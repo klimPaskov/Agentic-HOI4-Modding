@@ -115,8 +115,8 @@ Clausewitz script is picky. Follow these rules strictly.
     - Use them as scopes or targets with `event_target:my_target`.
     - In localisation, when using an event target as a localisation scope namespace, do not include the `event_target:` prefix.
 11. Do not use unary `-` on variable tokens such as `value = -my_var`. Negate via `multiply_*_variable` first.
-12. If an effect or trigger does not accept dynamic values, use `meta_effect` or `meta_trigger` with `text = { ... }` to inject computed variables or localisation into otherwise static fields.
-    - Meta effects can also be used to choose scripted effects dynamically.
+12. If an effect or trigger does not accept dynamic values, use `meta_effect` or `meta_trigger` with `text = { ... }` to inject computed variables/localisation into otherwise static fields.
+    - meta effects can be used in all sorts of creative ways, for example: `my_scripted_effect_[ID] = yes`, so you can even choose a scripted effect dynamically. Meta effects are very powerful and useful.
 13. Prefer reusable dynamic scripted effects or scripted triggers for complex or dynamic logic.
     - First check existing dynamic effects in (in `common/scripted_effects/[MOD_PREFIX]_dynamic_effects.txt`) and use them instead of duplicating logic.
     - If no existing effect fits, create a new dynamic effect and document it in (`common/scripted_effects/[MOD_PREFIX]_dynamic_effects.md`) in the same change.
