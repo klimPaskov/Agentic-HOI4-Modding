@@ -4,6 +4,8 @@ A practical starter kit for using coding agents on Hearts of Iron IV mods.
 
 This repo gives you a reusable `AGENTS.md` template, offline wiki references, and example skills that can be adapted into your own mod repo.
 
+Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3
+
 ## Who should use this
 
 This is for HOI4 modders who already understand the basics of modding and want AI to handle more of the repetitive work.
