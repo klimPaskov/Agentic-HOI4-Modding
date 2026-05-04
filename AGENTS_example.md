@@ -58,10 +58,9 @@ If Chaos Redux already has a pattern for the same thing, follow that over vanill
 
 If vanilla examples are insufficient or unclear, you are allowed to inspect well known large mods for additional reference.
 
-- Kaiserreich is approved as a reference mod for structure, patterns, and edge case handling.
+- Kaiserreich (1521695605) is approved as a reference mod for structure, patterns, and edge case handling.
 - You may read Kaiserreich files to understand how similar systems are implemented when vanilla does not provide a clear or complete example.
-
----
+- You may read other mod files as well (for example Kaiserredux 2076426030), if you don't find what you are looking for inside Kaiserreich.
 
 ## 1. Coding Style
 
@@ -178,24 +177,21 @@ add_equipment_to_stockpile = {
 
 This gives 10 units of `artillery_equipment_2`.
 
----
-
 ## 2. Localisation and UI
 
 Localisation and UI must always be kept in sync with gameplay changes.
 
 1. Localisation files must be encoded as **UTF 8 with BOM**. Wrong encoding breaks strings in game.
 2. When you add or rename anything that appears on screen, update localisation in the same change.
-3. Localisation keys:
+3. In scripted localisation, do not write format characters like `§` or `£` directly.
+4. Localisation keys:
    - Do not use `:0`. Write keys as `key_name: "Text"` without `0` and without a leading space before the key.
    - Keep key names consistent and readable. No unnecessary prefixes.
-4. Icons and UI assets:
+5. Icons and UI assets:
    - Define icons in `interface/...` and keep naming stable.
    - When something needs icons, define them in a correct `.gfx` file. I will provide the sprites myself, you just have to tell me what folder to put them in and with what name.
    - Copy placeholder sprites from vanilla files that match the new gfx definition, so later I can replace them with real sprites easily and that the game would run without complaining about missing sprites.
    - Register new UI assets before requesting art so filenames do not need to change later.
-
----
 
 ## 3. Naming and Prefix Rules
 
@@ -205,8 +201,6 @@ Add prefixes if a folder is dedicated to Chaos Redux files that all share the pr
 Prefer short, descriptive names that reflect function and scope.
 
 Unnecessary prefixes make code harder to read and maintain. Keep names clean.
-
----
 
 ## 4. HOI4 Modding Rules Summary
 
@@ -229,11 +223,10 @@ When implementing any new mechanic, follow this checklist:
 15. When the user reports an issue after new changes were made, assume the game has already been reloaded. Do not default to restart/reload advice unless the user explicitly says they did not reload. Do not ask for, request, or search for logs. If the user did not paste any error lines, treat it as having no error lines to use. Do not tell the user to run in-game validation. Assume they will always verify changes in a live session.
 16. Fallbacks are never allowed and MUST ALWAYS be discussed with the user.
 17. When the user reports that something is wrong and you can't figure out what exactly, then add temporary debug code (for example: `log = "my debug log"`) that exposes the relevant runtime values needed to understand the issue, and remove every debug line you added once the issue is resolved.
+18. When updating content (for example reworking an event), write as if the feature has always existed. Do not use meta wording like “now it is,” “now it has been reworked,” “newly added,” or similar update-history phrasing.
 
 Follow these rules and your changes will be easier to review, safer to merge and more consistent with the rest of the project.
 If this checklist cannot be satisfied, stop and request more design input instead of guessing.
-
----
 
 ## 5. Event Integration
 
@@ -244,14 +237,31 @@ For Chaos Redux event implementation, use the repo skill `chaos-redux-events`.
 3. If the event has evolutions or world-end branches, wire the log entries, super-event integration, and related localisation in the same change.
 4. Keep gameplay files, docs, the event spreadsheet/presentation, and any other details aligned.
 
----
+## 6. Agent-generated visual assets
 
-## 6. Git and Worktrees
+When the user explicitly asks to create final visual assets, use the `chaos-redux-event-assets` skill.
 
-When I tell you to, use a separate git worktree for a new session. The agent should create and use its own worktree so parallel sessions do not interfere with each other.
+The agent may use the configured image generation MCP instead of waiting for user-provided sprites.
 
-The agent may make small frequent commits inside its own worktree during the session, but commits must be meaningful and represent real progress.
+High-level rules:
 
-When the session is finished, move the result back into the main tree only if there is no overlap with other active worktrees. If there is any conflict risk, stop and leave the merge to the user.
+1. Use image generation for the base artwork.
+2. Do not create core artwork with Python, simple shapes, contact sheets, or layout-only mockups.
+3. Python or scripts may be used after generation for cropping, resizing, organizing, contact sheets, manifests, and DDS conversion.
+4. Convert final generated PNG assets to DDS 32 bit unsigned BGRB 8.8.8.8.
+5. Keep the source PNG, processed PNG preview, final DDS path, sprite name, intended use, and target size in an asset manifest.
+6. Move final DDS files into the correct mod folders and wire their sprite definitions in the same change.
 
-Never run `git push`. The user does that manually.
+## 7. Skill Maintenance
+
+When a task reveals a repeated workflow, repeated mistake, or reusable process, use the `skill-creator` skill.
+
+Use OpenAI’s official `skill-creator` skill.
+
+Rules:
+
+1. Add only concise, specific rules supported by the task.
+2. Do not rewrite existing skills unless needed.
+3. Prefer updating an existing skill over creating a new one if the workflow already belongs there.
+4. Keep skills focused on one reusable workflow.
+5. Report which skills were used, created, or updated at the end of each task.
