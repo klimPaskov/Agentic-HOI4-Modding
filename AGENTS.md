@@ -15,8 +15,6 @@ Replace these placeholders:
 - `[REFERENCE_MOD_NAME]` = approved large reference mod, if any
 - `[DOCS_FOLDER]` = docs folder path, usually `docs/`
 
----
-
 ## 0. Required Reading Before Any Change
 
 ### Paradox Wiki
@@ -73,8 +71,6 @@ If vanilla examples are insufficient or unclear, you are allowed to inspect well
 
 - `[REFERENCE_MOD_NAME]` is approved as a reference mod for structure, patterns, and edge case handling.
 - You may read `[REFERENCE_MOD_NAME]` files to understand how similar systems are implemented when vanilla does not provide a clear or complete example.
-
----
 
 ## 1. Coding Style
 
@@ -192,8 +188,6 @@ add_equipment_to_stockpile = {
 
 This gives 10 units of `artillery_equipment_2`.
 
----
-
 ## 2. Localisation and UI
 
 Localisation and UI must always be kept in sync with gameplay changes.
@@ -210,8 +204,6 @@ Localisation and UI must always be kept in sync with gameplay changes.
    - Use placeholder sprites from vanilla files where needed so later they can be replaced with real sprites without changing filenames.
    - Register new UI assets before requesting art so filenames do not need to change later.
 
----
-
 ## 3. Naming and Prefix Rules
 
 Use prefixes only where they are needed.
@@ -221,8 +213,6 @@ Add prefixes if a folder is dedicated to [MOD_NAME] files that all share the pre
 Prefer short, descriptive names that reflect function and scope.
 
 Unnecessary prefixes make code harder to read and maintain. Keep names clean.
-
----
 
 ## 4. HOI4 Modding Rules Summary
 
@@ -247,15 +237,3 @@ When implementing any new mechanic, follow this checklist:
 17. When the user reports that something is wrong and you cannot figure out what exactly, add temporary debug code such as `log = "my debug log"` that exposes the relevant runtime values, and remove every debug line you added once the issue is resolved.
 
 Follow these rules and your changes will be easier to review, safer to merge, and more consistent. If this checklist cannot be satisfied, stop and request more design input instead of guessing.
-
----
-
-## 6. Git and Worktrees
-
-When the user asks for it, use a separate git worktree for a new session so parallel sessions do not interfere with each other.
-
-The agent may make small frequent commits inside its own worktree during the session, but commits must be meaningful and represent real progress.
-
-When the session is finished, move the result back into the main tree only if there is no overlap with other active worktrees. If there is any conflict risk, stop and leave the merge to the user.
-
-Never run `git push`. The user does that manually.
