@@ -1,93 +1,130 @@
 ---
 name: chaos-redux-event-planning
-description: Use when turning a rough Chaos Redux event idea into a detailed event specification before implementation.
+description: Use when turning a rough Chaos Redux event idea into a repository-aware event specification before implementation.
 ---
 
 # Chaos Redux Event Planning
 
 Use this skill to design or expand events for the Hearts of Iron IV mod Chaos Redux.
 
-This skill creates event specifications. It does not implement code. Implementation belongs to `chaos-redux-events`. Visual asset generation and processing belongs to `chaos-redux-event-assets`.
+This skill creates event specifications. It does not implement code by itself. It is meant for a coding agent that can inspect the repository, read the existing systems, and write a spec that is ready to implement.
 
-## 1. Required reading
+Implementation belongs to `chaos-redux-events`. Visual asset creation and wiring belongs to `chaos-redux-event-assets`. Super-event quote, remark, music, and presentation research belongs to `chaos-redux-super-events`.
 
-Before writing the event specification, use the following as the design baseline:
+## 1. Repository-aware baseline
+
+Before writing the event specification, inspect the repository context that matters for the event.
+
+Read:
 
 - `AGENTS.md`
 - `chaos-redux-events`
-- provided event spreadsheet rows
-- provided existing event docs
-- provided Chaos Redux mechanics docs
+- `chaos-redux-event-assets` when visual assets may be needed
+- `chaos-redux-super-events` when a super-event may be needed
+- the provided event spreadsheet row or catalog entry
+- existing docs for the same event, cluster, mechanic, or related events
+- Chaos Redux mechanics docs
+- relevant existing event files and localisation files
+- relevant scripted effects, scripted triggers, scripted GUIs, ideas, decisions, focus trees, or assets if the event touches them
 
-Use those sources to understand how Chaos Redux works, then expand creatively from there.
+Use the actual repo as the source of truth. Do not design as if the agent has no code access. Check existing patterns before inventing new ones.
+
+If the repo already has a system for the thing being designed, use that system in the spec. If the repo does not have it yet, say whether the spec depends on a new system, an extension to an existing system, or a simple event-local implementation.
+
+Do not hallucinate existing mechanics, assets, event IDs, flags, GUI elements, or file paths. If something is uncertain after inspecting the repo, mark it as uncertain.
 
 ## 2. Input
 
-The user will provide either:
+The user may provide:
 
 - a rough event idea
 - a partly developed concept
 - an existing event that needs deeper rework
 - a detailed spec that needs cleanup before implementation
+- a spreadsheet row
+- existing docs or code references
 
-Treat the user’s idea as the starting point. Do not assume it is final.
+Treat the user’s idea as the starting point. Preserve the core direction unless there is a clear design or implementation reason to change it.
 
-When the idea is rough, expand it into a deeper design.
+When the idea is rough, expand it into a stronger event design.
 
-When the idea is already detailed, preserve the core direction and improve structure, clarity, missing connections, and implementation readiness.
+When the idea is already detailed, improve structure, lore, clarity, missing connections, implementation readiness, and repo alignment.
 
 ## 3. Design purpose
 
-The goal is to create an event that feels like a layered Chaos Redux system, not a basic popup.
+The goal is to create an event that feels like it belongs in Chaos Redux.
 
-The event should have atmosphere, player choice, consequences, escalation, lore, replay value, and enough visual support to feel finished.
+The spec should explain:
 
-The design should stay open and creative. Do not reduce the event to a rigid checklist. Use the structure that fits the idea best.
+- what happens in the world
+- why it might happen
+- how governments, civilians, soldiers, scientists, police, diplomats, or journalists understand it when relevant
+- what the player sees
+- what choices exist
+- what those choices mean in the story
+- how the event changes when it evolves
+- how it fits existing Chaos Redux systems and repo patterns
 
-## 3.1 Depth standard
+The spec should help the coding agent write believable event text, choose correct effects, wire the event cleanly, and avoid inventing missing design during implementation.
 
-The specification should be as deep as the event idea deserves.
+## 3.1 Lore and immersion first
 
-For small events, this may mean a compact but complete spec. For major events, world crises, custom UI systems, event chains, or events with evolutions, the spec should become very large and multi-part.
+The specification should read like an event design document, not a programming note.
 
-Do not aim for a short answer. Aim for a complete design.
+Start from the player-facing situation. Explain the event as something happening inside the campaign world. Technical notes come later and only where they matter.
 
-For larger events, it is acceptable and expected for the finished specification to span many files and potentially reach thousands of lines. A large event can justify 10,000+ lines across all parts.
+Think through:
 
-Do not add filler to reach a size target. Add depth by thinking through the event from every useful angle:
+- what the world believes happened
+- what is officially claimed
+- what is disputed
+- what information is missing
+- how the event is reported
+- how different governments might frame it
+- what the options feel like from the country’s perspective
+- how repeated firings or later stages change the story
+- what makes the event feel like Chaos Redux without becoming meaningless noise
+
+Do not let script structure, variables, IDs, arrays, or file wiring become the main content of the spec.
+
+## 3.2 Depth standard
+
+The specification should be as deep as the event deserves.
+
+Small events should stay compact but complete. Major crises, new countries, focus trees, custom UI, super-events, or world-end paths can justify very large specs.
+
+Depth means useful design, not more words.
+
+Add depth through:
 
 - player experience
-- event pacing
-- escalation
-- alternate paths
-- rare outcomes
-- AI behavior
-- world reactions
+- believable causes
+- public reaction
 - country-specific reactions
 - ideological interpretations
-- UI presentation
+- event pacing
+- escalation
+- rare variants
+- alternate paths
+- AI behavior when it affects outcomes
+- UI presentation when needed
+- asset direction when assets are needed
 - event log presence
-- asset needs
-- possible super-events
-- possible world-end branches
-- interactions with existing Chaos Redux systems
+- direct interactions with existing Chaos Redux systems
 - documentation needs
+- edge cases that the coding agent must handle
 
-The finished spec should make the coding agent feel like the event has already been fully designed.
+Do not add filler to make the spec longer.
 
-## 3.2 Focus tree depth standard
+## 3.3 Focus tree depth standard
 
 Focus trees should feel fully designed, not added as a thin bonus.
 
 Every focus should have a purpose. It should create a real choice, unlock a meaningful effect, reveal lore, change the country’s direction, support a playstyle, or connect to the event’s wider consequences.
 
-Do not design filler focuses just to make the tree larger.
-
-A large country or major event outcome can justify a very large focus tree. A country can have around 100 focuses if the design supports that scale.
-
 When planning a focus tree, think through:
 
-- main political paths
+- political paths
 - mutually exclusive branches
 - hidden or conditional branches
 - military development
@@ -98,39 +135,38 @@ When planning a focus tree, think through:
 - ideology-specific routes
 - event-driven unlocks
 - rare campaign-state paths
-- consequences of earlier player choices
+- consequences of earlier choices
 - long-term replay value
 - AI path behavior
 - focus icons and visual identity
 - evolution or chaos meter locked paths
-- world end scenario path(s)
+- world-end paths if relevant
 
-The focus tree should feel like it was designed carefully from the beginning. It should have enough alternate paths, internal logic, and meaningful decisions that a player can replay the country and get different experiences.
+Do not design filler focuses just to make the tree larger.
 
-## 4. What the specification should explore
+## 4. What the specification should cover
 
-A strong specification usually explores:
+Use the sections that fit the event. Do not force a fixed template.
 
-- the core event concept
-- why the event matters
-- how the event first appears
-- what the player sees and chooses
-- what consequences follow
-- how the situation can escalate
-- what rare variants can happen
-- how AI countries react
-- how the event changes under different world conditions
-- whether the event should create focus tree content
-- what UI or visual presentation would make it stronger
-- what other Chaos Redux systems it should interact with
-- what assets the event needs
-- what the coding agent needs to know before implementation
+A strong spec often covers:
 
-When exploring these areas, do not stop at the first obvious answer. Consider multiple possible versions of the event, then choose or describe the strongest ones.
+- the in-world situation
+- the likely cause or trigger
+- what is known, disputed, or hidden
+- what the player sees first
+- option text direction and option meaning
+- consequences
+- escalation and evolutions
+- rare variants
+- country, ideology, faction, or regional differences
+- event cluster placement when relevant
+- AI behavior when it changes outcomes
+- UI or presentation needs
+- assets that are actually needed
+- direct interactions with existing systems
+- repo-specific implementation notes that prevent mistakes
 
-For important events, think through edge cases, country differences, player incentives, AI incentives, possible abuse, pacing, cooldowns, narrative tone, and how the event feels after it has fired several times or evolved.
-
-The final result should feel like a complete design document, not an outline.
+The spec should not become a generic implementation checklist. The coding agent can inspect the repo. Include only technical details that are specific to this event or easy to get wrong.
 
 ## 5. Chaos Redux system awareness
 
@@ -140,7 +176,7 @@ Possible links include:
 
 - Chaos Meter
 - evolutions
-- super events
+- super-events
 - world-end scenarios
 - event clusters
 - condemnation
@@ -150,6 +186,16 @@ Possible links include:
 - biological warfare
 - world threats
 - existing or planned events
+
+Mention only direct, non-obvious, or event-specific integrations.
+
+Do not explain automatic HOI4 or Chaos Redux behavior that will happen without special event work. For example, do not say that a war feeds world tension, normal combat creates casualties, or existing systems react to their usual inputs unless the event must add special wiring.
+
+For event clusters, use plain wording. State which cluster the event belongs to and any secondary connection if useful. Also define the event's cluster behavior when it matters: whether it is an early, middle, or late event inside the cluster, whether it is low, medium, or high danger, whether it can fire as soon as the cluster is unlocked, and whether it is likely or only sometimes included when the cluster fires.
+
+Do not treat cluster unlock and event eligibility as the same thing. A cluster may become available at one chaos tier while a more dangerous member event only becomes eligible inside that cluster at a later chaos tier. Say that directly when relevant.
+
+Keep exact cluster weighting rules, minimum chances, and implementation formulas in `event_clusters_spec`. The event planning spec should describe intent and relative behavior, not technical math.
 
 Leave out connections that feel artificial.
 
@@ -163,15 +209,15 @@ Avoid blunt labels such as:
 - Danger
 - Threat
 - World Ending Risk
-- any direct UI label that tells the player too plainly what is coming
+- direct UI labels that tell the player too plainly what is coming
 
 Early information should feel incomplete. Use uncertainty, conflicting reports, rumours, cautious diplomatic language, intelligence disagreements, unexplained incidents, and unclear public reactions.
 
 The player should understand the deeper danger through patterns and consequences over time.
 
-## 7. Depth and hidden connections
+## 7. Hidden connections and variants
 
-Look for design connections the user may not have considered.
+Look for design connections the user may not have considered, but add them only when they improve the event.
 
 Useful connection types can include:
 
@@ -194,58 +240,198 @@ Useful connection types can include:
 - regional differences
 - long-term instability
 
-Add these only when they make the event stronger.
+Do not add hidden connections just to make the spec look larger.
 
 ## 8. Custom UI and presentation
 
-If the event benefits from custom UI, design one.
+If the event benefits from custom UI, design it.
 
-Describe what the player sees, how it changes, and what visual assets are needed.
+Describe what the player sees, how it changes, what information it shows, and what assets are needed.
 
-## 9. Writing style
+If normal event popups, reports, news events, decisions, or existing GUI elements are enough, use them. Do not invent custom UI because the event sounds important.
+
+## 9. Super-event planning
+
+Use a super-event only when the moment deserves stronger presentation than a normal popup.
+
+A super-event should mark a reveal, escalation, transformation, defeat, aftermath, ideological victory, global response, or world-end moment that changes how the player understands the campaign.
+
+If a super-event is needed, define:
+
+- purpose
+- trigger moment
+- role
+- tone
+- what the player should understand
+- what the world believes happened
+- what remains uncertain
+- image direction
+- quote direction
+- cultural remark direction
+- audio mood
+- follow-up content if needed
+
+Do not fully research quotes, cultural remarks, or music inside this skill. Use `chaos-redux-super-events` for that work.
+
+## 10. Writing style
 
 Write in a serious, direct, grounded HOI4 style.
+
+The specification should be explanatory and immersive first, then implementation-ready. Keep it concise by default.
 
 Avoid:
 
 - generic disaster wording
 - empty dramatic language
+- vague purpose lines
+- word salad
 - making every event apocalyptic
 - random chaos without purpose
-- implementation code
 - excessive technical detail
+- dry implementation scaffolding
+- long lists of standard script surfaces
+- repeating facts already obvious
+- explaining automatic vanilla or existing Chaos Redux behavior
 
-Mention implementation only where it matters for the design, such as super-event treatment, custom UI, AI behavior, documentation, assets, or important system connections.
+Do not use filler phrases such as:
 
-## 10. Specification shape
+- source of global instability
+- raises the stakes
+- deepens the chaos
+- creates a layered experience
+- adds more depth
+- the world descends further
+- tension spreads across the globe
 
-Do not force the specification into a fixed template.
+Replace vague explanation with direct event writing. Say what happens, what people believe, who is affected, what choices exist, and how the situation changes.
 
-Choose the structure that best fits the event idea.
+Mention implementation only where it matters for the design, such as custom UI, AI behavior, documentation, assets, unusual selection rules, exclusions, or important system connections.
 
-The specification should still be easy for a coding agent to use. Use clear headings, explain the logic in a natural order, and make sure the important design decisions are not buried.
+## 11. Specification shape
 
-## 11. Depth and continuation
+Do not force the spec into a fixed template. Choose the structure that fits the event.
 
-Do not compress the spec so much that important ideas become shallow.
+The spec should be easy for a coding agent to use. Use clear headings, explain the logic in a natural order, and keep important design decisions visible.
 
-The goal is depth, not speed.
+### 11.1 No spreadsheet metadata block
 
-Think through the event as far as the idea can reasonably go. If the event has multiple branches, evolutions, rare variants, UI elements, super-events, or major system connections, treat each of those as deserving real design space.
+Do not start the specification with a metadata block that repeats spreadsheet fields.
 
-Large events should be written across multiple parts instead of being rushed into one response.
+Avoid blocks like:
 
-Each part should be complete enough to be useful on its own. Stop at a clean point and state what section should continue next.
+```markdown
+- **Event ID:** ...
+- **Event name:** ...
+- **Type:** ...
+- **Status:** ...
+- **Cluster:** ...
+- **Event availability:** ...
+- **Evolution track:** ...
+```
 
-Do not summarize later sections just because the current response is getting long. Continue in the next part instead.
+The filename, title, spreadsheet row, and implementation prompt can carry those facts. The specification should begin with the actual event design.
 
-For major events, the final combined specification may be extremely long. That is acceptable. A 10,000+ line specification is valid if the event truly needs that much design detail.
+If a spreadsheet field needs clarification, mention it in the relevant section only.
 
-Avoid filler. Every section should add useful design, player-facing detail, implementation clarity, asset direction, or system connection.
+### 11.2 No negative feature inventory
 
-## 12. Asset planning
+Do not list things the event does not have.
 
-The event specification should identify all important visual assets.
+Avoid sections or bullets such as:
+
+- no custom GUI
+- no decisions
+- no focus tree
+- no super-event
+- no world-end branch
+
+If the spec does not mention a feature, the coding agent should assume it is not part of the design.
+
+Only mention an excluded feature when it prevents a likely implementation mistake or corrects a user request.
+
+### 11.3 No obvious system restatement
+
+Do not include lines that only describe automatic game behavior.
+
+Avoid saying that:
+
+- wars increase world tension through normal gameplay
+- normal combat can create deaths
+- existing systems react to their normal inputs
+- standard event registration needs to happen unless a special event-specific rule is needed
+
+Mention a system only when the event adds special logic, changes weighting, creates a new variable, writes to a log, overrides normal behavior, gates content, or requires careful exclusion handling.
+
+### 11.4 Keep technical detail in its place
+
+The main spec should not become a checklist of files, scripted effects, variables, constants, event roots, or registration steps.
+
+The coding agent has access to the code. It should inspect existing patterns and wire standard surfaces through the existing implementation skill.
+
+Use technical detail in the spec only when it changes the event design, prevents a likely mistake, or explains a non-obvious rule.
+
+### 11.5 Event cluster placement
+
+Cluster sections should be plain and useful.
+
+State the cluster membership directly:
+
+```markdown
+This event belongs in the X cluster.
+```
+
+If there is a secondary connection, state it directly.
+
+When the event belongs to a cluster, decide the parts that affect cluster behavior:
+
+- whether the event is early, middle, or late in the cluster sequence
+- whether the event is low, medium, or high danger inside the cluster
+- whether it can fire in the cluster as soon as the cluster unlocks
+- whether it needs a higher chaos tier before it can appear inside the cluster
+- whether it is likely, occasional, or rare when the cluster fires
+- whether it is required for the cluster or only an optional member
+
+Do not add abstract cluster justification. Do not explain the cluster as a mood or theme unless it affects visibility, ordering, weighting, event log text, or documentation.
+
+Do not put exact formulas or minimum percentages here. Those belong in `event_clusters_spec`.
+
+### 11.6 Direct sections
+
+Every section should answer a useful design, lore, gameplay, or implementation question.
+
+Useful sections often cover:
+
+- what happens in-world
+- why it happens
+- what different countries or groups believe happened
+- what the player sees
+- what options exist and what they mean
+- how evolutions change the situation
+- rare variants or campaign-state variants
+- AI behavior when it affects outcomes
+- cooldowns and exclusions when they affect pacing or fairness
+- event log text needs
+- assets that are actually needed
+
+Remove sections that only restate theme, identity, or mood without explaining the event. Keep lore when it tells the coding agent what to write, what to show, what to trigger, or how the event should feel in-game.
+
+## 12. One-file specification rule
+
+Create one complete Markdown specification file by default.
+
+Do not split the spec into `part_1`, `part_2`, or similar files unless the user explicitly asks for it or a tool limit makes a split unavoidable.
+
+A single spec file may be very large. That is acceptable when the event deserves it. Keep one clean document that can be read from top to bottom and implemented without merging multiple files later.
+
+If the spec is large, use headings and a table of contents instead of splitting it.
+
+Do not summarize later sections because the file is long. Write the full design in the same file.
+
+Small events should still stay small when the idea does not justify more. A compact event can have strong flavour, clear options, evolutions, variants, cooldowns, and AI behavior without becoming a major system.
+
+## 13. Asset planning
+
+The event specification should identify important visual assets when assets are needed.
 
 Consider whether the event needs:
 
@@ -257,20 +443,22 @@ Consider whether the event needs:
 - achievement icons
 - news event pictures
 - report event pictures
-- super-event art
+- super-event images
 - leader portraits
 - faction emblems
 - flags
 - UI
 - progression-state variants
 
-Asset generation, cropping, resizing, DDS conversion, file placement, `.gfx` wiring, and manifests belong to `chaos-redux-event-assets`.
+Asset generation, sourcing, cropping, resizing, DDS conversion, file placement, `.gfx` wiring, and manifests belong to `chaos-redux-event-assets`.
 
-This skill should only define what assets are needed and what they should represent.
+This skill should define what assets are needed and what they should represent. For generic events, prefer existing vanilla HOI4 or existing Chaos Redux images when they fit.
 
-## 13. Asset prompt handoff
+Do not include assets that the event does not need.
 
-After the full event specification is complete, create a separate copy-pasteable asset prompt for `chaos-redux-event-assets`.
+## 14. Asset prompt handoff
+
+Create a separate asset prompt only when the user wants a handoff prompt or when asset work is actually needed.
 
 The asset prompt should include:
 
@@ -281,14 +469,16 @@ The asset prompt should include:
 - intended in-game use
 - suggested filenames
 - suggested sprite names
-- whether each asset is for an event, report event, news event, super-event, decision, idea, focus, achievement, flag, leader portrait, or UI element
+- asset type
+- source mode
 - manifest requirements
+- user review requirements where relevant
 
-The prompt must state that image generation should be used for the base artwork.
+Use `chaos-redux-event-assets` rules for source selection. Symbolic icons usually use `image_gen`. News event images, report event images, super-event images, and real leader portraits use sourced or existing images unless the user says otherwise.
 
-Do not make the asset prompt vague.
+For generic events, prefer existing vanilla HOI4 or existing Chaos Redux images when they fit. Do not require new assets only to make the asset list look complete.
 
-## 14. HOI4 asset size reference
+## 15. HOI4 asset size reference
 
 Use these sizes when planning assets:
 
@@ -301,24 +491,22 @@ Use these sizes when planning assets:
 - tech icons small: 64x64
 - tech icons medium: 132x52
 - achievements: 64x64
-- super-event art: 457x328
+- super-event images: 457x328
 - decision icons: 32x32
 - idea and national spirit icons: 64x64
 - focus icons: 94x86
 
 Use other sizes when the event’s UI or asset type requires it.
 
-## 15. Asset style reference
-
-When planning visuals, use these style expectations.
+## 16. Asset style reference
 
 Report and news event images should look like documentary photographs. News event images should be black and white.
 
-Super-event art should be finished cinematic art before it is cropped or resized.
+Super-event images should have a strong central composition, clear theme, readable subject, and enough contrast for HOI4 UI.
 
 Focus icons should look like HOI4 focus icons, with a central symbol, readable silhouette, aged texture, painterly detail, and strong contrast.
 
-Idea and national spirit icons should look like compact HOI4 icon art. They need strong symbolic shapes and clear readability at 64x64. They are similar to focus icons, but they are just missing the main frame.
+Idea and national spirit icons should look like compact HOI4 icon art. They need strong symbolic shapes and clear readability at 64x64.
 
 Achievement icons should be readable at 64x64 and have a clear completion theme. The completed version is generated first. Grey and not-eligible variants can be produced later.
 
@@ -328,63 +516,72 @@ Progression-state variants may include selected, dim, active, locked, completed,
 
 Photoshop may be mentioned only for progression-state variants.
 
-## 16. Super-event music planning
+## 17. Super-event research handoff
 
-If the event has super-events, the asset prompt should also request music research.
+If the event has one or more super-events, create a separate copy-pasteable prompt for `chaos-redux-super-events` when a handoff prompt is needed.
 
-For each proposed track, ask for:
+For each super-event, include:
 
-- title
-- composer
-- performer or recording source if relevant
-- public domain status
-- source link
-- why it fits the super-event
+- purpose
+- trigger moment
+- tone
+- title direction
+- description direction
+- quote direction
+- cultural remark direction
+- audio mood
+- image direction
+- whether it is an escalation, defeat moment, aftermath moment, ideological moment, or world-end moment
+- special constraints from the event spec
 
-Do not claim public domain status without checking.
+The `chaos-redux-super-events` prompt should ask the agent to:
 
-If the license is unclear, mark the track as uncertain.
+- find a real quote using the internet search MCP server
+- verify quote wording and attribution
+- find a meaningful cultural remark, reference, allusion, or short line where appropriate
+- follow copyright limits for songs, films, books, and other protected works
+- find suitable public domain or clearly licensed audio
+- document all sources, license notes, and uncertainties
+- coordinate super-event image needs with `chaos-redux-event-assets`
 
-## 17. Output rules
+Do not claim a quote, cultural reference, or audio track is usable without checking.
 
-The event specification itself should be created as a downloadable Markdown file.
+If a license or attribution is unclear, mark it as uncertain.
+
+## 18. Output rules
+
+Create one Markdown spec file.
 
 The spec file should contain only the event specification.
 
-Do not put the asset prompt or coding-agent prompt inside the spec file.
+Do not put asset prompts, super-event prompts, or coding-agent prompts inside the spec file.
 
-For multi-part specs, create sequential files:
+If working inside the repository, save the spec in the repo location that matches the project’s documentation pattern. If no pattern exists, choose a clear docs path and keep the filename stable and descriptive.
 
-- `event_name_spec_part_1.md`
-- `event_name_spec_part_2.md`
-- `event_name_spec_part_3.md`
+If working outside the repository, create a downloadable Markdown file.
 
-Continuation files should continue directly from the previous part so they can be combined later without cleanup.
+Do not split the spec into multiple files unless the user explicitly asks or a tool limit forces it.
 
-Do not repeat earlier sections unless needed for clarity.
+## 19. Final prompts and final answer
 
-## 18. Final prompts
-
-Only after the full specification is complete, output two separate copy-pasteable prompts outside the downloadable spec file.
+Only create separate handoff prompts when the user asks for them or when the next step clearly requires a different skill or agent.
 
 ### Asset prompt
 
-Create an asset prompt for `chaos-redux-event-assets`.
+Create an asset prompt for `chaos-redux-event-assets` only if asset work is needed.
 
-The prompt should cover all required visual assets, progression-state variants, super-event music research when needed, and final asset packaging.
+The prompt should cover required assets, progression-state variants, review needs, and final asset packaging.
 
-### Coding-agent prompt
+### Super-event prompt
 
-Create a coding-agent implementation prompt that summarizes the finished event spec.
+Create a super-event prompt for `chaos-redux-super-events` only if one or more super-events are part of the spec.
 
-The prompt must tell the coding agent to:
+The prompt should cover titles, descriptions, quotes, cultural remarks, audio research, image direction, source documentation, and licensing notes.
 
-- implement the event according to the spec
-- implement any required focus tree content with meaningful focuses, coherent branches, proper icons, localisation, AI behavior, and event integration
-- follow `AGENTS.md`
-- follow `chaos-redux-events`
-- use `chaos-redux-event-assets` if visual assets are required
-- keep all Chaos Redux systems aligned
-- report anything that cannot be implemented cleanly
-- keep iterating until the full spec is implemented
-- avoid fallbacks, simplifications, temporary versions, and good-enough approximations
+### Implementation prompt
+
+Create a coding-agent implementation prompt only when the user wants a handoff prompt.
+
+Keep it short. Tell the coding agent to implement the spec fully, follow `AGENTS.md` and the relevant skills, keep iterating until done, and report files changed, implemented work, wiring, documentation, localisation, catalog updates, validation, and anything that could not be implemented cleanly.
+
+The implementation prompt should not repeat the whole spec.

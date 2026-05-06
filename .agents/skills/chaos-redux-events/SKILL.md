@@ -255,17 +255,11 @@ If the event shows or drives a super event, wire the whole package:
 - update player-facing localisation in the correct `.yml` files
 - also update the .html documentation of music files correctly. If you can't get all the info from the file metadata and the user didn't provide the author or the name of the piece, then ask the user to do so.
 
-Super events must follow this localisation format (example):
+Use `chaos-redux-super-events` whenever an event includes a super-event.
 
-```
-super_event.1.t: "Undead?"
-super_event.1.d: "The dead have risen, spreading terror and chaos.\n\nWitnesses describe scenes of horror as reanimated corpses or \"zombies\" began to terrorize cities and rural areas alike. The outbreak's cause appears to be unknown.\n\nAuthorities are urging the public to remain vigilant and avoid contact with anyone exhibiting unusual behavior."
-super_event.1.a: "Do you like to take a yo-yo for a ride?" # Ironic remark
-super_event.1.q: "This, then, is how you should pray: 'Our Father in heaven, hallowed be your name.' \n §Y-Matthew 6:9-§!" # An actual quote that fits the situation
-```
+That skill handles super-event title direction, description tone, quote research, cultural remark selection, audio research, source documentation, and super-event presentation rules.
 
-Do not wire only the image or only the audio; keep the slot, loc, image, and audio ID aligned.
-Follow `chaos-redux-super-events` skill for a full guide on super events.
+This skill handles implementation wiring: slot, flags, localisation, image, audio ID, scripted localisation, `.gfx`, docs, and spreadsheet updates.
 
 ### 7. World-end integration
 
@@ -345,6 +339,7 @@ Maintain the gameplay-facing event table in:
 
 Rules:
 
+- use the `xlsx` skill
 - write for players, not script readers
 - focus on what happens in play
 - keep the `Details` field aligned with the event-details window description
@@ -425,7 +420,7 @@ Before closing an event task, verify:
 6. Event log actor mapping is updated if needed.
 7. Event details window content is updated if the event appears there.
 8. Evolution logging and preview wiring are updated if relevant.
-9. Super-event slot, loc, image, and audio wiring are updated if relevant.
+9. If the event has a super-event, `chaos-redux-super-events` has been used for quote, remark, audio, and presentation planning.
 10. Supporting decisions, ideas, AI, country setup, or exclusions are updated if relevant.
 11. `docs/events/` is updated.
 12. `docs/spreadsheets/chaos_redux_events_catalog.xlsx` is updated.
