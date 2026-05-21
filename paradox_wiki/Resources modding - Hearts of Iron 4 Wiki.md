@@ -36,17 +36,17 @@ The resource image strip is defined by the **GFX\_resources\_strip** spritetype,
 The icons are defined in /Hearts of Iron IV/interface/general\_stuff.gfx. Their definition must be changed if you're adding or removing resources:
 
 ```text
-	spriteType = {
-		name = "GFX_resources_strip"
-		texturefile = "gfx/interface/resources_strip.dds"
-		noOfFrames = X #X being the number of resources you have, 
-	}
+    spriteType = {
+        name = "GFX_resources_strip"
+        texturefile = "gfx/interface/resources_strip.dds"
+        noOfFrames = X #X being the number of resources you have,
+    }
 
-	spriteType = {
-		name = "GFX_missing_resources_strip"
-		texturefile = "gfx/interface/missing_resources_strip.dds"
-		noOfFrames = X
-	}
+    spriteType = {
+        name = "GFX_missing_resources_strip"
+        texturefile = "gfx/interface/missing_resources_strip.dds"
+        noOfFrames = X
+    }
 ```
 
 The number of frames strictly corresponds to the amount of resources.
@@ -81,7 +81,7 @@ buttonType = {
     spriteType = "GFX_resources_strip"
     frame = 1 # Which icon is used from the spriteType image referred to above.
 }
-					
+
 instantTextboxType = {
     name = "<resource>_value"
     position = { x = 31 y = 5 }
@@ -97,7 +97,7 @@ instantTextboxType = {
 
 ### Additional notes
 
-A fuel can also correspond to the fuel dynamic, however only one resource at a time can do that. This is decided by the FUEL\_RESOURCE [define](<Defines - Hearts of Iron 4 Wiki.md>).   
+A fuel can also correspond to the fuel dynamic, however only one resource at a time can do that. This is decided by the FUEL\_RESOURCE [define](<Defines - Hearts of Iron 4 Wiki.md>).
 Infrastructure's bonus on resource gain is decided by the INFRASTRUCTURE\_RESOURCE\_BONUS define and applies to all resources the same.
 
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**

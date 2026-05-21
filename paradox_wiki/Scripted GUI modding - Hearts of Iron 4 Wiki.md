@@ -48,7 +48,7 @@ guiTypes = {
         name = "independent_container" # Can be used in the window_name of scripted GUI
         position = { x = 0 y = 0 }
         size = { width = 100% height= 210 }
-        
+
         containerWindowType = {
             name = "nested_container" # Located inside of another container, thus impossible to assign scripted GUI
             position = { x = 0 y = 0 }
@@ -75,7 +75,7 @@ There are two ways to do so in particular:
 
 For `parent_window_token`, a notable argument is `top_bar`. The topbar is positioned lower in the drawing order than most pop-up menus in the game. Therefore, assigning a scripted GUI to have a parent of the topbar will make it be hidden by menus such as the national focus selection or the politics tab. As the topbar container actually covers the entire screen, using it as the token will not result in the container being clipped off.
 
-`parent_window_name = example_container` can be used with most containers. If the parent container is itself independent, then directly entering the name of the container will result in the scripted GUI's window be attached to it.  
+`parent_window_name = example_container` can be used with most containers. If the parent container is itself independent, then directly entering the name of the container will result in the scripted GUI's window be attached to it.
 If the parent container is nested inside another one, then it's necessary to append \_instance. As such, a nested container with `name = "nested_container"` can be assigned as a parent with `parent_window_name = nested_container_instance`. This can also be used to place the scripted GUI lower in the drawing order. For example, to create a custom dynamic background for a base game's UI window, it's possible to create an "anchor" container window inside of it and then use it as the parent window:
 
 ```text
@@ -84,22 +84,22 @@ guiTypes = {
         name = "countrypoliticsview"
         position = { x=-606 y=78}
         size = { width=550 height=100%% }
-        
-        <...>    
-        
+
+        <...>
+
         iconType ={
             name ="pol_view_bg"
             spriteType = "GFX_pol_view_bg"
             position = { x= 0 y = 44 }
             Orientation = "UPPER_LEFT"
-        }    
-        
+        }
+
         containerWindowType = { # This container will be placed right above the background of the political view and below each of its elements
             name = "politics_anchor" # The scripted GUI will have parent_window_name = politics_anchor_instance
             position = { x = 0 y = 44 } # This will ensure that, for example, national spirits will be placed above the scripted GUI and not get hidden.
             size = { width = 100% height = 100% }
         }
-        
+
         <...>
     }
 }
@@ -200,38 +200,38 @@ Here is an example of this concept in action:
 
 ```text
 triggers = {
-	my_temp_array_calculator_click_enabled = {
-		clear_temp_array = my_temp_array
-		all_of = {
-			array = my_array
-			add_to_temp_array = { my_temp_array = v }
-		}
-	}
+    my_temp_array_calculator_click_enabled = {
+        clear_temp_array = my_temp_array
+        all_of = {
+            array = my_array
+            add_to_temp_array = { my_temp_array = v }
+        }
+    }
 
-	my_element_click_enabled = {
-		if = {
-			limit = {
-				has_completed_focus = my_focus
-			}
-			set_temp_variable = { my_temp_var = 1 }
-		}
-		else = {
-			set_temp_variable = { my_temp_var = 2 }
-		}
-	}
+    my_element_click_enabled = {
+        if = {
+            limit = {
+                has_completed_focus = my_focus
+            }
+            set_temp_variable = { my_temp_var = 1 }
+        }
+        else = {
+            set_temp_variable = { my_temp_var = 2 }
+        }
+    }
 }
 
 properties = {
-	my_element = {
-		frame = my_temp_var
-	}
+    my_element = {
+        frame = my_temp_var
+    }
 }
 
 dynamic_lists = {
-	my_gridbox = {
-		array = my_temp_array
-		entry_container = "my_entry_container"
-	}
+    my_gridbox = {
+        array = my_temp_array
+        entry_container = "my_entry_container"
+    }
 }
 ```
 
@@ -243,50 +243,50 @@ Here is some example code of how the scripted gui should look:
 
 ```text
 scripted_gui = {
-	Example_GUI = {
-	
-		context_type = player_context
-		
-		window_name = "Example_GUI_Window"
+    Example_GUI = {
 
-		visible = {
-			
-		}
+        context_type = player_context
 
-		dynamic_lists = {
-			Example_Grid_Box = {
-					#The array to use. Will call a gui for each index.
-					array = Example_Array
+        window_name = "Example_GUI_Window"
 
-					#value of the current array index. Optional. Default value is v.
-					value = v
+        visible = {
 
-					#current array index. Optional. Default value is i.
-					index = i
-					
-					#This will change the scope to the value if yes
-					change_scope = no
+        }
 
-					#The GUI drawn for each index
-					entry_container = "Example_GUI_Array"
-			}
-		}
-		effects = {
-			#Example Buttons to show it working
-			Button_1_click = {
-				add_to_array = {Example_Array = 1}
-			}
-			Button_2_click = {
-				remove_from_array = {Example_Array = 1}
-			}
-		}
-		triggers = {
+        dynamic_lists = {
+            Example_Grid_Box = {
+                    #The array to use. Will call a gui for each index.
+                    array = Example_Array
 
-		}
-		properties = {
+                    #value of the current array index. Optional. Default value is v.
+                    value = v
 
-		}
-	}
+                    #current array index. Optional. Default value is i.
+                    index = i
+
+                    #This will change the scope to the value if yes
+                    change_scope = no
+
+                    #The GUI drawn for each index
+                    entry_container = "Example_GUI_Array"
+            }
+        }
+        effects = {
+            #Example Buttons to show it working
+            Button_1_click = {
+                add_to_array = {Example_Array = 1}
+            }
+            Button_2_click = {
+                remove_from_array = {Example_Array = 1}
+            }
+        }
+        triggers = {
+
+        }
+        properties = {
+
+        }
+    }
 }
 ```
 
@@ -294,86 +294,86 @@ And this would be the corresponding gui:
 
 ```text
 guiTypes = {
-	#Example Scripted GUI Window
-	containerWindowType = {
-		name = "Example_GUI_Window"
-		size = { width = 400 height = 300 }
-		Orientation = upper_left
-		moveable = yes
-		position = { x = 650 y = 250 }
-					
-		background = {
-			name = "Background"
-			quadTextureSprite = "GFX_tiled_window2_1b_border"
-		}
-		
-		#Not required to put the gridbox within another container, but it allows for scrolling with the correct background and scrollbar type. This one is transparent.
-			
-		#Example Buttons for array
-		buttonType = {
-			name ="Button_1"
-			quadTextureSprite ="GFX_button_261x34"
-			position = { x=50 y=15 }
-			#This will write onto the button the value and index of the array
-			buttonText = "Add 1 to array"
-			buttonFont = "hoi_16mbs"
-			Orientation = centre
-		}
-			
-		buttonType = {
-			name ="Button_2"
-			quadTextureSprite ="GFX_button_261x34"
-			position = { x=50 y=50 }
-			#This will write onto the button the value and index of the array
-			buttonText = "Remove 1 from array"
-			buttonFont = "hoi_16mbs"
-			Orientation = centre
-		} 
-		containerWindowType = {
-			name = "Example_Container_For_Grid"
-			Orientation = upper_left
-			size = {width=400 height=200}
-			position = {x=0 y=100}
-			verticalScrollbar = "right_vertical_slider_intel"
-			scroll_wheel_factor = 40
-			smooth_scrolling = yes
-					
-			background = {
-				name = "Background"
-				quadTextureSprite = "GFX_tiled_window_transparent"
-			}
-			
-			gridBoxType = {
-				name = "Example_Grid_Box"
-				position = { x = 50 y = 0}
-				#The size of the gridbox
-				size = { width = 100%% height = 100%% }
-				Orientation = upper_left
-				#The slot size
-				slotsize = {width=400 height=50 }
-				format = "UPPER_LEFT"
-				#the maximum horizontal gui elements
-				max_slots_horizontal = 1
-				#the maximum vertical gui elements
-				#max_slots_vertical = 1
-			}
-		}
-	}
+    #Example Scripted GUI Window
+    containerWindowType = {
+        name = "Example_GUI_Window"
+        size = { width = 400 height = 300 }
+        Orientation = upper_left
+        moveable = yes
+        position = { x = 650 y = 250 }
 
-	#Example GUI for each Array Index. This will use an already existing button as an example.
-	containerWindowType = {
-		name = "Example_GUI_Array"
-		size = {width=400 height=50}
-			
-		buttonType = {
-			name ="Example_GUI"
-			quadTextureSprite ="GFX_button_261x34"
-			position = { x=0 y=0 }
-			#This will write onto the button the value and index of the array
-			buttonText = "v: [?v] i: [?i]"
-			buttonFont = "hoi_16mbs"
-		}
-	}
+        background = {
+            name = "Background"
+            quadTextureSprite = "GFX_tiled_window2_1b_border"
+        }
+
+        #Not required to put the gridbox within another container, but it allows for scrolling with the correct background and scrollbar type. This one is transparent.
+
+        #Example Buttons for array
+        buttonType = {
+            name ="Button_1"
+            quadTextureSprite ="GFX_button_261x34"
+            position = { x=50 y=15 }
+            #This will write onto the button the value and index of the array
+            buttonText = "Add 1 to array"
+            buttonFont = "hoi_16mbs"
+            Orientation = centre
+        }
+
+        buttonType = {
+            name ="Button_2"
+            quadTextureSprite ="GFX_button_261x34"
+            position = { x=50 y=50 }
+            #This will write onto the button the value and index of the array
+            buttonText = "Remove 1 from array"
+            buttonFont = "hoi_16mbs"
+            Orientation = centre
+        }
+        containerWindowType = {
+            name = "Example_Container_For_Grid"
+            Orientation = upper_left
+            size = {width=400 height=200}
+            position = {x=0 y=100}
+            verticalScrollbar = "right_vertical_slider_intel"
+            scroll_wheel_factor = 40
+            smooth_scrolling = yes
+
+            background = {
+                name = "Background"
+                quadTextureSprite = "GFX_tiled_window_transparent"
+            }
+
+            gridBoxType = {
+                name = "Example_Grid_Box"
+                position = { x = 50 y = 0}
+                #The size of the gridbox
+                size = { width = 100%% height = 100%% }
+                Orientation = upper_left
+                #The slot size
+                slotsize = {width=400 height=50 }
+                format = "UPPER_LEFT"
+                #the maximum horizontal gui elements
+                max_slots_horizontal = 1
+                #the maximum vertical gui elements
+                #max_slots_vertical = 1
+            }
+        }
+    }
+
+    #Example GUI for each Array Index. This will use an already existing button as an example.
+    containerWindowType = {
+        name = "Example_GUI_Array"
+        size = {width=400 height=50}
+
+        buttonType = {
+            name ="Example_GUI"
+            quadTextureSprite ="GFX_button_261x34"
+            position = { x=0 y=0 }
+            #This will write onto the button the value and index of the array
+            buttonText = "v: [?v] i: [?i]"
+            buttonFont = "hoi_16mbs"
+        }
+    }
 }
 ```
 
@@ -410,7 +410,7 @@ properties = {
 ```text
 defined_text = {
     name = get_my_icon_texture
-    
+
     text = {
         trigger = {
             <triggers>
@@ -450,8 +450,8 @@ This is the best optimization, as it means invalid AIs will never be checked aga
 
 These attributes determine when the AI checks the scripted GUI.
 
-**ai\_test\_interval** determines how often the AI checks, in hours. By default set to 24.  
-**ai\_test\_variance** determines the variance in time (In percent) for the check, which is the specified variance divided by 2 for plus and minus. By default set to 0.2   
+**ai\_test\_interval** determines how often the AI checks, in hours. By default set to 24.
+**ai\_test\_variance** determines the variance in time (In percent) for the check, which is the specified variance divided by 2 for plus and minus. By default set to 0.2
 As such, an interval of 100 with a variance of 0.2 will make the AI check every 90 to 110 hours (100±[10% of 100, which is 10]).
 
 ### AI Check
@@ -543,11 +543,11 @@ scripted_gui = {
         window_name = <string>
         context_type = <type>
         parent_window_token = <string>
-         
+
         visible = {
             <triggers>
         }
-        
+
         effects = {
             <element>_click = {
                 <effects>
@@ -556,7 +556,7 @@ scripted_gui = {
                 <effects>
             }
         }
-        
+
         triggers = {
             <element>_click_enabled = {
                 <triggers>
@@ -565,7 +565,7 @@ scripted_gui = {
                 <triggers>
             }
         }
-        
+
         properties = {
             <element> = {
                 image = <string>
@@ -574,38 +574,38 @@ scripted_gui = {
                 y = <var>
             }
         }
-        
+
         ai_enabled = {
             <triggers>
         }
-        
+
         ai_test_parent = <string>
-        
+
         ai_test_interval = <int>
         ai_test_variance = <float>
         ai_test_scopes = <type>
-        
+
         ai_check = {
             <triggers>
         }
-        
+
         ai_check_scope = {
             <triggers>
         }
-        
+
         ai_max_weight_taken_per_test = <int>
-        
+
         ai_weights = {
             <element>_<modifiers>_click = {
                 ai_will_do = {
                     base = <int>
                     factor = <float>
                     add = <float>
-                    
+
                     modifier = {
                         factor = <float>
                         add = <float>
-                        
+
                         <triggers>
                     }
                 }

@@ -34,7 +34,7 @@ male = {
 female = {
     <path>
 }
-    
+
 army = {
     male = {
         <path>

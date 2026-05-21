@@ -22,20 +22,15 @@ Each state is contained within a `state = { ... }` block that must encompass eve
 
 ### Mandatory
 
-`id = 123` is the ID number of the state. It must be an integer.  
-**State IDs have to follow a numerical order,** starting from 1: the game will expect every number between 1 and the largest state ID within the mod to be a state. If that expectation is not met, the game will crash when loading the game if the [debug mode](<Modding - Hearts of Iron 4 Wiki.md#advantages-to-using-debug>) is not turned on, as the map is deemed too erroneous to be played normally.  
+`id = 123` is the ID number of the state. It must be an integer.
+**State IDs have to follow a numerical order,** starting from 1: the game will expect every number between 1 and the largest state ID within the mod to be a state. If that expectation is not met, the game will crash when loading the game if the [debug mode](<Modding - Hearts of Iron 4 Wiki.md#advantages-to-using-debug>) is not turned on, as the map is deemed too erroneous to be played normally.
 As such, when deleting a state, the state IDs have to be shifted in order respectively, such as by changing the last state's ID to fit the now-missing ID. When doing that, everything that referenced the now-different state IDs will have to be adjusted, and [searching every text file in the mod using a text editor](<Modding - Hearts of Iron 4 Wiki.md#search-in-files>) can be used to do so.
 
 `name = STATE_123` is a localisation key that will become the name of the state, depending on which language is turned on. For English, this gets defined in any /Hearts of Iron IV/localisation/english/\*\_l\_english.yml file as such:
 
 ```text
-l_english
-STATE_123
-"My
- 
-state
- 
-name"
+l_english:
+STATE_123: "My state name"
 ```
 
 By default, the game uses `state_names_l_english.yml`.
@@ -64,17 +59,12 @@ All of these are contained within `history = { ... }`, which is defined within t
 
 `controller = LIT` defines the initial controller of the state. Optional to define - only necessary if the owner differs from the controller.
 
-`victory_points = { 1234 10 }` defines the amount of victory points on a specified province, where the first number is the province and the second number is the amount of victory points. **Only one province can be defined within one victory\_points**. In order to have multiple provinces with victory points in one state, several instances of `victory_points = { ... }` need to be put in.  
+`victory_points = { 1234 10 }` defines the amount of victory points on a specified province, where the first number is the province and the second number is the amount of victory points. **Only one province can be defined within one victory\_points**. In order to have multiple provinces with victory points in one state, several instances of `victory_points = { ... }` need to be put in.
 The localisation key that gets used for the victory point depending on the language of the game is `VICTORY_POINTS_1234`, where 1234 is the ID of the province. For English, this gets defined in any /Hearts of Iron IV/localisation/english/\*\_l\_english.yml file as such:
 
 ```text
-l_english
-VICTORY_POINTS_1234
-"My
- 
-city
- 
-name"
+l_english:
+VICTORY_POINTS_1234: "My city name"
 ```
 
 By default, the game uses `victory_points_l_english.yml`. For positioning the icon of a victory point on the map, the [unitstacks file](<Map modding - Hearts of Iron 4 Wiki.md#unitstacks>) is edited. Note that the icon of a victory point doesn't have to be inside of the province itself: if several victory points show up in the same place, it could be from different provinces with an outdated unitstacks file, which would need to be adjusted in the Nudge's Units section accordingly.
@@ -105,11 +95,11 @@ state = {
     name = STATE_123
     manpower = 50000
     state_category = large_town
-    
+
     history = {
         owner = ITA
     }
-    
+
     provinces = {
         1234 5678
     }
@@ -124,12 +114,12 @@ state = {
     name = STATE_124
     manpower = 50035
     state_category = megalopolis
-    
+
     resources = {
         oil = 10
         chromium = 50
     }
-    
+
     history = {
         owner = SWI
         add_core_of = SWI
@@ -153,16 +143,16 @@ state = {
             }
         }
     }
-    
+
     provinces = { 1111 2222 3333 4444 5555 6666 7777 8888 9999 }
-    
+
     local_supplies = 10
 }
 ```
 
 ## Notes
 
-The building model positions for each state are defined separately from the states themselves, instead being defined in /Hearts of Iron IV/map/buildings.txt. A mismatch will cause errors, taking up space in the log and potentially crashes. For example, if a province is lacking a definition for a naval base or a floating harbour within a province, whether it's set in the wrong state in the buildings.txt file or missing entirely, **attempting to use one within that province (whether by the player or the AI) will cause a crash**, marked with [the last read script being client\_ping](<Troubleshooting - Hearts of Iron 4 Wiki.md#crash-data-log>). The simplest way to compile the positions of models is to use the building section in the nudger.  
+The building model positions for each state are defined separately from the states themselves, instead being defined in /Hearts of Iron IV/map/buildings.txt. A mismatch will cause errors, taking up space in the log and potentially crashes. For example, if a province is lacking a definition for a naval base or a floating harbour within a province, whether it's set in the wrong state in the buildings.txt file or missing entirely, **attempting to use one within that province (whether by the player or the AI) will cause a crash**, marked with [the last read script being client\_ping](<Troubleshooting - Hearts of Iron 4 Wiki.md#crash-data-log>). The simplest way to compile the positions of models is to use the building section in the nudger.
 /Hearts of Iron IV/map/airports.txt and /Hearts of Iron IV/map/rocketsites.txt decide in which province in the state the game should put airports or rocket sites. This is also edited in the building section in the nudger. **If either is incorrect or missing, the game will not be possible to open without debug mode.**
 
 The state borders must follow strategic regions, defined in /Hearts of Iron IV/map/strategicregions/\*.txt. If one province in the state belongs to one strategic region, while a different province in the same state belongs to a different strategic region, a map error will be created, which will cause a game crash on launch if the debug mode is not turned on. Make sure that strategic region borders are followed, either by adjusting the state or the strategic regions.
@@ -173,8 +163,8 @@ The state borders must follow strategic regions, defined in /Hearts of Iron IV/m
 
 The nudger is a map editing tool, accessed through the main menu with the `-debug` launch option enabled. For the states, it can be used in order to change the borders of states and in order to generate the building models.
 
-The state section of the nudger is used for defining the borders and names of states. Any state border changes will also automatically change the borders of the strategic regions that cover the states, taking provinces out of strategic regions completely for new states. Within the user directory, this edits the /Hearts of Iron IV/history/states/ and /Hearts of Iron IV/map/strategicregions/ folders and the /Hearts of Iron IV/localisation/english/state\_names\_l\_english.yml file (for the English language).  
-**The nudger will remove quotation marks from the state file, aside from the `name` attribute.** This can break the rest of the script that's located inside of them. Most commonly, this will break any [has\_dlc](<Triggers - Hearts of Iron 4 Wiki.md#has-dlc>) checks, which will result in the entirety of the state breaking thereafter.  
+The state section of the nudger is used for defining the borders and names of states. Any state border changes will also automatically change the borders of the strategic regions that cover the states, taking provinces out of strategic regions completely for new states. Within the user directory, this edits the /Hearts of Iron IV/history/states/ and /Hearts of Iron IV/map/strategicregions/ folders and the /Hearts of Iron IV/localisation/english/state\_names\_l\_english.yml file (for the English language).
+**The nudger will remove quotation marks from the state file, aside from the `name` attribute.** This can break the rest of the script that's located inside of them. Most commonly, this will break any [has\_dlc](<Triggers - Hearts of Iron 4 Wiki.md#has-dlc>) checks, which will result in the entirety of the state breaking thereafter.
 **The nudger interprets version number–less [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) values as having a version of -1**, and writes that in the output. As the game only expects numeric values in the version number, this will break the localisation after that point, with an error of the `Expected quotation mark (") at line 113 and column 16 in ...` sort.
 
 Clicking onto a province is used to select a province. After a province is selected, `⇧Shift`-clicking onto a province causes the following behaviour, depending on the selected and clicked provinces:
@@ -200,7 +190,7 @@ Among the buttons that can always be selected, there are "Delete all empty" and 
 - "Delete all empty" works similarly to deleting an individual state: it checks for all provinces that have no provinces in memory (taking unsaved changes into consideration). If it finds any, the state gets deleted from memory and the user directory. Afterwards, the game will try finding a file to use as the new state information for each of the deleted states.
 - "Find collision" detects provinces that are located in several states at the same time. When pressed, it will move the player's camera to one of such provinces and give a selection of which state it must remain in; upon making a choice, it will be removed from every other state.
 
-"Update" is used to disregard all unsaved changes and re-read the state files among the [loaded files](<Modding - Hearts of Iron 4 Wiki.md#loading-files>). If the state borders were manually changed, such as by moving the outputs into the mod files from the user directory, this is necessary to load them without restarting the game.  
+"Update" is used to disregard all unsaved changes and re-read the state files among the [loaded files](<Modding - Hearts of Iron 4 Wiki.md#loading-files>). If the state borders were manually changed, such as by moving the outputs into the mod files from the user directory, this is necessary to load them without restarting the game.
 "Save" is used to write all changes to the user directory. Upon doing so, the changes will be purged from memory and the game will re-read the state files among the [loaded files](<Modding - Hearts of Iron 4 Wiki.md#loading-files>). **If the state files in the user directory are overwritten or unloaded by mod files, it will appear that (some of) the changes will instantly revert, however they'll still be present in the user directory.** This will require moving the files into the mod's files and updating the state of the game with "Update". Only the files since the last fetching of files will be created or changed within the user directory after saving.
 
 ### Buildings

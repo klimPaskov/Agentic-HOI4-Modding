@@ -1,6 +1,6 @@
 # Table of contents
 
-  - [spriteType](#spritetype)
+- [spriteType](#spritetype)
 - [frameAnimatedSpriteType](#frameanimatedspritetype)
 - [progressbartype](#progressbartype)
 - [corneredTileSpriteType](#corneredtilespritetype)
@@ -32,11 +32,11 @@ spriteTypes = {
         texturefile = <path>
         noOfFrames = <int>
         effectFile = <path>
-        
+
         allwaystransparent = <bool>
         legacy_lazy_load = <bool>
         transparencecheck = <bool>
-        
+
         animation = {
             animationmaskfile = <path>
             animationtexturefile = <path>
@@ -46,7 +46,7 @@ spriteTypes = {
             animationdelay = <float>
             animationblendmode = <mode>
             animationtype = <type>
-            animationrotationoffset = { 
+            animationrotationoffset = {
                 x = <float>
                 y = <float>
             }
@@ -103,12 +103,12 @@ spriteTypes = {
         texturefile = "<path>"
         noOfFrames = <int>
         effectFile = "<path>"
-        
+
         animation_rate_fps = <int>
         looping = <bool>
         play_on_show = <bool>
         pause_on_loop = <float>
-        
+
         allwaystransparent = <bool>
     }
 }
@@ -144,7 +144,7 @@ spriteTypes = {
         textureFile2 = "<path>"
         color = { <r> <g> <b> [<a>] }
         colortwo = { <r> <g> <b> [<a>] }
-        size = { 
+        size = {
             x = <int>
             y = <int>
         }
@@ -155,14 +155,14 @@ spriteTypes = {
 }
 ```
 
-**name** is the name you have given to the asset. This may be prefixed with various other segments, such as *idea* for idea images, etc.  
-**textureFile1** is the image to use for the progress bar.  
-**textureFile2** is the image to use for the background of the progress bar.  
-**color** defines the unprogressed color of the bar. It is decimal RGBA. Alpha is optional.  
-**colortwo** defines the progressed color of the bar. It is decimal RGBA. Alpha is optional.  
-**size** defines the size of the progress bar section in height and width.  
-**effectFile** is used to define an effect state to apply to the image, i.e. the button press effect on a button image. Effects are found in /Hearts of Iron IV/gfx/FX/\*.lua. Multiple can be defined to add multiple effects.  
-**horizontal** defines whether the progress bar is horizontal or not. By default a bar is horizontal.  
+**name** is the name you have given to the asset. This may be prefixed with various other segments, such as *idea* for idea images, etc.
+**textureFile1** is the image to use for the progress bar.
+**textureFile2** is the image to use for the background of the progress bar.
+**color** defines the unprogressed color of the bar. It is decimal RGBA. Alpha is optional.
+**colortwo** defines the progressed color of the bar. It is decimal RGBA. Alpha is optional.
+**size** defines the size of the progress bar section in height and width.
+**effectFile** is used to define an effect state to apply to the image, i.e. the button press effect on a button image. Effects are found in /Hearts of Iron IV/gfx/FX/\*.lua. Multiple can be defined to add multiple effects.
+**horizontal** defines whether the progress bar is horizontal or not. By default a bar is horizontal.
 **steps** defines the precision of the progressbar or into how many frames it's split into. Defaults to 100 if unset.
 
 ## corneredTileSpriteType
@@ -184,10 +184,10 @@ spriteTypes = {
             y = <int>
         }
         effectFile = <path>
-        
+
         allwaystransparent = <bool>
         tilingCenter = <bool>
-        
+
         looping = <bool>
         animation_rate_spf = <int>
     }
@@ -252,7 +252,7 @@ objectTypes = {
             text = <string>
             color = { <r> <g> <b> }
             font = <path>
-            position = { 
+            position = {
                 x = <int>
                 y = <int>
             }

@@ -23,10 +23,10 @@ Events are defined in the /Hearts of Iron IV/events/ folder. There are several t
 
 The list of event types includes `country_event`, `news_event`, `state_event`, `unit_leader_event`, and `operative_leader_event`.
 
-In each event type, the ROOT [scope](<Scopes - Hearts of Iron 4 Wiki.md>) refers to the country getting the event, however, the default assumed scope, also known as THIS, is not always purely the country. In state events, operative leader events, and unit leader events, the assumed scope is *both* the country and the event-specific scope type, accepting effects for either scope, sorting them at will. In case of overlap between something being possible for the country or the other scope (e.g. `add_manpower` being both a state- and country-scoped effect), the country is preferred.  
+In each event type, the ROOT [scope](<Scopes - Hearts of Iron 4 Wiki.md>) refers to the country getting the event, however, the default assumed scope, also known as THIS, is not always purely the country. In state events, operative leader events, and unit leader events, the assumed scope is *both* the country and the event-specific scope type, accepting effects for either scope, sorting them at will. In case of overlap between something being possible for the country or the other scope (e.g. `add_manpower` being both a state- and country-scoped effect), the country is preferred.
 Due to this confusion, it is recommended to avoid state events as they appear identical to country events (Event targets can be used within country events aimed to a specific state instead), however unit leader and operative leader events can be unavoidable due to their distinct appearance. **There is nearly no difference between event types**, with the exception of appearance, default scopes, and the fact that news event can have their pop-up disabled (However, the country will still get them). If the player country gets an event and doesn't pick a choice, the first option will get assumed by default.
 
-When [fired using an effect](<Effect - Hearts of Iron 4 Wiki.md#country-event>), the game ports over the regular event targets existing in the previous effect block to the event, as well as the ROOT scope of the block, which becomes FROM within the event. The previous effect block's FROM scopes get shifted one level down, with the effect block's FROM becoming FROM.FROM, previous FROM.FROM becoming FROM.FROM.FROM, and et cetera. Due to this, FROM is commonly called the 'sender' of the event in jargon, making FROM.FROM the sender to the sender. Although this does not always apply, as FROM.FROM can be something else entirely, e.g. [an additional scope within on actions](<On actions - Hearts of Iron 4 Wiki.md>) or [the target of a decision](<Decision modding - Hearts of Iron 4 Wiki.md#targeted-decisions>). Importantly, it's what the FROM block of the effect block that fired it is, which depends on where it's fired exactly.  
+When [fired using an effect](<Effect - Hearts of Iron 4 Wiki.md#country-event>), the game ports over the regular event targets existing in the previous effect block to the event, as well as the ROOT scope of the block, which becomes FROM within the event. The previous effect block's FROM scopes get shifted one level down, with the effect block's FROM becoming FROM.FROM, previous FROM.FROM becoming FROM.FROM.FROM, and et cetera. Due to this, FROM is commonly called the 'sender' of the event in jargon, making FROM.FROM the sender to the sender. Although this does not always apply, as FROM.FROM can be something else entirely, e.g. [an additional scope within on actions](<On actions - Hearts of Iron 4 Wiki.md>) or [the target of a decision](<Decision modding - Hearts of Iron 4 Wiki.md#targeted-decisions>). Importantly, it's what the FROM block of the effect block that fired it is, which depends on where it's fired exactly.
 This does not happen if the event gets fired using an on action's random\_events block: the same scoping rules as in the regular on action apply.
 
 A country that doesn't exist may still get events [if fired via an effect](#effect), but any other method doesn't work. However, if there's a time delay set in the effect that fires it, the timers in each delayed\_event will not decrease. This effectively puts any events with a time delay onto a backlog of the country, put on hold until it gets released. For example, if BHR doesn't exist when `BHR = { country_event = { id = event.0 days = 1 } }` is executed, then the event will only fire a day after BHR starts existing. This also applies to the original recipient of major events.
@@ -74,7 +74,7 @@ The game will choose the first localisation key where the conditions are met. In
 
 In order to add a picture to be shown for the event, the `picture` argument is used with the name of the sprite leading to the file of the picture, such as `picture = GFX_my_sprite`.
 
-Sprites are defined in any /Hearts of Iron IV/interface/\*.gfx file, by default using eventpictures.gfx, opened within any text editor. It is recommended to create a new file in the folder instead of using a base game file in the mod for update compatibility reasons.  
+Sprites are defined in any /Hearts of Iron IV/interface/\*.gfx file, by default using eventpictures.gfx, opened within any text editor. It is recommended to create a new file in the folder instead of using a base game file in the mod for update compatibility reasons.
 Within the /Hearts of Iron IV/interface/\*.gfx file of your choice, the following lines can be added within the `spriteTypes = { ... }` block to define a sprite:
 
 ```text
@@ -99,23 +99,7 @@ trigger = {
 
 If the event is fired in console, the trigger will be written into it as the contents of a regular trigger tooltip, highlighting which conditions were met and which were not.
 
-By default, the event will fire automatically. This consists of the trigger being checked every 20 days. If it is true, it changes to checking the `mean_time_to_happen = { ... }` daily. That is a modified MTTH block: it is evaluated for a country and returns an amount of days; if the returned amount of days is 
-
-M
-{\displaystyle M}
-![{\displaystyle M}](media/event-modding-hearts-of-iron-4-wiki_0d41ad8840__img1.svg) the chance for an event to fire on that day is 
-
-1
-−
-
-2
-
-−
-
-1
-M
-{\displaystyle 1-2^{-{\frac {1}{M}}}}
-![{\displaystyle 1-2^{-{\frac {1}{M}}}}](media/event-modding-hearts-of-iron-4-wiki_0d41ad8840__img2.svg), making this a median time to happen. If the trigger is false on a daily check, it reverts to checking the trigger every 20 days.
+By default, the event will fire automatically. This consists of the trigger being checked every 20 days. If it is true, it changes to checking the `mean_time_to_happen = { ... }` daily. That is a modified MTTH block: it is evaluated for a country and returns an amount of days; if the returned amount of days is `M`, the chance for an event to fire on that day is `{\\displaystyle 1-2^{-{\\frac {1}{M}}}}`, making this a median time to happen. If the trigger is false on a daily check, it reverts to checking the trigger every 20 days.
 
 `mean_time_to_happen = { ... }` has the attributes of `days`, `months`, and `years` to decide the base amount of days. A month is interpreted as being 30 days, a year is interpreted as being 365 days. If the amount of days should be dynamic, `modifier = { ... }` serves as a trigger block with additional attributes of `add = 123` (adding that amount of days) and `factor = 0.2` (multiplying the amount of days by the specified number). The modifiers are evaluated in the order that they're placed in, and they support variables in the argument. An example mean time to happen looks like the following:
 
@@ -181,16 +165,12 @@ ai_chance = {
 
 Any [effect block](<Effect - Hearts of Iron 4 Wiki.md>) can be used to fire an event, such as focus rewards, [event options](#options), or decision effects. This is usually paired with `is_triggered_only = yes` within the event as to disable automatic firing.
 
-In its simplest way, this is done with the effect of `country_event = my_event.1` (or `news_event = my_event.1`), which'll instantly fire the event for the scoped country. As country and news events are the exact same thing under the surface, both shortened effects can be used for either country and news events, with there being no difference between them whatsoever.  
+In its simplest way, this is done with the effect of `country_event = my_event.1` (or `news_event = my_event.1`), which'll instantly fire the event for the scoped country. As country and news events are the exact same thing under the surface, both shortened effects can be used for either country and news events, with there being no difference between them whatsoever.
 However, more options can be added primarily for setting up the delay. Additionally, expanded versions are mandatory for state and operative leader events.
 
 A more complex effect to fire is `country_event = { id = my_event.1 days = 100 random_days = 123 }`. This'll fire the event in 100 to 223 (
 
-100
-+
-123
-{\displaystyle 100+123}
-![{\displaystyle 100+123}](media/event-modding-hearts-of-iron-4-wiki_0d41ad8840__img3.svg)) days. There are the following arguments that can go into the effect (All of them are optional with one exception):
+{\displaystyle 100+123}) days. There are the following arguments that can go into the effect (All of them are optional with one exception):
 
 - `id = my_event.1` — The ID of the event to fire. This is mandatory as to let the game know which event to fire.
 - `hours = 1`|`days = 2`|`months = 3` — The lower bound on the needed time that the event will fire in. In this case, a month is treated as exactly 30 days. If multiple of these are used, the game will add them up together (e.g. the example with 1 hour, 2 days, and 3 months will fire in 92 days and 1 hour).
@@ -209,7 +189,7 @@ country_event = {
 }
 ```
 
-The optional delay is incredibly useful, as hidden events can be used to create a delay between an effect block's execution and the actual application of effects without the player detecting anything. This can also be used to make the events appear more "natural": news events can have a delay of a few hours (typically around 6-12) in order to simulate the time it takes for the news agencies to report on the event. Similarly can be done with other event types to simulate waiting a few hours for a diplomatic response, rather than it being unnaturally instant.  
+The optional delay is incredibly useful, as hidden events can be used to create a delay between an effect block's execution and the actual application of effects without the player detecting anything. This can also be used to make the events appear more "natural": news events can have a delay of a few hours (typically around 6-12) in order to simulate the time it takes for the news agencies to report on the event. Similarly can be done with other event types to simulate waiting a few hours for a diplomatic response, rather than it being unnaturally instant.
 `trigger = { ... }` of the event gets checked when it would fire, meaning that it's also possible to [fire the event on startup of the game](<On actions - Hearts of Iron 4 Wiki.md#on-startup>) with a needed delay to get it on a specific day, then use the event's trigger to simulate additional requirements.
 
 Additionally, there are these event type-specific arguments:
@@ -223,7 +203,7 @@ Additionally, there are these event type-specific arguments:
 
 ## Common mistakes
 
-Some errors are quite common to make when beginning to make events, whether it's poor practice or if it would prevent the event from working in entirely. Some of them may be hard to notice when modding, with the event seemingly working fine, such as the error that prevents news events from being fired for more than one country.  
+Some errors are quite common to make when beginning to make events, whether it's poor practice or if it would prevent the event from working in entirely. Some of them may be hard to notice when modding, with the event seemingly working fine, such as the error that prevents news events from being fired for more than one country.
 This covers some of them, as well as the less intuitive errors in the log.
 
 ### Unlogged errors
@@ -239,14 +219,14 @@ Note that `trigger = { ... }` can still co-exist with `is_triggered_only = yes`,
         id = my_event.1
         title = my_event.1.t
         desc = my_event.1.desc
-        
+
         trigger = {
             tag = GHA
             has_stability > 0.9
         }
         fire_only_once = yes
         is_triggered_only = yes  # Will make the event never automatically trigger.
-        
+
         option = {
             name = my_event.1.a
             add_war_support = 0.2
@@ -259,13 +239,13 @@ Note that `trigger = { ... }` can still co-exist with `is_triggered_only = yes`,
         id = my_event.1
         title = my_event.1.t
         desc = my_event.1.desc
-        
+
         trigger = {
             tag = GHA
             has_stability > 0.9
         }
         fire_only_once = yes
-        
+
         option = {
             name = my_event.1.a
             add_war_support = 0.2
@@ -290,12 +270,12 @@ Firing it via an effect has a purpose of being instant instead of having to wait
         id = my_event.1
         title = my_event.1.t
         desc = my_event.1.desc
-        
+
         trigger = {
             has_completed_focus = TAG_focus_name
         }
         fire_only_once = yes
-        
+
         option = {
             name = my_event.1.a
         }
@@ -307,9 +287,9 @@ Firing it via an effect has a purpose of being instant instead of having to wait
         id = my_event.1
         title = my_event.1.t
         desc = my_event.1.desc
-        
+
         is_triggered_only = yes
-        
+
         option = {
             name = my_event.1.a
         }
@@ -322,10 +302,10 @@ Firing it via an effect has a purpose of being instant instead of having to wait
         x = 5
         y = 0
         icon = GFX_focus_icon_name
-    
+
         cost = 8
         search_filters = { FOCUS_FILTER_POLITICAL }
-    
+
         completion_reward = {
             country_event = { id = my_event.1 hours = 6 random_hours = 3 }  # Fires the event in 6-9 hours.
         }
@@ -344,14 +324,14 @@ Any effect block executed before or during startup can be used. An example using
         id = my_event.1
         title = my_event.1.t
         desc = my_event.1.desc
-        
+
         trigger = {
             tag = POL
             NOT = { has_completed_focus = POL_my_focus }
             date > 1936.2.11 # If the event trigger check happens on the 1st of February and the 21st of February,
             date < 1936.2.13 # at least one of the date checks will always be false and the event will never trigger
         }
-        
+
         option = {
             name = my_event.1.a
         }
@@ -363,12 +343,12 @@ Any effect block executed before or during startup can be used. An example using
         id = my_event.1
         title = my_event.1.t
         desc = my_event.1.desc
-        
+
         is_triggered_only = yes # To prevent the 20-day range from causing a delay
         trigger = {
             NOT = { has_completed_focus = POL_my_focus }
         }
-        
+
         option = {
             name = my_event.1.a
         }
@@ -378,7 +358,7 @@ Any effect block executed before or during startup can be used. An example using
     ```text
     on_actions = {
         on_startup = {
-            effect = { 
+            effect = {
                 POL = {
                     country_event = { id = my_event.1 days = 42 } # 12th of February 1936, if on the first start date
                 }
@@ -419,9 +399,9 @@ country_event = {
     id = my_event.1
     title = my_event.1.t
     desc = my_event.1.desc
-    
+
     is_triggered_only = yes
-    
+
     option = {
         name = my_event.1.a
         add_political_power = 100
@@ -449,26 +429,26 @@ news_event = {
     desc = {
         text = my_event.1.desc
     }
-    
+
     picture = GFX_my_news_event_picture
-    
+
     is_triggered_only = yes
     major = yes
-    
+
     option = {
         name = my_news_event.1.a
         trigger = {
             tag = POL
         }
     }
-    
+
     option = {
         name = my_news_event.1.b
         trigger = {
             NOT = { tag = POL }
         }
     }
-    
+
     option = {
         name = my_news_event.1.c
         original_recipient_only = yes
@@ -477,12 +457,12 @@ news_event = {
 
 country_event = {
     id = my_hidden_event.1
-    
+
     trigger = {
         has_country_flag = event_happened
         country_exists = BHR
     }
-    
+
     mean_time_to_happen = {
         days = 10
         months = 2
@@ -496,10 +476,10 @@ country_event = {
             country_exists = OMA
         }
     }
-    
+
     fire_only_once = yes
     hidden = yes
-    
+
     immediate = {
         random_country = {
             limit = {
@@ -518,19 +498,19 @@ state_event = {
     title = my_event.2.t
     desc = my_event.2.desc
     picture = GFX_my_event_picture
-    
+
     trigger = {
         ROOT = {
             has_country_flag = fire_this_event
         }
     }
     is_triggered_only = yes
-    
+
     option = {
         name = my_event.2.a
         transfer_state_to = ROOT
     }
-    
+
     option = {
         name = my_event.2.b
         ai_chance = {
@@ -553,26 +533,26 @@ news_event = {      # City capture news event
     id = on_action_events.1
     title = on_action_events.1.t    # Fall of Giza
     desc = on_action_events.1.desc
-    
+
     is_triggered_only = yes
     major = yes
-    
+
     option = {
         trigger = {
             OR = {
                 tag = EGY
-                is_in_faction_with = EGY 
+                is_in_faction_with = EGY
                 is_subject_of = EGY
             }
         }
         name = on_action_events.1.a
     }
-    
+
     option = {
         trigger = {
             NOT = {
                 tag = EGY
-                is_in_faction_with = EGY 
+                is_in_faction_with = EGY
                 is_subject_of = EGY
             }
         }
@@ -584,12 +564,12 @@ country_event = {       # Fired on a specific day if circumstances are met
     id = on_action_events.2
     title = on_action_events.2.t
     desc = on_action_events.2.desc
-    
+
     is_triggered_only = yes                     # Prevents from firing automatically.
     trigger = {
         has_completed_focus = BHR_focus_name    # If the focus isn't completed, will never fire.
     }
-    
+
     option = {
         name = on_action_events.2
     }
@@ -599,9 +579,9 @@ country_event = {       # Other types of on_actions
     id = on_action_events.3 # In this case, a prompt on annexing a country with an option to release it.
     title = on_action_events.3.t
     desc = on_action_events.3.desc
-    
-    is_triggered_only = yes                     # Prevents from firing automatically.  
-    
+
+    is_triggered_only = yes                     # Prevents from firing automatically.
+
     trigger = {     # If all core states of FROM are cored or claimed by ROOT, should never appear.
         NOT = {     # Triggered within on_annex's random_events = { ... }, so has the same FROM as the on_action
             any_state = {
@@ -618,12 +598,12 @@ country_event = {       # Other types of on_actions
             }
         }
     }
-    
+
     option = {
         name = on_action_events.3.a   # "Release [FROM.GetName] as puppet"
         every_owned_state = {
             limit = {
-                is_core_of = FROM 
+                is_core_of = FROM
                 NOT = {
                     is_core_of = ROOT
                     is_claimed_by = ROOT
@@ -644,7 +624,7 @@ country_event = {       # Other types of on_actions
             puppet = FROM
         }
     }
-    
+
     option = {
         name = on_action_events.3.b # "Don't release [FROM.GetName]"
         add_stability = -0.1
@@ -675,9 +655,9 @@ on_actions = {
     on_startup = {
         effect = {
             BHR = {
-                country_event = { 
-                    id = on_action_events.2 
-                    days = 357  
+                country_event = {
+                    id = on_action_events.2
+                    days = 357
                     random_days = 7     # Fires in the last week of 1936, assuming default start date.
                 }
             }
@@ -700,10 +680,10 @@ Alternatively, you can fire the event inside /Hearts of Iron IV/history/countrie
 ```text
 # history/countries/BHR - Bahrain.txt
 # Other code is omitted
-country_event = { 
-	id = on_action_events.2 
-	days = 357  
-	random_days = 7     # Fires in the last week of 1936, assuming default start date.
+country_event = {
+    id = on_action_events.2
+    days = 357
+    random_days = 7     # Fires in the last week of 1936, assuming default start date.
 }
 ```
 

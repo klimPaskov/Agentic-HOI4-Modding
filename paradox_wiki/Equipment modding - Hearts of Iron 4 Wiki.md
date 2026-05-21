@@ -30,31 +30,31 @@ Archetype equipment follows the following format:
 
 ```text
 equipments = {
-	<equipment> = {
-		year = <int>		# Limits the equipment from appearing before the specified year. Optional
-		picture = <name>	# GFX reference used to define equipment picture in lend-lease
-		
-		can_be_produced = {	# Optional, specifies when equipment of this category can be produced.
-			<triggers>
-		}
-		
-		is_archetype = yes	# Specifies an entry as an archetype entry. All non-archetype entries inherit 
-		is_buildable = no	# Prevents this equipment from being built.
-		active = yes		# Determines if this equipment is available without unlocking from a technology.
-		
-		type = <type>	   	# Internal type: what kind of unit can use this equipment
+    <equipment> = {
+        year = <int>		# Limits the equipment from appearing before the specified year. Optional
+        picture = <name>	# GFX reference used to define equipment picture in lend-lease
 
-		group_by = <group>			  # How the equipment is grouped in the production screen
-		interface_category = <type>	 # Which category the equipment appears in the production screen
-		
-		# Resources used to build this equipment
-		resources = {
-			<resource> = <amount>
-		}
-		
-		# Modifiers the equipment uses
-		<modifiers> 
-	}
+        can_be_produced = {	# Optional, specifies when equipment of this category can be produced.
+            <triggers>
+        }
+
+        is_archetype = yes	# Specifies an entry as an archetype entry. All non-archetype entries inherit
+        is_buildable = no	# Prevents this equipment from being built.
+        active = yes		# Determines if this equipment is available without unlocking from a technology.
+
+        type = <type>	   	# Internal type: what kind of unit can use this equipment
+
+        group_by = <group>			  # How the equipment is grouped in the production screen
+        interface_category = <type>	 # Which category the equipment appears in the production screen
+
+        # Resources used to build this equipment
+        resources = {
+            <resource> = <amount>
+        }
+
+        # Modifiers the equipment uses
+        <modifiers>
+    }
 }
 ```
 
@@ -64,21 +64,21 @@ Regular equipment follows the following format:
 equipments = {
     <equipment> = {
         year = <int>        # Limits the equipment from appearing before the specified year. Optional
-        
+
         active = yes            # Determines if this equipment is available without unlocking from a technology.
-        
+
         archetype = <equipment> # Which archetype equipment this equipment inherits from.
         parent = <equipment>    # Which equipment is parent to this equipment (i.e. which does it supercede)
         priority = <int>        # Priority for usage over other equipment.
         visual_level = <int>    # Image priority in production screen
-        
+
         # Resources used to build this equipment
         resources = {
             <resource> = <amount>
         }
-        
+
         # Modifiers the equipment uses
-        <modifiers> 
+        <modifiers>
     }
 }
 ```

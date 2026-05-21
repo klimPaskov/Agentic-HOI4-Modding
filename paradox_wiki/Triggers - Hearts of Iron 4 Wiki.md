@@ -279,7 +279,7 @@ These can only be used as triggers; trying to use them as effects will result in
   - Example:
     ```text
     any_state_in = {
-      array = array_of_states  #required 
+      array = array_of_states  #required
         …                  #triggers to check
     }
     ```
@@ -642,7 +642,7 @@ Several dual scopes may have a scope that varies depending on where it's used, s
         target = FROM
         type = annex_everything
     }
-    
+
     FROM = {
         load_oob = defend_ourselves
     }
@@ -708,7 +708,7 @@ Several dual scopes may have a scope that varies depending on where it's used, s
   - Target type: Country scope
   - Example:
     ```text
-    controller = { 
+    controller = {
         ROOT = {
             create_wargoal = {
                 target = PREV
@@ -932,7 +932,7 @@ These are triggers that serve as more of a way to establish a connection in how 
   - Example:
     ```text
     custom_trigger_tooltip = {
-        tooltip = sunrise_invasion_tt		
+        tooltip = sunrise_invasion_tt
         any_state = {
             is_owned_by = JAP
             is_on_continent = europe
@@ -967,8 +967,8 @@ These are triggers that serve as more of a way to establish a connection in how 
     custom_override_tooltip = {
         tooltip = {
           localization_key = GER_inner_circle_focus_in_progress_tt
-    	  CHARACTER = GER_rudolf_hess
-    	  FLAG_DAYS = [?GER_rally_the_industrialists_in_progress_flag:days]
+          CHARACTER = GER_rudolf_hess
+          FLAG_DAYS = [?GER_rally_the_industrialists_in_progress_flag:days]
         }
         not_tooltip = MY_TOOLTIP_NOT
         <triggers>
@@ -3204,11 +3204,11 @@ Balances of power are stored within /Hearts of Iron IV/common/bop/\*.txt files.
     ```
   - Description:
     ```text
-    Checks if the current scope's autonomy state
-    min_freedom_level
-    is less or greater than that of the specified autonomy state. The special value "autonomy_free" compares as greater than any autonomy state. If the current scope is not a subject, it is treated as greater than any autonomy state (including "autonomy_free"). With
-    =
-    , checks if the current scope is in the specified autonomous state.
+    Checks if the current scope's autonomy state min_freedom_level
+    is less or greater than that of the specified autonomy state.
+    The special value "autonomy_free" compares as greater than any autonomy state.
+    If the current scope is not a subject, it is treated as greater than any autonomy state (including "autonomy_free").
+    With =, checks if the current scope is in the specified autonomous state.
     ```
   - Version Added: 1.0
 
@@ -5636,8 +5636,8 @@ These are state-related triggers in the country scope, not [state-scoped trigger
     ```
   - Example:
     ```text
-    compare_intel_with = { 
-        target = POL 
+    compare_intel_with = {
+        target = POL
         civilian_intel > 0.5
         army_intel = 0
         navy_intel < 0
@@ -5663,8 +5663,8 @@ These are state-related triggers in the country scope, not [state-scoped trigger
     ```
   - Example:
     ```text
-    intel_level_over = { 
-        target = POL 
+    intel_level_over = {
+        target = POL
         civilian_intel > 0.5
         army_intel = 0
         navy_intel < 0
@@ -6136,8 +6136,8 @@ These are character-related triggers in the country scope, not [character-scoped
   - Example:
     ```text
     has_country_leader = {
-    	character = SPR_niceto_alcala_zamora
-    	ruling_only = yes
+        character = SPR_niceto_alcala_zamora
+        ruling_only = yes
     }
     ```
   - Example:
@@ -7013,15 +7013,15 @@ Can be used in **state** scope.
   - Example:
     ```text
     has_railway_connection = {
-    	start_state = 10
-    	target_state = 90
+        start_state = 10
+        target_state = 90
     }
     ```
   - Example:
     ```text
     has_railway_connection = {
-    	start_province = 402
-    	target_province = 9400
+        start_province = 402
+        target_province = 9400
     }
     ```
   - Description: Returns true if the states are connected by a railway. Can also check provinces.
@@ -7038,15 +7038,15 @@ Can be used in **state** scope.
   - Example:
     ```text
     can_build_railway = {
-    	start_state = 10
-    	target_state = 90
+        start_state = 10
+        target_state = 90
     }
     ```
   - Example:
     ```text
     can_build_railway = {
-    	start_province = 402
-    	target_province = 9400
+        start_province = 402
+        target_province = 9400
     }
     ```
   - Description: Returns true if a railway can be built between states. Can also check for provinces.
@@ -7063,8 +7063,8 @@ Can be used in **state** scope.
   - Example:
     ```text
     has_railway_level = {
-        	state = 114
-        	level = 5
+            state = 114
+            level = 5
     }
     ```
   - Description: Checks if a state contains a railway at or above the specified level.
@@ -9029,7 +9029,7 @@ Can be used in **purchase contract** scope.
 
 ## Meta triggers
 
-Meta triggers are a system added with 1.6 with ![Man the Guns](media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img31.png)Man the Guns used in the exact same manner as [meta effects](<Effect - Hearts of Iron 4 Wiki.md#meta-effects>): in order to tie a trigger block to a dynamic localisation entry. This is usually used in conjunction with [scripted localisation](<Localisation - Hearts of Iron 4 Wiki.md#scripted-localisation>) for non-numerical checks. This also can serve in order to place a variable check where one is not possible.  
+Meta triggers are a system added with 1.6 with ![Man the Guns](media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img31.png)Man the Guns used in the exact same manner as [meta effects](<Effect - Hearts of Iron 4 Wiki.md#meta-effects>): in order to tie a trigger block to a dynamic localisation entry. This is usually used in conjunction with [scripted localisation](<Localisation - Hearts of Iron 4 Wiki.md#scripted-localisation>) for non-numerical checks. This also can serve in order to place a variable check where one is not possible.
 Meta triggers work in any scope that supports triggers, including combat scope.
 
 The following arguments go inside of a scripted trigger:
@@ -9074,7 +9074,7 @@ A scripted trigger is defined simply as
 
 ```text
 scripted_trigger_name = {
-	<triggers>
+    <triggers>
 }
 ```
 
@@ -9124,7 +9124,7 @@ DIPLOMACY_JOIN_ALLY_ENABLE_TRIGGER
 DIPLOMACY_CALL_ALLY_ENABLE_TRIGGER
 DIPLOMACY_WAR_ENABLE_TRIGGER
 DIPLOMACY_JOIN_FACTION_ENABLE_TRIGGER
-DIPLOMACY_CREATE_FACTION_ENABLE_TRIGGER	
+DIPLOMACY_CREATE_FACTION_ENABLE_TRIGGER
 DIPLOMACY_PEACE_PROPOSAL_ENABLE_TRIGGER
 DIPLOMACY_IMPROVERELATION_ENABLE_TRIGGER
 DIPLOMACY_NONAGGRESSIONPACT_ENABLE_TRIGGER
@@ -9219,15 +9219,15 @@ The scripted trigger's behaviour can be overwritten with state-specific scripted
 
 ```text
 should_initiate_resistance_123_321 = {
-	if = {
-		limit = {
-			tag = ENG
-		}
-		is_core_of = FRA
-	}
-	else = {
-		should_initiate_resistance = yes # If this is not done, resistance would always activate due to overwriting that scripted trigger.
-	}
+    if = {
+        limit = {
+            tag = ENG
+        }
+        is_core_of = FRA
+    }
+    else = {
+        should_initiate_resistance = yes # If this is not done, resistance would always activate due to overwriting that scripted trigger.
+    }
 }
 ```
 
@@ -9319,7 +9319,7 @@ These scripted triggers are defined in base game and might be useful to keep in 
 
 **[^](#ref-a)** **a:** Triggers are able to set and modify temporary variables. This temporary variable itself may be then used separately to change the game's state, such as in a MTTH block or if the trigger block is used in some [effect](<Effect - Hearts of Iron 4 Wiki.md>)'s `limit = { ... }` (most commonly [if statements](<Effect - Hearts of Iron 4 Wiki.md#if>) or [effect scope limits](<Scopes - Hearts of Iron 4 Wiki.md#scope-limits>)), though the usage of the variable to change the game's state is not a trigger by itself.
 
-1. [↑](#cite-ref-1) [[Modding] Achievement for mods](https://forum.paradoxplaza.com/forum/index.php?threads/1544899)  
+1. [↑](#cite-ref-1) [[Modding] Achievement for mods](https://forum.paradoxplaza.com/forum/index.php?threads/1544899)
    [Tutorial to write achievements files in your mod](https://forum.paradoxplaza.com/forum/index.php?threads/1544901)
 2. [↑](#cite-ref-2) [How does any\_war\_score work?](https://forum.paradoxplaza.com/forum/index.php?threads/1124460)
 3. [↑](#cite-ref-3) [forum:1356228/#post-26361808](https://forum.paradoxplaza.com/forum/index.php?threads/1356228/#post-26361808)

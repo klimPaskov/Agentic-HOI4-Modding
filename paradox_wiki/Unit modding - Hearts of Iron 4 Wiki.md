@@ -50,7 +50,7 @@ Units follow the following format:
 sub_units = {
     <unit name> = {
         sprite = <entity> # Refers to <name>_entity in a gfx/entities/.*.asset file - Controls the unit used on the map
-        
+
         # Controls the map icon category used for the unit
         map_icon_category = <type>
 
@@ -58,7 +58,7 @@ sub_units = {
         ai_priority = <int>
 
         active = yes / no       # Whether the unit is usable without explicit unlocking in technology
-        cavalry = yes           # Used to define subunit as cavalry 
+        cavalry = yes           # Used to define subunit as cavalry
         special_forces = yes    # Used to define subunit as special forces
         marines = yes           # Used to define subunit as marine
         can_exfiltrate_from_coast = yes # Used to define subunit opportunity of leaving the coast without a naval base
@@ -67,33 +67,33 @@ sub_units = {
         affects_speed = yes     # Used to check if the unit will affect the template's speed, support companies have it set to no.
 
         transport = <equipment> # Sets the speed of subunit via equipment. Used for motorized/mechanized
-        
+
         # How the unit is grouped division-wise, i.e. appearing in the Support tab. Not used for air or naval units
         group = <group>
-        
+
         # Internal types
         type = {
             <type>
         }
-        
+
         # Categories the unit belongs to.
         categories = {
             <categories>
         }
-        
+
         # Equipment that is required for this unit. Used when active = no
         essential = {
             <equipment>
         }
-        
+
         # Equipment needed to produce this unit. Unit won't be available until the nation has this equipment
         need = {
             <equipment>
         }
-        
+
         # Modifiers control the stats of the unit. More detail under the Stats section.
         <modifiers>
-        
+
         # Modifiers that occur only in specific terrain
         <terrain> = {
             <modifiers>
@@ -136,20 +136,20 @@ An example /Hearts of Iron IV/gfx/entities/\*.asset file is as such:
 
 ```text
 entity = {
-	name = SPRITE_entity # A simple model for a land unit
-	pdxmesh = example_mesh # References a mesh defined in a *.gfx file
+    name = SPRITE_entity # A simple model for a land unit
+    pdxmesh = example_mesh # References a mesh defined in a *.gfx file
 
-	default_state = idle
-	state = { name = attack			animation = attack 					animation_blend_time = 0.0  animation_speed = 1.0 }
-	state = { name = defend			animation = defend 			animation_blend_time = 0.3  animation_speed = 1.0 }
-	state = { name = support_attack	animation = support_attack 	animation_blend_time = 0.3 animation_speed = 1.0 }
-	state = { name = move				animation = move 		 		animation_blend_time = 1.0 animation_speed = 1.0 }
-	state = { name = retreat			animation = retreat 	 		animation_blend_time = 0.3 animation_speed = 1.0 }
-	state = { name = death			animation = death 			animation_blend_time = 0.3 animation_speed = 1.0 }
-	state = { name = idle				animation = idle       		animation_blend_time = 0.3 animation_speed = 1.0 }
-	state = { name = training				animation = training 			animation_blend_time = 0.3 animation_speed = 1.0 }
+    default_state = idle
+    state = { name = attack			animation = attack 					animation_blend_time = 0.0  animation_speed = 1.0 }
+    state = { name = defend			animation = defend 			animation_blend_time = 0.3  animation_speed = 1.0 }
+    state = { name = support_attack	animation = support_attack 	animation_blend_time = 0.3 animation_speed = 1.0 }
+    state = { name = move				animation = move 		 		animation_blend_time = 1.0 animation_speed = 1.0 }
+    state = { name = retreat			animation = retreat 	 		animation_blend_time = 0.3 animation_speed = 1.0 }
+    state = { name = death			animation = death 			animation_blend_time = 0.3 animation_speed = 1.0 }
+    state = { name = idle				animation = idle       		animation_blend_time = 0.3 animation_speed = 1.0 }
+    state = { name = training				animation = training 			animation_blend_time = 0.3 animation_speed = 1.0 }
 
-	scale = 0.8
+    scale = 0.8
 }
 entity = {
     name = middle_eastern_gfx_SPRITE_entity # Countries with the middle_eastern_gfx graphical culture will use a different mesh, with all other details the same
@@ -223,8 +223,8 @@ max_strength = <int>
 training_time = <int>
 weight = <float>
 default_morale = <float>
-max_organisation = <int>    
-combat_width = <int>        
+max_organisation = <int>
+combat_width = <int>
 supply_consumption = <float>
 ```
 
@@ -250,20 +250,20 @@ The following list is all the valid modifiers for use in units (and equipment):
 ### Base
 
 ```text
-max_organisation = 20           # Organisation indicates combat readiness and how organized a unit is. 
+max_organisation = 20           # Organisation indicates combat readiness and how organized a unit is.
                                 # Units with no organisation can't fight or move effectively.
 
 reliability = 0.9               # Reliability controls how often equipment will suffer random failures.
 
 weight = 0.1                    # Weight controls how many transports a unit needs to embark.
 
-maximum_speed = 0.5             # Maximum speed acts as a "bonus" mulitipler to the speed determined by the unit equipment in km/h. 
+maximum_speed = 0.5             # Maximum speed acts as a "bonus" mulitipler to the speed determined by the unit equipment in km/h.
                                 # The formula for the calculated speed is <base speed> * (1 + maximum_speed)km/h; thus a maximum_speed
                                 # of 0.5 gives a movement speed 50% faster, a maximum_speed of 2 equals 200% faster, etc.
 
 supply_consumption = 0.02       # Supply consumption determmines how much supply a unit consumes per day
 
-default_morale = 0.3            # Default morale determines how much extra organisation can be regained 
+default_morale = 0.3            # Default morale determines how much extra organisation can be regained
                                 # hourly when not in combat
 
 combat_width = 0.5              # Combat width determines how much this unit contributes to overall combat width.
@@ -283,7 +283,7 @@ training_time = 120             # Training time - Time in days to train this uni
 ```text
 # Offensive
 attack = 0.1                    # Firepower - Amount of damage done per attack
-soft_attack = -0.1              # Soft Attack - How many attacks the unit can make versus enemies with low hardness. (In this example here, this would mean that the unit would get 10% less Soft Attack than they 
+soft_attack = -0.1              # Soft Attack - How many attacks the unit can make versus enemies with low hardness. (In this example here, this would mean that the unit would get 10% less Soft Attack than they
 would usually get from its equipment
 hard_attack = -0.5              # Hard Attack - How many attacks the unit can make versus enemies with high hardness
 air_attack = 1                  # Air Attack - How much damage we can do against airplanes. High Air Attack also helps to counter enemy Air Superiority effects
@@ -373,17 +373,17 @@ This is caused, because the actual unit has no icon. You can provide sprites in 
 Create a new gfx file for your new unit. Add the following content for each unit in /Hearts of Iron IV/interface/subuniticons.gfx
 
 ```text
-spriteTypes = {	
+spriteTypes = {
 
-   spriteType = { 
-     name = "GFX_unit_<your unit name>_icon_medium"				
+   spriteType = {
+     name = "GFX_unit_<your unit name>_icon_medium"
      textureFile = "gfx/interface/counters/divisions_large/<your unit name>_icon.dds"  ## Thats the paradox shepe, but you can use any path and file naming you want
      noOfFrames = 2
    }
 
-   spriteType = { 
-     name = "GFX_unit_<your unit name>_icon_medium_white" # Do not omit "medium"						
-     textureFile = "gfx/interface/counters/divisions_small/onmap_unit_<your unit name>_icon.dds" 
+   spriteType = {
+     name = "GFX_unit_<your unit name>_icon_medium_white" # Do not omit "medium"
+     textureFile = "gfx/interface/counters/divisions_small/onmap_unit_<your unit name>_icon.dds"
      noOfFrames = 2
    }
 
@@ -391,8 +391,8 @@ spriteTypes = {
      name = "GFX_unit_<your unit name>_icon_small"
      texturefile = "gfx/texticons/unit_<your unit name>_icon_small.dds"
      legacy_lazy_load = no
-     noOfFrames = 2		
-   }		
+     noOfFrames = 2
+   }
 
 }
 ```

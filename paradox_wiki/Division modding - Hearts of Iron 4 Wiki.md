@@ -24,7 +24,7 @@
 
 Units are the foundations of Hearts of Iron, and can be broken down into air wings, divisions and naval task forces. The definitions are located within /Hearts of Iron IV/history/units/\*.txt files and can be loaded by using the [load\_oob effect](<Effect - Hearts of Iron 4 Wiki.md#load-oob>) or [various attributes inside of country history](<Country creation - Hearts of Iron 4 Wiki.md#order-of-battle>). The filename is irrelevant for interpretation, but it must match up with the effect or the attribute used to load it.
 
-The game uses orders of battle to define the state of the country's military. Traditionally, the starting equipment production is defined in them, using an [effect](<Effect - Hearts of Iron 4 Wiki.md>) block. Optionally, the current focus progress may be included.  
+The game uses orders of battle to define the state of the country's military. Traditionally, the starting equipment production is defined in them, using an [effect](<Effect - Hearts of Iron 4 Wiki.md>) block. Optionally, the current focus progress may be included.
 **Each order of battle must be loaded in order for the units to show up.** For the starting state of the country's military, [this is done in country history](<Country creation - Hearts of Iron 4 Wiki.md#order-of-battle>). [The load\_oob effect](<Effect - Hearts of Iron 4 Wiki.md#load-oob>) can be used to load one mid-game, which will add the information in the order of battle to the current information of the country, creating division templates and units and executing the effects.
 
 The internal names for sub-units can be found in /Hearts of Iron IV/common/units/\*.txt files, [localisation can be checked as well](<Modding - Hearts of Iron 4 Wiki.md#searching-multiple-files>).
@@ -148,12 +148,12 @@ The equipment production is simulated using the `instant_effect = { ... }` block
 instant_effect = {
     add_equipment_production = {
         equipment = {
-	    type = infantry_equipment_0
-	    creator = "ARG"
-	}
-	requested_factories = 1
-	progress = 0.19
-	efficiency = 100
+        type = infantry_equipment_0
+        creator = "ARG"
+    }
+    requested_factories = 1
+    progress = 0.19
+    efficiency = 100
     }
 }
 ```
@@ -203,7 +203,7 @@ units = {
                 name = "NRB Minas Gerasis" # Name 3
                 pride_of_the_fleet = yes
                 definition = battleship
-                equipment = { 
+                equipment = {
                     ship_hull_heavy_1 = {
                         amount = 1
                         owner = BRA

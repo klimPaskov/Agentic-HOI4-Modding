@@ -70,21 +70,21 @@ Check it first after game start and browsing through the MIO menus (browsing the
 
 ```text
 <MIO Name> = {
-	# Optional Localization Key
-	name = LOC_infernal_mio_tanks
-	icon = GFX_key
+    # Optional Localization Key
+    name = LOC_infernal_mio_tanks
+    icon = GFX_key
 
-	equipment_type = { <equipment type> <equipment type> }
-	research_categories = { <research type> <research type> }
+    equipment_type = { <equipment type> <equipment type> }
+    research_categories = { <research type> <research type> }
 
-	# Mandatory. In Country Scope.
-	allowed = <condition>
-	# Optional. In MIO Scope. FROM = country.
-	visible = <condition>
-	# Optional. In MIO Scope. FROM = country.
-	available = <condition>
+    # Mandatory. In Country Scope.
+    allowed = <condition>
+    # Optional. In MIO Scope. FROM = country.
+    visible = <condition>
+    # Optional. In MIO Scope. FROM = country.
+    available = <condition>
 
-	# Additional Events if desired
+    # Additional Events if desired
 #	on_design_team_assigned_to_tech = { ... }
 #	on_design_team_assigned_to_variant = { ... }
 #	on_industrial_manufacturer_assigned = { ... }
@@ -92,40 +92,40 @@ Check it first after game start and browsing through the MIO menus (browsing the
 #	on_tech_research_completed = { ... }
 #	on_industrial_manufacturer_unassigned = { ... }
 
-	# Bonus to assigned research
-	research_bonus = 0.2
-	# How many tasks can the MIO perform simultaneously?
-	task_capacity = 999
+    # Bonus to assigned research
+    research_bonus = 0.2
+    # How many tasks can the MIO perform simultaneously?
+    task_capacity = 999
 
-	# Provide custom AI weights to help the AI choose the right MIO
+    # Provide custom AI weights to help the AI choose the right MIO
 #	ai_will_do = {
 #		...
 #	}
 
-	# As many headers as desired.
-	tree_header_text = {
-		text = "Label1" # Either plain text or localization key
-		x = 0 # Just where on the header bar is the label placed. 0 = Leftmost, 9 = Rightmost
-	}
-	tree_header_text = {
-		text = "Label2"
-		x = 2
-	}
-	tree_header_text = {
-		text = "Label3"
-		x = 4
-	}
-	tree_header_text = {
-		text = "LabelN"
-		x = 8
-	}
+    # As many headers as desired.
+    tree_header_text = {
+        text = "Label1" # Either plain text or localization key
+        x = 0 # Just where on the header bar is the label placed. 0 = Leftmost, 9 = Rightmost
+    }
+    tree_header_text = {
+        text = "Label2"
+        x = 2
+    }
+    tree_header_text = {
+        text = "Label3"
+        x = 4
+    }
+    tree_header_text = {
+        text = "LabelN"
+        x = 8
+    }
 
-	initial_trait = <initial trait>
+    initial_trait = <initial trait>
 
-	trait = <trait>
-	trait = <trait>
-	trait = <trait>
-	# ... as many more as needed
+    trait = <trait>
+    trait = <trait>
+    trait = <trait>
+    # ... as many more as needed
 }
 ```
 
@@ -255,36 +255,36 @@ Check it first after game start and browsing through the MIO menus (browsing the
 
 ```text
 trait = {
-	token = upgrade_1 # mandatory
-	name = loc_key # optional
+    token = upgrade_1 # mandatory
+    name = loc_key # optional
 
-	icon = GFX_key # optional
+    icon = GFX_key # optional
 
-	special_trait_background = yes # optional - default no
+    special_trait_background = yes # optional - default no
 
-	parent = {
-		traits = { parent traits }
-		num_parents_needed = X
-	}
-	any_parent = { parent traits }
-	all_parents = { parent traits}
+    parent = {
+        traits = { parent traits }
+        num_parents_needed = X
+    }
+    any_parent = { parent traits }
+    all_parents = { parent traits}
 
-	mutually_exclusive= { upgrade4 }
+    mutually_exclusive= { upgrade4 }
 
-	position = { x=1 y=0 }
-	relative_position_id = trait_token
+    position = { x=1 y=0 }
+    relative_position_id = trait_token
 
-	visible = <condition>
-	available = <condition>
+    visible = <condition>
+    available = <condition>
 
-   	on_complete = <event>
+       on_complete = <event>
 
-	limit_to_equipment_type = { ... } # optional
-	equipment_bonus = <boni>
-	production_bonus = <boni>
-	organization_modifier = <boni>
+    limit_to_equipment_type = { ... } # optional
+    equipment_bonus = <boni>
+    production_bonus = <boni>
+    organization_modifier = <boni>
 
-	ai_will_do = <modifier> # optional
+    ai_will_do = <modifier> # optional
 }
 ```
 
@@ -375,10 +375,10 @@ In other words, most of the trait properties are not relevant to the initial tra
   - Example:
     ```text
     parent = {
-    	traits = {
-    		gunnery_1 stealth_1 mines_1
-    	}
-    	num_parents_needed = 2
+        traits = {
+            gunnery_1 stealth_1 mines_1
+        }
+        num_parents_needed = 2
     }
     ```
 
@@ -434,7 +434,7 @@ In other words, most of the trait properties are not relevant to the initial tra
   - Example:
     ```text
     visible = {
-    	FROM = { has_country_flag = <flag name> }
+        FROM = { has_country_flag = <flag name> }
     }
     ```
 
@@ -444,7 +444,7 @@ In other words, most of the trait properties are not relevant to the initial tra
   - Example:
     ```text
     available = {
-    	FROM = { has_completed_focus = <focus name> }
+        FROM = { has_completed_focus = <focus name> }
     }
     ```
 
@@ -454,7 +454,7 @@ In other words, most of the trait properties are not relevant to the initial tra
   - Example:
     ```text
     on_complete = {
-    	FROM = { set_country_flag = <flag name> }
+        FROM = { set_country_flag = <flag name> }
     }
     ```
 
@@ -472,9 +472,9 @@ In other words, most of the trait properties are not relevant to the initial tra
   - Example:
     ```text
     equipment_bonus = {
-    	armor_value = -0.05
-    	defense =-0.05
-    	build_cost_ic = -0.03
+        armor_value = -0.05
+        defense =-0.05
+        build_cost_ic = -0.03
     }
     ```
 
@@ -484,8 +484,8 @@ In other words, most of the trait properties are not relevant to the initial tra
   - Example:
     ```text
     production_bonus = {
-    	production_efficiency_gain_factor = 0.15
-    	production_resource_need_factor = -0.15
+        production_efficiency_gain_factor = 0.15
+        production_resource_need_factor = -0.15
     }
     ```
 
@@ -495,7 +495,7 @@ In other words, most of the trait properties are not relevant to the initial tra
   - Example:
     ```text
     organization_modifier = {
-    	military_industrial_organization_research_bonus = 0.05
+        military_industrial_organization_research_bonus = 0.05
     }
     ```
 
@@ -505,11 +505,11 @@ In other words, most of the trait properties are not relevant to the initial tra
   - Example:
     ```text
     ai_will_do = {
-    	base = 2
-    	modifier = {
-    		factor = 1.5
-    		date > 1937.1.1
-    	}
+        base = 2
+        modifier = {
+            factor = 1.5
+            date > 1937.1.1
+        }
     }
     ```
 
@@ -576,11 +576,11 @@ TODO: Write
     ```
   - Example:
     ```text
-    allowed = { 
-    	OR = {
-    		has_mio_equipment_type = motorized
-    		has_mio_equipment_type = mechanized
-    	} 
+    allowed = {
+        OR = {
+            has_mio_equipment_type = motorized
+            has_mio_equipment_type = mechanized
+        }
     }
     ```
 
@@ -618,9 +618,9 @@ TODO: Write
   - Example:
     ```text
     equipment_bonus = {
-    	infantry_equipment = {
-    		soft_attack = 0.1
-    	}
+        infantry_equipment = {
+            soft_attack = 0.1
+        }
     }
     ```
 
@@ -634,9 +634,9 @@ TODO: Write
   - Example:
     ```text
     production_bonus = {
-    	infantry_equipment = {
-    		production_cost_factor = -0.1
-    	}
+        infantry_equipment = {
+            production_cost_factor = -0.1
+        }
     }
     ```
 
@@ -646,7 +646,7 @@ TODO: Write
   - Example:
     ```text
     organization_modifier = {
-    	military_industrial_organization_research_bonus = 0.1
+        military_industrial_organization_research_bonus = 0.1
     }
     ```
 
@@ -676,7 +676,7 @@ TODO: Write
   - Example:
     ```text
     ai_will_do = {
-    	...
+        ...
     }
     ```
 

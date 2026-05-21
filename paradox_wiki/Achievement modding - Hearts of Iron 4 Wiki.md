@@ -49,10 +49,10 @@ custom_achievement = {
         has_any_custom_difficulty_setting = no
         game_rules_allow_achievements = yes
     }
- 
+
     happened = {
         date > 1936.01.02
-    } 
+    }
 }
 
 custom_ribbon = {
@@ -63,7 +63,7 @@ custom_ribbon = {
         game_rules_allow_achievements = yes
         tag = ITA
     }
- 
+
     happened = {
         date > 1936.01.02
     }

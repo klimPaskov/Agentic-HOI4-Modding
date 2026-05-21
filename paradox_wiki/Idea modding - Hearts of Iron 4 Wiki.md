@@ -46,37 +46,17 @@ In this case, `ideas = { ... }` encompasses each idea in the file, necessary to 
 Localisation for ideas is defined in any /Hearts of Iron IV/localisation/english/\*\_l\_english.yml file **encoded in UTF-8-BOM**, assuming the English language. If an idea does not have a name, the game uses the country's name-list in /Hearts of Iron IV/common/names to create a random name. This, however, does not apply to national spirits, where it uses the idea's ID. An idea can have both a name and a description that appears when hovering over it. Their localisation entries are defined as such, taking ZZZ\_example\_idea as an example:
 
 ```text
-l_english
-ZZZ_example_idea
-"Idea's
- 
-name"
-
- 
-ZZZ_example_idea_desc
-"Idea's
- 
-description"
+l_english:
+ZZZ_example_idea: "Idea's name"
+ZZZ_example_idea_desc: "Idea's description"
 ```
 
 `name = new_idea_name` assigns the idea's name to use a different localisation key. This can be useful if you plan to modify an idea by swapping it multiple times, ensuring that you needn't create a duplicate localisation entry for every instance of the idea. This will get defined in a localisation file similarly:
 
 ```text
-l_english
-new_idea_name
-"New
- 
-idea's
- 
-name"
-
- 
-new_idea_name_desc
-"New
- 
-idea's
- 
-description"
+l_english:
+new_idea_name: "New idea's name"
+new_idea_name_desc: "New idea's description"
 ```
 
 ### Picture
@@ -99,7 +79,7 @@ description"
 
 By default, an idea uses a sprite that is the same as the idea's name, but with `GFX_idea_` prepended in the beginning. For example, an idea with the name of `my_idea_1` will use the sprite with the name of `GFX_idea_my_idea_1`.
 
-This is possible to change using the `picture = my_sprite` attribute within the idea. **The game still inserts a prefix of `GFX_idea_` to the argument** to decide the sprite that should be used, e.g. `picture = XYZ` leads to `GFX_idea_XYZ` being used as the sprite. If the game cannot find a sprite with the name it expects, the ![Unknown.png](media/idea-modding-hearts-of-iron-4-wiki_e610dc0262__img1.png) default icon will be used instead.  
+This is possible to change using the `picture = my_sprite` attribute within the idea. **The game still inserts a prefix of `GFX_idea_` to the argument** to decide the sprite that should be used, e.g. `picture = XYZ` leads to `GFX_idea_XYZ` being used as the sprite. If the game cannot find a sprite with the name it expects, the ![Unknown.png](media/idea-modding-hearts-of-iron-4-wiki_e610dc0262__img1.png) default icon will be used instead.
 The prefix being inserted means that, most of the time, `picture = GFX_XYZ` (which makes `GFX_idea_GFX_XYZ` get used as the sprite) or `picture = idea_XYZ` (which makes `GFX_idea_idea_XYZ` get used as the sprite) will lead to the game expecting a sprite that doesn't exist and that sprites that do not follow the `GFX_idea_XYZ` naming pattern cannot be used as idea pictures.
 
 If the `texturefile` within the sprite is incorrect, the idea will be invisible in the country politics view, yet still apply the modifiers. Ensure that the idea is stored with the same folder path location, the same filename (including the extension), and that the right folder separator is used.
@@ -378,7 +358,7 @@ A spirit can be set to automatically cancel itself once a set of [triggers](<Tri
 
 ```text
 cancel = {
-    has_political_power > 50 
+    has_political_power > 50
 }
 ```
 
@@ -464,8 +444,8 @@ Hidden idea are exactly the same as regular spirits in every aspect in regards t
 
 These arguments are used within the idea category within the /Hearts of Iron IV/common/ideas/\*.txt file.
 
-`designer = yes` marks the entire category as designer ideas. This is primarily used for AI.  
-`law = yes` marks the entire category as laws. This is primarily used for AI.  
+`designer = yes` marks the entire category as designer ideas. This is primarily used for AI.
+`law = yes` marks the entire category as laws. This is primarily used for AI.
 `use_list_view = yes` marks the entire category to use a list view for selecting the idea, akin to how the base game treats laws.
 
 These will look in the idea file like the following:
@@ -511,7 +491,7 @@ This assumes that the idea is of the type that can be selected in-game, such as 
 ideas = {
     law_category = {
         law = yes
-        use_list_view = yes 
+        use_list_view = yes
         my_law = {
             allowed_to_remove = {
                 num_of_civilian_factories > 10
@@ -570,13 +550,13 @@ idea_categories = {
 }
 ```
 
-The category will then be used by the idea via the slot (which allows mapping an idea to a category)  
+The category will then be used by the idea via the slot (which allows mapping an idea to a category)
 The file also includes slot\_ledgers, which distributes idea slots to intelligence ledgers individually, which will take priority over the idea category's ledger. An example of it being used is
 
 ```text
 slot_ledgers = {
-	XXX_idea_slot = civilian
-	ZZZ_idea_slot = invalid
+    XXX_idea_slot = civilian
+    ZZZ_idea_slot = invalid
 }
 ```
 
@@ -586,7 +566,7 @@ Invalid will require specification in each idea individually.
 
 *See also: [Interface modding](<Interface modding - Hearts of Iron 4 Wiki.md>)*
 
-Each idea category represents a row in the country politics view, while each slot represents a slot under that row.  
+Each idea category represents a row in the country politics view, while each slot represents a slot under that row.
 The `country_politics_idea_category_entry` container window within the /Hearts of Iron IV/interface/countrypoliticsview.gui file decides the user inteface information about each row. The most important thing here is the gridbox, as it decides the following:
 
 - The size of each idea slot within the category, by default 80 by width and 64 by height. This is used for distances between slots.
@@ -596,11 +576,11 @@ The `country_politics_idea_category_entry` container window within the /Hearts o
 The idea category's icon, shown on the left of the category's row, is decided by the GFX\_idea\_categories sprite. The sprite is split into multiple frames horizontally, and each category is assigned a part of it depending on its order defined in /Hearts of Iron IV/common/idea\_tags/\*.txt. The sprite is defined in /Hearts of Iron IV/interface/countrypoliticsview.gfx and its definition in the base game consists of the following:
 
 ```text
-	spriteType = {
-		name = "GFX_idea_categories"
-		texturefile = "gfx/interface/idea_categories.dds"
-		noOfFrames = 6
-	}
+    spriteType = {
+        name = "GFX_idea_categories"
+        texturefile = "gfx/interface/idea_categories.dds"
+        noOfFrames = 6
+    }
 ```
 
 When adding a new category, make sure to update the sprite and the amount of frames accordingly.
@@ -608,10 +588,10 @@ When adding a new category, make sure to update the sprite and the amount of fra
 An icon can be defined for idea slots, which will be used for them if there is no idea assigned to that slot. This definition in any /Hearts of Iron IV/interface/\*.gfx file, taking XXX\_idea\_slot as an example, is done the following way:
 
 ```text
-	spriteType = {
-		name = GFX_idea_slot_XXX_idea_slot
-		textureFile = gfx/interface/filename.dds
-	}
+    spriteType = {
+        name = GFX_idea_slot_XXX_idea_slot
+        textureFile = gfx/interface/filename.dds
+    }
 ```
 
 In other words, the sprite must have the same name as the idea slot but with `GFX_idea_slot_` prepended in the beginning.

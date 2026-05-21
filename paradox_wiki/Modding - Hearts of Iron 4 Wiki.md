@@ -54,7 +54,7 @@ Official modding guides made by Paradox on Youtube.
 - **Use UTF-8 encoding** without the byte order mark for text files. This is commonly called "UTF-8", but can sometimes be specified as "UTF-8 without BOM".
 - **Use UTF-8 encoding with the byte order mark** for localisation files (.yml). This is commonly called "UTF-8-BOM", but can be just "UTF-8", in which case omitting the byte order mark is a separate option. Some text editors, such as Atom, do not support the byte order mark in entirety and should be avoided for localisation.
 - **Use comments** starting with # character, to remember reasons for writing tricky stuff. A single sharp sign will make the rest of the line completely ignored. There is no multi-line comment notation in the code.
-- **Debug** effectively by enabling [the debug mode](#debug-mode). Do this by adding **-debug** to your launch options in Steam. The launch options are accessed in the menu opened by right-clicking the game and choosing 'Properties..'.  
+- **Debug** effectively by enabling [the debug mode](#debug-mode). Do this by adding **-debug** to your launch options in Steam. The launch options are accessed in the menu opened by right-clicking the game and choosing 'Properties..'.
    Alternatively, in Windows it's possible to create a shortcut to the hoi4.exe or dowser.exe file, and then to open the shortcut's properties and append -debug (separated by a space) after the path's end, such as "C:\Program Files (x86)\Steam\steamapps\common\Hearts of Iron IV\hoi4.exe" -debug.
 
 ## Text editor
@@ -82,7 +82,7 @@ Reasons to use a non-default text editor include the following:
 
 ### Searching multiple files
 
-One feature of non-default text editors is a highly-customisable search of all files within the same folder. This is highly useful for dealing with errors and finding locations of certain elements.  
+One feature of non-default text editors is a highly-customisable search of all files within the same folder. This is highly useful for dealing with errors and finding locations of certain elements.
 **Windows File Explorer is a poor choice for doing this**, as it only searches inside of .txt files while it may be desirable to search files of other extensions, e.g. .yml, .gfx, .gui, or .asset, and it is very noticeably slower than either text editor: a search taking ~10 seconds on a text editor may take up to 15 minutes to conclude in the Windows File Explorer.
 
 This is how exactly the feature is enabled in the common text editors:
@@ -110,7 +110,7 @@ There are the following uses for this:
 
 ### Indenting
 
-Another reason to use non-default text editors is greater indenting capabilities. Indenting refers to the usage of newlines and spaces at the beginning of the line, which does not leave an impact on how the code is interpreted, but makes it easier to see the relations between different parts of the code.  
+Another reason to use non-default text editors is greater indenting capabilities. Indenting refers to the usage of newlines and spaces at the beginning of the line, which does not leave an impact on how the code is interpreted, but makes it easier to see the relations between different parts of the code.
 Typically, either a tab character (represented as `\t`) or 4 spaces are used as a single indenting level, placed from the beginning of the line to the beginning of code on the line. In order to increase the indenting level of code, the `⇆Tab` button is used in text editors, which can be done on multiple lines at the same time by selecting them. Inversely, `⇧Shift`+`⇆Tab` is used to decrease the indenting level of the line by one.
 
 An additional option present in these editors is 'Indent guide', drawing a line on each indent level in order to make it easier to see the borders of each indent level, which can assist in code capability. While turned on by default in Sublime Text and Visual Studio Code, this must be turned on manually in Notepad++ within the topbar.
@@ -253,7 +253,7 @@ In particular, these contents are notable contents of the user directory:
 
 ### Loading files
 
-After creating a mod folder within the launcher, every single file within will get loaded at the same location as in base game. Taking a mod with the name of "yourmod" as an example, every single file within mod/yourmod/common/national\_focus will get loaded alongside files in base game's /Hearts of Iron IV/common/national\_focus assuming the default path. However, inserting one more folder as in mod/yourmod/test/common/national\_focus will result in the files in that folder not being loaded as national focus files, appearing to get ignored.  
+After creating a mod folder within the launcher, every single file within will get loaded at the same location as in base game. Taking a mod with the name of "yourmod" as an example, every single file within mod/yourmod/common/national\_focus will get loaded alongside files in base game's /Hearts of Iron IV/common/national\_focus assuming the default path. However, inserting one more folder as in mod/yourmod/test/common/national\_focus will result in the files in that folder not being loaded as national focus files, appearing to get ignored.
 The root folder of the mod, considered the same as the /Hearts of Iron IV/ folder in the base game, will be defined in the user directory's /Hearts of Iron IV/mod/yourmod.mod file, opened with a text editor. This is set via `path = ""` in that file, by default being user directory's /Hearts of Iron IV/mod/yourmod.
 
 The base game is loaded first, while mods are loaded later. The order of loading files is primarily used to determine two things:
@@ -330,13 +330,13 @@ completion_reward = {
 
 There exists no multi-lined comment block.
 
-Aside from comments and strings, newlines are treated entirely identically to spaces as delimiter characters. As a result, indenting does not matter: most files can be done on one line in total without any change in how they get interpreted. However, doing indenting properly can make detecting bracket problems much easier without using a text editor's bracket highlighting and overall makes it easier to see at a glance what each block includes within of itself and what it doesn't.  
+Aside from comments and strings, newlines are treated entirely identically to spaces as delimiter characters. As a result, indenting does not matter: most files can be done on one line in total without any change in how they get interpreted. However, doing indenting properly can make detecting bracket problems much easier without using a text editor's bracket highlighting and overall makes it easier to see at a glance what each block includes within of itself and what it doesn't.
 This also means that an attribute's argument should never be left empty, as it'll interpret the next attribute as the argument instead. For example:
 
 ```text
 focus = {
     id = TAG_focusname
-    icon = 
+    icon =
     x = 2 # Will not work in-game.
 }
 ```
@@ -360,7 +360,7 @@ The order in which attributes are placed may matter or not depending on the cont
   - Where applicable, [the filename is primarily used for evaluation](#loading-files), with the order inside of the files being secondary. As [the ASCII order](http://en.wikipedia.org/wiki/ASCII#Printable_characters) is used for this, the filename beginning with `00_` is usually used to ensure that it's to be evaluated near the beginning, while beginning with `zz_` is used in the opposite manner.
 - For the same type of attribute in a database entry, the interpretation varies. If multiple are supported, the position in code decides the order (e.g. every `prerequisite = { ... }` in a national focus must be met for it to be possible to complete, or every `immediate = { ... }` in an event will be executed when the event is fired). Otherwise, it may pick the earliest or the latest definition of the attribute, disregarding the other ones (For example, in scripted localisation, the first valid `text = { ... }` where the trigger is met will be used).
 
-It is common for the same attribute to intentionally be duplicated with different arguments. The handling of duplicated attributes varies and isn't intended everywhere. For example, each instance of `focus = { ... }` inside of a national focus tree is treated as a separate national focus. Usually if an effect block is duplicated (such as an event's `immediate = { ... }`), each one gets executed in order that they are placed.  
+It is common for the same attribute to intentionally be duplicated with different arguments. The handling of duplicated attributes varies and isn't intended everywhere. For example, each instance of `focus = { ... }` inside of a national focus tree is treated as a separate national focus. Usually if an effect block is duplicated (such as an event's `immediate = { ... }`), each one gets executed in order that they are placed.
 Occassionally, the name of the attribute is arbitrary. For example, in ideas, each idea (placed inside of an idea category) the attribute's name will be treated as the name of the idea.
 
 ### Debug mode
@@ -400,7 +400,7 @@ The logs are located in the [user directory](#user-directory)'s /Hearts of Iron 
 
 Names depending on language are defined within [localisation](<Localisation - Hearts of Iron 4 Wiki.md>). Taking only the English language into consideration, the /Hearts of Iron IV/localisation/english folder is used. A file within must end with `_l_english.yml` in the filename to work properly, including the extension that is hidden by default within the Windows File Explorer. The file must be encoded in the UTF-8 encoding with the byte-order mark included, usually called UTF-8-BOM. The exact details on conversion depend on the text editor. The first line in the file is `l_english:` to assign it to that database.
 
-A localisation entry is structured as  `localisation_key:0 "Value of the key"`. In here, the first part before the colon is referred to as the localisation key, the ending part in quotes is referred to as the localisation key's value, and the number in-between is the version number. The version number is purely a comment and isn't read by the game, and it can be omitted entirely. **Any localisation file can be used for any localisation**, and it's better to use new files rather than copying over base game files.  
+A localisation entry is structured as  `localisation_key:0 "Value of the key"`. In here, the first part before the colon is referred to as the localisation key, the ending part in quotes is referred to as the localisation key's value, and the number in-between is the version number. The version number is purely a comment and isn't read by the game, and it can be omitted entirely. **Any localisation file can be used for any localisation**, and it's better to use new files rather than copying over base game files.
 While it is theoretically possible to avoid using localisation in many cases, localisation has advantages over using strings directly:
 
 - Text customisation support. This necessarily includes newlines and coloured text, which never work inside of strings. In some cases, dynamic localisation as marked with square brackets as e.g. `[TAG.GetName]` will work with localisation, but not in strings.
@@ -479,8 +479,8 @@ picture = "thumbnail.png"
 version = "v1"
 supported_version = "1.13.*"
 tags={
-	"Gameplay"
-	"Historical"
+    "Gameplay"
+    "Historical"
 }
 remote_file_id="1678247250"
 ```
@@ -500,7 +500,7 @@ These arguments aren't possible to set within the launcher and can only be added
 ```text
  user_dir = "NewSaveFolder"
  dependencies = { "Major Mod" "Major Mod 2" }
- replace_path = "history/states" 
+ replace_path = "history/states"
  replace_path = "map/strategicregions"
 ```
 
@@ -509,15 +509,15 @@ These arguments aren't possible to set within the launcher and can only be added
 
 #### replace\_path
 
-`replace_path` is used in order to unload every previously-loaded file during the main menu loading within the specified folder. This only applies to files directly within that folder, any sub-folders will left untouched.  
+`replace_path` is used in order to unload every previously-loaded file during the main menu loading within the specified folder. This only applies to files directly within that folder, any sub-folders will left untouched.
 **This does not force the mod to replace the folder's contents**: anything higher in the load order than the mod will be loaded in the exact same way, anything lower than the mod will first get loaded before getting unloaded (e.g. the error where a file will get loaded twice if there's one with a filename differing only by capitalisation will still be present even if one of the files is intended to be replaced with replace\_path), anything loaded after the main menu will still get loaded from "replaced" folders. **This doesn't change the load order**: if a file fails to overwrite another mod's file, it will still not do so with this attribute used; instead, `dependencies` is used in the mod's attributes to change the load order. In case the mod fails to overwrite base game's files, this will never solve the problem: ensure that the folder you're writing to is indeed the mod's folder rather than, for example, the user directory or a backup of the mod; in case of flags, the game may occassionally fail to make the mod's /Hearts of Iron IV/gfx/flags folder overwrite the base game which can be solved by creating another mod and moving the files there.
 
 For example, `replace_path = "history/states"` will ensure that no state files from the base game or the user directory will be loaded when the game is launched with the mod. This can be used within major map overhauls to ensure that no base game contents will be read with unexpected results. Since the user directory is earlier in the load order than the mod files, this will also seemingly prevent the Nudger from having any impact on the states, however the files will still be outputted in the folder even if immediately unloaded upon saving.
 
-Since this only unloads indexed files, a direct link to a file will not change regardless of the replace\_path being present. For example, `replace_path = "history/units"` will not change anything, since the files in that folder aren't checked during the main menu loading but rather get loaded with a direct link to the filename, such as `oob = "TAG_1936"` in [the country history file](<Country creation - Hearts of Iron 4 Wiki.md#orders-of-battle>). Similarly, a `replace_path = "gfx/flags"` will not change anything since the country-identifying flags are only loaded when the country changes the ruling ideology group.  
+Since this only unloads indexed files, a direct link to a file will not change regardless of the replace\_path being present. For example, `replace_path = "history/units"` will not change anything, since the files in that folder aren't checked during the main menu loading but rather get loaded with a direct link to the filename, such as `oob = "TAG_1936"` in [the country history file](<Country creation - Hearts of Iron 4 Wiki.md#orders-of-battle>). Similarly, a `replace_path = "gfx/flags"` will not change anything since the country-identifying flags are only loaded when the country changes the ruling ideology group.
 This is particularly obvious with the loading screens: `replace_path = "gfx/loadingscreens"` will prevent any base game or DLC loading screen from appearing during the loading, however the main menu background will remain the same as if the replace\_path wasn't present. This is since the main menu background is defined as a sprite with a direct link to the image, by default in /Hearts of Iron IV/interface/frontendmainviewbg.gfx.
 
-**This option must be added to both .mod files**: leaving it out from the mod-specific descriptor will cause the launcher to remove it from the user-specific one, while leaving it out from the user-specific descriptor will cause it to not take effect instead of being copied from the mod-specific descriptor as most other attributes do.  
+**This option must be added to both .mod files**: leaving it out from the mod-specific descriptor will cause the launcher to remove it from the user-specific one, while leaving it out from the user-specific descriptor will cause it to not take effect instead of being copied from the mod-specific descriptor as most other attributes do.
 **This commonly causes game crashes and unintuitive errors if used recklessly**. In some folders, the game isn't built for there being no database entries, such as [national focuses](<National focus modding - Hearts of Iron 4 Wiki.md>), resulting in a crash; in others, such as Scripted triggers, there are several usages for entries besides the obvious, which can cause unintuitive errors such as the resistance system being triggered when unintended. Therefore, the `replace_path` attribute shouldn't be used recklessly: there should always be at least one file with content within the replaced folder in the mod files, and the base game's contents in the folder should be checked manually to see if anything useful is better left as remaining in the mod.
 
 ## Game data
@@ -545,13 +545,12 @@ Generally, there is no reason to subscribe to your own mod in the Steam Workshop
 - **Wrong path** (*replace\_paths apply, yet the mod doesn't get loaded*) – In this case, the needed file to adjust is user directory's /Hearts of Iron IV/mod/modname.mod, opened directly within a text editor. There are two primary variations on this issue:
 
 - **Incorrect path** – This is commonly the cause if the game displays the filesize of the mod, but doesn't load it. The mod doesn't route to the file directly. This can sometimes be a cause of further subfoldering, such as if the mod is located in mod/my\_mod/cool\_mod, yet the user-specific .mod file contains `path = "mod/my_mod"`. In this case, the files still exist and get loaded. However, the game, for example, expects focus trees in the /Hearts of Iron IV/common/national\_focus/ folder. mod/my\_mod/cool\_mod/common/national\_focus/ gets taken to be /Hearts of Iron IV/cool\_mod/common/national\_focus/ instead, as `path = "mod/my_mod"` doesn't knock off the /cool\_mod/ folder. This is corrected simply by adjusting the path to be to the correct folder.
-    - **Invalid path** – The *intended* folder is correct, yet it's stated in a way that the game can't recognise.
 
+- **Invalid path** – The *intended* folder is correct, yet it's stated in a way that the game can't recognise.
     :   One of the ways of doing so is using backslashes for folder separations, such as `path = "mod\my_mod"`. **This is incorrect**, as a single backlash gets taken to be an [escape character](http://en.wikipedia.org/wiki/Escape_character) instead. Using forward slashes as in `path = "mod/my_mod"` is correct.
     :   Another way of doing so is using special characters in the name, such as `path = "C:/Users/Пример кириллицы/Documents/Paradox Interactive/Hearts of Iron IV/mod/my_mod"`. In this case, a special character is defined as one that takes more than 1 byte to write with UTF-8, not being present in [ASCII's printable characters](http://en.wikipedia.org/wiki/ASCII#Printable_characters). This is commonly non-English language folder names, such as diacritics or non-Latin alphabets. In this case, it can be rerouted to a folder that does not contain special characters in the name, such as `path = "D:/Hearts of Iron IV modding/my_mod"`.
     :   If the path to the [user directory](#user-directory) itself contains special characters, it's better to re-route the entire directory to another folder. To do so, edit the base game's /Hearts of Iron IV/launcher-settings.json file and change the folder specified under `gameDataPath`. After doing so, move the user directory's contents to that folder as to not lose save games and other information. The mod's path also needs to be adjusted properly.
-
-        :   **If the user directory has non-ASCII characters in the path to it, then all local mods stored there (as the default place to store them) will fail to be loaded and the in-game means will fail to open the error log**, with a pop-up saying that the system cannot get access to the file. The default Steam installation folder has a path that will only have ASCII characters in it, making the Steam mods work as intended even if the user directory has non-ASCII characters in it.
+    :   **If the user directory has non-ASCII characters in the path to it, then all local mods stored there (as the default place to store them) will fail to be loaded and the in-game means will fail to open the error log**, with a pop-up saying that the system cannot get access to the file. The default Steam installation folder has a path that will only have ASCII characters in it, making the Steam mods work as intended even if the user directory has non-ASCII characters in it.
 In case the launcher shows that the mod has an invalid path even after correcting the issue, make sure that the user-specific mod descriptor file directly within the user directory's /Hearts of Iron IV/mod/ exists and try forcing an update of mod information by deleting the [SQLite database that stores mod information](#mod-structure), located at either /Hearts of Iron IV/launcher-v2.sqlite or /Hearts of Iron IV/launcher-v2\_openbeta.sqlite.
 
 - **Incorrect dependency name** (*Mod fails to loaded when enabled with the main mod*) – If a mod is intended to be a sub-mod to a larger mod or several, it is, in most cases, mandatory to include `dependencies = { "Main mod 1" "Main mod 2" }`, which will place it higher in the load order. In this case, the name of the mod must be the exact same as in the .mod file of the mod, also showing up in the launcher. This can include special characters (e.g. `name = "Main mod – Subtitle"` in the main mod will require `dependencies = { "Main mod — Subtitle" }` in the sub-mod with an en dash rather than a hyphen). For this reason, it's preferable to copy over the name from the .mod file of the main mod rather than manually retyping it from the launcher: some special charactes may be difficult to notice or to distinguish from other characters.
@@ -604,7 +603,7 @@ editor_postfix=":$:1"
 
 ## Notes
 
-**[^](#ref-a)** **a:** Setting an empty file to overwrite a file is generally identical to unloading it in practice, since the game usually uses neither division into multiple files nor the filename of files for how it gets interpreted. This only applies to text files and not images such as loading screens.  
+**[^](#ref-a)** **a:** Setting an empty file to overwrite a file is generally identical to unloading it in practice, since the game usually uses neither division into multiple files nor the filename of files for how it gets interpreted. This only applies to text files and not images such as loading screens.
 **[^](#ref-b)** **b:** These exceptions that may reasonably be changed within a mod are the following:
 
 - /Hearts of Iron IV/gfx/flags/ and its subfolders, where the name must follow a strict formatting in order to be automatically loaded for a country.
@@ -615,8 +614,8 @@ editor_postfix=":$:1"
 - Files within the /Hearts of Iron IV/map/ and /Hearts of Iron IV/map/terrain/ folders, with the exception of /Hearts of Iron IV/map/strategicregions and those defined within /Hearts of Iron IV/default.map.
 - /Hearts of Iron IV/tutorial/tutorial.txt
 
-**[^](#ref-c)** **c:** The only exception that gets treated as a regular error is `MAP_ERROR: Palette in rivers.bmp is probably not correct`, caused by the palette in the file having a non-zero amount of colours, typically a product of saving over it in GIMP. Unlike other entries in error.log marked with MAP\_ERROR, this allows the game to be opened without the debug mode and doesn't place a warning when trying to go into singleplayer.  
-**[^](#ref-d)** **d:** In dynamic modifiers and only them, the order of modifiers in the tooltip isn't hard-coded. Instead, the game places them in the same order that they were written in the code of the dynamic modifier. However, the order of modifiers inside of dynamic modifiers cannot result in any difference in how they will get interpreted.  
+**[^](#ref-c)** **c:** The only exception that gets treated as a regular error is `MAP_ERROR: Palette in rivers.bmp is probably not correct`, caused by the palette in the file having a non-zero amount of colours, typically a product of saving over it in GIMP. Unlike other entries in error.log marked with MAP\_ERROR, this allows the game to be opened without the debug mode and doesn't place a warning when trying to go into singleplayer.
+**[^](#ref-d)** **d:** In dynamic modifiers and only them, the order of modifiers in the tooltip isn't hard-coded. Instead, the game places them in the same order that they were written in the code of the dynamic modifier. However, the order of modifiers inside of dynamic modifiers cannot result in any difference in how they will get interpreted.
 **[^](#ref-e)** **e:** In rare cases, there is no image set to be placeholder, making it so that using a non-existing sprite also results in nothing appearing. An example of this happening is in [balances of power](<Balance of power modding - Hearts of Iron 4 Wiki.md>), where specifying a non-existing sprite to represent a side will result in the side having no icon. This is particularly rare since there is a default fallback image of `GFX_default`, showing the error dog in the base game.
 
 **Modding**

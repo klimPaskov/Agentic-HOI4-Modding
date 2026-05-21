@@ -17,7 +17,7 @@ Intelligence agencies' cosmetics are defined and toggled for countries in it's r
 intelligence_agency = {
     picture = GFX_intelligence_agency_NOR_old_norse
     names = { "Hugin" "Munin" }
-    
+
     default = {
         tag = NOR
     }
@@ -37,7 +37,7 @@ The available definition contains the trigger for the intelligence agency to be 
 intelligence_agency = {
     picture = GFX_intelligence_agency_mod_generic_1
     names = { "Svalbard Intelligence Group" } # This would not appear, but it's safer to have a name for it anyway.
-    
+
     default = {
         always = yes # It's then in the random queue with the rest of the generic intelligence agencies. 'Rooke' is typically priority.
     }

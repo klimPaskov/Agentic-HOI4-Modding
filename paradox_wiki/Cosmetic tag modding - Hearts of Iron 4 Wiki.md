@@ -58,37 +58,17 @@ Either the [RGB colour model](http://en.wikipedia.org/wiki/RGB_color_model) or t
 For the English language, the name of the country is created in any /Hearts of Iron IV/localisation/english/\*\_l\_english.yml file encoded in UTF-8 with the byte order mark (or UTF-8-BOM). Either of the three versions of the name will overwrite the base country equivalent, for example:
 
 ```text
-l_english
-COSMETICTAG_neutrality
-"Cosmetic
- 
-tag"
-
- 
-COSMETICTAG_neutrality_ADJ
-"Cosmetic"
-
- 
-COSMETICTAG_neutrality_DEF
-"The
- 
-cosmetic
- 
-tag"
+l_english:
+COSMETICTAG_neutrality: "Cosmetic tag"
+COSMETICTAG_neutrality_ADJ: "Cosmetic"
+COSMETICTAG_neutrality_DEF: "The cosmetic tag"
 ```
 
 The cosmetic tag takes priority over the base localisation of the country. Each automatically-applying variation of the name may also be used, such as checking whether the country is a subject or if the check is moved to the ideology type within the ideology group, such as:
 
 ```text
-l_english
-COSMETICTAG_despotism_subject
-"$OVERLORDADJ$
- 
-despotist
- 
-cosmetic
- 
-tag"
+l_english:
+COSMETICTAG_despotism_subject: "$OVERLORDADJ$ despotist cosmetic tag"
 ```
 
 ## Other changes
@@ -138,9 +118,9 @@ country_event = {
     id = event.1
     title = event.1.t
     desc = event.1.desc
-    
+
     is_triggered_only = yes
-    
+
     option = {
         name = event.1.a
         set_cosmetic_tag = COSMETICTAG
@@ -148,7 +128,7 @@ country_event = {
 }
 ```
 
-[On actions](<On actions - Hearts of Iron 4 Wiki.md>) are commonly used to dynamically apply or remove cosmetic tags depending on the game circumstances, such as ideology change or puppeting (on actions are only able to detect puppeting in peace conferences and when releasing a country; [if puppeting is done via an effect](<Effect - Hearts of Iron 4 Wiki.md#puppet>), then set\_cosmetic\_tag has to be in the same effect block that puppets the country).  
+[On actions](<On actions - Hearts of Iron 4 Wiki.md>) are commonly used to dynamically apply or remove cosmetic tags depending on the game circumstances, such as ideology change or puppeting (on actions are only able to detect puppeting in peace conferences and when releasing a country; [if puppeting is done via an effect](<Effect - Hearts of Iron 4 Wiki.md#puppet>), then set\_cosmetic\_tag has to be in the same effect block that puppets the country).
 An example on action that applies a cosmetic tag only when the country is ![{{{1}}}](media/cosmetic-tag-modding-hearts-of-iron-4-wiki_8daa0f4184__img2.png)non-aligned is as such:
 
 ```text

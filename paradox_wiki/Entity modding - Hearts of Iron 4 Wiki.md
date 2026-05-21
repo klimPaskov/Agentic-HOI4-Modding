@@ -28,7 +28,7 @@ objectTypes = {
     pdxmesh = {
         name = "name_of_mesh"
         file = "gfx/models/name_of_mesh.mesh"
-        animation = { id = "idle" type = "name_of_animation" }				
+        animation = { id = "idle" type = "name_of_animation" }
         scale = 1.0
     }
 }
@@ -67,38 +67,38 @@ entity = {
         position = { 0.0 0.0 0.0 }
     }
 
-    state = { 
-        name = "idle" 
+    state = {
+        name = "idle"
         state_time = 0.0
-        
+
         animation = "idle"
         animation_blend_time = 0.0
         animation_speed = 1.0
         looping = yes
-        
+
         next_state = "idle"
-        
+
         chance = 2
         propagate_state = {
             node = "idle"
         }
-        
+
         event = {
             time = 1.0
             trigger_once = yes
-            
+
             node = "example_node"
             light=  "example_light"
-            
+
             particle = "example_particle"
             keep_particle = yes
-            
+
             sound = {
                 soundeffect = "example_soundeffect"
             }
         }
     }
-    
+
     attach = {
         name = "name"
         <node> = "example_entity"

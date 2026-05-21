@@ -251,86 +251,86 @@ It is possible to set a country-specific entry. An entry with `GER_autonomy_mod_
 
 ```text
 autonomy_state = {
-	id = autonomy_example
-	
-	default = yes					#Will be a possible option for peace deals
-	is_puppet = yes
-	
-	use_overlord_color = yes
-	
-	min_freedom_level = 0.2				#Puts it as 0.2 on the autonomy level scale, which is the same as an integrated puppet.
+    id = autonomy_example
 
-	peace_conference_initial_freedom = 0.9		#Close to independence
-	
-	manpower_influence = 0.9
-	
-	rule = {
-		can_not_declare_war = yes
-		can_decline_call_to_war = no
-		units_deployed_to_overlord = yes
-		can_be_spymaster = no
-		contributes_operatives = no
-		can_create_collaboration_government = no
-	}
-	
-	modifier = {
-		autonomy_manpower_share = 1.0
-		can_master_build_for_us = 1
-		extra_trade_to_overlord_factor = 1.0
-		overlord_trade_cost_factor = -0.9
-		cic_to_overlord_factor = 0.75
-		mic_to_overlord_factor = 0.75
-		research_sharing_per_country_bonus_factor = -0.5
-	}
-	
-	ai_subject_wants_higher = {
-		factor = 0.0
-	}
-	
-	ai_overlord_wants_lower = {
-		factor = 0.0
-	}
+    default = yes					#Will be a possible option for peace deals
+    is_puppet = yes
 
-	allowed = {
-		has_dlc = "Together for Victory"
-		OVERLORD = {
-			tag = FRA
-		}
-	}
+    use_overlord_color = yes
 
-	allowed_levels_filter = {
-		autonomy_example
-		autonomy_example_1
-		autonomy_example_2
-	}
+    min_freedom_level = 0.2				#Puts it as 0.2 on the autonomy level scale, which is the same as an integrated puppet.
 
-	use_for_peace_conference_weight = {
-		base = 0
-		modifier = {
-			add = 10
-			FROM = {
-				has_wargoal_against = { target = ROOT type = puppet_wargoal_focus }
-			}			# Adds 10 to the chance if the overlord has a wargoal to puppet the country.
-		}
-		modifier = {
-			factor = 2
-			tag = ENG	# Multiplies the chance by 2 if the subject is UK.	
-		}
-	}
+    peace_conference_initial_freedom = 0.9		#Close to independence
 
-	can_take_level = {
-		OVERLORD = {
-			NOT = {
-				controls_state = 123
-			}	# If the overlord does not control state 123, the subject can gain a level.
-		}
-	}
+    manpower_influence = 0.9
 
-	can_lose_level = {
-		OVERLORD = {
-			controls_state = 123
-		}	# If the overlord controls state 123, it can decrease the subject's autonomy level.
-	}
+    rule = {
+        can_not_declare_war = yes
+        can_decline_call_to_war = no
+        units_deployed_to_overlord = yes
+        can_be_spymaster = no
+        contributes_operatives = no
+        can_create_collaboration_government = no
+    }
+
+    modifier = {
+        autonomy_manpower_share = 1.0
+        can_master_build_for_us = 1
+        extra_trade_to_overlord_factor = 1.0
+        overlord_trade_cost_factor = -0.9
+        cic_to_overlord_factor = 0.75
+        mic_to_overlord_factor = 0.75
+        research_sharing_per_country_bonus_factor = -0.5
+    }
+
+    ai_subject_wants_higher = {
+        factor = 0.0
+    }
+
+    ai_overlord_wants_lower = {
+        factor = 0.0
+    }
+
+    allowed = {
+        has_dlc = "Together for Victory"
+        OVERLORD = {
+            tag = FRA
+        }
+    }
+
+    allowed_levels_filter = {
+        autonomy_example
+        autonomy_example_1
+        autonomy_example_2
+    }
+
+    use_for_peace_conference_weight = {
+        base = 0
+        modifier = {
+            add = 10
+            FROM = {
+                has_wargoal_against = { target = ROOT type = puppet_wargoal_focus }
+            }			# Adds 10 to the chance if the overlord has a wargoal to puppet the country.
+        }
+        modifier = {
+            factor = 2
+            tag = ENG	# Multiplies the chance by 2 if the subject is UK.
+        }
+    }
+
+    can_take_level = {
+        OVERLORD = {
+            NOT = {
+                controls_state = 123
+            }	# If the overlord does not control state 123, the subject can gain a level.
+        }
+    }
+
+    can_lose_level = {
+        OVERLORD = {
+            controls_state = 123
+        }	# If the overlord controls state 123, it can decrease the subject's autonomy level.
+    }
 }
 ```
 
@@ -363,18 +363,18 @@ When setting the autonomy level in the country's history file, it is possible th
 
 ```text
 TAG = {
-	if = {
-		limit = {
-			has_dlc = "Together for Victory"
-		}
-		set_autonomy = {
-			target = TAG2
-			autonomy_state = autonomy_mod_new
-		}
-	}
-	else = {
-		puppet = TAG2
-	}
+    if = {
+        limit = {
+            has_dlc = "Together for Victory"
+        }
+        set_autonomy = {
+            target = TAG2
+            autonomy_state = autonomy_mod_new
+        }
+    }
+    else = {
+        puppet = TAG2
+    }
 }
 ```
 

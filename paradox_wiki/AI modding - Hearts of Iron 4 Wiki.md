@@ -24,10 +24,10 @@ The artificial intelligence controlling countries in Hearts of Iron IV can be ch
 
 MTTH blocks, named in the game within /Hearts of Iron IV/common/mtth/, are a way to assign a dynamic value to some block, whether it's a [country = { ... } in a focus tree to assign which countries can get it](<National focus modding - Hearts of Iron 4 Wiki.md#focus-tree>), a dynamically-changing variable value (as in /Hearts of Iron IV/common/mtth/), a [mean-time-to-happen value for an event](<Event modding - Hearts of Iron 4 Wiki.md#triggering>), et cetera. As MTTH blocks are spread throughout the entire game, it's incredibly important to know how one works. Its most common application, however, is assigning a base AI weight to a database entry such as a national focus or a technology.
 
-In most cases, marked with ai\_will\_do, the approach taken by the game is generating a decimal number between 0 and the value of the ai\_will\_do block, and picking the entry with the highest value. There can be other modifiers applied after the ai\_will\_do value, such as the ones applied within [AI strategy plans](<AI modding - Hearts of Iron 4 Wiki.md#ai-strategy-plans>) towards focuses and research or the ones that get defined within [Defines](<Defines - Hearts of Iron 4 Wiki.md>), which'll multiply the value you get. This can include different ai\_will\_do values such as what's done with country leader traits and with ideas or characters that use them.  
+In most cases, marked with ai\_will\_do, the approach taken by the game is generating a decimal number between 0 and the value of the ai\_will\_do block, and picking the entry with the highest value. There can be other modifiers applied after the ai\_will\_do value, such as the ones applied within [AI strategy plans](<AI modding - Hearts of Iron 4 Wiki.md#ai-strategy-plans>) towards focuses and research or the ones that get defined within [Defines](<Defines - Hearts of Iron 4 Wiki.md>), which'll multiply the value you get. This can include different ai\_will\_do values such as what's done with country leader traits and with ideas or characters that use them.
 Event options, instead, use ai\_chance, which uses [probability-proportional-to-size sampling](<http://en.wikipedia.org/wiki/Sampling_(statistics>)#Probability-proportional-to-size_sampling) with a virtual roll of d00 being the final deciding factor. Due to that, in the end, an event option cannot have a probability which isn't a multiple of 1/100 to be picked, although the total sum of each option's weights can be vastly different from 100. In other words, if one option has a value of 1, while the other has a value of 999, the probability for the first option to be picked will be 1% rather than 0.1%.
 
-A MTTH block begins with an assumed value of 1. Further manipulations are done from that value as a starting point. There are 3 value-modifying arguments that can be done, `add`, `base`, and `factor`, done like `factor = 0.3`, `base = 10`, or `add = 5`. `add` adds the specified argument to the value, `factor` *multiplies* it, and `base`, typically done in the start before any changes, sets it to a different number entirely, akin to multiplying by 0 and adding the number.  
+A MTTH block begins with an assumed value of 1. Further manipulations are done from that value as a starting point. There are 3 value-modifying arguments that can be done, `add`, `base`, and `factor`, done like `factor = 0.3`, `base = 10`, or `add = 5`. `add` adds the specified argument to the value, `factor` *multiplies* it, and `base`, typically done in the start before any changes, sets it to a different number entirely, akin to multiplying by 0 and adding the number.
 In order for an operation to apply conditionally, a `modifier = { ... }` block is used. This also functions as a trigger block, with the default scope (thus also ROOT) being the country for which the MTTH block is evaluated. Depending on the MTTH block, [there may be additional scopes marked with FROM](<Decision modding - Hearts of Iron 4 Wiki.md#targeted-decisions>) [or FROM.FROM other than the default.](<AI modding - Hearts of Iron 4 Wiki.md#ai-peace>) The value-modifying arguments function as regular arguments, they can be put in anywhere directly within the `modifier = { ... }` block with almost no difference, whether it's in the end, the beginning, or between triggers.
 
 Variables can be used within the value-modifying arguments as well. If using a temporary variable that is defined within the `modifier = { ... }` trigger block, then the value-modifying argument of the modifier has to be after the definition of the variable in order for the variable to apply as defined. Variables can also be used outside of the `modifier = { ... }` block and directly inside of the MTTH block itself.
@@ -61,65 +61,27 @@ ai_will_do = {
 
 Assuming that GER and FRA are major countries, the result is
 
-- 0 for GER: 
+- 0 for GER:
 
-  10.5
-  ⋅
-  0
-  =
-  0
-  {\displaystyle 10.5\cdot 0=0}
-  ![{\displaystyle 10.5\cdot 0=0}](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img1.svg)
-- 74 for FRA: 
+{\displaystyle 10.5\cdot 0=0}
+- 74 for FRA:
 
-  (
-  (
-  10.5
-  +
-  1
-  )
-  ⋅
-  3
-  +
-  2.5
-  )
-  ⋅
-  2
-  =
-  74
-  {\displaystyle ((10.5+1)\cdot 3+2.5)\cdot 2=74}
-  ![{\displaystyle ((10.5+1)\cdot 3+2.5)\cdot 2=74}](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img2.svg)
-- 23 for other majors: 
+{\displaystyle ((10.5+1)\cdot 3+2.5)\cdot 2=74}
+- 23 for other majors:
 
-  (
-  10.5
-  +
-  1
-  )
-  ⋅
-  2
-  =
-  23
-  {\displaystyle (10.5+1)\cdot 2=23}
-  ![{\displaystyle (10.5+1)\cdot 2=23}](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img3.svg)
-- 21 for minors: 
+{\displaystyle (10.5+1)\cdot 2=23}
+- 21 for minors:
 
-  10.5
-  ⋅
-  2
-  =
-  21
-  {\displaystyle 10.5\cdot 2=21}
-  ![{\displaystyle 10.5\cdot 2=21}](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img4.svg)
+{\displaystyle 10.5\cdot 2=21}
 
 After calculating that value, the total number of civilian and military factories within the country, divided by 10 and rounded, will get added to the score. If FRA has a total of 43 civilian and military factories as it does in base game, then this will result in 4 being added to the prior 74 for a total of 78, for example.
 
 ## AI strategies
 
-AI strategies are used in order to pursue AI to do or avoid something. This includes diplomatic actions the AI will do, where and how exactly AI should focus and use its land army and the navy, the production lines for buildings and equipment, how AI should handle the intelligence system within the ![La Résistance](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img6.png)La Résistance DLC.  
+AI strategies are used in order to pursue AI to do or avoid something. This includes diplomatic actions the AI will do, where and how exactly AI should focus and use its land army and the navy, the production lines for buildings and equipment, how AI should handle the intelligence system within the ![La Résistance](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img6.png)La Résistance DLC.
 A value within an AI strategy can be either positive or negative, and it being negative will make AI desire to do it less.
 
-Regular AI strategies are stored in /Hearts of Iron IV/common/ai\_strategy/\*.txt files, however, AI strategies may be defined outside of that file. The [add\_ai\_strategy effect](<Effect - Hearts of Iron 4 Wiki.md#add-ai-strategy>) can add a permament AI strategy within any effect block, and [AI strategy plans](<AI modding - Hearts of Iron 4 Wiki.md#ai-strategy-plans>) can also include AI strategies defined within of themselves. Overall, /Hearts of Iron IV/common/ai\_strategy/\*.txt files describe AI strategies that would enable and disable themselves automatically.  
+Regular AI strategies are stored in /Hearts of Iron IV/common/ai\_strategy/\*.txt files, however, AI strategies may be defined outside of that file. The [add\_ai\_strategy effect](<Effect - Hearts of Iron 4 Wiki.md#add-ai-strategy>) can add a permament AI strategy within any effect block, and [AI strategy plans](<AI modding - Hearts of Iron 4 Wiki.md#ai-strategy-plans>) can also include AI strategies defined within of themselves. Overall, /Hearts of Iron IV/common/ai\_strategy/\*.txt files describe AI strategies that would enable and disable themselves automatically.
 Each entry within a /Hearts of Iron IV/common/ai\_strategy/\*.txt file is a block with the name of the AI strategy. This name can be anything, even allowing overlap between them: this will only appear in AI dumps and the player will never see it. If an AI strategy modifies the chance for AI to pick a diplomatic option with the player, it will be seen as `COUNTRY has strategic reasons to be ...` to the player when hovering over the option. This is an example of an AI strategy with the name of BHR\_invade\_qatar:
 
 ```text
@@ -154,7 +116,7 @@ These in particular are arguments for /Hearts of Iron IV/common/ai\_strategy/\*.
 
 `ai_strategy = { ... }` is, itself, the AI strategy that would be applied. The only argument shared for every AI strategy is `type = <AI strategy type>`. [The rest depends on the AI strategy](<AI modding - Hearts of Iron 4 Wiki.md#types>).
 
-In addition, reversed AI strategies exist. These are used with AI strategies that use `id = TAG` to target towards a specific country to swap it around: that strategy will be enabled for TAG towards the country which meets `enable = { ... }`. In order to mark the AI strategy as reversed, `reversed = yes` is used. `enable_reverse = { ... }` is an additional trigger block required to *enable* this AI strategy. It does not have a default scope, so scoping into a country is required.  
+In addition, reversed AI strategies exist. These are used with AI strategies that use `id = TAG` to target towards a specific country to swap it around: that strategy will be enabled for TAG towards the country which meets `enable = { ... }`. In order to mark the AI strategy as reversed, `reversed = yes` is used. `enable_reverse = { ... }` is an additional trigger block required to *enable* this AI strategy. It does not have a default scope, so scoping into a country is required.
 An example of a reversed AI strategy is the following:
 
 ```text
@@ -623,9 +585,9 @@ This list may be outdated. A list of every AI strategy can be found within base 
   - Example:
     ```text
     ai_strategy = {
-    	type = strategic_air_importance
-    	id = 18 #English Channel
-    	value = -30000
+        type = strategic_air_importance
+        id = 18 #English Channel
+        value = -30000
     }
     ```
   - Description:
@@ -803,14 +765,14 @@ This list may be outdated. A list of every AI strategy can be found within base 
   - Example:
     ```text
     ai_strategy = {
-    	type = force_concentration_front_factor
-    
-    	tag = CZE
-    	state = 9
-    	strategic_region = 22
-    	ratio = 0.2
-    
-    	value = 40
+        type = force_concentration_front_factor
+
+        tag = CZE
+        state = 9
+        strategic_region = 22
+        ratio = 0.2
+
+        value = 40
     }
     ```
   - Description: Used for increasing/decreasing priority score for AI force concentration on specified fronts.
@@ -829,8 +791,8 @@ This list may be outdated. A list of every AI strategy can be found within base 
   - Example:
     ```text
     ai_strategy = {
-    	type = force_concentration_factor
-    	value = 20
+        type = force_concentration_factor
+        value = 20
     }
     ```
   - Description:
@@ -872,13 +834,13 @@ This list may be outdated. A list of every AI strategy can be found within base 
     ```text
     ai_strategy = {
     # As Germany - Avoid attacking the areas behind the Maginot line
-    	type = force_concentration_target_weight
-    	state = 18 # Champagne
-    	state = 17 # Franche-Comte
-    	state = 28 # Alsace-Lorraine
-    	state = 27 # Bourgogne
-    
-    	value = -60
+        type = force_concentration_target_weight
+        state = 18 # Champagne
+        state = 17 # Franche-Comte
+        state = 28 # Alsace-Lorraine
+        state = 27 # Bourgogne
+
+        value = -60
     }
     ```
   - Description: Affects the score for offensive targets for AI Force Concentration.
@@ -1537,7 +1499,7 @@ This list may be outdated. A list of every AI strategy can be found within base 
     types = { ... }
     .
     Note:
-    Multiple variants of the same 'type' of equipment may exist. 
+    Multiple variants of the same 'type' of equipment may exist.
     This specific strategy will for example make AI have 3 lines of Artillery AND 3 lines of Rocket Artillery AND 3 lines of Motorized Rocket Artillery.
     ```
 
@@ -1883,8 +1845,8 @@ This list may be outdated. A list of every AI strategy can be found within base 
 
 AI areas are defined within /Hearts of Iron IV/common/ai\_areas/\*.txt files. These are *only* used in a variety of previously-listed AI strategies, such as [area\_priority](<AI modding - Hearts of Iron 4 Wiki.md#area-priority>). A province may be in several AI areas and it may be in none. Hovering over a province with the debug mode turned on will provide information in which AI areas the province is, if any.
 
-Each AI area is a separate block within the file, with the name of the block being the name of the area. Within these blocks, 2 things can be added:  
-`continents = { ... }` is a list of continents that make up the AI area. Continents are defined within /Hearts of Iron IV/map/continent.txt and assigned to provinces within [their definitions](<Map modding - Hearts of Iron 4 Wiki.md#provinces>) in /Hearts of Iron IV/map/definition.csv. The full name of the continent should be used within the AI area's definition, rather than the ID used in the province definition.  
+Each AI area is a separate block within the file, with the name of the block being the name of the area. Within these blocks, 2 things can be added:
+`continents = { ... }` is a list of continents that make up the AI area. Continents are defined within /Hearts of Iron IV/map/continent.txt and assigned to provinces within [their definitions](<Map modding - Hearts of Iron 4 Wiki.md#provinces>) in /Hearts of Iron IV/map/definition.csv. The full name of the continent should be used within the AI area's definition, rather than the ID used in the province definition.
 `strategic_regions = { ... }` is a list of strategic regions that make up the AI area, by their ID number.
 
 If there are multiple defined, the province has to be in *any* of them.
@@ -2245,7 +2207,7 @@ infantry_generic = {
 
 /Hearts of Iron IV/common/ai\_equipment/\*.txt files are used in order to define the equipment variants that the AI should aim for when assigning modules to tank or ship variants.
 
-A role template is defined as a block within any file in the folder with the name of the block being the same as the name of the role template.  
+A role template is defined as a block within any file in the folder with the name of the block being the same as the name of the role template.
 These arguments are used for role templates themselves:
 
 - `category = <land|naval|air>` decides whether the template is used for tanks, ships or planes respectively.
@@ -2254,7 +2216,7 @@ These arguments are used for role templates themselves:
 - `blocked_for = { ... }` restricts the countries that use this role template from being the tags in the list. This is only needed if there is no `available_for = { ... }` block.
 - `priority = { ... }` is a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#mtth-blocks>) that decides the 'importance' of the role template compared to other role templates for spending experience on improving. If there are several role templates with the same roles, the one with the highest priority gets used, otherwise this decides likelihood compared to role templates with different roles.
 
-Additionally, within role templates each individual design is defined as a block with the name of the design being the name of the block. It may be anything, as long as there is no overlap.  
+Additionally, within role templates each individual design is defined as a block with the name of the design being the name of the block. It may be anything, as long as there is no overlap.
 These arguments are used within a design definition:
 
 - `name = angry_speedboat` required to enable the equipment to be used as preset. If not defined, for example German `light_tank_artillery_2` will use `GER_light_tank_artillery_equipment_2_short` localization if defined.

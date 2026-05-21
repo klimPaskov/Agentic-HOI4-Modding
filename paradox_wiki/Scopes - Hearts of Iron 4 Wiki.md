@@ -22,7 +22,7 @@
 
 When a scope is used as for effects, each effect inside of the scope's block is executed. Conversely, when a scope is used as for triggers, it serves as a [logical conjunction](http://en.wikipedia.org/wiki/Logical_conjunction), requiring every trigger in the scope's block to be met for that scope to evaluate as true.
 
-In addition to serving as blocks for effects or triggers, some scopes can also serve as targets of effects or triggers: e.g. `transfer_state_to = ROOT` or `owns_state = 123`.  
+In addition to serving as blocks for effects or triggers, some scopes can also serve as targets of effects or triggers: e.g. `transfer_state_to = ROOT` or `owns_state = 123`.
  However, only [some dual scopes](#dual-scopes) can be used as a target. For scopes that cannot be used as targets, [PREV](#prev-usage), Variables, or Event targets can be used to get around this limitation.
 
 ## Types
@@ -102,7 +102,7 @@ Example scope with triggers: all contained triggers must return true for the sco
 Example use of PREV as target for non-targetable scope. Since `random_country` cannot be used as a target, `add_to_faction = random_country` is not valid syntax; instead, [PREV](#prev-usage) can be used to get around this limitation. The following example adds random country to ROOT's faction:
 
 ```text
-random_country = {  
+random_country = {
     ROOT = { add_to_faction = PREV }
 }
 ```
@@ -163,13 +163,8 @@ any_country = {
 The localisation key will be defined as such in any localisation file:
 
 ```text
-l_english
-any_friendly_country_tt
-"Any
- 
-friendly
- 
-country"
+l_english:
+any_friendly_country_tt: "Any friendly country"
 ```
 
 This will appear in the tooltip as such:
@@ -365,7 +360,7 @@ Several dual scopes may have a scope that varies depending on where it's used, s
         target = FROM
         type = annex_everything
     }
-    
+
     FROM = {
         load_oob = defend_ourselves
     }
@@ -431,7 +426,7 @@ Several dual scopes may have a scope that varies depending on where it's used, s
   - Target type: Country scope
   - Example:
     ```text
-    controller = { 
+    controller = {
         ROOT = {
             create_wargoal = {
                 target = PREV
@@ -501,7 +496,7 @@ Several dual scopes may have a scope that varies depending on where it's used, s
 
 *See also: Event targets*
 
-In regards to some dual scopes, a possible logged error to get while using them is "Invalid event target", as in `common/national_focus/generic.txt:690: controller: invalid event target: controller`, while the scope being used is not necessarily an event target.  
+In regards to some dual scopes, a possible logged error to get while using them is "Invalid event target", as in `common/national_focus/generic.txt:690: controller: invalid event target: controller`, while the scope being used is not necessarily an event target.
 This refers to the scope not having any defined target in the context that it is used, i.e. it is impossible to select any single target when it is used. In case of `controller = { ... }` as in the example, this means that the scope is checked or executed in a state that isn't controlled by any country. Such states are rather unstable and can cause crashes easily (such as if evaluated for an air mission by AI or if doing almost any effect on them), so if this happens for `controller` or `owner`, then this must be fixed only by making sure that every state has an owner or controller.
 
 In practice, this gets skipped over entirely when evaluating the effects or triggers: none of the effects would be executed; as a trigger it'll not come up as either true or false. However, since this can be checked every tick, leaving it as is can result in cluttering the error log. To avoid this, it's possible to use the if statement in [effects](<Effect - Hearts of Iron 4 Wiki.md#if-statements>) or [triggers](<Triggers - Hearts of Iron 4 Wiki.md#if>) in such a manner that the dual scope would only be checked if the conditions for it existing are fulfilled, such as by checking that the country is indeed a subject before checking the overlord. An example of that being done is as such:
@@ -710,7 +705,7 @@ These can only be used as [triggers](<Triggers - Hearts of Iron 4 Wiki.md>); try
   - Example:
     ```text
     any_state_in = {
-      array = array_of_states  #required 
+      array = array_of_states  #required
         …                  #triggers to check
     }
     ```
@@ -1423,12 +1418,8 @@ There are the following effects that also change the currently-selected scope:
     ```
   - Examples:
     ```text
-    (
-    See country tag aliases
-    )
-    (
-    See usage for PREV and PREV.PREV
-    )
+    (See country tag aliases)
+    (See usage for PREV and PREV.PREV)
     ```
   - Example:
     ```text
@@ -1586,7 +1577,7 @@ Arrays can be used to create a generic selection of scopes meeting the criteria.
     all_of_scopes = {
         array = global.majors
         tooltip = has_more_states_than_every_other_major_tt
-        OR = { 
+        OR = {
             tag = PREV
             check_variable = { num_owned_controlled_states < PREV.num_owned_controlled_states }
         }
@@ -1711,7 +1702,7 @@ Diagram showing how PREV and PREV.PREV connect to other entries in the code exam
 
 In this case, the tree is constructed with [123,owner,ROOT]. Using PREV within ROOT will refer to the previously-defined owner.
 
-Chaining PREV can be done by separating them with a dot as PREV.PREV.PREV. This can be useful if the needed scope is more than 1 scope back.  
+Chaining PREV can be done by separating them with a dot as PREV.PREV.PREV. This can be useful if the needed scope is more than 1 scope back.
 This is an another example of PREV usage with an attached diagram showing how they connect to other scopes:
 
 ```text

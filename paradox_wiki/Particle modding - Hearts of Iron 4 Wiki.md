@@ -27,23 +27,23 @@ Here is a generic example:
 ```text
 light = {
     name = "name_of_light"
-    
+
     color = {
         r = { <float> }
         g = { <float> }
         b = { <float> }
     }
-    
+
     intensity = <float>, fade
     radius = <float>
     falloff = <float>
-    
+
     position = {
         x = <float>
         y = <float>
         z = <float>
     }
-    
+
     animation = {
         name = "name_of_animation"
         start = <float>

@@ -49,8 +49,8 @@ Constants serve as a way to use the same value with a reference. The constants a
 
 This can later be used in the file as, for example, `cost = @CONSTANT_1`. These definitions can be in any point of the file.
 
-Constants are available in the vast majority of game files, including most, if not all, \*.txt and \*.gui files. Constants can be used as a way to link several values to be the same if they can easily be changed at any point in the development. However, constants that store a string for its value can only be used in triggers and the attributes of elements and windows, trying to use them in an effect will result in an "invalid database object for effect/trigger" error.  
-For example, if there is a large decision system where every decision is intended to have the same cost, then these constants may be used if the political power cost gets changed mid-development for better balance.  
+Constants are available in the vast majority of game files, including most, if not all, \*.txt and \*.gui files. Constants can be used as a way to link several values to be the same if they can easily be changed at any point in the development. However, constants that store a string for its value can only be used in triggers and the attributes of elements and windows, trying to use them in an effect will result in an "invalid database object for effect/trigger" error.
+For example, if there is a large decision system where every decision is intended to have the same cost, then these constants may be used if the political power cost gets changed mid-development for better balance.
 Another example would be a scripted GUI container: if a large multitude of elements are to be at the same X or Y position, it might be worth it to link them to be a constant in case their position could be changed for better appearance or to fit in another GUI element.
 
 Example [decision file](<Decision modding - Hearts of Iron 4 Wiki.md>) that utilises constants:
@@ -80,35 +80,19 @@ TAG_decision_category = {
 
 Defines are a particular type of constant that are used within internal calculations only, defined within /Hearts of Iron IV/common/defines/\*.lua files. These cannot be referenced in any other files and are only used within the internal, unchangeable code.
 
-Some of the things included in the defines are that events by default stay for 13 days before auto-selecting the first option or that the ai\_will\_do value is 50% higher for focuses which were unlocked by the just-completed focus. Most defines are numerical in nature, but some can be strings or blocks, such as the end date at which the game over screen appears or the list of experience need for a division to progress to the next level.  
+Some of the things included in the defines are that events by default stay for 13 days before auto-selecting the first option or that the ai\_will\_do value is 50% higher for focuses which were unlocked by the just-completed focus. Most defines are numerical in nature, but some can be strings or blocks, such as the end date at which the game over screen appears or the list of experience need for a division to progress to the next level.
 The list of defines is vast and touches on every mechanic in the game, so if something can't be changed within the mechanic's respective files, it may be worth to check defines. Defines don't include the [Modifiers#Static modifiers](<Modifiers - Hearts of Iron 4 Wiki.md#static-modifiers>), which can serve a similar purpose but with modifier blocks.
 
 As defines are Lua code rather than a PDXscript-interpreted file, any Lua code can go in there, however modules allowing to go out of this directory are not available. As a consequence of this, **there is no need to copy the entire file to edit it**. Defines, including graphical defines, are merely a Lua-contained array, and it is possible to modify a single member of the array in Lua using, for example, `NDefines.NGame.START_DATE = "1936.1.2.12"`. Each of these lines is contained on a separate line and there are no commas separating them, such as the following:
 
 ```text
-NDefines
-.
-NGame
-.
-START_DATE
- 
-=
- 
-"1936.1.2.12"
+NDefines.NGame.START_DATE = "1936.1.2.12"
 
-NDefines
-.
-NGraphics
-.
-COUNTRY_FLAG_TEX_MAX_SIZE
- 
-=
- 
-2048
+NDefines.NGraphics.COUNTRY_FLAG_TEX_MAX_SIZE = 2048
 ```
 
-This goes into a separate file set to be evaluated after the base game defines, which is done by making the filename be later in the alphabetical order (decided by Unicode character IDs). As most Unicode characters (including every uppercase or lowercase letter) have larger IDs than the code used for the number 0, the filename is almost irrelevant.  
-In the base game files, the graphical defines are set to be merged into NDefines in the last line of the base game file. However, since Lua does not create copies of tables by default, the base game's NDefines contains pointers to the actual elements, which are contained within NDefines\_Graphics regardless. For this reason, modifying either NDefines or NDefines\_Graphics works for changing graphical defines.  
+This goes into a separate file set to be evaluated after the base game defines, which is done by making the filename be later in the alphabetical order (decided by Unicode character IDs). As most Unicode characters (including every uppercase or lowercase letter) have larger IDs than the code used for the number 0, the filename is almost irrelevant.
+In the base game files, the graphical defines are set to be merged into NDefines in the last line of the base game file. However, since Lua does not create copies of tables by default, the base game's NDefines contains pointers to the actual elements, which are contained within NDefines\_Graphics regardless. For this reason, modifying either NDefines or NDefines\_Graphics works for changing graphical defines.
 A mod should **never** contain the 00\_defines.lua and 00\_graphics.lua files within of itself: these files are commonly changed even in minor game updates, and having a define missing from a file results in the mod being unstable, potentially having a crash on startup.
 
 ## Flags
@@ -127,9 +111,9 @@ Flags are divided into 5 scopes:
 
 In general, the same principles apply to them with little changes. While unit leader flags exist, these are marked as deprecated and are likely to be removed within the next updates.
 
-A flag can be set in *any* [effect](<Effect - Hearts of Iron 4 Wiki.md>) block. There is no file where flags need to be defined, they will exist if set and stop existing when cleared.  
-The simplest formatting for setting a flag is `set_country_flag = my_flag_name`. This will create the country flag (If it did not exist otherwise) and set it to be a value of 1. *This has no tooltip* and so it will be invisible to the player. [custom\_effect\_tooltip](<Effect - Hearts of Iron 4 Wiki.md#custom-effect-tooltip>) may be used to tell the player that something will be done, if wanting to keep them in the know.  
-Afterwards, that flag can be checked with `has_country_flag = my_flag_name` as a trigger. This is set to be true if the flag was set, regardless of which value it has. This will create a tooltip using the flag's name as the [localisation key](<Localisation - Hearts of Iron 4 Wiki.md>). As such, `my_flag_name: "Has my flag"` will make that appear when the country flag is checked.  
+A flag can be set in *any* [effect](<Effect - Hearts of Iron 4 Wiki.md>) block. There is no file where flags need to be defined, they will exist if set and stop existing when cleared.
+The simplest formatting for setting a flag is `set_country_flag = my_flag_name`. This will create the country flag (If it did not exist otherwise) and set it to be a value of 1. *This has no tooltip* and so it will be invisible to the player. [custom\_effect\_tooltip](<Effect - Hearts of Iron 4 Wiki.md#custom-effect-tooltip>) may be used to tell the player that something will be done, if wanting to keep them in the know.
+Afterwards, that flag can be checked with `has_country_flag = my_flag_name` as a trigger. This is set to be true if the flag was set, regardless of which value it has. This will create a tooltip using the flag's name as the [localisation key](<Localisation - Hearts of Iron 4 Wiki.md>). As such, `my_flag_name: "Has my flag"` will make that appear when the country flag is checked.
 If a flag is no longer useful, it can be cleared by using `clr_country_flag = my_flag_name`, which'll mark it as no longer being set. This also has no tooltip and the player will not be aware unless specifically told with the custom effect tooltip that the flag was cleared.
 
 The exact same principles apply with global, state, and character flags. The only differences are in the used effects/triggers (In which case the word `country` is swapped with the type's name like `set_global_flag`, `has_state_flag`, or `clr_character_flag`) scopes in which they can be set and where they can be checked. For global flags, it can be done in any scope rather than the 'global' scope: it can be set in either country, state, character, or rare other scopes.
@@ -145,13 +129,13 @@ country_event = {
     id = algeria_election.0         # Namespace is assumed to exist.
     title = algeria_election.0.t
     desc = algeria_election.0.desc
-    
+
     is_triggered_only = yes
-    
+
     immediate = {
         set_country_flag = ALG_1936_elect_campaign  # Since set_country_flag has no tooltip, no need to hide it.
     }
-    
+
     option = {
         < ... >                     # Irrelevant what's in the option
     }
@@ -168,11 +152,11 @@ ALG_1936_campaign_category = {         # Decision category is assumed to exist a
         available = {
             has_country_flag = ALG_1936_elect_campaign
         }
-        
+
         icon = ALG_elect
         cost = 50
         fire_only_once = yes
-        
+
         complete_effect = {
             country_event = algeria_election.1
         }
@@ -193,7 +177,7 @@ country_event = {
     id = algeria_election.100         # Namespace is assumed to exist.
     title = algeria_election.100.t
     desc = algeria_election.100.desc
-    
+
     is_triggered_only = yes
     option = {
         name = algeria_election.100.a
@@ -215,7 +199,7 @@ country_event = {
 }
 ```
 
-Note that neither of the effects that modify country flags have tooltips, so [a custom effect tooltip can be used to notify the player](<Effect - Hearts of Iron 4 Wiki.md#effect-tooltips>) in some cases.  
+Note that neither of the effects that modify country flags have tooltips, so [a custom effect tooltip can be used to notify the player](<Effect - Hearts of Iron 4 Wiki.md#effect-tooltips>) in some cases.
 Everything is the exact same for flags of other scope types.
 
 ### Non-boolean usage
@@ -302,7 +286,7 @@ The following console commands exist for debugging variables. In console command
 
 ## Event targets
 
-Event targets serve as a primitive way to set a pointer to a scope (country, state, character) to be referred to later. Any single event target can only point towards a single scope at a time, however a scope may have several event targets at the same time. Similarly to flags, there is no set folder for event targets, they can be assigned in any event block.  
+Event targets serve as a primitive way to set a pointer to a scope (country, state, character) to be referred to later. Any single event target can only point towards a single scope at a time, however a scope may have several event targets at the same time. Similarly to flags, there is no set folder for event targets, they can be assigned in any event block.
 There are two types of event targets: regular and global. The difference between them is purely when they get cleared.
 
 A scope can be checked if it has an event target assigned using `has_event_target = name_of_event_target`.
@@ -311,7 +295,7 @@ A scope can be checked if it has an event target assigned using `has_event_targe
 
 Global event targets can be declared using `save_global_event_target_as = my_event_target` as an effect. This will create the global event target with the name of `my_event_target` and it will last forever. Afterwards, it can be referred to as `event_target:my_event_target`, both as a scope and as a target.
 
-If `save_global_event_target_as = my_event_target` is used when the event target is already set, the event target will change scopes to the one where the effect is used.  
+If `save_global_event_target_as = my_event_target` is used when the event target is already set, the event target will change scopes to the one where the effect is used.
 Additionally, `clear_global_event_target = my_event_target` (to be used in any scope, not necessarily the event target) will clear the specified global event target entirely, while `clear_global_event_targets = ROOT` will clear every global event target from the specified scope.
 
 For example, by using [start\_civil\_war](<Effect - Hearts of Iron 4 Wiki.md#start-civil-war>) as an effect block, the following will assign the TAG\_democratic\_side event target to the revolter:
@@ -434,8 +418,8 @@ in common\country\_tag\_aliases\tag\_aliases.txt add
 
 ```text
 INA = {                                  #new tag
-	original_tag = INS
-	has_government = monarchism     #change monarchism to democratic etc to define which faction you want
+    original_tag = INS
+    has_government = monarchism     #change monarchism to democratic etc to define which faction you want
 }
 ```
 
@@ -444,13 +428,13 @@ The INA tag above will be functional without any other changes e.g. `INA = { add
 using a limit
 
 ```text
-        if = {                                          ## Put this inside completion reward in a focus to create a custom cosmetic tag for a dynamic country, 
-	limit = { 					##checks both conditions below match
-		any_country = { original_tag = INS } 	##INS is original country Tag
-		NOT = { has_government = democratic } 	## democratic/neutrality etc is government type change it to usually the government type of the original country or  , custom ideologies can be used here too.
-		}					##  if the civil war has  MORE than 2 factions of differing government types  copy the NOT line and enter the third factions government type. 
-	set_cosmetic_tag = INA				## set any country matching the above conditions to cosmetic tag INA that can be used.
-	}
+        if = {                                          ## Put this inside completion reward in a focus to create a custom cosmetic tag for a dynamic country,
+    limit = { 					##checks both conditions below match
+        any_country = { original_tag = INS } 	##INS is original country Tag
+        NOT = { has_government = democratic } 	## democratic/neutrality etc is government type change it to usually the government type of the original country or  , custom ideologies can be used here too.
+        }					##  if the civil war has  MORE than 2 factions of differing government types  copy the NOT line and enter the third factions government type.
+    set_cosmetic_tag = INA				## set any country matching the above conditions to cosmetic tag INA that can be used.
+    }
 ```
 
 To Change a Dynamic country Name the name file you need is \localisation\countries\_cosmetic\_l\_english.yml
@@ -464,12 +448,7 @@ add the below lines (rename inside " " to suit your needs)
 
 ## Variables
 
-A variable within Hearts of Iron IV is a signed 32-bit fixed point number with scaling of 
-
-1
-1000
-{\displaystyle {\frac {1}{1000}}}
-![{\displaystyle {\frac {1}{1000}}}](media/data-structures-hearts-of-iron-4-wiki_6e1fd6f20a__img3.svg). As such, it ranges from -2 147 483.648 to 2 147 483.647. Adding further amounts above or below the variable will result in an [overflow](http://en.wikipedia.org/wiki/Integer_overflow), causing the value go from the maximum to the minimum or vice-versa.
+{\displaystyle {\frac {1}{1000}}}. As such, it ranges from -2 147 483.648 to 2 147 483.647. Adding further amounts above or below the variable will result in an [overflow](http://en.wikipedia.org/wiki/Integer_overflow), causing the value go from the maximum to the minimum or vice-versa.
 
 Variables are not stored within any particular file and can be created dynamically with any [effect](<Effect - Hearts of Iron 4 Wiki.md>) or (temporary variables-only) trigger. Each database object (such as countries, states, ideas, or even equipment types) has a unique internal numeric ID, which can be assigned to a variable. For example, setting a variable's value to a country tag will make it take on the ID of the tag, and then the variable will be taken as a country when used as a target or as a scope. For [tokenizable database types](#token-valued-variables), a `token:` prefix is necessary when assigning a literal, for example: `var_name = token:some_idea_name`.
 
@@ -488,7 +467,7 @@ There are two types of variables: regular and temporary. There are the following
 
 ### Scoping
 
-**Scoping only exists for regular variables.** They can and must be assigned to countries, states, characters, and to the global scope.  
+**Scoping only exists for regular variables.** They can and must be assigned to countries, states, characters, and to the global scope.
 If nothing else is specified, the current scope, or [THIS](<Scopes - Hearts of Iron 4 Wiki.md#this>), is used as the scope of the variable. For example, `ABC = { set_variable = { my_var = 1 } }` will set the variable with the name of my\_var within the scope of ABC. `CBA = { check_variable = { my_var = 1 } }` would then come up as false, since it checks for the variable only within CBA, while the variable is set in ABC.
 
 The scope where the variable is read can be changed by prepending any [dual scope](<Scopes - Hearts of Iron 4 Wiki.md#dual-scopes>) that can be used as a target and can be used in any scope (For example, character scopes can not be prepended before variable because character scopes are not any-scoping scopes, which means they can not be used in other character scopes.) before the variable's name, separated with a dot, such as `PREV.PREV.var_name` being the value of `var_name` as checked for `PREV.PREV` or `event_target:my_event_target.var_name`. This also includes `global` in order to assign it globally, **which is necessary to scope into global**. Other variables, if pointing to a scope, can also be used, but the `var:` is unneeded. Variables must be chained using the `:` separator (rather than the usual dot), such as `ABC.capital:var_name` being the variable `var_name` as it's assigned to the capital state of the country ABC, where `capital` is a built-in variable pointing to the capital state of the country. Note that the scope specifier preceding `capital` is separated from it by a `.` since it is a static (that is, non-variable) scope. The way to intuit this syntax is that the whole `ABC.capital` clause forms a variable scope specifier, in which `var_name` is accessed.
@@ -527,15 +506,15 @@ In this case, each state has a `weighted_manpower` variable which is equal to th
 
 **Only temporary variables can be modified within a trigger block.** Regular variables can only be used in effects, while temporary can be used in both triggers and effects.
 
-However, there's one aspect of triggers that's important to know: *when* each scope stops evaluating. If a scope stops evaluating, then the variable will not be modified anymore. In general, [trigger scopes](<Scopes - Hearts of Iron 4 Wiki.md#trigger-scopes>) that can select multiple targets are divided into two groups: `all_<scope type>` and `any_<scope type>`. The first group, requiring all targets to meet triggers, evaluates each target in order and stops when it encounters one where the triggers aren't met. The second group, requiring any target to meet triggers, evaluates each target and stops when it encounters a true one.  
+However, there's one aspect of triggers that's important to know: *when* each scope stops evaluating. If a scope stops evaluating, then the variable will not be modified anymore. In general, [trigger scopes](<Scopes - Hearts of Iron 4 Wiki.md#trigger-scopes>) that can select multiple targets are divided into two groups: `all_<scope type>` and `any_<scope type>`. The first group, requiring all targets to meet triggers, evaluates each target in order and stops when it encounters one where the triggers aren't met. The second group, requiring any target to meet triggers, evaluates each target and stops when it encounters a true one.
 Empty trigger blocks are considered true by default, so one would instantly stop the validation of the second group (`any_` triggers). For this reason, [since scope limits are not supported in trigger scopes](<Scopes - Hearts of Iron 4 Wiki.md#scope-limits>), then the proper usage for modifying temp variables would be an if statement that modifies the variable if the limit is met with no other triggers that can come up as true or false coming up.
 
 ### Localisation
 
 *Parts of this section are transcluded from [Localisation § Formatting variables](<Localisation - Hearts of Iron 4 Wiki.md#formatting-variables>)*
 
-In order to display the value of a variable in localisation, `[?var_name]` is used, with the question mark signifying that it's a variable. **The question mark is mandatory** in order to distinguish the variable from the event targets. For example, such a localisation value will work:  `var_value_tt: "There are [?num_of_dogs] dog(s) in the country"`  
-By default, the scope where this is used gets assumed. Scoping works the same way as it does with variables regularly:  `GER_var_value_tt: "There are [?GER.num_of_dogs] dog(s) in [GER.GetNameWithFlag]"`  
+In order to display the value of a variable in localisation, `[?var_name]` is used, with the question mark signifying that it's a variable. **The question mark is mandatory** in order to distinguish the variable from the event targets. For example, such a localisation value will work:  `var_value_tt: "There are [?num_of_dogs] dog(s) in the country"`
+By default, the scope where this is used gets assumed. Scoping works the same way as it does with variables regularly:  `GER_var_value_tt: "There are [?GER.num_of_dogs] dog(s) in [GER.GetNameWithFlag]"`
 When the variable is a scope by itself, the question mark is still mandatory to use to distinguish from event targets:  `target_tt: "The target country is [?target_country.GetName]"`. **Variables can only be displayed in UI that supports dynamic localisation**, otherwise it will appear exactly as in the localisation file. List of such UI elements and necessary conditions for them to support dynamic localisation can be found in [Localisation § Namespaces](<Localisation - Hearts of Iron 4 Wiki.md#namespaces>).
 
 If the variable points to a certain address with more localised text, such as a country, namespaces can be used in the same manner as with a regular tag or event target:  `most_dogs_tt: "[?most_dogs.GetNameDefCap] has the most dogs out of any country."` Question marks are still mandatory to include in this case.
@@ -580,47 +559,17 @@ Any unrecognised symbols will neither change how the variable is localised nor g
 Some examples of formatting characters in usage:
 
 ```text
-l_english
-loc_key
-"Democratic
- 
-party
- 
-popularity:
- 
-[?party_popularity@democracy|%G0]"
- 
-
- 
-loc_key_2
-"Modifier
- 
-token's
- 
-value:
- 
-[?modifier@my_modifier|.1%%+]"
-
- 
-pol_power_trigger_tt
-"Has
- 
-more
- 
-than
- 
-[?var_name|Y]
- 
-political
- 
-power"
+l_english:
+loc_key: "Democratic party popularity: [?party_popularity@democracy|%G0]"
+loc_key_2: "Modifier token's value: [?modifier@my_modifier|.1%%+]"
+pol_power_trigger_tt: "Has more than [?var_name|Y] political power"
 ```
 
 Within these examples, the first string depicts the current scope's democratic popularity as a percentage multiplied by 100 (%), in green (G), rounded to a whole number with 0 decimals (0). The second string displays the `my_modifier` [modifier token](<Modifiers - Hearts of Iron 4 Wiki.md#modifier-tokens>)'s value as a 'good' number (+ making it green if positive, red if negative), with a percentage sign appended in the end (%%) and rounded to a number with one decimal (.1). The third string displays the variable in yellow colouring (as is common in the base game's tooltips), leaving it unchanged otherwise.
 
 By default, variable-related arguments such as `set_variable` or `check_variable` do not have a tooltip. For *some* of these arguments, such as `add_to_temp_variable`, it is possible to set a tooltip with an optional `tooltip = localisation_key` argument within. Others, such as `check_variable`, do not support this and a custom tooltip must be used instead, whether it's for [effects](<Effect - Hearts of Iron 4 Wiki.md#tooltip-manipulation>) or for [triggers](<Triggers - Hearts of Iron 4 Wiki.md#custom-trigger-tooltip>).
 
-This tooltip argument is notable since the value of that localisation key allows using two [strictly-internal variables](<Localisation - Hearts of Iron 4 Wiki.md#nested-strings>) marked with dollar signs: `$LEFT$` and `$RIGHT$`.  
+This tooltip argument is notable since the value of that localisation key allows using two [strictly-internal variables](<Localisation - Hearts of Iron 4 Wiki.md#nested-strings>) marked with dollar signs: `$LEFT$` and `$RIGHT$`.
 `$LEFT$` represents the variable's value before the operation, while `$RIGHT$` represents the variable's value after the operation. This can be used to let the player know the current and/or the potential value of the variable in the same localisation key without taking up more space with `custom_effect_tooltip`.
 
 Here's an example of it being done:
@@ -1030,7 +979,7 @@ The following is a list of variable-related effects and triggers. Variable-modif
 
 ### Usage examples
 
-A common usage for variables is to grant a more 'complex' effect or a trigger. This is best done with temporary variables, as they can be set in either triggers or effects and they're not bound to scopes making operations on them more simple.  
+A common usage for variables is to grant a more 'complex' effect or a trigger. This is best done with temporary variables, as they can be set in either triggers or effects and they're not bound to scopes making operations on them more simple.
 For example, the following can take 0.1% of every controlled state's population and add it directly to the manpower pool if the country has more democratic party support than fascist and communist party support combined:
 
 ```text
@@ -1039,12 +988,12 @@ if = {
         set_temp_variable = { fascom_pop = party_popularity@fascism }
         add_to_temp_variable = { fascom_pop = party_popularity@communism }
         check_variable = { party_popularity@democratic > fascom_pop }   # Completely hidden from the player.
-        
+
     }                                                                   # 'limit = {}' is always hidden so it doesn't matter here, but use custom_trigger_tooltip when wanting the player to be aware.
     hidden_effect = {   # Every controlled state can look weird to the player otherwise.
         set_temp_variable = { temp_manpower = 0 }   # Optional, can be omitted as variables are assumed to be 0 if unset.
         every_controlled_state = {
-            add_to_temp_variable = { temp_manpower = state_population_k } # Executed in the state's scope, so state_population_k is of the state. 
+            add_to_temp_variable = { temp_manpower = state_population_k } # Executed in the state's scope, so state_population_k is of the state.
         }                                                                 # Temp variables are unscoped so it doesn't matter where they're edited.
     }                                                                     # For regular varibles, "add_to_variable" would need to scope into the correct country such as with "PREV.temp_manpower".
     add_manpower = var:temp_manpower # 'add_manpower = temp_manpower' also works
@@ -1070,7 +1019,7 @@ if = {
 }
 ```
 
-Additionally, it is common for a variable to be a counter of something within a mechanic. For example, let CAN\_beavers be a counter of beavers within the country.  
+Additionally, it is common for a variable to be a counter of something within a mechanic. For example, let CAN\_beavers be a counter of beavers within the country.
 When using variables in this sense, **it is better to use [scripted effects](<Effect - Hearts of Iron 4 Wiki.md#scripted-effects>) to modify them**, in order to make changes to the variable easier. For example, a small gain in beavers could be the following:
 
 ```text
@@ -1089,10 +1038,10 @@ CAN_beavers_calibrate = {
         min = 0
         max = 2000
     }
-    
+
     set_variable = { CAN_beavers_modifier = CAN_beavers }
     divide_variable = { CAN_beavers_modifier = 1000 }   # Another variable tied to the base value, as long as the scripted effect is called upon each change of CAN_beavers.
-    
+
     if = {
         limit = {
             check_variable = { CAN_beavers = 0 }
@@ -1120,7 +1069,7 @@ Remember that variables are not necessarily used as numbers only. For example, t
 
 ### MTTH variables
 
-MTTH variables allow to dynamically create a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#mtth-blocks>) to be used as a variable. These are stored within /Hearts of Iron IV/common/mtth/\*.txt files, where each MTTH variable is a separate block, the name of which gets taken as the MTTH variable.  
+MTTH variables allow to dynamically create a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#mtth-blocks>) to be used as a variable. These are stored within /Hearts of Iron IV/common/mtth/\*.txt files, where each MTTH variable is a separate block, the name of which gets taken as the MTTH variable.
 As per the name, the MTTH variables serve as a MTTH block, so everything that applies to MTTH blocks applies here: The starting base is defined with `factor` or `base` and then each `modifier = { ... }` begin a trigger block needed to be fulfilled for the `add` (for adding) or/and `factor` (for multiplying) within to be applied.
 For example, the following is an example of a /Hearts of Iron IV/common/mtth/\*.txt file:
 
@@ -1285,7 +1234,7 @@ Technically, any raw token used in the language can actually be tokenized: for i
 
 *This section is transposed from [Modifiers § Modifier definitions](<Modifiers - Hearts of Iron 4 Wiki.md#modifier-tokens>)*
 
-Modifier definitions allow the creation of a custom modifier, which can be accessed as a variable when you wish to use it. After being defined, they function entirely like a new variable, being possible to read as a variable with the same `modifier@modifier_name` procedure. They will not have any effect by default and function only as a way to change the variable's value in an additive way with modifier blocks.  
+Modifier definitions allow the creation of a custom modifier, which can be accessed as a variable when you wish to use it. After being defined, they function entirely like a new variable, being possible to read as a variable with the same `modifier@modifier_name` procedure. They will not have any effect by default and function only as a way to change the variable's value in an additive way with modifier blocks.
 Each modifier token is defined within /Hearts of Iron IV/common/modifier\_definitions/\*.txt files as a separate code block, where the name of the code block serves as the ID of the modifier definition. There are the following arguments that can go inside of it:
 
 - `color_type = good` decides the colour of the modifier's value itself. There are three values, `good`, `bad`, and `neutral`. `neutral` is permamently yellow, while `good` turns the positive values **green** and negative values **red**. `bad` is the reversal of `good`.
@@ -1306,13 +1255,13 @@ The modifier definition's ID is also used as the [localisation](<Localisation - 
 
 ```text
 modifier_definition_example = {
-	color_type = good
-	value_type = number
-	precision = 1
-	postfix = daily
-	
-	category = country
-	category = state
+    color_type = good
+    value_type = number
+    precision = 1
+    postfix = daily
+
+    category = country
+    category = state
 }
 modifier_definition_example_2 = {
     color_type = bad
@@ -1330,7 +1279,7 @@ Example usage of making a modifier token create civilian factories in random cor
 
 ## Arrays
 
-Arrays are similar to variables, but they instead store a collection of variables.  
+Arrays are similar to variables, but they instead store a collection of variables.
 An array in the game is structured with indexes starting from 0. `arrayname^0` as a variable refers to the first item of `arrayname`, `arrayname^1` refers to the second item in the array, and so on. In order to obtain the total amount of items within the given array, `arrayname^num` is used. An array is assumed to have no elements by default, if not already created, with [add\_to\_array or add\_to\_temp\_array](#add-to-array) usually being used to create an array.
 
 Temporary and regular arrays exist, with the same distinction between them as in variables: temp arrays can be set and modified in triggers and effects, are unscoped, and cleared after the effect/trigger block ends; regular arrays can only be set or modified in effects, are linked to a specific scope, and persist forever until cleared manually.
@@ -1622,7 +1571,7 @@ Meanwhile, the following triggers exist that are array-related. As with variable
     all_of_scopes = {
         array = global.majors
         tooltip = has_more_states_than_every_other_major_tt
-        OR = { 
+        OR = {
             tag = PREV
             check_variable = { num_owned_controlled_states < PREV.num_owned_controlled_states }
         }
@@ -1881,23 +1830,23 @@ For example, the following is a scorer that sorts every major country depending 
 
 ```text
 asian_countries_owned_states_scorer = {
-	majors_owned_states = {
-		targets = {
-			target_array = global.countries
-			target_trigger = {
-				FROM = {
-					capital_scope = {
-						is_on_continent = asia
-					}
-				}
-			}
-			score = {
-				modifier = {
-					add = num_owned_states
-				}
-			}
-		}
-	}
+    majors_owned_states = {
+        targets = {
+            target_array = global.countries
+            target_trigger = {
+                FROM = {
+                    capital_scope = {
+                        is_on_continent = asia
+                    }
+                }
+            }
+            score = {
+                modifier = {
+                    add = num_owned_states
+                }
+            }
+        }
+    }
 }
 ```
 
@@ -1973,15 +1922,15 @@ Within the scorer file:
 
 ```text
 infantry_equipment_scorer = {
-	targets = {
-		target_array = global.countries
-		targets_dynamic = yes
-		score = {
-		    modifier = {
-		    	add = num_equipment@infantry_equipment
-		    }
-		}
-	}
+    targets = {
+        target_array = global.countries
+        targets_dynamic = yes
+        score = {
+            modifier = {
+                add = num_equipment@infantry_equipment
+            }
+        }
+    }
 }
 ```
 
@@ -1989,17 +1938,17 @@ Within an effect block:
 
 ```text
 ROOT = {
-	get_sorted_scored_countries_temp = {
-		scorer = infantry_equipment_scorer
-		array = scored_array
-		scores = scored_values
-	}
+    get_sorted_scored_countries_temp = {
+        scorer = infantry_equipment_scorer
+        array = scored_array
+        scores = scored_values
+    }
 
-	for_loop_effect = {
-		end = scored_array^num
-		value = s
-		log = "[?scored_array^s.GetName] had inf equipment [?scored_values^s]"
-	}
+    for_loop_effect = {
+        end = scored_array^num
+        value = s
+        log = "[?scored_array^s.GetName] had inf equipment [?scored_values^s]"
+    }
 }
 ```
 

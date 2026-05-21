@@ -147,91 +147,19 @@ SCO = {
 }
 ```
 
-`color` will overwrite the country's colour on the political map, while `color_ui` will be used externally, such as in the map generated with the `^Ctrl` + `F10` hotkey or the history viewer tool in /Hearts of Iron IV/tools/history\_viewer/. Colours may also be specified in the [HSV color model](http://en.wikipedia.org/wiki/HSL_and_HSV), in which case `rgb` will need to be replaced with `hsv`. The `color_ui` is also used in order to colour in the background of the country's division counter, if the option is set to be country-specific. If a country doesn't have a color\_ui entry, it defaults to a grey colour.  
+`color` will overwrite the country's colour on the political map, while `color_ui` will be used externally, such as in the map generated with the `^Ctrl` + `F10` hotkey or the history viewer tool in /Hearts of Iron IV/tools/history\_viewer/. Colours may also be specified in the [HSV color model](http://en.wikipedia.org/wiki/HSL_and_HSV), in which case `rgb` will need to be replaced with `hsv`. The `color_ui` is also used in order to colour in the background of the country's division counter, if the option is set to be country-specific. If a country doesn't have a color\_ui entry, it defaults to a grey colour.
 In HSV, hue, saturation, and value are each on the scale from 0 to 1, using decimals to show the value.
 
-After reading the colour from the file, the saturation and value of the colour will be multiplied by 0.6 and 0.8 respectively by default. This means the colour appearing in-game will be slightly darker and less saturated (closer to a shade of grey) than defined in the file. In order to have a country colour in HSV have a higher saturation or value than 0.6 or 0.8 respectively, a value larger than 1 can be used as long as it'll end up between 0 and 1 after the application of modifiers. For example, a pure red country colour can be simulated in HSV with `color = hsv { 0 1.66 1.25 }`. After applying the offsets, this will result in a saturation of 0.996 and a value of 1, being as close to pure red as possible.   
-For RGB, this calculation is harder: "Saturation" defines the difference between the colour with the largest value and the others (changing it does not change the largest colour's value), while "Value" manifests in multiplying every colour's value by that. For replicating a desired value, let 
-
-V
-
-M
-{\displaystyle V\_{M}}
-![{\displaystyle V_{M}}](media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img1.svg) represent the maximum value of colour. As such, each colour's value, originally 
-
-V
-{\displaystyle V}
-![{\displaystyle V}](media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img2.svg), by default should be 
-
-5
-12
-
-(
-
-5
-V
-−
-2
-
-V
-
-M
-)
-{\displaystyle {\frac {5}{12}}\left(5V-2V\_{M}\right)}
-![{\displaystyle {\frac {5}{12}}\left(5V-2V_{M}\right)}](media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img3.svg). With arbitrary Value/Saturation modifiers (represented with 
-
-M
-
-V
-{\displaystyle M\_{V}}
-![{\displaystyle M_{V}}](media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img4.svg) and 
-
-M
-
-S
-{\displaystyle M\_{S}}
-![{\displaystyle M_{S}}](media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img5.svg)), it's 
-
-1
-
-M
-
-V
-
-(
-
-V
-
-M
-
-S
-+
-
-V
-
-M
-∗
-
-M
-
-S
-−
-1
-
-M
-
-S
-)
-{\displaystyle {\frac {1}{M\_{V}}}\left({\frac {V}{M\_{S}}}+V\_{M}\*{\frac {M\_{S}-1}{M\_{S}}}\right)}
-![{\displaystyle {\frac {1}{M_{V}}}\left({\frac {V}{M_{S}}}+V_{M}*{\frac {M_{S}-1}{M_{S}}}\right)}](media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img6.svg). For example, pure green (i.e. what `rgb { 0 255 0 }` intends), would be represented well with `rgb { -107 425 -107 }` plugging numbers into that formula. Indeed, entering this value into the game, the result is exactly pure green, far closer to it than `rgb { 0 255 0 }` or `rgb { 0 425 0 }` are.  
+After reading the colour from the file, the saturation and value of the colour will be multiplied by 0.6 and 0.8 respectively by default. This means the colour appearing in-game will be slightly darker and less saturated (closer to a shade of grey) than defined in the file. In order to have a country colour in HSV have a higher saturation or value than 0.6 or 0.8 respectively, a value larger than 1 can be used as long as it'll end up between 0 and 1 after the application of modifiers. For example, a pure red country colour can be simulated in HSV with `color = hsv { 0 1.66 1.25 }`. After applying the offsets, this will result in a saturation of 0.996 and a value of 1, being as close to pure red as possible.
+For RGB, this calculation is harder: "Saturation" defines the difference between the colour with the largest value and the others (changing it does not change the largest colour's value), while "Value" manifests in multiplying every colour's value by that. For replicating a desired value, let `V_M` represent the maximum value of colour. As such, each colour's value, originally `V`, by default should be `{\\displaystyle {\\frac {5}{12}}\\left(5V-2V_M\\right)}`. With arbitrary Value/Saturation modifiers (represented with `M_V` and `M_S`), it's `{\\displaystyle {\\frac {1}{M_V}}\\left({\\frac {V}{M_S}}+V_M*{\\frac {M_S-1}{M_S}}\\right)}`. For example, pure green (i.e. what `rgb { 0 255 0 }` intends), would be represented well with `rgb { -107 425 -107 }` plugging numbers into that formula. Indeed, entering this value into the game, the result is exactly pure green, far closer to it than `rgb { 0 255 0 }` or `rgb { 0 425 0 }` are.
 These modifiers do not get applied when using the `tag_color` console command.
 
 ## History
 
-Create a file in the <yourmod>/history/countries folder. Alternatively, copy, rename, and edit a similar file. The filename typically follows the format of `TAG - country name.txt`, e.g. "SCO - Scotland.txt". The important aspect is that the **first three letters of the filename must be the same as the country's tag** in order to be loaded, without taking capitalisation into account. Everything after the tag is purely a comment and can be made into anything: "SCO - Bahrain.txt" will work just as well for SCO as would "SCO\_qatar.txt".  
+Create a file in the <yourmod>/history/countries folder. Alternatively, copy, rename, and edit a similar file. The filename typically follows the format of `TAG - country name.txt`, e.g. "SCO - Scotland.txt". The important aspect is that the **first three letters of the filename must be the same as the country's tag** in order to be loaded, without taking capitalisation into account. Everything after the tag is purely a comment and can be made into anything: "SCO - Bahrain.txt" will work just as well for SCO as would "SCO\_qatar.txt".
 This file contains information about the starting attributes of the country for each scenario, such as the capital and the ruling party. They serve as an effect block, so most effects can be used within of them. **These files get executed in the order of the countries in the country\_tags file,** which may come into play for subjects, as puppeting changes party popularity.
 
-A country may have more than one history file, in which case each one will be used.  
+A country may have more than one history file, in which case each one will be used.
 As a note, **any unnecessary closing bracket will stop the execution of the file prematurely**, leading anything afterwards to not be read. If nothing in the history file after a certain point applies, this is likely the cause.
 
 `capital = 121` defines the capital state. The province with the most victory points within that state will get used as the capital. In case of overlap, the lowest province ID out of the possible choices gets chosen. In this case, 121 is the state Lothian, which contains Edinburgh as the largest victory point. To reiterate, **this must be a state ID, not a province ID.**
@@ -359,7 +287,7 @@ ENG = {
 
 **Since the history files get loaded in a specific order, it is preferable to put it in the subject's history file, as to avoid the case where the overlord's file gets loaded after the subject's, which'll make the puppeting reset the politics of the subject. For this reason, `set_autonomy` must also be set before the political party and popularities of the subject.** The if statement is there to ensure that the integrated puppet is only there with ![Together for Victory](media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img17.png)Together for Victory, as that autonomous state is not available otherwise. A list of autonomous states can be found in /Hearts of Iron IV/common/autonomous\_states/\*.txt files.
 
-A faction can be created with `create_faction = localisation_key`. The localisation key will be used to define the name of the faction, defined in any <yourmod>/localisation/english/\*\_l\_english.yml file.  
+A faction can be created with `create_faction = localisation_key`. The localisation key will be used to define the name of the faction, defined in any <yourmod>/localisation/english/\*\_l\_english.yml file.
 Members are added to the faction with `add_to_faction = IRE` within the faction leader's history file. Although puppets usually get added to the faction automatically, it is recommended to add them manually as well.
 
 In order to use technology sharing groups, `add_to_tech_sharing_group = my_tech_group` can be used in each country's history file. This requires the ![Together for Victory](media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img18.png)Together for Victory DLC check (always positive) in order to work properly. Technology groups are defined in /Hearts of Iron IV/common/technology\_sharing/\*.txt files. [Additional details on the technology groups can be found on the dedicated article](<Technology modding - Hearts of Iron 4 Wiki.md#technology-sharing-groups>).
@@ -437,7 +365,7 @@ In order to assign a part of the history file to only apply on start dates later
 }
 ```
 
-In particular, this would *replace* the used order of battle with /Hearts of Iron IV/history/units/SCO\_1939.txt and *add* atomic\_research, nuclear\_reactor, and nukes technologies to the ones the country already has researched.  
+In particular, this would *replace* the used order of battle with /Hearts of Iron IV/history/units/SCO\_1939.txt and *add* atomic\_research, nuclear\_reactor, and nukes technologies to the ones the country already has researched.
 This will only apply on the start dates that are **strictly** later than the defined timestamp.
 
 #### Useful effects
@@ -454,8 +382,8 @@ In order to replace the country leader, the [promote\_character effect](<Effect 
 
 ## Flag
 
-The flags representing a country are stored in /Hearts of Iron IV/gfx/flags and its subfolders. Each country needs at least 3 flags. Each flag is commonly used in the UI, most notably the regular flag is used when viewing the country in the diplomacy menu or in the top-left corner of the screen, while the medium and small flags are used for divisions and in [localisation](<Localisation - Hearts of Iron 4 Wiki.md#getflag>); the flags get automatically assigned to countries based on the flag's filename.  
-Each flag needs to be a [TGA-file](http://en.wikipedia.org/wiki/Truevision_TGA) with the name of the country tag and, optionally, the ideology group that the flag is assigned to. **The flag file format is uncompressed 32-bit ARGB.** In this case, "32-bit", "32 bits per pixel (bpp)", and "32 bitdepth" have the exact same meaning. In some editors where the bitdepth isn't settable when exporting but rather static without allowing the user to draw anything that the bitdepth doesn't allow, 32-bit means the RGB image mode alongside an alpha channel used for transparency present within the image. If it is 24-bit (meaning there is no alpha channel), the file will load but throw an error stating that it'll slow down the game and that it's recommended to use 32bpp.  
+The flags representing a country are stored in /Hearts of Iron IV/gfx/flags and its subfolders. Each country needs at least 3 flags. Each flag is commonly used in the UI, most notably the regular flag is used when viewing the country in the diplomacy menu or in the top-left corner of the screen, while the medium and small flags are used for divisions and in [localisation](<Localisation - Hearts of Iron 4 Wiki.md#getflag>); the flags get automatically assigned to countries based on the flag's filename.
+Each flag needs to be a [TGA-file](http://en.wikipedia.org/wiki/Truevision_TGA) with the name of the country tag and, optionally, the ideology group that the flag is assigned to. **The flag file format is uncompressed 32-bit ARGB.** In this case, "32-bit", "32 bits per pixel (bpp)", and "32 bitdepth" have the exact same meaning. In some editors where the bitdepth isn't settable when exporting but rather static without allowing the user to draw anything that the bitdepth doesn't allow, 32-bit means the RGB image mode alongside an alpha channel used for transparency present within the image. If it is 24-bit (meaning there is no alpha channel), the file will load but throw an error stating that it'll slow down the game and that it's recommended to use 32bpp.
 If the origin point is set to top left rather than bottom left, the image will appear flipped upside down. This can be common within online converters. Instead, it's better to use a more configurable image editor in order to convert files to TGA, such as [Paint.net](https://getpaint.net/), [GIMP](https://gimp.org/), or [Photoshop](https://adobe.com/products/photoshop.html).
 
 There are two ways to name a flag:
@@ -490,43 +418,14 @@ Localisation, such as the country name, is defined in the <yourmod>/localisation
 Within the file, localisation can be added accordingly:
 
 ```text
-l_english
-SCO
-"Scotland"
-                               
+l_english:
+SCO: "Scotland"
 #Non-ideology name, primarily used for collaboration governments and as a fallback if an ideology group-specific one doesn't exist.
-
- 
-SCO_DEF
-"Scotland"
-
- 
-SCO_ADJ
-"Scottish"
-
- 
-SCO_democratic
-"Republic
- 
-of
- 
-Scotland"
-
- 
-SCO_democratic_DEF
-"the
- 
-Republic
- 
-of
- 
-Scotland"
-
- 
-SCO_democratic_ADJ
-"Scottish"
-
- 
+SCO_DEF: "Scotland"
+SCO_ADJ: "Scottish"
+SCO_democratic: "Republic of Scotland"
+SCO_democratic_DEF: "the Republic of Scotland"
+SCO_democratic_ADJ: "Scottish"
 <...>
 ```
 
@@ -537,68 +436,26 @@ The \_DEF and \_ADJ suffixes may be added. The suffixes serve the following purp
 - \_ADJ: The adjective form for the country. Used with the [TAG.GetAdjective] localisation command.
 - \_DEF: The definition form for the country. Used with the [TAG.GetNameDef] localisation command and when hovering over the state on the world map as the owner/controller. In base game, it's most commonly the same as the country's regular name but with "the " (Beginning with a lowercase letter as [TAG.GetNameDefCap] exists for otherwise) inserted in the beginning *if needed*. Due to widespread use of this localisation command within generic events and decisions, this is essentially mandatory to define.
 
-By changing each instance of English to the corresponding language, including the filename, the folder, and the first line of the file, it is also possible to make the name for different languages, including and limited to Brazilian Portuguese (l\_braz\_por instead of l\_english), French, German, Polish, Russian, Spanish, and Japanese.  
+By changing each instance of English to the corresponding language, including the filename, the folder, and the first line of the file, it is also possible to make the name for different languages, including and limited to Brazilian Portuguese (l\_braz\_por instead of l\_english), French, German, Polish, Russian, Spanish, and Japanese.
 Additionally, there are other cosmetic versions of the country's name that can apply automatically that can be mixed together:
 
 ```text
-l_english
-SCO_liberalism
-"Federal
- 
-Republic
- 
-of
- 
-Scotland"
-                         
+l_english:
+SCO_liberalism: "Federal Republic of Scotland"
 # Applies when the country has a specific ideology type, commonly called sub-ideologies in community jargon.
-
- 
-SCO_subject
-"$OVERLORDADJ$
- 
-Scotland"
-                                  
+SCO_subject: "$OVERLORDADJ$ Scotland"
 # Applies when the country is a subject of any other country.
-
- 
-SCO_IRE_subject
-"Alba"
-                                                
+SCO_IRE_subject: "Alba"
 # Applies when the country is a subject of a specific another country.
-
- 
-SCO_autonomy_dominion
-"Dominion
- 
-of
- 
-Scotland"
-                          
+SCO_autonomy_dominion: "Dominion of Scotland"
 # Applies when the country has the specified autonomy type with any other country as overlord.
-
- 
-SCO_IRE_democratic_autonomy_integrated_puppet
-"Most
- 
-Northern
- 
-Ireland"
- 
+SCO_IRE_democratic_autonomy_integrated_puppet: "Most Northern Ireland"
 # Example of mixing these together. Must be in the country-ideology-autonomy order.
-
- 
-COUNTRY_SCO_autonomy_dominion
-"Comhairle
- 
-nan
- 
-$NONIDEOLOGY$"
-           
+COUNTRY_SCO_autonomy_dominion: "Comhairle nan $NONIDEOLOGY$"
 # The first tag can be replaced with COUNTRY to apply to a generic country.
 ```
 
-IDs of autonomous states can be found within /Hearts of Iron IV/common/autonomous\_states/\*.txt files, while the names of ideology types can be found in /Hearts of Iron IV/common/ideologies/\*.txt files.  
+IDs of autonomous states can be found within /Hearts of Iron IV/common/autonomous\_states/\*.txt files, while the names of ideology types can be found in /Hearts of Iron IV/common/ideologies/\*.txt files.
 The country names are applied with the following priority:
 
 - Autonomous state with a specific country as overlord
@@ -635,45 +492,13 @@ A localisation key for the regular name follows the `TAG_ideology_party` format,
 Some other localisation keys that support similar country prefixing, such as division experience titles or idea/advisor names. Example localisation file with party/equipment renaming:
 
 ```text
-l_english
-SCO_communism_party
-"SCP"
-
-  
-SCO_communism_party_long
-"Scottish
- 
-Communist
- 
-Party"
-
-  
-SCO_neutrality_party
-"True
- 
-Scotsman"
- 
+l_english:
+SCO_communism_party: "SCP"
+SCO_communism_party_long: "Scottish Communist Party"
+SCO_neutrality_party: "True Scotsman"
 # The long name will re-use this
-
-  
-SCO_artillery_equipment
-"Armata
- 
-75mm
- 
-wz.
- 
-31
- 
-St."
-
-  
-SCO_artillery_equipment_short
-"75mm
- 
-wz.
- 
-31"
+SCO_artillery_equipment: "Armata 75mm wz. 31 St."
+SCO_artillery_equipment_short: "75mm wz. 31"
 ```
 
 ## Starting characters
@@ -720,7 +545,7 @@ In order to appear, a character **must** be recruited in the history file of the
 recruit_character = SCO_ronald_mcdonald
 ```
 
-If multiple country leaders fall under the same political party, the game will place the first-recruited one as its leader. Since `set_politics = { ... }` forces a leader of the specified ideology group to come to power, any characters recruited after a `set_politics` block will not immediately become country leader since the country already has one: **recruitment of the intended country leader must be before setting politics**.   
+If multiple country leaders fall under the same political party, the game will place the first-recruited one as its leader. Since `set_politics = { ... }` forces a leader of the specified ideology group to come to power, any characters recruited after a `set_politics` block will not immediately become country leader since the country already has one: **recruitment of the intended country leader must be before setting politics**.
 Corps commanders, field marshals, admirals, and advisors are also regarded as characters in the in-game code, and are added similarly: defined in the characters file and then recruited in /Hearts of Iron IV/history/countries/TAG\*.txt
 
 ## Order of battle
@@ -832,12 +657,12 @@ The equipment production is simulated using the `instant_effect = { ... }` block
 instant_effect = {
     add_equipment_production = {
         equipment = {
-	    type = infantry_equipment_0
-	    creator = "ARG"
-	}
-	requested_factories = 1
-	progress = 0.19
-	efficiency = 100
+        type = infantry_equipment_0
+        creator = "ARG"
+    }
+    requested_factories = 1
+    progress = 0.19
+    efficiency = 100
     }
 }
 ```
@@ -945,7 +770,7 @@ If the country is only to appear in the middle of the game, effects can be used 
 
 ## Notes and references
 
-**[^](#ref-a)** **a:** A similar process applies for other languages that the game supports, with the filename ending with the internal name of the language. The exact folder path is actually irrelevant, as long as the file is contained within the localisation folder or any of its subfolders at any depth level.  
+**[^](#ref-a)** **a:** A similar process applies for other languages that the game supports, with the filename ending with the internal name of the language. The exact folder path is actually irrelevant, as long as the file is contained within the localisation folder or any of its subfolders at any depth level.
 **[^](#ref-b)** **b:** If the correct settings of 32 bitdepth/bits per pixel and no RLE encoding are used, saving the flag should result in a consistent filesize each time. Paint.net, however, adds an approximately 500 byte large watermark to the end of the file if it is used to save the flag, which is not present when GIMP or Photoshop are used instead. The filesize is as shown in the Windows File Explorer and may differ in rounding if viewed elsewhere, such as the image editor's export menu.
 
 1. [↑](#cite-ref-1) `NDefines.NGraphics.COUNTRY_COLOR_SATURATION_MODIFIER = 0.6` and `NDefines.NGraphics.COUNTRY_COLOR_BRIGHTNESS_MODIFIER = 0.8` in [Defines](<Defines - Hearts of Iron 4 Wiki.md>)

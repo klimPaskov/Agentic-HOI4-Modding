@@ -14,42 +14,19 @@
 
 A **balance of power** (also internally referred to as bop or power balance) is typically used to represent a conflict between two sides, using a progress bar divided into distinct sections and decisions to push it towards some side for benefits. These are defined in /Hearts of Iron IV/common/bop/\*.txt files.
 
-Each balance of power consists of 2 or more sides. While a balance of power can contain more than 2 sides, at any time the player may only see 2 which are chosen in the effect to initialise the balance of power.  
-To track the current balance, a single value is used, which can range from -1 to 1 with up to 3 decimal points. The 
+Each balance of power consists of 2 or more sides. While a balance of power can contain more than 2 sides, at any time the player may only see 2 which are chosen in the effect to initialise the balance of power.
+To track the current balance, a single value is used, which can range from -1 to 1 with up to 3 decimal points. The `[-1;0)` range is used for the left side, while `[0;1]` is used for the right side. A side having power only has a cosmetic impact, changing the icon and the text used in scripted localisation. A side isn't inherently set as being left or right, instead it is assigned which side is on which half when the power balance is initialised.
 
-[
-−
-1
-;
-0
-)
-{\displaystyle [-1;0)}
-![{\displaystyle [-1;0)}](media/balance-of-power-modding-hearts-of-iron-4-wiki_2c86d53bfd__img1.svg) range is used for the left side, 
+Depending on the value, the country is placed in some range representing the exact degree of power on a certain side. This is usually used to grant certain [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) or to execute an [effect](<Effect - Hearts of Iron 4 Wiki.md>) upon entering it. Most ranges are placed inside of sides, making it only possible to enter when that side is active. A range may also not be assigned to any side and be always visible, usually used for a single "balanced" range in the middle.
+A range being assigned to a side only means that it'll be visible when the range is active, and a side may have ranges on both halves of the balance at the same time. Entering a range defined on a certain side does not necessitate that the balance is tipped in favour of that side. For example, if a side is set as a left side and yet it includes a range of
 
-[
-0
-;
-1
-]
-{\displaystyle [0;1]}
-![{\displaystyle [0;1]}](media/balance-of-power-modding-hearts-of-iron-4-wiki_2c86d53bfd__img2.svg) is used for the right side. A side having power only has a cosmetic impact, changing the icon and the text used in scripted localisation. A side isn't inherently set as being left or right, instead it is assigned which side is on which half when the power balance is initialised.
-
-Depending on the value, the country is placed in some range representing the exact degree of power on a certain side. This is usually used to grant certain [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) or to execute an [effect](<Effect - Hearts of Iron 4 Wiki.md>) upon entering it. Most ranges are placed inside of sides, making it only possible to enter when that side is active. A range may also not be assigned to any side and be always visible, usually used for a single "balanced" range in the middle.  
-A range being assigned to a side only means that it'll be visible when the range is active, and a side may have ranges on both halves of the balance at the same time. Entering a range defined on a certain side does not necessitate that the balance is tipped in favour of that side. For example, if a side is set as a left side and yet it includes a range of 
-
-[
-0.1
-,
-0.3
-)
-{\displaystyle [0.1,0.3)}
-![{\displaystyle [0.1,0.3)}](media/balance-of-power-modding-hearts-of-iron-4-wiki_2c86d53bfd__img3.svg), then if the value is at 0.2, then the balance will be tipped towards the right side visually, but it will still be inside of that range.
+{\displaystyle [0.1,0.3)}, then if the value is at 0.2, then the balance will be tipped towards the right side visually, but it will still be inside of that range.
 
 **A balance of power is tracked globally.** If 2 countries are assigned the same BoP, then the value of the balance will always be exactly the same between both countries. If both of these countries have modifiers pushing the BoP to some side daily or weekly, the effects of these modifiers will stack.
 
 ## Code structure
 
-Balances of power are created in any /Hearts of Iron IV/common/bop/\*.txt file. A BoP is defined as a root-level block, where the name of the block determines the unique ID of the BoP. In case of duplicates, the error.log entry `Template ID duplicate: bop_name` is generated and the game will prioritise the one that was [created later](<Modding - Hearts of Iron 4 Wiki.md#code-structure>), determined using the filename and order in files.  
+Balances of power are created in any /Hearts of Iron IV/common/bop/\*.txt file. A BoP is defined as a root-level block, where the name of the block determines the unique ID of the BoP. In case of duplicates, the error.log entry `Template ID duplicate: bop_name` is generated and the game will prioritise the one that was [created later](<Modding - Hearts of Iron 4 Wiki.md#code-structure>), determined using the filename and order in files.
 There are no strictly mandatory arguments, however it is preferred to have at least 2 sides as the UI is built on the assumption that there is always a left and a right side active. In particular, these arguments exist:
 
 - `intial_value = -0.1` is the default value of the BoP. If unset, defaults to 0.
@@ -91,25 +68,7 @@ Each side is defined using a `side = { ... }` block in the balance of power. In 
 
 A range is defined as a `range = { ... }` block which may exist either directly in the BoP or inside of a `side = { ... }`. This is used to determine when the range will be visible to the player: a range directly in a BoP is always visible, while a range in a side will only be visible if that side is visible. There are 3 mandatory attributes:
 
-- `id = range_id` is used to assign an ID to the specified range. There shouldn't be duplicates across the entire BoP (even in different sides), but there may be between different BoPs. A duplicate will be marked with a `Range ID duplicate: range_id` entry in error.log. In this case, the game will still display each range with the same ID that is not in a disabled side. However, this can cause issues with strict non-equal comparison when using [is\_power\_balance\_in\_range](#is-power-balance-in-range): in particular, the game will only recognise the range that's placed furthest to the left. For example, if there are duplicate `range_id` on intervals of 
-
-  [
-  −
-  0.3
-  ,
-  −
-  0.1
-  )
-  {\displaystyle [-0.3,-0.1)}
-  ![{\displaystyle [-0.3,-0.1)}](media/balance-of-power-modding-hearts-of-iron-4-wiki_2c86d53bfd__img4.svg) and 
-
-  [
-  0.1
-  ,
-  0.3
-  )
-  {\displaystyle [0.1,0.3)}
-  ![{\displaystyle [0.1,0.3)}](media/balance-of-power-modding-hearts-of-iron-4-wiki_2c86d53bfd__img5.svg), then a strict equilibrium will be recognised as being to the right of `range_id`, but not to the left of it.
+- `id = range_id` is used to assign an ID to the specified range. There shouldn't be duplicates across the entire BoP (even in different sides), but there may be between different BoPs. A duplicate will be marked with a `Range ID duplicate: range_id` entry in error.log. In this case, the game will still display each range with the same ID that is not in a disabled side. However, this can cause issues with strict non-equal comparison when using [is\_power\_balance\_in\_range](#is-power-balance-in-range): in particular, the game will only recognise the range that's placed furthest to the left. For example, if there are duplicate `range_id` on intervals of `[-0.3,-0.1)` and `[0.1,0.3)`, then a strict equilibrium will be recognised as being to the right of `range_id`, but not to the left of it.
 - `min = -0.1` is the minimum value in the range's interval. If the value is exactly at this point, this range will be applied.
 - `max = 0.1` is the maximum value in the range's interval. If the value is exactly at this point, this range will be applied if and only if max is set to 1. Otherwise, the exact point is excluded from the interval.
 

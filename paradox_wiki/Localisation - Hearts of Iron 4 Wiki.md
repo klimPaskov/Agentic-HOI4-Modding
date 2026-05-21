@@ -46,7 +46,7 @@ The localisation is stored within the /Hearts of Iron IV/localisation/ folder, i
 - `l_simp_chinese`: Simplified Chinese, as in /Hearts of Iron IV/localisation/simp\_chinese/khalkha\_l\_simp\_chinese.yml
 - `l_korean`: Korean, as in /Hearts of Iron IV/localisation/korean/victory\_points\_l\_korean.yml
 
-The filename **has to contain the language's internal name** as the file will not be loaded otherwise.  
+The filename **has to contain the language's internal name** as the file will not be loaded otherwise.
 The currently-enabled language is chosen within the user directory's /Hearts of Iron IV/pdx\_settings.txt file, however, more languages cannot be added directly other than these listed languages.
 
 ## Quick checklist
@@ -65,7 +65,7 @@ In order for a file to work, it must have the following:
 
 ## Basics
 
-Localisation is created within any file in the localisation folder: the filename aside from the file extension is irrelevant aside from deciding which language is chosen.  
+Localisation is created within any file in the localisation folder: the filename aside from the file extension is irrelevant aside from deciding which language is chosen.
 **Every localisation file must use the UTF-8-BOM encoding**, i.e. the UTF-8 encoding with the byte order mark in the beginning of the file. Exact details depend on the text editor:
 
 - Notepad++: Top bar's "Encoding" menu provides a selection of encodings. UTF-8-BOM is used in this case.
@@ -88,27 +88,10 @@ Any issue with localisation, such as special characters or spaces in localisatio
 An example of a localisation file's contents is the following:
 
 ```text
-l_english
-infantry_equipment
-"Infantry
- 
-Equipment"
-
- 
-infantry_equipment_short
-"Inf.
- 
-Eq."
-
- 
-infantry_equipment_desc
-"This
- 
-is
- 
-infantry
- 
-equipment"
+l_english:
+infantry_equipment: "Infantry Equipment"
+infantry_equipment_short: "Inf. Eq."
+infantry_equipment_desc: "This is infantry equipment"
 ```
 
 Nearly any printable character is allowed to use within the localisation value, other than certain special characters with special meaning, such as square brackets, or newlines. However, only some select characters are present in the fonts that are used in the game, and the selection of characters differs depending on the font. If the used font doesn't include a representation of a character, the game will replace it with a question mark (?). This affects only the font representation: this may be remedied by switching the used font within the [interface](<Interface modding - Hearts of Iron 4 Wiki.md>) or by changing the font to include the letter.
@@ -119,19 +102,14 @@ Typically, localisation key overlap must be avoided, overlap being the same loca
 
 However, if the localisation file is contained within a folder with the name of "replace" (such as /Hearts of Iron IV/localisation/english/replace, still must be inside of localisation), it will get priority over the entries that are not. This can be helpful to overwrite only specific localisation keys without porting over the entire file, such as if the file gets frequently updated in base game.
 
-For example, if desiring to change the name of the effect to add political power from the default  `POLITICS_ADD_POLITICAL_POWER:0 "Political Power: $VAL|=+0$."`, it may be undesirable to port over the entire /Hearts of Iron IV/localisation/english/effects\_l\_english.yml file to the mod, as new effects frequently get added to the game which would mean the file has to be kept in check.  
+For example, if desiring to change the name of the effect to add political power from the default  `POLITICS_ADD_POLITICAL_POWER:0 "Political Power: $VAL|=+0$."`, it may be undesirable to port over the entire /Hearts of Iron IV/localisation/english/effects\_l\_english.yml file to the mod, as new effects frequently get added to the game which would mean the file has to be kept in check.
 However, instead creating a new localisation file within the /Hearts of Iron IV/localisation/english/replace/ folder and defining the POLITICS\_ADD\_POLITICAL\_POWER localisation key there will result in the value of the key getting changed without needing to copy the entire localisation file, meaning that the mod is now easier to port to future updates.
 
 For example, /Hearts of Iron IV/localisation/english/replace/mod\_replace\_l\_english.yml would contain the following content:
 
 ```text
-l_english
-POLITICS_ADD_POLITICAL_POWER
-"New
- 
-mana:
- 
-$VAL|=+0$."
+l_english:
+POLITICS_ADD_POLITICAL_POWER: "New mana: $VAL|=+0$."
 ```
 
 ## Special characters
@@ -241,40 +219,15 @@ The following formatting characters are implemented in the base game (The colour
 Here is an example of the colour formatting:
 
 ```text
-l_english
-example_key
-"This
- 
-is
- 
-my
- 
-text,
- 
-§Bthis
- 
-text
- 
-is
- 
-blue§!,
- 
-and
- 
-§Rthis
- 
-text
- 
-is
- 
-red§!"
+l_english:
+example_key: "This is my text, §Bthis text is blue§!, and §Rthis text is red§!"
 ```
 
 New text colours can be added by expanding the `textcolors = { ... }` array in /Hearts of Iron IV/interface/core.gfx. Colour keys *cannot* have more than one letter (i.e. "BU = {0 255 0}"), and will attempt to overwrite another colour key with the same first letter. It is also possible to make a colouring character represent a different colour from default when a certain font is used within the bitmapfont definition of that font.
 
 #### Errors
 
-The errors related to the colouring characters can be fairly unintuitive to find, considering that they do not provide the location of the file.  
+The errors related to the colouring characters can be fairly unintuitive to find, considering that they do not provide the location of the file.
 There are three types of the error:
 
 - `Could not find coloring for character 'M'` – This exact example means that, somewhere, the game found `§M` within localisation; however, since "M" isn't a valid colour, this is an unexpected result. The exact character is provided, so finding the cause should be elementary. A space is also considered a character, so `Could not find coloring for character ' '` means that somewhere in localisation `§`  is present, with a symbol specifying the beginning or end of a colouring rule omitted.
@@ -334,47 +287,17 @@ Any unrecognised symbols will neither change how the variable is localised nor g
 Some examples of formatting characters in usage:
 
 ```text
-l_english
-loc_key
-"Democratic
- 
-party
- 
-popularity:
- 
-[?party_popularity@democracy|%G0]"
- 
-
- 
-loc_key_2
-"Modifier
- 
-token's
- 
-value:
- 
-[?modifier@my_modifier|.1%%+]"
-
- 
-pol_power_trigger_tt
-"Has
- 
-more
- 
-than
- 
-[?var_name|Y]
- 
-political
- 
-power"
+l_english:
+loc_key: "Democratic party popularity: [?party_popularity@democracy|%G0]"
+loc_key_2: "Modifier token's value: [?modifier@my_modifier|.1%%+]"
+pol_power_trigger_tt: "Has more than [?var_name|Y] political power"
 ```
 
 Within these examples, the first string depicts the current scope's democratic popularity as a percentage multiplied by 100 (%), in green (G), rounded to a whole number with 0 decimals (0). The second string displays the `my_modifier` [modifier token](<Modifiers - Hearts of Iron 4 Wiki.md#modifier-tokens>)'s value as a 'good' number (+ making it green if positive, red if negative), with a percentage sign appended in the end (%%) and rounded to a number with one decimal (.1). The third string displays the variable in yellow colouring (as is common in the base game's tooltips), leaving it unchanged otherwise.
 
 ### Country's flags
 
-The following in localisation will display the default, /Hearts of Iron IV/gfx/flags/TAG.tga, flag of a country: `@TAG`  
+The following in localisation will display the default, /Hearts of Iron IV/gfx/flags/TAG.tga, flag of a country: `@TAG`
 It's recommended to use the GetFlag namespace when possible instead, however, this can be used on localisation that doesn't support namespaces, such as custom modifier tooltips or the game rules.
 
 ### Text icons
@@ -382,19 +305,18 @@ It's recommended to use the GetFlag namespace when possible instead, however, th
 Icons can be displayed within strings using the **£** notation.
 
 ```text
-l_english
-example_key
-"£GFX_army_experience"
+l_english:
+example_key: "£GFX_army_experience"
 ```
 
 Text icons are added as `spriteType = { ... }` definitions in /Hearts of Iron IV/interface/\*.gfx files within an overarching `spriteTypes = { ... }`. An example definition of one looks like:
 
 ```text
-	spriteType = {
-		name = "GFX_my_text_icon"
-		texturefile = "gfx/texticons/filename.dds"
-		legacy_lazy_load = no
-	}
+    spriteType = {
+        name = "GFX_my_text_icon"
+        texturefile = "gfx/texticons/filename.dds"
+        legacy_lazy_load = no
+    }
 ```
 
 The text icon's name is equal to the text icon with the GFX\_ part in the beginning removed, being `£my_text_icon` in this case.
@@ -674,7 +596,7 @@ for which localization objects that are defined for that context.
 
 ## Namespaces
 
-Namespaces refer to obtaining certain information from some scope to display in localisation. For example, getting the name of a country, the surname of a character, the ID of a state, and etc.  
+Namespaces refer to obtaining certain information from some scope to display in localisation. For example, getting the name of a country, the surname of a character, the ID of a state, and etc.
 A namespace is marked with the square brackets on either side as in `my_localisation_key: "[GetDateText]"`. By default, **there is no scope assumed**. A [scope](<Scopes - Hearts of Iron 4 Wiki.md>) can be added, separated from the namespace with a dot, in order to let the game know from whom to obtain information, such as `my_localisation_key: "[QAT.GetRulingParty]"`, which'll result in the ruling party of the country QAT appearing in localisation. Any dual scope that can be used as a target may be used in localisation. [THIS](<Scopes - Hearts of Iron 4 Wiki.md#this>) can be used in order to refer to the scope of where it's used, such as  `effect_tooltip: "[ROOT.GetNameDefCap] declares war on [THIS.GetNameDef]"`.
 
 Variables and event targets can be used within namespaces as well. For example, this grants the name of the capital state of OMA using the 'capital' variable:  `my_localisation_key: "[OMA.capital.GetName]"`. A list of built-in variables that can be used can be seen in [the respective wiki page](<Data structures - Hearts of Iron 4 Wiki.md#game-variables>). Another common ones to use include 'owner' and 'controller' for states, such as `my_localisation_key: "Owner of South-West England: [123.owner.GetName]"`.
@@ -1317,21 +1239,10 @@ This consists of these entries:
 The example above will show the FRA\_localization\_key localisation key for France and the mod\_localization\_key one otherwise as a backup. The first localization key that meets the triggers will be used. In localisation, that example can be used as
 
 ```text
-l_english
-some_localisation
-"[mod_scripted_loc]"
-
- 
-FRA_localization_key
-"France-exclusive
- 
-localisation"
-
- 
-mod_localization_key
-"Generic
- 
-localisation"
+l_english:
+some_localisation: "[mod_scripted_loc]"
+FRA_localization_key: "France-exclusive localisation"
+mod_localization_key: "Generic localisation"
 ```
 
 Scripted localisation also allows randomisation of the localisation key that would be chosen, using [random\_list](<Effect - Hearts of Iron 4 Wiki.md#random-list>). For example, the following code will give a 60% and a 40% chance respectively for mod\_localization\_key\_1 or mod\_localization\_key\_2 to be chosen when this scripted localisation entry is used:
@@ -1364,81 +1275,11 @@ defined_text = {
 When the scripted localisation is called, it will read the value of `my_variable` and place the value into the string of the localisation key as specified and evaluate the entire localisation key as a whole after the variable has been implemented.
 
 ```text
-l_english
-some_localisation
-"[mod_scripted_loc]"
-
- 
-mod_localization_version_1
-"This
- 
-localization
- 
-will
- 
-be
- 
-called
- 
-when
- 
-my_variable
- 
-is
- 
-equal
- 
-to
- 
-1."
-
- 
-mod_localization_version_2
-"This
- 
-localization
- 
-will
- 
-be
- 
-called
- 
-when
- 
-my_variable
- 
-is
- 
-equal
- 
-to
- 
-2."
-
- 
-mod_localization_version_3
-"This
- 
-localization
- 
-will
- 
-be
- 
-called
- 
-when
- 
-my_variable
- 
-is
- 
-equal
- 
-to
- 
-3."
+l_english:
+some_localisation: "[mod_scripted_loc]"
+mod_localization_version_1: "This localization will be called when my_variable is equal to 1."
+mod_localization_version_2: "This localization will be called when my_variable is equal to 2."
+mod_localization_version_3: "This localization will be called when my_variable is equal to 3."
 ```
 
 ## References

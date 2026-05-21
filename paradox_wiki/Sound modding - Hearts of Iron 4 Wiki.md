@@ -44,40 +44,40 @@ soundeffect = {
     falloff = <name>
     sounds = {
         sound = <name>
-        weighted_sound = { 
-            sound = <name> 
-            weight = int 
+        weighted_sound = {
+            sound = <name>
+            weight = int
         }
     }
-    
+
     loop = <bool>
     is3d = <bool>
     random_sound_when_looping = <bool>
-    
+
     max_audible = <int>
     max_audible_behaviour = <type>
-    
+
     volume = <float>
     fade_in = <float>
     fade_out = <float>
-    
-	looping_delay_random_offset = <bool>
+
+    looping_delay_random_offset = <bool>
     delay_random_offset = {
         <float>
         <float>
     }
-    
-	looping_playbackrate_random_offset = <bool>
+
+    looping_playbackrate_random_offset = <bool>
     playbackrate_random_offset = {
         <float>
         <float>
     }
-    
+
     volume_random_offset = {
         <float>
         <float>
     }
-    
+
     prevent_random_repetition = <bool>
 }
 ```
@@ -123,7 +123,7 @@ Falloff entries define the falloff attributes for sound. They are added in sound
 ```text
 falloff = {
     name = <name>
-    
+
     min_distance = <float>
     max_distance = <float>
     height_scale = <float>

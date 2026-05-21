@@ -114,14 +114,14 @@ MIOs is an acronym for Military Industrial Organizations
     ```
   - Example:
     ```text
-    			in_progress={
-    				seawolf=0.000
-    				superior_tactician=0.000
-    				spotter=0.000
-    				fly_swatter=0.000
-    				ironside=0.000
-    				air_controller=0.000
-    			}
+                in_progress={
+                    seawolf=0.000
+                    superior_tactician=0.000
+                    spotter=0.000
+                    fly_swatter=0.000
+                    ironside=0.000
+                    air_controller=0.000
+                }
     ```
 
 - **cp [<amount>]**

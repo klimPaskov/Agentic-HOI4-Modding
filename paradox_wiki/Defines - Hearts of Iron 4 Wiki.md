@@ -51,33 +51,17 @@ Defines are defined in /Hearts of Iron IV/common/defines/\*.lua files.
 As defines are Lua code rather than a PDXscript-interpreted file, any Lua code can go in there, however modules allowing to go out of this directory are not available. As a consequence of this, **there is no need to copy the entire file to edit it**. Defines, including graphical defines, are merely a Lua-contained array, and it is possible to modify a single member of the array in Lua using, for example, `NDefines.NGame.START_DATE = "1936.1.2.12"`. Each of these lines is contained on a separate line and **there are no commas separating them**, such as the following:
 
 ```text
-NDefines
-.
-NGame
-.
-START_DATE
- 
-=
- 
-"1936.1.2.12"
- 
+NDefines.NGame.START_DATE = "1936.1.2.12"
+
 -- An unnecessary comma will result in a game crash upon launching.
 
-NDefines
-.
-NGraphics
-.
-COUNTRY_FLAG_TEX_MAX_SIZE
- 
-=
- 
-2048
- 
+NDefines.NGraphics.COUNTRY_FLAG_TEX_MAX_SIZE = 2048
+
 -- They are present in the base game defines file due to the fact that NDefines is one single large array, and when defining an array with members, the members are separated with commas. However, commands are not separated with commas.
 ```
 
-This goes into a separate file set to be evaluated after the base game defines, which is sorted by filenames using the [ASCII character IDs](http://en.wikipedia.org/wiki/ASCII#Printable_characters). Since 0 is among the earliest characters by ID – placed before letters, other numbers, and underscores – almost any filename can work.   
-In the base game files, the graphical defines are set to be merged into NDefines in the last line of the base game file. However, since Lua does not create copies of tables by default, the base game's NDefines contains pointers to the actual elements, which are contained within NDefines\_Graphics regardless. For this reason, modifying either NDefines or NDefines\_Graphics works for changing graphical defines.  
+This goes into a separate file set to be evaluated after the base game defines, which is sorted by filenames using the [ASCII character IDs](http://en.wikipedia.org/wiki/ASCII#Printable_characters). Since 0 is among the earliest characters by ID – placed before letters, other numbers, and underscores – almost any filename can work.
+In the base game files, the graphical defines are set to be merged into NDefines in the last line of the base game file. However, since Lua does not create copies of tables by default, the base game's NDefines contains pointers to the actual elements, which are contained within NDefines\_Graphics regardless. For this reason, modifying either NDefines or NDefines\_Graphics works for changing graphical defines.
 A mod should **never** contain the 00\_defines.lua and 00\_graphics.lua files within of itself: these files are commonly changed even in minor game updates, and having a define missing from a file results in the mod being unstable, potentially having a crash on startup.
 
 ## NGame
@@ -1194,19 +1178,10 @@ A mod should **never** contain the 00\_defines.lua and 00\_graphics.lua files wi
   - Usage:
     ```text
     Also used for calculating the modifiers applied to the country with the
-    stability_good_modifier
-    and
-    stability_bad_modifier
-    static modifiers
-    , multiplying the relevant modifiers by
-    |
-    Current Stability
-    −
-    DEFAULT STABILITY
-    |
-    DEFAULT STABILITY
-    {\displaystyle {\frac {|{\text{Current Stability}}-{\text{DEFAULT STABILITY}}|}{\text{DEFAULT STABILITY}}}}
-    . Highly unstable on the low values and completely disables the modifier if set to 0.
+    stability_good_modifier and stability_bad_modifier static modifiers,
+    multiplying the relevant modifiers by
+    abs(Current Stability - DEFAULT STABILITY) / DEFAULT STABILITY.
+    Highly unstable on the low values and completely disables the modifier if set to 0.
     ```
 
 - **DEFAULT_WAR_SUPPORT**
@@ -1215,19 +1190,10 @@ A mod should **never** contain the 00\_defines.lua and 00\_graphics.lua files wi
   - Usage:
     ```text
     Also used for calculating the modifiers applied to the country with the
-    war_support_good_modifier
-    and
-    war_support_bad_modifier
-    static modifiers
-    , multiplying the relevant modifiers by
-    |
-    Current War Support
-    −
-    DEFAULT WAR SUPPORT
-    |
-    DEFAULT WAR SUPPORT
-    {\displaystyle {\frac {|{\text{Current War Support}}-{\text{DEFAULT WAR SUPPORT}}|}{\text{DEFAULT WAR SUPPORT}}}}
-    . Highly unstable on the low values and completely disables the modifier if set to 0.
+    war_support_good_modifier and war_support_bad_modifier static modifiers,
+    multiplying the relevant modifiers by
+    abs(Current War Support - DEFAULT WAR SUPPORT) / DEFAULT WAR SUPPORT.
+    Highly unstable on the low values and completely disables the modifier if set to 0.
     ```
 
 - **BASE_STABILITY_WAR_FACTOR**
@@ -11798,8 +11764,8 @@ A mod should **never** contain the 00\_defines.lua and 00\_graphics.lua files wi
   - Default:
     ```text
     {25,
-    50, 
-    75, 
+    50,
+    75,
     100}
     ```
   - Developer comment:
@@ -12049,17 +12015,13 @@ A mod should **never** contain the 00\_defines.lua and 00\_graphics.lua files wi
 - **BASE_URL**
   - Default:
     ```text
-    "
-    https://hoi4.paradoxwikis.com/
-    "
+    "https://hoi4.paradoxwikis.com/"
     ```
 
 - **FORUM_URL**
   - Default:
     ```text
-    "
-    https://forum.paradoxplaza.com/forum/index.php?forums/hearts-of-iron-iv.844/
-    "
+    "https://forum.paradoxplaza.com/forum/index.php?forums/hearts-of-iron-iv.844/"
     ```
 
 ## NMapMode

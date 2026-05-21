@@ -151,11 +151,11 @@ Within the building construction menu, buildings are divided into 3 zones depend
 
 *Main article: [Entity modding](<Entity modding - Hearts of Iron 4 Wiki.md>)*
 
-There are several arguments related to models within buildings.  
-`show_on_map = 3` decides how many building models should there be per state or per province (depending on the building type) defined for the building. Each building construction will add one more model. If unspecified, will have no map models.  
-`show_on_map_meshes = 2` decides how many entities are used for each building model. By default assumed to be 1.  
-`always_shown = yes`, if specified, will make the building model appear regardless whether it's covered by the fog of war or not.  
-`has_destroyed_mesh = yes`, if specified, will make the game use a separate model if the building has been destroyed by air bombing or occupation.  
+There are several arguments related to models within buildings.
+`show_on_map = 3` decides how many building models should there be per state or per province (depending on the building type) defined for the building. Each building construction will add one more model. If unspecified, will have no map models.
+`show_on_map_meshes = 2` decides how many entities are used for each building model. By default assumed to be 1.
+`always_shown = yes`, if specified, will make the building model appear regardless whether it's covered by the fog of war or not.
+`has_destroyed_mesh = yes`, if specified, will make the game use a separate model if the building has been destroyed by air bombing or occupation.
 `centered = yes`, if specified, will mak
 
 In order to assign an entity to a building, it must have a name of `building_<building name>`, like `building_my_building`, within the /Hearts of Iron IV/gfx/entities/\*.asset file. If a building is set to use several entities, then the number will get appended in the end like `building_my_building_1`, starting with 1. If there's a destroyed mesh, then it'll append \_destroyed in the end as `building_my_building_destroyed`
@@ -318,11 +318,11 @@ buildings = {
     my_provincial_building = {
         base_cost = 10000
         infrastructure_construction_effect = yes
-        
+
         value = 1
-        
+
         icon_frame = 17
-        
+
         show_on_map = 1
         always_shown = yes
 
@@ -343,16 +343,16 @@ buildings = {
         base_cost = 1000
         per_level_extra_cost = 200
         infrastructure_construction_effect = yes
-        
+
         value = 15
         only_costal = yes
-        
+
         icon_frame = 18
-        
+
         show_on_map = 3
         show_on_map_meshes = 3
         has_destroyed_mesh = yes
-        
+
         military_production = 1
         general_production = 1
         naval_production = 1
@@ -365,13 +365,13 @@ buildings = {
     my_non_shared_building = {
         base_cost = 1000
         per_level_extra_cost = 2000
-        
+
         max_level = 2
-        
+
         value = 5
-        
+
         icon_frame = 19     # No model is defined
-        
+
         state_modifiers = {
             recruitable_population_factor = 0.5
         }
@@ -417,75 +417,13 @@ Now multiple buildings can use `spawn_point = my_building_type_spawn`.
 Buildings use the following localization keys, using my\_building as an example:
 
 ```text
- 
-my_building
-"My
- 
-building"
-
- 
-my_building_desc
-"My
- 
-building's
- 
-description"
-
- 
-my_building_plural
-"My
- 
-buildings"
-
- 
-modifier_production_speed_my_building_factor
-"§Y$my_building$§!
- 
-construction
- 
-speed"
-
- 
-modifier_production_speed_my_building_factor_desc
-"Modifies
- 
-the
- 
-speed
- 
-of
- 
-§Y$my_building$§!
- 
-construction."
-
- 
-modifier_state_production_my_building_factor
-"§Y$my_building$§!
- 
-construction
- 
-speed"
-
- 
-modifier_state_production_my_building_factor_desc
-"Modifies
- 
-the
- 
-speed
- 
-of
- 
-§Y$my_building$§!
- 
-construction
- 
-in
- 
-this
- 
-state."
+my_building: "My building"
+my_building_desc: "My building's description"
+my_building_plural: "My buildings"
+modifier_production_speed_my_building_factor: "§Y$my_building$§! construction speed"
+modifier_production_speed_my_building_factor_desc: "Modifies the speed of §Y$my_building$§! construction."
+modifier_state_production_my_building_factor: "§Y$my_building$§! construction speed"
+modifier_state_production_my_building_factor_desc: "Modifies the speed of §Y$my_building$§! construction in this state."
 ```
 
 The first 3 are used for the building itself in various UI elements, while the last 4 are used to localise the modifiers automatically created for each building: `production_speed_<building>_factor` and `state_production_speed_<building>_factor`.

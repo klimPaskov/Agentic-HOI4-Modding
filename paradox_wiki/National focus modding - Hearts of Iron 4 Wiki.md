@@ -58,7 +58,7 @@ In this case, countries originating from ![Flag of Transylvania](media/national-
 
 `default = yes` sets the focus tree to be marked as default. In total, *there should be one total default focus tree*, no more, no less. A focus tree being marked as default means that if every other focus tree has a country score of 0, this tree will be chosen instead. Additionally, a country starting with a focus tree will fail to appear in the "minor countries" section within the "interesting countries" menu before the game's start. If this is left out from a focus tree, it gets assumed to be non-default.
 
-`reset_on_civilwar = no` is not determined on its effect. Instead, this is how focus trees are handled in civil wars, regardless of if `reset_on_civilwar` is set or how it's set:  
+`reset_on_civilwar = no` is not determined on its effect. Instead, this is how focus trees are handled in civil wars, regardless of if `reset_on_civilwar` is set or how it's set:
 When a civil war starts, the original country will always continue using the focus tree. The focus it's doing will not be paused or cancelled by the civil war itself. The revolter will have the focus tree it's using evaluated when the civil war starts, assigning one depending on each tree's `country = { ... }` value. If the same focus tree gets used for the revolting country as the one that the original country used when the civil war started, every focus that the original country has completed will get completed for the revolting country, including setting the same focus progress for the one that's being completed by the original country at the moment. Otherwise, the focus progress will get lost.
 
 `shared_focus = TAG_focusname` will set the focus tree to include the specified [shared focus](#shared-focuses) and every focus that is connected to it via prerequisites. **Setting this to a non-existing focus causes a game crash when loading into the main menu.**
@@ -110,7 +110,7 @@ An example shortcut definition is as such:
 ```text
 shortcut = {
   name = GER_oppose_hitler_shortcut
-  target = GER_oppose_hitler_ww 
+  target = GER_oppose_hitler_ww
   scroll_wheel_factor = 0.485
   trigger = {
     has_dlc = "Gotterdammerung"
@@ -184,27 +184,17 @@ The ID for the focus is defined using `id = TAG_focusname`. While it's optional 
 The name of the focus depending on the language that's turned on is defined within /Hearts of Iron IV/localisation/, using the ID of the focus as the localisation key. For English in particular, this is defined within any /Hearts of Iron IV/localisation/english/\*\_l\_english.yml file with the UTF-8-BOM encoding. It is preferable to use new localisation files when possible rather than overwriting base game localisation in order to not have to change that for compatibility with recent versions, and to do so, the file should have a new name that doesn't exist in base game, but it must still end with `_l_english.yml` to be loaded properly. The focus' ID is used as the localisation key used to establish the name in the enabled language, while a description uses the focus' ID with `_desc` appended:
 
 ```text
-l_english
-TAG_focus_name
-"Example
- 
-focus"
-
- 
-TAG_focus_name_desc
-"Example
- 
-focus
- 
-description"
+l_english:
+TAG_focus_name: "Example focus"
+TAG_focus_name_desc: "Example focus description"
 ```
 
 ### Position
 
 The position of the focus is decided via `x = 5` and `y = 1` attributes. By default, a unit of x is equal to 96 pixels and a unit of y is equal to 130 pixels. In other words, a focus directly below another focus would have a unit difference of 1, while a focus directly to the right of another one would have a unit difference of 2. By default, this is relative to the top left corner of the tree: a larger x value moves the focus right, a larger y value moves the focus *down*.
 
-It is also possible **and preferred** (on focuses with prerequisites) to make the focus' position be relative to another focus with doing `relative_position_id = TAG_other_focus`. This will position the focus relative to that focus, adding the `x` and `y` values to the other focus' position (after calculating that one's relative\_position\_id too). Doing so allows for more flexibility in the focus tree design by allowing to easily modify the position of the entire branch at the same time, due to updates to the children focuses' positioning. This also allows to only use the later `offset = { ... }` only in the top focus of each branch that requires to be moved.  
-For example, if focus A has `x = 1 y = 2`, focus B is positioned relative to focus A and has `x = 3 y = 4`, then the focus B will be positioned, in total, 4 steps to the right and 6 steps down of the top-left corner. A focus C positioned relative to focus B at `x = -1 y = 1` would then be located 3 steps to the right and 7 steps down of the top-left corner.  
+It is also possible **and preferred** (on focuses with prerequisites) to make the focus' position be relative to another focus with doing `relative_position_id = TAG_other_focus`. This will position the focus relative to that focus, adding the `x` and `y` values to the other focus' position (after calculating that one's relative\_position\_id too). Doing so allows for more flexibility in the focus tree design by allowing to easily modify the position of the entire branch at the same time, due to updates to the children focuses' positioning. This also allows to only use the later `offset = { ... }` only in the top focus of each branch that requires to be moved.
+For example, if focus A has `x = 1 y = 2`, focus B is positioned relative to focus A and has `x = 3 y = 4`, then the focus B will be positioned, in total, 4 steps to the right and 6 steps down of the top-left corner. A focus C positioned relative to focus B at `x = -1 y = 1` would then be located 3 steps to the right and 7 steps down of the top-left corner.
 The game can behave unstably with an incorrect relative position ID. A recursion (such as a focus being positioned relative to itself or focus A and focus B being positioned relative to each other) may cause a game crash since it is impossible to determine the exact position of the focus, and the focus must also be located in the same focus tree for the argument to work properly.
 
 Changing a focus' position based on a condition being met is done with `offset = { ... }`. The `x = 10` and `y = -3` values will be added to the focus' position if the conditions within `trigger = { ... }` are met for the country *when the focus tree is loaded*. This looks like the following:
@@ -229,29 +219,7 @@ prerequisite = { focus = TAG_other_focus_1 }
 prerequisite = { focus = TAG_other_focus_2 }
 ```
 
-This system cannot represent every boolean logical arrangement, such as 
-
-A
-∨
-(
-B
-∧
-C
-)
-{\displaystyle A\lor (B\land C)}
-![{\displaystyle A\lor (B\land C)}](media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img5.svg) (Where 
-
-A
-{\displaystyle A}
-![{\displaystyle A}](media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img6.svg), 
-
-B
-{\displaystyle B}
-![{\displaystyle B}](media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img7.svg), and 
-
-C
-{\displaystyle C}
-![{\displaystyle C}](media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img8.svg) represent whether a focus is complete) or with anything using negation. In this case, it can be possible to, instead, put an OR statement for either of the focuses necessary to complete this one and use the has\_completed\_focus trigger within the `available = { ... }` block with necessary flow control tools. A custom trigger tooltip can be used to make it easier for the player to understand.
+This system cannot represent every boolean logical arrangement, such as `A OR (B AND C)` (where `A`, `B`, and `C` represent whether a focus is complete) or with anything using negation. In this case, it can be possible to, instead, put an OR statement for either of the focuses necessary to complete this one and use the has\_completed\_focus trigger within the `available = { ... }` block with necessary flow control tools. A custom trigger tooltip can be used to make it easier for the player to understand.
 
 `mutually_exclusive = { focus = TAG_other_focus }` makes this focus impossible to select if the specified focus has been completed. If both focuses are mutually exclusive toward each other, then the mutually exclusive arrows will be shown in the focus tree view. Mutual exclusivity to multiple focuses is usually done by putting several of `focus = TAG_focusname` in the same mutually\_exclusive, but defining several of mutually\_exclusive is also possible.
 
@@ -259,7 +227,7 @@ Neither prerequisites nor mutual exclusivity require the other focus to be in th
 
 The difference between prerequisites and using has\_completed\_focus within the `available = { ... }` block is that the prerequisites show up as lines within the national focus tree view and show up separately from other triggers in the tooltip of a focus.
 
-There is an issue that leads to prerequisite lines not working properly: duplicate focus IDs within different focus trees. In this case, the game can take the position of the focuses as the ones within the different focus tree that contains the same focuses, leading to them appearing to link towards empty spaces or start inside of them. This can also break the path-generating algorithm and make it use the wrong turn sprites, which will show up broken even in trees that don't have any duplicates.  
+There is an issue that leads to prerequisite lines not working properly: duplicate focus IDs within different focus trees. In this case, the game can take the position of the focuses as the ones within the different focus tree that contains the same focuses, leading to them appearing to link towards empty spaces or start inside of them. This can also break the path-generating algorithm and make it use the wrong turn sprites, which will show up broken even in trees that don't have any duplicates.
 In order to avoid this, duplicate focus IDs must be avoided. A simple way to decrease the chance drastically is to preface the focus IDs with the country tag (such as `TAG_focus_name`) or something else that's unique for the focus tree (Such as `REGION_focus_name` for a shared regional tree). If the same focus tree should be used for several countries, this can be done by only having one focus tree where the `country = { ... }` of the tree is set up so that the desire to use it is the highest for several countries instead of just one; if the same focus tree branch should be used within several different focus trees, then [shared focuses](#shared-focuses) can achieve exactly that.
 
 Additionally, the game intends for a focus' prerequisite to be placed above the focus that requires it and it is unable to correctly generate the path to the focus otherwise, which will show up as having a path that uses the wrong sprites in the 90° turns.
@@ -287,9 +255,9 @@ Within a focus, an icon is assigned with the line of `icon = GFX_focus_icon`. Th
 - Regular sprite, with the name of `GFX_focus_icon`. This is used in the focus description view and in the focus tree view when the focus is unavailable, is being completed, or has been completed.
 - Sprite for the shine animation, with the name of `GFX_focus_icon_shine` (With \_shine at the end). This is used in the focus tree view for focuses that are currently available and in the country politics and diplomacy views for the focus currently being complete. Since the game [doesn't use filenames in evaluation](<Modding - Hearts of Iron 4 Wiki.md#loading-files>), putting the spriteType definition into a file with `shine` in the filename isn't either necessary or sufficient. Only the name of the sprite is used, which must be the same as the regular sprite with \_shine appended to the end. **The most common mistake when the shine doesn't work is not following this naming rule**.
 
-If one of these is undefined or is defined incorrectly, the ![Goal unknown.png](media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img9.png)missing focus icon will be used instead of the appropriate sprite, however the working sprite will continue to be used.  
-If the texturefile links to a non-existing file, whether it's the folder path that's incorrect or the filename, including the extension, the focus icon will appear as fully transparent.  
-By default, the base game stores images for focus icons in the /Hearts of Iron IV/gfx/interface/goals/ folder and sprites in the interface/goals.gfx and interface/goals\_shine.gfx files. Since there's no reason to copy the files to the mod and doing so will lead to needing to update the file after a major update to use new sprites, it's best to create a new file in the folder for sprite definitions.  
+If one of these is undefined or is defined incorrectly, the ![Goal unknown.png](media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img9.png)missing focus icon will be used instead of the appropriate sprite, however the working sprite will continue to be used.
+If the texturefile links to a non-existing file, whether it's the folder path that's incorrect or the filename, including the extension, the focus icon will appear as fully transparent.
+By default, the base game stores images for focus icons in the /Hearts of Iron IV/gfx/interface/goals/ folder and sprites in the interface/goals.gfx and interface/goals\_shine.gfx files. Since there's no reason to copy the files to the mod and doing so will lead to needing to update the file after a major update to use new sprites, it's best to create a new file in the folder for sprite definitions.
 The following is an example of an interface file that defines both of the sprites:
 
 When copying from the template, note to change the `animationmaskfile` in each animation within the sprite with the shine alongside the `texturefile` and `name`.
@@ -594,18 +562,18 @@ An example style definition is as such:
 
 ```text
 style = {
-	name = example_style
-	unavailable = GFX_focus_unavailable_example
-	completed = GFX_focus_completed_example
-	available = GFX_focus_can_start_example
-	current = GFX_focus_current_example
+    name = example_style
+    unavailable = GFX_focus_unavailable_example
+    completed = GFX_focus_completed_example
+    available = GFX_focus_can_start_example
+    current = GFX_focus_current_example
 }
 ```
 
 ### AI will do
 
-`ai_will_do = { ... }` is a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#ai-will-do>) that decides the likelihood for the AI to do this focus if [an AI strategy plan](#ai-strategy-plans) is not set.  
-By default, each focus has a score of 1. The arguments of `base` (changing the value), `add`, and `factor` (multiplying it) can be used to modify it.  
+`ai_will_do = { ... }` is a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#ai-will-do>) that decides the likelihood for the AI to do this focus if [an AI strategy plan](#ai-strategy-plans) is not set.
+By default, each focus has a score of 1. The arguments of `base` (changing the value), `add`, and `factor` (multiplying it) can be used to modify it.
 Within the `ai_will_do = { ... }` block, `modifier = { ... }` functions as a trigger block where the prior three value-modifying arguments are also supported. The value will be modified if the triggers are true. For example, the following will result in the value of 15 for POL and a value of 5 for every other country:
 
 ```text
@@ -620,14 +588,14 @@ ai_will_do = {
 
 An arbitrarily large amount of modifiers is possible to add to an ai\_will\_do, and they will apply in the order they're put in the code. It is also possible to use variables within a modifier of the ai\_will\_do value.
 
-The way that the value is evaluated for AI picking the focus is that, when picking a focus to do, it generates a random decimal value between 0 and the ai\_will\_do value for each of the focuses. If the evaluated focus has a prerequisite focus that the AI has just completed, the generated ai\_will\_do value gets multiplied by 1.5 before the game picks a focus. If the [AI strategy plan](#ai-strategy-plans) that the country is currently following has `focus_factors = { ... }` defined for this focus, the value gets multiplied by the specified value. Afterwards, the game picks the focus that has the highest generated value. If neither of the focuses has a value above 0, the AI will not pick any of them, instead going into continuous focuses if possible or not doing any otherwise.  
+The way that the value is evaluated for AI picking the focus is that, when picking a focus to do, it generates a random decimal value between 0 and the ai\_will\_do value for each of the focuses. If the evaluated focus has a prerequisite focus that the AI has just completed, the generated ai\_will\_do value gets multiplied by 1.5 before the game picks a focus. If the [AI strategy plan](#ai-strategy-plans) that the country is currently following has `focus_factors = { ... }` defined for this focus, the value gets multiplied by the specified value. Afterwards, the game picks the focus that has the highest generated value. If neither of the focuses has a value above 0, the AI will not pick any of them, instead going into continuous focuses if possible or not doing any otherwise.
 **Due to that algorithm, low values are less likely to be picked than intuition suggests.**
 
 To reiterate, **this is only evaluated if the [AI strategy plan](#ai-strategy-plans) for the country doesn't have the order of the focuses set** or if none of the focuses in that order can be followed.Comparing the chances between focuses is the following:
 
 #### Formulas for chance calculation
 
-As the general formula can be complex to calculate without a special tool, simpler calculations for special cases can provide quite useful: whether for approximating a chance by substituting similar numbers or for calculating the exact chance if the numbers align. Each case will be provided with three paragraphs — The formula in the first paragraph, an example in the second paragraph, and a general explanation of why it applies (though not necessarily a rigorous proof) in the third paragraph. The total chance will be given on the scale of 0—1; focuses are assumed each to have a positive value, as negatives are unintended and a focus with a chance of zero will never get picked by the game's AI meaning they can be excluded from the calculation entirely; and the modifiers applying to the focus' AI will do value (e.g. from AI strategy plans or the bonus for continuing the same branch) have already been applied, as multiplying the result of the rolled dice by a number would be the same as multiplying the ends of a range by that number.  
+As the general formula can be complex to calculate without a special tool, simpler calculations for special cases can provide quite useful: whether for approximating a chance by substituting similar numbers or for calculating the exact chance if the numbers align. Each case will be provided with three paragraphs — The formula in the first paragraph, an example in the second paragraph, and a general explanation of why it applies (though not necessarily a rigorous proof) in the third paragraph. The total chance will be given on the scale of 0—1; focuses are assumed each to have a positive value, as negatives are unintended and a focus with a chance of zero will never get picked by the game's AI meaning they can be excluded from the calculation entirely; and the modifiers applying to the focus' AI will do value (e.g. from AI strategy plans or the bonus for continuing the same branch) have already been applied, as multiplying the result of the rolled dice by a number would be the same as multiplying the ends of a range by that number.
 In shortened form, the ai\_will\_do value of a focus will be referred simply as the "focus' value".
 
 - **Let there be**
@@ -756,10 +724,10 @@ Within that plan, `name = "AI plan's name"` and `desc = "AI plan's description"`
 
 ## Notes
 
-**[^](#ref-a)** **a:** Dynamic countries, when created, will go through the check assigning a focus tree again. As well as that, reloading focuses by saving over a focus tree file while the debug mode is turned on via launch settings will also refresh this check.  
-**[^](#ref-b)** **b:** The default position is defined within the pallete's definition in a /Hearts of Iron IV/common/continuous\_focus/\*.txt file  
-**[^](#ref-c)** **c:** The exact size of a single x and y coordinate unit uses the focus\_spacing positionType within /Hearts of Iron IV/interface/nationalfocusview.gui  
-**[^](#ref-d)** **d:** If [mark\_focus\_tree\_layout\_dirty](<Effect - Hearts of Iron 4 Wiki.md#mark-focus-tree-layout-dirty>) is put within a focus reward, it wouldn't be marked as complete for the [has\_completed\_focus](<Triggers - Hearts of Iron 4 Wiki.md#has-completed-focus>) trigger at the time it's executed. This can be avoided by using a hidden event, fired immediately, which has the effect to refresh the check within its immediate. Alternatively, the [load\_focus\_tree](<Effect - Hearts of Iron 4 Wiki.md#load-focus-tree>) effect, set to have the focuses kept complete, can be used to mark the focus as complete before doing the refreshing.  
+**[^](#ref-a)** **a:** Dynamic countries, when created, will go through the check assigning a focus tree again. As well as that, reloading focuses by saving over a focus tree file while the debug mode is turned on via launch settings will also refresh this check.
+**[^](#ref-b)** **b:** The default position is defined within the pallete's definition in a /Hearts of Iron IV/common/continuous\_focus/\*.txt file
+**[^](#ref-c)** **c:** The exact size of a single x and y coordinate unit uses the focus\_spacing positionType within /Hearts of Iron IV/interface/nationalfocusview.gui
+**[^](#ref-d)** **d:** If [mark\_focus\_tree\_layout\_dirty](<Effect - Hearts of Iron 4 Wiki.md#mark-focus-tree-layout-dirty>) is put within a focus reward, it wouldn't be marked as complete for the [has\_completed\_focus](<Triggers - Hearts of Iron 4 Wiki.md#has-completed-focus>) trigger at the time it's executed. This can be avoided by using a hidden event, fired immediately, which has the effect to refresh the check within its immediate. Alternatively, the [load\_focus\_tree](<Effect - Hearts of Iron 4 Wiki.md#load-focus-tree>) effect, set to have the focuses kept complete, can be used to mark the focus as complete before doing the refreshing.
 **[^](#ref-e)** **e:** Within folder paths, a backslash (\) can result in the game not being able to read the folder, since it's expected to be used as an [escape character](http://en.wikipedia.org/wiki/Escape_character). Instead, it's preferable to use forward slashes, as in `texturefile = gfx/interface/goals/my_file.dds`.
 
 ## References

@@ -51,8 +51,8 @@
 
 ---
 
-A modifier is essentially a variable used in internal calculations. However, unlike [Defines](<Defines - Hearts of Iron 4 Wiki.md>), modifiers are dynamically changeable within any modifier block. In general, modifiers are typically used to create a consistent and long-lasting effect that can be easily reversed.  
-Each modifier has the exact same layout: `modifier_name = 0.1`. This adds the specified value to the modifier's total value for the scope where it is applied. For example, assuming that there are no other modifiers changing that to the country, having `political_power_gain = 0.2` and `political_power_gain = -0.05` applied to the country (potentially in different modifier blocks) will result in a total of **+0.15** political power gain above the base gain. Due to how modifiers work, **a modifier with the value of 0 will always do nothing.** This also means that negative modifiers will always work and have the opposite effect of positive modifiers.  
+A modifier is essentially a variable used in internal calculations. However, unlike [Defines](<Defines - Hearts of Iron 4 Wiki.md>), modifiers are dynamically changeable within any modifier block. In general, modifiers are typically used to create a consistent and long-lasting effect that can be easily reversed.
+Each modifier has the exact same layout: `modifier_name = 0.1`. This adds the specified value to the modifier's total value for the scope where it is applied. For example, assuming that there are no other modifiers changing that to the country, having `political_power_gain = 0.2` and `political_power_gain = -0.05` applied to the country (potentially in different modifier blocks) will result in a total of **+0.15** political power gain above the base gain. Due to how modifiers work, **a modifier with the value of 0 will always do nothing.** This also means that negative modifiers will always work and have the opposite effect of positive modifiers.
 A modifier's current total value can be received as a variable by reading `modifier@modifier_name`, such as `set_variable = { my_var = modifier@political_power_gain }`. This works for countries and states, but for unit leaders, `unit_modifier@modifier_name` and `leader_modifier@modifier_name` is used instead.
 
 The following are *not* modifiers, even if they are similar:
@@ -186,7 +186,7 @@ Global modifiers are applied by the hard-coded game features. Their names mustn'
 
 ### Difficulty modifiers
 
-These are applied within /Hearts of Iron IV/common/difficulty\_settings/\*.txt files. This is used in the menu to strengthen specific countries at the game's start within game rules. If there are no difficulty settings defined, the menu will not be possible to open.  
+These are applied within /Hearts of Iron IV/common/difficulty\_settings/\*.txt files. This is used in the menu to strengthen specific countries at the game's start within game rules. If there are no difficulty settings defined, the menu will not be possible to open.
 Each difficulty setting is defined as a `difficulty_setting = { ... }` block, which must lie within an overarching `difficulty_settings = { ... }` block. The following arguments can go into difficulty settings:
 
 - `key = localisation_key` is the [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) key used as the name of the difficulty setting as it shows up in the game rules menu/
@@ -219,12 +219,12 @@ Not to be confused with opinion modifiers. The relation modifiers apply a target
 
 ```text
 test_relation_modifier = {
-	valid_relation_trigger = {
-		FROM = {
-			has_government = ROOT		# same ruling party as ROOT
-		}
-	}
-	compliance_gain = 0.2				# FROM's states have 20% more compliance gain when controlled by ROOT
+    valid_relation_trigger = {
+        FROM = {
+            has_government = ROOT		# same ruling party as ROOT
+        }
+    }
+    compliance_gain = 0.2				# FROM's states have 20% more compliance gain when controlled by ROOT
 }
 ```
 
@@ -232,8 +232,8 @@ They can be added by the add\_relation\_modifier effect, used as such:
 
 ```text
 add_relation_modifier = {
-	target = TAG
-	modifier = test_relation_modifier
+    target = TAG
+    modifier = test_relation_modifier
 }
 ```
 
@@ -241,14 +241,14 @@ remove\_relation\_modifier, which works similarly, can remove them.
 
 ### Province modifiers
 
-Province modifiers apply a modifier to a specific province rather than a state. They can be applied via the add\_province\_modifier effect, and removed with remove\_province\_modifier. More info on how to use these can be seen in the effects page.  
+Province modifiers apply a modifier to a specific province rather than a state. They can be applied via the add\_province\_modifier effect, and removed with remove\_province\_modifier. More info on how to use these can be seen in the effects page.
 An example definition looks like
 
 ```text
-mod_modifier = { 
-	army_speed_factor = -0.5
-	army_defence_factor = 0.5
-	dig_in_speed_factor = 0.5
+mod_modifier = {
+    army_speed_factor = -0.5
+    army_defence_factor = 0.5
+    dig_in_speed_factor = 0.5
 }
 ```
 
@@ -256,10 +256,10 @@ Many state-scope modifiers will work in province scope as well. In order to make
 
 ```text
 iconType = {
-	name = "<modifier name>_icon"
-	spriteType = "GFX_modifiers_<modifier name>_icon"
-	position = { x = 0 y = 0 }
-	Orientation = "UPPER_LEFT"			
+    name = "<modifier name>_icon"
+    spriteType = "GFX_modifiers_<modifier name>_icon"
+    position = { x = 0 y = 0 }
+    Orientation = "UPPER_LEFT"
 }
 ```
 
@@ -267,8 +267,8 @@ The spriteType you have defined needs to be defined in /Hearts of Iron IV/interf
 
 ```text
 spriteType = {
-	name = "GFX_modifiers_<modifier name>_icon"
-	textureFile = "gfx/interface/modifiers_<modifier name>_icon.dds"
+    name = "GFX_modifiers_<modifier name>_icon"
+    textureFile = "gfx/interface/modifiers_<modifier name>_icon.dds"
 }
 ```
 
@@ -295,7 +295,7 @@ add_power_balance_modifier = {
 
 ## Modifier definitions
 
-Modifier definitions allow the creation of a custom modifier, which can be accessed as a variable when you wish to use it. After being defined, they function entirely like a new variable, being possible to read as a variable with the same `modifier@modifier_name` procedure. They will not have any effect by default and function only as a way to change the variable's value in an additive way with modifier blocks.  
+Modifier definitions allow the creation of a custom modifier, which can be accessed as a variable when you wish to use it. After being defined, they function entirely like a new variable, being possible to read as a variable with the same `modifier@modifier_name` procedure. They will not have any effect by default and function only as a way to change the variable's value in an additive way with modifier blocks.
 Each modifier token is defined within /Hearts of Iron IV/common/modifier\_definitions/\*.txt files as a separate code block, where the name of the code block serves as the ID of the modifier definition. There are the following arguments that can go inside of it:
 
 - `color_type = good` decides the colour of the modifier's value itself. There are three values, `good`, `bad`, and `neutral`. `neutral` is permamently yellow, while `good` turns the positive values **green** and negative values **red**. `bad` is the reversal of `good`.
@@ -316,13 +316,13 @@ The modifier definition's ID is also used as the [localisation](<Localisation - 
 
 ```text
 modifier_definition_example = {
-	color_type = good
-	value_type = number
-	precision = 1
-	postfix = daily
-	
-	category = country
-	category = state
+    color_type = good
+    value_type = number
+    precision = 1
+    postfix = daily
+
+    category = country
+    category = state
 }
 modifier_definition_example_2 = {
     color_type = bad
@@ -1824,24 +1824,7 @@ The list of modifiers may be outdated. A complete, but unsorted, list of modifie
     and
     consumer_goods_factor = -0.5
     will, in total, multiply the consumer goods value by
-    (
-    1
-    −
-    0.5
-    )
-    (
-    1
-    +
-    0.5
-    )
-    =
-    0.5
-    ⋅
-    1.5
-    =
-    0.75
-    {\displaystyle (1-0.5)(1+0.5)=0.5\cdot 1.5=0.75}
-    .
+    (1 - 0.5) * (1 + 0.5) = 0.75.
     ```
   - Version added: 1.0
 
@@ -5121,7 +5104,7 @@ Note that most of these modifiers are not only in country scope but also in ace 
 
 #### Targeted modifiers
 
-These modifiers are targeted, meaning that they must be used in a block for targeted modifiers rather than regular modifiers. These include `targeted_modifier = { ... }` in ideas, traits, advisors, and decisions; [relation modifiers](#relation-modifiers).  
+These modifiers are targeted, meaning that they must be used in a block for targeted modifiers rather than regular modifiers. These include `targeted_modifier = { ... }` in ideas, traits, advisors, and decisions; [relation modifiers](#relation-modifiers).
 A `targeted_modifier` block is structured as such:
 
 ```text
@@ -5976,26 +5959,9 @@ This is limited to [static modifiers](#static-modifiers) defined for weather.
 
 ## Notes and references
 
-**[^](#ref-a)** **a:** A few modifiers, such as [consumer\_goods\_factor](#consumer-goods-factor), instead get added in a multiplicative fashion. What this means is that, for example, `consumer_goods_factor = 0.1` and `consumer_goods_factor = 0.2` as separate ideas don't sum up to a 0.3 bonus, but instead multiply the consumer goods by 
+**[^](#ref-a)** **a:** A few modifiers, such as [consumer\_goods\_factor](#consumer-goods-factor), instead get added in a multiplicative fashion. What this means is that, for example, `consumer_goods_factor = 0.1` and `consumer_goods_factor = 0.2` as separate ideas don't sum up to a 0.3 bonus, but instead multiply the consumer goods by
 
-(
-1
-+
-0.1
-)
-(
-1
-+
-0.2
-)
-=
-1.1
-⋅
-1.2
-=
-1.32
-{\displaystyle (1+0.1)(1+0.2)=1.1\cdot 1.2=1.32}
-![{\displaystyle (1+0.1)(1+0.2)=1.1\cdot 1.2=1.32}](media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img29.svg), resulting in a 32% increase instead of 30%.
+{\displaystyle (1+0.1)(1+0.2)=1.1\cdot 1.2=1.32}, resulting in a 32% increase instead of 30%.
 
 1. [↑](#cite-ref-1) [Developer Diary | Small Features #1](https://forum.paradoxplaza.com/forum/index.php?threads/1593911), 1.13 developer diary.
 

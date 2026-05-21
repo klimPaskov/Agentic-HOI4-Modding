@@ -18,17 +18,17 @@ Once in the file, you want to start off with the name list set in your OOB found
 
 ```text
 NEP_MTN_01 = { # DIVISIONS_NAME_GROUP, set in your units folder
-	name = "Mountain Divisions" # The name you want for your name list, can either be a string or in quotes.
-	for_countries = { NEP } # Sets what countries can use this name list, change NEP to your countries tag
-	can_use = { always = yes } # A country scope trigger that can lock or unlock a division name group given certain triggers
-	division_types = { "mountaineers" } # Sets what types of units can use this name list, replace mountaineers with whatever type of unit you are using
-	fallback_name = "%d Nepali Dibhijana" # This will be used if you run out of numbered divisions. Always use either %d for decimal numbers or %s for Roman numerals but you can change the rest
-	link_numbering_with = { NEP_INF_01 } # Alternative to fallback name, if you run out of numbers in this group you can use another list after it.
-	ordered = {
-		1 = { "%d Nepali Dibhijana" } # The first division.
-		2 = { "%d Nepali Dibhijana" } # Numbers must always start from 1 and go up
-		4 = { "%d Nepali Dibhijana" } # The numbers do not need to be sequential
-	}
+    name = "Mountain Divisions" # The name you want for your name list, can either be a string or in quotes.
+    for_countries = { NEP } # Sets what countries can use this name list, change NEP to your countries tag
+    can_use = { always = yes } # A country scope trigger that can lock or unlock a division name group given certain triggers
+    division_types = { "mountaineers" } # Sets what types of units can use this name list, replace mountaineers with whatever type of unit you are using
+    fallback_name = "%d Nepali Dibhijana" # This will be used if you run out of numbered divisions. Always use either %d for decimal numbers or %s for Roman numerals but you can change the rest
+    link_numbering_with = { NEP_INF_01 } # Alternative to fallback name, if you run out of numbers in this group you can use another list after it.
+    ordered = {
+        1 = { "%d Nepali Dibhijana" } # The first division.
+        2 = { "%d Nepali Dibhijana" } # Numbers must always start from 1 and go up
+        4 = { "%d Nepali Dibhijana" } # The numbers do not need to be sequential
+    }
 }
 ```
 
@@ -42,15 +42,15 @@ In this file, it does not rely upon a set name within your OOB file like in divi
 
 ```text
 PAK_DD_HISTORICAL = { # Any name you want
-	name = NAME_THEME_HISTORICAL_DESTROYERS # The name you want to appear in the naval designer, can either be a string or in quotes.
-	for_countries = { PAK } # Sets what countries can use this name list, change PAK to your countries tag
-	type = ship # Do not change
-	ship_types = { ship_hull_light destroyer } # First one is MTG technology, second is non-MTG technology. Set it to the technology you are using
-	prefix = "PNS " # The name that comes before your ships
-	fallback_Name = "Destroyer %d" # This will be used if you run out of numbered divisions. Always use either %d for decimal numbers or %s for Roman numerals but you can change the rest
-	unique = {
-		"Shamsher" "Tippu Sultan" "Tariq" # List all of the custom ship names they could use, do not use commas
-	}
+    name = NAME_THEME_HISTORICAL_DESTROYERS # The name you want to appear in the naval designer, can either be a string or in quotes.
+    for_countries = { PAK } # Sets what countries can use this name list, change PAK to your countries tag
+    type = ship # Do not change
+    ship_types = { ship_hull_light destroyer } # First one is MTG technology, second is non-MTG technology. Set it to the technology you are using
+    prefix = "PNS " # The name that comes before your ships
+    fallback_Name = "Destroyer %d" # This will be used if you run out of numbered divisions. Always use either %d for decimal numbers or %s for Roman numerals but you can change the rest
+    unique = {
+        "Shamsher" "Tippu Sultan" "Tariq" # List all of the custom ship names they could use, do not use commas
+    }
 }
 ```
 
@@ -60,11 +60,11 @@ Defined in /Hearts of Iron IV/common/units/names/\*.txt, for countries that lack
 
 ```text
 generic = { # Makes it apply to all countries
-	submarine = { # Name of the equipment
-		prefix = "" # The name that comes before equipment
-		generic = { "Submarine" } # Sets the equipments name
-		unique = {  } # For generic equipment, do not put anything here
-	}
+    submarine = { # Name of the equipment
+        prefix = "" # The name that comes before equipment
+        generic = { "Submarine" } # Sets the equipments name
+        unique = {  } # For generic equipment, do not put anything here
+    }
 }
 ```
 
@@ -74,18 +74,18 @@ Stored in /Hearts of Iron IV/common/units/codenames\_operatives, these codenames
 
 ```text
 codename_list_id = {				# ID of the namelist
-	name = codename_list_name		# Name of the namelist, can match ID
+    name = codename_list_name		# Name of the namelist, can match ID
 
-	for_countries = { TAG1 TAG2 }	# Countries using it
+    for_countries = { TAG1 TAG2 }	# Countries using it
 
-	type = codename					# To notify to the game that it's a codename list
+    type = codename					# To notify to the game that it's a codename list
 
-	fallback_name = "Agent %d"		# In case uniques run out.
+    fallback_name = "Agent %d"		# In case uniques run out.
 
-	unique = {						# Unique codenames, only 1 operative at a time can use them
-		"Codename 1"
-		"Codename 2"
-	}
+    unique = {						# Unique codenames, only 1 operative at a time can use them
+        "Codename 1"
+        "Codename 2"
+    }
 }
 ```
 

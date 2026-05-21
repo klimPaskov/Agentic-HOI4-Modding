@@ -65,49 +65,12 @@ This will create the `my_decision_1` and `my_decision_2` decisions, with the def
 A decision's name according to the currently-turned on language can be defined in any [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) file, taking the decision's name as key, and the decision's name with \_desc added in the end as the name for the localisation key for the description. As an example, the localisation for these decisions for the English language will look like the following within any /Hearts of Iron IV/localisation/english/\*\_l\_english.yml file:
 
 ```text
-l_english
-my_decision_category
-"My
- 
-decision
- 
-category"
-
- 
-my_decision_category_desc
-"My
- 
-decision
- 
-category's
- 
-description"
-
- 
-my_decision_1
-"My
- 
-decision"
-
- 
-my_decision_1_desc
-"My
- 
-decision's
- 
-description"
-
- 
-my_decision_2
-"My
- 
-decision
- 
-without
- 
-a
- 
-description"
+l_english:
+my_decision_category: "My decision category"
+my_decision_category_desc: "My decision category's description"
+my_decision_1: "My decision"
+my_decision_1_desc: "My decision's description"
+my_decision_2: "My decision without a description"
 ```
 
 ## Arguments for decisions and categories
@@ -144,8 +107,8 @@ available = {
 
 ### Icon
 
-The icon is the small picture displayed to the left of decision's or category's name. Icons use sprites, defined in any /Hearts of Iron IV/interface/\*.gfx file, by default in `decisions.gfx`. Within a decision or a category, it is set with `icon = icon_name`.   
-Note that the game automatically inserts either `GFX_decision_` or a `GFX_decision_category_`, depending on whether it's in a decision or a category. As such, the example with icon\_name will make it use the `GFX_decision_icon_name` sprite for decisions and the `GFX_decision_category_icon_name` for categories, or, other way around, to use `GFX_decision_sprite_name` in a decision, it should have `icon = sprite_name`.  
+The icon is the small picture displayed to the left of decision's or category's name. Icons use sprites, defined in any /Hearts of Iron IV/interface/\*.gfx file, by default in `decisions.gfx`. Within a decision or a category, it is set with `icon = icon_name`.
+Note that the game automatically inserts either `GFX_decision_` or a `GFX_decision_category_`, depending on whether it's in a decision or a category. As such, the example with icon\_name will make it use the `GFX_decision_icon_name` sprite for decisions and the `GFX_decision_category_icon_name` for categories, or, other way around, to use `GFX_decision_sprite_name` in a decision, it should have `icon = sprite_name`.
 However, `icon = GFX_decision_icon_name` will also work, as the game will check the spriteType with the exact same name as well. Overall, it's to the developer's discretion whether to include `GFX_decision_`/`GFX_decision_category_` in the icon or not. Additionally, you can use triggers inside of the icon definition when it is a decision, as follows:
 
 ```text
@@ -161,17 +124,17 @@ icon = GFX_decision_my_icon_two
 
 ### Priority
 
-Priority is used to change the order in which decisions or categories are displayed from top to bottom, with a higher priority being closer to the top. By default, a decision has the priority of 1. Decision priority can be set in a short form for a static value or in a long form, similar to [ai\_will\_do](#ai) formatting.  
-In short form, the following code will set a decision or category to have the priority value of 10: `priority = 10`  
+Priority is used to change the order in which decisions or categories are displayed from top to bottom, with a higher priority being closer to the top. By default, a decision has the priority of 1. Decision priority can be set in a short form for a static value or in a long form, similar to [ai\_will\_do](#ai) formatting.
+In short form, the following code will set a decision or category to have the priority value of 10: `priority = 10`
 In long form, the following code will have a priority value of 13 for POL and 3 for other countries:
 
 ```text
 priority = {
-	base = 3
-	modifier = {
-		add = 10
-		tag = POL
-	}
+    base = 3
+    modifier = {
+        add = 10
+        tag = POL
+    }
 }
 ```
 
@@ -227,7 +190,7 @@ A decision category can be assigned a map area, which will show up in the top of
 
 ```text
 on_map_area = {
-    state = 123 
+    state = 123
     name = my_localisation_key
     zoom = 850
     target_root_trigger = {
@@ -236,9 +199,9 @@ on_map_area = {
 }
 ```
 
-`state` sets a singular state that's used as the centre of the area where the camera will move. If the map area is to be dynamic, then formatting similar to [targeted decisions](#targeted-decisions) can be used, with `targets`, `target_array`, and `target_trigger` being available and mixable.  
-`name` is the [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) key that will be used as the name of the pseudo-decision that moves the camera to the map area.  
-`zoom` is the zoom level for the map area, set in the amount of pixels off the ground, meaning that a lower value results in it being zoomed in more. For comparison, by default, the player can change the camera zoom between 50 and 3000.  
+`state` sets a singular state that's used as the centre of the area where the camera will move. If the map area is to be dynamic, then formatting similar to [targeted decisions](#targeted-decisions) can be used, with `targets`, `target_array`, and `target_trigger` being available and mixable.
+`name` is the [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) key that will be used as the name of the pseudo-decision that moves the camera to the map area.
+`zoom` is the zoom level for the map area, set in the amount of pixels off the ground, meaning that a lower value results in it being zoomed in more. For comparison, by default, the player can change the camera zoom between 50 and 3000.
 Additionally, each of the trigger blocks defined for decisions and categories (aside from `available`) can go inside of `on_map_area`, such as `target_root_trigger`.
 
 An example map\_area with a dynamic target trigger:
@@ -288,7 +251,7 @@ my_map_category = {
         }
     }
     on_map_area = {
-        state = 123 
+        state = 123
         targets = { capital }
         zoom = 350
     }
@@ -357,38 +320,13 @@ custom_cost_text = decision_cost_CP_15
 The localisation file will have the following:
 
 ```text
-l_english
-decision_cost_CP_15
-"£command_power
-  
-§Y15§!"
-
- 
-decision_cost_CP_15_blocked
-"£command_power
-  
-§R15§!"
-
- 
-decision_cost_CP_15_tooltip
-"It
- 
-costs
- 
-£command_power
-  
-§Y15§!
- 
-to
- 
-take
- 
-the
- 
-decision"
+l_english:
+decision_cost_CP_15: "£command_power §Y15§!"
+decision_cost_CP_15_blocked: "£command_power §R15§!"
+decision_cost_CP_15_tooltip: "It costs £command_power §Y15§! to take the decision"
 ```
 
-In order to show icons, [text icons](<Localisation - Hearts of Iron 4 Wiki.md#text-icons>) are used.  
+In order to show icons, [text icons](<Localisation - Hearts of Iron 4 Wiki.md#text-icons>) are used.
 **A custom cost will not actually cost anything**, and what you set it to cost will have to be subtracted within the `complete_effect` of the decision, preferably as a hidden effect.
 
 As the custom cost can't be used in conjunction with the regular cost, if it includes political power, the AI will not be aware that it should save up an amount of it before taking the decision. This can be remidified with `ai_hint_pp_cost = 100`: this attribute will make the AI think that the decision will use 100 political power regardless of whether it does or not, making sure it will save up that much before trying to use it. This must be a constant amount rather than being a variable.
@@ -409,8 +347,8 @@ targeted_modifier = {
 }
 ```
 
-In order to make the timer cancel early without providing the effects, `visible = { ... }` does not work by default.  
-Instead, `cancel_trigger = { ... }` is used as a trigger block. Upon it being evaluated as true, the decision timer ends without `remove_effect = { ... }` being executed. `cancel_if_not_visible = yes`, false by default, serves as an easy way to add visible's triggers into the `cancel_trigger = { ... }` block.  
+In order to make the timer cancel early without providing the effects, `visible = { ... }` does not work by default.
+Instead, `cancel_trigger = { ... }` is used as a trigger block. Upon it being evaluated as true, the decision timer ends without `remove_effect = { ... }` being executed. `cancel_if_not_visible = yes`, false by default, serves as an easy way to add visible's triggers into the `cancel_trigger = { ... }` block.
 Upon the decision being cancelled, `cancel_effect = { ... }` is an effect block that gets executed. This can be useful as a way to reverse the effects applied within the complete effect.
 
 ### AI
@@ -433,8 +371,8 @@ ai_will_do = {
 
 ### Warning for war
 
-If your decision leads to a nation declaring war on another nation, there are several arguments that can be used to inform the targeted nation that a war is coming, as well as alert the AI to begin moving troops onto the border:  
-`war_with_on_remove = TAG` will make the game assume that the decision, within its `remove_effect` will declare war on the specified country, making it prepare when the timer starts.  
+If your decision leads to a nation declaring war on another nation, there are several arguments that can be used to inform the targeted nation that a war is coming, as well as alert the AI to begin moving troops onto the border:
+`war_with_on_remove = TAG` will make the game assume that the decision, within its `remove_effect` will declare war on the specified country, making it prepare when the timer starts.
 `war_with_on_complete = TAG` will make the game assume that the decision, within its `complete_effect` will declare war on the specified country, making it prepare when the decision becomes available.
 
 These arguments do not work for targeted decisions; see [Targeted Decisions: Warning for War](#warning-for-war-2).
@@ -570,8 +508,8 @@ my_mission = {
 
 ## Targeted decisions
 
-In addition to regular decisions that are taken by the country towards that same country, it is possible to make a decision be targeted towards a different country or group of countries. In that case, the decision will clone itself for each country that it gets targeted towards, putting the flag of the country in the bottom right of the decision's icon. The targeted country will be possible to reference in code using [FROM](<Scopes - Hearts of Iron 4 Wiki.md#dual-scopes>), while ROOT is still the country that gets the decision. **Despite what the names imply, FROM is the target of the decision rather than the country doing it.**  
-`fire_only_once`, in this case, will make the decision fire only once per each target country: a decision targeted towards BLR will not disappear if a decision of the same ID targered towards LIT gets completed.  
+In addition to regular decisions that are taken by the country towards that same country, it is possible to make a decision be targeted towards a different country or group of countries. In that case, the decision will clone itself for each country that it gets targeted towards, putting the flag of the country in the bottom right of the decision's icon. The targeted country will be possible to reference in code using [FROM](<Scopes - Hearts of Iron 4 Wiki.md#dual-scopes>), while ROOT is still the country that gets the decision. **Despite what the names imply, FROM is the target of the decision rather than the country doing it.**
+`fire_only_once`, in this case, will make the decision fire only once per each target country: a decision targeted towards BLR will not disappear if a decision of the same ID targered towards LIT gets completed.
 Missions, as well as regular decisions, can be made targeted.
 
 A decision becomes targeted if any way to check for a target is added within the decision:
@@ -599,8 +537,8 @@ For targeted decisions, `target_root_trigger` is also possible to use, as a trig
 
 The regular arguments of `war_with_on_` do not work if using FROM as a target. Instead, there are alternatives for targeted decisions specifically:
 
-`war_with_target_on_complete = yes` - Equivalent to `war_with_on_complete = FROM`  
-`war_with_target_on_remove = yes` - Equivalent to `war_with_on_remove = FROM`  
+`war_with_target_on_complete = yes` - Equivalent to `war_with_on_complete = FROM`
+`war_with_target_on_remove = yes` - Equivalent to `war_with_on_remove = FROM`
 `war_with_target_on_timeout = yes` - Equivalent to `war_with_on_timeout = FROM`
 
 ### Additional note
@@ -635,10 +573,10 @@ my_targeted_decision = {
 
 ## State targeted decisions
 
-If the decision has `state_target = yes` then, instead, it'll be targeted towards a state. Possible values are: yes, no, any, any\_owned\_state, any\_controlled\_state, continent\_key (europe, africa, north\_america...). This will only have an effect if no 'targets' are specified, else this should be set to 'any' (or 'yes') if targets are used. Unless omitted or set to "no", makes the decision a state targeted decision. Which states will be checked depends on value:  
-- any (or yes): will check every state in the game against the 'target\_trigger'.  
-- any\_owned\_state: will check every state owned by the country. This is equivalent to adding 'is\_owned\_by = ROOT' in the target\_trigger.  
-- any\_controlled\_state: will check every state controlled by the country. This is equivalent to adding 'is\_controlled\_by = ROOT' in the target\_trigger.  
+If the decision has `state_target = yes` then, instead, it'll be targeted towards a state. Possible values are: yes, no, any, any\_owned\_state, any\_controlled\_state, continent\_key (europe, africa, north\_america...). This will only have an effect if no 'targets' are specified, else this should be set to 'any' (or 'yes') if targets are used. Unless omitted or set to "no", makes the decision a state targeted decision. Which states will be checked depends on value:
+- any (or yes): will check every state in the game against the 'target\_trigger'.
+- any\_owned\_state: will check every state owned by the country. This is equivalent to adding 'is\_owned\_by = ROOT' in the target\_trigger.
+- any\_controlled\_state: will check every state controlled by the country. This is equivalent to adding 'is\_controlled\_by = ROOT' in the target\_trigger.
 - continent\_key (europe, africa, north\_america...): will check every state in the continent. This is equivalent to adding 'is\_on\_continent = xxx' in the target\_trigger.
 
 When using explicit targets such as via `targets = {}` or `target_array = yes` only `state_target = yes/any` will work the others will produce an error
@@ -649,8 +587,8 @@ Decisions targeted towards states will have the icon appear over the states whil
 
 Additionally, The argument `on_map_mode` will determine where the targeted decisions appear in.
 
-`on_map_mode = map_only` will make the targeted decisions only appear on the map.  
-`on_map_mode = decision_view_only` will make the targeted decisions only appear in the decisions menu.  
+`on_map_mode = map_only` will make the targeted decisions only appear on the map.
+`on_map_mode = decision_view_only` will make the targeted decisions only appear in the decisions menu.
 `on_map_mode = map_and_decisions_view` will make the targeted decisions appear on both the map and the decisions menu.
 
 ### Example

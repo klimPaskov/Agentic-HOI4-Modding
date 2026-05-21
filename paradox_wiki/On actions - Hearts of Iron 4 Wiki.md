@@ -46,7 +46,7 @@ on_actions = {
                 country_event = welcome_event.1
             }
             ENG = {
-                country_event = { 
+                country_event = {
                     id = new_year.1
                     days = 365  # Fires on January 1 1937. Remember that leap days do not exist in-game.
                 }
@@ -90,7 +90,7 @@ on_actions = {
   - Description: Trigger the following commands at the first day of a new game, after country selection. Doesn't work with save loading.
   - Example:
     ```text
-    on_startup = { 
+    on_startup = {
         effect = {
             ENG = {
                 news_event = { id = news_event.1 days = 31 random_days = 27 } # Fires a news event in February 1936
@@ -122,7 +122,7 @@ on_actions = {
             if = {
                 limit = { has_variable = to_be_updated_daily }
                 add_to_variable = { to_be_updated_daily = 1 }
-            } 
+            }
         }
     }
     ```
@@ -143,7 +143,7 @@ on_actions = {
   - Example:
     ```text
     on_daily_SOV = {
-        effect = {  
+        effect = {
             if = {
                 limit = { has_war_with = GER }
                 SOV_escalate_the_war_effect = yes
@@ -161,7 +161,7 @@ on_actions = {
     on_weekly = {
         effect = {
             if = {
-                limit = { 
+                limit = {
                     has_intelligence_agency = yes
                     is_ai = yes
                 }
@@ -208,7 +208,7 @@ on_actions = {
   - Description: Triggers each month for every country separately
   - Example:
     ```text
-    on_monthly = { 
+    on_monthly = {
         random_events = {
             1 = random_event.0
             99 = 0
@@ -229,7 +229,7 @@ on_actions = {
                 max = 10
             }
             if = {
-                limit = { 
+                limit = {
                     check_variable = { USA_unrest = 10 }
                 }
                 country_event = usa.rebellion.0
@@ -251,8 +251,8 @@ on_actions = {
     ```
   - Example:
     ```text
-    on_stage_coup = { 
-        effect = { 
+    on_stage_coup = {
+        effect = {
         }
     }
     ```
@@ -268,13 +268,13 @@ on_actions = {
     ```
   - Example:
     ```text
-    on_coup_succeeded = { 
-        effect = { 
-            random_other_country = { 
-                limit = { 
+    on_coup_succeeded = {
+        effect = {
+            random_other_country = {
+                limit = {
                     has_government = democratic
                     original_tag = ROOT
-                } 
+                }
                 set_politics = { elections_allowed = yes }
             }
         }
@@ -940,7 +940,7 @@ on_actions = {
   - Example:
     ```text
     on_naval_invasion = {
-        effect = { 
+        effect = {
             ROOT = {    # Unlike most on_actions, ROOT isn't the default scope
                 add_political_power = 100
             }
@@ -954,7 +954,7 @@ on_actions = {
   - Description: Triggers the following commands whenever a landing occurs.
   - Example:
     ```text
-    on_paradrop = { 
+    on_paradrop = {
         effect = {
             FROM = {
                 controller = {
@@ -971,7 +971,7 @@ on_actions = {
   - Description: This differs from on_paradrop in that it is run once per paradrop, not once per unit dropped.
   - Example:
     ```text
-    on_paradrop = { 
+    on_paradrop = {
         effect = {
             FROM = {
                 controller = {

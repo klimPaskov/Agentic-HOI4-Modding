@@ -703,7 +703,7 @@ Several dual scopes may have a scope that varies depending on where it's used, s
         target = FROM
         type = annex_everything
     }
-    
+
     FROM = {
         load_oob = defend_ourselves
     }
@@ -769,7 +769,7 @@ Several dual scopes may have a scope that varies depending on where it's used, s
   - Target type: Country scope
   - Example:
     ```text
-    controller = { 
+    controller = {
         ROOT = {
             create_wargoal = {
                 target = PREV
@@ -1654,7 +1654,7 @@ These effects refer to the border wars that simulate combat on a border between 
             modifier = 0.1
             dig_in_factor = 0
             terrain_factor = 0
-        }	
+        }
         defender = {
             state = 408
             num_provinces = 4
@@ -3488,10 +3488,10 @@ Mana in this usage means political power, stability, war support, and other valu
   - Example:
     ```text
     set_popularities = {
-    	democratic = 50
-    	neutrality = 15
-    	fascism = 30
-    	communism = 5
+        democratic = 50
+        neutrality = 15
+        fascism = 30
+        communism = 5
     }
     ```
   - Description: Sets the political party popularities for the current scope.
@@ -4448,7 +4448,7 @@ Balance of power is defined in /Hearts of Iron IV/common/bop/\*.txt files.
     ```text
     add_faction_goal_slot = {
         category  = short_term
-        value = 1 
+        value = 1
     }
     ```
   - Description: Adds extra goal slots to the faction for a specific category.
@@ -5016,12 +5016,8 @@ Balance of power is defined in /Hearts of Iron IV/common/bop/\*.txt files.
     ```
   - Examples:
     ```text
-    (
-    See country tag aliases
-    )
-    (
-    See usage for PREV and PREV.PREV
-    )
+    (See country tag aliases)
+    (See usage for PREV and PREV.PREV)
     ```
   - Example:
     ```text
@@ -5161,15 +5157,15 @@ Balance of power is defined in /Hearts of Iron IV/common/bop/\*.txt files.
   - Example:
     ```text
     transfer_units_fraction= {
-    	target = SPD
-    	size = 0.5
-    	stockpile_ratio = 0.8
-    	army_ratio = 0.8
-    	navy_ratio = 0.5
-    	air_ratio = 0.5
-    	keep_unit_leaders_trigger = {
-    		has_trait = trait_SPA_nationalist_sympathies
-    	}
+        target = SPD
+        size = 0.5
+        stockpile_ratio = 0.8
+        army_ratio = 0.8
+        navy_ratio = 0.5
+        air_ratio = 0.5
+        keep_unit_leaders_trigger = {
+            has_trait = trait_SPA_nationalist_sympathies
+        }
     }
     ```
   - Description: Transfers a fraction of the military to a target, including units (either type: land, navy, or air), equipment, and unit leaders.
@@ -5211,7 +5207,7 @@ Balance of power is defined in /Hearts of Iron IV/common/bop/\*.txt files.
         state = 42
         controller = GER
         use_nuke = yes
-        nuke_type = nuclear_bomb 
+        nuke_type = nuclear_bomb
     }
     ```
   - Description:
@@ -6260,7 +6256,7 @@ This includes national spirits, laws, designers, and advisors. (using the idea\_
     division_template = {
         name = "Test"
         is_locked = yes
-        division_cap = 3 
+        division_cap = 3
         division_names_group = USA_INF_01
         priority = 0
         template_counter = 0
@@ -6421,9 +6417,9 @@ This includes national spirits, laws, designers, and advisors. (using the idea\_
     ```
   - Example:
     ```text
-    set_division_template_cap = { 
-    	division_template = "Swiss Citizen Militia" 
-    	division_cap = SWI_militia_division_cap
+    set_division_template_cap = {
+        division_template = "Swiss Citizen Militia"
+        division_cap = SWI_militia_division_cap
     }
     ```
   - Description: Sets the cap of a division template. The template has to be locked first.
@@ -6437,8 +6433,8 @@ This includes national spirits, laws, designers, and advisors. (using the idea\_
     ```
   - Example:
     ```text
-    clear_division_template_cap = { 
-    	division_template = "Swiss Citizen Militia"
+    clear_division_template_cap = {
+        division_template = "Swiss Citizen Militia"
     }
     ```
   - Description: Clears the cap on the template, allowing it to have an unlimited amount of divisions.
@@ -6528,8 +6524,8 @@ This includes national spirits, laws, designers, and advisors. (using the idea\_
     ```text
     create_railway_gun = {
         equipment = railway_gun_equipment_1
-    	name = TAG_new_railway_gun
-    	location = 12406
+        name = TAG_new_railway_gun
+        location = 12406
     }
     ```
   - Description: Creates a railway gun.
@@ -6556,7 +6552,7 @@ This includes national spirits, laws, designers, and advisors. (using the idea\_
       category_light_infantry = {
         soft_attack = 0.05
       }
-    
+
       cavalry = {
         soft_attack = 0.05
         hard_attack = 0.05
@@ -6802,7 +6798,7 @@ This includes national spirits, laws, designers, and advisors. (using the idea\_
   - Example:
     ```text
     create_equipment_variant = {
-        name = "Vetehinen Class"								
+        name = "Vetehinen Class"
         type = ship_hull_submarine_1
         name_group = FIN_SS_HISTORICAL
         role_icon_index = 1
@@ -7149,9 +7145,9 @@ This includes national spirits, laws, designers, and advisors. (using the idea\_
   - Example:
     ```text
     add_doctrine_cost_reduction = {
-    	cost_reduction = 0.5
-    	uses = 2
-    	category = land_doctrine
+        cost_reduction = 0.5
+        uses = 2
+        category = land_doctrine
     }
     ```
   - Description: Adds a limited use cost reduction for doctrines.
@@ -7519,12 +7515,12 @@ This includes national spirits, laws, designers, and advisors. (using the idea\_
   - Example:
     ```text
     create_operative_leader = {
-    	name = "Jacques Duclos"
-    	GFX = GFX_portrait_jacques_duclos
-    	traits = { operative_infiltrator operative_natural_orator }
-    	bypass_recruitment = no
-    	available_to_spy_master = yes
-    	nationalities = { FRA POL }
+        name = "Jacques Duclos"
+        GFX = GFX_portrait_jacques_duclos
+        traits = { operative_infiltrator operative_natural_orator }
+        bypass_recruitment = no
+        available_to_spy_master = yes
+        nationalities = { FRA POL }
     }
     ```
   - Description: Creates an operative for the current scope with the specified attributes.
@@ -7567,8 +7563,8 @@ This includes national spirits, laws, designers, and advisors. (using the idea\_
   - Example:
     ```text
     free_random_operative = {
-    	captured_by = POL
-    	all = yes
+        captured_by = POL
+        all = yes
     }
     ```
   - Description: Frees one random captured operative or all of them.
@@ -7729,8 +7725,8 @@ These are the character-related effects in the country scope. For effects in cha
   - Example:
     ```text
     set_character_name = {
-    	character = my_character
-    	name = my_name
+        character = my_character
+        name = my_name
     }
     ```
   - Description: Sets the new name for the target character.
@@ -7748,7 +7744,7 @@ These are the character-related effects in the country scope. For effects in cha
   - Example:
     ```text
     character_list_tooltip = {
-    	limit = {
+        limit = {
             has_character_flag = SOV_targeted_for_purge_flag
         }
         random_select_amount = 4
@@ -7863,14 +7859,14 @@ These are the character-related effects in the country scope. For effects in cha
   - Example:
     ```text
     create_corps_commander = {
-    	name = "Jean de Lattre de Tassigny"
-    	picture = "Portrait_France_Jean_de_Lattre_de_Tassigny.dds"
-    	traits = { trickster brilliant_strategist }
-    	skill = 4
-    	attack_skill = 4
-    	defense_skill = 2
-    	planning_skill = 4
-    	logistics_skill = 3
+        name = "Jean de Lattre de Tassigny"
+        picture = "Portrait_France_Jean_de_Lattre_de_Tassigny.dds"
+        traits = { trickster brilliant_strategist }
+        skill = 4
+        attack_skill = 4
+        defense_skill = 2
+        planning_skill = 4
+        logistics_skill = 3
     }
     ```
   - Description: Creates a commander for the current scope with the specified attributes.
@@ -7919,14 +7915,14 @@ These are the character-related effects in the country scope. For effects in cha
   - Example:
     ```text
     create_field_marshal = {
-    	name = "Maurice Gamelin"
-    	portrait_path = "GFX_portrait_FRA_maurice_gamelin"
-    	traits = { defensive_doctrine }
-    	skill = 2
-    	attack_skill = 1
-    	defense_skill = 3
-    	planning_skill = 2
-    	logistics_skill = 1
+        name = "Maurice Gamelin"
+        portrait_path = "GFX_portrait_FRA_maurice_gamelin"
+        traits = { defensive_doctrine }
+        skill = 2
+        attack_skill = 1
+        defense_skill = 3
+        planning_skill = 2
+        logistics_skill = 1
     }
     ```
   - Description: Creates a field marshal for the current scope with the specified attributes.
@@ -7973,14 +7969,14 @@ These are the character-related effects in the country scope. For effects in cha
   - Example:
     ```text
     create_navy_leader = {
-    	name = "François Darlan"
-    	gfx = "GFX_portrait_FRA_francois_darlan"
-    	traits = { superior_tactician }
-    	skill = 3
-    	attack_skill = 2
-    	defense_skill = 4
-    	maneuvering_skill = 3
-    	coordination_skill = 2
+        name = "François Darlan"
+        gfx = "GFX_portrait_FRA_francois_darlan"
+        traits = { superior_tactician }
+        skill = 3
+        attack_skill = 2
+        defense_skill = 4
+        maneuvering_skill = 3
+        coordination_skill = 2
     }
     ```
   - Description: Creates a naval leader for the current scope with the specified attributes.
@@ -8120,13 +8116,13 @@ These are the character-related effects in the country scope. For effects in cha
   - Example:
     ```text
     create_country_leader = {
-    	name = AFG_mohammed_zahir_shah
-    	desc = "POLITICS_MOHAMMED_ZAHIR_SHAH_DESC"
-    	picture = GFX_AFG_mohammed_zahir_shah
-    	expire = "1965.1.1"
-    	ideology = despotism
-    	traits = {
-    	}
+        name = AFG_mohammed_zahir_shah
+        desc = "POLITICS_MOHAMMED_ZAHIR_SHAH_DESC"
+        picture = GFX_AFG_mohammed_zahir_shah
+        expire = "1965.1.1"
+        ideology = despotism
+        traits = {
+        }
     }
     ```
   - Notes:
@@ -8303,8 +8299,8 @@ These are the character-related effects in the country scope. For effects in cha
   - Example:
     ```text
     set_country_leader_description = {
-    	ideology = neutrality
-    	desc = LOC_KEY
+        ideology = neutrality
+        desc = LOC_KEY
     }
     ```
   - Description: Changes the country leader's description.
@@ -8329,8 +8325,8 @@ These are the character-related effects in the country scope. For effects in cha
   - Example:
     ```text
     set_country_leader_name = {
-    	ideology = neutrality
-    	name = LOC_KEY
+        ideology = neutrality
+        name = LOC_KEY
     }
     ```
   - Description: Changes the country leader's name.
@@ -8347,8 +8343,8 @@ These are the character-related effects in the country scope. For effects in cha
   - Example:
     ```text
     set_country_leader_portrait = {
-    	ideology = neutrality
-    	portrait = GFX_IMAGE_NAME
+        ideology = neutrality
+        portrait = GFX_IMAGE_NAME
     }
     ```
   - Description: Changes the country leader's portrait.
@@ -9441,9 +9437,9 @@ The effects here must be used within a **state** scope.
     ```
   - Example:
     ```text
-    create_unit = { 
-      division = "name = \"Tank division\" division_template = \"Tank Division\" start_manpower_factor = 1 force_equipment_variants = { medium_tank_chassis_2 = { owner = \"USA\" amount = 100 version_name = \"M4 Sherman\" }}" 
-      owner = USA 
+    create_unit = {
+      division = "name = \"Tank division\" division_template = \"Tank Division\" start_manpower_factor = 1 force_equipment_variants = { medium_tank_chassis_2 = { owner = \"USA\" amount = 100 version_name = \"M4 Sherman\" }}"
+      owner = USA
       count = 1
     }
     ```
@@ -9516,44 +9512,42 @@ The effects here must be used within a **state** scope.
   - Example:
     ```text
     add_province_modifier = {
-    	static_modifiers = { mod_modifier_1 mod_modifier_2 }
-    	province = 1234
+        static_modifiers = { mod_modifier_1 mod_modifier_2 }
+        province = 1234
     }
     ```
   - Example:
     ```text
     add_province_modifier = {
-    
-    	static_modifiers = { mod_modifier_1 mod_modifier_2 }
-    	province = {
-    		id = 1234
-    		id = 4321
-    
-    
-    
+
+        static_modifiers = { mod_modifier_1 mod_modifier_2 }
+        province = {
+            id = 1234
+            id = 4321
+
+
            days = 7
-    
-    
-    
-    	}
-    
-    
+
+
+        }
+
+
     }
     ```
   - Example:
     ```text
     add_province_modifier = {
-    
-    	static_modifiers = { mod_modifier_1 mod_modifier_2 }
-    	province = {
-    		all_provinces = yes
-    		limit_to_coastal = yes
-    		limit_to_border = yes
-    		limit_to_naval_base = yes
-    		limit_to_victory_point = yes
-    	}
-    
-    
+
+        static_modifiers = { mod_modifier_1 mod_modifier_2 }
+        province = {
+            all_provinces = yes
+            limit_to_coastal = yes
+            limit_to_border = yes
+            limit_to_naval_base = yes
+            limit_to_victory_point = yes
+        }
+
+
     }
     ```
   - Description: Adds a province modifier to the specified provinces in this state.
@@ -9589,37 +9583,37 @@ The effects here must be used within a **state** scope.
   - Example:
     ```text
     remove_province_modifier = {
-    	static_modifiers = { mod_modifier_1 mod_modifier_2 }
-    	province = 1234
+        static_modifiers = { mod_modifier_1 mod_modifier_2 }
+        province = 1234
     }
     ```
   - Example:
     ```text
     remove_province_modifier = {
-    
-    	static_modifiers = { mod_modifier_1 mod_modifier_2 }
-    	province = {
-    		id = 1234
-    		id = 4321
-    	}
-    
-    
+
+        static_modifiers = { mod_modifier_1 mod_modifier_2 }
+        province = {
+            id = 1234
+            id = 4321
+        }
+
+
     }
     ```
   - Example:
     ```text
     remove_province_modifier = {
-    
-    	static_modifiers = { mod_modifier_1 mod_modifier_2 }
-    	province = {
-    		all_provinces = yes
-    		limit_to_coastal = yes
-    		limit_to_border = yes
-    		limit_to_naval_base = yes
-    		limit_to_victory_point = yes
-    	}
-    
-    
+
+        static_modifiers = { mod_modifier_1 mod_modifier_2 }
+        province = {
+            all_provinces = yes
+            limit_to_coastal = yes
+            limit_to_border = yes
+            limit_to_naval_base = yes
+            limit_to_victory_point = yes
+        }
+
+
     }
     ```
   - Description: Removes a province modifier to the specified provinces in this state.
@@ -9635,8 +9629,8 @@ The effects here must be used within a **state** scope.
   - Example:
     ```text
     add_victory_points = {
-    	province = 1234
-    	value = 10
+        province = 1234
+        value = 10
     }
     ```
   - Description: Adds victory points to a province.
@@ -9648,8 +9642,8 @@ The effects here must be used within a **state** scope.
   - Example:
     ```text
     set_victory_points = {
-    	province = 1234
-    	value = 10
+        province = 1234
+        value = 10
     }
     ```
   - Description: Sets the number of victory point in a province.
@@ -11369,7 +11363,7 @@ These can only be used with characters of the country leader type.
         str_damage_multiplier = 0.25
         war_support_reduction_on_damage = 0.2
         cannot_retreat_while_attacking = 1.0
-    				
+
         days = 7
         tooltip = ABILITY_FORCE_ATTACK_TOOLTIP
     }
@@ -11518,14 +11512,14 @@ These can only be used with characters of the country leader type.
     ```text
     operative_leader_event = {
         id = my_event.1
-    	originator = POL
-    	recipient = GER
+        originator = POL
+        recipient = GER
         days = 10
         random = 50
         random_days = 10
-    	set_from = ENG
-    	set_root = SOV
-    	set_from_from = FRA
+        set_from = ENG
+        set_root = SOV
+        set_from_from = FRA
     }
     ```
   - Description: Fires the specified event for the operative.
@@ -12153,25 +12147,25 @@ The effects here must be used within a **raid** scope.
     ```text
     # Apply 50% damage to units
     raid_damage_units = {
-    	damage = 0.5
-    	ratio = yes
+        damage = 0.5
+        ratio = yes
     }
-    
+
     # Apply 10 strength loss and 20 organization loss to units
     raid_damage_units = {
-    	org_damage = 20
-    	str_damage = 10
+        org_damage = 20
+        str_damage = 10
     }
-    
+
     # Lose 40% of all planes
     raid_damage_units = {
-    	plane_loss = 0.4
-    	ratio = yes
+        plane_loss = 0.4
+        ratio = yes
     }
-    
+
     # Lose 5 planes
     raid_damage_units = {
-    	plane_loss = 5
+        plane_loss = 5
     }
     ```
   - Description: Damage is applied to ground units while damage to plane is defined as the amount of planes lost.
@@ -12216,9 +12210,9 @@ The effects here must be used within a **special project** scope. Special projec
   - Example:
     ```text
     complete_prototype_reward_option = {
-    	prototype_reward = my_reward
-    	prototyp_reward_option = my_option
-    	show_modifiers = yes
+        prototype_reward = my_reward
+        prototyp_reward_option = my_option
+        show_modifiers = yes
     }
     ```
   - Description: Complete a prototype reward option for the project in scope
@@ -12339,7 +12333,7 @@ if = {
 add_political_power = 100 # Outside of if = { ... }, so it will always give 100 political power, even if not playing as BHR
 ```
 
-Optionally, `else_if = { ... }` (with `limit = { ... }` serving in a similar fashion) and `else = { ... }` can be added. If the initial limit within `if = { ... }` is false, it moves on to the next `else_if = { ... }`, checking the limit there. If the limit there is false, then it moves on to the next one, until hitting an end or an `else = { ... }`.  
+Optionally, `else_if = { ... }` (with `limit = { ... }` serving in a similar fashion) and `else = { ... }` can be added. If the initial limit within `if = { ... }` is false, it moves on to the next `else_if = { ... }`, checking the limit there. If the limit there is false, then it moves on to the next one, until hitting an end or an `else = { ... }`.
 Two variants exist: nested and unnested. In the first case, the `else_if` or `else` is put directly inside of the preceding `if` or `else_if`, while in the second case it's put *right after*. In case of overlap, unnested if statements are preferred. Here is an example using unnested if statements:
 
 ```text
@@ -12445,7 +12439,7 @@ There are 3 ways to edit the tooltip within an effect block:
 For example, this sample [focus' completion reward](<National focus modding - Hearts of Iron 4 Wiki.md>) utilises all three:
 
 ```text
-completion_reward = { 
+completion_reward = {
     hidden_effect = {
         every_subject_country = { country_event = my_event.1 }
     }
@@ -12542,7 +12536,7 @@ A scripted effect is defined simply as
 
 ```text
 scripted_effect_name = {
-	<effects>
+    <effects>
 }
 ```
 
@@ -12550,17 +12544,17 @@ This example can be used as an effect in regular code as `scripted_effect_name =
 
 Scripted effects can be accessed in console by typing `e scripted_effect_name` to run them.
 
-To create a custom console command, the scripted effect's name should begin with `d_`. The console command itself does not include `d_`, so `d_test_command` would be run in console as `test_command`  
+To create a custom console command, the scripted effect's name should begin with `d_`. The console command itself does not include `d_`, so `d_test_command` would be run in console as `test_command`
 In custom console commands, the country running the command is FROM, while ROOT is the selected country, state, or character. Anything entered after the console command, separated by spaces like `test_command 123 321 GER` is added to the 'args' temp array. An example of a scripted effect which will transfer every state entered as an argument to the country that runs the console command is
 
 ```text
 d_transfer_states = {
-	for_each_scope_loop = {
-		array = args
-		FROM = {
-			transfer_state = PREV
-		}
-	}
+    for_each_scope_loop = {
+        array = args
+        FROM = {
+            transfer_state = PREV
+        }
+    }
 }
 ```
 
@@ -12670,48 +12664,11 @@ These scripted effects are defined in base game and might be useful to keep in t
     ```
   - Description:
     ```text
-    Creates the
-    lerp_result
-    regular variable with
-    r
-    e
-    s
-    u
-    l
-    t
-    :=
-    a
-    +
-    (
-    b
-    −
-    a
-    )
-    ⋅
-    x
-    {\displaystyle result:=a+(b-a)\cdot x}
+    Creates the lerp_result regular variable with result := a + (b - a) * x.
     ```
   - Notes:
     ```text
-    a
-    {\displaystyle a}
-    ,
-    b
-    {\displaystyle b}
-    , and
-    x
-    {\displaystyle x}
-    are stored as
-    lerp_a
-    ,
-    lerp_b
-    ,
-    lerp_x
-    temp variables
-    .
-    x
-    {\displaystyle x}
-    is clamped between 0 and 1.
+    x is clamped between 0 and 1.
     ```
 
 - **store_core_states_on_game_start**
