@@ -15,6 +15,7 @@ This is not a magic replacement for modding knowledge. You still need to review 
 ## What this repo provides
 
 - `AGENTS_example.md`, a real, full project instruction for a large HOI4 mod, Chaos Redux.
+- `AGENTS_template.md`, a template `AGENTS.md` file that can be adapted to your own mod. Just replace the placeholders.
 - Offline Paradox wiki references for syntax and engine behavior.
 - Example repo skills for repeated HOI4 workflows.
 - Optional custom Codex subagent patterns for bounded research, asset work, audits, and documentation.
@@ -86,7 +87,7 @@ Use subagents for work such as:
 - archival image sourcing
 - generated event art
 - icon production
-- super-event quote, remark, and audio research
+- quote, remark, and audio research (for super events for example)
 - focus tree audits
 - decision and mission audits
 - country package audits
