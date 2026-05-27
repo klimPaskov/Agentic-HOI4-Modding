@@ -67,77 +67,39 @@ Use repo skills as required implementation guidance, not as optional notes.
 
 - Use `chaos-redux-events` for Chaos Redux event implementation, event logs, evolutions, event details, documentation, and spreadsheet alignment.
 - Use `chaos-redux-event-assets` when an event needs visual assets, icons, flags, portraits, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes.
+- Use `chaos-redux-frame-animation` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
 - Use `chaos-redux-super-events` when a task creates, updates, researches, or wires a super-event.
 - Use `hoi4-focus-trees` before editing national focus trees.
 - Use `hoi4-decisions-missions` before editing decisions/missions
 - Use `hoi4-mtth` when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer.
+- Use `chaos-redux-subagents` when coordinating custom Codex subagents, routing bounded work, or defining parent/subagent ownership boundaries.
+- Use `chaos-redux-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
 
 ### Subagents
 
-Use project custom Codex agents when a task needs bounded research, asset production, audit, or documentation work that can be separated from main implementation.
+Use project custom Codex agents when a task needs bounded research, asset production, audit, recursive expansion, or documentation work that can be separated from main implementation.
 
-The main agent remains responsible for final implementation, final wiring, final review, and final validation. Subagents return evidence, files, manifests, or handoff notes. Do not let subagents silently change gameplay scope unless the parent prompt explicitly grants that scope.
+`chaos-redux-subagents` is the detailed source of truth for subagent routing, ownership boundaries, handoff quality, audit cadence, asset routing, super-event routing, and the recursive mechanic expansion loop.
 
-#### Routing rules
+The main agent remains responsible for final implementation, final wiring, final review, validation, and completion claims. Subagents return evidence, files, manifests, spec addenda, patches, or handoff notes depending on the parent-granted mode. The main agent must review their outputs and carry blockers or uncertainty into the final report.
 
-Use `chaosx_repo_explorer` to find relevant repo files, existing patterns, required docs, vanilla references, and likely touchpoints before editing.
+All project custom Codex subagents must be spawned with `fork_context=false`. Do not spawn any project subagent with inherited parent-thread context. If a subagent needs a user correction, task constraint, current implementation status, or prior handoff detail, the parent must pass it explicitly in the subagent prompt or write it into the relevant spec, plan, handoff, or repo file before spawning.
 
-Use `chaosx_asset_source_researcher` for real or archival visual sources. This includes report images, news images, documentary super-event images, real leader portraits, historical flags, and historically attested symbols.
+Use these high-level routing rules:
 
-Use `chaosx_generated_event_art` for generated non-icon event art. This includes fictional or symbolic super-event images, fictional portraits, fictional flags, faction emblems, UI panels, and progression-state art.
+- Use `chaosx_repo_explorer` only when file locations, existing patterns, vanilla references, likely touchpoints, missing-file recovery, or implementation order are unclear. Do not use it for small known-file edits, provided-file edits, direct skill or prompt updates, localisation-only cleanup, asset-only production, or tasks already bounded to exact files. The parent should inspect the known files directly for those cases.
+- Use asset subagents for visual production: `chaosx_asset_source_researcher`, `chaosx_generated_event_art`, and `chaosx_icon_artist`.
+- When an asset subagent is asked to produce animation, the parent prompt must require `chaos-redux-frame-animation` and must ask for separate generated, sourced, or provided source frames, static fallback, manifest, contact sheet, preview, and `.gfx` or `.gui` handoff.
+- Use super-event subagents for specialised research: `chaosx_super_event_text_researcher` and `chaosx_super_event_audio_researcher`.
+- Use audit subagents before completion claims: `chaosx_focus_tree_auditor`, `chaosx_decision_mission_auditor`, `chaosx_country_package_auditor`, `chaosx_localisation_auditor`, and `chaosx_event_completion_auditor`.
+- Use `chaosx_scripted_system_architect` for reusable scripted effects, triggers, script constants, event targets, meta effects, variable patterns, and dynamic helper design.
+- Use `chaosx_spreadsheet_doc_worker` only after implementation facts are available. Spreadsheet event-detail, evolution-detail, and cluster-detail fields must match the in-game localisation wording.
+- Use `chaosx_skill_maintainer` for non-trivial skill creation, cleanup, routing updates, or multi-skill consistency work.
+- Use `chaosx_improvement_loop_planner` during large event implementation when a mechanic, focus tree, country package, decision system, super-event, visual progression, lore package, or audit finding needs deeper design. It creates concrete event expansion addenda with research, historical connections, playable mechanics, and implementation surfaces for the main agent. It does not patch gameplay files. Do not spawn it again for the same event until the previous addendum has been implemented, folded into specs, queued with a reason, or rejected.
 
-Use `chaosx_icon_artist` for focus icons, idea icons, national spirit icons, officer corps spirit icons, decision icons, decision category icons, achievement icons, and tech icons.
+Patch-capable subagents are allowed to make small, local improvements by default when the change is inside the current task surface and directly improves the feature. They may vary costs, add clearer dynamic localisation, improve tooltips, adjust safe AI weights, add narrow helper calls, fix route locks, add cleanup hooks, or correct existing formable checks. They must not expand a whole mechanic, redesign a route family, add a new country package, create a new scripted GUI system, or change the requested design on their own. Broad gaps become a plan under `docs/plans/<event_id>_<event_slug>_plans/`. Every subagent edit needs a handoff that lists changed files, identifiers, validation, and remaining risks.
 
-Use `chaosx_super_event_text_researcher` for super-event main quotes, exact wording checks, attribution confidence, source comparison, button text, cultural remarks, slogans, allusions, and short references.
-
-Use `chaosx_super_event_audio_researcher` for super-event audio source research, license verification, download, conversion, and audio research notes.
-
-Use `chaosx_focus_tree_auditor` after creating or heavily reworking focus trees. It checks branch depth, route coverage, icons, localisation, reward variety, prerequisites, AI, and simplification.
-
-Use `chaosx_decision_mission_auditor` after creating or heavily changing decision categories, timed missions, mission pools, influence systems, intervention systems, aid systems, objective pools, or focus-unlocked decision families.
-
-Use `chaosx_country_package_auditor` after creating, releasing, transforming, splitting, puppeting, or substantially changing playable or AI-controlled countries. Use it when tags, history files, state ownership, leaders, portraits, flags, focus loading, starting forces, or country AI were touched.
-
-Use `chaosx_localisation_auditor` after broad visible-content changes across events, focuses, decisions, ideas, super-events, GUI, scripted localisation, or event logs.
-
-Use `chaosx_scripted_system_architect` before implementing repeated, dynamic, cross-file logic that should become a scripted effect, scripted trigger, script constant category, event target pattern, variable pattern, or meta-effect pattern. Also use it to refactor duplicated logic found during implementation.
-
-Use `chaosx_event_completion_auditor` before calling a large event implementation complete, especially when the task came from a long spec, multiple prompt files, or a user complaint about simplification.
-
-Use `chaosx_spreadsheet_doc_worker` only after implementation facts are available. It must document actual repo state, not intended state. For event details, evolution details, and cluster details, it must use the same wording as the in-game localisation in the relevant spreadsheet fields.
-
-#### Visual asset ownership split
-
-The main agent owns `.gfx` edits, GUI references, localisation references, event references, icon assignments, documentation that depends on implementation, and final validation.
-
-Visual asset subagents own only asset package production:
-
-- source files
-- processed PNG previews
-- final DDS files
-- contact sheets
-- manifests
-- `docs/assets/<event_id>_<event_slug>/gfx_handoff.md`
-
-The visual asset subagents must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, scripted effect, scripted trigger, history, country, or spreadsheet files unless the parent prompt explicitly changes the scope.
-
-For mixed asset packages, spawn the narrow agents separately. Use `chaosx_asset_source_researcher` for report and news photos (and super-event photos), `chaosx_generated_event_art` for fictional super-event images (if a custom generation is preferred), and `chaosx_icon_artist` for focus, idea, achievement, and decision icons.
-
-#### Super-event research ownership split
-
-For super-events, split research when useful:
-
-- `chaosx_super_event_text_researcher` finds and verifies the main quote and the short cultural remark.
-- `chaosx_super_event_audio_researcher` finds, verifies, downloads, converts, and documents the audio.
-- `chaosx_asset_source_researcher` or `chaosx_generated_event_art` handles the image source mode according to `chaos-redux-event-assets`.
-
-The main agent still owns super-event slot wiring, scripted localisation, audio id wiring, settings-aware playback integration, `.gfx` image wiring, event trigger wiring, docs alignment, and spreadsheet alignment.
-
-#### Audit and documentation cadence
-
-Use audit subagents before completion claims, not after claiming completion.
-
-A subagent report is not final proof. The main agent must inspect the report, make the fixes, rerun relevant checks, and clearly report anything still blocked.
+For major event work, the main agent should use the improvement loop after meaningful implementation tranches when several new mechanics have been added and now need deeper connections. The planner should expand ideas using the event-planning skill and relevant research. It should not be used repeatedly while a previous plan for the same event is still unresolved.
 
 ## 1. Coding Style
 
@@ -173,11 +135,11 @@ Clausewitz script is picky. Follow these rules strictly.
     - `paradox_wiki/Data structures - Hearts of Iron 4 Wiki.md` (Event targets section)
     - `~/projects/Hearts of Iron IV/documentation/effects_documentation.md` (`save_event_target_as`, `save_global_event_target_as`, `clear_global_event_target`, `clear_global_event_targets`)
     - `~/projects/Hearts of Iron IV/documentation/triggers_documentation.md` (`has_event_target`)
-    - Prefer regular event targets (`save_event_target_as`) for short-lived chains; they automatically clear when the originating effect chain ends (but do carry into events fired from that chain).
-    - Use global event targets (`save_global_event_target_as`) only when you need persistence beyond a single chain/system; they do not auto-clear and must be cleaned up (e.g. `clear_global_event_target = my_target`).
+    - Prefer regular event targets (`save_event_target_as`) for short-lived chains, they automatically clear when the originating effect chain ends (but do carry into events fired from that chain).
+    - Use global event targets (`save_global_event_target_as`) only when you need persistence beyond a single chain/system, they do not auto-clear and must be cleaned up (e.g. `clear_global_event_target = my_target`).
     - Use them as scopes/targets with `event_target:my_target`.
     - Localisation: when using an event target as a localization scope namespace, the `event_target:` prefix is not used (e.g. `[my_target.GetName]`).
-11. Do not use unary `-` on variable tokens (e.g. `value = -my_var`); negate via `multiply_*_variable` first.
+11. Do not use unary `-` on variable tokens (e.g. `value = -my_var`), negate via `multiply_*_variable` first.
 12. If an effect or trigger does not accept dynamic values, use `meta_effect` or `meta_trigger` with `text = { ... }` to inject computed variables/localisation into otherwise static fields.
     - meta effects can be used in all sorts of creative ways, for example: `my_scripted_effect_[ID] = yes`, so you can even choose a scripted effect dynamically. Meta effects are very powerful and useful.
 13. Prefer reusable dynamic scripted effects/triggers for complex/dynamic logic.
@@ -262,7 +224,7 @@ Localisation and UI must always be kept in sync with gameplay changes.
 1. Localisation files must be encoded as **UTF 8 with BOM**. Wrong encoding breaks strings in game.
 2. When you add or rename anything that appears on screen, update localisation in the same change.
 3. In scripted localisation, do not write format characters like `§` or `£` directly.
-4. Player-facing game text must describe the current world state and player choices, not implementation history or tuning mechanics. Do not say a value was capped, hardcoded, newly added, reworked, or changed because of an update request; keep those notes in docs or comments instead.
+4. Player-facing game text must describe the current world state and player choices, not implementation history or tuning mechanics. Do not say a value was capped, hardcoded, newly added, reworked, or changed because of an update request, keep those notes in docs or comments instead.
 5. Localisation keys:
    - Do not use `:0`. Write keys as `key_name: "Text"` without `0` and without a leading space before the key.
    - Keep key names consistent and readable. No unnecessary prefixes.
@@ -271,57 +233,6 @@ Localisation and UI must always be kept in sync with gameplay changes.
    - When something needs icons, define them in a correct `.gfx` file. I will provide the sprites myself, you just have to tell me what folder to put them in and with what name.
    - Copy placeholder sprites from vanilla files that match the new gfx definition, so later I can replace them with real sprites easily and that the game would run without complaining about missing sprites.
    - Register new UI assets before requesting art so filenames do not need to change later.
-
-
-### Trigger, prerequisite, and tooltip clarity
-
-Long trigger blocks should not be exposed raw to the player. Hide them or use scripted localisation.
-
-When a decision, mission, focus, or event option requires control of states, divisions in states, protected borders, held capitals, rail hubs, depots, or ports, the player-facing text must name the exact states or a clear named region. The named region must have a tooltip or scripted localisation explaining what it contains.
-
-Avoid vague requirement text such as:
-
-- `required states`
-- `border states`
-- `nearby states`
-- `key states`
-- `sufficient divisions`
-- `enough support`
-
-Use clear text instead, for example:
-
-- `Place 8 supplied divisions in Smolensk, Gomel, and Bryansk.`
-- `Hold the Western Rail Belt.`
-- `Guard the Kyiv Depot Belt.`
-- `Keep Tashkent and Dushanbe connected to supply.`
-
-Cost localisation should be short, readable, and icon-first.
-
-Do not prefix every blocked cost line with words like `Requires` or `Needed`. In most cases, show only the value and the matching text icon.
-
-Good examples:
-
-- `2,000 <infantry_equipment_texticon>`
-- `20 <army_xp_texticon> 20 <command_power_texticon>`
-- `200 <support_equipment_texticon>`
-- `Depot control`
-
-Do not add filler words between costs. For example, use:
-
-`20 <army_xp_texticon> 20 <command_power_texticon>`
-
-not:
-
-`20 <army_xp_texticon> and 20 <command_power_texticon>`
-
-If the country does not meet a requirement, show the missing or unmet cost in red. If the country meets the requirement, show it normally.
-
-If a decision has more than three or four simultaneous costs or requirements, do not show all of them inline. Use a short scripted localisation summary:
-
-- met: `Requirements met`
-- not met: `§RRequirements not met§!`
-
-Then put the full requirement list in a tooltip. The tooltip should still use short icon-first entries. Missing requirements should be red, while satisfied requirements should display normally.
 
 ## 3. Naming and Prefix Rules
 
@@ -357,7 +268,6 @@ When implementing any new mechanic, follow this checklist:
 
 Follow these rules and your changes will be easier to review, safer to merge and more consistent with the rest of the project.
 If this checklist cannot be satisfied, stop and request more design input instead of guessing.
-
 
 ## 5. Completion Proof and Simplification Reporting
 
@@ -395,6 +305,14 @@ Every simplification must be reported. This includes skipped routes, fallback tr
 
 If there are no simplifications, say so explicitly and provide evidence through audits, docs, or changed files. If the goal cannot be fully implemented, report that the goal is incomplete instead of presenting partial work as done.
 
+### Specs and Plans
+
+Event source specifications belong under `docs/specs/<event_id>_<event_slug>_specs/`.
+
+Subagent plans, improvement addenda, audit follow-up notes, blocked reports, and implementation handoffs belong under `docs/plans/<event_id>_<event_slug>_plans/`.
+
+The plans folder is a working area. The specs folder is the source-of-truth design area. If an accepted plan changes the event design, the main agent should merge it into the relevant spec or report that it remains queued.
+
 ## 6. Event Integration
 
 For Chaos Redux event implementation, use the repo skill `chaos-redux-events`.
@@ -404,78 +322,42 @@ For Chaos Redux event implementation, use the repo skill `chaos-redux-events`.
 3. If the event has evolutions or world-end branches, wire the log entries, super-event integration, and related localisation in the same change.
 4. Keep gameplay files, docs, the event spreadsheet/presentation, and any other details aligned.
 
-
 ## 7. Focus Trees and Large Content
 
-For national focus work, use `hoi4-focus-trees` before editing.
+For national focus work, use `hoi4-focus-trees` before editing. That skill is the detailed source of truth for focus-tree depth, reward variety, route logic, AI, localisation, icons, ideas, country identity changes, focus-decision integration, route coverage proof, and completion standards.
 
-Focus trees should be implemented as playable route systems, not as long vertical reward lists. The spec usually defines path architecture, route families, mutual exclusions, reward styles, idea lifecycles, AI behavior, and key anchor groups. The implementation agent owns the exact focus count, final names, coordinates, and detailed prerequisites unless the user explicitly asks for a focus-by-focus blueprint.
+Before claiming focus-tree completion, use the appropriate audit route from `chaos-redux-subagents`. If a tree works but feels shallow, duplicated, generic, or disconnected from gameplay, use `chaos-redux-improvement-loop` and consider a plan-mode pass from `chaosx_improvement_loop_planner`.
 
-Focus tree work must include:
+## 8. Agent-generated Visual Assets
 
-- readable non-linear branch layout
-- real route choices and mutual exclusions where identity changes
-- AI route behavior
-- icons or icon families
-- localisation names and descriptions
-- focus filter or search category usage where supported
-- documentation of route families and focus counts
+For final visual assets, use `chaos-redux-event-assets`. That skill is the detailed source of truth for image generation rules.
 
-Focus rewards must be diverse. Do not make most focuses grant a new idea, political power, stability, war support, or small flat modifiers. Use rewards that fit the route, such as factories, forts, anti-air, radar, airbases, infrastructure, railways, supply hubs, resources, production lines, equipment, templates, units, commanders, advisors, laws, decisions, missions, claims, cores, war goals, diplomacy, influence mechanics, faction mechanics, events, leader changes, cosmetic names, and flags.
+For animated visual assets, use `chaos-redux-frame-animation` in addition to `chaos-redux-event-assets`. Final animation assets must be built from real planned frames and must not be transform-only mockups.
 
-Ideas should have depth. New or unstable countries should usually start with a few meaningful negative or mixed ideas, then mitigate, upgrade, replace, worsen, or remove them through focuses, decisions, missions, events, and route choices. Prefer improving an existing idea over adding duplicate spirits.
-
-Before claiming focus-tree completion, audit duplicate focuses, duplicate ideas, generic rewards, missing icons, missing AI, missing localisation, and whether the tree is actually readable in game.
-
-## 8. Agent-generated visual assets
-
-When the user explicitly asks to create final visual assets, use the `chaos-redux-event-assets` skill.
-
-Use the project asset subagents when the work can be separated cleanly:
-
-- `chaosx_asset_source_researcher` for real, archival, historical, documentary, or public-source images.
-- `chaosx_generated_event_art` for generated non-icon fictional or symbolic art.
-- `chaosx_icon_artist` for generated icons.
-
-The relevant asset subagent must read `chaos-redux-event-assets` and inspect the matching reference folder under `.agents/skills/chaos-redux-event-assets/assets/` before creating, sourcing, processing, or converting assets.
-
-Asset subagents produce source files, processed PNG previews, final DDS files, manifests, contact sheets when useful, and `gfx_handoff.md`.
-
-The main agent owns `.gfx` edits, GUI references, localisation references, event references, focus icon assignments, idea icon assignments, decision icon assignments, documentation alignment, and final validation.
-
-If the main agent already registered `.gfx` sprites or texture paths before requesting art, the asset subagent must follow those filenames, sprite names, target DDS paths, and target sizes. It should only propose names or paths when they were not provided.
-
-Rules:
-
-1. Use Codex’s official image generation workflow for generated artwork.
-2. Do not create core artwork with Python, simple shapes, contact sheets, or layout-only mockups.
-3. Python or scripts may be used after generation or sourcing for cropping, resizing, organizing, contact sheets, manifests, and DDS conversion.
-4. Convert final PNG assets to DDS 32 bit unsigned BGRB 8.8.8.8 unless an existing repo pattern requires another compatible HOI4 format.
-5. Keep the source PNG, processed PNG preview, final DDS path, sprite name, intended use, target size, and inspected reference folder in the asset manifest.
-6. Do not leave final assets only in temporary folders.
-7. Do not mark visual assets complete until the main agent can wire every sprite without guessing.
+Use `chaos-redux-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation.
 
 ## 9. Skill Maintenance
 
 Use skills actively. Skills are not only for cleanup at the end of a task. They are the agent's memory for repeated workflows, project-specific patterns, hard-won fixes, and instructions that should not be rediscovered every time.
 
-When a task reveals a repeated workflow, repeated mistake, reusable process, repo-specific convention, validation pattern, asset workflow, prompt pattern, or useful implementation rule, use OpenAI’s official `skill-creator` skill.
+When a task reveals a repeated workflow, repeated mistake, reusable process, repo-specific convention, validation pattern, asset workflow, prompt pattern, or useful implementation rule, use `chaosx_skill_maintainer` or OpenAI’s official `skill-creator` skill to capture it cleanly.
 
-Create or update skills more often during long tasks, especially when working through many events, mechanics, assets, localisation passes, or UI patterns. If the same reasoning would likely be needed again later in the run, capture it in a skill before moving on.
+Create or update skills more often during long tasks, especially when working through many events, mechanics, assets, localisation passes, or UI patterns. If the same reasoning would likely be needed again later in the run, spawn `chaosx_skill_maintainer` or update the relevant skill before moving on.
 
 Never put event specific context inside skills! This is very important!
 
 Rules:
 
 1. Check whether an existing skill already covers the workflow before creating a new one.
-2. Prefer updating an existing skill when the workflow belongs there.
-3. Create a new skill when the workflow is reusable, distinct, and not covered by an existing skill.
-4. Add concise, specific rules based on actual task experience, not speculation.
-5. Record repo paths, commands, examples, gotchas, source folders, validation steps, and handoff rules when they prevent rediscovery.
-6. Keep each skill focused on one reusable workflow.
-7. Do not bloat skills with one-off details that will not help future tasks.
-8. During large multi-event runs, review skill gaps after each completed event or shared system. Update or create skills before starting the next event if something reusable was learned.
-9. Report which skills were used, created, or updated at the end of each task.
+2. Use `chaosx_skill_maintainer` for non-trivial skill creation, skill cleanup, routing updates, or multi-skill consistency work.
+3. Prefer updating an existing skill when the workflow belongs there.
+4. Create a new skill when the workflow is reusable, distinct, and not covered by an existing skill.
+5. Add concise, specific rules based on actual task experience, not speculation.
+6. Record repo paths, commands, examples, gotchas, source folders, validation steps, and handoff rules when they prevent rediscovery.
+7. Keep each skill focused on one reusable workflow.
+8. Do not bloat skills with one-off details that will not help future tasks.
+9. During large multi-event runs, review skill gaps after each completed event or shared system. Update or create skills before starting the next event if something reusable was learned.
+10. Report which skills were used, created, or updated at the end of each task.
 
 ## 10. Git
 

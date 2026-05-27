@@ -351,6 +351,8 @@ Expansion branches should define real strategic effects, such as claims, cores, 
 
 Political branches should change politics directly. Define ideology paths, ruling party shifts, party popularity changes, leader changes, advisor unlocks, advisor discounts, laws, councils, juntas, congresses, committees, faction struggles, cosmetic names, and flag changes where they fit. Leader changes imply portrait needs. Real leaders need sourced portraits. Fictional leaders and symbolic councils can use generated portraits through the asset skill.
 
+When planning generated or randomized single-person leaders, define the portrait's gender presentation and keep it aligned with HOI4 leader metadata and every possible generated name. Female-presenting portraits must use female name pools and `female = yes` where a country leader is created directly. Male-presenting portraits must use male name pools and must not set `female = yes`. Never let a country with a female-presenting portrait draw from a male name pool, and never let a country with a male-presenting portrait draw from a female name pool. If the portrait is a council, office, board, crowd, or symbolic institution rather than one identifiable person, use an institutional leader name instead of a personal random-name pool.
+
 Fixed-purpose chaos countries can have narrower politics when their identity demands it. A death-state, plague-state, machine-state, or pure destruction actor may have one ideological purpose. Even then, the tree should still provide meaningful internal choices inside that purpose, such as doctrine, expansion method, recruitment, economy, hierarchy, or endgame ambition.
 
 Focus trees and decision systems must be planned together. Focuses should unlock or change decisions and missions. Industry focuses can unlock construction decisions. Military focuses can unlock unit, depot, border, or offensive missions. Diplomacy focuses can unlock recognition, aid, volunteer, and influence decisions. Expansion focuses can unlock declarations, league votes, protectorate demands, border incidents, claims, cores, war goals, and settlement decisions.
@@ -369,6 +371,8 @@ Every major branch needs a clear payoff. A political branch can end in a new gov
 A good focus path should unlock new gameplay, not only stats. The plan should describe decisions, missions, units, advisors, leaders, laws, claims, cores, war goals, buildings, events, mechanics, route access, and AI behavior where they fit. Flat modifiers are supporting rewards, not the main design.
 
 Political routes should update the visible country package where relevant: leader, leader portrait, advisor roster, high command, ruling party, party names, ideology drift or swap, cosmetic name, flag, ideas, and AI strategy. Leader changes imply portrait needs.
+
+Generated one-person leader portraits need actual-ish personal names, not offices, generic council titles, or one fixed reused joke name. If the portrait visibly represents one person, plan a small regional name pool with plausible given names and surnames for the culture and era, then allow Chaos Redux absurdity or dark comedy through a surname, nickname, patronymic, epithet, or title. The pool must match the visible portrait: female portraits use female names and set female leader metadata where the implementation surface supports it; male portraits use male names and must not set female leader metadata. The implementation handoff must tell the coding agent to choose randomly from that pool at setup, so repeated campaigns can receive different believable names. If the portrait represents a council, committee, junta, or symbolic body rather than one person, use institutional names instead of personal names.
 
 Expansion branches should create consequences. Claims, cores, and war goals should interact with diplomacy, factions, resistance, foreign guarantees, local leagues, legitimacy, threat, or postwar settlement decisions.
 
@@ -515,7 +519,6 @@ The implementation agent should:
 The spec should give enough creative and structural direction that the agent cannot make a shallow generic tree, while still allowing the agent to build a clean in-game layout.
 
 
-
 ## 3.6 Focus tree visual planning standard
 
 Focus tree visuals should help the user and implementation agent understand the intended branch structure. The spec may include a high-level branch diagram, lane map, or route sketch for major trees, but it should not try to lock every final focus coordinate unless the user explicitly asks for that.
@@ -536,7 +539,6 @@ The visual should be readable, symmetrical where possible, and free of tangled c
 If the spec creates a graph or diagram, it should be treated as a design guide unless the user says it must match the final in-game tree exactly. The implementation agent may adjust the final layout to make the actual HOI4 tree cleaner.
 
 Do not spend excessive planning effort forcing exact graph coordinates if the result becomes ugly, brittle, or unhelpful. A clear path architecture is more important than a fake exact graph.
-
 
 
 ## 3.7 Achievement design standard
@@ -1020,11 +1022,11 @@ Consider whether the event needs:
 - progression-state variants
 - country-selection, event-log, or custom-window graphics when relevant
 
-Asset generation, sourcing, cropping, resizing, DDS conversion, file placement, sprite handoff notes, and manifests belong to `chaos-redux-event-assets`. Final `.gfx` wiring belongs to the main implementation agent.
+Asset generation, sourcing, cropping, resizing, DDS conversion, file placement, sprite handoff notes, and manifests belong to `chaos-redux-event-assets`. Final `.gfx` wiring belongs to the main implementation agent unless a parent prompt explicitly grants that scope.
 
 This skill should define what assets are needed, what they should represent, and what source mode they require.
 
-Historical or real-world assets need special care. Historical flags, historical symbols, and real leader portraits should be sourced from reliable references and converted to HOI4 style rather than generated. Generated art is appropriate for fictional flags, fictional leaders, symbolic council portraits, invented high-chaos identities, idea icons, focus icons, decision icons, achievements, faction emblems, and UI art unless the user says otherwise.
+Historical or real-world assets need special care. Historical flags, historical symbols, and real leader portraits should be sourced from reliable references and converted to HOI4 style rather than generated. Generated art is appropriate for fictional flags, fictional leaders, symbolic council portraits, invented high-chaos identities, idea icons, focus icons, decision icons, achievements, faction emblems, UI art, and fictional or alternate-history report/news/super-event images unless the user says otherwise.
 
 ### Reference examples for asset planning
 
@@ -1081,18 +1083,9 @@ The asset prompt should include:
 
 The asset prompt must state the correct source mode where relevant.
 
-For large asset prompts, split the work so the implementation agent can spawn the correct custom subagents:
-
-- sourced report/news/archival/super-event images, real portraits, historical flags, and historical symbols go to `chaosx_asset_source_researcher`
-- generated fictional or symbolic super-event art, fictional portraits, fictional flags, faction emblems, and UI art go to `chaosx_generated_event_art`
-- focus icons, idea icons, decision icons, achievement icons, officer corps icons, and tech icons go to `chaosx_icon_artist`
-
-The asset prompt should make these batches explicit instead of mixing all visual work into one vague list.
-
-
 It must also state the relevant reference folder from the list above when a matching folder exists.
 
-Use `chaos-redux-event-assets` rules for source selection. Symbolic icons usually use `$imagegen`. News event images, report event images, super-event images, and real leader portraits use sourced images unless the user explicitly asks otherwise. Historical flags and historically attested symbols should be sourced and documented, then converted to HOI4 flag sizes. Fictional, supernatural, invented, or alternate-history flags can use `$imagegen` through `chaos-redux-event-assets` when appropriate.
+Use `chaos-redux-event-assets` rules for source selection. Symbolic icons usually use `$imagegen`. News event images, report event images, and super-event images may be sourced or generated. prefer generated assets for fictional, alternate-history, symbolic, high-chaos, or unique scenes, and sourced assets for real historical people, real photographed events, and real archival artifacts. Historical flags and historically attested symbols should be sourced and documented, then converted to HOI4 flag sizes. Fictional, supernatural, invented, or alternate-history flags can use `$imagegen` through `chaos-redux-event-assets` when appropriate.
 
 Do not make the asset prompt vague. If a country has multiple cosmetic identities, ideology names, focus-route transformations, or leader changes, the asset prompt must list the required assets for each visible identity state.
 
@@ -1104,7 +1097,7 @@ Use these sizes when planning assets:
 - news event images: 397x153, black and white
 - leader portraits: 156x210
 - flags small: 10x7
-- flags medium: 42x26
+- flags medium: 41x26
 - flags normal: 82x52
 - tech icons small: 64x64
 - tech icons medium: 132x52
@@ -1120,7 +1113,7 @@ Use other sizes when the event UI or asset type requires it.
 
 When planning visuals, use these style expectations.
 
-Report and news event images should look like documentary photographs. News event images should be black and white.
+Report and news event images should look like documentary photographs, whether sourced or generated. News event images should be black and white.
 
 Super-event images should have a strong central composition, clear dramatic theme, readable subject, and enough contrast for HOI4 UI.
 
@@ -1134,7 +1127,7 @@ Flags should use clean symbols that remain readable at HOI4 flag sizes.
 
 Progression-state variants may include selected, dim, active, locked, completed, rejected, damaged, corrupted, urgent, meter-fill, and bar-fill states.
 
-Photoshop may be mentioned only for progression-state variants.
+Report-event image prompts should ask for Photoshop post-processing when Photoshop is available. Photoshop may also be mentioned for progression-state variants.
 
 ## 17. Super-event research handoff
 
@@ -1156,15 +1149,6 @@ For each super-event, include:
 - whether it is a normal escalation, defeat moment, aftermath moment, or world-end moment
 - any special constraints from the event spec
 
-
-
-For large super-event packages, write the prompt so the implementation agent can split research across custom subagents:
-
-- quote research goes to `chaosx_super_event_quote_researcher`
-- cultural remark and button text research goes to `chaosx_super_event_cultural_remark_researcher`
-- audio research goes to `chaosx_super_event_audio_researcher`
-- image work goes to `chaosx_asset_source_researcher` or `chaosx_generated_event_art` depending on source mode
-
 The `chaos-redux-super-events` prompt should ask the agent to:
 
 - find a real quote using the repository web research workflow from `AGENTS.md`
@@ -1179,13 +1163,52 @@ Do not claim a quote, cultural reference, or audio track is usable without check
 
 If a license or attribution is unclear, mark it as uncertain.
 
+## Improvement-loop expansion specs
+
+When `chaos-redux-improvement-loop` produces an expansion addendum, treat it as event-planning input. The addendum should be folded into the main spec pack with the same seriousness as the original user idea. Do not treat it as a loose suggestion if the parent accepted it.
+
+An improvement-derived spec can be shaped freely. It does not need to copy the section order of this skill. It should still make the design concrete. A useful addendum explains the playable promise, the route or mechanic that feels shallow, the deeper player loop, the choices that change outcomes, the AI behavior, the visual and localisation needs, and the surfaces that must align.
+
+The planning agent should preserve the open structure of the addendum where that helps the idea. Use tables, route maps, prose, diagrams, or country package matrices only when they make the design easier to implement. Do not convert every improvement into a rigid checklist.
+
+When an improvement addendum proposes formables, scripted GUI, animated sprites, animated portraits, or hidden routes, the final spec pack should carry those ideas into the relevant files instead of leaving them isolated. The core spec explains why the expansion matters. The decision and focus files explain how the player reaches it. The asset prompt explains the static and animated visual work. The coding prompt and goal prompt tell the implementation agent to wire and validate it.
+
+
+## Specification folder convention
+
+From now on, event source specifications should live in event-specific subfolders under `docs/specs/`.
+
+Use this shape:
+
+```text
+docs/specs/<event_id>_<event_slug>_specs/
+```
+
+Examples:
+
+```text
+docs/specs/006_independence_wave_specs/006_independence_wave_spec.md
+docs/specs/006_independence_wave_specs/006_independence_wave_focus_trees.md
+docs/specs/006_independence_wave_specs/006_independence_wave_country_packages.md
+```
+
+Use `docs/plans/<event_id>_<event_slug>_plans/` for subagent plans, improvement addenda, audit follow-up notes, blocked reports, and implementation handoffs. Plans can become source design later, but the main agent should promote or merge them into `docs/specs/` when they are accepted as part of the final event design.
+
 ## 18. Output rules
 
 The event specification itself should be created as one or more downloadable Markdown files.
 
+Full event specification output belongs under `docs/specs/<event_id>_<event_slug>_specs/`. This is the source-of-truth design folder for the event spec pack.
+
+Subagent planning addenda, audit follow-up plans, implementation notes, and temporary handoffs belong under `docs/plans/<event_id>_<event_slug>_plans/`. The plans folder is a working area. Accepted plan content should be folded into the relevant spec under `docs/specs/` when the final source-of-truth spec is updated.
+
+Do not create new event specs, addenda, prompt packages, or extracted handoffs under `docs/planning/`, `planning/`, or any other planning folder. If a prompt says "planning folder", interpret that as `docs/plans/` for subagent plans and `docs/specs/` for source specs unless the user explicitly provides a different path.
+
 The spec file should contain only the event specification.
 
 Do not put the asset prompt, super-event prompt, coding-agent prompt, or goal prompt inside the spec file.
+
+Keep planning files readable as design handoffs, not implementation blueprints. Prefer route purpose, player-facing behavior, balance intent, asset direction, AI intent, and acceptance criteria. Avoid long technical tables, exact constant lists, full scripted-effect recipes, exhaustive file inventories, parser-level implementation notes, and detailed code wiring unless the user explicitly asks for a technical blueprint.
 
 For multi-part specs, create sequential files:
 
@@ -1234,7 +1257,7 @@ matrices/
 ```
 
 The goal prompt inside the package must still be under 4000 characters.
-And the extracted zip will be placed in `docs/plans/`.
+The extracted zip should be placed in `docs/specs/<event_id>_<event_slug>_specs/` when it is the event source spec pack. If the zip contains only subagent plans, follow-up handoffs, or audits, place it under `docs/plans/<event_id>_<event_slug>_plans/`.
 
 ## 19. Final prompt files
 
@@ -1445,3 +1468,67 @@ Reject the draft if it has any of these problems:
 - obvious system plumbing repeated as design
 
 The spec should be ambitious, detailed, researched, and usable. Do not stop at a conservative minimum when the idea supports more.
+
+
+## Formable nations and formation routes
+
+When an event creates, transforms, releases, or empowers countries, check whether formable nations should be part of the design. A formable is a meaningful country identity that appears after a country satisfies territorial, political, event, focus, or hidden-route requirements. Do not treat formables as only a cosmetic rename.
+
+A formable design should define:
+
+- formable name and tag handling
+- whether it uses a new tag, an existing tag, a cosmetic tag, or a dynamic country name
+- required owned and controlled states
+- required cores, claims, subjects, puppets, allies, faction members, or occupied areas
+- alternate state sets for different borders or reduced maps
+- focus route or event route that reveals the formation
+- decision that performs the formation
+- hidden unlock conditions, if the formable is secret
+- ideology, leader, government, legitimacy, recognition, chaos tier, crisis, patron, or achievement gates
+- effects on cores, claims, compliance, resistance, subjects, puppets, factions, advisors, laws, technologies, and ideas
+- visible country identity after formation, including name, adjective, flag, leader, portrait, parties, ruling ideology, advisors, and focus tree access
+- post-formation ambitions, claims, diplomatic reactions, rivals, league or faction behavior, and failure states
+- AI willingness to pursue the formable and AI safety checks that prevent impossible or suicidal formation attempts
+- event log, event details, super-event, achievement, and asset implications
+
+Do not write vague lines such as `can form a greater country`. Define the concrete formation web. If the player must control this state, this state, and this state, name those states or name the scripted state group and explain what it contains. If the exact state ids are left to implementation, describe the intended geographic set clearly enough that the implementation agent can build a scripted trigger without guessing.
+
+Hidden formables should still be designed fully. The spec can hide player-facing names and spoilers, but the implementation handoff must describe the unlock route, required flags, reveal event, decision visibility, AI behavior, rewards, assets, and disqualifiers.
+
+Formation routes should interact with focus trees and decisions. A focus can reveal or prepare the claim, while a decision performs the formation after the map requirement is met. A decision can form the country directly, while later focuses stabilize it, core it, claim further territory, or resolve internal factions. Avoid giving a formable through a focus alone when the player should prove control over named land first.
+
+## Interactive mechanic UI and animated presentation in event specs
+
+When an event has an important mechanic, decide whether the decision category needs a richer scripted GUI or a separate mechanic window. The spec should define the player-facing interface when the system is important enough to manage visually.
+
+A mechanic UI spec should include:
+
+- where the UI appears, such as decision category header, attached scripted GUI, custom window, event-details panel, or country mechanic panel
+- what button opens or closes the window
+- what values, targets, meters, cards, lists, tabs, or map states the player sees
+- what buttons the player can click and what each costs
+- how unavailable buttons explain missing requirements
+- what scripted effects and scripted triggers own the button logic
+- how AI performs equivalent actions without relying on human-only clicks
+- how the UI cleans itself up after route change, tag change, annexation, civil war, peace, or event completion
+- what localisation and scripted localisation the UI needs
+- what static assets, animated sprites, hover states, selected states, locked states, warning states, and progress variants it needs
+
+The spec should not make an interactive window for every small modifier. Use custom UI when it improves readability, choice, atmosphere, or management of a living system.
+
+Animated presentation can be part of the spec. Use it for mechanics that benefit from motion, such as pressure rising, corruption spreading, a council activating, an occult meter pulsing, a patron influence network glowing, or a formable seal appearing after requirements are met. Animation should clarify the mechanic and improve presentation. It should not hide information or add noise.
+
+Leader portraits can have animated variants for major route reveals, high-chaos leaders, supernatural leaders, symbolic councils, final formables, or dramatic country transformations. The spec should say when the animated portrait appears, what static fallback exists, whether the portrait is sourced or generated, and how the animation remains period-appropriate and readable at leader-portrait size.
+
+## Formation and UI questions for planning passes
+
+Before finishing a major event spec, ask:
+
+- Can any country created or empowered by the event form a larger state later?
+- Are there regional, ideological, hidden, or high-chaos formables that should be locked behind focuses, decisions, or events?
+- Does each formable have concrete map requirements and a clear post-formation identity?
+- Do formation rewards avoid free core spam, free war-goal spam, and instant runaway snowballing?
+- Does the decision category need a scripted GUI, progress meter, custom window, or animated presentation?
+- Are animated sprites, leader portraits, particles, glow, float loops, or button states planned where they would make the mechanic clearer?
+- Does the asset prompt include all static and animated UI pieces, plus fallbacks?
+- Does the goal prompt tell the implementation agent to verify formables, UI windows, animated sprites, and fallbacks?

@@ -1,6 +1,6 @@
 # Agentic HOI4 Modding
 
-A practical starter kit for using coding agents on Hearts of Iron IV mods.
+A starter kit for using coding agents on Hearts of Iron IV mods.
 
 This repo gives you a reusable `AGENTS.md` example, offline wiki references, repo skills, and optional Codex subagent configs that can be adapted into your own mod repo.
 

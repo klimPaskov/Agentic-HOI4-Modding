@@ -40,7 +40,8 @@ For large or multi-surface event work, use project subagents to keep the main im
 
 - Spawn `chaosx_repo_explorer` before editing when the event touches many systems or when file locations are uncertain.
 - Spawn `chaosx_asset_source_researcher`, `chaosx_generated_event_art`, and `chaosx_icon_artist` for actual visual asset packages according to `chaos-redux-event-assets`.
-- Spawn `chaosx_super_event_quote_researcher`, `chaosx_super_event_cultural_remark_researcher`, and `chaosx_super_event_audio_researcher` for actual super-event research packages according to `chaos-redux-super-events`.
+- Spawn `chaosx_super_event_text_researcher` and `chaosx_super_event_audio_researcher` for actual super-event research packages according to `chaos-redux-super-events`.
+- Spawn `chaosx_improvement_loop_planner` after a meaningful implementation tranche when several new mechanics, country packages, formables, focus routes, decisions, scripted GUI surfaces, super-event candidates, or lore systems have been added and the event needs deeper connection. Do not spawn it again for the same event until the previous addendum is implemented, folded into specs, queued with a reason, or rejected.
 - Spawn `chaosx_focus_tree_auditor` after creating or heavily changing focus trees.
 - Spawn `chaosx_event_completion_auditor` before claiming a large event, event rework, or spec-driven implementation is complete.
 - Spawn `chaosx_spreadsheet_doc_worker` after implementation when docs, catalog rows, manifests, route coverage tables, or spreadsheet-style records need to match the final repo state.
@@ -48,11 +49,27 @@ For large or multi-surface event work, use project subagents to keep the main im
 Subagents do not remove the main agent's responsibility to wire, review, validate, and report honestly.
 
 
-Focus-tree work includes AI behavior. Even compact or runtime-only trees should avoid flat `ai_will_do` weights when campaign state matters; use existing constants, flags, and pressure variables so AI choices react to war state, stability, recognition, faction membership, and route eligibility.
+Focus-tree work includes AI behavior. Even compact or runtime-only trees should avoid flat `ai_will_do` weights when campaign state matters. Use existing constants, flags, and pressure variables so AI choices react to war state, stability, recognition, faction membership, and route eligibility.
 
-When focus counts change, update every count-bearing surface in the same pass: focus-tree docs, asset/icon reuse ledgers, prompt-to-artifact or completion audits, and the event spreadsheet row. Recount actual `focus = { ... }` blocks from the focus files and verify each new focus has an icon assignment, localisation name/description, completion reward, and `ai_will_do`; do not rely on stale manifest counts.
+When focus counts change, update every count-bearing surface in the same pass: focus-tree docs, asset/icon reuse ledgers, prompt-to-artifact or completion audits, and the event spreadsheet row. Recount actual `focus = { ... }` blocks from the focus files and verify each new focus has an icon assignment, localisation name/description, completion reward, and `ai_will_do`. Do not rely on stale manifest counts.
 
 When an event continuation goal cannot be completed because named prompt/spec inputs or source-of-truth classifications are missing, make the blocker reproducible instead of ending with a loose note. Add or update an input-file audit with exact path state, line/byte counts and SHA-256 for present files, and exact filename recovery searches for missing files. Add a blocked completion report that lists the requested final-report categories without claiming completion. If the blocked state is likely to be resumed later, add a blocker resolution checklist and a resume packet that record the exact source decisions required, follow-up implementation paths, and validation gates before the final audit can pass. Do not mark the active goal complete while any named input or source-of-truth classification remains unresolved.
+
+## Spec and plan locations
+
+Source event specs now live under `docs/specs/<event_id>_<event_slug>_specs/`. Implementation should read those files as the main design source when they exist.
+
+Subagent plans, expansion addenda, audit follow-up notes, blocked reports, and implementation handoffs live under `docs/plans/<event_id>_<event_slug>_plans/`. Plans are working documents. If a plan becomes accepted source design, merge it into the relevant spec or report that it remains queued.
+
+## Parent and subagent implementation ownership
+
+Patch-capable subagents are active by default inside the current task scope. Use them when a large event touches focus trees, decisions, country packages, localisation, GUI, scripted helpers, or assets at the same time.
+
+Small subagent patches are allowed when they improve a specific surface without changing the event design. A decision subagent can vary costs, clarify tooltips, add cleanup, improve AI weights, and patch related localisation. A focus subagent can fix a route lock, prerequisite, bypass, focus AI, icon reference, small reward, or formable unlock hook. A country package subagent can patch tag setup, party names, focus loading, leader references, country localisation, simple starting setup, or existing formable requirements. A localisation subagent can patch dynamic text directly. A scripted-system architect can add narrow helpers and direct call sites when the repeated logic is already present.
+
+The parent still owns final integration, docs, spreadsheets, event chain direction, completion claims, and any broad mechanic expansion. If a subagent sees a needed route family, new country package, new formable suite, new scripted GUI system, new event chain, or major balance redesign, it writes a plan under `docs/plans/<event_id>_<event_slug>_plans/` and stops.
+
+Every subagent edit must produce a handoff under `docs/plans/<event_id>_<event_slug>_plans/subagent_handoffs/` when the event id and slug are known. The handoff lists changed files, identifiers, behavior before and after, validation, skipped validation, remaining gaps, and follow-up work for the parent.
 
 ## Event anatomy
 
@@ -235,9 +252,9 @@ When a decision fires a follow-up popup whose options need computed state from t
 
 When a contest, rivalry, charter, or settlement event is meant to change later behavior, have each option set a persistent outcome flag and route future decisions/events through a small aftermath helper that reads those flags. Prefer this event-driven persistence over daily/weekly polling, and document which later action consumes the flags.
 
-When a focus capstone should form or enter a system that also has a paid decision path, split the system effect into a no-cost core helper and a paid decision wrapper. Decisions pay costs and call the core helper; focus rewards call the core helper only after checking the same eligibility trigger, so focus integration does not secretly charge political power.
+When a focus capstone should form or enter a system that also has a paid decision path, split the system effect into a no-cost core helper and a paid decision wrapper. Decisions pay costs and call the core helper. focus rewards call the core helper only after checking the same eligibility trigger, so focus integration does not secretly charge political power.
 
-When custom or special tags can qualify for multiple named systems through broad eligibility triggers, route focus hooks by explicit tag groups before calling the shared helper. Do not let a broad first-match order decide which faction/system the tag joins; encode the intended mapping in the hook and let already-joined members use a maintenance/strengthening effect instead of creating a second membership.
+When custom or special tags can qualify for multiple named systems through broad eligibility triggers, route focus hooks by explicit tag groups before calling the shared helper. Do not let a broad first-match order decide which faction/system the tag joins. encode the intended mapping in the hook and let already-joined members use a maintenance/strengthening effect instead of creating a second membership.
 
 If you add a new reusable dynamic scripted effect (an effect that could be generalized for all events), document it in `common/scripted_effects/chaosx_dynamic_effects.md` in the same change.
 
@@ -308,8 +325,8 @@ Cluster firing rules:
 
 - Automatic cluster firing happens from `try_fire_event_cluster_for_selected_event` after a member event is selected.
 - Automatic firing respects cluster unlock tier, cooldown, one-time state, member eligibility, optional participation rolls, and runtime context.
-- Manual firing from Settings uses `force_fire_event_cluster_by_temp_id`; it bypasses tier, cooldown, disabled-state, and member availability checks. Runtime context can still fail if the event cannot build the required scopes.
-- Cluster history rows are recorded by `record_events_log_cluster_entry`; cluster catalogue rows are rebuilt by `rebuild_events_log_cluster_view`.
+- Manual firing from Settings uses `force_fire_event_cluster_by_temp_id`. it bypasses tier, cooldown, disabled-state, and member availability checks. Runtime context can still fail if the event cannot build the required scopes.
+- Cluster history rows are recorded by `record_events_log_cluster_entry`. cluster catalogue rows are rebuilt by `rebuild_events_log_cluster_view`.
 
 ### 7. Duration fields and constants
 
@@ -323,7 +340,7 @@ Known sensitive fields:
 
 For those fields, use a file-scoped `@NAME = literal` constant in the same script file and pass `days = @NAME`. Keep the value mirrored with the matching `common/script_constants/` tuning entry, and update both in the same change.
 
-Do not work around this by setting a temp variable and passing `days = temp_name`; those fields can reject variable tokens too.
+Do not work around this by setting a temp variable and passing `days = temp_name`. those fields can reject variable tokens too.
 
 ### 8. Super-event integration
 
@@ -510,3 +527,49 @@ Before closing an event task, verify:
 12. `docs/spreadsheets/chaos_redux_events_catalog.xlsx` is updated.
 13. If assets are required, `chaos-redux-event-assets` has been used.
 14. Generated assets are resized, converted to DDS 32 bit unsigned BGRB 8.8.8.8, moved into the correct folders, wired in `.gfx`, and recorded in an asset manifest.
+
+
+## Formable nations as event surfaces
+
+When an event can create or empower countries, consider whether it should create formable nation routes. A formable can be a major event payoff, a late-game ambition, a hidden branch, a rare evolution reward, a country package route, or a post-crisis consolidation goal.
+
+Event implementation must keep formables aligned across:
+
+- event flags and route flags
+- decision category visibility
+- focus unlocks
+- scripted triggers for state control
+- scripted effects for formation
+- cosmetic tags and country names
+- flags and portraits
+- AI strategy
+- event log entries
+- event details
+- achievements
+- super-events where the formation changes world order
+- cleanup after tag switch, annexation, puppet transfer, civil war, or route failure
+
+Use scripted helpers for formation effects. Do not duplicate formation logic in events, decisions, focuses, scripted GUI buttons, and achievements. The decision can pay the cost and validate requirements, while a shared helper performs the identity change and logs the result.
+
+Hidden formables should still have implementation coverage. They need reveal events, hidden flags, visibility triggers, localisation, assets, AI rules, and cleanup.
+
+## Scripted GUI and animated event presentation
+
+Major event mechanics can use scripted GUI windows, decision-category interfaces, animated category art, animated leader portraits, or custom buttons when they make the system easier to play. Treat that UI as part of the event contract, not as decoration added later.
+
+When an event uses a custom interface, align these surfaces:
+
+- decision category or entry button
+- scripted GUI definition
+- scripted triggers and effects
+- costs and tooltips
+- animated and static sprites
+- localisation and scripted localisation
+- AI fallback behavior
+- event log and event details
+- cleanup and invalidation rules
+- documentation and asset manifest
+
+Every player-clickable GUI button that changes gameplay must validate the same requirements as a normal decision. It must show costs and missing requirements clearly. It must call scripted effects that can also be used by AI, decisions, focuses, and cleanup systems.
+
+Animated leader portraits, animated route emblems, glow effects, particles, and float effects should be used for major reveals, high-chaos escalation, hidden formables, supernatural leaders, or final transformations. Each animated asset needs a static fallback and manifest entry.

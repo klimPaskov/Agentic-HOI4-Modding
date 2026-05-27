@@ -9,7 +9,7 @@ Use this skill when a task touches decisions, missions, timed objectives, decisi
 
 This skill is for implementation and cleanup. For broader Chaos Redux event wiring, use `chaos-redux-events`. For focus trees, use `hoi4-focus-trees`. For visual assets, use `chaos-redux-event-assets`.
 
-For large or reworked decision systems, spawn `chaosx_decision_mission_auditor` after implementation and before completion. The auditor should check objective quality, costs, tooltips, AI validity, cleanup, duplicate missions, route integration, exploit risk, localisation, and balance evidence.
+For large or reworked decision systems, spawn `chaosx_decision_mission_auditor` after implementation and before completion. The subagent is patch-capable by default inside the current task scope. It should audit objective quality, costs, tooltips, AI validity, cleanup, duplicate missions, route integration, exploit risk, localisation, and balance evidence. It may directly patch small decision, mission, tooltip, dynamic localisation, AI, cleanup, cooldown, visibility, and existing formable requirement issues when the fix is local and clearly safer.
 
 ## 1. Required reading
 
@@ -713,6 +713,24 @@ Review:
 
 Document test scenarios or observations. Do not only say “balanced.”
 
+## Improvement addenda for decisions and mechanic windows
+
+When an improvement addendum proposes decision depth, scripted GUI, or mechanic windows, translate the design into active play. The decision category should show the mechanic clearly, but the gameplay should still live in decisions, missions, scripted effects, scripted triggers, AI rules, and cleanup logic.
+
+Use scripted GUI when the player needs to read or manage values that would otherwise be buried in tooltips. Good uses include influence boards, federation congresses, formable progress, patron leverage, resource routing, public fear, occult pressure, faction cohesion, reform votes, target cards, and timed crisis panels.
+
+A GUI button should be treated like a decision. It needs cost logic, requirement logic, tooltips, scripted effects, AI equivalents, state cleanup, and a visible result. Animated buttons, glowing meters, floating seals, and warning pulses should clarify state changes. Do not use animation to hide the cost or make a weak action look important.
+
+For formables, the decision should verify the map state. Focuses may reveal claims, prepare institutions, or reduce costs, but the formation decision should prove control, legitimacy, recognition, or integration when those are central to the idea.
+
+## Subagent patches for decision systems
+
+Decision and mission subagents are active small-patch agents by default inside the current task scope. They can patch varied costs, clearer dynamic localisation, custom trigger tooltips, AI target checks, cleanup hooks, visibility checks, cooldown fixes, scripted GUI button text, narrow helper call sites, and existing formable requirement fixes without waiting for a separate permission prompt.
+
+They should not expand a whole decision system, create a new mechanic window, add a new event chain, or invent a formable suite. When the gap is broad, they should write an improvement plan under `docs/plans/<event_id>_<event_slug>_plans/` and leave implementation to the main agent.
+
+Every patch must write a handoff with changed files, changed decision or mission ids, localisation keys, behavior before and after, validation, skipped validation, and remaining design risks.
+
 ## 20. Validation
 
 Validation should focus on the system actually working, not on creating scripts that replace work.
@@ -769,3 +787,87 @@ A decision or mission task is complete only when:
 If anything was simplified, skipped, approximated, or replaced with a weaker substitute, report it clearly.
 
 If nothing was simplified, say so and provide evidence.
+
+
+## Formable nation decisions
+
+Use decisions for formable nations when the player should prove control over land, complete a political route, or spend resources before changing the country identity. A formable decision should feel like a proclamation, settlement, congress, coronation, constitutional act, annexation settlement, liberation charter, or administrative project. It should not be only a hidden tag switch.
+
+A formable decision must define:
+
+- visible name and hidden debug name
+- decision category and visibility timing
+- required owned and controlled states
+- required subjects, allies, faction members, puppets, occupied territories, cores, claims, or compliance thresholds
+- required focus, event flag, route flag, ideology, leader, legitimacy, chaos tier, or hidden reveal state
+- whether the decision is visible before requirements are met, hidden until unlocked, or fully secret until an event reveals it
+- political, military, economic, legitimacy, stability, war support, command power, XP, equipment, fuel, convoy, train, manpower, or factory costs
+- what happens to the tag, cosmetic tag, country name, adjective, flag, leader, portrait, ruling party, advisors, national spirits, cores, claims, puppets, factions, wars, and guarantees
+- whether claims become cores instantly, gradually through decisions, or only after compliance and local support work
+- follow-up missions, border integration projects, legitimacy projects, resistance suppression, diplomatic reactions, and achievement hooks
+- AI willingness, AI blockers, AI timing, and AI target safety
+- cleanup for obsolete formation decisions after the formable is created
+
+State requirements must be readable. Use named state groups and custom trigger tooltips. Do not expose raw state id lists to the player unless the existing UI pattern already does that cleanly. If several alternate maps can qualify, create clear requirement groups such as `Danubian Core`, `Northern Mandate`, or `Old Capital Belt`.
+
+Hidden formables need extra care. A hidden formable can be locked behind an event, secret focus, rare ideology, high chaos, special leader, historical artifact, super-event, achievement route, or scripted GUI investigation. Hidden does not mean undocumented. The implementation handoff must still define all triggers, effects, assets, and cleanup.
+
+## Formation missions and integration projects
+
+Large formables should usually need post-formation work. Use missions or decision chains for integration when instant cores would be too strong.
+
+Good formation follow-ups include:
+
+- hold named capitals for 180 days
+- secure rail links between old and new capitals
+- integrate border districts through local support work
+- spend infantry equipment and support equipment to build local administrations
+- negotiate autonomy with subject members
+- reduce resistance before coring a newly claimed area
+- hold a plebiscite under observer conditions
+- build a capital road, port, or rail hub before moving the capital
+- keep stability and legitimacy above a threshold during the formation crisis
+- prevent rivals from reaching an influence threshold before the final proclamation
+
+Formation systems should support partial success and failure. A country can form the title but gain only claims, delay core grants, create dissatisfied regions, trigger rival reactions, or open emergency missions.
+
+## Scripted GUI decision categories and mechanic windows
+
+When a decision category controls a major mechanic, consider attaching a scripted GUI or opening a custom mechanic window from a category button. This is appropriate when the player needs to manage values, targets, meters, factions, sponsors, province groups, formable requirements, investment tracks, or competing internal blocs.
+
+A scripted GUI or custom window must have a gameplay reason. It should expose useful choices, not merely decorate a category.
+
+Interactive GUI design should define:
+
+- entry point from the decision category
+- visible tabs, panels, cards, meters, bars, or target lists
+- button costs and requirements
+- what each button changes
+- locked, available, selected, active, completed, warning, and disabled states
+- hover and tooltip text
+- scripted localisation for dynamic values
+- scripted effects for button outcomes
+- scripted triggers for button availability
+- AI equivalents for every meaningful button
+- cleanup and fallback behavior
+
+When buttons spend resources, show the cost clearly. Use icon-first cost localisation. If the GUI button has more than a few requirements, show a short requirement summary and put details in a tooltip.
+
+Do not use GUI buttons to bypass decision balance. GUI buttons should call the same scripted effect families, cost logic, validation triggers, logging, and cleanup that the normal decision system would use.
+
+## Animated decision category presentation
+
+Decision categories and mechanic windows can use animated sprites when motion improves readability or atmosphere. Suitable uses include:
+
+- soft glow around an available formation seal
+- warning pulse when pressure is near a threshold
+- slow float on an occult, diplomatic, or propaganda emblem
+- particle drift behind a high-chaos category header
+- meter shimmer when a value changes
+- selected-card glow for the active sponsor, faction, or route
+- animated border for crisis mode
+- animated leader or council portrait inside a special mechanic window
+
+Use static fallback sprites for every animated element. Keep animations subtle unless the route is deliberately supernatural or high-chaos. Do not animate every icon in a category. Too much movement makes the UI harder to read.
+
+The decision implementation handoff should list animated sprite names, static fallback names, target sizes, frame counts if known, loop behavior, file paths, source mode, and whether the animation is purely decorative or tied to a mechanic state.

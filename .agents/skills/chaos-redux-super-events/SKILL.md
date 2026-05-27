@@ -75,14 +75,14 @@ Use `chaos-redux-events` for the full implementation contract:
 
 Use `chaos-redux-event-assets` for:
 
-- super-event image sourcing
+- super-event image sourcing or generation
 - image processing
 - PNG previews
 - DDS conversion
 - sprite handoff notes for main-agent `.gfx` wiring
 - asset manifests
 
-Super-event images should use internet source images by default unless the event is fictional, symbolic, supernatural, or fully invented.
+Super-event images may be sourced or generated. Prefer generated images for fictional, alternate-history, symbolic, supernatural, high-chaos, or emotionally specific moments. use sourced images when the visual must depict real historical material.
 
 ### This skill
 
@@ -104,8 +104,8 @@ For actual research work, use the narrow project subagents instead of making one
 | Main quote candidates, wording verification, attribution, source confidence, and quote recommendation | `chaosx_super_event_quote_researcher` |
 | Button text, cultural remark, short allusion, slogan, title-like reference, and copyright-risk notes | `chaosx_super_event_cultural_remark_researcher` |
 | Audio candidates, license verification, legitimate download, conversion to `.ogg`, and audio research notes | `chaosx_super_event_audio_researcher` |
-| Documentary, historical, archival, or real-world super-event image | `chaosx_asset_source_researcher` |
-| Fictional, symbolic, supernatural, or fully invented generated super-event image | `chaosx_generated_event_art` |
+| Real historical, archival, or real-world super-event image that must depict real material | `chaosx_asset_source_researcher` |
+| Fictional, alternate-history, symbolic, supernatural, high-chaos, or emotionally specific generated super-event image | `chaosx_generated_event_art` |
 
 The main agent owns final localisation, scripted localisation, slot wiring, settings-aware playback wiring, audio id wiring, `.gfx` image wiring, event trigger wiring, docs alignment, and spreadsheet alignment.
 
@@ -501,7 +501,7 @@ For every super-event audio package:
 8. Add or update `music/chaosx_super_event_music.txt` so the station includes a representative entry for every final super-event track.
 9. Add or update `sound/chaosx_sound.asset` sound and soundeffect definitions for sound-channel playback.
 10. Wire the super-event to the correct audio id through `global.current_super_event_audio_id` and the settings-aware playback helper.
-11. Update the relevant event/system documentation and `music/chaosx_music_track_list.html`; every super-event track must have a row in the HTML music table, and that row must list the super-event id or ids using the track.
+11. Update the relevant event/system documentation and `music/chaosx_music_track_list.html`. every super-event track must have a row in the HTML music table, and that row must list the super-event id or ids using the track.
 12. Verify the final file paths, definitions, ids, and docs before calling the super-event complete.
 
 Use the existing Chaos Redux settings-aware playback helper. Do not bypass it.
@@ -599,8 +599,9 @@ Super-event images are handled through `chaos-redux-event-assets`.
 
 Default rule:
 
-- use internet source images for super-event images
-- do not generate them with `$imagegen` unless the user explicitly asks for fictional, symbolic, supernatural, or fully invented super-event art, and then follow `chaos-redux-event-assets` and the official `$imagegen` workflow
+- use generated super-event images when the moment is fictional, alternate-history, symbolic, supernatural, high-chaos, or needs a unique emotional composition
+- use internet-sourced images when the super-event must depict a real historical person, real photographed event, or real archival artifact
+- follow `chaos-redux-event-assets` and the official `$imagegen` workflow for generated images
 
 The super-event skill should define the image direction:
 
@@ -608,7 +609,8 @@ The super-event skill should define the image direction:
 - tone
 - composition need
 - symbolism
-- source-image search direction
+- source mode: generated, sourced, or user-provided
+- source-image search direction or image-generation prompt direction
 - what to avoid
 - why the image fits the super-event
 
@@ -734,6 +736,14 @@ The note should include:
 - implementation notes
 - open questions
 
+## Improvement-loop super-event depth
+
+Improvement addenda can propose new super-events, but a super-event should still mark a real campaign threshold. Do not add one just because a route has a strong image. Use one when a formable changes regional order, a hidden route becomes public, a scripted GUI mechanic reaches a global milestone, a league or world threat emerges, or a defeat aftermath reshapes the campaign.
+
+For formables, the super-event should reflect the formation method. A negotiated federation, violent restoration, occult revival, imperial proclamation, anti-colonial congress, and puppet-backed union should not share the same tone. The title, quote, image, audio, remark, and trigger should reveal the route identity.
+
+Animated portraits or animated scripted GUI assets can support a super-event-adjacent moment, but they are not replacements for the super-event package. The super-event still needs aligned text, quote, image, audio, trigger, docs, and spreadsheet entry when relevant.
+
 ## 25. Final checklist
 
 Before closing a super-event task, confirm:
@@ -763,7 +773,7 @@ Before closing a super-event task, confirm:
 23. The audio id is specific to the super-event or intentionally shared and documented.
 24. `global.current_super_event_audio_id` is set correctly.
 25. Settings-aware playback is used.
-26. Scripted localisation is updated, including `GetSuperEventImage`; otherwise the slot can show default art while the text/audio work.
+26. Scripted localisation is updated, including `GetSuperEventImage`. otherwise the slot can show default art while the text/audio work.
 27. Player-facing localisation is updated.
 28. Image wiring is updated.
 29. Audio wiring is updated.
@@ -771,3 +781,28 @@ Before closing a super-event task, confirm:
 31. No placeholder, default, mismatched, or wrong-format audio remains for completed super-events.
 32. Event docs are updated.
 33. Spreadsheet or event catalog is updated if relevant.
+
+
+## Super-events for formables and interface-driven mechanics
+
+A formable nation can justify a super-event when it changes the campaign order, resolves a long route, reveals a hidden identity, creates a new bloc, triggers a major war, or signals a high-chaos transformation. Do not use a super-event for every routine formation decision.
+
+A formable super-event package should define:
+
+- formation decision or focus route that triggers it
+- required state-control, route, ideology, chaos, or hidden-event condition
+- formed country name, tag or cosmetic tag, flag, leader, and faction state at trigger time
+- why this formation matters beyond the country itself
+- world reaction and regional reaction
+- quote direction that fits formation, sovereignty, union, empire, federation, restoration, or hidden-state revelation
+- image direction, including flag reveal, map room, proclamation, congress, coronation, cabinet, battlefield, or impossible-state tableau
+- audio mood
+- follow-up events, decisions, event log entry, achievements, and route unlocks
+
+If a formable reveal uses animated leader portraits or animated interface art, the super-event prompt should mention the visual relationship. The final super-event itself still needs image, text, quote, audio, trigger, docs, and spreadsheet alignment.
+
+## Animated presentation notes for super-event-adjacent assets
+
+Super-event images are usually static HOI4 presentation images. Animated assets can still support the surrounding route, such as an animated leader portrait after the reveal, a glowing decision category seal before the proclamation, or an animated scripted GUI panel for a world-order mechanic unlocked by the super-event.
+
+Use animated support assets when they reinforce the aftermath. Do not let animation replace the core super-event package.
