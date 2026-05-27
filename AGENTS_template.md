@@ -21,8 +21,8 @@ Replace these everywhere outside examples:
 For each group below, either fill the placeholders or delete the matching bullets and subsections from the template.
 
 - Reference mods: `[REFERENCE_MOD_NAME]`, `[REFERENCE_MOD_PATH]`, `[REFERENCE_MOD_2_NAME]`, `[REFERENCE_MOD_2_PATH]`.
-- Repo skills: `[EVENT_SKILL_NAME]`, `[ASSET_SKILL_NAME]`, `[FRAME_ANIMATION_SKILL_NAME]`, `[SUPER_EVENT_SKILL_NAME]`, `[FOCUS_TREE_SKILL_NAME]`, `[DECISION_MISSION_SKILL_NAME]`, `[MTTH_SKILL_NAME]`, `[SUBAGENT_SKILL_NAME]`, `[IMPROVEMENT_LOOP_SKILL_NAME]`, `[EVENT_PLANNING_SKILL_NAME]`.
-- Subagents: `[REPO_EXPLORER_AGENT]`, `[ASSET_SOURCE_AGENT]`, `[GENERATED_ART_AGENT]`, `[ICON_AGENT]`, `[SUPER_EVENT_TEXT_AGENT]`, `[SUPER_EVENT_AUDIO_AGENT]`, `[FOCUS_TREE_AUDITOR_AGENT]`, `[DECISION_MISSION_AUDITOR_AGENT]`, `[COUNTRY_PACKAGE_AUDITOR_AGENT]`, `[LOCALISATION_AUDITOR_AGENT]`, `[SCRIPTED_SYSTEM_ARCHITECT_AGENT]`, `[EVENT_COMPLETION_AUDITOR_AGENT]`, `[SPREADSHEET_DOC_WORKER_AGENT]`, `[SKILL_MAINTAINER_AGENT]`, `[IMPROVEMENT_LOOP_PLANNER_AGENT]`.
+- Repo skills: `[EVENT_SKILL_NAME]`, `[ASSET_SKILL_NAME]`, `[FRAME_ANIMATION_SKILL_NAME]`, `[FOCUS_TREE_SKILL_NAME]`, `[DECISION_MISSION_SKILL_NAME]`, `[MTTH_SKILL_NAME]`, `[SUBAGENT_SKILL_NAME]`.
+- Subagents: `[REPO_EXPLORER_AGENT]`, `[ASSET_SOURCE_AGENT]`, `[GENERATED_ART_AGENT]`, `[ICON_AGENT]`, `[FOCUS_TREE_AUDITOR_AGENT]`, `[DECISION_MISSION_AUDITOR_AGENT]`, `[COUNTRY_PACKAGE_AUDITOR_AGENT]`, `[LOCALISATION_AUDITOR_AGENT]`, `[SCRIPTED_SYSTEM_ARCHITECT_AGENT]`, `[CONTENT_COMPLETION_AUDITOR_AGENT]`, `[DOC_WORKER_AGENT]`, `[SKILL_MAINTAINER_AGENT]`.
 - Shared helper files: `[DYNAMIC_EFFECTS_FILE]`, `[DYNAMIC_EFFECTS_DOC]`, `[SCRIPTED_EFFECTS_REFERENCE_FILE]`.
 
 ## 0. Required Reading Before Any Change
@@ -86,23 +86,21 @@ If vanilla examples are insufficient or unclear, you are allowed to inspect well
 
 Use repo skills as required implementation guidance, not as optional notes.
 
-- Use `[EVENT_SKILL_NAME]` for event implementation, event logs, evolutions, event details, documentation, and spreadsheet alignment.
-- Use `[ASSET_SKILL_NAME]` when an event needs visual assets, icons, flags, portraits, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes.
+- Use `[EVENT_SKILL_NAME]` for event implementation, event chains, event-triggered gameplay, localisation, documentation, and validation.
+- Use `[ASSET_SKILL_NAME]` when a task needs visual assets, icons, flags, portraits, UI art, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes.
 - Use `[FRAME_ANIMATION_SKILL_NAME]` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
-- Use `[SUPER_EVENT_SKILL_NAME]` when a task creates, updates, researches, or wires a super-event.
 - Use `[FOCUS_TREE_SKILL_NAME]` before editing national focus trees.
-- Use `[DECISION_MISSION_SKILL_NAME]` before editing decisions/missions
+- Use `[DECISION_MISSION_SKILL_NAME]` before editing decisions/missions.
 - Use `[MTTH_SKILL_NAME]` when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer.
 - Use `[SUBAGENT_SKILL_NAME]` when coordinating custom Codex subagents, routing bounded work, or defining parent/subagent ownership boundaries.
-- Use `[IMPROVEMENT_LOOP_SKILL_NAME]` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
 
 ### Subagents
 
-Use project custom Codex agents when a task needs bounded research, asset production, audit, recursive expansion, or documentation work that can be separated from main implementation.
+Use project custom Codex agents when a task needs bounded research, asset production, audit, or documentation work that can be separated from main implementation.
 
-`[SUBAGENT_SKILL_NAME]` is the detailed source of truth for subagent routing, ownership boundaries, handoff quality, audit cadence, asset routing, super-event routing, and the recursive mechanic expansion loop.
+`[SUBAGENT_SKILL_NAME]` is the detailed source of truth for subagent routing, ownership boundaries, handoff quality, audit cadence, and asset routing.
 
-The main agent remains responsible for final implementation, final wiring, final review, validation, and completion claims. Subagents return evidence, files, manifests, spec addenda, patches, or handoff notes depending on the parent-granted mode. The main agent must review their outputs and carry blockers or uncertainty into the final report.
+The main agent remains responsible for final implementation, final wiring, final review, validation, and completion claims. Subagents return evidence, files, manifests, patches, or handoff notes depending on the parent-granted mode. The main agent must review their outputs and carry blockers or uncertainty into the final report.
 
 All project custom Codex subagents must be spawned with `fork_context=false`. Do not spawn any project subagent with inherited parent-thread context. If a subagent needs a user correction, task constraint, current implementation status, or prior handoff detail, the parent must pass it explicitly in the subagent prompt or write it into the relevant spec, plan, handoff, or repo file before spawning.
 
@@ -111,16 +109,12 @@ Use these high-level routing rules:
 - Use `[REPO_EXPLORER_AGENT]` only when file locations, existing patterns, vanilla references, likely touchpoints, missing-file recovery, or implementation order are unclear. Do not use it for small known-file edits, provided-file edits, direct skill or prompt updates, localisation-only cleanup, asset-only production, or tasks already bounded to exact files. The parent should inspect the known files directly for those cases.
 - Use asset subagents for visual production: `[ASSET_SOURCE_AGENT]`, `[GENERATED_ART_AGENT]`, and `[ICON_AGENT]`.
 - When an asset subagent is asked to produce animation, the parent prompt must require `[FRAME_ANIMATION_SKILL_NAME]` and must ask for separate generated, sourced, or provided source frames, static fallback, manifest, contact sheet, preview, and `.gfx` or `.gui` handoff.
-- Use super-event subagents for specialised research: `[SUPER_EVENT_TEXT_AGENT]` and `[SUPER_EVENT_AUDIO_AGENT]`.
-- Use audit subagents before completion claims: `[FOCUS_TREE_AUDITOR_AGENT]`, `[DECISION_MISSION_AUDITOR_AGENT]`, `[COUNTRY_PACKAGE_AUDITOR_AGENT]`, `[LOCALISATION_AUDITOR_AGENT]`, and `[EVENT_COMPLETION_AUDITOR_AGENT]`.
+- Use audit subagents before completion claims: `[FOCUS_TREE_AUDITOR_AGENT]`, `[DECISION_MISSION_AUDITOR_AGENT]`, `[COUNTRY_PACKAGE_AUDITOR_AGENT]`, `[LOCALISATION_AUDITOR_AGENT]`, and `[CONTENT_COMPLETION_AUDITOR_AGENT]`.
 - Use `[SCRIPTED_SYSTEM_ARCHITECT_AGENT]` for reusable scripted effects, triggers, script constants, event targets, meta effects, variable patterns, and dynamic helper design.
-- Use `[SPREADSHEET_DOC_WORKER_AGENT]` only after implementation facts are available. Spreadsheet event-detail, evolution-detail, and cluster-detail fields must match the in-game localisation wording.
+- Use `[DOC_WORKER_AGENT]` only after implementation facts are available. It must document actual repo state and should copy player-facing wording from localisation when exact wording matters.
 - Use `[SKILL_MAINTAINER_AGENT]` for non-trivial skill creation, cleanup, routing updates, or multi-skill consistency work.
-- Use `[IMPROVEMENT_LOOP_PLANNER_AGENT]` during large event implementation when a mechanic, focus tree, country package, decision system, super-event, visual progression, lore package, or audit finding needs deeper design. It creates concrete event expansion addenda with research, historical connections, playable mechanics, and implementation surfaces for the main agent. It does not patch gameplay files. Do not spawn it again for the same event until the previous addendum has been implemented, folded into specs, queued with a reason, or rejected.
 
-Patch-capable subagents are allowed to make small, local improvements by default when the change is inside the current task surface and directly improves the feature. They may vary costs, add clearer dynamic localisation, improve tooltips, adjust safe AI weights, add narrow helper calls, fix route locks, add cleanup hooks, or correct existing formable checks. They must not expand a whole mechanic, redesign a route family, add a new country package, create a new scripted GUI system, or change the requested design on their own. Broad gaps become a plan under `[DOCS_FOLDER]/plans/<event_id>_<event_slug>_plans/`. Every subagent edit needs a handoff that lists changed files, identifiers, validation, and remaining risks.
-
-For major event work, the main agent should use the improvement loop after meaningful implementation tranches when several new mechanics have been added and now need deeper connections. The planner should expand ideas using the `[EVENT_PLANNING_SKILL_NAME]` and relevant research. It should not be used repeatedly while a previous plan for the same event is still unresolved.
+Patch-capable subagents are allowed to make small, local improvements by default when the change is inside the current task surface and directly improves the feature. They may vary costs, add clearer dynamic localisation, improve tooltips, adjust safe AI weights, add narrow helper calls, fix route locks, add cleanup hooks, or correct existing formable checks. They must not expand a whole mechanic, redesign a route family, add a new country package, create a new scripted GUI system, or change the requested design on their own. Broad gaps become a plan under `[DOCS_FOLDER]/plans/<feature_slug>/`. Every subagent edit needs a handoff that lists changed files, identifiers, validation, and remaining risks.
 
 ## 1. Coding Style
 
@@ -306,8 +300,8 @@ Do not claim completion when:
 - localisation is missing
 - AI behavior is missing
 - assets are missing, unwired, or undocumented
-- event logs, docs, spreadsheet rows, or manifests are stale
-- any requested route, country, decision, mission, achievement, evolution, or super-event is missing
+- docs, manifests, or required tracking files are stale
+- any requested route, country, decision, mission, achievement, event chain, focus path, or asset is missing
 - a fallback or simplification was used without explicit approval
 
 Balance checks are implementation work, not optional polish. If the spec or user asks for balance validation, the agent must inspect the relevant variables, scripted effects, decisions, mission outcomes, trigger conditions, AI weights, and scenario behavior. A vague statement that balance was adjusted is not enough.
@@ -322,32 +316,32 @@ Do not claim a goal is complete just because the game loads or because the most 
 
 For large events, mechanics, focus-tree rewrites, country packages, balance passes, or multi-system goals, produce a concrete completion report. The report should list files changed, systems touched, balance checks, tests or validation scenarios, assets reused or created, documentation updated, and remaining blockers.
 
-Every simplification must be reported. This includes skipped routes, fallback trees used in place of bespoke trees, missing assets, missing localisation, missing AI behavior, missing event-log entries, missing focus paths, missing dynamic scaling, hardcoded values where dynamic logic was requested, placeholder content, or weaker substitutes.
+Every simplification must be reported. This includes skipped routes, fallback trees used in place of bespoke trees, missing assets, missing localisation, missing AI behavior, missing focus paths, missing dynamic scaling, hardcoded values where dynamic logic was requested, placeholder content, or weaker substitutes.
 
 If there are no simplifications, say so explicitly and provide evidence through audits, docs, or changed files. If the goal cannot be fully implemented, report that the goal is incomplete instead of presenting partial work as done.
 
 ### Specs and Plans
 
-Event source specifications belong under `[DOCS_FOLDER]/specs/<event_id>_<event_slug>_specs/`.
+Feature specifications belong under `[DOCS_FOLDER]/specs/<feature_slug>/`.
 
-Subagent plans, improvement addenda, audit follow-up notes, blocked reports, and implementation handoffs belong under `[DOCS_FOLDER]/plans/<event_id>_<event_slug>_plans/`.
+Subagent plans, audit follow-up notes, blocked reports, and implementation handoffs belong under `[DOCS_FOLDER]/plans/<feature_slug>/`.
 
-The plans folder is a working area. The specs folder is the source-of-truth design area. If an accepted plan changes the event design, the main agent should merge it into the relevant spec or report that it remains queued.
+The plans folder is a working area. The specs folder is the source-of-truth design area. If an accepted plan changes the feature design, the main agent should merge it into the relevant spec or report that it remains queued.
 
 ## 6. Event Integration
 
-For event implementation, use the repo skill `[EVENT_SKILL_NAME]`.
+For event implementation, use the repo skill `[EVENT_SKILL_NAME]` if this repo has one.
 
-1. Keep the entry event root format `[MOD_PREFIX].nr<ID>.1`.
-2. Wire event script, category registration, auto-firing, localisation/name mappings, event log actor mapping, and event details window content together in the same change.
-3. If the event has evolutions or world-end branches, wire the log entries, super-event integration, and related localisation in the same change.
-4. Keep gameplay files, docs, the event spreadsheet/presentation, and any other details aligned.
+1. Keep event IDs, namespaces, file placement, and trigger patterns consistent with the existing mod.
+2. Wire event script, triggers or hooks, localisation, images, and documentation together when the feature requires them.
+3. If an event changes decisions, focuses, ideas, characters, countries, UI, or AI behavior, update those related files in the same change.
+4. Keep gameplay files, localisation, UI assets, and docs aligned.
 
 ## 7. Focus Trees and Large Content
 
 For national focus work, use `[FOCUS_TREE_SKILL_NAME]` before editing. That skill is the detailed source of truth for focus-tree depth, reward variety, route logic, AI, localisation, icons, ideas, country identity changes, focus-decision integration, route coverage proof, and completion standards.
 
-Before claiming focus-tree completion, use the appropriate audit route from `[SUBAGENT_SKILL_NAME]`. If a tree works but feels shallow, duplicated, generic, or disconnected from gameplay, use `[IMPROVEMENT_LOOP_SKILL_NAME]` and consider a plan-mode pass from `[IMPROVEMENT_LOOP_PLANNER_AGENT]`.
+Before claiming focus-tree completion, use the appropriate audit route from `[SUBAGENT_SKILL_NAME]` if this repo uses audit subagents. If a tree works but feels shallow, duplicated, generic, or disconnected from gameplay, write a concrete follow-up plan under `[DOCS_FOLDER]/plans/<feature_slug>/` or improve the tree before calling it complete.
 
 ## 8. Agent-generated Visual Assets
 
@@ -363,7 +357,7 @@ Use skills actively. Skills are not only for cleanup at the end of a task. They 
 
 When a task reveals a repeated workflow, repeated mistake, reusable process, repo-specific convention, validation pattern, asset workflow, prompt pattern, or useful implementation rule, use `[SKILL_MAINTAINER_AGENT]` or OpenAI’s official `skill-creator` skill to capture it cleanly.
 
-Create or update skills more often during long tasks, especially when working through many events, mechanics, assets, localisation passes, or UI patterns. If the same reasoning would likely be needed again later in the run, spawn `[SKILL_MAINTAINER_AGENT]` or update the relevant skill before moving on.
+Create or update skills more often during long tasks, especially when working through many mechanics, assets, localisation passes, or UI patterns. If the same reasoning would likely be needed again later in the run, spawn `[SKILL_MAINTAINER_AGENT]` or update the relevant skill before moving on.
 
 Never put event-specific, country-specific, or one-off implementation context inside general skills. This is very important!
 
@@ -377,7 +371,7 @@ Rules:
 6. Record repo paths, commands, examples, gotchas, source folders, validation steps, and handoff rules when they prevent rediscovery.
 7. Keep each skill focused on one reusable workflow.
 8. Do not bloat skills with one-off details that will not help future tasks.
-9. During large multi-event runs, review skill gaps after each completed event or shared system. Update or create skills before starting the next event if something reusable was learned.
+9. During large multi-feature runs, review skill gaps after each completed feature or shared system. Update or create skills before starting the next feature if something reusable was learned.
 10. Report which skills were used, created, or updated at the end of each task.
 
 ## 10. Git
