@@ -138,6 +138,44 @@ Do not add tools just because they exist. More tools can also mean more noise, m
 
 Good use cases include web research, image sourcing, document conversion, spreadsheets, asset processing, or project-specific integrations.
 
+## Hermes automation
+
+Hermes Agent can be used as an automation layer around the coding agent workflow. It is useful for tasks that should happen on a schedule, or from another chat surface without manually opening the coding agent every time.
+
+Good Hermes use cases for HOI4 modding include:
+
+- scheduled `error.log` checks after launching HOI4
+- sending actionable game errors to a Codex or other coding-agent session
+- collecting Discord/GitHub bug reports, ideas, balance complaints
+- turning repeated community feedback into clean implementation handoff prompts
+- updating an Obsidian vault, documentations/spreadsheets, or project notes from chat
+- producing daily or weekly summaries of recent reports and unresolved issues
+
+A practical setup is:
+
+```text
+Hermes / Discord / Telegram / local cron
+        ↓
+collect reports, logs, notes, and screenshots
+        ↓
+write a focused handoff prompt
+        ↓
+Codex or another coding agent implements in the mod repo
+```
+
+For example, a Hermes cron job can periodically launch HOI4 for a fixed test window, inspect the Paradox `error.log`, copy the log into a repo-local temporary folder, and send Codex a prompt such as:
+
+```text
+Fix the HOI4 errors reported in this latest automated game run.
+
+error.log path: tmp/hoi4-error-logs/hoi4-error-YYYYMMDDTHHMMSSZ.log
+
+Identify actionable mod errors only. Ignore unrelated vanilla or launcher noise.
+After fixing and validating the errors, delete the temporary copied log.
+```
+
+Keep Hermes as the orchestrator, not the final implementer. Hermes should gather evidence, preserve source context, schedule recurring checks, and create precise handoff prompts. The coding agent should still make the code changes inside the repo, and the main implementation agent should still own final review, validation, docs alignment, and completion proof.
+
 ## Subagent design rules
 
 Subagents should be narrow.
