@@ -59,6 +59,8 @@ Use `chaosx_localisation_auditor` for localisation and scripted localisation aud
 
 Use `chaosx_scripted_system_architect` for reusable scripted system design and active narrow implementation covering scripted effects, scripted triggers, script constants, event targets, meta effects, variables, tuning values, formable helpers, scripted GUI button helpers, and dynamic helper logic.
 
+Use `chaosx_documentation_curator` for documentation cleanup and consistency during long implementation. It reconciles specs, plans, docs, handoffs, manifests, prompts, reports, and README files, writes source-of-truth maps and resume packets, marks superseded docs, records plan dispositions, and flags contradictions. It patches documentation surfaces only and does not edit gameplay files, localisation, assets, or spreadsheets.
+
 Use `chaosx_event_completion_auditor` for read-only spec-versus-implementation audits covering events, mechanics, assets, docs, super-events, focus trees, decisions, validation, and accepted plan addenda.
 
 Use `chaosx_spreadsheet_doc_worker` only for the event catalog workbook at `docs/spreadsheets/chaos_redux_events_catalog.xlsx`. It uses the xlsx/spreadsheet skill, keeps the workbook player-facing, and matches event log, event detail, evolution detail, and cluster detail fields to the in-game wording.
@@ -75,7 +77,7 @@ Use `chaosx_repo_explorer` when at least one of these is true:
 - the task spans several systems and the edit order is uncertain
 - the correct Chaos Redux pattern or vanilla precedent is unclear
 - a named spec, prompt, source file, classification, sprite, tag, localisation key, or helper appears missing and needs recovery evidence
-- the feature has enough cross-surface risk that a file map and validation plan will prevent missed work
+- the feature has enough cross-surface risk that a file map and meaningful validation plan will prevent missed work
 
 Do not spawn `chaosx_repo_explorer` for small or already bounded work, including:
 
@@ -110,6 +112,14 @@ They may write reports only when a report path is provided or obvious from the t
 When an event mechanic needs more depth, new branches, new countries, a new formable suite, a new scripted GUI system, deeper regional logic, historical anchors, or a larger route redesign, the planner writes a plan under `docs/plans/<event_id>_<event_slug>_plans/`. The main agent decides what to implement.
 
 The parent should use this planner after a meaningful implementation tranche, not after every small patch. Do not spawn it again for the same event until its previous addendum has been implemented, folded into specs, queued with a reason, or rejected with a reason.
+
+### Documentation curation agents
+
+`chaosx_documentation_curator` is patch-capable for documentation surfaces only. It may update Markdown specs, docs, plans, handoffs, manifests, prompt files, README files, route coverage tables, source-of-truth ledgers, resume packets, and documentation indexes inside the current task scope.
+
+Use it after long implementation tranches, after several subagent handoffs, before a major resume, or whenever docs may be stale, contradictory, duplicated, or too numerous. It should reduce confusion for the parent agent by recording what is current, what is superseded, what is queued, what is rejected, and what still needs a decision.
+
+It must not edit gameplay files, localisation, scripted localisation, GUI, GFX, events, focuses, decisions, ideas, scripted effects, scripted triggers, on_actions, country setup, history, AI files, assets, audio, binary files, or the event catalog workbook. It does not replace `chaosx_event_completion_auditor`, `chaosx_localisation_auditor`, `chaosx_spreadsheet_doc_worker`, or `chaosx_repo_explorer`.
 
 ### Asset-production agents
 
@@ -172,10 +182,12 @@ The handoff should include:
 - changed ids, keys, tags, helper names, or state groups
 - before and after behavior
 - why the change is safe and bounded
-- validation run
-- skipped validation and why
+- meaningful validation run, limited to task-specific checks that affect confidence
+- skipped meaningful validation and why
 - remaining issues or design gaps
 - any follow-up the parent must implement
+
+Do not fill handoffs with passing boilerplate checks that only restate AGENTS.md rules. Basic syntax hygiene can be done internally unless it found a problem or materially changed the patch.
 
 If a patch touches localisation, list the keys changed. If it touches decisions or focuses, list affected ids. If it touches scripted helpers, list helper names and call sites. If it touches country setup, list tags and state ids or state groups.
 
@@ -268,6 +280,7 @@ Before final completion, the parent should check:
 - subagent changes are inside approved scope
 - patch handoffs identify changed files and ids
 - plan handoffs are either implemented, queued, or rejected with a reason
+- documentation curator handoffs identify promoted, queued, rejected, superseded, and unresolved documents when one was used
 - assets are wired or reported as pending
 - validation reflects the final repo state
 - docs, specs, plans, and spreadsheet surfaces agree

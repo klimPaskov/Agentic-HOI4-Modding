@@ -297,7 +297,7 @@ Factions should not form too easily. Define minimum membership, crisis condition
 
 ## 5.10 Mechanic presentation, validity, and shared-tree rules
 
-Special mechanics must be visible somewhere the player can understand them. A mechanic can appear in a decision category header, custom scripted GUI, progress meter, scripted localisation tooltip, event detail window, focus tooltip, national spirit tooltip, event log entry, or a combination of these.
+Special mechanics must be visible somewhere the player can understand them. A mechanic can appear in a decision category header, custom scripted GUI, progress meter, scripted localisation tooltip, focus tooltip, national spirit tooltip, or a combination of these.
 
 When a mechanic is important enough for a custom scripted GUI, consider visual presentation beyond static text. Useful presentation can include progress bars, meter fill variants, state icons, status frames, warning frames, selected and locked variants, animated frames, or frame-by-frame visual changes that make the mechanic feel alive. The visuals should clarify the mechanic, not clutter it.
 
@@ -559,6 +559,83 @@ A focus that unlocks a decision family should state:
 
 A decision family unlocked by focuses should reference the relevant route in docs and localisation.
 
+## Focus routes that lead to formable nations
+
+A focus tree can prepare, reveal, enable, or stabilize a formable nation, but the final formation should usually be handled by a decision when state control matters. Use focuses to build the political claim. Use decisions to verify the map and perform the formation.
+
+A formation route in a focus tree should define:
+
+- narrative reason the country can claim the formable identity
+- route family that unlocks the claim
+- focuses that reveal the formation decision
+- focuses that mark required regions, start border commissions, invite subjects, sponsor plebiscites, or prepare integration
+- mutually exclusive formable routes
+- compatible support branches, such as industry, army, diplomacy, intelligence, or legitimacy
+- hidden formables that require rare events, special leaders, secret focuses, high chaos, or unusual state control
+- post-formation focuses that stabilize the new country, integrate regions, resolve opposition, change capital, update advisors, or expand claims
+- AI route behavior and AI safety checks
+- asset needs, including flags, cosmetic tags, leader portraits, focus icons, decision icons, and possible animated route portraits
+
+Do not make a formable route a linear claim ladder by default. The best formation routes usually combine legitimacy, state control, diplomatic recognition, military readiness, local integration, and a visible identity change.
+
+## Formation route architecture
+
+When mapping a focus tree that can form countries, include a formation lane or route overlay in the architecture map.
+
+Useful formation lane structure:
+
+1. claim preparation focus group
+2. required-region survey or claim office focus group
+3. diplomacy or internal legitimacy focus group
+4. decision unlock focus
+5. map-control decision handled in a decision category
+6. formation event or news event
+7. post-formation stabilization branch
+8. late ambition or hidden second-stage formable, if justified
+
+The tree should state whether the formable is:
+
+- visible from game start
+- revealed by a normal focus
+- revealed by a rare event
+- hidden until the player controls key states
+- hidden behind ideology, leader, chaos tier, patron, or secret route
+- available only if another country does not exist
+- available only if the forming country has the correct release origin or event origin
+
+For shared event-created trees, formables must use origin and package checks so unrelated countries do not receive the wrong route.
+
+## Focus rewards tied to formation decisions
+
+Focus rewards can:
+
+- unlock formation decisions
+- add claims on required regions
+- reduce integration costs
+- add temporary legitimacy for a formation crisis
+- reveal hidden state requirements in a tooltip
+- invite subjects or allies to join the formation
+- open border plebiscite missions
+- create a custom scripted GUI meter for formation progress
+- unlock post-formation branch content
+- switch to animated leader portraits or route emblems after a dramatic transformation
+
+Focus rewards should not:
+
+- grant all required states without gameplay reason
+- create a formable without checking map requirements
+- give instant full cores on large conquered regions without integration work
+- bypass route locks or hidden formable conditions
+- leave obsolete pre-formation focuses visible after the formation completes
+
+## Animated leader portraits and visual route payoffs
+
+Focus trees should consider animated portraits or animated route emblems for major political transformations. Use them for route payoffs such as a supernatural leader reveal, a restored dynasty, a revolutionary cult, a final formable proclamation, or a high-chaos state identity.
+
+Animated portraits need static fallbacks. They should be assigned through the same leader, character, or cosmetic identity logic as the route itself. Real historical portraits require sourced material and careful treatment. Fictional or symbolic leaders can use generated animated portrait packages through the asset skill.
+
+Do not make every leader animated. Animation should signal a special route, a high-chaos identity, a super-event-level transformation, or a rare hidden outcome.
+
 ## 11. Route locks and mutual exclusions
 
 Use mutual exclusions when the country's identity changes.
@@ -673,7 +750,7 @@ Focus tree subagents are active small-patch agents by default inside the current
 
 They should not redesign a whole tree, add a full route family, create a new formable chain, or change the country identity. When the tree needs broader depth, they should write an improvement plan under `docs/plans/<event_id>_<event_slug>_plans/` and leave implementation to the main agent.
 
-Every patch must write a handoff with changed files, changed focus ids, route behavior before and after, validation, skipped validation, and remaining route risks.
+Every patch must write a handoff with changed files, changed focus ids, route behavior before and after, meaningful validation, skipped task-specific validation, and remaining route risks.
 
 ## 16. Documentation and audit
 
@@ -737,7 +814,7 @@ A focus tree task is complete only when:
 - special mechanic values are changed by relevant focus paths
 - balance-of-power or equivalent internal struggle mechanics are used when appropriate
 - event-created factions have goals, membership rules, shared mechanics, AI behavior, rewards, and success or failure states
-- special mechanics have visible presentation through decision headers, scripted GUI, progress meters, tooltips, event details, event logs, or spirits
+- special mechanics have visible presentation through decision headers, scripted GUI, progress meters, tooltips, or spirits
 - important custom GUI mechanics consider progress variants, status frames, warning frames, selected or locked variants, and frame animations where useful
 - AI routes respect validity and avoid impossible branches
 - shared trees are adapted per country and do not read or play identically
@@ -760,79 +837,3 @@ If a tree uses a fallback tree where the spec requires a bespoke tree, report it
 If no simplifications were made, say so and provide evidence.
 
 
-## Focus routes that lead to formable nations
-
-A focus tree can prepare, reveal, enable, or stabilize a formable nation, but the final formation should usually be handled by a decision when state control matters. Use focuses to build the political claim. Use decisions to verify the map and perform the formation.
-
-A formation route in a focus tree should define:
-
-- narrative reason the country can claim the formable identity
-- route family that unlocks the claim
-- focuses that reveal the formation decision
-- focuses that mark required regions, start border commissions, invite subjects, sponsor plebiscites, or prepare integration
-- mutually exclusive formable routes
-- compatible support branches, such as industry, army, diplomacy, intelligence, or legitimacy
-- hidden formables that require rare events, special leaders, secret focuses, high chaos, or unusual state control
-- post-formation focuses that stabilize the new country, integrate regions, resolve opposition, change capital, update advisors, or expand claims
-- AI route behavior and AI safety checks
-- asset needs, including flags, cosmetic tags, leader portraits, focus icons, decision icons, and possible animated route portraits
-
-Do not make a formable route a linear claim ladder by default. The best formation routes usually combine legitimacy, state control, diplomatic recognition, military readiness, local integration, and a visible identity change.
-
-## Formation route architecture
-
-When mapping a focus tree that can form countries, include a formation lane or route overlay in the architecture map.
-
-Useful formation lane structure:
-
-1. claim preparation focus group
-2. required-region survey or claim office focus group
-3. diplomacy or internal legitimacy focus group
-4. decision unlock focus
-5. map-control decision handled in a decision category
-6. formation event or news event
-7. post-formation stabilization branch
-8. late ambition or hidden second-stage formable, if justified
-
-The tree should state whether the formable is:
-
-- visible from game start
-- revealed by a normal focus
-- revealed by a rare event
-- hidden until the player controls key states
-- hidden behind ideology, leader, chaos tier, patron, or secret route
-- available only if another country does not exist
-- available only if the forming country has the correct release origin or event origin
-
-For shared event-created trees, formables must use origin and package checks so unrelated countries do not receive the wrong route.
-
-## Focus rewards tied to formation decisions
-
-Focus rewards can:
-
-- unlock formation decisions
-- add claims on required regions
-- reduce integration costs
-- add temporary legitimacy for a formation crisis
-- reveal hidden state requirements in a tooltip
-- invite subjects or allies to join the formation
-- open border plebiscite missions
-- create a custom scripted GUI meter for formation progress
-- unlock post-formation branch content
-- switch to animated leader portraits or route emblems after a dramatic transformation
-
-Focus rewards should not:
-
-- grant all required states without gameplay reason
-- create a formable without checking map requirements
-- give instant full cores on large conquered regions without integration work
-- bypass route locks or hidden formable conditions
-- leave obsolete pre-formation focuses visible after the formation completes
-
-## Animated leader portraits and visual route payoffs
-
-Focus trees should consider animated portraits or animated route emblems for major political transformations. Use them for route payoffs such as a supernatural leader reveal, a restored dynasty, a revolutionary cult, a final formable proclamation, or a high-chaos state identity.
-
-Animated portraits need static fallbacks. They should be assigned through the same leader, character, or cosmetic identity logic as the route itself. Real historical portraits require sourced material and careful treatment. Fictional or symbolic leaders can use generated animated portrait packages through the asset skill.
-
-Do not make every leader animated. Animation should signal a special route, a high-chaos identity, a super-event-level transformation, or a rare hidden outcome.

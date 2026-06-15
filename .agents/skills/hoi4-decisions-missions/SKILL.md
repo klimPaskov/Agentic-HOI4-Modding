@@ -117,7 +117,7 @@ Use varied costs that fit the action:
 - army XP
 - navy XP
 - air XP
-- command power
+- command power (can't be expensive, command power costs must be conservative. A decision can't cost more than 60 command power)
 - political power only when the action is genuinely bureaucratic or political
 - infantry equipment
 - support equipment
@@ -558,7 +558,7 @@ A faction should not form just because one country exists. Use minimum membershi
 
 ## 15.5 Mechanic presentation, value clarity, and faction outcomes
 
-Special mechanic values must be visible somewhere the player can understand them. A decision category can show values in its header, a custom scripted GUI, a progress meter, a scripted localisation tooltip, event details, national spirit tooltips, or event log details.
+Special mechanic values must be visible somewhere the player can understand them. A decision category can show values in its header, a custom scripted GUI, a progress meter, a scripted localisation tooltip, or national spirit tooltips
 
 When a mechanic uses a scripted GUI, consider whether it needs visual state changes. Useful presentation can include progress bars, meter fill variants, status icons, warning frames, selected and locked frames, animated frames, or frame-by-frame changes. Use visual motion or variants only when they clarify the mechanic.
 
@@ -620,7 +620,104 @@ Good clutter-control patterns:
 - emergency decisions visible only during emergency states
 - late-game decisions hidden until the route payoff is reached
 
+For large targeted decision families, prefer a separate target-management category over dumping every target row into the main mechanic category. Use a compact `Show Decisions for [FROM.GetName]` / `Hide Decisions for [FROM.GetName]` flow when the human player only needs to inspect or act on one target at a time. AI should still see all decisions at once.
+
+The reusable selected-target pattern is:
+
+- a category dedicated to the target family
+- one visible selector decision over the target array
+- one visible hide/close decision for the selected target
+- a root variable that stores the selected target id
+- a target flag on the selected country
+- helper triggers for selecting, showing selected-target decisions, and recognizing the selected target from `FROM`
+- helper effects that activate and remove only the selected target decisions
+- cleanup that clears the target flag, stored id, event target if global, and active target decisions when the target becomes invalid
+- AI bypass or separate AI visibility so AI can still evaluate useful targets without needing a player-facing selector
+
 Do not leave stale, invalid, or irrelevant decisions visible simply because their scripted trigger is easy to write.
+
+## Formable nation decisions
+
+Use decisions for formable nations when the player should prove control over land, complete a political route, or spend resources before changing the country identity. A formable decision should feel like a proclamation, settlement, congress, coronation, constitutional act, annexation settlement, liberation charter, or administrative project. It should not be only a hidden tag switch.
+
+A formable decision must define:
+
+- visible name and hidden debug name
+- decision category and visibility timing
+- required owned and controlled states
+- required subjects, allies, faction members, puppets, occupied territories, cores, claims, or compliance thresholds
+- required focus, event flag, route flag, ideology, leader, legitimacy, chaos tier, or hidden reveal state
+- whether the decision is visible before requirements are met, hidden until unlocked, or fully secret until an event reveals it
+- political, military, economic, legitimacy, stability, war support, command power, XP, equipment, fuel, convoy, train, manpower, or factory costs
+- what happens to the tag, cosmetic tag, country name, adjective, flag, leader, portrait, ruling party, advisors, national spirits, cores, claims, puppets, factions, wars, and guarantees
+- whether claims become cores instantly, gradually through decisions, or only after compliance and local support work
+- follow-up missions, border integration projects, legitimacy projects, resistance suppression, diplomatic reactions, and achievement hooks
+- AI willingness, AI blockers, AI timing, and AI target safety
+- cleanup for obsolete formation decisions after the formable is created
+
+State requirements must be readable. Use named state groups and custom trigger tooltips. Do not expose raw state id lists to the player unless the existing UI pattern already does that cleanly. If several alternate maps can qualify, create clear requirement groups such as `Danubian Core`, `Northern Mandate`, or `Old Capital Belt`.
+
+Hidden formables need extra care. A hidden formable can be locked behind an event, secret focus, rare ideology, high chaos, special leader, historical artifact, super-event, achievement route, or scripted GUI investigation. Hidden does not mean undocumented. The implementation handoff must still define all triggers, effects, assets, and cleanup.
+
+## Formation missions and integration projects
+
+Large formables should usually need post-formation work. Use missions or decision chains for integration when instant cores would be too strong.
+
+Good formation follow-ups include:
+
+- hold named capitals for 180 days
+- secure rail links between old and new capitals
+- integrate border districts through local support work
+- spend infantry equipment and support equipment to build local administrations
+- negotiate autonomy with subject members
+- reduce resistance before coring a newly claimed area
+- hold a plebiscite under observer conditions
+- build a capital road, port, or rail hub before moving the capital
+- keep stability and legitimacy above a threshold during the formation crisis
+- prevent rivals from reaching an influence threshold before the final proclamation
+
+Formation systems should support partial success and failure. A country can form the title but gain only claims, delay core grants, create dissatisfied regions, trigger rival reactions, or open emergency missions.
+
+## Scripted GUI decision categories and mechanic windows
+
+When a decision category controls a major mechanic, consider attaching a scripted GUI or opening a custom mechanic window from a category button. This is appropriate when the player needs to manage values, targets, meters, factions, sponsors, province groups, formable requirements, investment tracks, or competing internal blocs.
+
+A scripted GUI or custom window must have a gameplay reason. It should expose useful choices, not merely decorate a category.
+
+Interactive GUI design should define:
+
+- entry point from the decision category
+- visible tabs, panels, cards, meters, bars, or target lists
+- button costs and requirements
+- what each button changes
+- locked, available, selected, active, completed, warning, and disabled states
+- hover and tooltip text
+- scripted localisation for dynamic values
+- scripted effects for button outcomes
+- scripted triggers for button availability
+- AI equivalents for every meaningful button
+- cleanup and fallback behavior
+
+When buttons spend resources, show the cost clearly. Use icon-first cost localisation. If the GUI button has more than a few requirements, show a short requirement summary and put details in a tooltip.
+
+Do not use GUI buttons to bypass decision balance. GUI buttons should call the same scripted effect families, cost logic, validation triggers, logging, and cleanup that the normal decision system would use.
+
+## Animated decision category presentation
+
+Decision categories and mechanic windows can use animated sprites when motion improves readability or atmosphere. Suitable uses include:
+
+- soft glow around an available formation seal
+- warning pulse when pressure is near a threshold
+- slow float on an occult, diplomatic, or propaganda emblem
+- particle drift behind a high-chaos category header
+- meter shimmer when a value changes
+- selected-card glow for the active sponsor, faction, or route
+- animated border for crisis mode
+- animated leader or council portrait inside a special mechanic window
+
+Use static fallback sprites for every animated element. Keep animations subtle unless the route is deliberately supernatural or high-chaos. Do not animate every icon in a category. Too much movement makes the UI harder to read.
+
+The decision implementation handoff should list animated sprite names, static fallback names, target sizes, frame counts if known, loop behavior, file paths, source mode, and whether the animation is purely decorative or tied to a mechanic state.
 
 ## 16. AI behavior
 
@@ -729,25 +826,9 @@ Decision and mission subagents are active small-patch agents by default inside t
 
 They should not expand a whole decision system, create a new mechanic window, add a new event chain, or invent a formable suite. When the gap is broad, they should write an improvement plan under `docs/plans/<event_id>_<event_slug>_plans/` and leave implementation to the main agent.
 
-Every patch must write a handoff with changed files, changed decision or mission ids, localisation keys, behavior before and after, validation, skipped validation, and remaining design risks.
+Every patch must write a handoff with changed files, changed decision or mission ids, localisation keys, behavior before and after, meaningful validation, skipped task-specific validation, and remaining design risks.
 
-## 20. Validation
-
-Validation should focus on the system actually working, not on creating scripts that replace work.
-
-Small scripts may be used for mechanical audits, such as:
-
-- duplicate ids
-- missing localisation keys
-- focus or decision counts
-- files touched
-- obvious orphaned references
-
-Do not spend the goal mainly creating validation scripts instead of implementing and reviewing the content.
-
-Manual or documented scenario checks are required when the user asks for balance or gameplay validation.
-
-## 21. Completion report
+## 20. Completion report
 
 A decision or mission task is complete only when:
 
@@ -781,7 +862,7 @@ A decision or mission task is complete only when:
 - duplicate missions are removed
 - stale mission cleanup exists
 - docs are updated
-- validation is documented
+- meaningful validation is documented
 - simplifications and blockers are reported
 
 If anything was simplified, skipped, approximated, or replaced with a weaker substitute, report it clearly.
@@ -789,85 +870,3 @@ If anything was simplified, skipped, approximated, or replaced with a weaker sub
 If nothing was simplified, say so and provide evidence.
 
 
-## Formable nation decisions
-
-Use decisions for formable nations when the player should prove control over land, complete a political route, or spend resources before changing the country identity. A formable decision should feel like a proclamation, settlement, congress, coronation, constitutional act, annexation settlement, liberation charter, or administrative project. It should not be only a hidden tag switch.
-
-A formable decision must define:
-
-- visible name and hidden debug name
-- decision category and visibility timing
-- required owned and controlled states
-- required subjects, allies, faction members, puppets, occupied territories, cores, claims, or compliance thresholds
-- required focus, event flag, route flag, ideology, leader, legitimacy, chaos tier, or hidden reveal state
-- whether the decision is visible before requirements are met, hidden until unlocked, or fully secret until an event reveals it
-- political, military, economic, legitimacy, stability, war support, command power, XP, equipment, fuel, convoy, train, manpower, or factory costs
-- what happens to the tag, cosmetic tag, country name, adjective, flag, leader, portrait, ruling party, advisors, national spirits, cores, claims, puppets, factions, wars, and guarantees
-- whether claims become cores instantly, gradually through decisions, or only after compliance and local support work
-- follow-up missions, border integration projects, legitimacy projects, resistance suppression, diplomatic reactions, and achievement hooks
-- AI willingness, AI blockers, AI timing, and AI target safety
-- cleanup for obsolete formation decisions after the formable is created
-
-State requirements must be readable. Use named state groups and custom trigger tooltips. Do not expose raw state id lists to the player unless the existing UI pattern already does that cleanly. If several alternate maps can qualify, create clear requirement groups such as `Danubian Core`, `Northern Mandate`, or `Old Capital Belt`.
-
-Hidden formables need extra care. A hidden formable can be locked behind an event, secret focus, rare ideology, high chaos, special leader, historical artifact, super-event, achievement route, or scripted GUI investigation. Hidden does not mean undocumented. The implementation handoff must still define all triggers, effects, assets, and cleanup.
-
-## Formation missions and integration projects
-
-Large formables should usually need post-formation work. Use missions or decision chains for integration when instant cores would be too strong.
-
-Good formation follow-ups include:
-
-- hold named capitals for 180 days
-- secure rail links between old and new capitals
-- integrate border districts through local support work
-- spend infantry equipment and support equipment to build local administrations
-- negotiate autonomy with subject members
-- reduce resistance before coring a newly claimed area
-- hold a plebiscite under observer conditions
-- build a capital road, port, or rail hub before moving the capital
-- keep stability and legitimacy above a threshold during the formation crisis
-- prevent rivals from reaching an influence threshold before the final proclamation
-
-Formation systems should support partial success and failure. A country can form the title but gain only claims, delay core grants, create dissatisfied regions, trigger rival reactions, or open emergency missions.
-
-## Scripted GUI decision categories and mechanic windows
-
-When a decision category controls a major mechanic, consider attaching a scripted GUI or opening a custom mechanic window from a category button. This is appropriate when the player needs to manage values, targets, meters, factions, sponsors, province groups, formable requirements, investment tracks, or competing internal blocs.
-
-A scripted GUI or custom window must have a gameplay reason. It should expose useful choices, not merely decorate a category.
-
-Interactive GUI design should define:
-
-- entry point from the decision category
-- visible tabs, panels, cards, meters, bars, or target lists
-- button costs and requirements
-- what each button changes
-- locked, available, selected, active, completed, warning, and disabled states
-- hover and tooltip text
-- scripted localisation for dynamic values
-- scripted effects for button outcomes
-- scripted triggers for button availability
-- AI equivalents for every meaningful button
-- cleanup and fallback behavior
-
-When buttons spend resources, show the cost clearly. Use icon-first cost localisation. If the GUI button has more than a few requirements, show a short requirement summary and put details in a tooltip.
-
-Do not use GUI buttons to bypass decision balance. GUI buttons should call the same scripted effect families, cost logic, validation triggers, logging, and cleanup that the normal decision system would use.
-
-## Animated decision category presentation
-
-Decision categories and mechanic windows can use animated sprites when motion improves readability or atmosphere. Suitable uses include:
-
-- soft glow around an available formation seal
-- warning pulse when pressure is near a threshold
-- slow float on an occult, diplomatic, or propaganda emblem
-- particle drift behind a high-chaos category header
-- meter shimmer when a value changes
-- selected-card glow for the active sponsor, faction, or route
-- animated border for crisis mode
-- animated leader or council portrait inside a special mechanic window
-
-Use static fallback sprites for every animated element. Keep animations subtle unless the route is deliberately supernatural or high-chaos. Do not animate every icon in a category. Too much movement makes the UI harder to read.
-
-The decision implementation handoff should list animated sprite names, static fallback names, target sizes, frame counts if known, loop behavior, file paths, source mode, and whether the animation is purely decorative or tied to a mechanic state.

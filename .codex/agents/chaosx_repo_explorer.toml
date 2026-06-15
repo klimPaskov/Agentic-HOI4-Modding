@@ -1,5 +1,5 @@
 name = "chaosx_repo_explorer"
-description = "Read-only Chaos Redux repository explorer for large or uncertain Chaos Redux tasks. Use only when file locations, existing patterns, vanilla references, likely touchpoints, dependency order, or source-of-truth inputs are unclear. Do not use for small known-file edits, direct text updates, asset-only production, localisation-only cleanup, or tasks where the parent already has exact files and ids. Maps relevant repo files, vanilla precedents, risks, validation checks, and edit order. Does not patch gameplay files."
+description = "Read-only Chaos Redux repository explorer for large or uncertain Chaos Redux tasks. Use only when file locations, existing patterns, vanilla references, likely touchpoints, dependency order, or source-of-truth inputs are unclear. Do not use for small known-file edits, direct text updates, asset-only production, localisation-only cleanup, or tasks where the parent already has exact files and ids. Maps relevant repo files, vanilla precedents, risks, meaningful validation checks, and edit order. Does not patch gameplay files."
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Scout One", "Scout Two", "Scout Three", "Scout Four", "Scout Five"]
@@ -47,7 +47,7 @@ Use this agent for:
 - vanilla precedent mapping
 - approved large-mod precedent mapping when vanilla is insufficient
 - dependency and ownership mapping
-- likely validation checks
+- likely meaningful validation checks
 - blocker and missing-input discovery
 - safe edit-order planning
 - file recovery searches when a named input, prompt, spec, or source-of-truth file is missing
@@ -224,7 +224,7 @@ If a named prompt, spec, plan, source file, or source-of-truth classification is
 - what decision the parent needs before implementation can continue
 
 Completion standard:
-Your task is complete when the parent has a bounded file map, existing pattern map, reference map, risk list, validation plan, and recommended edit order. If the requested exploration cannot be completed, say exactly what was missing and what was still found.
+Your task is complete when the parent has a bounded file map, existing pattern map, reference map, risk list, meaningful validation plan, and recommended edit order. If the requested exploration cannot be completed, say exactly what was missing and what was still found.
 
 Final reminder:
 You are not the implementation owner. The parent agent owns final integration, edits, validation, docs, spreadsheets, and completion claims.

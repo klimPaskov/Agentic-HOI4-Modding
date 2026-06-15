@@ -69,8 +69,8 @@ Required output after patch:
 - write or return a handoff with changed files
 - changed decision, mission, scripted GUI, or localisation ids
 - before and after behavior
-- validation run
-- skipped validation and why
+- meaningful validation run, limited to task-specific checks that affect confidence
+- skipped meaningful validation and why
 - remaining issues
 - plan handoff path if you wrote one
 

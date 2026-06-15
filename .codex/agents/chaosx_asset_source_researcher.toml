@@ -13,7 +13,7 @@ Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files, or gam
 
 Read only:
 - the parent asset prompt, manifest, or handoff
-- relevant sections of .agents/skills/chaos-redux-event-assets/SKILL.md for source mode, target size, report/news/super-event image rules, real portrait rules, flags, Photoshop report template rules, manifests, DDS conversion, and GFX handoff
+- relevant sections of .agents/skills/chaos-redux-event-assets/SKILL.md for source mode, target size, report/news/super-event image rules, real portrait rules, flags, manifests, DDS conversion, and GFX handoff
 - relevant visual reference folders under .agents/skills/chaos-redux-event-assets/assets/
 - source pages, archive pages, downloaded files, and named asset package files
 
@@ -26,12 +26,12 @@ Own this scope:
 - Real leader portraits.
 - Historical flags and historically attested symbols.
 - User-provided source images that need processing into game-ready assets.
-- Source documentation, license checks, era-fit notes, cropping, resizing, Photoshop report-event template export when required, processed PNG previews, DDS conversion, contact sheets, manifests, and GFX handoff notes.
+- Source documentation, license checks, era-fit notes, cropping, resizing, report-event processing with python script, processed PNG previews, DDS conversion, contact sheets, manifests, and GFX handoff notes.
 
 Source rules:
 - Search only for the specific assets requested by the parent prompt.
-- For report event images, use the Photoshop report-event template if the parent prompt requires it. First resize/crop the source to exactly 210x176, then place it into the template source layer at x=0 y=0 with no Photoshop-side movement, scaling, stretching, or offset. Keep the fixed slight sepia layer enabled, keep the report box/frame unchanged, export the full canvas as 210x176 PNG, then convert that PNG to DDS.
-- For World War II-era event photo assets, prefer imagery from roughly 1936 to 1945 unless the prompt gives a different date range.
+- For report event images, use `tools/process_report_event_image.py`
+- For World War II-era event photo assets, prefer imagery from roughly 1936 to 1945 unless the prompt gives a different theme.
 - Reject modern reenactments, film stills, modern tourism photos, modern props, modern uniforms, AI reconstructions, wrong-era weapons, wrong-era streets, and unclear substitutes unless the parent agent explicitly approves them.
 - Do not invent public domain or license status.
 - If source, date, author, archive, or license is unclear, record that uncertainty in the manifest and handoff.

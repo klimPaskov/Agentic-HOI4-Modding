@@ -54,7 +54,7 @@ Required output after design:
 - constants and tuning table plan
 - event target and cleanup plan
 - migration plan from duplicated logic to helpers
-- risks, unsupported fields, and validation notes
+- risks, unsupported fields that affect the design, and meaningful validation notes
 
 Required output after implementation:
 - files changed
@@ -62,8 +62,8 @@ Required output after implementation:
 - call sites changed
 - constants added or updated
 - cleanup logic added
-- validation run
-- skipped validation and why
+- meaningful validation run, limited to task-specific checks that affect confidence
+- skipped meaningful validation and why
 - known limitations and follow-up work
 
 Completion standard:

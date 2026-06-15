@@ -19,7 +19,7 @@ Own this scope:
 - Update the Chaos Redux event catalog workbook.
 - Keep rows, columns, workbook formatting, formulas, filters, data validation, freeze panes, and existing workbook structure intact unless the parent explicitly asks otherwise.
 - Make spreadsheet entries player-facing and readable.
-- Make event log, event detail, evolution detail, and cluster detail spreadsheet fields match the wording shown in-game.
+- Make event log, event detail, evolution detail, cluster detail, and manual scenario table fields match the wording shown in-game.
 - Use in-game localisation or scripted localisation as the source of truth for fields that mirror player-facing UI text.
 - Mark missing, stale, contradictory, or not-yet-implemented in-game wording as blocked or needs_user_review instead of guessing.
 - Report changed sheets, rows, columns, and event ids back to the parent.

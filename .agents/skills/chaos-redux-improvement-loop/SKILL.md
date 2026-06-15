@@ -9,7 +9,7 @@ Use this skill for loop improvement of Chaos Redux events and event-adjacent sys
 
 This skill writes expansion specs. It is not a checklist and it is not a code patch skill. The structure of each addendum should follow the mechanic. Some addenda need a route map. Some need a country package matrix. Some need a UI description. Some need a short design note that changes one decision category. The output should be open in form and concrete in content.
 
-The improvement loop absorbs the old mechanic-expander role. Do not route new work to a separate mechanic-expander subagent. Use this skill directly, or use the `chaosx_improvement_loop_planner` subagent when the parent agent wants a plan-writing helper.
+Use the `chaosx_improvement_loop_planner` subagent when the parent agent wants a plan-writing helper.
 
 ## Event loop improvement role
 
@@ -63,7 +63,7 @@ The planner should recommend stopping expansion when all of these are true:
 - the implemented mechanics match the accepted specs and plans
 - player choices have real consequences and replay value
 - AI behavior exists for systems that AI countries can use
-- localisation, event logs, docs, assets, GUI surfaces, focus routes, decisions, formables, and super-events are aligned where relevant
+- localisation, event logs, docs, assets, GUI surfaces, focus routes, decisions, formables, and super-events are properly aligned where relevant
 - open gaps are small finalization tasks, validation tasks, polish, or documentation alignment, not missing design depth
 - previous improvement addenda are implemented, folded into specs, queued with a reason, or rejected with a reason
 
@@ -81,7 +81,7 @@ Use the system skill that owns the surface being improved.
 - `hoi4-decisions-missions` owns decisions, missions, costs, objectives, scripted GUI decision surfaces, hidden decision visibility, tooltips, AI actions, and cleanup.
 - `chaos-redux-event-assets` owns visual assets, animated sprites, animated portraits, source rules, DDS outputs, manifests, contact sheets, and sprite handoffs.
 - `chaos-redux-super-events` owns super-event role, title, description, quote, audio, image, trigger, localisation, docs, and spreadsheet alignment.
-- `chaos-redux-subagents` explains when to use a planner subagent, a patch-capable system subagent, an asset worker, or a read-only auditor.
+- `chaos-redux-subagents` explains when to use a planner subagent, a patch-capable system subagent, an asset worker, a read-only auditor, or other subagents.
 
 ## Research and historical connection standard
 
@@ -174,9 +174,7 @@ Weak moves include more flat modifiers, more repeated buttons, more generic even
 
 For events, improve the incident into a chain or system only when the idea benefits from it. Ask what the event starts, what it pressures, what it changes, and what later systems remember.
 
-An event addendum can define event families for escalation, negotiation, failure, outside reaction, and aftermath. It can define baseline stages that are not evolutions, true evolutions that unlock new behavior, event log entries, event detail text, decisions and missions, AI strategies, country-specific reactions, ideology-specific reactions, super-event thresholds, and defeat aftermath.
-
-Keep the event's cluster role intact. Not every event should become a world-ending crisis.
+An event addendum can define event families for escalation, negotiation, failure, outside reaction, and aftermath. It can define baseline stages that are not evolutions, true evolutions that unlock new behavior, decisions and missions, AI strategies, country-specific reactions, ideology-specific reactions, super-event thresholds, and defeat aftermath.
 
 ## Focus tree improvement
 
@@ -202,7 +200,7 @@ Formables should matter when a country earns a larger identity. They can be publ
 
 A formable addendum should explain the formation fantasy and the proof required. It should name the region clearly, describe required state groups or exact states when known, explain whether subjects or allies count, define the decision that forms it, and describe the cost of integration.
 
-Formation can change tag or cosmetic tag, country name, adjective, flag, emblem, leader, party names, ideology, cores, claims, compliance, resistance, focus access, overlay routes, decisions, integration missions, faction behavior, diplomatic reactions, super-event eligibility, achievements, and event log entries.
+Formation can change tag or cosmetic tag, country name, adjective, flag, emblem, leader, party names, ideology, cores, claims, compliance, resistance, focus access, overlay routes, decisions, integration missions, faction behavior, diplomatic reactions, super-event eligibility, and achievements
 
 Hidden formables require more design, not less. Define how the player discovers them, what conditions reveal the decision, what routes disqualify them, what assets are needed, how AI treats them, and how post-formation gameplay avoids instant runaway power.
 

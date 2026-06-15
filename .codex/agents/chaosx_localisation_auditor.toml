@@ -64,8 +64,8 @@ Required output after patch:
 - changed keys
 - dynamic localisation added or fixed
 - behavior or display before and after
-- validation run
-- skipped validation and why
+- meaningful validation run, limited to task-specific checks that affect confidence
+- skipped meaningful validation and why
 - unresolved wording decisions
 - plan handoff path if you wrote one
 

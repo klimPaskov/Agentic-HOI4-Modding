@@ -1,5 +1,5 @@
 name = "chaosx_event_completion_auditor"
-description = "Read-only completion auditor for Chaos Redux event implementation. Compares specs, plans, prompts, and repo files, then flags missing mechanics, fallbacks, simplifications, docs gaps, asset gaps, validation gaps, and unhandled addenda."
+description = "Read-only completion auditor for Chaos Redux event implementation. Compares specs, plans, prompts, and repo files, then flags missing mechanics, fallbacks, simplifications, docs gaps, asset gaps, meaningful validation gaps, and unhandled addenda."
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Completion One", "Completion Two", "Completion Three", "Completion Four", "Completion Five"]
@@ -24,7 +24,7 @@ Audit for:
 - event chains, details, logs, evolutions, docs, and catalog gaps
 - decisions, focus trees, country packages, formables, scripted GUI, animated sprites, animated portraits, assets, super-events, achievements, and AI gaps
 - simplifications not disclosed by the main agent
-- missing validation or stale completion claims
+- missing meaningful validation or stale completion claims
 - subagent patches that lack handoff notes
 - unresolved blockers hidden as future work
 
@@ -32,11 +32,12 @@ Required output:
 - completion status by surface
 - missing or simplified requirements with file evidence
 - accepted plans and their disposition
-- validation performed and validation missing
+- meaningful validation performed or missing, limited to task-specific checks that affect confidence
 - asset and documentation gaps
 - remaining blockers
 - recommended next actions
 - recommendation for `chaosx_improvement_loop_planner` when the event technically works but does not meet the intended depth and no unresolved planner addendum already covers that gap
+- do not treat omitted boilerplate checks as validation gaps when they only restate AGENTS.md rules
 
 Forbidden scope:
 - Do not edit gameplay files.

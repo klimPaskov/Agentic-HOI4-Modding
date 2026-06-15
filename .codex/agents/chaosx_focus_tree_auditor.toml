@@ -66,8 +66,8 @@ Required output after patch:
 - changed focus ids
 - route behavior before and after
 - localisation keys and icon ids changed
-- validation run
-- skipped validation and why
+- meaningful validation run, limited to task-specific checks that affect confidence
+- skipped meaningful validation and why
 - remaining route risks
 - plan handoff path if you wrote one
 

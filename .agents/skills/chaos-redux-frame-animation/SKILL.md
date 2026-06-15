@@ -9,6 +9,8 @@ A final Chaos Redux animation is a HOI4 frame-sheet asset package.
 
 Every meaningful visual state in the loop must have its own source frame or source layer. A local script may assemble, align, crop, resize, pad, preview, sheet, and convert those frames, but it must not create the main animation by translating, scaling, rotating, warping, blurring, recoloring, adding glow pulses, or offsetting one still image.
 
+Do not use primitive shape animation as final art. Circles, rectangles, lines, gradients, simple icons, oscilloscope-style waves, bars, and other geometry-only frames are acceptable only as explicitly labeled planning diagrams or temporary debug previews, never as final Chaos Redux artwork.
+
 A GIF is only a review preview. Never treat a GIF as the final HOI4 asset. Do not convert a GIF directly and call the result complete.
 
 The normal HOI4 deliverable is:
@@ -101,6 +103,7 @@ A valid source frame is not:
 - the same image shifted up or down
 - the same image scaled or rotated
 - the same image with only blur, brightness, glow, opacity, hue, saturation, or contrast changes
+- frames made from only primitive shapes, waveform lines, bars, gradients, or other geometry-only placeholders
 - a contact sheet sliced into frames when the sheet itself was not generated as an animation source
 - a script-made particle layer placed over one still image unless the parent explicitly requested a mockup
 - a GIF split into frames when the GIF itself was created from one transformed still
@@ -147,7 +150,9 @@ Recommended frame plan table:
 
 For loops, the first and last frames must connect cleanly. Either repeat the first frame at the end only in the GIF preview, or make the final frame visually close enough to frame 000 that the loop does not pop.
 
-Frame count should usually stay small unless the animation needs more frames. Prefer 4 to 12 frames for small GUI loops. Larger portrait or super-event-adjacent loops may use more frames only when the target surface and performance cost are acceptable.
+Use enough real source frames for the motion to be smooth. More sprites are better than a choppy loop when the target surface and texture size can reasonably support them, especially for subtle pulses, breathing light, drifting particles, animated portraits, and slow UI state changes.
+
+Do not be lazy with frame count. Do not choose a small number of frames just to finish faster, and do not hide a rough low-frame loop behind filters, transforms, or opacity tricks. If a low frame count is used, the brief must justify it with the target size, performance cost, or intentionally stepped motion.
 
 ## 9. Generation rules
 
@@ -344,7 +349,97 @@ For every animated asset, record:
 
 If the animated sprite is for a character portrait, record the character key and portrait field that should reference the animated sprite name. If the animated sprite is for a scripted GUI, record the scripted GUI entry point and the static fallback sprite used when the animation is hidden, unsupported, or disabled.
 
-## 16. Quality gates
+## 16. Leader portrait overlay animations
+
+Use a scripted GUI overlay when an animation should appear over an existing country leader portrait without replacing the portrait itself. This is the safest pattern for state-driven effects such as burning, corruption, divine glow, warning frames, possession, transmission noise, or route-state overlays.
+
+Do not treat this as a character portrait replacement unless the user explicitly asks to animate the portrait asset itself. The overlay should be a transparent `frameAnimatedSpriteType` with a static fallback, placed by `.gui` and shown by `common/scripted_guis/`.
+
+Required workflow:
+
+1. Inspect the actual vanilla GUI surface that displays the portrait. Common country-leader surfaces include:
+   - `~/projects/Hearts of Iron IV/interface/countrypoliticsview.gui` for the current country's politics leader portrait.
+   - `~/projects/Hearts of Iron IV/interface/countrydiplomacyview.gui` for a selected country's diplomacy leader portrait.
+2. Record the exact vanilla element coordinates, scale, and parent containers used to reach that element.
+3. Create a separate independent overlay container in a Chaos Redux `.gui` file. Do not edit vanilla GUI files for the overlay unless the task explicitly requires a vanilla GUI override.
+4. Wire that container through `common/scripted_guis/` with the right context:
+	- `player_context` for the current/player/tagged country.
+	- `diplomacy_target_context` for an overlay that should appear only in the diplomacy tab for the active diplomacy target.
+	- `selected_country_context` for selected-country surfaces that are not tied to the diplomacy tab.
+5. Parent the scripted GUI to a known token or independent window when possible, then position the overlay from the chosen parent surface.
+6. Use `alwaystransparent = yes` on decorative overlay icons so the overlay does not block UI interaction.
+7. Document both the parent window and the coordinate source in the asset handoff.
+
+Reusable implementation pattern:
+
+1. Inspect the vanilla portrait surface and record:
+	- the independent window name or scripted GUI parent token to attach to
+	- every nested parent between the attachment point and the portrait
+	- the portrait element name, `position`, `scale`, frame element, and tab/container visibility
+2. Define the animation sprites in a `.gfx` file:
+	- `spriteType` for the static fallback
+	- `frameAnimatedSpriteType` for the sheet, with `noOfFrames`, `animation_rate_fps`, `looping`, and `play_on_show`
+3. Define one independent overlay container in a `.gui` file:
+	- `containerWindowType` must be top-level under `guiTypes`, not nested inside another container
+	- container `position` is the tunable overlay origin
+	- container `size` should fit the overlay frame; use `clipping = no` for portrait effects that extend beyond the portrait
+	- child `iconType` should usually use `position = { x = 0 y = 0 }`, the animated sprite, matching portrait `scale`, and `alwaystransparent = yes`
+4. Wire one scripted GUI entry:
+	- set `window_name` to the independent overlay container
+	- use `diplomacy_target_context` plus `parent_window_token = selected_country_view_diplomacy` for diplomacy-tab-only target overlays
+	- use `player_context` plus a politics parent for current-country overlays
+	- set `ai_enabled = { always = no }` unless the GUI has actual AI actions
+5. Gate both the scripted GUI and the icon by the same target-scoped trigger:
+	- put the actor/state trigger in `visible = { ... }`
+	- also add `<icon_name>_visible = { ... }` under `triggers`
+	- if non-actor countries show the overlay, fix the context or trigger scope; do not solve it with coordinate changes or duplicated GUI files
+6. Align coordinates in this order:
+	- start from the vanilla portrait coordinate relative to the chosen parent token/window
+	- if using a higher independent parent, add nested parent offsets manually
+	- if the parent token already maps to a nested tab/body surface, do not add that surface's offset again
+	- tune only the top-level overlay container `position` after live visual feedback; keep the child icon at `{ x = 0 y = 0 }` unless the source frame has a bad anchor
+7. Record the final parent token/window, context type, trigger name, overlay origin, scale, vanilla reference file, portrait element, and any manual visual offset in `gfx_handoff.md`.
+
+Parent-window rule:
+
+- `parent_window_name = <independent_container>` is usually safer than anchoring to a nested child.
+- A nested child may require `<child_name>_instance`, but this is not guaranteed to exist as a valid scripted GUI parent in the loaded UI.
+- If the game logs `Parent window for <scripted_gui> is not found`, do not keep trying variants blindly. Re-parent to the nearest independent vanilla window and sum the nested offsets manually.
+- Verify the parent by name against the exact vanilla `.gui` file, not a similarly named element from another window. For example, a `country_leader` element in an endgame dialog is not proof of a top-bar country leader surface.
+
+Example pattern:
+
+```txt
+scripted_gui = {
+	my_selected_country_leader_overlay_scripted_gui = {
+		context_type = selected_country_context
+		window_name = "my_selected_country_leader_overlay_container"
+		parent_window_name = countrydiplomacyview
+
+		visible = {
+			my_actor_trigger = yes
+		}
+
+		ai_enabled = { always = no }
+	}
+
+	my_current_country_leader_overlay_scripted_gui = {
+		context_type = player_context
+		window_name = "my_current_country_leader_overlay_container"
+		parent_window_name = countrypoliticsview
+
+		visible = {
+			my_actor_trigger = yes
+		}
+
+		ai_enabled = { always = no }
+	}
+}
+```
+
+The matching `.gui` containers should use the real vanilla portrait position for the chosen parent. If the target portrait is nested two containers deep, add those parent offsets to the portrait offset and record the calculation in `gfx_handoff.md`.
+
+## 17. Quality gates
 
 Before marking an animation complete, verify:
 
@@ -368,9 +463,11 @@ Before marking an animation complete, verify:
 - final DDS files exist in the correct location
 - the manifest records source mode, frame count, timing, frame size, sheet size, paths, and status
 - `gfx_handoff.md` names the static and animated sprites
+- scripted GUI leader overlays parent to a valid loaded window, not an unverified nested `*_instance`
+- leader overlay handoffs record the vanilla file, portrait element, parent window, context type, position, scale, and any summed offsets
 - no fake transform-only animation is being presented as final art
 
-## 17. Blockers
+## 18. Blockers
 
 Stop and report a blocker when:
 
@@ -378,7 +475,6 @@ Stop and report a blocker when:
 - required source frames for a sourced animation cannot be found
 - the offline HOI4 wiki page, vanilla file, or existing Chaos Redux example needed for wiring cannot be inspected
 - the repo has no safe known pattern for the requested animated sprite type and the parent did not authorize exploration
-- the target surface may not support `frameAnimatedSpriteType` and no tested alternative exists
 - frame identity drifts too much to pass review
 - DDS conversion fails
 - the sheet dimensions do not match the expected frame count

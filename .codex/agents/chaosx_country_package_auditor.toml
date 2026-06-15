@@ -27,7 +27,7 @@ Audit for:
 - state ownership, controller setup, cores, claims, capitals, victory points, supply, railways, ports, resources, buildings, and starting map coherence
 - release, spawn, civil conflict, transfer, annexation, puppet, cosmetic-tag, and cleanup logic that may create invalid country state
 - leaders, portraits, characters, advisors, high command, commanders, traits, portrait paths, and real versus fictional portrait sourcing requirements
-- fictional one-person leaders using generated portraits should have actual-ish personal names selected from a small regional random pool at setup; female-presenting portraits must use female name pools and female leader metadata where supported, male-presenting portraits must use male name pools and must not set female leader metadata, and no country may draw leader names from the opposite gender pool
+- fictional one-person leaders using generated portraits should have actual-ish personal names selected from a small regional random pool at setup; female-presenting portraits must use female name pools and female leader metadata where supported, male-presenting portraits must use male name pools and must not set female leader metadata, and no country may draw leader names from the opposite gender pool; any opposite-gender portrait/name pairing is a blocking country-package defect
 - council, committee, junta, crowd, office, and symbolic-body portraits should use institutional names instead of personal random-name pools
 - ruling party, party names, ideology setup, elections, popularity, stability, war support, laws, diplomacy, faction state, guarantees, subjects, and scripted diplomatic behavior
 - focus tree assignment, focus-tree loading, route availability, prerequisites, icon coverage, localisation, AI focus behavior, branch depth, and promised decision or event unlocks
@@ -72,8 +72,8 @@ Required output after patch:
 - changed files
 - changed tags, state ids, leaders, parties, focus tree ids, localisation keys, or formable ids
 - before and after behavior
-- validation run
-- skipped validation and why
+- meaningful validation run, limited to task-specific checks that affect confidence
+- skipped meaningful validation and why
 - remaining setup or identity risks
 - plan handoff path if you wrote one
 
