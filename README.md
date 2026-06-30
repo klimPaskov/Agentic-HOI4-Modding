@@ -6,15 +6,9 @@ This repo gives you a reusable `AGENTS.md` example, offline wiki references, rep
 
 Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3
 
-## Who should use this
-
-This is for HOI4 modders who already understand the basics of modding and want AI to handle more of the repetitive work.
-
-This is not a magic replacement for modding knowledge. You still need to review the diff, understand the design, and test the result in game.
-
 ## What this repo provides
 
-- `AGENTS_example.md`, a real, full project instruction for a large HOI4 mod, Chaos Redux.
+- `AGENTS_chaos_redux.md`, a real, full project instruction for a large HOI4 mod, Chaos Redux.
 - `AGENTS_template.md`, a template `AGENTS.md` file that can be adapted to your own mod. Just replace the placeholders.
 - Offline Paradox wiki references for syntax and engine behavior.
 - Example repo skills for repeated HOI4 workflows.
@@ -31,10 +25,10 @@ Use a normal git repository for the mod. Git is important because agents can mak
 
 The agent should be able to inspect vanilla files. Vanilla implementations are usually the best examples for syntax, file structure, and edge cases.
 
-A practical WSL path is:
+The usual Windows path is:
 
 ```text
-~/projects/Hearts of Iron IV/
+C:\Program Files (x86)\Steam\steamapps\common\Hearts of Iron IV\
 ```
 
 ### 3. Keep the offline wiki snapshot available
@@ -53,9 +47,40 @@ The agent should consult the offline wiki before editing systems that depend on 
 
 Copy `AGENTS_template.md` into the root of your mod repo as `AGENTS.md`.
 
-Then adapt it to your real project. Replace project-specific names, paths, skills, subagents, docs policy, asset folders, and validation rules.
+Then adapt it to your real project. Replace project-specific names, paths, skills, subagents, docs policy, asset folders, validation rules, and any workflow rules that only apply to the example project. Codex can do the first adaptation pass by inspecting the repo and local setup.
 
-Generic instructions help less than specific ones. A large mod should document event formats, naming rules, integration points, docs policy, asset rules, subagent routing, completion proof, and git expectations.
+Example Codex prompt:
+
+```text
+I am adapting an AGENTS.md template for a Hearts of Iron IV mod repo.
+
+Work from the current repo root. Use AGENTS_template.md as the base and create or update AGENTS.md for this specific mod.
+
+First discover the project setup yourself. Inspect the repo files, descriptor.mod, folder names, existing docs, .agents/skills, .codex/agents, git root, common script prefixes, namespaces, localisation prefixes, event namespaces, and any existing project instructions. Also inspect likely local Windows paths for Hearts of Iron IV and the Paradox user mod folder where needed.
+
+Discover these values where possible:
+- Mod name
+- Mod prefix or namespace
+- Mod repo path
+- Vanilla HOI4 path
+- Offline Paradox wiki path
+- Docs folder
+- Main systems in this mod
+- Existing repo skills
+- Existing Codex subagents
+- Approved reference mods and paths
+- Project-specific rules, including naming rules, event formats, file placement, completion rules, asset rules, and validation rules
+
+If a value cannot be discovered confidently after inspection, stop and ask me for that specific value before editing AGENTS.md. Do not invent missing paths, skills, agents, reference mods, or rules.
+
+Instructions:
+1. Replace all template placeholders with discovered project values.
+2. Remove optional sections for tools, skills, subagents, reference mods, or workflows this project does not use.
+3. Keep core general instructions as is.
+4. Preserve the structure and style of the template.
+5. Report what you changed and list any values that still need confirmation.
+6. Do not create a commit unless I explicitly ask for one.
+```
 
 ### 5. Copy or create repo skills
 
@@ -94,7 +119,7 @@ Use subagents for work such as:
 - localisation audits
 - scripted system architecture
 - event completion audits
-- spreadsheet and documentation updates
+- documentation updates
 
 The main agent should still own final implementation, final wiring, final review, final validation, and the completion report.
 
@@ -110,25 +135,37 @@ This split avoids having an asset worker silently change gameplay or UI wiring.
 
 Run your coding agent inside the repository root so it can see `AGENTS.md`, the mod files, docs, skills, local references, and optional `.codex/agents/` configs.
 
-## Windows and WSL
+## Windows native Codex setup
 
-For Windows users, WSL is usually the cleanest setup.
+For Windows users, the simplest setup is to keep the mod repo in a normal Windows folder and open that folder directly in Codex.
 
-A practical layout is:
-
-```text
-/home/<you>/projects/<your_mod>
-```
-
-Then link the project into the normal HOI4 mod folder on Windows so the game can load it.
-
-Example Windows mod folder:
+The easiest layout is to clone the mod straight into the normal HOI4 mod folder:
 
 ```text
 C:\Users\<you>\Documents\Paradox Interactive\Hearts of Iron IV\mod\<your_mod>
 ```
 
-The important part is that your development environment stays in WSL while HOI4 still sees the mod in its normal place. You can achieve that using a Windows directory symbolic link.
+Some Windows installs use OneDrive for Documents:
+
+```text
+C:\Users\<you>\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\<your_mod>
+```
+
+A practical setup is:
+
+```text
+HOI4 mod folder
+        ↓
+native Windows git repo
+        ↓
+Codex opened from the repo root
+        ↓
+HOI4 launcher loads the same folder
+```
+
+After cloning, check the mod descriptor. Its `path="..."` value should point to the real Windows folder that contains the mod. If the repo folder name changes, update the descriptor path to match it.
+
+Start Codex from the repository root so it can see `AGENTS.md`, `.agents/skills/`, `.codex/agents/`, `paradox_wiki/`, docs, and all mod files from one native Windows path.
 
 ## MCP servers and apps
 
@@ -138,32 +175,33 @@ Do not add tools just because they exist. More tools can also mean more noise, m
 
 Good use cases include web research, image sourcing, document conversion, spreadsheets, asset processing, or project-specific integrations.
 
-## Hermes automation
+## Codex scheduled tasks or Hermes
 
-Hermes Agent can be used as an automation layer around the coding agent workflow. It is useful for tasks that should happen on a schedule, or from another chat surface without manually opening the coding agent every time.
+Codex scheduled tasks (or Hermes cornjobs) can handle recurring modding work.
 
-Good Hermes use cases for HOI4 modding include:
+Good scheduled task use cases for HOI4 modding include:
 
 - scheduled `error.log` checks after launching HOI4
-- sending actionable game errors to a Codex or other coding-agent session
-- collecting Discord/GitHub bug reports, ideas, balance complaints
-- turning repeated community feedback into clean implementation handoff prompts
-- updating an Obsidian vault, documentations/spreadsheets, or project notes from chat
-- producing daily or weekly summaries of recent reports and unresolved issues
+- collecting actionable game errors from the current mod
+- turning repeated Discord or GitHub reports into clean implementation prompts
+- producing daily or weekly summaries of unresolved bugs, balance complaints, and content requests
+- checking whether docs, spreadsheets, plans, and implementation files are drifting apart
 
 A practical setup is:
 
 ```text
-Hermes / Discord / Telegram / local cron
+Codex scheduled task
+        ↓
+repo-local script or focused recurring prompt
         ↓
 collect reports, logs, notes, and screenshots
         ↓
-write a focused handoff prompt
+filter for actionable current-mod issues
         ↓
-Codex or another coding agent implements in the mod repo
+Codex fixes the issue or writes a local handoff file
 ```
 
-For example, a Hermes cron job can periodically launch HOI4 for a fixed test window, inspect the Paradox `error.log`, copy the log into a repo-local temporary folder, and send Codex a prompt such as:
+For example, a Codex scheduled task can periodically run a HOI4 error-log watchdog for a fixed test window. The watchdog can launch HOI4, inspect the Paradox `error.log`, copy the log into a repo-local temporary folder, and create a focused Codex prompt such as:
 
 ```text
 Fix the HOI4 errors reported in this latest automated game run.
@@ -174,7 +212,7 @@ Identify actionable mod errors only. Ignore unrelated vanilla or launcher noise.
 After fixing and validating the errors, delete the temporary copied log.
 ```
 
-Keep Hermes as the orchestrator, not the final implementer. Hermes should gather evidence, preserve source context, schedule recurring checks, and create precise handoff prompts. The coding agent should still make the code changes inside the repo, and the main implementation agent should still own final review, validation, docs alignment, and completion proof.
+Keep scheduled tasks narrow. They should gather evidence, preserve source context, and create precise work items. The main Codex implementation pass should still own code changes, final review, validation, docs alignment, and completion proof.
 
 ## Subagent design rules
 
