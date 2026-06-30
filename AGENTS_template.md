@@ -258,35 +258,7 @@ Localisation and UI must always be kept in sync with gameplay changes.
    - Copy placeholder sprites from vanilla files that match the new gfx definition, so final sprites can replace them cleanly and the game can load without missing-sprite errors.
    - Register new UI assets before requesting art so filenames do not need to change later.
 
-## 3. Writing Style
-
-These rules apply to every `[MOD_NAME]` prose surface. This includes event text, news text, super-event text, decision text, focus descriptions, tooltips, docs, specs, plans, prompts, spreadsheets, and all player-facing texts.
-
-1. Never use the em dash or semicolons in sentences.
-2. Absolutely avoid dialectical hedging. Do not frame sentences as thesis, antithesis, synthesis.
-   - Dialectical hedging examples:
-     - `This is not just a strike. This is a warning.`
-     - `The cult is not fighting for land, but for meaning.`
-     - `The disaster is both a local tragedy and a global sign.`
-     - `The army did not collapse. It transformed.`
-     - `This is less a rebellion than a confession.`
-     - `The question is not whether order can return, but what kind of order will survive.`
-   - Thesis, antithesis, synthesis examples:
-     - `The army claims the province is secure. Refugees say it is already lost. The truth lies between them.`
-     - `Some call the new state liberation. Others call it occupation. In reality, it is both.`
-     - `The priests call it a miracle. The generals call it a weapon. History will call it both.`
-3. Avoid AI-style explanatory templates. Do not write lines that sound prebuilt or reusable across any event.
-4. Absolutely avoid staccato sentences. Do not split one simple thought into a chain of tiny lines for artificial weight or dramatic effect. Use complete, readable sentences with enough context to be clear.
-   - Staccato examples:
-     - `No orders. No mercy. No dawn.`
-     - `The guns stopped. The screaming did not.`
-     - `First hunger. Then anger. Then flags.`
-     - `The gate opened. The crowd moved. The guards ran.`
-5. Absolutely avoid empty dramatic filler. Do not lean on vague intensity words when concrete detail would do the work.
-6. Do not paste instruction text, task labels, prompt fragments, or process notes into in-game text, specs, docs, localisation, spreadsheet fields, or reports.
-   - For example, when the user says: `Do not reveal the hidden mechanics here.`, do not write `This path purposely doesn't reveal the hidden mechanics`
-
-## 4. Naming and Prefix Rules
+## 3. Naming and Prefix Rules
 
 Use prefixes only where they are needed.
 
@@ -295,7 +267,7 @@ Prefer short, descriptive names that reflect function and scope.
 
 Unnecessary prefixes make code harder to read and maintain. Keep names clean.
 
-## 5. HOI4 Modding Rules Summary
+## 4. HOI4 Modding Rules Summary
 
 When implementing any new mechanic, follow this checklist:
 
@@ -323,7 +295,7 @@ When implementing any new mechanic, follow this checklist:
 Follow these rules and your changes will be easier to review, safer to merge and more consistent with the rest of the project.
 If this checklist cannot be satisfied, stop and request more design input instead of guessing.
 
-## 6. Completion Proof and Simplification Reporting
+## 5. Completion Proof and Simplification Reporting
 
 A goal can never be marked complete unless it is actually complete.
 
@@ -368,7 +340,7 @@ Subagent plans, improvement addenda, audit follow-up notes, blocked reports, and
 
 The plans folder is a working area. The specs folder is the source-of-truth design area. If an accepted plan changes the feature or event design, the main agent should merge it into the relevant spec or report that it remains queued.
 
-## 7. Event Integration
+## 6. Event Integration
 
 For event implementation, use the repo skill `[EVENT_SKILL_NAME]` if this repo has one.
 
@@ -377,13 +349,13 @@ For event implementation, use the repo skill `[EVENT_SKILL_NAME]` if this repo h
 3. If the event has evolutions, world-end branches, or super-events, wire log entries, super-event integration, related gameplay files, and related localisation in the same change.
 4. Keep gameplay files, docs, spreadsheets, presentations, UI assets, and any other details aligned.
 
-## 8. Focus Trees and Large Content
+## 7. Focus Trees and Large Content
 
 For national focus work, use `[FOCUS_TREE_SKILL_NAME]` before editing. That skill is the detailed source of truth for focus-tree depth, reward variety, route logic, AI, localisation, icons, ideas, country identity changes, focus-decision integration, route coverage proof, and completion standards.
 
 Before claiming focus-tree completion, use the appropriate audit route from `[SUBAGENT_SKILL_NAME]` if this repo uses audit subagents. If a tree works but feels shallow, duplicated, generic, or disconnected from gameplay, use `[IMPROVEMENT_LOOP_SKILL_NAME]` and consider a plan-mode pass from `[IMPROVEMENT_LOOP_PLANNER_AGENT]` if this repo uses one.
 
-## 9. Agent-generated Visual Assets
+## 8. Agent-generated Visual Assets
 
 For final visual assets, use `[ASSET_SKILL_NAME]`. That skill is the detailed source of truth for image generation rules.
 
@@ -391,7 +363,7 @@ For animated visual assets, use `[FRAME_ANIMATION_SKILL_NAME]` in addition to `[
 
 Use `[SUBAGENT_SKILL_NAME]` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation.
 
-## 10. Skill Maintenance
+## 9. Skill Maintenance
 
 Use skills actively. Skills are not only for cleanup at the end of a task. They are the agent's memory for repeated workflows, project-specific patterns, hard-won fixes, and instructions that should not be rediscovered every time.
 
@@ -414,7 +386,7 @@ Rules:
 9. During large multi-event or multi-feature runs, review skill gaps after each completed event, feature, or shared system. Update or create skills before starting the next event or feature if something reusable was learned.
 10. Report which skills were used, created, or updated at the end of each task.
 
-## 11. Git
+## 10. Git
 
 After completing each meaningful plan, create a Git commit.
 

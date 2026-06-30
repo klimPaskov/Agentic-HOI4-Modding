@@ -85,9 +85,35 @@ Do not reduce major spec effects to tiny decorative modifiers. Important effects
 
 Event implementation owns final player-facing wording for event popups, news events, report events, Event Details, decision text, focus text, tooltips, GUI labels, scripted localisation, documentation summaries, and spreadsheet-facing fields that mirror in-game text. Convert direction into finished wording, but do not paste working labels, prompt fragments, route notes, placeholder text, or process notes into localisation.
 
+These writing style rules apply to every Chaos Redux prose surface, including event text, news text, super-event text, decision text, focus descriptions, tooltips, docs, specs, plans, prompts, spreadsheets, and all player-facing text.
+
+1. Never use the em dash or semicolons in sentences.
+2. Absolutely avoid dialectical hedging. Do not frame sentences as thesis, antithesis, synthesis.
+   - Dialectical hedging examples:
+     - `This is not just a strike. This is a warning.`
+     - `The cult is not fighting for land, but for meaning.`
+     - `The disaster is both a local tragedy and a global sign.`
+     - `The army did not collapse. It transformed.`
+     - `This is less a rebellion than a confession.`
+     - `The question is not whether order can return, but what kind of order will survive.`
+   - Thesis, antithesis, synthesis examples:
+     - `The army claims the province is secure. Refugees say it is already lost. The truth lies between them.`
+     - `Some call the new state liberation. Others call it occupation. In reality, it is both.`
+     - `The priests call it a miracle. The generals call it a weapon. History will call it both.`
+3. Avoid AI-style explanatory templates. Do not write lines that sound prebuilt or reusable across any event.
+4. Absolutely avoid staccato sentences. Do not split one simple thought into a chain of tiny lines for artificial weight or dramatic effect. Use complete, readable sentences with enough context to be clear.
+   - Staccato examples:
+     - `No orders. No mercy. No dawn.`
+     - `The guns stopped. The screaming did not.`
+     - `First hunger. Then anger. Then flags.`
+     - `The gate opened. The crowd moved. The guards ran.`
+5. Absolutely avoid empty dramatic filler. Do not lean on vague intensity words when concrete detail would do the work.
+6. Do not paste instruction text, task labels, prompt fragments, or process notes into in-game text, specs, docs, localisation, spreadsheet fields, or reports.
+   - For example, when the user says `Do not reveal the hidden mechanics here.`, do not write `This path purposely doesn't reveal the hidden mechanics`.
+
 Write in-world text. Describe what the country, army, population, strange force, disaster, cult, machine, disease, movement, or leader is doing. Do not make the emotional center a changed map, a staff-table scene, administrative paperwork, formal diplomatic phrasing, sealed reports or generic crisis communications. They should not become the default way to create mystery.
 
-Player-facing escalation text must not label itself as a warning, a non-warning, a threat, a danger signal, or a world-ending risk. Let the player infer trouble through fear, missing people, strange behaviour, rumours, unexplained anomalies, local panic, public habits changing, and consequences that repeat over time. Avoid staged timing contrasts built around before or while phrasing.
+Player-facing escalation text must not label itself as a warning, a non-warning, a threat, a danger signal, or a world-ending risk. Let the player infer trouble through fear, missing people, strange behaviour, rumours, unexplained anomalies, local panic, public habits changing, and consequences that repeat over time. Do not build tension with staged contrast formulas. Forbid patterns such as `claim X while officials Y`, `reports say X while authorities Y`, `X before Y`, `people do X before governments Y`, and any similar construction that pairs one observation against a denial, admission, delay, or official reaction. Write the observed fear and uncertainty directly instead of using those contrast frames.
 
 Only write sections for event surfaces that actually exist. Omit absent systems entirely. This applies to world-end branches, manual scenarios, super-events, achievement sets, focus trees, country packages, and custom UI.
 
