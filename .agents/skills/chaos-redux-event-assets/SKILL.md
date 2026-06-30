@@ -201,16 +201,16 @@ This skill includes reference images that show how different Chaos Redux asset t
 Before generating, sourcing, processing, or wiring an asset, inspect the relevant reference folder for that asset type. Use the examples to match style, framing, contrast, readability, scale, texture, and HOI4 presentation.
 
 ```text
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/ideas
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/news_event_images
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/report_event_images
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/super_event_images
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/tech_icons
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/achievements
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/decisions
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/flags
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/focuses
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/special_projects
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/ideas
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/news_event_images
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/report_event_images
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/super_event_images
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/tech_icons
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/achievements
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/decisions
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/flags
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/focuses
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/special_projects
 ```
 
 Reference mapping:
@@ -609,7 +609,7 @@ Use `$imagegen` for the base artwork unless the user provides or requests a spec
 
 Follow the `$imagegen` skill's transparent image workflow when the icon should have a transparent background.
 
-Inspect `~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/ideas` before generating or processing idea icons.
+Inspect `C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/ideas` before generating or processing idea icons.
 
 ## 17. Focus icons
 
@@ -643,7 +643,7 @@ Use `$imagegen` for the base artwork unless the user provides or requests a spec
 
 Follow the `$imagegen` skill's transparent image workflow when the icon should have a transparent background.
 
-Inspect `~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/focuses` before generating or processing focus icons.
+Inspect `C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/focuses` before generating or processing focus icons.
 
 ## 18. Decision icons
 
@@ -677,7 +677,7 @@ Use `$imagegen` for the base artwork unless the user provides or requests a spec
 
 Follow the `$imagegen` skill's transparent image workflow when the icon should have a transparent background.
 
-Inspect `~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/decisions` before generating or processing decision icons.
+Inspect `C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/decisions` before generating or processing decision icons.
 
 ## 19. Achievement icons
 
@@ -700,7 +700,7 @@ Target size:
 
 Use `achievement_` filename prefix.
 
-Inspect `~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/achievements` before generating or processing achievement icons.
+Inspect `C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/achievements` before generating or processing achievement icons.
 
 ## 20. Flags
 

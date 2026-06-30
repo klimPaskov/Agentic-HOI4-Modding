@@ -15,12 +15,19 @@ from openpyxl import load_workbook
 
 def setup_libreoffice_macro():
     """Setup LibreOffice macro for recalculation if not already configured"""
-    if platform.system() == 'Darwin':
-        macro_dir = os.path.expanduser('~/Library/Application Support/LibreOffice/4/user/basic/Standard')
+    system = platform.system()
+    if system == 'Windows':
+        appdata = os.environ.get('APPDATA')
+        if appdata:
+            macro_dir = Path(appdata) / 'LibreOffice' / '4' / 'user' / 'basic' / 'Standard'
+        else:
+            macro_dir = Path.home() / 'AppData' / 'Roaming' / 'LibreOffice' / '4' / 'user' / 'basic' / 'Standard'
+    elif system == 'Darwin':
+        macro_dir = Path.home() / 'Library' / 'Application Support' / 'LibreOffice' / '4' / 'user' / 'basic' / 'Standard'
     else:
-        macro_dir = os.path.expanduser('~/.config/libreoffice/4/user/basic/Standard')
+        macro_dir = Path.home() / '.config' / 'libreoffice' / '4' / 'user' / 'basic' / 'Standard'
     
-    macro_file = os.path.join(macro_dir, 'Module1.xba')
+    macro_file = macro_dir / 'Module1.xba'
     
     if os.path.exists(macro_file):
         with open(macro_file, 'r') as f:

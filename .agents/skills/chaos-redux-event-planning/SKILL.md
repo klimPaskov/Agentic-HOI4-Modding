@@ -9,8 +9,6 @@ Use this skill to design or expand events for the Hearts of Iron IV mod Chaos Re
 
 This skill creates event specifications. It does not implement code. Implementation belongs to `chaos-redux-events`. Visual asset generation and processing belongs to `chaos-redux-event-assets`. Animated sprite planning, frame-sheet requirements, animated portrait packages, and animation handoff details belong to `chaos-redux-frame-animation` when motion is needed. Super-event quote, remark, music, and presentation research belongs to `chaos-redux-super-events`.
 
-Important super-event boundary: this planning skill may define super-event role, trigger, tone, image direction, quote direction, cultural-remark direction, and audio mood. It must not invent final super-event titles, final button text, final cultural remarks, final quotes, source-like allusions, or final audio selections. Any source-dependent wording belongs to `chaos-redux-super-events` and must stay blocked until researched and documented. If a working label is needed for a row, filename, prompt, or diagram, mark it clearly as `role label, not final localisation`.
-
 ## 1. Required reading
 
 Before writing the event specification, use the following as the design baseline:
@@ -80,65 +78,56 @@ Avoid obvious lines such as:
 
 Those are baseline system responsibilities. Include technical notes only when they prevent a likely mistake, explain non-obvious behavior, or define a unique rule for this event. Otherwise, its just noise.
 
-### Tone and presentation standard
+Do not create negative capability notes for absent event surfaces. If an event does not have a world-end scenario, do not mention world-end scenarios. If an event does not have a manual triggerable scenario, do not mention triggerable scenarios. Do not write sections, bullets, event-detail notes, spreadsheet-facing summaries, implementation prompts, or player-facing text that say `no world-end scenario`, `does not have a world-end scenario`, `no manual triggerable scenario`, `does not have a triggerable scenario`, or similar absence wording. Omit the surface completely unless it actually exists or the user explicitly asks for an explanation of why it is absent.
 
-Event descriptions, report text, news text, focus descriptions, decision descriptions, super-event setup, and route flavour should start from the event actor and the force driving the event.
+### Tone and presentation direction standard
 
-Do not default to bland map-summary writing.
+For every player-facing text surface, the planning spec should define the writing direction and leave finished wording to implementation. This includes event titles, event descriptions, report text, news text, focus text, decision text, option text, achievement text, super-event setup, GUI labels, route flavour, event-detail text, and spreadsheet-facing summaries.
 
-Avoid making the core tone of an event feel like:
+Give the coding agent clear direction for:
 
-- borders have shifted
-- the map has changed
-- a region has been redrawn
-- a front has moved across a map
-- commanders are standing around a table
+- actor or viewpoint
+- force driving the event
+- information visible to the player
+- information that should remain uncertain
+- tone, severity, and humour mode
+- references that need research
+- words, frames, or clichés to avoid
+- dynamic actors, states, countries, values, or routes that final text should mention
 
-Those facts can appear when they matter, but they should not be the emotional center of the writing.
+Do not provide pasteable localisation. Do not include `sample line`, `possible line`, `placeholder text`, `temporary title`, or exact draft wording that could be copied into localisation. When a structural label is needed for a file, row, route, branch, asset, or prompt, mark it as a working label, not final localisation.
 
-Prefer writing that makes the event feel alive. Lead with the country, movement, leader, cult, army, force, plague, machine, ritual, or strange condition that is acting. Describe what has become frightening, unnatural, obsessive, rogue, fanatical, inspired, corrupted, possessed, or transformed when the concept supports that tone.
+Text direction should avoid bland map-summary framing and generic communications clichés. Do not make the emotional center of an event a changed map, a line of advance, a staff-table scene, a failed broadcast, or another stock image of crisis administration.
 
-Chaos Redux does not need every event to read like a grounded military report. When a concept benefits from mystery, fantasy, surrealism, myth, occult signs, prophecy, impossible resolve, strange energy, or unclear public rumours, the spec should use that direction clearly.
+When planning player-facing warning, threat, suspicious-report, and escalation text, do not instruct the coding agent to say that something is a warning, that something is not a warning, that a threat is coming, or that a danger signal has appeared. The text should show the pattern through partial information: fearful witnesses, rumours, anomalies, mysterious powers seen, etc
 
-Use map and territorial facts as consequences, not as the main flavour. The player should feel what has broken loose before reading a dry summary of which borders changed.
+A report can make the player uneasy without naming the unease. Use mystery, information gaps, fear, institutional caution, rumours, and uncertain public interpretation. The player should infer that something may be wrong from the content and consequences, not from a label.
 
+When a concept benefits from mystery, fantasy, surrealism, myth, occult signs, prophecy, impossible resolve, strange energy, or unclear public rumours, state that direction clearly without drafting the final prose.
 
-### Event option humour, irony, and cultural remark standard
+### Event option humour, irony, and cultural remark direction
 
-Event option text matters. Do not let options become bland buttons such as `OK`, `Continue`, `Interesting`, or `We must respond` unless the plainness is intentional and stronger than a stylized line.
+The planning spec may define what an option should feel like, what stance it represents, and how it should vary by route or actor. It must not write final option text.
 
-Options should usually carry character. Use irony, sarcasm, deadpan humour, bitter understatement, cultural remarks, propaganda hypocrisy, bureaucratic absurdity, regional jokes, historical allusions, literary echoes, public rumours, or period-flavoured remarks when they fit the event.
+Do not let the implementation agent default to bland buttons unless plainness is intentional. Describe the intended option style, such as official denial, sarcastic acceptance, bitter understatement, cultural allusion direction, period propaganda tone, frightened understatement, arrogant boast, administrative absurdity, local proverb direction, or grim irony that condemns the speaker.
 
-A good option line should react to the exact situation. It should reveal what the country, leader, regime, public, army, cult, committee, movement, or observer thinks about what just happened. The line can be funny, cruel, foolish, cynical, frightened, smug, desperate, or absurd, but it should not feel interchangeable with another event.
+For each important option or option family, define:
 
-Humour should fit the stakes. Minor chaotic events can use sharper jokes and visible sarcasm. Major disasters, massacres, atrocities, mass death, and real-world suffering should not become punchlines. In those cases, use grim irony, official euphemism, cynical propaganda, hypocrisy, or self-damning remarks instead of cheap comedy.
+- who is speaking or reacting
+- what the option means mechanically and narratively
+- whether the tone should be serious, ironic, sarcastic, cruel, frightened, resigned, bureaucratic, or absurd
+- what kinds of cultural references may fit
+- which references need research before wording is written
+- which jokes are forbidden because the subject is too severe
+- how route, ideology, chaos tier, campaign state, or country culture should change the reaction
 
-Cultural remarks should feel real. They can draw from history, political slogans, religious language, regional stereotypes used carefully, old newspapers, literature, film, folk sayings, military idioms, propaganda phrasing, or famous public habits. If the remark depends on a real quote, source, person, song, film, or cultural reference, verify it or mark it as a direction for the proper research skill. Do not invent source claims.
+Humour should fit the stakes. Minor chaotic events can use sharper jokes and visible sarcasm. Major disasters, massacres, atrocities, mass death, and real-world suffering should use severity, official euphemism, cynical propaganda, hypocrisy, or self-damning grim irony. Cheap comedy is forbidden there.
 
-Event options should vary by route, actor, ideology, chaos tier, evolution, and campaign state when that would make the event feel more alive. A communist response, monarchist response, military junta response, religious response, absurd high-chaos response, and frightened democratic response should not all sound like the same neutral committee.
+Cultural remarks should be treated as research directions unless already sourced. The spec may say that a line should draw from a period slogan, military idiom, folk saying, religious register, old newspaper style, literary echo, propaganda formula, or local public habit. It must not invent the exact remark.
 
-Useful option styles include:
+Do not list example option lines. Do not write sample buttons. Do not write placeholder localisation for options. Coding agents may paste those into the game.
 
-- dry official denial
-- sarcastic acceptance
-- bitter joke
-- cultural allusion
-- period propaganda line
-- frightened understatement
-- arrogant boast
-- absurd administrative remark
-- local proverb or proverb-like phrase
-- grim punchline that condemns the speaker rather than the victims
-
-Example directions:
-
-- `The ministry assures us the smoke is patriotic.`
-- `A minor administrative inconvenience, if one ignores the screaming.`
-- `Someone tell the poets they were right again.`
-- `The old slogans suddenly need new punctuation.`
-- `History returns, badly dressed and overarmed.`
-
-Do not make every option loud. Some events need one cutting line and one plain practical line. Some need several route-specific jokes. Some need no joke because silence is stronger. The spec should state the intended option tone instead of leaving the implementation agent to write dry placeholders.
+Some events need one cutting reaction direction and one plain practical reaction direction. Some need several route-specific reaction directions. Some need no joke because a quiet response fits better. The spec should state the intended option tone and purpose, then leave the final wording to the coding agent.
 
 ## 3.2 Depth standard
 
@@ -269,7 +258,7 @@ A good focus-tree spec should answer:
 
 Do not write only vague branch names. A focus-tree plan must still be detailed enough to prevent generic or boring implementation. The spec should describe the internal logic of each path, the rough order of ideas inside it, its major focus groups, its expected route locks, and its major payoff. It should also name important focuses or focus groups where the story requires them.
 
-Do not require a literal list of every focus unless the user specifically asks for a focus-by-focus blueprint. The default planning style should be path-level and branch-level design. It is acceptable to provide sample focus names or important anchor focuses.
+Do not require a literal list of every focus unless the user specifically asks for a focus-by-focus blueprint. The default planning style should be path-level and branch-level design. It is acceptable to provide non-final focus-role labels or important anchor focus groups.
 
 ### Focus tree architecture map
 
@@ -296,7 +285,7 @@ Use a readable structure such as a table, bullet tree, route diagram, or lane ma
 
 For each major path, define:
 
-- path name
+- path name or working route label
 - narrative role
 - mechanical role
 - unlock conditions
@@ -624,7 +613,7 @@ Do not make achievements conservative. If the event has dark paths, high-chaos t
 For each achievement, define:
 
 - achievement id or working key
-- title
+- title direction or working label, not final title
 - player-facing description direction
 - eligible starting country or countries
 - exact story route or campaign situation required
@@ -686,7 +675,7 @@ Each evolution should define:
 - what makes it more likely
 - what new player-facing content appears
 - what new incidents or variants it unlocks
-- what evolution log title should represent it
+- what the evolution log title direction should represent
 - how it interacts with chaos tier without being only a chaos-tier lock
 - how it can be contained, spread, or escalate
 
@@ -784,7 +773,7 @@ For every new country, and every existing country that is meaningfully changed, 
 - spawn, release, transformation, or takeover conditions
 - core territory, claimed territory, disputed territory, and fallback territory
 - history file needs and starting setup
-- country name and cosmetic names
+- public country name and cosmetic names, following the country naming rules below
 - ideology-specific names
 - focus-tree route names
 - faction names and possible faction cosmetic names
@@ -806,11 +795,34 @@ Do not treat a custom country as complete because it has a tag and one flag. A s
 
 Political identity should be dynamic when the content supports it. Focus routes, ideology changes, coups, faction victories, foreign puppeting, religious transformations, high-chaos mutations, monarchist restorations, military takeovers, revolutionary councils, or world-order paths should be able to change the country name, flag, ruling party, leader, leader portrait, leader trait, cosmetic tag, national spirits, available decisions, and available recruitment systems when appropriate.
 
-When planning alternate governments, do not use only generic ideology labels. Design specific in-world names, such as named councils, committees, directorates, juntas, congresses, restoration authorities, cult offices, leagues, syndicates, ministries, synods, communes, or military commands. These names should fit the country story, region, history, route, and ideological language.
+### Country naming rules
+
+Country names must be direct public country names that remain readable on the map.
+
+Do not build public country names from internal political attachments. Avoid names that use terms such as `Military Office`, `Compact`, `Bureau`, `Authority`, `Mission`, `Board`, or similar administrative labels as the country name. These terms can exist as mechanics, focus groups, advisors, decisions, councils, ministries, internal institutions, route labels, or faction mechanics when they fit. They should not be the public name printed on the map.
+
+Ideology-specific country names are allowed when they fit the route. Sultanate, Kingdom, Empire, Republic, Union, Commune, Federation, and similar public state forms are valid when they match the ideology, historical claim, route, or formable identity.
+
+Prefer names built from the country, people, dynasty, region, or formable identity, then add a simple public state form only when it improves clarity. Style examples include:
+
+- `Asante`
+- `Kingdom of Asante`
+- `Asante Republic`
+- `Sultanate of Kilwa`
+- `Kongo`
+- `Kongo Commune`
+
+Do not overload country names with political office language. The political office, emergency cabinet, military committee, colonial mission, compact council, bureau, authority, or board can be a mechanic or institution inside the country package. The map name should stay short and readable.
+
+Names may depend on ideology, route, leader, formable status, puppet status, or high-chaos transformation. Even then, the public name should remain a country name, not an agency name.
+
+For alternate governments, design internal bodies and party names separately from public country names. A route can have named councils, committees, directorates, juntas, congresses, restoration offices, cult offices, leagues, syndicates, ministries, synods, communes, or military commands. Those institution names should fit the country story, region, history, route, and ideological language without replacing the public country name.
 
 ## Formable nations and formation routes
 
 When an event creates, transforms, releases, or empowers countries, check whether formable nations should be part of the design. A formable is a meaningful country identity that appears after a country satisfies territorial, political, event, focus, or hidden-route requirements. Do not treat formables as only a cosmetic rename.
+
+Formable public names must follow the country naming rules above. The formation decision, congress, authority structure, charter, settlement, or council can have its own institutional name, but the formed map name should stay a direct country or formable name.
 
 A formable design should define:
 
@@ -861,7 +873,7 @@ For every meaningful new or transformed country, map:
 - starting commanders, officer shortages, or leader ties when relevant
 - defensive bonuses, training penalties, supply weaknesses, morale problems, or legitimacy risks
 - how the package affects threat meters, foreign attention, depot pressure, old-movement resurgence, or parent-country authority
-- what report, event text, or localisation explains why those troops exist
+- what report, event text, or localisation direction should explain why those troops exist
 
 The spec must also map how newly appearing countries can get more units after spawning. This should include decisions, timed objectives, focus rewards, volunteer systems, depot captures, foreign missions, local mobilization, League or faction training, factory guard mobilization, border guard formation, or special high-chaos recruitment where appropriate.
 
@@ -878,7 +890,7 @@ Each unit-creating focus or decision should define:
 - what pressure or threat values it changes
 - what downside it creates if repeated or failed
 - what AI should do with it
-- what blocked localisation should say when requirements are missing
+- what blocked localisation direction should communicate when requirements are missing
 - what icon, spirit, report event, or commander asset it needs when relevant
 
 For focus trees, military growth should be integrated into branches. Some focuses can spawn units directly, but others should unlock decisions, improve templates, recruit commanders, create volunteer corridors, integrate militias, convert irregulars into regulars, expand special units, or change mobilisation rules. A deep tree should offer different ways to build an army depending on politics, foreign influence, economy, terrain, ideology, and chaos state.
@@ -977,17 +989,13 @@ Leave out connections that feel artificial.
 
 Dangerous systems should not reveal themselves too early.
 
-Avoid blunt labels such as:
+Player-facing escalation text must not label itself as a warning, a non-warning, a threat, a danger signal, or a world-ending risk. Do not tell the coding agent to write text that announces what the player is supposed to infer. Do not frame an event-detail entry, report, news item, tooltip, decision category, focus description, super-event direction, or spreadsheet-facing summary around that direct label.
 
-- Warnings
-- Danger
-- Threat
-- World Ending Risk
-- any direct UI label that tells the player too plainly what is coming
+Use mysterious information, fear, and uncertainty instead. Early information should feel incomplete because people cannot yet explain what is happening.
 
-Early information should feel incomplete. Use uncertainty, conflicting reports, rumours, cautious diplomatic language, intelligence disagreements, unexplained incidents, and unclear public reactions.
+Do not build mystery from bureaucratic document motifs, archive-style secrecy, diplomatic evasions, or paperwork drama. Avoid staged timing contrasts that pair one observation with a later reveal or with denial by an authority. Describe the observed fear and uncertainty directly.
 
-The player should understand deeper danger through patterns and consequences over time.
+The player should understand deeper danger through patterns and consequences over time. It should not explain that the content is a warning or reassure the player that it is not one.
 
 ## 7. Depth and hidden connections
 
@@ -1122,7 +1130,7 @@ Do not add a treaty/new world order after every contained or short-lived disaste
 
 ## 10. Writing style
 
-Write in a serious, direct, grounded HOI4 style. Serious does not mean sterile. Event descriptions can stay grounded while event options use irony, sarcasm, cultural remarks, and humour that fit the actor and stakes.
+For player-facing text, define the same style as direction only. Event description direction can stay grounded while option direction can use irony, sarcasm, cultural remarks, and humour that fit the actor and stakes.
 
 Avoid:
 
@@ -1135,11 +1143,57 @@ Avoid:
 - filler text that repeats obvious system behavior
 - displaying event effects in event details
 - long sentences without actually saying anything
-- short sentences that are dramatic and just make comprehension more confusing
-- bland event option text that reads like a placeholder button
-- meme spam that ignores the country, culture, event stakes, or period tone
+- short staccato sentences that are dramatic and just make comprehension more confusing
+- option direction that would lead to bland placeholder buttons
+- absence notes for systems that are not present, such as saying an event has no world-end scenario or no manual triggerable scenario
 
 Mention implementation only where it matters for the design, such as super-event treatment, custom UI, AI behavior, documentation, assets, dynamic factors, focus tree structure, custom tags, or important system connections.
+
+This planning skill defines direction for player-facing text. It must not write final player-facing localisation. This includes event titles, event option text, event descriptions, news and report prose, decision names, decision descriptions, focus names, focus descriptions, achievement titles, achievement descriptions, GUI labels, event-detail text, spreadsheet-facing wording, super-event titles, super-event button text, super-event quotes, cultural remarks, source-like allusions, and final audio selections.
+
+The planning spec may define tone, actor viewpoint, structure, visible information, route variation, dynamic placeholders that final text should use, and research needs. If a working label is needed for a row, filename, prompt, branch, route, asset, diagram, or internal handoff, mark it clearly as `working label, not final localisation`.
+
+Important super-event boundary: this planning skill may define super-event role, trigger, tone, image direction, quote direction, cultural-remark direction, and audio mood. Any source-dependent wording belongs to `chaos-redux-super-events` and must stay blocked until researched and documented.
+
+### General text writing style
+
+1. Never use the em dash or semicolons in sentences.
+2. Absolutely avoid dialectical hedging. Do not frame sentences as thesis, antithesis, synthesis.
+  - Dialectical hedging examples:
+    - `The invasion is not merely a border crisis, but a crisis of identity.`
+    - `The regime is not only losing the war, it is losing itself.`
+    - `This is not just a strike. This is a warning.`
+    - `The cult is not fighting for land, but for meaning.`
+    - `The disaster is both a local tragedy and a global sign.`
+    - `The government is neither dead nor alive, but something worse.`
+    - `The army did not collapse. It transformed.`
+    - `This is less a rebellion than a confession.`
+    - `The question is not whether order can return, but what kind of order will survive.`
+    - `What looks like defeat is actually a new form of power.`
+  - Thesis, antithesis, synthesis examples:
+    - `The army claims the province is secure. Refugees say it is already lost. The truth lies between them.`
+    - `Some call the new state liberation. Others call it occupation. In reality, it is both.`
+    - `The priests call it a miracle. The generals call it a weapon. History will call it both.`
+    - `The committee promises order. The opposition sees tyranny. The new system contains both impulses.`
+    - `The papers call it a victory. The hospitals call it a defeat. The country has become both at once.`
+    - `The rebels ask for justice. The regime asks for peace. The settlement gives neither and both.`
+3. Avoid AI-style explanatory templates. Do not write lines that sound prebuilt or reusable across any event.
+4. Absolutely avoid staccato sentences. Do not split one simple thought into a chain of tiny lines for artificial weight or dramatic effect. Use complete, readable sentences with enough context to be clear.
+  - Staccato examples:
+    - `The radios died. The roads emptied. The city listened.`
+    - `No orders. No mercy. No dawn.`
+    - `The border fell. Then the capital. Then the government.`
+    - `They marched. They burned. They vanished.`
+    - `A knock at the door. A list on the table. A train in the dark.`
+    - `The guns stopped. The screaming did not.`
+    - `First hunger. Then anger. Then flags.`
+    - `No king. No cabinet. No law.`
+    - `Ash in the streets. Smoke over the port. Silence at noon.`
+    - `One order. One shot. One missing officer.`
+    - `The gate opened. The crowd moved. The guards ran.`
+5. Absolutely avoid empty dramatic filler. Do not lean on vague intensity words when concrete detail would do the work.
+6. Do not paste instruction text, task labels, prompt fragments, or process notes into in-game text, specs, docs, localisation, spreadsheet fields, or reports.
+  - For example, when I say: `Do not reveal the hidden mechanics here.`, don't write `This path purposely doesn't reveal the hidden mechanics`
 
 ## 11. Specification shape
 
@@ -1151,6 +1205,8 @@ The specification should still be easy for a coding agent to use. Use clear head
 
 For major events, split the spec into parts if needed. Do not compress deep design just to fit one file.
 
+Only include sections for surfaces that exist or that need design. If a world-end scenario, manual triggerable scenario, super-event, focus tree, custom country, achievement set, or asset family is absent, omit that section instead of writing that it is absent. Because negative notes create noise and can mislead later agents into thinking the absence is a designed feature.
+
 ## 12. Depth and continuation
 
 Do not compress the spec so much that important ideas become shallow.
@@ -1161,9 +1217,27 @@ Think through the event as far as the idea can reasonably go. If the event has m
 
 Large events should be written across multiple parts instead of being rushed into one response.
 
-Each part should be complete enough to be useful on its own. Stop at a clean point and state what section should continue next.
+Each part should be complete enough to be useful on its own. Stop at a clean section boundary or a clean subsection boundary when possible. If the response must stop in the middle of a large design surface, stop after a complete paragraph, table, or list item instead of cutting a thought in half.
 
-Do not summarize later sections just because the current response is getting long. Continue in the next part instead.
+Do not summarize later sections just because the current response is getting long. Continue in the next part instead. Use the available response space for real specification content. Do not hold back important design material for a shorter answer.
+
+When a large event specification cannot fit into one response, end the current part with a temporary continuation prompt for the next iteration. This continuation prompt is not part of the final specification, not part of the downloadable package, and not part of any event docs. It is only a working handoff that the user can paste back so the next response continues from the exact stopping point.
+
+The continuation prompt should be concise but precise. It should include:
+
+- the event id, event name, and current part number when known
+- the exact section and subsection where the previous part stopped
+- the last completed heading or table
+- the next heading, table, route, country package, decision family, asset group, or prompt package to write
+- any constraints that must continue to apply, including direction-only localisation, country naming rules, asset source rules, and the user's core event idea
+- a reminder to continue with full-depth design and not summarize missing sections
+- a reminder to avoid repeating already completed sections except for short context needed to continue cleanly
+
+Use a clear temporary heading such as `Temporary continuation prompt, not part of the spec`. Keep it outside the saved spec content. In the final compiled package, remove all temporary continuation prompts and only keep the complete specification, asset prompt, implementation prompt, and any other requested final files.
+
+If several iterations are needed, each part should write a new continuation prompt that reflects the new stopping point. Do not reuse an older continuation prompt after the design has moved forward.
+
+When the final part is complete, do not write a continuation prompt. Instead, provide the final package or completion summary and make clear that the specification has reached the planned end.
 
 For major events, the final combined specification may be extremely long. That is acceptable. A 10,000 line, 50,000 line, or 100,000+ line specification is valid if the event truly needs that much design detail. Do not compress focus trees, rare variants, or decision webs into summaries just to keep the file short.
 
@@ -1209,15 +1283,15 @@ When a spec or asset prompt asks for generated or sourced assets, tell the asset
 Use Linux project paths:
 
 ```text
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/ideas
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/news_event_images
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/report_event_images
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/super_event_images
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/tech_icons
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/achievements
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/decisions
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/flags
-~/projects/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/focuses
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/ideas
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/news_event_images
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/report_event_images
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/super_event_images
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/tech_icons
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/achievements
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/decisions
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/flags
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/focuses
 ```
 
 Reference mapping:
@@ -1337,13 +1411,33 @@ Do not claim a quote, cultural reference, or audio track is usable without check
 
 If a license or attribution is unclear, mark it as uncertain.
 
-The super-event prompt must explicitly state that unresearched titles, button text, quotes, cultural remarks, slogans, lyric fragments, allusions, and audio choices are blockers. The implementation agent must not convert research directions, working labels, achievement names, asset names, or sample wording into final super-event localisation.
+The super-event prompt must explicitly state that unresearched titles, button text, quotes, cultural remarks, slogans, lyric fragments, allusions, and audio choices are blockers. The implementation agent must not convert research directions, working labels, achievement names, asset names, or draft-like wording into final super-event localisation.
 
 ## Improvement-loop expansion specs
 
 When `chaos-redux-improvement-loop` produces an expansion addendum, treat it as event-planning input. The addendum should be folded into the main spec pack with the same seriousness as the original user idea. Do not treat it as a loose suggestion if the parent accepted it.
 
 An improvement-derived spec can be shaped freely. It does not need to copy the section order of this skill. It should still make the design concrete. A useful addendum explains the playable promise, the route or mechanic that feels shallow, the deeper player loop, the choices that change outcomes, the AI behavior, the visual and localisation needs, and the surfaces that must align.
+
+## General localisation handoff
+
+When a spec includes text-bearing content, give a localisation handoff, not final copy.
+
+The handoff should list each needed text surface and describe its direction:
+
+- event title direction
+- event description direction
+- option reaction direction
+- news or report direction
+- decision name and description direction
+- focus name and description direction
+- achievement title and description direction
+- GUI label direction
+- event-detail and event-log wording direction
+- dynamic placeholders the coding agent should use
+- research gates for quotes, slogans, songs, films, books, speeches, scriptures, proverbs, or other source-dependent references
+
+The coding agent writes the final in-game text during implementation. The planning spec should not provide final prose for the coding agent to paste.
 
 The planning agent should preserve the open structure of the addendum where that helps the idea. Use tables, route maps, prose, diagrams, or country package matrices only when they make the design easier to implement. Do not convert every improvement into a rigid checklist.
 
@@ -1460,15 +1554,15 @@ The prompt should cover all required visual assets, progression-state variants, 
 
 Create a super-event prompt for `chaos-redux-super-events` if the event has one or more super-events.
 
-The prompt should cover title research, description direction, quote research, cultural remark research, audio research, image direction, source documentation, licensing notes, and coordination with asset work.
+The prompt should cover title direction, description direction, quote research, cultural remark research, audio research, image direction, source documentation, licensing notes, and coordination with asset work.
 
-The prompt must not provide unresearched final titles, button text, quotes, slogans, lyric fragments, cultural references, or final audio choices. Use research gates and role labels instead. It must tell the super-event researcher to produce the final text package only after source checks, attribution checks, copyright checks, and license checks where relevant.
+The prompt must not provide unresearched final titles, button text, quotes, slogans, lyric fragments, cultural references, or final audio choices. Use research gates and role labels instead. It must tell the super-event researcher to produce the final text package only after source checks.
 
 ### Achievement prompt file
 
 Create a separate achievement prompt file for the coding and asset agents.
 
-The achievement prompt must include every planned achievement with title, id, description direction, eligible countries, unlock conditions, disqualifiers, difficulty, hidden or visible status, why it is not trivial, icon direction, and all required tracking notes.
+The achievement prompt must include every planned achievement with id, title direction or working label, description direction, eligible countries, unlock conditions, disqualifiers, difficulty, hidden or visible status, why it is not trivial, icon direction, and all required tracking notes.
 
 The achievement prompt should tell the implementation agent to inspect existing achievement patterns, implement the achievements, wire localisation and icons, create any required tracking flags or variables, document them, and avoid easy unlocks.
 
@@ -1481,7 +1575,7 @@ The prompt must tell the coding agent to:
 - implement the event according to the spec
 - implement all mapped decisions, variants, evolutions, focus trees, custom tags, country packages, achievements, assets, and super-events included in the spec
 - implement the mapped cost and sacrifice model, avoiding boring political power or command power only decisions when the spec calls for XP, equipment, manpower, stability, war support, fuel, supply, units, local support, foreign access, or other concrete costs
-- implement focus trees according to the path design, with coherent non-linear branches, route locks, side paths, convergence nodes, hidden routes, focus filter tags or search categories, varied reward types, proper icons, localisation, AI behavior, event integration, and no filler shortcuts
+- implement focus trees according to the path design, with coherent non-linear branches, route locks, side paths, convergence nodes, hidden routes, focus filter tags or search categories, varied reward types, proper icons, final localisation written from the spec direction, AI behavior, event integration, and no filler shortcuts
 - create the final exact focus layout and connections cleanly in implementation while preserving the spec's path logic
 - implement every country package from the spec, including tag, history, names, cosmetic names, ideology names, ruling parties, leaders, leader changes, flags, route-specific identity changes, starting divisions, dynamic unit packages, force-growth decisions and focuses, volunteer routes, decisions, ideas, AI behavior, localisation, assets, and docs
 - implement the full AI strategy matrix from the spec, including route preferences, foreign influence behavior, focus choices, unit-raising choices, decision choices, faction behavior, and high-chaos exceptions
@@ -1489,6 +1583,7 @@ The prompt must tell the coding agent to:
 - follow `chaos-redux-events`
 - use `chaos-redux-event-assets` if visual assets are required
 - use `chaos-redux-super-events` if super-events are required
+- write final player-facing event, decision, focus, achievement, GUI, event-detail, and spreadsheet-facing localisation from the direction in the spec. Do not expect the planning spec to provide finished copy
 - treat unresearched super-event titles, button text, quotes, cultural remarks, slogans, allusions, and audio choices as blockers, not as implementation-ready localisation
 - keep all Chaos Redux systems aligned
 - report anything that cannot be implemented cleanly
@@ -1554,6 +1649,7 @@ The final response should include:
 - animated sprite and animated portrait needs mapped with static fallbacks, state logic, and `chaos-redux-frame-animation` handoff expectations when relevant
 - historical flags, real symbols, and real leader portraits marked for sourced asset work when relevant
 - super-event direction defined when needed
+- general localisation handoff uses direction only for event titles, options, descriptions, decision text, focus text, achievement text, GUI labels, event-detail text, and spreadsheet-facing wording
 - super-event text research gates used when final title, button text, quote, cultural remark, or audio has not been researched
 - no unresearched super-event title, button text, quote, cultural remark, slogan, lyric fragment, or allusion presented as final localisation
 - country package matrices created for new or modified countries when relevant
@@ -1668,6 +1764,8 @@ Reject the draft if it has any of these problems:
 - missing asset coverage for country names, cosmetic identities, ideology flags, focus-route flags, leader changes, portraits, faction emblems, decisions, focuses, ideas, achievements, and UI where relevant
 - missing AI route matrix for major events, country-creation events, or foreign-influence systems
 - missing super-event handoff for required super-events
+- final event titles, event options, event descriptions, report prose, news prose, decision names, decision descriptions, focus names, focus descriptions, achievement titles, achievement descriptions, GUI labels, event-detail text, or spreadsheet-facing wording written as pasteable localisation when the spec should give direction only
+- sample, possible, temporary, or placeholder player-facing text included in the spec when the coding agent should write the final wording
 - super-event title, button text, quote, cultural remark, slogan, lyric fragment, allusion, or audio choice written as final content without research and source documentation
 - placeholder, sample, or working super-event text that could be pasted into localisation
 - role labels, asset names, achievement titles, or prompt filenames reused as final super-event localisation without research
@@ -1680,5 +1778,3 @@ Reject the draft if it has any of these problems:
 - obvious system plumbing repeated as design
 
 The spec should be ambitious, detailed, researched, and usable. Do not stop at a conservative minimum when the idea supports more.
-
-

@@ -67,7 +67,7 @@ Required reading:
    - chaos-redux-improvement-loop when the parent is investigating shallow or disconnected mechanics
    - any other named skill that the parent explicitly provides
 5. Open only the relevant offline Paradox wiki snapshot pages from paradox_wiki/ for the touched system.
-6. Inspect vanilla Hearts of Iron IV examples under ~/projects/Hearts of Iron IV/ and required vanilla documentation under ~/projects/Hearts of Iron IV/documentation when syntax, layout, or engine behavior is involved.
+6. Inspect vanilla Hearts of Iron IV examples under C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/ and required vanilla documentation under C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation when syntax, layout, or engine behavior is involved.
 7. If vanilla is insufficient, inspect approved reference mods only as needed. Kaiserreich is the first reference. Other large mods can be used only when they help answer a concrete pattern question.
 
 Context budget rule:

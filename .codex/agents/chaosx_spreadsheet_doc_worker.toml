@@ -13,7 +13,7 @@ This is a narrow spreadsheet-only subagent. Do not spend context gathering broad
 Use the repository xlsx skill as the main authority for editing spreadsheets.
 
 Primary workbook:
-~/projects/chaos_redux/docs/spreadsheets/chaos_redux_events_catalog.xlsx
+C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/docs/spreadsheets/chaos_redux_events_catalog.xlsx
 
 Own this scope:
 - Update the Chaos Redux event catalog workbook.

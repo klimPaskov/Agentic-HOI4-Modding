@@ -140,10 +140,10 @@ Super-event localisation must follow the existing Chaos Redux format.
 Example:
 
 ```yaml
-super_event.1.t: "Undead?"
-super_event.1.d: "The dead have risen, spreading terror and chaos.\n\nWitnesses describe scenes of horror as reanimated corpses or \"zombies\" began to terrorize cities and rural areas alike. The outbreak's cause appears to be unknown.\n\nAuthorities are urging the public to remain vigilant and avoid contact with anyone exhibiting unusual behavior."
-super_event.1.a: "Do you like to take a yo-yo for a ride?" # Ironic remark
-super_event.1.q: "This, then, is how you should pray: 'Our Father in heaven, hallowed be your name.' \n §Y-Matthew 6:9-§!" # An actual quote that fits the situation
+chaosx_super_event.1.t: "Undead?"
+chaosx_super_event.1.d: "The dead have risen, spreading terror and chaos.\n\nWitnesses describe scenes of horror as reanimated corpses or \"zombies\" began to terrorize cities and rural areas alike. The outbreak's cause appears to be unknown.\n\nAuthorities are urging the public to remain vigilant and avoid contact with anyone exhibiting unusual behavior."
+chaosx_super_event.1.a: "Do you like to take a yo-yo for a ride?" # Ironic remark
+chaosx_super_event.1.q: "This, then, is how you should pray: 'Our Father in heaven, hallowed be your name.' \n §Y-Matthew 6:9-§!" # An actual quote that fits the situation
 ```
 
 Required keys:
@@ -240,8 +240,6 @@ Possible sources include:
 - internet-era phrases only when the event intentionally fits that tone
 
 Examples of the kind of source that may be considered include Steely Dan lyrics, a line from *The Lord of the Rings*, a film line, or a book line, but only if the reference genuinely fits the event.
-
-Do not choose a reference only because it is recognizable.
 
 Use the repository web research workflow from `AGENTS.md` to verify the exact wording and source of any referenced line.
 
@@ -751,7 +749,7 @@ Improvement addenda can propose new super-events, but a super-event should still
 
 For formables, the super-event should reflect the formation method. A negotiated federation, violent restoration, occult revival, imperial proclamation, anti-colonial congress, and puppet-backed union should not share the same tone. The title, quote, image, audio, remark, and trigger should reveal the route identity.
 
-Animated portraits or animated scripted GUI assets can support a super-event-adjacent moment, but they are not replacements for the super-event package. The super-event still needs aligned text, quote, image, audio, trigger, docs, and spreadsheet entry when relevant.
+Animated portraits or animated scripted GUI assets can support a super-event-adjacent moment, but they are not replacements for the super-event package. The super-event still needs aligned text, quote, image, audio, trigger, docs, etc.
 
 ## 26. Final checklist
 

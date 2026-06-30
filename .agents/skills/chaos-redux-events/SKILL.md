@@ -81,6 +81,22 @@ Major events and country-creation events need route-specific AI. Implement focus
 
 Do not reduce major spec effects to tiny decorative modifiers. Important effects must change incentives, unlock content, move visible mechanic values, alter army or economy behavior, create a real tradeoff, or connect to later outcomes. Small modifiers are fine as support, not as the whole payoff.
 
+## Event writing and player-facing text
+
+Event implementation owns final player-facing wording for event popups, news events, report events, Event Details, decision text, focus text, tooltips, GUI labels, scripted localisation, documentation summaries, and spreadsheet-facing fields that mirror in-game text. Convert direction into finished wording, but do not paste working labels, prompt fragments, route notes, placeholder text, or process notes into localisation.
+
+Write in-world text. Describe what the country, army, population, strange force, disaster, cult, machine, disease, movement, or leader is doing. Do not make the emotional center a changed map, a staff-table scene, administrative paperwork, formal diplomatic phrasing, sealed reports or generic crisis communications. They should not become the default way to create mystery.
+
+Player-facing escalation text must not label itself as a warning, a non-warning, a threat, a danger signal, or a world-ending risk. Let the player infer trouble through fear, missing people, strange behaviour, rumours, unexplained anomalies, local panic, public habits changing, and consequences that repeat over time. Avoid staged timing contrasts built around before or while phrasing.
+
+Only write sections for event surfaces that actually exist. Omit absent systems entirely. This applies to world-end branches, manual scenarios, super-events, achievement sets, focus trees, country packages, and custom UI.
+
+Do not expose hidden routes, secret variables, future surprises, achievement paths, implementation history, tuning history, or rework history in player-facing text. Event Details and spreadsheet detail fields describe the situation and premise, not the mechanical effects. Options, decisions, focuses, and tooltips must still clearly describe visible consequences and requirements, but they should not read like reward lists.
+
+Use uncertainty carefully. It should come from what people cannot explain, what they fear, what they avoid, and what changes around them. Do not use administrative secrecy or formal evasions as a default substitute for atmosphere.
+
+For super-events, do not invent quotes, cultural remarks, song fragments, title references, or final audio choices. Use `chaos-redux-super-events` and the relevant research subagents when the event needs sourced wording or music.
+
 ## Parent and subagent implementation ownership
 
 Patch-capable subagents are active by default inside the current task scope. Use them when a large event touches focus trees, decisions, country packages, localisation, GUI, scripted helpers, or assets at the same time.
@@ -152,6 +168,8 @@ Before changing evolution log display, identify the exact surface and keep the c
 
 When adding evolution row metadata, reuse the arrays for that row surface: main rows read the `global.events_log_evolution_view_*` arrays rebuilt by `rebuild_events_log_evolution_view`, while selected-history rows read the `global.events_log_history_detail_evolution_*` arrays rebuilt by `events_log_rebuild_history_details_view`. The required row metadata is sequence, date, source event, type/name, tier, stage, actor, and enabled state. If the user reports row alignment, patch `interface/chaosx_events_log_popup.gui` row sizes, button bounds, and text widths for the affected surface in the same change.
 
+Event-log defaults must keep unreworked events disabled by default. An event that is still waiting for a rework should stay out of the reworked-event default enable allowlist so startup seeds it into `global.disabled_events` and it appears unchecked. When an event is reworked and ready for normal selection and log use, add its ID back to that allowlist in the same change as the event registration and log wiring.
+
 ## World-end scenarios
 
 A world-end scenario is a terminal branch that changes the campaign into a resolved or end-state condition, not just a large disaster or strong major event. World-end scenario is chosen based on the world state. World-end scenario can only be triggered when the chaos value is over 1000.
@@ -184,7 +202,7 @@ Use this contract when adding a scenario for an event:
 6. Add scenario name, sort text, detail text, type labels, and intensity impact text in `common/scripted_localisation/chaosx_scripted_localisation_scenarios.txt`.
 7. Add or update player-facing labels, tooltips, confirmation text, and scenario event text in `localisation/english/chaosx_gui_l_english.yml`.
 8. Update `interface/chaosx.gui` only when the existing scenario window cannot present the new controls cleanly.
-9. Document the scenario in the relevant event doc or scenario doc, for example in `~\projects\chaos_redux\docs\systems\triggerable_scenarios.md`.
+9. Document the scenario in the relevant event doc or scenario doc, for example in `C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/docs/systems/triggerable_scenarios.md`.
 
 The scenario window is data-driven. It should use `global.triggerable_scenario_view_ids` for the sortable list, log-style entries for scenario rows, and a detail panel that updates from the selected entry. Do not hardcode one button per scenario when the registry and dynamic list can handle it.
 
@@ -541,42 +559,13 @@ Rules:
 - keep evolution and world-end columns aligned with the real chain structure
 - do not put baseline progression stages into evolution columns unless they are actual mutation tracks
 
-## Event presentation workflow
-
-Use this when the user asks for event slides, a showcase deck, or presentation updates.
-
-Required tools and order:
-
-1. `pptx`
-2. `theme-factory`
-3. `canvas-design`
-4. LaTeX rendering when formulas or gameplay math need to be shown clearly
-
-Visual standard:
-
-- minimalistic
-- stark
-- propaganda-poster energy
-- 1984-inspired restraint
-- strong contrast
-- deliberate negative space
-- bold composition
-- no generic corporate deck styling
-
-Rules:
-
-- every slide gets original event-specific art
-- evolutions should visibly mutate the event, not merely show the next ordinary stage
-- terminal branches should get heavier final-slide treatment
-- keep deck path and asset folder stable unless the user asks otherwise
-
-Preferred deck path:
-
-- `docs/presentations/chaos_redux_events.pptx`
-
 ### Extra rules to follow
 
 Event Details text must never display mechanical effects. The Event Details window, spreadsheet `Details` field, and player-facing detail summaries should describe the situation and premise, not list rewards, penalties, modifiers, variable changes, or script effects. If an event is meant to apply gameplay effects immediately regardless of which option the player chooses, place the real effects in the event `immediate` block inside a `hidden_effect`. The option should not reapply those effects. The option may show the immediate result only through a custom tooltip for cosmetic clarity, so the player sees the consequence without turning Event Details into an effects list.
+
+Player-facing event, decision, focus, and Event Details text must describe in-world consequences rather than meta reward routes. Do not advertise that a choice opens, grants, counts toward, or completes an achievement path. Keep achievement conditions in achievement UI and docs, and use ordinary in-world consequence text elsewhere. For ambiguous report-stage incidents, describe what people see, fear, suffer, or fail to explain. Do not directly label the incident as a warning, a non-warning, a danger signal, or the absence of one.
+
+Visible dynamic values often display decimal places unless their localisation formatter says otherwise. If a value is conceptually an integer, show it as an integer with `|0` formatting or an equivalent scripted-localisation helper. Only show decimal places when the value genuinely needs fractional precision, such as ratios, percentages, fractional costs, or progress values where the fraction changes player decisions.
 
 If the event creates or manages non-standard countries, account for that in shared classification triggers. Any event-created or event-managed chaos country must be registered in `is_special_chaos_country` in `common/scripted_triggers/chaosx_dynamic_triggers.txt` and documented in `common/scripted_triggers/chaosx_dynamic_triggers.md`. If that chaos country is actually nonhuman rather than merely unusual, supernatural, extremist, or scenario-specific, also register it in `is_actual_nonhuman_country` and update the same documentation. Do not create event-specific duplicate classifiers such as `is_<event>_chaos_enemy`, `is_<event>_special_country`, or per-event nonhuman triggers when the shared triggers can express the category. Events interact with each other, so systems that usually affect normal countries, such as black plague, mass panic, civilian migration, or ideology spread, should exclude zombie, alien, and other nonhuman countries through the shared triggers instead of one-off checks.
 

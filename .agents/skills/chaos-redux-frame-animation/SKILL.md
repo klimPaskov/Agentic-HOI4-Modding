@@ -66,7 +66,7 @@ Required references:
 - `paradox_wiki/Interface modding - Hearts of Iron 4 Wiki.md` when the animation appears in GUI
 - `paradox_wiki/Scripted GUI Modding - Hearts of Iron 4 Wiki.md` when the animation appears in scripted GUI
 - `paradox_wiki/Character modding - Hearts of Iron 4 Wiki.md` when the animation is a portrait
-- relevant vanilla `.gfx` and `.gui` files under `~/projects/Hearts of Iron IV/`
+- relevant vanilla `.gfx` and `.gui` files under `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/`
 - existing Chaos Redux `.gfx`, `.gui`, portrait, focus, decision, and scripted GUI examples when available
 
 The agent must record which local example was used.
@@ -358,8 +358,8 @@ Do not treat this as a character portrait replacement unless the user explicitly
 Required workflow:
 
 1. Inspect the actual vanilla GUI surface that displays the portrait. Common country-leader surfaces include:
-   - `~/projects/Hearts of Iron IV/interface/countrypoliticsview.gui` for the current country's politics leader portrait.
-   - `~/projects/Hearts of Iron IV/interface/countrydiplomacyview.gui` for a selected country's diplomacy leader portrait.
+   - `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/interface/countrypoliticsview.gui` for the current country's politics leader portrait.
+   - `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/interface/countrydiplomacyview.gui` for a selected country's diplomacy leader portrait.
 2. Record the exact vanilla element coordinates, scale, and parent containers used to reach that element.
 3. Create a separate independent overlay container in a Chaos Redux `.gui` file. Do not edit vanilla GUI files for the overlay unless the task explicitly requires a vanilla GUI override.
 4. Wire that container through `common/scripted_guis/` with the right context:

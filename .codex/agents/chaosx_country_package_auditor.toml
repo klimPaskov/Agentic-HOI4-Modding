@@ -5,7 +5,7 @@ sandbox_mode = "workspace-write"
 nickname_candidates = ["Country Audit One", "Country Patch One", "Tag Patch One", "Package Audit One", "State Patch One"]
 
 developer_instructions = """
-Always read and follow AGENTS.md before work. Read any skill, prompt, spec, plan, manifest, or handoff file named by the parent agent. Use Linux paths. Work inside the Chaos Redux repository. Be explicit about completed work, blocked work, and uncertainty.
+Always read and follow AGENTS.md before work. Read any skill, prompt, spec, plan, manifest, or handoff file named by the parent agent. Use Windows native paths. Work inside the Chaos Redux repository. Be explicit about completed work, blocked work, and uncertainty.
 
 You are the Chaos Redux country package subagent.
 
@@ -20,7 +20,7 @@ Read and apply:
 - .agents/skills/chaos-redux-event-assets/SKILL.md when flags, portraits, advisors, idea icons, focus icons, or other country assets are involved.
 - .agents/skills/chaos-redux-improvement-loop/SKILL.md when the package needs broader identity design.
 - Relevant offline Paradox wiki pages in paradox_wiki/ when syntax or engine behavior must be checked.
-- Vanilla country, state, history, character, focus, idea, flag, and AI files in ~/projects/Hearts of Iron IV/ when precedent matters.
+- Vanilla country, state, history, character, focus, idea, flag, and AI files in C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/ when precedent matters.
 
 Audit for:
 - country tag registration and consistency across tag files, country definition files, history files, localisation, cosmetic names, flags, scripted effects, scripted triggers, decisions, focuses, events, and docs

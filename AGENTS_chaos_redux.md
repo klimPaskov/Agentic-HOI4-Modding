@@ -40,10 +40,10 @@ Web access:
 Use HOI4 vanilla as the main example set.
 
 - The vanilla game directory is available at  
-  `~/projects/Hearts of Iron IV/`
+  `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/`
 
 - Vanilla Hearts of Iron IV includes official documentation files (often in markdown).
-  - The folder `~/projects/Hearts of Iron IV/documentation` contains markdown documentation files that **must be read**.
+  - The folder `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation` contains markdown documentation files that **must be read**.
   - Vanilla game files may also include documentation files in other folders. These documentation files **must be consulted when they exist** for the systems you touch.
   - Treat vanilla documentation as more authoritative, more complete, and more up to date than the Paradox wiki.
   - The Paradox wiki must still be consulted in parallel. Both sources are required.
@@ -57,13 +57,12 @@ If Chaos Redux already has a pattern for the same thing, follow that over vanill
 
 If vanilla examples are insufficient or unclear, you are allowed to inspect well known large mods for additional reference.
 
-- Kaiserreich (1521695605) is approved as a reference mod for structure, patterns, and edge case handling.
+- Kaiserreich (1521695605) is approved as a reference mod for structure, patterns, and edge case handling. Its Windows workshop path is `C:/Program Files (x86)/Steam/steamapps/workshop/content/394360/1521695605`.
 - You may read Kaiserreich files to understand how similar systems are implemented when vanilla does not provide a clear or complete example.
-- You may read other mod files as well (for example Kaiserredux 2076426030), if you don't find what you are looking for inside Kaiserreich.
 
 ### Repo Skills
 
-Use repo skills as required implementation guidance, not as optional notes.
+Use repo skills as required implementation guidance.
 
 - Use `chaos-redux-events` for Chaos Redux event implementation, event logs, evolutions, event details, documentation, and spreadsheet alignment.
 - Use `chaos-redux-event-assets` when an event needs visual assets, icons, flags, portraits, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes.
@@ -114,15 +113,15 @@ Clausewitz script is picky. Follow these rules strictly.
 5. Try to use loops when they improve clarity and avoid repetition.
 6. Use flags for true or false state, not numeric variables that only ever take 0 or 1.
 7. Move repeated logic into `scripted_effects` or `scripted_triggers`.
-8. `on_weekly`, `on_daily`, `on_monthly` and similar on actions iterate over all countries by default unless a narrower scope is explicitly required. But these on actions can slow down the game.
+8. `on_weekly`, `on_daily`, `on_monthly` and similar on actions iterate over all countries by default unless a narrower scope is explicitly required. `on_daily_TAG` are allowed.
    - Only use these types of on actions (which iterate through every country by default) when I explicitly ask for it.
    - If you believe a whole world iteration is required, stop and ask for permission. Do not implement it until permission is granted.
 9. Constants `@MY_CONSTANT` cannot cross file boundaries. They are file scoped.
    - Prefer HOI4 `script_constants` for shared tuning values. They are global (available across script files), improve readability, and have no runtime cost (they are injected on load).
    - Script constants are the preferred tuning source, but not every effect field parses `constant:` tokens. For duration fields that reject constants, such as `days =` inside timed flags, assign the constant to a normal or temporary variable first and pass that variable to `days =`.
    - Required vanilla docs:
-     - `~/projects/Hearts of Iron IV/documentation/script_concept_documentation.md` (Script Constants section)
-     - `~/projects/Hearts of Iron IV/common/script_constants/documentation.md` (schema + examples)
+     - `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation/script_concept_documentation.md` (Script Constants section)
+     - `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/common/script_constants/documentation.md` (schema + examples)
    - Where to put them:
      - `common/script_constants/` only.
      - Create multiple files by subsystem (chemical warfare, events, settings, etc).
@@ -134,8 +133,8 @@ Clausewitz script is picky. Follow these rules strictly.
 10. Use event targets (`event_target:`) to persist a scope pointer across blocks/events when variables/scopes alone are insufficient.
     - Required references:
     - `paradox_wiki/Data structures - Hearts of Iron 4 Wiki.md` (Event targets section)
-    - `~/projects/Hearts of Iron IV/documentation/effects_documentation.md` (`save_event_target_as`, `save_global_event_target_as`, `clear_global_event_target`, `clear_global_event_targets`)
-    - `~/projects/Hearts of Iron IV/documentation/triggers_documentation.md` (`has_event_target`)
+    - `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation/effects_documentation.md` (`save_event_target_as`, `save_global_event_target_as`, `clear_global_event_target`, `clear_global_event_targets`)
+    - `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation/triggers_documentation.md` (`has_event_target`)
     - Prefer regular event targets (`save_event_target_as`) for short-lived chains, they automatically clear when the originating effect chain ends (but do carry into events fired from that chain).
     - Use global event targets (`save_global_event_target_as`) only when you need persistence beyond a single chain/system, they do not auto-clear and must be cleaned up (e.g. `clear_global_event_target = my_target`).
     - Use them as scopes/targets with `event_target:my_target`.
@@ -231,11 +230,38 @@ Localisation and UI must always be kept in sync with gameplay changes.
    - Keep key names consistent and readable. No unnecessary prefixes.
 6. Icons and UI assets:
    - Define icons in `interface/...` and keep naming stable.
-   - When something needs icons, define them in a correct `.gfx` file. I will provide the sprites myself, you just have to tell me what folder to put them in and with what name.
-   - Copy placeholder sprites from vanilla files that match the new gfx definition, so later I can replace them with real sprites easily and that the game would run without complaining about missing sprites.
+   - When something needs icons, define them in a correct `.gfx` file.
    - Register new UI assets before requesting art so filenames do not need to change later.
 
-## 3. Naming and Prefix Rules
+## 3. Writing Style
+
+These rules apply to every Chaos Redux prose surface. This includes event text, news text, super-event text, decision text, focus descriptions, tooltips, docs, specs, plans, prompts, spreadsheets, and all player-facing texts.
+
+1. Never use the em dash or semicolons in sentences.
+2. Absolutely avoid dialectical hedging. Do not frame sentences as thesis, antithesis, synthesis.
+   - Dialectical hedging examples:
+     - `This is not just a strike. This is a warning.`
+     - `The cult is not fighting for land, but for meaning.`
+     - `The disaster is both a local tragedy and a global sign.`
+     - `The army did not collapse. It transformed.`
+     - `This is less a rebellion than a confession.`
+     - `The question is not whether order can return, but what kind of order will survive.`
+   - Thesis, antithesis, synthesis examples:
+     - `The army claims the province is secure. Refugees say it is already lost. The truth lies between them.`
+     - `Some call the new state liberation. Others call it occupation. In reality, it is both.`
+     - `The priests call it a miracle. The generals call it a weapon. History will call it both.`
+3. Avoid AI-style explanatory templates. Do not write lines that sound prebuilt or reusable across any event.
+4. Absolutely avoid staccato sentences. Do not split one simple thought into a chain of tiny lines for artificial weight or dramatic effect. Use complete, readable sentences with enough context to be clear.
+   - Staccato examples:
+     - `No orders. No mercy. No dawn.`
+     - `The guns stopped. The screaming did not.`
+     - `First hunger. Then anger. Then flags.`
+     - `The gate opened. The crowd moved. The guards ran.`
+5. Absolutely avoid empty dramatic filler. Do not lean on vague intensity words when concrete detail would do the work.
+6. Do not paste instruction text, task labels, prompt fragments, or process notes into in-game text, specs, docs, localisation, spreadsheet fields, or reports.
+   - For example, when I say: `Do not reveal the hidden mechanics here.`, don't write `This path purposely doesn't reveal the hidden mechanics`
+
+## 4. Naming and Prefix Rules
 
 Use prefixes only where they are needed.
 
@@ -244,12 +270,12 @@ Prefer short, descriptive names that reflect function and scope.
 
 Unnecessary prefixes make code harder to read and maintain. Keep names clean.
 
-## 4. HOI4 Modding Rules Summary
+## 5. HOI4 Modding Rules Summary
 
 When implementing any new mechanic, follow this checklist:
 
 1. First open the required Paradox wiki pages from `paradox_wiki/` (section 0). Keep Data Structures, Triggers, Effects, Modifiers, and Localisation in front of you while you work.
-2. In addition to the Paradox wiki, inspect vanilla files in `~/projects/Hearts of Iron IV/` and read all the necessary documentation, particularly in `~/projects/Hearts of Iron IV/documentation`.
+2. In addition to the Paradox wiki, inspect vanilla files in `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/` and read all the necessary documentation, particularly in `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`.
 3. Create a new markdown file in `docs/` for the mechanic you've added. Describe what it does, how it works step by step and how it interacts with existing systems. Add a section for future plans and your own suggestions on how the mechanic could be extended or made deeper.
 4. In that docs file, list all icons needed for the new features. Write where the sprites should live, which `gfx` file should reference them and what icon names are used in code and localisation, so the wiring rules from this file are also clear inside the docs file.
 5. Plan variables and flags so that values are dynamic and centralised.
@@ -267,11 +293,12 @@ When implementing any new mechanic, follow this checklist:
 17. When the user reports that something is wrong and you can't figure out what exactly, then add temporary debug code (for example: `log = "my debug log"`) that exposes the relevant runtime values needed to understand the issue, and remove every debug line you added once the issue is resolved.
 18. When an error is reported or discovered after your changes, treat it as caused by your current change set. Do not speculate that the project was already broken before your work.
 19. When updating content (for example reworking an event), write as if the feature has always existed. Do not use meta wording like “now it is,” “now it has been reworked,” “newly added,” or similar update-history phrasing.
+20. Respect the writing style.
 
 Follow these rules and your changes will be easier to review, safer to merge and more consistent with the rest of the project.
 If this checklist cannot be satisfied, stop and request more design input instead of guessing.
 
-## 5. Completion Proof and Simplification Reporting
+## 6. Completion Proof and Simplification Reporting
 
 A goal can never be marked complete unless it is actually complete.
 
@@ -316,7 +343,7 @@ Subagent plans, improvement addenda, audit follow-up notes, and implementation h
 
 The plans folder is a working area. The specs folder is the source-of-truth design area. If an accepted plan changes the event design, the main agent should merge it into the relevant spec or report that it remains queued.
 
-## 6. Event Integration
+## 7. Event Integration
 
 For Chaos Redux event implementation, use the repo skill `chaos-redux-events`.
 
@@ -325,13 +352,13 @@ For Chaos Redux event implementation, use the repo skill `chaos-redux-events`.
 3. If the event has evolutions or world-end branches, wire the log entries, super-event integration, and related localisation in the same change.
 4. Keep gameplay files, docs, the event spreadsheet/presentation, and any other details aligned.
 
-## 7. Focus Trees and Large Content
+## 8. Focus Trees and Large Content
 
 For national focus work, use `hoi4-focus-trees` before editing. That skill is the detailed source of truth for focus-tree depth, reward variety, route logic, AI, localisation, icons, ideas, country identity changes, focus-decision integration, route coverage proof, and completion standards.
 
 Before claiming focus-tree completion, use the appropriate audit route from `chaos-redux-subagents`. If a tree works but feels shallow, duplicated, generic, or disconnected from gameplay, use `chaos-redux-improvement-loop` and consider a plan-mode pass from `chaosx_improvement_loop_planner`.
 
-## 8. Agent-generated Visual Assets
+## 9. Agent-generated Visual Assets
 
 For final visual assets, use `chaos-redux-event-assets`. That skill is the detailed source of truth for image generation rules.
 
@@ -339,7 +366,7 @@ For animated visual assets, use `chaos-redux-frame-animation` in addition to `ch
 
 Use `chaos-redux-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation.
 
-## 9. Skill Maintenance
+## 10. Skill Maintenance
 
 Use skills actively. Skills are not only for cleanup at the end of a task. They are the agent's memory for repeated workflows, project-specific patterns, hard-won fixes, and instructions that should not be rediscovered every time.
 
@@ -362,7 +389,7 @@ Rules:
 9. During large multi-event runs, review skill gaps after each completed event or shared system. Update or create skills before starting the next event if something reusable was learned.
 10. Report which skills were used, created, or updated at the end of each task.
 
-## 10. Git
+## 11. Git
 
 After completing each meaningful plan, create a Git commit.
 
@@ -370,4 +397,4 @@ The commit must only include changes related to that plan. Before committing, re
 
 Use a clear commit message that describes what was implemented.
 
-Do not commit broken, unrelated, or half-finished work. If the goal cannot be completed cleanly, report the blocker instead of creating a misleading commit.
+Do not commit broken, unrelated, or half-finished work. If the plan cannot be completed cleanly, report the blocker instead of creating a misleading commit.

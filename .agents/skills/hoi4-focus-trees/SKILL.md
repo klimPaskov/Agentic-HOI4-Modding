@@ -21,7 +21,7 @@ Use this skill together with:
 Before editing focus files:
 
 - Read the offline Paradox wiki National focus modding page.
-- Read relevant vanilla documentation from `~/projects/Hearts of Iron IV/documentation`.
+- Read relevant vanilla documentation from `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`.
 - Inspect vanilla focus files for syntax and layout precedent.
 - Inspect existing Chaos Redux focus trees and event-created focus-tree loading patterns.
 - Read `AGENTS.md`.
@@ -835,5 +835,3 @@ A focus tree task is complete only when:
 If a tree uses a fallback tree where the spec requires a bespoke tree, report it as a simplification.
 
 If no simplifications were made, say so and provide evidence.
-
-

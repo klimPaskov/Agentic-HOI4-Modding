@@ -24,8 +24,8 @@ Before editing decisions or missions, read:
   - Modifiers
   - Scopes
   - Data structures
-- vanilla decision files from `~/projects/Hearts of Iron IV/`
-- vanilla documentation in `~/projects/Hearts of Iron IV/documentation`
+- vanilla decision files from `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/`
+- vanilla documentation in `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`
 - existing Chaos Redux decision categories and scripted effects that do similar work
 
 Do not rely on memory when syntax or UI behavior is documented.
@@ -208,8 +208,6 @@ Bad:
 
 - `required states`
 - `border states`
-- `nearby states`
-- `key states`
 - `some divisions`
 - `sufficient troops`
 - `enough equipment`
@@ -218,10 +216,6 @@ Good:
 
 - `Place 8 supplied divisions in Smolensk, Gomel, and Bryansk.`
 - `Hold Kyiv and Minsk for 120 days.`
-- `Guard the Kyiv Depot Belt.`
-- `Secure the Minsk Switchyards.`
-- `Hold the Western Rail Belt.`
-- `Keep Tashkent and Dushanbe connected to supply.`
 
 If the list is dynamic, scripted localisation must print the current targets or explain the named region.
 
@@ -655,7 +649,7 @@ A formable decision must define:
 - AI willingness, AI blockers, AI timing, and AI target safety
 - cleanup for obsolete formation decisions after the formable is created
 
-State requirements must be readable. Use named state groups and custom trigger tooltips. Do not expose raw state id lists to the player unless the existing UI pattern already does that cleanly. If several alternate maps can qualify, create clear requirement groups such as `Danubian Core`, `Northern Mandate`, or `Old Capital Belt`.
+State requirements must be readable. Use named state groups and custom trigger tooltips. Do not expose raw state id lists to the player unless the existing UI pattern already does that cleanly. If several alternate maps can qualify, create clear requirement groups.
 
 Hidden formables need extra care. A hidden formable can be locked behind an event, secret focus, rare ideology, high chaos, special leader, historical artifact, super-event, achievement route, or scripted GUI investigation. Hidden does not mean undocumented. The implementation handoff must still define all triggers, effects, assets, and cleanup.
 
@@ -868,5 +862,3 @@ A decision or mission task is complete only when:
 If anything was simplified, skipped, approximated, or replaced with a weaker substitute, report it clearly.
 
 If nothing was simplified, say so and provide evidence.
-
-
