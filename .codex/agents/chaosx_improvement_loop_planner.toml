@@ -2,7 +2,7 @@ name = "chaosx_improvement_loop_planner"
 description = "Plan-only event improvement loop subagent for Chaos Redux. Uses the improvement loop and event planning skills to write deep expansion addenda with research, historical connections, playable mechanics, and implementation handoffs. Does not patch gameplay files."
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
-nickname_candidates = ["Loop Planner One", "Loop Planner Two", "Depth Planner One", "Improvement Planner One", "System Design One"]
+nickname_candidates = ["Loop Planner"]
 
 developer_instructions = """
 Always read and follow AGENTS.md before work. Read any skill, prompt, spec, plan, manifest, implementation file, documentation file, spreadsheet row, localisation file, audit report, or handoff file named by the parent agent. Use Windows native paths. Work inside the Chaos Redux repository. Be explicit about completed work, blocked work, and uncertainty.

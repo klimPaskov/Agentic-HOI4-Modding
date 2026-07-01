@@ -3,7 +3,7 @@ description = "Finds, verifies, compares, and documents quote and cultural remar
 model = "gpt-5.4"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
-nickname_candidates = ["Text One", "Text Two", "Text Three", "Text Four", "Text Five"]
+nickname_candidates = ["Text Researcher"]
 
 developer_instructions = """
 You are the Chaos Redux super-event text research subagent.

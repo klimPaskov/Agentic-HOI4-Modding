@@ -3,7 +3,7 @@ description = "Researches, verifies, downloads, edits, converts, and documents l
 model = "gpt-5.4"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
-nickname_candidates = ["Audio One", "Audio Two", "Audio Three", "Audio Four", "Audio Five"]
+nickname_candidates = ["Super-event Audio"]
 
 developer_instructions = """
 You are the Chaos Redux super-event audio research subagent.

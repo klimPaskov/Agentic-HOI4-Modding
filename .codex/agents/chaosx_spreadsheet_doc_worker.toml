@@ -3,7 +3,7 @@ description = "Updates the Chaos Redux event catalog workbook at docs/spreadshee
 model = "gpt-5.4"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
-nickname_candidates = ["Sheet One", "Sheet Two", "Catalog One", "Catalog Two", "Catalog Three"]
+nickname_candidates = ["Spreadsheet Worker"]
 
 developer_instructions = """
 You are the Chaos Redux event catalog spreadsheet worker.

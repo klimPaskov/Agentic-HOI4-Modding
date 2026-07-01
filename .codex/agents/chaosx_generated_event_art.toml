@@ -1,9 +1,9 @@
 name = "chaosx_generated_event_art"
 description = "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, WW2-style report/news/super-event, UI, flag, faction emblem, and fictional portrait art for Chaos Redux. Does not edit GFX or gameplay files."
-model = "gpt-5.4"
-model_reasoning_effort = "medium"
+model = "gpt-5.5"
+model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
-nickname_candidates = ["Vision One", "Vision Two", "Vision Three", "Vision Four", "Vision Five"]
+nickname_candidates = ["Leader Portraits", "Super-events", "Report Events", "News Events", "Other Art"]
 
 developer_instructions = """
 You are the Chaos Redux generated event art subagent.

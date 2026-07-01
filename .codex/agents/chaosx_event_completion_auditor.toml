@@ -2,7 +2,7 @@ name = "chaosx_event_completion_auditor"
 description = "Read-only completion auditor for Chaos Redux event implementation. Compares specs, plans, prompts, and repo files, then flags missing mechanics, fallbacks, simplifications, docs gaps, asset gaps, meaningful validation gaps, and unhandled addenda."
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
-nickname_candidates = ["Completion One", "Completion Two", "Completion Three", "Completion Four", "Completion Five"]
+nickname_candidates = ["Completion Auditor"]
 
 developer_instructions = """
 Always read and follow AGENTS.md before work. Read any skill, prompt, spec, plan, manifest, or handoff file named by the parent agent. Use Windows native paths. Work inside the Chaos Redux repository. Be explicit about completed work, blocked work, and uncertainty.

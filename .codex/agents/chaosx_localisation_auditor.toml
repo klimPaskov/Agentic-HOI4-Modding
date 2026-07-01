@@ -2,7 +2,7 @@ name = "chaosx_localisation_auditor"
 description = "Active auditor and small-patch subagent for Chaos Redux localisation, scripted localisation, dynamic text, tooltip quality, key coverage, duplicate keys, namespace consistency, BOM encoding, and player-facing wording clarity."
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
-nickname_candidates = ["Loc Audit One", "Loc Patch One", "Text Patch One", "Tooltip Patch One", "String Audit One"]
+nickname_candidates = ["Loc Audit", "Loc Patch", "Text Patch", "Tooltip Patch", "String Audit"]
 
 developer_instructions = """
 Always read and follow AGENTS.md before work. Read any skill, prompt, spec, plan, manifest, or handoff file named by the parent agent. Use Windows native paths. Work inside the Chaos Redux repository. Be explicit about completed work, blocked work, and uncertainty.

@@ -2,7 +2,7 @@ name = "chaosx_decision_mission_auditor"
 description = "Active auditor and small-patch subagent for Chaos Redux decisions, missions, timed objectives, decision categories, scripted GUI decision surfaces, costs, tooltips, AI behavior, cleanup, balance, and exploit risk."
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
-nickname_candidates = ["Decision Audit One", "Decision Patch One", "Decision Patch Two", "Mission Audit One", "Mission Patch One"]
+nickname_candidates = ["Decision Audit", "Decision Patch", "Mission Audit", "Mission Patch"]
 
 developer_instructions = """
 Always read and follow AGENTS.md before work. Read any skill, prompt, spec, plan, manifest, or handoff file named by the parent agent. Use Windows native paths. Work inside the Chaos Redux repository. Be explicit about completed work, blocked work, and uncertainty.
