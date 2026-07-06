@@ -9,7 +9,7 @@ Use this skill when a task touches decisions, missions, timed objectives, decisi
 
 This skill is for implementation and cleanup. For broader Chaos Redux event wiring, use `chaos-redux-events`. For focus trees, use `hoi4-focus-trees`. For visual assets, use `chaos-redux-event-assets`.
 
-For large or reworked decision systems, spawn `chaosx_decision_mission_auditor` after implementation and before completion. The subagent is patch-capable by default inside the current task scope. It should audit objective quality, costs, tooltips, AI validity, cleanup, duplicate missions, route integration, exploit risk, localisation, and balance evidence. It may directly patch small decision, mission, tooltip, dynamic localisation, AI, cleanup, cooldown, visibility, and existing formable requirement issues when the fix is local and clearly safer.
+For large or reworked decision systems, spawn `chaosx_decision_mission_auditor` after implementation and before completion. The subagent is patch-capable by default inside the current task scope. It should audit objective quality, costs, tooltips, AI validity, cleanup, duplicate missions, route integration, fairy-dust rewards, exploit risk, localisation, and balance evidence. It may directly patch small decision, mission, tooltip, dynamic localisation, AI, cleanup, cooldown, visibility, and existing formable requirement issues when the fix is local and clearly safer.
 
 ## 1. Required reading
 
@@ -30,28 +30,11 @@ Before editing decisions or missions, read:
 
 Do not rely on memory when syntax or UI behavior is documented.
 
-## 1.1 Chaos Redux file organization
-
-Event-owned decision files should be grouped by event:
-
-```text
-common/decisions/<event_id>_<event_slug>_decisions.txt
-common/decisions/categories/<event_id>_<event_slug>_categories.txt
-```
-
-If one event owns several decision categories, keep them together in the same event decision file and the same event category file unless a verified engine limitation requires separate or root-only placement.
-
-Shared or cross-event systems should use a clear subsystem filename instead of a fake event id, for example `common/decisions/chemical_warfare_decisions.txt` and `common/decisions/categories/chemical_warfare_categories.txt`. Avoid unnecessary `chaosx_` prefixes for new or reorganized subsystem files.
-
-`common/decisions/chaosx_decisions.txt` and `common/decisions/categories/chaosx_decisions_categories.txt` are reserved for shared or legacy root-only hooks. Do not put ordinary event-owned decisions or categories there.
-
-When reorganizing files, keep decision ids, category ids, scripted GUI ids, localisation keys, and sprite names stable unless the user explicitly asks for an identifier rename. Update docs and any path references, but do not rename working in-game ids just to match filenames.
-
 ## 2. Core design rule
 
 A decision or mission should represent something the country is actually doing. Decisions should also connect to focus routes and wider mechanics instead of sitting as isolated buttons.
 
-Avoid turning decisions into a store where the player spends political power for small modifiers. A good decision or mission usually asks the player to commit resources, move units, hold a location, secure supply, manage foreign access, spend equipment, accept risk, meet a deadline, or change a living pressure system.
+Avoid turning decisions into a store where the player spends political power for small modifiers. Do not make a decision category feel like a tray of tiny stat dust. A good decision or mission usually asks the player to commit resources, move units, hold a location, secure supply, manage foreign access, spend equipment, accept risk, meet a deadline, or change a living pressure system.
 
 A mission should feel like an order or objective. A decision should feel like a meaningful choice.
 
@@ -125,6 +108,28 @@ Useful factors:
 
 Do not copy the same cost or duration across every country unless the story and balance justify it.
 
+## 4.1 Effect strength and no fairy-dust rewards
+
+Do not fill decision systems, missions, scripted GUI buttons, or formable routes with tiny bonuses that feel meaningless. Small values such as plus 1 percent, plus 2 percent, minus 3 percent, tiny political power, tiny stability, tiny war support, small generic stockpiles, or slight production nudges do not count as meaningful design by themselves.
+
+A decision or mission reward should usually do at least one meaningful thing:
+
+- change what the player chooses next
+- open or upgrade a decision family, mission family, formable step, advisor path, unit path, special mechanic, or route action
+- move a visible value by enough that the player cares, such as legitimacy, authority, cohesion, readiness, corruption, recognition, panic, threat, local support, or sponsor pressure
+- change the map, production, logistics, diplomacy, army behavior, intelligence behavior, or internal politics in a visible way
+- create a real tradeoff, risk, deadline, escalation, partial success, or failure state
+- transform an existing idea, national spirit, or mechanic stage into a stronger or weaker form
+- connect to later events, focus routes, super-events, or country identity changes
+
+Tiny modifiers are allowed only when they belong to a visible stacking system, frequent tick, temporary crisis push, dynamic scaling formula, or larger effect package. They should never be the whole reward for an important decision, mission, GUI button, formable step, route unlock, or crisis response.
+
+If a decision family has many small rewards, combine them into fewer stronger actions, convert them into staged idea upgrades, make them change a visible mechanic value. Do not scatter small bonuses across a category to create the appearance of progress.
+
+Starting penalties and negative mission outcomes must also matter. A failed objective, broken authority value, bad crisis decision, or starting debuff should create pressure the player must answer. Harmless negative modifiers that can be ignored are not valid crisis design.
+
+Scripted GUI presentation cannot compensate for weak gameplay. Do not use glowing buttons, animated seals, long tooltips, or dramatic localisation to make a tiny effect look important. If the action is important enough to receive custom presentation, its gameplay effect must be important too.
+
 ## 5. Cost and sacrifice design
 
 Political power and command power are allowed, but they should not be the default answer.
@@ -145,7 +150,7 @@ Use varied costs that fit the action:
 - aircraft
 - ships
 - tanks
-- fuel
+- fuel (don't use conservative values)
 - manpower
 - stability
 - war support
@@ -590,7 +595,9 @@ Avoid one-time reward dumps as the main decision or mission design. A decision o
 
 A large decision system should not become a sequence of buttons that only give free rewards.
 
-Balance review must include exploit checks.
+A large decision system should also not become a sequence of tiny fairy-dusted rewards. Repeated minor modifiers, token stockpiles, small stability changes, and tiny production nudges are not better than reward dumps when they do not change play. Treat low-impact reward dust as a design failure unless it is part of a visible cumulative system with clear thresholds and consequences.
+
+Balance review must include exploit checks and impact checks. The question is not only whether the decision can be abused. The question is also whether a reasonable player would notice the reward, care about the failure, and plan around the system.
 
 Check for:
 
@@ -861,7 +868,9 @@ A decision or mission task is complete only when:
 - shared decision systems are adapted per country where needed
 - important tuning values are centralized in script constants or documented tuning files
 - one-time reward dumps are not the main decision pattern
-- balance review checks for exploits, farming loops, spam, and abuse cases
+- fairy-dust bonuses, tiny modifiers, and harmless penalties are not the main reward or failure pattern
+- every important decision, mission, GUI button, formable step, and crisis response changes play enough for the player to notice and plan around
+- balance review checks for exploits, farming loops, spam, abuse cases, and low-impact reward dust
 - decision categories use phases, caps, priorities, regional pools, route locks, or crisis filters to avoid clutter
 - missions behave correctly
 - costs are dynamic where needed
@@ -876,6 +885,6 @@ A decision or mission task is complete only when:
 - meaningful validation is documented
 - simplifications and blockers are reported
 
-If anything was simplified, skipped, approximated, or replaced with a weaker substitute, report it clearly.
+If anything was simplified, skipped, approximated, replaced with a weaker substitute, or reduced to tiny low-impact modifiers, report it clearly.
 
 If nothing was simplified, say so and provide evidence.

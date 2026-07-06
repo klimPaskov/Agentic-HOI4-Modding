@@ -483,7 +483,7 @@ If the event shows or drives a super event, wire the whole package:
 
 - choose the slot intentionally
 - set `super_event_visible`
-- set `global.current_super_event_audio_id`. Every super event has a unique audio. Copy an existing audio and use it as placeholder, so that I can replace it with the real track later.
+- set `global.current_super_event_audio_id`. Every super event has a unique audio.
 - use the settings-aware playback helper rather than bypassing it
 - update scripted localisation in `common/scripted_localisation/chaosx_scripted_localisation_super_events.txt`
 - update image wiring in `interface/chaosx_super_events.gfx`

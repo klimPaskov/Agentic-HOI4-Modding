@@ -178,6 +178,16 @@ A branch made of one or two generic focuses is not a branch. It is a support nod
 
 Large-country branches should not be shallow labels. If a tree says it has a political branch, industry branch, expansion branch, military branch, or diplomacy branch, each of those branches must have enough content to be felt in play.
 
+### Branch closure and dead-end standard
+
+Do not leave large focus trees full of dead ends. A terminal focus is acceptable only when it is a real capstone, convergence point, failure state, route lock, formable completion, settlement outcome, late-game ambition, or deliberately optional side payoff.
+
+A focus line has failed if it stops after a small modifier, an isolated national spirit, a token equipment grant, a generic stability reward, or a decorative political power payout. Side branches can end, but their final focus must feed back into the country identity, a decision family, a mechanic value, a new unit path, a map change, an advisor set, an expansion route, or another visible route payoff.
+
+Do not create one-focus or two-focus spurs just to fill space. Merge them into a nearby branch, turn them into decisions, make them part of an idea lifecycle, or build them into a real side path with a clear purpose.
+
+Every major branch should answer what the player does after finishing it. Good answers include a stronger decision category, a new diplomatic stance, a changed army system, postwar integration work, a formable route, a crisis response loop, a new expansion policy, or a late-game convergence path. A finished branch that only leaves the player with passive numbers is not enough.
+
 ## 5.5 Route-specific AI and localisation tone
 
 Every major route needs route-specific AI strategy. AI should not only have generic focus weights.
@@ -490,10 +500,28 @@ Good rewards include:
 - local leagues
 - foreign aid mechanics
 - crisis value effects
-- achievement tracking
 - event chains
 
 Small numeric modifiers can support a focus, but they should not be the main point of most focuses.
+
+### No fairy-dust reward standard
+
+Do not fairy dust a focus tree with many tiny bonuses and call it depth. A branch made from small pieces such as `+2%`, `+3%`, minor political power, tiny stability, tiny war support, small generic equipment, or slight production bonuses will feel meaningless.
+
+A focus reward should usually do at least one of these things:
+
+- unlock or upgrade a decision family, mission family, mechanic, route, advisor, unit type, template, law, formable, or diplomatic action
+- change the map through factories, infrastructure, railways, supply hubs, ports, airbases, forts, resources, claims, cores, or border settlement work
+- move an important visible value by enough that the player cares, such as legitimacy, authority, cohesion, readiness, corruption, recognition, panic, threat, or local support
+- create a real tradeoff, cost reduction, risk, deadline, failure state, or new action loop
+- alter army, industry, diplomacy, intelligence, logistics, state control, or internal politics for a meaningful period
+- transform an existing idea or national spirit into a new stage with visible play consequences
+
+If a focus mainly gives a small flat modifier, the implementation must justify why that modifier matters. It can be acceptable as one part of a larger reward package, a frequent stack, a temporary crisis push, or a final adjustment to an existing mechanic. It is not acceptable as the whole reward for an important focus.
+
+Do not scatter many tiny modifiers across a tree to create the appearance of progression. Combine weak rewards into fewer stronger focuses, convert them into staged idea upgrades, or replace them with decisions, missions, map changes, unit paths, advisors, mechanic thresholds, or route access.
+
+Completion reports and focus audits must flag fairy-dust rewards. A route with many tiny standalone rewards should be treated as incomplete until the rewards are merged, strengthened, connected to a mechanic, or replaced with visible gameplay.
 
 ## 9. Idea lifecycle
 
@@ -533,6 +561,26 @@ Every important starting idea should have a lifecycle:
 - route-specific upgrade
 - failure or corruption form
 - final form or removal path
+
+### National spirit reward complexity standard
+
+Do not use national spirits as easy badges for completing shallow focus lines. A national spirit should represent an institution, doctrine, crisis condition, political identity, economic system, military structure, foreign relationship, or special mechanic that changes how the country plays.
+
+A major national spirit should not be earned by one easy focus with no cost, risk, prerequisite, route commitment, decision follow-up, or mechanic interaction. If the spirit is powerful, it should usually require a real path commitment, a branch milestone, a mission success, a crisis choice, a reform chain, a formable step, or a meaningful sacrifice. If the spirit is easy to obtain, it should be modest, temporary, narrow, or part of a larger staged system.
+
+A national spirit is unrewarding when it has only a flat modifier and no lifecycle. Before adding a new spirit, decide whether the existing idea can be upgraded, modified, replaced, worsened, temporarily strengthened, or tied to decisions. Prefer a smaller number of deep spirits over a long list of shallow spirits.
+
+Important national spirits should usually have at least two of these:
+
+- a visible starting problem, benefit, tradeoff, or route identity
+- staged upgrades or mitigations through later focuses, decisions, missions, events, or reforms
+- a failure, corruption, radicalisation, dependency, or high-chaos form when the route goes badly
+- decision or mission hooks that make the spirit more than passive stats
+- mechanic value hooks, such as legitimacy, cohesion, authority, readiness, recognition, corruption, panic, or local support
+- route-specific localisation and icon direction
+- clear AI priority for solving, exploiting, upgrading, or avoiding it
+
+Reject a tree if it has many easy-to-achieve national spirits that feel unrelated, passive, or unrewarding. Merge them into one staged institution, convert some into timed modifiers, move some effects into decisions or missions, or require a stronger route commitment before granting them.
 
 ## 10. Focuses and decisions must interconnect
 
@@ -668,6 +716,9 @@ Required layout checks:
 - hidden branches do not clutter ordinary routes
 - large branches are not stacked in one vertical column
 - the tree does not look like one long checklist
+- branch endings are visually and mechanically clear
+- side branches feed back into the main route, a mechanic, a decision family, or a real capstone
+- the layout does not create random dangling focus chains with weak terminal rewards
 
 If an `available = { has_completed_focus = ... }` condition gates a focus, decide whether it should also be a visible prerequisite. Do not add a visible prerequisite if it creates crossing lines. Move the branch or redesign the gate.
 
@@ -785,6 +836,10 @@ Before completion, audit:
 - expansion branch without claims, cores, war goals, diplomacy, leagues, or settlements
 - industry branch without map, construction, logistics, production, or resource effects
 - generic flat rewards
+- fairy-dust reward patterns made from many tiny bonuses
+- dead-end branches with no capstone, convergence, or follow-up gameplay
+- national spirits that are too easy to earn for their importance
+- national spirits that have no lifecycle, route commitment, mechanic hook, or decision hook
 - layout readability
 
 ## 17. Completion rules
@@ -798,12 +853,17 @@ A focus tree task is complete only when:
 - political routes change visible country identity where relevant
 - industry routes affect the map, production, logistics, or construction
 - expansion routes create claims, cores, war goals, leagues, protectorates, settlements, declarations, guarantees, or external diplomacy
-
 - route architecture is implemented
 - expansion branch exists for large trees
 - political routes actually change politics
 - rewards are varied and concrete
+- fairy-dust reward patterns have been removed, merged, strengthened, or connected to visible mechanics
+- focus terminal nodes are real capstones, convergence points, route locks, failure states, formable steps, or meaningful optional side payoffs
+- dead-end branches with weak final rewards have been redesigned
 - ideas are not spammed
+- national spirits are earned through meaningful route commitment, cost, risk, milestone progress, or mechanic interaction when their effects are important
+- important national spirits have lifecycle stages, decision or mission hooks, mechanic hooks, or clear route identity
+- easy national spirits are narrow, temporary, modest, or part of a staged system
 - focus-decision integration exists
 - AI behavior is implemented
 - localisation and icons exist
@@ -820,6 +880,7 @@ A focus tree task is complete only when:
 - shared trees are adapted per country and do not read or play identically
 - important tuning values are centralized in script constants or documented tuning files
 - one-time reward dumps are not the main branch pattern
+- small modifiers are never the main reward pattern for important branches
 - exploit checks cover unit loops, factory loops, equipment dumps, cores, claims, war goals, advisor stacking, influence farming, bypass abuse, and puppet abuse
 - decision categories avoid showing every possible action at once
 - large trees have early, middle, and late pacing
