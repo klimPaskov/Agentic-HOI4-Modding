@@ -18,6 +18,8 @@ Before writing the event specification, use the following as the design baseline
 - `chaos-redux-event-assets` when the event needs visual assets
 - `chaos-redux-frame-animation` when the event has animated sprites, animated UI, animated route emblems, animated portraits, warning pulses, hover loops, glow loops, float loops, particle loops, or frame-by-frame presentation needs
 - `chaos-redux-super-events` when the event needs a super-event
+- `chaos-redux-improvement-loop` before a near-completion review, and whenever the design may still be shallow, disconnected, bloated, or missing deeper playable consequences
+- `chaos-redux-subagents` before spawning `chaosx_improvement_loop_planner` or any other project subagent
 - `hoi4-focus-trees` or the current focus-tree skill when the event needs focus trees
 - `hoi4-decisions-missions` when the event needs decisions, missions, timed objectives, influence actions, or decision-driven mechanics
 - provided event spreadsheet rows (don't use Python to read the spreadsheet, read the .csv files directly)
@@ -66,7 +68,7 @@ Do not put sections such as:
 - `Existing implementation audit`
 - `Generic trigger safeguards`
 
-The final response may mention that the repo and spreadsheet were inspected. The spec should be player-facing design and implementation-relevant event design.
+The spec should be player-facing design and implementation-relevant event design.
 
 Avoid obvious lines such as:
 
@@ -101,7 +103,7 @@ Text direction should avoid bland map-summary framing and generic communications
 
 When planning player-facing warning, threat, suspicious-report, and escalation text, do not instruct the coding agent to say that something is a warning, that something is not a warning, that a threat is coming, or that a danger signal has appeared. The text should show the pattern through partial information: fearful witnesses, rumours, anomalies, mysterious powers seen, etc
 
-A report can make the player uneasy without naming the unease. Use mystery, information gaps, fear, institutional caution, rumours, and uncertain public interpretation. The player should infer that something may be wrong from the content and consequences, not from a label.
+A report can make the player uneasy without naming the unease. Use mystery, information gaps, fear, rumours, etc. The player should infer that something may be wrong from the content and consequences, not from a label.
 
 When a concept benefits from mystery, fantasy, surrealism, myth, occult signs, prophecy, impossible resolve, strange energy, or unclear public rumours, state that direction clearly without drafting the final prose.
 
@@ -1427,6 +1429,20 @@ When `chaos-redux-improvement-loop` produces an expansion addendum, treat it as 
 
 An improvement-derived spec can be shaped freely. It does not need to copy the section order of this skill. It should still make the design concrete. A useful addendum explains the playable promise, the route or mechanic that feels shallow, the deeper player loop, the choices that change outcomes, the AI behavior, the visual and localisation needs, and the surfaces that must align.
 
+### Mandatory near-completion improvement loop pass
+
+Before any event-planning goal is treated as near complete, the coding agent must spawn `chaosx_improvement_loop_planner` for a final depth and anti-bloat pass. This is mandatory for event specs, large addenda, country packages, focus-tree plans, decision systems, super-event planning, asset-heavy plans, formable plans, custom UI plans, and any goal that creates or changes meaningful Chaos Redux design.
+
+Run this pass after the main design is mostly assembled and before the final completion report. The loop planner should inspect the current spec, accepted plans, unresolved handoffs, asset needs, AI plans, mechanic surfaces, and implementation handoff needs. Its job is to find remaining shallow systems, disconnected mechanics, missing route depth, missing AI behavior, missing asset states, missing aftermath, or scope bloat.
+
+Spawn the loop planner with `fork_context=false`. The parent prompt must explicitly pass the event id, event slug, current goal, user constraints, current spec paths, relevant plan paths, known unresolved decisions, and the exact question to answer. Do not rely on inherited conversation context.
+
+The loop planner may return either an expansion addendum or a closure handoff. If it returns an expansion addendum, the parent must resolve it before completion by folding accepted content into `docs/specs/<event_id>_<event_slug>_specs/`, implementing or queuing it with a clear reason, or rejecting it with a clear reason. If it returns a closure handoff, record that closure and proceed with final checks.
+
+A goal is not complete while an accepted loop addendum is unresolved, while a loop-recommended closure handoff has not been recorded, or while the mandatory loop pass was skipped without a tooling blocker. If the loop agent cannot be spawned because the tool is unavailable, the completion report must state that as a blocker and must not hide it as finished work.
+
+Tiny known-file text edits, narrow typo fixes, and direct one-line skill updates can skip the loop pass only when they do not create or change event design, mechanics, focus trees, decisions, country packages, assets, super-events, or implementation handoff rules.
+
 ## General localisation handoff
 
 When a spec includes text-bearing content, give a localisation handoff, not final copy.
@@ -1593,6 +1609,7 @@ The prompt must tell the coding agent to:
 - keep all Chaos Redux systems aligned
 - report anything that cannot be implemented cleanly
 - keep iterating until the full spec is implemented to its fullest extent
+- spawn `chaosx_improvement_loop_planner` with `fork_context=false` before claiming the goal is near complete, then resolve its addendum or closure handoff before final completion
 - avoid fallbacks, simplifications, temporary versions, and good-enough approximations
 - not claim completion until the implemented files satisfy the spec
 
@@ -1617,6 +1634,7 @@ A good goal prompt should include:
 - the top design non-negotiables
 - the requirement to create all required static and animated assets, static fallbacks, tags, starting divisions, reinforcement pathways, non-linear focus trees based on the mapped paths, focus filter tags, decisions, evolutions, achievements, and docs
 - the requirement to research and source final super-event titles, button text, quotes, cultural remarks, and audio through the proper super-event workflow when super-events exist
+- the requirement to spawn `chaosx_improvement_loop_planner` near completion and resolve its addendum or closure handoff before claiming completion
 - the requirement to provide a concrete completion report
 
 If the goal prompt is near 4000 characters, shorten it by pointing to files instead of repeating details.
@@ -1671,6 +1689,7 @@ The final response should include:
 - unit-creating focuses and decisions mapped with requirements, template families, pressure effects, AI behavior, and blocked localisation notes when relevant
 - uncertainties or blockers
 - idea, spirit, decision, mission, and focus effects are strong enough to matter and not only conservative small modifiers
+- `chaosx_improvement_loop_planner` spawned near completion, with its expansion addendum folded in, queued with reason, rejected with reason, or closure handoff recorded
 - downloadable link to the final zip package
 
 ## 21. Cleanup and quality gate
@@ -1739,6 +1758,8 @@ Reject the draft if it has any of these problems:
 - route-unlocked advisors that do not match route identity
 - major focus trees without achievement hooks
 - completion prompts missing a route coverage table requirement
+- near-completion work that skipped the mandatory `chaosx_improvement_loop_planner` pass without a tooling blocker
+- unresolved loop-agent expansion addendum, missing addendum disposition, or missing closure handoff before completion
 - focus trees where unit rewards are repeated generic division spawns instead of route-specific military institutions, decisions, templates, or mobilization systems
 - unit-granting focuses that exist only as filler or repeated free divisions with no story, route logic, or constraints
 - major focus trees that read like one vertical checklist instead of a branching system
