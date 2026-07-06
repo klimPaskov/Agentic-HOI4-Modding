@@ -1,6 +1,5 @@
 name = "chaosx_asset_source_researcher"
 description = "Finds, verifies, downloads, processes, converts, and documents real or archival visual source assets for Chaos Redux. Use for report event images, news event images, archival super-event images, real leader portraits, historical flags, and historically attested symbols. Does not edit GFX or gameplay files."
-model = "gpt-5.5"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Asset Researcher"]

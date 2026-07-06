@@ -1,6 +1,5 @@
 name = "chaosx_super_event_audio_researcher"
 description = "Researches, verifies, downloads, edits, converts, and documents licensed or public domain audio for Chaos Redux super-events. Does not wire audio into scripts or sound definitions."
-model = "gpt-5.4"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Super-event Audio"]

@@ -89,6 +89,31 @@ The main agent owns final `.gfx` sprite definitions, gameplay references, docs a
 A good parent prompt to an asset subagent includes the event id, asset list, asset type, target size, source mode, final DDS folder, sprite name if already registered, reference folder, visual direction, source constraints, and anything the subagent must mark blocked instead of substituting.
 
 
+## 2.2 Final asset placement and naming
+
+Event-owned final assets should be grouped under an event-scoped folder whenever the engine surface uses explicit sprite or texture paths.
+
+Use this folder form:
+
+```text
+<event_id>_<event_slug>
+```
+
+Place the event folder directly under the asset category folder, for example `gfx/event_pictures/014_cannibalism/` or `gfx/interface/ideas/014_cannibalism/`. Do not insert a project namespace layer such as `gfx/event_pictures/chaos_redux/014_cannibalism/`; the mod root already provides the project namespace.
+
+Do not leave new event assets loose in category roots such as `gfx/event_pictures/`, `gfx/super_events/`, `gfx/interface/ideas/`, `gfx/interface/goals/`, `gfx/interface/decisions/`, or `gfx/leaders/` unless that root placement is an engine-facing lookup requirement.
+
+Root-only and engine-convention exceptions:
+
+- `gfx/achievements/` must keep achievement DDS files directly in the root. Do not create `gfx/achievements/<event_id>_<event_slug>/` subfolders unless a new engine behavior has been verified locally. Achievement filenames must match the full achievement ids from `common/achievements/`, so event-owned achievement ids and triplet filenames should use `<event_id>_<event_slug>_<achievement_name>{,_grey,_not_eligible}.dds` or the exact established id if it includes an ordinal.
+- `gfx/flags/`, `gfx/flags/medium/`, and `gfx/flags/small/` must keep HOI4 tag/ideology filenames. Do not put flags into event folders; use cosmetic tags or route-specific tag filenames when an event needs transformed flags.
+
+Shared or non-event systems may use a clear shared/system folder. Do not force shared assets into an event folder just to avoid a root directory.
+
+When moving or adding an asset, update every `.gfx`, `.gui`, event, idea, decision, focus, localisation, and documentation reference that names the old path or sprite. Keep sprite names stable unless the engine-facing identifier itself has to change, as with achievement ids.
+
+Super-event audio follows the `chaos-redux-super-events` convention. Final music belongs under `music/<event_id>_<event_slug>/super_event_<super_event_id>_<super_event_name>.ogg`, and matching sound-channel files belong under `sound/<event_id>_<event_slug>/super_event_<super_event_id>_<super_event_name>.wav`. Do not create persistent `music/source/` or `music/super_events/` folders; preserve source downloads under docs/assets source-audio paths instead.
+
 ## 3. Asset source rules
 
 Choose the source mode based on asset type.
@@ -255,6 +280,8 @@ Small gameplay icons must be readable at their final in-game size.
 For every generated icon, follow the `$imagegen` skill's transparent image workflow. Preserve the original generated image, create a processed PNG preview, convert to DDS, and validate the final appearance over a checker background before treating the icon as complete.
 
 The final icon should have transparent unused canvas, no fake checker or matte pixels, no transparent holes inside the painted subject, a slight black outline, a subtle drop shadow, and a centered subject that remains readable at final size.
+
+Generated icon packages must keep visible `$imagegen` source evidence: save the source atlas or source PNGs, record the prompt and source mode in the manifest, process to real transparent backgrounds, and include a contact sheet that shows final alignment, dimensions, transparency, and absence of white matte or opaque square backgrounds. Do not mark a generated icon complete if the final art is a primitive local drawing, a resized unrelated icon, or a locally assembled shape substitute instead of imagegen or sourced artwork.
 
 ## 5.2 Icon type separation rules
 
@@ -563,7 +590,7 @@ Target size:
 457x328
 ```
 
-If a super-event needs music, use `chaos-redux-super-events` and research suitable public domain or clearly licensed music. Never create event or super-event audio from generated test tones, primitive waveforms, beeps, noise beds, or local oscillator output; that includes sine, square, triangle, and sawtooth waveforms.
+If a super-event needs music, use `chaos-redux-super-events` and research suitable public domain or clearly licensed music. Final audio should use the event-scoped `music/<event_id>_<event_slug>/` and `sound/<event_id>_<event_slug>/` layout from that skill. Never create event or super-event audio from generated test tones, primitive waveforms, beeps, noise beds, or local oscillator output; that includes sine, square, triangle, and sawtooth waveforms.
 
 For each track, document:
 
@@ -688,9 +715,11 @@ Generate the completed achievement icon first with `$imagegen`.
 Then create:
 
 - grey variant (simply black and white)
-- not-eligible variant (the same as the grey variant, but with the red cross in the center)
+- not-eligible variant by copying the grey variant and compositing `C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/achievements/overlay.png` on top
 
 The variants may be created after the completed icon exists.
+
+Do not create not-eligible achievement icons by red-tinting, filtering, darkening, recoloring, or manually redrawing the grey icon. If the overlay file is missing or cannot be applied cleanly, stop and report the asset as blocked instead of substituting another treatment.
 
 Target size:
 
@@ -698,7 +727,17 @@ Target size:
 64x64
 ```
 
-Use `achievement_` filename prefix.
+Use an `achievement_` prefix for source or intermediate art when it helps distinguish the asset type.
+
+For Chaos Redux final files, achievements are a root-only exception. Put completed, grey, and not-eligible DDS files directly under `gfx/achievements/`, and name them after the exact achievement id registered in `common/achievements/`:
+
+```text
+gfx/achievements/<achievement_id>.dds
+gfx/achievements/<achievement_id>_grey.dds
+gfx/achievements/<achievement_id>_not_eligible.dds
+```
+
+When renaming or adding achievement ids, update `common/achievements/`, `localisation/english/chaosx_achievements_l_english.yml`, `interface/chaosx_achievements.gfx`, the three DDS variants in `gfx/achievements/`, and any docs or manifests that list the final DDS paths. If the achievement registry owns a single `unique_id`, keep it as one root-level registry file and group event-owned achievements by event section inside the file instead of splitting it into per-event achievement files.
 
 Inspect `C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/achievements` before generating or processing achievement icons.
 
@@ -896,7 +935,7 @@ After conversion, confirm that:
 - the dimensions are correct
 - the background is transparent for icons
 - the filename is stable
-- the file is in the correct mod folder
+- the file is in the correct mod folder, including the event-scoped folder or documented root-only exception
 - the `.gfx` path points to the DDS
 - the manifest records the final path
 
@@ -935,6 +974,8 @@ The main agent then:
 5. Keeps sprite names stable.
 6. Updates localisation, GUI, event, focus, idea, or decision references that use the sprite.
 7. Updates docs and spreadsheet rows when relevant.
+
+When wiring event-owned sprite-backed art, the texture path should point to the event-scoped folder for that asset category. If an asset must stay root-only, document the engine reason in the handoff or manifest.
 
 Do not create a new `.gfx` file if an existing one is clearly the right place. If a new `.gfx` file is needed, the main agent must name it consistently and document why.
 

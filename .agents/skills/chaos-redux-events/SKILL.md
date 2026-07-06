@@ -10,7 +10,7 @@ Use this skill for any Chaos Redux event work, including:
 - adding or updating `chaosx.nr<ID>.*` event chains
 - wiring event log, event details, evolutions, and world-end branches
 - maintaining `docs/events/` event documentation
-- updating the gameplay-facing event spreadsheet, including the `Manual_Scenarios` table for triggerable scenarios
+- updating the gameplay-facing event spreadsheet
 
 Repository-wide reading and style rules live in `AGENTS.md`. This skill only adds the Chaos Redux event-specific implementation contract.
 
@@ -55,9 +55,9 @@ Subagent plans, expansion addenda, audit follow-up notes, and implementation han
 
 ## Spec fidelity and implementation quality
 
-When implementing from `docs/specs/`, treat mapped content as acceptance criteria. Do not silently replace mapped mechanics, routes, countries, decisions, achievements, assets, or super-events with smaller fallback versions. If something must be merged, renamed, skipped, or simplified, report it in the completion notes with the reason and affected files.
+When implementing from `docs/specs/`, treat mapped content as acceptance criteria. Do not silently replace mapped mechanics, routes, countries, decisions, achievements, assets, or super-events with smaller fallback versions. If something must be merged, skipped, or simplified, report it in the completion notes with the reason and affected files.
 
-Use dynamic factors for pressure, cooldowns, progress, chance, support, duration, costs, AI willingness, spawn strength, aid amounts, stage movement, and recognition when the spec calls for a living system. Flat values are allowed only as constants, caps, floors, or deliberate tuning anchors. Centralize shared values in script constants or documented tuning.
+Use dynamic factors for pressure, cooldowns, progress, chance, support, duration, costs, AI willingness, spawn strength, aid amounts, stage movement, recognition, etc when the spec calls for a living system. Flat values are allowed only as constants, caps, floors, or deliberate tuning anchors. Centralize shared values in script constants or documented tuning.
 
 Do not implement major decisions, missions, focus rewards, GUI buttons, or event responses as political power or command power purchases by default. Use concrete costs and requirements from the spec when relevant: XP, equipment, manpower, fuel, trains, convoys, supply, stability, war support, local support, held states, unit presence, foreign access, intelligence exposure, or time pressure. Tooltips must explain blocked nonstandard requirements.
 
@@ -77,9 +77,9 @@ Do not generate real historical leaders, historical flags, or well-attested real
 
 Any new, released, restored, transformed, or event-managed country that is expected to fight needs starting forces and a reinforcement pathway. Implement dynamic starting units, templates, equipment and manpower assumptions, commander or officer handling when relevant, and later unit growth through decisions, focuses, depots, objectives, volunteers, foreign support, mobilisation, or special mechanics. Do not leave a serious fighting country as an empty tag unless the spec says so and explains why.
 
-Major events and country-creation events need route-specific AI. Implement focus choices, decision choices, unit-raising choices, faction behavior, foreign influence behavior, rare variant handling, high-chaos exceptions, invalid-route blocking, and fallback behavior when preferred content becomes impossible.
+Major events and country-creation events need route-specific AI. Implement focus choices, decision choices, unit-raising choices, faction behavior, foreign influence behavior, rare variant handling, high-chaos exceptions, invalid-route blocking, etc.
 
-Do not reduce major spec effects to tiny decorative modifiers. Important effects must change incentives, unlock content, move visible mechanic values, alter army or economy behavior, create a real tradeoff, or connect to later outcomes. Small modifiers are fine as support, not as the whole payoff.
+Do not reduce major spec effects to tiny decorative modifiers. Important effects must change incentives, unlock content, move visible mechanic values, alter army or economy behavior, create a real tradeoff, or connect to later outcomes.
 
 ## Event writing and player-facing text
 
@@ -113,13 +113,11 @@ These writing style rules apply to every Chaos Redux prose surface, including ev
 
 Write in-world text. Describe what the country, army, population, strange force, disaster, cult, machine, disease, movement, or leader is doing. Do not make the emotional center a changed map, a staff-table scene, administrative paperwork, formal diplomatic phrasing, sealed reports or generic crisis communications. They should not become the default way to create mystery.
 
-Player-facing escalation text must not label itself as a warning, a non-warning, a threat, a danger signal, or a world-ending risk. Let the player infer trouble through fear, missing people, strange behaviour, rumours, unexplained anomalies, local panic, public habits changing, and consequences that repeat over time. Do not build tension with staged contrast formulas. Forbid patterns such as `claim X while officials Y`, `reports say X while authorities Y`, `X before Y`, `people do X before governments Y`, and any similar construction that pairs one observation against a denial, admission, delay, or official reaction. Write the observed fear and uncertainty directly instead of using those contrast frames.
+Player-facing escalation text must not label itself as a warning, a non-warning, a threat, a danger signal, or a world-ending risk. Let the player infer trouble through fear, missing people, strange behaviour, rumours, unexplained anomalies, local panic, and consequences that repeat over time. Do not build tension with staged contrast formulas. Forbid patterns such as `claim X while officials Y`, `reports say X while authorities Y`, `X before Y`, `people do X before governments Y`, and any similar construction that pairs one observation against a denial, admission, delay, or official reaction. Write the observed fear and uncertainty directly instead of using those contrast frames.
 
 Only write sections for event surfaces that actually exist. Omit absent systems entirely. This applies to world-end branches, manual scenarios, super-events, achievement sets, focus trees, country packages, and custom UI.
 
-Do not expose hidden routes, secret variables, future surprises, achievement paths, implementation history, tuning history, or rework history in player-facing text. Event Details and spreadsheet detail fields describe the situation and premise, not the mechanical effects. Options, decisions, focuses, and tooltips must still clearly describe visible consequences and requirements, but they should not read like reward lists.
-
-Use uncertainty carefully. It should come from what people cannot explain, what they fear, what they avoid, and what changes around them. Do not use administrative secrecy or formal evasions as a default substitute for atmosphere.
+Do not expose hidden routes, secret variables, future surprises, achievement paths, implementation history, tuning history, or rework history in player-facing text. Event Details and spreadsheet detail fields describe the situation and premise, not the mechanical effects. Options, decisions, focuses, and tooltips must still clearly describe visible consequences and requirements, but they should not read like reward lists or spoil content.
 
 For super-events, do not invent quotes, cultural remarks, song fragments, title references, or final audio choices. Use `chaos-redux-super-events` and the relevant research subagents when the event needs sourced wording or music.
 
@@ -313,6 +311,11 @@ Core files to check:
 
 - `events/<ID>_my_event.txt`
 - `common/on_actions/chaosx_on_actions_system.txt`
+- `common/on_actions/<event_id>_<event_slug>_on_actions.txt` for event-owned runtime hooks
+- `common/ideas/<event_id>_<event_slug>_ideas.txt` for event-owned national spirits, hidden ideas, and other idea categories
+- `common/scripted_guis/<event_id>_<event_slug>_scripted_guis.txt` for event-owned scripted GUI bindings
+- `common/opinion_modifiers/<event_id>_<event_slug>_opinion_modifiers.txt` for event-owned opinion modifiers
+- `common/dynamic_modifiers/<event_id>_<event_slug>_dynamic_modifiers.txt` for event-owned dynamic modifiers
 - `common/scripted_effects/chaosx_logic_effects.txt`
 - `common/scripted_effects/chaosx_events_log_effects.txt`
 - `localisation/english/chaosx_event_names_l_english.yml`
@@ -322,7 +325,7 @@ Core files to check:
 
 Frequently-needed companion files:
 
-- `common/on_actions/chaosx_on_actions.txt`
+- `common/on_actions/chaosx_on_actions.txt` only for shared hooks that do not belong to one event
 - `common/scripted_effects/chaosx_settings_effects.txt`
 - `common/scripted_guis/chaosx_scripted_gui_events_log.txt`
 - `common/scripted_guis/chaosx_scripted_gui_settings.txt`
@@ -334,9 +337,11 @@ Frequently-needed companion files:
 - `common/script_constants/*.txt`
 - `common/scripted_triggers/*.txt`
 - `common/scripted_effects/*.txt`
-- `common/decisions/*.txt`
-- `common/decisions/categories/*.txt`
-- `common/ideas/*.txt`
+- `common/decisions/<event_id>_<event_slug>_decisions.txt` for event-owned decisions. Keep all decision categories owned by the same event in that event file unless a verified engine constraint requires root-only or separate placement
+- `common/decisions/categories/<event_id>_<event_slug>_categories.txt` for event-owned decision category definitions
+- shared or cross-event decision systems under `common/decisions/` and `common/decisions/categories/` with clear subsystem filenames, without fake event ids or unnecessary `chaosx_` prefixes. `common/decisions/chaosx_decisions.txt` and `common/decisions/categories/chaosx_decisions_categories.txt` are reserved for shared or legacy root-only hooks
+- `common/ideas/*.txt`, with `common/ideas/chaosx_ideas.txt` reserved for shared or legacy root-only ideas that cannot safely belong to one event
+- `common/achievements/chaos_redux_achievements.txt` for the single root-only Chaos Redux achievement registry. Keep event achievements grouped by event section inside this file instead of creating per-event achievement files with new `unique_id`s
 - `common/ai_strategy/*.txt`
 - `common/ai_templates/*.txt`
 - and possibly more. Some events can truly touch all systems.
@@ -366,14 +371,6 @@ Touch the relevant systems in the same change:
 - special-country exclusions if the event touches broad civilian, political, migration, or ideology systems
 - shared country classification when the event creates or manages chaos countries: register every such country in `is_special_chaos_country` in `common/scripted_triggers/chaosx_dynamic_triggers.txt`, document it in `common/scripted_triggers/chaosx_dynamic_triggers.md`, also register/document it in `is_actual_nonhuman_country` when it is actually nonhuman, and avoid adding separate event-local classification triggers for the same concept
 - and much more
-
-When a decision, focus, or event option grants a one-time package through a shared helper effect, make the helper idempotent with a country/global flag and keep availability triggers aligned with that flag. Reused helper effects should be safe to call from later follow-up branches without duplicating manpower, equipment, PP, XP, or pressure adjustments.
-
-When a decision fires a follow-up popup whose options need computed state from the decision, do not put those state variables in the decision's generic cleanup helper. Keep only immediate aid/cost variables in the cleanup helper, preserve the popup option state as scoped country variables, and clear that option state from each event option after it is consumed.
-
-When a contest, rivalry, charter, or settlement event is meant to change later behavior, have each option set a persistent outcome flag and route future decisions/events through a small aftermath helper that reads those flags. Prefer this event-driven persistence over daily/weekly polling, and document which later action consumes the flags.
-
-When custom or special tags can qualify for multiple named systems through broad eligibility triggers, route focus hooks by explicit tag groups before calling the shared helper. Do not let a broad first-match order decide which faction/system the tag joins. encode the intended mapping in the hook and let already-joined members use a maintenance/strengthening effect instead of creating a second membership.
 
 If you add a new reusable dynamic scripted effect (an effect that could be generalized for all events), document it in `common/scripted_effects/chaosx_dynamic_effects.md` in the same change.
 
@@ -693,4 +690,3 @@ Before closing an event task, verify:
 16. Dynamic values, concrete costs, mechanic visibility, decision category filtering, and effect strength are checked where the spec calls for them.
 17. Focus trees preserve route structure, focus filters, varied rewards, idea lifecycles, route-specific AI, and visible branch payoffs where relevant.
 18. New fighting countries have dynamic starting forces, template assumptions, equipment and manpower handling, and reinforcement pathways.
-19. Achievement tracking, historical source mode, full asset coverage, animated fallbacks, and placeholder status are checked where relevant.

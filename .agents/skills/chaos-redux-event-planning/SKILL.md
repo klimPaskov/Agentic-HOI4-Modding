@@ -20,7 +20,7 @@ Before writing the event specification, use the following as the design baseline
 - `chaos-redux-super-events` when the event needs a super-event
 - `hoi4-focus-trees` or the current focus-tree skill when the event needs focus trees
 - `hoi4-decisions-missions` when the event needs decisions, missions, timed objectives, influence actions, or decision-driven mechanics
-- provided event spreadsheet rows
+- provided event spreadsheet rows (don't use Python to read the spreadsheet, read the .csv files directly)
 - provided existing event docs
 - provided Chaos Redux mechanics docs
 
@@ -118,7 +118,6 @@ For each important option or option family, define:
 - whether the tone should be serious, ironic, sarcastic, cruel, frightened, resigned, bureaucratic, or absurd
 - what kinds of cultural references may fit
 - which references need research before wording is written
-- which jokes are forbidden because the subject is too severe
 - how route, ideology, chaos tier, campaign state, or country culture should change the reaction
 
 Humour should fit the stakes. Minor chaotic events can use sharper jokes and visible sarcasm. Major disasters, massacres, atrocities, mass death, and real-world suffering should use severity, official euphemism, cynical propaganda, hypocrisy, or self-damning grim irony. Cheap comedy is forbidden there.
@@ -127,7 +126,7 @@ Cultural remarks should be treated as research directions unless already sourced
 
 Do not list example option lines. Do not write sample buttons. Do not write placeholder localisation for options. Coding agents may paste those into the game.
 
-Some events need one cutting reaction direction and one plain practical reaction direction. Some need several route-specific reaction directions. Some need no joke because a quiet response fits better. The spec should state the intended option tone and purpose, then leave the final wording to the coding agent.
+Some events need one cutting reaction direction and one plain practical reaction direction. Some need several route-specific reaction directions. The spec should state the intended option tone and purpose, then leave the final wording to the coding agent.
 
 ## 3.2 Depth standard
 
@@ -914,9 +913,11 @@ When an asset source is historically sensitive, disputed, or politically loaded,
 
 ## 3.15 Effect strength and impact standard
 
-Do not design important event effects with timid or decorative values. If an idea, decision, focus, mission, national spirit, or crisis response is supposed to matter, its effects should be strong enough for the player to feel and plan around.
+Do not design important event effects with timid, decorative, or micro values. If an idea, decision, focus, mission, national spirit, crisis response, starting debuff, or route payoff is supposed to matter, its effects must be strong enough for the player to feel and plan around.
 
-Avoid conservative values such as plus 2 percent or minus 3 percent as the main reward or penalty unless the spec explains that they are part of a wider stacking system. A small modifier can support a larger effect package, but it should not be the whole design.
+Micro modifiers do not count as meaningful design. Avoid values such as plus 2 percent, minus 3 percent, or tiny flat changes as the main reward, penalty, starting debuff, crisis modifier, or route payoff. A small modifier can support a larger effect package only when it belongs to a visible stacking system, a frequent tick, or a clearly explained cumulative mechanic. It cannot be the whole design.
+
+Starting negative debuffs must matter. They should create real pressure on survival, production, mobilisation, logistics, legitimacy, command, diplomacy, state control, AI behavior, or player priorities. A starting problem that the player can ignore has failed. The spec should map how the player feels the debuff, why it exists, which choices mitigate it, and what happens if it is left unresolved.
 
 A good effect package should do at least one meaningful thing:
 
@@ -924,14 +925,20 @@ A good effect package should do at least one meaningful thing:
 - unlock a new decision, mission, focus branch, unit type, mechanic, or route
 - move a crisis, loyalty, legitimacy, recognition, stability, or threat value in a visible way
 - create a real cost, risk, or tradeoff
-- alter army, economy, diplomacy, internal politics, logistics, production, or intelligence behavior
+- apply a strong positive or negative modifier that changes army, economy, diplomacy, internal politics, logistics, production, intelligence, state control, or AI behavior in a visible way
+- create an urgent weakness, route identity, or route payoff the player cannot ignore
 - change how a country plays for a meaningful period
 - connect to later events, evolutions, achievements, or super-events
 
-Effects should fit the event story. A desperate military measure should not only cost political power. A logistical crisis should interact with trains, fuel, depots, supply, equipment, routes, or tied-down units. A legitimacy crisis should affect stability, war support, recognition, internal factions, local support, or authority. A foreign intervention system should create influence, dependence, access, backlash, or diplomatic consequences.
+Effects should fit the event story. A desperate military measure should affect units, equipment, losses, command, supply, stability, or war support. A logistical crisis should interact with trains, fuel, depots, supply, equipment, routes, or tied-down units. A legitimacy crisis should affect stability, war support, recognition, internal factions, local support, or authority. A foreign intervention system should create influence, dependence, access, backlash, or diplomatic consequences.
 
-The spec should explain why a value is strong, weak, temporary, risky, or conditional. Do not make every effect huge, but do not hide a major event behind barely noticeable numbers. Special chaos countries usually do have absurd numbers, because the country itself is absurd and that justifies it.
+Normal countries still need balance, but balance must come from costs, timing, risks, limits, tradeoffs, counterplay, AI validity, and route locks. Do not create fake balance by making the numbers too small to matter.
 
+Special chaos countries are different. They do not have to be balanced against ordinary countries. If a special chaos country finishes its path, final route, high-chaos transformation, or full mechanic loop, the payoff must be absurd, dangerous, and visibly overpowered when the concept supports it. A completed chaos country can receive extreme buffs, extreme penalties to enemies, impossible-seeming armies, unnatural production, severe combat bonuses, global pressure, map-changing powers, or other absurd effects if the route earned them.
+
+The spec should still prevent accidental exploits for ordinary countries, repeated free rewards, and unintended cross-route stacking. It should not weaken a completed special chaos country into ordinary balance values. The absurdity must be intentional, visible, and connected to the event identity.
+
+The spec should explain why a value is strong, weak, temporary, risky, conditional, escalating, or deliberately absurd. Reject effect plans whose main outcomes are tiny percentage modifiers, flavour-only ideas, harmless starting debuffs, invisible penalties, or rewards that the player would not notice during normal play.
 
 ## 4. What the specification should explore
 
@@ -1479,13 +1486,14 @@ The spec file should contain only the event specification.
 
 Do not put the asset prompt, super-event prompt, coding-agent prompt, or goal prompt inside the spec file.
 
-Keep planning files readable as design handoffs, not implementation blueprints. Prefer route purpose, player-facing behavior, balance intent, asset direction, AI intent, and acceptance criteria. Avoid long technical tables, exact constant lists, full scripted-effect recipes, exhaustive file inventories, parser-level implementation notes, and detailed code wiring unless the user explicitly asks for a technical blueprint.
+Keep planning files readable as design handoffs, not implementation blueprints. Prefer route purpose, player-facing behavior, balance intent, asset direction, AI intent, and acceptance criteria. Avoid long technical tables, exact constant lists, full scripted-effect recipes, exhaustive file inventories, parser-level implementation notes, and detailed code wiring. The specs you create are not implementation oriented. You do not give implementation guidance, you are just handing off ideas.
 
 Create sequential files:
 
 - `<event_id>_<event_slug>_spec_part_1_core.md`
 - `<event_id>_<event_slug>_spec_part_2_<theme>.md`
 - `<event_id>_<event_slug>_spec_part_3_<theme>.md`
+- and more as needed
 
 Do not repeat earlier sections unless needed for clarity.
 

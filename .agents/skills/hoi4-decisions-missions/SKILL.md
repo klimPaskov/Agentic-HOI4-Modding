@@ -30,6 +30,23 @@ Before editing decisions or missions, read:
 
 Do not rely on memory when syntax or UI behavior is documented.
 
+## 1.1 Chaos Redux file organization
+
+Event-owned decision files should be grouped by event:
+
+```text
+common/decisions/<event_id>_<event_slug>_decisions.txt
+common/decisions/categories/<event_id>_<event_slug>_categories.txt
+```
+
+If one event owns several decision categories, keep them together in the same event decision file and the same event category file unless a verified engine limitation requires separate or root-only placement.
+
+Shared or cross-event systems should use a clear subsystem filename instead of a fake event id, for example `common/decisions/chemical_warfare_decisions.txt` and `common/decisions/categories/chemical_warfare_categories.txt`. Avoid unnecessary `chaosx_` prefixes for new or reorganized subsystem files.
+
+`common/decisions/chaosx_decisions.txt` and `common/decisions/categories/chaosx_decisions_categories.txt` are reserved for shared or legacy root-only hooks. Do not put ordinary event-owned decisions or categories there.
+
+When reorganizing files, keep decision ids, category ids, scripted GUI ids, localisation keys, and sprite names stable unless the user explicitly asks for an identifier rename. Update docs and any path references, but do not rename working in-game ids just to match filenames.
+
 ## 2. Core design rule
 
 A decision or mission should represent something the country is actually doing. Decisions should also connect to focus routes and wider mechanics instead of sitting as isolated buttons.

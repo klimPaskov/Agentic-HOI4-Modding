@@ -1,6 +1,5 @@
 name = "chaosx_spreadsheet_doc_worker"
 description = "Updates the Chaos Redux event catalog workbook at docs/spreadsheets/chaos_redux_events_catalog.xlsx using the xlsx skill. Keeps player-facing spreadsheet fields aligned with in-game event log, event detail, evolution detail, and cluster wording."
-model = "gpt-5.4"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Spreadsheet Worker"]

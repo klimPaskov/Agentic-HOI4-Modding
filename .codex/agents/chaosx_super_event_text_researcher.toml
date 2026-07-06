@@ -1,6 +1,5 @@
 name = "chaosx_super_event_text_researcher"
 description = "Finds, verifies, compares, and documents quote and cultural remark candidates for Chaos Redux super-events. Does not edit localisation or event files."
-model = "gpt-5.4"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Text Researcher"]

@@ -497,13 +497,13 @@ For every super-event audio package:
 1. Select the track after repository and internet-source checks.
 2. Verify the track title, creator or composer, source, license, duration, and usage terms.
 3. Download the selected audio from its legitimate source.
-4. Preserve the downloaded source file under an appropriate docs or source-audio path when practical.
+4. Preserve the downloaded source file under an appropriate docs asset/source-audio path when practical. Do not keep source downloads under `music/source/` or `music/super_events/`; those folders are not persistent source archives.
 5. Convert the final in-game file to game-ready `.ogg`.
    Game-ready super-event `.ogg` files must be 44.1 kHz / 44100 Hz.
-6. Place the final `.ogg` in the correct mod audio folder, normally `music/` for super-event music-channel playback.
+6. Place the final `.ogg` in the correct event-scoped music folder: `music/<event_id>_<event_slug>/super_event_<super_event_id>_<super_event_name>.ogg`. Shared defaults or non-event music may remain in `music/` only when they are intentionally shared and documented.
 7. Add or update `music/chaosx_super_event_music.asset` definitions for every dynamic volume variant that the current audio helper can call.
 8. Add or update `music/chaosx_super_event_music.txt` so the station includes a representative entry for every final super-event track.
-9. Add or update `sound/chaosx_sound.asset` sound and soundeffect definitions for sound-channel playback.
+9. Add or update `sound/chaosx_sound.asset` sound and soundeffect definitions for sound-channel playback. If a sound-channel WAV is used for the same super-event, mirror the folder and filename structure under `sound/<event_id>_<event_slug>/super_event_<super_event_id>_<super_event_name>.wav`.
 10. Wire the super-event to the correct audio id through `global.current_super_event_audio_id` and the settings-aware playback helper.
 11. Update the relevant event/system documentation and `music/chaosx_music_track_list.html`. every super-event track must have a row in the HTML music table, and that row must list the super-event id using the track. If a user-approved reuse exists, document every id in the row and explain the approval in the audio docs.
 12. Verify the final file paths, definitions, ids, and docs before calling the super-event complete.
@@ -572,6 +572,7 @@ For each super-event audio package, document:
 - attribution text if required
 - downloaded source path
 - final `.ogg` path
+- final sound-channel `.wav` path, when used
 - sound definition id
 - super-event id or key using the track
 - `music/chaosx_music_track_list.html` row with the final track and super-event ID or IDs
