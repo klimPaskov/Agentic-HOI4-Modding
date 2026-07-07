@@ -12,18 +12,18 @@ This skill is the detailed focus-tree source of truth for `AGENTS.md`. Keep the 
 Use this skill together with:
 
 - `AGENTS.md` for repository-wide rules
-- `chaos-redux-events` when the tree belongs to an event
+- `hoi4-events` when the tree belongs to an event
 - `hoi4-decisions-missions` when focuses unlock, modify, or depend on decisions and missions
-- `chaos-redux-event-assets` when focus icons, leader portraits, flags, or idea icons are required
+- `hoi4-event-assets` when focus icons, leader portraits, flags, or idea icons are required
 
 ## 1. Required checks
 
 Before editing focus files:
 
 - Read the offline Paradox wiki National focus modding page.
-- Read relevant vanilla documentation from `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`.
+- Read relevant vanilla documentation from `<HOI4_INSTALL_DIR>/documentation`.
 - Inspect vanilla focus files for syntax and layout precedent.
-- Inspect existing Chaos Redux focus trees and event-created focus-tree loading patterns.
+- Inspect existing repository focus trees and event-created focus-tree loading patterns.
 - Read `AGENTS.md`.
 - Read `hoi4-decisions-missions` when focuses unlock decisions, timed objectives, missions, or dynamic mechanics.
 
@@ -110,7 +110,7 @@ A major tree should usually include:
 - diplomacy path
 - distinct expansion or settlement path
 - special mechanic path
-- hidden, crisis, or high-chaos path when relevant
+- hidden, crisis, or extreme-route path when relevant
 - late-game ambition path
 
 Do not collapse everything into one political ladder.
@@ -151,7 +151,7 @@ Political routes should update the visible country package where relevant:
 - AI strategy
 - diplomacy behavior
 
-Leader changes require portrait handling. Real leaders use sourced portraits. Fictional leaders, councils, symbolic leaders, or high-chaos authorities can use generated portraits through the asset skill.
+Leader changes require portrait handling. Real leaders use sourced portraits. Fictional leaders, councils, symbolic leaders, or extreme-route authorities can use generated portraits through the asset skill.
 
 Expansion branches should create consequences. Claims, cores, and war goals should usually interact with diplomacy, factions, resistance, foreign guarantees, local leagues, legitimacy, threat, or postwar settlement decisions.
 
@@ -200,10 +200,10 @@ AI should understand:
 - when to join or form factions
 - when to accept or reject foreign influence
 - when to avoid high-risk paths
-- when high-chaos routes are allowed
+- when extreme-route routes are allowed
 - when a route no longer makes sense because the campaign state changed
 
-Every major route also needs a distinct localisation tone. A socialist route, military route, democratic route, nationalist route, religious route, machine route, death-state route, foreign client route, and high-chaos route should not sound the same.
+Every major route also needs a distinct localisation tone. A socialist route, military route, democratic route, nationalist route, religious route, machine route, death-state route, foreign client route, and extreme-route route should not sound the same.
 
 Focus titles and descriptions should make the route identity clear without using generic filler language.
 
@@ -236,11 +236,11 @@ Examples:
 - industry routes unlock engineers, factory boards, construction trusts, resource planners, or railway administrators
 - military routes unlock commanders, high command, training officers, doctrine theorists, or militia leaders
 - diplomacy routes unlock envoys, negotiators, foreign liaisons, intelligence contacts, or recognition specialists
-- high-chaos routes unlock strange councils, symbolic leaders, cult officers, machine boards, death-state authorities, or other route-specific figures
+- extreme-route routes unlock strange councils, symbolic leaders, cult officers, machine boards, death-state authorities, or other route-specific figures
 
 ## 5.7 Achievement hooks and route coverage proof
 
-Large focus trees should include achievement hooks for difficult route completions, rare branch combinations, expansion outcomes, successful internal reform, avoiding foreign dependency, forming leagues, surviving high-chaos paths, or completing hard late-game ambitions.
+Large focus trees should include achievement hooks for difficult route completions, rare branch combinations, expansion outcomes, successful internal reform, avoiding foreign dependency, forming leagues, surviving extreme-route paths, or completing hard late-game ambitions.
 
 For every major focus tree, the completion report must include a route coverage table comparing the spec's required routes against implemented routes.
 
@@ -260,9 +260,9 @@ Large focus trees should have early, middle, and late pacing.
 
 - Early focuses solve survival, first institutions, first units, first industry, and basic identity.
 - Middle focuses create route mechanics, meaningful choices, decision families, military systems, diplomacy, and branch interaction.
-- Late focuses deliver major payoffs, expansion, faction or League outcomes, high-chaos routes, postwar settlement, or world-order ambitions.
+- Late focuses deliver major payoffs, expansion, faction or League outcomes, extreme-route routes, postwar settlement, or international-order ambitions.
 
-Every major route should have a tradeoff. A military route may reduce freedom or legitimacy. A foreign-aid route may increase dependency. An expansion route may create resistance or foreign backlash. An industry route may consume civilian capacity or weaken short-term defense. A high-chaos route may give power while damaging stability, diplomacy, or normal politics.
+Every major route should have a tradeoff. A military route may reduce freedom or legitimacy. A foreign-aid route may increase dependency. An expansion route may create resistance or foreign backlash. An industry route may consume civilian capacity or weaken short-term defense. A extreme-route route may give power while damaging stability, diplomacy, or normal politics.
 
 Do not overuse mutual exclusions. Mutually exclusive paths should represent real identity changes, strategic commitments, or incompatible institutions. Support branches like industry, army, diplomacy, and logistics should usually coexist unless the route logic says otherwise.
 
@@ -313,7 +313,7 @@ When a mechanic is important enough for a custom scripted GUI, consider visual p
 
 Special mechanics can hide future surprises, but they should not hide basic cause and effect. The player should understand why a visible value rose or fell, which public action changed it, and what broad type of response is available.
 
-AI strategy must respect route validity. AI should not pick a branch that requires a missing state, dead sponsor, non-existent faction, unavailable ideology, disabled evolution, impossible border, or absent enemy. Invalid routes should be hidden, bypassed, or weighted to zero.
+AI strategy must respect route validity. AI should not pick a branch that requires a missing state, dead sponsor, non-existent faction, unavailable ideology, disabled escalation variant, impossible border, or absent enemy. Invalid routes should be hidden, bypassed, or weighted to zero.
 
 A new playable country package must not be generic. It needs a specific identity, starting problem, political direction, map role, military style, economy, diplomacy, AI behavior, and at least one mechanic or decision family that makes it play differently from other new countries.
 
@@ -437,11 +437,11 @@ Examples of route families:
 - foreign client government
 - revolutionary council
 - security directorate
-- high-chaos cult
+- extreme-route cult
 - machine or factory state
 - death-state actor
 
-Fixed-purpose chaos countries can have narrower political design. For example, a country whose entire identity is death, plague, machine rule, or total destruction may have one ideological purpose. Even then, its tree should still create mechanical choices inside that purpose, such as doctrine, expansion method, internal hierarchy, recruitment, economy, and endgame ambition.
+Fixed-purpose special event-created countries can have narrower political design. For example, a country whose entire identity is death, plague, machine rule, or total destruction may have one ideological purpose. Even then, its tree should still create mechanical choices inside that purpose, such as doctrine, expansion method, internal hierarchy, recruitment, economy, and endgame ambition.
 
 ## 8. Focus reward diversity
 
@@ -574,7 +574,7 @@ Important national spirits should usually have at least two of these:
 
 - a visible starting problem, benefit, tradeoff, or route identity
 - staged upgrades or mitigations through later focuses, decisions, missions, events, or reforms
-- a failure, corruption, radicalisation, dependency, or high-chaos form when the route goes badly
+- a failure, corruption, radicalisation, dependency, or extreme-route form when the route goes badly
 - decision or mission hooks that make the spirit more than passive stats
 - mechanic value hooks, such as legitimacy, cohesion, authority, readiness, recognition, corruption, panic, or local support
 - route-specific localisation and icon direction
@@ -619,7 +619,7 @@ A formation route in a focus tree should define:
 - focuses that mark required regions, start border commissions, invite subjects, sponsor plebiscites, or prepare integration
 - mutually exclusive formable routes
 - compatible support branches, such as industry, army, diplomacy, intelligence, or legitimacy
-- hidden formables that require rare events, special leaders, secret focuses, high chaos, or unusual state control
+- hidden formables that require rare events, special leaders, secret focuses, high escalation, or unusual state control
 - post-formation focuses that stabilize the new country, integrate regions, resolve opposition, change capital, update advisors, or expand claims
 - AI route behavior and AI safety checks
 - asset needs, including flags, cosmetic tags, leader portraits, focus icons, decision icons, and possible animated route portraits
@@ -647,7 +647,7 @@ The tree should state whether the formable is:
 - revealed by a normal focus
 - revealed by a rare event
 - hidden until the player controls key states
-- hidden behind ideology, leader, chaos tier, patron, or secret route
+- hidden behind ideology, leader, escalation tier, patron, or secret route
 - available only if another country does not exist
 - available only if the forming country has the correct release origin or event origin
 
@@ -678,11 +678,11 @@ Focus rewards should not:
 
 ## Animated leader portraits and visual route payoffs
 
-Focus trees should consider animated portraits or animated route emblems for major political transformations. Use them for route payoffs such as a supernatural leader reveal, a restored dynasty, a revolutionary cult, a final formable proclamation, or a high-chaos state identity.
+Focus trees should consider animated portraits or animated route emblems for major political transformations. Use them for route payoffs such as a supernatural leader reveal, a restored dynasty, a revolutionary cult, a final formable proclamation, or a extreme-route state identity.
 
 Animated portraits need static fallbacks. They should be assigned through the same leader, character, or cosmetic identity logic as the route itself. Real historical portraits require sourced material and careful treatment. Fictional or symbolic leaders can use generated animated portrait packages through the asset skill.
 
-Do not make every leader animated. Animation should signal a special route, a high-chaos identity, a super-event-level transformation, or a rare hidden outcome.
+Do not make every leader animated. Animation should signal a special route, a extreme-route identity, a super-event-level transformation, or a rare hidden outcome.
 
 ## 11. Route locks and mutual exclusions
 
@@ -762,7 +762,7 @@ AI should consider:
 - available territory
 - nearby enemies
 - route compatibility
-- high-chaos conditions
+- extreme-route conditions
 - player proximity
 
 Avoid flat AI weights when campaign state matters.
@@ -791,9 +791,9 @@ When an improvement addendum deepens a focus tree, preserve the route idea befor
 
 Formation routes should usually combine focus preparation with a decision that verifies state control. Focuses can discover old claims, call a congress, unlock a seal, prepare integration, recruit elites, expose a hidden identity, or open the formation decision. The decision then checks the map and performs the formation.
 
-Hidden formables can be routed through secret focuses, events, leader changes, chaos tiers, ancient artifacts, internal factions, or custom GUI investigation. Hidden content should still have a full implementation handoff. It needs reveal logic, visibility rules, localisation, assets, AI handling, post-formation gameplay, and disqualifiers.
+Hidden formables can be routed through secret focuses, events, leader changes, escalation tiers, ancient artifacts, internal factions, or custom GUI investigation. Hidden content should still have a full implementation handoff. It needs reveal logic, visibility rules, localisation, assets, AI handling, post-formation gameplay, and disqualifiers.
 
-Animated leader portraits and animated route emblems should be reserved for major transformations. Use them when the route payoff changes the country's identity, reveals a high-chaos leader, forms a new state, or completes a dramatic ideological break. Keep a static fallback and ensure the animation has a clear trigger and cleanup state.
+Animated leader portraits and animated route emblems should be reserved for major transformations. Use them when the route payoff changes the country's identity, reveals a extreme-route leader, forms a new state, or completes a dramatic ideological break. Keep a static fallback and ensure the animation has a clear trigger and cleanup state.
 
 ## Subagent patches for focus trees
 

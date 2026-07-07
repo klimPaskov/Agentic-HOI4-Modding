@@ -7,9 +7,9 @@ description: Use when designing, implementing, auditing, or fixing Hearts of Iro
 
 Use this skill when a task touches decisions, missions, timed objectives, decision categories, mission UI, costs, trigger tooltips, scripted localisation, AI decision behavior, or balance around decision-driven systems.
 
-This skill is for implementation and cleanup. For broader Chaos Redux event wiring, use `chaos-redux-events`. For focus trees, use `hoi4-focus-trees`. For visual assets, use `chaos-redux-event-assets`.
+This skill is for implementation and cleanup. For broader the event wiring, use `hoi4-events`. For focus trees, use `hoi4-focus-trees`. For visual assets, use `hoi4-event-assets`.
 
-For large or reworked decision systems, spawn `chaosx_decision_mission_auditor` after implementation and before completion. The subagent is patch-capable by default inside the current task scope. It should audit objective quality, costs, tooltips, AI validity, cleanup, duplicate missions, route integration, fairy-dust rewards, exploit risk, localisation, and balance evidence. It may directly patch small decision, mission, tooltip, dynamic localisation, AI, cleanup, cooldown, visibility, and existing formable requirement issues when the fix is local and clearly safer.
+For large or reworked decision systems, spawn `hoi4_decision_mission_auditor` after implementation and before completion. The subagent is patch-capable by default inside the current task scope. It should audit objective quality, costs, tooltips, AI validity, cleanup, duplicate missions, route integration, fairy-dust rewards, exploit risk, localisation, and balance evidence. It may directly patch small decision, mission, tooltip, dynamic localisation, AI, cleanup, cooldown, visibility, and existing formable requirement issues when the fix is local and clearly safer.
 
 ## 1. Required reading
 
@@ -17,16 +17,16 @@ Before editing decisions or missions, read:
 
 - `AGENTS.md`
 - relevant offline Paradox wiki pages from `paradox_wiki/`
-  - Decision modding
-  - Triggers
-  - Effects
-  - Localisation
-  - Modifiers
-  - Scopes
-  - Data structures
-- vanilla decision files from `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/`
-- vanilla documentation in `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`
-- existing Chaos Redux decision categories and scripted effects that do similar work
+ - Decision modding
+ - Triggers
+ - Effects
+ - Localisation
+ - Modifiers
+ - Scopes
+ - Data structures
+- vanilla decision files from `<HOI4_INSTALL_DIR>/`
+- vanilla documentation in `<HOI4_INSTALL_DIR>/documentation`
+- existing repository decision categories and scripted effects that do similar work
 
 Do not rely on memory when syntax or UI behavior is documented.
 
@@ -103,7 +103,7 @@ Useful factors:
 - faction membership
 - previous failures
 - previous successes
-- chaos tier or event pressure
+- escalation tier or event pressure
 - AI strategy situation
 
 Do not copy the same cost or duration across every country unless the story and balance justify it.
@@ -120,11 +120,11 @@ A decision or mission reward should usually do at least one meaningful thing:
 - change the map, production, logistics, diplomacy, army behavior, intelligence behavior, or internal politics in a visible way
 - create a real tradeoff, risk, deadline, escalation, partial success, or failure state
 - transform an existing idea, national spirit, or mechanic stage into a stronger or weaker form
-- connect to later events, focus routes, super-events, or country identity changes
+- connect to later events, focus routes, achievements, super-events, or country identity changes
 
 Tiny modifiers are allowed only when they belong to a visible stacking system, frequent tick, temporary crisis push, dynamic scaling formula, or larger effect package. They should never be the whole reward for an important decision, mission, GUI button, formable step, route unlock, or crisis response.
 
-If a decision family has many small rewards, combine them into fewer stronger actions, convert them into staged idea upgrades, make them change a visible mechanic value. Do not scatter small bonuses across a category to create the appearance of progress.
+If a decision family has many small rewards, combine them into fewer stronger actions, convert them into staged idea upgrades, make them change a visible mechanic value, or replace them with missions, map objectives, units, advisors, buildings, route access, or diplomatic consequences. Do not scatter small bonuses across a category to create the appearance of progress.
 
 Starting penalties and negative mission outcomes must also matter. A failed objective, broken authority value, bad crisis decision, or starting debuff should create pressure the player must answer. Harmless negative modifiers that can be ignored are not valid crisis design.
 
@@ -150,7 +150,7 @@ Use varied costs that fit the action:
 - aircraft
 - ships
 - tanks
-- fuel (don't use conservative values)
+- fuel
 - manpower
 - stability
 - war support
@@ -512,7 +512,7 @@ Political decision families should interact with leaders, advisors, parties, law
 
 Advisor, leader, and council decisions should match the route that unlocked them. Do not unlock generic advisors unrelated to the route identity.
 
-Decision families can include achievement tracking when they support difficult route completions, rare combinations, expansion victories, internal reform, or survival under high-chaos conditions.
+Decision families can include achievement tracking when they support difficult route completions, rare combinations, expansion victories, internal reform, or survival under extreme-route conditions.
 
 
 ## 15.3 Decision pacing, tradeoffs, and visible effects
@@ -521,7 +521,7 @@ Decision categories unlocked by focuses should progress over time.
 
 - Early decisions should be limited, urgent, and tied to survival or first institutions.
 - Middle decisions should add stronger tools, new targets, route mechanics, influence actions, military actions, and construction options.
-- Late decisions should support route payoffs, expansion, integration, faction leadership, League leadership, postwar settlement, or high-chaos end states.
+- Late decisions should support route payoffs, expansion, integration, faction leadership, League leadership, postwar settlement, or extreme-route end states.
 
 Decision families should have tradeoffs. A powerful decision should cost or risk something that fits the action: equipment, manpower, stability, war support, consumer goods burden, foreign dependency, legitimacy, faction cohesion, unit commitment, fuel, convoys, or crisis pressure.
 
@@ -582,7 +582,7 @@ Special mechanics can hide future surprises, but should not hide basic cause and
 
 Faction, league, bloc, or coalition goals need rewards and failure states. A successful faction goal can unlock shared decisions, war goals, legitimacy, cohesion, member rewards, postwar settlements, or new faction leadership. A failed goal can reduce cohesion, trigger member exits, invite foreign pressure, start leadership contests, weaken shared defenses, or open emergency missions.
 
-AI strategy must respect route and decision validity. AI should not take decisions that require missing states, dead sponsors, non-existent factions, unavailable ideologies, disabled evolutions, impossible borders, absent enemies, invalid targets, or closed routes. Invalid actions should be hidden, bypassed, or weighted to zero.
+AI strategy must respect route and decision validity. AI should not take decisions that require missing states, dead sponsors, non-existent factions, unavailable ideologies, disabled escalation variants, impossible borders, absent enemies, invalid targets, or closed routes. Invalid actions should be hidden, bypassed, or weighted to zero.
 
 Decision systems for shared trees or shared mechanics must still feel country-specific. Use scripted localisation, country-specific targets, country-specific AI weights, local leaders, regional decisions, and route-specific rewards to prevent every country from playing the same.
 
@@ -664,7 +664,7 @@ A formable decision must define:
 - decision category and visibility timing
 - required owned and controlled states
 - required subjects, allies, faction members, puppets, occupied territories, cores, claims, or compliance thresholds
-- required focus, event flag, route flag, ideology, leader, legitimacy, chaos tier, or hidden reveal state
+- required focus, event flag, route flag, ideology, leader, legitimacy, escalation tier, or hidden reveal state
 - whether the decision is visible before requirements are met, hidden until unlocked, or fully secret until an event reveals it
 - political, military, economic, legitimacy, stability, war support, command power, XP, equipment, fuel, convoy, train, manpower, or factory costs
 - what happens to the tag, cosmetic tag, country name, adjective, flag, leader, portrait, ruling party, advisors, national spirits, cores, claims, puppets, factions, wars, and guarantees
@@ -675,7 +675,7 @@ A formable decision must define:
 
 State requirements must be readable. Use named state groups and custom trigger tooltips. Do not expose raw state id lists to the player unless the existing UI pattern already does that cleanly. If several alternate maps can qualify, create clear requirement groups.
 
-Hidden formables need extra care. A hidden formable can be locked behind an event, secret focus, rare ideology, high chaos, special leader, historical artifact, super-event, achievement route, or scripted GUI investigation. Hidden does not mean undocumented. The implementation handoff must still define all triggers, effects, assets, and cleanup.
+Hidden formables need extra care. A hidden formable can be locked behind an event, secret focus, rare ideology, high escalation, special leader, historical artifact, super-event, achievement route, or scripted GUI investigation. Hidden does not mean undocumented. The implementation handoff must still define all triggers, effects, assets, and cleanup.
 
 ## Formation missions and integration projects
 
@@ -727,13 +727,13 @@ Decision categories and mechanic windows can use animated sprites when motion im
 - soft glow around an available formation seal
 - warning pulse when pressure is near a threshold
 - slow float on an occult, diplomatic, or propaganda emblem
-- particle drift behind a high-chaos category header
+- particle drift behind a extreme-route category header
 - meter shimmer when a value changes
 - selected-card glow for the active sponsor, faction, or route
 - animated border for crisis mode
 - animated leader or council portrait inside a special mechanic window
 
-Use static fallback sprites for every animated element. Keep animations subtle unless the route is deliberately supernatural or high-chaos. Do not animate every icon in a category. Too much movement makes the UI harder to read.
+Use static fallback sprites for every animated element. Keep animations subtle unless the route is deliberately supernatural or extreme-route. Do not animate every icon in a category. Too much movement makes the UI harder to read.
 
 The decision implementation handoff should list animated sprite names, static fallback names, target sizes, frame counts if known, loop behavior, file paths, source mode, and whether the animation is purely decorative or tied to a mechanic state.
 
