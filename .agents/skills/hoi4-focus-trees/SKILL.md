@@ -682,7 +682,7 @@ Focus trees should consider animated portraits or animated route emblems for maj
 
 Animated portraits need static fallbacks. They should be assigned through the same leader, character, or cosmetic identity logic as the route itself. Real historical portraits require sourced material and careful treatment. Fictional or symbolic leaders can use generated animated portrait packages through the asset skill.
 
-Do not make every leader animated. Animation should signal a special route, a extreme-route identity, a super-event-level transformation, or a rare hidden outcome.
+Do not make every leader animated. Animation should signal a special route, a extreme-route identity, sourced quote, remark, or audio research-level transformation, or a rare hidden outcome.
 
 ## 11. Route locks and mutual exclusions
 

@@ -11,10 +11,10 @@ This includes:
 
 - adding or updating country events, hidden events, news events, report-style events, and narrative event chains
 - wiring events through `on_actions`, decisions, focuses, scripted effects, scripted triggers, scripted localisation, and optional mod-specific registration hooks
-- keeping localisation, event pictures, report pictures, news pictures, super-events, docs, and planning records aligned
+- keeping localisation, event pictures, report pictures, news pictures, text and audio packages, docs, and any parent-provided tracking records aligned
 - validating event ids, namespaces, scopes, triggers, effects, options, localisation keys, pictures, and follow-up hooks
 
-Repository-wide reading and style rules live in `AGENTS.md`. This skill adds the event-specific implementation contract. It does not replace focus-tree, decision, asset, animation, super-event, or subagent skills.
+Repository-wide reading and style rules live in `AGENTS.md`. This skill adds the event-specific implementation contract. It does not replace focus-tree, decision, asset, animation, text and audio research, or subagent skills.
 
 When event work creates broad visible text, use `hoi4_localisation_auditor` before completion when that subagent is available. When repeated dynamic logic appears across events, decisions, focuses, GUI, or country setup, use `hoi4_scripted_system_architect` before duplicating logic.
 
@@ -32,9 +32,9 @@ Treat every event as a contract across some or all of these surfaces:
 - follow-up events, news events, and report events
 - `on_actions`, decisions, focuses, ideas, scripted GUI, scripted effects, scripted triggers, and scripted localisation
 - AI chance, AI-only follow-ups, AI strategies, and scripted behavior
-- event pictures, report images, news images, super-event images, audio, and icons
+- event pictures, report images, news images, custom audio, researched text, and icons
 - localisation files, scripted localisation files, and custom trigger tooltips
-- optional mod-specific event registries, debug tools, event documentation, and planning workbooks when the repository actually has them
+- optional mod-specific event registries, debug tools, event documentation, and tracking records when the repository actually has them
 
 If a task seems to need custom one-off plumbing, first check whether the behavior should become a reusable helper for future events. Repeated target selection, weighted random actor choice, cleanup, event target storage, scripted localisation selectors, variable formatting, dynamic costs, and common option effects usually belong in scripted helpers.
 
@@ -46,7 +46,7 @@ Use this skill with:
 - `hoi4-feature-planning` when the user asks for event design or a deeper event specification before implementation
 - `hoi4-feature-assets` when the event needs event pictures, report images, news images, icons, flags, portraits, or final DDS assets
 - `hoi4-frame-animation` when event presentation needs animated sprites, animated portraits, animated UI pieces, frame sheets, or GIF previews for review
-- `hoi4-super-events` when a major event needs super-event presentation, quote research, audio research, image direction, and wiring notes
+- `hoi4-text-audio-research` when an event needs sourced quotes, cultural references, title-like references, slogans, or music and audio research
 - `hoi4-focus-trees` when the event creates, unlocks, modifies, or depends on focus trees
 - `hoi4-decisions-missions` when the event creates or depends on decisions, missions, timed objectives, formables, or decision-driven mechanics
 - `hoi4-subagents` when bounded research, asset production, small patches, or completion audits should be delegated
@@ -57,14 +57,14 @@ The parent agent remains responsible for final integration, final validation, an
 
 ## Spec and plan locations
 
-Source event specs live under `docs/specs/<feature_slug>/`. Implementation should read those files as the main design source when they exist.
+Feature specs for event-related work live under `docs/specs/<feature_slug>/`. Implementation should read those files as the main design source when they exist.
 
 Subagent plans, expansion addenda, audit follow-up notes, and implementation handoffs live under `docs/plans/<feature_slug>/`. Plans are working documents. If a plan becomes accepted source design, merge it into the relevant spec.
 
 
 ## Spec fidelity and implementation quality
 
-When implementing from `docs/specs/`, treat mapped content as acceptance criteria. Do not silently replace mapped mechanics, routes, countries, decisions, achievements, assets, or super-events with smaller fallback versions. If something must be merged, skipped, or simplified, report it in the completion notes with the reason and affected files.
+When implementing from `docs/specs/`, treat mapped content as acceptance criteria. Do not silently replace mapped mechanics, routes, countries, decisions, achievements, assets, or text and audio packages with smaller fallback versions. If something must be merged, skipped, or simplified, report it in the completion notes with the reason and affected files.
 
 Use dynamic factors for pressure, cooldowns, progress, chance, support, duration, costs, AI willingness, spawn strength, aid amounts, stage movement, recognition, etc when the spec calls for a living system. Flat values are allowed only as constants, caps, floors, or deliberate tuning anchors. Centralize shared values in script constants or documented tuning.
 
@@ -80,7 +80,7 @@ Large decision systems must hide obsolete or irrelevant actions. Use phases, act
 
 If the spec defines achievements, implement the full achievement surface: tracking flags or variables, unlock triggers, disqualifiers, localisation, icons, docs, and any route or formable hooks. Do not convert hard achievements into automatic unlocks.
 
-Before completion, check every visible asset named or implied by the spec: flags, ideology flags, cosmetic flags, leaders, portraits, focus icons, decision icons, ideas, achievements, faction emblems, report or news images, super-event images, UI sprites, animated sprites, and static fallbacks. Do not claim completion while required visible assets are placeholders unless the completion report says so clearly.
+Before completion, check every visible asset named or implied by the spec: flags, ideology flags, cosmetic flags, leaders, portraits, focus icons, decision icons, ideas, achievements, faction emblems, report or news images, UI sprites, animated sprites, and static fallbacks. Do not claim completion while required visible assets are placeholders unless the completion report says so clearly.
 
 Do not generate real historical leaders, historical flags, or well-attested real symbols as fictional art. Source them, document source and license status when possible, and convert them to the required HOI4 format. Generated art is for fictional, symbolic, alternate, supernatural, or invented identities unless the user says otherwise.
 
@@ -93,9 +93,9 @@ Do not reduce major spec effects to tiny decorative modifiers. Important effects
 
 ## Event writing and player-facing text
 
-Event implementation owns final player-facing wording for event popups, news events, report events, event details, decision text, focus text, tooltips, GUI labels, scripted localisation, documentation summaries, and workbook-facing fields that mirror in-game text. Convert direction into finished wording, but do not paste working labels, prompt fragments, route notes, placeholder text, or process notes into localisation.
+Event implementation owns final player-facing wording for event popups, news events, report events, event details, decision text, focus text, tooltips, GUI labels, scripted localisation, documentation summaries, and any parent-provided external records that mirror in-game text. Convert direction into finished wording, but do not paste working labels, prompt fragments, route notes, placeholder text, or process notes into localisation.
 
-These writing style rules apply to every mod prose surface, including event text, news text, super-event text, decision text, focus descriptions, tooltips, docs, specs, plans, prompts, spreadsheets, and all player-facing text.
+These writing style rules apply to every mod prose surface, including event text, news text, researched text, decision text, focus descriptions, tooltips, docs, specs, plans, prompts, and all player-facing text.
 
 1. Never use the em dash or semicolons in sentences.
 2. Absolutely avoid dialectical hedging. Do not frame sentences as thesis, antithesis, synthesis.
@@ -118,18 +118,18 @@ These writing style rules apply to every mod prose surface, including event text
    - `First hunger. Then anger. Then flags.`
    - `The gate opened. The crowd moved. The guards ran.`
 5. Absolutely avoid empty dramatic filler. Do not lean on vague intensity words when concrete detail would do the work.
-6. Do not paste instruction text, task labels, prompt fragments, or process notes into in-game text, specs, docs, localisation, spreadsheet fields, or reports.
+6. Do not paste instruction text, task labels, prompt fragments, or process notes into in-game text, specs, docs, localisation, external documentation fields, or reports.
   - For example, when the user says `Do not reveal the hidden mechanics here.`, do not write `This path purposely doesn't reveal the hidden mechanics`.
 
 Write in-world text. Describe what the country, army, population, strange force, disaster, cult, machine, disease, movement, or leader is doing. Do not make the emotional center a changed map, a staff-table scene, administrative paperwork, formal diplomatic phrasing, sealed reports or generic crisis communications. They should not become the default way to create mystery.
 
 Player-facing escalation text must not label itself as a warning, a non-warning, a threat, a danger signal, or a campaign-endinging risk. Let the player infer trouble through fear, missing people, strange behaviour, rumours, unexplained anomalies, local panic, and consequences that repeat over time. Do not build tension with staged contrast formulas. Forbid patterns such as `claim X while officials Y`, `reports say X while authorities Y`, `X before Y`, `people do X before governments Y`, and any similar construction that pairs one observation against a denial, admission, delay, or official reaction. Write the observed fear and uncertainty directly instead of using those contrast frames.
 
-Only write sections for event surfaces that actually exist. Omit absent systems entirely. This applies to campaign-ending branches, manual scenarios, super-events, achievement sets, focus trees, country packages, and custom UI.
+Only write sections for event surfaces that actually exist. Omit absent systems entirely. This applies to campaign-ending branches, manual scenarios, text or audio research packages, achievement sets, focus trees, country packages, and custom UI.
 
-Do not expose hidden routes, secret variables, future surprises, achievement paths, implementation history, tuning history, or rework history in player-facing text. event details and spreadsheet detail fields describe the situation and premise, not the mechanical effects. Options, decisions, focuses, and tooltips must still clearly describe visible consequences and requirements, but they should not read like reward lists or spoil content.
+Do not expose hidden routes, secret variables, future surprises, achievement paths, implementation history, tuning history, or rework history in player-facing text. event details and any explicitly scoped external records describe the situation and premise, not the mechanical effects. Options, decisions, focuses, and tooltips must still clearly describe visible consequences and requirements, but they should not read like reward lists or spoil content.
 
-For super-events, do not invent quotes, cultural remarks, song fragments, title references, or final audio choices. Use `hoi4-super-events` and the relevant research subagents when the event needs sourced wording or music.
+For sourced text or audio packages, do not invent quotes, cultural remarks, song fragments, title references, or final audio choices. Use `hoi4-text-audio-research` and the relevant research subagents when the event needs sourced wording or music.
 
 
 ## Parent and subagent implementation ownership
@@ -138,7 +138,7 @@ Patch-capable subagents are active by default inside the current task scope. Use
 
 Small subagent patches are allowed when they improve a specific surface without changing the event design. A decision subagent can vary costs, clarify tooltips, add cleanup, improve AI weights, and patch related localisation. A focus subagent can fix a route lock, prerequisite, bypass, focus AI, icon reference, small reward, or formable unlock hook. A country package subagent can patch tag setup, party names, focus loading, leader references, country localisation, simple starting setup, or existing formable requirements. A localisation subagent can patch dynamic text directly. A scripted-system architect can add narrow helpers and direct call sites when the repeated logic is already present.
 
-The parent still owns final integration, docs, spreadsheets, event chain direction, completion claims, and any broad mechanic expansion. If a subagent sees a needed route family, new country package, new formable suite, new scripted GUI system, new event chain, or major balance redesign, it writes a plan under `docs/plans/<feature_slug>/` and stops.
+The parent still owns final integration, docs, explicitly scoped external records, event chain direction, completion claims, and any broad mechanic expansion. If a subagent sees a needed route family, new country package, new formable suite, new scripted GUI system, new event chain, or major balance redesign, it writes a plan under `docs/plans/<feature_slug>/` and stops.
 
 Every subagent edit must produce a handoff under `docs/plans/<feature_slug>/subagent_handoffs/` when the feature slug is known. The handoff lists changed files, identifiers, behavior before and after, meaningful validation, remaining gaps, and follow-up work for the parent.
 
@@ -155,7 +155,7 @@ Use a defeat aftermath package when all of these are true:
 
 Typical aftermath content:
 
-- a defeat super-event or defeat-stage super-event effect
+- a sourced defeat quote, cultural remark, or audio cue when the feature needs one
 - postwar treaties, compacts, or new world orders
 - recurring remembrance, reconstruction, or vigilance events
 - lasting ideas, tech-sharing groups, or diplomatic rules that exist because the world learned from the crisis
@@ -197,7 +197,7 @@ Event doc structure:
 5. Supporting systems touched.
 6. AI behavior if relevant.
 7. Baseline progression, escalation variant tracks, and escalation flow if relevant.
-8. Campaign-ending and super-event integration if relevant.
+8. Campaign-ending and source-researched text or audio integration if relevant.
 9. Connections with other events if relevant.
 10. Asset wiring and sprite expectations if relevant.
 11. Limitations if any.
@@ -214,7 +214,7 @@ Do not leave the doc describing:
 - old stage counts
 - removed branches
 - removed assets
-- outdated spreadsheet or deck expectations
+- outdated external record or deck expectations
 
 
 ### Docs and gameplay must stay aligned
@@ -228,7 +228,7 @@ Do not leave the doc describing:
 - old stage counts
 - removed branches
 - removed assets
-- outdated spreadsheet or deck expectations
+- outdated external record or deck expectations
 
 
 ## Formable nations as event surfaces
@@ -246,7 +246,7 @@ Event implementation must keep formables aligned across:
 - flags and portraits
 - AI strategy
 - achievements
-- super-events where the formation changes world order
+- researched text or audio packages where the formation changes world order
 - cleanup after tag switch, annexation, puppet transfer, civil war, or route failure
 
 Use scripted helpers for formation effects. Do not duplicate formation logic in events, decisions, focuses, scripted GUI buttons, and achievements. The decision can pay the cost and validate requirements, while a shared helper performs the identity change and logs the result.
@@ -287,7 +287,7 @@ For every generated asset:
 4. Convert the processed PNG to DDS 32 bit unsigned BGRB 8.8.8.8.
 5. Move the DDS into the correct mod asset folder.
 6. Add or update the matching sprite definition in the correct `.gfx` file.
-7. Update localisation, docs, and event spreadsheet entries that reference the asset.
+7. Update localisation, docs, and any explicitly scoped external records that reference the asset.
 8. Record the asset in a markdown manifest.
 
 The asset manifest must include:
@@ -300,7 +300,8 @@ The asset manifest must include:
 - target size
 - sprite name
 - intended in-game use
-- related event id
+- related event id when the asset is tied to a real HOI4 event
+- related feature slug
 - notes
 
 Do not leave generated assets only in a temporary folder. If the event uses them, wire them into the mod.
@@ -315,12 +316,12 @@ Before closing an event task, verify the surfaces that actually exist for the fe
 3. Triggers, scopes, immediate effects, option effects, and cleanup effects match the design.
 4. Shared effects, triggers, script constants, and event targets are updated when needed.
 5. Localisation exists for titles, descriptions, options, tooltips, news/report text, and dynamic values.
-6. News events, report events, and super-events are wired only when they are real surfaces in the design.
+6. News events, report events, and researched text or audio packages are wired only when they are real surfaces in the design.
 7. Supporting decisions, missions, ideas, focuses, AI, country setup, or scripted GUI surfaces are aligned when relevant.
-8. Event pictures, report images, news images, super-event images, icons, flags, portraits, animated sprites, and fallbacks exist when required.
+8. Event pictures, report images, news images, icons, flags, portraits, animated sprites, and fallbacks exist when required.
 9. Generated or sourced assets are resized, converted, moved into correct folders, wired in `.gfx`, and recorded in manifests when they are part of the task.
-10. Documentation, specs, plans, manifests, and optional planning workbooks are updated only when the repository actually uses those surfaces.
-11. Spec-mapped mechanics, routes, countries, decisions, achievements, assets, and super-events are implemented or clearly reported as blocked, merged, renamed, skipped, or simplified.
+10. Documentation, specs, plans, manifests, and any explicitly scoped external records are updated only when the repository actually uses those surfaces.
+11. Spec-mapped mechanics, routes, countries, decisions, achievements, assets, and researched text or audio packages are implemented or clearly reported as blocked, merged, renamed, skipped, or simplified.
 12. Dynamic values, concrete costs, mechanic visibility, decision filtering, cleanup, AI behavior, and effect strength are checked where the spec calls for them.
 13. Focus trees preserve route structure, focus filters, varied rewards, idea lifecycles, route-specific AI, and visible branch payoffs where relevant.
 14. New fighting countries have dynamic starting forces, template assumptions, equipment and manpower handling, and reinforcement pathways.
@@ -349,7 +350,7 @@ Keep ids stable when updating existing chains. If an event already exists in a n
 
 Baseline stages are the ordinary flow of the event chain. They are not automatically special mod systems. They can be represented by flags, variables, follow-up events, timed missions, decisions, focus unlocks, or scripted GUI state.
 
-Escalation variants are optional branches that change the shape of the event because the campaign state changed. They can add new actors, harsher mechanics, additional decisions, new focus paths, country transformations, stronger AI behavior, or super-event eligibility.
+Escalation variants are optional branches that change the shape of the event because the campaign state changed. They can add new actors, harsher mechanics, additional decisions, new focus paths, country transformations, stronger AI behavior, or source-researched text or audio eligibility.
 
 Do not record ordinary stage progression as a special escalation record unless the repository has an explicit generic feature for that purpose and the current event is meant to use it.
 
@@ -371,7 +372,7 @@ Before editing, decide what each event block does:
 - decision result
 - focus result
 - on_action result
-- super-event trigger event
+- presentation trigger event
 - aftermath event
 
 Also decide whether the event is fire-once, repeatable, decision-triggered, focus-triggered, on_action-triggered, random, scripted-only, or a mod-specific registered event. Keep this classification aligned with the script.
@@ -396,7 +397,7 @@ Common files to inspect or update:
 - `interface/*.gfx` when event pictures or sprites are referenced
 - `localisation/<language>/*.yml`
 - `gfx/event_pictures/`, `gfx/interface/`, `gfx/leaders/`, `gfx/flags/`, and other asset folders
-- `docs/`, specs, plans, manifests, and optional workbooks when the repository uses them
+- `docs/`, specs, plans, manifests, and any explicitly scoped external records when the repository uses them
 
 Use exact ids, namespaces, flags, variables, localisation keys, sprite names, tags, and file stems to search. Avoid broad repo exploration when the files are already known.
 
@@ -409,7 +410,7 @@ Generic rule:
 1. Find the existing registration pattern.
 2. Add the event id, display name, category, enabled state, or weight in the same shape as existing events.
 3. Keep any scripted-localisation selectors aligned with the registration.
-4. Keep optional docs or planning workbooks aligned with the in-game text.
+4. Keep optional docs or parent-provided tracking records aligned with the in-game text.
 5. If the repository has no such system, do not invent one for a normal event.
 
 ### 4. Handle supporting gameplay systems
@@ -517,22 +518,21 @@ When using `on_actions`, document:
 - performance risk
 - validation check
 
-### 11. Super-event integration
+### 11. Text, audio, and custom presentation handoff
 
-If the event shows or drives a super-event, wire the whole package:
+If the event uses sourced quotes, cultural remarks, slogans, allusions, custom audio, or a custom presentation surface, keep the package aligned:
 
-- slot or display id
-- visibility flag or trigger
-- title, description, button text, and quote localisation
-- image sprite
-- audio id and final audio file
-- settings-aware playback or equivalent mod helper when the repository has one
+- localisation keys and scripted localisation that show the final text
+- source notes for quotes, remarks, slogans, allusions, and audio
+- final audio file and audio id when custom audio is used
+- playback helper or sound definition when the repository has one
+- image or sprite references only when a real custom visual surface exists
 - triggering event or effect
-- docs and asset manifest
+- docs and asset manifest when the repository uses them
 
-Use `hoi4-super-events` for quote, cultural remark, audio, image direction, source documentation, and presentation rules. This skill handles ordinary event-side wiring.
+Use `hoi4-text-audio-research` for quote, cultural remark, slogan, allusion, audio source documentation, attribution checks, and license checks. Use the owning implementation skill for event-side wiring.
 
-Do not leave default, placeholder, mismatched, undocumented, or wrong-format super-event audio in a completed package.
+Do not leave default, placeholder, mismatched, undocumented, or wrong-format audio in a completed package.
 
 ### 12. Completion cleanup
 
@@ -549,7 +549,7 @@ Cleanup should handle:
 - mission expired
 - decision category no longer relevant
 - hidden branch disqualified
-- super-event already shown
+- presentation cue already used
 - repeated event should not duplicate a state
 
 Do not leave stale flags or missions that make a later branch believe the old target is still valid.
@@ -572,7 +572,7 @@ Localisation must describe the in-world situation and visible consequences. It m
 
 Dynamic values often display decimal places unless formatted. If a value is conceptually an integer, use an integer formatter such as `|0` or an equivalent scripted-localisation helper. Use fractional precision only when the fraction changes player decisions.
 
-When text mirrors a docs or planning workbook field, the in-game localisation is the source of truth. Do not paraphrase mirror fields unless the field is explicitly a summary field.
+When text mirrors a docs field or a parent-provided external record, the in-game localisation is the source of truth. Do not paraphrase mirror fields unless the field is explicitly a summary field.
 
 
 ## Validation checks

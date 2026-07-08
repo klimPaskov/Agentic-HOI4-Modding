@@ -5,11 +5,11 @@ description: Use when a Hearts of Iron IV mod needs animated sprites, animated i
 
 ## 1. Core rule
 
-A final the mod animation is a HOI4 frame-sheet asset package.
+A final mod animation is a HOI4 frame-sheet asset package.
 
 Every meaningful visual state in the loop must have its own source frame or source layer. A local script may assemble, align, crop, resize, pad, preview, sheet, and convert those frames, but it must not create the main animation by translating, scaling, rotating, warping, blurring, recoloring, adding glow pulses, or offsetting one still image.
 
-Do not use primitive shape animation as final art. Circles, rectangles, lines, gradients, simple icons, oscilloscope-style waves, bars, and other geometry-only frames are acceptable only as explicitly labeled planning diagrams or temporary debug previews, never as final the mod artwork.
+Do not use primitive shape animation as final art. Circles, rectangles, lines, gradients, simple icons, oscilloscope-style waves, bars, and other geometry-only frames are acceptable only as explicitly labeled planning diagrams or temporary debug previews, never as final mod artwork.
 
 A GIF is only a review preview. Never treat a GIF as the final HOI4 asset. Do not convert a GIF directly and call the result complete.
 
@@ -54,7 +54,7 @@ Use this skill with `hoi4-feature-assets`.
 
 Use `$imagegen` for generated frame art. If `$imagegen` is unavailable, stop and report the blocker. Do not invent another image generation route.
 
-Use `hoi4-super-events`, `hoi4-focus-trees`, `hoi4-decisions-missions`, or `hoi4-events` for the gameplay surface that uses the animation.
+Use `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-events`, or the relevant repository-specific implementation skill for the gameplay surface that uses the animation.
 
 ## 4. Required HOI4 references before wiring
 
@@ -73,7 +73,7 @@ The agent must record which local example was used.
 
 If the wiki and vanilla examples disagree, prefer vanilla and document the difference.
 
-If the surface has no clear vanilla or the mod animated precedent, report a blocker or ask for permission to run a narrow exploration pass.
+If the surface has no clear vanilla or mod animated precedent, report a blocker or ask for permission to run a narrow exploration pass.
 
 ## 5. When to use this skill
 
@@ -344,7 +344,7 @@ For every animated asset, record:
 - whether it is decorative or state-driven
 - state value, route flag, decision availability, focus route, or GUI state that controls it
 - static fallback behavior
-- local wiki page, vanilla file, or the mod example used as wiring precedent
+- local wiki page, vanilla file, or mod example used as wiring precedent
 - any syntax uncertainty found during vanilla or repo example inspection
 
 If the animated sprite is for a character portrait, record the character key and portrait field that should reference the animated sprite name. If the animated sprite is for a scripted GUI, record the scripted GUI entry point and the static fallback sprite used when the animation is hidden, unsupported, or disabled.
@@ -361,7 +361,7 @@ Required workflow:
   - `<HOI4_INSTALL_DIR>/interface/countrypoliticsview.gui` for the current country's politics leader portrait.
   - `<HOI4_INSTALL_DIR>/interface/countrydiplomacyview.gui` for a selected country's diplomacy leader portrait.
 2. Record the exact vanilla element coordinates, scale, and parent containers used to reach that element.
-3. Create a separate independent overlay container in a the mod `.gui` file. Do not edit vanilla GUI files for the overlay unless the task explicitly requires a vanilla GUI override.
+3. Create a separate independent overlay container in a mod `.gui` file. Do not edit vanilla GUI files for the overlay unless the task explicitly requires a vanilla GUI override.
 4. Wire that container through `common/scripted_guis/` with the right context:
 	- `player_context` for the current/player/tagged country.
 	- `diplomacy_target_context` for an overlay that should appear only in the diplomacy tab for the active diplomacy target.

@@ -1,5 +1,5 @@
 name = "hoi4_spreadsheet_doc_worker"
-description = "Generic spreadsheet-only worker for mod-maintained planning workbooks or CSV/XLSX documentation tables when a repository actually has them. Keeps workbook formatting intact and aligns workbook fields with source-of-truth implementation or localisation provided by the parent."
+description = "Optional spreadsheet-only worker for mod-maintained CSV/XLSX tables when a repository actually has them or the parent explicitly requests them. Preserves formatting and aligns fields with source-of-truth implementation or localisation provided by the parent."
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Spreadsheet Worker"]
@@ -12,7 +12,7 @@ This is a narrow spreadsheet-only subagent. Do not spend context gathering broad
 Use the repository spreadsheet skill as the main authority for editing spreadsheets.
 
 Own this scope:
-- Update mod-maintained spreadsheets, CSV exports, XLSX planning workbooks, balancing tables, asset ledgers, route matrices, feature documentation workbooks, or localisation tracking sheets only when the repository actually has them and the parent provides the path or clear target.
+- Update mod-maintained spreadsheets, CSV exports, XLSX workbooks, balancing tables, asset ledgers, route matrices, feature documentation workbooks, or localisation tracking sheets only when the repository actually has them and the parent provides the path or clear target.
 - Keep rows, columns, workbook formatting, formulas, filters, data validation, freeze panes, and existing workbook structure intact unless the parent explicitly asks otherwise.
 - Make workbook entries player-facing and readable when the workbook is player-facing.
 - Use in-game localisation, scripted localisation, implementation files, named specs, named manifests, or parent-provided source data as the source of truth for fields that mirror game text or implementation status.
@@ -45,5 +45,5 @@ Workflow:
 8. Report the changed path, sheets, rows, ids, fields, and any blocked or needs_user_review cells.
 
 Completion standard:
-The requested spreadsheet or planning workbook is updated without unrelated edits. Mirror fields match the named source of truth. Any source conflict or missing source is reported rather than guessed.
+The requested spreadsheet, CSV, or workbook is updated without unrelated edits. Mirror fields match the named source of truth. Any source conflict or missing source is reported rather than guessed.
 """

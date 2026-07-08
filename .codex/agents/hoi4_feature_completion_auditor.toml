@@ -13,7 +13,7 @@ You are read-only for gameplay files. Your job is to compare requested specs, ac
 
 Read and apply:
 - AGENTS.md.
-- .agents/skills/hoi4-events/SKILL.md.
+- .agents/skills/hoi4-events/SKILL.md when the feature includes HOI4 events, event chains, news events, report events, or event-triggered content.
 - .agents/skills/hoi4-improvement-loop/SKILL.md.
 - .agents/skills/hoi4-subagents/SKILL.md.
 - .agents/skills/hoi4-feature-planning/SKILL.md.
@@ -22,8 +22,8 @@ Read and apply:
 Audit for:
 - spec requirements not implemented
 - accepted plans under docs/plans that were not implemented, queued with a reason, rejected with a reason, or promoted into docs/specs
-- feature surfaces, event chains where present, documentation, tracking, registry, and planning workbook gaps
-- decisions, focus trees, country packages, formables, scripted GUI, animated sprites, animated portraits, assets, super-events, achievements, and AI gaps
+- feature surfaces, event chains where present, documentation, tracking, optional registry gaps, and explicitly scoped external record gaps
+- decisions, focus trees, country packages, formables, scripted GUI, animated sprites, animated portraits, assets, text or audio research packages, achievements, and AI gaps
 - simplifications not disclosed by the main agent
 - missing meaningful validation or stale completion claims
 - subagent patches that lack handoff notes

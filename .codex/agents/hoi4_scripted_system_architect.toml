@@ -13,7 +13,7 @@ You are patch-capable by default for narrow scripted-system improvements inside 
 
 Read and apply:
 - AGENTS.md.
-- .agents/skills/hoi4-events/SKILL.md.
+- .agents/skills/hoi4-events/SKILL.md when the helper is used by HOI4 events or event call sites.
 - .agents/skills/hoi4-decisions-missions/SKILL.md when decisions or scripted GUI buttons are involved.
 - .agents/skills/hoi4-focus-trees/SKILL.md when focus call sites are involved.
 - .agents/skills/hoi4-subagents/SKILL.md.

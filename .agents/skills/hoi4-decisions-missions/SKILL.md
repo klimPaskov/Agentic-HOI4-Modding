@@ -7,7 +7,7 @@ description: Use when designing, implementing, auditing, or fixing Hearts of Iro
 
 Use this skill when a task touches decisions, missions, timed objectives, decision categories, mission UI, costs, trigger tooltips, scripted localisation, AI decision behavior, or balance around decision-driven systems.
 
-This skill is for implementation and cleanup. For broader the event wiring, use `hoi4-events`. For focus trees, use `hoi4-focus-trees`. For visual assets, use `hoi4-feature-assets`.
+This skill is for implementation and cleanup. For broader event wiring, use `hoi4-events`. For focus trees, use `hoi4-focus-trees`. For visual assets, use `hoi4-feature-assets`.
 
 For large or reworked decision systems, spawn `hoi4_decision_mission_auditor` after implementation and before completion. The subagent is patch-capable by default inside the current task scope. It should audit objective quality, costs, tooltips, AI validity, cleanup, duplicate missions, route integration, fairy-dust rewards, exploit risk, localisation, and balance evidence. It may directly patch small decision, mission, tooltip, dynamic localisation, AI, cleanup, cooldown, visibility, and existing formable requirement issues when the fix is local and clearly safer.
 
@@ -120,7 +120,7 @@ A decision or mission reward should usually do at least one meaningful thing:
 - change the map, production, logistics, diplomacy, army behavior, intelligence behavior, or internal politics in a visible way
 - create a real tradeoff, risk, deadline, escalation, partial success, or failure state
 - transform an existing idea, national spirit, or mechanic stage into a stronger or weaker form
-- connect to later events, focus routes, achievements, super-events, or country identity changes
+- connect to later events, focus routes, achievements, text and audio packages, or country identity changes
 
 Tiny modifiers are allowed only when they belong to a visible stacking system, frequent tick, temporary crisis push, dynamic scaling formula, or larger effect package. They should never be the whole reward for an important decision, mission, GUI button, formable step, route unlock, or crisis response.
 
@@ -675,7 +675,7 @@ A formable decision must define:
 
 State requirements must be readable. Use named state groups and custom trigger tooltips. Do not expose raw state id lists to the player unless the existing UI pattern already does that cleanly. If several alternate maps can qualify, create clear requirement groups.
 
-Hidden formables need extra care. A hidden formable can be locked behind an event, secret focus, rare ideology, high escalation, special leader, historical artifact, super-event, achievement route, or scripted GUI investigation. Hidden does not mean undocumented. The implementation handoff must still define all triggers, effects, assets, and cleanup.
+Hidden formables need extra care. A hidden formable can be locked behind an event, secret focus, rare ideology, high escalation, special leader, historical artifact, quote, remark, audio, achievement route, or scripted GUI investigation. Hidden does not mean undocumented. The implementation handoff must still define all triggers, effects, assets, and cleanup.
 
 ## Formation missions and integration projects
 

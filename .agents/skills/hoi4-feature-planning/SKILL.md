@@ -7,22 +7,22 @@ description: Use when expanding Hearts of Iron IV mod feature ideas into detaile
 
 Use this skill to design or expand features for a Hearts of Iron IV mod.
 
-This skill creates feature specifications. It does not implement code. Implementation belongs to `hoi4-events`. Visual asset generation and processing belongs to `hoi4-feature-assets`. Animated sprite planning, frame-sheet requirements, animated portrait packages, and animation handoff details belong to `hoi4-frame-animation` when motion is needed. Super-event quote, remark, music, and presentation research belongs to `hoi4-super-events`.
+This skill creates feature specifications. It does not implement code. Implementation belongs to the owning implementation skill for the surface being designed, such as `hoi4-events` for event content, `hoi4-focus-trees` for focus trees, `hoi4-decisions-missions` for decisions and missions, and repository-specific implementation rules for other systems. Visual asset generation and processing belongs to `hoi4-feature-assets`. Animated sprite planning, frame-sheet requirements, animated portrait packages, and animation handoff details belong to `hoi4-frame-animation` when motion is needed. Quote, remark, and audio research belongs to `hoi4-text-audio-research`.
 
 ## 1. Required reading
 
 Before writing the feature specification, use the following as the design baseline:
 
 - `AGENTS.md`
-- `hoi4-events`
+- `hoi4-events` when the feature includes ordinary HOI4 events, news events, report events, event chains, or event-triggered content
 - `hoi4-feature-assets` when the feature needs visual assets
 - `hoi4-frame-animation` when the feature has animated sprites, animated UI, animated route emblems, animated portraits, warning pulses, hover loops, glow loops, float loops, particle loops, or frame-by-frame presentation needs
-- `hoi4-super-events` when the feature needs a super-event
+- `hoi4-text-audio-research` when the feature needs sourced quotes, cultural remarks, or audio research
 - `hoi4-improvement-loop` before a near-completion review, and whenever the design may still be shallow, disconnected, bloated, or missing deeper playable consequences
 - `hoi4-subagents` before spawning `hoi4_improvement_loop_planner` or any other project subagent
 - `hoi4-focus-trees` or the current focus-tree skill when the feature needs focus trees
 - `hoi4-decisions-missions` when the feature needs decisions, missions, timed objectives, influence actions, or decision-driven mechanics
-- provided planning rows or CSV exports when the repository includes them
+- parent-provided planning rows, CSV exports, or external records when the repository includes them and the parent explicitly provides them
 - provided existing feature docs
 - provided mod mechanics docs
 
@@ -64,7 +64,7 @@ Do not put sections such as:
 - `Scope`
 - `Source baseline`
 - `Repository context`
-- `Planning workbook row`
+- `External tracking row`
 - `Existing implementation audit`
 - `Generic trigger safeguards`
 
@@ -80,11 +80,11 @@ Avoid obvious lines such as:
 
 Those are baseline system responsibilities. Include technical notes only when they prevent a likely mistake, explain non-obvious behavior, or define a unique rule for this feature. Otherwise, its just noise.
 
-Do not create negative capability notes for absent feature surfaces. If a feature does not have a campaign-ending branch, do not mention campaign-ending branches. If another surface is absent, omit that surface instead of documenting its absence. Do not write sections, bullets, feature-detail notes, planning workbook-facing summaries, implementation prompts, or player-facing text that say negative absence wording such as `no special branch`, `no manual variant`, or similar. Omit the surface completely unless it actually exists or the user explicitly asks for an explanation of why it is absent.
+Do not create negative capability notes for absent feature surfaces. If a feature does not have a campaign-ending branch, do not mention campaign-ending branches. If another surface is absent, omit that surface instead of documenting its absence. Do not write sections, bullets, feature-detail notes, parent-provided external record summaries, implementation prompts, or player-facing text that say negative absence wording such as `no special branch`, `no manual variant`, or similar. Omit the surface completely unless it actually exists or the user explicitly asks for an explanation of why it is absent.
 
 ### Tone and presentation direction standard
 
-For every player-facing text surface, the planning spec should define the writing direction and leave finished wording to implementation. This includes feature titles and descriptions, report text, news text, focus text, decision text, option text, achievement text, super-event setup, GUI labels, route flavour, feature-detail text, and planning workbook-facing summaries.
+For every player-facing text surface, the planning spec should define the writing direction and leave finished wording to implementation. This includes feature titles and descriptions, report text, news text, focus text, decision text, option text, achievement text, text or audio research setup, GUI labels, route flavour, feature-detail text, and parent-provided external record summaries.
 
 Give the coding agent clear direction for:
 
@@ -160,7 +160,7 @@ Do not add filler to reach a size target. Add depth by thinking through the feat
 - UI presentation
 - optional feature history or logging surface presence
 - assets
-- super-events
+- text and audio packages
 - achievements and difficult achievement routes
 - campaign-ending branches
 - linked feature group behavior
@@ -232,7 +232,7 @@ For rare variants, map:
 - what the player first sees
 - how observers interpret it
 - what new rules or actors it adds
-- what decisions, focuses, spirits, features, or super-events it unlocks
+- what decisions, focuses, spirits, features, or text and audio packages it unlocks
 - how it ends, spreads, mutates, or is contained
 - what makes it different from the baseline feature
 
@@ -478,7 +478,7 @@ Every important mechanic value should have a consistent colour identity in local
 
 If a mechanic has values such as legitimacy, authority, influence, cohesion, obedience, power, or readiness, then focuses, decisions, and missions should interact with those values directly. A focus tree should not sit beside the mechanic without changing it. A decision system should not sit beside the mechanic without changing it.
 
-Mechanic values should unlock or block content: decisions, focuses, features, missions, leaders, advisors, factions, war goals, reforms, crises, achievements, super-events, or endings. A mechanic should change what the player can do.
+Mechanic values should unlock or block content: decisions, focuses, features, missions, leaders, advisors, factions, war goals, reforms, crises, achievements, text and audio packages, or endings. A mechanic should change what the player can do.
 
 When a country has two or more internal power centers, consider a balance-of-power or equivalent system. Focuses and decisions should push the balance, unlock branch content, create risks, and change leaders, laws, advisors, features, or crises.
 
@@ -488,7 +488,7 @@ Important feature-created factions should usually have a mechanic such as cohesi
 
 A faction should not form just because one country exists. Define minimum membership, crisis conditions, ideological compatibility, war pressure, diplomatic preparation, and regional logic.
 
-A special mechanic should define success, failure, partial success, and runaway failure states. These states should unlock features, decisions, focus branches, faction changes, wars, reforms, aftermath, achievements, or super-events.
+A special mechanic should define success, failure, partial success, and runaway failure states. These states should unlock features, decisions, focus branches, faction changes, wars, reforms, aftermath, achievements, or text and audio packages.
 
 AI must understand mechanic values. It should know when to lower threat, build legitimacy, increase influence, join a faction, avoid dependence, push balance of power, or trigger escalation.
 
@@ -592,7 +592,7 @@ Do not spend excessive planning effort forcing exact graph coordinates if the re
 
 ## 3.7 Achievement design standard
 
-Achievements are mandatory for feature specifications unless the user explicitly says not to include them or the feature is so small that achievements would be dishonest. Major features, custom countries, deep focus trees, rare variants, international-order routes, or super-events always need achievements.
+Achievements are mandatory for feature specifications unless the user explicitly says not to include them or the feature is so small that achievements would be dishonest. Major features, custom countries, deep focus trees, rare variants, international-order routes, or text and audio packages always need achievements.
 
 Achievements should be creative and difficult. Do not design achievements that unlock just because the feature appeared, because the player clicked the obvious option, or because a country survived a few days. Achievements should reward mastery, unusual campaign states, risky choices, hidden routes, hard containment, difficult victories, or rare escalated outcomes.
 
@@ -624,7 +624,7 @@ For each achievement, define:
 - difficulty tier
 - why it is interesting and not trivial
 - icon direction and visual motif
-- related focus paths, decisions, escalation variants, tags, factions, super-events, or assets
+- related focus paths, decisions, escalation variants, tags, factions, text and audio packages, or assets
 - implementation notes for tracking if the unlock cannot be checked from a single final state
 
 Achievement design must include asset planning. Each achievement needs a 64x64 completed icon direction, and the asset prompt must hand those icons to `hoi4-feature-assets`. Grey, locked, and not-eligible variants can be produced later if the achievement system requires them.
@@ -651,9 +651,9 @@ When a feature has escalation variants, the spec must say how each escalation va
 
 Use two separate entry-path concepts when the feature supports both.
 
-**Active feature escalation variant** means the feature is already active and an escalation variant unlocks while one or more actors from that feature still exist or the feature system is still active. The spec must define what changes immediately for the active actors: focus paths, decision families, national spirits, unit growth, targeting rules, AI strategy, faction behavior, super-event eligibility, and cleanup. The feature should not need to run again for the active actor to receive the escalation variant content.
+**Active feature escalation variant** means the feature is already active and an escalation variant unlocks while one or more actors from that feature still exist or the feature system is still active. The spec must define what changes immediately for the active actors: focus paths, decision families, national spirits, unit growth, targeting rules, AI strategy, faction behavior, source-researched text or audio eligibility, and cleanup. The feature should not need to activate again for the active actor to receive the escalation variant content.
 
-**Pre-fire escalated opening** means the feature has not fired yet, but the world state, escalation tier, previous escalation variant memory, or other allowed feature trigger lets the first run start in a more escalated form. The spec must define the changed opening package: number of actors, target selection, starting ideas, initial units, first decisions, opening features, AI plan.
+**Pre-activation escalated opening** means the feature has not started yet, but the world state, escalation tier, previous escalation variant memory, or other allowed feature trigger lets the first activation start in a more escalated form. The spec must define the changed opening package: number of actors, target selection, starting ideas, initial units, first decisions, opening features, AI plan.
 
 If both entry paths exist, write both explicitly under one escalation variant. For example, a feature may have an active escalation variant that unlocks a focus path for an already spawned country, while a later first run may start with multiple spawned countries.
 
@@ -728,7 +728,7 @@ When mapping costs, use a varied cost palette where it fits the mechanic:
 - command power and political power only when they match the story
 - construction capacity, civilian factories, military factories, dockyards, repair capacity, or production disruption
 - relations, recognition pressure, foreign influence debt, intelligence exposure, or diplomatic credibility
-- crisis pressure, threat-meter components, condemnation, deaths, pollution, contamination, or other the mod-specific system values when relevant
+- crisis pressure, threat-meter components, condemnation, deaths, pollution, contamination, or other repository-specific system values when relevant
 - time, deadlines, objective failure risk, opportunity cost, or visible map requirements such as holding borders, guarding depots, or placing divisions in key states
 
 Political power or command power may still be one part of a cost, but they should not be the default answer. If a section uses mostly political power or command power, redesign it unless the story clearly demands bureaucratic or command attention.
@@ -840,7 +840,7 @@ A formable design should define:
 - visible country identity after formation, including name, adjective, flag, leader, portrait, parties, ruling ideology, advisors, and focus tree access
 - post-formation ambitions, claims, diplomatic reactions, rivals, league or faction behavior, and failure states
 - AI willingness to pursue the formable and AI safety checks that prevent impossible or suicidal formation attempts
-- super-event, achievement, and asset implications
+- quote, remark, audio, achievement, and asset implications
 
 Do not write vague lines such as `can form a greater country`. Define the concrete formation web. If the player must control this state, this state, and this state, name those states or name the scripted state group and explain what it contains. If the exact state ids are left to implementation, describe the intended geographic set clearly enough that the implementation agent can build a scripted trigger without guessing.
 
@@ -898,11 +898,11 @@ For focus trees, military growth should be integrated into branches. Some focuse
 
 ## 3.14 Mandatory asset coverage and source-mode standard
 
-Everything visible or meaningful needs an asset plan. A major spec should not only define a few feature images. It should identify assets for countries, focus trees, decisions, ideas, national spirits, achievements, flags, portraits, faction emblems, super-events, feature images, UI, unit systems, and route-specific identity changes.
+Everything visible or meaningful needs an asset plan. A major spec should not only define a few feature images. It should identify assets for countries, focus trees, decisions, ideas, national spirits, achievements, flags, portraits, faction emblems, text and audio packages, feature images, UI, unit systems, and route-specific identity changes.
 
 Every focus in a mapped focus tree needs an icon direction. Large trees may use reusable icon packs, but the spec must still state which focuses use which motif or icon category. Do not leave hundreds of focuses with no asset guidance.
 
-Every decision, decision category, idea, national spirit, achievement, faction emblem, UI panel, news image, report image, super-event image, leader or council portrait, and important special-unit identity that appears in the feature needs an asset entry or a clear asset-family entry.
+Every decision, decision category, idea, national spirit, achievement, faction emblem, UI panel, news image, report image, custom feature image, leader or council portrait, and important special-unit identity that appears in the feature needs an asset entry or a clear asset-family entry.
 
 Every country package must include flags. Required flag coverage includes normal, medium, and small sizes for each implemented flag state. If the country has ideology-specific names, focus-tree transformations, puppet identities, restored historical forms, radical routes, or extreme-route mutations, the spec must identify whether those states need separate flags.
 
@@ -930,7 +930,7 @@ A good effect package should do at least one meaningful thing:
 - apply a strong positive or negative modifier that changes army, economy, diplomacy, internal politics, logistics, production, intelligence, state control, or AI behavior in a visible way
 - create an urgent weakness, route identity, or route payoff the player cannot ignore
 - change how a country plays for a meaningful period
-- connect to later features, escalation variants, achievements, or super-events
+- connect to later features, escalation variants, achievements, or text and audio packages
 
 Effects should fit the feature story. A desperate military measure should affect units, equipment, losses, command, supply, stability, or war support. A logistical crisis should interact with trains, fuel, depots, supply, equipment, routes, or tied-down units. A legitimacy crisis should affect stability, war support, recognition, internal factions, local support, or authority. A foreign intervention system should create influence, dependence, access, backlash, or diplomatic consequences.
 
@@ -961,7 +961,7 @@ A strong specification usually explores:
 - whether the feature should create new tags or transform existing countries
 - what starting units and reinforcement routes new countries receive
 - how each new or transformed country changes names, flags, leaders, ideologies, parties, and politics
-- whether the feature should use a super-event
+- whether the feature needs sourced quotes, cultural remarks, or audio
 - what achievements should exist and why they are difficult
 - what UI or visual presentation would make it stronger
 - what other mod systems it should interact with
@@ -981,19 +981,19 @@ Possible generic links include:
 
 - escalation values or pressure meters that already exist in the target repository
 - optional feature history or logging surfaces that already exist in the target repository
-- super-events
+- text and audio packages
 - decisions, missions, focus trees, country packages, scripted GUI, achievements, and formables
 - diplomacy, war, ideology, casualties, public panic, contamination, legitimacy, recognition, or other mechanics that the target repository already supports
 - existing or planned features in the same mod
 
-Leave out connections that feel artificial. Optional registry hooks, debug menus, planning workbooks, and custom UI surfaces should be used only when the target repository actually has them.
+Leave out connections that feel artificial. Optional registry hooks, debug menus, parent-provided tracking records, and custom UI surfaces should be used only when the target repository actually has them.
 
 
 ## 6. Escalation and uncertainty
 
 Dangerous systems should not reveal themselves too early.
 
-Player-facing escalation text must not label itself as a warning, a non-warning, a threat, a danger signal, or a campaign-ending risk. Do not tell the coding agent to write text that announces what the player is supposed to infer. Do not frame a feature-detail entry, report, news item, tooltip, decision category, focus description, super-event direction, or planning workbook-facing summary around that direct label.
+Player-facing escalation text must not label itself as a warning, a non-warning, a threat, a danger signal, or a campaign-ending risk. Do not tell the coding agent to write text that announces what the player is supposed to infer. Do not frame a feature-detail entry, report, news item, tooltip, decision category, focus description, quote, remark, image, or audio direction, or external record summary around that direct label.
 
 Use mysterious information, fear, and uncertainty instead. Early information should feel incomplete because people cannot yet explain what is happening.
 
@@ -1070,48 +1070,44 @@ For each planned animated asset, the spec should define the in-game use, target 
 
 Leader portraits can have animated variants for major route reveals, extreme-route leaders, supernatural leaders, symbolic councils, final formables, or dramatic country transformations. The spec should say when the animated portrait appears, what static fallback exists, whether the portrait is sourced or generated, what state or route controls it, what removes or replaces it, and how the animation remains period-appropriate and readable at leader-portrait size.
 
-## 9. Super-event planning
+## 9. Quote, remark, and audio research planning
 
-If the feature needs a super-event, design the super-event as part of the feature emotional and gameplay pacing.
+If the feature needs sourced wording or audio, design the research need as part of the feature's emotional and gameplay pacing.
 
-A super-event should not be used only because something large happens. It should mark a moment that changes how the player understands the campaign, the feature chain, the world state, or the stakes of the current crisis.
+Do not assume every feature needs researched quotes, cultural remarks, or music. Use researched text or audio only when it improves a reveal, route payoff, achievement theme, custom UI surface, event chain, focus route, decision package, menu cue, or feature announcement.
 
-When planning a super-event, define:
+When planning a researched text or audio package, define:
 
-- why this moment deserves super-event treatment
-- what exact feature state triggers it
-- whether it is a reveal, escalation, transformation, defeat, aftermath, or campaign-ending moment
-- what the player should feel when it appears
-- what the world believes has happened
-- what information is still uncertain
-- what image direction would fit
+- why this feature needs researched material
+- what exact feature state uses it
+- whether it supports a reveal, escalation, transformation, defeat, aftermath, campaign-ending moment, route payoff, achievement theme, custom UI cue, or other feature role
+- what the player should understand when it appears
+- what information remains uncertain
 - what quote direction would fit
-- what cultural remark direction would fit
-- what audio mood would fit
-- whether it needs follow-up events, decisions, or focus routes
+- what cultural remark, slogan, or allusion direction would fit
+- what audio mood would fit, if audio is needed
+- whether follow-up events, decisions, focuses, UI, docs, or assets must stay aligned with it
 
-Keep the super-event tone specific to the feature. Do not make every super-event feel like the same apocalypse with a different image.
+Do not fully research quotes, cultural remarks, slogans, allusions, or music inside this planning skill. Use `hoi4-text-audio-research` for that work.
 
-Do not fully research quotes, cultural remarks, or music inside this skill. Use `hoi4-super-events` for that work.
+The feature spec should provide enough direction for `hoi4-text-audio-research` to find real quotes, meaningful cultural remarks, and suitable audio without guessing the feature role.
 
-The feature spec should provide enough direction for `hoi4-super-events` to find real quotes, meaningful cultural remarks, and suitable audio.
+### Text boundary and research gate
 
-### Super-event text boundary and research gate
-
-This skill is direction-only for super-event title text, `.a` button text, `.q` quote text, and any cultural reference. Do not write a final title, option, button line, quote, lyric fragment, slogan, proverb, scripture excerpt, literary allusion, or film, song, book, or game reference inside the feature spec unless the exact wording has already been researched, sourced, and documented through the super-event skill or a provided source file.
+This planning skill is direction-only for sourced quotes, cultural remarks, slogans, lyric fragments, scripture excerpts, literary allusions, film lines, song references, book references, game references, and audio choices. Do not write final source-dependent text inside the feature spec unless the exact wording has already been researched, sourced, and documented through `hoi4-text-audio-research` or a provided source file.
 
 If research has not been done, use neutral research gates instead of lines that could be pasted into localisation:
 
-- `Reveal super-event title: research required`
-- `Button remark: research required`
 - `Main quote: research required`
-- `Cultural reference: research required`
+- `Cultural remark: research required`
+- `Slogan or allusion: research required`
+- `Audio candidate: research required`
 
 Do not include unresearched `possible line`, `sample title`, `placeholder quote`, or `temporary button text`. Implementation agents may treat those as final localisation.
 
-Describe the desired shape instead. For example, write `short title direction about public recognition of the threat, avoiding generic apocalypse wording`, not a finished title.
+Describe the desired shape instead. For example, write `short public reaction direction about fear spreading through port cities, avoiding generic apocalypse wording`, not a finished line.
 
-Functional labels are allowed for spec structure, asset filenames, and prompt routing, but they must be neutral and explicitly non-final. Use labels such as `mainland reveal super-event`, `campaign-ending super-event`, or `se_death_mainland_reveal`. Do not name assets, localisation keys, or prompt files after unresearched title concepts.
+Functional labels are allowed for spec structure, asset filenames, prompt routing, branch labels, and internal handoffs, but they must be neutral and explicitly non-final. Do not name assets, localisation keys, or prompt files after unresearched title concepts.
 
 ### Major-feature defeat aftermath
 
@@ -1125,7 +1121,7 @@ Use a defeat aftermath package when all of these are true:
 
 Typical aftermath content:
 
-- a defeat super-event or defeat-stage super-event effect
+- a sourced quote, cultural remark, or audio cue when the aftermath needs researched material
 - postwar treaties, compacts, or new world orders
 - recurring remembrance, reconstruction, or vigilance features
 - lasting ideas, tech-sharing groups, or diplomatic rules that exist because the world learned from the crisis
@@ -1151,13 +1147,13 @@ Avoid:
 - option direction that would lead to bland placeholder buttons
 - absence notes for systems that are not present, such as saying that a feature lacks a surface that was never in scope
 
-Mention implementation only where it matters for the design, such as super-event treatment, custom UI, AI behavior, documentation, assets, dynamic factors, focus tree structure, custom tags, or important system connections.
+Mention implementation only where it matters for the design, such as custom presentation treatment, custom UI, AI behavior, documentation, assets, dynamic factors, focus tree structure, custom tags, or important system connections.
 
-This planning skill defines direction for player-facing text. It must not write final player-facing localisation. This includes feature titles, feature option text, feature descriptions, news and report prose, decision names, decision descriptions, focus names, focus descriptions, achievement titles, achievement descriptions, GUI labels, feature-detail text, planning workbook-facing wording, super-event titles, super-event button text, super-event quotes, cultural remarks, source-like allusions, and final audio selections.
+This planning skill defines direction for player-facing text. It must not write final player-facing localisation. This includes feature titles, feature option text, feature descriptions, news and report prose, decision names, decision descriptions, focus names, focus descriptions, achievement titles, achievement descriptions, GUI labels, feature-detail text, external record wording, presentation titles, presentation button text, main quotes, cultural remarks, source-like allusions, and final audio selections.
 
 The planning spec may define tone, actor viewpoint, structure, visible information, route variation, dynamic placeholders that final text should use, and research needs. If a working label is needed for a row, filename, prompt, branch, route, asset, diagram, or internal handoff, mark it clearly as `working label, not final localisation`.
 
-Important super-event boundary: this planning skill may define super-event role, trigger, tone, image direction, quote direction, cultural-remark direction, and audio mood. Any source-dependent wording belongs to `hoi4-super-events` and must stay blocked until researched and documented.
+Important text and audio research boundary: this planning skill may define feature role, trigger, tone, image direction, quote direction, cultural-remark direction, and audio mood. Any source-dependent wording belongs to `hoi4-text-audio-research` and must stay blocked until researched and documented.
 
 ### General text writing style
 
@@ -1197,7 +1193,7 @@ Important super-event boundary: this planning skill may define super-event role,
   - `The gate opened. The crowd moved. The guards ran.`
 5. Avoid staged contrast formulas. Do not write sentences or paired clauses built as `claim X while officials Y`, `reports say X while authorities Y`, `people do X before governments Y`, `X happens before Y admits it`, or similar. Do not manufacture tension by contrasting unofficial fear with official denial, silence, delay, admission, or reaction. Write the observed fear, behaviour, rumours, anomalies, and consequences directly.
 6. Absolutely avoid empty dramatic filler. Do not lean on vague intensity words when concrete detail would do the work.
-7. Do not paste instruction text, task labels, prompt fragments, or process notes into in-game text, specs, docs, localisation, planning workbook fields, or reports.
+7. Do not paste instruction text, task labels, prompt fragments, or process notes into in-game text, specs, docs, localisation, external documentation fields, or reports.
  - For example, when I say: `Do not reveal the hidden mechanics here.`, don't write `This path purposely doesn't reveal the hidden mechanics`
 
 ## 11. Specification shape
@@ -1210,7 +1206,7 @@ The specification should still be easy for a coding agent to use. Use clear head
 
 For major features, split the spec into parts if needed. Do not compress deep design just to fit one file.
 
-Only include sections for surfaces that exist or that need design. If a super-event, focus tree, custom country, achievement set, asset family, or other major surface is absent, omit that section instead of writing that it is absent. Because negative notes create noise and can mislead later agents into thinking the absence is a designed feature.
+Only include sections for surfaces that exist or that need design. If a researched text package, custom presentation surface, focus tree, custom country, achievement set, asset family, or other major surface is absent, omit that section instead of writing that it is absent. Because negative notes create noise and can mislead later agents into thinking the absence is a designed feature.
 
 ## 12. Depth and continuation
 
@@ -1218,7 +1214,7 @@ Do not compress the spec so much that important ideas become shallow.
 
 The goal is depth, not speed.
 
-Think through the feature as far as the idea can reasonably go. If the feature has multiple branches, escalation variants, rare variants, custom countries, focus trees, UI elements, super-events, or major system connections, treat each of those as deserving real design space.
+Think through the feature as far as the idea can reasonably go. If the feature has multiple branches, escalation variants, rare variants, custom countries, focus trees, UI elements, text and audio packages, or major system connections, treat each of those as deserving real design space.
 
 Large features should be written across multiple parts instead of being rushed into one response.
 
@@ -1264,7 +1260,7 @@ Consider whether the feature needs:
 - achievement icons
 - news event pictures
 - report event pictures
-- super-event images
+- custom feature images for custom feature UI when the repository has such a surface
 - leader portraits
 - council, committee, regency, cult, junta, or symbolic leadership portraits
 - faction emblems
@@ -1279,7 +1275,7 @@ Asset generation, sourcing, cropping, resizing, DDS conversion, file placement, 
 
 This skill should define what assets are needed, what they should represent, what source mode they require, and which visible states should be animated. If a major mechanic has no animated sprite plan, the spec should explain why the static presentation is stronger.
 
-Historical or real-world assets need special care. Historical flags, historical symbols, and real leader portraits should be sourced from reliable references and converted to HOI4 style rather than generated. Generated art is appropriate for fictional flags, fictional leaders, symbolic council portraits, invented extreme-route identities, idea icons, focus icons, decision icons, achievements, faction emblems, UI art, and fictional or alternate-history report/news/super-event images unless the user says otherwise.
+Historical or real-world assets need special care. Historical flags, historical symbols, and real leader portraits should be sourced from reliable references and converted to HOI4 style rather than generated. Generated art is appropriate for fictional flags, fictional leaders, symbolic council portraits, invented extreme-route identities, idea icons, focus icons, decision icons, achievements, faction emblems, UI art, and fictional or alternate-history report, news, or custom feature images unless the user says otherwise.
 
 ### Reference examples for asset planning
 
@@ -1291,7 +1287,6 @@ Use repo-relative project paths:
 .agents/skills/hoi4-feature-assets/assets/ideas
 .agents/skills/hoi4-feature-assets/assets/news_event_images
 .agents/skills/hoi4-feature-assets/assets/report_event_images
-.agents/skills/hoi4-feature-assets/assets/super_event_images
 .agents/skills/hoi4-feature-assets/assets/tech_icons
 .agents/skills/hoi4-feature-assets/assets/achievements
 .agents/skills/hoi4-feature-assets/assets/decisions
@@ -1304,7 +1299,6 @@ Reference mapping:
 - idea and national spirit icons: `assets/ideas`
 - news event images: `assets/news_event_images`
 - report event images: `assets/report_event_images`
-- super-event images: `assets/super_event_images`
 - tech icons: `assets/tech_icons`
 - achievement icons: `assets/achievements`
 - decision and decision category icons: `assets/decisions`
@@ -1329,7 +1323,7 @@ The asset prompt should include:
 - suggested filenames
 - suggested sprite names
 - suggested static fallback sprite names and animated sprite names when animation is planned
-- whether each asset is for a feature, report event, news event, super-event, decision, idea, focus, achievement, flag, leader portrait, faction emblem, or UI element
+- whether each asset is for a feature, report event, news event, custom feature image, decision, idea, focus, achievement, flag, leader portrait, faction emblem, or UI element
 - animation brief needs for every animated asset, including state logic, frame count target, target frame size, expected sheet size, frames per second, loop behavior, `play_on_show` expectation, static fallback, source mode, and target `.gfx` or `.gui` surface when known
 - achievement icon list with completed icon directions for every achievement
 - manifest requirements
@@ -1340,7 +1334,7 @@ The asset prompt must state the correct source mode where relevant.
 
 It must also state the relevant reference folder from the list above when a matching folder exists.
 
-Use `hoi4-feature-assets` rules for source selection. Symbolic icons usually use `$imagegen`. News event images, report event images, and super-event images may be sourced or generated. prefer generated assets for fictional, alternate-history, symbolic, extreme-route, or unique scenes, and sourced assets for real historical people, real photographed events, and real archival artifacts. Historical flags and historically attested symbols should be sourced and documented, then converted to HOI4 flag sizes. Fictional, supernatural, invented, or alternate-history flags can use `$imagegen` through `hoi4-feature-assets` when appropriate.
+Use `hoi4-feature-assets` rules for source selection. Symbolic icons usually use `$imagegen`. News event images, report event images, and custom feature images may be sourced or generated. prefer generated assets for fictional, alternate-history, symbolic, extreme-route, or unique scenes, and sourced assets for real historical people, real photographed events, and real archival artifacts. Historical flags and historically attested symbols should be sourced and documented, then converted to HOI4 flag sizes. Fictional, supernatural, invented, or alternate-history flags can use `$imagegen` through `hoi4-feature-assets` when appropriate.
 
 Do not make the asset prompt vague. If a country has multiple cosmetic identities, ideology names, focus-route transformations, or leader changes, the asset prompt must list the required assets for each visible identity state. If any visible identity state is important enough to feel like a reveal, crisis mode, extreme-route form, completed formable, or living mechanic state, the asset prompt should usually include an animated sprite or animated portrait plan plus a static fallback.
 
@@ -1357,7 +1351,7 @@ Use these sizes when planning assets:
 - tech icons small: 64x64
 - tech icons medium: 132x52
 - achievements: 64x64
-- super-event images: 457x328
+- custom feature images: match the target GUI surface or documented repository pattern
 - decision icons: 32x32
 - idea and national spirit icons: 64x64
 - focus icons: 94x86
@@ -1370,7 +1364,7 @@ When planning visuals, use these style expectations.
 
 Report and news event images should look like documentary photographs, whether sourced or generated. News event images should be black and white.
 
-Super-event images should have a strong central composition, clear dramatic theme, readable subject, and enough contrast for HOI4 UI.
+Large feature presentation images should have a strong central composition, clear dramatic theme, readable subject, and enough contrast for HOI4 UI.
 
 Focus icons should look like HOI4 focus icons, with a central symbol, readable silhouette, aged texture, painterly detail, and strong contrast.
 
@@ -1382,41 +1376,36 @@ Flags should use clean symbols that remain readable at HOI4 flag sizes.
 
 Progression-state variants may include selected, dim, active, locked, completed, rejected, damaged, corrupted, urgent, meter-fill, and bar-fill states.
 
-## 17. Super-event research handoff
+## 17. Text and audio research handoff
 
-If the feature has one or more super-events, create a separate super-event prompt file for `hoi4-super-events`.
+If the feature has one or more sourced text or audio needs, create a separate prompt file for `hoi4-text-audio-research`.
 
-The prompt should ask that skill to research or create the full super-event presentation package.
+For each research package, include:
 
-For each super-event, include:
-
-- super-event purpose
-- trigger moment
+- feature role
+- trigger moment or surface where the material appears
 - tone
-- title direction, not a final title unless researched and sourced
-- description direction
 - quote direction, not quote text unless researched and sourced
-- cultural remark direction, not final button text unless researched and sourced
+- cultural remark, slogan, or allusion direction, not final wording unless researched and sourced
 - audio mood, not a final track unless researched and licensed
-- image direction
-- whether it is a normal escalation, defeat moment, aftermath moment, or campaign-ending moment
+- whether the material supports a reveal, escalation, defeat moment, aftermath moment, route payoff, achievement theme, menu cue, custom UI surface, or other feature role
 - any special constraints from the feature spec
 
-The `hoi4-super-events` prompt should ask the agent to:
+The `hoi4-text-audio-research` prompt should ask the researcher to:
 
-- find a real quote using the repository web research workflow from `AGENTS.md`
+- find a real quote using the repository research workflow from `AGENTS.md`
 - verify quote wording and attribution
-- find a meaningful cultural remark, reference, allusion, or short line where appropriate
-- follow copyright limits for songs, films, books, and other protected works
-- find suitable public domain or clearly licensed audio
-- document all sources, license notes, and uncertainties
-- coordinate super-event image needs with `hoi4-feature-assets`
+- find a meaningful cultural remark, reference, allusion, slogan, or short line where appropriate
+- follow copyright limits for songs, films, books, games, poems, and other protected works
+- find suitable public domain or clearly licensed audio when audio is required
+- document all sources, license notes, rights notes, and uncertainties
+- mark unclear attribution or licensing as blocked instead of treating it as usable
 
 Do not claim a quote, cultural reference, or audio track is usable without checking.
 
-If a license or attribution is unclear, mark it as uncertain.
+If a license or attribution is unclear, mark it as uncertain or unsuitable.
 
-The super-event prompt must explicitly state that unresearched titles, button text, quotes, cultural remarks, slogans, lyric fragments, allusions, and audio choices are blockers. The implementation agent must not convert research directions, working labels, achievement names, asset names, or draft-like wording into final super-event localisation.
+The prompt must explicitly state that unresearched button text, quotes, cultural remarks, slogans, lyric fragments, allusions, and audio choices are blockers. The implementation agent must not convert research directions, working labels, achievement names, asset names, or draft-like wording into final localisation.
 
 ## Improvement-loop expansion specs
 
@@ -1426,7 +1415,7 @@ An improvement-derived spec can be shaped freely. It does not need to copy the s
 
 ### Mandatory near-completion improvement loop pass
 
-Before any feature-planning goal is treated as near complete, the coding agent must spawn `hoi4_improvement_loop_planner` for a final depth and anti-bloat pass when the repository has that subagent. This is mandatory for feature specs, large addenda, country packages, focus-tree plans, decision systems, super-event planning, asset-heavy plans, formable plans, custom UI plans, and any goal that creates or changes meaningful mod design.
+Before any feature-planning goal is treated as near complete, the coding agent must spawn `hoi4_improvement_loop_planner` for a final depth and anti-bloat pass when the repository has that subagent. This is mandatory for feature specs, large addenda, country packages, focus-tree plans, decision systems, quote, remark, and audio research planning, asset-heavy plans, formable plans, custom UI plans, and any goal that creates or changes meaningful mod design.
 
 Run this pass after the main design is mostly assembled and before the final completion report. The loop planner should inspect the current spec, accepted plans, unresolved handoffs, asset needs, AI plans, mechanic surfaces, and implementation handoff needs. Its job is to find remaining shallow systems, disconnected mechanics, missing route depth, missing AI behavior, missing asset states, missing aftermath, or scope bloat.
 
@@ -1436,7 +1425,7 @@ The loop planner may return either an expansion addendum or a closure handoff. I
 
 A goal is not complete while an accepted loop addendum is unresolved, while a loop-recommended closure handoff has not been recorded, or while the mandatory loop pass was skipped without a tooling blocker. If the loop agent cannot be spawned because the tool is unavailable, the completion report must state that as a blocker and must not hide it as finished work.
 
-Tiny known-file text edits, narrow typo fixes, and direct one-line skill updates can skip the loop pass only when they do not create or change feature design, mechanics, focus trees, decisions, country packages, assets, super-events, or implementation handoff rules.
+Tiny known-file text edits, narrow typo fixes, and direct one-line skill updates can skip the loop pass only when they do not create or change feature design, mechanics, focus trees, decisions, country packages, assets, sourced text or audio packages, or implementation handoff rules.
 
 ## General localisation handoff
 
@@ -1495,7 +1484,7 @@ Do not create new feature specs, addenda, prompt packages, or extracted handoffs
 
 The spec file should contain only the feature specification.
 
-Do not put the asset prompt, super-event prompt, coding-agent prompt, or goal prompt inside the spec file.
+Do not put the asset prompt, text and audio research prompt, coding-agent prompt, or goal prompt inside the spec file.
 
 Keep planning files readable as design handoffs, not implementation blueprints. Prefer route purpose, player-facing behavior, balance intent, asset direction, AI intent, and acceptance criteria. Avoid long technical tables, exact constant lists, full scripted-effect recipes, exhaustive file inventories, parser-level implementation notes, and detailed code wiring. The specs you create are not implementation oriented. You do not give implementation guidance, you are just handing off ideas.
 
@@ -1519,7 +1508,7 @@ The zip should include, when relevant:
 - focus-tree path spec parts
 - optional focus tree path diagrams or route sketches when useful
 - asset prompt file
-- super-event prompt file
+- text and audio research prompt file
 - achievement prompt file
 - coding-agent prompt file
 - goal prompt file
@@ -1552,7 +1541,7 @@ Only after the full specification is complete, create separate prompt files outs
 Required prompt files:
 
 - `feature_slug_asset_prompt.md`
-- `feature_slug_super_event_prompt.md` when the feature has one or more super-events
+- `feature_slug_text_audio_research_prompt.md` when the feature needs sourced text or audio
 - `feature_slug_achievement_prompt.md`
 - `feature_slug_decision_mission_prompt.md` when the feature has large decision or mission systems
 - `feature_slug_coding_prompt.md`
@@ -1566,13 +1555,13 @@ Create an asset prompt for `hoi4-feature-assets`.
 
 The prompt should cover all required visual assets, progression-state variants, final asset packaging, reference folders, source modes, and manifest requirements.
 
-### Super-event prompt file
+### Text and audio research prompt file
 
-Create a super-event prompt for `hoi4-super-events` if the feature has one or more super-events.
+Create sourced quote, remark, or audio research prompt for `hoi4-text-audio-research` if the feature needs sourced text or audio.
 
-The prompt should cover title direction, description direction, quote research, cultural remark research, audio research, image direction, source documentation, licensing notes, and coordination with asset work.
+The prompt should cover title direction, quote research, cultural remark research, slogan or allusion research, audio research, source documentation, licensing notes, and coordination with asset work when a custom image is also needed.
 
-The prompt must not provide unresearched final titles, button text, quotes, slogans, lyric fragments, cultural references, or final audio choices. Use research gates and role labels instead. It must tell the super-event researcher to produce the final text package only after source checks.
+The prompt must not provide unresearched final titles, button text, quotes, slogans, lyric fragments, cultural references, or final audio choices. Use research gates and role labels instead. It must tell the text and audio researcher to produce the final text package only after source checks.
 
 ### Achievement prompt file
 
@@ -1589,18 +1578,18 @@ Create a coding-agent implementation prompt that summarizes the finished feature
 The prompt must tell the coding agent to:
 
 - implement the feature according to the spec
-- implement all mapped decisions, variants, escalation variants, focus trees, custom tags, country packages, achievements, assets, and super-events included in the spec
+- implement all mapped decisions, variants, escalation variants, focus trees, custom tags, country packages, achievements, assets, and sourced text or audio packages included in the spec
 - implement the mapped cost and sacrifice model, avoiding boring political power or command power only decisions when the spec calls for XP, equipment, manpower, stability, war support, fuel, supply, units, local support, foreign access, or other concrete costs
 - implement focus trees according to the path design, with coherent non-linear branches, route locks, side paths, convergence nodes, hidden routes, focus filter tags or search categories, varied reward types, proper icons, final localisation written from the spec direction, AI behavior, feature integration, and no filler shortcuts
 - create the final exact focus layout and connections cleanly in implementation while preserving the spec's path logic
 - implement every country package from the spec, including tag, history, names, cosmetic names, ideology names, ruling parties, leaders, leader changes, flags, route-specific identity changes, starting divisions, dynamic unit packages, force-growth decisions and focuses, volunteer routes, decisions, ideas, AI behavior, localisation, assets, and docs
 - implement the full AI strategy matrix from the spec, including route preferences, foreign influence behavior, focus choices, unit-raising choices, decision choices, faction behavior, and extreme-route exceptions
 - follow `AGENTS.md`
-- follow `hoi4-events`
+- follow `hoi4-events` if the feature includes ordinary HOI4 events, event chains, news events, or report events
 - use `hoi4-feature-assets` if visual assets are required
-- use `hoi4-super-events` if super-events are required
-- write final player-facing feature, decision, focus, achievement, GUI, feature-detail, and planning workbook-facing localisation from the direction in the spec. Do not expect the planning spec to provide finished copy
-- treat unresearched super-event titles, button text, quotes, cultural remarks, slogans, allusions, and audio choices as blockers, not as implementation-ready localisation
+- use `hoi4-text-audio-research` if sourced text or audio is required
+- write final player-facing feature, decision, focus, achievement, GUI, feature-detail, and parent-provided external record wording from the direction in the spec. Do not expect the planning spec to provide finished copy
+- treat unresearched text or audio titles, button text, quotes, cultural remarks, slogans, allusions, and audio choices as blockers, not as implementation-ready localisation
 - keep all mod systems aligned
 - report anything that cannot be implemented cleanly
 - keep iterating until the full spec is implemented to its fullest extent
@@ -1623,12 +1612,12 @@ A good goal prompt should include:
 - the spec file path
 - the coding prompt file path
 - the asset prompt file path
-- the super-event prompt file path when relevant
+- the text and audio research prompt file path when relevant
 - the achievement prompt file path
 - the required skills or docs to follow
 - the top design non-negotiables
 - the requirement to create all required static and animated assets, static fallbacks, tags, starting divisions, reinforcement pathways, non-linear focus trees based on the mapped paths, focus filter tags, decisions, escalation variants, achievements, and docs
-- the requirement to research and source final super-event titles, button text, quotes, cultural remarks, and audio through the proper super-event workflow when super-events exist
+- the requirement to research and source final presentation titles, button text, quotes, cultural remarks, slogans, allusions, and audio through the proper text and audio research workflow when sourced text or audio exists
 - the requirement to spawn `hoi4_improvement_loop_planner` near completion and resolve its addendum or closure handoff before claiming completion
 - the requirement to provide a concrete completion report
 
@@ -1654,17 +1643,17 @@ Before finishing a major feature spec, ask:
 The final response should include:
 
 - spec file created
-- planning workbook row used when applicable
+- external records used only when the repository has them and the parent provides them
 - repo context inspected
 - linked feature group role defined when relevant
 - assets defined when needed, including country identity assets
 - animation planning pass completed for important mechanics, custom UI, formables, route reveals, extreme-route states, and major leader transformations
 - animated sprite and animated portrait needs mapped with static fallbacks, state logic, and `hoi4-frame-animation` handoff expectations when relevant
 - historical flags, real symbols, and real leader portraits marked for sourced asset work when relevant
-- super-event direction defined when needed
-- general localisation handoff uses direction only for feature titles, options, descriptions, decision text, focus text, achievement text, GUI labels, feature-detail text, and planning workbook-facing wording
-- super-event text research gates used when final title, button text, quote, cultural remark, or audio has not been researched
-- no unresearched super-event title, button text, quote, cultural remark, slogan, lyric fragment, or allusion presented as final localisation
+- quote, remark, image, or audio direction defined when needed
+- general localisation handoff uses direction only for feature titles, options, descriptions, decision text, focus text, achievement text, GUI labels, feature-detail text, and external record wording
+- researched text research gates used when final title, button text, quote, cultural remark, or audio has not been researched
+- no unresearched text or audio title, button text, quote, cultural remark, slogan, lyric fragment, or allusion presented as final localisation
 - country package matrices created for new or modified countries when relevant
 - starting force and reinforcement pathway plans created for new or transformed fighting countries, including dynamic scaling, template families, unit sources, and later reinforcement routes
 - AI strategy matrix created for major features or country-creation features
@@ -1677,7 +1666,7 @@ The final response should include:
 - focus tree files split into separate parts when the tree is too large for one file
 - decisions and rare variants mapped when they exist
 - feature option tone mapped where feature options exist, including irony, sarcasm, cultural remarks, humour, or deliberate plain severity
-- escalation variant entry paths mapped when escalation variants exist, including active-feature escalation variant, pre-fire escalated opening, or a clear reason only one path applies
+- escalation variant entry paths mapped when escalation variants exist, including active-feature escalation variant, pre-activation escalated opening, or a clear reason only one path applies
 - decision and objective costs use varied resources, sacrifices, requirements, and risks instead of defaulting to political power or command power
 - achievements mapped with difficult conditions, icon directions, and tracking notes
 - ideology-specific names, cosmetic names, leader changes, and flag changes mapped when relevant
@@ -1762,9 +1751,9 @@ Reject the draft if it has any of these problems:
 - branches where every focus simply follows the previous one without a strong story reason
 - expansion trees that are only linear claim ladders instead of ideology, trauma, patron, military, economic, or escalation-driven ambitions
 - escalation variants that are really just ordinary stages
-- escalation variant specs that do not define whether each escalation variant enters through active-feature escalation variant, pre-fire escalated opening, or both
+- escalation variant specs that do not define whether each escalation variant enters through active-feature escalation variant, pre-activation escalated opening, or both
 - active-feature escalation variants that do not state what changes immediately for existing active actors
-- pre-fire escalated openings that do not state how the first run changes before the ordinary baseline starts
+- pre-activation escalated openings that do not state how the first run changes before the ordinary baseline starts
 - fixed cooldowns or pressure values without dynamic factors
 - decision, mission, or focus cost plans that rely mostly on political power or command power when concrete costs such as XP, equipment, manpower, fuel, stability, war support, supply, local support, foreign access, or unit commitments would fit better
 - achievements missing from a major feature spec
@@ -1775,13 +1764,13 @@ Reject the draft if it has any of these problems:
 - animated asset plan that lacks static fallback, state logic, frame-sheet handoff, target surface, sprite names, or `hoi4-frame-animation` ownership
 - missing asset coverage for country names, cosmetic identities, ideology flags, focus-route flags, leader changes, portraits, faction emblems, decisions, focuses, ideas, achievements, and UI where relevant
 - missing AI route matrix for major features, country-creation features, or foreign-influence systems
-- missing super-event handoff for required super-events
-- final feature titles, feature options, feature descriptions, report prose, news prose, decision names, decision descriptions, focus names, focus descriptions, achievement titles, achievement descriptions, GUI labels, feature-detail text, or planning workbook-facing wording written as pasteable localisation when the spec should give direction only
+- missing text/audio research handoff for required text and audio packages
+- final feature titles, feature options, feature descriptions, report prose, news prose, decision names, decision descriptions, focus names, focus descriptions, achievement titles, achievement descriptions, GUI labels, feature-detail text, or external record wording written as pasteable localisation when the spec should give direction only
 - sample, possible, temporary, or placeholder player-facing text included in the spec when the coding agent should write the final wording
-- super-event title, button text, quote, cultural remark, slogan, lyric fragment, allusion, or audio choice written as final content without research and source documentation
-- placeholder, sample, or working super-event text that could be pasted into localisation
-- role labels, asset names, achievement titles, or prompt filenames reused as final super-event localisation without research
-- coding prompt or goal prompt that lets unresearched super-event text be implemented instead of treating it as blocked
+- presentation title, button text, quote, cultural remark, slogan, lyric fragment, allusion, or audio choice written as final content without research and source documentation
+- placeholder, sample, or working researched text that could be pasted into localisation
+- role labels, asset names, achievement titles, or prompt filenames reused as final presentation localisation without research
+- coding prompt or goal prompt that lets unresearched researched text be implemented instead of treating it as blocked
 - goal prompt over 4000 characters
 - goal prompt that tries to contain the whole spec instead of pointing to files
 - missing final zip package containing all required spec files, prompt files, route diagrams if used, research notes, and matrices

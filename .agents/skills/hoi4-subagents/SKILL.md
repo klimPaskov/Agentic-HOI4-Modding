@@ -1,6 +1,6 @@
 ---
 name: hoi4-subagents
-description: Use when coordinating custom Codex subagents for HOI4 mod implementation, asset production, super-event research, audits, active small patches, planning handoffs, or documentation work.
+description: Use when coordinating custom Codex subagents for HOI4 mod implementation, asset production, text and audio research, audits, active small patches, planning handoffs, or documentation work.
 ---
 
 # HOI4 Subagents
@@ -24,7 +24,7 @@ This rule applies to every subagent type:
 - read-only agents
 - plan-only agents
 - asset-production agents
-- super-event research agents
+- text and audio research agents
 - active small-patch agents
 - scripted-system agents
 - documentation agents
@@ -39,15 +39,15 @@ Use `hoi4_repo_explorer` only for read-only repo exploration when touched-file m
 
 Use `hoi4_improvement_loop_planner` for feature improvement loop planning, detailed expansion specs, historical and regional research notes, and implementation-ready improvement handoffs. This replaces the old mechanic-expander role. It writes plans and addenda. It does not patch gameplay files.
 
-Use `hoi4_asset_source_researcher` for real or archival image sourcing, real leader portraits, historical flags, historical symbols, user-provided source photos, source-image processing, animated portrait bases, and report, news, or super-event images that must depict real historical material.
+Use `hoi4_asset_source_researcher` for real or archival image sourcing, real leader portraits, historical flags, historical symbols, user-provided source photos, source-image processing, animated portrait bases, and report, news, or custom feature images that must depict real historical material.
 
-Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, super-event images, fictional portraits, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces.
+Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, custom feature images, fictional portraits, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces.
 
 Use `hoi4_icon_artist` for focus icons, idea icons, national spirit icons, officer corps icons, decision icons, decision category icons, achievement icons, tech icons, formable seals, scripted GUI icons, and small animated icon or button sprites.
 
-Use `hoi4_super_event_text_researcher` for super-event main quotes, exact wording checks, attribution confidence, source comparison, button text, cultural remarks, slogans, allusions, and short references.
+Use `hoi4_quote_remark_researcher` for main quotes, exact wording checks, attribution confidence, source comparison, button text, cultural remarks, slogans, allusions, and short references.
 
-Use `hoi4_super_event_audio_researcher` for licensed or public domain audio research, source verification, download, `.ogg` conversion, and audio handoff notes.
+Use `hoi4_audio_researcher` for licensed or public domain audio research, source verification, download, `.ogg` conversion, and audio handoff notes.
 
 Use `hoi4_focus_tree_auditor` for focus tree audits and active small patches covering branch depth, route coverage, icons, localisation, rewards, prerequisites, mutual exclusions, AI, focus-formable links, and simplification.
 
@@ -59,11 +59,11 @@ Use `hoi4_localisation_auditor` for localisation and scripted localisation audit
 
 Use `hoi4_scripted_system_architect` for reusable scripted system design and active narrow implementation covering scripted effects, scripted triggers, script constants, event targets, meta effects, variables, tuning values, formable helpers, scripted GUI button helpers, and dynamic helper logic.
 
-Use `hoi4_documentation_curator` for documentation cleanup and consistency during long implementation. It reconciles specs, plans, docs, handoffs, manifests, prompts, reports, and README files, writes source-of-truth maps and resume packets, marks superseded docs, records plan dispositions, and flags contradictions. It patches documentation surfaces only and does not edit gameplay files, localisation, assets, or planning workbooks.
+Use `hoi4_documentation_curator` for documentation cleanup and consistency during long implementation. It reconciles specs, plans, docs, handoffs, manifests, prompts, reports, and README files, writes source-of-truth maps and resume packets, marks superseded docs, records plan dispositions, and flags contradictions. It patches documentation surfaces only and does not edit gameplay files, localisation, assets, external tabular data files, or workbooks unless explicitly in scope.
 
-Use `hoi4_feature_completion_auditor` for read-only spec-versus-implementation audits covering events, mechanics, assets, docs, super-events, focus trees, decisions, validation, and accepted plan addenda.
+Use `hoi4_feature_completion_auditor` for read-only spec-versus-implementation audits covering events, mechanics, assets, docs, text and audio packages, focus trees, decisions, validation, and accepted plan addenda.
 
-Use `hoi4_spreadsheet_doc_worker` only for mod-maintained spreadsheets or planning workbooks when the repository actually has them. It uses the spreadsheet skill, keeps the workbook player-facing, and matches optional event history or logging surface, event-detail, escalation variant detail, and linked-table fields to the in-game wording.
+Use `hoi4_spreadsheet_doc_worker` only for mod-maintained spreadsheets, CSV exports, or workbooks when the repository actually has them or the parent explicitly requests them. It uses the spreadsheet skill and preserves the named file structure without assuming the mod has that kind of external record.
 
 Do not route new work to obsolete planner aliases. Use `hoi4_improvement_loop_planner` and the `hoi4-improvement-loop` skill.
 
@@ -75,7 +75,7 @@ Use `hoi4_repo_explorer` when at least one of these is true:
 
 - the parent does not know the likely touched files
 - the task spans several systems and the edit order is uncertain
-- the correct the mod pattern or vanilla precedent is unclear
+- the correct repository pattern or vanilla precedent is unclear
 - a named spec, prompt, source file, classification, sprite, tag, localisation key, or helper appears missing and needs recovery evidence
 - the feature has enough cross-surface risk that a file map and meaningful validation plan will prevent missed work
 
@@ -87,7 +87,7 @@ Do not spawn `hoi4_repo_explorer` for small or already bounded work, including:
 - small bug fixes where the relevant files are already named
 - localisation-only cleanup with known keys
 - asset-only production that belongs to an asset subagent
-- spreadsheet-only updates that belong to `hoi4_spreadsheet_doc_worker`
+- tabular-data-only updates that belong to `hoi4_spreadsheet_doc_worker`
 - simple report, docs, or markdown edits where the parent can inspect the provided files directly
 
 When the task is small, the parent should read the known files directly and proceed. Do not use repo exploration as a ritual step or as a replacement for parent review.
@@ -107,7 +107,7 @@ They may write reports only when a report path is provided or obvious from the t
 
 ### Plan-only agents
 
-`hoi4_improvement_loop_planner` writes feature expansion specs, improvement addenda, deep research notes, historical connection notes, and implementation handoffs. It does not edit gameplay, localisation, GUI, scripted effects, focus trees, decisions, assets, planning workbooks, or country files.
+`hoi4_improvement_loop_planner` writes feature expansion specs, improvement addenda, deep research notes, historical connection notes, and implementation handoffs. It does not edit gameplay, localisation, GUI, scripted effects, focus trees, decisions, assets, external tabular data files, workbooks, or country files.
 
 When an event mechanic needs more depth, new branches, new countries, a new formable suite, a new scripted GUI system, deeper regional logic, historical anchors, or a larger route redesign, the planner writes a plan under `docs/plans/<feature_slug>/`. The main agent decides what to implement.
 
@@ -119,11 +119,11 @@ The parent should use this planner after a meaningful implementation tranche, no
 
 Use it after long implementation tranches, after several subagent handoffs, before a major resume, or whenever docs may be stale, contradictory, duplicated, or too numerous. It should reduce confusion for the parent agent by recording what is current, what is superseded, what is queued, what is rejected, and what still needs a decision.
 
-It must not edit gameplay files, localisation, scripted localisation, GUI, GFX, events, focuses, decisions, ideas, scripted effects, scripted triggers, on_actions, country setup, history, AI files, assets, audio, binary files, or spreadsheets. It does not replace `hoi4_feature_completion_auditor`, `hoi4_localisation_auditor`, `hoi4_spreadsheet_doc_worker`, or `hoi4_repo_explorer`.
+It must not edit gameplay files, localisation, scripted localisation, GUI, GFX, events, focuses, decisions, ideas, scripted effects, scripted triggers, on_actions, country setup, history, AI files, assets, audio, binary files, or external tabular data files. It does not replace `hoi4_feature_completion_auditor`, `hoi4_localisation_auditor`, `hoi4_spreadsheet_doc_worker`, or `hoi4_repo_explorer`.
 
 ### Asset-production agents
 
-Asset subagents create source files, processed previews, final DDS outputs, contact sheets, manifests, and asset handoffs. They do not wire gameplay, localisation, GFX, GUI, events, focuses, decisions, or planning workbooks unless the parent gives a narrow exception.
+Asset subagents create source files, processed previews, final DDS outputs, contact sheets, manifests, and asset handoffs. They do not wire gameplay, localisation, GFX, GUI, events, focuses, decisions, or workbooks unless the parent gives a narrow exception.
 
 ### Active small-patch agents
 
@@ -223,37 +223,37 @@ The parent agent must give each asset subagent a bounded prompt with exact asset
 
 For flags, the parent prompt must state whether each flag is a base flag, ideology variant, route variant, cosmetic-tag flag, historical flag, or fictional flag. Base flags for existing countries must be preserved unless explicitly in scope. Ideology variants must be distinct designs, not recolors or copied emblems. Historical flags and attested symbols belong with `hoi4_asset_source_researcher`. Fictional or alternate-history variants belong with `hoi4_generated_feature_art`.
 
-Asset subagents may create source files, PNG previews, DDS files, contact sheets, manifests, and `gfx_handoff.md`. They must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, script, history, country, or planning workbook files unless the parent explicitly expands scope.
+Asset subagents may create source files, PNG previews, DDS files, contact sheets, manifests, and `gfx_handoff.md`. They must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, script, history, country, or workbook files unless the parent explicitly expands scope.
 
-## Super-event routing
+## Quote, remark, and audio research routing
 
-Use separate research agents when the super-event package has enough work to justify it.
+Use separate research agents when the text and audio package has enough work to justify it.
 
-Use `hoi4_super_event_text_researcher` for quotes, exact wording, attribution confidence, button text, cultural remarks, slogans, allusions, and short references.
+Use `hoi4_quote_remark_researcher` for quotes, exact wording, attribution confidence, button text, cultural remarks, slogans, allusions, and short references.
 
-Use `hoi4_super_event_audio_researcher` for audio research, license verification, download, `.ogg` conversion, and audio handoff notes.
+Use `hoi4_audio_researcher` for audio research, license verification, download, `.ogg` conversion, and audio handoff notes.
 
 Use `hoi4_asset_source_researcher` or `hoi4_generated_feature_art` for image work according to the source mode required by `hoi4-feature-assets`.
 
-The main agent owns final wiring, localisation, settings-aware playback, docs, and planning workbook alignment.
+The main agent owns final wording, localisation, audio wiring, playback helpers, and docs alignment.
 
 ## Improvement routing
 
 Use `hoi4_improvement_loop_planner` when a feature or feature-adjacent mechanic needs new design material, not just an audit finding.
 
-The planner should read `hoi4-improvement-loop`, `hoi4-feature-planning`, and relevant system skills. It should inspect actual implementation, specs, plans, docs, localisation, and asset notes when available. It should then write concrete design material that expands the event through playable mechanics, historical or regional connections, AI behavior, and visual needs. It should not patch gameplay files.
+The planner should read `hoi4-improvement-loop`, `hoi4-feature-planning`, and relevant system skills. It should inspect actual implementation, specs, plans, docs, localisation, and asset notes when available. It should then write concrete design material that expands the feature through playable mechanics, historical or regional connections, AI behavior, and visual needs. It should not patch gameplay files.
 
 The main agent should deploy the planner often enough to keep major features from becoming shallow after new mechanics are added, but not so often that plans pile up. For the same feature, do not deploy another planner pass until the previous addendum is implemented, promoted to specs, queued with a reason, or rejected.
 
 Audit subagents may include compact improvement handoffs inside their reports. If a gap requires a new route family, new GUI system, new formable suite, new country package, or new event chain, they should recommend a plan-mode pass rather than trying to patch it.
 
-## Planning workbook routing
+## Optional spreadsheet and workbook routing
 
-`hoi4_spreadsheet_doc_worker` is a context-light spreadsheet worker, not a general documentation agent.
+`hoi4_spreadsheet_doc_worker` is a context-light spreadsheet or workbook worker, not a general documentation agent.
 
-Use it only when the required output is a spreadsheet, CSV export, XLSX planning workbook, balancing table, route matrix, asset ledger, localisation tracking sheet, or similar workbook that already exists in the repository or is explicitly requested by the parent.
+Use it only when the required output is a spreadsheet, CSV export, XLSX workbook, balancing table, route matrix, asset ledger, localisation tracking sheet, or similar table that already exists in the repository or is explicitly requested by the parent.
 
-The parent prompt should provide the workbook path, sheet, ids, row targets, source localisation keys, or exact fields to update when possible.
+The parent prompt must provide the workbook or CSV path, sheet, ids, row targets, source localisation keys, or exact fields to update when possible.
 
 The worker should read only:
 
@@ -265,7 +265,7 @@ The worker should read only:
 
 It should not read HOI4 wiki pages, vanilla documentation, vanilla files, broad implementation guides, or unrelated repo systems. It should not edit docs, specs, plans, manifests, gameplay files, localisation files, assets, GFX, GUI, events, focuses, decisions, ideas, history, scripted effects, scripted triggers, or other workbooks unless the parent explicitly expands scope.
 
-The worker must preserve workbook structure, formatting, formulas, filters, and validation unless the parent explicitly asks for structural changes.
+The worker must preserve workbook or CSV structure, formatting, formulas, filters, and validation unless the parent explicitly asks for structural changes.
 
 
 ## Parent review
@@ -280,6 +280,6 @@ Before final completion, the parent should check:
 - documentation curator handoffs identify promoted, queued, rejected, superseded, and unresolved documents when one was used
 - assets are wired or reported as pending
 - validation reflects the final repo state
-- docs, specs, plans, and planning workbook surfaces agree
+- docs, specs, plans, and any explicitly scoped external records agree
 
 A subagent patch can reduce workload. It never owns the final completion claim.

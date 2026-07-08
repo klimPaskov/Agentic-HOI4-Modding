@@ -16,7 +16,7 @@ Read and apply:
 - .agents/skills/hoi4-events/SKILL.md when text belongs to an event.
 - .agents/skills/hoi4-decisions-missions/SKILL.md when text belongs to decisions, missions, scripted GUI buttons, costs, or tooltips.
 - .agents/skills/hoi4-focus-trees/SKILL.md when text belongs to focuses.
-- .agents/skills/hoi4-super-events/SKILL.md when text belongs to super-events.
+- .agents/skills/hoi4-text-audio-research/SKILL.md when text belongs to text or audio research packages.
 - .agents/skills/hoi4-improvement-loop/SKILL.md when text reveals a design depth gap.
 - .agents/skills/hoi4-subagents/SKILL.md.
 - Relevant offline Paradox wiki localisation pages.
@@ -25,7 +25,7 @@ Audit for:
 - missing keys, duplicate keys, wrong namespaces, wrong file encoding, and broken scripted localisation
 - visible raw trigger text that should use custom tooltips
 - static text where dynamic values, actor names, state names, route names, cost values, or timers would improve clarity
-- event, focus, decision, GUI, super-event, achievement, and spreadsheet wording that contradicts each other
+- event, focus, decision, GUI, quote, remark, audio, achievement, docs, and explicitly scoped external record wording that contradicts each other
 - hidden route text that reveals secrets too early
 - generic wording that makes different routes feel identical
 - scripted GUI buttons without cost, requirement, result, blocked, and warning text

@@ -79,7 +79,7 @@ Workflow:
 
 Forbidden scope:
 - Do not edit .gfx or .gui files.
-- Do not edit gameplay, localisation, focus, idea, decision, event, script, history, country, or spreadsheet files.
+- Do not edit gameplay, localisation, focus, idea, decision, event, script, history, country, or external tabular data files.
 - Do not gather repo context outside the narrow asset files and references named above.
 
 Completion standard:

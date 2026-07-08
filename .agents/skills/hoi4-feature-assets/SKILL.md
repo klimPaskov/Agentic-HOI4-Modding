@@ -3,11 +3,11 @@ name: hoi4-feature-assets
 description: Use when creating, sourcing, processing, converting, organizing, wiring, or documenting visual assets for a Hearts of Iron IV mod.
 ---
 
-# HOI4 Event Assets
+# HOI4 Feature Assets
 
 Use this skill when a HOI4 modding task requires final visual assets.
 
-This includes event assets, UI assets, focus tree assets, country assets, achievement assets, generated icons, sourced event art, generated icon art, animated sprites, animated portraits, sprite sheets, GIF previews, and any asset package that must be wired into the mod.
+This includes event pictures, UI assets, focus tree assets, country assets, achievement assets, generated icons, sourced feature art, generated icon art, animated sprites, animated portraits, sprite sheets, GIF previews, and any asset package that must be wired into the mod.
 
 ## 1. Core purpose
 
@@ -24,7 +24,7 @@ The asset workflow must produce:
 
 Do not leave assets as loose generated or downloaded images.
 
-If an asset is used by the event, it must be processed, placed, documented, and handed off so the main agent can wire it cleanly.
+If an asset is used by the feature, it must be processed, placed, documented, and handed off so the main agent can wire it cleanly.
 
 ## 2. When to use this skill
 
@@ -33,7 +33,7 @@ Use this skill for:
 - event pictures
 - report event pictures
 - news event pictures
-- super-event images
+- custom feature images
 - decision icons
 - decision category icons
 - idea icons
@@ -50,7 +50,7 @@ Use this skill for:
 - animated UI pieces
 - animated leader portraits
 - sprite sheets and GIF previews for review
-- any other static or animated visual asset required by a the event or mechanic
+- any other static or animated visual asset required by a feature or mechanic
 
 Use this skill when the user asks the agent to create, source, process, or wire final visual assets.
 
@@ -67,8 +67,8 @@ The main agent decides which subagent to spawn, gives it a bounded asset prompt,
 
 Use:
 
-- `hoi4_asset_source_researcher` for real or archival image sourcing, real leader portraits, historical flags, historically attested symbols, user-provided source photos, and report/news/super-event images that must depict a real photographed person, place, object, or historical document
-- `hoi4_generated_feature_art` for generated non-icon event art, including fictional or alternate-history report images, news images, super-event images, fictional portraits, fictional flags, faction emblems, UI panels, dossier art, and progression-state base art
+- `hoi4_asset_source_researcher` for real or archival image sourcing, real leader portraits, historical flags, historically attested symbols, user-provided source photos, and report, news, or custom feature images that must depict a real photographed person, place, object, or historical document
+- `hoi4_generated_feature_art` for generated non-icon feature art, including fictional or alternate-history report images, news images, custom feature images, fictional portraits, fictional flags, faction emblems, UI panels, dossier art, and progression-state base art
 - `hoi4_icon_artist` for focus icons, idea icons, national spirit icons, officer corps spirit icons, decision icons, decision category icons, achievement icons, and tech icons
 
 For animated work, route by asset type first. Then require the chosen asset subagent to follow `hoi4-frame-animation` for frame plans, per-frame source art, normalization, contact sheets, preview GIFs, frame sheets, static fallbacks, and animation handoffs.
@@ -82,9 +82,9 @@ Asset subagents may create:
 - manifests
 - `docs/assets/<feature_slug>/gfx_handoff.md`
 
-Asset subagents must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, scripted effect, scripted trigger, on_action, history, country, or planning workbook files unless the parent explicitly grants that scope.
+Asset subagents must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, scripted effect, scripted trigger, on_action, history, country, external tabular data files, or workbooks unless the parent explicitly grants that scope.
 
-The main agent owns final `.gfx` sprite definitions, gameplay references, docs alignment, planning workbook alignment, and validation.
+The main agent owns final `.gfx` sprite definitions, gameplay references, docs alignment, and validation.
 
 A good parent prompt to an asset subagent includes the feature slug, asset list, asset type, target size, source mode, final DDS folder, sprite name if already registered, reference folder, visual direction, source constraints, and anything the subagent must mark blocked instead of substituting.
 
@@ -101,18 +101,18 @@ Use this folder form:
 
 Place the feature folder directly under the asset category folder, for example `gfx/event_pictures/<feature_slug>/` or `gfx/interface/ideas/<feature_slug>/`. Do not insert a project namespace layer such as `gfx/event_pictures/<mod_namespace>/<feature_slug>/`; the mod root already provides the project namespace.
 
-Do not leave new event assets loose in category roots such as `gfx/event_pictures/`, `gfx/super_events/`, `gfx/interface/ideas/`, `gfx/interface/goals/`, `gfx/interface/decisions/`, or `gfx/leaders/` unless that root placement is an engine-facing lookup requirement.
+Do not leave new feature assets loose in category roots such as `gfx/event_pictures/`, `gfx/presentations/`, `gfx/interface/ideas/`, `gfx/interface/goals/`, `gfx/interface/decisions/`, or `gfx/leaders/` unless that root placement is an engine-facing lookup requirement.
 
 Root-only and engine-convention exceptions:
 
 - `gfx/achievements/` must keep achievement DDS files directly in the root. Do not create `gfx/achievements/<feature_slug>/` subfolders unless a new engine behavior has been verified locally. Achievement filenames must match the full achievement ids from `common/achievements/`, so feature-owned achievement ids and triplet filenames should use `<feature_slug>_<achievement_name>{,_grey,_not_eligible}.dds` or the exact established id if it includes an ordinal.
 - `gfx/flags/`, `gfx/flags/medium/`, and `gfx/flags/small/` must keep HOI4 tag/ideology filenames. Do not put flags into feature folders; use cosmetic tags or route-specific tag filenames when a feature needs transformed flags.
 
-Shared or non-event systems may use a clear shared/system folder. Do not force shared assets into a feature folder just to avoid a root directory.
+Shared systems may use a clear shared or system folder. Do not force shared assets into a feature folder just to avoid a root directory.
 
 When moving or adding an asset, update every `.gfx`, `.gui`, event, idea, decision, focus, localisation, and documentation reference that names the old path or sprite. Keep sprite names stable unless the engine-facing identifier itself has to change, as with achievement ids.
 
-Super-event audio follows the `hoi4-super-events` convention. Final music belongs under `music/<feature_slug>/super_event_<super_event_id>_<super_event_name>.ogg`, and matching sound-channel files belong under `sound/<feature_slug>/super_event_<super_event_id>_<super_event_name>.wav`. Do not create persistent `music/source/` or `music/super_events/` folders; preserve source downloads under docs/assets source-audio paths instead.
+Researched presentation audio belongs to `hoi4-text-audio-research`. Use feature-scoped music and sound paths only when the repository already uses that convention or the parent prompt asks for it. Preserve source downloads under a documented source-audio path instead of burying them among final game files.
 
 ## 3. Asset source rules
 
@@ -120,9 +120,9 @@ Choose the source mode based on asset type.
 
 ### Scene-first and mood-first selection rule
 
-Do not default event art to maps, cartographic overlays, arrows, staff tables, conference rooms, or generic war-room compositions unless that is the strongest visual for the specific asset.
+Do not default feature art to maps, cartographic overlays, arrows, staff tables, conference rooms, or generic war-room compositions unless that is the strongest visual for the specific asset.
 
-For the mod, many event visuals should focus on the actor, force, symbol, ritual, creature, crowd, machine, government, army, leader, or strange condition behind the event. The image should usually make the event feel active and dangerous, not merely show that territory changed.
+For a feature, many visuals should focus on the actor, force, symbol, ritual, creature, crowd, machine, government, army, leader, or strange condition behind the event. The image should usually make the event feel active and dangerous, not merely show that territory changed.
 
 Prefer visuals that show:
 
@@ -168,13 +168,13 @@ For generated animated assets, use `$imagegen` through `hoi4-frame-animation`. E
 
 ### Choose source mode for event photo assets
 
-Report images, news images, and super-event images may be either internet-sourced or generated.
+Report images, news images, and custom feature images may be either internet-sourced or generated.
 
 Use internet-sourced imagery when the asset must show a real photographed person, specific real battle, real place, real object, real newspaper, real poster, real map, real archive item, or other verifiable historical material.
 
 Use `$imagegen` when the event is fictional, alternate-history, symbolic, supernatural, extreme-route, or when a unique scene is more important than matching an existing archive image. Generated event-photo assets should be prompted as period-authentic documentary material, not modern cinematic concept art.
 
-For generated Second World War-era report/news/super-event images:
+For generated Second World War-era report, news, or custom feature images:
 
 - prompt for 1936-1945 photographic technology, period composition, period clothing, period vehicles, period architecture, and documentary realism
 - avoid modern streets, uniforms, props, weapons, vehicles, signage, UI overlays, cinematic color grading, and readable generated text
@@ -229,7 +229,6 @@ Before generating, sourcing, processing, or wiring an asset, inspect the relevan
 .agents/skills/hoi4-feature-assets/assets/ideas
 .agents/skills/hoi4-feature-assets/assets/news_event_images
 .agents/skills/hoi4-feature-assets/assets/report_event_images
-.agents/skills/hoi4-feature-assets/assets/super_event_images
 .agents/skills/hoi4-feature-assets/assets/tech_icons
 .agents/skills/hoi4-feature-assets/assets/achievements
 .agents/skills/hoi4-feature-assets/assets/decisions
@@ -244,7 +243,6 @@ Reference mapping:
 - officer corps spirit icons: inspect vanilla `gfx/interface/officer_corp/spirits/`. Final assets should be 45x45 DDS files with transparent backgrounds, no frames, no painted backdrop, no full-canvas opaque pixels, a readable dark or black outline, and a slight drop shadow. Wire them as `GFX_idea_<spirit_id>` sprites from a `.gfx` file.
 - news event images: `assets/news_event_images`
 - report event images: `assets/report_event_images`
-- super-event images: `assets/super_event_images`
 - tech icons: `assets/tech_icons`
 - achievement icons: `assets/achievements`
 - decision and decision category icons: `assets/decisions`
@@ -261,7 +259,7 @@ If the needed asset type has no matching reference folder, inspect the closest r
 
 Do not create core artwork from simple shapes, placeholders, contact sheets, layout-only mockups, empty UI boxes, or generated charts. Final art must be real generated, sourced, or user-provided artwork, not circles, rectangles, lines, gradients, geometric diagrams, or other primitive-shape stand-ins.
 
-For super-event images, this rule is strict: final art must be a real scene, archival image, painted illustration, or generated documentary-style image. Do not use symbolic diagrams, flat icons, abstract geometry, title cards, or UI-like compositions as the final super-event image unless the user explicitly requests that exact visual approach and the exception is documented.
+For custom feature images, this rule is strict: final art must be a real scene, archival image, painted illustration, or generated documentary-style image. Do not use symbolic diagrams, flat icons, abstract geometry, title cards, or UI-like compositions as the final custom feature image unless the user explicitly requests that exact visual approach and the exception is documented.
 
 Use `$imagegen` for generated artwork and follow the `$imagegen` skill workflow for the source image.
 
@@ -380,8 +378,8 @@ The manifest must list every asset.
 Each asset entry should include:
 
 - asset name
-- related feature slug, and related event id only when the asset is tied to a real HOI4 event
 - related feature slug
+- related event id only when the asset is tied to a real HOI4 event
 - asset type
 - intended in-game use
 - source mode: `$imagegen`, internet source image, or user-provided source image
@@ -398,7 +396,7 @@ Each asset entry should include:
 - sprite name
 - `.gfx` file
 - localisation key if relevant
-- related focus, idea, event, decision, UI element, or super-event if relevant
+- related focus, idea, event, decision, UI element, or text and audio research package if relevant
 - notes
 - asset status
 - frame count, frame timing, loop behavior, and anchor point for animated assets
@@ -420,12 +418,12 @@ Use these sizes unless the feature spec or an existing repo pattern gives a bett
 - tech icons small: 64x64
 - tech icons medium: 132x52
 - achievements: 64x64
-- super-event images: 457x328
+- custom feature images: match the target GUI surface or documented repository pattern
 - decision icons: 32x32
 - idea and national spirit icons: 64x64
 - focus icons: 94x86
 
-Use other sizes when the event's UI or asset type requires it.
+Use other sizes when the feature UI or asset type requires it.
 
 When unsure, inspect the existing repository pattern and vanilla HOI4 assets before choosing.
 
@@ -443,7 +441,7 @@ Recommended filename prefixes:
 - decision category icons: `decision_category_`
 - report event images: `report_event_`
 - news event images: `news_event_`
-- super-event images: `super_event_`
+- custom feature images: `presentation_`
 - achievement icons: `achievement_`
 - leader portraits: `leader_`
 
@@ -498,7 +496,7 @@ Use:
 
 - realistic or period-authentic source imagery
 - black-and-white treatment with sepia applied
-- Second World War-era visual fit when the event belongs to that era
+- Second World War-era visual fit when the feature belongs to that era
 - period-appropriate framing where possible
 - strong subject clarity
 - natural composition
@@ -551,7 +549,7 @@ For Second World War-era subjects, prefer contemporary newspapers, news photogra
 Use:
 
 - old news photograph or period press illustration style
-- Second World War-era visual fit when the event belongs to that era
+- Second World War-era visual fit when the feature belongs to that era
 - clear central subject
 - strong contrast
 - period-appropriate composition
@@ -569,28 +567,26 @@ News images must be black and white.
 
 Generated news images must be converted to black and white during processing, with period press contrast/grain and no modern color remnants. Record the source link and license or public domain status for internet-sourced images, or the generation prompt and source-mode rationale for generated images.
 
-## 15. Super-event images
+## 15. Large feature presentation images
 
-Super-event images may use internet-sourced imagery or generated art. Prefer generated super-event images for fictional, alternate-history, symbolic, supernatural, extreme-route, or emotionally specific moments where a unique composed image better fits the super-event role. Use internet sources when the image must depict a real historical person, real photographed event, or real archival artifact.
+Large feature presentation images may use internet-sourced imagery or generated art. Prefer generated custom feature images for fictional, alternate-history, symbolic, supernatural, extreme-route, or emotionally specific moments where a unique composed image better fits the feature role. Use internet sources when the image must depict a real historical person, real photographed event, or real archival artifact.
 
-Super-event images should have:
+Large feature presentation images should have:
 
 - strong central composition
 - clear dramatic theme
 - readable subject
 - enough contrast for HOI4 UI
-- Second World War-era visual fit when the event belongs to that era
+- Second World War-era visual fit when the feature belongs to that era
 - no generated text
 - no modern clothing, streets, weapons, vehicles, buildings, props, film stills, or reenactment imagery when they do not fit the era
 - no cluttered small details that disappear at final size
 
 Target size:
 
-```text
-457x328
-```
+Use the exact target size required by the repository UI surface, image slot, or parent prompt. Do not assume a fixed custom-presentation size when the repository has no matching surface.
 
-If a super-event needs music, use `hoi4-super-events` and research suitable public domain or clearly licensed music. Final audio should use the feature-scoped `music/<feature_slug>/` and `sound/<feature_slug>/` layout from that skill. Never create event or super-event audio from generated test tones, primitive waveforms, beeps, noise beds, or local oscillator output; that includes sine, square, triangle, and sawtooth waveforms.
+If sourced quote, remark, or audio research needs music, use `hoi4-text-audio-research` and research suitable public domain or clearly licensed music. Use feature-scoped paths such as `music/<feature_slug>/` and `sound/<feature_slug>/` only when the repository uses that convention or the parent requests it. Never create final music or audio from generated test tones, primitive waveforms, beeps, noise beds, or local oscillator output; that includes sine, square, triangle, and sawtooth waveforms.
 
 For each track, document:
 
@@ -906,7 +902,7 @@ Asset planning should cover:
 - focus icons for the formation route
 - decision icon for the formation decision
 - decision category or scripted GUI assets if formation progress is managed visually
-- news, report, or super-event image if the formation is globally important
+- news, report, or custom feature image if the formation is globally important
 - faction emblem if the formable creates a league, empire, federation, bloc, mandate, compact, or coalition
 - achievement icon if the formable has achievement hooks
 
@@ -959,7 +955,7 @@ The handoff must include:
 2. Proposed sprite name or the exact sprite name already provided by the parent.
 3. Suggested target `.gfx` file.
 4. Ready-to-copy sprite definition snippet when useful.
-5. Related localisation key, GUI element, event id, focus id, idea id, decision id, achievement id, or super-event slot when known.
+5. Related localisation key, GUI element, event id, focus id, idea id, decision id, achievement id, or presentation cue or package id when known.
 6. Any uncertainty about sprite naming or target file placement.
 7. Any blocked or needs-review asset.
 
@@ -973,7 +969,7 @@ The main agent then:
 4. Points the texture file to the final DDS path.
 5. Keeps sprite names stable.
 6. Updates localisation, GUI, event, focus, idea, or decision references that use the sprite.
-7. Updates docs and planning workbook rows when relevant.
+7. Updates docs and any explicitly scoped external records when relevant.
 
 When wiring feature-owned sprite-backed art, the texture path should point to the feature-scoped folder for that asset category. If an asset must stay root-only, document the engine reason in the handoff or manifest.
 
@@ -981,7 +977,7 @@ Do not create a new `.gfx` file if an existing one is clearly the right place. I
 
 ## 26. Documentation updates
 
-When generated or sourced assets are part of an event or mechanic, update the relevant docs.
+When generated or sourced assets are part of a feature or mechanic, update the relevant docs.
 
 The docs should mention:
 
@@ -1028,7 +1024,7 @@ Do not invent a substitute asset unless the user explicitly approves it.
 Before finishing, confirm:
 
 1. Every required asset from the feature spec is accounted for.
-2. Every asset uses the correct source mode: `$imagegen` for generated symbolic, fictional, alternate-history, or unique report/news/super-event assets. internet or user-provided source images for real historical materials. and real source images for real leader portraits.
+2. Every asset uses the correct source mode: `$imagegen` for generated symbolic, fictional, alternate-history, or unique report, news, or large feature presentation assets. internet or user-provided source images for real historical materials. and real source images for real leader portraits.
 3. The matching reference folder from section 4 was inspected before generation, sourcing, processing, or wiring.
 4. Every generated, sourced, or provided asset has a source PNG.
 5. Every final asset has a processed PNG preview.

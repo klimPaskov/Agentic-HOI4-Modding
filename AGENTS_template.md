@@ -18,8 +18,8 @@ These values are already filled in this template and should normally be left as-
 - Offline Paradox wiki snapshot: `paradox_wiki/`
 - Local vanilla Hearts of Iron IV install: `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`
 - Default documentation folder: `docs/`
-- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-frame-animation`, `hoi4-super-events`, `hoi4-subagents`, `hoi4-improvement-loop`, `hoi4-focus-trees`, and `hoi4-decisions-missions`
-- Generic HOI4 subagents from `.codex/agents/`: `hoi4_repo_explorer`, `hoi4_feature_completion_auditor`, `hoi4_scripted_system_architect`, `hoi4_localisation_auditor`, `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_improvement_loop_planner`, `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_super_event_text_researcher`, `hoi4_super_event_audio_researcher`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, and `hoi4_skill_maintainer`
+- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-subagents`, `hoi4-improvement-loop`, `hoi4-focus-trees`, and `hoi4-decisions-missions`
+- Generic HOI4 subagents from `.codex/agents/`: `hoi4_repo_explorer`, `hoi4_feature_completion_auditor`, `hoi4_scripted_system_architect`, `hoi4_localisation_auditor`, `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_improvement_loop_planner`, `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_quote_remark_researcher`, `hoi4_audio_researcher`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, and `hoi4_skill_maintainer`
 
 ---
 
@@ -83,11 +83,11 @@ If vanilla examples are insufficient or unclear, you are allowed to inspect well
 
 Use repo skills as required implementation guidance, not as optional notes.
 
-- Use `hoi4-events` for ordinary HOI4 event implementation, event chains, news events, report events, localisation, on_actions, documentation, optional mod-specific event tracking, optional planning workbook alignment, and validation.
-- Use `hoi4-feature-planning` when designing or expanding feature ideas, feature-adjacent mechanics, country packages, super-event plans, focus-tree route plans, decision plans, achievements, AI behavior, asset needs, and implementation-ready specifications before coding.
+- Use `hoi4-events` for ordinary HOI4 event implementation, event chains, news events, report events, localisation, on_actions, documentation, optional mod-specific event tracking only when the repository has it, documentation, and validation.
+- Use `hoi4-feature-planning` when designing or expanding feature ideas, feature mechanics, country packages, focus-tree route plans, decision plans, achievements, AI behavior, asset needs, text and audio research gates, and implementation-ready specifications before coding.
 - Use `hoi4-feature-assets` when a task needs visual assets, icons, flags, portraits, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes.
 - Use `hoi4-frame-animation` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
-- Use `hoi4-super-events` when a task creates, updates, researches, or wires a super-event.
+- Use `hoi4-text-audio-research` when a task needs sourced quotes, cultural references, title-like references, slogans, or music and audio research.
 - Use `hoi4-focus-trees` before editing national focus trees.
 - Use `hoi4-decisions-missions` before editing decisions/missions.
 - If this repository installs an additional MTTH or weighted-timing skill, use it when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer. Otherwise centralize weighted timing logic in the relevant event, decision, or scripted-system helpers.
@@ -98,7 +98,7 @@ Use repo skills as required implementation guidance, not as optional notes.
 
 Use project custom Codex agents when a task needs bounded research, asset production, audit, recursive expansion, or documentation work that can be separated from main implementation.
 
-`hoi4-subagents` is the detailed source of truth for subagent routing, ownership boundaries, handoff quality, audit cadence, asset routing, super-event routing, and the recursive mechanic expansion loop.
+`hoi4-subagents` is the detailed source of truth for subagent routing, ownership boundaries, handoff quality, audit cadence, asset routing, text and audio research routing, and the recursive mechanic expansion loop.
 
 The main agent remains responsible for final implementation, final wiring, final review, validation, and completion claims. Subagents return evidence, files, manifests, spec addenda, patches, or handoff notes depending on the parent-granted mode. The main agent must review their outputs and carry blockers or uncertainty into the final report.
 
@@ -109,13 +109,13 @@ Use these high-level routing rules:
 - Use `hoi4_repo_explorer` only when file locations, existing patterns, vanilla references, likely touchpoints, missing-file recovery, or implementation order are unclear. Do not use it for small known-file edits, provided-file edits, direct skill or prompt updates, localisation-only cleanup, asset-only production, or tasks already bounded to exact files. The parent should inspect the known files directly for those cases.
 - Use asset subagents for visual production: `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, and `hoi4_icon_artist`.
 - When an asset subagent is asked to produce animation, the parent prompt must require `hoi4-frame-animation` and must ask for separate generated, sourced, or provided source frames, static fallback, manifest, contact sheet, preview, and `.gfx` or `.gui` handoff.
-- Use super-event subagents for specialised research: `hoi4_super_event_text_researcher` and `hoi4_super_event_audio_researcher`.
+- Use quote and audio research subagents only for specialised sourced text or audio work: `hoi4_quote_remark_researcher` and `hoi4_audio_researcher`.
 - Use audit subagents before completion claims: `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_localisation_auditor`, and `hoi4_feature_completion_auditor`.
 - Use `hoi4_scripted_system_architect` for reusable scripted effects, triggers, script constants, event targets, meta effects, variable patterns, and dynamic helper design.
 - Use `hoi4_documentation_curator` during long implementation when specs, plans, docs, manifests, prompts, reports, or subagent handoffs may be stale, duplicated, contradictory, or too numerous. It patches documentation surfaces only, writes source-of-truth maps and resume packets, and does not edit gameplay files or spreadsheets.
 - Use `hoi4_spreadsheet_doc_worker` only when this repository actually has a maintained workbook or planning spreadsheet and implementation facts are available. Spreadsheet fields that mirror in-game wording must match the in-game localisation wording.
 - Use `hoi4_skill_maintainer` for non-trivial skill creation, cleanup, routing updates, or multi-skill consistency work.
-- Use `hoi4_improvement_loop_planner` during large feature implementation when a mechanic, focus tree, country package, decision system, super-event, visual progression, lore package, or audit finding needs deeper design. It creates concrete feature expansion addenda with research, historical connections, playable mechanics, and implementation surfaces for the main agent. It does not patch gameplay files. Do not spawn it again for the same feature until the previous addendum has been implemented, folded into specs, queued with a reason, or rejected.
+- Use `hoi4_improvement_loop_planner` during large feature implementation when a mechanic, focus tree, country package, decision system, text or audio research need, visual progression, lore package, or audit finding needs deeper design. It creates concrete feature expansion addenda with research, historical connections, playable mechanics, and implementation surfaces for the main agent. It does not patch gameplay files. Do not spawn it again for the same feature until the previous addendum has been implemented, folded into specs, queued with a reason, or rejected.
 
 Patch-capable subagents are allowed to make small, local improvements by default when the change is inside the current task surface and directly improves the feature. They may vary costs, add clearer dynamic localisation, improve tooltips, adjust safe AI weights, add narrow helper calls, fix route locks, add cleanup hooks, or correct existing formable checks. They must not expand a whole mechanic, redesign a route family, add a new country package, create a new scripted GUI system, or change the requested design on their own. Broad gaps become a plan under `docs/plans/<feature_slug>/`. Every subagent edit needs a handoff that lists changed files, identifiers, meaningful validation when it affects confidence, and remaining risks. Documentation cleanup work should also record which specs, plans, handoffs, manifests, or reports were promoted, queued, rejected, superseded, or left unresolved.
 
@@ -309,7 +309,7 @@ Do not claim completion when:
 - AI behavior is missing
 - assets are missing, unwired, or undocumented
 - event logs, docs, spreadsheet rows, tracking files, or manifests are stale
-- any requested route, country, decision, mission, achievement, event chain, focus path, custom progression milestone, super-event, or asset is missing
+- any requested route, country, decision, mission, achievement, event chain, focus path, custom progression milestone, researched text or audio package, or asset is missing
 - a fallback or simplification was used without explicit approval
 
 Balance checks are implementation work, not optional polish. If the spec or user asks for balance validation, the agent must inspect the relevant variables, scripted effects, decisions, mission outcomes, trigger conditions, AI weights, and scenario behavior. A vague statement that balance was adjusted is not enough.
@@ -342,7 +342,7 @@ For event implementation, use the repo skill `hoi4-events`.
 
 1. Keep event IDs, namespaces, entry event root format, file placement, and trigger patterns consistent with the existing mod.
 2. Wire event script, category registration or trigger hooks, auto-firing where used, localisation/name mappings, images, event log actor mapping, and event details window content together when the feature requires them.
-3. If the event has custom progression or milestone tracking, terminal branches, or super-events, wire the related log or tracking entries, super-event integration, gameplay files, and localisation in the same change.
+3. If the event has custom progression or milestone tracking, terminal branches, or text and audio packages, wire the related log or tracking entries, source-researched text or audio integration, gameplay files, and localisation in the same change.
 4. Keep gameplay files, docs, spreadsheets, presentations, UI assets, and any other details aligned.
 
 ## 7. Focus Trees and Large Content

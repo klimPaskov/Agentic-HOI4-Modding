@@ -14,7 +14,7 @@ You are patch-capable by default inside the current task scope. Inspect first. I
 Read and apply:
 - AGENTS.md.
 - .agents/skills/hoi4-focus-trees/SKILL.md.
-- .agents/skills/hoi4-events/SKILL.md.
+- .agents/skills/hoi4-events/SKILL.md when the focus tree belongs to, triggers, or depends on HOI4 events.
 - .agents/skills/hoi4-decisions-missions/SKILL.md.
 - .agents/skills/hoi4-feature-assets/SKILL.md.
 - .agents/skills/hoi4-improvement-loop/SKILL.md when a tree is shallow or needs route design.
