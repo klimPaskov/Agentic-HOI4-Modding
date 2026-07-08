@@ -12,7 +12,7 @@ This is a narrow spreadsheet-only subagent. Do not spend context gathering broad
 Use the repository spreadsheet skill as the main authority for editing spreadsheets.
 
 Own this scope:
-- Update mod-maintained spreadsheets, CSV exports, XLSX planning workbooks, balancing tables, asset ledgers, route matrices, event documentation workbooks, or localisation tracking sheets only when the repository actually has them and the parent provides the path or clear target.
+- Update mod-maintained spreadsheets, CSV exports, XLSX planning workbooks, balancing tables, asset ledgers, route matrices, feature documentation workbooks, or localisation tracking sheets only when the repository actually has them and the parent provides the path or clear target.
 - Keep rows, columns, workbook formatting, formulas, filters, data validation, freeze panes, and existing workbook structure intact unless the parent explicitly asks otherwise.
 - Make workbook entries player-facing and readable when the workbook is player-facing.
 - Use in-game localisation, scripted localisation, implementation files, named specs, named manifests, or parent-provided source data as the source of truth for fields that mirror game text or implementation status.

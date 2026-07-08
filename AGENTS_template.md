@@ -6,24 +6,20 @@ This file describes how you should read, edit and extend the `[MOD_NAME]` codeba
 
 Use this guide once before turning the template into a real `AGENTS.md` file.
 
-### Fill the required project values
-
 Replace these everywhere outside examples:
 
 - `[MOD_NAME]`: full mod name used in prose.
 - `[MOD_PREFIX]`: short script prefix, namespace, or internal identifier prefix.
-- `[OFFLINE_WIKI_PATH]`: path to the offline Paradox wiki snapshot.
-- `[HOI4_VANILLA_PATH]`: path to the local vanilla Hearts of Iron IV install.
-- `[DOCS_FOLDER]`: documentation folder, usually `docs/`.
 
-### Keep only the optional systems this repo uses
+### Fixed shared paths and package references
 
-For each group below, either fill the placeholders or delete the matching bullets and subsections from the template.
+These values are already filled in this template and should normally be left as-is:
 
-- Reference mods: `[REFERENCE_MOD_NAME]`, `[REFERENCE_MOD_PATH]`, `[REFERENCE_MOD_2_NAME]`, `[REFERENCE_MOD_2_PATH]`.
-- Repo skills: `[EVENT_SKILL_NAME]`, `[ASSET_SKILL_NAME]`, `[FRAME_ANIMATION_SKILL_NAME]`, `[SUPER_EVENT_SKILL_NAME]`, `[FOCUS_TREE_SKILL_NAME]`, `[DECISION_MISSION_SKILL_NAME]`, `[MTTH_SKILL_NAME]`, `[SUBAGENT_SKILL_NAME]`, `[IMPROVEMENT_LOOP_SKILL_NAME]`.
-- Subagents: `[REPO_EXPLORER_AGENT]`, `[ASSET_SOURCE_AGENT]`, `[GENERATED_ART_AGENT]`, `[ICON_AGENT]`, `[SUPER_EVENT_TEXT_AGENT]`, `[SUPER_EVENT_AUDIO_AGENT]`, `[FOCUS_TREE_AUDITOR_AGENT]`, `[DECISION_MISSION_AUDITOR_AGENT]`, `[COUNTRY_PACKAGE_AUDITOR_AGENT]`, `[LOCALISATION_AUDITOR_AGENT]`, `[EVENT_COMPLETION_AUDITOR_AGENT]`, `[SCRIPTED_SYSTEM_ARCHITECT_AGENT]`, `[DOCUMENTATION_CURATOR_AGENT]`, `[SPREADSHEET_DOC_WORKER_AGENT]`, `[SKILL_MAINTAINER_AGENT]`, `[IMPROVEMENT_LOOP_PLANNER_AGENT]`.
-- Shared helper files: `[DYNAMIC_EFFECTS_FILE]`, `[DYNAMIC_EFFECTS_DOC]`, `[SCRIPTED_EFFECTS_REFERENCE_FILE]`.
+- Offline Paradox wiki snapshot: `paradox_wiki/`
+- Local vanilla Hearts of Iron IV install: `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`
+- Default documentation folder: `docs/`
+- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-frame-animation`, `hoi4-super-events`, `hoi4-subagents`, `hoi4-improvement-loop`, `hoi4-focus-trees`, and `hoi4-decisions-missions`
+- Generic HOI4 subagents from `.codex/agents/`: `hoi4_repo_explorer`, `hoi4_feature_completion_auditor`, `hoi4_scripted_system_architect`, `hoi4_localisation_auditor`, `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_improvement_loop_planner`, `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_super_event_text_researcher`, `hoi4_super_event_audio_researcher`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, and `hoi4_skill_maintainer`
 
 ---
 
@@ -31,14 +27,14 @@ For each group below, either fill the placeholders or delete the matching bullet
 
 ### Paradox Wiki
 
-Before you open or edit any `[MOD_NAME]` file, you must consult the relevant Hearts of Iron IV modding pages from the offline Paradox wiki snapshot in `[OFFLINE_WIKI_PATH]`.
+Before you open or edit any `[MOD_NAME]` file, you must consult the relevant Hearts of Iron IV modding pages from the offline Paradox wiki snapshot in `paradox_wiki/`.
 
 Rules:
 
 - Treat the offline snapshot as the required wiki reference. Do not access the Paradox wiki on the web.
 - Keep the key pages open while you work and treat them as the primary reference for syntax and engine behavior.
 
-Always open at least these core pages from `[OFFLINE_WIKI_PATH]`:
+Always open at least these core pages from `paradox_wiki/`:
 
 - Data structures
 - Triggers
@@ -52,7 +48,7 @@ Always open at least these core pages from `[OFFLINE_WIKI_PATH]`:
 - Idea modding
 - AI modding
 
-If your task touches some other system, for example for gui, open Interface Modding and Scripted GUI Modding pages. For country creation, national focuses, equipment, divisions or technology, open the corresponding wiki snapshot page(s) from `[OFFLINE_WIKI_PATH]` as well. Do not rely on memory when a page exists.
+If your task touches some other system, for example for gui, open Interface Modding and Scripted GUI Modding pages. For country creation, national focuses, equipment, divisions or technology, open the corresponding wiki snapshot page(s) from `paradox_wiki/` as well. Do not rely on memory when a page exists.
 
 Web access:
 
@@ -63,10 +59,10 @@ Web access:
 Use HOI4 vanilla as the main example set.
 
 - The vanilla game directory is available at  
-  `[HOI4_VANILLA_PATH]`
+  `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`
 
 - Vanilla Hearts of Iron IV includes official documentation files (often in markdown).
-  - The folder `[HOI4_VANILLA_PATH]/documentation` contains markdown documentation files that **must be read**.
+  - The folder `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation` contains markdown documentation files that **must be read**.
   - Vanilla game files may also include documentation files in other folders. These documentation files **must be consulted when they exist** for the systems you touch.
   - Treat vanilla documentation as more authoritative, more complete, and more up to date than the Paradox wiki.
   - The Paradox wiki must still be consulted in parallel. Both sources are required.
@@ -80,29 +76,29 @@ If `[MOD_NAME]` already has a pattern for the same thing, follow that over vanil
 
 If vanilla examples are insufficient or unclear, you are allowed to inspect well known large mods for additional reference.
 
-- `[REFERENCE_MOD_NAME]` at `[REFERENCE_MOD_PATH]` is approved as a reference mod for structure, patterns, and edge case handling.
-- You may read `[REFERENCE_MOD_NAME]` files to understand how similar systems are implemented when vanilla does not provide a clear or complete example.
-- You may read `[REFERENCE_MOD_2_NAME]` at `[REFERENCE_MOD_2_PATH]` as well, if the first reference mod does not provide enough guidance. Remove this line if no second reference mod is approved.
+- Kaiserreich (1521695605) is approved as a reference mod for structure, patterns, and edge case handling. Its Windows workshop path is `C:/Program Files (x86)/Steam/steamapps/workshop/content/394360/1521695605`. `2265420196` and `1458561226` are also approved as reference mods.
+- You may read mod files to understand how similar systems are implemented when vanilla does not provide a clear or complete example.
 
 ### Repo Skills
 
 Use repo skills as required implementation guidance, not as optional notes.
 
-- Use `[EVENT_SKILL_NAME]` for event implementation, event logs, evolutions, event details, documentation, spreadsheet alignment, and validation.
-- Use `[ASSET_SKILL_NAME]` when a task needs visual assets, icons, flags, portraits, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes.
-- Use `[FRAME_ANIMATION_SKILL_NAME]` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
-- Use `[SUPER_EVENT_SKILL_NAME]` when a task creates, updates, researches, or wires a super-event.
-- Use `[FOCUS_TREE_SKILL_NAME]` before editing national focus trees.
-- Use `[DECISION_MISSION_SKILL_NAME]` before editing decisions/missions.
-- Use `[MTTH_SKILL_NAME]` when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer.
-- Use `[SUBAGENT_SKILL_NAME]` when coordinating custom Codex subagents, routing bounded work, or defining parent/subagent ownership boundaries.
-- Use `[IMPROVEMENT_LOOP_SKILL_NAME]` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
+- Use `hoi4-events` for ordinary HOI4 event implementation, event chains, news events, report events, localisation, on_actions, documentation, optional mod-specific event tracking, optional planning workbook alignment, and validation.
+- Use `hoi4-feature-planning` when designing or expanding feature ideas, feature-adjacent mechanics, country packages, super-event plans, focus-tree route plans, decision plans, achievements, AI behavior, asset needs, and implementation-ready specifications before coding.
+- Use `hoi4-feature-assets` when a task needs visual assets, icons, flags, portraits, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes.
+- Use `hoi4-frame-animation` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
+- Use `hoi4-super-events` when a task creates, updates, researches, or wires a super-event.
+- Use `hoi4-focus-trees` before editing national focus trees.
+- Use `hoi4-decisions-missions` before editing decisions/missions.
+- If this repository installs an additional MTTH or weighted-timing skill, use it when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer. Otherwise centralize weighted timing logic in the relevant event, decision, or scripted-system helpers.
+- Use `hoi4-subagents` when coordinating custom Codex subagents, routing bounded work, or defining parent/subagent ownership boundaries.
+- Use `hoi4-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
 
 ### Subagents
 
 Use project custom Codex agents when a task needs bounded research, asset production, audit, recursive expansion, or documentation work that can be separated from main implementation.
 
-`[SUBAGENT_SKILL_NAME]` is the detailed source of truth for subagent routing, ownership boundaries, handoff quality, audit cadence, asset routing, super-event routing, and the recursive mechanic expansion loop.
+`hoi4-subagents` is the detailed source of truth for subagent routing, ownership boundaries, handoff quality, audit cadence, asset routing, super-event routing, and the recursive mechanic expansion loop.
 
 The main agent remains responsible for final implementation, final wiring, final review, validation, and completion claims. Subagents return evidence, files, manifests, spec addenda, patches, or handoff notes depending on the parent-granted mode. The main agent must review their outputs and carry blockers or uncertainty into the final report.
 
@@ -110,20 +106,20 @@ All project custom Codex subagents must be spawned with `fork_context=false`. Do
 
 Use these high-level routing rules:
 
-- Use `[REPO_EXPLORER_AGENT]` only when file locations, existing patterns, vanilla references, likely touchpoints, missing-file recovery, or implementation order are unclear. Do not use it for small known-file edits, provided-file edits, direct skill or prompt updates, localisation-only cleanup, asset-only production, or tasks already bounded to exact files. The parent should inspect the known files directly for those cases.
-- Use asset subagents for visual production: `[ASSET_SOURCE_AGENT]`, `[GENERATED_ART_AGENT]`, and `[ICON_AGENT]`.
-- When an asset subagent is asked to produce animation, the parent prompt must require `[FRAME_ANIMATION_SKILL_NAME]` and must ask for separate generated, sourced, or provided source frames, static fallback, manifest, contact sheet, preview, and `.gfx` or `.gui` handoff.
-- Use super-event subagents for specialised research: `[SUPER_EVENT_TEXT_AGENT]` and `[SUPER_EVENT_AUDIO_AGENT]`.
-- Use audit subagents before completion claims: `[FOCUS_TREE_AUDITOR_AGENT]`, `[DECISION_MISSION_AUDITOR_AGENT]`, `[COUNTRY_PACKAGE_AUDITOR_AGENT]`, `[LOCALISATION_AUDITOR_AGENT]`, and `[EVENT_COMPLETION_AUDITOR_AGENT]`.
-- Use `[SCRIPTED_SYSTEM_ARCHITECT_AGENT]` for reusable scripted effects, triggers, script constants, event targets, meta effects, variable patterns, and dynamic helper design.
-- Use `[DOCUMENTATION_CURATOR_AGENT]` during long implementation when specs, plans, docs, manifests, prompts, reports, or subagent handoffs may be stale, duplicated, contradictory, or too numerous. It patches documentation surfaces only, writes source-of-truth maps and resume packets, and does not edit gameplay files or spreadsheets.
-- Use `[SPREADSHEET_DOC_WORKER_AGENT]` only after implementation facts are available. Spreadsheet event-detail, evolution-detail, and cluster-detail fields must match the in-game localisation wording.
-- Use `[SKILL_MAINTAINER_AGENT]` for non-trivial skill creation, cleanup, routing updates, or multi-skill consistency work.
-- Use `[IMPROVEMENT_LOOP_PLANNER_AGENT]` during large event implementation when a mechanic, focus tree, country package, decision system, super-event, visual progression, lore package, or audit finding needs deeper design. It creates concrete event expansion addenda with research, historical connections, playable mechanics, and implementation surfaces for the main agent. It does not patch gameplay files. Do not spawn it again for the same event until the previous addendum has been implemented, folded into specs, queued with a reason, or rejected.
+- Use `hoi4_repo_explorer` only when file locations, existing patterns, vanilla references, likely touchpoints, missing-file recovery, or implementation order are unclear. Do not use it for small known-file edits, provided-file edits, direct skill or prompt updates, localisation-only cleanup, asset-only production, or tasks already bounded to exact files. The parent should inspect the known files directly for those cases.
+- Use asset subagents for visual production: `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, and `hoi4_icon_artist`.
+- When an asset subagent is asked to produce animation, the parent prompt must require `hoi4-frame-animation` and must ask for separate generated, sourced, or provided source frames, static fallback, manifest, contact sheet, preview, and `.gfx` or `.gui` handoff.
+- Use super-event subagents for specialised research: `hoi4_super_event_text_researcher` and `hoi4_super_event_audio_researcher`.
+- Use audit subagents before completion claims: `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_localisation_auditor`, and `hoi4_feature_completion_auditor`.
+- Use `hoi4_scripted_system_architect` for reusable scripted effects, triggers, script constants, event targets, meta effects, variable patterns, and dynamic helper design.
+- Use `hoi4_documentation_curator` during long implementation when specs, plans, docs, manifests, prompts, reports, or subagent handoffs may be stale, duplicated, contradictory, or too numerous. It patches documentation surfaces only, writes source-of-truth maps and resume packets, and does not edit gameplay files or spreadsheets.
+- Use `hoi4_spreadsheet_doc_worker` only when this repository actually has a maintained workbook or planning spreadsheet and implementation facts are available. Spreadsheet fields that mirror in-game wording must match the in-game localisation wording.
+- Use `hoi4_skill_maintainer` for non-trivial skill creation, cleanup, routing updates, or multi-skill consistency work.
+- Use `hoi4_improvement_loop_planner` during large feature implementation when a mechanic, focus tree, country package, decision system, super-event, visual progression, lore package, or audit finding needs deeper design. It creates concrete feature expansion addenda with research, historical connections, playable mechanics, and implementation surfaces for the main agent. It does not patch gameplay files. Do not spawn it again for the same feature until the previous addendum has been implemented, folded into specs, queued with a reason, or rejected.
 
-Patch-capable subagents are allowed to make small, local improvements by default when the change is inside the current task surface and directly improves the feature. They may vary costs, add clearer dynamic localisation, improve tooltips, adjust safe AI weights, add narrow helper calls, fix route locks, add cleanup hooks, or correct existing formable checks. They must not expand a whole mechanic, redesign a route family, add a new country package, create a new scripted GUI system, or change the requested design on their own. Broad gaps become a plan under `[DOCS_FOLDER]/plans/<event_id>_<event_slug>_plans/` for event work, or under `[DOCS_FOLDER]/plans/<feature_slug>/` for non-event work. Every subagent edit needs a handoff that lists changed files, identifiers, meaningful validation when it affects confidence, and remaining risks. Documentation cleanup work should also record which specs, plans, handoffs, manifests, or reports were promoted, queued, rejected, superseded, or left unresolved.
+Patch-capable subagents are allowed to make small, local improvements by default when the change is inside the current task surface and directly improves the feature. They may vary costs, add clearer dynamic localisation, improve tooltips, adjust safe AI weights, add narrow helper calls, fix route locks, add cleanup hooks, or correct existing formable checks. They must not expand a whole mechanic, redesign a route family, add a new country package, create a new scripted GUI system, or change the requested design on their own. Broad gaps become a plan under `docs/plans/<feature_slug>/`. Every subagent edit needs a handoff that lists changed files, identifiers, meaningful validation when it affects confidence, and remaining risks. Documentation cleanup work should also record which specs, plans, handoffs, manifests, or reports were promoted, queued, rejected, superseded, or left unresolved.
 
-For major event work, the main agent should use the improvement loop after meaningful implementation tranches when several new mechanics have been added and now need deeper connections. The planner should expand ideas using the event-planning skill and relevant research. It should not be used repeatedly while a previous plan for the same event is still unresolved.
+For major feature work, the main agent should use the improvement loop after meaningful implementation tranches when several new mechanics have been added and now need deeper connections. The planner should expand ideas using the feature-planning skill and relevant research. It should not be used repeatedly while a previous plan for the same feature is still unresolved.
 
 ## 1. Coding Style
 
@@ -144,8 +140,8 @@ Clausewitz script is picky. Follow these rules strictly.
    - Prefer HOI4 `script_constants` for shared tuning values. They are global (available across script files), improve readability, and have no runtime cost (they are injected on load).
    - Script constants are the preferred tuning source, but not every effect field parses `constant:` tokens. For duration fields that reject constants, such as `days =` inside timed flags, assign the constant to a normal or temporary variable first and pass that variable to `days =`.
    - Required vanilla docs:
-     - `[HOI4_VANILLA_PATH]/documentation/script_concept_documentation.md` (Script Constants section)
-     - `[HOI4_VANILLA_PATH]/common/script_constants/documentation.md` (schema + examples)
+     - `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation/script_concept_documentation.md` (Script Constants section)
+     - `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/common/script_constants/documentation.md` (schema + examples)
    - Where to put them:
      - `common/script_constants/` only.
      - Create multiple files by subsystem, such as events, settings, UI, or country systems.
@@ -156,9 +152,9 @@ Clausewitz script is picky. Follow these rules strictly.
    - Prefer the explicit fixed-point access: `constant:category.key` (e.g. `value = constant:system_ratio.low`).
 10. Use event targets (`event_target:`) to persist a scope pointer across blocks/events when variables/scopes alone are insufficient.
     - Required references:
-    - `[OFFLINE_WIKI_PATH]/Data structures - Hearts of Iron 4 Wiki.md` (Event targets section)
-    - `[HOI4_VANILLA_PATH]/documentation/effects_documentation.md` (`save_event_target_as`, `save_global_event_target_as`, `clear_global_event_target`, `clear_global_event_targets`)
-    - `[HOI4_VANILLA_PATH]/documentation/triggers_documentation.md` (`has_event_target`)
+    - `paradox_wiki/Data structures - Hearts of Iron 4 Wiki.md` (Event targets section)
+    - `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation/effects_documentation.md` (`save_event_target_as`, `save_global_event_target_as`, `clear_global_event_target`, `clear_global_event_targets`)
+    - `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation/triggers_documentation.md` (`has_event_target`)
     - Prefer regular event targets (`save_event_target_as`) for short-lived chains, they automatically clear when the originating effect chain ends (but do carry into events fired from that chain).
     - Use global event targets (`save_global_event_target_as`) only when you need persistence beyond a single chain/system, they do not auto-clear and must be cleaned up (e.g. `clear_global_event_target = my_target`).
     - Use them as scopes/targets with `event_target:my_target`.
@@ -167,10 +163,10 @@ Clausewitz script is picky. Follow these rules strictly.
 12. If an effect or trigger does not accept dynamic values, use `meta_effect` or `meta_trigger` with `text = { ... }` to inject computed variables/localisation into otherwise static fields.
     - meta effects can be used in all sorts of creative ways, for example: `my_scripted_effect_[ID] = yes`, so you can even choose a scripted effect dynamically. Meta effects are very powerful and useful, use them often.
 13. Prefer reusable dynamic scripted effects/triggers for complex/dynamic logic.
-    - First check existing dynamic effects (in `[DYNAMIC_EFFECTS_FILE]`) and use them instead of duplicating logic.
-    - If no existing effect fits, create a new dynamic effect and document it in the markdown file of the same name (`[DYNAMIC_EFFECTS_DOC]`) in the same change.
+    - First check existing dynamic effects (in `common/scripted_effects/[MOD_PREFIX]_dynamic_effects.txt`) and use them instead of duplicating logic.
+    - If no existing effect fits, create a new dynamic effect and document it in the matching markdown file `docs/[MOD_PREFIX]_dynamic_effects.md` in the same change.
     - Keep effect docs explicit: purpose, scope, inputs/outputs, defaults, side effects, and a usage example.
-14. If MTTH (mean time to happen) variables are required to reduce AI/script clutter (especially in ai_will_do blocks) by centralizing weighted logic, use the `[MTTH_SKILL_NAME]` skill and follow its MTTH guidance before implementing.
+14. If MTTH (mean time to happen) variables or weighted timing logic would reduce AI/script clutter, centralize the weighted logic in scripted helpers, constants, or the relevant event/decision system. If this repository installs an additional MTTH-specific skill, use that skill before implementing.
 
 ### Meta effect example
 
@@ -271,17 +267,17 @@ Unnecessary prefixes make code harder to read and maintain. Keep names clean.
 
 When implementing any new mechanic, follow this checklist:
 
-1. First open the required Paradox wiki pages from `[OFFLINE_WIKI_PATH]` (section 0). Keep Data Structures, Triggers, Effects, Modifiers, and Localisation in front of you while you work.
-2. In addition to the Paradox wiki, inspect vanilla files in `[HOI4_VANILLA_PATH]` and read all the necessary documentation, particularly in `[HOI4_VANILLA_PATH]/documentation`.
-3. Create a new markdown file in `[DOCS_FOLDER]` for the mechanic you've added. Describe what it does, how it works step by step and how it interacts with existing systems. Add a section for future plans and your own suggestions on how the mechanic could be extended or made deeper.
+1. First open the required Paradox wiki pages from `paradox_wiki/` (section 0). Keep Data Structures, Triggers, Effects, Modifiers, and Localisation in front of you while you work.
+2. In addition to the Paradox wiki, inspect vanilla files in `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV` and read all the necessary documentation, particularly in `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`.
+3. Create a new markdown file in `docs/` for the mechanic you've added. Describe what it does, how it works step by step and how it interacts with existing systems. Add a section for future plans and your own suggestions on how the mechanic could be extended or made deeper.
 4. In that docs file, list all icons needed for the new features. Write where the sprites should live, which `gfx` file should reference them and what icon names are used in code and localisation, so the wiring rules from this file are also clear inside the docs file.
 5. Plan variables and flags so that values are dynamic and centralised.
 6. Avoid unsupported operators and constructs.
 7. Use loops, meta effects/triggers if needed to make things dynamic, and scripted effects or scripted triggers to remove duplication.
-8. Reuse existing dynamic scripted effects before writing new bespoke logic. If new dynamic effects/triggers are added, document them in `[DYNAMIC_EFFECTS_DOC]` in the same change.
+8. Reuse existing dynamic scripted effects before writing new bespoke logic. If new dynamic effects/triggers are added, document them in `docs/[MOD_PREFIX]_dynamic_effects.md` in the same change.
 9. Keep localisation, icons and UI definitions aligned with changes in the same edit.
 10. When adding any new equipment type/archetype/category, also update `common/script_enums.txt` (`script_enum_equipment_bonus_type`) in the same change.
-11. Document each new script file with an overview at the top. Do it similarly to `[SCRIPTED_EFFECTS_REFERENCE_FILE]`.
+11. Document each new script file with an overview at the top.
 12. Confirm that all decisions and event options or other effects have proper trigger tooltips and effect descriptions.
 13. Respect the repository style and naming rules so new content blends with existing `[MOD_NAME]` code.
 14. For systems that touch or are related to an existing project-wide mechanic, review related docs and verify integration across events, on_actions, decisions, scripted logic, UI, logs, and localisation.
@@ -313,7 +309,7 @@ Do not claim completion when:
 - AI behavior is missing
 - assets are missing, unwired, or undocumented
 - event logs, docs, spreadsheet rows, tracking files, or manifests are stale
-- any requested route, country, decision, mission, achievement, event chain, focus path, evolution, super-event, or asset is missing
+- any requested route, country, decision, mission, achievement, event chain, focus path, custom progression milestone, super-event, or asset is missing
 - a fallback or simplification was used without explicit approval
 
 Balance checks are implementation work, not optional polish. If the spec or user asks for balance validation, the agent must inspect the relevant variables, scripted effects, decisions, mission outcomes, trigger conditions, AI weights, and scenario behavior. A vague statement that balance was adjusted is not enough.
@@ -334,56 +330,56 @@ If there are no simplifications, say so explicitly and provide evidence through 
 
 ### Specs and Plans
 
-Event source specifications belong under `[DOCS_FOLDER]/specs/<event_id>_<event_slug>_specs/` when the repo uses numbered event specs. General feature specifications belong under `[DOCS_FOLDER]/specs/<feature_slug>/`.
+Source specifications belong under `docs/specs/<feature_slug>/`.
 
-Subagent plans, improvement addenda, audit follow-up notes, blocked reports, and implementation handoffs belong under `[DOCS_FOLDER]/plans/<event_id>_<event_slug>_plans/` for event work, or under `[DOCS_FOLDER]/plans/<feature_slug>/` for non-event work.
+Subagent plans, improvement addenda, audit follow-up notes, blocked reports, and implementation handoffs belong under `docs/plans/<feature_slug>/`.
 
-The plans folder is a working area. The specs folder is the source-of-truth design area. If an accepted plan changes the feature or event design, the main agent should merge it into the relevant spec or report that it remains queued.
+The plans folder is a working area. The specs folder is the source-of-truth design area. If an accepted plan changes the feature design, the main agent should merge it into the relevant spec or report that it remains queued.
 
 ## 6. Event Integration
 
-For event implementation, use the repo skill `[EVENT_SKILL_NAME]` if this repo has one.
+For event implementation, use the repo skill `hoi4-events`.
 
 1. Keep event IDs, namespaces, entry event root format, file placement, and trigger patterns consistent with the existing mod.
 2. Wire event script, category registration or trigger hooks, auto-firing where used, localisation/name mappings, images, event log actor mapping, and event details window content together when the feature requires them.
-3. If the event has evolutions, world-end branches, or super-events, wire log entries, super-event integration, related gameplay files, and related localisation in the same change.
+3. If the event has custom progression or milestone tracking, terminal branches, or super-events, wire the related log or tracking entries, super-event integration, gameplay files, and localisation in the same change.
 4. Keep gameplay files, docs, spreadsheets, presentations, UI assets, and any other details aligned.
 
 ## 7. Focus Trees and Large Content
 
-For national focus work, use `[FOCUS_TREE_SKILL_NAME]` before editing. That skill is the detailed source of truth for focus-tree depth, reward variety, route logic, AI, localisation, icons, ideas, country identity changes, focus-decision integration, route coverage proof, and completion standards.
+For national focus work, use `hoi4-focus-trees` before editing. That skill is the detailed source of truth for focus-tree depth, reward variety, route logic, AI, localisation, icons, ideas, country identity changes, focus-decision integration, route coverage proof, and completion standards.
 
-Before claiming focus-tree completion, use the appropriate audit route from `[SUBAGENT_SKILL_NAME]` if this repo uses audit subagents. If a tree works but feels shallow, duplicated, generic, or disconnected from gameplay, use `[IMPROVEMENT_LOOP_SKILL_NAME]` and consider a plan-mode pass from `[IMPROVEMENT_LOOP_PLANNER_AGENT]` if this repo uses one.
+Before claiming focus-tree completion, use the appropriate audit route from `hoi4-subagents` if this repo uses audit subagents. If a tree works but feels shallow, duplicated, generic, or disconnected from gameplay, use `hoi4-improvement-loop` and consider a plan-mode pass from `hoi4_improvement_loop_planner` if this repo uses one.
 
 ## 8. Agent-generated Visual Assets
 
-For final visual assets, use `[ASSET_SKILL_NAME]`. That skill is the detailed source of truth for image generation rules.
+For final visual assets, use `hoi4-feature-assets`. That skill is the detailed source of truth for image generation rules.
 
-For animated visual assets, use `[FRAME_ANIMATION_SKILL_NAME]` in addition to `[ASSET_SKILL_NAME]`. Final animation assets must be built from real planned frames and must not be transform-only mockups.
+For animated visual assets, use `hoi4-frame-animation` in addition to `hoi4-feature-assets`. Final animation assets must be built from real planned frames and must not be transform-only mockups.
 
-Use `[SUBAGENT_SKILL_NAME]` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation.
+Use `hoi4-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation.
 
 ## 9. Skill Maintenance
 
 Use skills actively. Skills are not only for cleanup at the end of a task. They are the agent's memory for repeated workflows, project-specific patterns, hard-won fixes, and instructions that should not be rediscovered every time.
 
-When a task reveals a repeated workflow, repeated mistake, reusable process, repo-specific convention, asset workflow, prompt pattern, or useful implementation rule, use `[SKILL_MAINTAINER_AGENT]` or OpenAI’s official `skill-creator` skill to capture it cleanly.
+When a task reveals a repeated workflow, repeated mistake, reusable process, repo-specific convention, asset workflow, prompt pattern, or useful implementation rule, use `hoi4_skill_maintainer` or OpenAI’s official `skill-creator` skill to capture it cleanly.
 
-Create or update skills more often during long tasks, especially when working through many events, mechanics, assets, localisation passes, or UI patterns. If the same reasoning would likely be needed again later in the run, spawn `[SKILL_MAINTAINER_AGENT]` or update the relevant skill before moving on.
+Create or update skills more often during long tasks, especially when working through many events, mechanics, assets, localisation passes, or UI patterns. If the same reasoning would likely be needed again later in the run, spawn `hoi4_skill_maintainer` or update the relevant skill before moving on.
 
-Never put event-specific, country-specific, or one-off implementation context inside general skills. This is very important!
+Never put feature-specific, country-specific, or one-off implementation context inside general skills. This is very important!
 
 Rules:
 
 1. Check whether an existing skill already covers the workflow before creating a new one.
-2. Use `[SKILL_MAINTAINER_AGENT]` for non-trivial skill creation, skill cleanup, routing updates, or multi-skill consistency work.
+2. Use `hoi4_skill_maintainer` for non-trivial skill creation, skill cleanup, routing updates, or multi-skill consistency work.
 3. Prefer updating an existing skill when the workflow belongs there.
 4. Create a new skill when the workflow is reusable, distinct, and not covered by an existing skill.
 5. Add concise, specific rules based on actual task experience, not speculation.
 6. Record repo paths, commands, examples, gotchas, source folders, validation steps, and handoff rules when they prevent rediscovery.
 7. Keep each skill focused on one reusable workflow.
 8. Do not bloat skills with one-off details that will not help future tasks.
-9. During large multi-event or multi-feature runs, review skill gaps after each completed event, feature, or shared system. Update or create skills before starting the next event or feature if something reusable was learned.
+9. During large multi-feature runs, review skill gaps after each completed feature or shared system. Update or create skills before starting the next feature if something reusable was learned.
 10. Report which skills were used, created, or updated at the end of each task.
 
 ## 10. Git

@@ -48,7 +48,7 @@ You must not:
 - edit unrelated localisation files
 - conceal uncertainty about quote wording or historical claims
 
-If a text issue reveals a missing mechanic, write a plan handoff under docs/plans/<feature_id>_<feature_slug>_plans/ and leave implementation to the parent.
+If a text issue reveals a missing mechanic, write a plan handoff under docs/plans/<feature_slug>/ and leave implementation to the parent.
 
 Required output after audit:
 - missing key list

@@ -11,7 +11,7 @@ This skill covers super-event presentation, localisation, quote selection, audio
 
 General event implementation belongs to `hoi4-events`.
 
-Visual asset sourcing and processing belongs to `hoi4-event-assets`.
+Visual asset sourcing and processing belongs to `hoi4-feature-assets`.
 
 ## 1. Core purpose
 
@@ -52,7 +52,7 @@ Use this skill for:
 - super-event music research
 - super-event audio documentation
 - super-event localisation updates
-- super-event image handoff to `hoi4-event-assets`
+- super-event image handoff to `hoi4-feature-assets`
 
 Do not use a super-event for every dramatic event. Use it when the campaign moment should feel larger than a normal popup.
 
@@ -70,9 +70,9 @@ Use `hoi4-events` for the ordinary event-side implementation contract:
 - optional planning workbook updates when a repository actually maintains one
 - final cross-surface validation
 
-### `hoi4-event-assets`
+### `hoi4-feature-assets`
 
-Use `hoi4-event-assets` for:
+Use `hoi4-feature-assets` for:
 
 - super-event image sourcing or generation
 - image processing
@@ -104,7 +104,7 @@ For actual research work, use the narrow project subagents instead of making one
 | Button text, cultural remark, short allusion, slogan, title-like reference, and copyright-risk notes | `hoi4_super_event_text_researcher` |
 | Audio candidates, license verification, legitimate download, conversion to `.ogg`, and audio research notes | `hoi4_super_event_audio_researcher` |
 | Real historical, archival, or real-world super-event image that must depict real material | `hoi4_asset_source_researcher` |
-| Fictional, alternate-history, symbolic, supernatural, extreme-route, or emotionally specific generated super-event image | `hoi4_generated_event_art` |
+| Fictional, alternate-history, symbolic, supernatural, extreme-route, or emotionally specific generated super-event image | `hoi4_generated_feature_art` |
 
 The main agent owns final localisation, scripted localisation, slot wiring, settings-aware or mod-specific playback wiring, audio id wiring, `.gfx` image wiring, event trigger wiring, docs alignment, and planning workbook alignment.
 
@@ -499,10 +499,10 @@ For every super-event audio package:
 4. Preserve the downloaded source file under an appropriate docs asset/source-audio path when practical. Do not keep source downloads under `music/source/` or `music/super_events/`; those folders are not persistent source archives.
 5. Convert the final in-game file to game-ready `.ogg`.
   Game-ready super-event `.ogg` files must be 44.1 kHz / 44100 Hz.
-6. Place the final `.ogg` in the correct event-scoped music folder: `music/<event_id>_<event_slug>/super_event_<super_event_id>_<super_event_name>.ogg`. Shared defaults or non-event music may remain in `music/` only when they are intentionally shared and documented.
+6. Place the final `.ogg` in the correct feature-scoped music folder: `music/<feature_slug>/super_event_<super_event_id>_<super_event_name>.ogg`. Shared defaults or non-event music may remain in `music/` only when they are intentionally shared and documented.
 7. Add or update `music/<mod_namespace>_super_event_music.asset` definitions for every dynamic volume variant that the current audio helper can call.
 8. Add or update `music/<mod_namespace>_super_event_music.txt` so the station includes a representative entry for every final super-event track.
-9. Add or update `sound/<mod_namespace>_sound.asset` sound and soundeffect definitions for sound-channel playback. If a sound-channel WAV is used for the same super-event, mirror the folder and filename structure under `sound/<event_id>_<event_slug>/super_event_<super_event_id>_<super_event_name>.wav`.
+9. Add or update `sound/<mod_namespace>_sound.asset` sound and soundeffect definitions for sound-channel playback. If a sound-channel WAV is used for the same super-event, mirror the folder and filename structure under `sound/<feature_slug>/super_event_<super_event_id>_<super_event_name>.wav`.
 10. Wire the super-event to the correct audio id through `<current_super_event_audio_variable>` and the settings-aware or mod-specific playback helper.
 11. Update the relevant event/system documentation and `music/<mod_namespace>_music_track_list.html`. every super-event track must have a row in the HTML music table, and that row must list the super-event id using the track. If a user-approved reuse exists, document every id in the row and explain the approval in the audio docs.
 12. Verify the final file paths, definitions, ids, and docs before calling the super-event complete.
@@ -602,13 +602,13 @@ Before finishing any super-event task, confirm:
 
 ## 19. Super-event image handoff
 
-Super-event images are handled through `hoi4-event-assets`.
+Super-event images are handled through `hoi4-feature-assets`.
 
 Default rule:
 
 - use generated super-event images when the moment is fictional, alternate-history, symbolic, supernatural, extreme-route, or needs a unique emotional composition
 - use internet-sourced images when the super-event must depict a real historical person, real photographed event, or real archival artifact
-- follow `hoi4-event-assets` and the official `$imagegen` workflow for generated images
+- follow `hoi4-feature-assets` and the official `$imagegen` workflow for generated images
 
 The super-event skill should define the image direction:
 
@@ -706,13 +706,13 @@ For every super-event research package, create or update a markdown note.
 Recommended path:
 
 ```text
-docs/super_events/<event_id>_<event_slug>_super_event_research.md
+docs/super_events/<feature_slug>_super_event_research.md
 ```
 
 The note should include:
 
 - event id
-- event slug
+- feature slug
 - super-event role
 - title
 - description
@@ -763,7 +763,7 @@ Before closing a super-event task, confirm:
 6. Quote attribution is documented.
 7. Button text cultural references are sourced when applicable.
 8. Modern copyrighted lyrics, film lines, book lines, or game lines are kept very short.
-9. The image direction has been handed to `hoi4-event-assets`.
+9. The image direction has been handed to `hoi4-feature-assets`.
 10. The super-event image is sourced or generated according to the asset rules.
 11. An approved existing track was checked first.
 12. If no approved track existed, the repository web research workflow from `AGENTS.md` was used.

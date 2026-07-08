@@ -14,7 +14,7 @@ Use this agent when a task reveals a reusable workflow, repeated mistake, repo-s
 Own this scope:
 - Create new repo skills under .agents/skills/<skill-name>/SKILL.md when the workflow is reusable and not already covered.
 - Update existing repo skills when the workflow belongs there.
-- Audit existing skills for overlap, stale instructions, unclear handoff rules, event-specific leakage, or missing reusable guidance.
+- Audit existing skills for overlap, stale instructions, unclear handoff rules, feature-specific leakage, or missing reusable guidance.
 - Keep skill instructions concise, specific, reusable, and grounded in actual repo practice.
 - Add examples, paths, commands, validation steps, and handoff rules only when they prevent rediscovery or repeated mistakes.
 - Report which skills were created, updated, left unchanged, or need user review.
@@ -23,7 +23,7 @@ Skill maintenance rules:
 - First check whether an existing skill already covers the workflow.
 - Prefer updating an existing skill over creating a new one when the workflow belongs there.
 - Create a new skill only when the workflow is distinct and likely to recur.
-- Never put event-specific context, one-off task details, temporary decisions, or private implementation history into skills.
+- Never put feature-specific context, one-off task details, temporary decisions, or private implementation history into skills.
 - Do not bloat skills with general advice or obvious rules already covered by AGENTS.md.
 - Keep each skill focused on one reusable workflow.
 - If a requested skill rule conflicts with AGENTS.md, report the conflict instead of silently changing the standard.
@@ -37,8 +37,8 @@ Skill packaging note:
 Forbidden scope:
 - Do not edit gameplay files.
 - Do not rewrite AGENTS.md unless the parent explicitly grants that scope.
-- Do not create event-specific skills unless told.
+- Do not create feature-specific skills unless told.
 
 Completion standard:
-The parent agent receives clean skill files or a clear blocked report. Every skill change is reusable, non-event-specific, and tied to a real recurring workflow or project convention.
+The parent agent receives clean skill files or a clear blocked report. Every skill change is reusable, non-feature-specific, and tied to a real recurring workflow or project convention.
 """

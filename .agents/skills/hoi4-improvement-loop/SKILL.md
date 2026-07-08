@@ -5,17 +5,17 @@ description: Use when recursively deepening HOI4 mod mechanics, events, focus tr
 
 # HOI4 Improvement Loop
 
-Use this skill for loop improvement of the events and event-adjacent systems when a feature works, has a draft, or has an audit result, but the design still feels thin, generic, disconnected, static, or too small for the idea.
+Use this skill for loop improvement of features and feature-adjacent systems when a feature works, has a draft, or has an audit result, but the design still feels thin, generic, disconnected, static, or too small for the idea.
 
 This skill writes expansion specs. It is not a checklist and it is not a code patch skill. The structure of each addendum should follow the mechanic. Some addenda need a route map. Some need a country package matrix. Some need a UI description. Some need a short design note that changes one decision category. The output should be open in form and concrete in content.
 
 Use the `hoi4_improvement_loop_planner` subagent when the parent agent wants a plan-writing helper.
 
-## Event loop improvement role
+## Feature loop improvement role
 
-This skill is the main event-improvement loop for the mod. It is used after an event, mechanic, country package, decision system, focus route, formable, scripted GUI, asset set, or super-event has enough shape to evaluate, but before the main agent calls the event finished.
+This skill is the main feature-improvement loop for the mod. It is used after a feature, mechanic, country package, decision system, focus route, formable, scripted GUI, asset set, or super-event has enough shape to evaluate, but before the main agent calls the feature finished.
 
-The loop should expand ideas and existing mechanics thoroughly using `hoi4-event-planning` as the quality standard. It should turn rough systems into playable designs with regional logic, player choices, AI behavior, consequences, visual support, and implementation-ready handoffs. It is especially useful for large event reworks where the first implementation pass creates many surfaces that now need deeper connections.
+The loop should expand ideas and existing mechanics thoroughly using `hoi4-feature-planning` as the quality standard. It should turn rough systems into playable designs with regional logic, player choices, AI behavior, consequences, visual support, and implementation-ready handoffs. It is especially useful for large feature reworks where the first implementation pass creates many surfaces that now need deeper connections.
 
 The loop should not write a checklist for the main agent to mechanically fill in. It should write a real expansion spec. The spec can include narrative paths, decision families, focus route architecture, country packages, formables, state groups, scripted GUI concepts, animated sprite needs, super-event thresholds, achievements, and acceptance criteria when those make the feature stronger.
 
@@ -47,9 +47,9 @@ Do not use this skill to inflate simple bug fixes. Use it when the bug reveals a
 
 ## Deployment cadence
 
-The main agent should actively deploy the improvement loop during large event implementation, especially after a meaningful tranche of work adds several new mechanics, countries, focus routes, formables, decision systems, scripted GUI elements, or super-event candidates. This is the best moment to ask whether the new surfaces are connected, reactive, regionally grounded, and worth playing.
+The main agent should actively deploy the improvement loop during large feature implementation, especially after a meaningful tranche of work adds several new mechanics, countries, focus routes, formables, decision systems, scripted GUI elements, or super-event candidates. This is the best moment to ask whether the new surfaces are connected, reactive, regionally grounded, and worth playing.
 
-Do not spawn the improvement loop planner repeatedly for the same event while the previous addendum is still waiting. Before another loop pass, the previous plan should be implemented, folded into `docs/specs/<event_id>_<event_slug>_specs/`, explicitly queued with a reason, or rejected with a reason. This prevents endless plan stacking.
+Do not spawn the improvement loop planner repeatedly for the same feature while the previous addendum is still waiting. Before another loop pass, the previous plan should be implemented, folded into `docs/specs/<feature_slug>/`, explicitly queued with a reason, or rejected with a reason. This prevents endless plan stacking.
 
 A second loop pass is justified when the main agent has implemented the previous addendum and the new implemented layer creates new design questions. It is also justified after a completion auditor finds a different large design gap that was not covered by the previous plan.
 
@@ -75,11 +75,11 @@ A closure handoff should not claim implementation completion on its own. It tell
 
 Use the system skill that owns the surface being improved.
 
-- `hoi4-event-planning` is the standard for expansion spec quality. The addendum should be idea-first, detailed, and implementation-ready, but not forced into a rigid template.
+- `hoi4-feature-planning` is the standard for expansion spec quality. The addendum should be idea-first, detailed, and implementation-ready, but not forced into a rigid template.
 - `hoi4-events` owns event chains, event-details, escalation variants, optional event history or logging surfaces, docs, and documentation alignment.
 - `hoi4-focus-trees` owns route depth, branch interaction, focus rewards, route AI, focus icons, and focus documentation.
 - `hoi4-decisions-missions` owns decisions, missions, costs, objectives, scripted GUI decision surfaces, hidden decision visibility, tooltips, AI actions, and cleanup.
-- `hoi4-event-assets` owns visual assets, animated sprites, animated portraits, source rules, DDS outputs, manifests, contact sheets, and sprite handoffs.
+- `hoi4-feature-assets` owns visual assets, animated sprites, animated portraits, source rules, DDS outputs, manifests, contact sheets, and sprite handoffs.
 - `hoi4-super-events` owns super-event role, title, description, quote, audio, image, trigger, localisation, docs, and planning workbook alignment.
 - `hoi4-subagents` explains when to use a planner subagent, a patch-capable system subagent, an asset worker, a read-only auditor, or other subagents.
 
@@ -103,21 +103,21 @@ The result should still play well. Research should make mechanics sharper, not t
 
 ## Specs and plans folders
 
-Full event specification packs belong under:
+Full feature specification packs belong under:
 
 ```text
-docs/specs/<event_id>_<event_slug>_specs/
+docs/specs/<feature_slug>/
 ```
 
 Improvement addenda, audit follow-up plans, subagent handoffs, and implementation notes belong under:
 
 ```text
-docs/plans/<event_id>_<event_slug>_plans/
+docs/plans/<feature_slug>/
 ```
 
-The plans folder is where subagents add working handoffs. The specs folder is where accepted source-of-truth event specs live.
+The plans folder is where subagents add working handoffs. The specs folder is where accepted source-of-truth feature specs live.
 
-If an improvement addendum is accepted as source design, the main agent should either implement it or fold the design into the relevant spec file under `docs/specs/<event_id>_<event_slug>_specs/`. Do not let accepted design live only as a loose plan if the final spec is meant to be complete.
+If an improvement addendum is accepted as source design, the main agent should either implement it or fold the design into the relevant spec file under `docs/specs/<feature_slug>/`. Do not let accepted design live only as a loose plan if the final spec is meant to be complete.
 
 ## The improvement question
 
@@ -170,11 +170,11 @@ Useful moves include:
 
 Weak moves include more flat modifiers, more repeated buttons, more generic events, more hidden content without a reveal path, and more spectacle without gameplay.
 
-## Event improvement
+## Feature improvement
 
-For events, improve the incident into a chain or system only when the idea benefits from it. Ask what the event starts, what it pressures, what it changes, and what later systems remember.
+For features, improve the idea into a chain or system only when the concept benefits from it. Ask what the event starts, what it pressures, what it changes, and what later systems remember.
 
-An event addendum can define event families for escalation, negotiation, failure, outside reaction, and aftermath. It can define baseline stages, optional escalation variants that unlock new behavior, decisions and missions, AI strategies, country-specific reactions, ideology-specific reactions, super-event thresholds, and defeat aftermath.
+A feature addendum can define event families for escalation, negotiation, failure, outside reaction, and aftermath. It can define baseline stages, optional escalation variants that unlock new behavior, decisions and missions, AI strategies, country-specific reactions, ideology-specific reactions, super-event thresholds, and defeat aftermath.
 
 ## Focus tree improvement
 
@@ -196,7 +196,7 @@ A decision category should not become a store. If it is only a store, redesign i
 
 ## Formable nation improvement
 
-Formables should matter when a country earns a larger identity. They can be public, route-locked, ideology-locked, hidden, extreme-route, event-created, leader-bound, artifact-bound, or tied to a specific prior crisis.
+Formables should matter when a country earns a larger identity. They can be public, route-locked, ideology-locked, hidden, extreme-route, feature-created, leader-bound, artifact-bound, or tied to a specific prior crisis.
 
 A formable addendum should explain the formation fantasy and the proof required. It should name the region clearly, describe required state groups or exact states when known, explain whether subjects or allies count, define the decision that forms it, and describe the cost of integration.
 
@@ -254,11 +254,11 @@ When the player has an interface, the AI needs an equivalent action path. It can
 
 ## Subagent behavior
 
-Use `hoi4_improvement_loop_planner` when the parent agent wants a helper to write event expansion addenda. That planner writes design handoffs under `docs/plans/<event_id>_<event_slug>_plans/`. It should not edit gameplay files, localisation files, GUI files, scripted effects, focus trees, decisions, assets, or planning workbooks.
+Use `hoi4_improvement_loop_planner` when the parent agent wants a helper to write feature expansion addenda. That planner writes design handoffs under `docs/plans/<feature_slug>/`. It should not edit gameplay files, localisation files, GUI files, scripted effects, focus trees, decisions, assets, or planning workbooks.
 
-The planner should be deployed during implementation when a large event has gained enough new content that the design needs a second pass. It should use `hoi4-event-planning` to expand the idea deeply, research historical and regional connections, define mechanics that the main agent can implement, and explain how the addendum should be promoted into specs if accepted.
+The planner should be deployed during implementation when a large event has gained enough new content that the design needs a second pass. It should use `hoi4-feature-planning` to expand the idea deeply, research historical and regional connections, define mechanics that the main agent can implement, and explain how the addendum should be promoted into specs if accepted.
 
-The planner should not be deployed again for the same event until its previous addendum has been implemented, folded into specs, queued with a reason, or rejected with a reason. Audit subagents should point to the latest unresolved addendum before asking for another planner pass.
+The planner should not be deployed again for the same feature until its previous addendum has been implemented, folded into specs, queued with a reason, or rejected with a reason. Audit subagents should point to the latest unresolved addendum before asking for another planner pass.
 
 Audit subagents should use this skill when they find shallow design. They may include a compact improvement handoff in their audit. If the gap is broad enough to require new design, they should recommend `hoi4_improvement_loop_planner` or write a bounded plan if the parent explicitly asked for that kind of audit output.
 

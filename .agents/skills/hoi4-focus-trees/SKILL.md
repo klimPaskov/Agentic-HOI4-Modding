@@ -5,7 +5,7 @@ description: Use when designing, implementing, auditing, or fixing Hearts of Iro
 
 # HOI4 Focus Trees
 
-Use this skill when a task touches national focus trees, focus-tree loading, focus effects, focus layout, focus localisation, focus icons, focus AI, focus-tree documentation, or event-created country trees.
+Use this skill when a task touches national focus trees, focus-tree loading, focus effects, focus layout, focus localisation, focus icons, focus AI, focus-tree documentation, or feature-created country trees.
 
 This skill is the detailed focus-tree source of truth for `AGENTS.md`. Keep the root `AGENTS.md` concise and put reusable focus-tree design, implementation, audit, and completion standards here.
 
@@ -14,7 +14,7 @@ Use this skill together with:
 - `AGENTS.md` for repository-wide rules
 - `hoi4-events` when the tree belongs to an event
 - `hoi4-decisions-missions` when focuses unlock, modify, or depend on decisions and missions
-- `hoi4-event-assets` when focus icons, leader portraits, flags, or idea icons are required
+- `hoi4-feature-assets` when focus icons, leader portraits, flags, or idea icons are required
 
 ## 1. Required checks
 
@@ -23,7 +23,7 @@ Before editing focus files:
 - Read the offline Paradox wiki National focus modding page.
 - Read relevant vanilla documentation from `<HOI4_INSTALL_DIR>/documentation`.
 - Inspect vanilla focus files for syntax and layout precedent.
-- Inspect existing repository focus trees and event-created focus-tree loading patterns.
+- Inspect existing repository focus trees and feature-created focus-tree loading patterns.
 - Read `AGENTS.md`.
 - Read `hoi4-decisions-missions` when focuses unlock decisions, timed objectives, missions, or dynamic mechanics.
 
@@ -98,7 +98,7 @@ The final tree must preserve the route logic and gameplay intent from the spec.
 
 ## 5. Major country tree requirements
 
-Large, playable, long-lived, or event-created countries need real focus trees.
+Large, playable, long-lived, or feature-created countries need real focus trees.
 
 A major tree should usually include:
 
@@ -300,7 +300,7 @@ Mechanic values should unlock or block content. A value should not only be a num
 
 Important internal struggles should consider a balance of power or equivalent mechanic. Good balance-of-power conflicts include army versus parliament, factory councils versus ministries, monarchists versus republicans, foreign patrons versus national independence, security service versus civilian cabinet, or cult authority versus military command. Focuses and decisions should push the balance and unlock branch content, risks, leaders, laws, advisors, or events.
 
-When a focus tree creates or leads a faction, league, bloc, compact, coalition, or alliance, that faction needs goals and rules. Define membership conditions, joining logic, refusal logic, expulsion logic where relevant, war goals, shared decisions, AI behavior, victory conditions, and failure conditions. Important event-created factions should usually have a mechanic such as cohesion, shared command, war council support, joint reserves, recognition, member confidence, sponsor pressure, or strategic goals.
+When a focus tree creates or leads a faction, league, bloc, compact, coalition, or alliance, that faction needs goals and rules. Define membership conditions, joining logic, refusal logic, expulsion logic where relevant, war goals, shared decisions, AI behavior, victory conditions, and failure conditions. Important feature-created factions should usually have a mechanic such as cohesion, shared command, war council support, joint reserves, recognition, member confidence, sponsor pressure, or strategic goals.
 
 Factions should not form too easily. Define minimum membership, crisis conditions, ideological compatibility, war pressure, diplomatic preparation, and regional logic.
 
@@ -441,7 +441,7 @@ Examples of route families:
 - machine or factory state
 - death-state actor
 
-Fixed-purpose special event-created countries can have narrower political design. For example, a country whose entire identity is death, plague, machine rule, or total destruction may have one ideological purpose. Even then, its tree should still create mechanical choices inside that purpose, such as doctrine, expansion method, internal hierarchy, recruitment, economy, and endgame ambition.
+Fixed-purpose special feature-created countries can have narrower political design. For example, a country whose entire identity is death, plague, machine rule, or total destruction may have one ideological purpose. Even then, its tree should still create mechanical choices inside that purpose, such as doctrine, expansion method, internal hierarchy, recruitment, economy, and endgame ambition.
 
 ## 8. Focus reward diversity
 
@@ -651,7 +651,7 @@ The tree should state whether the formable is:
 - available only if another country does not exist
 - available only if the forming country has the correct release origin or event origin
 
-For shared event-created trees, formables must use origin and package checks so unrelated countries do not receive the wrong route.
+For shared feature-created trees, formables must use origin and package checks so unrelated countries do not receive the wrong route.
 
 ## Focus rewards tied to formation decisions
 
@@ -730,7 +730,7 @@ Only load or replace a runtime focus tree if the event actually created the coun
 
 Existing countries with their own meaningful tree should usually receive additive crisis branches, decisions, ideas, or events, not a blind tree replacement.
 
-For every event-created country, verify:
+For every feature-created country, verify:
 
 - tag
 - history setup
@@ -799,7 +799,7 @@ Animated leader portraits and animated route emblems should be reserved for majo
 
 Focus tree subagents are active small-patch agents by default inside the current task scope. They can patch prerequisite fixes, mutual exclusion fixes, bypasses, route locks, AI weights, icon references, focus filters, localisation keys, small reward variety, existing decision hooks, and existing formable unlock hooks without waiting for a separate permission prompt.
 
-They should not redesign a whole tree, add a full route family, create a new formable chain, or change the country identity. When the tree needs broader depth, they should write an improvement plan under `docs/plans/<event_id>_<event_slug>_plans/` and leave implementation to the main agent.
+They should not redesign a whole tree, add a full route family, create a new formable chain, or change the country identity. When the tree needs broader depth, they should write an improvement plan under `docs/plans/<feature_slug>/` and leave implementation to the main agent.
 
 Every patch must write a handoff with changed files, changed focus ids, route behavior before and after, meaningful validation, skipped task-specific validation, and remaining route risks.
 
@@ -873,7 +873,7 @@ A focus tree task is complete only when:
 - routes have visible baseline effects without revealing hidden outcomes
 - special mechanic values are changed by relevant focus paths
 - balance-of-power or equivalent internal struggle mechanics are used when appropriate
-- event-created factions have goals, membership rules, shared mechanics, AI behavior, rewards, and success or failure states
+- feature-created factions have goals, membership rules, shared mechanics, AI behavior, rewards, and success or failure states
 - special mechanics have visible presentation through decision headers, scripted GUI, progress meters, tooltips, or spirits
 - important custom GUI mechanics consider progress variants, status frames, warning frames, selected or locked variants, and frame animations where useful
 - AI routes respect validity and avoid impossible branches

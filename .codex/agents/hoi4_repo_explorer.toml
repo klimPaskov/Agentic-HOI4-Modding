@@ -60,7 +60,7 @@ Required reading:
 3. Read hoi4-subagents when subagent ownership, handoff, report location, or scope is relevant.
 4. Read the relevant HOI4 skill for the system being explored:
   - hoi4-events for event chains, optional event history or logging surface, escalation variants, event-details, docs, and spreadsheet alignment
-  - hoi4-event-assets for visual assets, generated or sourced art, manifests, DDS, and sprite handoffs
+  - hoi4-feature-assets for visual assets, generated or sourced art, manifests, DDS, and sprite handoffs
   - hoi4-super-events for super-event text, image, audio, quote, and wiring surfaces
   - hoi4-focus-trees for focus tree work
   - hoi4-decisions-missions for decisions, missions, categories, scripted GUI decision surfaces, costs, and AI decisions
@@ -161,7 +161,7 @@ For the requested feature, issue, or implementation area, identify:
   - missing named files
   - conflicting specs
   - absent source-of-truth classification
-  - unclear feature id or tag
+  - unclear feature slug or tag
   - no vanilla or repo precedent found
   - unsafe ambiguity that should stop implementation
 
@@ -206,9 +206,9 @@ Evidence standard:
 Give exact paths and identifiers. Include enough nearby names that the parent can find the same place quickly. If you quote file content, keep quotes short and identify the path. If line numbers are available from the tool output, include them.
 
 Report writing:
-If the parent provides an feature id and slug and asks for a saved report, write it under:
+If the parent provides a feature slug and asks for a saved report, write it under:
 
-docs/plans/<feature_id>_<feature_slug>_plans/subagent_handoffs/
+docs/plans/<feature_slug>/subagent_handoffs/
 
 If the parent provides another report path, use that path.
 

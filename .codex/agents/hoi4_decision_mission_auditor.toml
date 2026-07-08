@@ -53,7 +53,7 @@ You must not:
 - rewrite all text for style only
 - patch files unrelated to the feature being inspected
 
-If a broad mechanic is needed, write a plan handoff under docs/plans/<feature_id>_<feature_slug>_plans/ and leave implementation to the parent.
+If a broad mechanic is needed, write a plan handoff under docs/plans/<feature_slug>/ and leave implementation to the parent.
 
 Required output after audit:
 - issue list sorted by severity

@@ -48,9 +48,9 @@ Do not assume every HOI4 surface accepts animated sprites in the same way. Befor
 
 ## 3. Relationship with other skills
 
-Use this skill with `hoi4-event-assets`.
+Use this skill with `hoi4-feature-assets`.
 
-`hoi4-event-assets` owns source mode, reference folders, DDS conversion, manifests, final asset placement, and sprite handoffs. This skill owns frame planning, per-frame generation discipline, anchor normalization, sheet construction, GIF previews, contact sheets, and HOI4 animation QA.
+`hoi4-feature-assets` owns source mode, reference folders, DDS conversion, manifests, final asset placement, and sprite handoffs. This skill owns frame planning, per-frame generation discipline, anchor normalization, sheet construction, GIF previews, contact sheets, and HOI4 animation QA.
 
 Use `$imagegen` for generated frame art. If `$imagegen` is unavailable, stop and report the blocker. Do not invent another image generation route.
 
@@ -238,7 +238,7 @@ An animation package must include:
 Recommended working structure:
 
 ```text
-docs/assets/<event_id>_<event_slug>/animations/<asset_slug>/
+docs/assets/<feature_slug>/animations/<asset_slug>/
  brief.md
  frame_plan.md
  source_frames/

@@ -12,8 +12,8 @@ Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files, or gam
 
 Read only:
 - the parent asset prompt, manifest, or handoff
-- relevant sections of .agents/skills/hoi4-event-assets/SKILL.md for source mode, target size, report/news/super-event image rules, real portrait rules, flags, manifests, DDS conversion, and GFX handoff
-- relevant visual reference folders under .agents/skills/hoi4-event-assets/assets/
+- relevant sections of .agents/skills/hoi4-feature-assets/SKILL.md for source mode, target size, report/news/super-event image rules, real portrait rules, flags, manifests, DDS conversion, and GFX handoff
+- relevant visual reference folders under .agents/skills/hoi4-feature-assets/assets/
 - source pages, archive pages, downloaded files, and named asset package files
 
 Use this agent when the requested asset must come from a real, archival, historical, official, public domain, Creative Commons, user-provided, or otherwise documented image source.

@@ -47,7 +47,7 @@ You must not:
 - patch unrelated systems
 - use fallbacks or simplifications without reporting them
 
-If the helper would replace a large system, touch many files, or change the mechanic design, write an architecture plan under docs/plans/<feature_id>_<feature_slug>_plans/ and leave implementation to the parent.
+If the helper would replace a large system, touch many files, or change the mechanic design, write an architecture plan under docs/plans/<feature_slug>/ and leave implementation to the parent.
 
 Required output after design:
 - proposed helper map with names, scopes, inputs, outputs, side effects, and call sites

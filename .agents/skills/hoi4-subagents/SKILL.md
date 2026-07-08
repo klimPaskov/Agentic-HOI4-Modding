@@ -37,11 +37,11 @@ The goal is to keep subagents narrow, reproducible, and grounded in explicit inp
 
 Use `hoi4_repo_explorer` only for read-only repo exploration when touched-file mapping, pattern search, vanilla reference mapping, missing-file recovery, dependency mapping, or edit-order planning is actually unclear. It is not a default preflight agent.
 
-Use `hoi4_improvement_loop_planner` for event improvement loop planning, detailed expansion specs, historical and regional research notes, and implementation-ready improvement handoffs. This replaces the old mechanic-expander role. It writes plans and addenda. It does not patch gameplay files.
+Use `hoi4_improvement_loop_planner` for feature improvement loop planning, detailed expansion specs, historical and regional research notes, and implementation-ready improvement handoffs. This replaces the old mechanic-expander role. It writes plans and addenda. It does not patch gameplay files.
 
 Use `hoi4_asset_source_researcher` for real or archival image sourcing, real leader portraits, historical flags, historical symbols, user-provided source photos, source-image processing, animated portrait bases, and report, news, or super-event images that must depict real historical material.
 
-Use `hoi4_generated_event_art` for generated non-icon art, including fictional or alternate-history report images, news images, super-event images, fictional portraits, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces.
+Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, super-event images, fictional portraits, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces.
 
 Use `hoi4_icon_artist` for focus icons, idea icons, national spirit icons, officer corps icons, decision icons, decision category icons, achievement icons, tech icons, formable seals, scripted GUI icons, and small animated icon or button sprites.
 
@@ -61,7 +61,7 @@ Use `hoi4_scripted_system_architect` for reusable scripted system design and act
 
 Use `hoi4_documentation_curator` for documentation cleanup and consistency during long implementation. It reconciles specs, plans, docs, handoffs, manifests, prompts, reports, and README files, writes source-of-truth maps and resume packets, marks superseded docs, records plan dispositions, and flags contradictions. It patches documentation surfaces only and does not edit gameplay files, localisation, assets, or planning workbooks.
 
-Use `hoi4_event_completion_auditor` for read-only spec-versus-implementation audits covering events, mechanics, assets, docs, super-events, focus trees, decisions, validation, and accepted plan addenda.
+Use `hoi4_feature_completion_auditor` for read-only spec-versus-implementation audits covering events, mechanics, assets, docs, super-events, focus trees, decisions, validation, and accepted plan addenda.
 
 Use `hoi4_spreadsheet_doc_worker` only for mod-maintained spreadsheets or planning workbooks when the repository actually has them. It uses the spreadsheet skill, keeps the workbook player-facing, and matches optional event history or logging surface, event-detail, escalation variant detail, and linked-table fields to the in-game wording.
 
@@ -101,17 +101,17 @@ Subagents should act at the level their role requires. Do not make every subagen
 These agents do not patch gameplay files:
 
 - `hoi4_repo_explorer`
-- `hoi4_event_completion_auditor`
+- `hoi4_feature_completion_auditor`
 
 They may write reports only when a report path is provided or obvious from the task.
 
 ### Plan-only agents
 
-`hoi4_improvement_loop_planner` writes event expansion specs, improvement addenda, deep research notes, historical connection notes, and implementation handoffs. It does not edit gameplay, localisation, GUI, scripted effects, focus trees, decisions, assets, planning workbooks, or country files.
+`hoi4_improvement_loop_planner` writes feature expansion specs, improvement addenda, deep research notes, historical connection notes, and implementation handoffs. It does not edit gameplay, localisation, GUI, scripted effects, focus trees, decisions, assets, planning workbooks, or country files.
 
-When an event mechanic needs more depth, new branches, new countries, a new formable suite, a new scripted GUI system, deeper regional logic, historical anchors, or a larger route redesign, the planner writes a plan under `docs/plans/<event_id>_<event_slug>_plans/`. The main agent decides what to implement.
+When an event mechanic needs more depth, new branches, new countries, a new formable suite, a new scripted GUI system, deeper regional logic, historical anchors, or a larger route redesign, the planner writes a plan under `docs/plans/<feature_slug>/`. The main agent decides what to implement.
 
-The parent should use this planner after a meaningful implementation tranche, not after every small patch. Do not spawn it again for the same event until its previous addendum has been implemented, folded into specs, queued with a reason, or rejected with a reason.
+The parent should use this planner after a meaningful implementation tranche, not after every small patch. Do not spawn it again for the same feature until its previous addendum has been implemented, folded into specs, queued with a reason, or rejected with a reason.
 
 ### Documentation curation agents
 
@@ -119,7 +119,7 @@ The parent should use this planner after a meaningful implementation tranche, no
 
 Use it after long implementation tranches, after several subagent handoffs, before a major resume, or whenever docs may be stale, contradictory, duplicated, or too numerous. It should reduce confusion for the parent agent by recording what is current, what is superseded, what is queued, what is rejected, and what still needs a decision.
 
-It must not edit gameplay files, localisation, scripted localisation, GUI, GFX, events, focuses, decisions, ideas, scripted effects, scripted triggers, on_actions, country setup, history, AI files, assets, audio, binary files, or spreadsheets. It does not replace `hoi4_event_completion_auditor`, `hoi4_localisation_auditor`, `hoi4_spreadsheet_doc_worker`, or `hoi4_repo_explorer`.
+It must not edit gameplay files, localisation, scripted localisation, GUI, GFX, events, focuses, decisions, ideas, scripted effects, scripted triggers, on_actions, country setup, history, AI files, assets, audio, binary files, or spreadsheets. It does not replace `hoi4_feature_completion_auditor`, `hoi4_localisation_auditor`, `hoi4_spreadsheet_doc_worker`, or `hoi4_repo_explorer`.
 
 ### Asset-production agents
 
@@ -135,7 +135,7 @@ These agents are patch-capable by default inside the current task scope:
 - `hoi4_country_package_auditor`
 - `hoi4_localisation_auditor`
 
-They do not need a separate permission prompt to fix small, local issues that are clearly connected to the current event, mechanic, country, focus tree, decision category, GUI surface, or localisation surface.
+They do not need a separate permission prompt to fix small, local issues that are clearly connected to the current feature, mechanic, country, focus tree, decision category, GUI surface, or localisation surface.
 
 They should inspect first, then patch only when the fix is narrow, reversible, and supported by the relevant skill. They may edit files they own for the current task surface and directly related dependency files. They must not search for unrelated cleanup outside the feature they were spawned for.
 
@@ -169,10 +169,10 @@ When a patch-capable subagent sees a broad design gap, it writes a plan handoff 
 
 ## Mandatory handoff after any patch
 
-Every subagent that edits files must write a handoff back to the parent. If the event id and slug are known, place it under:
+Every subagent that edits files must write a handoff back to the parent. If the feature slug is known, place it under:
 
 ```text
-docs/plans/<event_id>_<event_slug>_plans/subagent_handoffs/
+docs/plans/<feature_slug>/subagent_handoffs/
 ```
 
 The handoff should include:
@@ -193,16 +193,16 @@ If a patch touches localisation, list the keys changed. If it touches decisions 
 
 ## Plan and spec paths
 
-Full accepted event specs belong under:
+Full accepted feature specs belong under:
 
 ```text
-docs/specs/<event_id>_<event_slug>_specs/
+docs/specs/<feature_slug>/
 ```
 
 Subagent plans, expansion addenda, audit follow-up notes, blocked reports, implementation handoffs, and patch handoffs belong under:
 
 ```text
-docs/plans/<event_id>_<event_slug>_plans/
+docs/plans/<feature_slug>/
 ```
 
 The plans folder is the working area. The specs folder is the source-of-truth design area. If a plan is accepted as source design, the main agent should fold it into the relevant spec file or clearly report that it remains queued.
@@ -216,12 +216,12 @@ Do not use one broad asset worker for mixed visual packages.
 Use:
 
 - `hoi4_asset_source_researcher` for real, archival, historical, documentary, or public-source images when the asset must show real historical material
-- `hoi4_generated_event_art` for generated non-icon fictional, alternate-history, symbolic, extreme-route, or unique event art
+- `hoi4_generated_feature_art` for generated non-icon fictional, alternate-history, symbolic, extreme-route, or unique event art
 - `hoi4_icon_artist` for generated gameplay icons, formable seals, decision category icons, and small animated icon or button sprites
 
 The parent agent must give each asset subagent a bounded prompt with exact asset names, target sizes, source mode, final folders, sprite names when already registered, reference folders, and constraints.
 
-For flags, the parent prompt must state whether each flag is a base flag, ideology variant, route variant, cosmetic-tag flag, historical flag, or fictional flag. Base flags for existing countries must be preserved unless explicitly in scope. Ideology variants must be distinct designs, not recolors or copied emblems. Historical flags and attested symbols belong with `hoi4_asset_source_researcher`. Fictional or alternate-history variants belong with `hoi4_generated_event_art`.
+For flags, the parent prompt must state whether each flag is a base flag, ideology variant, route variant, cosmetic-tag flag, historical flag, or fictional flag. Base flags for existing countries must be preserved unless explicitly in scope. Ideology variants must be distinct designs, not recolors or copied emblems. Historical flags and attested symbols belong with `hoi4_asset_source_researcher`. Fictional or alternate-history variants belong with `hoi4_generated_feature_art`.
 
 Asset subagents may create source files, PNG previews, DDS files, contact sheets, manifests, and `gfx_handoff.md`. They must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, script, history, country, or planning workbook files unless the parent explicitly expands scope.
 
@@ -233,17 +233,17 @@ Use `hoi4_super_event_text_researcher` for quotes, exact wording, attribution co
 
 Use `hoi4_super_event_audio_researcher` for audio research, license verification, download, `.ogg` conversion, and audio handoff notes.
 
-Use `hoi4_asset_source_researcher` or `hoi4_generated_event_art` for image work according to the source mode required by `hoi4-event-assets`.
+Use `hoi4_asset_source_researcher` or `hoi4_generated_feature_art` for image work according to the source mode required by `hoi4-feature-assets`.
 
 The main agent owns final wiring, localisation, settings-aware playback, docs, and planning workbook alignment.
 
 ## Improvement routing
 
-Use `hoi4_improvement_loop_planner` when an event or event-adjacent mechanic needs new design material, not just an audit finding.
+Use `hoi4_improvement_loop_planner` when a feature or feature-adjacent mechanic needs new design material, not just an audit finding.
 
-The planner should read `hoi4-improvement-loop`, `hoi4-event-planning`, and relevant system skills. It should inspect actual implementation, specs, plans, docs, localisation, and asset notes when available. It should then write concrete design material that expands the event through playable mechanics, historical or regional connections, AI behavior, and visual needs. It should not patch gameplay files.
+The planner should read `hoi4-improvement-loop`, `hoi4-feature-planning`, and relevant system skills. It should inspect actual implementation, specs, plans, docs, localisation, and asset notes when available. It should then write concrete design material that expands the event through playable mechanics, historical or regional connections, AI behavior, and visual needs. It should not patch gameplay files.
 
-The main agent should deploy the planner often enough to keep major events from becoming shallow after new mechanics are added, but not so often that plans pile up. For the same event, do not deploy another planner pass until the previous addendum is implemented, promoted to specs, queued with a reason, or rejected.
+The main agent should deploy the planner often enough to keep major features from becoming shallow after new mechanics are added, but not so often that plans pile up. For the same feature, do not deploy another planner pass until the previous addendum is implemented, promoted to specs, queued with a reason, or rejected.
 
 Audit subagents may include compact improvement handoffs inside their reports. If a gap requires a new route family, new GUI system, new formable suite, new country package, or new event chain, they should recommend a plan-mode pass rather than trying to patch it.
 

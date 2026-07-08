@@ -43,8 +43,8 @@ If a task seems to need custom one-off plumbing, first check whether the behavio
 
 Use this skill with:
 
-- `hoi4-event-planning` when the user asks for event design or a deeper event specification before implementation
-- `hoi4-event-assets` when the event needs event pictures, report images, news images, icons, flags, portraits, or final DDS assets
+- `hoi4-feature-planning` when the user asks for event design or a deeper event specification before implementation
+- `hoi4-feature-assets` when the event needs event pictures, report images, news images, icons, flags, portraits, or final DDS assets
 - `hoi4-frame-animation` when event presentation needs animated sprites, animated portraits, animated UI pieces, frame sheets, or GIF previews for review
 - `hoi4-super-events` when a major event needs super-event presentation, quote research, audio research, image direction, and wiring notes
 - `hoi4-focus-trees` when the event creates, unlocks, modifies, or depends on focus trees
@@ -57,9 +57,9 @@ The parent agent remains responsible for final integration, final validation, an
 
 ## Spec and plan locations
 
-Source event specs live under `docs/specs/<event_id>_<event_slug>_specs/`. Implementation should read those files as the main design source when they exist.
+Source event specs live under `docs/specs/<feature_slug>/`. Implementation should read those files as the main design source when they exist.
 
-Subagent plans, expansion addenda, audit follow-up notes, and implementation handoffs live under `docs/plans/<event_id>_<event_slug>_plans/`. Plans are working documents. If a plan becomes accepted source design, merge it into the relevant spec.
+Subagent plans, expansion addenda, audit follow-up notes, and implementation handoffs live under `docs/plans/<feature_slug>/`. Plans are working documents. If a plan becomes accepted source design, merge it into the relevant spec.
 
 
 ## Spec fidelity and implementation quality
@@ -138,9 +138,9 @@ Patch-capable subagents are active by default inside the current task scope. Use
 
 Small subagent patches are allowed when they improve a specific surface without changing the event design. A decision subagent can vary costs, clarify tooltips, add cleanup, improve AI weights, and patch related localisation. A focus subagent can fix a route lock, prerequisite, bypass, focus AI, icon reference, small reward, or formable unlock hook. A country package subagent can patch tag setup, party names, focus loading, leader references, country localisation, simple starting setup, or existing formable requirements. A localisation subagent can patch dynamic text directly. A scripted-system architect can add narrow helpers and direct call sites when the repeated logic is already present.
 
-The parent still owns final integration, docs, spreadsheets, event chain direction, completion claims, and any broad mechanic expansion. If a subagent sees a needed route family, new country package, new formable suite, new scripted GUI system, new event chain, or major balance redesign, it writes a plan under `docs/plans/<event_id>_<event_slug>_plans/` and stops.
+The parent still owns final integration, docs, spreadsheets, event chain direction, completion claims, and any broad mechanic expansion. If a subagent sees a needed route family, new country package, new formable suite, new scripted GUI system, new event chain, or major balance redesign, it writes a plan under `docs/plans/<feature_slug>/` and stops.
 
-Every subagent edit must produce a handoff under `docs/plans/<event_id>_<event_slug>_plans/subagent_handoffs/` when the event id and slug are known. The handoff lists changed files, identifiers, behavior before and after, meaningful validation, remaining gaps, and follow-up work for the parent.
+Every subagent edit must produce a handoff under `docs/plans/<feature_slug>/subagent_handoffs/` when the feature slug is known. The handoff lists changed files, identifiers, behavior before and after, meaningful validation, remaining gaps, and follow-up work for the parent.
 
 
 ## Major-event defeat aftermath
@@ -184,7 +184,7 @@ Event-specific documentation belongs in `docs/events/`.
 
 Preferred naming pattern:
 
-- `docs/events/<zero_padded_id>_<slug>.md`, so exactly like with event script files.
+- `docs/events/<feature_slug>.md`, using the same feature slug as the related spec, plan, and asset folders.
 
 Keep one canonical doc per event chain instead of splitting mechanics across multiple top-level docs unless the user explicitly asks for that.
 
@@ -277,11 +277,11 @@ Animated leader portraits, animated route emblems, glow effects, particles, and 
 
 ## Generated asset handling
 
-Use the `hoi4-event-assets` skill whenever an event task requires generated or processed visual assets.
+Use the `hoi4-feature-assets` skill whenever an event task requires generated or processed visual assets.
 
 For every generated asset:
 
-1. Create the base artwork by following the official `$imagegen` skill workflow through `hoi4-event-assets`.
+1. Create the base artwork by following the official `$imagegen` skill workflow through `hoi4-feature-assets`.
 2. Save the original generated image as a source PNG.
 3. Create a processed PNG preview at the correct HOI4 target size.
 4. Convert the processed PNG to DDS 32 bit unsigned BGRB 8.8.8.8.

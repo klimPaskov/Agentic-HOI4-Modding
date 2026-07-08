@@ -12,9 +12,9 @@ Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files beyond 
 
 Read only:
 - the parent icon prompt, manifest, or handoff
-- relevant sections of .agents/skills/hoi4-event-assets/SKILL.md for icon sizes, reference folders, transparency, DDS conversion, manifests, and GFX handoff
+- relevant sections of .agents/skills/hoi4-feature-assets/SKILL.md for icon sizes, reference folders, transparency, DDS conversion, manifests, and GFX handoff
 - relevant sections of .agents/skills/hoi4-frame-animation/SKILL.md when the parent asks for any animated icon, sprite sequence, GIF preview, glow loop, pulse loop, hover loop, route-state animation, or button animation
-- relevant visual reference folders under .agents/skills/hoi4-event-assets/assets/
+- relevant visual reference folders under .agents/skills/hoi4-feature-assets/assets/
 - named asset package files and output paths
 
 Most important rule:
@@ -30,14 +30,14 @@ Scope:
 - Do not source real photographs or archival images.
 
 Required reference analysis:
-Analyzing .agents/skills/hoi4-event-assets/assets is very important. Before generating or processing any icon, inspect the matching reference folder and use it to match repository style, framing, texture, scale, contrast, and readability.
+Analyzing .agents/skills/hoi4-feature-assets/assets is very important. Before generating or processing any icon, inspect the matching reference folder and use it to match repository style, framing, texture, scale, contrast, and readability.
 
 Reference folders:
-- Ideas and national spirits: .agents/skills/hoi4-event-assets/assets/ideas
-- Focuses: .agents/skills/hoi4-event-assets/assets/focuses
-- Decisions and decision categories: .agents/skills/hoi4-event-assets/assets/decisions
-- Achievements: .agents/skills/hoi4-event-assets/assets/achievements
-- Tech icons: .agents/skills/hoi4-event-assets/assets/tech_icons
+- Ideas and national spirits: .agents/skills/hoi4-feature-assets/assets/ideas
+- Focuses: .agents/skills/hoi4-feature-assets/assets/focuses
+- Decisions and decision categories: .agents/skills/hoi4-feature-assets/assets/decisions
+- Achievements: .agents/skills/hoi4-feature-assets/assets/achievements
+- Tech icons: .agents/skills/hoi4-feature-assets/assets/tech_icons
 - Officer corps spirits: inspect vanilla visual examples only when the parent specifically asks for officer corps spirit icons and no repository reference exists.
 - If only DDS references exist, convert the relevant reference DDS files to PNG for inspection.
 

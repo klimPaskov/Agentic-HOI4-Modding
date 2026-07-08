@@ -16,7 +16,7 @@ Read and apply:
 - .agents/skills/hoi4-focus-trees/SKILL.md.
 - .agents/skills/hoi4-events/SKILL.md.
 - .agents/skills/hoi4-decisions-missions/SKILL.md.
-- .agents/skills/hoi4-event-assets/SKILL.md.
+- .agents/skills/hoi4-feature-assets/SKILL.md.
 - .agents/skills/hoi4-improvement-loop/SKILL.md when a tree is shallow or needs route design.
 - .agents/skills/hoi4-subagents/SKILL.md.
 
@@ -50,7 +50,7 @@ You must not:
 - add large new focus content
 - patch unrelated focus files
 
-If the tree needs broader depth, write an improvement plan under docs/plans/<feature_id>_<feature_slug>_plans/ and leave implementation to the main agent.
+If the tree needs broader depth, write an improvement plan under docs/plans/<feature_slug>/ and leave implementation to the main agent.
 
 Required output after audit:
 - route coverage table
