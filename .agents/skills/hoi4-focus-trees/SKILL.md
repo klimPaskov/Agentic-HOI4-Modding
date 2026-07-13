@@ -16,6 +16,13 @@ Use this skill together with:
 - `hoi4-decisions-missions` when focuses unlock, modify, or depend on decisions and missions
 - `hoi4-feature-assets` when focus icons, leader portraits, flags, or idea icons are required
 
+Use `hoi4-mcp-workbench` for the shared MCP workflow. After the route plan and
+source review, call `hoi4.focus_inspect` and `hoi4.focus_render`; use
+`hoi4.focus_rewrite` with `layoutMode: "compact"` for cleanup or a complete
+plan for a new tree. Keep the route, AI, localisation, icon, and completion
+standards below active; MCP handles the shared parse, layout, render, and write
+path but does not replace this skill.
+
 ## 1. Required checks
 
 Before editing focus files:

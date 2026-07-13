@@ -9,6 +9,11 @@ Use this skill to design or expand features for a Hearts of Iron IV mod.
 
 This skill creates feature specifications. It does not implement code. Implementation belongs to the owning implementation skill for the surface being designed, such as `hoi4-events` for event content, `hoi4-focus-trees` for focus trees, `hoi4-decisions-missions` for decisions and missions, and repository-specific implementation rules for other systems. Visual asset generation and processing belongs to `hoi4-feature-assets`. Animated sprite planning, frame-sheet requirements, animated portrait packages, and animation handoff details belong to `hoi4-frame-animation` when motion is needed. Quote, remark, and audio research belongs to `hoi4-text-audio-research`.
 
+When the planned feature includes a focus tree, scripted GUI, or map work,
+record the MCP handoff in the implementation notes: use
+`hoi4-mcp-workbench` after planning to inspect the current workspace, render a
+review artifact, and apply the complete plan or declarative operation set.
+
 ## 1. Required reading
 
 Before writing the feature specification, use the following as the design baseline:

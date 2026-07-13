@@ -1,0 +1,4 @@
+interface:
+  display_name: "HOI4 MCP Workbench"
+  short_description: "Use the HOI4 MCP server from coding-agent workflows"
+  default_prompt: "Use the installed HOI4 MCP server to inspect event chains or inspect, render, create, and clean focus trees, scripted GUIs, and maps in the current mod workspace."

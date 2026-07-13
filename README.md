@@ -6,6 +6,24 @@ This repo gives you a reusable `AGENTS.md` example, offline wiki references, rep
 
 Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3
 
+## HOI4 MCP setup
+
+Install the MCP server once, then every coding agent can use it with the mods
+under the configured parent folder:
+
+```powershell
+npm install --global hoi4-agent-tools@1.2.0
+hoi4-agent-tools-setup --init `
+  --mod-root "C:\Users\<you>\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod" `
+  --game-root "C:\Program Files (x86)\Steam\steamapps\common\Hearts of Iron IV"
+hoi4-agent-tools-setup --print-client-config
+```
+
+Use the real Documents or OneDrive path. Copy the printed `globalInstall` or
+`codexTomlGlobal` entry into the agent's MCP settings and reload the agent.
+Then call `hoi4.mods` and use the returned workspace ID. See
+[`AGENTS.md`](AGENTS.md) for the short workflow and tool map.
+
 ## What this repo provides
 
 - `AGENTS_chaos_redux.md`, a real, full project instruction for a large HOI4 mod, Chaos Redux.
@@ -167,13 +185,15 @@ After cloning, check the mod descriptor. Its `path="..."` value should point to 
 
 Start Codex from the repository root so it can see `AGENTS.md`, `.agents/skills/`, `.codex/agents/`, `paradox_wiki/`, docs, and all mod files from one native Windows path.
 
-## MCP servers and apps
+## MCP in agent workflows
 
-MCP servers and apps are optional tools that can expand what the agent can access.
-
-Do not add tools just because they exist. More tools can also mean more noise, more tokens, and more confusion. Add tools when they solve a real workflow problem.
-
-Good use cases include web research, image sourcing, document conversion, spreadsheets, asset processing, or project-specific integrations.
+The HOI4 MCP server is the normal implementation tool for focus trees, scripted
+GUIs, and maps, plus event-chain analysis. Agents can inspect, render, create,
+clean, and validate the writable systems while the existing skills and
+subagents handle design, research, assets, and audits. Event tools are
+read-only: inspect a bounded chain, edit normal source files, then compare,
+lint, and render the result. Use linked MCP resources for large artifacts
+instead of copying them into the prompt.
 
 ## Codex scheduled tasks or Hermes
 

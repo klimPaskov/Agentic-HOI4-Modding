@@ -9,6 +9,16 @@ Use this skill when a HOI4 modding task should be split across custom Codex suba
 
 The parent Codex agent remains responsible for final integration, validation, and completion claims. Subagents can inspect, patch, create assets, write addenda, or produce reports. The parent must review their outputs, wire final cross-surface behavior, and carry blockers into the final report.
 
+Use `hoi4-mcp-workbench` as the shared MCP surface when a routed task touches
+focus trees, event chains, scripted GUI, or maps. A
+subagent may return a workspace ID, selector, revision, MCP artifact URI,
+layout report, comparison, or diagnostics in its handoff. The parent owns final
+source writes, review, and validation. Pass only the bounded MCP evidence the
+subagent needs instead of copying a whole graph into its prompt.
+
+Capture an event baseline before patch-capable subagents begin. Assign disjoint
+files and serialize any work that would touch the same source.
+
 Do not use subagents to hide uncertainty or pass off responsibility. A subagent handoff is evidence for the parent, not a replacement for parent review.
 
 ## Fork context rule
