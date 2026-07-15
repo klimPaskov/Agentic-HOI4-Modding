@@ -2,7 +2,9 @@
 
 A starter kit for using coding agents on Hearts of Iron IV mods.
 
-This repo gives you a reusable `AGENTS.md` example, offline wiki references, repo skills, and optional Codex subagent configs that can be adapted into your own mod repo.
+This repo gives you a reusable `AGENTS_template.md` to copy as `AGENTS.md`,
+offline wiki references, repo skills, and optional Codex subagent configs that
+can be adapted into your own mod repo.
 
 Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3
 
