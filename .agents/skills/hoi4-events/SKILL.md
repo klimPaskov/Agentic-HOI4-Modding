@@ -1,6 +1,6 @@
 ---
 name: hoi4-events
-description: Use when implementing, updating, auditing, or documenting Hearts of Iron IV events and event chains, including MCP-assisted chain inspection, news and report events, on_action hooks, localisation, pictures, registration hooks, and validation.
+description: Use when implementing, updating, auditing, or documenting Hearts of Iron IV events and event chains, including news and report events, on_action hooks, localisation, pictures, registration hooks, and validation.
 ---
 
 # HOI4 Events
@@ -13,11 +13,6 @@ This includes:
 - wiring events through `on_actions`, decisions, focuses, scripted effects, scripted triggers, scripted localisation, and optional mod-specific registration hooks
 - keeping localisation, event pictures, report pictures, news pictures, text and audio packages, docs, and any parent-provided tracking records aligned
 - validating event ids, namespaces, scopes, triggers, effects, options, localisation keys, pictures, and follow-up hooks
-
-Use `hoi4-mcp-workbench` for the event-chain graph pass. When an event package
-also changes a focus tree, scripted GUI, or map surface, use its matching MCP
-tools while keeping the event wiring and localisation rules in this skill
-active.
 
 Repository-wide reading and style rules live in `AGENTS.md`. This skill adds the event-specific implementation contract. It does not replace focus-tree, decision, asset, animation, text and audio research, or subagent skills.
 
@@ -65,6 +60,8 @@ The parent agent remains responsible for final integration, final validation, an
 
 Use the event viewer for unfamiliar, large, or cross-file chains and whenever a
 change can affect callers, descendants, state flow, targets, timing, or scope.
+Set the MCP server `cwd` to the mod being edited and omit `workspaceId`; the
+server resolves that workspace automatically.
 
 1. Before any parent or subagent source write, call `hoi4.event_inspect` in
    `scan` or `roots` mode and record the returned revision as the comparison

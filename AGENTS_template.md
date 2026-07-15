@@ -52,7 +52,7 @@ If your task touches some other system, for example for gui, open Interface Modd
 
 Web access:
 
-- For general web research, use your default web search tool. If that fails, then use the fallback `ddg-search` MCP server.
+- For general web research, use your default web search tool.
 
 ### Vanilla References
 
@@ -95,16 +95,25 @@ Use repo skills as required implementation guidance, not as optional notes.
 - Use `hoi4-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
 - Use `hoi4-mcp-workbench` when a coding-agent task needs the installed HOI4 MCP server to analyze event chains or inspect, render, create, clean, and validate focus trees, scripted GUIs, or maps. It contains the one-time setup and tool-routing steps; the other skills still own design and repository rules.
 
-### HOI4 MCP setup
+### HOI4 MCP setup (bootstrap; remove after setup)
 
-Install and configure the server once per machine:
+This section is only for first-time setup. After the package is installed and
+the MCP client entry is registered, delete this entire section from the copied
+or generated `AGENTS.md`. Keep the normal MCP routing and use guidance below;
+do not leave bootstrap commands in the project instructions.
+
+Install the server once per machine:
 
 ```powershell
 npm install --global hoi4-agent-tools@2.0.0
 ```
 
-Register the global server with the target mod as its working directory, for
-example in Codex:
+If the package release is not available from npm yet, clone the standalone
+`hoi4-agent-tools` project and run `npm install --global . --ignore-scripts`
+from that project directory instead.
+
+Register the server with the target mod as its working directory, for example
+in Codex:
 
 ```toml
 [mcp_servers.hoi4_agent_tools]
@@ -112,13 +121,21 @@ command = "hoi4-agent-tools.cmd"
 cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\<your_mod>"
 ```
 
-Reload the agent. No server config or mod-selection command is needed. Call
-`hoi4.focus_*`, `hoi4.event_*`, `hoi4.gui_*`, and
-`hoi4.map_*` for the matching systems. Event tools inspect, render, and compare
-source but do not rewrite it: use a narrow event query, edit normal mod files,
-then compare and lint. The agent can call the server autonomously as part of
-the normal workflow; MCP does not replace this file, the offline wiki, vanilla
-documentation, skills, or subagent handoffs.
+Reload the agent. For a mod-local `cwd`, no server configuration or
+mod-selection command is needed and `workspaceId` can be omitted. Use
+`hoi4-agent-tools-setup --init` only for persistent multi-mod or remote
+configurations. Once setup is complete, remove this setup section from the
+copied agents file before normal work begins.
+
+### HOI4 MCP workflow
+
+Use `hoi4.focus_*`, `hoi4.event_*`, `hoi4.gui_*`, and `hoi4.map_*` for the
+matching systems. Focus, GUI, and map tools inspect, render, lint, and rewrite
+their current mod workspace. Event tools inspect, render, compare, and lint
+source without rewriting it; edit event files through the normal source
+workflow, then compare and lint again. The coding agent may call MCP
+autonomously alongside the owning skill, offline wiki, vanilla documentation,
+source review, tests, audits, and subagent handoffs.
 
 ### Subagents
 

@@ -9,11 +9,6 @@ Use this skill to design or expand features for a Hearts of Iron IV mod.
 
 This skill creates feature specifications. It does not implement code. Implementation belongs to the owning implementation skill for the surface being designed, such as `hoi4-events` for event content, `hoi4-focus-trees` for focus trees, `hoi4-decisions-missions` for decisions and missions, and repository-specific implementation rules for other systems. Visual asset generation and processing belongs to `hoi4-feature-assets`. Animated sprite planning, frame-sheet requirements, animated portrait packages, and animation handoff details belong to `hoi4-frame-animation` when motion is needed. Quote, remark, and audio research belongs to `hoi4-text-audio-research`.
 
-When the planned feature includes a focus tree, scripted GUI, or map work,
-record the MCP handoff in the implementation notes: use
-`hoi4-mcp-workbench` after planning to inspect the current workspace, render a
-review artifact, and apply the complete plan or declarative operation set.
-
 ## 1. Required reading
 
 Before writing the feature specification, use the following as the design baseline:
@@ -593,6 +588,15 @@ The visual should be readable, symmetrical where possible, and free of tangled c
 If the spec creates a graph or diagram, it should be treated as a design guide unless the user says it must match the final in-game tree exactly. The implementation agent may adjust the final layout to make the actual HOI4 tree cleaner.
 
 Do not spend excessive planning effort forcing exact graph coordinates if the result becomes ugly, brittle, or unhelpful. A clear path architecture is more important than a fake exact graph.
+
+### MCP implementation handoff
+
+When the planned feature includes a focus tree, scripted GUI, or map work, add
+an implementation note for `hoi4-mcp-workbench`: after planning, inspect the
+target mod, render a review artifact, and apply the complete focus plan or map
+and GUI operation set. Set the server `cwd` to the target mod and omit
+`workspaceId`; the normal owning skill still controls design, source review,
+assets, and final validation.
 
 
 ## 3.7 Achievement design standard

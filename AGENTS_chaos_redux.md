@@ -74,6 +74,29 @@ Use repo skills as required implementation guidance.
 - Use `chaos-redux-subagents` when coordinating custom Codex subagents, routing bounded work, or defining parent/subagent ownership boundaries.
 - Use `chaos-redux-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
 
+### HOI4 MCP
+
+Use the installed `hoi4-agent-tools` server as the coding-agent surface for
+focus trees, event-chain analysis, scripted GUIs, and maps. Register it with
+the Chaos Redux root as its process working directory:
+
+```toml
+[mcp_servers.hoi4_agent_tools]
+command = "hoi4-agent-tools.cmd"
+cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\chaos_redux"
+```
+
+Install `hoi4-agent-tools@2.0.0` once, or install the standalone project with
+`npm install --global . --ignore-scripts` if the npm release is not available
+yet. Reload the agent, then call the domain tool directly. A mod-local `cwd`
+makes the server infer the workspace, so omit
+`workspaceId` and do not run a mod-selection command. Use
+`hoi4-agent-tools-setup --init` only for persistent multi-mod or remote setups.
+Focus, GUI, and map tools inspect, render, lint, and rewrite their own systems;
+event tools inspect, render, compare, and lint without rewriting event source.
+Keep the owning skills, offline wiki, vanilla documentation, source review,
+tests, audits, and handoffs active alongside MCP.
+
 ### Subagents
 
 Use project custom Codex agents when a task needs bounded research, asset production, audit, recursive expansion, or documentation work that can be separated from main implementation.

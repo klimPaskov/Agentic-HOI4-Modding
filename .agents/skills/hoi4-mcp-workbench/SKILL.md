@@ -12,33 +12,29 @@ does not replace the agent's planning, source review, or final validation.
 ## Setup once per machine
 
 1. Install Node.js 22 or newer.
-2. Install the public package:
+2. Install the package:
 
    ```powershell
-   npm install --global hoi4-agent-tools@1.2.0
+   npm install --global hoi4-agent-tools@2.0.0
    ```
 
-3. Configure the game and mod parent roots. The parent directory must contain
-   the mod directories directly:
+   If the npm release is not available yet, clone the standalone project and
+   run `npm install --global . --ignore-scripts` from its root.
 
-   ```powershell
-   hoi4-agent-tools-setup --init `
-     --mod-root "C:\Users\<you>\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod" `
-     --game-root "C:\Program Files (x86)\Steam\steamapps\common\Hearts of Iron IV"
+3. Register the server with the mod being edited as its process working
+   directory:
+
+   ```toml
+   [mcp_servers.hoi4_agent_tools]
+   command = "hoi4-agent-tools.cmd"
+   cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\<your_mod>"
    ```
 
-   Use the actual Documents or OneDrive path on the machine. Add another
-   `--mod-root` for another mod collection.
-
-4. Print the client entry and add the `globalInstall` or `codexTomlGlobal`
-   example to the coding agent's MCP configuration:
-
-   ```powershell
-   hoi4-agent-tools-setup --print-client-config
-   ```
-
-5. Reload the coding agent and call `hoi4.mods`. Use the returned workspace ID;
-   do not guess a path-derived ID.
+4. Reload the coding agent. With a mod-local `cwd`, the server infers the
+   current workspace; call the domain tool directly and omit `workspaceId`.
+   No server configuration or mod-selection command is needed. Use
+   `hoi4-agent-tools-setup --init` only for persistent multi-mod or remote
+   deployments.
 
 ## Tool routing
 

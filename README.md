@@ -6,29 +6,6 @@ This repo gives you a reusable `AGENTS.md` example, offline wiki references, rep
 
 Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3
 
-## HOI4 MCP setup
-
-Install the MCP server once, then register it with the mod the coding agent is
-currently editing:
-
-```powershell
-npm install --global hoi4-agent-tools@2.0.0
-```
-
-Codex registration example:
-
-```toml
-[mcp_servers.hoi4_agent_tools]
-command = "hoi4-agent-tools.cmd"
-cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\<your_mod>"
-```
-
-Reload the agent and call the needed focus, GUI, map, or event tool directly.
-When `cwd` is the target mod, omit `workspaceId`; the server resolves the mod
-automatically. Use `hoi4-agent-tools-setup --init` only for persistent
-multi-mod or remote configurations. See
-[`AGENTS.md`](AGENTS.md) for the short workflow and tool map.
-
 ## What this repo provides
 
 - `AGENTS_chaos_redux.md`, a real, full project instruction for a large HOI4 mod, Chaos Redux.
@@ -192,13 +169,39 @@ Start Codex from the repository root so it can see `AGENTS.md`, `.agents/skills/
 
 ## MCP in agent workflows
 
-The HOI4 MCP server is the normal implementation tool for focus trees, scripted
-GUIs, and maps, plus event-chain analysis. Agents can inspect, render, create,
-clean, and validate the writable systems while the existing skills and
-subagents handle design, research, assets, and audits. Event tools are
-read-only: inspect a bounded chain, edit normal source files, then compare,
-lint, and render the result. Use linked MCP resources for large artifacts
-instead of copying them into the prompt.
+The HOI4 MCP server is a normal tool in the coding-agent workflow. Install it
+once, then register it with each mod by setting the server process `cwd` to
+that mod's root:
+
+```powershell
+npm install --global hoi4-agent-tools@2.0.0
+```
+
+If the npm release is not available yet, clone the standalone
+`hoi4-agent-tools` project and run `npm install --global . --ignore-scripts`
+from its root.
+
+Codex registration example:
+
+```toml
+[mcp_servers.hoi4_agent_tools]
+command = "hoi4-agent-tools.cmd"
+cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\<your_mod>"
+```
+
+Reload the agent and call the domain tool directly. A mod-local `cwd` makes the
+server infer the current workspace, so omit `workspaceId` and do not run a
+mod-selection command. Use `hoi4-agent-tools-setup --init` only for persistent
+multi-mod or remote deployments.
+
+Use focus tools to inspect, render, lint, create, and clean focus trees; GUI
+tools for scripted-GUI inspection, deterministic renders, and rewrites; map
+tools for connected map inspection and declarative edits; and event tools for
+narrow, read-only chain inspection, comparison, rendering, and linting. The
+owning skills still define design, research, source review, assets, tests,
+audits, and handoffs. Large MCP artifacts stay in linked resources instead of
+the prompt. After copying `AGENTS_template.md` into a mod, remove its
+`HOI4 MCP setup (bootstrap; remove after setup)` section once setup is complete.
 
 ## Codex scheduled tasks or Hermes
 

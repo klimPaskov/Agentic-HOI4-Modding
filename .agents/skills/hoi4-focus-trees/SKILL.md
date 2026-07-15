@@ -16,13 +16,6 @@ Use this skill together with:
 - `hoi4-decisions-missions` when focuses unlock, modify, or depend on decisions and missions
 - `hoi4-feature-assets` when focus icons, leader portraits, flags, or idea icons are required
 
-Use `hoi4-mcp-workbench` for the shared MCP workflow. After the route plan and
-source review, call `hoi4.focus_inspect` and `hoi4.focus_render`; use
-`hoi4.focus_rewrite` with `layoutMode: "compact"` for cleanup or a complete
-plan for a new tree. Keep the route, AI, localisation, icon, and completion
-standards below active; MCP handles the shared parse, layout, render, and write
-path but does not replace this skill.
-
 ## 1. Required checks
 
 Before editing focus files:
@@ -809,6 +802,18 @@ Focus tree subagents are active small-patch agents by default inside the current
 They should not redesign a whole tree, add a full route family, create a new formable chain, or change the country identity. When the tree needs broader depth, they should write an improvement plan under `docs/plans/<feature_slug>/` and leave implementation to the main agent.
 
 Every patch must write a handoff with changed files, changed focus ids, route behavior before and after, meaningful validation, skipped task-specific validation, and remaining route risks.
+
+## MCP layout and rewrite pass
+
+After the route plan and source review, use `hoi4-mcp-workbench` for complex
+tree cleanup or creation. Call `hoi4.focus_inspect` and `hoi4.focus_render`,
+then use `hoi4.focus_rewrite` with `layoutMode: "compact"` for cleanup or the
+complete route plan for a new tree. With the server `cwd` set to the target mod,
+omit `workspaceId`; do not run a mod-selection command. Review diagnostics and
+the rendered layout, then inspect the source diff and run the repository audit.
+MCP supplies shared parsing, layout, rendering, and writes; this skill still
+owns route design, prerequisites, AI, localisation, icons, balance, and the
+completion report.
 
 ## 16. Documentation and audit
 

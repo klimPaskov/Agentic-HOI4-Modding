@@ -9,11 +9,6 @@ Use this skill when a HOI4 modding task requires final visual assets.
 
 This includes event pictures, UI assets, focus tree assets, country assets, achievement assets, generated icons, sourced feature art, generated icon art, animated sprites, animated portraits, sprite sheets, GIF previews, and any asset package that must be wired into the mod.
 
-Use `hoi4-mcp-workbench` when asset changes are part of a focus-tree or
-scripted-GUI review. MCP can inspect the references and render deterministic
-review artifacts; this skill still owns asset creation, processing, placement,
-and `.gfx`/`.gui` handoff.
-
 ## 1. Core purpose
 
 The goal is to turn asset needs from a feature spec into real HOI4-ready files.
@@ -851,6 +846,12 @@ The implementation must still follow HOI4 UI rules and existing repo patterns.
 ## Decision category and scripted GUI visual packs
 
 For a decision category with a scripted GUI or mechanic window, the asset handoff should cover the full interface state set.
+
+When the asset package belongs to a focus-tree or scripted-GUI change, use
+`hoi4-mcp-workbench` after placement to inspect references and render a
+deterministic review artifact. Set the server `cwd` to the target mod and omit
+`workspaceId`. This skill still owns source art, processing, DDS conversion,
+placement, manifests, and `.gfx`/`.gui` handoff.
 
 Useful assets include:
 
