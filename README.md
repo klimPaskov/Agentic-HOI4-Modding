@@ -8,20 +8,25 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 
 ## HOI4 MCP setup
 
-Install the MCP server once, then every coding agent can use it with the mods
-under the configured parent folder:
+Install the MCP server once, then register it with the mod the coding agent is
+currently editing:
 
 ```powershell
-npm install --global hoi4-agent-tools@1.2.0
-hoi4-agent-tools-setup --init `
-  --mod-root "C:\Users\<you>\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod" `
-  --game-root "C:\Program Files (x86)\Steam\steamapps\common\Hearts of Iron IV"
-hoi4-agent-tools-setup --print-client-config
+npm install --global hoi4-agent-tools@2.0.0
 ```
 
-Use the real Documents or OneDrive path. Copy the printed `globalInstall` or
-`codexTomlGlobal` entry into the agent's MCP settings and reload the agent.
-Then call `hoi4.mods` and use the returned workspace ID. See
+Codex registration example:
+
+```toml
+[mcp_servers.hoi4_agent_tools]
+command = "hoi4-agent-tools.cmd"
+cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\<your_mod>"
+```
+
+Reload the agent and call the needed focus, GUI, map, or event tool directly.
+When `cwd` is the target mod, omit `workspaceId`; the server resolves the mod
+automatically. Use `hoi4-agent-tools-setup --init` only for persistent
+multi-mod or remote configurations. See
 [`AGENTS.md`](AGENTS.md) for the short workflow and tool map.
 
 ## What this repo provides

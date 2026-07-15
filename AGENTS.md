@@ -9,22 +9,27 @@ can read that mod's `AGENTS.md`, skills, offline wiki, and documentation.
 Install the MCP server once on the machine that runs the coding agent:
 
 ```powershell
-npm install --global hoi4-agent-tools@1.2.0
-hoi4-agent-tools-setup --init `
-  --mod-root "C:\Users\<you>\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod" `
-  --game-root "C:\Program Files (x86)\Steam\steamapps\common\Hearts of Iron IV"
-hoi4-agent-tools-setup --print-client-config
+npm install --global hoi4-agent-tools@2.0.0
 ```
 
-Use the real Documents or OneDrive path. The `--mod-root` value is the parent
-directory whose immediate children are mods. Add another `--mod-root` when
-mods are stored in another collection. Copy the printed `globalInstall` or
-`codexTomlGlobal` entry into the agent's MCP settings, then reload the agent.
-The setup command writes the server config; it does not edit the agent's
-settings.
+Register the global server with the target mod as its working directory. For
+Codex, the entry is:
 
-After reload, call `hoi4.mods` and use the returned workspace ID. The server
-discovers every configured mod, so agents do not need a per-mod MCP setup.
+```toml
+[mcp_servers.hoi4_agent_tools]
+command = "hoi4-agent-tools.cmd"
+cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\<your_mod>"
+```
+
+Reload the agent after installing or changing the registration. No server
+config, mod-selection command, or per-mod initialization is needed. Run
+`hoi4-agent-tools-setup --init` only for a persistent multi-mod or remote
+configuration.
+
+After reload, call the domain tool you need directly. When the MCP working
+directory is the target mod, omit `workspaceId`; the server resolves it from
+that directory. Explicit workspace IDs remain available for configured
+multi-mod or remote deployments.
 
 ## Normal agent workflow
 

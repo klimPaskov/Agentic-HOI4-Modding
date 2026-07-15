@@ -100,16 +100,20 @@ Use repo skills as required implementation guidance, not as optional notes.
 Install and configure the server once per machine:
 
 ```powershell
-npm install --global hoi4-agent-tools@1.2.0
-hoi4-agent-tools-setup --init `
-  --mod-root "C:\Users\<you>\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod" `
-  --game-root "C:\Program Files (x86)\Steam\steamapps\common\Hearts of Iron IV"
-hoi4-agent-tools-setup --print-client-config
+npm install --global hoi4-agent-tools@2.0.0
 ```
 
-Copy the printed `globalInstall` or `codexTomlGlobal` entry into the coding
-agent's MCP settings, reload the agent, call `hoi4.mods`, and use the returned
-workspace ID. Use `hoi4.focus_*`, `hoi4.event_*`, `hoi4.gui_*`, and
+Register the global server with the target mod as its working directory, for
+example in Codex:
+
+```toml
+[mcp_servers.hoi4_agent_tools]
+command = "hoi4-agent-tools.cmd"
+cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\<your_mod>"
+```
+
+Reload the agent. No server config or mod-selection command is needed. Call
+`hoi4.focus_*`, `hoi4.event_*`, `hoi4.gui_*`, and
 `hoi4.map_*` for the matching systems. Event tools inspect, render, and compare
 source but do not rewrite it: use a narrow event query, edit normal mod files,
 then compare and lint. The agent can call the server autonomously as part of
