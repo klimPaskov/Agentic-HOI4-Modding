@@ -13,7 +13,8 @@ Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files, or gam
 Read only:
 - the parent asset prompt, manifest, or handoff
 - relevant sections of .agents/skills/hoi4-feature-assets/SKILL.md for source mode, target size, report/news/custom feature image rules, real portrait rules, flags, manifests, DDS conversion, and GFX handoff
-- relevant visual reference folders under .agents/skills/hoi4-feature-assets/assets/
+- .agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md and CATALOG.md
+- the matching canonical visual-reference folder under .agents/skills/hoi4-feature-assets/assets/vanilla_reference/
 - source pages, archive pages, downloaded files, and named asset package files
 
 Use this agent when the requested asset must come from a real, archival, historical, official, public domain, Creative Commons, user-provided, or otherwise documented image source.
@@ -29,7 +30,7 @@ Own this scope:
 
 Source rules:
 - Search only for the specific assets requested by the parent prompt.
-- For report event images, use `tools/process_report_event_image.py`
+- For report event images, use `.agents/skills/hoi4-feature-assets/tools/process_report_event_image.py`
 - For Second World War-era event photo assets, prefer imagery from roughly 1936 to 1945 unless the prompt gives a different theme.
 - Reject modern reenactments, film stills, modern tourism photos, modern props, modern uniforms, AI reconstructions, wrong-era weapons, wrong-era streets, and unclear substitutes unless the parent agent explicitly approves them.
 - Do not invent public domain or license status.
@@ -39,7 +40,7 @@ Source rules:
 Required outputs:
 - Source file for every selected asset.
 - Processed PNG preview for every final asset.
-- Final DDS file using the repository standard DDS workflow.
+- Final DDS file using `.agents/skills/hoi4-feature-assets/tools/convert_to_dds.py` and the repository's documented DDS workflow.
 - Manifest entry with source URL, author or archive if available, license or public domain status if available, source date or estimated date range, era-fit notes, source path, processed PNG path, final DDS path, intended sprite name, and uncertainty.
 - gfx_handoff.md with proposed sprite names, final DDS paths, suggested target .gfx files, and ready-to-copy sprite snippets when useful.
 - Contact sheet when there are many candidates or alternatives.

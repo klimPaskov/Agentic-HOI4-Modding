@@ -1,0 +1,37 @@
+{
+  "package": "reusable_hoi4_advisor_dossier_overlays",
+  "created": "2026-07-15",
+  "generator": "OpenAI built-in ImageGen",
+  "license": "Original generated fictional assets; no third-party visual source or identity reference",
+  "composition_rule": "The processor may crop, grade, angle, derive alpha shadows, composite these generated overlays, resize, validate, and export. It may not draw or reconstruct visible frame, paper, seal, writing, or patina with primitive geometry.",
+  "assets": [
+    {
+      "role": "advisor_frame",
+      "imagegen_handle": "exec-e3c2e24d-4275-41ba-a25c-bdbfdb2a94ff",
+      "prompt_summary": "An original late-1930s HOI4-style irregular charcoal and gunmetal advisor dossier frame with worn bronze bevels and chips, isolated on a removable chroma field, hollow portrait center, no person and no text.",
+      "source": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/advisor_frame_imagegen_source.png",
+      "source_dimensions": [1235, 1274],
+      "source_sha256": "305af4b0f8f6e01eb55965ed6c4e9a3bfd99c7bd11ef89e9c4ae087c4563e701",
+      "processed": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/advisor_frame_overlay.png",
+      "processed_dimensions": [1235, 1274],
+      "processed_sha256": "ca4385ac4bfa700248d1b2373703035c61a3a7813003cfa213b6c52f6f025668",
+      "alpha_range": [0, 255],
+      "processing": "Official ImageGen chroma-key removal helper with alpha and spill cleanup; no visible artwork drawn locally",
+      "exact_source_byte_copy": true
+    },
+    {
+      "role": "advisor_paper_and_seal",
+      "imagegen_handle": "exec-44055cbe-b80e-4e91-9f84-b47e46ded6c8",
+      "prompt_summary": "An original aged cream dossier slip with illegible archival marks, paperclip, wax seal, folded and worn edges, isolated on a removable chroma field, with no readable text and no portrait.",
+      "source": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/advisor_paper_imagegen_source.png",
+      "source_dimensions": [1024, 1536],
+      "source_sha256": "1af3b0a628c4abe2733452f6f042fb3175612292978439246ebb6494ce688a87",
+      "processed": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/advisor_paper_overlay.png",
+      "processed_dimensions": [1024, 1536],
+      "processed_sha256": "cac44b7f8251ac62d3a57f65f9c2583f83dc7f12432ae15e03ca355ec10212c9",
+      "alpha_range": [0, 255],
+      "processing": "Official ImageGen chroma-key removal helper with alpha and spill cleanup; no visible artwork drawn locally",
+      "exact_source_byte_copy": true
+    }
+  ]
+}

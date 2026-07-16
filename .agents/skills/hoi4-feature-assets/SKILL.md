@@ -221,39 +221,60 @@ Still crop, resize, convert, place, wire, and document it like any other source 
 
 ## 4. Reference asset examples
 
-This skill includes reference images that show how different mod asset types should look.
+This skill owns a canonical vanilla HOI4 visual-reference library. Read the library rules and catalog before generating, sourcing, processing, or wiring an asset.
 
-Before generating, sourcing, processing, or wiring an asset, inspect the relevant reference folder for that asset type. Use the examples to match style, framing, contrast, readability, scale, texture, and HOI4 presentation.
+Start with:
 
-```text
-.agents/skills/hoi4-feature-assets/assets/ideas
-.agents/skills/hoi4-feature-assets/assets/news_event_images
-.agents/skills/hoi4-feature-assets/assets/report_event_images
-.agents/skills/hoi4-feature-assets/assets/tech_icons
-.agents/skills/hoi4-feature-assets/assets/achievements
-.agents/skills/hoi4-feature-assets/assets/decisions
-.agents/skills/hoi4-feature-assets/assets/flags
-.agents/skills/hoi4-feature-assets/assets/focuses
-.agents/skills/hoi4-feature-assets/assets/special_projects
-```
+- `assets/vanilla_reference/README.md`
+- `assets/vanilla_reference/CATALOG.md`
 
-Reference mapping:
+Every semantic reference directory contains a labeled `contact_sheet.png`.
+There is no shared `assets/vanilla_reference/contact_sheets/` directory.
+Contact sheets are review aids, not final assets. Common icon families target 15 references; other tracked families target at least 5.
 
-- idea and national spirit icons: `assets/ideas`
-- officer corps spirit icons: inspect vanilla `gfx/interface/officer_corp/spirits/`. Final assets should be 45x45 DDS files with transparent backgrounds, no frames, no painted backdrop, no full-canvas opaque pixels, a readable dark or black outline, and a slight drop shadow. Wire them as `GFX_idea_<spirit_id>` sprites from a `.gfx` file.
-- news event images: `assets/news_event_images`
-- report event images: `assets/report_event_images`
-- tech icons: `assets/tech_icons`
-- achievement icons: `assets/achievements`
-- decision and decision category icons: `assets/decisions`
-- flags: `assets/flags`
-- focus icons: `assets/focuses`
+Canonical portrait paths:
 
-If a relevant reference folder exists, do not generate, source, crop, process, or wire new artwork until you have inspected it.
+- country leaders: `assets/vanilla_reference/portraits/leaders/`
+- army and navy commanders: `assets/vanilla_reference/portraits/commanders/`
+- operatives: `assets/vanilla_reference/portraits/operatives/`
+- advisor, theorist, high-command, and officer dossier icons: `assets/vanilla_reference/portraits/advisors/`
 
-Never copy reference assets directly. Use them as style and formatting guidance.
+Canonical flag and event-art paths:
 
-If the needed asset type has no matching reference folder, inspect the closest relevant folder and existing repository or vanilla assets before choosing a style.
+- flat flags: `assets/vanilla_reference/flags/normal/`, `assets/vanilla_reference/flags/medium/`, and `assets/vanilla_reference/flags/small/`
+- report-event art: `assets/vanilla_reference/event_art/report/`
+- news-event art: `assets/vanilla_reference/event_art/news/`
+- super-event art: `assets/vanilla_reference/event_art/super_event/`
+
+Canonical gameplay-icon paths:
+
+- national focus: `assets/vanilla_reference/icons/national_focus/`
+- ideas and national spirits: `assets/vanilla_reference/icons/ideas/`
+- decisions: `assets/vanilla_reference/icons/decisions/`
+- missions: `assets/vanilla_reference/icons/missions/`
+- decision categories: `assets/vanilla_reference/icons/decision_categories/`
+- achievement state triplets: `assets/vanilla_reference/icons/achievements/`
+- officer corps spirits: `assets/vanilla_reference/icons/officer_corps_spirits/`
+- technologies: `assets/vanilla_reference/icons/technologies/`
+- special projects: `assets/vanilla_reference/icons/special_projects/`
+- balance of power: `assets/vanilla_reference/icons/balance_of_power/`
+- intelligence agencies and operations: `assets/vanilla_reference/icons/intelligence_agency/` and `assets/vanilla_reference/icons/intelligence_operations/`
+- commander traits, medals, and military raids: their separate folders under `assets/vanilla_reference/icons/`
+- state modifiers, military industrial organizations, factions, buildings, and modifiers: their separate folders under `assets/vanilla_reference/icons/`
+
+Canonical unit-visual paths:
+
+- equipment and technology art: `assets/vanilla_reference/units/equipment/technology_art/`
+- large land-unit counters: `assets/vanilla_reference/units/land/counters_large/`
+- land map counters: `assets/vanilla_reference/units/land/map_counters/`
+- division-template emblems: `assets/vanilla_reference/units/land/division_template_emblems/`
+- air map counters: `assets/vanilla_reference/units/air/map_counters/`
+- naval map counters: `assets/vanilla_reference/units/naval/map_counters/`
+- land, air, and naval model materials: their separate folders under `assets/vanilla_reference/units/models_3d/`
+
+These families are not interchangeable. Follow the cataloged native canvas, transparency, frame order, and owning `.gfx`, `.gui`, `.asset`, or `.mesh` definition. Reference PNGs are never final assets: do not copy, wire, recolor, or trace them. The only top-level support assets are `assets/achievements/overlay.png` and the reusable `assets/advisor_dossier_overlays/` source/overlay package.
+
+If no category matches, inspect the closest skill-local category plus direct vanilla or established repository precedents before choosing a style.
 
 ## 5. Generated artwork rules
 
@@ -411,7 +432,10 @@ Use these sizes unless the feature spec or an existing repo pattern gives a bett
 
 - report event images: 210x176
 - news event images: 397x153, black and white
-- leader portraits: 156x210
+- country-leader portraits: 156x210
+- commander portraits: 156x210 full portrait textures
+- operative portraits: 156x210 full portrait textures
+- advisor, theorist, and high-command dossier icons: 65x67 independently composed cards
 - flags small: 10x7
 - flags medium: 41x26
 - flags normal: 82x52
@@ -424,6 +448,19 @@ Use these sizes unless the feature spec or an existing repo pattern gives a bett
 - focus icons: 94x86
 
 Use other sizes when the feature UI or asset type requires it.
+
+## 9.1 Unit visual references
+
+Treat every unit visual as a domain-and-surface-specific pipeline. Inspect the matching catalog entry, contact sheet, and owning vanilla definition before deciding what the task needs.
+
+- `assets/vanilla_reference/units/equipment/technology_art/` contains flat 2D equipment illustrations used by equipment and technology sprites. Native canvases vary; follow the owning `interface/*.gfx` sprite.
+- `assets/vanilla_reference/units/land/counters_large/` contains large frame-aware land-unit strips. Preserve the cataloged `noOfFrames`, frame order, per-frame footprint, and transparent bounds.
+- `assets/vanilla_reference/units/land/map_counters/` contains land map-counter art. It is not a large division-designer strip.
+- `assets/vanilla_reference/units/land/division_template_emblems/` contains division-template identity emblems. It is not equipment art or map-counter art.
+- `assets/vanilla_reference/units/air/map_counters/` and `assets/vanilla_reference/units/naval/map_counters/` contain domain-specific map-counter art. Do not substitute land counters or resized equipment art.
+- `assets/vanilla_reference/units/models_3d/land_materials/`, `assets/vanilla_reference/units/models_3d/air_materials/`, and `assets/vanilla_reference/units/models_3d/naval_materials/` contain UV model materials paired with cataloged `.mesh`, `.asset`, and entity definitions. They are not 2D icons, finished renders, or concept sheets.
+
+Classify the requested deliverable before creating art: equipment/technology illustration, large land counter, land/air/naval map counter, division-template emblem, or land/air/naval 3D model package. Give each class its own brief, source art, native canvas or UV layout, frame metadata, final path, and handoff. A 3D task must keep model geometry, materials, entity wiring, and any separately produced concept reference distinct. Do not derive one unit pipeline by resizing, relabeling, or recoloring another.
 
 When unsure, inspect the existing repository pattern and vanilla HOI4 assets before choosing.
 
@@ -519,8 +556,8 @@ Report-event images use a finished `210x176` RGBA canvas. The source photograph 
 Do not ask `$imagegen` to create the tilted card. Generate or source the documentary photograph first, then apply the card treatment locally. This keeps the tilt, shadow, and margins consistent.
 
 ```bash
-python tools/process_report_event_image.py source.png processed_report_event.png
-python tools/process_report_event_image.py source_folder processed_folder
+python -B .agents/skills/hoi4-feature-assets/tools/process_report_event_image.py source.png processed_report_event.png
+python -B .agents/skills/hoi4-feature-assets/tools/process_report_event_image.py source_folder processed_folder
 ```
 
 The script performs cover crop, black-and-white conversion, sepia application, grain, paper border, deterministic tilt, transparent canvas margin, and soft shadow. It writes RGBA PNG output. Convert the processed PNG to DDS through the normal repo workflow.
@@ -632,7 +669,7 @@ Use `$imagegen` for the base artwork unless the user provides or requests a spec
 
 Follow the `$imagegen` skill's transparent image workflow when the icon should have a transparent background.
 
-Inspect `.agents/skills/hoi4-feature-assets/assets/ideas` before generating or processing idea icons.
+Inspect `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/ideas/` before generating or processing idea icons.
 
 ## 17. Focus icons
 
@@ -666,7 +703,7 @@ Use `$imagegen` for the base artwork unless the user provides or requests a spec
 
 Follow the `$imagegen` skill's transparent image workflow when the icon should have a transparent background.
 
-Inspect `.agents/skills/hoi4-feature-assets/assets/focuses` before generating or processing focus icons.
+Inspect `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus/` before generating or processing focus icons.
 
 ## 18. Decision icons
 
@@ -700,7 +737,7 @@ Use `$imagegen` for the base artwork unless the user provides or requests a spec
 
 Follow the `$imagegen` skill's transparent image workflow when the icon should have a transparent background.
 
-Inspect `.agents/skills/hoi4-feature-assets/assets/decisions` before generating or processing decision icons.
+Inspect `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/decisions/` before generating or processing decision icons.
 
 ## 19. Achievement icons
 
@@ -735,7 +772,7 @@ gfx/achievements/<achievement_id>_not_eligible.dds
 
 When renaming or adding achievement ids, update `common/achievements/`, `localisation/english/<mod_namespace>_achievements_l_english.yml`, `interface/<mod_namespace>_achievements.gfx`, the three DDS variants in `gfx/achievements/`, and any docs or manifests that list the final DDS paths. If the achievement registry owns a single `unique_id`, keep it as one root-level registry file and group feature-owned achievements by feature section inside the file instead of splitting it into per-feature achievement files.
 
-Inspect `.agents/skills/hoi4-feature-assets/assets/achievements` before generating or processing achievement icons.
+Inspect `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/` before generating or processing achievement icons.
 
 ## 20. Flags
 
@@ -776,32 +813,54 @@ Before marking any flag complete, verify normal, medium, and small TGA files:
 - no upside-down copies
 - no accidental no-suffix base-flag replacement for countries that were only meant to receive ideology variants
 
-## 21. Leader portraits
+## 21. Country-leader, commander, and operative portraits
 
-For real people, do not generate leader portraits with `$imagegen`.
+For real people, do not generate portraits with `$imagegen`.
 
-Use a real source image from the internet or a user-provided image, then crop, resize, process, convert, and document it.
+Choose the canonical reference family by role before starting:
 
-Record:
+- country leader: `assets/vanilla_reference/portraits/leaders/`
+- army or navy commander: `assets/vanilla_reference/portraits/commanders/`
+- operative: `assets/vanilla_reference/portraits/operatives/`
 
-- source link if internet-sourced
-- author or archive if available
-- license or public domain status if available
-- original image path
-- processed PNG path
-- final DDS path
+Use an attributed real source image from the internet or a user-provided image. Select and record an explicit head-and-shoulders crop, then apply an identity-preserving HOI4 painted finish while retaining recognisable source details. A raw photograph, simple resize, generic oil-paint filter, face replacement, or weak likeness is not a finished portrait.
 
-For fictional people, non-human beings, supernatural entities, aliens, zombies, monsters, symbolic leaders, or other invented characters, `$imagegen` may be used to create the base portrait.
+Use `.agents/skills/hoi4-feature-assets/tools/advisor_icon_processing.py leader` for the deterministic crop, restrained finish, dimensions, metadata, and reference comparison sheet for full portrait textures. The script is only a finishing tool; compare its output with the matching canonical contact sheet and the real person's source image before approval.
 
-Leader portraits should match the intended the repository visual direction for the character or country.
+Record the source link, author or archive, license or public-domain status when available, original image path, processed PNG path, final DDS path, and sprite name.
 
-Target size:
+For fictional people, non-human beings, supernatural entities, aliens, zombies, monsters, symbolic leaders, or other invented characters, `$imagegen` may be used to create the base portrait. Give the matching canonical references as style inputs and request a restrained HOI4 painted treatment with no text or modern concept-art finish.
 
-```text
-156x210
+Country-leader, commander, and operative portrait textures are `156x210`. Never manufacture or document a smaller commander source texture merely because a UI view displays it at a smaller apparent size.
+
+## 21.1 Advisor and high-command portrait icons
+
+Advisor, theorist, military-high-command, and officer-corps portrait icons are a separate asset type. Inspect `assets/vanilla_reference/portraits/advisors/` before work. The target is `65x67`, with a recognisable HOI4-styled head-and-shoulders portrait, dark irregular dossier framing, and transparent outer corners.
+
+For a fictional advisor, generate a distinct full-resolution portrait master and the visible dossier overlays with `$imagegen`; do not reuse a leader crop or manufacture card artwork with a local drawing script. Retain each generated source together with its alpha-processed overlay. For real people, follow the real-person portrait rules above and preserve source attribution.
+
+Do not shrink, pad, or directly wire a `156x210` leader, commander, or operative portrait. Choose an explicit source-pixel crop and compose the subject independently inside the native card with `.agents/skills/hoi4-feature-assets/tools/advisor_icon_processing.py advisor`. Pass `--face-box` so native-size validation can reject a face that is too small, too large, off-centre, clipped, or obscured. The processor may crop, resize, angle, derive shadows from authored alpha, composite, validate, and export; it must not draw visible frame, paper, seal, bevel, patina, emblem, or writing from primitive geometry or synthesize fallback overlays. Keep the frame narrow, irregular, and predominantly charcoal or black.
+
+Use this invocation shape:
+
+```powershell
+python -B .agents/skills/hoi4-feature-assets/tools/advisor_icon_processing.py advisor `
+	<portrait_master.png> <advisor_icon.png> --source-kind fictional `
+	--crop <left> <top> <right> <bottom> `
+	--face-box <left> <top> <right> <bottom> `
+	--advisor-frame-source <generated_frame_source.png> `
+	--advisor-frame-overlay <generated_frame_overlay.png> `
+	--advisor-paper-source <generated_paper_source.png> `
+	--advisor-paper-overlay <generated_paper_overlay.png> `
+	--review-sheet <advisor_review.png> `
+	--metadata <advisor_icon.json>
 ```
 
-Inspect the closest relevant reference folder and existing repository portraits before generating or processing fictional leader portraits.
+Omit both paper arguments together only when the target reference family and the processor contract permit a paperless variant. Never provide an overlay without its retained generated source.
+
+Apply this same dossier-card pipeline when a character defines a `portraits = { army = { small = ... } }` sprite. Keep the full `156x210` commander portrait separate from the independently composed `65x67` small card, keep both sprite names stable, and validate both runtime textures.
+
+Retain the portrait master, generated overlay sources, processed overlays, overlay prompts, processor arguments, hashes, metadata, and comparison sheet. Compare every result with the full canonical advisor reference family at native size and enlarged nearest-neighbour size before converting the approved PNG with `.agents/skills/hoi4-feature-assets/tools/convert_to_dds.py`.
 
 ## Animated leader portraits
 
@@ -847,11 +906,7 @@ The implementation must still follow HOI4 UI rules and existing repo patterns.
 
 For a decision category with a scripted GUI or mechanic window, the asset handoff should cover the full interface state set.
 
-When the asset package belongs to a focus-tree or scripted-GUI change, use
-`hoi4-mcp-workbench` after placement to inspect references and render a
-deterministic review artifact. Set the server `cwd` to the target mod and omit
-`workspaceId`. This skill still owns source art, processing, DDS conversion,
-placement, manifests, and `.gfx`/`.gui` handoff.
+When the asset package belongs to a focus-tree or scripted-GUI change, use the MCP tools after placement to inspect references and render a deterministic review artifact. This skill still owns source art, processing, DDS conversion, placement, manifests, and `.gfx`/`.gui` handoff.
 
 Useful assets include:
 
@@ -926,6 +981,12 @@ Final animated assets must be built from planned source frames. Do not create fi
 ## 24. DDS conversion
 
 Final PNG assets must be converted to DDS using the repository's standard DDS conversion workflow.
+
+Use the bundled deterministic converter:
+
+```powershell
+python -B .agents/skills/hoi4-feature-assets/tools/convert_to_dds.py --input <processed.png> --output <final.dds> [--width <pixels> --height <pixels>]
+```
 
 The output must be compatible with the mod's expected 32-bit BGRA or B8G8R8A8-style DDS workflow.
 

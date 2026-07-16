@@ -591,12 +591,7 @@ Do not spend excessive planning effort forcing exact graph coordinates if the re
 
 ### MCP implementation handoff
 
-When the planned feature includes a focus tree, scripted GUI, or map work, add
-an implementation note for `hoi4-mcp-workbench`: after planning, inspect the
-target mod, render a review artifact, and apply the complete focus plan or map
-and GUI operation set. Set the server `cwd` to the target mod and omit
-`workspaceId`; the normal owning skill still controls design, source review,
-assets, and final validation.
+When the planned feature includes a focus tree, scripted GUI, or map work, add an implementation note for the MCP tools: after planning, inspect the target mod, render a review artifact, and apply the complete focus plan or map and GUI operation set. The normal owning skill still controls design, source review, assets, and final validation.
 
 
 ## 3.7 Achievement design standard
@@ -1293,27 +1288,29 @@ When a spec or asset prompt asks for generated or sourced assets, tell the asset
 Use repo-relative project paths:
 
 ```text
-.agents/skills/hoi4-feature-assets/assets/ideas
-.agents/skills/hoi4-feature-assets/assets/news_event_images
-.agents/skills/hoi4-feature-assets/assets/report_event_images
-.agents/skills/hoi4-feature-assets/assets/tech_icons
-.agents/skills/hoi4-feature-assets/assets/achievements
-.agents/skills/hoi4-feature-assets/assets/decisions
-.agents/skills/hoi4-feature-assets/assets/flags
-.agents/skills/hoi4-feature-assets/assets/focuses
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/flags
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/units
 ```
 
 Reference mapping:
 
-- idea and national spirit icons: `assets/ideas`
-- news event images: `assets/news_event_images`
-- report event images: `assets/report_event_images`
-- tech icons: `assets/tech_icons`
-- achievement icons: `assets/achievements`
-- decision and decision category icons: `assets/decisions`
-- flags: `assets/flags`
-- focus icons: `assets/focuses`
-- and others if needed
+- idea and national spirit icons: `assets/vanilla_reference/icons/ideas/`
+- news event images: `assets/vanilla_reference/event_art/news/`
+- report event images: `assets/vanilla_reference/event_art/report/`
+- super-event and large presentation art: `assets/vanilla_reference/event_art/super_event/`
+- technology and special-project icons: `assets/vanilla_reference/icons/technologies/` and `assets/vanilla_reference/icons/special_projects/`
+- achievement icons: `assets/vanilla_reference/icons/achievements/`; the reusable not-eligible overlay is `assets/achievements/overlay.png`
+- decisions, missions, and decision-category icons: their separate folders under `assets/vanilla_reference/icons/`
+- flags: complete normal, medium, and small sets under `assets/vanilla_reference/flags/`
+- focus icons: `assets/vanilla_reference/icons/national_focus/`
+- officer-corps, balance-of-power, faction, and other system icons: their matching folders under `assets/vanilla_reference/icons/`
+- country-leader, commander, operative, and advisor portraits: their matching folders under `assets/vanilla_reference/portraits/`
+- unit visual references: the separate equipment, land, air, naval, and 3D-model families under `assets/vanilla_reference/units/`
 
 The feature spec does not need to analyze those images itself. It should make the handoff explicit so the asset agent knows which example set to inspect before generation, sourcing, cropping, or wiring.
 
@@ -1354,6 +1351,9 @@ Use these sizes when planning assets:
 - report event images: 210x176
 - news event images: 397x153, black and white
 - leader portraits: 156x210
+- commander portraits: 156x210
+- operative portraits: 156x210
+- advisor, theorist, and high-command dossier icons: 65x67 independently composed cards
 - flags small: 10x7
 - flags medium: 41x26
 - flags normal: 82x52

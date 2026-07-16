@@ -1,0 +1,79 @@
+{
+  "package": "reusable_hoi4_advisor_dossier_overlays_v3",
+  "created": "2026-07-16",
+  "generator": "OpenAI built-in ImageGen",
+  "license": "Original generated fictional assets; no third-party visual source or identity reference",
+  "composition_rule": "The portrait processor may crop, grade, angle, resize, derive shadows from authored alpha, composite, validate, and export. It may not draw or reconstruct visible frame, paper, seal, writing, or patina with primitive geometry.",
+  "final_roles": [
+    "advisor_frame_shadowless",
+    "advisor_paper_shadowless"
+  ],
+  "assets": [
+    {
+      "role": "combined_reference_iteration_history",
+      "status": "superseded_iteration_history",
+      "source": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/v3/advisor_combined_reference_imagegen_source.png",
+      "source_dimensions": [1254, 1254],
+      "source_sha256": "4ca196b253d73f66fd283f05caea0201c1931e6862756f93f4085162e2e93193",
+      "exact_source_byte_copy": true,
+      "notes": "Combined visual exploration retained only to document the v3 generation route."
+    },
+    {
+      "role": "advisor_frame_intermediate",
+      "status": "superseded_iteration_history",
+      "source": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/v3/advisor_frame_imagegen_source.png",
+      "source_dimensions": [1254, 1254],
+      "source_sha256": "7067e48f103c6377c65257c9b366d54b90929b07b09910783bffa48e7931f407",
+      "processed": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/v3/advisor_frame_overlay.png",
+      "processed_dimensions": [1254, 1254],
+      "processed_sha256": "8c190cca704d9b0b17193b80e684d6c1fe928c4f31ffc74378fe6d8e90485b0f",
+      "exact_source_byte_copy": true
+    },
+    {
+      "role": "advisor_paper_intermediate",
+      "status": "superseded_iteration_history",
+      "source": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/v3/advisor_paper_imagegen_source.png",
+      "source_dimensions": [1254, 1254],
+      "source_sha256": "025a0660916c207277387ea35c2dbca61ace10fba0f705987bf93010ab62ae72",
+      "processed": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/v3/advisor_paper_overlay.png",
+      "processed_dimensions": [1254, 1254],
+      "processed_sha256": "084f03f95e8386771f60a8715c7381292032d6cb87c77d28c2af989556b3a475",
+      "exact_source_byte_copy": true
+    },
+    {
+      "role": "advisor_frame_upright_intermediate",
+      "status": "superseded_iteration_history",
+      "source": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/v3/advisor_frame_upright_imagegen_source.png",
+      "source_dimensions": [1254, 1254],
+      "source_sha256": "530d603885c68ea1bd80d5dd3d6e8906d80bec9a3f008891972e9171e341679b",
+      "processed": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/v3/advisor_frame_upright_overlay.png",
+      "processed_dimensions": [1254, 1254],
+      "processed_sha256": "fe3bf3e89eb4367ec028db10e7571c319e1b71368d935b0e6cb3235be56d3f3a",
+      "exact_source_byte_copy": true
+    },
+    {
+      "role": "advisor_frame_shadowless",
+      "status": "final_frozen",
+      "source": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/v3/advisor_frame_shadowless_imagegen_source.png",
+      "source_dimensions": [1254, 1254],
+      "source_sha256": "1437b8e2afbe65d963923bb3fdbaf26ec91c2eae5d0a426815b0baa154a3381d",
+      "processed": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/v3/advisor_frame_shadowless_overlay.png",
+      "processed_dimensions": [1254, 1254],
+      "processed_sha256": "d5b0e0a631e620b137969c2877c37889941163a232832ef11e0d2abd05424a3b",
+      "exact_source_byte_copy": true,
+      "processing": "Chroma-key alpha extraction and spill cleanup only; no visible frame artwork drawn locally"
+    },
+    {
+      "role": "advisor_paper_shadowless",
+      "status": "final_frozen",
+      "source": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/v3/advisor_paper_shadowless_imagegen_source.png",
+      "source_dimensions": [1254, 1254],
+      "source_sha256": "80d908477e692da1015fd9a163f95a56962a993a78f6fe76da97626fb793e566",
+      "processed": ".agents/skills/hoi4-feature-assets/assets/advisor_dossier_overlays/v3/advisor_paper_shadowless_overlay.png",
+      "processed_dimensions": [1254, 1254],
+      "processed_sha256": "5471d2f33e96871e0db34d8d20cdf2af9a536d09c36cf8c5c8ab1efca8bfbbec",
+      "exact_source_byte_copy": true,
+      "processing": "Chroma-key alpha extraction and spill cleanup only; no visible paper or marking artwork drawn locally"
+    }
+  ]
+}

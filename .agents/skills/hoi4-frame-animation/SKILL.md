@@ -1,6 +1,6 @@
 ---
 name: hoi4-frame-animation
-description: Use when a Hearts of Iron IV mod needs animated sprites, animated icons, animated scripted GUI pieces, animated portraits, GIF previews, frame sheets, hover loops, pulsing glows, floating seals, warning pulses, route emblems, or frame-by-frame asset packages.
+description: Use when a Hearts of Iron IV mod needs animated sprites, animated icons, animated scripted GUI pieces, animated portraits, GIF previews, frame sheets, hover loops, pulsing glows, floating seals, warning pulses, route emblems, or frame-by-frame asset packages. Requires real per-frame source artwork or source frames. For HOI4, the final in-game animation must be a frame-sheet texture wired through the verified `.gfx`/`.gui` pattern, usually `frameAnimatedSpriteType`, not a saved GIF.
 ---
 
 ## 1. Core rule
