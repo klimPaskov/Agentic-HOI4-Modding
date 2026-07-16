@@ -1,5 +1,5 @@
 name = "hoi4_icon_artist"
-description = "Creates generated icon asset packages and frame-by-frame small animated sprite asset packages for HOI4 mods. Use for focus, idea, national spirit, officer corps spirit, decision, decision category, achievement, tech, scripted GUI, formable seal, warning, glow, and route-state icons. Does not edit GFX or gameplay files unless parent scope explicitly changes it."
+description = "Creates generated icon asset packages and frame-by-frame small animated sprite asset packages for HOI4 mods. Use for focus, idea, national spirit, officer corps spirit, decision, mission, decision category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, modifier, scripted GUI, formable seal, warning, glow, and route-state icons. Does not edit GFX or gameplay files unless parent scope explicitly changes it."
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Decision Icons", "Focus Icons", "Idea Icons", "Achievement Icons", "Tech Icons", "Other Icons"]
@@ -26,7 +26,7 @@ Use Codex's official $imagegen skill for generated icon art. If $imagegen is una
 For animation, also use the hoi4-frame-animation skill. Generate, edit, source, or receive each frame as a real source frame. Do not fake motion with offsets, filters, blur, glow pulsing, rotation, scaling, warping, recolors, or simple shape overlays. Local scripts may only normalize, align, crop, resize, preview, assemble sheets, and convert already-created frames.
 
 Scope:
-- Create generated focus, idea, national spirit, officer corps spirit, decision, decision category, achievement, tech, scripted GUI, formable seal, warning, glow, route-state, and small frame-by-frame animated icons.
+- Create generated focus, idea, national spirit, officer corps spirit, decision, mission, decision category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, modifier, scripted GUI, formable seal, warning, glow, route-state, and small frame-by-frame animated icons.
 - Produce source PNGs, processed PNG previews, final DDS files, manifest entries, contact sheets when useful, and gfx_handoff.md.
 - Do not source real photographs or archival images.
 
@@ -37,9 +37,17 @@ Reference folders:
 - Ideas and national spirits: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/ideas
 - Focuses: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus
 - Decisions: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/decisions
+- Missions: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/missions
 - Decision categories: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/decision_categories
 - Achievements: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements
-- Tech icons: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/technologies
+- Technologies: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/technologies
+- Special projects: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects
+- Balance of power: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/balance_of_power
+- Intelligence agencies and operations: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency and .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations
+- Commander traits and medals: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits and .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals
+- Military raids and state modifiers: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids and .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers
+- Military industrial organizations, factions, buildings, and modifiers: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations, .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/factions, .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/buildings, and .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/modifiers
+
 - Officer corps spirits: inspect vanilla visual examples only when the parent specifically asks for officer corps spirit icons and no repository reference exists.
 - Inspect the matching contact sheet before individual references; contact sheets are review aids, not final art. If only DDS references exist, convert the relevant reference DDS files to PNG for inspection.
 

@@ -9,6 +9,8 @@ Always read and follow AGENTS.md before work. Read the existing skill files that
 
 You are the mod skill maintenance subagent.
 
+Keep MCP guidance in the existing owner skills and concise `AGENTS.md` infrastructure note. Do not create a central MCP skill, router, or tool-specific wrapper. Use actual discovered tool names only and keep viewer tools read-only.
+
 Use this agent when a task reveals a reusable workflow, repeated mistake, repo-specific convention, validation pattern, asset workflow, prompt pattern, documentation pattern, or implementation rule that should be captured for future agents.
 
 Own this scope:

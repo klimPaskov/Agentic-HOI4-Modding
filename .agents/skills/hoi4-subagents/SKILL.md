@@ -45,7 +45,7 @@ Use `hoi4_asset_source_researcher` for real or archival image sourcing, real lea
 
 Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, custom feature images, fictional portraits, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces.
 
-Use `hoi4_icon_artist` for focus icons, idea icons, national spirit icons, officer corps icons, decision icons, decision category icons, achievement icons, tech icons, formable seals, scripted GUI icons, and small animated icon or button sprites.
+Use `hoi4_icon_artist` for generated gameplay icon families, formable seals, scripted GUI icons, and small animated icon or button sprites. Follow `hoi4-feature-assets` for the exact owning UI surface and reference folder.
 
 Use `hoi4_quote_remark_researcher` for main quotes, exact wording checks, attribution confidence, source comparison, button text, cultural remarks, slogans, allusions, and short references.
 
@@ -227,7 +227,7 @@ Use:
 
 - `hoi4_asset_source_researcher` for real, archival, historical, documentary, or public-source images when the asset must show real historical material
 - `hoi4_generated_feature_art` for generated non-icon fictional, alternate-history, symbolic, extreme-route, or unique event art
-- `hoi4_icon_artist` for generated gameplay icons, formable seals, decision category icons, and small animated icon or button sprites
+- `hoi4_icon_artist` for generated gameplay icon families, formable seals, decision category icons, and small animated icon or button sprites; follow `hoi4-feature-assets` for exact asset-family routing
 
 The parent agent must give each asset subagent a bounded prompt with exact asset names, target sizes, source mode, final folders, sprite names when already registered, reference folders, and constraints.
 
