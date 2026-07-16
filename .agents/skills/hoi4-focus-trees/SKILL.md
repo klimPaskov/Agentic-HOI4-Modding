@@ -506,7 +506,11 @@ Small numeric modifiers can support a focus, but they should not be the main poi
 
 ### No fairy-dust reward standard
 
-Do not fairy dust a focus tree with many tiny bonuses and call it depth. A branch made from small pieces such as `+2%`, `+3%`, minor political power, tiny stability, tiny war support, small generic equipment, or slight production bonuses will feel meaningless.
+Fairy-dusted values are prohibited. Do not spread many tiny bonuses across a focus tree and present them as depth. Values such as `+2%`, `+3%`, `+7%`, `12`, `18`, tiny political power grants, tiny stability or war support changes, token equipment, and slight generic production bonuses are completion-blocking defects unless an engine-defined formula or hard technical constraint requires that exact value.
+
+Use round balance values in multiples of 5 wherever the value is authored for gameplay tuning. Prefer values such as `5`, `10`, `15`, `20`, `25`, and corresponding percentage values. Do not use arbitrary-looking values such as `2`, `3`, `7`, `12`, `18`, or `23` for focus rewards, mechanic gains or losses, thresholds, caps, durations, AI weights, or costs without a documented reason. Engine-required values, binary flags, coordinate values, dates, state ids, and formula-derived results are exempt.
+
+A focus tree with repeated fairy-dusted rewards must be rejected during audit. Do not excuse the pattern because each individual value is technically useful. Merge weak rewards, strengthen them into meaningful round values, turn them into staged upgrades, or replace them with decisions, missions, map changes, units, advisors, laws, mechanics, or route access.
 
 A focus reward should usually do at least one of these things:
 
@@ -561,6 +565,16 @@ Every important starting idea should have a lifecycle:
 - route-specific upgrade
 - failure or corruption form
 - final form or removal path
+
+### National spirit count limit
+
+A focus tree must never grant or maintain more than three focus-tree-created national spirits at the same time for one country. This is a hard maximum, not a target.
+
+Before adding a fourth spirit, the implementation must upgrade, replace, merge, transform, or remove one of the existing three. Starting national spirits that belong to the same focus-tree package count toward this limit when the tree is responsible for their lifecycle. Temporary timed modifiers do not count when they are clearly short-lived and are not being used to evade the limit.
+
+Prefer one staged national spirit with several lifecycle forms over several separate spirits covering closely related themes. Political institutions, military structures, economic systems, foreign dependence, legitimacy crises, and similar systems should usually evolve through replacement or modification chains.
+
+Audits and completion reports must list the maximum number of simultaneously active focus-tree-created national spirits for every major route. A route exceeding three is incomplete until the spirits are consolidated.
 
 ### National spirit reward complexity standard
 
@@ -771,6 +785,10 @@ AI should not accidentally choose suicidal or nonsensical routes just because th
 
 ## 15. Localisation and icons
 
+Focus-tree assets must not reuse one uniform colour palette across the whole tree. Political routes, military routes, industry routes, diplomacy routes, expansion routes, crisis routes, and hidden or extreme-route paths should use visibly distinct palette families where their identities differ. Separate branches should not look like recoloured copies of the same icon set.
+
+Do not solve asset variety by taking the same composition and changing only its hue. Vary subject matter, framing, lighting, contrast, symbols, materials, and background treatment while keeping the tree visually coherent and readable in the HOI4 interface.
+
 Every focus needs:
 
 - title localisation
@@ -849,6 +867,9 @@ Before completion, audit:
 - industry branch without map, construction, logistics, production, or resource effects
 - generic flat rewards
 - fairy-dust reward patterns made from many tiny bonuses
+- authored gameplay values that are not rounded to multiples of 5 without a documented exception
+- routes that can hold more than three focus-tree-created national spirits at once
+- focus-tree asset sets that reuse the same colour palette across distinct branches
 - dead-end branches with no capstone, convergence, or follow-up gameplay
 - national spirits that are too easy to earn for their importance
 - national spirits that have no lifecycle, route commitment, mechanic hook, or decision hook
@@ -870,15 +891,19 @@ A focus tree task is complete only when:
 - political routes actually change politics
 - rewards are varied and concrete
 - fairy-dust reward patterns have been removed, merged, strengthened, or connected to visible mechanics
+- authored gameplay tuning values use round multiples of 5 unless a documented engine, formula, or technical exception applies
+- no route can maintain more than three focus-tree-created national spirits at the same time
 - focus terminal nodes are real capstones, convergence points, route locks, failure states, formable steps, or meaningful optional side payoffs
 - dead-end branches with weak final rewards have been redesigned
 - ideas are not spammed
+- adding a new route spirit upgrades, replaces, merges, or removes an existing spirit when the three-spirit ceiling has been reached
 - national spirits are earned through meaningful route commitment, cost, risk, milestone progress, or mechanic interaction when their effects are important
 - important national spirits have lifecycle stages, decision or mission hooks, mechanic hooks, or clear route identity
 - easy national spirits are narrow, temporary, modest, or part of a staged system
 - focus-decision integration exists
 - AI behavior is implemented
 - localisation and icons exist
+- distinct focus-tree branches use distinct palette families and do not rely on one repeated colour palette or simple hue-shifted icon composition
 - layout is readable
 - documentation is updated
 - route coverage table compares required routes with implemented routes

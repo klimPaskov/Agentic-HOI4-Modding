@@ -1212,7 +1212,7 @@ For major features, split the spec into parts if needed. Do not compress deep de
 
 Only include sections for surfaces that exist or that need design. If a researched text package, custom presentation surface, focus tree, custom country, achievement set, asset family, or other major surface is absent, omit that section instead of writing that it is absent. Because negative notes create noise and can mislead later agents into thinking the absence is a designed feature.
 
-## 12. Depth and continuation
+## 12. Depth, file splitting, and internal resume notes
 
 Do not compress the spec so much that important ideas become shallow.
 
@@ -1220,29 +1220,28 @@ The goal is depth, not speed.
 
 Think through the feature as far as the idea can reasonably go. If the feature has multiple branches, escalation variants, rare variants, custom countries, focus trees, UI elements, text and audio packages, or major system connections, treat each of those as deserving real design space.
 
-Large features should be written across multiple parts instead of being rushed into one response.
+Large feature specifications should be written across multiple repo files instead of being rushed into one oversized file. Split at clean design boundaries, such as the core loop, variants, focus trees, decisions, country packages, assets, AI, or acceptance criteria.
 
-Each part should be complete enough to be useful on its own. Stop at a clean section boundary or a clean subsection boundary when possible. If the response must stop in the middle of a large design surface, stop after a complete paragraph, table, or list item instead of cutting a thought in half.
+Each file should be complete enough to be useful on its own. Stop at a clean section boundary or a clean subsection boundary when possible. If a design surface is too large for one file, stop after a complete paragraph, table, route, country package, or list item instead of cutting a thought in half.
 
-Do not summarize later sections just because the current response is getting long. Continue in the next part instead. Use the available response space for real specification content. Do not hold back important design material for a shorter answer.
+Do not summarize later sections just because the current working context is getting large. Continue in another repo file under the same spec folder. Use the available context for real specification content and do not hold back important design material for a shorter handoff.
 
-When a large feature specification cannot fit into one response, end the current part with a temporary continuation prompt for the next iteration. This continuation prompt is not part of the final specification, not part of the downloadable package, and not part of any feature docs. It is only a working handoff that the user can paste back so the next response continues from the exact stopping point.
+Do not create user-facing continuation text blocks as deliverables. Continue by writing the next spec file under the same `docs/specs/<feature_slug>/` folder rather than asking the user to paste text into a later chat turn.
 
-The continuation prompt should be concise but precise. It should include:
+Internal continuation notes are allowed only when the agent is about to hit context limits, output a very large amount of design material, hand off to another agent, or prepare for auto compaction. Put those notes outside the source spec, preferably in `docs/plans/<feature_slug>/resume_packet.md` or another clearly marked plan handoff. Internal notes should not be part of feature docs, localisation, spreadsheets, or asset manifests.
 
-- the feature slug, feature name, and current part number when known
-- the exact section and subsection where the previous part stopped
-- the last completed heading or table
-- the next heading, table, route, country package, decision family, asset group, or prompt package to write
-- any constraints that must continue to apply, including direction-only localisation, country naming rules, asset source rules, and the user's core feature idea
+An internal resume note should include:
+
+- feature slug, feature name, and current source spec folder
+- files already written or updated
+- the exact section, subsection, route, table, country package, or design surface where work stopped
+- the next file, heading, route, decision family, country package, asset group, or research brief to write
+- constraints that must continue to apply, including localisation direction, country naming rules, asset source rules, and the user's core feature idea
+- unresolved research needs, blockers, and accepted assumptions
 - a reminder to continue with full-depth design and not summarize missing sections
-- a reminder to avoid repeating already completed sections except for short context needed to continue cleanly
+- a reminder to avoid repeating completed sections except for short context needed to continue cleanly
 
-Use a clear temporary heading such as `Temporary continuation prompt, not part of the spec`. Keep it outside the saved spec content. In the final compiled package, remove all temporary continuation prompts and only keep the complete specification, asset prompt, implementation prompt, and any other requested final files.
-
-If several iterations are needed, each part should write a new continuation prompt that reflects the new stopping point. Do not reuse an older continuation prompt after the design has moved forward.
-
-When the final part is complete, do not write a continuation prompt. Instead, provide the final package or completion summary and make clear that the specification has reached the planned end.
+When the source spec is complete, remove temporary resume wording from source spec files. If a resume packet remains useful for implementation, keep it as a working handoff under `docs/plans/` rather than source design.
 
 For major features, the final combined specification may be extremely long. That is acceptable. A 10,000 line, 50,000 line, or 100,000+ line specification is valid if the feature truly needs that much design detail. Do not compress focus trees, rare variants, or decision webs into summaries just to keep the file short.
 

@@ -304,7 +304,7 @@ Generated icon packages must keep visible `$imagegen` source evidence: save the 
 
 ## 5.2 Icon type separation rules
 
-Focus icons, idea icons, national spirit icons, officer corps spirit icons, decision icons, decision category icons, achievement icons, and tech icons are separate asset types.
+Focus, idea, national-spirit, officer-corps, decision, mission, decision-category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, and modifier icons are separate asset types.
 
 Never treat focus, idea, and decision icons as interchangeable.
 
@@ -320,6 +320,9 @@ Shared visual themes are allowed only when every icon is still designed for its 
 - decision category icons should be designed for the category button or scripted GUI surface, not derived from a focus icon
 - officer corps spirit icons should follow the vanilla officer corps spirit look and 45x45 transparent style
 - achievement icons should follow achievement presentation rules and variant rules
+- intelligence-agency and intelligence-operation icons must follow their own agency or operation UI precedent rather than a generic decision treatment
+- commander traits, medals, military raids, state modifiers, MIOs, factions, buildings, and modifier icons must follow the matching canonical folder and owning vanilla definition; do not force these families onto a blanket 32x32 or 64x64 canvas
+- frame strips, indexed building sprites, and multi-state modifier art must retain their frame order and frame count rather than being treated as a single standalone icon
 
 If a mechanic needs matching focus, idea, and decision visuals, build them as a coordinated icon family. A coordinated family can share subject matter, symbols, colors, and lore cues, but each member still needs separate source art or a separate generated output designed for its target size and UI role.
 
@@ -332,7 +335,7 @@ For every asset package:
 1. Read the feature spec, asset prompt, or implementation task.
 2. Identify every required visual asset.
 3. Group assets by usage type.
-4. Split focus icons, idea icons, national spirit icons, officer corps spirit icons, decision icons, decision category icons, achievement icons, and tech icons into separate asset-type work items. Never satisfy one icon type by resizing or lightly editing another icon type.
+4. Split every icon family named in section 5.2 into its own asset-type work item. Never satisfy one UI surface by resizing, relabeling, or lightly editing art created for another surface.
 5. Assign each asset a stable filename.
 6. Assign each asset a sprite name if it needs one.
 7. Identify the target size.
@@ -425,6 +428,24 @@ Each asset entry should include:
 - source mode and source note for every animation frame when animated
 
 Use `not_needed`, `planned`, `sourced`, `generated`, `processed`, `converted`, `handed_off`, `wired`, `complete`, `needs_user_review`, or `blocked` as asset statuses.
+
+## 8.1 Requirement-to-runtime coverage audit
+
+Before any asset completion claim, create or refresh a row-level coverage crosswalk from every accepted asset requirement in the current specs, manifest plans, and animation plans. Do not start from the assets that happen to be live. Each accepted row must identify:
+
+- its requirement id and accepted design source
+- its intended in-game purpose
+- the exact source package and manifest entry
+- the exact runtime registration: final asset path plus the `.gfx` sprite or texture, engine lookup id, or other owning definition as applicable
+- the live consumer file and id
+- the state or visibility binding when the asset is conditional or state-driven
+- the current audit record path, evidence, and row status
+
+For every animation family, also record the purpose and the direction or state semantics that distinguish the family, together with its frame, timing, and loop evidence. Frame totals, live animation-family totals, and registered sprite totals are not coverage proof.
+
+Audit exact rows, not counts. An extra asset or animation cannot satisfy an absent accepted row unless an explicit accepted design amendment identifies that row and names the replacement; link that amendment in the crosswalk. Any missing source package, runtime registration, live consumer, required state or visibility binding, or current audit record leaves the row incomplete.
+
+After a late user correction or accepted spec, manifest-plan, or animation-plan change, rebuild the crosswalk against the current repository and attach a fresh coverage diff listing added, removed or replaced, changed, and still-uncovered rows. Do not reuse the prior audit or its totals for the completion claim.
 
 ## 9. Standard HOI4 asset sizes
 
@@ -669,7 +690,7 @@ Use `$imagegen` for the base artwork unless the user provides or requests a spec
 
 Follow the `$imagegen` skill's transparent image workflow when the icon should have a transparent background.
 
-Inspect `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/ideas/` before generating or processing idea icons.
+Inspect `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/ideas/` and the matching row in `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md` before generating or processing idea icons.
 
 ## 17. Focus icons
 
@@ -703,7 +724,7 @@ Use `$imagegen` for the base artwork unless the user provides or requests a spec
 
 Follow the `$imagegen` skill's transparent image workflow when the icon should have a transparent background.
 
-Inspect `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus/` before generating or processing focus icons.
+Inspect `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus/` and the matching row in `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md` before generating or processing focus icons. Do not force every focus source onto an older nominal canvas when the owning sprite and current vanilla precedent use a different native canvas.
 
 ## 18. Decision icons
 
@@ -737,7 +758,19 @@ Use `$imagegen` for the base artwork unless the user provides or requests a spec
 
 Follow the `$imagegen` skill's transparent image workflow when the icon should have a transparent background.
 
-Inspect `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/decisions/` before generating or processing decision icons.
+Inspect `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/decisions/`, `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/missions/`, or `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/decision_categories/` as appropriate before generating or processing decision-system icons. Missions use the decision icon pipeline but still need mission-specific semantic readability.
+
+## Additional gameplay icon families
+
+Route additional icon work by the exact UI surface:
+
+- intelligence identity and action: `icons/intelligence_agency/` and `icons/intelligence_operations/`
+- commander progression and honours: `icons/commander_traits/` and `icons/medals/`
+- operations and world state: `icons/military_raids/` and `icons/state_modifiers/`
+- organizations and map/economy identity: `icons/military_industrial_organizations/`, `icons/factions/`, and `icons/buildings/`
+- generic or text-linked modifier presentation: `icons/modifiers/`
+
+Read the matching canonical catalog entries and inspect the owning `.gfx`, `.gui`, or database definition before choosing canvas, frame layout, transparency, or filename. These families are not reskinned decision or idea icons. When a source is a strip or contains several UI states, preserve its frame semantics and document them in the manifest and handoff.
 
 ## 19. Achievement icons
 
