@@ -171,19 +171,15 @@ Start Codex from the repository root so it can see `AGENTS.md`, `.agents/skills/
 
 ## MCP in agent workflows
 
-The HOI4 MCP server is a normal tool in the coding-agent workflow. Install it
-once, then register it with each mod by setting the server process `cwd` to
-that mod's root:
+HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, lint, render, create, and rewrite focus trees; inspect and rewrite scripted GUIs; inspect and edit connected map data; and trace, compare, render, and lint event chains. It is one tool in the existing skills and source workflow.
+
+`AGENTS_template.md` includes instructions for the coding agent to install and register the server when a mod needs it, so users do not need to install it manually. For reference, the published package command is:
 
 ```powershell
-npm install --global hoi4-agent-tools@2.0.0
+npm install --global hoi4-agent-tools@latest
 ```
 
-If the npm release is not available yet, clone the standalone
-`hoi4-agent-tools` project and run `npm install --global . --ignore-scripts`
-from its root.
-
-Codex registration example:
+A Codex server entry looks like this:
 
 ```toml
 [mcp_servers.hoi4_agent_tools]
@@ -191,19 +187,7 @@ command = "hoi4-agent-tools.cmd"
 cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\<your_mod>"
 ```
 
-Reload the agent and call the domain tool directly. A mod-local `cwd` makes the
-server infer the current workspace, so omit `workspaceId` and do not run a
-mod-selection command. Use `hoi4-agent-tools-setup --init` only for persistent
-multi-mod or remote deployments.
-
-Use focus tools to inspect, render, lint, create, and clean focus trees; GUI
-tools for scripted-GUI inspection, deterministic renders, and rewrites; map
-tools for connected map inspection and declarative edits; and event tools for
-narrow, read-only chain inspection, comparison, rendering, and linting. The
-owning skills still define design, research, source review, assets, tests,
-audits, and handoffs. Large MCP artifacts stay in linked resources instead of
-the prompt. After copying `AGENTS_template.md` into a mod, remove its
-`HOI4 MCP setup (bootstrap; remove after setup)` section once setup is complete.
+Agents use MCP when they need structural diagnostics, deterministic renders, or broad edits. The owning skills still define design, research, source review, assets, tests, audits, and handoffs. Large MCP artifacts are returned as linked resources instead of placed in the prompt.
 
 ## Codex scheduled tasks or Hermes
 

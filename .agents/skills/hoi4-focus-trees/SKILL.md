@@ -719,11 +719,17 @@ When a route becomes impossible, use bypasses or availability logic cleanly.
 
 The tree must be readable in game.
 
+Use the MCP focus tools to find layout deformities before rewriting. `hoi4.focus_inspect` and `hoi4.focus_render` report overlapping focus boxes, excessive gaps, cramped spacing, connector crossings, path lines that run through focuses or stretch too far, dangling connectors, bad prerequisite presentation, unbalanced branches, off-center layouts, and related diagnostics. Review the artifacts, then call `hoi4.focus_rewrite` with `layoutMode: "compact"` for cleanup or a complete route plan for creation. Review the rewritten artifacts and source diff; MCP supplies shared parsing, layout, rendering, and writes, while this skill owns design, prerequisites, localisation, AI, icons, balance, and completion.
+
 Required layout checks:
 
 - prerequisite parents are above children
 - no duplicate coordinates
 - no unnecessary crossing lines
+- no connector runs through focus boxes or unrelated branches
+- horizontal and vertical gaps are neither excessive nor cramped
+- visible connectors agree with the scripted prerequisite structure
+- route families remain balanced and centered
 - mutually exclusive branches are spaced comfortably
 - branches are visually distinct
 - continuous focuses are placed somewhere convenient
@@ -820,18 +826,6 @@ Focus tree subagents are active small-patch agents by default inside the current
 They should not redesign a whole tree, add a full route family, create a new formable chain, or change the country identity. When the tree needs broader depth, they should write an improvement plan under `docs/plans/<feature_slug>/` and leave implementation to the main agent.
 
 Every patch must write a handoff with changed files, changed focus ids, route behavior before and after, meaningful validation, skipped task-specific validation, and remaining route risks.
-
-## MCP layout and rewrite pass
-
-After the route plan and source review, use `hoi4-mcp-workbench` for complex
-tree cleanup or creation. Call `hoi4.focus_inspect` and `hoi4.focus_render`,
-then use `hoi4.focus_rewrite` with `layoutMode: "compact"` for cleanup or the
-complete route plan for a new tree. With the server `cwd` set to the target mod,
-omit `workspaceId`; do not run a mod-selection command. Review diagnostics and
-the rendered layout, then inspect the source diff and run the repository audit.
-MCP supplies shared parsing, layout, rendering, and writes; this skill still
-owns route design, prerequisites, AI, localisation, icons, balance, and the
-completion report.
 
 ## 16. Documentation and audit
 

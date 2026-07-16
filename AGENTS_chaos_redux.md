@@ -76,26 +76,14 @@ Use repo skills as required implementation guidance.
 
 ### HOI4 MCP
 
-Use the installed `hoi4-agent-tools` server as the coding-agent surface for
-focus trees, event-chain analysis, scripted GUIs, and maps. Register it with
-the Chaos Redux root as its process working directory:
+The installed `hoi4-agent-tools` server is the coding-agent tool for focus trees, event-chain analysis, scripted GUIs, and maps.
 
-```toml
-[mcp_servers.hoi4_agent_tools]
-command = "hoi4-agent-tools.cmd"
-cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\chaos_redux"
-```
+- Focus work: inspect, render, lint, and use `hoi4.focus_rewrite` for cleanup or a complete new route plan; review the returned layout and diagnostics.
+- Event work: use narrow `hoi4.event_inspect` queries and the read-only render and compare tools, then edit source files through the normal workflow.
+- GUI work: inspect and render the linked layout, states, resolutions, and click regions before an in-scope `hoi4.gui_rewrite`.
+- Map work: inspect connected province, state, region, adjacency, supply, and railway data before a declarative `hoi4.map_rewrite`.
 
-Install `hoi4-agent-tools@2.0.0` once, or install the standalone project with
-`npm install --global . --ignore-scripts` if the npm release is not available
-yet. Reload the agent, then call the domain tool directly. A mod-local `cwd`
-makes the server infer the workspace, so omit
-`workspaceId` and do not run a mod-selection command. Use
-`hoi4-agent-tools-setup --init` only for persistent multi-mod or remote setups.
-Focus, GUI, and map tools inspect, render, lint, and rewrite their own systems;
-event tools inspect, render, compare, and lint without rewriting event source.
-Keep the owning skills, offline wiki, vanilla documentation, source review,
-tests, audits, and handoffs active alongside MCP.
+The agent may call MCP autonomously as part of the larger skills, source review, wiki and vanilla-documentation checks, tests, audits, and subagent handoffs. MCP does not replace those repository requirements.
 
 ### Subagents
 
@@ -117,6 +105,13 @@ Use these high-level routing rules:
 - Use `chaosx_scripted_system_architect` for reusable scripted effects, triggers, script constants, event targets, meta effects, variable patterns, and dynamic helper design.
 - Use `chaosx_documentation_curator` during long implementation when specs, plans, docs, manifests, prompts, reports, or subagent handoffs may be stale, duplicated, contradictory, or too numerous. It patches documentation surfaces only, writes source-of-truth maps and resume packets, and does not edit gameplay files or spreadsheets.
 - Use `chaosx_spreadsheet_doc_worker` only after implementation facts are available. Spreadsheet event-detail, evolution-detail, and cluster-detail fields must match the in-game localisation wording.
+
+Spreadsheet source and export rule:
+
+- `docs/spreadsheets/chaos_redux_events_catalog.xlsx` is the only editable source for the event catalog.
+- After every successful workbook update, run `python .tools/export_event_catalog_csv.py` from the mod root.
+- That tool overwrites the export-only `chaos_redux_events_catalog.csv`, `chaos_redux_clusters_catalog.csv`, and `chaos_redux_scenarios_catalog.csv` files in `docs/spreadsheets/`.
+- Never edit those CSV files directly or use a stale CSV as the source of truth.
 - Use `chaosx_skill_maintainer` for non-trivial skill creation, cleanup, routing updates, or multi-skill consistency work.
 - Use `chaosx_improvement_loop_planner` during large event implementation when a mechanic, focus tree, country package, decision system, super-event, visual progression, lore package, or audit finding needs deeper design. It creates concrete event expansion addenda with research, historical connections, playable mechanics, and implementation surfaces for the main agent. It does not patch gameplay files. Do not spawn it again for the same event until the previous addendum has been implemented, folded into specs, queued with a reason, or rejected.
 

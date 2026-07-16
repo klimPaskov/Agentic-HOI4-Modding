@@ -18,7 +18,7 @@ These values are already filled in this template and should normally be left as-
 - Offline Paradox wiki snapshot: `paradox_wiki/`
 - Local vanilla Hearts of Iron IV install: `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`
 - Default documentation folder: `docs/`
-- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-subagents`, `hoi4-improvement-loop`, `hoi4-focus-trees`, `hoi4-decisions-missions`, and `hoi4-mcp-workbench`
+- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-subagents`, `hoi4-improvement-loop`, `hoi4-focus-trees`, and `hoi4-decisions-missions`
 - Generic HOI4 subagents from `.codex/agents/`: `hoi4_repo_explorer`, `hoi4_feature_completion_auditor`, `hoi4_scripted_system_architect`, `hoi4_localisation_auditor`, `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_improvement_loop_planner`, `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_quote_remark_researcher`, `hoi4_audio_researcher`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, and `hoi4_skill_maintainer`
 
 ---
@@ -93,27 +93,20 @@ Use repo skills as required implementation guidance, not as optional notes.
 - If this repository installs an additional MTTH or weighted-timing skill, use it when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer. Otherwise centralize weighted timing logic in the relevant event, decision, or scripted-system helpers.
 - Use `hoi4-subagents` when coordinating custom Codex subagents, routing bounded work, or defining parent/subagent ownership boundaries.
 - Use `hoi4-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
-- Use `hoi4-mcp-workbench` when a coding-agent task needs the installed HOI4 MCP server to analyze event chains or inspect, render, create, clean, and validate focus trees, scripted GUIs, or maps. It contains the one-time setup and tool-routing steps; the other skills still own design and repository rules.
 
 ### HOI4 MCP setup (bootstrap; remove after setup)
 
-This section is only for first-time setup. After the package is installed and
-the MCP client entry is registered, delete this entire section from the copied
-or generated `AGENTS.md`. Keep the normal MCP routing and use guidance below;
-do not leave bootstrap commands in the project instructions.
+This section is only for first-time setup. After the package is installed and the MCP client entry is registered, delete this entire section from the copied or generated `AGENTS.md`. Keep the normal MCP routing and use guidance below; do not leave bootstrap commands in the project instructions.
 
-Install the server once per machine:
+Install the current published server once per machine:
 
 ```powershell
-npm install --global hoi4-agent-tools@2.0.0
+npm install --global hoi4-agent-tools@latest
 ```
 
-If the package release is not available from npm yet, clone the standalone
-`hoi4-agent-tools` project and run `npm install --global . --ignore-scripts`
-from that project directory instead.
+If the package is unavailable from npm, clone the standalone `hoi4-agent-tools` project and run `npm install --global . --ignore-scripts` from that project directory instead.
 
-Register the server with the target mod as its working directory, for example
-in Codex:
+Register the server with the target mod as its working directory, for example in Codex:
 
 ```toml
 [mcp_servers.hoi4_agent_tools]
@@ -121,21 +114,18 @@ command = "hoi4-agent-tools.cmd"
 cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\<your_mod>"
 ```
 
-Reload the agent. For a mod-local `cwd`, no server configuration or
-mod-selection command is needed and `workspaceId` can be omitted. Use
-`hoi4-agent-tools-setup --init` only for persistent multi-mod or remote
-configurations. Once setup is complete, remove this setup section from the
-copied agents file before normal work begins.
+Reload the agent. For a mod-local `cwd`, no server configuration or mod-selection command is needed. Use `hoi4-agent-tools-setup --init` only for persistent multi-mod or remote configurations. Once setup is complete, remove this setup section from the copied agents file before normal work begins.
 
-### HOI4 MCP workflow
+### HOI4 MCP
 
-Use `hoi4.focus_*`, `hoi4.event_*`, `hoi4.gui_*`, and `hoi4.map_*` for the
-matching systems. Focus, GUI, and map tools inspect, render, lint, and rewrite
-their current mod workspace. Event tools inspect, render, compare, and lint
-source without rewriting it; edit event files through the normal source
-workflow, then compare and lint again. The coding agent may call MCP
-autonomously alongside the owning skill, offline wiki, vanilla documentation,
-source review, tests, audits, and subagent handoffs.
+The installed `hoi4-agent-tools` server is the coding-agent tool for focus trees, event-chain analysis, scripted GUIs, and maps.
+
+- Focus work: inspect, render, lint, and use `hoi4.focus_rewrite` for cleanup or a complete new route plan; review the returned layout and diagnostics.
+- Event work: use narrow `hoi4.event_inspect` queries and the read-only render and compare tools, then edit source files through the normal workflow.
+- GUI work: inspect and render the linked layout, states, resolutions, and click regions before an in-scope `hoi4.gui_rewrite`.
+- Map work: inspect connected province, state, region, adjacency, supply, and railway data before a declarative `hoi4.map_rewrite`.
+
+The agent may call MCP autonomously as part of the larger skills, source review, wiki and vanilla-documentation checks, tests, audits, and subagent handoffs. MCP does not replace those repository requirements.
 
 ### Subagents
 

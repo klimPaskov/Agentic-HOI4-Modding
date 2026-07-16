@@ -51,34 +51,24 @@ Use this skill with:
 - `hoi4-decisions-missions` when the event creates or depends on decisions, missions, timed objectives, formables, or decision-driven mechanics
 - `hoi4-subagents` when bounded research, asset production, small patches, or completion audits should be delegated
 - `hoi4-improvement-loop` when an implemented event works but is still shallow, generic, disconnected, or underdeveloped
-- `hoi4-mcp-workbench` to inspect, trace, render, compare, and lint event chains without replacing the source-editing workflow
+- MCP event tools to inspect, trace, render, compare, and lint event chains without replacing the source-editing workflow
 
 The parent agent remains responsible for final integration, final validation, and completion claims. Subagents and helper skills provide evidence, patches, assets, or plans. They do not replace parent review.
 
 
 ## MCP event-chain pass
 
-Use the event viewer for unfamiliar, large, or cross-file chains and whenever a
-change can affect callers, descendants, state flow, targets, timing, or scope.
-Set the MCP server `cwd` to the mod being edited and omit `workspaceId`; the
-server resolves that workspace automatically.
+Use the event viewer for unfamiliar, large, or cross-file chains and whenever a change can affect callers, descendants, state flow, targets, timing, or scope.
 
-1. Before any parent or subagent source write, call `hoi4.event_inspect` in
-   `scan` or `roots` mode and record the returned revision as the comparison
-   baseline.
+1. Before any parent or subagent source write, call `hoi4.event_inspect` in `scan` or `roots` mode and record the returned revision as the comparison baseline.
 2. Use a narrow selector with `trace`, `explain_path`, `state_flow`, or `impact`.
 3. Read linked JSON only when the compact result lacks necessary evidence.
 4. Edit the event and connected mod files through the normal source workflow.
-5. Run `hoi4.event_compare` with the baseline revision as `before`, then run
-   `hoi4.event_inspect` in `lint` mode and the most relevant
-   `hoi4.event_render` view.
+5. Run `hoi4.event_compare` with the baseline revision as `before`, then run `hoi4.event_inspect` in `lint` mode and the most relevant `hoi4.event_render` view.
 
-The event tools are read-only. Comparison refreshes edited source by default.
-Use bounded depth and node limits so MCP remains one small part of the larger
-skills, subagent, and repository workflow.
+The event tools are read-only. Comparison refreshes edited source by default. Use bounded depth and node limits so MCP remains one small part of the larger skills, subagent, and repository workflow.
 
-Give patch-capable subagents disjoint file ownership. Serialize overlapping
-edits and run the final comparison only after their handoffs are integrated.
+Give patch-capable subagents disjoint file ownership. Serialize overlapping edits and run the final comparison only after their handoffs are integrated.
 
 
 ## Spec and plan locations
