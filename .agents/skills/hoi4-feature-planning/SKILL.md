@@ -1226,7 +1226,21 @@ Each file should be complete enough to be useful on its own. Stop at a clean sec
 
 Do not summarize later sections just because the current working context is getting large. Continue in another repo file under the same spec folder. Use the available context for real specification content and do not hold back important design material for a shorter handoff.
 
-Do not create user-facing continuation text blocks as deliverables. Continue by writing the next spec file under the same `docs/specs/<feature_slug>/` folder rather than asking the user to paste text into a later chat turn.
+When a large feature specification cannot fit in the current response, end the response with a temporary continuation prompt for the next iteration. This prompt is a working handoff, not part of the saved specification, final package, or feature documentation. When the agent can continue by writing the next repo file without yielding, prefer that; use the prompt when response boundaries or a handoff make it necessary.
+
+The continuation prompt should include:
+
+- the feature slug, feature name, and current part number when known
+- the exact section and subsection where work stopped
+- the last completed heading, table, route, country package, or design surface
+- the next heading, table, route, country package, decision family, asset group, or research brief to write
+- constraints that must continue to apply, including localisation direction, country naming rules, asset source rules, and the user's core feature idea
+- a reminder to continue with full-depth design and not summarize missing sections
+- a reminder to avoid repeating completed sections except for short context needed to continue cleanly
+
+Use a clear temporary heading such as `Temporary continuation prompt, not part of the spec`. Keep it outside the saved spec content. In the final compiled package, remove all temporary continuation prompts and retain only the complete specification and requested final handoff files.
+
+If several iterations are needed, each response should write a new continuation prompt that reflects the current stopping point. Do not reuse an older prompt after the design has moved forward. When the final part is complete, omit the continuation prompt and provide the finished package or completion summary.
 
 Internal continuation notes are allowed only when the agent is about to hit context limits, output a very large amount of design material, hand off to another agent, or prepare for auto compaction. Put those notes outside the source spec, preferably in `docs/plans/<feature_slug>/resume_packet.md` or another clearly marked plan handoff. Internal notes should not be part of feature docs, localisation, spreadsheets, or asset manifests.
 
