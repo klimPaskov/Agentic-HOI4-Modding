@@ -1,6 +1,7 @@
 name = "hoi4_asset_source_researcher"
 description = "Finds, verifies, downloads, processes, converts, and documents real or archival visual source assets for HOI4 mods. Use for report event images, news event images, archival custom feature images, real leader portraits, historical flags, and historically attested symbols. Does not edit GFX or gameplay files."
-model_reasoning_effort = "high"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Asset Researcher"]
 

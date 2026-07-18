@@ -5,20 +5,19 @@
 - [Adding a Light](#adding-a-light)
   - [Animation](#animation)
 
-
 ---
 
 Particles are special entities used by other entities to create visual effects such as lightning, snow, etc.
 
 Particles are defined in **.asset** files which are found in /Hearts of Iron IV/gfx/particles/.
 
-## Adding a Particle
+## <a id="adding-a-particle"></a>Adding a Particle
 
-## Particle Editor
+## <a id="particle-editor"></a>Particle Editor
 
 The particle editor can be accessed by adding *exclusively* **-editor** to your launch options in Steam and **reverting to 1.11**; anything earlier will result in a non functional launcher, anything later will result in a crash upon trying to access the editor. **Since the particle editor can't access new particles made by the mod, it is necessary to overwrite vanilla particles, move the edited particles to your mod files, and then verify integrity after you've finished.** The particle editor can access any vanilla entity, mesh, or particle; once accessed, the vanilla particle can then be edited to fit your needs.
 
-## Adding a Light
+## <a id="adding-a-light"></a>Adding a Light
 
 Lights are special types of particles that are referred to in entities, for example the muzzle flash of the gun during the combat animation.
 
@@ -27,23 +26,23 @@ Here is a generic example:
 ```text
 light = {
     name = "name_of_light"
-
+    
     color = {
         r = { <float> }
         g = { <float> }
         b = { <float> }
     }
-
+    
     intensity = <float>, fade
     radius = <float>
     falloff = <float>
-
+    
     position = {
         x = <float>
         y = <float>
         z = <float>
     }
-
+    
     animation = {
         name = "name_of_animation"
         start = <float>
@@ -68,7 +67,7 @@ light = {
 - **position** is the position of the light relative to the entity using it.
 - **animation** is animation to play for the light.
 
-### Animation
+### <a id="animation"></a>Animation
 
 - **name** is the name of the animation.
 - **start** is the starting position of the curve.

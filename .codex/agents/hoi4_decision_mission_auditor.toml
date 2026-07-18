@@ -1,6 +1,7 @@
 name = "hoi4_decision_mission_auditor"
 description = "Active auditor and small-patch subagent for HOI4 decisions, missions, timed objectives, decision categories, scripted GUI decision surfaces, costs, tooltips, AI behavior, cleanup, balance, and exploit risk."
-model_reasoning_effort = "high"
+model = "gpt-5.6-terra"
+model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Decision Audit", "Decision Patch", "Mission Audit", "Mission Patch"]
 

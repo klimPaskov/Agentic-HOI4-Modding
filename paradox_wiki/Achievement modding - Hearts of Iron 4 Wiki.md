@@ -7,14 +7,13 @@
 - [Triggers](#triggers)
 - [References](#references)
 
-
 ---
 
 Paradox allowed the creation of custom achievements to be displayed in the Career Profile of a player. The ability to create these achievements came with the Avalanche (1.12.1) release.
 
 Achievements are found in the career profile (in-game this button is called "Playthrough Overview"), images are available on the Paradox Forum.
 
-## File structure
+## <a id="file-structure"></a>File structure
 
 ```text
 custom_achievements/
@@ -28,11 +27,11 @@ custom_achievements/
         custom_achievements_l_english.yml
 ```
 
-## Coding syntax
+## <a id="coding-syntax"></a>Coding syntax
 
 - **unique\_id** - This is mandatory and custom to your mod. It references the name of the cloudsavefile that will store the achievements.
 - **custom\_achievement/custom\_ribbon** - This is a unique identifier for your particular achievement.
-- **possible** - This checks at the game's start whether a ribbon or achievement is possible to get in the playthrough. **If false at the game's start, getting the achievement will never be impossible.**
+- **possible** - This checks at the game's start whether a ribbon or achievement is possible to get in the playthrough. **If false at the game's start, getting the achievement will never be possible.**
   - This is similar to `allowed` in decisions or ideas, though it is evaluated at the game's start rather than before.
   - Some common triggers not used in the code example are tag checks (with either [tag](<Triggers - Hearts of Iron 4 Wiki.md#tag>) or [original\_tag](<Triggers - Hearts of Iron 4 Wiki.md#original-tag>)) or ironman checks (`is_ironman = yes`).
 - **happened** - Once these conditions are met then the achievement is earned. (Usually instant to ~2 in-game hours)
@@ -49,10 +48,10 @@ custom_achievement = {
         has_any_custom_difficulty_setting = no
         game_rules_allow_achievements = yes
     }
-
+ 
     happened = {
         date > 1936.01.02
-    }
+    } 
 }
 
 custom_ribbon = {
@@ -63,7 +62,7 @@ custom_ribbon = {
         game_rules_allow_achievements = yes
         tag = ITA
     }
-
+ 
     happened = {
         date > 1936.01.02
     }
@@ -80,7 +79,7 @@ custom_ribbon = {
 }
 ```
 
-## Icon
+## <a id="icon"></a>Icon
 
 Images for achievements require three different images which are provided in `gfx/achievements`. These do not require a spriteType in interface.
 
@@ -91,7 +90,7 @@ Images for achievements require three different images which are provided in `gf
 - custom\_achievement\_test\_grey.dds
   - Refers to the icon if it is possible to be earned during that playthrough
 
-## Localization
+## <a id="localization"></a>Localization
 
 Localization for the achievement is done in two loc keys. The suffix NAME refers to the title of the achievement and the DESC refers to the description that can be either some funny joke or how you describe to achieve the achievement.
 
@@ -100,39 +99,19 @@ Localization for the achievement is done in two loc keys. The suffix NAME refers
  custom_achievement_test_DESC: "Custom Achievement Description"
 ```
 
-## Triggers
+## <a id="triggers"></a>Triggers
 
 Achievement related triggers.
 
-- **has_completed_custom_achievement**
-  - Parameters:
-    ```text
-    mod = <mod ID>
-    The mod where the achievement is from.
-    achievement = <achievement ID>
-    The name of the achievement.
-    ```
-  - Example:
-    ```text
-    has_completed_custom_achievement = {
-        mod = my_mod_unique_id
-        achievement = my_achievement_token
-    }
-    ```
-  - Description: Checks if the player controlling the current scope has completed the specified custom achievement.
-  - Notes:
-    ```text
-    The achievement (including the ID of the mod it's from) is defined within
-    /Hearts of Iron IV/common/achievements/*.txt
-    files. The achievement could be completed during a previous session, not necessarily the current one.
-    If the mod defining the achievement is not loaded, the trigger evaluates as false.
-    ```
-  - Version Added: 1.12.5
+General any-scoped triggers:
+| Name | Parameters | Examples | Description | Notes | Version Added |
+| --- | --- | --- | --- | --- | --- |
+| <a id="has-completed-custom-achievement"></a> has\_completed\_custom\_achievement | `mod = <mod ID>` The mod where the achievement is from.  `achievement = <achievement ID>` The name of the achievement. | `has_completed_custom_achievement = { mod = my_mod_unique_id achievement = my_achievement_token }` | Checks if the player controlling the current scope has completed the specified custom achievement. | The achievement (including the ID of the mod it's from) is defined within /Hearts of Iron IV/common/achievements/\*.txt files. The achievement could be completed during a previous session, not necessarily the current one. If the mod defining the achievement is not loaded, the trigger evaluates as false. | 1.12.5 |
 
-## References
+## <a id="references"></a>References
 
-- [ Achievements for mods](https://forum.paradoxplaza.com/forum/index.php?threads/1544899)
-- [ Tutorial to design ribbons in mod achievement](https://forum.paradoxplaza.com/forum/index.php?threads/1544902)
-- [ Tutorial to write achievements files in your mod](https://forum.paradoxplaza.com/forum/index.php?threads/1544901)
+- [[1] Achievements for mods](https://forum.paradoxplaza.com/forum/index.php?threads/1544899)
+- [[2] Tutorial to design ribbons in mod achievement](https://forum.paradoxplaza.com/forum/index.php?threads/1544902)
+- [[3] Tutorial to write achievements files in your mod](https://forum.paradoxplaza.com/forum/index.php?threads/1544901)
 
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**

@@ -1,6 +1,7 @@
 name = "hoi4_repo_explorer"
 description = "Read-only HOI4 mod repository explorer for large or uncertain tasks. Maps relevant files, vanilla precedents, risks, validation checks, dependencies, and edit order. Does not patch gameplay files."
-model_reasoning_effort = "high"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Scout"]
 

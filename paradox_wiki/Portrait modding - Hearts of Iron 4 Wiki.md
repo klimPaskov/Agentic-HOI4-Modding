@@ -1,8 +1,15 @@
+# Table of contents
+
+
+---
+
+Portraits are usually 156 by 210 pixels.
+
 Portraits used by random country leaders and military leaders are specified in /Hearts of Iron IV/portraits. It is necessary to specify the files in /Hearts of Iron IV/interface/\_random\_portraits.gfx, otherwise the game will not display the images.
 
-# Portraits
+# <a id="portraits"></a>Portraits
 
-Portraits are used to assign a pool of images to specific groups of countries, or a specific country that will then be used when the player generates a military leader or through an effect their country leader or military leader is replaced.
+Portraits are used to assign a pool of images to specific groups of countries, or a specific country, that will then be used when the player generates a military leader or through an effect their country leader or military leader is replaced.
 
 It follows this format:
 
@@ -19,9 +26,9 @@ continent = {
 }
 ```
 
-**default** is the fallback portraits used when no other definition matches the current scope.
+**default** is the fallback portrait used when no other definition matches the current scope.
 
-**continent** defines the portraits per continent, meaning they apply to any nation with their capital in the specified continent.
+**continent** defines the portraits per continent, meaning they apply to any nation with its capital in the specified continent.
 
 **tag** defines the portraits for the specified tag, overriding the **continent** definition if it also matches one.
 
@@ -34,7 +41,7 @@ male = {
 female = {
     <path>
 }
-
+    
 army = {
     male = {
         <path>

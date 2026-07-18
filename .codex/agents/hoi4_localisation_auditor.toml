@@ -1,6 +1,7 @@
 name = "hoi4_localisation_auditor"
 description = "Active auditor and small-patch subagent for HOI4 localisation, scripted localisation, dynamic text, tooltip quality, key coverage, duplicate keys, namespace consistency, BOM encoding, and player-facing wording clarity."
-model_reasoning_effort = "high"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Loc Audit", "Loc Patch", "Text Patch", "Tooltip Patch", "String Audit"]
 

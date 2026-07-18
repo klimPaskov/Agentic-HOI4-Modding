@@ -6,14 +6,13 @@
 - [Categories](#categories)
 - [Compressors](#compressors)
 
-
 ---
 
 Sound definitions are found in /Hearts of Iron IV/sound. A sound file should be saved as a **WAV** file in Stereo, as a mono channel, at 44100Hz and as a 32-bit float.
 
 All of the sound definition files must be saved as **.asset** files.
 
-## Sound
+## <a id="sound"></a>Sound
 
 A **sound** entry is used to define a sound. It follows this format:
 
@@ -34,7 +33,7 @@ sound = {
 
 **volume** defines the volume of the sound.
 
-## Sound Effect
+## <a id="sound-effect"></a>Sound Effect
 
 A **soundeffect** entry is used to define a soundeffect. It follows this format:
 
@@ -44,40 +43,40 @@ soundeffect = {
     falloff = <name>
     sounds = {
         sound = <name>
-        weighted_sound = {
-            sound = <name>
-            weight = int
+        weighted_sound = { 
+            sound = <name> 
+            weight = int 
         }
     }
-
+    
     loop = <bool>
     is3d = <bool>
     random_sound_when_looping = <bool>
-
+    
     max_audible = <int>
     max_audible_behaviour = <type>
-
+    
     volume = <float>
     fade_in = <float>
     fade_out = <float>
-
-    looping_delay_random_offset = <bool>
+    
+	looping_delay_random_offset = <bool>
     delay_random_offset = {
         <float>
         <float>
     }
-
-    looping_playbackrate_random_offset = <bool>
+    
+	looping_playbackrate_random_offset = <bool>
     playbackrate_random_offset = {
         <float>
         <float>
     }
-
+    
     volume_random_offset = {
         <float>
         <float>
     }
-
+    
     prevent_random_repetition = <bool>
 }
 ```
@@ -104,11 +103,11 @@ soundeffect = {
 
 **fade\_out** defines the fade out duration for the sound effect.
 
-**looping\_delay\_random\_offset** ???
+**looping\_delay\_random\_offset** ???
 
 **delay\_random\_offset** defines the minimum and maximum random offset to the delay between sound loops.
 
-**looping\_playbackrate\_random\_offset** ???
+**looping\_playbackrate\_random\_offset** ???
 
 **playbackrate\_random\_offset** defines the minimum and maximum random offset to the playback rate between sound loops.
 
@@ -116,14 +115,14 @@ soundeffect = {
 
 **prevent\_random\_repetition** prevents the same sounds from playing right after it was played
 
-## Falloff
+## <a id="falloff"></a>Falloff
 
 Falloff entries define the falloff attributes for sound. They are added in sound effects, and follow this format:
 
 ```text
 falloff = {
     name = <name>
-
+    
     min_distance = <float>
     max_distance = <float>
     height_scale = <float>
@@ -138,7 +137,7 @@ falloff = {
 
 **height\_scale** is a scalar for the height between the sound source and the player camera.
 
-## Categories
+## <a id="categories"></a>Categories
 
 Sound effects can be placed in sound categories that apply a specific compressor to the sounds. The categories follow this format:
 
@@ -166,7 +165,7 @@ category = {
 
 **compressor** is the compressor to use for the category, see below for more information on the attributes.
 
-## Compressors
+## <a id="compressors"></a>Compressors
 
 There are two global compressors: **master\_compressor** used for sounds and **music\_compressor** used for music. Individual compressors can be defined for sounds within categories.
 

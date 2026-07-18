@@ -21,22 +21,21 @@
   - [Organization Boni](#organization-boni)
 - [References](#references)
 
-
 ---
 
 Military Industrial Organizations (MIOs) represent the applied research and development of your country.
 They boost your research in their area of focus and modify the stats of equipment produced with their aid.
 
-## Warning
+## <a id="warning"></a>Warning
 
 Military Industrial Organizations and their policies are loaded only *when creating a new game.*
 it is not possible to inject new MIOs/policies into an ongoing game - for development / test runs, you must always create a new game.
 
 You can freely modify what boni a trait grants, what icon to use or the localization. Adding traits is also possible, but removing existing traits can lead to errors.
 
-## Designing an MIO
+## <a id="designing-an-mio"></a>Designing an MIO
 
-### What can you mod?
+### <a id="what-can-you-mod-3f"></a><a id="what-can-you-mod"></a>What can you mod?
 
 Fundamentally, MIO modding has four aspects you can modify:
 
@@ -45,7 +44,7 @@ Fundamentally, MIO modding has four aspects you can modify:
 - A Policy that can be applied to MIOs (typically after reaching Level 6+)
 - AI Bonus Weights, which governs how the AI will prioritize boni granted by traits
 
-### Files and Folders
+### <a id="files-and-folders"></a>Files and Folders
 
 MIOs are defined in /Hearts of Iron IV/common/military\_industrial\_organization/organizations/, where you can place any number of MIOs in any number of txt files, encoded in UTF8 *without* a Byte Order Mark (BOM).
 For example, the game itself comes with one default "generic organization" file, containing the baseline templates, then one for each TAG that has alterations / extensions to that baseline.
@@ -56,7 +55,7 @@ Finally, AI Bonus Weights are defined in /Hearts of Iron IV/common/military\_ind
 
 In all three directories of the game you can find a "documentation.info" text file describing some of the thoughts of the designers and some guidance.
 
-### The Error Log
+### <a id="the-error-log"></a>The Error Log
 
 While this is true for most aspects of modding, checking the error log has never been more critical than when modding MIOs:
 The simple fact that most errors impact the start of a game, are unfixable once it is running and that MIOs affect the game in the long run make it simple to waste a lot of time only to have to reset after all.
@@ -64,27 +63,27 @@ The simple fact that most errors impact the start of a game, are unfixable once 
 You can find the error.log text file in "%userprofile%\Documents\Paradox Interactive\Hearts of Iron IV\logs".
 Check it first after game start and browsing through the MIO menus (browsing the menus will trigger any errors associated with visibility filters).
 
-## Full MIO
+## <a id="full-mio"></a>Full MIO
 
-### Layout
+### <a id="layout"></a>Layout
 
 ```text
 <MIO Name> = {
-    # Optional Localization Key
-    name = LOC_infernal_mio_tanks
-    icon = GFX_key
+	# Optional Localization Key
+	name = LOC_infernal_mio_tanks
+	icon = GFX_key
 
-    equipment_type = { <equipment type> <equipment type> }
-    research_categories = { <research type> <research type> }
+	equipment_type = { <equipment type> <equipment type> }
+	research_categories = { <research type> <research type> }
 
-    # Mandatory. In Country Scope.
-    allowed = <condition>
-    # Optional. In MIO Scope. FROM = country.
-    visible = <condition>
-    # Optional. In MIO Scope. FROM = country.
-    available = <condition>
+	# Mandatory. In Country Scope.
+	allowed = <condition>
+	# Optional. In MIO Scope. FROM = country.
+	visible = <condition>
+	# Optional. In MIO Scope. FROM = country.
+	available = <condition>
 
-    # Additional Events if desired
+	# Additional Events if desired
 #	on_design_team_assigned_to_tech = { ... }
 #	on_design_team_assigned_to_variant = { ... }
 #	on_industrial_manufacturer_assigned = { ... }
@@ -92,203 +91,107 @@ Check it first after game start and browsing through the MIO menus (browsing the
 #	on_tech_research_completed = { ... }
 #	on_industrial_manufacturer_unassigned = { ... }
 
-    # Bonus to assigned research
-    research_bonus = 0.2
-    # How many tasks can the MIO perform simultaneously?
-    task_capacity = 999
+	# Bonus to assigned research
+	research_bonus = 0.2
+	# How many tasks can the MIO perform simultaneously?
+	task_capacity = 999
 
-    # Provide custom AI weights to help the AI choose the right MIO
+	# Provide custom AI weights to help the AI choose the right MIO
 #	ai_will_do = {
 #		...
 #	}
 
-    # As many headers as desired.
-    tree_header_text = {
-        text = "Label1" # Either plain text or localization key
-        x = 0 # Just where on the header bar is the label placed. 0 = Leftmost, 9 = Rightmost
-    }
-    tree_header_text = {
-        text = "Label2"
-        x = 2
-    }
-    tree_header_text = {
-        text = "Label3"
-        x = 4
-    }
-    tree_header_text = {
-        text = "LabelN"
-        x = 8
-    }
+	# As many headers as desired.
+	tree_header_text = {
+		text = "Label1" # Either plain text or localization key
+		x = 0 # Just where on the header bar is the label placed. 0 = Leftmost, 9 = Rightmost
+	}
+	tree_header_text = {
+		text = "Label2"
+		x = 2
+	}
+	tree_header_text = {
+		text = "Label3"
+		x = 4
+	}
+	tree_header_text = {
+		text = "LabelN"
+		x = 8
+	}
 
-    initial_trait = <initial trait>
+	initial_trait = <initial trait>
 
-    trait = <trait>
-    trait = <trait>
-    trait = <trait>
-    # ... as many more as needed
+	trait = <trait>
+	trait = <trait>
+	trait = <trait>
+	# ... as many more as needed
 }
 ```
 
-### The Properties Explained
+### <a id="the-properties-explained"></a>The Properties Explained
 
-- **name**
-  - Mandatory?: false
-  - Description: If provided, it will resolve the displayname of the MIO in the following order: 1. <tag>_<name> 2. <name>
-  - Example: name = LOC_infernal_mio_tanks
+Properties of a Full MIO
+| Key | Mandatory? | Description | Example |
+| --- | --- | --- | --- |
+| name | false | If provided, it will resolve the displayname of the MIO in the following order: 1. <tag>\_<name> 2. <name> | name = LOC\_infernal\_mio\_tanks |
+| icon | false | The Icon to use for the MIO in the interface | icon = GFX\_idea\_generic\_tank\_manufacturer\_1 |
+| background | false | The background image for the Details window. If not specified, one of standard backgrounds will be used based on supported equipment types | background = GFX\_key |
+| equipment\_type | true | List of equipment types the MIO affects. Used to select which production lines the MIO can be applied to and what the various boni in the traits will affect | equipment\_type = { mio\_cat\_eq\_all\_light\_tank mio\_cat\_eq\_all\_medium\_tank } |
+| research\_categories | true | List of research categories affected by the MIO. | research\_categories = { mio\_cat\_tech\_light\_armor\_and\_modules mio\_cat\_tech\_medium\_armor\_and\_modules } |
+| allowed | true | The condition checked AT GAME START whether the MIO is applicable to a given country. *At this time, some conditions do not yet apply - for example, the player has not yet taken control, so the "is\_ai" condition is meaningless.* | allowed = { always = true } |
+| visible | false | Whether the MIO is visible to the nation. Is evaluated in the MIO scope, the country is available in the FROM scope. An MIO must be visible *and* available for the AI to be able to use it. | visible = { always = true } |
+| available | false | Whether the MIO is available to the nation. Will be grayed out in the UI if not. Is evaluated in the MIO scope, the country is available in the FROM scope. An MIO must be visible *and* available for the AI to be able to use it. | available = { always = true } |
+| on\_design\_team\_assigned\_to\_tech | false | Event that triggers when the MIO is attached to a research project | na |
+| on\_design\_team\_assigned\_to\_variant | false | Event that triggers when the MIO is attached to a model in the ship/tank/aircraft designer | na |
+| on\_industrial\_manufacturer\_assigned | false | Event that triggers when the MIO is attached to a production line | na |
+| on\_industrial\_manufacturer\_unassigned | false | Event that triggers when unassigned from a production line | na |
+| on\_tech\_research\_cancelled | false | Event that triggers when the associated research is cancelled (be sure to add some deeply annoyed researches with crippling country penalties) | na |
+| on\_tech\_research\_completed | false | Event that triggers when the associated research is completed successfully | na |
+| research\_bonus | false | How much research % bonus the MIO grants by default to associated research. Defaults to the DESIGN\_TEAM\_RESEARCH\_BONUS define value | research\_bonus = 0.2 |
+| task\_capacity | false | How many things the MIO can do in parallel. Defaults to the DEFAULT\_INITIAL\_TASK\_CAPACITY define value | task\_capacity = 3 |
+| ai\_will\_do | false | How the AI prioritizes using this MIO compared to alternatively available MIOs | na |
+| tree\_header\_text | false | Can be provided multiple times. The headers shown above the trait tree in the MIO menu. "x" represents how far to the right it is placed with "0" being at the left border and "9" being as right as it goes. Text can be a localization key or the straight label. | `tree_header_text = { text = my_flavor_text_loc_key x = 1 }` |
+| initial\_trait | true | The initial trait the MIO has without having to invest anything into it. | See "Trait Layout" |
+| trait | true | Can be repeated any number of times. The individual traits of the MIO that can be unlocked. | See "Trait Layout" |
 
-- **icon**
-  - Mandatory?: false
-  - Description: The Icon to use for the MIO in the interface
-  - Example: icon = GFX_idea_generic_tank_manufacturer_1
-
-- **background**
-  - Mandatory?: false
-  - Description: The background image for the Details window. If not specified, one of standard backgrounds will be used based on supported equipment types
-  - Example: background = GFX_key
-
-- **equipment_type**
-  - Mandatory?: true
-  - Description: List of equipment types the MIO affects. Used to select which production lines the MIO can be applied to and what the various boni in the traits will affect
-  - Example: equipment_type = { mio_cat_eq_all_light_tank mio_cat_eq_all_medium_tank }
-
-- **research_categories**
-  - Mandatory?: true
-  - Description: List of research categories affected by the MIO.
-  - Example: research_categories = { mio_cat_tech_light_armor_and_modules mio_cat_tech_medium_armor_and_modules }
-
-- **allowed**
-  - Mandatory?: true
-  - Description:
-    ```text
-    The condition checked AT GAME START whether the MIO is applicable to a given country.
-    At this time, some conditions do not yet apply - for example, the player has not yet taken control, so the "is_ai" condition is meaningless.
-    ```
-  - Example: allowed = { always = true }
-
-- **visible**
-  - Mandatory?: false
-  - Description:
-    ```text
-    Whether the MIO is visible to the nation. Is evaluated in the MIO scope, the country is available in the FROM scope. An MIO must be visible
-    and
-    available for the AI to be able to use it.
-    ```
-  - Example: visible = { always = true }
-
-- **available**
-  - Mandatory?: false
-  - Description:
-    ```text
-    Whether the MIO is available to the nation. Will be grayed out in the UI if not. Is evaluated in the MIO scope, the country is available in the FROM scope. An MIO must be visible
-    and
-    available for the AI to be able to use it.
-    ```
-  - Example: available = { always = true }
-
-- **on_design_team_assigned_to_tech**
-  - Mandatory?: false
-  - Description: Event that triggers when the MIO is attached to a research project
-  - Example: na
-
-- **on_design_team_assigned_to_variant**
-  - Mandatory?: false
-  - Description: Event that triggers when the MIO is attached to a model in the ship/tank/aircraft designer
-  - Example: na
-
-- **on_industrial_manufacturer_assigned**
-  - Mandatory?: false
-  - Description: Event that triggers when the MIO is attached to a production line
-  - Example: na
-
-- **on_industrial_manufacturer_unassigned**
-  - Mandatory?: false
-  - Description: Event that triggers when unassigned from a production line
-  - Example: na
-
-- **on_tech_research_cancelled**
-  - Mandatory?: false
-  - Description: Event that triggers when the associated research is cancelled (be sure to add some deeply annoyed researches with crippling country penalties)
-  - Example: na
-
-- **on_tech_research_completed**
-  - Mandatory?: false
-  - Description: Event that triggers when the associated research is completed successfully
-  - Example: na
-
-- **research_bonus**
-  - Mandatory?: false
-  - Description: How much research % bonus the MIO grants by default to associated research. Defaults to the DESIGN_TEAM_RESEARCH_BONUS define value
-  - Example: research_bonus = 0.2
-
-- **task_capacity**
-  - Mandatory?: false
-  - Description: How many things the MIO can do in parallel. Defaults to the DEFAULT_INITIAL_TASK_CAPACITY define value
-  - Example: task_capacity = 3
-
-- **ai_will_do**
-  - Mandatory?: false
-  - Description: How the AI prioritizes using this MIO compared to alternatively available MIOs
-  - Example: na
-
-- **tree_header_text**
-  - Mandatory?: false
-  - Description: Can be provided multiple times. The headers shown above the trait tree in the MIO menu. "x" represents how far to the right it is placed with "0" being at the left border and "9" being as right as it goes. Text can be a localization key or the straight label.
-  - Example:
-    ```text
-    tree_header_text = {
-        text = my_flavor_text_loc_key
-        x = 1
-    }
-    ```
-
-- **initial_trait**
-  - Mandatory?: true
-  - Description: The initial trait the MIO has without having to invest anything into it.
-  - Example: See "Trait Layout"
-
-- **trait**
-  - Mandatory?: true
-  - Description: Can be repeated any number of times. The individual traits of the MIO that can be unlocked.
-  - Example: See "Trait Layout"
-
-### Trait Layout
+### <a id="trait-layout"></a>Trait Layout
 
 ```text
 trait = {
-    token = upgrade_1 # mandatory
-    name = loc_key # optional
+	token = upgrade_1 # mandatory
+	name = loc_key # optional
 
-    icon = GFX_key # optional
+	icon = GFX_key # optional
 
-    special_trait_background = yes # optional - default no
+	special_trait_background = yes # optional - default no
 
-    parent = {
-        traits = { parent traits }
-        num_parents_needed = X
-    }
-    any_parent = { parent traits }
-    all_parents = { parent traits}
+	parent = {
+		traits = { parent traits }
+		num_parents_needed = X
+	}
+	any_parent = { parent traits }
+	all_parents = { parent traits}
 
-    mutually_exclusive= { upgrade4 }
+	mutually_exclusive= { upgrade4 }
 
-    position = { x=1 y=0 }
-    relative_position_id = trait_token
+	position = { x=1 y=0 }
+	relative_position_id = trait_token
 
-    visible = <condition>
-    available = <condition>
+	visible = <condition>
+	available = <condition>
 
-       on_complete = <event>
+   	on_complete = <event>
 
-    limit_to_equipment_type = { ... } # optional
-    equipment_bonus = <boni>
-    production_bonus = <boni>
-    organization_modifier = <boni>
+	limit_to_equipment_type = { ... } # optional
+	equipment_bonus = <boni>
+	production_bonus = <boni>
+	organization_modifier = <boni>
 
-    ai_will_do = <modifier> # optional
+	ai_will_do = <modifier> # optional
 }
 ```
 
-### Designing a trait
+### <a id="designing-a-trait"></a>Designing a trait
 
 As we can see from the layout, designing a trait comes to a few key steps:
 
@@ -319,7 +222,7 @@ These fall into three categories:
 Finally, there's the AI, but best do not touch that unless you really want to.
 Trait prioritization is best handled through how the AI weighs boni (see chapter below on how to mod that).
 
-### Initial Trait
+### <a id="initial-trait"></a>Initial Trait
 
 The initial trait you assign to a MIO differs in a few aspects:
 
@@ -335,548 +238,164 @@ In other words, most of the trait properties are not relevant to the initial tra
 - production\_bonus: Boni granted to the production of the related equipment
 - organization\_bonus: Boni granted to the MIO itself
 
-### Trait Properties Explained
+### <a id="trait-properties-explained"></a>Trait Properties Explained
 
-- **token**
-  - Mandatory?: true
-  - Description: System name of the trait. Must be provided, can be simple
-  - Example:
-    ```text
-    token = gunnery_1
-    ```
+Properties of a trait
+| Key | Mandatory? | Description | Example |
+| --- | --- | --- | --- |
+| token | true | System name of the trait. Must be provided, can be simple | `token = gunnery_1` |
+| name | false | Localization key, overwriting the default key of "<mio name>\_<trait token>". If defined, the system will prioritize "<tag>\_<trait name>" over "<trait name>" | `name = my_MIO_gunnery_1_Name` |
+| icon | false | Icon to use for your trait. Defaults to GFX\_idea\_unknown. Check the icons other traits with the same boni use. | `icon = GFX_generic_mio_trait_icon_hg_attack` |
+| special\_trait\_background | false | If yes, trait background will be golden to indicate an interesting trait. Defaults to "no". | `special_trait_background = yes` |
+| parent | false | Provide a custom trait dependency link. This allows setting conditions such as "Have at least 2 out of these traits." See "any\_parent" or "all\_parents" for simpler dependencies | `parent = { traits = { gunnery_1 stealth_1 mines_1 } num_parents_needed = 2 }` |
+| any\_parent | false | Any one of the listed traits must already have been selected. | `any_parent = { gunnery_1 stealth_1 }` |
+| all\_parents | false | Every single one of the listed traits must already have been selected. | `all_parents = { gunnery_1 stealth_1 }` |
+| mutually\_exclusive | false | Have multiple traits exclude each other. Must be defined in each of the traits to work as expected. | `mutually_exclusive = { heavy_guns_specialization }` |
+| position | true | Where on the board to place the trait. (x = 0 y = 0) is the upper-left corner, (x = 9 y = 4) is the lower right. It is possible (but not recommended) to go lower by using an y value greater than 4, but that requires the player to scroll and is not recommended. | `position = { x = 0 y = 0 }` |
+| relative\_position\_id | false | By providing this setting, turn the "position"-provided coordinates into coordinates relative to the listed trait. "position = { x=0 y=1 }" would then become "directly beneath the parent trait" | `relative_position_id = gunnery_1` |
+| visible | false | Whether the trait is shown on the MIO traits menu. The condition executes in the current MIO's scope, the country is available in the FROM scope. | `visible = { FROM = { has_country_flag = <flag name> } }` |
+| available | false | Whether the trait is available (or greyed out). Useful for tying MIOs into the Focus Tree. The condition executes in the current MIO's scope, the country is available in the FROM scope. | `available = { FROM = { has_completed_focus = <focus name> } }` |
+| on\_complete | false | Event that happens when the player selects the trait. Again, a way to integrate the MIO into the narrative of the country. The event executes in the current MIO's scope, the country is available in the FROM scope. | `on_complete = { FROM = { set_country_flag = <flag name> } }` |
+| limit\_to\_equipment\_type | false | By default, Equipment and Production boni apply to all equipment types supported by the MIO. This condition allows you to narrow it down to a smaller subset. Useful for specialization traits. | `limit_to_equipment_type = { mio_cat_eq_all_light_tank }` |
+| equipment\_bonus | false | Actual improvements applied to all produced equipment the MIO applies to (unless further constrained through limit\_to\_equipment\_type) | `equipment_bonus = { armor_value = -0.05 defense =-0.05 build_cost_ic = -0.03 }` |
+| production\_bonus | false | Improvements applied to the production lines, such as accelerated efficiency gains, greater output or improved conversion rates. | `production_bonus = { production_efficiency_gain_factor = 0.15 production_resource_need_factor = -0.15 }` |
+| organization\_modifier | false | Boni granted to the MIO itself, such as cheaper assignment, improved research boni or increased task limit. | `organization_modifier = { military_industrial_organization_research_bonus = 0.05 }` |
+| ai\_will\_do | false | Override the default prioritization weights the AI would usually apply to this trait, based on the boni given. Usually not recommended. | `ai_will_do = { base = 2 modifier = { factor = 1.5 date > 1937.1.1 } }` |
 
-- **name**
-  - Mandatory?: false
-  - Description: Localization key, overwriting the default key of "<mio name>_<trait token>". If defined, the system will prioritize "<tag>_<trait name>" over "<trait name>"
-  - Example:
-    ```text
-    name = my_MIO_gunnery_1_Name
-    ```
-
-- **icon**
-  - Mandatory?: false
-  - Description: Icon to use for your trait. Defaults to GFX_idea_unknown. Check the icons other traits with the same boni use.
-  - Example:
-    ```text
-    icon = GFX_generic_mio_trait_icon_hg_attack
-    ```
-
-- **special_trait_background**
-  - Mandatory?: false
-  - Description: If yes, trait background will be golden to indicate an interesting trait. Defaults to "no".
-  - Example:
-    ```text
-    special_trait_background = yes
-    ```
-
-- **parent**
-  - Mandatory?: false
-  - Description: Provide a custom trait dependency link. This allows setting conditions such as "Have at least 2 out of these traits." See "any_parent" or "all_parents" for simpler dependencies
-  - Example:
-    ```text
-    parent = {
-        traits = {
-            gunnery_1 stealth_1 mines_1
-        }
-        num_parents_needed = 2
-    }
-    ```
-
-- **any_parent**
-  - Mandatory?: false
-  - Description: Any one of the listed traits must already have been selected.
-  - Example:
-    ```text
-    any_parent = { gunnery_1 stealth_1 }
-    ```
-
-- **all_parents**
-  - Mandatory?: false
-  - Description: Every single one of the listed traits must already have been selected.
-  - Example:
-    ```text
-    all_parents = { gunnery_1 stealth_1 }
-    ```
-
-- **mutually_exclusive**
-  - Mandatory?: false
-  - Description: Have multiple traits exclude each other. Must be defined in each of the traits to work as expected.
-  - Example:
-    ```text
-    mutually_exclusive = { heavy_guns_specialization }
-    ```
-
-- **position**
-  - Mandatory?: true
-  - Description:
-    ```text
-    Where on the board to place the trait. (x = 0 y = 0) is the upper-left corner, (x = 9 y = 4) is the lower right. It is possible (but not recommended) to go lower by using an y value greater than 4, but that requires the player to scroll and is not recommended.
-    ```
-  - Example:
-    ```text
-    position = { x = 0 y = 0 }
-    ```
-
-- **relative_position_id**
-  - Mandatory?: false
-  - Description:
-    ```text
-    By providing this setting, turn the "position"-provided coordinates into coordinates relative to the listed trait. "position = { x=0 y=1 }" would then become "directly beneath the parent trait"
-    ```
-  - Example:
-    ```text
-    relative_position_id = gunnery_1
-    ```
-
-- **visible**
-  - Mandatory?: false
-  - Description: Whether the trait is shown on the MIO traits menu. The condition executes in the current MIO's scope, the country is available in the FROM scope.
-  - Example:
-    ```text
-    visible = {
-        FROM = { has_country_flag = <flag name> }
-    }
-    ```
-
-- **available**
-  - Mandatory?: false
-  - Description: Whether the trait is available (or greyed out). Useful for tying MIOs into the Focus Tree. The condition executes in the current MIO's scope, the country is available in the FROM scope.
-  - Example:
-    ```text
-    available = {
-        FROM = { has_completed_focus = <focus name> }
-    }
-    ```
-
-- **on_complete**
-  - Mandatory?: false
-  - Description: Event that happens when the player selects the trait. Again, a way to integrate the MIO into the narrative of the country. The event executes in the current MIO's scope, the country is available in the FROM scope.
-  - Example:
-    ```text
-    on_complete = {
-        FROM = { set_country_flag = <flag name> }
-    }
-    ```
-
-- **limit_to_equipment_type**
-  - Mandatory?: false
-  - Description: By default, Equipment and Production boni apply to all equipment types supported by the MIO. This condition allows you to narrow it down to a smaller subset. Useful for specialization traits.
-  - Example:
-    ```text
-    limit_to_equipment_type = { mio_cat_eq_all_light_tank }
-    ```
-
-- **equipment_bonus**
-  - Mandatory?: false
-  - Description: Actual improvements applied to all produced equipment the MIO applies to (unless further constrained through limit_to_equipment_type)
-  - Example:
-    ```text
-    equipment_bonus = {
-        armor_value = -0.05
-        defense =-0.05
-        build_cost_ic = -0.03
-    }
-    ```
-
-- **production_bonus**
-  - Mandatory?: false
-  - Description: Improvements applied to the production lines, such as accelerated efficiency gains, greater output or improved conversion rates.
-  - Example:
-    ```text
-    production_bonus = {
-        production_efficiency_gain_factor = 0.15
-        production_resource_need_factor = -0.15
-    }
-    ```
-
-- **organization_modifier**
-  - Mandatory?: false
-  - Description: Boni granted to the MIO itself, such as cheaper assignment, improved research boni or increased task limit.
-  - Example:
-    ```text
-    organization_modifier = {
-        military_industrial_organization_research_bonus = 0.05
-    }
-    ```
-
-- **ai_will_do**
-  - Mandatory?: false
-  - Description: Override the default prioritization weights the AI would usually apply to this trait, based on the boni given. Usually not recommended.
-  - Example:
-    ```text
-    ai_will_do = {
-        base = 2
-        modifier = {
-            factor = 1.5
-            date > 1937.1.1
-        }
-    }
-    ```
-
-## Delta MIO
+## <a id="delta-mio"></a>Delta MIO
 
 TODO: Write
 
-## Policies
+## <a id="policies"></a>Policies
 
-- **name**
-  - Mandatory?: false
-  - Description:
-    ```text
-    Policy name.
-    May use scripted localization, scope will be set with the country owning the policy.
-    ```
-  - Example:
-    ```text
-    name = loc_key
-    ```
+Properties of a policies
+| Key | Mandatory? | Description | Example |
+| --- | --- | --- | --- |
+| name | false | Policy name. May use scripted localization, scope will be set with the country owning the policy. | `name = loc_key` |
+| icon | false | Icon to use for your policy. | `icon = GFX_mio_policy_my_policy` |
+| cost | false | Attach cost in political power. Default is define [DEFAULT INITIAL POLICY ATTACH COST](<Defines - Hearts of Iron 4 Wiki.md#default-initial-policy-attach-cost>) "25". | `cost = 10` |
+| cooldown | false | Cooldown in days after attaching a policy. Default is define [DEFAULT INITIAL ATTACH POLICY COOLDOWN](<Defines - Hearts of Iron 4 Wiki.md#default-initial-attach-policy-cooldown>) "180". | `cooldown = 60` |
+| allowed | true | Evaluated when starting the game. If trigger returns false, the policy will never be considered later in-game. | `allowed = { OR = { has_mio_equipment_type = motorized has_mio_equipment_type = mechanized } }` |
+| visible | false | Evaluated when displaying the policy screen. Default is "always = yes". | `visible = { has_mio_size > 3 }` |
+| available | false | Evaluated when displaying the policy screen. Default is "always = yes". | `available = { has_mio_size > 5}` |
+| equipment\_bonus | false | Defines the bonus given when the policy is attached and the MIO is assigned to an equipment variant. Note: it's different from equipment\_bonus in traits. Here you have to give the equipment group/category/archetype/type. | `equipment_bonus = { infantry_equipment = { soft_attack = 0.1 } }` |
+| production\_bonus | false | Defines the bonus given when the policy is attached and the MIO is assigned to a production line. Note: it's different from production\_bonus in traits. Here you have to give the equipment group/category/archetype/type. | `production_bonus = { infantry_equipment = { production_cost_factor = -0.1 } }` |
+| organization\_modifier | false | Defines modifiers that will apply on the MIOs. | `organization_modifier = { military_industrial_organization_research_bonus = 0.1 }` |
+| on\_add | false | Effects executed when the policy is attached. | `on_add = { ... }` |
+| on\_remove | false | Effects executed when the policy is un-attached. | `on_remove = { ... }` |
+| ai\_will\_do | false | AI weight modifier for this policy. Note: this affects how likely AI is to spend PP on this policy. | `ai_will_do = { ... }` |
 
-- **icon**
-  - Mandatory?: false
-  - Description: Icon to use for your policy.
-  - Example:
-    ```text
-    icon = GFX_mio_policy_my_policy
-    ```
-
-- **cost**
-  - Mandatory?: false
-  - Description:
-    ```text
-    Attach cost in political power.
-    Default is define
-    DEFAULT INITIAL POLICY ATTACH COST
-    "25".
-    ```
-  - Example:
-    ```text
-    cost = 10
-    ```
-
-- **cooldown**
-  - Mandatory?: false
-  - Description:
-    ```text
-    Cooldown in days after attaching a policy.
-    Default is define
-    DEFAULT INITIAL ATTACH POLICY COOLDOWN
-    "180".
-    ```
-  - Example:
-    ```text
-    cooldown = 60
-    ```
-
-- **allowed**
-  - Mandatory?: true
-  - Description:
-    ```text
-    Evaluated when starting the game.
-    If trigger returns false, the policy will never be considered later in-game.
-    ```
-  - Example:
-    ```text
-    allowed = {
-        OR = {
-            has_mio_equipment_type = motorized
-            has_mio_equipment_type = mechanized
-        }
-    }
-    ```
-
-- **visible**
-  - Mandatory?: false
-  - Description:
-    ```text
-    Evaluated when displaying the policy screen.
-    Default is "always = yes".
-    ```
-  - Example:
-    ```text
-    visible = { has_mio_size > 3 }
-    ```
-
-- **available**
-  - Mandatory?: false
-  - Description:
-    ```text
-    Evaluated when displaying the policy screen.
-    Default is "always = yes".
-    ```
-  - Example:
-    ```text
-    available = { has_mio_size > 5}
-    ```
-
-- **equipment_bonus**
-  - Mandatory?: false
-  - Description:
-    ```text
-    Defines the bonus given when the policy is attached and the MIO is assigned to an equipment variant.
-    Note: it's different from equipment_bonus in traits. Here you have to give the equipment group/category/archetype/type.
-    ```
-  - Example:
-    ```text
-    equipment_bonus = {
-        infantry_equipment = {
-            soft_attack = 0.1
-        }
-    }
-    ```
-
-- **production_bonus**
-  - Mandatory?: false
-  - Description:
-    ```text
-    Defines the bonus given when the policy is attached and the MIO is assigned to a production line.
-    Note: it's different from production_bonus in traits. Here you have to give the equipment group/category/archetype/type.
-    ```
-  - Example:
-    ```text
-    production_bonus = {
-        infantry_equipment = {
-            production_cost_factor = -0.1
-        }
-    }
-    ```
-
-- **organization_modifier**
-  - Mandatory?: false
-  - Description: Defines modifiers that will apply on the MIOs.
-  - Example:
-    ```text
-    organization_modifier = {
-        military_industrial_organization_research_bonus = 0.1
-    }
-    ```
-
-- **on_add**
-  - Mandatory?: false
-  - Description: Effects executed when the policy is attached.
-  - Example:
-    ```text
-    on_add = { ... }
-    ```
-
-- **on_remove**
-  - Mandatory?: false
-  - Description: Effects executed when the policy is un-attached.
-  - Example:
-    ```text
-    on_remove = { ... }
-    ```
-
-- **ai_will_do**
-  - Mandatory?: false
-  - Description:
-    ```text
-    AI weight modifier for this policy.
-    Note: this affects how likely AI is to spend PP on this policy.
-    ```
-  - Example:
-    ```text
-    ai_will_do = {
-        ...
-    }
-    ```
-
-## AI Bonus Weights
+## <a id="ai-bonus-weights"></a>AI Bonus Weights
 
 TODO: Write
 
-## Appendix: Boni
+## <a id="appendix-boni"></a>Appendix: Boni
 
-### Equipment Boni
+### <a id="equipment-boni"></a>Equipment Boni
 
 List of stats that can be used for different equipments.
 
 **Tanks**
-
-- **maximum_speed**
-
-- **reliability**
-
-- **defense**
-
-- **breakthrough**
-
-- **armor_value**
-
-- **build_cost_ic**
-
-- **entrenchment**
-
-- **fuel_capacity**
+| Modifier |
+| --- |
+| maximum\_speed |
+| reliability |
+| defense |
+| breakthrough |
+| armor\_value |
+| build\_cost\_ic |
+| entrenchment |
+| fuel\_capacity |
 
 **Ships**
-
-- **lg_armor_piercing**
-
-- **lg_attack**
-
-- **hg_armor_piercing**
-
-- **hg_attack**
-
-- **torpedo_attack**
-
-- **sub_attack**
-
-- **anti_air_attack**
-
-- **armor_value**
-
-- **surface_detection**
-
-- **sub_detection**
-
-- **sub_visibility**
-
-- **surface_visibility**
-
-- **naval_speed**
-
-- **reliability**
-
-- **naval_range**
-
-- **max_strength**
-
-- **fuel_consumption**
-
-- **build_cost_ic**
-
-- **manpower**
-
-- **naval_supremacy_factor**
-
-- **naval_torpedo_enemy_critical_chance_factor**
-
-- **naval_torpedo_damage_reduction_factor**
-
-- **carrier_size**
-
-- **mines_sweeping**
-
-- **mines_planting**
-
-- **naval_torpedo_hit_chance_factor**
-
-- **naval_light_gun_hit_chance_factor**
-
-- **naval_heavy_gun_hit_chance_factor**
+| Modifier |
+| --- |
+| lg\_armor\_piercing |
+| lg\_attack |
+| hg\_armor\_piercing |
+| hg\_attack |
+| torpedo\_attack |
+| sub\_attack |
+| anti\_air\_attack |
+| armor\_value |
+| surface\_detection |
+| sub\_detection |
+| sub\_visibility |
+| surface\_visibility |
+| naval\_speed |
+| reliability |
+| naval\_range |
+| max\_strength |
+| fuel\_consumption |
+| build\_cost\_ic |
+| manpower |
+| naval\_supremacy\_factor |
+| naval\_torpedo\_enemy\_critical\_chance\_factor |
+| naval\_torpedo\_damage\_reduction\_factor |
+| carrier\_size |
+| mines\_sweeping |
+| mines\_planting |
+| naval\_torpedo\_hit\_chance\_factor |
+| naval\_light\_gun\_hit\_chance\_factor |
+| naval\_heavy\_gun\_hit\_chance\_factor |
 
 **Planes**
+| Key |
+| --- |
+| air\_superiority |
+| reliability |
+| naval\_strike\_attack |
+| naval\_strike\_targetting |
+| manpower |
+| fuel\_consumption |
+| build\_cost\_ic |
+| resources |
+| thrust |
+| weight |
+| maximum\_speed |
+| air\_range |
+| air\_agility |
+| air\_attack |
+| air\_defence |
+| surface\_detection |
+| sub\_detection |
+| air\_ground\_attack |
+| air\_bombing |
+| mines\_planting |
+| mines\_sweeping |
+| night\_penalty |
 
-- **air_superiority**
-
-- **reliability**
-
-- **naval_strike_attack**
-
-- **naval_strike_targetting**
-
-- **manpower**
-
-- **fuel_consumption**
-
-- **build_cost_ic**
-
-- **resources**
-
-- **thrust**
-
-- **weight**
-
-- **maximum_speed**
-
-- **air_range**
-
-- **air_agility**
-
-- **air_attack**
-
-- **air_defence**
-
-- **surface_detection**
-
-- **sub_detection**
-
-- **air_ground_attack**
-
-- **air_bombing**
-
-- **mines_planting**
-
-- **mines_sweeping**
-
-- **night_penalty**
-
-### Production Boni
+### <a id="production-boni"></a>Production Boni
 
 All production boni apply to the production lines the MIO has been attached to.
 
-- **production_cost_factor**
-  - Description: Reduces the production cost.
-  - Example: production_cost_factor = 0.05
+Production Boni
+| Key | Description | Example |
+| --- | --- | --- |
+| production\_cost\_factor | Reduces the production cost. | production\_cost\_factor = 0.05 |
+| production\_capacity\_factor | Increases the production output, accelerating the # items produced per day. | production\_capacity\_factor = 0.1 |
+| production\_efficiency\_cap\_factor | Increase the maximum production efficiency. Keep in mind, ships don't have that ... | production\_efficiency\_cap\_factor = 0.2 |
+| production\_efficiency\_gain\_factor | Increase the rate, at which the production efficiency increases. Keep in mind, ships don't have that ... | production\_efficiency\_gain\_factor = 0.24 |
+| production\_resource\_need\_factor | Change the amount of raw resources (Iron, Tungsten, Chromium, ...) needed. | production\_resource\_need\_factor = -0.1 |
+| production\_resource\_penalty\_factor | Modify the penalty the production line suffers from not having enough resources. | production\_resource\_penalty\_factor = -0.1 |
+| production\_conversion\_speed\_factor | Change the speed, at which equipment conversions are performed. | production\_conversion\_speed\_factor = 0.5 |
 
-- **production_capacity_factor**
-  - Description: Increases the production output, accelerating the # items produced per day.
-  - Example: production_capacity_factor = 0.1
-
-- **production_efficiency_cap_factor**
-  - Description: Increase the maximum production efficiency. Keep in mind, ships don't have that ...
-  - Example: production_efficiency_cap_factor = 0.2
-
-- **production_efficiency_gain_factor**
-  - Description: Increase the rate, at which the production efficiency increases. Keep in mind, ships don't have that ...
-  - Example: production_efficiency_gain_factor = 0.24
-
-- **production_resource_need_factor**
-  - Description: Change the amount of raw resources (Iron, Tungsten, Chromium, ...) needed.
-  - Example: production_resource_need_factor = -0.1
-
-- **production_resource_penalty_factor**
-  - Description: Modify the penalty the production line suffers from not having enough resources.
-  - Example: production_resource_penalty_factor = -0.1
-
-- **production_conversion_speed_factor**
-  - Description: Change the speed, at which equipment conversions are performed.
-  - Example: production_conversion_speed_factor = 0.5
-
-### Organization Boni
+### <a id="organization-boni"></a>Organization Boni
 
 Organization Boni apply to the MIO globally and not to a specific equipment line / product.
 As such they cannot be constrained.
 
-- **military_industrial_organization_research_bonus**
-  - Description: A flat increase to the research bonus percentage applied by the MIO. If previously it gave 20% bonus and receives a "0.1" bonus here, it will then give a 30% bonus to research.
-  - Example: military_industrial_organization_research_bonus = 0.1
+Organization Boni
+| Key | Description | Example |
+| --- | --- | --- |
+| military\_industrial\_organization\_research\_bonus | A flat increase to the research bonus percentage applied by the MIO. If previously it gave 20% bonus and receives a "0.1" bonus here, it will then give a 30% bonus to research. | military\_industrial\_organization\_research\_bonus = 0.1 |
+| military\_industrial\_organization\_design\_team\_assign\_cost | Modifier over how much it costs to assign an MIO in the Tank/Aircraft/Ship designer. | military\_industrial\_organization\_design\_team\_assign\_cost = -0.2 |
+| military\_industrial\_organization\_design\_team\_change\_cost | Modifier over how much it costs to pull the latest changes from an already assigned MIO for a given Tank/Aircraft/Ship design. | military\_industrial\_organization\_design\_team\_change\_cost = -0.1 |
+| military\_industrial\_organization\_industrial\_manufacturer\_assign\_cost | How much does it cost to assign a MIO to an industrial (that is non-designer) production line. | military\_industrial\_organization\_industrial\_manufacturer\_assign\_cost = -0.2 |
+| military\_industrial\_organization\_task\_capacity | Flat increase to the number of tasks an MOI can be assigned to in parallel. | military\_industrial\_organization\_task\_capacity = 5 |
+| military\_industrial\_organization\_size\_up\_requirement | Modifies the funds it takes to level up an MIO, effectively accelerating the rate at which you unlock traits. Consider applying this if you design a MIO with an above-average number of traits. | military\_industrial\_organization\_size\_up\_requirement = -0.1 |
+| military\_industrial\_organization\_funds\_gain | Modifies the rate at which funds are obtained, which are then used to level the MIO and unlock molre traits. Another lever to increase the levelling rate of an MIO. | military\_industrial\_organization\_funds\_gain = 0.2 |
 
-- **military_industrial_organization_design_team_assign_cost**
-  - Description: Modifier over how much it costs to assign an MIO in the Tank/Aircraft/Ship designer.
-  - Example: military_industrial_organization_design_team_assign_cost = -0.2
-
-- **military_industrial_organization_design_team_change_cost**
-  - Description: Modifier over how much it costs to pull the latest changes from an already assigned MIO for a given Tank/Aircraft/Ship design.
-  - Example: military_industrial_organization_design_team_change_cost = -0.1
-
-- **military_industrial_organization_industrial_manufacturer_assign_cost**
-  - Description: How much does it cost to assign a MIO to an industrial (that is non-designer) production line.
-  - Example: military_industrial_organization_industrial_manufacturer_assign_cost = -0.2
-
-- **military_industrial_organization_task_capacity**
-  - Description: Flat increase to the number of tasks an MOI can be assigned to in parallel.
-  - Example: military_industrial_organization_task_capacity = 5
-
-- **military_industrial_organization_size_up_requirement**
-  - Description: Modifies the funds it takes to level up an MIO, effectively accelerating the rate at which you unlock traits. Consider applying this if you design a MIO with an above-average number of traits.
-  - Example: military_industrial_organization_size_up_requirement = -0.1
-
-- **military_industrial_organization_funds_gain**
-  - Description: Modifies the rate at which funds are obtained, which are then used to level the MIO and unlock molre traits. Another lever to increase the levelling rate of an MIO.
-  - Example: military_industrial_organization_funds_gain = 0.2
-
-## References
+## <a id="references"></a>References
 
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**

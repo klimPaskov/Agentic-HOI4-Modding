@@ -8,10 +8,9 @@
 - [Interface](#interface)
   - [Additional notes](#additional-notes)
 
-
 ---
 
-## Resources
+## <a id="resources"></a>Resources
 
 The resources used by the game are found in /Hearts of Iron IV/common/resources/00\_resources.txt.
 
@@ -27,7 +26,7 @@ resources = {
 }
 ```
 
-### Icon frame
+### <a id="icon-frame"></a>Icon frame
 
 Icon frame controls which frame from the resource image strip is used for the resource icon. A 'frame' is the 27 by 27 pixel square the icon occupies in the image.
 
@@ -36,30 +35,30 @@ The resource image strip is defined by the **GFX\_resources\_strip** spritetype,
 The icons are defined in /Hearts of Iron IV/interface/general\_stuff.gfx. Their definition must be changed if you're adding or removing resources:
 
 ```text
-    spriteType = {
-        name = "GFX_resources_strip"
-        texturefile = "gfx/interface/resources_strip.dds"
-        noOfFrames = X #X being the number of resources you have,
-    }
+	spriteType = {
+		name = "GFX_resources_strip"
+		texturefile = "gfx/interface/resources_strip.dds"
+		noOfFrames = X #X being the number of resources you have, 
+	}
 
-    spriteType = {
-        name = "GFX_missing_resources_strip"
-        texturefile = "gfx/interface/missing_resources_strip.dds"
-        noOfFrames = X
-    }
+	spriteType = {
+		name = "GFX_missing_resources_strip"
+		texturefile = "gfx/interface/missing_resources_strip.dds"
+		noOfFrames = X
+	}
 ```
 
 The number of frames strictly corresponds to the amount of resources.
 
-### CIC
+### <a id="cic"></a>CIC
 
 CIC defines the amount of resources needed to trade for 1 Civilian Factory. By default, this is 0.125, meaning 8 units of that resource are traded for 1 factory. Value can not be larger than 1.
 
-### Convoys
+### <a id="convoys"></a>Convoys
 
 Convoys controls the maximum amount of this resource a single convoy carries. By default, this is 0.1, meaning a convoy can carry 10 of the resource.
 
-## Localization
+## <a id="localization"></a>Localization
 
 Localisation is defined in /Hearts of Iron IV/localisation/production\_l\_<language>.yml with the following localization keys:
 
@@ -68,7 +67,7 @@ PRODUCTION_MATERIALS_<RESOURCE>:0 "Name of resource"
 <resource>_desc:0 "Description of resource"
 ```
 
-## Interface
+## <a id="interface"></a>Interface
 
 If implementing different resources, you will need to edit the interface so the game understands how to display the new resource. /Hearts of Iron IV/interface/countryproductionlineview.gui is the relevant file here.
 
@@ -81,7 +80,7 @@ buttonType = {
     spriteType = "GFX_resources_strip"
     frame = 1 # Which icon is used from the spriteType image referred to above.
 }
-
+					
 instantTextboxType = {
     name = "<resource>_value"
     position = { x = 31 y = 5 }
@@ -95,9 +94,9 @@ instantTextboxType = {
 }
 ```
 
-### Additional notes
+### <a id="additional-notes"></a>Additional notes
 
-A fuel can also correspond to the fuel dynamic, however only one resource at a time can do that. This is decided by the FUEL\_RESOURCE [define](<Defines - Hearts of Iron 4 Wiki.md>).
+A fuel can also correspond to the fuel dynamic, however only one resource at a time can do that. This is decided by the FUEL\_RESOURCE [define](<Defines - Hearts of Iron 4 Wiki.md>).   
 Infrastructure's bonus on resource gain is decided by the INFRASTRUCTURE\_RESOURCE\_BONUS define and applies to all resources the same.
 
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**

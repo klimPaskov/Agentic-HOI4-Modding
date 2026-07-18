@@ -1,6 +1,7 @@
 name = "hoi4_quote_remark_researcher"
 description = "Finds, verifies, compares, and documents quote, cultural remark, slogan, title-reference, and allusion candidates for a HOI4 feature. Does not edit localisation or gameplay files."
-model_reasoning_effort = "medium"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Quote Researcher", "Remark Researcher", "Text Researcher"]
 

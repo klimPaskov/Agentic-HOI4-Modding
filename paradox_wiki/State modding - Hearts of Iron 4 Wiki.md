@@ -11,37 +11,36 @@
 - [Building types](#building-types)
 - [State categories](#state-categories)
 
-
 ---
 
 States (and their history) are defined in /Hearts of Iron IV/history/states/\*.txt files. While it is typical to reserve one file to a state, that is not necessary. Unlike, for example, /Hearts of Iron IV/history/countries/, **the filename does not get read in how the file should be handled**, only its contents do. For that reason, unless a [replace\_path](<Modding - Hearts of Iron 4 Wiki.md#mod-definition>) is defined to the folder, it should be avoided to change the filenames of already-existing files, as this can make it so that both the base game and the mod's state files will get read.
 
-## Arguments
+## <a id="arguments"></a>Arguments
 
 Each state is contained within a `state = { ... }` block that must encompass everything. These are the arguments that can be used.
 
-### Mandatory
+### <a id="mandatory"></a>Mandatory
 
-`id = 123` is the ID number of the state. It must be an integer.
-**State IDs have to follow a numerical order,** starting from 1: the game will expect every number between 1 and the largest state ID within the mod to be a state. If that expectation is not met, the game will crash when loading the game if the [debug mode](<Modding - Hearts of Iron 4 Wiki.md#advantages-to-using-debug>) is not turned on, as the map is deemed too erroneous to be played normally.
+`id = 123` is the ID number of the state. It must be an integer.  
+**State IDs have to follow a numerical order,** starting from 1: the game will expect every number between 1 and the largest state ID within the mod to be a state. If that expectation is not met, the game will crash when loading the game if the [debug mode](<Modding - Hearts of Iron 4 Wiki.md#advantages-to-using-debug>) is not turned on, as the map is deemed too erroneous to be played normally.  
 As such, when deleting a state, the state IDs have to be shifted in order respectively, such as by changing the last state's ID to fit the now-missing ID. When doing that, everything that referenced the now-different state IDs will have to be adjusted, and [searching every text file in the mod using a text editor](<Modding - Hearts of Iron 4 Wiki.md#search-in-files>) can be used to do so.
 
 `name = STATE_123` is a localisation key that will become the name of the state, depending on which language is turned on. For English, this gets defined in any /Hearts of Iron IV/localisation/english/\*\_l\_english.yml file as such:
 
 ```text
 l_english:
-STATE_123: "My state name"
+ STATE_123: "My state name"
 ```
 
 By default, the game uses `state_names_l_english.yml`.
 
-`manpower = 500000` is the total population of the state at the game's start, both recruitable and non-recruitable. This will be the starting population on every scenario, without population growth being simulated between the first start date and the scenario's beginning. However, a single tick of monthly population growth will be done for each scenario, increasing the state's population by 0.125%.
+`manpower = 500000` is the total population of the state at the game's start, both recruitable and non-recruitable. This will be the starting population on every scenario, without population growth being simulated between the first start date and the scenario's beginning. However, a single tick of monthly population growth will be done for each scenario, increasing the state's population by 0.125%.<a id="cite-ref-1"></a>[[1]](#cite-note-1)
 
 `state_category = my_category` is the category that the state uses. This sets the state modifiers that the state starts with (Including the amount of starting unlocked shared building slots), as well as assigning a colour to the state in the state view map mode. [Details on the state categories are covered later in the article.](#state-categories)
 
 `provinces = { 123 456 7890 }` is the list of provinces that are defined as belonging to the state, separated with whitespace characters.
 
-### Optional
+### <a id="optional"></a>Optional
 
 `impassable = yes`, if added in the state, will mark it as impassable. This includes making troops unable to enter it; its provinces going to the controller of the nearest passable provinces; making it impossible to build provincial buildings within it; marking it as true for the impassable trigger.
 
@@ -51,7 +50,7 @@ By default, the game uses `state_names_l_english.yml`.
 
 `buildings_max_level_factor = 0.5` adds an additional multiplier on the amount of unlocked shared building slots. Recommended to avoid, instead using state categories.
 
-### History
+### <a id="history"></a>History
 
 All of these are contained within `history = { ... }`, which is defined within the state. Additionally, these can be used within a YYYY.MM.DD-formatted datestamp inside of history, such as `1939.1.1 = { ... }`. This will make them be executed only if the start date is strictly after the specified date.
 
@@ -59,12 +58,12 @@ All of these are contained within `history = { ... }`, which is defined within t
 
 `controller = LIT` defines the initial controller of the state. Optional to define - only necessary if the owner differs from the controller.
 
-`victory_points = { 1234 10 }` defines the amount of victory points on a specified province, where the first number is the province and the second number is the amount of victory points. **Only one province can be defined within one victory\_points**. In order to have multiple provinces with victory points in one state, several instances of `victory_points = { ... }` need to be put in.
+`victory_points = { 1234 10 }` defines the amount of victory points on a specified province, where the first number is the province and the second number is the amount of victory points. **Only one province can be defined within one victory\_points**. In order to have multiple provinces with victory points in one state, several instances of `victory_points = { ... }` need to be put in.  
 The localisation key that gets used for the victory point depending on the language of the game is `VICTORY_POINTS_1234`, where 1234 is the ID of the province. For English, this gets defined in any /Hearts of Iron IV/localisation/english/\*\_l\_english.yml file as such:
 
 ```text
 l_english:
-VICTORY_POINTS_1234: "My city name"
+ VICTORY_POINTS_1234: "My city name"
 ```
 
 By default, the game uses `victory_points_l_english.yml`. For positioning the icon of a victory point on the map, the [unitstacks file](<Map modding - Hearts of Iron 4 Wiki.md#unitstacks>) is edited. Note that the icon of a victory point doesn't have to be inside of the province itself: if several victory points show up in the same place, it could be from different provinces with an outdated unitstacks file, which would need to be adjusted in the Nudge's Units section accordingly.
@@ -83,9 +82,9 @@ buildings = {
 
 If a building is not mentioned, it does not change the initial value, which is 0 by default; however, the initial building level may be different if the buildings block is within a datestamp rather than being executed immediately. In landlocked states, buildings that can only be built on coastal states/provinces cannot be defined, even if set to 0.
 
-Additionally, history serves as an [effect block](<Effect - Hearts of Iron 4 Wiki.md>). Common effects to use within state history include `add_core_of = POL` or `add_claim_by = LIT`, but any effect can be used.
+Additionally, history serves as an [effect block](<Effects - Hearts of Iron 4 Wiki.md>). Common effects to use within state history include `add_core_of = POL` or `add_claim_by = LIT`, but any effect can be used.
 
-## Examples
+## <a id="examples"></a>Examples
 
 Bare minimum:
 
@@ -95,31 +94,27 @@ state = {
     name = STATE_123
     manpower = 50000
     state_category = large_town
-
+    
     history = {
         owner = ITA
     }
-
+    
     provinces = {
         1234 5678
     }
 }
-```
-
-Average state:
-
-```text
+`Average state:`
 state = {
     id = 124
     name = STATE_124
     manpower = 50035
     state_category = megalopolis
-
+    
     resources = {
         oil = 10
         chromium = 50
     }
-
+    
     history = {
         owner = SWI
         add_core_of = SWI
@@ -143,28 +138,30 @@ state = {
             }
         }
     }
-
+    
     provinces = { 1111 2222 3333 4444 5555 6666 7777 8888 9999 }
-
+    
     local_supplies = 10
 }
 ```
 
-## Notes
+## <a id="notes"></a>Notes
 
-The building model positions for each state are defined separately from the states themselves, instead being defined in /Hearts of Iron IV/map/buildings.txt. A mismatch will cause errors, taking up space in the log and potentially crashes. For example, if a province is lacking a definition for a naval base or a floating harbour within a province, whether it's set in the wrong state in the buildings.txt file or missing entirely, **attempting to use one within that province (whether by the player or the AI) will cause a crash**, marked with [the last read script being client\_ping](<Troubleshooting - Hearts of Iron 4 Wiki.md#crash-data-log>). The simplest way to compile the positions of models is to use the building section in the nudger.
+<a id="additional-notes"></a>
+
+The building model positions for each state are defined separately from the states themselves, instead being defined in /Hearts of Iron IV/map/buildings.txt. A mismatch will cause errors, taking up space in the log and potentially crashes. For example, if a province is lacking a definition for a naval base or a floating harbour within a province, whether it's set in the wrong state in the buildings.txt file or missing entirely, **attempting to use one within that province (whether by the player or the AI) will cause a crash**, marked with [the last read script being client\_ping](<Troubleshooting - Hearts of Iron 4 Wiki.md#crash-data-log>). The simplest way to compile the positions of models is to use the building section in the nudger.  
 /Hearts of Iron IV/map/airports.txt and /Hearts of Iron IV/map/rocketsites.txt decide in which province in the state the game should put airports or rocket sites. This is also edited in the building section in the nudger. **If either is incorrect or missing, the game will not be possible to open without debug mode.**
 
 The state borders must follow strategic regions, defined in /Hearts of Iron IV/map/strategicregions/\*.txt. If one province in the state belongs to one strategic region, while a different province in the same state belongs to a different strategic region, a map error will be created, which will cause a game crash on launch if the debug mode is not turned on. Make sure that strategic region borders are followed, either by adjusting the state or the strategic regions.
 
-## Using the nudger
+## <a id="using-the-nudger"></a>Using the nudger
 
-*Parts of this section are transcluded from Nudger § States*
+*Parts of this section are transcluded from Nudger § States*
 
 The nudger is a map editing tool, accessed through the main menu with the `-debug` launch option enabled. For the states, it can be used in order to change the borders of states and in order to generate the building models.
 
-The state section of the nudger is used for defining the borders and names of states. Any state border changes will also automatically change the borders of the strategic regions that cover the states, taking provinces out of strategic regions completely for new states. Within the user directory, this edits the /Hearts of Iron IV/history/states/ and /Hearts of Iron IV/map/strategicregions/ folders and the /Hearts of Iron IV/localisation/english/state\_names\_l\_english.yml file (for the English language).
-**The nudger will remove quotation marks from the state file, aside from the `name` attribute.** This can break the rest of the script that's located inside of them. Most commonly, this will break any [has\_dlc](<Triggers - Hearts of Iron 4 Wiki.md#has-dlc>) checks, which will result in the entirety of the state breaking thereafter.
+The state section of the nudger is used for defining the borders and names of states. Any state border changes will also automatically change the borders of the strategic regions that cover the states, taking provinces out of strategic regions completely for new states. Within the user directory, this edits the /Hearts of Iron IV/history/states/ and /Hearts of Iron IV/map/strategicregions/ folders and the /Hearts of Iron IV/localisation/english/state\_names\_l\_english.yml file (for the English language).  
+**The nudger will remove quotation marks from the state file, aside from the `name` attribute.** This can break the rest of the script that's located inside of them. Most commonly, this will break any [has\_dlc](<Triggers - Hearts of Iron 4 Wiki.md#has-dlc>) checks, which will result in the entirety of the state breaking thereafter.  
 **The nudger interprets version number–less [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) values as having a version of -1**, and writes that in the output. As the game only expects numeric values in the version number, this will break the localisation after that point, with an error of the `Expected quotation mark (") at line 113 and column 16 in ...` sort.
 
 Clicking onto a province is used to select a province. After a province is selected, `⇧Shift`-clicking onto a province causes the following behaviour, depending on the selected and clicked provinces:
@@ -177,7 +174,7 @@ Clicking onto a province is used to select a province. After a province is selec
 
 If a province or several not in any state are selected, it is possible to create a state. That requires entering a state name into the textbox and selecting "Create state".
 
-- **The state name must only contain [ASCII](http://en.wikipedia.org/wiki/ASCII) characters that are possible to use in filenames**. If there are any characters that aren't in ASCII, such as diacritics or non-Latin script, the game will crash to desktop instead of creating the state, but it will be able to remove the provinces from the old state first and save the changes there. Characters that are impossible to use in filenames include, on Windows, `\ / : * " < > |`.
+- **The state name must only contain [ASCII](http://en.wikipedia.org/wiki/ASCII) characters that are possible to use in filenames**. If there are any characters that aren't in ASCII, such as diacritics or non-Latin script, the game will crash to desktop instead of creating the state, but it will be able to remove the provinces from the old state first and save the changes there. Characters that are impossible to use in filenames include, on Windows, `\ / : * " < > |`.
 - **Creating a new state (and occasionally editing state borders) requires changing the building model positions and airport/rocket launch site locations to avoid crashes**.
 
 If the selected province(s) are in a state, it is possible to select "Open file" or "Delete state":
@@ -190,286 +187,70 @@ Among the buttons that can always be selected, there are "Delete all empty" and 
 - "Delete all empty" works similarly to deleting an individual state: it checks for all provinces that have no provinces in memory (taking unsaved changes into consideration). If it finds any, the state gets deleted from memory and the user directory. Afterwards, the game will try finding a file to use as the new state information for each of the deleted states.
 - "Find collision" detects provinces that are located in several states at the same time. When pressed, it will move the player's camera to one of such provinces and give a selection of which state it must remain in; upon making a choice, it will be removed from every other state.
 
-"Update" is used to disregard all unsaved changes and re-read the state files among the [loaded files](<Modding - Hearts of Iron 4 Wiki.md#loading-files>). If the state borders were manually changed, such as by moving the outputs into the mod files from the user directory, this is necessary to load them without restarting the game.
+"Update" is used to disregard all unsaved changes and re-read the state files among the [loaded files](<Modding - Hearts of Iron 4 Wiki.md#loading-files>). If the state borders were manually changed, such as by moving the outputs into the mod files from the user directory, this is necessary to load them without restarting the game.  
 "Save" is used to write all changes to the user directory. Upon doing so, the changes will be purged from memory and the game will re-read the state files among the [loaded files](<Modding - Hearts of Iron 4 Wiki.md#loading-files>). **If the state files in the user directory are overwritten or unloaded by mod files, it will appear that (some of) the changes will instantly revert, however they'll still be present in the user directory.** This will require moving the files into the mod's files and updating the state of the game with "Update". Only the files since the last fetching of files will be created or changed within the user directory after saving.
 
-### Buildings
+### <a id="buildings"></a> Buildings
 
-## Building types
+## <a id="building-types"></a>Building types
 
 *Main article: [Building modding](<Building modding - Hearts of Iron 4 Wiki.md>)*
 
 These are the different types of buildings in the game (Can also be found inside /Hearts of Iron IV/common/buildings/00\_buildings.txt):
+| Icon | Localised name | Internal name | Maximum level | Type |
+| --- | --- | --- | --- | --- |
+| <a id="infrastructure"></a> ![Infrastructure.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img2.png) | Infrastructure | infrastructure | 5 | Non-shared |
+| <a id="arms-factory"></a> ![Military factory.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img3.png) | Military factory | arms\_factory | 20 | Shared |
+| <a id="industrial-complex"></a> ![Civilian factory.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img4.png) | Civilian factory | industrial\_complex | 20 | Shared |
+| <a id="air-base"></a> ![Air base.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img5.png) | Air base | air\_base | 10 | Non-shared |
+| <a id="supply-node"></a> ![Supply hub.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img6.png) | Supply hub | supply\_node | 1 | Provincial |
+| <a id="rail-way"></a> ![Railway.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img7.png) | Railway | rail\_way | 5<a id="cite-ref-2"></a>[[2]](#cite-note-2) | Provincial |
+| <a id="naval-facility"></a> ![Naval engineering facility.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img8.png) | Naval Engineering Facility | naval\_facility | 1 | Provincial |
+| <a id="naval-base"></a> ![Naval base.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img9.png) | Naval base | naval\_base | 10 | Provincial |
+| <a id="bunker"></a> ![Land fort.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img10.png) | Land fort | bunker | 10 | Provincial |
+| <a id="coastal-bunker"></a> ![Coastal fort.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img11.png) | Coastal fort | coastal\_bunker | 10 | Provincial |
+| <a id="stronghold-network"></a> ![Stronghold Network.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img12.png) | Stronghold Network | stronghold\_network | 1 | Shared |
+| <a id="dockyard"></a> ![Naval dockyard.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img13.png) | Naval dockyard | dockyard | 20 | Shared |
+| <a id="anti-air-building"></a> ![Anti-air (building).png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img14.png) | Anti-air | anti\_air\_building | 5 | Non-shared |
+| <a id="synthetic-refinery"></a> ![Synthetic refinery.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img15.png) | Synthetic refinery | synthetic\_refinery | 3 | Shared |
+| <a id="fuel-silo"></a> ![Fuel silo.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img16.png) | Fuel silo | fuel\_silo | 15 | Shared |
+| <a id="radar-station"></a> ![Radar station.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img17.png) | Radar station | radar\_station | 6 | Non-shared |
+| <a id="mega-gun-emplacement"></a> ![Multi-Charge Large Caliber Gun.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img18.png) | Multi-Charge Large Caliber Gun(\*) | mega\_gun\_emplacement | 1 | Shared |
+| <a id="rocket-site"></a> ![Rocket site.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img19.png) | Rocket site(\*) | rocket\_site | 3 | Shared |
+| <a id="naval-supply-hub"></a> ![Naval supply hub.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img20.png) | Naval supply hub (\*) | naval\_supply\_hub | 1 | Provincial |
+| <a id="naval-headquarters"></a> ![Naval headquarters.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img21.png) | Naval headquarters (\*) | naval\_headquarters | 1 | Provincial |
+| <a id="nuclear-reactor"></a> ![Nuclear reactor.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img22.png) | Nuclear reactor | nuclear\_reactor | 1 | Shared |
+| <a id="nuclear-reactor-heavy-water"></a> ![Nuclear reactor.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img22.png) | Heavy Water Nuclear Reactor | nuclear\_reactor\_heavy\_water | 1 | Shared |
+| <a id="commercial-nuclear-reactor"></a> ![Civilian Nuclear Reactor.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img24.png) | Civilian Nuclear Reactor | commercial\_nuclear\_reactor | 1 | Shared |
+| <a id="nuclear-facility"></a> ![Nuclear research facility.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img25.png) | Nuclear Research Facility | nuclear\_facility | 1 | Provincial |
+| <a id="air-facility"></a> ![Aerodynamics and avionics facility.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img26.png) | Aerodynamics and Avionics Facility | air\_facility | 1 | Provincial |
+| <a id="land-facility"></a> ![Land warfare facility.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img27.png) | Land Warfare Facility | land\_facility | 1 | Provincial |
+| <a id="dam"></a> ![Dam.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img28.png) | Dam | dam | 1 | Provincial |
+| <a id="dam-mountain"></a> ![Dam.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img28.png) | Dam | dam\_mountain | 1 | Provincial |
+| <a id="canal-kiel"></a> ![Canal Locks.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img30.png) | Kiel Canal Locks | canal\_kiel | 1 | Provincial |
+| <a id="canal-panama"></a> ![Canal Locks.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img30.png) | Panama Canal Locks | canal\_panama | 1 | Provincial |
+| <a id="energy-infrastructure"></a> ![Reinforced electrical grid.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img32.png) | Reinforced electrical grid(\*) | energy\_infrastructure | 1 | Shared |
+| <a id="industrial-infrastructure"></a> ![High capacity electrical grid.png](media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img33.png) | High capacity electrical grid(\*) | industrial\_infrastructure | 1 | Shared |
 
-- **(item)**
-  - Localised name: Infrastructure
-  - Internal name: infrastructure
-  - Maximum level: 5
-  - Type: Non-shared
+Note that while railways and supply nodes are buildings, not all traditional building operations apply to them. Their starting level is defined [outside of state history](<Map modding - Hearts of Iron 4 Wiki.md#supply-nodes-and-railways>) and [a separate effect](<Effects - Hearts of Iron 4 Wiki.md#build-railway>) must be used to construct railways mid-game, with the default [add\_building\_construction](<Effects - Hearts of Iron 4 Wiki.md#add-building-construction>) or other building-related effects crashing the game.
 
-- **(item)**
-  - Localised name: Military factory
-  - Internal name: arms_factory
-  - Maximum level: 20
-  - Type: Shared
-
-- **(item)**
-  - Localised name: Civilian factory
-  - Internal name: industrial_complex
-  - Maximum level: 20
-  - Type: Shared
-
-- **(item)**
-  - Localised name: Air base
-  - Internal name: air_base
-  - Maximum level: 10
-  - Type: Non-shared
-
-- **(item)**
-  - Localised name: Supply hub
-  - Internal name: supply_node
-  - Maximum level: 1
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Railway
-  - Internal name: rail_way
-  - Maximum level: 5
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Naval Engineering Facility
-  - Internal name: naval_facility
-  - Maximum level: 1
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Naval base
-  - Internal name: naval_base
-  - Maximum level: 10
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Land fort
-  - Internal name: bunker
-  - Maximum level: 10
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Coastal fort
-  - Internal name: coastal_bunker
-  - Maximum level: 10
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Stronghold Network
-  - Internal name: stronghold_network
-  - Maximum level: 1
-  - Type: Shared
-
-- **(item)**
-  - Localised name: Naval dockyard
-  - Internal name: dockyard
-  - Maximum level: 20
-  - Type: Shared
-
-- **(item)**
-  - Localised name: Anti-air
-  - Internal name: anti_air_building
-  - Maximum level: 5
-  - Type: Non-shared
-
-- **(item)**
-  - Localised name: Synthetic refinery
-  - Internal name: synthetic_refinery
-  - Maximum level: 3
-  - Type: Shared
-
-- **(item)**
-  - Localised name: Fuel silo
-  - Internal name: fuel_silo
-  - Maximum level: 15
-  - Type: Shared
-
-- **(item)**
-  - Localised name: Radar station
-  - Internal name: radar_station
-  - Maximum level: 6
-  - Type: Non-shared
-
-- **(item)**
-  - Localised name:
-    ```text
-    Multi-Charge Large Caliber Gun
-    (*)
-    ```
-  - Internal name: mega_gun_emplacement
-  - Maximum level: 1
-  - Type: Shared
-
-- **(item)**
-  - Localised name:
-    ```text
-    Rocket site
-    (*)
-    ```
-  - Internal name: rocket_site
-  - Maximum level: 3
-  - Type: Shared
-
-- **(item)**
-  - Localised name:
-    ```text
-    Naval supply hub
-    (*)
-    ```
-  - Internal name: naval_supply_hub
-  - Maximum level: 1
-  - Type: Provincial
-
-- **(item)**
-  - Localised name:
-    ```text
-    Naval headquarters
-    (*)
-    ```
-  - Internal name: naval_headquarters
-  - Maximum level: 1
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Nuclear reactor
-  - Internal name: nuclear_reactor
-  - Maximum level: 1
-  - Type: Shared
-
-- **(item)**
-  - Localised name: Heavy Water Nuclear Reactor
-  - Internal name: nuclear_reactor_heavy_water
-  - Maximum level: 1
-  - Type: Shared
-
-- **(item)**
-  - Localised name: Civilian Nuclear Reactor
-  - Internal name: commercial_nuclear_reactor
-  - Maximum level: 1
-  - Type: Shared
-
-- **(item)**
-  - Localised name: Nuclear Research Facility
-  - Internal name: nuclear_facility
-  - Maximum level: 1
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Aerodynamics and Avionics Facility
-  - Internal name: air_facility
-  - Maximum level: 1
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Land Warfare Facility
-  - Internal name: land_facility
-  - Maximum level: 1
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Dam
-  - Internal name: dam
-  - Maximum level: 1
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Dam
-  - Internal name: dam_mountain
-  - Maximum level: 1
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Kiel Canal Locks
-  - Internal name: canal_kiel
-  - Maximum level: 1
-  - Type: Provincial
-
-- **(item)**
-  - Localised name: Panama Canal Locks
-  - Internal name: canal_panama
-  - Maximum level: 1
-  - Type: Provincial
-
-- **(item)**
-  - Localised name:
-    ```text
-    Reinforced electrical grid
-    (*)
-    ```
-  - Internal name: energy_infrastructure
-  - Maximum level: 1
-  - Type: Shared
-
-- **(item)**
-  - Localised name:
-    ```text
-    High capacity electrical grid
-    (*)
-    ```
-  - Internal name: industrial_infrastructure
-  - Maximum level: 1
-  - Type: Shared
-
-Note that while railways and supply nodes are buildings, not all traditional building operations apply to them. Their starting level is defined [outside of state history](<Map modding - Hearts of Iron 4 Wiki.md#supply-nodes-and-railways>) and [a separate effect](<Effect - Hearts of Iron 4 Wiki.md#build-railway>) must be used to construct railways mid-game, with the default [add\_building\_construction](<Effect - Hearts of Iron 4 Wiki.md#add-building-construction>) or other building-related effects crashing the game.
-
-## State categories
+## <a id="state-categories"></a>State categories
 
 The base game state categories and their corresponding number of building slots:
-
-- **Wasteland**
-  - Internal name: wasteland
-  - Amount of slots: 0
-
-- **Enclave**
-  - Internal name: enclave
-  - Amount of slots: 0
-
-- **Tiny island**
-  - Internal name: tiny_island
-  - Amount of slots: 0
-
-- **Pastoral region**
-  - Internal name: pastoral
-  - Amount of slots: 1
-
-- **Small island**
-  - Internal name: small_island
-  - Amount of slots: 1
-
-- **Rural region**
-  - Internal name: rural
-  - Amount of slots: 2
-
-- **Developed Rural Region**
-  - Internal name: town
-  - Amount of slots: 4
-
-- **Sparse Urban Region**
-  - Internal name: large_town
-  - Amount of slots: 5
-
-- **Urban Region**
-  - Internal name: city
-  - Amount of slots: 6
-
-- **Dense Urban Region**
-  - Internal name: large_city
-  - Amount of slots: 8
-
-- **Metropolis Region**
-  - Internal name: metropolis
-  - Amount of slots: 10
-
-- **Megalopolis Region**
-  - Internal name: megalopolis
-  - Amount of slots: 12
+| Localised name | Internal name | Amount of slots | Color |
+| --- | --- | --- | --- |
+| <a id="wasteland"></a> Wasteland | wasteland | 0 |  |
+| <a id="enclave"></a> Enclave | enclave | 0 |  |
+| <a id="tiny-island"></a> Tiny island | tiny\_island | 0 |  |
+| <a id="pastoral"></a> Pastoral region | pastoral | 1 |  |
+| <a id="small-island"></a> Small island | small\_island | 1 |  |
+| <a id="rural"></a> Rural region | rural | 2 |  |
+| <a id="town"></a> Developed Rural Region | town | 4 |  |
+| <a id="large-town"></a> Sparse Urban Region | large\_town | 5 |  |
+| <a id="city"></a> Urban Region | city | 6 |  |
+| <a id="large-city"></a> Dense Urban Region | large\_city | 8 |  |
+| <a id="metropolis"></a> Metropolis Region | metropolis | 10 |  |
+| <a id="megalopolis"></a> Megalopolis Region | megalopolis | 12 |  |
 
 State categories can be added in /Hearts of Iron IV/common/state\_category/\*.txt files. Each state category is contained within the `state_categories = { ... }`, as a code block with the name of the state category's ID.
 
@@ -493,7 +274,7 @@ state_categories={
 
 The `set_state_category = category_id` effect can be used to change the state category of a state mid-game.
 
-**[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**
+<a id="cite-note-1"></a>1. [↑](#cite-ref-1) `NDefines.NCountry.POPULATION_YEARLY_GROWTH_BASE = 0.015`
+<a id="cite-note-2"></a>2. [↑](#cite-ref-2) `NDefines.NSupply.MAX_RAILWAY_LEVEL = 5` in [Defines](<Defines - Hearts of Iron 4 Wiki.md>).
 
-1. [↑](#cite-ref-1) `NDefines.NCountry.POPULATION_YEARLY_GROWTH_BASE = 0.015`
-2. [↑](#cite-ref-2) `NDefines.NSupply.MAX_RAILWAY_LEVEL = 5` in [Defines](<Defines - Hearts of Iron 4 Wiki.md>).
+**[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**

@@ -1,6 +1,7 @@
 name = "hoi4_focus_tree_auditor"
 description = "Active auditor and small-patch subagent for HOI4 focus trees. Checks and can patch route logic, prerequisites, mutual exclusions, rewards, icons, localisation, AI, formable links, and simplifications inside the current task scope."
-model_reasoning_effort = "high"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Focus Patch", "Focus Audit"]
 

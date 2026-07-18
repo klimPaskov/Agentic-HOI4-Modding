@@ -9,10 +9,9 @@
 - [Goals](#goals)
 - [Manifests](#manifests)
 
-
 ---
 
-## Structure
+## <a id="structure"></a>Structure
 
 The file structure is as follows:
 
@@ -24,9 +23,9 @@ The file structure is as follows:
 - /Hearts of Iron IV/common/factions/rules/groups/\*.txt - Groups for rules.
 - /Hearts of Iron IV/common/factions/templates/\*.txt - Faction [templates](#templates).
 
-## Triggers and Effects
+## <a id="triggers-and-effects"></a>Triggers and Effects
 
-### List of faction-related effects
+### <a id="list-of-faction-related-effects"></a>List of faction-related effects
 
 - create\_faction - creates a faction without a template (OBSOLETE)
 - create\_faction\_from\_template - the new fancy way of creating factions
@@ -46,7 +45,7 @@ The file structure is as follows:
 - add\_faction\_influence\_score - adds influence to the country in the faction
 - add\_faction\_influence\_ratio - adds influence to the country based on the given ratio of the faction's total influence
 
-### List of faction-related triggers
+### <a id="list-of-faction-related-triggers"></a>List of faction-related triggers
 
 - faction\_manifest\_fulfillment - compares the current country faction's manifest fulfillmens to a value
 - has\_faction\_template - checks if the current country is in a faction created from a template
@@ -60,7 +59,7 @@ The file structure is as follows:
 - has\_manpower\_to\_become\_leader - checks if the current country exceeds the current faction leader and its subjects in deployed manpower
 - has\_industry\_to\_become\_leader - checks if the current country exceeds the faction leader in number of factories
 
-### List of faction-related modifiers
+### <a id="list-of-faction-related-modifiers"></a>List of faction-related modifiers
 
 - faction\_influence\_war\_score\_factor - war score modifier for faction influence
 - faction\_influence\_industrial\_capacity\_factor - industrial capacity modifier for faction influence
@@ -69,15 +68,15 @@ The file structure is as follows:
 - faction\_influence\_expeditionary\_force\_provider\_factor - expeditionary force provider modifier for faction influence
 - faction\_influence\_expeditionary\_force\_reciver\_factor - expeditionary force reciver modifier for faction influence
 
-## Templates
+## <a id="templates"></a>Templates
 
 TODO
 
-## Goals
+## <a id="goals"></a>Goals
 
 TODO
 
-## Manifests
+## <a id="manifests"></a>Manifests
 
 TODO
 

@@ -1,6 +1,7 @@
 name = "hoi4_generated_feature_art"
 description = "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, or large feature presentation, UI, flag, faction emblem, and fictional portrait art for HOI4 mods. Does not edit GFX or gameplay files."
-model_reasoning_effort = "high"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Leader Portraits", "Source-researched text or audio packages", "Report Events", "News Events", "Other Art"]
 

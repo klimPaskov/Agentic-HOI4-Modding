@@ -1,6 +1,7 @@
 name = "hoi4_feature_completion_auditor"
 description = "Read-only completion auditor for HOI4 mod feature implementation. Compares specs, plans, prompts, and repo files, then flags missing mechanics, fallbacks, simplifications, docs gaps, asset gaps, validation gaps, and unresolved addenda."
-model_reasoning_effort = "high"
+model = "gpt-5.6-sol"
+model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Completion Auditor"]
 

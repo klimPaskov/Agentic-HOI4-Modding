@@ -1,6 +1,7 @@
 name = "hoi4_scripted_system_architect"
 description = "Active architect and narrow implementation subagent for reusable HOI4 scripted effects, scripted triggers, script constants, event targets, meta effects, variables, tuning tables, formable helpers, scripted GUI helpers, and dynamic helper logic."
-model_reasoning_effort = "high"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Script Architect", "Systems Patch", "Systems Architect", "Helper Patch", "Logic Architect"]
 

@@ -10,7 +10,6 @@
   - [Locator](#locator)
 - [Adding an Animation](#adding-an-animation)
 
-
 ---
 
 Entities are definitions used by Hearts of Iron IV to link models with script objects that are used in places such as `ambient_objects.txt`.
@@ -19,7 +18,7 @@ Both **.gfx** and **.asset** files are found in /Hearts of Iron IV/gfx/entities/
 
 Animations **.asset** files are found in /Hearts of Iron IV/gfx/models/.
 
-## Adding a Mesh
+## <a id="adding-a-mesh"></a>Adding a Mesh
 
 To add a mesh, you need to add a **.gfx** file in your mod that includes a mesh definition. Here is a generic example:
 
@@ -28,10 +27,10 @@ objectTypes = {
     pdxmesh = {
         name = "name_of_mesh"
         file = "gfx/models/name_of_mesh.mesh"
-        animation = { id = "idle" type = "name_of_animation" }
+        animation = { id = "idle" type = "name_of_animation" }				
         scale = 1.0
     }
-}
+}	
 ```
 
 - **name** is the name of the mesh that is then referred to in an **.asset** file.
@@ -39,14 +38,14 @@ objectTypes = {
 - **animation** is a scope added for each animation associated with the mesh.
 - **scale** is a scalar for the size of the model.
 
-### Animation
+### <a id="animation"></a>Animation
 
 The animation scope contains these attributes:
 
 - **id** is the name of the animation within the pdxmesh.
 - **type** is the name of the actual animation defined in an .asset file.
 
-## Adding an Entity
+## <a id="adding-an-entity"></a>Adding an Entity
 
 Once a mesh is defined, you then need to add an entity definition to use it within script. This is done within a **.asset** file that you need to add within your mod.
 
@@ -67,38 +66,38 @@ entity = {
         position = { 0.0 0.0 0.0 }
     }
 
-    state = {
-        name = "idle"
+    state = { 
+        name = "idle" 
         state_time = 0.0
-
+        
         animation = "idle"
         animation_blend_time = 0.0
         animation_speed = 1.0
         looping = yes
-
+        
         next_state = "idle"
-
+        
         chance = 2
         propagate_state = {
             node = "idle"
         }
-
+        
         event = {
             time = 1.0
             trigger_once = yes
-
+            
             node = "example_node"
             light=  "example_light"
-
+            
             particle = "example_particle"
             keep_particle = yes
-
+            
             sound = {
                 soundeffect = "example_soundeffect"
             }
         }
     }
-
+    
     attach = {
         name = "name"
         <node> = "example_entity"
@@ -118,7 +117,7 @@ entity = {
 
 Note that the available states depending on where the entity is used (i.e. a unit entity will get combat states, where as a building entity will get building states, etc). All entities share the **idle** state.
 
-### State
+### <a id="state"></a>State
 
 The state scope contains these attributes:
 
@@ -133,7 +132,7 @@ The state scope contains these attributes:
 - **chance** determines the chance of this state entry occuring if it shares its name with multiple other state entries (i.e. training, whether to pushup, jumping jack, etc.)
 - **propagate\_state** propagates the current state to the specified node.
 
-### Event
+### <a id="event"></a>Event
 
 The event scope contains these attributes:
 
@@ -145,25 +144,25 @@ The event scope contains these attributes:
 - **node** specifies a locator node or model node to set the event position origin to.
 - **light** specifies a light to display.
 
-### Attach
+### <a id="attach"></a>Attach
 
 - **name** is the name of the attached entity.
 - **<node>** is the name of the node from the entities skeleton, and the value is the entity to attach.
 
-### Sound
+### <a id="sound"></a>Sound
 
 The sound scope contains these attributes:
 
 - **soundeffect** is the sound effect to play.
 
-### Locator
+### <a id="locator"></a>Locator
 
 The locator scope contains these attributes:
 
 - **name** is the name of the locator node.
 - **position** is the position of the location node, with the values being x, y and z co-ordinates.
 
-## Adding an Animation
+## <a id="adding-an-animation"></a>Adding an Animation
 
 Animations for models are added in a **.asset** file found in /Hearts of Iron IV/gfx/models/ or the sub-folders.
 

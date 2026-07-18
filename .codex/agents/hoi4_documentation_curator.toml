@@ -1,6 +1,7 @@
 name = "hoi4_documentation_curator"
 description = "Documentation cleanup and consistency subagent for HOI4 mods. Reconciles specs, plans, docs, handoffs, manifests, prompts, reports, and README files with accepted decisions and current implementation evidence. Does not edit gameplay files or external tabular data files."
-model_reasoning_effort = "high"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Docs Curator", "Docs Cleanup", "Archive"]
 

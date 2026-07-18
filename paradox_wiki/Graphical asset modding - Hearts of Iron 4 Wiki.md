@@ -1,6 +1,6 @@
 # Table of contents
 
-- [spriteType](#spritetype)
+  - [spriteType](#spritetype)
 - [frameAnimatedSpriteType](#frameanimatedspritetype)
 - [progressbartype](#progressbartype)
 - [corneredTileSpriteType](#corneredtilespritetype)
@@ -8,8 +8,7 @@
 - [animatedmaptext](#animatedmaptext)
 - [textcolors](#textcolors)
 - [bitmapfont](#bitmapfont)
-- [bitmapfont_override](#bitmapfont_override)
-
+- [bitmapfont\override](#bitmapfont-override)
 
 ---
 
@@ -19,9 +18,9 @@ Graphical asset files can be found in /Hearts of Iron IV/interface/\*.gfx.
 
 Note that for many assets, such as technology and equipment asset definitions, the image can be specified for a specific tag, i.e. `GFX_ENG_<name>`, which only displays the asset for the specified tag. This will override the base asset of the same name. This also applies to graphical culture, i.e. `GFX_african_<name>`.
 
-# Sprite Types
+# <a id="sprite-types"></a>Sprite Types
 
-### spriteType
+### <a id="spritetype"></a>spriteType
 
 A **spriteType** and **textSpriteType** asset entry follows this format:
 
@@ -32,11 +31,11 @@ spriteTypes = {
         texturefile = <path>
         noOfFrames = <int>
         effectFile = <path>
-
+        
         allwaystransparent = <bool>
         legacy_lazy_load = <bool>
         transparencecheck = <bool>
-
+        
         animation = {
             animationmaskfile = <path>
             animationtexturefile = <path>
@@ -46,7 +45,7 @@ spriteTypes = {
             animationdelay = <float>
             animationblendmode = <mode>
             animationtype = <type>
-            animationrotationoffset = {
+            animationrotationoffset = { 
                 x = <float>
                 y = <float>
             }
@@ -92,7 +91,7 @@ spriteTypes = {
 
 Be wary that the maximum file size for a sprite .dds files is around 16MB
 
-## frameAnimatedSpriteType
+## <a id="frameanimatedspritetype"></a>frameAnimatedSpriteType
 
 A **frameAnimatedSpriteType** asset entry follows this format:
 
@@ -103,12 +102,12 @@ spriteTypes = {
         texturefile = "<path>"
         noOfFrames = <int>
         effectFile = "<path>"
-
+        
         animation_rate_fps = <int>
         looping = <bool>
         play_on_show = <bool>
         pause_on_loop = <float>
-
+        
         allwaystransparent = <bool>
     }
 }
@@ -132,7 +131,7 @@ spriteTypes = {
 
 **allwaystransparent** defines whether the image is bound by its alpha channel with regards to player clicks. Otherwise the bounding box is the image dimensions.
 
-## progressbartype
+## <a id="progressbartype"></a>progressbartype
 
 A **progressbartype** asset entry is used for progress bars. It follows this format:
 
@@ -144,7 +143,7 @@ spriteTypes = {
         textureFile2 = "<path>"
         color = { <r> <g> <b> [<a>] }
         colortwo = { <r> <g> <b> [<a>] }
-        size = {
+        size = { 
             x = <int>
             y = <int>
         }
@@ -155,17 +154,17 @@ spriteTypes = {
 }
 ```
 
-**name** is the name you have given to the asset. This may be prefixed with various other segments, such as *idea* for idea images, etc.
-**textureFile1** is the image to use for the progress bar.
-**textureFile2** is the image to use for the background of the progress bar.
-**color** defines the unprogressed color of the bar. It is decimal RGBA. Alpha is optional.
-**colortwo** defines the progressed color of the bar. It is decimal RGBA. Alpha is optional.
-**size** defines the size of the progress bar section in height and width.
-**effectFile** is used to define an effect state to apply to the image, i.e. the button press effect on a button image. Effects are found in /Hearts of Iron IV/gfx/FX/\*.lua. Multiple can be defined to add multiple effects.
-**horizontal** defines whether the progress bar is horizontal or not. By default a bar is horizontal.
+**name** is the name you have given to the asset. This may be prefixed with various other segments, such as *idea* for idea images, etc.  
+**textureFile1** is the image to use for the progress bar.  
+**textureFile2** is the image to use for the background of the progress bar.  
+**color** defines the unprogressed color of the bar. It is decimal RGBA. Alpha is optional.  
+**colortwo** defines the progressed color of the bar. It is decimal RGBA. Alpha is optional.  
+**size** defines the size of the progress bar section in height and width.  
+**effectFile** is used to define an effect state to apply to the image, i.e. the button press effect on a button image. Effects are found in /Hearts of Iron IV/gfx/FX/\*.lua. Multiple can be defined to add multiple effects.  
+**horizontal** defines whether the progress bar is horizontal or not. By default a bar is horizontal.  
 **steps** defines the precision of the progressbar or into how many frames it's split into. Defaults to 100 if unset.
 
-## corneredTileSpriteType
+## <a id="corneredtilespritetype"></a>corneredTileSpriteType
 
 A **corneredTileSpriteType** asset entry is used for tiling textures that tile to fill the size of the interface element they are used in. It follows this format:
 
@@ -184,10 +183,10 @@ spriteTypes = {
             y = <int>
         }
         effectFile = <path>
-
+        
         allwaystransparent = <bool>
         tilingCenter = <bool>
-
+        
         looping = <bool>
         animation_rate_spf = <int>
     }
@@ -214,7 +213,7 @@ spriteTypes = {
 
 **animation\_rate\_spf** defiens the framerate at which the animation plays.
 
-## maskedShieldType
+## <a id="maskedshieldtype"></a>maskedShieldType
 
 A **maskedShieldType** asset entry is used for country shields. It follows this format:
 
@@ -237,9 +236,9 @@ spriteTypes = {
 
 **effectFile** is used to define an effect state to apply to the image, i.e. the button press effect on a button image. Effects are found in /Hearts of Iron IV/gfx/FX/\*.lua. Multiple can be defined to add multiple effects.
 
-# Object Types
+# <a id="object-types"></a>Object Types
 
-## animatedmaptext
+## <a id="animatedmaptext"></a>animatedmaptext
 
 A **animatedmaptext** asset entry is used for text that appears from the map. It follows this format:
 
@@ -252,7 +251,7 @@ objectTypes = {
             text = <string>
             color = { <r> <g> <b> }
             font = <path>
-            position = {
+            position = { 
                 x = <int>
                 y = <int>
             }
@@ -273,9 +272,9 @@ objectTypes = {
 
 **textblock** controls the attributes of the text that appears.
 
-# Font Types
+# <a id="font-types"></a>Font Types
 
-## textcolors
+## <a id="textcolors"></a>textcolors
 
 A **textcolors** entry defines the text colors used in localization with the § symbol. It follows this format:
 
@@ -291,7 +290,7 @@ bitmapfonts = {
 
 **RGB** is the color that the symbol applies. It is integer RGB.
 
-## bitmapfont
+## <a id="bitmapfont"></a>bitmapfont
 
 A **bitmapfont** entry defines a font used in the game. It follows this format:
 
@@ -331,7 +330,7 @@ bitmapfonts = {
 
 **cursor\_offset** offsets the text cursor for the font. Defines the *x* position and then the *y* position.
 
-## bitmapfont\_override
+## <a id="bitmapfont-override"></a>bitmapfont\_override
 
 A **bitmapfont\_override** entry is used to override a font for a specific locale. It follows this format:
 

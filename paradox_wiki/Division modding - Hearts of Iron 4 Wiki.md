@@ -10,28 +10,23 @@
   - [Non-Man The Guns](#non-man-the-guns)
 - [List of Units](#list-of-units)
   - [Regiments](#regiments)
-  - [Support Companies](#support-companies)
   - [Aircraft](#aircraft)
-  - [Ship Categories](#ship-categories)
-  - [MTG Ship Equipment](#mtg-ship-equipment)
-  - [Non-MTG Ship Equipment](#non-mtg-ship-equipment)
 - [References](#references)
-
 
 ---
 
 *This article is for creating divisions as part of a country's military. For sub-units making up the construction of division templates, see [Unit modding](<Unit modding - Hearts of Iron 4 Wiki.md>).*
 
-Units are the foundations of Hearts of Iron, and can be broken down into air wings, divisions and naval task forces. The definitions are located within /Hearts of Iron IV/history/units/\*.txt files and can be loaded by using the [load\_oob effect](<Effect - Hearts of Iron 4 Wiki.md#load-oob>) or [various attributes inside of country history](<Country creation - Hearts of Iron 4 Wiki.md#order-of-battle>). The filename is irrelevant for interpretation, but it must match up with the effect or the attribute used to load it.
+Units are the foundations of Hearts of Iron, and can be broken down into air wings, divisions and naval task forces. The definitions are located within /Hearts of Iron IV/history/units/\*.txt files and can be loaded by using the [load\_oob effect](<Effects - Hearts of Iron 4 Wiki.md#load-oob>) or [various attributes inside of country history](<Country creation - Hearts of Iron 4 Wiki.md#order-of-battle>). The filename is irrelevant for interpretation, but it must match up with the effect or the attribute used to load it.
 
-The game uses orders of battle to define the state of the country's military. Traditionally, the starting equipment production is defined in them, using an [effect](<Effect - Hearts of Iron 4 Wiki.md>) block. Optionally, the current focus progress may be included.
-**Each order of battle must be loaded in order for the units to show up.** For the starting state of the country's military, [this is done in country history](<Country creation - Hearts of Iron 4 Wiki.md#order-of-battle>). [The load\_oob effect](<Effect - Hearts of Iron 4 Wiki.md#load-oob>) can be used to load one mid-game, which will add the information in the order of battle to the current information of the country, creating division templates and units and executing the effects.
+The game uses orders of battle to define the state of the country's military. Traditionally, the starting equipment production is defined in them, using an [effect](<Effects - Hearts of Iron 4 Wiki.md>) block. Optionally, the current focus progress may be included.  
+**Each order of battle must be loaded in order for the units to show up.** For the starting state of the country's military, [this is done in country history](<Country creation - Hearts of Iron 4 Wiki.md#order-of-battle>). [The load\_oob effect](<Effects - Hearts of Iron 4 Wiki.md#load-oob>) can be used to load one mid-game, which will add the information in the order of battle to the current information of the country, creating division templates and units and executing the effects.
 
 The internal names for sub-units can be found in /Hearts of Iron IV/common/units/\*.txt files, [localisation can be checked as well](<Modding - Hearts of Iron 4 Wiki.md#searching-multiple-files>).
 
-## Land units
+## <a id="land-units"></a>Land units
 
-The land unit order of battle is usually the one that's loaded with `oob` or `set_oob` in country history. Most commonly, one is used since most definitions don't differ by DLC. However, if tank equipment types are referenced, such as when a unit is forced to use a certain tank equipment type or starting equipment production includes tanks, this is split into 2 files divided by the ![No Step Back](media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img2.png)No Step Back DLC, with an if statement in the place that loads it deciding whether one should be loaded, such as the following in a country history file:
+The land unit order of battle is usually the one that's loaded with `oob` or `set_oob` in country history. Most commonly, one is used since most definitions don't differ by DLC. However, if tank equipment types are referenced, such as when a unit is forced to use a certain tank equipment type or starting equipment production includes tanks, this is split into 2 files divided by the ![No Step Back](media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img2.png) No Step Back DLC, with an if statement in the place that loads it deciding whether one should be loaded, such as the following in a country history file:
 
 ```text
 if = {
@@ -41,9 +36,11 @@ if = {
 }
 ```
 
-### Division template
+### <a id="division-template"></a>Division template
 
-*See also: [Effect § division\_template](<Effect - Hearts of Iron 4 Wiki.md#division-template>)*
+<a id="division-templates"></a>
+
+*See also: [Effect § division\_template](<Effects - Hearts of Iron 4 Wiki.md#division-template>)*
 
 Land units require a template of some sort, which assigns the necessary information. The template definition is equivalent to the `division_template` effect internally. A simple template can be defined as such:
 
@@ -66,7 +63,7 @@ division_template = {
 - `regiments = { ... }` and `support = { ... }` decide the sub-units of the template, meaning combat battalions and support companies respectively. In particular:
   - `subunit = { x = 0 y = 0 }` decides the placement of the specified sub-unit. The coordinates represent the [Cartesian coordinate system](http://en.wikipedia.org/wiki/Cartesian_coordinate_system), where (0,0) is the top-left corner, x goes left-to-right, and y goes up-to-down. For a unit to be placed as a support company, it must have `group = support` in its definition, and to be placed in combat battalions, it must have a different group. The group cannot change in a single y column.
 
-:   By default, the combat battalions have 5 columns and 5 rows, while the support companies have 1 column and 5 rows. The max index is one less than the total amount.
+:   By default, the combat battalions have 5 columns and 5 rows, while the support companies have 1 column and 5 rows.<a id="cite-ref-1"></a>[[1]](#cite-note-1) The max index is one less than the total amount.
 
 There are also optional arguments:
 
@@ -78,7 +75,7 @@ There are also optional arguments:
 - `template_counter = 10` is used to override the default icon used for the position. The particular example with 10 will make sure that the sprites with the name of `GFX_div_templ_10_large` and `GFX_div_templ_10_small` will get used.
 - `override_model = GER_infantry_entity` is used to change the [entity](<Entity modding - Hearts of Iron 4 Wiki.md>) that is used by divisions made from this template. Defaults to automatically determining based on the sub-units if unset.
 
-### Division placement
+### <a id="division-placement"></a>Division placement
 
 The `units = { ... }` block is used for positioning land and naval divisions. In particular, a land division placement is done via `division = { ... }`:
 
@@ -126,34 +123,34 @@ There are these mandatory arguments in addition to the name:
 
 There are also optional arguments:
 
-- `start_experience_factor = 0.2` sets the experience level of the division (from Greens to Veterans) in the range from 0 to 1. If unset, defaults to 0. The experience level boundaries in the base game are `{ 0.1, 0.3, 0.75, 0.9 }`.
+- `start_experience_factor = 0.2` sets the experience level of the division (from Greens to Veterans) in the range from 0 to 1. If unset, defaults to 0. The experience level boundaries in the base game are `{ 0.1, 0.3, 0.75, 0.9 }`.<a id="cite-ref-2"></a>[[2]](#cite-note-2)
 - `start_equipment_factor = 0.5` decides the starting equipment level of the division, not deciding on the manpower. The equipment is not subtracted from the reserves of the country. If unset, defaults to 1.
 - `start_manpower_factor = 0.3` decides the starting manpower level of the division. If unset, then it's automatically subtracted from the reserves of the country until the highest possible level.
 - `force_equipment_variants = { ... }` is a set of equipment types that the division should use, replacing the default. Each entry in there is `equipment_type = { ... }`, which may include:
   - `owner = TAG` is the owner of the equipment that should be used. This should be the same as the country which gets the order of battle.
   - `creator = TAG` is the original creator of the equipment that should be used. This is used to determine the variants, and it defaults to the owner if not specified.
   - `amount = 14` is how much of the equipment should be there. The rest of required equipment within the archetype will remain ungiven.
-  - `version_name = "Variant's name"` is the name of the equipment variant that should be used. If the equipment type requires a variant to use, such as tanks in ![No Step Back](media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img3.png)No Step Back, this is mandatory. Otherwise, this is optional.
+  - `version_name = "Variant's name"` is the name of the equipment variant that should be used. If the equipment type requires a variant to use, such as tanks in ![No Step Back](media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img3.png) No Step Back, this is mandatory. Otherwise, this is optional.
 - `officer = { ... }` is a character definition that will be used for the divisional commander if promoted to a commander or the officer corps system is used. In particular, these attributes are common inside:
   - `name = loc_key` is the [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) key to be used as the division commander's name.
   - `portraits = { army = { large = "GFX_portrait_SCO_character" small = "GFX_idea_SCO_character" } }` is the portrait that the division commander must use. The large portrait will be used for the corps commander promotion and the small portrait will be used for the officer corps system. If both are unset, [randomly generates a portrait](<Country creation - Hearts of Iron 4 Wiki.md#character-portraits>). If the large is set, the small portrait will default to the name of large portrait with \_small appended to the end.
 
-## Equipment production
+## <a id="equipment-production"></a>Equipment production
 
-*Main article: [Effect § add\_equipment\_production](<Effect - Hearts of Iron 4 Wiki.md#add-equipment-production>)*
+*Main article: [Effect § add\_equipment\_production](<Effects - Hearts of Iron 4 Wiki.md#add-equipment-production>)*
 
-The equipment production is simulated using the `instant_effect = { ... }` block. This is a regular [effect](<Effect - Hearts of Iron 4 Wiki.md>) block, any effect can be used here. Usually, the production is added in this manner:
+The equipment production is simulated using the `instant_effect = { ... }` block. This is a regular [effect](<Effects - Hearts of Iron 4 Wiki.md>) block, any effect can be used here. Usually, the production is added in this manner:
 
 ```text
 instant_effect = {
     add_equipment_production = {
         equipment = {
-        type = infantry_equipment_0
-        creator = "ARG"
-    }
-    requested_factories = 1
-    progress = 0.19
-    efficiency = 100
+	    type = infantry_equipment_0
+	    creator = "ARG"
+	}
+	requested_factories = 1
+	progress = 0.19
+	efficiency = 100
     }
 }
 ```
@@ -163,12 +160,12 @@ The `add_equipment_production = { ... }` has these attributes:
 - `equipment = { ... }` decides on which equipment specifically should be made, in particular:
   - `creator = TAG` is the creator of the equipment. Usually it's the same person who makes the equipment, but it may be different for lend-leases.
   - `type = infantry_equipment_0` is the exact equipment type that should be produced. The technology to unlock it, if needed, must be researched by the creator. Equipment can be found in /Hearts of Iron IV/common/units/equipment/\*.txt files.
-  - `version_name = "Variant name"` is the variant that should be used for equipment, [usually defined in country history](<Country creation - Hearts of Iron 4 Wiki.md#variants>). This is mandatory if the equipment requires a variant to produce, such as ships in ![Man the Guns](media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img5.png)Man the Guns or airplanes in ![By Blood Alone](media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img6.png)By Blood Alone. Otherwise, it's optional.
+  - `version_name = "Variant name"` is the variant that should be used for equipment, [usually defined in country history](<Country creation - Hearts of Iron 4 Wiki.md#variants>). This is mandatory if the equipment requires a variant to produce, such as ships in ![Man the Guns](media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img5.png) Man the Guns or airplanes in ![By Blood Alone](media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img6.png) By Blood Alone. Otherwise, it's optional.
 - `requested_factories = 1` is the amount of military factories or dockyards that should be dedicated towards producing this equipment type. If unfulfilled, the factories will be assigned into the queue.
 - `progress = 0.2` is used to assign the current amount of progress towards a single piece of equipment being finished. This is usually changed for expensive equipment, such as battleships.
 - `efficiency = 100` is, with 0 as 0% and 100 as 100%, the production efficiency which the factories should have immediately.
 
-## Adding Air Wings
+## <a id="adding-air-wings"></a>Adding Air Wings
 
 ```text
 air_wings = {
@@ -187,9 +184,9 @@ air_wings = {
 - **Owner** is who created the type of aircraft. Does not need to be the country you are making the file for.
 - **Amount** is how many of that type of equipment is in that air wing.
 
-## Adding Navies
+## <a id="adding-navies"></a>Adding Navies
 
-### Man the Guns
+### <a id="man-the-guns"></a>Man the Guns
 
 ```text
 units = {
@@ -203,7 +200,7 @@ units = {
                 name = "NRB Minas Gerasis" # Name 3
                 pride_of_the_fleet = yes
                 definition = battleship
-                equipment = {
+                equipment = { 
                     ship_hull_heavy_1 = {
                         amount = 1
                         owner = BRA
@@ -248,7 +245,7 @@ units = {
 
 Note: The owner or creator country needs to have the technology unlocked and the version needs to exist in their countries history file.
 
-### Non-Man The Guns
+### <a id="non-man-the-guns"></a>Non-Man The Guns
 
 The only main difference between this section and the Man The Guns section is the equipment.
 
@@ -288,9 +285,9 @@ units = {
 - **Owner** is who created the equipment the ship uses.
 - **Version Name** is for custom classes of ship. Optional
 
-## List of Units
+## <a id="list-of-units"></a>List of Units
 
-### Regiments
+### <a id="regiments"></a>Regiments
 
 ```text
 infantry
@@ -334,17 +331,14 @@ medium_tank_destroyer_brigade
 heavy_tank_destroyer_brigade
 super_heavy_tank_destroyer_brigade
 modern_tank_destroyer_brigade
-```
-
-### Support Companies
-
-```text
+`### <a id="support-companies"></a>Support Companies`
 anti_air
 anti_tank
 armored_car_recon
 artillery
 engineer
 field_hospital
+light_tank_recon
 logistics_company
 maintenance_company
 military_police
@@ -354,7 +348,7 @@ rocket_artillery
 signal_company
 ```
 
-### Aircraft
+### <a id="aircraft"></a>Aircraft
 
 CV references the carrier variant of the aircraft. All aircraft have a carrier variant unless otherwise specified.
 
@@ -400,11 +394,7 @@ strat_bomber_equipment_3
 jet_strat_bomber_equipment_1
 
 rocket_suicide_equipment_1
-```
-
-### Ship Categories
-
-```text
+`### <a id="ship-categories"></a>Ship Categories`
 battleship
 carrier
 destroyer
@@ -412,11 +402,7 @@ battle_cruiser
 heavy_cruiser
 light_cruiser
 submarine
-```
-
-### MTG Ship Equipment
-
-```text
+`### <a id="mtg-ship-equipment"></a>MTG Ship Equipment`
 ship_hull_carrier_1
 ship_hull_carrier_2
 ship_hull_carrier_3
@@ -457,11 +443,7 @@ ship_hull_cruiser_coastal_defense_ship
 
 SH_battleship_1
 SH_battleship_2
-```
-
-### Non-MTG Ship Equipment
-
-```text
+`### <a id="non-mtg-ship-equipment"></a>Non-MTG Ship Equipment`
 carrier_1
 carrier_2
 carrier_3
@@ -496,9 +478,9 @@ submarine_3
 submarine_4
 ```
 
-## References
+## <a id="references"></a>References
 
-1. [↑](#cite-ref-1) `NDefines.NMilitary.MAX_DIVISION_BRIGADE_WIDTH = 5`, `NDefines.NMilitary.MAX_DIVISION_BRIGADE_HEIGHT = 5`, `NDefines.NMilitary.MAX_DIVISION_SUPPORT_WIDTH = 1`, and `NDefines.NMilitary.MAX_DIVISION_SUPPORT_HEIGHT = 5` in [Defines](<Defines - Hearts of Iron 4 Wiki.md>)
-2. [↑](#cite-ref-2) `NDefines.NMilitary.UNIT_EXP_LEVELS = { 0.1, 0.3, 0.75, 0.9 }` in [Defines](<Defines - Hearts of Iron 4 Wiki.md>).
+<a id="cite-note-1"></a>1. [↑](#cite-ref-1) `NDefines.NMilitary.MAX_DIVISION_BRIGADE_WIDTH = 5`, `NDefines.NMilitary.MAX_DIVISION_BRIGADE_HEIGHT = 5`, `NDefines.NMilitary.MAX_DIVISION_SUPPORT_WIDTH = 1`, and `NDefines.NMilitary.MAX_DIVISION_SUPPORT_HEIGHT = 5` in [Defines](<Defines - Hearts of Iron 4 Wiki.md>)
+<a id="cite-note-2"></a>2. [↑](#cite-ref-2) `NDefines.NMilitary.UNIT_EXP_LEVELS = { 0.1, 0.3, 0.75, 0.9 }` in [Defines](<Defines - Hearts of Iron 4 Wiki.md>).
 
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**

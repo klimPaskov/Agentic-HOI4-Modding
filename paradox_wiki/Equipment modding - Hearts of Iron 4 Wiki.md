@@ -10,19 +10,13 @@
 - [Stats](#stats)
 - [Modifiers](#modifiers)
   - [All](#all)
-  - [Land](#land)
+  - [Land](#land_2)
     - [Base](#base)
-    - [Offensive](#offensive)
-    - [Defensive](#defensive)
-    - [Unique](#unique)
-  - [Navy-specific](#navy-specific)
-  - [Air-specific](#air-specific)
 - [Localization](#localization)
-
 
 ---
 
-## Equipment
+## <a id="equipment"></a>Equipment
 
 Equipment is found in /Hearts of Iron IV/common/units/equipment/\*.txt. Equipment is split into two types, archetype and regular. Archetype equipment is used to assign more general attributes that regular equipment then inherits via the *archetype* attribute.
 
@@ -30,62 +24,58 @@ Archetype equipment follows the following format:
 
 ```text
 equipments = {
-    <equipment> = {
-        year = <int>		# Limits the equipment from appearing before the specified year. Optional
-        picture = <name>	# GFX reference used to define equipment picture in lend-lease
+	<equipment> = {
+		year = <int>		# Limits the equipment from appearing before the specified year. Optional
+		picture = <name>	# GFX reference used to define equipment picture in lend-lease
+		
+		can_be_produced = {	# Optional, specifies when equipment of this category can be produced.
+			<triggers>
+		}
+		
+		is_archetype = yes	# Specifies an entry as an archetype entry. All non-archetype entries inherit 
+		is_buildable = no	# Prevents this equipment from being built.
+		active = yes		# Determines if this equipment is available without unlocking from a technology.
+		
+		type = <type>	   	# Internal type: what kind of unit can use this equipment
 
-        can_be_produced = {	# Optional, specifies when equipment of this category can be produced.
-            <triggers>
-        }
-
-        is_archetype = yes	# Specifies an entry as an archetype entry. All non-archetype entries inherit
-        is_buildable = no	# Prevents this equipment from being built.
-        active = yes		# Determines if this equipment is available without unlocking from a technology.
-
-        type = <type>	   	# Internal type: what kind of unit can use this equipment
-
-        group_by = <group>			  # How the equipment is grouped in the production screen
-        interface_category = <type>	 # Which category the equipment appears in the production screen
-
-        # Resources used to build this equipment
-        resources = {
-            <resource> = <amount>
-        }
-
-        # Modifiers the equipment uses
-        <modifiers>
-    }
+		group_by = <group>			  # How the equipment is grouped in the production screen
+		interface_category = <type>	 # Which category the equipment appears in the production screen
+		
+		# Resources used to build this equipment
+		resources = {
+			<resource> = <amount>
+		}
+		
+		# Modifiers the equipment uses
+		<modifiers> 
+	}
 }
-```
-
-Regular equipment follows the following format:
-
-```text
+`Regular equipment follows the following format:`
 equipments = {
     <equipment> = {
         year = <int>        # Limits the equipment from appearing before the specified year. Optional
-
+        
         active = yes            # Determines if this equipment is available without unlocking from a technology.
-
+        
         archetype = <equipment> # Which archetype equipment this equipment inherits from.
         parent = <equipment>    # Which equipment is parent to this equipment (i.e. which does it supercede)
         priority = <int>        # Priority for usage over other equipment.
         visual_level = <int>    # Image priority in production screen
-
+        
         # Resources used to build this equipment
         resources = {
             <resource> = <amount>
         }
-
+        
         # Modifiers the equipment uses
-        <modifiers>
+        <modifiers> 
     }
 }
 ```
 
-### Internal Types
+### <a id="internal-types"></a>Internal Types
 
-#### Land
+#### <a id="land"></a>Land
 
 - anti\_air
 - anti\_tank
@@ -100,7 +90,7 @@ equipments = {
 - rocket
 - support\_equipment
 
-#### Naval
+#### <a id="naval"></a>Naval
 
 - capital\_ship
 - carrier
@@ -109,7 +99,7 @@ equipments = {
 - screen\_ship
 - submarine
 
-#### Air
+#### <a id="air"></a>Air
 
 - air\_transport
 - cas
@@ -121,12 +111,12 @@ equipments = {
 - strat\_bomber
 - suicide
 
-### Group By types
+### <a id="group-by-types"></a>Group By types
 
 - archetype
 - type
 
-### Interface Categories
+### <a id="interface-categories"></a>Interface Categories
 
 - interface\_category\_land
 - interface\_category\_armor
@@ -135,7 +125,7 @@ equipments = {
 - interface\_category\_other\_ships
 - interface\_category\_air
 
-## Stats
+## <a id="stats"></a>Stats
 
 Equipment uses modifiers to determine which stats it confers to its assigned unit.
 
@@ -158,11 +148,11 @@ air_attack = <float>
 
 Note that the default *maximum\_speed* is 4, so you don't need to include it when you want equipment to confer the default *maximum\_speed*.
 
-## Modifiers
+## <a id="modifiers"></a>Modifiers
 
 The following list is all the valid modifiers for use in equipment (and units):
 
-### All
+### <a id="all"></a>All
 
 ```text
 lend_lease_cost = 1             # Space taken up in convoy
@@ -172,46 +162,30 @@ can_license = no                # Can be licensed
 is_convertable = yes            # Can be converted
 ```
 
-### Land
+### <a id="land_2"></a>Land
 
-#### Base
+#### <a id="base"></a>Base
 
 ```text
 reliability = 0.9               # Reliability - The lower the reliability, the more likely the equipment will suffer random failure
 maximum_speed = 4               # Max Speed - How quickly this unit can traverse terrain under optimal circumtances, in kilometres per hour
-```
-
-#### Offensive
-
-```text
+`#### <a id="offensive"></a>Offensive`
 # Offensive
 soft_attack = -0.1              # Soft Attack - How many attacks the unit can make versus enemies with low hardness
 hard_attack = -0.5              # Hard Attack - How many attacks the unit can make versus enemies with high hardness
 air_attack = 1                  # Air Attack - How much damage we can do against airplanes. High Air Attack also helps to counter enemy Air Superiority effects
 ap_attack = 1                   # Piercing - Having equal or greater Piercing to the targets Armor value allows you to do more damage.
 breakthrough = 0.5              # Breakthrough - How many enemy attacks a unit can attempt to avoid while on the offensive, effectively allowing it to stay on the offense longer.
-```
-
-#### Defensive
-
-```text
+`#### <a id="defensive"></a>Defensive`
 # Defensive
 defense = 0.1                   # Defense - How many enemy attacks a unit can avoid whilst on the defensive, effectively allowing it to stay on the defensive longer.
 max_strength = 2                # HP - Strength represents how much damage this unit can suffer before it is destroyed
 armor_value = 0                 # Armor - Armor that is higher than the opponents Piercing value reduces damage taken and allows more attacks to occur
 hardness = 0.5                  # Hardness - Represents how much of your divsion is made up of armoured vehicles. High Hardness = High Hard Attacks, Low Soft Attack
 entrenchment = 5                # Entrenchment - The ability to make proper defensive entrenchments before a hostile attack
-```
-
-#### Unique
-
-```text
+`#### <a id="unique"></a>Unique`
 recon = 1                       # Reconnaissance - Increases the chance that this unit can pick better tactics in battle
-```
-
-### Navy-specific
-
-```text
+`### <a id="navy-specific"></a>Navy-specific`
 naval_speed = 28                        # Max Speed - maximum speed in kilometres per hour of the ship, higher means faster in combat and contributes to evasion
 fire_range = 32                         # Fire Range - The range of the ship's main guns (OBSOLETE)
 lg_armor_piercing = 12                  # Light gun armor piercing - Determines how much armor ship's light gun attack can pierce
@@ -231,11 +205,7 @@ naval_range = 3000                      # Naval Range - max distance in kilometr
 port_capacity_usage = 1                 # Port capacity usage - How much room the ship requires in port
 search_and_destroy_coordination = 0.1
 convoy_raiding_coordination = 0.1
-```
-
-### Air-specific
-
-```text
+`### <a id="air-specific"></a>Air-specific`
 air_attack = 50                         # Air Attack - amount of damage done against other planes
 air_defence = 50                        # Air Defence - how many hits a plane takes before being shot down
 air_range = 500                         # Range - How far away missions the plane can perform
@@ -250,7 +220,7 @@ default_carrier_composition_weight = 1
 carrier_capable = yes           # Is usable in carriers (air only)
 ```
 
-## Localization
+## <a id="localization"></a>Localization
 
 Each equipment must be localized in a *.yml* file in the *localisation* folder within your mod.
 
@@ -258,11 +228,7 @@ Each equipment must be localized in a *.yml* file in the *localisation* folder w
 <equipment>: ""
 <equipment>_desc: ""
 <equipment>_short: ""
-```
-
-For country-specific localization, prefix with the tag:
-
-```text
+`For country-specific localization, prefix with the tag:`
 <tag>_<equipment>: ""
 <tag>_<equipment>_desc: ""
 <tag>_<equipment>_short: ""

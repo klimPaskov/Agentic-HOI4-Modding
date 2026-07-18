@@ -1,6 +1,7 @@
 name = "hoi4_country_package_auditor"
 description = "Active auditor and small-patch subagent for HOI4 country packages. Checks and can patch tags, history, states, leaders, portraits, flags, parties, focus loading, ideas, advisors, units, technology, claims, cores, localisation, AI, formables, and playable setup inside the current task scope."
-model_reasoning_effort = "high"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Country Audit One", "Country Patch One", "Tag Patch One", "Package Audit One", "State Patch One"]
 

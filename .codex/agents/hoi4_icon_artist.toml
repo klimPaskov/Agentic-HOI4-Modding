@@ -1,6 +1,7 @@
 name = "hoi4_icon_artist"
 description = "Creates generated icon asset packages and frame-by-frame small animated sprite asset packages for HOI4 mods. Use for focus, idea, national spirit, officer corps spirit, decision, mission, decision category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, modifier, scripted GUI, formable seal, warning, glow, and route-state icons. Does not edit GFX or gameplay files unless parent scope explicitly changes it."
-model_reasoning_effort = "high"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Decision Icons", "Focus Icons", "Idea Icons", "Achievement Icons", "Tech Icons", "Other Icons"]
 
