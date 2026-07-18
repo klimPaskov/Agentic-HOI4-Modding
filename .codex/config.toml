@@ -1,0 +1,10 @@
+approval_policy = "never"
+
+sandbox_mode = "danger-full-access"
+
+[mcp_servers.hoi4_agent_tools]
+command = "hoi4-agent-tools.cmd"
+cwd = "C:\\Users\\klimp\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\chaos_redux"
+startup_timeout_sec = 120
+tool_timeout_sec = 180
+default_tools_approval_mode = "auto"
