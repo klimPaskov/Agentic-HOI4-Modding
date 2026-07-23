@@ -193,7 +193,9 @@ Do not fill handoffs with passing boilerplate checks that only restate AGENTS.md
 
 ## MCP evidence in handoffs
 
-When a routed task touches focus trees, event chains, scripted GUI, or maps, use MCP as the shared surface. A handoff may include bounded diagnostics, layout reports, comparisons, revisions, or linked MCP artifact URIs. Pass only the evidence the parent needs; do not copy an entire graph into the prompt.
+When a routed task touches focus trees, event chains, technology or doctrine trees, weighted logic, scripted GUI, or maps, use MCP as the shared evidence surface. Pass only the diagnostics, revision, scenario hash, comparison, or linked artifact URI the parent needs instead of copying a complete graph or matrix into the prompt.
+
+For probability work, name the analyzed surface and scenario ids, state whether the candidate pool and external factors were complete, and distinguish exact, bounded, sampled, score-only, and unresolved results. For technology or doctrine work, list the affected technology, folder, unlock, grant, bonus, or asset ids and include the relevant `hoi4.tech_compare` result when source changed.
 
 If a patch touches localisation, list the keys changed. If it touches decisions or focuses, list affected ids. If it touches scripted helpers, list helper names and call sites. If it touches country setup, list tags and state ids or state groups.
 

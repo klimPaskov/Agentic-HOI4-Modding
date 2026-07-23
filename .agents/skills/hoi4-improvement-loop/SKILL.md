@@ -150,6 +150,8 @@ Use prose, route maps, state diagrams, package tables, UI descriptions, event fa
 
 Do not write vague lines such as `add more flavor`, `make decisions deeper`, `add a hidden formable`, `improve AI`, or `add animations`. Name the route, action, state group, cost type, reveal condition, failure consequence, asset family, and AI behavior where they matter.
 
+When the weakness is weighted AI, timing, or random selection, turn the intended improvement into named scenarios and measurable ordering, timing, dominance, or starvation expectations. Require `hoi4.probability_inspect` before analysis, then select `hoi4.probability_evaluate`, `hoi4.probability_sweep`, `hoi4.probability_simulate`, `hoi4.probability_sequence`, `hoi4.probability_compare`, or `hoi4.probability_render` according to the evidence needed. Do not ask the implementation agent to prove an exact probability from an incomplete candidate pool or undeclared external state.
+
 ## Design moves that matter
 
 Good improvement usually adds pressure, consequence, identity, or feedback.
@@ -223,6 +225,8 @@ Animated leader portraits should be reserved for major identity changes, extreme
 A country package is weak if it only has a tag, flag, leader, and generic tree. It should have a starting problem, a political identity, a reason to survive, and a route plan.
 
 A country addendum can define why the country exists, what states it can receive, what states are claims only, how it avoids invalid map states, starting leader, ruling party, advisors, ideas, units, technology, industry, supply, focus or overlay route, decisions, missions, survival tools, formables, claims, integration routes, diplomatic ambitions, asset needs, historical source needs, AI behavior, and cleanup.
+
+If the improvement changes a technology or doctrine tree, require `hoi4.tech_inspect` evidence for prerequisites, placement, exclusivity, unlocks, grants, bonuses, references, and missing assets; use `hoi4.tech_render` for the affected folder or branch and `hoi4.tech_compare` for the implemented change.
 
 If a shared tag can appear through more than one event, define origin logic. The same tag can use different mechanics depending on release origin, formation origin, or route origin.
 

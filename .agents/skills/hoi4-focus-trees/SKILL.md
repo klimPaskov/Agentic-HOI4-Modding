@@ -680,6 +680,8 @@ Good rewards include:
 - crisis value effects
 - event chains
 
+When a focus grants, unlocks, removes, or redirects a technology, doctrine, or research bonus, use `hoi4.tech_inspect` in `impact`, `unlocks`, or `bonus_coverage` mode to verify the linked graph and references. Render the affected folder or branch with `hoi4.tech_render`, then use `hoi4.tech_compare` after source edits. Treat missing assets, disconnected prerequisites, misplaced items, exclusivity errors, and unresolved dynamic behavior as implementation findings instead of guessing.
+
 Small numeric modifiers can support a focus, but they should not be the main point of most focuses.
 
 ### No fairy-dust reward standard
@@ -1018,6 +1020,8 @@ AI should consider:
 - player proximity
 
 Avoid flat AI weights when campaign state matters.
+
+When focus selection probabilities, route dominance, or starvation matter, use `hoi4.probability_inspect` to identify the candidate pool and required scenario inputs. Evaluate named campaign states with `hoi4.probability_evaluate`, sweep thresholds and rank reversals with `hoi4.probability_sweep`, compare a proposed change with `hoi4.probability_compare`, and use `hoi4.probability_simulate` only for explicitly declared uncertain inputs. Use `hoi4.probability_render` when a ranking, matrix, sensitivity, comparison, or unresolved view is clearer than a compact trace. The focus adapter models the verified independent score race, not weight divided by the sum of weights. Supply the complete available-focus pool and declare prerequisite, bypass, strategy, and external factors; keep anything the analyzer cannot resolve visible as uncertainty. Use the result as balance evidence while this skill retains ownership of route design and tuning decisions.
 
 AI should not accidentally choose suicidal or nonsensical routes just because they are visible.
 

@@ -939,7 +939,7 @@ The implementation must still follow HOI4 UI rules and existing repo patterns.
 
 For a decision category with a scripted GUI or mechanic window, the asset handoff should cover the full interface state set.
 
-When the asset package belongs to a focus-tree or scripted-GUI change, use the MCP tools after placement to inspect references and render a deterministic review artifact. This skill still owns source art, processing, DDS conversion, placement, manifests, and `.gfx`/`.gui` handoff.
+When the asset package belongs to a focus-tree or scripted-GUI change, use the corresponding MCP inspect and render tools after placement to verify references and produce a deterministic review artifact. For technology or doctrine icons, use `hoi4.tech_inspect` in `explain` or `lint` mode to verify sprite and texture references, then use the `assets` or affected folder view in `hoi4.tech_render`. This skill still owns source art, processing, DDS conversion, placement, manifests, and `.gfx`/`.gui` handoff.
 
 Useful assets include:
 

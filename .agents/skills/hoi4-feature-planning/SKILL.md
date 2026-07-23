@@ -353,6 +353,8 @@ Good focus reward types include:
 - objective completion bonuses
 - features or feature chains
 
+When a specification adds or changes technologies, doctrines, folders, prerequisites, unlocks, grants, or research bonuses, require the implementation handoff to inspect the affected graph with `hoi4.tech_inspect`, render the relevant folder or branch with `hoi4.tech_render`, and compare the implemented source with `hoi4.tech_compare`. The plan must identify intended placement, prerequisites, exclusivity, unlocks, bonuses, and asset needs so the implementation agent has a concrete result to verify.
+
 Every focus path should have a distinct purpose. If two focus groups would grant nearly the same effect, merge them, rewrite one, or make one an upgrade of the other.
 
 Reject focus trees where most focus groups grant new ideas without a clear reason. A tree that uses repeated new ideas as filler has failed even if it has many focuses.
@@ -761,6 +763,8 @@ For each important AI actor or actor group, define:
 - how it uses or avoids rare variants and escalated tracks
 - how it behaves when it is player-adjacent, major-power-adjacent, or a possible snowball threat
 - what cleanup or fallback behavior it should use if its preferred route becomes impossible
+
+For weighted behavior, give the implementation agent named scenarios and the expected ordering, timing band, dominance limit, or starvation limit to test. Direct it to begin with `hoi4.probability_inspect`, use `hoi4.probability_evaluate` for the scenario matrix, `hoi4.probability_sweep` for thresholds and rank reversals, and `hoi4.probability_compare` after implementation. Reserve `hoi4.probability_simulate` for explicitly declared uncertain inputs and `hoi4.probability_sequence` for a complete declared custom pool with cadence and state transitions. Request `hoi4.probability_render` when a ranking, matrix, timing, sensitivity, sequence, comparison, or unresolved view will make the handoff easier to review. Do not specify an exact selection probability when the candidate pool or external factors are not complete.
 
 For focus trees, the spec must define AI path behavior at the branch level and for key individual focuses. If a large tree has mutually exclusive paths, secret routes, or dangerous extreme-route paths, specify which AI personalities or campaign states can choose them. Extreme-route AI should be allowed to make strange or extreme choices when that is the point, but ordinary AI should not accidentally choose suicidal or nonsensical branches.
 

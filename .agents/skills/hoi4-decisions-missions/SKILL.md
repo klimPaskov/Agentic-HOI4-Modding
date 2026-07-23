@@ -761,6 +761,8 @@ AI should understand:
 
 Avoid flat `ai_will_do` when campaign state matters.
 
+For complex decision or mission weights, use `hoi4.probability_inspect` to find required inputs, `hoi4.probability_evaluate` for named campaign states, `hoi4.probability_sweep` for thresholds and rank reversals, and `hoi4.probability_compare` after a source change. Use `hoi4.probability_simulate` only for explicitly declared uncertain inputs, and use `hoi4.probability_render` when the ranking, matrix, sensitivity, comparison, or unresolved view improves review. Decision and mission `ai_will_do` results are willingness scores, so do not present them as click probabilities. Include availability, target, cost, cooldown, and route state where relevant, and retain unresolved engine state in the result.
+
 AI should not take suicidal or nonsensical decisions just because they are available.
 
 ## 17. Category cleanup and lifecycle
