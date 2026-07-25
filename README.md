@@ -16,6 +16,7 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 - Example repo skills for repeated HOI4 workflows.
 - Optional custom Codex subagent patterns for bounded research, asset work, audits, and documentation.
 - A model for separating main-agent implementation from helper-agent production and audits.
+- The mod-agnostic hoi4-3d-model-pipeline skill and hoi4_3d_model_pipeline subagent for verified Meshy-to-Blender-to-io_pdx_mesh model production.
 
 ## Recommended setup
 
@@ -171,7 +172,7 @@ Start Codex from the repository root so it can see `AGENTS.md`, `.agents/skills/
 
 ## MCP in agent workflows
 
-HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, lint, render, create, and rewrite focus trees; inspect and rewrite scripted GUIs; inspect and edit connected map data; and trace, compare, render, and lint event chains. It is one tool in the existing skills and source workflow.
+HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, lint, render, create, and rewrite focus trees; inspect and rewrite scripted GUIs; inspect and edit connected map data; trace, compare, render, and lint event chains; view technology and doctrine trees; and analyze AI weights, MTTH, random outcomes, and declared weighted systems under explicit scenarios. It is one tool in the existing skills and source workflow.
 
 `AGENTS_template.md` includes instructions for the coding agent to install and register the server when a mod needs it, so users do not need to install it manually. For reference, the published package command is:
 
@@ -187,7 +188,35 @@ command = "hoi4-agent-tools.cmd"
 cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\<your_mod>"
 ```
 
-Agents use MCP when they need structural diagnostics, deterministic renders, or broad edits. The owning skills still define design, research, source review, assets, tests, audits, and handoffs. Large MCP artifacts are returned as linked resources instead of placed in the prompt.
+Agents use MCP when they need structural diagnostics, deterministic renders, broad edits, or source-linked probability and timing evidence. The owning skills still define design, research, source review, assets, tests, audits, and handoffs. Large MCP artifacts are returned as linked resources instead of placed in the prompt.
+
+## Autonomous 3D model workflow
+
+The reusable 3D workflow lives in .agents/skills/hoi4-3d-model-pipeline/SKILL.md and .codex/agents/hoi4_3d_model_pipeline.toml.
+
+This workflow is optional. Mods that do not add new 3D models, entities, unit actions, or skeletal animations do not install or enable the 3D routes.
+
+The workflow stops before any path discovery, brief read, reference generation, balance check, or provider call unless the process environment already exposes a nonblank MESHY_API_KEY.
+
+If the key is missing, the agent must show this PowerShell command and then require a shell or Codex restart:
+
+    [Environment]::SetEnvironmentVariable(
+        "MESHY_API_KEY",
+        "msy_your_actual_key_here",
+        "User"
+    )
+
+When a feature needs 3D work, the agent runs .tools/3d_pipeline/bootstrap_3d_workflow.py after the key gate. The bootstrap autonomously discovers the mod and Blender paths, installs or verifies the pinned Meshy and Blender MCP dependencies, installs the checksum-locked io_pdx_mesh extension, writes concrete entries into .codex/config.toml, records the resolved setup, and removes .codex/3d_mcp_config.template.toml.
+
+When a brief has no ready reference, the workflow generates exactly one final Meshy-ready image for the asset and never sends side-profile sheets, turnaround boards, collages, or multi-view boards to Meshy.
+
+Humanoid units are calibrated against a named installed vanilla source mesh and entity scale with source geometry height and effective runtime height recorded separately and the scale applied exactly once.
+
+The package retains provider lineage, immutable source downloads, Blender checkpoints, topology repair evidence, locally verified PDX material packing, processed textures, real mesh and skeletal animation exports, reimport proof, source-to-runtime hashes, and a parent-owned runtime handoff.
+
+The parent agent owns entity, asset, GFX, gameplay, placement, live-consumer wiring, and in-game proof, so an export alone never counts as a completed feature.
+
+Users provide only MESHY_API_KEY. The agent must not ask the user to copy, edit, or replace MCP configuration; if optional setup cannot finish, it must report the blocker and leave the 3D routes disabled.
 
 ## Codex scheduled tasks or Hermes
 

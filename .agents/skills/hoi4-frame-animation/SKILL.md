@@ -56,6 +56,8 @@ Use `$imagegen` for generated frame art. If `$imagegen` is unavailable, stop and
 
 Use `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-events`, or the relevant repository-specific implementation skill for the gameplay surface that uses the animation.
 
+3D skeletal `.anim` actions are not frame-sheet assets. Route model rigs, retargeting, baked actions, root-motion policy, `.anim` export, reimport proof, and unit or entity runtime binding to `hoi4-3d-model-pipeline`; do not manufacture a skeletal action by moving or filtering one still image, and do not replace a requested action with a 2D frame sheet.
+
 ## 4. Required HOI4 references before wiring
 
 Before wiring an animated asset into the game, inspect the local sources that apply to the target surface.

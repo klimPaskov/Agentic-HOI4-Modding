@@ -47,6 +47,8 @@ Use `hoi4_generated_feature_art` for generated non-icon art, including fictional
 
 Use `hoi4_icon_artist` for generated gameplay icon families, formable seals, scripted GUI icons, and small animated icon or button sprites. Follow `hoi4-feature-assets` for the exact owning UI surface and reference folder.
 
+Use `hoi4_3d_model_pipeline` for bounded custom HOI4 3D model work covering provider candidates, Blender processing, model textures, rigs, skeletal actions, `.mesh`/`.anim` export, QA evidence, and runtime handoffs.
+
 Use `hoi4_quote_remark_researcher` for main quotes, exact wording checks, attribution confidence, source comparison, button text, cultural remarks, slogans, allusions, and short references.
 
 Use `hoi4_audio_researcher` for licensed or public domain audio research, source verification, download, `.ogg` conversion, and audio handoff notes.
@@ -126,6 +128,18 @@ It must not edit gameplay files, localisation, scripted localisation, GUI, GFX, 
 ### Asset-production agents
 
 Asset subagents create source files, processed previews, final DDS outputs, contact sheets, manifests, and asset handoffs. They do not wire gameplay, localisation, GFX, GUI, events, focuses, decisions, or workbooks unless the parent gives a narrow exception.
+
+### 3D model-production agents
+
+Route `hoi4_3d_model_pipeline` only when the feature actually needs a 3D output, with `fork_context=false` and a context-complete prompt containing the exact deterministic job root, reference-image path or approved asset brief, output folders, handoff path, asset profile, named vanilla references, scale relationship, required action roles, credit and paid-attempt limits, dependency lock, and forbidden simplifications.
+
+Before spawning it, the parent must run `.tools/3d_pipeline/bootstrap_3d_workflow.py` if the feature needs 3D work and the concrete Meshy/Blender entries are not already present in `.codex/config.toml`. This keeps ordinary mods free of 3D setup while ensuring the 3D worker starts only after its routes and dependency record exist.
+
+The parent prompt must require the `MESHY_API_KEY` hard gate and autonomous 3D bootstrap before path discovery or provider work, exactly one Meshy input image when no ready image exists, no multi-view provider board, immediate provider download and checksum, protected provider source, topology repair, PDX packed-material validation, hash-aware runtime synchronization, and `.mesh`/`.anim` reimport evidence. For humanoids, name the installed vanilla source mesh and entity and pass the source-height/entity-scale/effective-runtime crosswalk; for buildings, pass the valid state/province pair and entity visibility test.
+
+The subagent owns source/reference preservation, provider candidates, downloaded GLB/FBX and lineage, Blender source and checkpoints, bounded geometry/material/rig/weight/action work, processed model textures and DDS files, `.mesh`/`.anim` exports, previews, manifests, QA/reimport evidence, crosswalk rows, and handoffs. It must not edit gameplay, GFX, `.gfx`, `.gui`, `.asset`, entity, localisation, events, focuses, decisions, country/history/AI, on_actions, or external records.
+
+The parent alone owns `.asset`/entity/GFX/runtime source wiring, province/state placement, live-consumer and in-game validation, runtime evidence, and the overall completion claim. A successful provider task, `.blend`, preview, or export never authorizes the subagent to claim the feature is complete or to silently use a fallback.
 
 ### Active small-patch agents
 

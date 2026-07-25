@@ -45,11 +45,13 @@ Use this skill with:
 
 - `hoi4-feature-planning` when the user asks for event design or a deeper event specification before implementation
 - `hoi4-feature-assets` when the event needs event pictures, report images, news images, icons, flags, portraits, or final DDS assets
+- `hoi4-3d-model-pipeline` when the event creates or changes a visible 3D unit, building, creature, vehicle, aircraft, naval object, or map entity
 - `hoi4-frame-animation` when event presentation needs animated sprites, animated portraits, animated UI pieces, frame sheets, or GIF previews for review
 - `hoi4-text-audio-research` when an event needs sourced quotes, cultural references, title-like references, slogans, or music and audio research
 - `hoi4-focus-trees` when the event creates, unlocks, modifies, or depends on focus trees
 - `hoi4-decisions-missions` when the event creates or depends on decisions, missions, timed objectives, formables, or decision-driven mechanics
 - `hoi4-subagents` when bounded research, asset production, small patches, or completion audits should be delegated
+- `hoi4_3d_model_pipeline` for bounded model geometry, textures, rigs, skeletal actions, `.mesh`/`.anim` exports, reimport proof, and runtime handoff when the event owns a 3D unit or building surface
 - `hoi4-improvement-loop` when an implemented event works but is still shallow, generic, disconnected, or underdeveloped
 - MCP event tools to inspect, trace, render, compare, and lint event chains without replacing the source-editing workflow
 
@@ -278,6 +280,18 @@ Every player-clickable GUI button that changes gameplay must validate the same r
 
 Animated leader portraits, animated route emblems, glow effects, particles, and float effects should be used for major reveals, extreme-route escalation, hidden formables, supernatural leaders, or final transformations. Each animated asset needs a static fallback and manifest entry.
 
+
+## 3D model and entity integration
+
+When an event creates or changes a 3D unit or building, treat the model as a runtime contract across the event, unit or building definition, entity, `.asset`, `.gfx`, materials, textures, actions, and live map consumer.
+
+The event implementation must use the `hoi4-3d-model-pipeline` handoff instead of trying to produce geometry or animations inside event work. The model handoff must include the exact runtime identifiers, processed texture paths, `.mesh`/`.anim` paths, action names, scale crosswalk, provider and Blender evidence, reimport proof, and final hashes.
+
+For a spawned unit, validate that `create_unit` is executed in a country or other supported scope, that the unit template and sub-unit are registered, that every emitted `unit_<id>_icon_small` text icon exists when required, and that movement uses a real exported action rather than a static substitute.
+
+For a building or map entity, validate that the building has an entity, the entity key resolves in the `.gfx`/`.asset` chain, the province belongs to the specified state, the building command has the correct argument count, and the test province is visible at the intended zoom without an existing building hiding it.
+
+The main event agent owns the gameplay and runtime source wiring, final runtime copy synchronization, province/state placement, live consumer, and in-game evidence. The 3D worker owns the bounded model package and must not claim event or in-game completion.
 
 ## Generated asset handling
 

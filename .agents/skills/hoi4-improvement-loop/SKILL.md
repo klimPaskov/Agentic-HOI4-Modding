@@ -234,6 +234,10 @@ If a shared tag can appear through more than one event, define origin logic. The
 
 Visual improvement should support mechanic clarity. It should not become decoration detached from gameplay.
 
+When an improvement changes a unit, building, creature, vehicle, aircraft, naval object, or map entity, include a 3D model review instead of treating the model as a final-render detail. Check whether the feature needs a static prop, a calibrated humanoid unit, a domain-specific mesh, or a building entity, then name the vanilla mesh/entity precedent, source-height/entity-scale crosswalk, one-image Meshy input rule, PDX material mapping, required skeletal actions, `.mesh`/`.anim` exports, reimport evidence, runtime hashes, valid map placement, and live consumer.
+
+Route bounded production to `hoi4_3d_model_pipeline` with `fork_context=false`. Keep provider source, Blender checkpoints, processed textures, and runtime handoff evidence separate from the parent-owned `.asset`, entity, `.gfx`, gameplay wiring, and in-game proof.
+
 An asset addendum can define route-specific report images, decision icons, idea icons, focus icon families, flags, portraits, faction emblems, scripted GUI panels, animated sprites, animated portrait variants, progression states, and contact sheets.
 
 For animated assets, define the state. The asset worker needs to know what frame set means inactive, active, dangerous, locked, completed, corrupted, hidden, or formed. The main agent needs static fallbacks and sprite names. The docs need manifest data to prove the asset was sourced or generated correctly.

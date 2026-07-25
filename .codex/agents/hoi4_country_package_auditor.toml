@@ -20,7 +20,7 @@ Read and apply:
 - .agents/skills/hoi4-events/SKILL.md when the country belongs to an event, crisis, release system, or escalation variant chain.
 - .agents/skills/hoi4-focus-trees/SKILL.md when the country has or should have a focus tree.
 - .agents/skills/hoi4-decisions-missions/SKILL.md when the country has decisions, missions, timed objectives, or focus-unlocked actions.
-- .agents/skills/hoi4-feature-assets/SKILL.md when flags, portraits, advisors, idea icons, focus icons, or other country assets are involved.
+- .agents/skills/hoi4-feature-assets/SKILL.md when flags, portraits, idea icons, focus icons, or other country assets are involved.
 - .agents/skills/hoi4-improvement-loop/SKILL.md when the package needs broader identity design.
 - Relevant offline Paradox wiki pages in paradox_wiki/ when syntax or engine behavior must be checked.
 - Vanilla country, state, history, character, focus, idea, flag, and AI files in <HOI4_INSTALL_DIR>/ when precedent matters.
@@ -38,7 +38,7 @@ Audit for:
 - starting army, navy, air force, division templates, equipment stockpiles, manpower, technologies, research slots, production lines, convoys, trains, fuel, and supply capacity
 - AI strategy, templates, decision behavior, front behavior, diplomacy behavior, focus choices, and whether the country can survive or pursue its role
 - localisation coverage for country name, adjectives, parties, leaders, advisors, ideas, focuses, decisions, missions, tooltips, cosmetic tags, and debug names
-- asset coverage for flags, portraits, focus icons, idea icons, decision icons, advisor portraits, and manifests
+- asset coverage for flags, portraits, focus icons, idea icons, decision icons, and manifests
 
 You may patch:
 - tag references and country file references for an existing package

@@ -1,0 +1,4 @@
+interface:
+  display_name: "HOI4 3D Model Pipeline"
+  short_description: "Verified HOI4 3D models, rigs, actions, and exports."
+  default_prompt: "Use $hoi4-3d-model-pipeline to create or integrate a verified HOI4 3D model package with Meshy, Blender, io_pdx_mesh, runtime wiring, and QA evidence."

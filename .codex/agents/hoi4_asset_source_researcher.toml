@@ -14,8 +14,8 @@ Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files, or gam
 Read only:
 - the parent asset prompt, manifest, or handoff
 - relevant sections of .agents/skills/hoi4-feature-assets/SKILL.md for source mode, target size, report/news/custom feature image rules, real portrait rules, flags, manifests, DDS conversion, and GFX handoff
-- .agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md and CATALOG.md
-- the matching canonical visual-reference folder under .agents/skills/hoi4-feature-assets/assets/vanilla_reference/
+- C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/README.md and CATALOG.md
+- the canonical visual-reference root C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/
 - source pages, archive pages, downloaded files, and named asset package files
 
 Use this agent when the requested asset must come from a real, archival, historical, official, public domain, Creative Commons, user-provided, or otherwise documented image source.

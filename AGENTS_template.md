@@ -18,8 +18,8 @@ These values are already filled in this template and should normally be left as-
 - Offline Paradox wiki snapshot: `paradox_wiki/`
 - Local vanilla Hearts of Iron IV install: `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`
 - Default documentation folder: `docs/`
-- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-subagents`, `hoi4-improvement-loop`, `hoi4-focus-trees`, and `hoi4-decisions-missions`
-- Generic HOI4 subagents from `.codex/agents/`: `hoi4_repo_explorer`, `hoi4_feature_completion_auditor`, `hoi4_scripted_system_architect`, `hoi4_localisation_auditor`, `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_improvement_loop_planner`, `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_quote_remark_researcher`, `hoi4_audio_researcher`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, and `hoi4_skill_maintainer`
+- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-3d-model-pipeline`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-subagents`, `hoi4-improvement-loop`, `hoi4-focus-trees`, and `hoi4-decisions-missions`
+- Generic HOI4 subagents from `.codex/agents/`: `hoi4_repo_explorer`, `hoi4_feature_completion_auditor`, `hoi4_scripted_system_architect`, `hoi4_localisation_auditor`, `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_improvement_loop_planner`, `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_3d_model_pipeline`, `hoi4_quote_remark_researcher`, `hoi4_audio_researcher`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, and `hoi4_skill_maintainer`
 
 ---
 
@@ -85,7 +85,9 @@ Use repo skills as required implementation guidance, not as optional notes.
 
 - Use `hoi4-events` for ordinary HOI4 event implementation, event chains, news events, report events, localisation, on_actions, documentation, and validation.
 - Use `hoi4-feature-planning` when designing or expanding feature ideas, feature mechanics, country packages, focus-tree route plans, decision plans, achievements, AI behavior, asset needs, text and audio research gates, and implementation-ready specifications before coding.
-- Use `hoi4-feature-assets` when a task needs visual assets, icons, flags, portraits, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes.
+- Use `hoi4-feature-assets` when a task needs visual assets, icons, flags, portraits, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes; route 3D geometry, materials, skeletal actions, `.mesh`/`.anim` exports, and reimport evidence to `hoi4-3d-model-pipeline`.
+- Use `hoi4-feature-planning` to plan 3D unit and building profiles, exact-one-image Meshy inputs, vanilla scale calibration, action roles, entity consumers, map placement, and runtime acceptance evidence whenever a feature needs a model.
+- Use `hoi4-3d-model-pipeline` for bounded custom HOI4 model production, provider lineage, Blender processing, PDX textures, rigs, skeletal actions, `.mesh`/`.anim` export, reimport proof, and runtime handoffs.
 - Use `hoi4-frame-animation` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
 - Use `hoi4-text-audio-research` when a task needs sourced quotes, cultural references, title-like references, slogans, or music and audio research.
 - Use `hoi4-focus-trees` before editing national focus trees.
@@ -118,14 +120,22 @@ Reload the agent. For a mod-local `cwd`, no server configuration or mod-selectio
 
 ### HOI4 MCP
 
-The installed `hoi4-agent-tools` server is the coding-agent tool for focus trees, event-chain analysis, scripted GUIs, and maps.
+The installed `hoi4-agent-tools` server is the coding-agent tool for focus trees, event chains, technology trees, weighted logic, scripted GUIs, and maps.
 
 - Focus work: inspect, render, lint, and use `hoi4.focus_rewrite` for cleanup or a complete new route plan; review the returned layout and diagnostics.
 - Event work: use narrow `hoi4.event_inspect` queries and the read-only render and compare tools, then edit source files through the normal workflow.
+- Technology work: inspect, render, and compare technology and doctrine trees, including their prerequisites, placements, unlocks, bonuses, references, and missing assets.
+- Weighted-logic work: inspect and evaluate event MTTH, event options, decision and mission scores, focus and research selection, random blocks, AI strategy factors, and declared custom pools under explicit scenarios; use sweeps, seeded simulation, sequence analysis, and comparisons when needed.
 - GUI work: inspect and render the linked layout, states, resolutions, and click regions before an in-scope `hoi4.gui_rewrite`.
 - Map work: inspect connected province, state, region, adjacency, supply, and railway data before a declarative `hoi4.map_rewrite`.
 
 The agent may call MCP autonomously as part of the larger skills, source review, wiki and vanilla-documentation checks, tests, audits, and subagent handoffs. MCP does not replace those repository requirements.
+
+### Optional 3D MCP bootstrap
+
+The 3D workflow is optional. Do not install, enable, or invoke Meshy, Blender, or io_pdx_mesh for a feature that does not actually need a new 3D model, entity, unit action, or skeletal animation.
+
+When a feature does need 3D work, first apply the MESHY_API_KEY hard gate in `hoi4-3d-model-pipeline`, then run `python .tools/3d_pipeline/bootstrap_3d_workflow.py` from the mod root. The bootstrap autonomously discovers paths, installs or verifies the pinned Meshy and Blender MCP dependencies, installs the checksum-locked io_pdx_mesh extension, writes concrete entries into `.codex/config.toml`, records the resolved setup, and deletes `.codex/3d_mcp_config.template.toml`. The user must not be asked to copy, edit, or replace MCP configuration. If setup cannot finish, keep the optional routes disabled and report the blocker.
 
 ### Subagents
 
@@ -141,7 +151,7 @@ Use these high-level routing rules:
 
 - Use `hoi4_repo_explorer` only when file locations, existing patterns, vanilla references, likely touchpoints, missing-file recovery, or implementation order are unclear. Do not use it for small known-file edits, provided-file edits, direct skill or prompt updates, localisation-only cleanup, asset-only production, or tasks already bounded to exact files. The parent should inspect the known files directly for those cases.
 - Use asset subagents for visual production: `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, and `hoi4_icon_artist`.
-- When an asset subagent is asked to produce animation, the parent prompt must require `hoi4-frame-animation` and must ask for separate generated, sourced, or provided source frames, static fallback, manifest, contact sheet, preview, and `.gfx` or `.gui` handoff.
+- When an asset subagent is asked to produce animation, the parent prompt must require `hoi4-frame-animation` for 2D frame-sheet assets and `hoi4-3d-model-pipeline` for skeletal `.anim` actions; 3D prompts must include the Meshy hard gate, one-image rule, vanilla scale crosswalk, material packing, reimport proof, and parent-owned runtime wiring.
 - Use quote and audio research subagents only for specialised sourced text or audio work: `hoi4_quote_remark_researcher` and `hoi4_audio_researcher`.
 - Use audit subagents before completion claims: `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_localisation_auditor`, and `hoi4_feature_completion_auditor`.
 - Use `hoi4_scripted_system_architect` for reusable scripted effects, triggers, script constants, event targets, meta effects, variable patterns, and dynamic helper design.
@@ -154,9 +164,20 @@ Patch-capable subagents are allowed to make small, local improvements by default
 
 For major feature work, the main agent should use the improvement loop after meaningful implementation tranches when several new mechanics have been added and now need deeper connections. The planner should expand ideas using the feature-planning skill and relevant research. It should not be used repeatedly while a previous plan for the same feature is still unresolved.
 
+### Specs and Plans
+
+Source specifications belong under `docs/specs/<feature_slug>/`.
+
+Subagent plans, improvement addenda, audit follow-up notes, blocked reports, and implementation handoffs belong under `docs/plans/<feature_slug>/`.
+
+The plans folder is a working area. The specs folder is the source-of-truth design area. If an accepted plan changes the feature design, the main agent should merge it into the relevant spec or report that it remains queued.
+
+
 ## 1. Coding Style
 
 Clausewitz script is picky. Follow these rules strictly.
+
+Markdown prose must not be hard-wrapped in the middle of a sentence. Keep each sentence on one physical line and place line breaks only between sentences or paragraphs.
 
 1. Indent script blocks with tabs. Use lowercase keys and snake_case for variables and script names.
 2. Never use `<=` or `>=`. They are not supported and will break the game.
@@ -360,14 +381,6 @@ Every simplification must be reported. This includes skipped routes, fallback tr
 
 If there are no simplifications, say so explicitly and provide evidence through audits, docs, or changed files. If the goal cannot be fully implemented, report that the goal is incomplete instead of presenting partial work as done.
 
-### Specs and Plans
-
-Source specifications belong under `docs/specs/<feature_slug>/`.
-
-Subagent plans, improvement addenda, audit follow-up notes, blocked reports, and implementation handoffs belong under `docs/plans/<feature_slug>/`.
-
-The plans folder is a working area. The specs folder is the source-of-truth design area. If an accepted plan changes the feature design, the main agent should merge it into the relevant spec or report that it remains queued.
-
 ## 6. Focus Trees and Large Content
 
 For national focus work, use `hoi4-focus-trees` before editing. That skill is the detailed source of truth for focus-tree depth, reward variety, route logic, AI, localisation, icons, ideas, country identity changes, focus-decision integration, route coverage proof, and completion standards.
@@ -376,11 +389,11 @@ Before claiming focus-tree completion, use the appropriate audit route from `hoi
 
 ## 7. Agent-generated Visual Assets
 
-For final visual assets, use `hoi4-feature-assets`. That skill is the detailed source of truth for image generation rules.
+For final visual assets, use `hoi4-feature-assets`. That skill is the detailed source of truth for image generation rules, 2D asset classification, and the handoff boundary for 3D model packages.
 
-For animated visual assets, use `hoi4-frame-animation` in addition to `hoi4-feature-assets`. Final animation assets must be built from real planned frames and must not be transform-only mockups.
+For animated visual assets, use `hoi4-frame-animation` in addition to `hoi4-feature-assets` for frame-sheet animation. Use `hoi4-3d-model-pipeline` for skeletal unit or entity actions. Final animation assets must be built from real planned frames or real exported skeletal actions and must not be transform-only mockups.
 
-Use `hoi4-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation.
+Use `hoi4-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation. For 3D packages, the model worker owns the bounded production evidence while the main agent owns `.asset`, entity, runtime wiring, and live proof.
 
 ## 8. Skill Maintenance
 

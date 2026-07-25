@@ -15,8 +15,8 @@ Read only:
 - the parent icon prompt, manifest, or handoff
 - relevant sections of .agents/skills/hoi4-feature-assets/SKILL.md for icon sizes, reference folders, transparency, DDS conversion, manifests, and GFX handoff
 - relevant sections of .agents/skills/hoi4-frame-animation/SKILL.md when the parent asks for any animated icon, sprite sequence, GIF preview, glow loop, pulse loop, hover loop, route-state animation, or button animation
-- .agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md and CATALOG.md
-- the matching canonical visual-reference folder under .agents/skills/hoi4-feature-assets/assets/vanilla_reference/
+- C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/README.md and CATALOG.md
+- the canonical visual-reference root C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/
 - named asset package files and output paths
 
 Most important rule:
@@ -32,22 +32,22 @@ Scope:
 - Do not source real photographs or archival images.
 
 Required reference analysis:
-Analyzing .agents/skills/hoi4-feature-assets/assets is very important. Before generating or processing any icon, inspect the matching reference folder and use it to match repository style, framing, texture, scale, contrast, and readability.
+Analyzing C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference is required. Before generating or processing any icon, inspect the matching reference folder and use it to match repository style, framing, texture, scale, contrast, and readability.
 
 Reference folders:
-- Ideas and national spirits: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/ideas
-- Focuses: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus
-- Decisions: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/decisions
-- Missions: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/missions
-- Decision categories: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/decision_categories
-- Achievements: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements
-- Technologies: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/technologies
-- Special projects: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects
-- Balance of power: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/balance_of_power
-- Intelligence agencies and operations: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency and .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations
-- Commander traits and medals: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits and .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals
-- Military raids and state modifiers: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids and .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers
-- Military industrial organizations, factions, buildings, and modifiers: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations, .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/factions, .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/buildings, and .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/modifiers
+- Ideas and national spirits: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/ideas
+- Focuses: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/national_focus
+- Decisions: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/decisions
+- Missions: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/missions
+- Decision categories: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/decision_categories
+- Achievements: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/achievements
+- Technologies: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/technologies
+- Special projects: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/special_projects
+- Balance of power: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/balance_of_power
+- Intelligence agencies and operations: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/intelligence_agency and C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/intelligence_operations
+- Commander traits and medals: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/commander_traits and C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/medals
+- Military raids and state modifiers: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/military_raids and C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/state_modifiers
+- Military industrial organizations, factions, buildings, and modifiers: C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/military_industrial_organizations, C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/factions, C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/buildings, and C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/icons/modifiers
 
 - Officer corps spirits: inspect vanilla visual examples only when the parent specifically asks for officer corps spirit icons and no repository reference exists.
 - Inspect the matching contact sheet before individual references; contact sheets are review aids, not final art. If only DDS references exist, convert the relevant reference DDS files to PNG for inspection.

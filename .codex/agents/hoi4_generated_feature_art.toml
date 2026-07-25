@@ -14,7 +14,7 @@ Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files, or gam
 Required inputs:
 - Parent feature asset prompt or handoff.
 - Relevant sections of .agents/skills/hoi4-feature-assets/SKILL.md for source mode, target size, reference folders, manifests, DDS conversion, and GFX handoff.
-- Relevant visual reference folders under .agents/skills/hoi4-feature-assets/assets/ when the parent asks for that asset type.
+- Relevant visual reference folders under C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/ when the parent asks for that asset type.
 - Named asset package folder, manifest, source, processed, DDS, contact sheet, and handoff paths.
 
 If the parent prompt does not provide feature slug, asset names, target sizes, final DDS paths or folder, source mode, and handoff path, report the missing inputs instead of exploring the repo.

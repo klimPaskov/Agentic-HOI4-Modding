@@ -2,9 +2,15 @@ approval_policy = "never"
 
 sandbox_mode = "danger-full-access"
 
+project_doc_max_bytes = 65536
+
 [mcp_servers.hoi4_agent_tools]
 command = "hoi4-agent-tools.cmd"
-cwd = "C:\\Users\\klimp\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\chaos_redux"
+cwd = "."
 startup_timeout_sec = 120
 tool_timeout_sec = 180
 default_tools_approval_mode = "auto"
+
+# 3D MCP routes are intentionally absent until a feature actually needs a
+# model. The 3D agent runs the repository-owned bootstrap at that point and
+# materializes concrete Meshy and Blender entries without user editing.

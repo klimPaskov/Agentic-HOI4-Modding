@@ -904,6 +904,44 @@ Each unit-creating focus or decision should define:
 
 For focus trees, military growth should be integrated into branches. Some focuses can spawn units directly, but others should unlock decisions, improve templates, recruit commanders, create volunteer corridors, integrate militias, convert irregulars into regulars, expand special units, or change mobilisation rules. A deep tree should offer different ways to build an army depending on politics, foreign influence, economy, terrain, ideology, and escalation state.
 
+## 3.13.1 3D model and skeletal animation planning standard
+
+When a feature adds a visible unit, building, creature, vehicle, aircraft, naval object, map entity, or other 3D surface, plan the model package as a first-class feature surface rather than treating it as an optional render.
+
+Classify the asset before writing the brief: static prop, building, humanoid unit, non-humanoid creature, vehicle, aircraft, naval object, or articulated attachment.
+
+For a unit, define the gameplay consumer, unit category or sub-unit, entity key, `.asset` key, `.mesh` key, material and texture paths, icon or text-icon requirements, idle action, movement action, attack action, death or destruction action when relevant, and the exact country, province, state, or map test that will show it.
+
+For a building or map entity, define the building key, entity key, mesh key, state and province placement, valid state-to-province relationship, level or construction behavior, zoom visibility, rotation, runtime scale, and a test location that is inside the intended state and does not hide the model behind an existing building.
+
+If the parent does not provide a ready reference image, plan exactly one clean Meshy-ready reference image for the asset and route it through the approved image-generation workflow before the provider gate.
+
+Never plan a side-profile sheet, turnaround board, collage, or multi-view board as a Meshy input. Blender QA views and contact sheets are review evidence only and must never be sent to Meshy.
+
+The brief must name the installed vanilla mesh and entity that establish axes, orientation, source geometry height, entity scale, origin, ground or water contact, and effective runtime height.
+
+For humanoid units, the custom source geometry must match the named vanilla source mesh height and the entity scale must be applied exactly once. Record source height, entity scale, effective runtime height, coordinate axes, facing direction, origin, and the measurement evidence in the plan.
+
+For every requested skeletal action, define the semantic role, action name, FPS, frame range, loop policy, root-motion or in-place policy, ground-contact requirement, retarget or authoring route, static fallback policy, runtime binding, and acceptance evidence.
+
+Do not let a static render or still mesh stand in for a requested skeletal animation. If an action cannot be produced, the implementation handoff must mark it blocked or needs_user_review with the reason.
+
+The model package must plan provider lineage, Blender source and normalized/repaired/material/rigged/action/pre-export checkpoints, processed textures, PDX material channel mapping, `.mesh` and `.anim` exports, reimport proof, runtime hashes, and final live-consumer screenshots.
+
+The asset plan must distinguish provider source files from final runtime copies. It must require a final hash-aware synchronization step so an older mapped texture, mesh, entity, or animation cannot overwrite the approved runtime candidate.
+
+Route production to `hoi4_3d_model_pipeline` with `fork_context=false` and give it the exact job root, reference status, asset profile, vanilla references, scale relationship, action list, dependency lock, credit limits, and handoff path.
+
+The main implementation agent owns `.asset`, entity, `.gfx`, unit/building/gameplay wiring, valid province and state placement, live runtime validation, and in-game evidence.
+
+### 3D model planning matrix
+
+| Surface | Minimum planned evidence |
+| --- | --- |
+| Humanoid unit | Vanilla source-height measurement, entity-scale crosswalk, repaired geometry, PDX material audit, idle/move/attack actions, `.mesh`/`.anim` reimport proof, unit consumer, movement test, and screenshot |
+| Building or static map entity | Vanilla building precedent, valid state/province pair, entity and `.asset` existence, mesh/material proof, scale and zoom test, construction or level test, and screenshot |
+| Creature, vehicle, aircraft, or naval object | Profile-specific axis and contact calibration, topology/material proof, required action list, export/reimport proof, entity/runtime wiring, and domain-appropriate live test |
+
 ## 3.14 Mandatory asset coverage and source-mode standard
 
 Everything visible or meaningful needs an asset plan. A major spec should not only define a few feature images. It should identify assets for countries, focus trees, decisions, ideas, national spirits, achievements, flags, portraits, faction emblems, text and audio packages, feature images, UI, unit systems, and route-specific identity changes.
@@ -1305,29 +1343,29 @@ When a spec or asset prompt asks for generated or sourced assets, tell the asset
 Use repo-relative project paths:
 
 ```text
-.agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md
-.agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md
-.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons
-.agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art
-.agents/skills/hoi4-feature-assets/assets/vanilla_reference/flags
-.agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits
-.agents/skills/hoi4-feature-assets/assets/vanilla_reference/units
+C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\README.md
+C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\CATALOG.md
+C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons
+C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\event_art
+C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\flags
+C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\portraits
+C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\units
 ```
 
 Reference mapping:
 
-- idea and national spirit icons: `assets/vanilla_reference/icons/ideas/`
-- news event images: `assets/vanilla_reference/event_art/news/`
-- report event images: `assets/vanilla_reference/event_art/report/`
-- super-event and large presentation art: `assets/vanilla_reference/event_art/super_event/`
-- technology and special-project icons: `assets/vanilla_reference/icons/technologies/` and `assets/vanilla_reference/icons/special_projects/`
-- achievement icons: `assets/vanilla_reference/icons/achievements/`; the reusable not-eligible overlay is `assets/achievements/overlay.png`
-- decisions, missions, and decision-category icons: their separate folders under `assets/vanilla_reference/icons/`
-- flags: complete normal, medium, and small sets under `assets/vanilla_reference/flags/`
-- focus icons: `assets/vanilla_reference/icons/national_focus/`
-- officer-corps, balance-of-power, faction, and other system icons: their matching folders under `assets/vanilla_reference/icons/`
-- country-leader, commander, operative, and advisor portraits: their matching folders under `assets/vanilla_reference/portraits/`
-- unit visual references: the separate equipment, land, air, naval, and 3D-model families under `assets/vanilla_reference/units/`
+- idea and national spirit icons: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\ideas\`
+- news event images: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\event_art\news\`
+- report event images: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\event_art\report\`
+- super-event and large presentation art: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\event_art\super_event\`
+- technology and special-project icons: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\technologies\` and `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\special_projects\`
+- achievement icons: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\achievements\`; the reusable not-eligible overlay is `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\achievements\overlay.png`
+- decisions, missions, and decision-category icons: their separate folders under `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\`
+- flags: complete normal, medium, and small sets under `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\flags\`
+- focus icons: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\national_focus\`
+- officer-corps, balance-of-power, faction, and other system icons: their matching folders under `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\`
+- country-leader, commander, and operative portraits: their matching folders under `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\portraits\`
+- unit visual references: the separate equipment, land, air, naval, and 3D-model families under `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\units\`
 
 The feature spec does not need to analyze those images itself. It should make the handoff explicit so the asset agent knows which example set to inspect before generation, sourcing, cropping, or wiring.
 
@@ -1370,7 +1408,6 @@ Use these sizes when planning assets:
 - leader portraits: 156x210
 - commander portraits: 156x210
 - operative portraits: 156x210
-- advisor, theorist, and high-command dossier icons: 65x67 independently composed cards
 - flags small: 10x7
 - flags medium: 41x26
 - flags normal: 82x52
