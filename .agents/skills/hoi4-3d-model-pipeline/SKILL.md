@@ -25,7 +25,7 @@ If the key is missing or blank, stop and tell the user to run this exact PowerSh
 
 Then tell the user to restart the shell or Codex. Do not continue until the restarted process exposes the key.
 
-After the key gate passes for an actual 3D requirement, run `python .tools/3d_pipeline/bootstrap_3d_workflow.py` from the mod root before route discovery. The bootstrap autonomously discovers the repository and Blender paths, installs or verifies the pinned Meshy and Blender MCP dependencies, installs the checksum-locked io_pdx_mesh extension, materializes concrete entries in `.codex/config.toml`, removes `.codex/3d_mcp_config.template.toml`, and records the resolved paths. The user must not be asked to copy, edit, or replace MCP configuration. Verify the selected Meshy MCP route is reachable, the official Meshy server version is pinned, the generated Blender MCP route or a verified narrow adapter is available, the intended Blender executable and version are known, and the io_pdx_mesh archive/version/checksum is locked. Stop with blocked or needs_user_review when a required route or dependency is unavailable; never silently substitute an unverified route.
+After the key gate passes for an actual 3D requirement, run `python .tools/3d_pipeline/bootstrap_3d_workflow.py` from the mod root before route discovery. The bootstrap autonomously discovers the repository and Blender paths, resolves the latest available Meshy package, Blender MCP release or default-branch head, and io_pdx_mesh release, verifies each resolved artifact, materializes concrete entries in `.codex/config.toml`, removes `.codex/3d_mcp_config.template.toml`, installs and enables the matching Blender MCP add-on into Blender's discovered extension repository, configures its resolved bridge endpoint, starts Blender when no reachable bridge exists, and records the observed versions, refs, paths, and checksums. The user must not be asked to copy, edit, replace, install, enable, or launch MCP or Blender components manually. Treat `.tools/3d_pipeline/config/dependencies.lock.json` as a generated resolution record with `resolution_policy = latest_at_bootstrap`, not as a stale hand-written version pin. Verify the selected Meshy MCP route is reachable, the latest official package and its live schema are usable, the latest Blender MCP server and matching add-on are installed and enabled, the discovered Blender executable and build are known, the configured Blender bridge is reachable, and the latest io_pdx_mesh archive is installed and checksum-recorded. If latest-version resolution, verification, add-on installation, bridge reachability, or compatibility fails, stop with `required installation/verification` or `blocked`; never silently substitute an unverified route or continue with an older dependency.
 
 Read the repository AGENTS.md, the local offline wiki pages for entities, graphical assets, units, buildings, scopes, effects, and relevant gameplay surfaces, the local vanilla documentation, and the exact vanilla model/entity/material/action precedents before wiring source files.
 
@@ -76,13 +76,13 @@ Keep an append-only history, a manifest, a provider task ledger, a dependency re
 
 ## 4. Classify the model profile
 
-Choose one profile before provider work: static_prop, building, humanoid_unit, creature, vehicle, aircraft, naval, or articulated_attachment.
+Choose one profile before provider work: `static_prop`, `building`, `humanoid_unit`, `nonhumanoid_creature`, `vehicle_land`, `aircraft`, `naval`, or `articulated_attachment`.
 
 For a humanoid unit, define the unit or sub-unit consumer, entity key, .asset key, mesh key, material paths, icon or text-icon requirements, idle action, move action, attack action, death action when relevant, and the country/province/state test that exposes it.
 
 For a building or map entity, define the building key, entity key, mesh key, state and province placement, valid state-to-province pair, construction or level behavior, zoom visibility, rotation, runtime scale, and a test location that is not hidden by an existing building.
 
-For a creature, vehicle, aircraft, or naval object, define the domain-specific coordinate axes, ground/water contact, orientation, required actions, camera/zoom expectation, and live consumer before export.
+For a nonhumanoid creature, vehicle, aircraft, or naval object, define the domain-specific coordinate axes, ground/water contact, orientation, required actions, camera/zoom expectation, rigid or deforming parts, and live consumer before export.
 
 ## 5. Reference-image gate
 
@@ -102,10 +102,10 @@ Use this sequence:
 
 1. Preflight the one reference image and job manifest.
 2. Check provider balance and record the result.
-3. Submit image-to-3D using the pinned official route and the verified schema.
+3. Submit image-to-3D using the latest verified official route and live schema.
 4. Poll task status until success or a recorded terminal failure.
 5. Download GLB/FBX and textures immediately and checksum them.
-6. Review the candidate from several local Blender views before spending on remesh, retexture, rig, or animation.
+6. Review the candidate from front, rear, side, top, and underside views where relevant, plus wireframe, untextured shading, and textured material views, before spending on remesh, retexture, rig, or animation.
 7. Use remesh, retexture, rig, or animation only when the profile and QA gates justify the paid tranche.
 
 Provider actions are candidates, not final runtime files. Preserve rejected candidates and reason codes in the job evidence.
@@ -120,17 +120,15 @@ For humanoid units, match the custom source geometry to the measured vanilla sou
 
 Do not apply nonuniform scale, leave negative transforms, or allow the mesh to float, shrink on movement, change orientation between actions, or exceed the intended runtime footprint. The scale crosswalk must distinguish source geometry height from effective in-game height.
 
-Repair the working geometry so it has no holes, loose components, non-manifold edges, degenerate triangles, missing body parts, invalid normals, duplicate shells, or zero-weight deforming vertices. Triangulate unless a verified local export path requires another topology.
+Repair or reject the working geometry so it has no holes, loose components, non-manifold edges, boundary defects, degenerate triangles, missing body parts, invalid normals, duplicate shells, or zero-weight deforming vertices. Record the geometry counts, bounds, transforms, material slots, UV layers, ground/water contact, and repair results. Triangulate unless a verified local export path requires another topology.
 
 ## 8. PDX materials and textures
 
 Use the local vanilla shader, UV, texture names, dimensions, and entity material pattern as the authority. Do not assume that a provider preview is a runtime-ready PDX material.
 
-For the installed vanilla PdxMeshAdvanced pattern, verify the packed specular convention against the local precedent before export. The tested convention is R=0, G=32, B=metallic, and A=roughness; raw grayscale roughness in the specular texture produces chrome-black or incorrectly lit surfaces.
+For the installed vanilla PdxMeshAdvanced pattern, verify the packed specular convention against the local precedent before export. The tested convention is R=0, G=32, B=metallic, and A=roughness; raw grayscale roughness in the specular texture produces chrome-black or incorrectly lit surfaces. Record the shader, channel semantics, color space, alpha behavior, texture dimensions, and DDS format rather than trusting a provider preview.
 
-Keep provider source textures immutable and derive processed textures from them without compounding edits. If the provider diffuse is too dark, record a deterministic grade and apply it from the immutable base on every run. Do not overwrite a final mapped texture with an older candidate.
-
-Match the local runtime texture dimension and DDS format. Process and checksum the PNG and DDS files, record shader slots and channel semantics, and compare the final runtime copy against the approved source hash immediately before wiring.
+Keep provider textures immutable and derive all processed maps from those originals. If the provider diffuse is too dark, apply a deterministic documented grade from the immutable source on every run and never compound an older processed texture. Use the local vanilla model dimension limit, currently 1024 pixels unless local installed references prove otherwise, and the repository DDS converter. Process and checksum the PNG and DDS files, record shader slots and channel semantics, and compare the final runtime copy against the approved source hash immediately before wiring.
 
 ## 9. Skeletal animation
 
@@ -144,11 +142,13 @@ Export real .anim files for every requested action and reimport or parse those a
 
 ## 10. Export and reimport
 
-Use only the checksum-locked io_pdx_mesh extension and record its export settings, Blender version, extension version, and archive checksum.
+Use only the latest verified io_pdx_mesh extension resolved by bootstrap and record its export settings, Blender build, extension version, release URL, and archive checksum in the generated dependency record.
 
 Export .mesh and .anim files into the job export folders first. Reimport or parse each approved export, inspect identity, bounds, material slots, skeleton, actions, FPS, frame range, contacts, and warnings, and save the proof beside the job manifest.
 
 Do not copy exports to the live mod root until the parent has selected the final candidate. Synchronize the final runtime copy in one hash-aware step and record source and destination hashes for every mesh, animation, texture, entity, and .asset file.
+
+Treat selected source exports, staged runtime copies, and active consumer files as separate surfaces. Select the final geometry, material maps, and actions first, then lock the selected source paths in the manifest before copying. Never synchronize from an older provider or processed path, never let a filename choose the source, and compare destination hashes after synchronization.
 
 ## 11. Runtime integration handoff
 

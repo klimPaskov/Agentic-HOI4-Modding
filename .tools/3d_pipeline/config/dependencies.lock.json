@@ -1,31 +1,12 @@
 {
   "schema_version": "1.0.0",
   "lock_name": "hoi4-3d-model-pipeline",
+  "resolution_policy": "latest_at_bootstrap",
   "bootstrap": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-  "routes": {
-    "meshy_mcp": {
-      "package": "@meshy-ai/meshy-mcp-server",
-      "version": "0.4.0",
-      "required_environment": ["MESHY_API_KEY"]
-    },
-    "blender_lab_mcp": {
-      "repository": "https://projects.blender.org/lab/blender_mcp.git",
-      "tag": "v1.0.0",
-      "commit": "03004fd0216bfe5e0a3d9ac9b47d5efadc3d78c4",
-      "server_version": "1.28.1",
-      "wrapper": ".tools/3d_pipeline/wrappers/run_blender_lab_mcp.cmd"
-    },
-    "blender": {
-      "minimum_version": "5.1.0",
-      "required_minor": "5.1"
-    },
-    "io_pdx_mesh": {
-      "release": "0.91",
-      "version": "0.91.0",
-      "download_url": "https://github.com/ross-g/io_pdx_mesh/releases/download/0.91/blender-io_pdx_mesh.zip",
-      "sha256": "A683DF08318CB700014C7FE9A3D15139E5FB2313C7E98715204263E48931F7C2",
-      "installed_extension_id": "io_pdx_mesh"
-    }
+  "sources": {
+    "meshy_mcp": "npm:@meshy-ai/meshy-mcp-server@latest",
+    "blender_lab_mcp": "https://projects.blender.org/lab/blender_mcp.git",
+    "io_pdx_mesh": "https://api.github.com/repos/ross-g/io_pdx_mesh/releases/latest"
   },
   "policy": {
     "provider_input_image_count": 1,
