@@ -131,12 +131,6 @@ The installed `hoi4-agent-tools` server is the coding-agent tool for focus trees
 
 The agent may call MCP autonomously as part of the larger skills, source review, wiki and vanilla-documentation checks, tests, audits, and subagent handoffs. MCP does not replace those repository requirements.
 
-### Optional 3D MCP bootstrap
-
-The 3D workflow is optional. Do not install, enable, or invoke Meshy, Blender, or io_pdx_mesh for a feature that does not actually need a new 3D model, entity, unit action, or skeletal animation.
-
-When a feature does need 3D work, first apply the MESHY_API_KEY hard gate in `hoi4-3d-model-pipeline`, then run `python .tools/3d_pipeline/bootstrap_3d_workflow.py` from the mod root. The bootstrap autonomously discovers paths, installs or verifies the pinned Meshy and Blender MCP dependencies, installs the checksum-locked io_pdx_mesh extension, writes concrete entries into `.codex/config.toml`, records the resolved setup, and deletes `.codex/3d_mcp_config.template.toml`. The user must not be asked to copy, edit, or replace MCP configuration. If setup cannot finish, keep the optional routes disabled and report the blocker.
-
 ### Subagents
 
 Use project custom Codex agents when a task needs bounded research, asset production, audit, recursive expansion, or documentation work that can be separated from main implementation.
