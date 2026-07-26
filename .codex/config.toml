@@ -14,3 +14,71 @@ default_tools_approval_mode = "auto"
 # 3D MCP routes are intentionally absent until a feature actually needs a
 # model. The 3D agent runs the repository-owned bootstrap at that point and
 # materializes concrete Meshy and Blender entries without user editing.
+
+[agents.hoi4_3d_model_pipeline]
+description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through the verified Meshy-to-Blender-to-io_pdx_mesh workflow. Produces source models, checkpoints, PDX textures, mesh and animation exports, reimport evidence, manifests, and runtime handoffs without claiming final gameplay completion."
+config_file = "agents/hoi4_3d_model_pipeline.toml"
+
+[agents.hoi4_asset_source_researcher]
+description = "Finds, verifies, downloads, processes, converts, and documents real or archival visual source assets for HOI4 mods. Use for report event images, news event images, archival custom feature images, real leader portraits, historical flags, and historically attested symbols. Does not edit GFX or gameplay files."
+config_file = "agents/hoi4_asset_source_researcher.toml"
+
+[agents.hoi4_audio_researcher]
+description = "Researches, verifies, downloads, edits, converts, and documents licensed or public-domain audio for HOI4 mod presentation surfaces. Does not wire audio into scripts or sound definitions."
+config_file = "agents/hoi4_audio_researcher.toml"
+
+[agents.hoi4_country_package_auditor]
+description = "Active auditor and small-patch subagent for HOI4 country packages. Checks and can patch tags, history, states, leaders, portraits, flags, parties, focus loading, ideas, advisors, units, technology, claims, cores, localisation, AI, formables, and playable setup inside the current task scope."
+config_file = "agents/hoi4_country_package_auditor.toml"
+
+[agents.hoi4_decision_mission_auditor]
+description = "Active auditor and small-patch subagent for HOI4 decisions, missions, timed objectives, decision categories, scripted GUI decision surfaces, costs, tooltips, AI behavior, cleanup, balance, and exploit risk."
+config_file = "agents/hoi4_decision_mission_auditor.toml"
+
+[agents.hoi4_documentation_curator]
+description = "Documentation cleanup and consistency subagent for HOI4 mods. Reconciles specs, plans, docs, handoffs, manifests, prompts, reports, and README files with accepted decisions and current implementation evidence. Does not edit gameplay files or external tabular data files."
+config_file = "agents/hoi4_documentation_curator.toml"
+
+[agents.hoi4_feature_completion_auditor]
+description = "Read-only completion auditor for HOI4 mod feature implementation. Compares specs, plans, prompts, and repo files, then flags missing mechanics, fallbacks, simplifications, docs gaps, asset gaps, validation gaps, and unresolved addenda."
+config_file = "agents/hoi4_feature_completion_auditor.toml"
+
+[agents.hoi4_focus_tree_auditor]
+description = "Active auditor and small-patch subagent for HOI4 focus trees. Checks and can patch route logic, prerequisites, mutual exclusions, rewards, icons, localisation, AI, formable links, and simplifications inside the current task scope."
+config_file = "agents/hoi4_focus_tree_auditor.toml"
+
+[agents.hoi4_generated_feature_art]
+description = "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, or large feature presentation, UI, flag, faction emblem, and fictional portrait art for HOI4 mods. Does not edit GFX or gameplay files."
+config_file = "agents/hoi4_generated_feature_art.toml"
+
+[agents.hoi4_icon_artist]
+description = "Creates generated icon asset packages and frame-by-frame small animated sprite asset packages for HOI4 mods. Use for focus, idea, national spirit, officer corps spirit, decision, mission, decision category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, modifier, scripted GUI, formable seal, warning, glow, and route-state icons. Does not edit GFX or gameplay files unless parent scope explicitly changes it."
+config_file = "agents/hoi4_icon_artist.toml"
+
+[agents.hoi4_improvement_loop_planner]
+description = "Plan-only improvement loop subagent for HOI4 mods. Writes deep expansion addenda with research, historical connections, playable mechanics, and implementation handoffs. Does not patch gameplay files."
+config_file = "agents/hoi4_improvement_loop_planner.toml"
+
+[agents.hoi4_localisation_auditor]
+description = "Active auditor and small-patch subagent for HOI4 localisation, scripted localisation, dynamic text, tooltip quality, key coverage, duplicate keys, namespace consistency, BOM encoding, and player-facing wording clarity."
+config_file = "agents/hoi4_localisation_auditor.toml"
+
+[agents.hoi4_quote_remark_researcher]
+description = "Finds, verifies, compares, and documents quote, cultural remark, slogan, title-reference, and allusion candidates for a HOI4 feature. Does not edit localisation or gameplay files."
+config_file = "agents/hoi4_quote_remark_researcher.toml"
+
+[agents.hoi4_repo_explorer]
+description = "Read-only HOI4 mod repository explorer for large or uncertain tasks. Maps relevant files, vanilla precedents, risks, validation checks, dependencies, and edit order. Does not patch gameplay files."
+config_file = "agents/hoi4_repo_explorer.toml"
+
+[agents.hoi4_scripted_system_architect]
+description = "Active architect and narrow implementation subagent for reusable HOI4 scripted effects, scripted triggers, script constants, event targets, meta effects, variables, tuning tables, formable helpers, scripted GUI helpers, and dynamic helper logic."
+config_file = "agents/hoi4_scripted_system_architect.toml"
+
+[agents.hoi4_skill_maintainer]
+description = "Creates, updates, audits, and trims HOI4 mod repository skills. Use when a reusable workflow, repeated mistake, validation pattern, asset workflow, prompt pattern, or project convention should be captured in a skill. Does not edit gameplay files."
+config_file = "agents/hoi4_skill_maintainer.toml"
+
+[agents.hoi4_spreadsheet_doc_worker]
+description = "Optional spreadsheet-only worker for mod-maintained CSV/XLSX tables when a repository actually has them or the parent explicitly requests them. Preserves formatting and aligns fields with source-of-truth implementation or localisation provided by the parent."
+config_file = "agents/hoi4_spreadsheet_doc_worker.toml"
