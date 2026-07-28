@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "599497ea2f93612d9094461c6fde114fc87a5c0f",
+  "generated_for_revision": "27128a7b311d728a959afff7238a9aeeb9987f2b",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "420bea21df06f2cdf32f40b80859dc7a4db8568cea91c8a2070d5b035bd25afc",
-          "size": 36892
+          "sha256": "20551fafd2eaaaa9aa73909b98278b3972f5aa9b6cf0ff6f1c1ef9f2befc1f48",
+          "size": 37315
         }
       ]
     },
@@ -116,23 +116,33 @@
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "213ef331c7695090bd1cd4a2a10cb168bc60fadc94d050a61cacda33ac330119",
-          "size": 14823
+          "sha256": "255a45e587a9b46b19ed93b5a0ac3d8703556cea6c24bf91e48ada71cdbb855b",
+          "size": 14990
         },
         {
           "path": ".agents/skills/hoi4-decisions-missions/SKILL.md",
-          "sha256": "79e1cb65a738c0d2d9dca8fdd6e459b817e43414ccedcb3fdf175995da0e702f",
-          "size": 45024
+          "sha256": "87507102b3f0788bcd61f94a1e82de21b9a510684d045a7fb0874586cb77cc05",
+          "size": 45920
         },
         {
           "path": ".agents/skills/hoi4-events/SKILL.md",
-          "sha256": "0dde0e5d07025f0c2b37e5af56e67562b8aafc4f544949df8e76d8e4b038981c",
-          "size": 40419
+          "sha256": "ae5318d831e135000208828717c2e172f27b062265885daa3440deb3f89374c8",
+          "size": 41038
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
+          "sha256": "70126f2582e9456bac0df3c4b824abb2f7cabbd5a80c57bda9790be1fa414998",
+          "size": 67179
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
           "sha256": "585b51780621c8f6a1eed1987b71a4fac2b760615f71f3cfe1ea96d3d5631be0",
           "size": 59603
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md",
+          "sha256": "0f5a38670a969982164ed76a45ff49a3623df696cca72c7c94fdfd77d024a748",
+          "size": 1485
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art/news/contact_sheet.png",
@@ -1315,11 +1325,6 @@
           "size": 46036
         },
         {
-          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md",
-          "sha256": "bbb7b7c198e47778d360490fad78640bc6a85d48d1690de48d5a0575e2ef85c0",
-          "size": 1452
-        },
-        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/contact_sheet.png",
           "sha256": "f35021a371280702452380920fc1a52ef4f2dbe0dc3673533b07c99f024e5dc9",
           "size": 6467
@@ -1595,54 +1600,49 @@
           "size": 569
         },
         {
-          "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "f85b150bd0ad6b0a93b352a879dbe9705a7df67b4fcb136b299b853886e58f21",
-          "size": 66038
-        },
-        {
           "path": ".agents/skills/hoi4-feature-assets/tools/convert_to_dds.py",
-          "sha256": "d8aa0ba6a16ba8b6b698ccd6cf599b90e81db6f6c6132009f07115c728f6b8a0",
-          "size": 10086
+          "sha256": "347c68404fdfc4a458e584ea22a5279c4f2eb6fc87273dbbd7d3799d920bb82c",
+          "size": 10232
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/tools/process_report_event_image.py",
-          "sha256": "042d261adb6d17ea986a3244d08cb9c8991bd3003b8fd2dc252be65ef730ae54",
-          "size": 9969
+          "sha256": "33985c0dfc233b47b69f1400c1e23832fe97d3778c3af1b48286f689408e34af",
+          "size": 10266
         },
         {
           "path": ".agents/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "71b1197f9a61c0c5a55da1baf902cd925fea96b6cd53ef45c36ddeabe62b1b8a",
-          "size": 148330
+          "sha256": "7850251ef038c958f88d3fa02620e388a2b017bdac5b7d68e888dfc07fc29b15",
+          "size": 150174
         },
         {
           "path": ".agents/skills/hoi4-focus-trees/SKILL.md",
-          "sha256": "d8f782bd683c260d473bedd7ac8dd1999d504040f65bd545989f36b82c65f097",
-          "size": 75286
+          "sha256": "ddb19dcb23aed6e63f8af7e756db72e9ce10b04885f504c8e88e44674318f220",
+          "size": 76488
         },
         {
           "path": ".agents/skills/hoi4-frame-animation/SKILL.md",
-          "sha256": "b19b3518d77c09ce9dacacb5a77a218103b0d62cb2972c10000ddaa757bc4608",
-          "size": 23843
+          "sha256": "03018a8417cbfd0d0db91a931a5995286b7967a4d0ab53bb8ff7312eedf5a670",
+          "size": 24328
         },
         {
           "path": ".agents/skills/hoi4-improvement-loop/SKILL.md",
-          "sha256": "a79318cfa8bb10f895ab42858f9d93e87493cc7064167f60a66d8f9d23a5a0e7",
-          "size": 26239
+          "sha256": "74726457b55e57162d634cbf97c98e38f51a2e28fd43d061cd8fea550e53eb5b",
+          "size": 26522
         },
         {
           "path": ".agents/skills/hoi4-mtth/SKILL.md",
-          "sha256": "4492c96409c03a7acc9c59059b36522c4a773c46ce1fb4f8c601c698abff0dde",
-          "size": 2129
+          "sha256": "a157ba9ee04cf91d777adc716caf2414781784c278e61772ed79463fab1cf040",
+          "size": 2194
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "982979d02c8df8c0ba146488e36dab556f34243661e3ce3b409572d1f0e78095",
-          "size": 22593
+          "sha256": "a5ed9ba915d4251a6d7ebf852790e5958e3d8231a55f749b13ff70ec8362e5b2",
+          "size": 22900
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
-          "sha256": "dd539b2a236df82f065f719781cac12e00112ba1017aac7efe47c01fd8241588",
-          "size": 16584
+          "sha256": "ef383c7603f24faff641ca02c70187f57b7bfa9caab2f46c9b4db5207af6b9c6",
+          "size": 17041
         }
       ]
     },
@@ -1696,88 +1696,88 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_3d_model_pipeline.toml",
-          "sha256": "92e05f77c3ccb82cecadd3db1cae3f178037dca7f79c94c2daf5a8752573ab49",
-          "size": 9710
+          "sha256": "66363583092df3ec38b25345398d6baa5a215437e3f46e70e3c6ff46a7fc13e2",
+          "size": 9818
         },
         {
           "path": ".codex/agents/hoi4_asset_source_researcher.toml",
-          "sha256": "a50d4032eb3f7528f9b2a94795ecac4cfb19442b7b49ed9f0f204e1b39fad9a0",
-          "size": 4194
+          "sha256": "8292fe4956ed6549d676b9eb839a29b57b4dcf6e556756faea8c3b0d49f2973c",
+          "size": 4251
         },
         {
           "path": ".codex/agents/hoi4_audio_researcher.toml",
-          "sha256": "0465b66f2e33d0de5c4bc2e47937a1bbb1e5d6f8f29607bed8bf0b4e93c2fc1a",
-          "size": 4058
+          "sha256": "248cb65cfd5022a8afbf91bcf42a842bd9647c7d9c26238a5813bedc5441fbb5",
+          "size": 4127
         },
         {
           "path": ".codex/agents/hoi4_country_package_auditor.toml",
-          "sha256": "18a8be42810ddc9302efa895a12f0d43b26fc792754503f321331b654ae20395",
-          "size": 6905
+          "sha256": "944fcbff9acedf6037576324a9e2b8dd1f1d72ecbceff6d2ff906ca4160af975",
+          "size": 6990
         },
         {
           "path": ".codex/agents/hoi4_decision_mission_auditor.toml",
-          "sha256": "5130b329ff9368399689ca2ac70ba985827ad15e7436e51eadef041c5ae08dc5",
-          "size": 4937
+          "sha256": "8333c2f5bbb0ee05c0824d577ca941b44721e1a325313cd5835b82cc624f3fc2",
+          "size": 5019
         },
         {
           "path": ".codex/agents/hoi4_documentation_curator.toml",
-          "sha256": "ff26a3823885432ca92b51a84a78fb004432c64042061e92d0a2b2aed13d3fe0",
-          "size": 8710
+          "sha256": "bfda5ee415672af7d2ade75d31a769433f90696cf594de03412740e3aace7ee8",
+          "size": 8833
         },
         {
           "path": ".codex/agents/hoi4_feature_completion_auditor.toml",
-          "sha256": "b2f31d1d21574ab14c11ef8fa516811afa172f6323be5856e42e7f2cf3a773e3",
-          "size": 3369
+          "sha256": "30a0587152a5531aabc95d18ea789e76f271d148313044fa04e5b3a22e4a7287",
+          "size": 3423
         },
         {
           "path": ".codex/agents/hoi4_focus_tree_auditor.toml",
-          "sha256": "674e952f316bdd306b3827ee666ee1d1cd232a280c5056c0012881f5d2f1f73b",
-          "size": 4031
+          "sha256": "0057e1bc43bb4a43422155e4bdd847e377b79abb9b02381f64ecaf156a7db9ec",
+          "size": 4110
         },
         {
           "path": ".codex/agents/hoi4_generated_feature_art.toml",
-          "sha256": "5bc276fd2fea7ee24add24368d4cfc45320ac6fa44d3a6cbd99e41a0f7ef3596",
-          "size": 6067
+          "sha256": "6d52ae75372779cd0533a4d28cfe32fc76ecc613167d234f5236206381236d97",
+          "size": 6133
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
-          "sha256": "555694f44e6dd07918876bac0f0984e51a78e9f408550da513802f6316d39755",
-          "size": 11362
+          "sha256": "9d3719714778dbf4765058a115c72acecc7de2cc29fb113611382c7992559d5e",
+          "size": 11460
         },
         {
           "path": ".codex/agents/hoi4_improvement_loop_planner.toml",
-          "sha256": "b44ec68a170fd298d461169ba598baa04ba91044b797c59d90ac281d1e22cf9e",
-          "size": 6506
+          "sha256": "e420acf187de1b1386870d5a1616aeff24897013e4ba04795706134fc680df4f",
+          "size": 6567
         },
         {
           "path": ".codex/agents/hoi4_localisation_auditor.toml",
-          "sha256": "c55ec555445e8fb87ef220aec4f632e7f63b30ce89f6e3590db027fe0a2fbe28",
-          "size": 4456
+          "sha256": "88470b2356e102afdbdfb50633142ab864bf3f46c0e39108bf773a867da1a42f",
+          "size": 4533
         },
         {
           "path": ".codex/agents/hoi4_quote_remark_researcher.toml",
-          "sha256": "2d15f26ce6a9d933626f0aebab4075efa1045adb8aa19e5240efb2315a56f392",
-          "size": 3903
+          "sha256": "b382b9832b1a5badce1ec58aedcafe84ebbbbabbafd338555a536125d24de7c4",
+          "size": 3964
         },
         {
           "path": ".codex/agents/hoi4_repo_explorer.toml",
-          "sha256": "2343bfa442e4685b876d5582594a22bc47c034c92fdb04ad15d848cfc56b1146",
-          "size": 11845
+          "sha256": "833e6d325d2e1edbad095e65f1891f6d37349eee37a38651f28d61bc07087b67",
+          "size": 12079
         },
         {
           "path": ".codex/agents/hoi4_scripted_system_architect.toml",
-          "sha256": "873a90b77d56fad943a359e056aa7a9d996094d3e3baadfbae37e1f686adaf5d",
-          "size": 4917
+          "sha256": "0dff73d32b8c2e169898cb9ddd80f1630bda4419ef756c7c427e6a774288560b",
+          "size": 4991
         },
         {
           "path": ".codex/agents/hoi4_skill_maintainer.toml",
-          "sha256": "1a1a20904db1f700615f32a2ad0dcc449738bc3f71efcbd9feba2793def015f3",
-          "size": 3460
+          "sha256": "c64251a5a492f9db73039bfdd881f71880813c62cf2789e68a9e5d5b14fb7dc5",
+          "size": 3507
         },
         {
           "path": ".codex/agents/hoi4_spreadsheet_doc_worker.toml",
-          "sha256": "40f86acd5d0b790dcf36aafec8338d850fb13f0af4042e95e4fdf22ff2dce367",
-          "size": 3875
+          "sha256": "c2d59b65f3e66e92a70dd5b10d199e15bf826ade4420558ba5c8fd3a1826538a",
+          "size": 3925
         }
       ]
     },
@@ -1837,8 +1837,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "ac7bd4f5d6f188d663bc042ec062bd1fc01148780a041909d5a8d841ba11f719",
-          "size": 491
+          "sha256": "f0e0d08c4dbdd5229a68e86a42c6aef70e9313bf96be14e856bdddc2abb20370",
+          "size": 6793
         }
       ]
     },
@@ -1958,8 +1958,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "e699b4ec20741849454376d49bc5c017a475608965604e3882c216a30ec166e4",
-          "size": 13489
+          "sha256": "0cae2cfc53b94bf545d2125f9a15caee3a35fdfdffd146bd14f62ad034e25529",
+          "size": 13781
         }
       ]
     },
@@ -2007,8 +2007,8 @@
       "expected_files": [
         {
           "path": "AGENTS_chaos_redux.md",
-          "sha256": "ed9cb54702589a3663273e96fb150259551394f0eed78ddf5d1889dad58c41fe",
-          "size": 34487
+          "sha256": "93d63dfc2e8cd202c2fa7daa5ebd2b6a721df2bb06aa9f9e3fcd161d9186f528",
+          "size": 34882
         }
       ]
     },
@@ -2061,149 +2061,254 @@
       ],
       "expected_files": [
         {
-          "path": "paradox_wiki/Achievement modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "e80b8db8a9a14964edd0c447669de2e59a7296db53da799f574aee4102dd7dc6",
-          "size": 5157
-        },
-        {
           "path": "paradox_wiki/AI focuses - Hearts of Iron 4 Wiki.md",
-          "sha256": "5b9784d6776982a38d9b35caaabc790bc9c03c5566be3e9f3834b1550e2c6dd2",
-          "size": 5149
+          "sha256": "9c2432116431ffe09f353fa89a533be66f34b53fd01644b527d4fe96f2a00eab",
+          "size": 5259
         },
         {
           "path": "paradox_wiki/AI modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "f1fdb9fdad274546fb129fcb87745f5fcb6e710d0e46653eb31b07ae4d20a14f",
-          "size": 73238
+          "sha256": "1edc5ff8e5c10916b18ee780b495a199fea113c5689d3c71d2f19f9f2cf560bb",
+          "size": 73850
+        },
+        {
+          "path": "paradox_wiki/Achievement modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "c86ed77ffaf587d6ffb222d98e6c76004bb6585fe1fd9420f77dd9aad7451a2a",
+          "size": 5274
         },
         {
           "path": "paradox_wiki/Autonomy state modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "4016e392c8211769e68d3d462376233cb8141c08fd78e2b3c8cdf7a129463a8e",
-          "size": 18494
+          "sha256": "f65f938e6ea5c6a179f1d83d158693c84f61e1ca3aaa49e05f4743f8265b1442",
+          "size": 18705
         },
         {
           "path": "paradox_wiki/Balance of power modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "1ba12e672e528e71e30b931cb0bbcfa6597cec5b406433036252b8fb2f2734ee",
-          "size": 21675
+          "sha256": "0e0fcbf1631afd507c7aa9f7972b9bcf3f4b5a1ff362015a1507fc325e0719e9",
+          "size": 21892
         },
         {
           "path": "paradox_wiki/Bookmark modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "f815925fa2a7e20db81bcde9e0aab5d746f7f3bed4c9693766939a70cef43149",
-          "size": 29139
+          "sha256": "15652f0daccd1c3f1c6cab2c9d8c8e396aa09abaa4015178c50d1f54a811a0a3",
+          "size": 29440
         },
         {
           "path": "paradox_wiki/Building modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "25c020bb4a2a950275fa7c095eac38f8c29ae099b2591ae030574d2d6574c2d5",
-          "size": 26958
+          "sha256": "c15d446f98bcae778a51bee1165d10b229560e030aaf2b37366f738a91184886",
+          "size": 27322
         },
         {
           "path": "paradox_wiki/Character modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "827f261977dbf1ccfc74a80d8ef331056bbd49a58a60254fb53275c214f4edc4",
-          "size": 62716
+          "sha256": "0536ec9a21c58c30bf1d5accc17e0ff5daa1c604022c5eff3eb08964c45f7838",
+          "size": 63516
         },
         {
           "path": "paradox_wiki/Console commands - Hearts of Iron 4 Wiki.md",
-          "sha256": "36a61f2d2821e2e364333f7676003371cea0929c62b755d8d095e1049950a482",
-          "size": 37553
+          "sha256": "08917d6920703181b4e930dad868e270e4ce2e8cff836ffbd4a8d93a98c3a44a",
+          "size": 37878
         },
         {
           "path": "paradox_wiki/Cosmetic tag modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "aa46c7136636c3589eb7a976cd2aebd2ddd8445e4eba185167ea48347e14ebe2",
-          "size": 9688
+          "sha256": "571faf5fcfe4264d75699af018baa9bfccaccad0b1b8cce928b018d22d4ef941",
+          "size": 9831
         },
         {
           "path": "paradox_wiki/Country creation - Hearts of Iron 4 Wiki.md",
-          "sha256": "9e12adfeab7ce8439190cd1427264766e1c0bdfc77c8739c1e309d859fcaeaf0",
-          "size": 60059
+          "sha256": "38d4718a127de40edd58a7dc7bce91f899fdb43318ecb76ac564dc833cfa8fb6",
+          "size": 60770
         },
         {
           "path": "paradox_wiki/Data structures - Hearts of Iron 4 Wiki.md",
-          "sha256": "20a033856bfef59050840d38d9606bc1e43754eedbb8c16e832f864bcd8fbf20",
-          "size": 158841
+          "sha256": "7e5e5369dad08240b61eac1126823087335aacd7230c6294f5a7f8ad3c4d4f38",
+          "size": 160150
         },
         {
           "path": "paradox_wiki/Decision modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "500e816119c17caf9f2c585c649c5d0e62bda49678ba415aeb668ce3d46a768c",
-          "size": 33502
+          "sha256": "cf5b2c91791aaeaa69b7a1869d876d781b238b4111425b05682d9dcf63b0ab5b",
+          "size": 34111
         },
         {
           "path": "paradox_wiki/Defines - Hearts of Iron 4 Wiki.md",
-          "sha256": "ddc7920caaaf1fb9c7bf5dd976b083909ead64a30b0abe82893ca6e90ababcec",
-          "size": 639902
+          "sha256": "c159b80d7cdc594313205c60c7b95a78654d16bd1530577203c04812c6eb0ca0",
+          "size": 644056
         },
         {
           "path": "paradox_wiki/Division modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "9ddc3e72db09936fefdce02330bec33f10b5e372fcb439df3b72365cf6bf4da4",
-          "size": 20807
+          "sha256": "d7cea0d6b99cd231c331569b5e6185dc0eacf58192dae46b3ed1aceb5e1ac083",
+          "size": 21293
         },
         {
           "path": "paradox_wiki/Doctrine modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "5b0bcefe93345a404d733929d2f3af3533f888ac433ed2bba17aca7aea59e730",
-          "size": 6143
+          "sha256": "8b8c92d02bc871c213f9c2a82b6bba12cf7fd51d569344ed3dc70cf9b17b594f",
+          "size": 6218
         },
         {
           "path": "paradox_wiki/Effects - Hearts of Iron 4 Wiki.md",
-          "sha256": "d6e87119701cb736e0712df830cc9297223fa107f13f309eac975c7cca85498b",
-          "size": 287346
+          "sha256": "166db8e2be659269d8fa236d28c85f3a9ebb9afab0587c655ccf50ad71bf5f7a",
+          "size": 288665
         },
         {
           "path": "paradox_wiki/Entity modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "001e2e19543c0886bf168be8bd4b0eff92849efe7511a4a41f1501ac335a320c",
-          "size": 6147
+          "sha256": "68e0c61aa04fea2047ccfc12d39562f41c00c3c119e5278dcc4f62c8f5d48782",
+          "size": 6328
         },
         {
           "path": "paradox_wiki/Equipment modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "bdf9fc416708cb63e501c9612b358f9de99fc595031daafb77ee65477c93d4fd",
-          "size": 10462
+          "sha256": "34dfe5fb1b6233bf94d255dfb076ae64484871fba89fb2b8f1b28ca9eb79046c",
+          "size": 10699
         },
         {
           "path": "paradox_wiki/Event modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "b0186d9b15f4e77cca6bb5090cec3e429c475675246b6312979e84dfcc495e00",
-          "size": 44381
+          "sha256": "e41428e9cd928df07e67d2d08ff37a07ac7b75dc9b57918ff7d26be6c7bfd2aa",
+          "size": 44981
         },
         {
           "path": "paradox_wiki/Faction modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "b5bbcb963c92998d3b35a2fa34b0aee07cb2a54776e1d3b0d9eac195fa60fa3a",
-          "size": 4309
+          "sha256": "63fe06c1d29f840fc99e397982ee35868231439d68011cd5b1eff9b6968b1e25",
+          "size": 4392
         },
         {
           "path": "paradox_wiki/Font modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "7c44957e273f693d10e9257833a0aed07c6a0bca6cf1b467735e52f2f8cedd36",
-          "size": 16052
+          "sha256": "b4eed76154935fd43f5204e97a75c690d69fd7804c7073eb9e64b1d397da2ddb",
+          "size": 16254
         },
         {
           "path": "paradox_wiki/Graphical asset modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "8f76ea70f8df9e94f5e67a17bd1bd45480b4068ee14a8298b7ca6566bf297fd5",
-          "size": 13305
+          "sha256": "8ad698efc0549b027acb88de9148c709e136d043378342450592ec4d696ef9f0",
+          "size": 13664
         },
         {
           "path": "paradox_wiki/Idea modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "f7c9eaee11135bf7d2a14b53512b07a6954e49b5189f176388e3998d2372bb92",
-          "size": 33080
+          "sha256": "ea445094ef98807ec29286fc095081b40f2d76aa576a6e9f27c863433fbb9ddd",
+          "size": 33510
         },
         {
           "path": "paradox_wiki/Ideology modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "a3411e28e9a5fd2f3d72b3a0618c35deb936263cbf8cadef2cd4a00632ed332b",
-          "size": 14714
+          "sha256": "644f210f123dd772ac3f784a13d8dc5dbb3020d745ce9e8584359637b9c8bf68",
+          "size": 14944
         },
         {
           "path": "paradox_wiki/Intelligence agency modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "cad0c011067723b991b9e7f4065f25e3f5dcd76ee96b5807a9c3641d40388c65",
-          "size": 4418
+          "sha256": "259faf2da418f80d4dc132661da0c0cccd7501744b04ee356cf6d38a15331e02",
+          "size": 4489
         },
         {
           "path": "paradox_wiki/Interface modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "e166b2d23e27bbdf95dcc466d8df40cccf3f989f4b45fb496bb128fbb664c029",
-          "size": 25473
+          "sha256": "237a1678a4b84125fdcfb47cea49bee39123a8609499ed71a3fca0f276a3768e",
+          "size": 25905
         },
         {
           "path": "paradox_wiki/Localisation - Hearts of Iron 4 Wiki.md",
-          "sha256": "1af6ac6d45008b0ba850dab67cd2f4e2af65610c182490d930cbebe3c169946c",
-          "size": 67235
+          "sha256": "9b38e45fa70bab7b166f78edcf048877230f5d3aa7ed5fc25a71ce8fcd7e9003",
+          "size": 68019
         },
         {
           "path": "paradox_wiki/Map modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "fc154b651bf01f6cced4f466f40bc6327d755b0d94b4ae7247afe7b2a99a293a",
-          "size": 82357
+          "sha256": "4f83db12e16cfc80acbbfb8450329537a81dbdec136c54bf3b255764b3bd08c4",
+          "size": 83144
+        },
+        {
+          "path": "paradox_wiki/Military industrial organization modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "8a5796879e58859d4508aa6fd90afe6e01cce3aa4cdb49db4e83fea47de355d0",
+          "size": 25320
+        },
+        {
+          "path": "paradox_wiki/Modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "ba12d0c656b81bcd70999806f3556ebed332da2a775d3285361b1becef027a38",
+          "size": 84798
+        },
+        {
+          "path": "paradox_wiki/Modifiers - Hearts of Iron 4 Wiki.md",
+          "sha256": "78dcc5c2bf72a17b846ef47d4b80d8db207091f89409ed7a21725e27ac2d701d",
+          "size": 159110
+        },
+        {
+          "path": "paradox_wiki/Music modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "01c7bb0899e1381360a30ed14ea0b75dc7ef4d225824b9df6cd950363c570b7e",
+          "size": 6257
+        },
+        {
+          "path": "paradox_wiki/Namelist modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "00a1f94d0b3de529b288af9f409a7c6c55c51bbd4383b7107fab43a01a8c8c5b",
+          "size": 4529
+        },
+        {
+          "path": "paradox_wiki/National focus modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "238e1bb37cc22fd1eb10354a898d986b238a51122999d669491f4ce3d6950dc9",
+          "size": 85027
+        },
+        {
+          "path": "paradox_wiki/On actions - Hearts of Iron 4 Wiki.md",
+          "sha256": "79a94b07d9e69844eaed6f05dab3c2f351ece6451c500408302dd847d62c5078",
+          "size": 35541
+        },
+        {
+          "path": "paradox_wiki/Particle modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "2de81641e7bb616d3c5045b44af19507df54a36209968778724e628fc94d169f",
+          "size": 3620
+        },
+        {
+          "path": "paradox_wiki/Portrait modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "99e751916b135d0aa409d5148f5e45e0f7e5f5ec123724c06ce51e86917ca2e9",
+          "size": 1975
+        },
+        {
+          "path": "paradox_wiki/Posteffect modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "a0f1864f1156eb2234d3e5063b5f00fa5362cd62b50dafc2e8cb477ee756baae",
+          "size": 7892
+        },
+        {
+          "path": "paradox_wiki/Resources modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "e79bf5cae3cf16d10ee5a36e9db45f584f22375d61ddc7eeee1fe2576fe0f88c",
+          "size": 3542
+        },
+        {
+          "path": "paradox_wiki/Scopes - Hearts of Iron 4 Wiki.md",
+          "sha256": "64633d8033d36df8e2b9b3aec8d430d07c4d89175ea711148e8189e6e093f844",
+          "size": 72797
+        },
+        {
+          "path": "paradox_wiki/Scripted GUI modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "c76f6ddaca15575297991d92e53dd9f36138b98c358064f21e82052383d8d702",
+          "size": 26114
+        },
+        {
+          "path": "paradox_wiki/Sound modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "fef59703329e677327ce5aed1006ee1dcda5bddeda4ef56d21c95a6ce67687a2",
+          "size": 5052
+        },
+        {
+          "path": "paradox_wiki/State modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "6bf3cc19d97723000e887e0749b58a79358c72f1ea025af46b93d2756d4300ae",
+          "size": 25701
+        },
+        {
+          "path": "paradox_wiki/Strategic region modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "6d46f89ad0552e2a4c9715c8ff6e4aad2b03dbb66ae9548b1bc9c60b07299276",
+          "size": 6892
+        },
+        {
+          "path": "paradox_wiki/Supply areas modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "3a4c758e29b8bdde24ec1314950705db1829ee811954c83c2554927b89cca685",
+          "size": 5403
+        },
+        {
+          "path": "paradox_wiki/Technology modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "1ef3777b68b2d9a3be1cc9b062fb5cb33e32eb209e3de5a1ccc2460cf789a7f1",
+          "size": 53784
+        },
+        {
+          "path": "paradox_wiki/Triggers - Hearts of Iron 4 Wiki.md",
+          "sha256": "035e5fd34130e6e3ae74821c59e9134e156e4b548a3525b973978ad0bd75578f",
+          "size": 194938
+        },
+        {
+          "path": "paradox_wiki/Troubleshooting - Hearts of Iron 4 Wiki.md",
+          "sha256": "6aa3e83d6b0671b27b802016c400f2a0e6c1f93dde073d8845f487d7aa65141d",
+          "size": 17239
+        },
+        {
+          "path": "paradox_wiki/Unit modding - Hearts of Iron 4 Wiki.md",
+          "sha256": "5ec3856b5c4c9eabd0c4100514b9afed2e7e96e427ab21dc261e7c90c4619bf6",
+          "size": 16707
         },
         {
           "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img1.svg",
@@ -4884,111 +4989,6 @@
           "path": "paradox_wiki/media/unit-modding-hearts-of-iron-4-wiki_2559a5eea4__img1.png",
           "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
           "size": 1411
-        },
-        {
-          "path": "paradox_wiki/Military industrial organization modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "10ed8d9eb2980c48d8df0a2e4d50b12e1734b0a860897fcd2ce5e3d01ac3a0ad",
-          "size": 24919
-        },
-        {
-          "path": "paradox_wiki/Modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "7c830c9b8029254278054d60d72cde191981f53905cba82a0f6c8e3e02ac6f84",
-          "size": 84174
-        },
-        {
-          "path": "paradox_wiki/Modifiers - Hearts of Iron 4 Wiki.md",
-          "sha256": "96fb9fbe1b378872fa515ccc85c2751f4768cd59fab43c7b6a1555bb09ee5f4f",
-          "size": 157947
-        },
-        {
-          "path": "paradox_wiki/Music modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "084dee24681052a8eef4eaf626be7b82f8151adc47a7c07c6118585a469db22e",
-          "size": 6059
-        },
-        {
-          "path": "paradox_wiki/Namelist modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "7415813d145fe9ff66e2c16eb49e3fc98b3e35e6eadb115873878b7ff36c2974",
-          "size": 4438
-        },
-        {
-          "path": "paradox_wiki/National focus modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "b1c7f624d4faf90d9be545afbde9490ad897d271c3ddb55cb7f45e5d8e1f6faf",
-          "size": 84390
-        },
-        {
-          "path": "paradox_wiki/On actions - Hearts of Iron 4 Wiki.md",
-          "sha256": "53635b65d19bf6e95bcaa29cdd775256174d75b5b7c5a6a2e08ad5ef6629a84a",
-          "size": 35301
-        },
-        {
-          "path": "paradox_wiki/Particle modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "999a7f9805b2a981bc5f46718a80d09129e81d739a694e9f929cbe365a5bc825",
-          "size": 3539
-        },
-        {
-          "path": "paradox_wiki/Portrait modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "be53bcaa7c23a9eb7f7253603f3a3b382f285d27d2c1dec72bffa4e4cc41976a",
-          "size": 1892
-        },
-        {
-          "path": "paradox_wiki/Posteffect modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "c50f6ad86e5ad919f7393633d5ab07690cf9ab1c8e96b5a89e77eb1b4ec43ece",
-          "size": 7733
-        },
-        {
-          "path": "paradox_wiki/Resources modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "14e9d279840355b0c3c5e81e95e3baa1f40da321aaf7f20877b684eee6cd9ddd",
-          "size": 3440
-        },
-        {
-          "path": "paradox_wiki/Scopes - Hearts of Iron 4 Wiki.md",
-          "sha256": "048668153b01ac9350770f61f98d298e98d34af6ba6dfdcf6e89f43256486325",
-          "size": 72288
-        },
-        {
-          "path": "paradox_wiki/Scripted GUI modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "e29e605d7210dd281f04485967b42c0db18f611b3808b11e2f72802d08bf0eb4",
-          "size": 25492
-        },
-        {
-          "path": "paradox_wiki/Sound modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "8f2ecb3b44336668ba7d4e0de4c3759d2c78cdf9d5b924d26e3d3318063f7838",
-          "size": 4867
-        },
-        {
-          "path": "paradox_wiki/State modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "cfb84311a5761348c596731f3987b34b58058c66db859bc15211fb46012064b7",
-          "size": 25421
-        },
-        {
-          "path": "paradox_wiki/Strategic region modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "2f39dbcc1e08e86f69a8a3885380127eb6ea00663305714475aa5f708cb56357",
-          "size": 6807
-        },
-        {
-          "path": "paradox_wiki/Supply areas modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "36a1f02b9c7537943b77e891f2ea64b41dda92fd8a9b085d0f3f8fdc1592f754",
-          "size": 5346
-        },
-        {
-          "path": "paradox_wiki/Technology modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "48050261832de01287cdd6a6e4d599caee11ee10a5b49fdf5b2cc2c9e9c72fdc",
-          "size": 53267
-        },
-        {
-          "path": "paradox_wiki/Triggers - Hearts of Iron 4 Wiki.md",
-          "sha256": "2f8b31cbc8a82a33c75cdec653b9da7b9b939f4670804cdb04b604011b055230",
-          "size": 193747
-        },
-        {
-          "path": "paradox_wiki/Troubleshooting - Hearts of Iron 4 Wiki.md",
-          "sha256": "abdec06107a267131cfcea59afe60f7b0ab05339fcc771d3a06896178e7f10a4",
-          "size": 17098
-        },
-        {
-          "path": "paradox_wiki/Unit modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "d1ec745164aebf5bd93fecb990c9dc48a7e03f2b34e8accb7cd2d0822546a4b4",
-          "size": 16349
         }
       ]
     },
@@ -5103,43 +5103,23 @@
       "expected_files": [
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "9dbe83483c6aeca78a90e1c20284cf5214564f46ee13f2ca21974019e58c255f",
-          "size": 33773
-        },
-        {
-          "path": ".tools/3d_pipeline/config/blender_mcp_project.txt",
-          "sha256": "3c9699ba93f47ced5072b4823d6a783251fecc28a221591bda3e98f9f2077cc7",
-          "size": 136
+          "sha256": "df2b9ec3add939b540677219bc5e3c5e8618e4f37952cb10ba70c60b4b05d082",
+          "size": 34623
         },
         {
           "path": ".tools/3d_pipeline/config/dependencies.lock.json",
-          "sha256": "d5673cac65cbeee2b4cce1538bed3d9eacc6d9e2e308069565713bcffbd2240c",
-          "size": 657
-        },
-        {
-          "path": ".tools/3d_pipeline/config/meshy_mcp_version.txt",
-          "sha256": "be36d0066e8b6749a88a1c6bf1ce96482157ec618cb7f2aab162d3efae41f4d9",
-          "size": 7
-        },
-        {
-          "path": ".tools/3d_pipeline/config/runtime.json",
-          "sha256": "741146c06c980fb4297cc2237527f52ccdfeff875f8fc0589b46ce523d87ef31",
-          "size": 3644
-        },
-        {
-          "path": ".tools/3d_pipeline/config/uv_executable.txt",
-          "sha256": "401626d11e27a14f419ea88df940ce59afe11300598ad158919030ef0d6f3ef1",
-          "size": 43
+          "sha256": "52d37f7adb1332d8b212ff0680214ddaee54b9853c3ede31b10da11e882c03f5",
+          "size": 675
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_blender_lab_mcp.cmd",
-          "sha256": "66a3fa5f7f78e6a092c932f165951a2d9ca6295f2754b3fca1ad086dae304bb3",
-          "size": 2199
+          "sha256": "dfef12ca198a7aad0ef66a9b830a9be967e729dee781d0c3e637a6ef4659b676",
+          "size": 2262
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_meshy_mcp.cmd",
-          "sha256": "e5d20b659fb8c476b9cfdf367f9cdc2c4811fb2263dc8938c42d6ab6a6bdd477",
-          "size": 1249
+          "sha256": "42589b4959c365dc2986d7e6d0137772711964fd807cbd5bc00e05433340fb12",
+          "size": 1293
         }
       ]
     },
