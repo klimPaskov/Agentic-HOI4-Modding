@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "ba2551a2caba6c35c5439c5802a44f30d59f1a3d",
+  "generated_for_revision": "0c07656d61910781e1cbaf06c50875f5d6fc9183",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "420bea21df06f2cdf32f40b80859dc7a4db8568cea91c8a2070d5b035bd25afc",
-          "size": 36892
+          "sha256": "1db3e7a4d92b9ced460d6e9b633c8080c9b203f420b5286ea79da85939c87b3a",
+          "size": 38137
         }
       ]
     },
@@ -127,23 +127,23 @@
         },
         {
           "path": ".agents/skills/hoi4-events/SKILL.md",
-          "sha256": "0dde0e5d07025f0c2b37e5af56e67562b8aafc4f544949df8e76d8e4b038981c",
-          "size": 40419
+          "sha256": "f8076ec3007f1a4da03a2bbcdf581fcd3553d6f130ab54f887163edecd9254fe",
+          "size": 41633
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "f85b150bd0ad6b0a93b352a879dbe9705a7df67b4fcb136b299b853886e58f21",
-          "size": 66038
+          "sha256": "abcd1bafd8b141975a4c316af7612d59f616256b0a1021a4778bae9c2c2eb2da",
+          "size": 71326
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
-          "sha256": "5e111e58f465c1d2334fd2d8490b4ba5051de7b11497f68d17351d2cd9b24e9d",
-          "size": 59278
+          "sha256": "aa29770cfb84dc1f211eeaff04bb02cf2ed475843dfc7f807c37ad223731c360",
+          "size": 59888
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md",
-          "sha256": "bbb7b7c198e47778d360490fad78640bc6a85d48d1690de48d5a0575e2ef85c0",
-          "size": 1452
+          "sha256": "aa5c76c5f75eabac78da06ce54884b915e0d4ad2ffcd17bb6f71aea60a19c0d7",
+          "size": 1360
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art/news/contact_sheet.png",
@@ -1201,6 +1201,11 @@
           "size": 7578
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/advisor_template.png",
+          "sha256": "8f594ef62afba6fdec58de66a80609350dcfe884320b11e6cb6220f1a0e19f58",
+          "size": 7891
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/army_small_ger_erwin_rommel.png",
           "sha256": "46d8a65f55d98aba8fcecf68e738a98c47bfb1d5ad31d9ed37a4e832b8556cd9",
           "size": 8069
@@ -1217,8 +1222,13 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/contact_sheet.png",
-          "sha256": "b7eaaf1db85ef1cc7bf97341c387f8cc8ab96408b7eb960ab70501446807a051",
-          "size": 38786
+          "sha256": "444d4c1ea83d63aaed1e4db126f697ce64818348b5eac2cec5a1c7ace6a1c8ae",
+          "size": 88429
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_africa_1.png",
+          "sha256": "fb0c5f632c9cdd969f2223478c24fba830c51948dede74388295447dfaeae5d9",
+          "size": 7538
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_asia_1.png",
@@ -1231,9 +1241,19 @@
           "size": 7586
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_europe_6.png",
+          "sha256": "afc41dfb82de93b73f8ec9f1a2954fa63b3840a1615f97e138e3859fe65ad478",
+          "size": 7574
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_female_europe.png",
           "sha256": "6c2ae2cf867a620eb0855a05adfde73550ef84528b876d4d4019ba6488c8bafb",
           "size": 8274
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/high_command_fevzi_cakmak.png",
+          "sha256": "e73bc81a0060f22e9881353306fe69f5e783d777a814c304acc752e49df85881",
+          "size": 7602
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/commanders/contact_sheet.png",
@@ -1601,9 +1621,24 @@
           "size": 569
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/tools/README.md",
+          "sha256": "1d7750e0994ed486fe56762cd5fd2419068d55023aeef02f8d7f32437be7591a",
+          "size": 5557
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/tools/convert_to_dds.py",
-          "sha256": "12e54ded72051e5ddacb2e2258a7fe45fb22b83b06c4900ea34789c4bb8c314e",
-          "size": 9844
+          "sha256": "3e9eb77a750928b70f863c5339c21c8486533b849e3608c850c9fade30180482",
+          "size": 9854
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/tools/create_advisor_icon.py",
+          "sha256": "54139230eec069f423e8dbd7d920f7e32836a0cc0b1f772bbd42c6274302ed45",
+          "size": 5899
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py",
+          "sha256": "70f5888d849b96e0eeceff24376c0dd9767bcb0bcae0e4ba7694b1073f348443",
+          "size": 12076
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/tools/process_report_event_image.py",
@@ -1611,9 +1646,19 @@
           "size": 9969
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/tools/tests/test_create_advisor_icon.py",
+          "sha256": "cebb22d33995f2e9c50da0b350976f20d3eb31b6eee1e6324b2f660363910390",
+          "size": 2419
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/tools/tests/test_extract_portrait_source_crop.py",
+          "sha256": "23d241fbe5dfc5bd8869a3727bb14f8100d06246dda49977e08fc0c915b6b849",
+          "size": 3227
+        },
+        {
           "path": ".agents/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "71b1197f9a61c0c5a55da1baf902cd925fea96b6cd53ef45c36ddeabe62b1b8a",
-          "size": 148330
+          "sha256": "66ddd585564e342bb3704a246bcaf8958532ae87eb0d8cf4f69cd90d2365c80b",
+          "size": 146400
         },
         {
           "path": ".agents/skills/hoi4-focus-trees/SKILL.md",
@@ -1637,13 +1682,13 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "982979d02c8df8c0ba146488e36dab556f34243661e3ce3b409572d1f0e78095",
-          "size": 22593
+          "sha256": "35982b96cbb4296e177698e5a1618f87225b528d1f14c191e675856378c49235",
+          "size": 23592
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
-          "sha256": "dd539b2a236df82f065f719781cac12e00112ba1017aac7efe47c01fd8241588",
-          "size": 16584
+          "sha256": "bdc1ca0db1a498191dfd18e4a4ad7ca2fcb21786fb01feab436e30d7003d8f4b",
+          "size": 17487
         }
       ]
     },
@@ -1702,18 +1747,18 @@
         },
         {
           "path": ".codex/agents/hoi4_asset_source_researcher.toml",
-          "sha256": "a50d4032eb3f7528f9b2a94795ecac4cfb19442b7b49ed9f0f204e1b39fad9a0",
-          "size": 4194
+          "sha256": "02fdabead8dfda98a50961cdf37dc18d5b3e2552da8e858b2c57f2bbb8f2031b",
+          "size": 4152
         },
         {
           "path": ".codex/agents/hoi4_audio_researcher.toml",
-          "sha256": "0465b66f2e33d0de5c4bc2e47937a1bbb1e5d6f8f29607bed8bf0b4e93c2fc1a",
-          "size": 4058
+          "sha256": "de46cce3973522b308e5a386baaca78ea40271bf03a2c34d26b9ace958a5bd63",
+          "size": 4379
         },
         {
           "path": ".codex/agents/hoi4_country_package_auditor.toml",
-          "sha256": "18a8be42810ddc9302efa895a12f0d43b26fc792754503f321331b654ae20395",
-          "size": 6905
+          "sha256": "95630b491284cd0c34ea979b2a1258d77e2e776e2e5f857d1efe1a0aa71a0758",
+          "size": 7053
         },
         {
           "path": ".codex/agents/hoi4_decision_mission_auditor.toml",
@@ -1722,13 +1767,13 @@
         },
         {
           "path": ".codex/agents/hoi4_documentation_curator.toml",
-          "sha256": "ff26a3823885432ca92b51a84a78fb004432c64042061e92d0a2b2aed13d3fe0",
-          "size": 8710
+          "sha256": "9492323dff026fc5de5398b19edc1a6b03683596966e710af7a889586d0a7560",
+          "size": 8731
         },
         {
           "path": ".codex/agents/hoi4_feature_completion_auditor.toml",
-          "sha256": "b2f31d1d21574ab14c11ef8fa516811afa172f6323be5856e42e7f2cf3a773e3",
-          "size": 3369
+          "sha256": "893e6ecb6d6ff111462a2e056db6f2e16c974cdb3e4f6c37ae5391627e880426",
+          "size": 3474
         },
         {
           "path": ".codex/agents/hoi4_focus_tree_auditor.toml",
@@ -1737,33 +1782,33 @@
         },
         {
           "path": ".codex/agents/hoi4_generated_feature_art.toml",
-          "sha256": "5bc276fd2fea7ee24add24368d4cfc45320ac6fa44d3a6cbd99e41a0f7ef3596",
-          "size": 6067
+          "sha256": "bd5c7a938cd08576de3457a2e80caa155156ae7a849051edf5218be3797e9f9a",
+          "size": 6326
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
-          "sha256": "555694f44e6dd07918876bac0f0984e51a78e9f408550da513802f6316d39755",
-          "size": 11362
+          "sha256": "19b577319d6500e47edb80dd03da164026634ccc66bee348d11fc42585a7762b",
+          "size": 9317
         },
         {
           "path": ".codex/agents/hoi4_improvement_loop_planner.toml",
-          "sha256": "b44ec68a170fd298d461169ba598baa04ba91044b797c59d90ac281d1e22cf9e",
-          "size": 6506
+          "sha256": "b36909a35e1c044677f22a4a2d89afa461e424dbd7cc4713c1811470f9392546",
+          "size": 6654
         },
         {
           "path": ".codex/agents/hoi4_localisation_auditor.toml",
-          "sha256": "c55ec555445e8fb87ef220aec4f632e7f63b30ce89f6e3590db027fe0a2fbe28",
-          "size": 4456
+          "sha256": "5fed543630b8d747e949072dc9dbd397a08917db21afdf756a94cec47446160b",
+          "size": 4555
         },
         {
           "path": ".codex/agents/hoi4_quote_remark_researcher.toml",
-          "sha256": "2d15f26ce6a9d933626f0aebab4075efa1045adb8aa19e5240efb2315a56f392",
-          "size": 3903
+          "sha256": "6c7d5c36c043c0ffa713fb5056c1c68c574db1f6473c540d7a3424b40276d2dd",
+          "size": 4169
         },
         {
           "path": ".codex/agents/hoi4_repo_explorer.toml",
-          "sha256": "2343bfa442e4685b876d5582594a22bc47c034c92fdb04ad15d848cfc56b1146",
-          "size": 11845
+          "sha256": "8acafc1950dd4bd994b515ecadb14542218bbe5dd463dac773ed560a3bc61cc5",
+          "size": 11969
         },
         {
           "path": ".codex/agents/hoi4_scripted_system_architect.toml",
@@ -1959,8 +2004,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "36d0ed12281f2f4e75549927787709bcc6522616deb2c33822e6e702d46823e9",
-          "size": 14575
+          "sha256": "92820f4d989c7291a903f5e502a7db4569424efb8e63f2f76f5149c4746d8d58",
+          "size": 15318
         }
       ]
     },
@@ -5127,7 +5172,7 @@
     {
       "id": "workflow.super_events",
       "display_name": "Super Events workflow",
-      "description": "Install the generic detection-first skill for complete HOI4 super-event presentation packages.",
+      "description": "Install a reusable HOI4 Super Events runtime, editable templates, example registration, and implementation guidance.",
       "category": "workflow",
       "optional": true,
       "platforms": [
@@ -5149,7 +5194,13 @@
         "outside_project": false
       },
       "dependencies": [
-        "core.skills"
+        "core.skills",
+        "workflow.super_events.runtime.interface",
+        "workflow.super_events.runtime.common",
+        "workflow.super_events.runtime.events",
+        "workflow.super_events.runtime.localisation",
+        "workflow.super_events.runtime.gfx",
+        "workflow.super_events.runtime.docs"
       ],
       "conflicts": [
         "existing Super Events skill with the same path"
@@ -5162,24 +5213,369 @@
         "preserve_local_additions": true
       },
       "capabilities": [
-        "super-event architecture discovery",
-        "presentation package planning",
+        "ready-to-use Super Events popup",
+        "namespace-adapted reusable registration",
         "text, image, and audio alignment",
+        "editable DDS and Photoshop templates",
         "runtime wiring and validation"
       ],
       "notes": [
-        "The skill detects each mod's implementation and does not install a Chaos Redux-specific runtime."
+        "The runtime is adapted to the confirmed project namespace during installation.",
+        "Audio remains optional and is added only from sources with verified usage rights."
       ],
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-super-events/SKILL.md",
-          "sha256": "861df05dcd01d56dd8c0c7825e40cac9e3ba188ce9e640d5761f3be7949253ce",
-          "size": 11209
+          "sha256": "6153375686bd5be9bbb5fbfd1df2c57ddcee6bb4774a42b0895bf76e2ecb7cd7",
+          "size": 13739
         },
         {
           "path": ".agents/skills/hoi4-super-events/agents/openai.yaml",
           "sha256": "766b37960ad43077f22585ab17c5d120048a6948d52b4cebe674ca4805bc457d",
           "size": 220
+        }
+      ]
+    },
+    {
+      "id": "workflow.super_events.runtime.interface",
+      "display_name": "Super Events interface",
+      "description": "Install the reusable Super Events GUI and sprite declarations.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": "interface",
+        "include": [
+          "**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": "interface/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing Super Events interface file with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Super Events GUI",
+        "Super Events GFX declarations"
+      ],
+      "notes": [
+        "Text identifiers are adapted to the confirmed project namespace during installation."
+      ],
+      "expected_files": [
+        {
+          "path": "interface/hoi4ms_super_events.gfx",
+          "sha256": "c4f093f7de057cef007bfb91f40cf22d77e3f57079fa3ddc1b7fee8a79b45e80",
+          "size": 597
+        },
+        {
+          "path": "interface/hoi4ms_super_events.gui",
+          "sha256": "c760e505ebff94863a42716c36db7fe5a3873621d30b5acd07f20837eca6beeb",
+          "size": 2532
+        }
+      ]
+    },
+    {
+      "id": "workflow.super_events.runtime.common",
+      "display_name": "Super Events reusable logic",
+      "description": "Install the scripted GUI, registration effect, and dynamic presentation selectors.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": "common",
+        "include": [
+          "**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": "common/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing Super Events common file with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "dynamic Super Event registration",
+        "scripted presentation selection",
+        "close-state cleanup"
+      ],
+      "notes": [
+        "Text identifiers are adapted to the confirmed project namespace during installation."
+      ],
+      "expected_files": [
+        {
+          "path": "common/scripted_effects/hoi4ms_super_events.txt",
+          "sha256": "154bde06fef9431de98100f57aaa5e9a985198d33be7f7916d9f8467dbd2a854",
+          "size": 471
+        },
+        {
+          "path": "common/scripted_guis/hoi4ms_super_events.txt",
+          "sha256": "44a3e0f374d3bb33a3dfec16c1efc01c14bbf33947099bd65d7267c277c6424b",
+          "size": 592
+        },
+        {
+          "path": "common/scripted_localisation/hoi4ms_super_events.txt",
+          "sha256": "3e5ac11046470efd2e7e3af8946ff5521449d453c953c25c7a124a7c2c74d02e",
+          "size": 1971
+        }
+      ]
+    },
+    {
+      "id": "workflow.super_events.runtime.events",
+      "display_name": "Super Events example",
+      "description": "Install one hidden console event that demonstrates the reusable registration effect.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": "events",
+        "include": [
+          "**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": "events/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing Super Events example file with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "console smoke test",
+        "example Super Event caller"
+      ],
+      "notes": [
+        "Text identifiers are adapted to the confirmed project namespace during installation."
+      ],
+      "expected_files": [
+        {
+          "path": "events/hoi4ms_super_event_examples.txt",
+          "sha256": "b1771e3f4fcb3ca4cca63dfc72327a3afb4bb7a348584940afa8d5af57ac9f18",
+          "size": 375
+        }
+      ]
+    },
+    {
+      "id": "workflow.super_events.runtime.localisation",
+      "display_name": "Super Events localisation",
+      "description": "Install complete default and example text for the reusable Super Events runtime.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": "localisation",
+        "include": [
+          "**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": "localisation/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing Super Events localisation file with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "default Super Event text",
+        "example title, description, quote, and response"
+      ],
+      "notes": [
+        "Localisation is distributed with the required UTF-8 BOM and adapted to the confirmed project name and namespace."
+      ],
+      "expected_files": [
+        {
+          "path": "localisation/english/hoi4ms_super_events_l_english.yml",
+          "sha256": "ee5fda784d3001ec1353f70f51af40f54e81338b29732a83b542fa60869eef56",
+          "size": 725
+        }
+      ]
+    },
+    {
+      "id": "workflow.super_events.runtime.gfx",
+      "display_name": "Super Events visual templates",
+      "description": "Install the wired runtime DDS assets and editable Photoshop templates.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": "gfx",
+        "include": [
+          "**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": "gfx/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing Super Events visual asset with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "wired Super Events background and button",
+        "default and example imagery",
+        "editable Photoshop templates"
+      ],
+      "notes": [
+        "Binary assets are copied without text adaptation."
+      ],
+      "expected_files": [
+        {
+          "path": "gfx/interface/super_event_option.dds",
+          "sha256": "652537210def43d1d6f66a3f29fc6394de270d8a8ed7d006c158f4f910412bbe",
+          "size": 67712
+        },
+        {
+          "path": "gfx/super_events/super_event_bg.dds",
+          "sha256": "5bfa8c17902d51101af392db492898c0406d02ae6f14d911a575a147ed303ca5",
+          "size": 2837284
+        },
+        {
+          "path": "gfx/super_events/super_event_default.dds",
+          "sha256": "9abaaa95d7889649ff054b3d828cc48dcb8e3e40b9c2f755d76fdf486f76abf9",
+          "size": 2837284
+        },
+        {
+          "path": "gfx/super_events/super_event_image_default.dds",
+          "sha256": "7f47de68ca681f9c1e08d80100cba1a58aa9c3a187b3caeb07109b17c407b846",
+          "size": 798988
+        },
+        {
+          "path": "gfx/super_events/super_event_image_template_457x328.psd",
+          "sha256": "e4114f7eef4e1984ffc594cd2261c883ce7c347b0a35bcf20ca8e7c02542bdc9",
+          "size": 1002691
+        },
+        {
+          "path": "gfx/super_events/super_event_template.psd",
+          "sha256": "4f2c509a690cb9eef3262bee9064ab8ea585826d7c2637b197f7b98a2a39e168",
+          "size": 1382300
+        }
+      ]
+    },
+    {
+      "id": "workflow.super_events.runtime.docs",
+      "display_name": "Super Events guide",
+      "description": "Install the registration guide, smoke-test command, and asset lineage note.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": "docs/super_events",
+        "include": [
+          "**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": "docs/super_events/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing Super Events guide with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Super Events registration guide",
+        "runtime smoke test",
+        "asset lineage record"
+      ],
+      "notes": [
+        "The guide remains usable with any confirmed project namespace."
+      ],
+      "expected_files": [
+        {
+          "path": "docs/super_events/README.md",
+          "sha256": "d0cda27737a9d1e540a1c1339d09db701622112b9461f500788ec73ef12cb186",
+          "size": 2324
         }
       ]
     }
