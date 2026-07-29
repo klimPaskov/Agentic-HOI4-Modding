@@ -1,0 +1,79 @@
+defined_text = {
+    name = Get[MOD_PREFIX]SuperEventImage
+    text = {
+        trigger = {
+            has_global_flag = {
+                flag = [MOD_PREFIX]_super_event_visible
+                value = 1
+            }
+        }
+        localization_key = "GFX_[MOD_PREFIX]_super_event_example"
+    }
+    text = {
+        localization_key = "GFX_[MOD_PREFIX]_super_event_image_default"
+    }
+}
+
+defined_text = {
+    name = Get[MOD_PREFIX]SuperEventTitle
+    text = {
+        trigger = {
+            has_global_flag = {
+                flag = [MOD_PREFIX]_super_event_visible
+                value = 1
+            }
+        }
+        localization_key = "[MOD_PREFIX]_super_event_example_title"
+    }
+    text = {
+        localization_key = "[MOD_PREFIX]_super_event_default_title"
+    }
+}
+
+defined_text = {
+    name = Get[MOD_PREFIX]SuperEventDesc
+    text = {
+        trigger = {
+            has_global_flag = {
+                flag = [MOD_PREFIX]_super_event_visible
+                value = 1
+            }
+        }
+        localization_key = "[MOD_PREFIX]_super_event_example_desc"
+    }
+    text = {
+        localization_key = "[MOD_PREFIX]_super_event_default_desc"
+    }
+}
+
+defined_text = {
+    name = Get[MOD_PREFIX]SuperEventQuote
+    text = {
+        trigger = {
+            has_global_flag = {
+                flag = [MOD_PREFIX]_super_event_visible
+                value = 1
+            }
+        }
+        localization_key = "[MOD_PREFIX]_super_event_example_quote"
+    }
+    text = {
+        localization_key = "[MOD_PREFIX]_super_event_default_quote"
+    }
+}
+
+defined_text = {
+    name = Get[MOD_PREFIX]SuperEventRemark
+    text = {
+        trigger = {
+            has_global_flag = {
+                flag = [MOD_PREFIX]_super_event_visible
+                value = 1
+            }
+        }
+        localization_key = "[MOD_PREFIX]_super_event_example_remark"
+    }
+    text = {
+        localization_key = "[MOD_PREFIX]_super_event_default_remark"
+    }
+}

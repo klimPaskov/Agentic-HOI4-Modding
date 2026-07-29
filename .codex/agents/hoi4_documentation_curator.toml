@@ -42,7 +42,7 @@ Read and apply only what the cleanup needs:
 - named specs under docs/specs/
 - named plans, addenda, handoffs, and reports under docs/plans/
 - named feature docs under docs/features/
-- named manifests under docs/assets/ or docs/presentations/
+- named manifests under docs/assets/, docs/presentations/, or docs/super_events/
 - named prompt files when they may be stale
 - current implementation files only as evidence when the parent asks you to verify whether documentation matches reality
 

@@ -285,7 +285,7 @@ def run_ffmpeg_bgra_fallback(
             "Set one of these:\n"
             "- TEXCONV_PATH=/path/to/texconv\n"
             "- TEXCONV_EXE=/path/to/texconv.exe\n"
-            "- TEXCONV_DOCKER_IMAGE=chaos-texconv"
+            "- TEXCONV_DOCKER_IMAGE=<approved texconv image>"
         )
 
     source_width, source_height = probe_image_size(input_file)
@@ -328,7 +328,7 @@ def convert_to_dds(
         run_ffmpeg_bgra_fallback(input_path, output_path, width, height)
         return output_path
 
-    with tempfile.TemporaryDirectory(prefix="chaos_dds_") as temp_dir_str:
+    with tempfile.TemporaryDirectory(prefix="hoi4_dds_") as temp_dir_str:
         temp_dir = Path(temp_dir_str)
         input_dir = temp_dir / "in"
         output_dir = temp_dir / "out"

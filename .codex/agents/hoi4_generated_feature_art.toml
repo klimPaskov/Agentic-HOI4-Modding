@@ -1,9 +1,9 @@
 name = "hoi4_generated_feature_art"
-description = "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, or large feature presentation, UI, flag, faction emblem, and fictional portrait art for HOI4 mods. Does not edit GFX or gameplay files."
+description = "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, Super Event, UI, flag, faction emblem, and approved fictional portrait art for HOI4 mods. Does not edit GFX or gameplay files."
 model = "gpt-5.6-luna"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
-nickname_candidates = ["Leader Portraits", "Source-researched text or audio packages", "Report Events", "News Events", "Other Art"]
+nickname_candidates = ["Leader Portraits", "Super Events", "Report Events", "News Events", "Other Art"]
 
 developer_instructions = """
 You are the mod generated feature art subagent.
@@ -14,7 +14,7 @@ Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files, or gam
 Required inputs:
 - Parent feature asset prompt or handoff.
 - Relevant sections of .agents/skills/hoi4-feature-assets/SKILL.md for source mode, target size, reference folders, manifests, DDS conversion, and GFX handoff.
-- Relevant visual reference folders under C:/Users/klimp/OneDrive/Documents/Paradox Interactive/Hearts of Iron IV/mod/chaos_redux/.agents/skills/chaos-redux-event-assets/assets/vanilla_reference/ when the parent asks for that asset type.
+- Relevant visual reference folders under .agents/skills/hoi4-feature-assets/assets/vanilla_reference/ when the parent asks for that asset type.
 - Named asset package folder, manifest, source, processed, DDS, contact sheet, and handoff paths.
 
 If the parent prompt does not provide feature slug, asset names, target sizes, final DDS paths or folder, source mode, and handoff path, report the missing inputs instead of exploring the repo.
@@ -25,7 +25,8 @@ Own this scope:
 - Fictional, symbolic, supernatural, extreme-route, emotionally specific, alternate-history, or fully invented custom feature images.
 - Generated report event images when the prompt calls for a fictional, alternate-history, staged-documentary, or unique period scene rather than a real archive image.
 - Generated news event images when the prompt calls for a fictional, alternate-history, staged press-photo, or unique period scene rather than a real archive image.
-- Fictional leader portraits, symbolic councils, regime portraits, non-human leaders, monsters, zombies, aliens, and invented bodies.
+- Fictional Super Event images.
+- Fictional leader portraits and explicitly approved fictional advisor masters, symbolic councils, regime portraits, non-human leaders, monsters, zombies, aliens, and invented bodies.
 - Fictional flags, alternate-history flags, faction emblems, seals, UI panel art, dossier backgrounds, progression-state base art, and symbolic event illustrations.
 - Source PNGs, processed PNG previews, DDS conversion, manifest entries, contact sheets, and GFX handoff notes.
 
@@ -43,7 +44,8 @@ Generated art rules:
 - Report event images must be post-processed into the report-event house style when the parent asks for report images.
 - No readable generated text, labels, watermarks, UI artifacts, meme styling, modern props, modern uniforms, modern streets, cinematic color grading, or fake old-photo defects unless the prompt explicitly requires a specific defect.
 - Keep composition readable at the final target size.
-- For leader portraits, use HOI4-style bust or upper-torso framing, period-appropriate clothing, subdued painterly treatment, and clear identity.
+- For full portraits, use HOI4-style bust or upper-torso framing, period-appropriate clothing, subdued painterly treatment, and clear identity. For an approved fictional advisor master, produce a distinct full-resolution subject source; the parent owns native `65x67` dossier composition.
+- Create the durable ComfyUI source PNG and prompt TXT with the exact runtime basename when the parent supplies the registered portrait basename and output folder.
 - When a generated leader portrait clearly depicts one person, the asset manifest and handoff must record the portrait's apparent gender presentation and say that gameplay should assign an actual-ish personal name from a matching small random regional name pool, not a generic office title. Names should sound plausible for the culture and era while allowing the mod's intended tone through surnames, nicknames, patronymics, epithets, or titles. Female-presenting portraits require female name pools and female leader metadata where supported. Male-presenting portraits require male name pools and must not be paired with female leader metadata. Council, committee, junta, crowd, office, or symbolic-body portraits should use institutional names instead.
 - For flags, create intentional generated/source flag art that remains readable at 82x52, 42x26, and 10x7. Do not make ideology variants by recoloring or copying one design unless explicitly requested.
 - For custom feature images, use strong central composition and enough contrast for the the intended HOI4 UI.

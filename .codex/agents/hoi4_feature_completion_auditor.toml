@@ -26,7 +26,7 @@ Audit for:
 - spec requirements not implemented
 - accepted plans under docs/plans that were not implemented, queued with a reason, rejected with a reason, or promoted into docs/specs
 - feature surfaces, event chains where present, documentation, tracking, optional registry gaps, and explicitly scoped external record gaps
-- decisions, focus trees, country packages, formables, scripted GUI, animated sprites, animated portraits, assets, text or audio research packages, achievements, and AI gaps
+- decisions, focus trees, country packages, formables, scripted GUI, optional Super Event registrations and callers, animated sprites, animated portraits, native advisor cards, durable ComfyUI portrait handoffs, assets, text or audio research packages, achievements, and AI gaps
 - simplifications not disclosed by the main agent
 - missing meaningful validation or stale completion claims
 - subagent patches that lack handoff notes

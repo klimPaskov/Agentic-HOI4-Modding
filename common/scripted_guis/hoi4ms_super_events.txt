@@ -1,0 +1,26 @@
+scripted_gui = {
+    [MOD_PREFIX]_super_events = {
+        context_type = player_context
+        window_name = "[MOD_PREFIX]_super_events"
+
+        visible = {
+            has_global_flag = [MOD_PREFIX]_super_event_visible
+        }
+
+        effects = {
+            super_event_close_click = {
+                clr_global_flag = [MOD_PREFIX]_super_event_visible
+            }
+        }
+
+        properties = {
+            super_event_image = {
+                image = "[Get[MOD_PREFIX]SuperEventImage]"
+            }
+        }
+
+        ai_enabled = {
+            always = no
+        }
+    }
+}

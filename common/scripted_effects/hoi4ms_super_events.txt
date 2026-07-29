@@ -1,0 +1,15 @@
+# Public registration entry point. Keep every ID unique and add matching
+# image/title/description/quote/remark branches in scripted localisation.
+[MOD_PREFIX]_show_super_event = {
+    set_global_flag = {
+        flag = [MOD_PREFIX]_super_event_visible
+        value = $SUPER_EVENT_ID$
+    }
+}
+
+# Stable smoke-test registration installed with the package.
+[MOD_PREFIX]_show_example_super_event = {
+    [MOD_PREFIX]_show_super_event = {
+        SUPER_EVENT_ID = 1
+    }
+}

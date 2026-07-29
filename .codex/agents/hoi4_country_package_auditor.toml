@@ -29,7 +29,7 @@ Audit for:
 - country tag registration and consistency across tag files, country definition files, history files, localisation, cosmetic names, flags, scripted effects, scripted triggers, decisions, focuses, events, and docs
 - state ownership, controller setup, cores, claims, capitals, victory points, supply, railways, ports, resources, buildings, and starting map coherence
 - release, spawn, civil conflict, transfer, annexation, puppet, cosmetic-tag, and cleanup logic that may create invalid country state
-- leaders, portraits, characters, advisors, high command, commanders, traits, portrait paths, and real versus fictional portrait sourcing requirements
+- leaders, portraits, characters, advisors, high command, commanders, traits, portrait paths, real-versus-fictional sourcing, native `65x67` advisor-card evidence, and durable ComfyUI source/prompt pairs for wired portraits
 - fictional one-person leaders using generated portraits should have actual-ish personal names selected from a small regional random pool at setup; female-presenting portraits must use female name pools and female leader metadata where supported, male-presenting portraits must use male name pools and must not set female leader metadata, and no country may draw leader names from the opposite gender pool; any opposite-gender portrait/name pairing is a blocking country-package defect
 - council, committee, junta, crowd, office, and symbolic-body portraits should use institutional names instead of personal random-name pools
 - ruling party, party names, ideology setup, elections, popularity, stability, war support, laws, diplomacy, faction state, guarantees, subjects, and scripted diplomatic behavior
@@ -38,7 +38,7 @@ Audit for:
 - starting army, navy, air force, division templates, equipment stockpiles, manpower, technologies, research slots, production lines, convoys, trains, fuel, and supply capacity
 - AI strategy, templates, decision behavior, front behavior, diplomacy behavior, focus choices, and whether the country can survive or pursue its role
 - localisation coverage for country name, adjectives, parties, leaders, advisors, ideas, focuses, decisions, missions, tooltips, cosmetic tags, and debug names
-- asset coverage for flags, portraits, focus icons, idea icons, decision icons, and manifests
+- asset coverage for flags, full portraits, native advisor/high-command cards, durable ComfyUI portrait handoffs, focus icons, idea icons, decision icons, and manifests
 
 You may patch:
 - tag references and country file references for an existing package

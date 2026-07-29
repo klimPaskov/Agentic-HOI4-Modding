@@ -17,7 +17,7 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 - Optional custom Codex subagent patterns for bounded research, asset work, audits, and documentation.
 - A model for separating main-agent implementation from helper-agent production and audits.
 - The mod-agnostic hoi4-3d-model-pipeline skill and hoi4_3d_model_pipeline subagent for verified Meshy-to-Blender-to-io_pdx_mesh model production.
-- The optional mod-agnostic `hoi4-super-events` skill for complete presentation packages built around each mod's detected event, GUI, localisation, image, audio, and settings architecture.
+- The optional mod-agnostic `hoi4-super-events` package: a project-adapted GUI/GFX runtime, dynamic registration pattern, hidden smoke-test event, default DDS assets, editable Photoshop templates, research guidance, and complete presentation workflow.
 
 ## Recommended setup
 
@@ -116,7 +116,7 @@ Use subagents for work such as:
 - archival image sourcing
 - generated event art
 - icon production
-- quote, remark, and audio research (for super events for example)
+- quote, remark, and audio research, including Super Events
 - focus tree audits
 - decision and mission audits
 - country package audits
@@ -126,6 +126,20 @@ Use subagents for work such as:
 - documentation updates
 
 The main agent should still own final implementation, final wiring, final review, final validation, and the completion report.
+
+## Optional Super Events workflow
+
+HOI4 Mod Setup leaves Super Events out by default. Selecting the workflow
+installs the `hoi4-super-events` skill plus the reusable runtime under
+`interface/`, `common/`, `events/`, `localisation/`, `gfx/`, and
+`docs/super_events/`.
+
+The installer adapts all scripted identifiers to the confirmed mod namespace.
+The package includes one hidden console-test event, a default image and
+background, the response button texture, and both full-composition and
+`457x328` image Photoshop templates. New registrations add one stable integer
+ID and matching image, title, description, quote, response, caller, optional
+rights-verified audio, and documentation.
 
 ### 7. Keep asset ownership clear
 

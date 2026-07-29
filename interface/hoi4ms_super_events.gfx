@@ -1,0 +1,18 @@
+spriteTypes = {
+    spriteType = {
+        name = "GFX_[MOD_PREFIX]_super_event_option"
+        texturefile = "gfx/interface/super_event_option.dds"
+    }
+    spriteType = {
+        name = "GFX_[MOD_PREFIX]_super_event_image_default"
+        texturefile = "gfx/super_events/super_event_image_default.dds"
+    }
+    spriteType = {
+        name = "GFX_[MOD_PREFIX]_super_event_example"
+        texturefile = "gfx/super_events/super_event_image_default.dds"
+    }
+    spriteType = {
+        name = "GFX_[MOD_PREFIX]_super_event_bg"
+        texturefile = "gfx/super_events/super_event_bg.dds"
+    }
+}

@@ -13,7 +13,7 @@ This includes event pictures, UI assets, focus tree assets, country assets, achi
 
 All active HOI4 asset skills and agents use this one reference folder:
 
-`C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference`
+`.agents/skills/hoi4-feature-assets/assets/vanilla_reference/`
 
 All category paths in this skill are relative to that exact folder. Do not use
 a project-local copy, another skill-local copy, a compatibility pack, or a
@@ -77,8 +77,8 @@ The main agent decides which subagent to spawn, gives it a bounded asset prompt,
 
 Use:
 
-- `hoi4_asset_source_researcher` for real or archival image sourcing, real leader portraits, historical flags, historically attested symbols, user-provided source photos, and report, news, or custom feature images that must depict a real photographed person, place, object, or historical document
-- `hoi4_generated_feature_art` for generated non-icon feature art, including fictional or alternate-history report images, news images, custom feature images, fictional portraits, fictional flags, faction emblems, UI panels, and progression-state base art
+- `hoi4_asset_source_researcher` for real or archival image sourcing, real country-leader, commander, operative, advisor, and named-officeholder portraits, historical flag-design research, historically attested symbols, user-provided source photos, and report, news, super-event, or custom feature images that must depict real photographed material
+- `hoi4_generated_feature_art` for generated non-icon feature art, including fictional or alternate-history report images, news images, super-event images, fictional portraits and explicitly approved fictional advisor masters, flat fictional flag designs, faction emblems, UI panels, and progression-state base art
 - `hoi4_icon_artist` for focus icons, idea icons, national spirit icons, officer corps spirit icons, decision icons, decision category icons, achievement icons, and tech icons
 
 For animated work, route by asset type first. Then require the chosen asset subagent to follow `hoi4-frame-animation` for frame plans, per-frame source art, normalization, contact sheets, preview GIFs, frame sheets, static fallbacks, and animation handoffs.
@@ -90,6 +90,7 @@ Asset subagents may create:
 - final DDS files
 - contact sheets
 - manifests
+- optional external ComfyUI portrait source and prompt pairs under `docs/assets/portraits/`
 - `docs/assets/<feature_slug>/gfx_handoff.md`
 
 Asset subagents must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, scripted effect, scripted trigger, on_action, history, country, external tabular data files, or workbooks unless the parent explicitly grants that scope.
@@ -123,6 +124,56 @@ Shared systems may use a clear shared or system folder. Do not force shared asse
 When moving or adding an asset, update every `.gfx`, `.gui`, event, idea, decision, focus, localisation, and documentation reference that names the old path or sprite. Keep sprite names stable unless the engine-facing identifier itself has to change, as with achievement ids.
 
 Researched presentation audio belongs to `hoi4-text-audio-research`. Use feature-scoped music and sound paths only when the repository already uses that convention or the parent prompt asks for it. Preserve source downloads under a documented source-audio path instead of burying them among final game files.
+
+## 2.3 Optional external ComfyUI portrait handoff
+
+Use this handoff only when the user explicitly asks to work with an external
+ComfyUI portrait workflow or the repository already maintains this queue.
+Agentic HOI4 Modding does not install, configure, inspect, or run ComfyUI,
+models, LoRAs, Python, GPU software, or drivers. The separate portrait project
+is `https://github.com/klimPaskov/comfyui-hoi4-portraits`.
+
+When the handoff is in scope, create a durable source and prompt pair while
+continuing the normal HOI4 processing, DDS conversion, review, and
+runtime-wiring workflow. The current approved runtime portrait remains usable;
+a pending external replacement does not block the feature.
+
+Resolve the stable runtime basename first:
+
+```text
+portrait_<tag>_<character_key>
+```
+
+Use that exact basename for all three artifacts:
+
+```text
+<runtime_portrait_path>/portrait_<tag>_<character_key>.dds
+docs/assets/portraits/<feature_slug>/portrait_<tag>_<character_key>.png
+docs/assets/portraits/<feature_slug>/portrait_<tag>_<character_key>.txt
+```
+
+`<tag>` is the owning country or cosmetic tag. `<character_key>` is the stable
+scripted character or institutional subject key, never a localised display
+name. Save the highest-resolution source that anchors the subject as the PNG,
+before final resizing and DDS conversion. Preserve separate immutable source
+and provenance evidence for a sourced real person.
+
+The matching TXT contains only one concise natural-language image prompt. It
+must begin with `hoi4_portrait,`, describe supported age, presentation, facial
+features, pose, clothing, role, period, and visible details, omit the person’s
+name, and invent nothing. Use verified research for non-visual identity or role
+facts and record those sources in the manifest, not in the prompt TXT.
+
+Record each pair’s runtime path and one state:
+
+- `comfyui_replacement_pending`
+- `comfyui_replaced`
+- `comfyui_not_needed`
+
+The durable queue is not runtime storage. No `.gfx`, character, GUI, event,
+focus, idea, or decision reference may point into `docs/assets/portraits/`.
+Never delete it during temporary feature-workspace cleanup unless the user
+explicitly asks.
 
 ## 3. Asset source rules
 
@@ -875,23 +926,85 @@ Before marking any flag complete, verify normal, medium, and small TGA files:
 - no upside-down copies
 - no accidental no-suffix base-flag replacement for countries that were only meant to receive ideology variants
 
-## 21. Country-leader, commander, and operative portraits
+## 21. Country-leader, commander, operative, and officeholder portraits
 
-For real people, do not generate portraits with `$imagegen`.
-
-Choose the canonical reference family by role before starting:
+Choose the canonical reference family before production:
 
 - country leader: `portraits/leaders/`
 - army or navy commander: `portraits/commanders/`
 - operative: `portraits/operatives/`
+- advisor, theorist, high command, officer corps, or army-small:
+  `portraits/advisors/`
 
-Use an attributed real source image from the internet or a user-provided image. Select and record an explicit head-and-shoulders crop, then apply an identity-preserving HOI4 painted finish while retaining recognisable source details. A raw photograph, simple resize, generic oil-paint filter, face replacement, or weak likeness is not a finished portrait.
+Grounded real, historical, restored, separatist, regional, indigenous, dynastic,
+or otherwise plausibly historical identities use an attributed real-person
+source. One-person generated portraits are reserved for wholly fictional,
+impossible, or supernatural identities. Missing or contradictory identity
+classification fails closed.
 
-Record the source link, author or archive, license or public-domain status when available, original image path, processed PNG path, final DDS path, and sprite name.
+For a real person, preserve the unchanged archival master, create the explicit
+head-and-shoulders crop with
+`.agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py`,
+retain its exact-pixel JSON evidence, apply an identity-preserving HOI4 painted
+finish, process to the role’s native dimensions, and require an independent
+likeness, style, and provenance review before DDS conversion or wiring. A raw
+photograph, simple resize, generic filter, illustration used as an identity
+master, face replacement, or weak likeness is not a finished portrait.
 
-For fictional people, non-human beings, supernatural entities, aliens, zombies, monsters, symbolic leaders, or other invented characters, `$imagegen` may be used to create the base portrait. Give the matching canonical references as style inputs and request a restrained HOI4 painted treatment with no text or modern concept-art finish.
+Record source URL, author or archive, rights status when available, source and
+candidate hashes, crop coordinates, review evidence, processed PNG, final DDS,
+runtime sprite, and the durable ComfyUI pair from section 2.3.
 
-Country-leader, commander, and operative portrait textures are `156x210`. Never manufacture or document a smaller commander source texture merely because a UI view displays it at a smaller apparent size.
+For fictional people and impossible or supernatural entities, `$imagegen` may
+create a full-resolution base portrait after the identity gate permits it. Use
+the matching canonical family as style input. Reject generic, modern, meme,
+gore, stereotyped, text-bearing, or interchangeable output.
+
+Full country-leader, commander, and operative textures are `156x210`. Never
+manufacture a smaller commander source merely because one UI view displays it
+at a smaller apparent size.
+
+## 21.1 Advisor and high-command portrait icons
+
+Advisor, theorist, military-high-command, officer-corps, and army-small dossier
+portraits are a distinct native `65x67` asset family. Inspect
+`assets/vanilla_reference/portraits/advisors/` and its contact sheet before
+production. Do not satisfy an advisor requirement by shrinking a `156x210`
+leader texture or by reusing an unrelated icon.
+
+Apply the same identity gate. A grounded real subject first needs an
+independently approved full portrait candidate and retained attribution. An
+allowed fictional subject needs its own full-resolution generated master; do
+not reuse a leader crop. Institutional or collective briefs must state whether
+the card is people-free or depicts a governing group.
+
+Use the bundled compositor:
+
+```powershell
+python -B .agents/skills/hoi4-feature-assets/tools/create_advisor_icon.py `
+  --source <approved_portrait> `
+  --portrait-size <width> <height> `
+  --rotation <degrees> `
+  --portrait-offset <right> <down> `
+  --preview <review.png> `
+  --output <runtime.dds>
+```
+
+The tool resizes the complete source to a native intermediate, applies the
+reviewed size, rotation, and opening-center offset, then composites the exact
+`advisor_template.png` once as the untouched top layer. Use a placement study
+when the first transform does not fit. Do not redraw the frame, paper, seal,
+bevel, patina, or shadows.
+
+Record source and template hashes, complete-source resize, transformed
+dimensions, center, offset, rotation, sepia strength, preview hash, DDS hash,
+runtime path, and independent reviewer. Review at native size and at `4x`
+nearest-neighbour scale. Automated dimension and alpha checks are evidence,
+not visual approval.
+
+When a character defines `army.large` and `army.small`, keep the approved
+`156x210` commander texture for `large` and create a separate native `65x67`
+dossier portrait for `small`. Validate and document both sprites independently.
 
 ## Animated leader portraits
 
@@ -1122,7 +1235,7 @@ Do not invent a substitute asset unless the user explicitly approves it.
 Before finishing, confirm:
 
 1. Every required asset from the feature spec is accounted for.
-2. Every asset uses the correct source mode: `$imagegen` for generated symbolic, fictional, alternate-history, or unique report, news, or large feature presentation assets. internet or user-provided source images for real historical materials. and real source images for real leader portraits.
+2. Every asset uses the correct source mode: `$imagegen` for approved generated symbolic, fictional, alternate-history, or unique report, news, super-event, or large presentation assets; attributed sources for real historical material and every grounded real-person portrait.
 3. The matching reference folder from section 4 was inspected before generation, sourcing, processing, or wiring.
 4. Every generated, sourced, or provided asset has a source PNG.
 5. Every final asset has a processed PNG preview.
@@ -1139,3 +1252,5 @@ Before finishing, confirm:
 16. Focus, idea, national spirit, officer corps spirit, decision, decision category, achievement, and tech icons were treated as separate asset types. No idea or decision icon is only a resized, cropped, recolored, padded, or lightly edited focus icon.
 17. Every animated asset used `hoi4-frame-animation`, has real source frames, has a static fallback, and has no transform-only final motion.
 18. Every unit visual is classified by domain and surface as equipment/technology art, a large land counter, a land/air/naval map counter, a division-template emblem, or a land/air/naval 3D model package; one pipeline was not resized or relabeled to substitute for another. A 3D package also proves the one-image Meshy input rule, provider lineage, vanilla scale calibration, PDX material mapping, topology repair, required skeletal actions, `.mesh`/`.anim` reimport, hash-aware runtime synchronization, parent-owned wiring, and a live consumer.
+19. Every advisor, theorist, high-command, officer-corps, or army-small card uses the native `65x67` advisor workflow, the exact accepted template, retained transforms and hashes, and independent native/4x review; it is not a shrunken leader texture.
+20. Every wired portrait DDS has a durable source PNG and prompt TXT with the exact runtime basename under `docs/assets/portraits/<feature_slug>/`, a recorded ComfyUI replacement state, no invented prompt details, and no runtime reference into that queue.

@@ -1,0 +1,13 @@
+add_namespace = [MOD_PREFIX]_super_event
+
+# Run `event [MOD_PREFIX]_super_event.1` from the debug console to verify the
+# installed GUI, GFX, scripted GUI, scripted localisation, and close action.
+country_event = {
+    id = [MOD_PREFIX]_super_event.1
+    hidden = yes
+    is_triggered_only = yes
+
+    immediate = {
+        [MOD_PREFIX]_show_example_super_event = yes
+    }
+}

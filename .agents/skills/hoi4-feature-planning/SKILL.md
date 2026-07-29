@@ -1343,29 +1343,29 @@ When a spec or asset prompt asks for generated or sourced assets, tell the asset
 Use repo-relative project paths:
 
 ```text
-C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\README.md
-C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\CATALOG.md
-C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons
-C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\event_art
-C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\flags
-C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\portraits
-C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\units
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/flags
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits
+.agents/skills/hoi4-feature-assets/assets/vanilla_reference/units
 ```
 
 Reference mapping:
 
-- idea and national spirit icons: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\ideas\`
-- news event images: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\event_art\news\`
-- report event images: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\event_art\report\`
-- super-event and large presentation art: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\event_art\super_event\`
-- technology and special-project icons: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\technologies\` and `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\special_projects\`
-- achievement icons: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\achievements\`; the reusable not-eligible overlay is `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\achievements\overlay.png`
-- decisions, missions, and decision-category icons: their separate folders under `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\`
-- flags: complete normal, medium, and small sets under `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\flags\`
-- focus icons: `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\national_focus\`
-- officer-corps, balance-of-power, faction, and other system icons: their matching folders under `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\icons\`
-- country-leader, commander, and operative portraits: their matching folders under `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\portraits\`
-- unit visual references: the separate equipment, land, air, naval, and 3D-model families under `C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference\units\`
+- idea and national spirit icons: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/ideas/`
+- news event images: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art/news/`
+- report event images: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art/report/`
+- super-event and large presentation art: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art/super_event/`
+- technology and special-project icons: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/technologies/` and `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/`
+- achievement icons: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/`; the reusable not-eligible overlay is `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/overlay.png`
+- decisions, missions, and decision-category icons: their separate folders under `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/`
+- flags: complete normal, medium, and small sets under `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/flags/`
+- focus icons: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus/`
+- officer-corps, balance-of-power, faction, and other system icons: their matching folders under `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/`
+- country-leader, commander, operative, advisor, and high-command portraits: their matching folders under `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/`
+- unit visual references: the separate equipment, land, air, naval, and 3D-model families under `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/`
 
 The feature spec does not need to analyze those images itself. It should make the handoff explicit so the asset agent knows which example set to inspect before generation, sourcing, cropping, or wiring.
 

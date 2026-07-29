@@ -41,17 +41,17 @@ Use `hoi4_repo_explorer` only for read-only repo exploration when touched-file m
 
 Use `hoi4_improvement_loop_planner` for feature improvement loop planning, detailed expansion specs, historical and regional research notes, and implementation-ready improvement handoffs. This replaces the old mechanic-expander role. It writes plans and addenda. It does not patch gameplay files.
 
-Use `hoi4_asset_source_researcher` for real or archival image sourcing, real leader portraits, historical flags, historical symbols, user-provided source photos, source-image processing, animated portrait bases, and report, news, or custom feature images that must depict real historical material.
+Use `hoi4_asset_source_researcher` for real or archival image sourcing, real leader, commander, operative, advisor, and officeholder portraits, historical flags, historical symbols, user-provided source photos, source-image processing, animated portrait bases, and report, news, Super Event, or custom feature images that must depict real historical material.
 
-Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, custom feature images, fictional portraits, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces.
+Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, Super Event images, custom feature images, allowed fictional portraits and advisor masters, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces.
 
 Use `hoi4_icon_artist` for generated gameplay icon families, formable seals, scripted GUI icons, and small animated icon or button sprites. Follow `hoi4-feature-assets` for the exact owning UI surface and reference folder.
 
 Use `hoi4_3d_model_pipeline` for bounded custom HOI4 3D model work covering provider candidates, Blender processing, model textures, rigs, skeletal actions, `.mesh`/`.anim` export, QA evidence, and runtime handoffs.
 
-Use `hoi4_quote_remark_researcher` for main quotes, exact wording checks, attribution confidence, source comparison, button text, cultural remarks, slogans, allusions, and short references.
+Use `hoi4_quote_remark_researcher` for main quotes, exact wording checks, attribution confidence, source comparison, Super Event responses, button text, cultural remarks, slogans, allusions, and short references.
 
-Use `hoi4_audio_researcher` for licensed or public domain audio research, source verification, download, `.ogg` conversion, and audio handoff notes.
+Use `hoi4_audio_researcher` for licensed or public-domain audio research, including Super Event cues, source verification, download, `.ogg` conversion, and audio handoff notes.
 
 Use `hoi4_focus_tree_auditor` for focus tree audits and active small patches covering branch depth, route coverage, icons, localisation, rewards, prerequisites, mutual exclusions, AI, focus-formable links, and simplification.
 
@@ -245,19 +245,25 @@ The parent agent must give each asset subagent a bounded prompt with exact asset
 
 For flags, the parent prompt must state whether each flag is a base flag, ideology variant, route variant, cosmetic-tag flag, historical flag, or fictional flag. Base flags for existing countries must be preserved unless explicitly in scope. Ideology variants must be distinct designs, not recolors or copied emblems. Historical flags and attested symbols belong with `hoi4_asset_source_researcher`. Fictional or alternate-history variants belong with `hoi4_generated_feature_art`.
 
-Asset subagents may create source files, PNG previews, DDS files, contact sheets, manifests, and `gfx_handoff.md`. They must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, script, history, country, or workbook files unless the parent explicitly expands scope.
+Asset subagents may create source files, PNG previews, DDS files, contact sheets, manifests, and `gfx_handoff.md`. When the user explicitly requests the separate external ComfyUI portrait workflow, they may also create its durable source/prompt pairs under the boundary in `hoi4-feature-assets`; they never install, configure, inspect, or run ComfyUI. They must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, script, history, country, or workbook files unless the parent explicitly expands scope. Native advisor and high-command cards follow the `65x67` compositor and independent-review contract in `hoi4-feature-assets`.
 
-## Quote, remark, and audio research routing
+## Super Event, quote, remark, and audio research routing
 
 Use separate research agents when the text and audio package has enough work to justify it.
 
-Use `hoi4_quote_remark_researcher` for quotes, exact wording, attribution confidence, button text, cultural remarks, slogans, allusions, and short references.
+When the optional runtime is installed, use `hoi4-super-events` as the package
+contract. The parent provides the stable registration ID, presentation role,
+owning caller, exact research question, and output path.
 
-Use `hoi4_audio_researcher` for audio research, license verification, download, `.ogg` conversion, and audio handoff notes.
+Use `hoi4_quote_remark_researcher` for quotes, exact wording, attribution confidence, Super Event responses, button text, cultural remarks, slogans, allusions, and short references.
+
+Use `hoi4_audio_researcher` for audio research, license verification, download, `.ogg` conversion, and audio handoff notes. For a Super Event, its handoff also records the registration ID, proposed project-scoped sound ID, owning caller, and trigger/close/retrigger behavior.
 
 Use `hoi4_asset_source_researcher` or `hoi4_generated_feature_art` for image work according to the source mode required by `hoi4-feature-assets`.
 
-The main agent owns final wording, localisation, audio wiring, playback helpers, and docs alignment.
+The main agent owns final wording, localisation, Super Event registry branches,
+GUI/GFX, audio wiring, playback helpers, caller effects, docs alignment, and
+live validation.
 
 ## Improvement routing
 

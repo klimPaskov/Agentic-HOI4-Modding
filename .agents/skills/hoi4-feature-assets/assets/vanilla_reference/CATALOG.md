@@ -31,7 +31,7 @@ Every tracked type has a local `contact_sheet.png`; common icon families target 
 | `icons/special_projects` | 6 | 5 | `icons/special_projects/contact_sheet.png` |
 | `icons/state_modifiers` | 5 | 5 | `icons/state_modifiers/contact_sheet.png` |
 | `icons/technologies` | 2 | 15 | `icons/technologies/contact_sheet.png` |
-| `portraits/advisors` | 6 | 5 | `portraits/advisors/contact_sheet.png` |
+| `portraits/advisors` | 9 | 5 | `portraits/advisors/contact_sheet.png` |
 | `portraits/commanders` | 5 | 5 | `portraits/commanders/contact_sheet.png` |
 | `portraits/leaders` | 5 | 5 | `portraits/leaders/contact_sheet.png` |
 | `portraits/operatives` | 5 | 5 | `portraits/operatives/contact_sheet.png` |
@@ -73,9 +73,12 @@ Every tracked type has a local `contact_sheet.png`; common icon families target 
 | Army-small dossier | `portraits/advisors/army_small_ger_erwin_rommel.png` | 65x67 | Vanilla HOI4 | `gfx/interface/ideas/idea_erwin_rommel.dds` | `portraits/advisors/contact_sheet.png` | `interface/ideas.gfx; common/characters/GER.txt` |
 | Army-small dossier | `portraits/advisors/army_small_ger_friedrich_paulus.png` | 65x67 | Vanilla HOI4 | `gfx/interface/ideas/idea_GER_friedrich_paulus.dds` | `portraits/advisors/contact_sheet.png` | `interface/_leader_portraits.gfx; common/characters/GER.txt` |
 | Army-small dossier | `portraits/advisors/army_small_ger_gunther_von_kluge.png` | 65x67 | Vanilla HOI4 | `gfx/interface/ideas/idea_GER_gunther_von_kluge.dds` | `portraits/advisors/contact_sheet.png` | `interface/_leader_portraits.gfx; common/characters/GER.txt` |
+| Advisor dossier | `portraits/advisors/generic_africa_1.png` | 65x67 | Vanilla HOI4 | `gfx/interface/ideas/idea_generic_political_advisor_africa_1.dds` | `portraits/advisors/contact_sheet.png` | — |
 | Advisor dossier | `portraits/advisors/generic_asia_1.png` | 65x67 | Vanilla HOI4 | `gfx/interface/ideas/idea_generic_political_advisor_asia_1.dds` | `portraits/advisors/contact_sheet.png` | — |
 | Advisor dossier | `portraits/advisors/generic_europe_1.png` | 65x67 | Vanilla HOI4 | `gfx/interface/ideas/idea_generic_political_advisor_europe_1.dds` | `portraits/advisors/contact_sheet.png` | — |
+| Advisor dossier | `portraits/advisors/generic_europe_6.png` | 65x67 | Vanilla HOI4 | `gfx/interface/ideas/idea_generic_political_advisor_europe_6.dds` | `portraits/advisors/contact_sheet.png` | — |
 | Advisor dossier | `portraits/advisors/generic_female_europe.png` | 65x67 | Vanilla HOI4 | `gfx/interface/ideas/idea_generic_political_advisor_female_europe.dds` | `portraits/advisors/contact_sheet.png` | — |
+| Advisor dossier | `portraits/advisors/high_command_fevzi_cakmak.png` | 65x67 | Vanilla HOI4 | `gfx/interface/ideas/idea_tur_fevzi_cakmak_high_command.dds` | `portraits/advisors/contact_sheet.png` | — |
 | Land commander portrait | `portraits/commanders/generic_africa_land_1.png` | 156x210 | Vanilla HOI4 | `gfx/leaders/Africa/Portrait_Africa_Generic_land_1.dds` | `portraits/commanders/contact_sheet.png` | `interface/_random_portraits.gfx` |
 | Land commander portrait | `portraits/commanders/generic_africa_land_2.png` | 156x210 | Vanilla HOI4 | `gfx/leaders/Africa/Portrait_Africa_Generic_land_2.dds` | `portraits/commanders/contact_sheet.png` | `interface/_random_portraits.gfx` |
 | Land commander portrait | `portraits/commanders/generic_africa_land_3.png` | 156x210 | Vanilla HOI4 | `gfx/leaders/Africa/Portrait_Africa_Generic_land_3.dds` | `portraits/commanders/contact_sheet.png` | `interface/_random_portraits.gfx` |

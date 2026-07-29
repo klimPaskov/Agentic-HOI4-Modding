@@ -1,0 +1,11 @@
+﻿l_english:
+ [MOD_PREFIX]_super_event_quote_heading: "Quote of the Day"
+ [MOD_PREFIX]_super_event_close_tt: "Close"
+ [MOD_PREFIX]_super_event_default_title: "[MOD_NAME]"
+ [MOD_PREFIX]_super_event_default_desc: "This Super Event has not been registered yet."
+ [MOD_PREFIX]_super_event_default_quote: "Add a sourced quote in the Super Events registry."
+ [MOD_PREFIX]_super_event_default_remark: "Continue"
+ [MOD_PREFIX]_super_event_example_title: "[MOD_NAME]"
+ [MOD_PREFIX]_super_event_example_desc: "The reusable Super Events package is installed and ready for registrations."
+ [MOD_PREFIX]_super_event_example_quote: "Replace this example with a short, sourced quotation."
+ [MOD_PREFIX]_super_event_example_remark: "Begin"

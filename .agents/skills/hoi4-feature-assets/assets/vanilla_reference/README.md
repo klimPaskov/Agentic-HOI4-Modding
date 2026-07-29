@@ -5,7 +5,7 @@ source for this mod, and no workflow may use its path.
 
 All active asset skills and agents use this single canonical reference root:
 
-`C:\Users\klimp\OneDrive\Documents\Paradox Interactive\Hearts of Iron IV\mod\chaos_redux\.agents\skills\chaos-redux-event-assets\assets\vanilla_reference`
+`.agents/skills/hoi4-feature-assets/assets/vanilla_reference/`
 
 All paths below are relative to that canonical root. Reference PNGs are review
 material only; never wire, ship, trace, recolour, or copy them into final art.
