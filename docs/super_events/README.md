@@ -25,6 +25,7 @@ lineage without making an unsupported rights claim.
 - `localisation/english/hoi4ms_super_events_l_english.yml`
 - `gfx/super_events/` background, default preview, example image, and editable Photoshop templates
 - `gfx/interface/super_event_option.dds`
+- `.agents/skills/hoi4-super-events/assets/examples/` composition references and contact sheet
 
 ## Smoke test
 

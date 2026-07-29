@@ -60,6 +60,7 @@ gfx/super_events/super_event_image_default.dds
 gfx/super_events/super_event_template.psd
 gfx/super_events/super_event_image_template_457x328.psd
 docs/super_events/README.md
+.agents/skills/hoi4-super-events/assets/examples/
 ```
 
 Filenames stay stable for managed update and repair. Scripted identifiers,
@@ -237,6 +238,10 @@ title-like allusion or paraphrase. Record the source and risk.
 The visible image area is `457x328`. Use
 `gfx/super_events/super_event_image_template_457x328.psd` for the image and
 `gfx/super_events/super_event_template.psd` to review the complete composition.
+Inspect `.agents/skills/hoi4-super-events/assets/examples/contact_sheet.png`
+and the five individual reference PNGs for framing, contrast, subject scale,
+and text-safe composition. They are review references only: never register
+them as project sprites or present them as original art for a new mod.
 
 Choose source mode deliberately:
 
