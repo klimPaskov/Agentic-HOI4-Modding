@@ -34,8 +34,11 @@ report event.
 
 Before writing:
 
-1. Read `AGENTS.md` and the relevant offline wiki pages for events, scripted
-   GUI, scripted localisation, graphical assets, sound, and localisation.
+1. Read `AGENTS.md` and use its declared game version, vanilla path, offline
+   wiki path, and approved reference policy. If one is absent and the task
+   needs it, ask for that exact value rather than choosing a path or version.
+   Read the relevant offline wiki pages for events, scripted GUI, scripted
+   localisation, graphical assets, sound, and localisation.
 2. Search exact existing super-event identifiers and known presentation files.
 3. Determine whether the mod already has:
    - a scripted GUI or event-window implementation
@@ -54,6 +57,25 @@ Before writing:
 
 Do not use another mod as a reference unless the repository or user explicitly
 approves it.
+
+Bound the architecture search to the selected mod root. Inspect `AGENTS.md`,
+`events/`, `common/scripted_guis/`, `common/scripted_localisation/`,
+`common/scripted_effects/`, `common/scripted_triggers/`, `interface/`,
+`localisation/`, `gfx/`, `sound/`, `music/`, and the repository's documented
+docs or manifest roots when they exist. Search exact variants of `super_event`,
+`super event`, known presentation IDs, sprite consumers, sound consumers, and
+visibility state. Exclude `.git`, offline wiki copies, caches, backups, exports,
+and generated build output. Conclude that no architecture exists only after
+these relevant roots have no implementation or consumer evidence; report
+unreadable or oversized roots as unresolved instead of treating them as absent.
+
+When no architecture exists, record the proposal in the repository's existing
+architecture-decision or plan format. If there is no established format, use
+`docs/plans/super_event_architecture.md`. Include the mechanism, ID allocation,
+naming, file placement, state and cleanup model, localisation fallback, image
+contract, audio and player-volume contract, save/load, repeat, AI, multiplayer,
+language, platform, documentation, and provenance decisions. Obtain explicit
+user acceptance of that design before implementation.
 
 ## Package contract
 
@@ -152,7 +174,9 @@ For new audio:
 6. Register a stable sound or music ID following the current mod's naming
    convention.
 7. Use the detected player-volume or settings-aware playback route. If the mod
-   has none, expose that design gap instead of inventing a helper name.
+   has none, block final audio wiring until the user approves either a new
+   settings-aware route or direct playback as a documented exception. Never
+   silently omit audio or invent a helper name.
 
 Do not hardcode `.wav`, `.ogg`, a duration range, wrapper count, or volume suffix
 without repository or engine evidence.
