@@ -1,0 +1,4 @@
+interface:
+  display_name: "HOI4 Super Events"
+  short_description: "Design and wire complete HOI4 super-event packages"
+  default_prompt: "Use $hoi4-super-events to design and wire a complete super-event for this mod."

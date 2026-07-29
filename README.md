@@ -17,6 +17,7 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 - Optional custom Codex subagent patterns for bounded research, asset work, audits, and documentation.
 - A model for separating main-agent implementation from helper-agent production and audits.
 - The mod-agnostic hoi4-3d-model-pipeline skill and hoi4_3d_model_pipeline subagent for verified Meshy-to-Blender-to-io_pdx_mesh model production.
+- The optional mod-agnostic `hoi4-super-events` skill for complete presentation packages built around each mod's detected event, GUI, localisation, image, audio, and settings architecture.
 
 ## Recommended setup
 
@@ -217,6 +218,14 @@ The package retains provider lineage, immutable source downloads, Blender checkp
 The parent agent owns entity, asset, GFX, gameplay, placement, live-consumer wiring, and in-game proof, so an export alone never counts as a completed feature.
 
 Users provide only MESHY_API_KEY. The agent must not ask the user to copy, edit, or replace MCP configuration; if optional setup cannot finish, it must report the blocker and leave the 3D routes disabled.
+
+## Optional super-event workflow
+
+The reusable super-event workflow lives in `.agents/skills/hoi4-super-events/SKILL.md`.
+
+It is optional because many mods do not use a custom super-event presentation system. When enabled, the skill first detects the current mod's event, scripted GUI, scripted localisation, sprite, sound, volume-setting, documentation, and naming patterns. It does not assume Chaos Redux slots, prefixes, helpers, paths, audio formats, subagents, spreadsheets, or catalogues.
+
+Use it for major campaign moments that need aligned trigger wiring, title and body text, reaction text, a sourced quote, final image and audio assets, settings-aware playback, provenance, cleanup, and validation. General event logic remains owned by `hoi4-events`; visual production remains owned by `hoi4-feature-assets`; quote and audio source research remains owned by `hoi4-text-audio-research`.
 
 ## Codex scheduled tasks or Hermes
 

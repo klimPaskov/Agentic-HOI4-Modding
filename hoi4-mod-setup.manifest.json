@@ -77,6 +77,7 @@
           "hoi4-*/**"
         ],
         "exclude": [
+          "hoi4-super-events/**",
           "**/.DS_Store"
         ]
       },
@@ -5122,6 +5123,61 @@
           "size": 1249
         }
       ]
+    },
+    {
+      "id": "workflow.super_events",
+      "display_name": "Super Events workflow",
+      "description": "Install the generic detection-first skill for complete HOI4 super-event presentation packages.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".agents/skills/hoi4-super-events",
+        "include": [
+          "**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".agents/skills/hoi4-super-events/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.skills"
+      ],
+      "conflicts": [
+        "existing Super Events skill with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "super_events.frontmatter",
+          "severity": "block",
+          "kind": "custom",
+          "target": ".agents/skills/hoi4-super-events/SKILL.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "super-event architecture discovery",
+        "presentation package planning",
+        "text, image, and audio alignment",
+        "runtime wiring and validation"
+      ],
+      "notes": [
+        "The skill detects each mod's implementation and does not install a Chaos Redux-specific runtime."
+      ],
+      "expected_files": []
     }
   ],
   "profiles": [
