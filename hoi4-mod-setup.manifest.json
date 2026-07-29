@@ -5122,49 +5122,6 @@
           "size": 1293
         }
       ]
-    },
-    {
-      "id": "workflow.lora_comfyui_interest",
-      "display_name": "LoRA and ComfyUI portrait workflow preference",
-      "description": "Record interest only. Version 1 performs no installer actions.",
-      "category": "workflow",
-      "optional": true,
-      "platforms": [
-        "all"
-      ],
-      "source": {
-        "kind": "generated",
-        "path": "project-state.json#preferences.lora_comfyui_interest",
-        "template_engine": "preference_only"
-      },
-      "destination": {
-        "path": ".hoi4-mod-setup/state.json",
-        "ownership": "generated",
-        "outside_project": false
-      },
-      "dependencies": [],
-      "conflicts": [],
-      "conflict_policy": "generated_review",
-      "validation": [
-        {
-          "id": "lora.no_actions",
-          "severity": "block",
-          "kind": "custom",
-          "target": null
-        }
-      ],
-      "update": {
-        "strategy": "recreate",
-        "remove_obsolete": false,
-        "preserve_local_additions": true
-      },
-      "capabilities": [
-        "interest recording"
-      ],
-      "notes": [
-        "Readiness state is planned_unavailable; no ComfyUI, model, LoRA, Python, GPU, or driver operation is allowed."
-      ],
-      "expected_files": []
     }
   ],
   "profiles": [
