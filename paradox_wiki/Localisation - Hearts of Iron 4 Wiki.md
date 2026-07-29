@@ -466,7 +466,7 @@ Some of the localization objects are :
 
 The localization objects are used with the following syntax: `[(Object.)+Property]`.
 `(Object.)+` refers to a sequence of at least one object accessor and `Property` is the property
-that is accessed by the last object in the sequence. For example, if the localization string is localized with an [Character](loc\_objects\_documentation.md#character) object
+that is accessed by the last object in the sequence. For example, if the localization string is localized with a Character object
 the following queries would get the character's name and the name of the country that the character belongs to `[Character.GetName]`
 and `[Character.Owner.GetName]`, respectively.
 
