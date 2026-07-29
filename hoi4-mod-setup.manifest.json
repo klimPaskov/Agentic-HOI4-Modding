@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "0c07656d61910781e1cbaf06c50875f5d6fc9183",
+  "generated_for_revision": "00350e2f4b3cb7297c538e4f8ee7e07045d83fbf",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -5226,13 +5226,48 @@
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-super-events/SKILL.md",
-          "sha256": "6153375686bd5be9bbb5fbfd1df2c57ddcee6bb4774a42b0895bf76e2ecb7cd7",
-          "size": 13739
+          "sha256": "1d278b4e4403361f1aa44f56eaaab8e904fa76398466d4d6d4950063fd0309cf",
+          "size": 14089
         },
         {
           "path": ".agents/skills/hoi4-super-events/agents/openai.yaml",
           "sha256": "766b37960ad43077f22585ab17c5d120048a6948d52b4cebe674ca4805bc457d",
           "size": 220
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events/assets/examples/README.md",
+          "sha256": "50faf6e0e1ce97d23a6399ba6838cf02aa65e9d60835feb5b1cc987236f95b8d",
+          "size": 852
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events/assets/examples/contact_sheet.png",
+          "sha256": "22e6959e53479f2a8fe88b7206ac8f72166eb4491a0d5b5fa63b6aa663fdc638",
+          "size": 289158
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events/assets/examples/super_event_006_league_formation.png",
+          "sha256": "a0382c507c3ee2829cf5ffb596a2650929b4236016b15f7933ef1179dfe49cbf",
+          "size": 285262
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events/assets/examples/super_event_angel_directorate.png",
+          "sha256": "c0eaff9f7a4a65846e457c9000ca8062c5d9f333dc56dd2a42ba747136cd4eeb",
+          "size": 187190
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events/assets/examples/super_event_angelic_world_order.png",
+          "sha256": "7aef720be0e23d75a69cacd48d6587f70174f310213331be379c65259514cdc3",
+          "size": 252276
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events/assets/examples/super_event_divine_sovereignty.png",
+          "sha256": "b8709450a216b15fd0f94df570e744e17d8a670bc18b3026aebdc590d524663a",
+          "size": 257936
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events/assets/examples/super_event_world_in_fury.png",
+          "sha256": "8c287aaf41ca872a5e11695eccd74497e1c41bb3c06729ff8771c33d84be5f7b",
+          "size": 366023
         }
       ]
     },
@@ -5574,8 +5609,8 @@
       "expected_files": [
         {
           "path": "docs/super_events/README.md",
-          "sha256": "d0cda27737a9d1e540a1c1339d09db701622112b9461f500788ec73ef12cb186",
-          "size": 2324
+          "sha256": "d3485463c593549e1a75a65f798db74d103f6ac3473ce3a41a7b04bc959c87a1",
+          "size": 2419
         }
       ]
     }
