@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "eaccb3188ee00dbf4ac5d7893eec6272d1078f4a",
+  "generated_for_revision": "168c8a1d1abf46b790a92013513391a1651c94c3",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "420bea21df06f2cdf32f40b80859dc7a4db8568cea91c8a2070d5b035bd25afc",
-          "size": 36892
+          "sha256": "228a929b83433796cd16a9c207c5810284989584f33637ca1689725034e8a824",
+          "size": 37170
         }
       ]
     },
@@ -1959,8 +1959,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "e699b4ec20741849454376d49bc5c017a475608965604e3882c216a30ec166e4",
-          "size": 13489
+          "sha256": "36d0ed12281f2f4e75549927787709bcc6522616deb2c33822e6e702d46823e9",
+          "size": 14575
         }
       ]
     },
@@ -5177,7 +5177,18 @@
       "notes": [
         "The skill detects each mod's implementation and does not install a Chaos Redux-specific runtime."
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".agents/skills/hoi4-super-events/SKILL.md",
+          "sha256": "861df05dcd01d56dd8c0c7825e40cac9e3ba188ce9e640d5761f3be7949253ce",
+          "size": 11209
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events/agents/openai.yaml",
+          "sha256": "766b37960ad43077f22585ab17c5d120048a6948d52b4cebe674ca4805bc457d",
+          "size": 220
+        }
+      ]
     }
   ],
   "profiles": [
