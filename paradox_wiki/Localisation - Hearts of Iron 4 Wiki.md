@@ -444,7 +444,7 @@ Example:
 Contextual localization is a way to access data from Localization Objects when localizing a string.
 The concept differs slightly from standard values ($VAL$) that can be injected into the localization string by allowing the localization string
 to select which properties to add to the resulting string and where.
-When a string is contextually localized with a localization object, then there's one root object (either a [Scope](loc\_objects\_documentation.md#scope) or [Localization Environment(loc\_objects\_documentation.md#localization\_environment)].
+When a string is contextually localized with a localization object, then there's one root object (either a Scope or Localization Environment).
 In general this object can only be used for two purposes: Accessing other objects and getting the current date.
 
 Some of the localization objects are :
