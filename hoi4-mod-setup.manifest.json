@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "00350e2f4b3cb7297c538e4f8ee7e07045d83fbf",
+  "generated_for_revision": "1592a763dad14027653dc0846328b70c4f3af73e",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -2243,8 +2243,8 @@
         },
         {
           "path": "paradox_wiki/Localisation - Hearts of Iron 4 Wiki.md",
-          "sha256": "1af6ac6d45008b0ba850dab67cd2f4e2af65610c182490d930cbebe3c169946c",
-          "size": 67235
+          "sha256": "eda6af1a6a099bd9dc9a2d13030bb5b02c5a89a946485c892a0c3513f6f40b5b",
+          "size": 67091
         },
         {
           "path": "paradox_wiki/Map modding - Hearts of Iron 4 Wiki.md",
