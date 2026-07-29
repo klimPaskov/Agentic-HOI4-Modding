@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "168c8a1d1abf46b790a92013513391a1651c94c3",
+  "generated_for_revision": "ba2551a2caba6c35c5439c5802a44f30d59f1a3d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "228a929b83433796cd16a9c207c5810284989584f33637ca1689725034e8a824",
-          "size": 37170
+          "sha256": "420bea21df06f2cdf32f40b80859dc7a4db8568cea91c8a2070d5b035bd25afc",
+          "size": 36892
         }
       ]
     },
@@ -5155,14 +5155,7 @@
         "existing Super Events skill with the same path"
       ],
       "conflict_policy": "replace_if_unmodified",
-      "validation": [
-        {
-          "id": "super_events.frontmatter",
-          "severity": "block",
-          "kind": "custom",
-          "target": ".agents/skills/hoi4-super-events/SKILL.md"
-        }
-      ],
+      "validation": [],
       "update": {
         "strategy": "replace_if_unmodified",
         "remove_obsolete": true,
