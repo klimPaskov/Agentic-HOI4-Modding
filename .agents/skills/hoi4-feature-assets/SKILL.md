@@ -1254,3 +1254,11 @@ Before finishing, confirm:
 18. Every unit visual is classified by domain and surface as equipment/technology art, a large land counter, a land/air/naval map counter, a division-template emblem, or a land/air/naval 3D model package; one pipeline was not resized or relabeled to substitute for another. A 3D package also proves the one-image Meshy input rule, provider lineage, vanilla scale calibration, PDX material mapping, topology repair, required skeletal actions, `.mesh`/`.anim` reimport, hash-aware runtime synchronization, parent-owned wiring, and a live consumer.
 19. Every advisor, theorist, high-command, officer-corps, or army-small card uses the native `65x67` advisor workflow, the exact accepted template, retained transforms and hashes, and independent native/4x review; it is not a shrunken leader texture.
 20. Every wired portrait DDS has a durable source PNG and prompt TXT with the exact runtime basename under `docs/assets/portraits/<feature_slug>/`, a recorded ComfyUI replacement state, no invented prompt details, and no runtime reference into that queue.
+
+<!-- HOI4_MOD_SETUP_SUPER_EVENTS_START -->
+## Super Events images
+
+When the installed `hoi4-super-events` workflow is selected, read its runtime templates and use the declared `457x328` presentation image size. Define the exact role, subject, tone, focal hierarchy, symbolism, source mode, safe text area, prohibited content, final DDS path, and sprite purpose before production. Use sourced archival material for real people, events, places, documents, or objects; use approved generation for fictional, alternate-history, symbolic, or supernatural scenes that do not claim to be historical photographs.
+
+Keep source material, processed previews, provenance, licenses, uncertainty, final DDS output, and GFX handoff together. Review the image at runtime size in the complete popup, then let the main agent wire the sprite, localisation branches, caller, and registration. The examples bundled with `hoi4-super-events` are composition references only and must not be registered as project art.
+<!-- HOI4_MOD_SETUP_SUPER_EVENTS_END -->

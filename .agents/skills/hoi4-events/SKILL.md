@@ -617,3 +617,11 @@ Common useful checks:
 - docs and manifests match final ids and assets
 
 Do not fill the final report with boilerplate checks that only restate repo-wide rules. Report validation when it affected confidence, found a problem, or directly proves a task-specific surface is wired.
+
+<!-- HOI4_MOD_SETUP_SUPER_EVENTS_START -->
+## Super Events integration
+
+When the installed `hoi4-super-events` workflow is selected, treat the owning gameplay transition and its presentation registration as one feature. Read `hoi4-super-events`, establish the announced state before showing the presentation, reserve one stable unused registration ID, add every required title, description, quote, response, image, and optional audio branch, call the project-scoped show effect from one reachable owner, suppress duplicate callers, and clear visibility, registration, and playback state through the installed close path.
+
+Validate the live caller, state ordering, registration uniqueness, sprite and texture resolution, localisation coverage, duplicate suppression, cleanup, permanent documentation, and one named in-game scenario. Never invent helpers, commands, sound conventions, or Chaos Redux paths. Optional audio must not break the visual package; audio marked required by the accepted project plan remains a completion blocker until its source, rights, sound ID, definition, playback, and documentation agree.
+<!-- HOI4_MOD_SETUP_SUPER_EVENTS_END -->

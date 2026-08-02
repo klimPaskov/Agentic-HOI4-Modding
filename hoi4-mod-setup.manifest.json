@@ -5184,7 +5184,7 @@
         "kind": "tree",
         "path": ".agents/skills",
         "include": [
-          "hoi4-super-events*/**"
+          "hoi4-super-events/**"
         ],
         "exclude": [
           "**/.DS_Store"

@@ -305,3 +305,11 @@ Before final completion, the parent should check:
 - docs, specs, plans, and any explicitly scoped external records agree
 
 A subagent patch can reduce workload. It never owns the final completion claim.
+
+<!-- HOI4_MOD_SETUP_SUPER_EVENTS_START -->
+## Super Events research routes
+
+When the installed `hoi4-super-events` workflow is selected, route bounded work to `hoi4_super_event_quote_researcher` for quote candidates, attribution, response text, cultural fit, and copyright notes; `hoi4_super_event_audio_researcher` for source, license, download, verified conversion, and audio evidence; and `hoi4_super_event_art_researcher` for image direction, source-mode research, named-reference review, and explicitly authorized image production.
+
+Spawn each with `fork_context=false`. Include the mod root, stable registration ID, presentation role, owning caller, accepted plan path, exact question, named inputs, exact outputs and handoff path, source mode or audio decision, user constraints, and forbidden files. These agents do not edit gameplay, event, GUI, GFX, localisation, scripted localisation, sound definitions, or registry files; the main agent reviews the handoff and owns final wiring and completion.
+<!-- HOI4_MOD_SETUP_SUPER_EVENTS_END -->

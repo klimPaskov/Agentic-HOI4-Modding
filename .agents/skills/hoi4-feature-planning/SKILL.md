@@ -1842,3 +1842,11 @@ Reject the draft if it has any of these problems:
 - obvious system plumbing repeated as design
 
 The spec should be ambitious, detailed, researched, and usable. Do not stop at a conservative minimum when the idea supports more.
+
+<!-- HOI4_MOD_SETUP_SUPER_EVENTS_START -->
+## Super Events planning
+
+When the installed `hoi4-super-events` workflow is selected, use it only for a campaign-scale first reveal, irreversible escalation, world-order change, rare ideological victory, catastrophic collapse, global defeat, or genuine ending. The plan must name the owning caller, the state established before presentation, one stable registration ID, duplicate-suppression and close-cleanup behavior, title and description direction, quote and response themes, image direction and source mode, audio decision, runtime touchpoints, permanent documentation, and one acceptance scenario.
+
+Treat title, response, quote, cultural reference, image, and audio choices as research briefs rather than invented final assets. Audio is optional unless the user, accepted specification, or verified project convention explicitly makes it required. Route implementation through `hoi4-events`, visual work through `hoi4-feature-assets`, sourced wording and audio through `hoi4-text-audio-research`, and the complete presentation contract through `hoi4-super-events`.
+<!-- HOI4_MOD_SETUP_SUPER_EVENTS_END -->

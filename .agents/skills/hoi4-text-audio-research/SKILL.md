@@ -457,3 +457,11 @@ Sourced quote, remark, or audio research task is complete when the main agent re
 - explicit blockers and uncertainty
 
 Do not treat an unverified quote, uncertain audio license, placeholder track, unsourced cultural reference, or missing attribution as complete.
+
+<!-- HOI4_MOD_SETUP_SUPER_EVENTS_START -->
+## Super Events text and audio
+
+When the installed `hoi4-super-events` workflow is selected, bind every research handoff to the stable registration ID, presentation role, owning caller, accepted tone, and permanent research note. Compare several quote and response candidates, verify exact wording and attribution, keep modern copyrighted excerpts short, record uncertainty, and reject dramatic language that does not fit the exact reveal, victory, defeat, aftermath, or ending.
+
+Audio remains optional unless the accepted project design explicitly requires it. A required cue needs verified composition and recording rights, a legitimate source, conversion through the project's established workflow, a unique project-scoped sound ID unless reuse was approved, playback and close behavior, and durable documentation. Never invent a format, duration, helper, path, command, license, placeholder cue, generated test tone, or primitive waveform substitute.
+<!-- HOI4_MOD_SETUP_SUPER_EVENTS_END -->
