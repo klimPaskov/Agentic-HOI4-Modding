@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "8c619f7dfee59f50096573e4ed1ea200e06632be",
+  "generated_for_revision": "de725e52ec2cb8d2d5796e86a93bf14bf1bb5c6b",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -127,13 +127,13 @@
         },
         {
           "path": ".agents/skills/hoi4-events/SKILL.md",
-          "sha256": "0dde0e5d07025f0c2b37e5af56e67562b8aafc4f544949df8e76d8e4b038981c",
-          "size": 40419
+          "sha256": "49381f59107da3cba94207fa8ff7c8df3c168387c8bf6174c483ca8141fc959b",
+          "size": 41579
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "323fbec28d661dcbaa0badddbc5bb52740fec63edc6baa11d6b4675797eea833",
-          "size": 71377
+          "sha256": "7e7e33455630222f0d8df8148bbd83d1695c4f9f8e7dfadb9d81031f60f15ddc",
+          "size": 72413
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -1657,8 +1657,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "dcd1b2900346ad5122eb681df67af77b6aa729f6664ad5543a7dd43ab582d8d8",
-          "size": 146388
+          "sha256": "456b7df8dcac73543aee8a9407196906189f18bf1a8da01b0be97aea458a1aec",
+          "size": 147545
         },
         {
           "path": ".agents/skills/hoi4-focus-trees/SKILL.md",
@@ -1682,13 +1682,13 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "53f453779fbc5ca6951228989071e482385460d420647a5a256126f4162a6976",
-          "size": 23131
+          "sha256": "97024cf104b6a79f6ff4df99468e094dc25c9b0d27dc655b05d23b78fe3d380c",
+          "size": 24181
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
-          "sha256": "aea1057256cf8539898297ad777d5054dd0075ebf9e17bda45a6aadd7dbc78ca",
-          "size": 16903
+          "sha256": "34ee6e42d76373a42da95612dd0400b17ff5e92c9c12ab7cc15b7aa9e0c5dde2",
+          "size": 17943
         }
       ]
     },
@@ -5191,7 +5191,7 @@
         ]
       },
       "destination": {
-      "path": ".agents/skills/",
+        "path": ".agents/skills/",
         "ownership": "managed",
         "outside_project": false
       },
@@ -5227,31 +5227,6 @@
         "Audio remains optional and is added only from sources with verified usage rights."
       ],
       "expected_files": [
-        {
-          "path": ".agents/skills/hoi4-super-events-event-integration/SKILL.md",
-          "sha256": "b6c2fa2b865411870ba40304c7e96456204c1297c576ce875932c6c6b5ee69e1",
-          "size": 4076
-        },
-        {
-          "path": ".agents/skills/hoi4-super-events-feature-assets/SKILL.md",
-          "sha256": "441b3d15208284a26d21cab1a68819d1123e2340ef7d86dd65cc1f08264232a3",
-          "size": 3761
-        },
-        {
-          "path": ".agents/skills/hoi4-super-events-planning/SKILL.md",
-          "sha256": "2669e0a7eac12c1cf697dfb528d50569437d81514b00a15b72fc43c82b1e1e8d",
-          "size": 3811
-        },
-        {
-          "path": ".agents/skills/hoi4-super-events-subagents/SKILL.md",
-          "sha256": "71e1de9f4579e345a0d70e67c17f93f1907cab4c59f4e480ea15534af04d01f1",
-          "size": 3701
-        },
-        {
-          "path": ".agents/skills/hoi4-super-events-text-audio-research/SKILL.md",
-          "sha256": "6c1b033a901edb0e54aa898f119e0245b7c024fe509babfa9eedcf25772b7d97",
-          "size": 4107
-        },
         {
           "path": ".agents/skills/hoi4-super-events/SKILL.md",
           "sha256": "ecab1936f9a30391d6ca9ab7fdc5f1f551f99de51220c078355d96512f9980bc",
