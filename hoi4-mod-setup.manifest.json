@@ -5191,7 +5191,7 @@
         ]
       },
       "destination": {
-        "path": ".agents/skills/hoi4-super-events/",
+      "path": ".agents/skills/",
         "ownership": "managed",
         "outside_project": false
       },
