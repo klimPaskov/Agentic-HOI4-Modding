@@ -89,10 +89,7 @@ Use repo skills as required implementation guidance, not as optional notes.
 - Use `hoi4-feature-planning` to plan 3D unit and building profiles, exact-one-image Meshy inputs, vanilla scale calibration, action roles, entity consumers, map placement, and runtime acceptance evidence whenever a feature needs a model.
 - Use `hoi4-3d-model-pipeline` for bounded custom HOI4 model production, provider lineage, Blender processing, PDX textures, rigs, skeletal actions, `.mesh`/`.anim` export, reimport proof, and runtime handoffs.
 - Use `hoi4-frame-animation` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
-- Use `hoi4-text-audio-research` when a task needs sourced quotes, Super Event responses, cultural references, title-like references, slogans, or music and audio research.
-<!-- HOI4_MOD_SETUP:SUPER_EVENTS:START -->
-- Use `hoi4-super-events` when the optional runtime is installed and a task creates, updates, researches, registers, wires, tests, or documents a Super Event. Keep its caller, stable ID, five scripted-localisation branches, image, text, quote, response, optional rights-verified audio, close cleanup, docs, and acceptance scenario aligned.
-<!-- HOI4_MOD_SETUP:SUPER_EVENTS:END -->
+- Use `hoi4-text-audio-research` when a task needs sourced quotes, cultural references, title-like references, slogans, or music and audio research.
 - Use `hoi4-focus-trees` before editing national focus trees.
 - Use `hoi4-decisions-missions` before editing decisions/missions.
 - If this repository installs an additional MTTH or weighted-timing skill, use it when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer. Otherwise centralize weighted timing logic in the relevant event, decision, or scripted-system helpers.
@@ -149,7 +146,7 @@ Use these high-level routing rules:
 - Use `hoi4_repo_explorer` only when file locations, existing patterns, vanilla references, likely touchpoints, missing-file recovery, or implementation order are unclear. Do not use it for small known-file edits, provided-file edits, direct skill or prompt updates, localisation-only cleanup, asset-only production, or tasks already bounded to exact files. The parent should inspect the known files directly for those cases.
 - Use asset subagents for visual production: `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, and `hoi4_icon_artist`.
 - When an asset subagent is asked to produce animation, the parent prompt must require `hoi4-frame-animation` for 2D frame-sheet assets and `hoi4-3d-model-pipeline` for skeletal `.anim` actions; 3D prompts must include the Meshy hard gate, one-image rule, vanilla scale crosswalk, material packing, reimport proof, and parent-owned runtime wiring.
-- Use quote and audio research subagents only for specialised sourced text or audio work: `hoi4_quote_remark_researcher` and `hoi4_audio_researcher`. For a Super Event, the parent prompt must include its stable registration ID, presentation role, owning caller, research question, and handoff path.
+- Use quote and audio research subagents only for specialised sourced text or audio work: `hoi4_quote_remark_researcher` and `hoi4_audio_researcher`.
 - Use audit subagents before completion claims: `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_localisation_auditor`, and `hoi4_feature_completion_auditor`.
 - Use `hoi4_scripted_system_architect` for reusable scripted effects, triggers, script constants, event targets, meta effects, variable patterns, and dynamic helper design.
 - Use `hoi4_documentation_curator` during long implementation when specs, plans, docs, manifests, prompts, reports, or subagent handoffs may be stale, duplicated, contradictory, or too numerous. It patches documentation surfaces only, writes source-of-truth maps and resume packets, and does not edit gameplay files or spreadsheets.
@@ -361,7 +358,7 @@ Do not claim completion when:
 - AI behavior is missing
 - assets are missing, unwired, or undocumented
 - maintained event logs, documentation, tables, or manifests that describe the changed system are stale
-- any requested route, country, decision, mission, achievement, event chain, focus path, custom progression milestone, Super Event, researched text or audio package, or asset is missing
+- any requested route, country, decision, mission, achievement, event chain, focus path, custom progression milestone, researched text or audio package, or asset is missing
 - a fallback or simplification was used without explicit approval
 
 Balance checks are implementation work, not optional polish. If the spec or user asks for balance validation, the agent must inspect the relevant variables, scripted effects, decisions, mission outcomes, trigger conditions, AI weights, and scenario behavior. A vague statement that balance was adjusted is not enough.
@@ -392,7 +389,7 @@ For final visual assets, use `hoi4-feature-assets`. That skill is the detailed s
 
 For animated visual assets, use `hoi4-frame-animation` in addition to `hoi4-feature-assets` for frame-sheet animation. Use `hoi4-3d-model-pipeline` for skeletal unit or entity actions. Final animation assets must be built from real planned frames or real exported skeletal actions and must not be transform-only mockups.
 
-Use `hoi4-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. They create external ComfyUI portrait source/prompt pairs only when that separate workflow is explicitly requested; they do not install or run it. The main agent owns `.gfx` edits, gameplay references, localisation references, Super Event registration, documentation alignment, and final validation. Native advisor and high-command cards use the `65x67` compositor and independent-review contract in `hoi4-feature-assets`. For 3D packages, the model worker owns the bounded production evidence while the main agent owns `.asset`, entity, runtime wiring, and live proof.
+Use `hoi4-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. They create external ComfyUI portrait source/prompt pairs only when that separate workflow is explicitly requested; they do not install or run it. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation. Native advisor and high-command cards use the `65x67` compositor and independent-review contract in `hoi4-feature-assets`. For 3D packages, the model worker owns the bounded production evidence while the main agent owns `.asset`, entity, runtime wiring, and live proof.
 
 ## 8. Skill Maintenance
 

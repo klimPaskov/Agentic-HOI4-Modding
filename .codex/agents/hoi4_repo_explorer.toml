@@ -64,7 +64,6 @@ Required reading:
 4. Read the relevant HOI4 skill for the system being explored:
   - hoi4-events for event chains, event details, escalation variants, docs, and optional mod-specific logging or external records when the repository has them
   - hoi4-feature-assets for visual assets, generated or sourced art, manifests, DDS, and sprite handoffs
-  - hoi4-super-events for optional runtime, registry, GUI/GFX, text, image, audio, caller, cleanup, and validation surfaces
   - hoi4-text-audio-research for sourced quotes, cultural remarks, title-like references, slogans, audio source checks, and license notes
   - hoi4-focus-trees for focus tree work
   - hoi4-decisions-missions for decisions, missions, categories, scripted GUI decision surfaces, costs, and AI decisions

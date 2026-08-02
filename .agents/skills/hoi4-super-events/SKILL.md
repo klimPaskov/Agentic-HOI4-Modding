@@ -5,41 +5,26 @@ description: Use when designing, researching, registering, wiring, testing, or d
 
 # HOI4 Super Events
 
-Use this skill only when the optional Super Events workflow is installed or the
-repository already has an accepted Super Event architecture. A Super Event is a
-large campaign presentation moment, not a substitute for an ordinary event
-popup.
+Use this skill only when the optional Super Events workflow is installed or the repository already has an accepted Super Event architecture. A Super Event is a large campaign presentation moment, not a substitute for an ordinary event popup.
 
-The HOI4 Mod Setup package provides a neutral runtime derived from a proven
-mod architecture and adapted to the project’s confirmed namespace. It includes
-GUI, GFX, scripted GUI, scripted localisation, one hidden smoke-test event,
-default assets, editable Photoshop templates, and a registration guide.
+The HOI4 Mod Setup package provides a neutral runtime derived from a proven mod architecture and adapted to the project’s confirmed namespace. It includes GUI, GFX, scripted GUI, scripted localisation, one hidden smoke-test event, default assets, editable Photoshop templates, and a registration guide.
 
 ## Boundaries
 
-The main agent owns final registration, caller effects, GUI/GFX integration,
-localisation, audio wiring, documentation, validation, and completion claims.
+The main agent owns final registration, caller effects, GUI/GFX integration, localisation, audio wiring, documentation, validation, and completion claims.
 
 Route bounded work to:
 
-- `hoi4_quote_remark_researcher` for exact quotations, attribution, cultural
-  remarks, slogans, title references, and copyright risk
-- `hoi4_audio_researcher` for licensed or public-domain audio research,
-  downloads, editing, conversion, rights evidence, and handoff
+- `hoi4_quote_remark_researcher` for exact quotations, attribution, cultural remarks, slogans, title references, and copyright risk
+- `hoi4_audio_researcher` for licensed or public-domain audio research, downloads, editing, conversion, rights evidence, and handoff
 - `hoi4_asset_source_researcher` for real or archival Super Event images
-- `hoi4_generated_feature_art` for approved fictional, symbolic,
-  supernatural, or alternate-history Super Event images
+- `hoi4_generated_feature_art` for approved fictional, symbolic, supernatural, or alternate-history Super Event images
 - `hoi4_localisation_auditor` for consistency and key coverage
-- `hoi4_repo_explorer` only when the owning caller or an existing custom
-  architecture is not already known
+- `hoi4_repo_explorer` only when the owning caller or an existing custom architecture is not already known
 
-Use `hoi4-feature-assets` for image production and DDS handoff,
-`hoi4-text-audio-research` for source-aware text and audio, `hoi4-events` for
-event-chain ownership, and `hoi4-subagents` for bounded delegation.
+Use `hoi4-feature-assets` for image production and DDS handoff, `hoi4-text-audio-research` for source-aware text and audio, `hoi4-events` for event-chain ownership, and `hoi4-subagents` for bounded delegation.
 
-Subagents do not edit the registry, scripted localisation, GUI, GFX, callers,
-sound definitions, or gameplay unless the parent explicitly grants that narrow
-scope.
+Subagents do not edit the registry, scripted localisation, GUI, GFX, callers, sound definitions, or gameplay unless the parent explicitly grants that narrow scope.
 
 ## Installed package
 
@@ -63,14 +48,9 @@ docs/super_events/README.md
 .agents/skills/hoi4-super-events/assets/examples/
 ```
 
-Filenames stay stable for managed update and repair. Scripted identifiers,
-event namespace, sprite names, flags, localisation keys, and example text are
-adapted from `[MOD_PREFIX]` and `[MOD_NAME]` during installation.
+Filenames stay stable for managed update and repair. Scripted identifiers, event namespace, sprite names, flags, localisation keys, and example text are adapted from `[MOD_PREFIX]` and `[MOD_NAME]` during installation.
 
-Never copy identifiers or event-specific content from another mod. Never
-silently replace an existing custom Super Event architecture. Compare base,
-local, and incoming files through the setup transaction and honor the user’s
-conflict choices.
+Never copy identifiers or event-specific content from another mod. Never silently replace an existing custom Super Event architecture. Compare base, local, and incoming files through the setup transaction and honor the user’s conflict choices.
 
 ## Discovery gate
 
@@ -79,22 +59,14 @@ Before editing:
 1. Read `AGENTS.md`.
 2. Read this skill and `docs/super_events/README.md`.
 3. Confirm the current mod prefix and installed package paths.
-4. Search the requested event, effect, focus, decision, on_action, or other
-   caller.
-5. Inspect the current GUI, GFX, scripted GUI, scripted localisation,
-   localisation, assets, audio definitions, and permanent Super Event docs.
-6. Check whether an ID, sprite, localisation key, audio cue, or presentation
-   moment already exists.
+4. Search the requested event, effect, focus, decision, on_action, or other caller.
+5. Inspect the current GUI, GFX, scripted GUI, scripted localisation, localisation, assets, audio definitions, and permanent Super Event docs.
+6. Check whether an ID, sprite, localisation key, audio cue, or presentation moment already exists.
 7. Identify every player-visible and AI path that can invoke the moment.
 
-Use `hoi4.gui_inspect` before changing a scripted GUI you do not understand.
-Use `hoi4.gui_render` after wiring when the available scenario can represent
-the window. Keep tool output as evidence; it does not replace source review or
-live in-game validation.
+Use `hoi4.gui_inspect` before changing a scripted GUI you do not understand. Use `hoi4.gui_render` after wiring when the available scenario can represent the window. Keep tool output as evidence; it does not replace source review or live in-game validation.
 
-If the installed runtime is absent, do not fabricate its paths or claim it is
-available. Either use the repository’s accepted custom architecture or ask the
-user to add the optional workflow through HOI4 Mod Setup.
+If the installed runtime is absent, do not fabricate its paths or claim it is available. Either use the repository’s accepted custom architecture or ask the user to add the optional workflow through HOI4 Mod Setup.
 
 ## Package contract
 
@@ -114,13 +86,13 @@ Every registered Super Event keeps these surfaces aligned:
 - permanent documentation and source evidence
 - smoke-test and live acceptance evidence
 
-Do not wire only one part. A new image without registry text, a caller without
-close cleanup, or audio without rights evidence is incomplete.
+Do not wire only one part. A new image without registry text, a caller without close cleanup, or audio without rights evidence is incomplete.
+
+Treat working titles, draft descriptions, unsourced quotes, generic response text, placeholder art, and unverified audio as planning inputs only. Do not promote them into final localisation or runtime registration until the relevant research and asset handoffs are complete.
 
 ## Registration model
 
-Reserve one integer ID per Super Event. Never recycle an established ID for a
-different moment.
+Reserve one integer ID per Super Event. Never recycle an established ID for a different moment.
 
 The installed runtime exposes:
 
@@ -130,25 +102,18 @@ The installed runtime exposes:
 }
 ```
 
-The helper stores the ID as the value of
-`<mod_prefix>_super_event_visible`. The scripted GUI becomes visible while that
-flag is present. Each `defined_text` block selects image, title, description,
-quote, and remark from that same value. The close action clears the visibility
-flag.
+The helper stores the ID as the value of `<mod_prefix>_super_event_visible`. The scripted GUI becomes visible while that flag is present. Each `defined_text` block selects image, title, description, quote, and remark from that same value. The close action clears the visibility flag.
 
 For every new ID:
 
 1. Add one sprite in `interface/hoi4ms_super_events.gfx`.
-2. Add one matching branch to each of the five `defined_text` blocks in
-   `common/scripted_localisation/hoi4ms_super_events.txt`.
+2. Add one matching branch to each of the five `defined_text` blocks in `common/scripted_localisation/hoi4ms_super_events.txt`.
 3. Add all player-facing keys to the project localisation file.
 4. Call `<mod_prefix>_show_super_event` from the accepted gameplay moment.
 5. Add optional audio only after its source and usage rights are verified.
-6. Record the ID, caller, sprite, texture, text keys, quote source, optional
-   audio, and validation state in permanent docs.
+6. Record the ID, caller, sprite, texture, text keys, quote source, optional audio, and validation state in permanent docs.
 
-Keep every branch keyed to the same integer. Do not use one ID for text and a
-different ID for image or audio.
+Keep every branch keyed to the same integer. Do not use one ID for text and a different ID for image or audio.
 
 ## Smoke-test example
 
@@ -158,17 +123,11 @@ The package includes one hidden, trigger-only event:
 event <mod_prefix>_super_event.1
 ```
 
-Run it from the debug console. It should open the default package, render the
-project-adapted text and image, and close cleanly. The example is test
-infrastructure, not a finished campaign moment. Do not repurpose ID `1` without
-updating the package docs and test.
+Run it from the debug console. It should open the default package, render the project-adapted text and image, and close cleanly. The example is test infrastructure, not a finished campaign moment. Do not repurpose ID `1` without updating the package docs and test.
 
 ## Design the moment
 
-Use a Super Event for campaign-scale reveals, irreversible escalation, a major
-world-order change, rare ideological victory, catastrophic collapse, global
-defeat, or a genuine campaign-ending moment. Do not create one merely because a
-normal event is dramatic.
+Use a Super Event for campaign-scale reveals, irreversible escalation, a major world-order change, rare ideological victory, catastrophic collapse, global defeat, or a genuine campaign-ending moment. Do not create one merely because a normal event is dramatic.
 
 Before production, define:
 
@@ -185,15 +144,13 @@ Before production, define:
 - close cleanup
 - test scenario
 
-The title, image, quote, response, and audio should express the same moment.
-Avoid a generic “dramatic” package with unrelated components.
+If planning identifies a Super Event, write a bounded handoff that records the intended role, owning caller, title and description direction, quote themes, response tone, image direction, audio requirement, research questions, and acceptance scenario. Planning does not invent final sourced text or claim that research has been completed.
+
+The title, image, quote, response, and audio should express the same moment. Avoid a generic “dramatic” package with unrelated components.
 
 ## Title and description
 
-Titles should be short, memorable, and specific. Prefer a person, state,
-movement, place, institution, transformation, collapse, or irreversible
-condition. Avoid generic labels such as `THE CRISIS` unless the project’s
-accepted style requires them.
+Titles should be short, memorable, and specific. Prefer a person, state, movement, place, institution, transformation, collapse, or irreversible condition. Avoid generic labels such as `THE CRISIS` unless the project’s accepted style requires them.
 
 Descriptions should:
 
@@ -204,14 +161,11 @@ Descriptions should:
 - use the project’s established prose rules
 - avoid invented factual claims
 
-Keep text readable at the actual game resolution and UI scale. Long text that
-overflows the window is a blocking presentation defect.
+Keep text readable at the actual game resolution and UI scale. Long text that overflows the window is a blocking presentation defect.
 
 ## Quote and response research
 
-Do not invent a quotation and present it as real. Use
-`hoi4_quote_remark_researcher` when wording, attribution, cultural origin, or
-copyright risk needs research.
+Do not invent a quotation and present it as real. Use `hoi4_quote_remark_researcher` when wording, attribution, cultural origin, or copyright risk needs research.
 
 For every direct quote record:
 
@@ -224,77 +178,52 @@ For every direct quote record:
 - public-domain or copyright note when known
 - why it fits this exact moment
 
-Prefer primary sources, official transcripts, libraries, archives, reputable
-editions, and traceable historical collections. Unsourced quote sites are
-search leads only.
+Prefer primary sources, official transcripts, libraries, archives, reputable editions, and traceable historical collections. Unsourced quote sites are search leads only.
 
-The response remark is a short player reaction, not a second description. It
-may be sober, ceremonial, bitter, fatalistic, defiant, or culturally grounded.
-For modern copyrighted works, keep direct fragments very short and prefer a
-title-like allusion or paraphrase. Record the source and risk.
+The response remark is a short player reaction, not a second description. It may be sober, ceremonial, bitter, fatalistic, defiant, or culturally grounded. For modern copyrighted works, keep direct fragments very short and prefer a title-like allusion or paraphrase. Record the source and risk.
 
 ## Image workflow
 
-The visible image area is `457x328`. Use
-`gfx/super_events/super_event_image_template_457x328.psd` for the image and
-`gfx/super_events/super_event_template.psd` to review the complete composition.
-Inspect `.agents/skills/hoi4-super-events/assets/examples/contact_sheet.png`
-and the five individual reference PNGs for framing, contrast, subject scale,
-and text-safe composition. They are review references only: never register
-them as project sprites or present them as original art for a new mod.
+The visible image area is `457x328`. Use `gfx/super_events/super_event_image_template_457x328.psd` for the image and `gfx/super_events/super_event_template.psd` to review the complete composition. Inspect `.agents/skills/hoi4-super-events/assets/examples/contact_sheet.png` and the five individual reference PNGs for framing, contrast, subject scale, and text-safe composition. They are review references only: never register them as project sprites or present them as original art for a new mod.
 
 Choose source mode deliberately:
 
 - real historical material: attributed archival or user-provided source
-- fictional, symbolic, supernatural, or alternate-history moment: generated
-  art may be appropriate
+- fictional, symbolic, supernatural, or alternate-history moment: generated art may be appropriate
 - a user-provided final image: preserve its provenance and process it
 
-Keep the full-resolution source, processed PNG, final DDS, hashes, dimensions,
-crop/composition notes, source link, rights status, and sprite handoff. Use
-`hoi4-feature-assets`; do not wire a contact sheet, PSD, or temporary evidence
-path as runtime art.
+Keep the full-resolution source, processed PNG, final DDS, hashes, dimensions, crop/composition notes, source link, rights status, and sprite handoff. Use `hoi4-feature-assets`; do not wire a contact sheet, PSD, or temporary evidence path as runtime art.
 
-The image must remain legible at `457x328`, match the described moment, and
-avoid text baked into the image unless the accepted design explicitly needs
-it.
+The image must remain legible at `457x328`, match the described moment, and avoid text baked into the image unless the accepted design explicitly needs it.
 
 ## Audio workflow
 
-Audio is optional for the reusable runtime. A missing or blocked track must not
-break the visual Super Event.
+Audio is optional for the reusable runtime. A missing or blocked track must not break the visual Super Event.
+
+When the accepted design requires audio, the Super Event is incomplete until one intentional final track is sourced, rights-checked, converted through the project's verified audio route, registered, wired, and documented. Give each completed Super Event its own track and project-scoped sound ID unless the user explicitly approves a specific reuse. Do not leave default, placeholder, mismatched, wrong-format, or undocumented audio in a completed package.
 
 When audio is requested:
 
-1. Define its role: reveal, escalation, victory, defeat, aftermath, collapse,
-   ritual, or campaign ending.
-2. Check only approved existing audio catalogues or folders named by the
-   parent.
+1. Define its role: reveal, escalation, victory, defeat, aftermath, collapse, ritual, or campaign ending.
+2. Check only approved existing audio catalogues or folders named by the parent.
 3. Use `hoi4_audio_researcher` when no approved track fits.
 4. Verify composition and recording rights separately.
 5. Preserve the original download and source page.
-6. Document title, creator/composer, performer or recording source, URL,
-   license, attribution, duration, edits, and final path.
+6. Document title, creator/composer, performer or recording source, URL, license, attribution, duration, edits, and final path.
 7. Convert through the repository’s verified audio workflow.
 8. Give the cue a unique project-scoped sound ID.
 9. Wire playback from the same accepted caller as the presentation.
-10. Verify the cue plays once, honors the project’s audio settings if such a
-    system exists, and does not survive close or retrigger unexpectedly.
+10. Verify the cue plays once, honors the project’s audio settings if such a system exists, and does not survive close or retrigger unexpectedly.
 
-Do not use commercial game, film, trailer, or album music without verified
-permission. Do not treat a public-domain composition as proof that a modern
-recording is public domain. Do not use test tones, beeps, oscillator output, or
-noise beds as final music.
+Do not use commercial game, film, trailer, or album music without verified permission. Do not treat a public-domain composition as proof that a modern recording is public domain. Do not use test tones, beeps, oscillator output, or noise beds as final music.
 
-If the mod has no settings-aware playback helper, do not invent one silently.
-Document the existing sound route or propose a bounded design before adding a
-new settings surface.
+Prefer an intentional musical recording such as a chant, hymn, orchestral excerpt, song, march, or other structured track. Do not manufacture a final cue from primitive waveforms, generated beeps, metronome clicks, noise beds, abstract ambience, or quick local synthesis. If no legally usable track fits a required-audio design, report the blocker instead of fabricating success.
+
+If the mod has no settings-aware playback helper, do not invent one silently. Document the existing sound route or propose a bounded design before adding a new settings surface.
 
 ## Caller and scope wiring
 
-Show the Super Event from the gameplay effect that owns the completed moment,
-after the state transition it announces is established. Avoid firing from
-multiple routes unless duplicate suppression is explicit.
+Show the Super Event from the gameplay effect that owns the completed moment, after the state transition it announces is established. Avoid firing from multiple routes unless duplicate suppression is explicit.
 
 Verify:
 
@@ -306,13 +235,17 @@ Verify:
 - close cleanup does not clear unrelated project state
 - the visibility flag is not left set by an interrupted or bypassed path
 
-Keep project-specific cleanup in the owning feature, not in the generic close
-button.
+Keep project-specific cleanup in the owning feature, not in the generic close button.
+
+## World-end and defeat-aftermath moments
+
+For a world-end Super Event, align the presentation with the owning terminal-state rules. Establish the terminal state before showing the window, set the scenario-specific state, gate incompatible future systems, prevent ordinary retriggers, and make the title, quote, image, response, audio decision, caller, docs, and acceptance scenario communicate finality.
+
+Use a defeat-aftermath Super Event only when the defeated threat was sufficiently global, sustained, and costly to reshape the campaign. Communicate what ended, what was lost, what remains unstable, and what order or memory follows. Prefer reflective weight over cost-free triumph.
 
 ## Documentation
 
-Maintain one permanent registry or research note under `docs/super_events/`.
-For each Super Event include:
+Maintain one permanent registry or research note under `docs/super_events/`. For each Super Event include:
 
 - ID and stable slug
 - role and owning feature
@@ -324,10 +257,9 @@ For each Super Event include:
 - acceptance scenario
 - status and blockers
 
-Temporary asset workspaces may hold downloads, processed previews, contact
-sheets, and handoffs during active work. Before declaring the feature complete,
-promote durable facts into permanent docs, verify runtime paths, and clean only
-the task-owned temporary workspace.
+Temporary asset workspaces may hold downloads, processed previews, contact sheets, and handoffs during active work. Before declaring the feature complete, promote durable facts into permanent docs, verify runtime paths, and clean only the task-owned temporary workspace.
+
+Use an event-scoped temporary workspace such as `docs/assets/<event_id>_<event_slug>/` when the project follows that convention. Preserve it while work is active, blocked, awaiting review, or undergoing acceptance. Before completion, move durable provenance, research, conversion, and crosswalk facts into permanent event, plan, specification, or Super Event documentation; verify that no runtime path points into the temporary workspace; then remove only that event-scoped workspace.
 
 ## Validation
 
@@ -341,15 +273,9 @@ Before completion:
 6. Confirm keyboard/mouse close behavior and cleanup.
 7. Confirm repeated or simultaneous triggers follow the documented policy.
 8. Confirm AI and multiplayer behavior is intentional.
-9. If audio is used, verify rights evidence, file format, one-time playback,
-   volume behavior, and cleanup.
-10. Search for duplicate IDs, duplicate sprite names, unresolved template
-    tokens, missing textures, missing localisation keys, stale docs, and
-    unreferenced final files.
+9. If audio is used, verify rights evidence, file format, one-time playback, volume behavior, and cleanup.
+10. Search for duplicate IDs, duplicate sprite names, unresolved template tokens, missing textures, missing localisation keys, stale docs, and unreferenced final files.
 11. Use GUI inspect/render evidence where available.
-12. Check the game logs after the scenario and separate pre-existing messages
-    from messages caused by this package.
+12. Check the game logs after the scenario and separate pre-existing messages from messages caused by this package.
 
-A Super Event is incomplete while any caller, registry branch, localisation
-key, image, required audio, close path, provenance record, or acceptance
-scenario is missing or contradictory.
+A Super Event is incomplete while any caller, registry branch, localisation key, image, required audio, close path, provenance record, or acceptance scenario is missing or contradictory.

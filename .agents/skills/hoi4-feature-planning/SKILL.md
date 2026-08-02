@@ -1357,7 +1357,7 @@ Reference mapping:
 - idea and national spirit icons: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/ideas/`
 - news event images: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art/news/`
 - report event images: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art/report/`
-- super-event and large presentation art: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art/super_event/`
+- large presentation art: use the report, news, or custom feature reference set that matches the owning UI surface
 - technology and special-project icons: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/technologies/` and `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/`
 - achievement icons: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/`; the reusable not-eligible overlay is `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/overlay.png`
 - decisions, missions, and decision-category icons: their separate folders under `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/`

@@ -20,7 +20,6 @@ Read and apply:
 - .agents/skills/hoi4-decisions-missions/SKILL.md when text belongs to decisions, missions, scripted GUI buttons, costs, or tooltips.
 - .agents/skills/hoi4-focus-trees/SKILL.md when text belongs to focuses.
 - .agents/skills/hoi4-text-audio-research/SKILL.md when text belongs to text or audio research packages.
-- .agents/skills/hoi4-super-events/SKILL.md when text belongs to an installed Super Event package.
 - .agents/skills/hoi4-improvement-loop/SKILL.md when text reveals a design depth gap.
 - .agents/skills/hoi4-subagents/SKILL.md.
 - Relevant offline Paradox wiki localisation pages.

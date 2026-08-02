@@ -5,13 +5,13 @@ description: Use when a Hearts of Iron IV mod task needs sourced quotes, cultura
 
 # HOI4 Text and Audio Research
 
-Use this skill when a HOI4 modding task needs researched text or audio for any feature, event, Super Event, focus route, decision category, custom GUI, loading screen, main menu change, news item, report image package, achievement theme, country reveal, formable proclamation, or other presentation surface.
+Use this skill when a HOI4 modding task needs researched text or audio for any feature, event, focus route, decision category, custom GUI, loading screen, main menu change, news item, report image package, achievement theme, country reveal, formable proclamation, or other presentation surface.
 
 This skill is optional. Most features do not need quote, remark, or audio research. Use it only when the user, specification, asset prompt, implementation task, or documentation target asks for sourced wording, cultural reference checks, or music and audio licensing.
 
 This skill does not implement gameplay code. It does not wire sound definitions, GUI, event files, localisation files, focus files, decision files, or `.gfx` files unless the parent explicitly grants that scope. Its purpose is to produce reliable source notes, recommended text candidates, usable audio candidates, and handoff material that the main agent can implement.
 
-General event implementation belongs to `hoi4-events`. Installed Super Event registration and runtime wiring belongs to `hoi4-super-events`. Visual asset sourcing and processing belongs to `hoi4-feature-assets`. Animated visual work belongs to `hoi4-frame-animation`.
+General event implementation belongs to `hoi4-events`. Visual asset sourcing and processing belongs to `hoi4-feature-assets`. Animated visual work belongs to `hoi4-frame-animation`.
 
 ## 1. Core purpose
 
@@ -29,7 +29,6 @@ Use this skill for:
 - cultural remark research
 - slogan, proverb, scripture, poem, speech, book, song, film, or game allusion checks
 - title-like reference checks
-- Super Event title, quote, response, and cultural-fit research
 - source and attribution verification
 - copyright risk notes for short modern references
 - music and audio source research
@@ -45,8 +44,8 @@ Use the narrow research subagents when actual research work is large enough to s
 
 | Need | Spawn |
 | --- | --- |
-| Quote candidates, exact wording checks, attribution confidence, public-domain text, Super Event responses, cultural remarks, slogans, allusions, and short references | `hoi4_quote_remark_researcher` |
-| Music or audio candidates, including Super Event cues, license checks, legitimate downloads, conversion notes, and audio handoff notes | `hoi4_audio_researcher` |
+| Quote candidates, exact wording checks, attribution confidence, public-domain text, cultural remarks, slogans, allusions, and short references | `hoi4_quote_remark_researcher` |
+| Music or audio candidates, including presentation cues, license checks, legitimate downloads, conversion notes, and audio handoff notes | `hoi4_audio_researcher` |
 
 The main agent owns final localisation, final sound wiring, final `.gfx` or `.gui` wiring, final documentation integration, and completion claims. Research subagents return evidence and recommendations. They do not make final implementation claims.
 
@@ -142,7 +141,7 @@ If a translation is used, state that it is a translation when relevant. Do not a
 
 ## 6. Cultural remark and short reference rules
 
-A cultural remark is a short source-aware reaction or allusion. It can be useful for an event option, Super Event response button, decision button, achievement hint, custom GUI button, loading quote, presentation card, or other visible surface.
+A cultural remark is a short source-aware reaction or allusion. It can be useful for an event option, decision button, achievement hint, custom GUI button, loading quote, presentation card, or other visible surface.
 
 Possible sources include:
 
@@ -229,7 +228,7 @@ If the user requests a long copyrighted passage, do not provide it. Provide a sh
 
 ## 10. Audio research purpose
 
-Audio research is needed when a mod feature requires a final music track, cue, loop, sound wrapper, menu track, custom event cue, Super Event reveal or aftermath cue, custom GUI sound, loading music, victory cue, defeat cue, route reveal cue, or other audio asset.
+Audio research is needed when a mod feature requires a final music track, cue, loop, sound wrapper, menu track, custom event cue, presentation reveal or aftermath cue, custom GUI sound, loading music, victory cue, defeat cue, route reveal cue, or other audio asset.
 
 The goal is not to find something that sounds vaguely dramatic. The goal is to find legally usable audio that fits the exact feature role and can be documented.
 
@@ -293,7 +292,7 @@ Common shapes:
 - short UI cue: a few seconds
 - button or alert sound: under a few seconds
 - event or presentation cue: roughly 30 seconds to 2 minutes
-- Super Event cue: usually 30 seconds to 2 minutes and unique to that registered moment
+- major presentation cue: usually 30 seconds to 2 minutes and unique to that moment
 - menu or loading music: longer tracks or loops
 - ambient custom GUI loop: short loop only if the user or repository accepts ambience for that role
 - victory or defeat cue: often 30 seconds to 2 minutes
@@ -307,7 +306,7 @@ Choose audio by role:
 - country formation: proclamation, ceremony, regional identity, or state-building
 - custom GUI ambience: quiet enough not to annoy repeated play
 - main menu or loading: broad identity of the mod, not one isolated feature
-- Super Event: the exact registered reveal, escalation, victory, defeat, collapse, or campaign-ending role; do not choose a track only because it sounds generally dramatic
+- major presentation: the exact reveal, escalation, victory, defeat, collapse, or campaign-ending role; do not choose a track only because it sounds generally dramatic
 
 Avoid tracks that sound generally dramatic but do not fit the requested role.
 
@@ -375,12 +374,6 @@ Include when useful:
 - blockers that prevent final wiring
 
 Do not edit sound definitions unless the parent explicitly grants that scope.
-
-For a Super Event handoff, also include the stable registration ID, proposed
-project-scoped sound ID, owning caller, whether audio is required or optional,
-and how playback should behave on trigger, close, retrigger, multiplayer, and
-the project’s existing audio settings. The reusable Super Events runtime does
-not bundle a track or invent a settings system.
 
 
 ## 17. Research note shape

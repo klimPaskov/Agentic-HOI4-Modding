@@ -77,8 +77,8 @@ The main agent decides which subagent to spawn, gives it a bounded asset prompt,
 
 Use:
 
-- `hoi4_asset_source_researcher` for real or archival image sourcing, real country-leader, commander, operative, advisor, and named-officeholder portraits, historical flag-design research, historically attested symbols, user-provided source photos, and report, news, super-event, or custom feature images that must depict real photographed material
-- `hoi4_generated_feature_art` for generated non-icon feature art, including fictional or alternate-history report images, news images, super-event images, fictional portraits and explicitly approved fictional advisor masters, flat fictional flag designs, faction emblems, UI panels, and progression-state base art
+- `hoi4_asset_source_researcher` for real or archival image sourcing, real country-leader, commander, operative, advisor, and named-officeholder portraits, historical flag-design research, historically attested symbols, user-provided source photos, and report, news, or custom feature images that must depict real photographed material
+- `hoi4_generated_feature_art` for generated non-icon feature art, including fictional or alternate-history report images, news images, large presentation images, fictional portraits and explicitly approved fictional advisor masters, flat fictional flag designs, faction emblems, UI panels, and progression-state base art
 - `hoi4_icon_artist` for focus icons, idea icons, national spirit icons, officer corps spirit icons, decision icons, decision category icons, achievement icons, and tech icons
 
 For animated work, route by asset type first. Then require the chosen asset subagent to follow `hoi4-frame-animation` for frame plans, per-frame source art, normalization, contact sheets, preview GIFs, frame sheets, static fallbacks, and animation handoffs.
@@ -306,7 +306,7 @@ Canonical flag and event-art paths:
 - flat flags: `flags/normal/`, `flags/medium/`, and `flags/small/`
 - report-event art: `event_art/report/`
 - news-event art: `event_art/news/`
-- super-event art: `event_art/super_event/`
+- large presentation art: use the closest report, news, or custom feature reference set for the owning UI surface
 
 Canonical gameplay-icon paths:
 
@@ -1235,7 +1235,7 @@ Do not invent a substitute asset unless the user explicitly approves it.
 Before finishing, confirm:
 
 1. Every required asset from the feature spec is accounted for.
-2. Every asset uses the correct source mode: `$imagegen` for approved generated symbolic, fictional, alternate-history, or unique report, news, super-event, or large presentation assets; attributed sources for real historical material and every grounded real-person portrait.
+2. Every asset uses the correct source mode: `$imagegen` for approved generated symbolic, fictional, alternate-history, or unique report, news, or large presentation assets; attributed sources for real historical material and every grounded real-person portrait.
 3. The matching reference folder from section 4 was inspected before generation, sourcing, processing, or wiring.
 4. Every generated, sourced, or provided asset has a source PNG.
 5. Every final asset has a processed PNG preview.

@@ -28,7 +28,6 @@ Read and apply:
 - .agents/skills/hoi4-focus-trees/SKILL.md when the feature touches focus trees.
 - .agents/skills/hoi4-decisions-missions/SKILL.md when the feature touches decisions, missions, scripted GUI decision surfaces, or formables.
 - .agents/skills/hoi4-feature-assets/SKILL.md when visual depth, animated sprites, animated portraits, or asset handoffs matter.
-- .agents/skills/hoi4-super-events/SKILL.md when the optional runtime is installed and the expansion may need a campaign-scale presentation moment.
 - .agents/skills/hoi4-text-audio-research/SKILL.md when the expansion could require sourced quote, remark, or audio research.
 - .agents/skills/hoi4-subagents/SKILL.md for folder paths and handoff rules.
 

@@ -48,7 +48,6 @@ Use this skill with:
 - `hoi4-3d-model-pipeline` when the event creates or changes a visible 3D unit, building, creature, vehicle, aircraft, naval object, or map entity
 - `hoi4-frame-animation` when event presentation needs animated sprites, animated portraits, animated UI pieces, frame sheets, or GIF previews for review
 - `hoi4-text-audio-research` when an event needs sourced quotes, cultural references, title-like references, slogans, or music and audio research
-- `hoi4-super-events` when the optional runtime is installed and an event owns a campaign-scale reveal, escalation, victory, defeat, collapse, or campaign-ending presentation
 - `hoi4-focus-trees` when the event creates, unlocks, modifies, or depends on focus trees
 - `hoi4-decisions-missions` when the event creates or depends on decisions, missions, timed objectives, formables, or decision-driven mechanics
 - `hoi4-subagents` when bounded research, asset production, small patches, or completion audits should be delegated
@@ -553,24 +552,6 @@ Use `hoi4-text-audio-research` for quote, cultural remark, slogan, allusion, aud
 
 Do not leave default, placeholder, mismatched, undocumented, or wrong-format audio in a completed package.
 
-### 11.1 Super Event integration
-
-When the optional Super Events runtime is installed and the event owns a Super
-Event, use `hoi4-super-events` and wire the complete package in the same change:
-
-- reserve one stable integer registration ID
-- add matching image, title, description, quote, and response branches
-- add the project-scoped sprite and final image
-- invoke `<mod_prefix>_show_super_event` from the accepted event or effect path
-- research and document the quote and response
-- add unique, rights-verified audio only when requested
-- keep duplicate suppression, scope, multiplayer behavior, close cleanup, docs,
-  and acceptance scenarios aligned
-
-Do not add a caller without registry branches or register a presentation with no
-live caller. A branch mapped to a Super Event remains incomplete until its
-GUI/GFX/localisation package and trigger scenario pass.
-
 ### 12. Completion cleanup
 
 Every event chain needs cleanup for flags, variables, event targets, missions, decisions, temporary ideas, temporary modifiers, and invalid targets.
@@ -634,6 +615,5 @@ Common useful checks:
 - dynamic localisation selectors return fallback-safe text for every visible route
 - AI chance exists for meaningful choices
 - docs and manifests match final ids and assets
-- optional Super Event callers, registration IDs, five scripted-localisation branches, sprites, textures, close cleanup, research notes, and acceptance scenarios agree
 
 Do not fill the final report with boilerplate checks that only restate repo-wide rules. Report validation when it affected confidence, found a problem, or directly proves a task-specific surface is wired.

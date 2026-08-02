@@ -42,8 +42,7 @@ visibility flag and current registration value.
 
 1. Reserve a new integer ID in the project’s permanent Super Events registry.
 2. Add one sprite to `interface/hoi4ms_super_events.gfx`.
-3. Add matching ID branches to all four `defined_text` blocks in
-   `common/scripted_localisation/hoi4ms_super_events.txt`.
+3. Add matching ID branches to all five `defined_text` blocks in `common/scripted_localisation/hoi4ms_super_events.txt`.
 4. Add title, description, quote, and response localisation.
 5. Add a caller that invokes `<mod_prefix>_show_super_event` with the reserved
    ID.
