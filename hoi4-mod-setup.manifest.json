@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "1592a763dad14027653dc0846328b70c4f3af73e",
+  "generated_for_revision": "8c619f7dfee59f50096573e4ed1ea200e06632be",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "1db3e7a4d92b9ced460d6e9b633c8080c9b203f420b5286ea79da85939c87b3a",
-          "size": 38137
+          "sha256": "af37f935cec416e1c65177321fc4c01e7bf1e0f74a539cee424ad160bdedb7c9",
+          "size": 37502
         }
       ]
     },
@@ -127,13 +127,13 @@
         },
         {
           "path": ".agents/skills/hoi4-events/SKILL.md",
-          "sha256": "f8076ec3007f1a4da03a2bbcdf581fcd3553d6f130ab54f887163edecd9254fe",
-          "size": 41633
+          "sha256": "0dde0e5d07025f0c2b37e5af56e67562b8aafc4f544949df8e76d8e4b038981c",
+          "size": 40419
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "abcd1bafd8b141975a4c316af7612d59f616256b0a1021a4778bae9c2c2eb2da",
-          "size": 71326
+          "sha256": "323fbec28d661dcbaa0badddbc5bb52740fec63edc6baa11d6b4675797eea833",
+          "size": 71377
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -1657,8 +1657,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "66ddd585564e342bb3704a246bcaf8958532ae87eb0d8cf4f69cd90d2365c80b",
-          "size": 146400
+          "sha256": "dcd1b2900346ad5122eb681df67af77b6aa729f6664ad5543a7dd43ab582d8d8",
+          "size": 146388
         },
         {
           "path": ".agents/skills/hoi4-focus-trees/SKILL.md",
@@ -1682,13 +1682,13 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "35982b96cbb4296e177698e5a1618f87225b528d1f14c191e675856378c49235",
-          "size": 23592
+          "sha256": "53f453779fbc5ca6951228989071e482385460d420647a5a256126f4162a6976",
+          "size": 23131
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
-          "sha256": "bdc1ca0db1a498191dfd18e4a4ad7ca2fcb21786fb01feab436e30d7003d8f4b",
-          "size": 17487
+          "sha256": "aea1057256cf8539898297ad777d5054dd0075ebf9e17bda45a6aadd7dbc78ca",
+          "size": 16903
         }
       ]
     },
@@ -1749,13 +1749,13 @@
         },
         {
           "path": ".codex/agents/hoi4_asset_source_researcher.toml",
-          "sha256": "02fdabead8dfda98a50961cdf37dc18d5b3e2552da8e858b2c57f2bbb8f2031b",
-          "size": 4152
+          "sha256": "787bd9e587cab1cc95d63b5ce1d5a2ebe9aeacde108c7ec891e53c13183d8eec",
+          "size": 4179
         },
         {
           "path": ".codex/agents/hoi4_audio_researcher.toml",
-          "sha256": "de46cce3973522b308e5a386baaca78ea40271bf03a2c34d26b9ace958a5bd63",
-          "size": 4379
+          "sha256": "946db68fffba5bb61165a41592e6404da2981588b160a44faa6045a9590b61d9",
+          "size": 4118
         },
         {
           "path": ".codex/agents/hoi4_country_package_auditor.toml",
@@ -1774,8 +1774,8 @@
         },
         {
           "path": ".codex/agents/hoi4_feature_completion_auditor.toml",
-          "sha256": "893e6ecb6d6ff111462a2e056db6f2e16c974cdb3e4f6c37ae5391627e880426",
-          "size": 3474
+          "sha256": "06c7a46eb658a0b409d4e06693dd399717ab9f616a597366b35197d9e8eeb050",
+          "size": 3426
         },
         {
           "path": ".codex/agents/hoi4_focus_tree_auditor.toml",
@@ -1784,8 +1784,8 @@
         },
         {
           "path": ".codex/agents/hoi4_generated_feature_art.toml",
-          "sha256": "bd5c7a938cd08576de3457a2e80caa155156ae7a849051edf5218be3797e9f9a",
-          "size": 6326
+          "sha256": "6c1bb420b85cde7b29c83f3d1aa39757ce54a99765b4b15d4b798d3c948404cd",
+          "size": 6344
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
@@ -1794,23 +1794,23 @@
         },
         {
           "path": ".codex/agents/hoi4_improvement_loop_planner.toml",
-          "sha256": "b36909a35e1c044677f22a4a2d89afa461e424dbd7cc4713c1811470f9392546",
-          "size": 6654
+          "sha256": "b44ec68a170fd298d461169ba598baa04ba91044b797c59d90ac281d1e22cf9e",
+          "size": 6506
         },
         {
           "path": ".codex/agents/hoi4_localisation_auditor.toml",
-          "sha256": "5fed543630b8d747e949072dc9dbd397a08917db21afdf756a94cec47446160b",
-          "size": 4555
+          "sha256": "c55ec555445e8fb87ef220aec4f632e7f63b30ce89f6e3590db027fe0a2fbe28",
+          "size": 4456
         },
         {
           "path": ".codex/agents/hoi4_quote_remark_researcher.toml",
-          "sha256": "6c7d5c36c043c0ffa713fb5056c1c68c574db1f6473c540d7a3424b40276d2dd",
-          "size": 4169
+          "sha256": "d3dfb5529852f5d38be42acf7c0b83acf352abb836e6c0d055062cfd0cc98a5b",
+          "size": 3923
         },
         {
           "path": ".codex/agents/hoi4_repo_explorer.toml",
-          "sha256": "8acafc1950dd4bd994b515ecadb14542218bbe5dd463dac773ed560a3bc61cc5",
-          "size": 11969
+          "sha256": "2343bfa442e4685b876d5582594a22bc47c034c92fdb04ad15d848cfc56b1146",
+          "size": 11845
         },
         {
           "path": ".codex/agents/hoi4_scripted_system_architect.toml",
@@ -5228,9 +5228,34 @@
       ],
       "expected_files": [
         {
+          "path": ".agents/skills/hoi4-super-events-event-integration/SKILL.md",
+          "sha256": "b6c2fa2b865411870ba40304c7e96456204c1297c576ce875932c6c6b5ee69e1",
+          "size": 4076
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events-feature-assets/SKILL.md",
+          "sha256": "441b3d15208284a26d21cab1a68819d1123e2340ef7d86dd65cc1f08264232a3",
+          "size": 3761
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events-planning/SKILL.md",
+          "sha256": "2669e0a7eac12c1cf697dfb528d50569437d81514b00a15b72fc43c82b1e1e8d",
+          "size": 3811
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events-subagents/SKILL.md",
+          "sha256": "71e1de9f4579e345a0d70e67c17f93f1907cab4c59f4e480ea15534af04d01f1",
+          "size": 3701
+        },
+        {
+          "path": ".agents/skills/hoi4-super-events-text-audio-research/SKILL.md",
+          "sha256": "6c1b033a901edb0e54aa898f119e0245b7c024fe509babfa9eedcf25772b7d97",
+          "size": 4107
+        },
+        {
           "path": ".agents/skills/hoi4-super-events/SKILL.md",
-          "sha256": "1d278b4e4403361f1aa44f56eaaab8e904fa76398466d4d6d4950063fd0309cf",
-          "size": 14089
+          "sha256": "ecab1936f9a30391d6ca9ab7fdc5f1f551f99de51220c078355d96512f9980bc",
+          "size": 16666
         },
         {
           "path": ".agents/skills/hoi4-super-events/agents/openai.yaml",
@@ -5323,7 +5348,23 @@
         "Super Event audio research",
         "Super Event art research"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".codex/agents/hoi4_super_event_art_researcher.toml",
+          "sha256": "9a8875ed426966913d57247d9f79a20439666d6780dca9af7f971e09c02abbd4",
+          "size": 2590
+        },
+        {
+          "path": ".codex/agents/hoi4_super_event_audio_researcher.toml",
+          "sha256": "d95a890aa10590bd42fb09b08c0358cb8da642e520ae127f0d883e9e70f808ee",
+          "size": 2549
+        },
+        {
+          "path": ".codex/agents/hoi4_super_event_quote_researcher.toml",
+          "sha256": "476104cf58c81297f2d9fdc92dad02925b024da366a1f3b3cacaa1998aea35bd",
+          "size": 2088
+        }
+      ]
     },
     {
       "id": "workflow.super_events.runtime.interface",
@@ -5663,8 +5704,8 @@
       "expected_files": [
         {
           "path": "docs/super_events/README.md",
-          "sha256": "d3485463c593549e1a75a65f798db74d103f6ac3473ce3a41a7b04bc959c87a1",
-          "size": 2419
+          "sha256": "2d20b8c7931a19e521bbb2691c77d188455cd92117e8e20b84178811983aec56",
+          "size": 2416
         }
       ]
     }
