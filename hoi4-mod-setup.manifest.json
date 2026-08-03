@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "de725e52ec2cb8d2d5796e86a93bf14bf1bb5c6b",
+  "generated_for_revision": "b3c001a3a3e9605096f79b6154629f1d1176c01c",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "af37f935cec416e1c65177321fc4c01e7bf1e0f74a539cee424ad160bdedb7c9",
-          "size": 37502
+          "sha256": "a993d6d632e50ba87f2f1818720abf5b45b7a39cf11ec1cb716eb2751b596e77",
+          "size": 37954
         }
       ]
     },
@@ -136,8 +136,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "7e7e33455630222f0d8df8148bbd83d1695c4f9f8e7dfadb9d81031f60f15ddc",
-          "size": 72413
+          "sha256": "aca1a3c024bb6cadf2dbd5c142acf2da75e3ed16343efa1af88bec67a11224f3",
+          "size": 72514
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -1686,8 +1686,8 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "97024cf104b6a79f6ff4df99468e094dc25c9b0d27dc655b05d23b78fe3d380c",
-          "size": 24181
+          "sha256": "fff6dd0c2807c05d938501f984154a9fad12cc9a73911f10dc6464e4b8a29f14",
+          "size": 24129
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
@@ -1754,8 +1754,8 @@
         },
         {
           "path": ".codex/agents/hoi4_asset_source_researcher.toml",
-          "sha256": "787bd9e587cab1cc95d63b5ce1d5a2ebe9aeacde108c7ec891e53c13183d8eec",
-          "size": 4179
+          "sha256": "168e76effb0ba35060031e9860d0284f0cc02d4639db59894681dd217f299061",
+          "size": 4180
         },
         {
           "path": ".codex/agents/hoi4_audio_researcher.toml",
@@ -1764,8 +1764,8 @@
         },
         {
           "path": ".codex/agents/hoi4_country_package_auditor.toml",
-          "sha256": "95630b491284cd0c34ea979b2a1258d77e2e776e2e5f857d1efe1a0aa71a0758",
-          "size": 7053
+          "sha256": "b7fa9e6c5da928c77d4337f2eb54b591ebc13e15d0982f2a0f526a8a93317e2c",
+          "size": 7055
         },
         {
           "path": ".codex/agents/hoi4_decision_mission_auditor.toml",
@@ -1779,8 +1779,8 @@
         },
         {
           "path": ".codex/agents/hoi4_feature_completion_auditor.toml",
-          "sha256": "06c7a46eb658a0b409d4e06693dd399717ab9f616a597366b35197d9e8eeb050",
-          "size": 3426
+          "sha256": "ee7d1279940e01f77439a5b7f2226691112a310499c302a30b627de6362513d2",
+          "size": 3427
         },
         {
           "path": ".codex/agents/hoi4_focus_tree_auditor.toml",
@@ -1789,8 +1789,8 @@
         },
         {
           "path": ".codex/agents/hoi4_generated_feature_art.toml",
-          "sha256": "6c1bb420b85cde7b29c83f3d1aa39757ce54a99765b4b15d4b798d3c948404cd",
-          "size": 6344
+          "sha256": "e3a68a39d6a8e98f0804447ad4696d8f8ebe30f511fc45cd166931a2b432192d",
+          "size": 6345
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
@@ -1890,8 +1890,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "c4699d374990ed0274083fcfeb788665c4f7cb77039f49b3f6083fd7f04c3dd0",
-          "size": 6709
+          "sha256": "a2df3157c11135fd887f17851f39607f2f9596974d753fb8b8b308ac53bc6441",
+          "size": 7054
         }
       ]
     },
@@ -2011,8 +2011,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "92820f4d989c7291a903f5e502a7db4569424efb8e63f2f76f5149c4746d8d58",
-          "size": 15318
+          "sha256": "c9837889fce206b3a7def61e5f3e78f961c169d21b687c8d4972491b61e94e0b",
+          "size": 13667
         }
       ]
     },
@@ -5104,7 +5104,28 @@
         "Disabled projects omit this component and its ComfyUI-specific guidance.",
         "Provider credentials remain outside the project and installation lock."
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md",
+          "sha256": "54d491bdd8465cf2ccf29515b612e1b8b5b092c3f1ec3aea10fee630a526e567",
+          "size": 1316
+        },
+        {
+          "path": ".agents/skills/hoi4-comfyui-local/SKILL.md",
+          "sha256": "85c8c4d86e166794ac748637c481cf5a0aa233511670551d10cd6cd415fd732c",
+          "size": 1234
+        },
+        {
+          "path": ".agents/skills/hoi4-comfyui-portraits/SKILL.md",
+          "sha256": "328ff23b9bbd05d200e9b90b2b5865bc2968fbdc2b2a794576991b988d53cadc",
+          "size": 5968
+        },
+        {
+          "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md",
+          "sha256": "1f5a35f46e498fac5050d82238e48afb23824b37dce39587e60e32ef6acee2b1",
+          "size": 1168
+        }
+      ]
     },
     {
       "id": "workflow.portraits.subagent",
@@ -5143,7 +5164,13 @@
         "output validation",
         "fallback and deferred-state reporting"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".codex/agents/hoi4_portrait_creator.toml",
+          "sha256": "4cbdbc2286f96a9a2053d808c15f267c0e39b129142dcc4a309004748775c5e2",
+          "size": 2016
+        }
+      ]
     },
     {
       "id": "workflow.portraits.config",
@@ -5181,7 +5208,13 @@
         "Cloud MCP route",
         "upstream revision evidence"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".codex/portrait_pipeline.toml",
+          "sha256": "a47867eb97eec617f868e7e281b4e5ba880a494f6d9ba5796feca9f358d9cdbd",
+          "size": 573
+        }
+      ]
     },
     {
       "id": "workflow.portraits.docs",
@@ -5216,7 +5249,13 @@
         "exact commit pinning",
         "workflow and model hash evidence"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": "docs/portrait_pipeline/upstream-lock.json",
+          "sha256": "bab0d31c1a8ea6257d43693f2cec938726d884a6dd8a6b75dcf53cea81d077bb",
+          "size": 1708
+        }
+      ]
     },
     {
       "id": "workflow.3d",
