@@ -241,45 +241,6 @@ It is optional because many mods do not use a custom super-event presentation sy
 
 Use it for major campaign moments that need aligned trigger wiring, title and body text, reaction text, a sourced quote, final image and audio assets, settings-aware playback, provenance, cleanup, and validation. General event logic remains owned by `hoi4-events`; visual production remains owned by `hoi4-feature-assets`; quote and audio source research remains owned by `hoi4-text-audio-research`.
 
-## Codex scheduled tasks or Hermes
-
-Codex scheduled tasks (or Hermes cornjobs) can handle recurring modding work.
-
-Good scheduled task use cases for HOI4 modding include:
-
-- scheduled `error.log` checks after launching HOI4
-- collecting actionable game errors from the current mod
-- turning repeated Discord or GitHub reports into clean implementation prompts
-- producing daily or weekly summaries of unresolved bugs, balance complaints, and content requests
-- checking whether docs, spreadsheets, plans, and implementation files are drifting apart
-
-A practical setup is:
-
-```text
-Codex scheduled task
-        ↓
-repo-local script or focused recurring prompt
-        ↓
-collect reports, logs, notes, and screenshots
-        ↓
-filter for actionable current-mod issues
-        ↓
-Codex fixes the issue or writes a local handoff file
-```
-
-For example, a Codex scheduled task can periodically run a HOI4 error-log watchdog for a fixed test window. The watchdog can launch HOI4, inspect the Paradox `error.log`, copy the log into a repo-local temporary folder, and create a focused Codex prompt such as:
-
-```text
-Fix the HOI4 errors reported in this latest automated game run.
-
-error.log path: tmp/hoi4-error-logs/hoi4-error-YYYYMMDDTHHMMSSZ.log
-
-Identify actionable mod errors only. Ignore unrelated vanilla or launcher noise.
-After fixing and validating the errors, delete the temporary copied log.
-```
-
-Keep scheduled tasks narrow. They should gather evidence, preserve source context, and create precise work items. The main Codex implementation pass should still own code changes, final review, validation, docs alignment, and completion proof.
-
 ## Subagent design rules
 
 Subagents should be narrow.
