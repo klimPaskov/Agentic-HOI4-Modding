@@ -158,11 +158,14 @@ name. Save the highest-resolution source that anchors the subject as the PNG,
 before final resizing and DDS conversion. Preserve separate immutable source
 and provenance evidence for a sourced real person.
 
-The matching TXT contains only one concise natural-language image prompt. It
-must begin with `hoi4_portrait,`, describe supported age, presentation, facial
-features, pose, clothing, role, period, and visible details, omit the person’s
-name, and invent nothing. Use verified research for non-visual identity or role
-facts and record those sources in the manifest, not in the prompt TXT.
+The matching TXT contains only the final person-only prompt. It must begin
+with `hoi4_portrait,` and may describe visible age, gender presentation, face
+shape/proportions, hair, facial hair, expression, gaze, head direction,
+clothing or uniform, medals, accessories, and framing. Omit the subject’s
+name, game-style instructions, background/scenery, lighting,
+rendering/restoration instructions, and unsupported biographical details.
+Record provenance and non-visual identity or role facts in the manifest, not
+in the prompt TXT.
 
 Record each pair’s runtime path and one state:
 

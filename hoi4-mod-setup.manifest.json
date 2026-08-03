@@ -136,8 +136,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "aca1a3c024bb6cadf2dbd5c142acf2da75e3ed16343efa1af88bec67a11224f3",
-          "size": 72514
+          "sha256": "39c2a5af5190d1ece7694cf8c9a30b3dfab9eb1a9c792875868a8a46e690b35c",
+          "size": 72658
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -5074,8 +5074,7 @@
       },
       "dependencies": [
         "core.skills",
-        "core.subagents",
-        "codex.config"
+        "core.subagents"
       ],
       "conflicts": [
         "existing portrait provider skill with the same path"
@@ -5117,8 +5116,8 @@
         },
         {
           "path": ".agents/skills/hoi4-comfyui-portraits/SKILL.md",
-          "sha256": "328ff23b9bbd05d200e9b90b2b5865bc2968fbdc2b2a794576991b988d53cadc",
-          "size": 5968
+          "sha256": "963b54ac6b1e6d9d3120f2aeb4f90c986a31e8617ec7d49c766f539448e8df",
+          "size": 6197
         },
         {
           "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md",
@@ -5190,9 +5189,7 @@
         "ownership": "managed",
         "outside_project": false
       },
-      "dependencies": [
-        "codex.config"
-      ],
+      "dependencies": [],
       "conflicts": [
         "existing portrait provider configuration"
       ],

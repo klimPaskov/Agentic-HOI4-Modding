@@ -66,10 +66,14 @@ before execution. Use the `.api.json` graph for Cloud/MCP/API submission and
 the matching UI JSON for local/browser operation. Keep the project LoRA at
 `0.7`, Euler, 8 steps, CFG 5, 832x1120 master, and 156x210 game output.
 
-Prompts are one line, begin with `hoi4_portrait,`, describe only the person,
-and omit names, titles, roles, background, scenery, style, camera, lighting,
-pose, expression, gaze, and facing direction. Do not add a period-separated
-second sentence. The exact final prompt is archived beside the source.
+Prompts are one line, begin with `hoi4_portrait,`, and describe only the
+visible person: age, gender presentation, face shape/proportions, hair,
+facial hair, expression, gaze, head direction, visible clothing or uniform,
+medals, accessories, and framing. Omit the subject's name, game-style
+instructions, background/scenery, lighting, rendering/style instructions,
+restoration instructions, and unsupported biographical details. Do not add a
+period-separated second sentence. The exact final prompt is archived beside
+the source.
 
 Background replacement is optional and happens only after the decoded final
 LoRA image. Do not apply a generic repaint to a grounded source. If the
