@@ -43,7 +43,9 @@ Use `hoi4_improvement_loop_planner` for feature improvement loop planning, detai
 
 Use `hoi4_asset_source_researcher` for real or archival image sourcing, real leader, commander, operative, advisor, and officeholder portraits, historical flags, historical symbols, user-provided source photos, source-image processing, animated portrait bases, and report, news, or custom feature images that must depict real historical material.
 
-Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, large presentation images, custom feature images, allowed fictional portraits and advisor masters, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces.
+Use `hoi4_portrait_creator` for every final character portrait. The source researcher stops after the attributed source, exact crop, person-only prompt, durable source pair, and handoff; generated feature art does not own final fictional portraits. The portrait worker uses the configured Cloud, Local, RunPod, or Disabled route and never edits runtime wiring.
+
+Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, large presentation images, custom feature images, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces. Do not route final character portraits through this worker.
 
 Use `hoi4_icon_artist` for generated gameplay icon families, formable seals, scripted GUI icons, and small animated icon or button sprites. Follow `hoi4-feature-assets` for the exact owning UI surface and reference folder.
 
@@ -238,7 +240,8 @@ Do not use one broad asset worker for mixed visual packages.
 Use:
 
 - `hoi4_asset_source_researcher` for real, archival, historical, documentary, or public-source images when the asset must show real historical material
-- `hoi4_generated_feature_art` for generated non-icon fictional, alternate-history, symbolic, extreme-route, or unique event art
+- `hoi4_portrait_creator` for every final character portrait after the source package is complete, including permitted fictional text-to-image portraits
+- `hoi4_generated_feature_art` for generated non-icon fictional, alternate-history, symbolic, extreme-route, or unique event art that is not a final character portrait
 - `hoi4_icon_artist` for generated gameplay icon families, formable seals, decision category icons, and small animated icon or button sprites; follow `hoi4-feature-assets` for exact asset-family routing
 
 The parent agent must give each asset subagent a bounded prompt with exact asset names, target sizes, source mode, final folders, sprite names when already registered, reference folders, and constraints.
@@ -255,7 +258,7 @@ Use `hoi4_quote_remark_researcher` for quotes, exact wording, attribution confid
 
 Use `hoi4_audio_researcher` for audio research, license verification, download, `.ogg` conversion, and audio handoff notes.
 
-Use `hoi4_asset_source_researcher` or `hoi4_generated_feature_art` for image work according to the source mode required by `hoi4-feature-assets`.
+Use `hoi4_asset_source_researcher`, `hoi4_portrait_creator`, or `hoi4_generated_feature_art` for image work according to the source mode required by `hoi4-feature-assets`.
 
 The main agent owns final wording, localisation, GUI/GFX, audio wiring, playback helpers, caller effects, docs alignment, and live validation.
 

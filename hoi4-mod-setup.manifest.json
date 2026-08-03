@@ -136,8 +136,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "39c2a5af5190d1ece7694cf8c9a30b3dfab9eb1a9c792875868a8a46e690b35c",
-          "size": 72658
+          "sha256": "76183cc9831371817aef99d2f5ff209ddd0a1c21eedee9b7a9e335374b857da4",
+          "size": 73800
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -1686,8 +1686,8 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "fff6dd0c2807c05d938501f984154a9fad12cc9a73911f10dc6464e4b8a29f14",
-          "size": 24129
+          "sha256": "2f1158abaf8061af2b2fc12a9af0291ae7452d71393a7f93c40f56a462c8ba0e",
+          "size": 24720
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
@@ -1754,8 +1754,8 @@
         },
         {
           "path": ".codex/agents/hoi4_asset_source_researcher.toml",
-          "sha256": "168e76effb0ba35060031e9860d0284f0cc02d4639db59894681dd217f299061",
-          "size": 4180
+          "sha256": "8152ec6323fc630ed9ddb6b63af23e99b71537aff33f7becd36363bd0bbd694e",
+          "size": 4839
         },
         {
           "path": ".codex/agents/hoi4_audio_researcher.toml",
@@ -1789,8 +1789,8 @@
         },
         {
           "path": ".codex/agents/hoi4_generated_feature_art.toml",
-          "sha256": "e3a68a39d6a8e98f0804447ad4696d8f8ebe30f511fc45cd166931a2b432192d",
-          "size": 6345
+          "sha256": "ddea57d7e6b7ffa8018ec494126f4c98f24d95c5b79c259c3b29ac3bb13b4c65",
+          "size": 5868
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
@@ -1890,8 +1890,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "a2df3157c11135fd887f17851f39607f2f9596974d753fb8b8b308ac53bc6441",
-          "size": 7054
+          "sha256": "b0eee452bbd2226821a00c067bf14bddd17f917db312b441e07f03eb979e99e3",
+          "size": 7182
         }
       ]
     },

@@ -78,7 +78,8 @@ The main agent decides which subagent to spawn, gives it a bounded asset prompt,
 Use:
 
 - `hoi4_asset_source_researcher` for real or archival image sourcing, real country-leader, commander, operative, advisor, and named-officeholder portraits, historical flag-design research, historically attested symbols, user-provided source photos, and report, news, or custom feature images that must depict real photographed material
-- `hoi4_generated_feature_art` for generated non-icon feature art, including fictional or alternate-history report images, news images, large presentation images, fictional portraits and explicitly approved fictional advisor masters, flat fictional flag designs, faction emblems, UI panels, and progression-state base art
+- `hoi4_portrait_creator` for every final character portrait after source research, including grounded provider production and permitted fictional text-to-image portraits
+- `hoi4_generated_feature_art` for generated non-icon feature art, including fictional or alternate-history report images, news images, large presentation images, flat fictional flag designs, faction emblems, UI panels, and progression-state base art; it does not own final character portraits
 - `hoi4_icon_artist` for focus icons, idea icons, national spirit icons, officer corps spirit icons, decision icons, decision category icons, achievement icons, and tech icons
 
 For animated work, route by asset type first. Then require the chosen asset subagent to follow `hoi4-frame-animation` for frame plans, per-frame source art, normalization, contact sheets, preview GIFs, frame sheets, static fallbacks, and animation handoffs.
@@ -128,15 +129,17 @@ Researched presentation audio belongs to `hoi4-text-audio-research`. Use feature
 <!-- HOI4_MOD_SETUP_PORTRAITS_START -->
 ## 2.3 Optional provider portrait handoff
 
-Use this handoff only when the project lock enables the provider-aware portrait
-workflow. The selected provider skill owns installation and execution; this
-asset skill owns durable source, crop, output, DDS, and runtime handoff.
+Use this handoff whenever the project has a provider-aware portrait workflow.
+The selected provider skill owns installation and execution, and
+`hoi4_portrait_creator` owns provider output and final portrait production;
+this asset skill owns durable source, crop, prompt, provenance, output review,
+DDS validation, and runtime handoff.
 The canonical portrait project is `https://github.com/klimPaskov/comfyui-hoi4-portraits`.
 
-When the handoff is in scope, create a durable source and prompt pair while
-continuing the normal HOI4 processing, DDS conversion, review, and
-runtime-wiring workflow. The current approved runtime portrait remains usable;
-a pending external replacement does not block the feature.
+When the handoff is in scope, create a durable source and prompt pair before
+provider production. The current approved runtime portrait remains usable while
+a replacement is pending; if the provider is Disabled or temporarily
+unavailable, use and report only the source-based fallback.
 
 Resolve the stable runtime basename first:
 
@@ -218,7 +221,7 @@ Use Codex's official `$imagegen` skill by default for:
 - achievement icons
 - fictional flags
 - faction emblems
-- fictional leader portraits
+- fictional feature illustrations (final character portraits use `hoi4_portrait_creator`)
 - UI panels
 - progression-state base art
 - other symbolic or fictional static assets
@@ -257,20 +260,20 @@ Record the image source, source link, author or archive if available, license or
 
 Do not generate a leader portrait for a real person.
 
-For real people, use a real source image from the internet or a user-provided image, then crop, resize, process, convert, and document it. Use the repository web research tools when a source image is needed, and prefer public domain, archival, official, or clearly licensed images. If the person belongs to the Second World War setting, prefer contemporary portraits, wartime photographs, news photographs, official portraits, military archive images, passport or identity photos, or archival illustrations. Do not use modern actors, reenactors, statues, cosplay, later fictional depictions, postwar images, or modern images that do not fit the era unless the user explicitly approves them as placeholders.
+For real people, use a real source image from the internet or a user-provided image, then create the exact crop and document it before handing the source and person-only prompt to `hoi4_portrait_creator`. Use the repository web research tools when a source image is needed, and prefer public domain, archival, official, or clearly licensed images. If the person belongs to the Second World War setting, prefer contemporary portraits, wartime photographs, news photographs, official portraits, military archive images, passport or identity photos, or archival illustrations. Do not use modern actors, reenactors, statues, cosplay, later fictional depictions, postwar images, or modern images that do not fit the era unless the user explicitly approves them as placeholders.
 
-Real leader portraits should be processed toward the HOI4 portrait style rather than left as raw photos: bust or upper-torso crop, face readable, subdued contrast, mild painterly or period texture, HOI4-like color grading, no modern UI artifacts, no hard white cutout halo, and no over-smoothed face. Do not change the person's identity or generate missing facial features.
+Real leader portraits preserve the immutable source and exact crop. When the project portrait provider is enabled, hand the source and person-only prompt to `hoi4_portrait_creator` for the pinned provider route and its reviewed final output. When Disabled or temporarily unavailable, use only the source-based crop, deterministic resize, and normal DDS fallback; never apply a local filter, repaint, or improvised HOI4-style pass.
 
-Record the source link, author or archive if available, license or public domain status if available, source image path, processed PNG path, final DDS path, and sprite name
+Record the source link, author or archive if available, license or public domain status if available, source image path, processed PNG path, final DDS path when applicable, and sprite name.
 
 For generated or sourced one-person leader portraits, the asset handoff must identify the portrait's gender presentation and any matching leader-name pool requirement. Female-presenting portraits must not be paired with male names and should require `female = yes` where a country leader is created directly. Male-presenting portraits must not be paired with female names or `female = yes`. Council, board, office, crowd, and symbolic-institution portraits should keep institutional leader names instead of personal random-name pools.
 
 
 ### Fictional leader portraits
 
-Fictional leaders, invented councils, collective bodies, supernatural leaders, and symbolic regime portraits must use `$imagegen`.
+When the project portrait provider is enabled, fictional leaders, invented councils, collective bodies, supernatural leaders, and symbolic regime portraits use `hoi4_portrait_creator` and the pinned text-to-image workflow. When Disabled, do not fabricate a replacement through this general asset worker; use an approved source-based asset or mark the missing source blocked.
 
-Generated leader portraits should follow HOI4 leader portrait conventions: 156x210 final DDS unless an existing sprite uses another size, bust or upper-torso framing, strong face or governing-body focal point, subdued painterly finish, period-appropriate uniform or civilian clothing, transparent or HOI4-compatible portrait background as required by the existing asset pattern, and no text, labels, watermarks, modern UI, or meme-like exaggeration.
+Portrait-worker output should follow HOI4 leader portrait conventions: 156x210 final DDS unless an existing sprite uses another size, bust or upper-torso framing, strong face or governing-body focal point, subdued painterly finish, period-appropriate uniform or civilian clothing, transparent or HOI4-compatible portrait background as required by the existing asset pattern, and no text, labels, watermarks, modern UI, or meme-like exaggeration.
 
 For generated one-person leader portraits, record the portrait's apparent gender presentation in the manifest and handoff. Female-presenting portraits require female leader-name pools and female leader metadata where the implementation surface supports it. Male-presenting portraits require male leader-name pools and must not be paired with female metadata. Never hand off a portrait in a way that lets implementation randomly assign names from the opposite gender pool. Council, committee, junta, crowd, office, or symbolic-body portraits should be marked as institutional leaders and use institutional names instead of personal random-name pools.
 
@@ -946,23 +949,27 @@ source. One-person generated portraits are reserved for wholly fictional,
 impossible, or supernatural identities. Missing or contradictory identity
 classification fails closed.
 
-For a real person, preserve the unchanged archival master, create the explicit
-head-and-shoulders crop with
-`.agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py`,
-retain its exact-pixel JSON evidence, apply an identity-preserving HOI4 painted
-finish, process to the role’s native dimensions, and require an independent
-likeness, style, and provenance review before DDS conversion or wiring. A raw
-photograph, simple resize, generic filter, illustration used as an identity
-master, face replacement, or weak likeness is not a finished portrait.
+For a real person, preserve the unchanged archival master and create the
+explicit head-and-shoulders crop with
+`.agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py`.
+Retain its exact-pixel JSON evidence and hand the source and person-only prompt
+to `hoi4_portrait_creator` when the project provider is enabled. Require an
+independent likeness, style, and provenance review before DDS conversion or
+wiring. A raw photograph, generic filter, illustration used as an identity
+master, face replacement, or weak likeness is not a provider-backed final;
+simple resize and normal DDS conversion are allowed only for the source-based
+fallback when Disabled or temporarily unavailable.
 
 Record source URL, author or archive, rights status when available, source and
 candidate hashes, crop coordinates, review evidence, processed PNG, final DDS,
-runtime sprite, and the durable provider pair from section 2.3.
+runtime sprite, and the durable source/prompt pair from section 2.3.
 
-For fictional people and impossible or supernatural entities, `$imagegen` may
-create a full-resolution base portrait after the identity gate permits it. Use
-the matching canonical family as style input. Reject generic, modern, meme,
-gore, stereotyped, text-bearing, or interchangeable output.
+For fictional people and impossible or supernatural entities, the enabled
+portrait provider may create a full-resolution base through its pinned
+text-to-image workflow after the identity gate permits it. Use the matching
+canonical family as style input. Reject generic, modern, meme, gore,
+stereotyped, text-bearing, or interchangeable output. If Disabled, use an
+approved source-based asset or mark the missing source blocked.
 
 Full country-leader, commander, and operative textures are `156x210`. Never
 manufacture a smaller commander source merely because one UI view displays it
@@ -1122,7 +1129,13 @@ Historical or culturally attested formable symbols need source review. Fictional
 
 Use `hoi4-frame-animation` for every final animated visual asset. Some mod mechanics should have animated visual layers when motion improves readability, atmosphere, or feedback. Examples include floating seals, glowing route emblems, particle drift, meter pulses, warning frames, active-button glows, occult pressure effects, sponsor influence networks, and final formable proclamations.
 
-Animated leader portraits should be handled as major identity assets. Real people require sourced base images. Fictional or impossible leaders can be generated. The asset handoff must say whether the animation is subtle, such as breathing light or smoke, or symbolic, such as eye glow, map shadow, glitch, or spectral overlay. The portrait should still read clearly at in-game size.
+Animated leader portraits should be handled as major identity assets by
+`hoi4_portrait_creator` plus `hoi4-frame-animation`. Real people require
+sourced base images; fictional or impossible leaders use the enabled pinned
+portrait provider. The asset handoff must say whether the animation is subtle,
+such as breathing light or smoke, or symbolic, such as eye glow, map shadow,
+glitch, or spectral overlay. The portrait should still read clearly at in-game
+size.
 
 Final animated assets must be built from planned source frames. Do not create final animation by taking one still image and shifting, scaling, rotating, warping, blurring, recoloring, brightening, or pulsing it with a script. Local scripts may normalize, align, crop, resize, assemble sheets, create previews, and convert frames after the real frames exist.
 
@@ -1239,7 +1252,7 @@ Do not invent a substitute asset unless the user explicitly approves it.
 Before finishing, confirm:
 
 1. Every required asset from the feature spec is accounted for.
-2. Every asset uses the correct source mode: `$imagegen` for approved generated symbolic, fictional, alternate-history, or unique report, news, or large presentation assets; attributed sources for real historical material and every grounded real-person portrait.
+2. Every asset uses the correct source mode: `$imagegen` for approved generated symbolic, fictional, alternate-history, or unique report, news, or large presentation assets; attributed sources for real historical material and every grounded real-person portrait; the selected pinned portrait provider for final character portraits.
 3. The matching reference folder from section 4 was inspected before generation, sourcing, processing, or wiring.
 4. Every generated, sourced, or provided asset has a source PNG.
 5. Every final asset has a processed PNG preview.
@@ -1249,7 +1262,7 @@ Before finishing, confirm:
 9. A `gfx_handoff.md` exists for every asset that needs a sprite definition, and the main agent has enough information to wire it.
 10. The asset manifest exists.
 11. Internet-sourced assets record source links, source date or estimated date range, license or public domain status if available, and era-fit notes for Second World War-era assets.
-12. Fictional or non-human portraits generated with `$imagegen` are clearly marked as fictional or generated in the manifest.
+12. Fictional or non-human portraits produced through the selected pinned portrait provider are clearly marked as fictional or generated in the manifest.
 13. Docs are updated where relevant.
 14. The feature implementation or parent handoff knows which sprite names to use.
 15. No final asset remains only in a temporary folder.

@@ -1,5 +1,5 @@
 name = "hoi4_generated_feature_art"
-description = "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, large presentation, UI, flag, faction emblem, and approved fictional portrait art for HOI4 mods. Does not edit GFX or gameplay files."
+description = "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, large presentation, UI, flag, faction-emblem, and other feature art for HOI4 mods. Final character portraits use the dedicated portrait worker. Does not edit GFX or gameplay files."
 model = "gpt-5.6-luna"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
@@ -26,13 +26,14 @@ Own this scope:
 - Generated report event images when the prompt calls for a fictional, alternate-history, staged-documentary, or unique period scene rather than a real archive image.
 - Generated news event images when the prompt calls for a fictional, alternate-history, staged press-photo, or unique period scene rather than a real archive image.
 - Fictional large presentation images.
-- Fictional leader portraits and explicitly approved fictional advisor masters, symbolic councils, regime portraits, non-human leaders, monsters, zombies, aliens, and invented bodies.
+- Fictional feature illustrations, symbolic councils, regime art, non-human scenes, monsters, zombies, aliens, and invented bodies that are not final character portraits.
 - Fictional flags, alternate-history flags, faction emblems, seals, UI panel art, dossier backgrounds, progression-state base art, and symbolic event illustrations.
 - Source PNGs, processed PNG previews, DDS conversion, manifest entries, contact sheets, and GFX handoff notes.
 
 Do not use this agent for:
 - Icons.
 - Real leader portraits.
+- Final fictional or grounded character portraits; route permitted fictional portraits to `hoi4_portrait_creator` and its pinned text-to-image workflow.
 - Historical flags or historically attested symbols.
 - Real documentary report or news images that must depict an actual photographed person, place, battle, object, document, or historical scene.
 - Placeholder report or news images. Generated feature art must be treated as final-source art, not a placeholder substitute.
@@ -44,9 +45,8 @@ Generated art rules:
 - Report event images must be post-processed into the report-event house style when the parent asks for report images.
 - No readable generated text, labels, watermarks, UI artifacts, meme styling, modern props, modern uniforms, modern streets, cinematic color grading, or fake old-photo defects unless the prompt explicitly requires a specific defect.
 - Keep composition readable at the final target size.
-- For full portraits, use HOI4-style bust or upper-torso framing, period-appropriate clothing, subdued painterly treatment, and clear identity. For an approved fictional advisor master, produce a distinct full-resolution subject source; the parent owns native `65x67` dossier composition.
-- Create the durable provider source PNG and prompt TXT with the exact runtime basename when the parent supplies the registered portrait basename and output folder.
-- When a generated leader portrait clearly depicts one person, the asset manifest and handoff must record the portrait's apparent gender presentation and say that gameplay should assign an actual-ish personal name from a matching small random regional name pool, not a generic office title. Names should sound plausible for the culture and era while allowing the mod's intended tone through surnames, nicknames, patronymics, epithets, or titles. Female-presenting portraits require female name pools and female leader metadata where supported. Male-presenting portraits require male name pools and must not be paired with female leader metadata. Council, committee, junta, crowd, office, or symbolic-body portraits should use institutional names instead.
+- For non-character feature illustrations, use the requested HOI4-compatible framing and readable composition. Do not create final character portrait masters here; `hoi4_portrait_creator` owns portrait framing, prompts, provider output, and DDS production.
+- If a non-portrait feature illustration accidentally depicts one person, keep it a scene or symbolic illustration and do not turn it into a gameplay portrait. Named character portrait metadata, prompts, provider outputs, and portrait-specific handoffs belong to `hoi4_portrait_creator`.
 - For flags, create intentional generated/source flag art that remains readable at 82x52, 42x26, and 10x7. Do not make ideology variants by recoloring or copying one design unless explicitly requested.
 - For custom feature images, use strong central composition and enough contrast for the the intended HOI4 UI.
 
