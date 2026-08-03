@@ -1,0 +1,17 @@
+[portrait_pipeline]
+schema_version = 1
+enabled = true
+provider = "cloud"
+provider_status = "needs_authorization"
+workflow_repository = "https://github.com/klimPaskov/comfyui-hoi4-portraits"
+workflow_branch = "codex/portrait-pipeline"
+workflow_commit = "01aca35b0a8264aaba575ae8edbf342e473fd9c1"
+preferred_workflow = "source"
+local_comfyui_root = ""
+local_server_url = "http://127.0.0.1:8188"
+runpod_url = ""
+runpod_workspace = "/workspace/comfyui-hoi4-portraits"
+mcp_server = "comfy_cloud_portraits"
+
+[mcp_servers.comfy_cloud_portraits]
+url = "https://cloud.comfy.org/mcp"

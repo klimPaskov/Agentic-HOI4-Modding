@@ -13,7 +13,7 @@ Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files, or gam
 
 Read only:
 - the parent asset prompt, manifest, or handoff
-- relevant sections of .agents/skills/hoi4-feature-assets/SKILL.md for source mode, target size, report, news, and large presentation image rules, real portrait and native advisor-card rules, durable ComfyUI portrait handoffs, flags, manifests, DDS conversion, and GFX handoff
+- relevant sections of .agents/skills/hoi4-feature-assets/SKILL.md for source mode, target size, report, news, and large presentation image rules, real portrait and native advisor-card rules, durable provider portrait handoffs, flags, manifests, DDS conversion, and GFX handoff
 - .agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md and CATALOG.md
 - the canonical visual-reference root .agents/skills/hoi4-feature-assets/assets/vanilla_reference/
 - source pages, archive pages, downloaded files, and named asset package files

@@ -90,7 +90,7 @@ Asset subagents may create:
 - final DDS files
 - contact sheets
 - manifests
-- optional external ComfyUI portrait source and prompt pairs under `docs/assets/portraits/`
+- <!-- HOI4_MOD_SETUP_PORTRAITS_START --> optional provider portrait source and prompt pairs under `docs/assets/portraits/` <!-- HOI4_MOD_SETUP_PORTRAITS_END -->
 - `docs/assets/<feature_slug>/gfx_handoff.md`
 
 Asset subagents must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, scripted effect, scripted trigger, on_action, history, country, external tabular data files, or workbooks unless the parent explicitly grants that scope.
@@ -125,13 +125,13 @@ When moving or adding an asset, update every `.gfx`, `.gui`, event, idea, decisi
 
 Researched presentation audio belongs to `hoi4-text-audio-research`. Use feature-scoped music and sound paths only when the repository already uses that convention or the parent prompt asks for it. Preserve source downloads under a documented source-audio path instead of burying them among final game files.
 
-## 2.3 Optional external ComfyUI portrait handoff
+<!-- HOI4_MOD_SETUP_PORTRAITS_START -->
+## 2.3 Optional provider portrait handoff
 
-Use this handoff only when the user explicitly asks to work with an external
-ComfyUI portrait workflow or the repository already maintains this queue.
-Agentic HOI4 Modding does not install, configure, inspect, or run ComfyUI,
-models, LoRAs, Python, GPU software, or drivers. The separate portrait project
-is `https://github.com/klimPaskov/comfyui-hoi4-portraits`.
+Use this handoff only when the project lock enables the provider-aware portrait
+workflow. The selected provider skill owns installation and execution; this
+asset skill owns durable source, crop, output, DDS, and runtime handoff.
+The canonical portrait project is `https://github.com/klimPaskov/comfyui-hoi4-portraits`.
 
 When the handoff is in scope, create a durable source and prompt pair while
 continuing the normal HOI4 processing, DDS conversion, review, and
@@ -170,10 +170,11 @@ Record each pair’s runtime path and one state:
 - `comfyui_replaced`
 - `comfyui_not_needed`
 
-The durable queue is not runtime storage. No `.gfx`, character, GUI, event,
+The durable archive is not runtime storage. No `.gfx`, character, GUI, event,
 focus, idea, or decision reference may point into `docs/assets/portraits/`.
 Never delete it during temporary feature-workspace cleanup unless the user
 explicitly asks.
+<!-- HOI4_MOD_SETUP_PORTRAITS_END -->
 
 ## 3. Asset source rules
 
@@ -953,7 +954,7 @@ master, face replacement, or weak likeness is not a finished portrait.
 
 Record source URL, author or archive, rights status when available, source and
 candidate hashes, crop coordinates, review evidence, processed PNG, final DDS,
-runtime sprite, and the durable ComfyUI pair from section 2.3.
+runtime sprite, and the durable provider pair from section 2.3.
 
 For fictional people and impossible or supernatural entities, `$imagegen` may
 create a full-resolution base portrait after the identity gate permits it. Use
@@ -1253,7 +1254,7 @@ Before finishing, confirm:
 17. Every animated asset used `hoi4-frame-animation`, has real source frames, has a static fallback, and has no transform-only final motion.
 18. Every unit visual is classified by domain and surface as equipment/technology art, a large land counter, a land/air/naval map counter, a division-template emblem, or a land/air/naval 3D model package; one pipeline was not resized or relabeled to substitute for another. A 3D package also proves the one-image Meshy input rule, provider lineage, vanilla scale calibration, PDX material mapping, topology repair, required skeletal actions, `.mesh`/`.anim` reimport, hash-aware runtime synchronization, parent-owned wiring, and a live consumer.
 19. Every advisor, theorist, high-command, officer-corps, or army-small card uses the native `65x67` advisor workflow, the exact accepted template, retained transforms and hashes, and independent native/4x review; it is not a shrunken leader texture.
-20. Every wired portrait DDS has a durable source PNG and prompt TXT with the exact runtime basename under `docs/assets/portraits/<feature_slug>/`, a recorded ComfyUI replacement state, no invented prompt details, and no runtime reference into that queue.
+20. Every wired portrait DDS has a durable source PNG and prompt TXT with the exact runtime basename under `docs/assets/portraits/<feature_slug>/`, a recorded provider replacement state, no invented prompt details, and no runtime reference into that archive.
 
 <!-- HOI4_MOD_SETUP_SUPER_EVENTS_START -->
 ## Super Events images

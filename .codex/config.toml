@@ -82,3 +82,12 @@ config_file = "agents/hoi4_skill_maintainer.toml"
 [agents.hoi4_spreadsheet_doc_worker]
 description = "Optional spreadsheet-only worker for mod-maintained CSV/XLSX tables when a repository actually has them or the parent explicitly requests them. Preserves formatting and aligns fields with source-of-truth implementation or localisation provided by the parent."
 config_file = "agents/hoi4_spreadsheet_doc_worker.toml"
+
+# HOI4_MOD_SETUP_PORTRAITS_START
+[agents.hoi4_portrait_creator]
+description = "Provider-aware HOI4 portrait production worker. Use only when the portrait provider configuration is enabled."
+config_file = "agents/hoi4_portrait_creator.toml"
+
+[mcp_servers.comfy_cloud_portraits]
+url = "https://cloud.comfy.org/mcp"
+# HOI4_MOD_SETUP_PORTRAITS_END

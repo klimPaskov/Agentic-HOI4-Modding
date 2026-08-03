@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/klimPaskov/comfyui-hoi4-portraits",
+  "branch": "codex/portrait-pipeline",
+  "commit": "01aca35b0a8264aaba575ae8edbf342e473fd9c1",
+  "manifest_sha256": "6c8294ea903816f6a3d6745aac997d0a6fd47b6c5ac32a2f0e41ddb6539b7573",
+  "models_sha256": "662624db1d01e7547e7d2c3672316339bd95ac39bce7d5d567b2feb049be2d80",
+  "prompt_sha256": "b0c8ab4d0fc97190f6c0bb13d8919a4fe678be240e8d6bd30e6605804803a6f6",
+  "workflows": {
+    "source": {
+      "workflow_id": "hoi4_portrait_flux2_klein_9b_source",
+      "ui_path": "workflows/hoi4_portrait_flux2_klein_9b_source.json",
+      "api_path": "workflows/hoi4_portrait_flux2_klein_9b_source.api.json",
+      "ui_sha256": "2e3d4824f9cc4cc34922640ef12985c9fbd11443c3fdb057a754d07212a3cd8a",
+      "api_sha256": "327b2dffb95fe402cbc69d5bfa104810978b4b8a50978a389f2b96984999f2fc"
+    },
+    "processing_only": {
+      "workflow_id": "hoi4_portrait_processing_only",
+      "ui_path": "workflows/hoi4_portrait_processing_only.json",
+      "api_path": "workflows/hoi4_portrait_processing_only.api.json",
+      "ui_sha256": "3aeec172c0c63e2fe39eb0935f9ad850a44ef3e6b9956515b561c9a27ff51b01",
+      "api_sha256": "d4012402208f9d1288625da640bf703ff11f366f8c9b471d45499340cb19fc82"
+    },
+    "text_to_image": {
+      "workflow_id": "hoi4_portrait_flux2_klein_9b_text_to_image",
+      "ui_path": "workflows/hoi4_portrait_flux2_klein_9b_text_to_image.json",
+      "api_path": "workflows/hoi4_portrait_flux2_klein_9b_text_to_image.api.json",
+      "ui_sha256": "ca0420eee7f42be905251c29c7d9d92e5d5984f2a5a24631b6ceb6626e24a2ed",
+      "api_sha256": "0ebfb793a1d7871a7b42569173625d088788e430626d3bc564f20522ebab00d1"
+    }
+  }
+}

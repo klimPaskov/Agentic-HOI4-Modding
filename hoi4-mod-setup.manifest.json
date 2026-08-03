@@ -78,6 +78,10 @@
         ],
         "exclude": [
           "hoi4-super-events*/**",
+          "hoi4-comfyui-portraits*/**",
+          "hoi4-comfyui-cloud*/**",
+          "hoi4-comfyui-local*/**",
+          "hoi4-comfyui-runpod*/**",
           "**/.DS_Store"
         ]
       },
@@ -1708,7 +1712,8 @@
           "hoi4_*.toml"
         ],
         "exclude": [
-          "hoi4_super_event_*.toml"
+          "hoi4_super_event_*.toml",
+          "hoi4_portrait_creator.toml"
         ]
       },
       "destination": {
@@ -5039,6 +5044,179 @@
           "size": 1411
         }
       ]
+    },
+    {
+      "id": "workflow.portraits",
+      "display_name": "Portrait production workflow",
+      "description": "Install the provider-aware portrait skill family and durable source/prompt guidance when a Cloud, Local, or RunPod provider is selected.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".agents/skills",
+        "include": [
+          "hoi4-comfyui-portraits/**",
+          "hoi4-comfyui-cloud/**",
+          "hoi4-comfyui-local/**",
+          "hoi4-comfyui-runpod/**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".agents/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.skills",
+        "core.subagents",
+        "codex.config"
+      ],
+      "conflicts": [
+        "existing portrait provider skill with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "portraits.provider_config",
+          "severity": "warn",
+          "kind": "custom",
+          "target": ".codex/portrait_pipeline.toml"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "source and provider separation",
+        "Cloud, Local, and RunPod routing",
+        "durable portrait archive and prompt contract",
+        "source-based fallback"
+      ],
+      "notes": [
+        "Disabled projects omit this component and its ComfyUI-specific guidance.",
+        "Provider credentials remain outside the project and installation lock."
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "workflow.portraits.subagent",
+      "display_name": "Portrait production subagent",
+      "description": "Install the bounded provider execution and portrait QA subagent.",
+      "category": "subagent",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".codex/agents/hoi4_portrait_creator.toml"
+      },
+      "destination": {
+        "path": ".codex/agents/hoi4_portrait_creator.toml",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "workflow.portraits"
+      ],
+      "conflicts": [
+        "existing portrait production subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "provider execution",
+        "output validation",
+        "fallback and deferred-state reporting"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "workflow.portraits.config",
+      "display_name": "Portrait provider configuration",
+      "description": "Install non-secret provider, route, and pinned upstream configuration for an enabled portrait workflow.",
+      "category": "codex",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".codex/portrait_pipeline.toml"
+      },
+      "destination": {
+        "path": ".codex/portrait_pipeline.toml",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "codex.config"
+      ],
+      "conflicts": [
+        "existing portrait provider configuration"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "provider persistence",
+        "Cloud MCP route",
+        "upstream revision evidence"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "workflow.portraits.docs",
+      "display_name": "Portrait upstream lock",
+      "description": "Install the exact canonical portrait repository and workflow hash evidence.",
+      "category": "documentation",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": "docs/portrait_pipeline/upstream-lock.json"
+      },
+      "destination": {
+        "path": "docs/portrait_pipeline/upstream-lock.json",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing portrait upstream lock"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "exact commit pinning",
+        "workflow and model hash evidence"
+      ],
+      "expected_files": []
     },
     {
       "id": "workflow.3d",
