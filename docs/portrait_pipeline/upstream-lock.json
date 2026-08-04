@@ -2,24 +2,25 @@
   "schema_version": 1,
   "repository": "https://github.com/klimPaskov/comfyui-hoi4-portraits",
   "branch": "codex/portrait-pipeline",
-  "commit": "92c8118f9ab61a0a658af24bc6868ed7f93cdebd",
-  "manifest_sha256": "8026e29382c8c402a5d83c5c8e940ffcb406a948a9ffb9ed3e39a8d79198466a",
-  "models_sha256": "662624db1d01e7547e7d2c3672316339bd95ac39bce7d5d567b2feb049be2d80",
-  "prompt_sha256": "b0c8ab4d0fc97190f6c0bb13d8919a4fe678be240e8d6bd30e6605804803a6f6",
+  "commit": "b47222a77f2f6454704530865aa1441fad48bdd3",
+  "manifest_sha256": "879f3c8504480062065884abb41681e7d62a017d2254a4aa8cac42b86fcfbfe2",
+  "models_sha256": "4571a2093bd3577c26d63bf75d71319848f3bf60c9b7b4267ad8939045444e6d",
+  "prompt_source": "README.md#prompting",
+  "prompt_sha256": "65990d8db889708598b1caf437688b4eae007de059428f348690284bc662ddf1",
   "workflows": {
     "source": {
       "workflow_id": "hoi4_portrait_flux2_klein_9b_source",
       "ui_path": "workflows/hoi4_portrait_flux2_klein_9b_source.json",
       "api_path": "workflows/hoi4_portrait_flux2_klein_9b_source.api.json",
-      "ui_sha256": "fb1c9d58275034461054aed7d2cf005b91e982745b4653c5581cec318cc40e55",
-      "api_sha256": "c81e748fc3f6190b0769ed23f5e40a6b205fcb8dc4117c87b4a5d7aabc898a92"
+      "ui_sha256": "7c0ad4926a2b64ca7a596f63e92147b38c196ff247fd855867987f6bef0082a0",
+      "api_sha256": "fb71a7aab6fdb40ee39a575b7db110fba8123638668062a24c76173fb173a01b"
     },
     "processing_only": {
       "workflow_id": "hoi4_portrait_processing_only",
       "ui_path": "workflows/hoi4_portrait_processing_only.json",
       "api_path": "workflows/hoi4_portrait_processing_only.api.json",
-      "ui_sha256": "3aeec172c0c63e2fe39eb0935f9ad850a44ef3e6b9956515b561c9a27ff51b01",
-      "api_sha256": "d4012402208f9d1288625da640bf703ff11f366f8c9b471d45499340cb19fc82"
+      "ui_sha256": "fb0d219de7ceb5576d3deae8e743204ad32747d450e87cf1a3ee84d7d037be5b",
+      "api_sha256": "e97327d9e7adfe717b6f51ff18ad4f8c930e28db44d891ec669d7b261c63491a"
     },
     "text_to_image": {
       "workflow_id": "hoi4_portrait_flux2_klein_9b_text_to_image",
@@ -27,8 +28,8 @@
       "api_path": "workflows/hoi4_portrait_flux2_klein_9b_text_to_image.api.json",
       "status": "upstream_not_authorized",
       "use": "Non-sourced fictional or impossible portraits use native ImageGen and never use this ComfyUI graph.",
-      "ui_sha256": "ca0420eee7f42be905251c29c7d9d92e5d5984f2a5a24631b6ceb6626e24a2ed",
-      "api_sha256": "0ebfb793a1d7871a7b42569173625d088788e430626d3bc564f20522ebab00d1"
+      "ui_sha256": "e8ae30cefbaf38deca8c8b9112de92ac3aa2fee6a4661a917ab5ff1c14825c0f",
+      "api_sha256": "c638d5958ef99cd9dd079036eb39143034da27bb30fddeb77f77abc430f92992"
     }
   }
 }

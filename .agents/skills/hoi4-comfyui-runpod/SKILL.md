@@ -19,8 +19,19 @@ The canonical setup uses the pinned repository and installer:
 ```bash
 export HF_TOKEN="hf_..."
 P=/workspace/comfyui-hoi4-portraits
+COMFY_ROOT=/workspace/runpod-slim/ComfyUI
+test -f "$COMFY_ROOT/main.py" || { echo "ComfyUI not found at $COMFY_ROOT; set COMFY_ROOT to the folder containing main.py."; exit 1; }
 test -d "$P/.git" || git clone --depth 1 https://github.com/klimPaskov/comfyui-hoi4-portraits "$P"
-"$P/scripts/install_runpod.sh" /workspace/ComfyUI
+"$P/scripts/install_runpod.sh" "$COMFY_ROOT"
+```
+
+The current installer places the adaptive crop node, workflows, backgrounds,
+sample input, and eight pinned model files into the standard ComfyUI folders.
+The model files use about 19.42 GB decimal; keep a 30 GB pod volume for the
+repository, ComfyUI files, caches, and outputs. Start the pod UI with:
+
+```bash
+"$P/scripts/start_runpod.sh" "$COMFY_ROOT"
 ```
 
 Record the resolved upstream commit, workspace, endpoint, model state, and

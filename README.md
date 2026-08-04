@@ -18,6 +18,7 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 - A model for separating main-agent implementation from helper-agent production and audits.
 - The mod-agnostic hoi4-3d-model-pipeline skill and hoi4_3d_model_pipeline subagent for verified Meshy-to-Blender-to-io_pdx_mesh model production.
 - The optional mod-agnostic `hoi4-super-events` package: a project-adapted GUI/GFX runtime, dynamic registration pattern, hidden smoke-test event, default DDS assets, editable Photoshop templates, research guidance, and complete presentation workflow.
+- The optional provider-selected ComfyUI portrait workflow: a source and prompt contract, Cloud, Local, and RunPod skills, a bounded portrait subagent, durable source archives, and source-based fallback handling.
 
 ## Recommended setup
 
@@ -140,6 +141,18 @@ background, the response button texture, and both full-composition and
 `457x328` image Photoshop templates. New registrations add one stable integer
 ID and matching image, title, description, quote, response, caller, optional
 rights-verified audio, and documentation.
+
+## Optional portrait workflow
+
+Generic projects may select Comfy Cloud, Local ComfyUI, RunPod, or Disabled.
+Only the selected provider skill is installed. Sourced portraits use the
+identity-preserving source or processing workflow from the pinned
+`comfyui-hoi4-portraits` revision; non-sourced fictional or impossible
+portraits use native ImageGen and never enter the ComfyUI workflow. The current
+workflow uses eight pinned model files, about 19.42 GB of model storage, and a
+24 GB GPU as the practical target. A 16 GB GPU is limited to slower reduced
+tests, and RunPod should use a 30 GB volume. See the provider skill and
+`docs/portrait_pipeline/upstream-lock.json` for the exact revision and checks.
 
 ### 7. Keep asset ownership clear
 

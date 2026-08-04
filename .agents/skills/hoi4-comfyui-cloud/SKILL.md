@@ -31,6 +31,12 @@ Use the provider subscription required for custom model import. Import the
 exact current LoRA filename from the upstream lock:
 `hoi4_portraits_flux2_klein_9b_lora_000002500.safetensors`.
 
+The source and processing graphs also use the upstream
+`adaptive_portrait_crop` custom node. Confirm that the current Builder
+environment has that node before opening the graph. The processing graph does
+not use the LoRA; a source run still emits three candidate master/game pairs
+for review.
+
 Use the matching pinned `.api.json` graph. Upload the approved source through
 the provider upload flow; a project filesystem path is not a valid
 `LoadImage.image` value. Dry-run the graph, submit it, retain the exact
