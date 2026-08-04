@@ -24,6 +24,13 @@ python scripts/install_workflows.py --comfyui-root "<COMFYUI_ROOT>"
 python scripts/download_models.py --comfyui-root "<COMFYUI_ROOT>"
 ```
 
+The current manifest installs eight pinned model files totaling about 19.42 GB
+decimal. A 24 GB GPU is the practical target; 18 GB may work with aggressive
+offloading, and 16 GB is limited to slower reduced-resolution tests. Accept
+the gated FLUX.2 Klein agreement before downloading the base model. The
+current source and processing graphs also require the
+`adaptive_portrait_crop` custom node and the MediaPipe/YuNet detector files.
+
 Use the canonical model manifest and require Hugging Face authorization where
 the manifest requires it. Submit through the loopback REST/WebSocket
 interface, poll the exact job/history record, retrieve both output sizes, and
