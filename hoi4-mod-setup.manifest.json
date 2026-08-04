@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "a993d6d632e50ba87f2f1818720abf5b45b7a39cf11ec1cb716eb2751b596e77",
-          "size": 37954
+          "sha256": "9c7c010a5ccc8f08d521f663f83143c3329d0a4c9de99bad6ddf25cee8605ff5",
+          "size": 38219
         }
       ]
     },
@@ -78,10 +78,8 @@
         ],
         "exclude": [
           "hoi4-super-events*/**",
-          "hoi4-comfyui-portraits*/**",
-          "hoi4-comfyui-cloud*/**",
-          "hoi4-comfyui-local*/**",
-          "hoi4-comfyui-runpod*/**",
+          "hoi4-comfyui*/**",
+          "hoi4-portrait-production*/**",
           "**/.DS_Store"
         ]
       },
@@ -136,8 +134,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "76183cc9831371817aef99d2f5ff209ddd0a1c21eedee9b7a9e335374b857da4",
-          "size": 73800
+          "sha256": "e23e47c908099fbe0a04451b2d4c9c6dfff5a88665f1d6702b17023638de93cf",
+          "size": 74031
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -1686,8 +1684,8 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "2f1158abaf8061af2b2fc12a9af0291ae7452d71393a7f93c40f56a462c8ba0e",
-          "size": 24720
+          "sha256": "cb273a8324c749629563c01dc3ca9ab6aa024c6b7e54aab186547302133b951e",
+          "size": 24818
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
@@ -1789,8 +1787,8 @@
         },
         {
           "path": ".codex/agents/hoi4_generated_feature_art.toml",
-          "sha256": "ddea57d7e6b7ffa8018ec494126f4c98f24d95c5b79c259c3b29ac3bb13b4c65",
-          "size": 5868
+          "sha256": "e8793cd05b3804b95e50f2cd8b119a95d5481854ecdfe8adac84bccb31a6df95",
+          "size": 5909
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
@@ -1890,8 +1888,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "b0eee452bbd2226821a00c067bf14bddd17f917db312b441e07f03eb979e99e3",
-          "size": 7182
+          "sha256": "0e9d58913ccd1755f9c3c592e7d4c96d026b13430ff2bfdfebf7f15f7115015c",
+          "size": 7167
         }
       ]
     },
@@ -5046,38 +5044,28 @@
       ]
     },
     {
-      "id": "workflow.portraits",
-      "display_name": "Portrait production workflow",
-      "description": "Install the provider-aware portrait skill family and durable source/prompt guidance when a Cloud, Local, or RunPod provider is selected.",
+      "id": "workflow.portraits.core",
+      "display_name": "Portrait production contract",
+      "description": "Install the provider-neutral portrait source, prompt, archive, validation, and runtime handoff contract.",
       "category": "workflow",
       "optional": true,
       "platforms": [
         "all"
       ],
       "source": {
-        "kind": "tree",
-        "path": ".agents/skills",
-        "include": [
-          "hoi4-comfyui-portraits/**",
-          "hoi4-comfyui-cloud/**",
-          "hoi4-comfyui-local/**",
-          "hoi4-comfyui-runpod/**"
-        ],
-        "exclude": [
-          "**/.DS_Store"
-        ]
+        "kind": "file",
+        "path": ".agents/skills/hoi4-portrait-production/SKILL.md"
       },
       "destination": {
-        "path": ".agents/skills/",
+        "path": ".agents/skills/hoi4-portrait-production/SKILL.md",
         "ownership": "managed",
         "outside_project": false
       },
       "dependencies": [
-        "core.skills",
-        "core.subagents"
+        "core.skills"
       ],
       "conflicts": [
-        "existing portrait provider skill with the same path"
+        "existing portrait production contract"
       ],
       "conflict_policy": "replace_if_unmodified",
       "validation": [
@@ -5094,8 +5082,8 @@
         "preserve_local_additions": true
       },
       "capabilities": [
-        "source and provider separation",
-        "Cloud, Local, and RunPod routing",
+        "source and production separation",
+        "durable portrait contract",
         "durable portrait archive and prompt contract",
         "source-based fallback"
       ],
@@ -5105,26 +5093,65 @@
       ],
       "expected_files": [
         {
-          "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md",
-          "sha256": "54d491bdd8465cf2ccf29515b612e1b8b5b092c3f1ec3aea10fee630a526e567",
-          "size": 1316
-        },
-        {
-          "path": ".agents/skills/hoi4-comfyui-local/SKILL.md",
-          "sha256": "85c8c4d86e166794ac748637c481cf5a0aa233511670551d10cd6cd415fd732c",
-          "size": 1234
-        },
-        {
-          "path": ".agents/skills/hoi4-comfyui-portraits/SKILL.md",
-          "sha256": "963b54ac6b1ede6d9d3120f2aeb4f90c986a31e8617ec7d49c766f539448e8df",
-          "size": 6197
-        },
-        {
-          "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md",
-          "sha256": "1f5a35f46e498fac5050d82238e48afb23824b37dce39587e60e32ef6acee2b1",
-          "size": 1168
+          "path": ".agents/skills/hoi4-portrait-production/SKILL.md",
+          "sha256": "72b6d1673556fbbe4960fc8a5723c56c86b914361823e806ae5e417902ee9056",
+          "size": 3410
         }
       ]
+    },
+    {
+      "id": "workflow.portraits.cloud",
+      "display_name": "Comfy Cloud portrait production",
+      "description": "Install only the Comfy Cloud MCP portrait route selected for this project.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "file", "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md"},
+      "destination": {"path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md", "ownership": "managed", "outside_project": false},
+      "dependencies": ["workflow.portraits.core", "workflow.portraits.subagent", "workflow.portraits.config", "workflow.portraits.docs"],
+      "conflicts": ["another portrait provider skill"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["selected provider route"],
+      "notes": ["Only this provider skill is installed when this component is selected."],
+      "expected_files": [{"path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md", "sha256": "bddaa8444b4cb57898add4d7861fe4aba1659d7752956a21ca440101eaa9937f", "size": 1715}]
+    },
+    {
+      "id": "workflow.portraits.local",
+      "display_name": "Loopback ComfyUI portrait production",
+      "description": "Install only the loopback ComfyUI portrait route selected for this project.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "file", "path": ".agents/skills/hoi4-comfyui-local/SKILL.md"},
+      "destination": {"path": ".agents/skills/hoi4-comfyui-local/SKILL.md", "ownership": "managed", "outside_project": false},
+      "dependencies": ["workflow.portraits.core", "workflow.portraits.subagent", "workflow.portraits.config", "workflow.portraits.docs"],
+      "conflicts": ["another portrait provider skill"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["selected provider route"],
+      "notes": ["Only this provider skill is installed when this component is selected."],
+      "expected_files": [{"path": ".agents/skills/hoi4-comfyui-local/SKILL.md", "sha256": "ce9d8ce7ce2f3e5dca16270d0b89e423c3acc148546bb20f7c1a269f28ea1aeb", "size": 1471}]
+    },
+    {
+      "id": "workflow.portraits.runpod",
+      "display_name": "RunPod ComfyUI portrait production",
+      "description": "Install only the RunPod ComfyUI portrait route selected for this project.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "file", "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md"},
+      "destination": {"path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md", "ownership": "managed", "outside_project": false},
+      "dependencies": ["workflow.portraits.core", "workflow.portraits.subagent", "workflow.portraits.config", "workflow.portraits.docs"],
+      "conflicts": ["another portrait provider skill"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["selected provider route"],
+      "notes": ["Only this provider skill is installed when this component is selected."],
+      "expected_files": [{"path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md", "sha256": "7ed538de28d7c621be6803a83f7851fd9e8bad28710980595047a7a4a543e8d9", "size": 1735}]
     },
     {
       "id": "workflow.portraits.subagent",
@@ -5146,7 +5173,7 @@
       },
       "dependencies": [
         "core.subagents",
-        "workflow.portraits"
+        "workflow.portraits.core"
       ],
       "conflicts": [
         "existing portrait production subagent"
@@ -5166,8 +5193,8 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_portrait_creator.toml",
-          "sha256": "4cbdbc2286f96a9a2053d808c15f267c0e39b129142dcc4a309004748775c5e2",
-          "size": 2016
+          "sha256": "13f1baa66f833ebd9dc0a8a694675a5bc20315e056310c087f4a26459980078c",
+          "size": 2315
         }
       ]
     },
@@ -5208,8 +5235,8 @@
       "expected_files": [
         {
           "path": ".codex/portrait_pipeline.toml",
-          "sha256": "a47867eb97eec617f868e7e281b4e5ba880a494f6d9ba5796feca9f358d9cdbd",
-          "size": 573
+          "sha256": "a624d3c8127cf950befc525b3eeddfaf01198f342e0a5f52c34808731e9a4913",
+          "size": 611
         }
       ]
     },
@@ -5249,8 +5276,8 @@
       "expected_files": [
         {
           "path": "docs/portrait_pipeline/upstream-lock.json",
-          "sha256": "bab0d31c1a8ea6257d43693f2cec938726d884a6dd8a6b75dcf53cea81d077bb",
-          "size": 1708
+          "sha256": "067be3b7023e8d119b6bdfbbc0c4f9586152eea7d08c77156d7d6947dde615fb",
+          "size": 1867
         }
       ]
     },

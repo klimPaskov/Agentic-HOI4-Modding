@@ -33,7 +33,7 @@ Own this scope:
 Do not use this agent for:
 - Icons.
 - Real leader portraits.
-- Final fictional or grounded character portraits; route permitted fictional portraits to `hoi4_portrait_creator` and its pinned text-to-image workflow.
+- Final fictional or grounded character portraits; non-sourced fictional or impossible portraits use native ImageGen under the parent brief, while sourced portraits use `hoi4_portrait_creator`.
 - Historical flags or historically attested symbols.
 - Real documentary report or news images that must depict an actual photographed person, place, battle, object, document, or historical scene.
 - Placeholder report or news images. Generated feature art must be treated as final-source art, not a placeholder substitute.

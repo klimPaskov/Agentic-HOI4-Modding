@@ -99,13 +99,15 @@ Use repo skills as required implementation guidance, not as optional notes.
 <!-- HOI4_MOD_SETUP_PORTRAITS_START -->
 ### Optional portrait production
 
-When the project lock enables the portrait workflow, read
-`.agents/skills/hoi4-comfyui-portraits/SKILL.md`, route real-person source work
-to `hoi4_asset_source_researcher`, and route provider execution to
-`hoi4_portrait_creator`. The selected provider is Cloud, Local, RunPod, or
-Disabled; provider status is evidence and does not bypass source, prompt,
-output, archive, DDS, or runtime validation. Disabled projects omit this
-section and all portrait-provider files.
+When the project lock enables portrait production, read
+`.agents/skills/hoi4-portrait-production/SKILL.md`, then read only the provider
+skill named by `provider_skill` in `.codex/portrait_pipeline.toml`. Route
+real-person source work to `hoi4_asset_source_researcher` and selected-provider
+production through `hoi4_portrait_creator`. Non-sourced fictional or
+impossible portraits use native ImageGen under the parent brief and never
+enter the ComfyUI workflow. Provider status is evidence and does not bypass
+source, prompt, output, archive, DDS, or runtime validation. Disabled projects
+omit this section and all portrait workflow files.
 <!-- HOI4_MOD_SETUP_PORTRAITS_END -->
 
 ### HOI4 MCP setup (bootstrap; remove after setup)
@@ -401,7 +403,7 @@ For final visual assets, use `hoi4-feature-assets`. That skill is the detailed s
 
 For animated visual assets, use `hoi4-frame-animation` in addition to `hoi4-feature-assets` for frame-sheet animation. Use `hoi4-3d-model-pipeline` for skeletal unit or entity actions. Final animation assets must be built from real planned frames or real exported skeletal actions and must not be transform-only mockups.
 
-Use `hoi4-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. The optional portrait worker owns only provider execution and portrait packaging; it does not edit gameplay or runtime wiring. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation. Native advisor and high-command cards use the `65x67` compositor and independent-review contract in `hoi4-feature-assets`. For 3D packages, the model worker owns the bounded production evidence while the main agent owns `.asset`, entity, runtime wiring, and live proof.
+Use `hoi4-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. The optional portrait worker owns only selected-provider execution and portrait packaging; non-sourced fictional or impossible portraits are parent-owned native ImageGen work. It does not edit gameplay or runtime wiring. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation. Native advisor and high-command cards use the `65x67` compositor and independent-review contract in `hoi4-feature-assets`. For 3D packages, the model worker owns the bounded production evidence while the main agent owns `.asset`, entity, runtime wiring, and live proof.
 
 ## 8. Skill Maintenance
 
