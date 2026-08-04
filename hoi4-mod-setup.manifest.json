@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "42a99f60b6818cf20ad572ccf0e835f7a430e0f1",
+  "generated_for_revision": "8f01184fbf6c4ebce6d850e17d752925b76d6182",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1888,8 +1888,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "0e9d58913ccd1755f9c3c592e7d4c96d026b13430ff2bfdfebf7f15f7115015c",
-          "size": 7167
+          "sha256": "c9f8133b72e97f8717b8c506fca6fc70fad0315fa1c7895aeabcbcc2f284e5ca",
+          "size": 7090
         }
       ]
     },
@@ -2009,8 +2009,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "c9837889fce206b3a7def61e5f3e78f961c169d21b687c8d4972491b61e94e0b",
-          "size": 13667
+          "sha256": "c6c1f386a87752e2a5e753de3dfcb9a82c6e9314263657d26fb4679fe04eebed",
+          "size": 14585
         }
       ]
     },
@@ -5105,17 +5105,47 @@
       "description": "Install only the Comfy Cloud MCP portrait route selected for this project.",
       "category": "workflow",
       "optional": true,
-      "platforms": ["all"],
-      "source": {"kind": "file", "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md"},
-      "destination": {"path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md", "ownership": "managed", "outside_project": false},
-      "dependencies": ["workflow.portraits.core", "workflow.portraits.subagent", "workflow.portraits.config", "workflow.portraits.docs"],
-      "conflicts": ["another portrait provider skill"],
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md"
+      },
+      "destination": {
+        "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "workflow.portraits.core",
+        "workflow.portraits.subagent",
+        "workflow.portraits.config",
+        "workflow.portraits.docs"
+      ],
+      "conflicts": [
+        "another portrait provider skill"
+      ],
       "conflict_policy": "replace_if_unmodified",
       "validation": [],
-      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
-      "capabilities": ["selected provider route"],
-      "notes": ["Only this provider skill is installed when this component is selected."],
-      "expected_files": [{"path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md", "sha256": "bddaa8444b4cb57898add4d7861fe4aba1659d7752956a21ca440101eaa9937f", "size": 1715}]
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "selected provider route"
+      ],
+      "notes": [
+        "Only this provider skill is installed when this component is selected."
+      ],
+      "expected_files": [
+        {
+          "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md",
+          "sha256": "2bad44802abaaa936f4458e18012da0e8639965f3deba366e3425a247a852c41",
+          "size": 2009
+        }
+      ]
     },
     {
       "id": "workflow.portraits.local",
@@ -5123,17 +5153,47 @@
       "description": "Install only the loopback ComfyUI portrait route selected for this project.",
       "category": "workflow",
       "optional": true,
-      "platforms": ["all"],
-      "source": {"kind": "file", "path": ".agents/skills/hoi4-comfyui-local/SKILL.md"},
-      "destination": {"path": ".agents/skills/hoi4-comfyui-local/SKILL.md", "ownership": "managed", "outside_project": false},
-      "dependencies": ["workflow.portraits.core", "workflow.portraits.subagent", "workflow.portraits.config", "workflow.portraits.docs"],
-      "conflicts": ["another portrait provider skill"],
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".agents/skills/hoi4-comfyui-local/SKILL.md"
+      },
+      "destination": {
+        "path": ".agents/skills/hoi4-comfyui-local/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "workflow.portraits.core",
+        "workflow.portraits.subagent",
+        "workflow.portraits.config",
+        "workflow.portraits.docs"
+      ],
+      "conflicts": [
+        "another portrait provider skill"
+      ],
       "conflict_policy": "replace_if_unmodified",
       "validation": [],
-      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
-      "capabilities": ["selected provider route"],
-      "notes": ["Only this provider skill is installed when this component is selected."],
-      "expected_files": [{"path": ".agents/skills/hoi4-comfyui-local/SKILL.md", "sha256": "ce9d8ce7ce2f3e5dca16270d0b89e423c3acc148546bb20f7c1a269f28ea1aeb", "size": 1471}]
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "selected provider route"
+      ],
+      "notes": [
+        "Only this provider skill is installed when this component is selected."
+      ],
+      "expected_files": [
+        {
+          "path": ".agents/skills/hoi4-comfyui-local/SKILL.md",
+          "sha256": "e8634ce07c64ba800c5d37ec0cdcf3630e6b44d81be10954843ccf2098423f83",
+          "size": 1907
+        }
+      ]
     },
     {
       "id": "workflow.portraits.runpod",
@@ -5141,17 +5201,47 @@
       "description": "Install only the RunPod ComfyUI portrait route selected for this project.",
       "category": "workflow",
       "optional": true,
-      "platforms": ["all"],
-      "source": {"kind": "file", "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md"},
-      "destination": {"path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md", "ownership": "managed", "outside_project": false},
-      "dependencies": ["workflow.portraits.core", "workflow.portraits.subagent", "workflow.portraits.config", "workflow.portraits.docs"],
-      "conflicts": ["another portrait provider skill"],
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md"
+      },
+      "destination": {
+        "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "workflow.portraits.core",
+        "workflow.portraits.subagent",
+        "workflow.portraits.config",
+        "workflow.portraits.docs"
+      ],
+      "conflicts": [
+        "another portrait provider skill"
+      ],
       "conflict_policy": "replace_if_unmodified",
       "validation": [],
-      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
-      "capabilities": ["selected provider route"],
-      "notes": ["Only this provider skill is installed when this component is selected."],
-      "expected_files": [{"path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md", "sha256": "7ed538de28d7c621be6803a83f7851fd9e8bad28710980595047a7a4a543e8d9", "size": 1735}]
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "selected provider route"
+      ],
+      "notes": [
+        "Only this provider skill is installed when this component is selected."
+      ],
+      "expected_files": [
+        {
+          "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md",
+          "sha256": "e8442c9673fff1e42b5e6a36205816db420e35a541d67ace7ee0d2e3759e3c9b",
+          "size": 2267
+        }
+      ]
     },
     {
       "id": "workflow.portraits.subagent",
@@ -5235,7 +5325,7 @@
       "expected_files": [
         {
           "path": ".codex/portrait_pipeline.toml",
-          "sha256": "a624d3c8127cf950befc525b3eeddfaf01198f342e0a5f52c34808731e9a4913",
+          "sha256": "dc07b67ea5c540732ce616212c87217a2a3aa65455d95f7b0b3e3301a15cac9d",
           "size": 611
         }
       ]
@@ -5276,8 +5366,8 @@
       "expected_files": [
         {
           "path": "docs/portrait_pipeline/upstream-lock.json",
-          "sha256": "067be3b7023e8d119b6bdfbbc0c4f9586152eea7d08c77156d7d6947dde615fb",
-          "size": 1867
+          "sha256": "5670dd8764896bc4dff8f9f0b12fc65b5b6ba67bf96af23c39ac182eb97cfa6e",
+          "size": 1909
         }
       ]
     },
