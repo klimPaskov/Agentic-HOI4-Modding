@@ -85,7 +85,7 @@ Use repo skills as required implementation guidance, not as optional notes.
 
 - Use `hoi4-events` for ordinary HOI4 event implementation, event chains, news events, report events, localisation, on_actions, documentation, and validation.
 - Use `hoi4-feature-planning` when designing or expanding feature ideas, feature mechanics, country packages, focus-tree route plans, decision plans, achievements, AI behavior, asset needs, text and audio research gates, and implementation-ready specifications before coding.
-- Use `hoi4-feature-assets` when a task needs visual assets, icons, flags, portraits, native advisor or high-command cards, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes; route 3D geometry, materials, skeletal actions, `.mesh`/`.anim` exports, and reimport evidence to `hoi4-3d-model-pipeline`. Its external ComfyUI portrait handoff applies only when the user explicitly requests that separate workflow.
+- Use `hoi4-feature-assets` when a task needs visual assets, icons, flags, portraits, native advisor or high-command cards, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes; route 3D geometry, materials, skeletal actions, `.mesh`/`.anim` exports, and reimport evidence to `hoi4-3d-model-pipeline`.
 - Use `hoi4-feature-planning` to plan 3D unit and building profiles, exact-one-image Meshy inputs, vanilla scale calibration, action roles, entity consumers, map placement, and runtime acceptance evidence whenever a feature needs a model.
 - Use `hoi4-3d-model-pipeline` for bounded custom HOI4 model production, provider lineage, Blender processing, PDX textures, rigs, skeletal actions, `.mesh`/`.anim` export, reimport proof, and runtime handoffs.
 - Use `hoi4-frame-animation` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
@@ -95,6 +95,20 @@ Use repo skills as required implementation guidance, not as optional notes.
 - If this repository installs an additional MTTH or weighted-timing skill, use it when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer. Otherwise centralize weighted timing logic in the relevant event, decision, or scripted-system helpers.
 - Use `hoi4-subagents` when coordinating custom Codex subagents, routing bounded work, or defining parent/subagent ownership boundaries.
 - Use `hoi4-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
+
+<!-- HOI4_MOD_SETUP_PORTRAITS_START -->
+### Optional portrait production
+
+When the project lock enables portrait production, read
+`.agents/skills/hoi4-portrait-production/SKILL.md`, then read only the provider
+skill named by `provider_skill` in `.codex/portrait_pipeline.toml`. Route
+real-person source work to `hoi4_asset_source_researcher` and selected-provider
+production through `hoi4_portrait_creator`. Non-sourced fictional or
+impossible portraits use native ImageGen under the parent brief and never
+enter the ComfyUI workflow. Provider status is evidence and does not bypass
+source, prompt, output, archive, DDS, or runtime validation. Disabled projects
+omit this section and all portrait workflow files.
+<!-- HOI4_MOD_SETUP_PORTRAITS_END -->
 
 ### HOI4 MCP setup (bootstrap; remove after setup)
 
@@ -389,7 +403,7 @@ For final visual assets, use `hoi4-feature-assets`. That skill is the detailed s
 
 For animated visual assets, use `hoi4-frame-animation` in addition to `hoi4-feature-assets` for frame-sheet animation. Use `hoi4-3d-model-pipeline` for skeletal unit or entity actions. Final animation assets must be built from real planned frames or real exported skeletal actions and must not be transform-only mockups.
 
-Use `hoi4-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. They create external ComfyUI portrait source/prompt pairs only when that separate workflow is explicitly requested; they do not install or run it. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation. Native advisor and high-command cards use the `65x67` compositor and independent-review contract in `hoi4-feature-assets`. For 3D packages, the model worker owns the bounded production evidence while the main agent owns `.asset`, entity, runtime wiring, and live proof.
+Use `hoi4-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. The optional portrait worker owns only selected-provider execution and portrait packaging; non-sourced fictional or impossible portraits are parent-owned native ImageGen work. It does not edit gameplay or runtime wiring. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation. Native advisor and high-command cards use the `65x67` compositor and independent-review contract in `hoi4-feature-assets`. For 3D packages, the model worker owns the bounded production evidence while the main agent owns `.asset`, entity, runtime wiring, and live proof.
 
 ## 8. Skill Maintenance
 

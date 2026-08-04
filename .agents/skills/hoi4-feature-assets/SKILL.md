@@ -78,7 +78,8 @@ The main agent decides which subagent to spawn, gives it a bounded asset prompt,
 Use:
 
 - `hoi4_asset_source_researcher` for real or archival image sourcing, real country-leader, commander, operative, advisor, and named-officeholder portraits, historical flag-design research, historically attested symbols, user-provided source photos, and report, news, or custom feature images that must depict real photographed material
-- `hoi4_generated_feature_art` for generated non-icon feature art, including fictional or alternate-history report images, news images, large presentation images, fictional portraits and explicitly approved fictional advisor masters, flat fictional flag designs, faction emblems, UI panels, and progression-state base art
+- `hoi4_portrait_creator` for every final sourced or grounded character portrait after source research; fictional or impossible portraits use native ImageGen under the parent brief and never enter this worker
+- `hoi4_generated_feature_art` for generated non-icon feature art, including fictional or alternate-history report images, news images, large presentation images, flat fictional flag designs, faction emblems, UI panels, and progression-state base art; it does not own final character portraits
 - `hoi4_icon_artist` for focus icons, idea icons, national spirit icons, officer corps spirit icons, decision icons, decision category icons, achievement icons, and tech icons
 
 For animated work, route by asset type first. Then require the chosen asset subagent to follow `hoi4-frame-animation` for frame plans, per-frame source art, normalization, contact sheets, preview GIFs, frame sheets, static fallbacks, and animation handoffs.
@@ -90,7 +91,7 @@ Asset subagents may create:
 - final DDS files
 - contact sheets
 - manifests
-- optional external ComfyUI portrait source and prompt pairs under `docs/assets/portraits/`
+- <!-- HOI4_MOD_SETUP_PORTRAITS_START --> optional provider portrait source and prompt pairs under `docs/assets/portraits/` <!-- HOI4_MOD_SETUP_PORTRAITS_END -->
 - `docs/assets/<feature_slug>/gfx_handoff.md`
 
 Asset subagents must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, scripted effect, scripted trigger, on_action, history, country, external tabular data files, or workbooks unless the parent explicitly grants that scope.
@@ -125,18 +126,18 @@ When moving or adding an asset, update every `.gfx`, `.gui`, event, idea, decisi
 
 Researched presentation audio belongs to `hoi4-text-audio-research`. Use feature-scoped music and sound paths only when the repository already uses that convention or the parent prompt asks for it. Preserve source downloads under a documented source-audio path instead of burying them among final game files.
 
-## 2.3 Optional external ComfyUI portrait handoff
+<!-- HOI4_MOD_SETUP_PORTRAITS_START -->
+## 2.3 Optional provider portrait handoff
 
-Use this handoff only when the user explicitly asks to work with an external
-ComfyUI portrait workflow or the repository already maintains this queue.
-Agentic HOI4 Modding does not install, configure, inspect, or run ComfyUI,
-models, LoRAs, Python, GPU software, or drivers. The separate portrait project
-is `https://github.com/klimPaskov/comfyui-hoi4-portraits`.
+Use this handoff whenever the project has portrait production enabled. The
+provider-neutral `hoi4-portrait-production` skill owns the common contract,
+the one installed provider skill owns provider-specific execution,
+`hoi4_portrait_creator` owns selected-provider output and final portrait
+production, and this asset skill owns durable source, crop, prompt, provenance,
+output review, DDS validation, and runtime handoff. The canonical portrait
+project is `https://github.com/klimPaskov/comfyui-hoi4-portraits`.
 
-When the handoff is in scope, create a durable source and prompt pair while
-continuing the normal HOI4 processing, DDS conversion, review, and
-runtime-wiring workflow. The current approved runtime portrait remains usable;
-a pending external replacement does not block the feature.
+When the handoff is in scope, create a durable source and prompt pair before provider production. The current approved runtime portrait remains usable while a replacement is pending; if the provider is Disabled or temporarily unavailable, use and report only the source-based fallback.
 
 Resolve the stable runtime basename first:
 
@@ -152,28 +153,18 @@ docs/assets/portraits/<feature_slug>/portrait_<tag>_<character_key>.png
 docs/assets/portraits/<feature_slug>/portrait_<tag>_<character_key>.txt
 ```
 
-`<tag>` is the owning country or cosmetic tag. `<character_key>` is the stable
-scripted character or institutional subject key, never a localised display
-name. Save the highest-resolution source that anchors the subject as the PNG,
-before final resizing and DDS conversion. Preserve separate immutable source
-and provenance evidence for a sourced real person.
+`<tag>` is the owning country or cosmetic tag. `<character_key>` is the stable scripted character or institutional subject key, never a localised display name. Save the highest-resolution source that anchors the subject as the PNG before final resizing and DDS conversion. Preserve separate immutable source and provenance evidence for a sourced real person.
 
-The matching TXT contains only one concise natural-language image prompt. It
-must begin with `hoi4_portrait,`, describe supported age, presentation, facial
-features, pose, clothing, role, period, and visible details, omit the person’s
-name, and invent nothing. Use verified research for non-visual identity or role
-facts and record those sources in the manifest, not in the prompt TXT.
+The matching TXT contains only the final person-only prompt. It must begin with `hoi4_portrait,` and may describe visible age, gender presentation, face shape/proportions, hair, facial hair, expression, gaze, head direction, clothing or uniform, medals, accessories, and framing. Omit the subject's name, game-style instructions, background/scenery, lighting, rendering/restoration instructions, and unsupported biographical details. Record provenance and non-visual identity or role facts in the manifest, not in the prompt TXT.
 
-Record each pair’s runtime path and one state:
+Record each pair's runtime path and one state:
 
 - `comfyui_replacement_pending`
 - `comfyui_replaced`
 - `comfyui_not_needed`
 
-The durable queue is not runtime storage. No `.gfx`, character, GUI, event,
-focus, idea, or decision reference may point into `docs/assets/portraits/`.
-Never delete it during temporary feature-workspace cleanup unless the user
-explicitly asks.
+The durable archive is not runtime storage. No `.gfx`, character, GUI, event, focus, idea, or decision reference may point into `docs/assets/portraits/`. Never delete it during temporary feature-workspace cleanup unless the user explicitly asks.
+<!-- HOI4_MOD_SETUP_PORTRAITS_END -->
 
 ## 3. Asset source rules
 
@@ -214,7 +205,7 @@ Use Codex's official `$imagegen` skill by default for:
 - achievement icons
 - fictional flags
 - faction emblems
-- fictional leader portraits
+- fictional feature illustrations (final character portraits use `hoi4_portrait_creator`)
 - UI panels
 - progression-state base art
 - other symbolic or fictional static assets
@@ -253,20 +244,20 @@ Record the image source, source link, author or archive if available, license or
 
 Do not generate a leader portrait for a real person.
 
-For real people, use a real source image from the internet or a user-provided image, then crop, resize, process, convert, and document it. Use the repository web research tools when a source image is needed, and prefer public domain, archival, official, or clearly licensed images. If the person belongs to the Second World War setting, prefer contemporary portraits, wartime photographs, news photographs, official portraits, military archive images, passport or identity photos, or archival illustrations. Do not use modern actors, reenactors, statues, cosplay, later fictional depictions, postwar images, or modern images that do not fit the era unless the user explicitly approves them as placeholders.
+For real people, use a real source image from the internet or a user-provided image, then create the exact crop and document it before handing the source and person-only prompt to `hoi4_portrait_creator`. Use the repository web research tools when a source image is needed, and prefer public domain, archival, official, or clearly licensed images. If the person belongs to the Second World War setting, prefer contemporary portraits, wartime photographs, news photographs, official portraits, military archive images, passport or identity photos, or archival illustrations. Do not use modern actors, reenactors, statues, cosplay, later fictional depictions, postwar images, or modern images that do not fit the era unless the user explicitly approves them as placeholders.
 
-Real leader portraits should be processed toward the HOI4 portrait style rather than left as raw photos: bust or upper-torso crop, face readable, subdued contrast, mild painterly or period texture, HOI4-like color grading, no modern UI artifacts, no hard white cutout halo, and no over-smoothed face. Do not change the person's identity or generate missing facial features.
+Real leader portraits preserve the immutable source and exact crop. When the project portrait provider is enabled, hand the source and person-only prompt to `hoi4_portrait_creator` for the pinned provider route and its reviewed final output. When Disabled or temporarily unavailable, use only the source-based crop, deterministic resize, and normal DDS fallback; never apply a local filter, repaint, or improvised HOI4-style pass.
 
-Record the source link, author or archive if available, license or public domain status if available, source image path, processed PNG path, final DDS path, and sprite name
+Record the source link, author or archive if available, license or public domain status if available, source image path, processed PNG path, final DDS path when applicable, and sprite name.
 
 For generated or sourced one-person leader portraits, the asset handoff must identify the portrait's gender presentation and any matching leader-name pool requirement. Female-presenting portraits must not be paired with male names and should require `female = yes` where a country leader is created directly. Male-presenting portraits must not be paired with female names or `female = yes`. Council, board, office, crowd, and symbolic-institution portraits should keep institutional leader names instead of personal random-name pools.
 
 
 ### Fictional leader portraits
 
-Fictional leaders, invented councils, collective bodies, supernatural leaders, and symbolic regime portraits must use `$imagegen`.
+When the project portrait provider is enabled, fictional leaders, invented councils, collective bodies, supernatural leaders, and symbolic regime portraits use native ImageGen under the parent brief and never use the ComfyUI portrait workflow. When Disabled, do not fabricate a replacement through this general asset worker; use an approved source-based asset or mark the missing source blocked.
 
-Generated leader portraits should follow HOI4 leader portrait conventions: 156x210 final DDS unless an existing sprite uses another size, bust or upper-torso framing, strong face or governing-body focal point, subdued painterly finish, period-appropriate uniform or civilian clothing, transparent or HOI4-compatible portrait background as required by the existing asset pattern, and no text, labels, watermarks, modern UI, or meme-like exaggeration.
+Portrait-worker output should follow HOI4 leader portrait conventions: 156x210 final DDS unless an existing sprite uses another size, bust or upper-torso framing, strong face or governing-body focal point, subdued painterly finish, period-appropriate uniform or civilian clothing, transparent or HOI4-compatible portrait background as required by the existing asset pattern, and no text, labels, watermarks, modern UI, or meme-like exaggeration.
 
 For generated one-person leader portraits, record the portrait's apparent gender presentation in the manifest and handoff. Female-presenting portraits require female leader-name pools and female leader metadata where the implementation surface supports it. Male-presenting portraits require male leader-name pools and must not be paired with female metadata. Never hand off a portrait in a way that lets implementation randomly assign names from the opposite gender pool. Council, committee, junta, crowd, office, or symbolic-body portraits should be marked as institutional leaders and use institutional names instead of personal random-name pools.
 
@@ -942,23 +933,27 @@ source. One-person generated portraits are reserved for wholly fictional,
 impossible, or supernatural identities. Missing or contradictory identity
 classification fails closed.
 
-For a real person, preserve the unchanged archival master, create the explicit
-head-and-shoulders crop with
-`.agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py`,
-retain its exact-pixel JSON evidence, apply an identity-preserving HOI4 painted
-finish, process to the role’s native dimensions, and require an independent
-likeness, style, and provenance review before DDS conversion or wiring. A raw
-photograph, simple resize, generic filter, illustration used as an identity
-master, face replacement, or weak likeness is not a finished portrait.
+For a real person, preserve the unchanged archival master and create the
+explicit head-and-shoulders crop with
+`.agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py`.
+Retain its exact-pixel JSON evidence and hand the source and person-only prompt
+to `hoi4_portrait_creator` when the project provider is enabled. Require an
+independent likeness, style, and provenance review before DDS conversion or
+wiring. A raw photograph, generic filter, illustration used as an identity
+master, face replacement, or weak likeness is not a provider-backed final;
+simple resize and normal DDS conversion are allowed only for the source-based
+fallback when Disabled or temporarily unavailable.
 
 Record source URL, author or archive, rights status when available, source and
 candidate hashes, crop coordinates, review evidence, processed PNG, final DDS,
-runtime sprite, and the durable ComfyUI pair from section 2.3.
+runtime sprite, and the durable source/prompt pair from section 2.3.
 
-For fictional people and impossible or supernatural entities, `$imagegen` may
-create a full-resolution base portrait after the identity gate permits it. Use
-the matching canonical family as style input. Reject generic, modern, meme,
-gore, stereotyped, text-bearing, or interchangeable output.
+For fictional people and impossible or supernatural entities, use native
+ImageGen under the parent brief after the identity gate permits it. Never use
+the portrait provider or a ComfyUI text-to-image graph for these subjects.
+Reject generic, modern, meme, gore, stereotyped, text-bearing, or
+interchangeable output. If Disabled, use an approved source-based asset or
+mark the missing source blocked.
 
 Full country-leader, commander, and operative textures are `156x210`. Never
 manufacture a smaller commander source merely because one UI view displays it
@@ -1118,7 +1113,13 @@ Historical or culturally attested formable symbols need source review. Fictional
 
 Use `hoi4-frame-animation` for every final animated visual asset. Some mod mechanics should have animated visual layers when motion improves readability, atmosphere, or feedback. Examples include floating seals, glowing route emblems, particle drift, meter pulses, warning frames, active-button glows, occult pressure effects, sponsor influence networks, and final formable proclamations.
 
-Animated leader portraits should be handled as major identity assets. Real people require sourced base images. Fictional or impossible leaders can be generated. The asset handoff must say whether the animation is subtle, such as breathing light or smoke, or symbolic, such as eye glow, map shadow, glitch, or spectral overlay. The portrait should still read clearly at in-game size.
+Animated leader portraits should be handled as major identity assets by
+`hoi4_portrait_creator` plus `hoi4-frame-animation`. Real people require
+sourced base images; fictional or impossible leaders use native ImageGen under
+the parent brief and never use the portrait provider. The asset handoff must say whether the animation is subtle,
+such as breathing light or smoke, or symbolic, such as eye glow, map shadow,
+glitch, or spectral overlay. The portrait should still read clearly at in-game
+size.
 
 Final animated assets must be built from planned source frames. Do not create final animation by taking one still image and shifting, scaling, rotating, warping, blurring, recoloring, brightening, or pulsing it with a script. Local scripts may normalize, align, crop, resize, assemble sheets, create previews, and convert frames after the real frames exist.
 
@@ -1235,7 +1236,7 @@ Do not invent a substitute asset unless the user explicitly approves it.
 Before finishing, confirm:
 
 1. Every required asset from the feature spec is accounted for.
-2. Every asset uses the correct source mode: `$imagegen` for approved generated symbolic, fictional, alternate-history, or unique report, news, or large presentation assets; attributed sources for real historical material and every grounded real-person portrait.
+2. Every asset uses the correct source mode: `$imagegen` for approved generated symbolic, fictional, alternate-history, or unique report, news, or large presentation assets; attributed sources for real historical material and every grounded real-person portrait; the selected provider route for final sourced character portraits; native ImageGen for non-sourced fictional or impossible portraits.
 3. The matching reference folder from section 4 was inspected before generation, sourcing, processing, or wiring.
 4. Every generated, sourced, or provided asset has a source PNG.
 5. Every final asset has a processed PNG preview.
@@ -1245,7 +1246,7 @@ Before finishing, confirm:
 9. A `gfx_handoff.md` exists for every asset that needs a sprite definition, and the main agent has enough information to wire it.
 10. The asset manifest exists.
 11. Internet-sourced assets record source links, source date or estimated date range, license or public domain status if available, and era-fit notes for Second World War-era assets.
-12. Fictional or non-human portraits generated with `$imagegen` are clearly marked as fictional or generated in the manifest.
+12. Fictional or non-human portraits produced through native ImageGen are clearly marked as fictional or generated in the manifest and never labeled as ComfyUI output.
 13. Docs are updated where relevant.
 14. The feature implementation or parent handoff knows which sprite names to use.
 15. No final asset remains only in a temporary folder.
@@ -1253,7 +1254,7 @@ Before finishing, confirm:
 17. Every animated asset used `hoi4-frame-animation`, has real source frames, has a static fallback, and has no transform-only final motion.
 18. Every unit visual is classified by domain and surface as equipment/technology art, a large land counter, a land/air/naval map counter, a division-template emblem, or a land/air/naval 3D model package; one pipeline was not resized or relabeled to substitute for another. A 3D package also proves the one-image Meshy input rule, provider lineage, vanilla scale calibration, PDX material mapping, topology repair, required skeletal actions, `.mesh`/`.anim` reimport, hash-aware runtime synchronization, parent-owned wiring, and a live consumer.
 19. Every advisor, theorist, high-command, officer-corps, or army-small card uses the native `65x67` advisor workflow, the exact accepted template, retained transforms and hashes, and independent native/4x review; it is not a shrunken leader texture.
-20. Every wired portrait DDS has a durable source PNG and prompt TXT with the exact runtime basename under `docs/assets/portraits/<feature_slug>/`, a recorded ComfyUI replacement state, no invented prompt details, and no runtime reference into that queue.
+20. Every wired portrait DDS has a durable source PNG and prompt TXT with the exact runtime basename under `docs/assets/portraits/<feature_slug>/`, a recorded provider replacement state, no invented prompt details, and no runtime reference into that archive.
 
 <!-- HOI4_MOD_SETUP_SUPER_EVENTS_START -->
 ## Super Events images

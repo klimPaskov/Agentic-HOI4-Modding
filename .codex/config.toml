@@ -20,7 +20,7 @@ description = "Creates, rigs, animates, processes, exports, audits, and document
 config_file = "agents/hoi4_3d_model_pipeline.toml"
 
 [agents.hoi4_asset_source_researcher]
-description = "Finds, verifies, downloads, processes, converts, and documents real or archival visual source assets for HOI4 mods. Use for report event images, news event images, archival custom feature images, real leader portraits, historical flags, and historically attested symbols. Does not edit GFX or gameplay files."
+description = "Finds, verifies, and documents real or archival visual source assets for HOI4 mods. Use for report, news, and large presentation images plus source packages for real portraits, historical flags, and attested symbols. Portrait sourcing stops before final styling or runtime production. Does not edit GFX or gameplay files."
 config_file = "agents/hoi4_asset_source_researcher.toml"
 
 [agents.hoi4_audio_researcher]
@@ -48,7 +48,7 @@ description = "Active auditor and small-patch subagent for HOI4 focus trees. Che
 config_file = "agents/hoi4_focus_tree_auditor.toml"
 
 [agents.hoi4_generated_feature_art]
-description = "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, or large feature presentation, UI, flag, faction emblem, and fictional portrait art for HOI4 mods. Does not edit GFX or gameplay files."
+description = "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, large feature presentation, UI, flag, and faction-emblem art for HOI4 mods. Final character portraits use the dedicated portrait worker. Does not edit GFX or gameplay files."
 config_file = "agents/hoi4_generated_feature_art.toml"
 
 [agents.hoi4_icon_artist]
@@ -82,3 +82,12 @@ config_file = "agents/hoi4_skill_maintainer.toml"
 [agents.hoi4_spreadsheet_doc_worker]
 description = "Optional spreadsheet-only worker for mod-maintained CSV/XLSX tables when a repository actually has them or the parent explicitly requests them. Preserves formatting and aligns fields with source-of-truth implementation or localisation provided by the parent."
 config_file = "agents/hoi4_spreadsheet_doc_worker.toml"
+
+# HOI4_MOD_SETUP_PORTRAITS_START
+[agents.hoi4_portrait_creator]
+description = "HOI4 portrait production worker. Use only when the portrait provider configuration is enabled."
+config_file = "agents/hoi4_portrait_creator.toml"
+
+[mcp_servers.comfy_cloud_portraits]
+url = "https://cloud.comfy.org/mcp"
+# HOI4_MOD_SETUP_PORTRAITS_END

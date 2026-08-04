@@ -43,7 +43,9 @@ Use `hoi4_improvement_loop_planner` for feature improvement loop planning, detai
 
 Use `hoi4_asset_source_researcher` for real or archival image sourcing, real leader, commander, operative, advisor, and officeholder portraits, historical flags, historical symbols, user-provided source photos, source-image processing, animated portrait bases, and report, news, or custom feature images that must depict real historical material.
 
-Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, large presentation images, custom feature images, allowed fictional portraits and advisor masters, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces.
+Use `hoi4_portrait_creator` for every final sourced or grounded character portrait. The source researcher stops after the attributed source, exact crop, person-only prompt, durable source pair, and handoff; non-sourced fictional or impossible portraits use native ImageGen under the parent brief and never enter the ComfyUI workflow. The portrait worker uses only the provider skill named in the project configuration and never edits runtime wiring.
+
+Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, large presentation images, custom feature images, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces. Do not route final character portraits through this worker.
 
 Use `hoi4_icon_artist` for generated gameplay icon families, formable seals, scripted GUI icons, and small animated icon or button sprites. Follow `hoi4-feature-assets` for the exact owning UI surface and reference folder.
 
@@ -238,14 +240,15 @@ Do not use one broad asset worker for mixed visual packages.
 Use:
 
 - `hoi4_asset_source_researcher` for real, archival, historical, documentary, or public-source images when the asset must show real historical material
-- `hoi4_generated_feature_art` for generated non-icon fictional, alternate-history, symbolic, extreme-route, or unique event art
+- `hoi4_portrait_creator` for every final character portrait after the source package is complete, including permitted fictional text-to-image portraits
+- `hoi4_generated_feature_art` for generated non-icon fictional, alternate-history, symbolic, extreme-route, or unique event art that is not a final character portrait
 - `hoi4_icon_artist` for generated gameplay icon families, formable seals, decision category icons, and small animated icon or button sprites; follow `hoi4-feature-assets` for exact asset-family routing
 
 The parent agent must give each asset subagent a bounded prompt with exact asset names, target sizes, source mode, final folders, sprite names when already registered, reference folders, and constraints.
 
 For flags, the parent prompt must state whether each flag is a base flag, ideology variant, route variant, cosmetic-tag flag, historical flag, or fictional flag. Base flags for existing countries must be preserved unless explicitly in scope. Ideology variants must be distinct designs, not recolors or copied emblems. Historical flags and attested symbols belong with `hoi4_asset_source_researcher`. Fictional or alternate-history variants belong with `hoi4_generated_feature_art`.
 
-Asset subagents may create source files, PNG previews, DDS files, contact sheets, manifests, and `gfx_handoff.md`. When the user explicitly requests the separate external ComfyUI portrait workflow, they may also create its durable source/prompt pairs under the boundary in `hoi4-feature-assets`; they never install, configure, inspect, or run ComfyUI. They must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, script, history, country, or workbook files unless the parent explicitly expands scope. Native advisor and high-command cards follow the `65x67` compositor and independent-review contract in `hoi4-feature-assets`.
+Asset subagents may create source files, PNG previews, DDS files, contact sheets, manifests, and `gfx_handoff.md`. The optional portrait worker may create durable source/prompt pairs and selected-provider outputs only when the project lock enables portrait production; it never owns gameplay or runtime wiring. It must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, script, history, country, or workbook files unless the parent explicitly expands scope. Native advisor and high-command cards follow the `65x67` compositor and independent-review contract in `hoi4-feature-assets`.
 
 ## Quote, remark, and audio research routing
 
@@ -255,7 +258,7 @@ Use `hoi4_quote_remark_researcher` for quotes, exact wording, attribution confid
 
 Use `hoi4_audio_researcher` for audio research, license verification, download, `.ogg` conversion, and audio handoff notes.
 
-Use `hoi4_asset_source_researcher` or `hoi4_generated_feature_art` for image work according to the source mode required by `hoi4-feature-assets`.
+Use `hoi4_asset_source_researcher`, `hoi4_portrait_creator`, or `hoi4_generated_feature_art` for image work according to the source mode required by `hoi4-feature-assets`.
 
 The main agent owns final wording, localisation, GUI/GFX, audio wiring, playback helpers, caller effects, docs alignment, and live validation.
 

@@ -1,1 +1,0 @@
-Scheduled tasks now also a thing in Codex app. So you can use it instead of Hermes.

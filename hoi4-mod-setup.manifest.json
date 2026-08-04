@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "de725e52ec2cb8d2d5796e86a93bf14bf1bb5c6b",
+  "generated_for_revision": "f7bca8fd80b8e3c04cfafb53d1f0a8b5a53ad11c",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "af37f935cec416e1c65177321fc4c01e7bf1e0f74a539cee424ad160bdedb7c9",
-          "size": 37502
+          "sha256": "9c7c010a5ccc8f08d521f663f83143c3329d0a4c9de99bad6ddf25cee8605ff5",
+          "size": 38219
         }
       ]
     },
@@ -78,6 +78,8 @@
         ],
         "exclude": [
           "hoi4-super-events*/**",
+          "hoi4-comfyui*/**",
+          "hoi4-portrait-production*/**",
           "**/.DS_Store"
         ]
       },
@@ -132,8 +134,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "7e7e33455630222f0d8df8148bbd83d1695c4f9f8e7dfadb9d81031f60f15ddc",
-          "size": 72413
+          "sha256": "e23e47c908099fbe0a04451b2d4c9c6dfff5a88665f1d6702b17023638de93cf",
+          "size": 74031
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -1682,8 +1684,8 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "97024cf104b6a79f6ff4df99468e094dc25c9b0d27dc655b05d23b78fe3d380c",
-          "size": 24181
+          "sha256": "cb273a8324c749629563c01dc3ca9ab6aa024c6b7e54aab186547302133b951e",
+          "size": 24818
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
@@ -1708,7 +1710,8 @@
           "hoi4_*.toml"
         ],
         "exclude": [
-          "hoi4_super_event_*.toml"
+          "hoi4_super_event_*.toml",
+          "hoi4_portrait_creator.toml"
         ]
       },
       "destination": {
@@ -1749,8 +1752,8 @@
         },
         {
           "path": ".codex/agents/hoi4_asset_source_researcher.toml",
-          "sha256": "787bd9e587cab1cc95d63b5ce1d5a2ebe9aeacde108c7ec891e53c13183d8eec",
-          "size": 4179
+          "sha256": "8152ec6323fc630ed9ddb6b63af23e99b71537aff33f7becd36363bd0bbd694e",
+          "size": 4839
         },
         {
           "path": ".codex/agents/hoi4_audio_researcher.toml",
@@ -1759,8 +1762,8 @@
         },
         {
           "path": ".codex/agents/hoi4_country_package_auditor.toml",
-          "sha256": "95630b491284cd0c34ea979b2a1258d77e2e776e2e5f857d1efe1a0aa71a0758",
-          "size": 7053
+          "sha256": "b7fa9e6c5da928c77d4337f2eb54b591ebc13e15d0982f2a0f526a8a93317e2c",
+          "size": 7055
         },
         {
           "path": ".codex/agents/hoi4_decision_mission_auditor.toml",
@@ -1774,8 +1777,8 @@
         },
         {
           "path": ".codex/agents/hoi4_feature_completion_auditor.toml",
-          "sha256": "06c7a46eb658a0b409d4e06693dd399717ab9f616a597366b35197d9e8eeb050",
-          "size": 3426
+          "sha256": "ee7d1279940e01f77439a5b7f2226691112a310499c302a30b627de6362513d2",
+          "size": 3427
         },
         {
           "path": ".codex/agents/hoi4_focus_tree_auditor.toml",
@@ -1784,8 +1787,8 @@
         },
         {
           "path": ".codex/agents/hoi4_generated_feature_art.toml",
-          "sha256": "6c1bb420b85cde7b29c83f3d1aa39757ce54a99765b4b15d4b798d3c948404cd",
-          "size": 6344
+          "sha256": "e8793cd05b3804b95e50f2cd8b119a95d5481854ecdfe8adac84bccb31a6df95",
+          "size": 5909
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
@@ -1885,8 +1888,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "c4699d374990ed0274083fcfeb788665c4f7cb77039f49b3f6083fd7f04c3dd0",
-          "size": 6709
+          "sha256": "0e9d58913ccd1755f9c3c592e7d4c96d026b13430ff2bfdfebf7f15f7115015c",
+          "size": 7167
         }
       ]
     },
@@ -2006,8 +2009,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "92820f4d989c7291a903f5e502a7db4569424efb8e63f2f76f5149c4746d8d58",
-          "size": 15318
+          "sha256": "c9837889fce206b3a7def61e5f3e78f961c169d21b687c8d4972491b61e94e0b",
+          "size": 13667
         }
       ]
     },
@@ -5037,6 +5040,244 @@
           "path": "paradox_wiki/media/unit-modding-hearts-of-iron-4-wiki_2559a5eea4__img1.png",
           "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
           "size": 1411
+        }
+      ]
+    },
+    {
+      "id": "workflow.portraits.core",
+      "display_name": "Portrait production contract",
+      "description": "Install the provider-neutral portrait source, prompt, archive, validation, and runtime handoff contract.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".agents/skills/hoi4-portrait-production/SKILL.md"
+      },
+      "destination": {
+        "path": ".agents/skills/hoi4-portrait-production/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.skills"
+      ],
+      "conflicts": [
+        "existing portrait production contract"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "portraits.provider_config",
+          "severity": "warn",
+          "kind": "custom",
+          "target": ".codex/portrait_pipeline.toml"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "source and production separation",
+        "durable portrait contract",
+        "durable portrait archive and prompt contract",
+        "source-based fallback"
+      ],
+      "notes": [
+        "Disabled projects omit this component and its ComfyUI-specific guidance.",
+        "Provider credentials remain outside the project and installation lock."
+      ],
+      "expected_files": [
+        {
+          "path": ".agents/skills/hoi4-portrait-production/SKILL.md",
+          "sha256": "72b6d1673556fbbe4960fc8a5723c56c86b914361823e806ae5e417902ee9056",
+          "size": 3410
+        }
+      ]
+    },
+    {
+      "id": "workflow.portraits.cloud",
+      "display_name": "Comfy Cloud portrait production",
+      "description": "Install only the Comfy Cloud MCP portrait route selected for this project.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "file", "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md"},
+      "destination": {"path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md", "ownership": "managed", "outside_project": false},
+      "dependencies": ["workflow.portraits.core", "workflow.portraits.subagent", "workflow.portraits.config", "workflow.portraits.docs"],
+      "conflicts": ["another portrait provider skill"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["selected provider route"],
+      "notes": ["Only this provider skill is installed when this component is selected."],
+      "expected_files": [{"path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md", "sha256": "bddaa8444b4cb57898add4d7861fe4aba1659d7752956a21ca440101eaa9937f", "size": 1715}]
+    },
+    {
+      "id": "workflow.portraits.local",
+      "display_name": "Loopback ComfyUI portrait production",
+      "description": "Install only the loopback ComfyUI portrait route selected for this project.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "file", "path": ".agents/skills/hoi4-comfyui-local/SKILL.md"},
+      "destination": {"path": ".agents/skills/hoi4-comfyui-local/SKILL.md", "ownership": "managed", "outside_project": false},
+      "dependencies": ["workflow.portraits.core", "workflow.portraits.subagent", "workflow.portraits.config", "workflow.portraits.docs"],
+      "conflicts": ["another portrait provider skill"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["selected provider route"],
+      "notes": ["Only this provider skill is installed when this component is selected."],
+      "expected_files": [{"path": ".agents/skills/hoi4-comfyui-local/SKILL.md", "sha256": "ce9d8ce7ce2f3e5dca16270d0b89e423c3acc148546bb20f7c1a269f28ea1aeb", "size": 1471}]
+    },
+    {
+      "id": "workflow.portraits.runpod",
+      "display_name": "RunPod ComfyUI portrait production",
+      "description": "Install only the RunPod ComfyUI portrait route selected for this project.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "file", "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md"},
+      "destination": {"path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md", "ownership": "managed", "outside_project": false},
+      "dependencies": ["workflow.portraits.core", "workflow.portraits.subagent", "workflow.portraits.config", "workflow.portraits.docs"],
+      "conflicts": ["another portrait provider skill"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["selected provider route"],
+      "notes": ["Only this provider skill is installed when this component is selected."],
+      "expected_files": [{"path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md", "sha256": "7ed538de28d7c621be6803a83f7851fd9e8bad28710980595047a7a4a543e8d9", "size": 1735}]
+    },
+    {
+      "id": "workflow.portraits.subagent",
+      "display_name": "Portrait production subagent",
+      "description": "Install the bounded provider execution and portrait QA subagent.",
+      "category": "subagent",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".codex/agents/hoi4_portrait_creator.toml"
+      },
+      "destination": {
+        "path": ".codex/agents/hoi4_portrait_creator.toml",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "workflow.portraits.core"
+      ],
+      "conflicts": [
+        "existing portrait production subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "provider execution",
+        "output validation",
+        "fallback and deferred-state reporting"
+      ],
+      "expected_files": [
+        {
+          "path": ".codex/agents/hoi4_portrait_creator.toml",
+          "sha256": "13f1baa66f833ebd9dc0a8a694675a5bc20315e056310c087f4a26459980078c",
+          "size": 2315
+        }
+      ]
+    },
+    {
+      "id": "workflow.portraits.config",
+      "display_name": "Portrait provider configuration",
+      "description": "Install non-secret provider, route, and pinned upstream configuration for an enabled portrait workflow.",
+      "category": "codex",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".codex/portrait_pipeline.toml"
+      },
+      "destination": {
+        "path": ".codex/portrait_pipeline.toml",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing portrait provider configuration"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "provider persistence",
+        "Cloud MCP route",
+        "upstream revision evidence"
+      ],
+      "expected_files": [
+        {
+          "path": ".codex/portrait_pipeline.toml",
+          "sha256": "a624d3c8127cf950befc525b3eeddfaf01198f342e0a5f52c34808731e9a4913",
+          "size": 611
+        }
+      ]
+    },
+    {
+      "id": "workflow.portraits.docs",
+      "display_name": "Portrait upstream lock",
+      "description": "Install the exact canonical portrait repository and workflow hash evidence.",
+      "category": "documentation",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": "docs/portrait_pipeline/upstream-lock.json"
+      },
+      "destination": {
+        "path": "docs/portrait_pipeline/upstream-lock.json",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing portrait upstream lock"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "exact commit pinning",
+        "workflow and model hash evidence"
+      ],
+      "expected_files": [
+        {
+          "path": "docs/portrait_pipeline/upstream-lock.json",
+          "sha256": "067be3b7023e8d119b6bdfbbc0c4f9586152eea7d08c77156d7d6947dde615fb",
+          "size": 1867
         }
       ]
     },
