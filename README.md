@@ -20,7 +20,7 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 - The read-only `hoi4_ai_probability_auditor` subagent for MCP-backed scenario analysis and before/after comparison of AI weights, MTTH, event chances, random lists, strategy factors, and other declared weighted systems.
 - The Luna Max `hoi4_event_ui_worker` for implementing and visually refining only the scripted GUI that a named event specifically adds, with mandatory MCP GUI inspection, rendering, rewrite, and post-change comparison evidence.
 - The optional mod-agnostic `hoi4-super-events` package: a project-adapted GUI/GFX runtime, dynamic registration pattern, hidden smoke-test event, default DDS assets, editable Photoshop templates, research guidance, and complete presentation workflow.
-- A concise sourced-portrait workflow: archive and wire the source, then install the user-supplied HOI4-style final.
+- A concise sourced-portrait workflow with selectable Comfy Cloud, Local ComfyUI, and RunPod routes: archive and wire the source, then install the user-supplied HOI4-style final.
 
 ## Recommended setup
 
@@ -151,7 +151,7 @@ ID and matching image, title, description, quote, response, caller, unique right
 
 ## Sourced portrait workflow
 
-Archive and wire the attributed source portrait under `docs/assets/portraits/<feature_slug>/`. The user alone creates the HOI4-style final externally. When supplied, the portrait worker validates it, converts it to DDS, and replaces the source placeholder without changing runtime wiring. Agents never operate RunPod or another external portrait service.
+Archive and wire the attributed source portrait under `docs/assets/portraits/<feature_slug>/`. Select Comfy Cloud, Local ComfyUI, or RunPod in `.codex/portrait_pipeline.toml`; the matching provider skill defines that route. When the user supplies the HOI4-style final, the portrait worker validates it, converts it to DDS, and replaces the source placeholder without changing runtime wiring.
 
 ### 7. Keep asset ownership clear
 

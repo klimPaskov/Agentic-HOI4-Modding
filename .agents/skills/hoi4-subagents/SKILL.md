@@ -43,7 +43,7 @@ Use `hoi4_improvement_loop_planner` for feature improvement loop planning, detai
 
 Use `hoi4_asset_source_researcher` for real or archival image sourcing, real leader, commander, operative, advisor, and officeholder portraits, historical flags, historical symbols, user-provided source photos, source-image processing, animated portrait bases, and report, news, or custom feature images that must depict real historical material.
 
-Use `hoi4_portrait_creator` after the user supplies an HOI4-style replacement for an archived sourced portrait. It validates the final, converts it to DDS, replaces the source placeholder, and never operates RunPod or changes runtime wiring. Non-sourced fictional or impossible portraits use parent-owned native ImageGen.
+Use `hoi4_portrait_creator` after the user supplies an HOI4-style replacement from the Cloud, Local, or RunPod route selected in `.codex/portrait_pipeline.toml`. It validates the final, converts it to DDS, replaces the source placeholder, and does not change runtime wiring. Non-sourced fictional or impossible portraits use parent-owned native ImageGen.
 
 Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, large presentation images, custom feature images, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces. Do not route final character portraits through this worker.
 

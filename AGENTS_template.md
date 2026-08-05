@@ -18,7 +18,7 @@ These values are already filled in this template and should normally be left as-
 - Offline Paradox wiki snapshot: `paradox_wiki/`
 - Local vanilla Hearts of Iron IV install: `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`
 - Default documentation folder: `docs/`
-- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-mtth`, `hoi4-super-events`, `hoi4-3d-model-pipeline`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-portrait-production`, `hoi4-subagents`, and `hoi4-improvement-loop`
+- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-mtth`, `hoi4-super-events`, `hoi4-3d-model-pipeline`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-portrait-production`, `hoi4-comfyui-cloud`, `hoi4-comfyui-local`, `hoi4-comfyui-runpod`, `hoi4-subagents`, and `hoi4-improvement-loop`
 - Generic HOI4 subagents from `.codex/agents/`: `hoi4_repo_explorer`, `hoi4_feature_completion_auditor`, `hoi4_ai_probability_auditor`, `hoi4_scripted_system_architect`, `hoi4_localisation_auditor`, `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_event_ui_worker`, `hoi4_country_package_auditor`, `hoi4_improvement_loop_planner`, `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_3d_model_pipeline`, `hoi4_portrait_creator`, `hoi4_quote_remark_researcher`, `hoi4_audio_researcher`, `hoi4_super_event_art_researcher`, `hoi4_super_event_audio_researcher`, `hoi4_super_event_quote_researcher`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, and `hoi4_skill_maintainer`
 
 ---
@@ -101,7 +101,7 @@ Use repo skills as required implementation guidance, not as optional notes.
 <!-- HOI4_MOD_SETUP_PORTRAITS_START -->
 ### Sourced portraits
 
-Use `hoi4-portrait-production` for sourced or grounded portraits. Archive and wire the source portrait, then validate and install the HOI4-style final when the user supplies it. External portrait styling, including RunPod, is user-only and must never be operated by an agent. Non-sourced fictional or impossible portraits use parent-owned native ImageGen.
+Use `hoi4-portrait-production` for sourced or grounded portraits. Select Cloud, Local, or RunPod in `.codex/portrait_pipeline.toml` and use the matching provider skill. Archive and wire the source portrait, then validate and install the HOI4-style final when the user supplies it. Non-sourced fictional or impossible portraits use parent-owned native ImageGen.
 <!-- HOI4_MOD_SETUP_PORTRAITS_END -->
 
 ### HOI4 MCP setup (bootstrap; remove after setup)

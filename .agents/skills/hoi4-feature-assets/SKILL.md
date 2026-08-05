@@ -142,7 +142,7 @@ An absent temporary workspace is expected after a fully complete goal. If the fe
 <!-- HOI4_MOD_SETUP_PORTRAITS_START -->
 ## 2.4 Sourced portrait handoff
 
-Archive each attributed source under `docs/assets/portraits/<feature_slug>/`, wire a source placeholder at the final runtime path, and keep the basename stable. External portrait styling is user-only. When the user supplies the HOI4-style final, `hoi4_portrait_creator` validates it, converts it to DDS, and replaces the placeholder.
+Archive each attributed source under `docs/assets/portraits/<feature_slug>/`, wire a source placeholder at the final runtime path, and keep the basename stable. Use the Cloud, Local, or RunPod route selected in `.codex/portrait_pipeline.toml`. When the user supplies the HOI4-style final, `hoi4_portrait_creator` validates it, converts it to DDS, and replaces the placeholder.
 
 Resolve the stable runtime basename first:
 

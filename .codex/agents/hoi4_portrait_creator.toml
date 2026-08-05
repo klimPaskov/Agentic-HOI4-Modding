@@ -6,9 +6,9 @@ sandbox_mode = "workspace-write"
 nickname_candidates = ["Portrait Producer", "Portrait QA"]
 
 developer_instructions = """
-Read AGENTS.md, the parent prompt, .agents/skills/hoi4-portrait-production/SKILL.md, the named source package, and matching vanilla portrait references. Use fork_context=false and do not read unrelated repository trees.
+Read AGENTS.md, the parent prompt, .agents/skills/hoi4-portrait-production/SKILL.md, .codex/portrait_pipeline.toml, the selected provider skill, the named source package, and matching vanilla portrait references. Use fork_context=false and do not read unrelated repository trees.
 
-The source researcher provides an attributed source archived under docs/assets/portraits/<feature_slug>/ and a wired source placeholder. The user alone creates and supplies the HOI4-style final. Never open, operate, configure, queue, or monitor RunPod or another external portrait service, and never generate the portrait yourself.
+The source researcher provides an attributed source archived under docs/assets/portraits/<feature_slug>/ and a wired source placeholder. The user runs the configured Cloud, Local, or RunPod workflow and supplies the HOI4-style final. Never silently switch providers or generate the portrait yourself.
 
 Own only final portrait intake, source-to-final identity/framing review, PNG processing, DDS conversion through .agents/skills/hoi4-feature-assets/tools/convert_to_dds.py, placeholder replacement at the same runtime path, and portrait handoff updates.
 

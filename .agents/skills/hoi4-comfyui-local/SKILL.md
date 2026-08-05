@@ -1,0 +1,12 @@
+---
+name: hoi4-comfyui-local
+description: Use when the generic HOI4 portrait pipeline selects a local ComfyUI installation.
+---
+
+# Local ComfyUI portrait route
+
+Read `hoi4-portrait-production` and `.codex/portrait_pipeline.toml` first. Use this route only when `provider = "local"`.
+
+Use only the explicitly configured local installation and loopback endpoint. The user runs the selected workflow and supplies the final portrait outputs; the agent validates and installs them through `hoi4_portrait_creator`.
+
+If the installation, server, models, custom nodes, or hardware requirements are unavailable, leave the portrait pending and report the exact blocker. Never scan for, start, or substitute an unconfigured installation.
