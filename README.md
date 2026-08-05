@@ -153,8 +153,8 @@ identity-preserving source or processing workflow from the pinned
 portraits use native ImageGen and never enter the ComfyUI workflow. The current
 workflow uses eight pinned model files, about 19.42 GB of model storage, and a
 24 GB GPU as the practical target. A 16 GB GPU is limited to slower reduced
-tests, and RunPod should use a 30 GB volume. See the provider skill and
-`docs/portrait_pipeline/upstream-lock.json` for the exact revision and checks.
+tests, and RunPod should use a 30 GB volume. See the selected provider skill and
+`.codex/portrait_pipeline.toml` for the persisted revision and checks.
 
 ### 7. Keep asset ownership clear
 
