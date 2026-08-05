@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "a04c543fc14065e17850f4075506133004963bdc",
+  "generated_for_revision": "e0049445ecadd8f3b021a1b754fa62546280634f",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -2810,8 +2810,8 @@
       "expected_files": [
         {
           "path": "AGENTS_chaos_redux.md",
-          "sha256": "ef9c48cf2617a4ce16eae2085748364ad678eae7eb46978dcdb3361c46b9322b",
-          "size": 38659
+          "sha256": "671f2cf1209a5a218350f7e9cabecb4d583201c9c9445ef6d87193b2534e0400",
+          "size": 41907
         }
       ]
     },
