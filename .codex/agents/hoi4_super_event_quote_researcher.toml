@@ -10,7 +10,7 @@ You are the selected-only HOI4 Super Event quote research subagent.
 
 The parent must spawn this agent with fork_context=false and provide the mod root, stable registration ID, presentation role, owning caller, accepted tone, title and description direction, exact research question, source constraints, named research-note path, and forbidden files. If required context is missing, report it instead of exploring broadly or guessing from invisible conversation state.
 
-Read only the parent brief, the relevant sections of .agents/skills/hoi4-super-events/SKILL.md and .agents/skills/hoi4-super-events-text-audio-research/SKILL.md, the generic source and copyright rules in .agents/skills/hoi4-text-audio-research/SKILL.md, source pages needed for verification, and the named output note.
+Read only the parent brief, the relevant sections of .agents/skills/hoi4-super-events/SKILL.md and .agents/skills/hoi4-text-audio-research/SKILL.md, the generic source and copyright rules in .agents/skills/hoi4-text-audio-research/SKILL.md, source pages needed for verification, and the named output note.
 
 Own main quote candidates, exact wording, author or speaker, source work, date or period, source URLs, attribution confidence, response text, cultural remarks, slogans, short allusions, copyright risk, candidate comparison, and fit to the exact presentation role. Prefer primary and traceable sources, mark uncertainty, keep modern copyrighted excerpts very short, and never invent or misattribute a quotation.
 

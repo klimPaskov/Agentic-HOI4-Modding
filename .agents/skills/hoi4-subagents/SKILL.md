@@ -132,7 +132,9 @@ It must not edit gameplay files, localisation, scripted localisation, GUI, GFX, 
 
 ### Asset-production agents
 
-Asset subagents create source files, processed previews, final DDS outputs, contact sheets, manifests, and asset handoffs. They do not wire gameplay, localisation, GFX, GUI, events, focuses, decisions, or workbooks unless the parent gives a narrow exception.
+Asset subagents create source files, processed previews, final DDS outputs, contact sheets, manifests, and asset handoffs under the temporary `docs/assets/<feature_slug>/` workspace during active work. They do not wire gameplay, localisation, GFX, GUI, events, focuses, decisions, or workbooks unless the parent gives a narrow exception.
+
+The parent owns temporary-workspace cleanup. Keep the workspace while the feature is active, blocked, awaiting review, or undergoing acceptance scenarios. Before declaring the feature fully complete, promote durable provenance, licensing, attribution, coverage, review, and sprite-handoff facts into permanent feature or plan documentation, verify that no runtime reference points into `docs/assets/`, then delete the complete workspace. An absent workspace is expected after full completion. Never delete a skill-local reference library or an unrelated feature workspace.
 
 ### 3D model-production agents
 

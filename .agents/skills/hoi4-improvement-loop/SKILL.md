@@ -244,6 +244,14 @@ For animated assets, define the state. The asset worker needs to know what frame
 
 Use source-based assets for real people, real flags, real symbols, and real historical images. Use generated assets for fictional, symbolic, supernatural, or impossible content. If an asset cannot be sourced or generated safely, mark it blocked instead of substituting a weak image.
 
+Use `docs/assets/<feature_slug>/` only as a temporary feature-scoped evidence and working folder for source files, previews, contact sheets, manifests, animation plans, and handoffs. Keep it while implementation or review is active, blocked, or incomplete. Before the feature is fully complete, promote durable provenance, coverage, review, and runtime-wiring facts into permanent feature or plan documentation, verify that no runtime reference points into `docs/assets/`, and delete the complete workspace. A closure handoff should treat the absent workspace as expected, not as a missing asset. Never delete skill-local reference assets or another feature's workspace.
+
+## Super-event improvement
+
+A super-event addendum should explain why the moment is larger than a normal popup. Define the campaign threshold first: first reveal, faction formation, global escalation, defeat aftermath, campaign-ending threshold, hidden route reveal, final formable reveal, or regional order change.
+
+A good super-event addendum includes trigger meaning, title direction, description direction, button tone, quote direction, image direction, sourced-audio direction, documentation, and catalog alignment where the repository maintains one. It should not choose a dramatic quote, image, or sound without a campaign threshold that justifies it. Formables deserve super-events only when they materially alter a region, revive a major identity, complete a hidden route, or announce a new bloc.
+
 ## Text and audio research improvement
 
 Sourced quote, remark, or audio research addendum should explain why the moment is larger than a normal popup. Define the role first. Examples include first reveal, faction formation, global escalation, defeat aftermath, campaign-ending threshold, hidden route reveal, final formable reveal, or regional order change.

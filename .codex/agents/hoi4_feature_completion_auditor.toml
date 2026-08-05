@@ -28,6 +28,7 @@ Audit for:
 - feature surfaces, event chains where present, documentation, tracking, optional registry gaps, and explicitly scoped external record gaps
 - decisions, focus trees, country packages, formables, scripted GUI, animated sprites, animated portraits, native advisor cards, durable provider portrait handoffs, assets, text or audio research packages, achievements, and AI gaps
 - custom-unit 3D packages missing Internet-sourced audio, immutable originals, source URLs, licensing and usage evidence, checksums, action/frame synchronization maps, proposed sound identifiers, or explicit parent-owned runtime status; generated, synthesized, recorded, manually authored, placeholder, test-tone, and unlicensed unit audio is a blocking failure
+- sourced or grounded character portraits missing a persisted provider selection, locked upstream commit or workflow identity, durable source and prompt pair, verified full-size and runtime-size outputs, DDS evidence, and an independent final-versus-placeholder review; a queued provider job or source placeholder is not a final portrait
 - weighted surfaces missing the read-only `hoi4_ai_probability_auditor` baseline and same-scenario post-patch `hoi4.probability_compare` evidence
 - simplifications not disclosed by the main agent
 - missing meaningful validation or stale completion claims

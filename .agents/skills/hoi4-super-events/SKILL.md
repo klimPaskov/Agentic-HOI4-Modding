@@ -1,39 +1,121 @@
 ---
 name: hoi4-super-events
-description: Use when designing, researching, registering, wiring, testing, or documenting a Hearts of Iron IV Super Event with the optional reusable runtime.
+description: Use when designing, researching, wiring, or documenting Hearts of Iron IV super-events and their sourced audio, quote, image, localisation, and runtime handoffs.
 ---
 
-# HOI4 Super Events
+# HOI4 Super-Events
 
-The upstream package uses `hoi4ms_*` only as stable source and manifest names.
-During installation, each runtime filename is renamed to the confirmed
-`<mod_prefix>_*` form and its contents are adapted to the same prefix and
-project name.
+Use this skill when a mod task creates, updates, researches, or wires a super-event.
 
-Use this skill only when the optional Super Events workflow is installed or the repository already has an accepted Super Event architecture. A Super Event is a large campaign presentation moment, not a substitute for an ordinary event popup.
+This skill covers super-event presentation, localisation, quote selection, audio research, image handoff, implementation wiring, and documentation.
 
-The HOI4 Mod Setup package provides a neutral runtime derived from a proven mod architecture and adapted to the project’s confirmed namespace. It includes GUI, GFX, scripted GUI, scripted localisation, one hidden smoke-test event, default assets, editable Photoshop templates, and a registration guide.
+General event implementation belongs to `hoi4-events`.
 
-## Boundaries
+Visual asset sourcing and processing belongs to `hoi4-feature-assets`.
 
-The main agent owns final registration, caller effects, GUI/GFX integration, localisation, audio wiring, documentation, validation, and completion claims.
+## 1. Core purpose
 
-Route bounded work to:
+A super-event is a major presentation moment.
 
-- `hoi4_quote_remark_researcher` for exact quotations, attribution, cultural remarks, slogans, title references, and copyright risk
-- `hoi4_audio_researcher` for licensed or public-domain audio research, downloads, editing, conversion, rights evidence, and handoff
-- `hoi4_asset_source_researcher` for real or archival Super Event images
-- `hoi4_generated_feature_art` for approved fictional, symbolic, supernatural, or alternate-history Super Event images
-- `hoi4_localisation_auditor` for consistency and key coverage
-- `hoi4_repo_explorer` only when the owning caller or an existing custom architecture is not already known
+It should mark a major event, major escalation, defeat aftermath, or world-end scenario that deserves stronger treatment than a normal popup.
 
-Use `hoi4-feature-assets` for image production and DDS handoff, `hoi4-text-audio-research` for source-aware text and audio, `hoi4-events` for event-chain ownership, and `hoi4-subagents` for bounded delegation.
+A super-event package must keep these parts aligned:
 
-Subagents do not edit the registry, scripted localisation, GUI, GFX, callers, sound definitions, or gameplay unless the parent explicitly grants that narrow scope.
+- super-event slot
+- title localisation
+- description localisation
+- button text localisation
+- quote localisation
+- image
+- audio id
+- final sound file
+- audio documentation
+- event trigger or effect wiring
+- settings-aware sound playback
+- event docs
+- catalog or spreadsheet entry when the repository maintains one
 
-## Installed package
+Do not wire only one part of a super-event. The image, text, quote, sourced audio, event effect, docs, and any maintained catalog must agree.
 
-The optional package installs these managed surfaces:
+## 2. When to use this skill
+
+Use this skill for:
+
+- major-event super-events
+- evolved minor events that become major enough for super-event treatment
+- world-end scenario super-events
+- defeat aftermath super-events
+- major faction or world-order announcements
+- global threat escalation
+- large event chain milestones
+- super-event quote research
+- super-event audio research
+- super-event audio documentation
+- super-event localisation updates
+- super-event image handoff to `hoi4-feature-assets`
+
+Do not use a super-event for every dramatic event. Use it when the campaign moment should feel larger than a normal popup.
+
+## 3. Relationship with other skills
+
+### `hoi4-events`
+
+Use `hoi4-events` for the full implementation contract:
+
+- event script
+- event registration
+- event log
+- evolutions
+- world-end logic
+- docs
+- spreadsheet updates
+- full event system wiring
+
+### `hoi4-feature-assets`
+
+Use `hoi4-feature-assets` for:
+
+- super-event image sourcing or generation
+- image processing
+- PNG previews
+- DDS conversion
+- sprite handoff notes for main-agent `.gfx` wiring
+- asset manifests
+
+Super-event images may be sourced or generated. Prefer generated images for fictional, alternate-history, symbolic, supernatural, surreal, or emotionally specific moments. use sourced images when the visual must depict real historical material.
+
+### This skill
+
+This skill owns:
+
+- super-event presentation design
+- localisation structure
+- quote selection and verification
+- audio research and licensing checks
+- audio documentation
+- super-event package checklist
+
+### Custom research subagent split
+
+For actual research work, use the narrow project subagents instead of making one agent research everything at once.
+
+| Need | Spawn |
+| --- | --- |
+| Main quote candidates, wording verification, attribution, source confidence, and quote recommendation | `hoi4_super_event_quote_researcher` |
+| Button text, cultural remark, short allusion, slogan, title-like reference, and copyright-risk notes | `hoi4_super_event_quote_researcher` |
+| Audio candidates, license verification, legitimate download, conversion to a game-ready `.wav`, and audio research notes | `hoi4_super_event_audio_researcher` |
+| Real historical, archival, or real-world super-event image that must depict real material | `hoi4_asset_source_researcher` |
+| Fictional, alternate-history, symbolic, supernatural, surreal, or emotionally specific generated super-event image | `hoi4_generated_feature_art` |
+
+The main agent owns final localisation, scripted localisation, slot wiring, settings-aware sound playback wiring, audio id wiring, sound definition wiring, `.gfx` image wiring, event trigger wiring, docs alignment, and catalog alignment. When the repository maintains an authoritative XLSX and generated CSV exports, edit only the XLSX and run its repository-owned export command; never edit generated exports directly.
+
+The quote, remark, audio, and image subagents produce research notes, final files where applicable, and handoff notes. They do not edit event files, localisation files, `.gfx` files, GUI files, sound definition files, or spreadsheet rows unless the parent prompt explicitly expands their scope.
+
+## Optional runtime and registration contract
+
+Use this skill only when the optional HOI4 Mod Setup super-event runtime is installed or the repository already has an accepted super-event architecture. The upstream package uses `hoi4ms_*` only as stable source and manifest names. Installation adapts runtime filenames, scripted identifiers, namespace, sprites, localisation keys, flags, and example text to the confirmed `<mod_prefix>_*` and project name.
+
+The optional package normally installs:
 
 ```text
 interface/<mod_prefix>_super_events.gui
@@ -50,60 +132,24 @@ gfx/super_events/super_event_image_default.dds
 gfx/super_events/super_event_template.psd
 gfx/super_events/super_event_image_template_457x328.psd
 docs/super_events/README.md
-.agents/skills/hoi4-super-events/assets/examples/
 ```
 
-The installed runtime filenames use the confirmed project prefix. Managed
-update and repair follow those adapted destinations; the upstream `hoi4ms_*`
-names remain only in source and manifest evidence. Scripted identifiers, event
-namespace, sprite names, flags, localisation keys, and example text are
-adapted from `[MOD_PREFIX]` and `[MOD_NAME]` during installation.
+Never copy identifiers or feature-specific content from another mod, and never silently replace an existing custom architecture. If the installed runtime is absent, use only the repository's accepted custom architecture or report that the optional workflow must be installed.
 
-Never copy identifiers or event-specific content from another mod. Never silently replace an existing custom Super Event architecture. Compare base, local, and incoming files through the setup transaction and honor the user’s conflict choices.
+Before editing, confirm the project prefix and installed paths; inspect the owning event, effect, focus, decision, on-action, or other caller; inspect the current GUI, GFX, scripted GUI, scripted localisation, localisation, assets, audio definitions, and permanent docs; check for existing IDs and presentation moments; and identify every player-visible and AI invocation path.
 
-## Discovery gate
+For every supported scripted-GUI surface, `hoi4.gui_inspect` and `hoi4.gui_render` are mandatory before edits and after wiring. If the route or scenario is unavailable, record the exact blocker and leave the layout claim unresolved. Source review is not equivalent MCP evidence.
 
-Before editing:
+Every registration keeps these surfaces aligned:
 
-1. Read `AGENTS.md`.
-2. Read this skill and `docs/super_events/README.md`.
-3. Confirm the current mod prefix and installed package paths.
-4. Search the requested event, effect, focus, decision, on_action, or other caller.
-5. Inspect the current GUI, GFX, scripted GUI, scripted localisation, localisation, assets, audio definitions, and permanent Super Event docs.
-6. Check whether an ID, sprite, localisation key, audio cue, or presentation moment already exists.
-7. Identify every player-visible and AI path that can invoke the moment.
-
-For every supported Super Event scripted-GUI surface, use `hoi4.gui_inspect` and `hoi4.gui_render` as mandatory evidence before edits and after wiring. If the required GUI route or representable scenario is unavailable, record the exact blocker and leave the engine-layout claim unresolved; source-only review is not equivalent. Keep tool output as evidence; it does not replace source review or live in-game validation.
-
-If the installed runtime is absent, do not fabricate its paths or claim it is available. Either use the repository’s accepted custom architecture or ask the user to add the optional workflow through HOI4 Mod Setup.
-
-## Package contract
-
-Every registered Super Event keeps these surfaces aligned:
-
-- stable integer registration ID
-- unique scripted trigger or caller
-- project-scoped visibility flag
+- stable integer registration ID and unique owning caller
+- project-scoped visibility state, close behavior, and cleanup
 - image sprite and texture
-- title
-- description
-- sourced quote or a deliberate no-quote decision
-- short response remark
-- optional audio ID, sound definition, final file, and rights record
-- close behavior and cleanup
-- owning event, focus, decision, effect, or on_action
-- permanent documentation and source evidence
-- smoke-test and live acceptance evidence
+- title, description, sourced quote, and short response remark
+- unique rights-verified Internet-sourced audio file, ID, sound definition or wrapper, playback route, and provenance
+- permanent documentation, smoke-test evidence, and live acceptance handoff
 
-Do not wire only one part. A new image without registry text, a caller without close cleanup, or audio without rights evidence is incomplete.
-
-Treat working titles, draft descriptions, unsourced quotes, generic response text, placeholder art, and unverified audio as planning inputs only. Do not promote them into final localisation or runtime registration until the relevant research and asset handoffs are complete.
-
-## Registration model
-
-Reserve one integer ID per Super Event. Never recycle an established ID for a different moment.
-
-The installed runtime exposes:
+Reserve one integer per super-event and never recycle an established ID for a different moment. The installed runtime exposes a project-adapted helper equivalent to:
 
 ```text
 <mod_prefix>_show_super_event = {
@@ -111,180 +157,687 @@ The installed runtime exposes:
 }
 ```
 
-The helper stores the ID as the value of `<mod_prefix>_super_event_visible`. The scripted GUI becomes visible while that flag is present. Each `defined_text` block selects image, title, description, quote, and remark from that same value. The close action clears the visibility flag.
+The helper stores the selected ID in the project visibility state. Every scripted-localisation branch for image, title, description, quote, and remark must read the same integer; the close action clears the state. Add one sprite, one branch to each required `defined_text` block, all localisation keys, the accepted caller, the sourced-audio wiring, and a permanent registry record for every new ID.
 
-For every new ID:
+The package's hidden `<mod_prefix>_super_event.1` event is smoke-test infrastructure. It should open the default package and close cleanly. Do not repurpose ID `1` without updating the package docs and test.
 
-1. Add one sprite in `interface/<mod_prefix>_super_events.gfx`.
-2. Add one matching branch to each of the five `defined_text` blocks in `common/scripted_localisation/<mod_prefix>_super_events.txt`.
-3. Add all player-facing keys to the project localisation file.
-4. Call `<mod_prefix>_show_super_event` from the accepted gameplay moment.
-5. Add optional audio only after its source and usage rights are verified.
-6. Record the ID, caller, sprite, texture, text keys, quote source, optional audio, and validation state in permanent docs.
 
-Keep every branch keyed to the same integer. Do not use one ID for text and a different ID for image or audio.
+## 4. Super-event design role
 
-## Smoke-test example
+Before wiring a super-event, decide what role it plays.
 
-The package includes one hidden, trigger-only event:
+Common roles:
 
-```text
-event <mod_prefix>_super_event.1
+- first reveal
+- escalation
+- global response
+- faction formation
+- world-end scenario
+- defeat aftermath
+- irreversible political shift
+- campaign-ending signal
+- rare hidden branch
+- ideological victory or collapse
+
+The role should determine the tone, title, image, quote, and audio.
+
+Do not choose a quote, image, or track because it sounds dramatic in isolation. It must fit the exact super-event role.
+
+## 5. Localisation format
+
+Super-event localisation must follow the existing repository format.
+
+Example:
+
+```yaml
+example_super_event.1.t: "Undead?"
+example_super_event.1.d: "The dead have risen, spreading terror and confusion.\n\nWitnesses describe scenes of horror as reanimated corpses or \"zombies\" began to terrorize cities and rural areas alike. The outbreak's cause appears to be unknown.\n\nAuthorities are urging the public to remain vigilant and avoid contact with anyone exhibiting unusual behavior."
+example_super_event.1.a: "Do you like to take a yo-yo for a ride?" # Ironic remark
+example_super_event.1.q: "This, then, is how you should pray: 'Our Father in heaven, hallowed be your name.' \n §Y-Matthew 6:9-§!" # An actual quote that fits the situation
 ```
 
-Run it from the debug console. It should open the default package, render the project-adapted text and image, and close cleanly. The example is test infrastructure, not a finished campaign moment. Do not repurpose ID `1` without updating the package docs and test.
+Required keys:
 
-## Design the moment
+- `.t` for title
+- `.d` for description
+- `.a` for button text
+- `.q` for quote
 
-Use a Super Event for campaign-scale reveals, irreversible escalation, a major world-order change, rare ideological victory, catastrophic collapse, global defeat, or a genuine campaign-ending moment. Do not create one merely because a normal event is dramatic.
+Keep the key numbering aligned with the actual super-event slot.
 
-Before production, define:
+Do not invent a different localisation pattern unless the existing repo pattern has changed.
 
-- exact gameplay moment
-- intended emotional role
-- owning caller and scopes
-- whether every player should see it
-- title direction
-- description direction
-- quote role
-- response tone
-- image subject and source mode
-- whether audio is required, optional, or deliberately omitted
-- close cleanup
-- test scenario
+## 6. Title rules
 
-If planning identifies a Super Event, write a bounded handoff that records the intended role, owning caller, title and description direction, quote themes, response tone, image direction, audio requirement, research questions, and acceptance scenario. Planning does not invent final sourced text or claim that research has been completed.
+A good super-event title should be short, memorable, and specific.
 
-The title, image, quote, response, and audio should express the same moment. Avoid a generic “dramatic” package with unrelated components.
+It can be:
 
-## Title and description
+- direct
+- ironic
+- ominous
+- religious
+- political
+- military
+- bureaucratic
+- poetic
+- understated
 
-Titles should be short, memorable, and specific. Prefer a person, state, movement, place, institution, transformation, collapse, or irreversible condition. Avoid generic labels such as `THE CRISIS` unless the project’s accepted style requires them.
+Avoid generic titles such as:
 
-Descriptions should:
+- The End Begins
+- World in Flames
+- The Final Crisis
+- Humanity Falls
+- Darkness Rises
 
-- state what changed
-- establish campaign significance
-- fit the available GUI space
-- avoid repeating the title
-- use the project’s established prose rules
-- avoid invented factual claims
+Use titles that fit the event's actual identity.
 
-Keep text readable at the actual game resolution and UI scale. Long text that overflows the window is a blocking presentation defect.
+## 7. Description rules
 
-## Quote and response research
+The description should explain the event clearly without turning into a normal event wall of text.
 
-Do not invent a quotation and present it as real. Use `hoi4_quote_remark_researcher` when wording, attribution, cultural origin, or copyright risk needs research.
+It should:
 
-For every direct quote record:
+- give the player enough context
+- fit the tone of the event
+- avoid overexplaining mechanics
+- avoid direct spoilers if the event is meant to remain uncertain
+- describe visible consequences or public understanding
+- keep uncertainty where the event has not fully revealed itself
 
-- exact text
-- author or speaker
-- source work, speech, scripture, document, archive, or collection
-- year or approximate period when known
-- source URL or repository path
+For secret or uncertain events, use partial information:
+
+- observers are unsure
+- reports conflict
+- foreign diplomats avoid clear statements
+- intelligence agencies disagree
+- governments deny involvement
+- regional witnesses give different accounts
+- the full meaning is not yet clear
+
+Do not reveal a hidden world-ending branch too early.
+
+## 8. Button text and remark rules
+
+The button text (`.a`) should feel like a reaction to the moment.
+
+It may be:
+
+- ironic
+- grim
+- understated
+- religious
+- ideological
+- military
+- sarcastic
+- resigned
+- coldly bureaucratic
+- a meaningful cultural reference
+
+Button text can use a short cultural reference when it fits the super-event.
+
+Possible sources include:
+
+- songs
+- films
+- books
+- poems
+- games
+- political slogans
+- religious texts
+- historical remarks
+- internet-era phrases only when the event intentionally fits that tone
+
+Examples of the kind of source that may be considered include Steely Dan lyrics, a line from *The Lord of the Rings*, a film line, or a book line, but only if the reference genuinely fits the event.
+
+Use the repository web research workflow from `AGENTS.md` to verify the exact wording and source of any referenced line.
+
+For modern copyrighted songs, films, books, or games, keep the line very short. Prefer a short fragment, a title-like reference, or a paraphrased allusion when a direct quote would be too long.
+
+Avoid generic button text such as:
+
+- OK
+- We must act
+- This is terrible
+- The world will never be the same
+
+The button text should be short enough to fit well in-game.
+
+Document the cultural source in the super-event research note when the button text is a reference.
+
+## 9. Quote rules
+
+The quote (`.q`) should deepen the super-event.
+
+Do not invent quotes.
+
+Do not misattribute quotes.
+
+Do not use a quote unless it fits the specific event.
+
+Use the repository web research workflow from `AGENTS.md` to find and verify real quotes.
+
+Prefer quotes that can be checked against a reliable source. Primary sources are best. If a primary source is not available, use reputable quote collections, archives, books, speeches, scripture references, or other traceable sources.
+
+Good quote sources can include:
+
+- public domain literature
+- religious texts
+- historical speeches
+- philosophical works
+- political writings
+- military memoirs
+- legal documents
+- poetry
+- mythology
+- propaganda slogans
+- period documents
+
+For the main quote, prefer public domain, historical, religious, literary, philosophical, or political sources when possible.
+
+Avoid:
+
+- invented quotes
+- misattributed quotes
+- unsourced internet quotes
+- quotes that only sound dramatic but do not fit the event
+- quotes with uncertain attribution unless clearly marked
+- long copyrighted song lyrics, film dialogue, book dialogue, or game dialogue
+
+Modern songs, films, books, and games are better suited for the button text or remark (`.a`) than the main quote (`.q`).
+
+If a modern cultural line is used as the main quote anyway, it must be very short, and clearly sourced
+
+If attribution is uncertain, mark it uncertain or choose another quote.
+
+## 10. Quote research workflow
+
+Use the repository web research workflow from `AGENTS.md` for quote research.
+
+Search for quotes by combining the event's core themes with terms such as:
+
+- quote
+- speech
+- poem
+- scripture
+- proverb
+- historical quote
+- public domain quote
+- literature quote
+- military quote
+- political quote
+- philosophical quote
+
+Do not stop at the first quote that sounds good. Find several candidates, compare them, and select the one that best fits the exact super-event role.
+
+For every proposed quote, document:
+
+- quote text
+- speaker or author
+- source work, speech, book, scripture, or document
+- year or approximate period if known
+- source link
+- why it fits the super-event
 - attribution confidence
-- public-domain or copyright note when known
-- why it fits this exact moment
+- notes about uncertainty
+- whether the quote is public domain, copyrighted, or unclear when this can be determined
 
-Prefer primary sources, official transcripts, libraries, archives, reputable editions, and traceable historical collections. Unsourced quote sites are search leads only.
+Use direct quotes sparingly and keep them short enough for the super-event UI.
 
-The response remark is a short player reaction, not a second description. It may be sober, ceremonial, bitter, fatalistic, defiant, or culturally grounded. For modern copyrighted works, keep direct fragments very short and prefer a title-like allusion or paraphrase. Record the source and risk.
+If the quote is too long, use a shorter excerpt.
 
-## Image workflow
+Do not alter a quote in a way that changes its meaning.
 
-The visible image area is `457x328`. Use `gfx/super_events/super_event_image_template_457x328.psd` for the image and `gfx/super_events/super_event_template.psd` to review the complete composition. Inspect `.agents/skills/hoi4-super-events/assets/examples/contact_sheet.png` and the five individual reference PNGs for framing, contrast, subject scale, and text-safe composition. They are review references only: never register them as project sprites or present them as original art for a new mod.
+If a translation is used, state that it is a translation when relevant.
 
-Choose source mode deliberately:
+If no strong quote is found, continue searching instead of inventing one.
 
-- real historical material: attributed archival or user-provided source
-- fictional, symbolic, supernatural, or alternate-history moment: generated art may be appropriate
-- a user-provided final image: preserve its provenance and process it
+## 10.1 Cultural remark research workflow
 
-Keep the full-resolution source, processed PNG, final DDS, hashes, dimensions, crop/composition notes, source link, rights status, and sprite handoff. Use `hoi4-feature-assets`; do not wire a contact sheet, PSD, or temporary evidence path as runtime art.
+The button text (`.a`) can be a meaningful remark or cultural reference.
 
-The image must remain legible at `457x328`, match the described moment, and avoid text baked into the image unless the accepted design explicitly needs it.
+This is separate from the main quote (`.q`).
 
-## Audio workflow
+Use the repository web research workflow from `AGENTS.md` to find and verify cultural references.
 
-Audio is optional for the reusable runtime. A missing or blocked track must not break the visual Super Event.
+Good cultural remark sources can include:
 
-When the accepted design requires audio, the Super Event is incomplete until one intentional final track is sourced, rights-checked, converted through the project's verified audio route, registered, wired, and documented. Give each completed Super Event its own track and project-scoped sound ID unless the user explicitly approves a specific reuse. Do not leave default, placeholder, mismatched, wrong-format, or undocumented audio in a completed package.
+- song lines or titles
+- film lines
+- book lines
+- play lines
+- game lines
+- well-known slogans
+- religious or mythological phrases
+- political or military catchphrases
 
-When audio is requested:
+The remark should fit the super-event's tone. It can be ironic, grim, darkly funny, understated, reverent, fatalistic, or bitter.
 
-1. Define its role: reveal, escalation, victory, defeat, aftermath, collapse, ritual, or campaign ending.
-2. Check only approved existing audio catalogues or folders named by the parent.
-3. Use `hoi4_audio_researcher` when no approved track fits.
-4. Verify composition and recording rights separately.
-5. Preserve the original download and source page.
-6. Document title, creator/composer, performer or recording source, URL, license, attribution, duration, edits, and final path.
-7. Convert through the repository’s verified audio workflow.
-8. Give the cue a unique project-scoped sound ID.
-9. Wire playback from the same accepted caller as the presentation.
-10. Verify the cue plays once, honors the project’s audio settings if such a system exists, and does not survive close or retrigger unexpectedly.
+For modern copyrighted works, keep the direct quote very short. Prefer brief fragments, paraphrased allusions, or title-like references when possible.
 
-Do not use commercial game, film, trailer, or album music without verified permission. Do not treat a public-domain composition as proof that a modern recording is public domain. Do not use test tones, beeps, oscillator output, or noise beds as final music.
+For every cultural remark candidate, document:
 
-Prefer an intentional musical recording such as a chant, hymn, orchestral excerpt, song, march, or other structured track. Do not manufacture a final cue from primitive waveforms, generated beeps, metronome clicks, noise beds, abstract ambience, or quick local synthesis. If no legally usable track fits a required-audio design, report the blocker instead of fabricating success.
+- remark text
+- source work or artist
+- author, songwriter, filmmaker, or writer if relevant
+- year if known
+- source link
+- why it fits the super-event
+- whether it is a direct quote, short fragment, title reference, or paraphrase
 
-If the mod has no settings-aware playback helper, do not invent one silently. Document the existing sound route or propose a bounded design before adding a new settings surface.
+Do not invent a cultural reference.
 
-## Caller and scope wiring
+Do not misquote a line if presenting it as a direct reference.
 
-Show the Super Event from the gameplay effect that owns the completed moment, after the state transition it announces is established. Avoid firing from multiple routes unless duplicate suppression is explicit.
+Do not use a reference that breaks the tone of the event unless the contrast is intentional.
 
-Verify:
+## 11. Quote style by super-event type
 
-- the caller has the correct country, state, character, or global scope
-- every intended player path invokes the same registration
-- AI-only effects do not attempt to interact with the GUI
-- multiplayer visibility is intentional
-- retriggers are prevented or deliberately supported
-- close cleanup does not clear unrelated project state
-- the visibility flag is not left set by an interrupted or bypassed path
+### First reveal
 
-Keep project-specific cleanup in the owning feature, not in the generic close button.
+Use quotes about discovery, doubt, fear, false peace, hidden rot, or the first sign of collapse.
 
-## World-end and defeat-aftermath moments
+### Escalation
 
-For a world-end Super Event, align the presentation with the owning terminal-state rules. Establish the terminal state before showing the window, set the scenario-specific state, gate incompatible future systems, prevent ordinary retriggers, and make the title, quote, image, response, audio decision, caller, docs, and acceptance scenario communicate finality.
+Use quotes about loss of control, failed containment, pride, punishment, betrayal, war, disease, or mass panic.
 
-Use a defeat-aftermath Super Event only when the defeated threat was sufficiently global, sustained, and costly to reshape the campaign. Communicate what ended, what was lost, what remains unstable, and what order or memory follows. Prefer reflective weight over cost-free triumph.
+### World-end scenario
 
-## Documentation
+Use quotes about final judgment, collapse, extinction, fate, prophecy, silence, ruin, or the end of order.
 
-Maintain one permanent registry or research note under `docs/super_events/`. For each Super Event include:
+### Defeat aftermath
 
-- ID and stable slug
-- role and owning feature
-- caller path and effect
-- sprite and texture
-- title, description, quote, response keys
-- quote/remark source and confidence
-- audio ID, file, source, rights, duration, and edits, or `not used`
-- acceptance scenario
-- status and blockers
+Use quotes about memory, cost, survival, rebuilding, responsibility, or vigilance.
 
-Temporary asset workspaces may hold downloads, processed previews, contact sheets, and handoffs during active work. Before declaring the feature complete, promote durable facts into permanent docs, verify runtime paths, and clean only the task-owned temporary workspace.
+### Ideological victory or transformation
 
-Use an event-scoped temporary workspace such as `docs/assets/<event_id>_<event_slug>/` when the project follows that convention. Preserve it while work is active, blocked, awaiting review, or undergoing acceptance. Before completion, move durable provenance, research, conversion, and crosswalk facts into permanent event, plan, specification, or Super Event documentation; verify that no runtime path points into the temporary workspace; then remove only that event-scoped workspace.
+Use quotes about faith, revolution, obedience, sacrifice, destiny, legitimacy, power, or rebirth.
 
-## Validation
+### Scientific or experimental disaster
 
-Before completion:
+Use quotes about knowledge, arrogance, forbidden inquiry, unintended consequences, or the limits of control.
 
-1. Run the installed example smoke test.
-2. Trigger the real caller through its intended gameplay path.
-3. Confirm the correct ID, title, description, quote, response, and image.
-4. Confirm no missing localisation or sprite fallback appears.
-5. Confirm the window fits at supported resolutions and UI scales.
-6. Confirm keyboard/mouse close behavior and cleanup.
-7. Confirm repeated or simultaneous triggers follow the documented policy.
-8. Confirm AI and multiplayer behavior is intentional.
-9. If audio is used, verify rights evidence, file format, one-time playback, volume behavior, and cleanup.
-10. Search for duplicate IDs, duplicate sprite names, unresolved template tokens, missing textures, missing localisation keys, stale docs, and unreferenced final files.
-11. Use GUI inspect/render evidence where available.
-12. Check the game logs after the scenario and separate pre-existing messages from messages caused by this package.
+## 12. Audio research purpose
 
-A Super Event is incomplete while any caller, registry branch, localisation key, image, required audio, close path, provenance record, or acceptance scenario is missing or contradictory.
+Super-event audio should make the moment feel distinct.
+
+Register the final super-event cue as sound and play it through the settings-aware sound helper.
+
+Core rule: a super-event task is not complete unless its audio is selected, verified, converted to a game-ready WAV, registered, wired, and documented.
+
+Every super-event implementation must include complete sound wiring. Do not leave a completed super-event on default, placeholder, mismatched, wrong-format, or undocumented audio.
+
+Every super-event must have its own unique final track, unique audio id, and unique sound registration unless the user explicitly approves a specific reuse before implementation. Do not reuse another super-event's track just because the moments are related.
+
+The final cue should be an intentional musical recording by default, such as a chant, hymn, orchestral excerpt, song, march, or other track with musical structure. Do not use pure sound effects, drones, pulses, room tone, one-shot stingers, abstract ambience, or texture beds for a super-event unless the user explicitly asks for non-musical audio and the exception is documented.
+
+Never create or accept a super-event track from generated test tones, primitive waveforms, signal-generator output, metronome clicks, generated beeps, simple oscillator layers, noise beds, or quick local synthesis. This includes sine, square, triangle, sawtooth, and similar waveforms, even when mixed with noise or effects. If no real licensed track is available, stop and report the blocker instead of manufacturing a cue.
+
+Never describe a final cue with placeholder provenance such as "restored legacy", "legacy audio package", "repository history", or similar implementation-history wording in player-facing or attribution documentation. The repository's canonical audio catalog, when present, and the audio docs must name the actual source title, creator or composer, performer or recording source when known, source URL, license, and duration. Use attribution status `verified` only after the identity and source/license have been checked.
+
+The final cue should be chosen intentionally.
+
+## 13. Audio research rules
+
+Before looking outside the repository, check whether an approved suitable track already exists in the repo. Inspect:
+
+- existing `sound/*.wav`
+- the repository sound asset file
+- the repository's canonical audio catalog, if one exists
+- existing docs or manifests that identify source and license
+
+Use an existing track only when its source, license, duration, and intended use are already documented well enough to trust, and when its tone fits the specific super-event role and pacing.
+
+If no approved suitable track exists, search the internet using the repository web research workflow from `AGENTS.md`. Do not use unapproved web browsing tools for this repo.
+
+Find audio that fits the exact super-event tone, role, and pacing. Prefer tracks between 1 and 2 minutes long. If a better track falls outside that range, document the exception before use and trim the final in-game file to 2 minutes or less unless the user explicitly approves a longer final track.
+
+Prefer:
+
+- public domain audio
+- Creative Commons audio
+- government or institutional recordings with clear use terms
+- official archive recordings with clear rights
+- user-provided audio with explicit permission
+- otherwise clearly licensed audio that permits the intended mod use
+
+Reject:
+
+- generated test-tone or oscillator audio, including sine, square, triangle, sawtooth, beep, pulse, and noise-bed cues
+- tracks that are primarily sound effects, drones, stingers, loops, abstract ambience, or texture beds when the request is for a structured musical cue
+- tracks with unclear licensing
+- YouTube uploads with no license information
+- vague "royalty free" claims without usage terms
+- modern commercial recordings with unclear rights
+- copyrighted film, game, trailer, or album recordings without clear permission
+- tracks where the composition is public domain but the recording is not usable
+
+For each candidate and final selected track, verify and document:
+
+- title
+- creator or composer
+- performer or recording source if relevant
+- source URL
+- license
+- license confidence
+- duration
+- usage terms
+- attribution text if required
+- source link
+- why it fits the super-event
+- suggested in-game use
+- editing notes
+- suitability rating
+- uncertainty notes
+
+Check composition rights and recording rights separately.
+
+A public domain composition does not automatically make a recording public domain.
+
+If the license is unclear, mark it unsuitable and find another option. Do not wire uncertain audio into a completed super-event.
+
+Do not claim a track is public domain without checking.
+
+## 14. Audio implementation workflow
+
+For every super-event audio package:
+
+1. Select the track after repository and internet-source checks.
+2. Verify the track title, creator or composer, source, license, duration, and usage terms.
+3. Download the selected audio from its legitimate source.
+4. Preserve the downloaded source file under the temporary feature-scoped `docs/assets/<feature_slug>/` source-audio path when practical. Before the feature is fully complete, promote durable source, license, attribution, and conversion facts into permanent audio documentation, verify that no runtime reference points into `docs/assets/`, and delete the feature-scoped workspace. Keep it for blocked or incomplete work.
+5. Convert the final cue to a game-ready `.wav`.
+6. Place the final `.wav` in the repository's established feature-scoped sound folder with a stable, unique basename.
+7. Add or update the base `sound` definition in the repository's sound asset file so it points to the final WAV and has a unique sound definition id.
+8. Add or update settings-volume `soundeffect` wrappers when the repository uses them. Each wrapper must point to the base sound and follow the existing `max_audible`, behavior, and naming pattern.
+9. Route playback through the repository's verified settings-aware helper when one exists; otherwise mirror the closest installed vanilla sound-playback precedent and document the contract.
+10. Update the relevant feature documentation and canonical audio catalog when one exists. Every final cue entry must list the super-event id, track identity, and source/rights details. If user-approved reuse exists, document every id and the approval.
+11. Verify the final file paths, sound definitions, volume wrappers, ids, helper call, and docs before calling the super-event complete.
+
+Use the existing repository settings-aware sound helper when one exists. Do not bypass a repository-owned volume or settings contract.
+
+## 15. Audio editing notes
+
+For every suitable track, propose practical editing notes.
+
+Possible notes:
+
+- trim start
+- trim ending
+- fade in
+- fade out
+- loop segment
+- lower volume
+- raise intro volume
+- remove silence
+- use only first 30 seconds
+- use quiet opening only
+- avoid loud ending
+- match super-event duration
+
+Do not perform destructive edits without preserving the original source file.
+
+Document any edited derivative file.
+
+## 16. Audio implementation expectations
+
+When implementing audio, follow the existing repository audio pattern and the closest installed vanilla precedent.
+
+The implementation should keep these aligned:
+
+- final sound file
+- base sound definition
+- required volume-wrapper soundeffects
+- audio id
+- the repository audio-selector variable
+- settings-aware sound helper
+- super-event slot
+- localisation
+- documentation
+
+Every super-event must have a specific audio id and a unique final track. Shared audio ids or shared tracks are allowed only when the user explicitly approved the exact reuse.
+
+Use the repository's settings-aware playback helper rather than bypassing it.
+
+Fallbacks are not allowed without discussing them with the user. If final audio is unavailable, stop and explain the blocker instead of silently leaving default or placeholder audio.
+
+## 17. Audio documentation
+
+Always update the repository's canonical audio catalog when one exists. Every final super-event track entry must show the super-event ID using the track. User-approved reuse must list every affected ID and the audio docs must explain why reuse was approved.
+
+Update any additional audio documentation used by the repo.
+
+For each super-event audio package, document:
+
+- title
+- creator or composer
+- performer or recording source if relevant
+- source URL
+- license
+- license confidence
+- usage terms
+- duration
+- attribution text if required
+- downloaded source path
+- final `.wav` path
+- base sound definition id
+- required volume-wrapper soundeffect ids
+- super-event id or key using the track
+- the canonical audio catalog row with the final track and super-event ID or IDs
+- editing or conversion steps
+- uncertainties, if any
+- why the track fits the super-event tone, role, and pacing
+
+If metadata cannot identify the author, title, source, license, or duration, and the user did not provide it, reject the track or ask the user for the missing information instead of guessing.
+
+## 18. Audio validation checklist
+
+Before finishing any super-event task, confirm:
+
+- the final `.wav` exists
+- the final `.wav` is game-ready for the HOI4 sound pipeline
+- the file is in the correct feature-scoped sound folder
+- the selected track is between 1 and 2 minutes long, or the exception is documented
+- the base sound definition in the repository sound asset file points to the correct `.wav`
+- the required settings-volume soundeffect wrappers point to the base sound and use the helper naming contract
+- the super-event points to the correct audio id and uses the repository settings-aware playback helper
+- the canonical audio catalog documents every super-event track and shows the super-event ID or IDs using it
+- documentation records the source, license, and duration
+- documentation records the downloaded source path, final `.wav` path, sound definition id, volume-wrapper ids, and super-event use
+- no generated test-tone, oscillator, beep, primitive waveform, or noise-bed cue remains in any completed super-event track
+- every completed super-event has a unique final track unless exact reuse was explicitly approved by the user and documented
+- no placeholder, default, mismatched, or wrong-format audio remains for completed super-events
+
+## 19. Super-event image handoff
+
+Super-event images are handled through `hoi4-feature-assets`.
+
+Default rule:
+
+- use generated super-event images when the moment is fictional, alternate-history, symbolic, supernatural, surreal, or needs a unique emotional composition
+- use internet-sourced images when the super-event must depict a real historical person, real photographed event, or real archival artifact
+- follow `hoi4-feature-assets` and the official `$imagegen` workflow for generated images
+
+The super-event skill should define the image direction:
+
+- subject
+- tone
+- composition need
+- symbolism
+- source mode: generated, sourced, or user-provided
+- source-image search direction or image-generation prompt direction
+- what to avoid
+- why the image fits the super-event
+
+The asset skill handles:
+
+- source search
+- source documentation
+- image processing
+- PNG preview
+- DDS conversion
+- main-agent `.gfx` wiring
+- manifest
+
+Treat project-root `docs/assets/<feature_slug>/` as temporary evidence for super-event image and audio work. Retain source files, previews, contact sheets, manifests, provenance, research notes, and handoffs while work is active, blocked, awaiting review, or undergoing acceptance scenarios. Before declaring the feature goal fully complete, move or copy durable evidence into `docs/events/`, `docs/plans/`, `docs/specs/`, `docs/super_events/`, or another permanent documentation surface, then delete only that feature-scoped workspace. Never delete skill-local reusable assets under `.agents/skills/.../assets/` or unrelated workspaces. Do not require the deleted workspace to exist for a completion claim.
+
+## 20. Super-event slot wiring
+
+When wiring a super-event, choose the slot intentionally.
+
+Make sure the implementation:
+
+1. sets the correct visibility flag
+2. sets the repository audio-selector variable
+3. uses the settings-aware playback helper
+4. updates scripted localisation, including `GetSuperEventImage` for the slot's sprite and the title/description/quote/remark getters
+5. updates player-facing localisation
+6. updates image wiring in the correct `.gfx` file
+7. updates audio wiring
+8. updates docs
+9. updates spreadsheet or event catalog if relevant
+
+Do not reuse a slot accidentally.
+
+Do not let two unrelated super-events point to the same current image, text, or audio unless the reuse is intentional and documented.
+
+## 21. World-end super-events
+
+World-end super-events need stricter alignment.
+
+When a super-event represents a world-end scenario:
+
+- guard the branch with the world-end rules from `hoi4-events`
+- make the terminal state clear
+- set the scenario-specific global flag
+- set the matching super-event visibility
+- stop or gate incompatible future systems and branches
+- make the docs and spreadsheet agree
+- choose quote and audio with finality in mind
+
+A world-end super-event should feel like an end-state, not a normal escalation.
+
+## 22. Defeat aftermath super-events
+
+Use defeat aftermath super-events only when the defeated threat was global or near-global, long enough, and costly enough to reshape the campaign.
+
+The super-event should communicate:
+
+- what was defeated
+- what the world lost
+- what remains unstable
+- what new order or memory follows
+- why the campaign does not simply return to normal
+
+Quotes and audio should usually feel reflective, not triumphant without cost.
+
+## 23. Documentation requirements
+
+The event documentation should explain:
+
+- which super-event exists
+- when it fires
+- what branch or evolution triggers it
+- what slot it uses
+- what image it uses
+- what audio id it uses
+- what quote it uses
+- what source the quote came from
+- what audio source is used
+- whether any image is placeholder
+- confirmation that audio is final and not placeholder/default
+
+Do not leave the docs saying only "super-event added."
+
+## 24. Manifest or research note
+
+For every super-event research package, create or update a markdown note.
+
+Recommended path:
+
+```text
+docs/super_events/<event_id>_<event_slug>_super_event_research.md
+```
+
+The note should include:
+
+- event id
+- event slug
+- super-event role
+- title
+- description
+- button text
+- button text source or cultural reference if applicable
+- button text source link if applicable
+- quote candidates
+- selected quote
+- quote source and confidence
+- image direction
+- image asset manifest path or permanent asset-provenance/crosswalk note. If the temporary `docs/assets/` manifest was deleted after completion, record the permanent note that replaced its durable facts instead of leaving a broken path.
+- audio candidates
+- selected audio
+- track title
+- creator or composer
+- performer or recording source if relevant
+- source URL
+- license
+- license confidence
+- duration
+- attribution text if required
+- downloaded source path
+- final `.wav` path
+- base sound definition id
+- required volume-wrapper soundeffect ids
+- super-event id or key using the track
+- the canonical audio catalog row with the final track and super-event ID or IDs
+- editing or conversion steps
+- uncertainties, if any
+- implementation notes
+- open questions
+
+## 25. Improvement-loop super-event depth
+
+Improvement addenda can propose new super-events, but a super-event should still mark a real campaign threshold. Do not add one just because a route has a strong image. Use one when a formable changes regional order, a hidden route becomes public, a scripted GUI mechanic reaches a global milestone, a league or world threat emerges, or a defeat aftermath reshapes the campaign.
+
+For formables, the super-event should reflect the formation method. A negotiated federation, violent restoration, occult revival, imperial proclamation, anti-colonial congress, and puppet-backed union should not share the same tone. The title, quote, image, audio, remark, and trigger should reveal the route identity.
+
+Animated portraits or animated scripted GUI assets can support a super-event-adjacent moment, but they are not replacements for the super-event package. The super-event still needs aligned text, quote, image, audio, trigger, docs, etc.
+
+## 26. Final checklist
+
+Before closing a super-event task, confirm:
+
+1. The super-event role is clear.
+2. The slot is chosen intentionally.
+3. Title, description, button text, and quote exist.
+4. The repository web research workflow from `AGENTS.md` was used to find and verify real quote candidates.
+5. The quote is sourced and not invented.
+6. Quote attribution is documented.
+7. Button text cultural references are sourced when applicable.
+8. Modern copyrighted lyrics, film lines, book lines, or game lines are kept very short.
+9. The image direction has been handed to `hoi4-feature-assets`.
+10. The super-event image is sourced or generated according to the asset rules.
+11. An approved existing track was checked first.
+12. If no approved track existed, the repository web research workflow from `AGENTS.md` was used.
+13. Audio candidates were researched against the event tone, role, and pacing.
+14. Composition rights and recording rights were considered separately.
+15. Tracks with unclear licensing were rejected.
+16. License or public domain status is documented.
+17. Selected audio has title, creator or composer, source, license, duration, usage terms, and suitability notes.
+18. The final `.wav` exists in the correct feature-scoped sound folder.
+19. The selected track is between 1 and 2 minutes long, or the exception is documented.
+20. The base sound definition in the repository sound asset file points to the correct `.wav`.
+21. Required settings-volume soundeffect wrappers point to the base sound and follow the helper naming contract.
+22. the canonical audio catalog records the final track, source/rights details, and super-event ID or IDs.
+23. The audio id is specific to the super-event or intentionally shared and documented.
+24. the repository audio-selector variable is set correctly.
+25. the repository settings-aware playback helper uses the settings-aware sound helper.
+26. Scripted localisation is updated, including `GetSuperEventImage`. otherwise the slot can show default art while the text/audio work.
+27. Player-facing localisation is updated.
+28. Image wiring is updated.
+29. Audio wiring is updated.
+30. Audio documentation is updated with source, license, duration, paths, sound definition id, volume-wrapper ids, super-event use, and conversion steps.
+31. No placeholder, default, mismatched, or wrong-format audio remains for completed super-events.
+32. Event docs are updated.
+33. Spreadsheet or event catalog is updated if relevant.

@@ -252,6 +252,8 @@ docs/assets/<feature_slug>/animations/<asset_slug>/
 
 Final in-game DDS files must still move into the correct mod asset folders. Do not leave final game assets under `docs/assets/`.
 
+The feature-scoped `docs/assets/<feature_slug>/animations/<asset_slug>/` tree is temporary evidence and working material. Keep it while the animation is active, blocked, awaiting review, or undergoing acceptance scenarios. Before declaring the feature fully complete, promote durable frame metadata, provenance, review results, coverage, and sprite handoff facts into permanent feature or plan documentation, verify that no runtime reference points into `docs/assets/`, and delete the complete feature-scoped workspace. An absent workspace is expected after full completion. Never delete the skill-local reference library or another feature's workspace.
+
 ## 13. Naming rules
 
 Use lowercase snake_case.
@@ -465,6 +467,7 @@ Before marking an animation complete, verify:
 - final DDS files exist in the correct location
 - the manifest records source mode, frame count, timing, frame size, sheet size, paths, and status
 - `gfx_handoff.md` names the static and animated sprites
+- before full completion, durable sprite and frame facts from the temporary handoff are copied into permanent feature or plan documentation and the feature-scoped workspace is deleted
 - scripted GUI leader overlays parent to a valid loaded window, not an unverified nested `*_instance`
 - leader overlay handoffs record the vanilla file, portrait element, parent window, context type, position, scale, and any summed offsets
 - no fake transform-only animation is being presented as final art

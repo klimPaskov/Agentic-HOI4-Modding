@@ -2,7 +2,7 @@ approval_policy = "never"
 
 sandbox_mode = "danger-full-access"
 
-project_doc_max_bytes = 65536
+project_doc_max_bytes = 184320
 
 [mcp_servers.hoi4_agent_tools]
 command = "hoi4-agent-tools.cmd"
@@ -40,7 +40,7 @@ description = "Active auditor and small-patch subagent for HOI4 decisions, missi
 config_file = "agents/hoi4_decision_mission_auditor.toml"
 
 [agents.hoi4_documentation_curator]
-description = "Documentation cleanup and consistency subagent for HOI4 mods. Reconciles specs, plans, docs, handoffs, manifests, prompts, reports, and README files with accepted decisions and current implementation evidence. Does not edit gameplay files or external tabular data files."
+description = "Documentation cleanup and consistency subagent for HOI4 mods. Reconciles specs, plans, docs, handoffs, manifests, prompts, reports, README files, and accidental Markdown hard wraps with accepted decisions and current implementation evidence. Does not edit gameplay files or external tabular data files."
 config_file = "agents/hoi4_documentation_curator.toml"
 
 [agents.hoi4_feature_completion_auditor]
@@ -64,7 +64,7 @@ description = "Plan-only improvement loop subagent for HOI4 mods. Writes deep ex
 config_file = "agents/hoi4_improvement_loop_planner.toml"
 
 [agents.hoi4_localisation_auditor]
-description = "Active auditor and small-patch subagent for HOI4 localisation, scripted localisation, dynamic text, tooltip quality, key coverage, duplicate keys, namespace consistency, BOM encoding, and player-facing wording clarity."
+description = "Active auditor and patch subagent for HOI4 localisation, scripted localisation, dynamic text, tooltip quality, key coverage, encoding, cross-surface consistency, and direct, concise, readable player-facing prose."
 config_file = "agents/hoi4_localisation_auditor.toml"
 
 [agents.hoi4_quote_remark_researcher]
@@ -87,9 +87,21 @@ config_file = "agents/hoi4_skill_maintainer.toml"
 description = "Optional spreadsheet-only worker for mod-maintained CSV/XLSX tables when a repository actually has them or the parent explicitly requests them. Preserves formatting and aligns fields with source-of-truth implementation or localisation provided by the parent."
 config_file = "agents/hoi4_spreadsheet_doc_worker.toml"
 
+[agents.hoi4_super_event_art_researcher]
+description = "Finds, verifies, and documents archival or real-world image candidates for registered HOI4 super-events without editing runtime wiring."
+config_file = "agents/hoi4_super_event_art_researcher.toml"
+
+[agents.hoi4_super_event_audio_researcher]
+description = "Researches, verifies, downloads, converts, and documents unique rights-checked Internet-sourced audio for registered HOI4 super-events. Never generates or manually authors the sound and does not edit runtime wiring."
+config_file = "agents/hoi4_super_event_audio_researcher.toml"
+
+[agents.hoi4_super_event_quote_researcher]
+description = "Finds, verifies, compares, and documents quote and cultural-remark candidates for registered HOI4 super-events without editing localisation or runtime wiring."
+config_file = "agents/hoi4_super_event_quote_researcher.toml"
+
 # HOI4_MOD_SETUP_PORTRAITS_START
 [agents.hoi4_portrait_creator]
-description = "HOI4 portrait production worker. Use only when the portrait provider configuration is enabled."
+description = "Prepares locked HOI4 portrait jobs and validates user-supplied provider outputs, replacing source placeholders and packaging approved DDS files without silently queueing generation or editing runtime wiring."
 config_file = "agents/hoi4_portrait_creator.toml"
 
 [mcp_servers.comfy_cloud_portraits]

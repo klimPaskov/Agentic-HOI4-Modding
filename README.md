@@ -143,8 +143,7 @@ installed files use the project's actual `<mod_prefix>_*` names.
 The package includes one hidden console-test event, a default image and
 background, the response button texture, and both full-composition and
 `457x328` image Photoshop templates. New registrations add one stable integer
-ID and matching image, title, description, quote, response, caller, optional
-rights-verified audio, and documentation.
+ID and matching image, title, description, quote, response, caller, unique rights-verified Internet-sourced audio, and documentation. Audio is never synthesized, generated, recorded, or manually authored by an agent.
 
 ## Optional portrait workflow
 
@@ -152,11 +151,7 @@ Generic projects may select Comfy Cloud, Local ComfyUI, RunPod, or Disabled.
 Only the selected provider skill is installed. Sourced portraits use the
 identity-preserving source or processing workflow from the pinned
 `comfyui-hoi4-portraits` revision; non-sourced fictional or impossible
-portraits use native ImageGen and never enter the ComfyUI workflow. The current
-workflow uses eight pinned model files, about 19.42 GB of model storage, and a
-24 GB GPU as the practical target. A 16 GB GPU is limited to slower reduced
-tests, and RunPod should use a 30 GB volume. See the selected provider skill and
-`.codex/portrait_pipeline.toml` for the persisted revision and checks.
+portraits use native ImageGen and never enter the ComfyUI workflow. Generation is user-owned by default: the agent prepares the locked job and placeholder, the user runs the selected workflow and supplies the outputs, and the portrait worker validates and installs them. Browser or computer control is opt-in and never silently queues generation. See the selected provider skill and `.codex/portrait_pipeline.toml` for the persisted revision and checks.
 
 ### 7. Keep asset ownership clear
 

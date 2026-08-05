@@ -904,6 +904,25 @@ Each unit-creating focus or decision should define:
 
 For focus trees, military growth should be integrated into branches. Some focuses can spawn units directly, but others should unlock decisions, improve templates, recruit commanders, create volunteer corridors, integrate militias, convert irregulars into regulars, expand special units, or change mobilisation rules. A deep tree should offer different ways to build an army depending on politics, foreign influence, economy, terrain, ideology, and escalation state.
 
+### Distinct army identity and new unit-type gate
+
+When a feature introduces a new type of country with its own army, explicitly assess whether that army needs new unit types instead of only renamed vanilla division templates. Plan at least one distinct unit family when the country's biology, doctrine, recruitment source, battlefield role, equipment relationship, movement, supply behavior, or visual silhouette differs materially from an ordinary national army.
+
+A renamed template made entirely from ordinary vanilla battalions does not count as a new unit type. If vanilla battalions are sufficient, the spec must explain why their mechanics fit and must still define distinct templates, recruitment rules, caps, costs, AI use, progression, and visible identity.
+
+For every planned new unit family, define:
+
+- gameplay role, strengths, weaknesses, intended counterplay, and division-template consumers
+- custom sub-unit, support unit, unit category, equipment, modifier, technology, doctrine, and script-enum needs
+- manpower, equipment, supply, fuel, training, reinforcement, availability, cap, upgrade, conversion, and cleanup rules
+- AI template priorities, role ratios, production needs, recruitment limits, and operational use
+- localisation, map-counter, icon, and runtime-consumer requirements
+- 3D entity, model, material, idle, movement, attack, death, and validation requirements when the unit should look different on the map
+
+Every custom unit family also needs a sourced voice and sound-design pass. Define the applicable selection, acknowledgement, movement, idle, attack, retreat, impact, damage, destruction, and death roles; variation needs; runtime identifiers and consumers; looping, distance, volume, mix, and animation synchronization; and the exact vanilla or Internet-sourced files that may satisfy them. Recording, generation, synthesis, and manual authoring are forbidden. Every external file needs provenance, licensing, attribution, intended-use evidence, and an immutable original. If a suitable source cannot be found, the role remains blocked.
+
+Treat the unit package as part of the country package. A new military country archetype represented only by renamed vanilla formations is a planning failure unless the spec provides a concrete mechanical, visual, and audio justification.
+
 ## 3.13.1 3D model and skeletal animation planning standard
 
 When a feature adds a visible unit, building, creature, vehicle, aircraft, naval object, map entity, or other 3D surface, plan the model package as a first-class feature surface rather than treating it as an optional render. A custom unit package also requires a sourced sound-design handoff.

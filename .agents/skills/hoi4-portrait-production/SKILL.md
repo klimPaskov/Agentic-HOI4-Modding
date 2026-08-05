@@ -18,6 +18,8 @@ output retrieval, validation, archive placement, DDS conversion, and the
 runtime handoff. The provider never edits gameplay, character, GFX,
 localisation, or country files.
 
+Portrait generation is user-owned by default. The agent prepares and validates the locked job, source placeholder, prompt, and exact manual or API handoff; the user runs the selected provider workflow and supplies the final outputs. The agent must not queue or generate a portrait unless the user explicitly changes that boundary for the current task. Browser or computer control is opt-in for the current user-run job and must never silently queue generation.
+
 Never invent a real person. A grounded subject uses the approved source and
 the pinned source or processing workflow. A fictional, impossible, or
 otherwise non-sourced subject uses native ImageGen under the parent brief and
@@ -67,7 +69,7 @@ remain outside the project, lock, logs, prompts, screenshots, and runtime
 files.
 
 The portrait worker must report the selected provider skill, workflow commit,
-source and prompt paths/hashes, provider job evidence, output paths/hashes,
+source and prompt paths/hashes, user-supplied provider job evidence, output paths/hashes,
 DDS path/hash, review result, final or pending state, skipped checks, and
 remaining blockers. The parent owns character/GFX/gameplay/localisation
 wiring and the final completion claim.

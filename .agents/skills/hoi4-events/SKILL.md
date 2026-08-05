@@ -552,6 +552,8 @@ Use `hoi4-text-audio-research` for quote, cultural remark, slogan, allusion, aud
 
 Do not leave default, placeholder, mismatched, undocumented, or wrong-format audio in a completed package.
 
+During active asset work, retain sources, processed previews, manifests, crosswalks, and handoffs under the temporary `docs/assets/<feature_slug>/` workspace. Before declaring the event fully complete, promote durable provenance, licensing, attribution, coverage, review, and wiring facts into permanent event, plan, spec, super-event, or system documentation; verify that no runtime reference points into `docs/assets/`; and delete the complete feature-scoped workspace. Keep it when work is blocked or incomplete. Its absence is expected after full completion.
+
 ### 12. Completion cleanup
 
 Every event chain needs cleanup for flags, variables, event targets, missions, decisions, temporary ideas, temporary modifiers, and invalid targets.

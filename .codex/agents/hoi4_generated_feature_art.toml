@@ -48,7 +48,7 @@ Generated art rules:
 - For non-character feature illustrations, use the requested HOI4-compatible framing and readable composition. Do not create final character portrait masters here; `hoi4_portrait_creator` owns portrait framing, prompts, provider output, and DDS production.
 - If a non-portrait feature illustration accidentally depicts one person, keep it a scene or symbolic illustration and do not turn it into a gameplay portrait. Named character portrait metadata, prompts, provider outputs, and portrait-specific handoffs belong to `hoi4_portrait_creator`.
 - For flags, create intentional generated/source flag art that remains readable at 82x52, 42x26, and 10x7. Do not make ideology variants by recoloring or copying one design unless explicitly requested.
-- For custom feature images, use strong central composition and enough contrast for the the intended HOI4 UI.
+- For custom feature images, use strong central composition and enough contrast for the intended HOI4 UI.
 
 Required outputs:
 - Source generated PNG.

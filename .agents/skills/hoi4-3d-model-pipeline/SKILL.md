@@ -1,183 +1,273 @@
 ---
 name: hoi4-3d-model-pipeline
-description: Create, rig, animate, convert, export, audit, and integrate Hearts of Iron IV 3D units, buildings, props, creatures, vehicles, aircraft, and naval objects through a verified Meshy-to-Blender-to-io_pdx_mesh workflow, including sourced sound-design handoffs for custom unit packages. Use when a HOI4 mod needs .mesh, .anim, PDX model textures, entity or .asset handoffs, scale calibration, skeletal actions, companion unit audio, or runtime model QA.
+description: Use when creating, rigging, animating, converting, exporting, auditing, or documenting a custom Hearts of Iron IV 3D model and its companion sourced sound-design handoff for a unit, building, vehicle, aircraft, ship, creature, or articulated asset.
 ---
 
 # HOI4 3D Model Pipeline
 
-Use this skill for a complete model package from one approved reference image through Meshy, Blender, PDX conversion, sourced unit sound design, runtime wiring, and live evidence. Treat geometry, materials, animation, sound roles, entity registration, gameplay consumers, and map placement as one contract with explicit ownership.
+Use this skill for final 3D geometry and skeletal animation assets. It covers the bounded path from one approved reference image through provider generation, Blender normalization, PDX materials, rigs, actions, Paradox export, QA evidence, and a parent-owned runtime handoff.
 
-## 1. Hard start gates
+Do not use it for 2D equipment illustrations, map counters, focus or idea icons, 2D frame-sheet animation, leader portraits, or concept-only requests. Those remain with `hoi4-feature-assets` and `hoi4-frame-animation` where applicable.
 
-This workflow is optional. Do not inspect, install, enable, or call any 3D provider or Blender route for a mod that has no requirement for a new 3D model, entity, unit action, or skeletal animation.
+## Ownership and completion boundary
 
-Check the process environment for a nonblank MESHY_API_KEY before reading a model brief for path discovery, generating a reference, checking balance, or calling any provider.
+A provider result is a source candidate, a `.blend` is a working artifact, and a `.mesh` or `.anim` is a runtime candidate. The package is not complete merely because a provider task, Blender preview, or export succeeded. Completion requires the exact runtime registration, a live consumer, and in-game evidence owned by the parent implementation agent.
 
-If the key is missing or blank, stop and tell the user to run this exact PowerShell command:
+The 3D worker may create source files, Blender checkpoints, textures, `.mesh`, `.anim`, sourced unit-audio candidates, mechanically derived audio, previews, manifests, reports, and handoffs. It must not edit gameplay, sound definitions, localisation, `.gfx`, `.gui`, `.asset`, entity, event, focus, decision, country, history, AI, on-action, or spreadsheet files unless the parent grants a narrow exception explicitly. The parent owns runtime identifiers, source wiring, live consumer validation, and the overall completion claim.
 
-~~~powershell
+`hoi4-feature-assets` remains the owner of broad asset inventories, source provenance conventions, texture/DDS conventions, and requirement-to-runtime coverage across asset types. Keep model geometry, model materials, entity wiring, and any separate 2D concept reference distinct. `hoi4-frame-animation` governs 2D frame-sheet animation; it does not replace skeletal 3D `.anim` production.
+
+Every new custom unit, custom subunit, creature, vehicle, aircraft, or ship also requires a custom sound-design package. The 3D worker must research the Internet for legally usable sourced audio, preserve the original downloads and licensing evidence, define the required sound roles, map animation synchronization points, inspect vanilla precedents, propose runtime identifiers, and write the handoff. The parent owns final sound definitions, runtime wiring, and in-game validation, while mechanical trimming or format conversion remains allowed only when it preserves the sourced file and its license permits the transformation.
+
+Final unit audio is source-only. The worker must never create, synthesize, record, generate, or manually author sound, and must never replace a missing source with test tones, primitive waveforms, placeholder beeps, noise beds, or an unlicensed stock effect. If a suitable sourced file cannot be found and licensed, mark the affected role or package `blocked`.
+
+## Hard start gates
+
+The first process check is `MESHY_API_KEY`, which must be a non-blank process environment variable before any path discovery, job intake read, reference inspection or generation, route discovery, balance check, provider call, or downstream work. If the key is missing or blank, stop immediately, print this exact PowerShell command, and tell the user to restart the shell or Codex:
+
+```powershell
 [Environment]::SetEnvironmentVariable(
     "MESHY_API_KEY",
     "msy_your_actual_key_here",
     "User"
 )
-~~~
+```
 
-Then tell the user to restart the shell or Codex. Do not continue until the restarted process exposes the key.
+Do not resolve the repository root or job root, read a job or brief, inspect or generate a reference, discover a route, call balance, make a provider call, invoke Blender, or begin downstream work before this gate passes.
 
-After the key gate passes for an actual 3D requirement, run `python .tools/3d_pipeline/bootstrap_3d_workflow.py` from the mod root before route discovery. The bootstrap autonomously discovers the repository and Blender paths, resolves the latest available Meshy package, Blender MCP release or default-branch head, and io_pdx_mesh release, verifies each resolved artifact, materializes concrete entries in `.codex/config.toml`, removes `.codex/3d_mcp_config.template.toml`, installs and enables the matching Blender MCP add-on into Blender's discovered extension repository, configures its resolved bridge endpoint, starts Blender when no reachable bridge exists, and records the observed versions, refs, paths, and checksums. The user must not be asked to copy, edit, replace, install, enable, or launch MCP or Blender components manually. Treat `.tools/3d_pipeline/config/dependencies.lock.json` as a generated resolution record with `resolution_policy = latest_at_bootstrap`, not as a stale hand-written version pin. Verify the selected Meshy MCP route is reachable, the latest official package and its live schema are usable, the latest Blender MCP server and matching add-on are installed and enabled, the discovered Blender executable and build are known, the configured Blender bridge is reachable, and the latest io_pdx_mesh archive is installed and checksum-recorded. If latest-version resolution, verification, add-on installation, bridge reachability, or compatibility fails, stop with `required installation/verification` or `blocked`; never silently substitute an unverified route or continue with an older dependency.
+After the key gate passes, resolve the repository and job roots from repository-owned files, then run `python .tools/3d_pipeline/bootstrap_3d_workflow.py` from the mod root before any balance or paid/provider call. The bootstrap must resolve the latest official Meshy package, latest Blender Lab MCP release or default-branch head, the discovered Blender executable/build, and the latest io_pdx_mesh release, then write the exact observed resolution and checksums to `.tools/3d_pipeline/config/dependencies.lock.json`. It must also install and enable the matching Blender MCP add-on in the discovered Blender extension repository, configure the add-on's resolved bridge endpoint, start Blender when needed, and verify that the bridge is reachable. Treat that file as generated evidence with `resolution_policy = latest_at_bootstrap`, not as a permanent version pin. Verify the selected Meshy route, the narrow repository-owned Blender HOI4 adapter route when the repository provides one, the resolved Blender server and add-on route, the reachable bridge, and the latest io_pdx_mesh installation. If latest resolution, live schema, add-on installation, bridge reachability, compatibility, or checksum verification fails, stop and report `required installation/verification` or `blocked`; do not substitute an older dependency or invent a live MCP/tool name.
 
-Read the repository AGENTS.md, the local offline wiki pages for entities, graphical assets, units, buildings, scopes, effects, and relevant gameplay surfaces, the local vanilla documentation, and the exact vanilla model/entity/material/action precedents before wiring source files.
+Record the exact verified server package, version, git head, route or wrapper, schema version, actual tool identifiers, paid flags, input exclusivity, required arguments, adapter operation names and arguments, Blender build, extension manifest, archive checksum, dependency-lock checksums, provider task IDs, response IDs, and output checksums. The current verified Meshy tool identifiers include `meshy_check_balance`, `meshy_image_to_3d`, `meshy_get_task_status`, `meshy_download_model`, `meshy_remesh`, `meshy_rig`, `meshy_convert`, and `meshy_animate`; use only names returned by the live locked route and record the exact arguments used. If a required route, schema, package, version, checksum, or capability is missing or mismatched, stop and report `required installation/verification` or `blocked`; do not install packages, substitute an unapproved route, or invent a live MCP/tool name.
 
-## 2. Ownership and scope
+Keep provider and Blender integration guidance in this skill and the job's dependency lock. Do not create a central MCP router or tool-specific wrapper. Any viewer, inspector, renderer, or comparison route used for QA must be read-only. This package does not provide unrelated viewers, including a Technology Tree Viewer; record such a capability as absent when requested.
 
-The 3D worker owns the deterministic job, one-image reference gate, provider lineage, downloaded source models, Blender source and checkpoints, geometry repair, materials, processed textures, rigs, skeletal actions, sourced unit sound research, original and derived audio files, .mesh/.anim exports, reimport evidence, manifests, QA reports, and runtime handoff.
+There is no silent fallback or simplification. Discuss every fallback with the parent/user before use and record the decision. If approval is not explicit, mark the item `blocked` or `needs_user_review`. A static animation fallback is an explicit companion artifact for review or unavailable motion, never a replacement for a requested skeletal action.
 
-The parent implementation agent owns .asset, entity, .gfx, unit and building definitions, gameplay effects, text icons, province/state placement, final runtime synchronization, live consumers, in-game screenshots, and the overall completion claim.
+## Required reading and local calibration
 
-Do not edit gameplay or runtime registration from the 3D worker unless the parent explicitly grants a narrow file scope. A provider task, .blend, preview, or export is not in-game completion.
+Before 3D work, read:
 
-Every custom unit, sub-unit, creature, vehicle, aircraft, or naval package requires a sourced sound-design handoff. The worker must search the Internet for a defensible, legally usable source for each applicable sound role, preserve the original download and source evidence, and record the original URL, license, usage terms, access date, and SHA-256 checksums. Mechanical trimming or format conversion is allowed only when the license permits the transformation, and the original must remain unchanged beside any derived file. Map each sound role and synchronization point to the relevant animation action and frame, or to the named runtime lifecycle when no animation exists. If no defensible source exists, mark the role or package `blocked`.
+- `AGENTS.md`.
+- `.agents/skills/hoi4-feature-assets/SKILL.md`.
+- `.agents/skills/hoi4-subagents/SKILL.md` when a subagent is used.
+- The parent brief, accepted spec, plan, manifest, job, dependency lock, and handoff.
+- The offline Paradox wiki pages relevant to the target surface, especially `paradox_wiki/Graphical asset modding - Hearts of Iron 4 Wiki.md` and `paradox_wiki/Entity modding - Hearts of Iron 4 Wiki.md`.
+- Relevant character or interface pages when the target consumes those systems.
+- Relevant documentation under `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`.
+- Local vanilla `.mesh`, `.anim`, `.asset`, entity, material, texture, and model precedents for the exact domain, plus existing repository model precedents.
+- For custom units, the exact installed vanilla sound, voice, soundeffect, and entity precedents used by the closest matching unit surface.
 
-The worker must never generate, synthesize, record, manually author, fabricate, or use unlicensed audio. Test tones, primitive waveforms, placeholder beeps, noise beds, stock effects with unclear rights, and silent stand-ins are not acceptable unit audio. The parent owns final sound definitions, runtime wiring, and live validation.
+Use existing repository paths under `gfx/models/` and `gfx/entities/` as local precedents where applicable, but confirm the final path, shader, material channels, scale, axes, skeleton, action names, and entity structure against the installed vanilla version. Do not lock tutorial values or assume that a nearby asset belongs to the same runtime surface. Treat tutorial polygon counts, texture dimensions, and provider defaults as starting heuristics only; the installed game and latest verified toolchain decide acceptance.
 
-## 3. Resolve the job root
+For a humanoid land-unit pilot, this is a hard calibration gate, not a suggestion: import the installed vanilla infantry `.mesh` into the Blender reference collection read-only, identify the exact entity and runtime `scale`, exclude collision-only geometry, and record the measured source-mesh height, effective runtime height, forward axis, ground contact, and the comparison result in the job and manifest. When the custom entity retains the vanilla entity scale, normalize the exported mesh to the measured source-mesh height so the engine applies that scale exactly once; do not normalize to the effective runtime height and then multiply it by the entity scale again. Do not use a generic real-world height or an arbitrary entity `scale` as a substitute. Keep the provider/animation height and the Blender source-mesh calibration height as separate fields when the provider and HOI4 coordinate spaces differ.
 
-Resolve the mod root from the current repository and derive a lowercase safe owner/feature/asset slug. Do not use a path from chat when the repository can determine it.
+For a static map-building pilot, this is also a hard calibration gate: import the installed vanilla mesh used by the actual building entity, identify the exact `pdxmesh` and entity scale, measure the source dimensions and effective runtime dimensions, and record the reference in the job and manifest. Height-only calibration is invalid for buildings. The current `building` profile uses `facility_land.mesh` with `building_land_facility`, source height `3.4697628021`, entity scale `0.6`, effective runtime height `2.0818576813`, and a hard runtime X/Y footprint ceiling of `4.0` meters. A candidate over that ceiling must be explicitly fit with one uniform X/Y factor and must record before/after dimensions; silent anisotropic stretching is forbidden.
 
-Use a deterministic job root such as docs/assets/<feature_slug>/models_3d/<asset_slug>/ unless the repository has an established model evidence root. Keep source evidence and runtime sources separate.
+## Job intake and deterministic layout
 
-Create these job surfaces as needed:
+Validate the job before any paid work. The parent must provide:
 
-~~~text
-refs/original/
-refs/derived/
-refs/briefs/
-provider/requests/
-provider/responses/
-provider/tasks/
-provider/credits/
-provider/downloads/
-provider/rejected/
-sound/source/
-sound/derived/
-blender/source/
-blender/reference/
-blender/working/
-blender/checkpoints/
-blender/previews/
-blender/reports/
-textures/source/
-textures/processed/
-textures/dds/
-export/mesh/
-export/anim/
-validation/
-evidence/
-runtime/
-logs/
-~~~
+- event or system owner, stable asset ID, and lowercase asset slug
+- one ready reference image path and checksum, or enough brief input to generate it
+- source provenance, license status, or explicit user-provided authorization
+- one asset profile: `static_prop`, `building`, `humanoid_unit`, `nonhumanoid_creature`, `vehicle_land`, `aircraft`, `naval`, or `articulated_attachment`
+- geometry intent, required components, forbidden additions, texture direction, and unseen-side/rear-geometry policy
+- named vanilla reference paths and the expected scale relationship
+- for buildings, the measured runtime footprint budget and whether the consumer is a dedicated provincial map building or a state-level gameplay building with a provincial visual anchor
+- required action roles, runtime consumer, credit hard/soft limits, and paid-attempt limit
+- for every custom unit, a sound-design brief covering applicable voice, selection, movement, idle or engine loop, attack, impact, special-action, and death or destruction roles, plus the selected vanilla precedent and animation synchronization points
+- the locked provider, Blender, adapter, and `io_pdx_mesh` dependencies
+- the deterministic job root and exact handoff path
 
-Keep an append-only history, a manifest, a provider task ledger, a dependency record, a sound-source ledger, a requirement-to-runtime crosswalk, and a handoff under the job root. Record absolute paths only in local evidence and portable relative paths in manifests.
+When the parent does not supply a root, derive it from the resolved repository root, a normalized stable owner id, and a normalized asset slug:
 
-## 4. Classify the model profile
+```text
+docs/assets/<owner_id>/models_3d/<asset_slug>/
+  job.yaml
+  manifest.md
+  history.jsonl
+  refs/
+    original/
+      meshy_input.png        # the only image sent to Meshy
+      input_manifest.json
+    derived/                  # optional, approved clarification only
+    briefs/
+  provider/
+    requests/
+    responses/
+    tasks/
+    credits/
+    downloads/
+    rejected/
+  blender/
+    source/
+    reference/
+    working/
+    checkpoints/
+    previews/
+    reports/
+  textures/
+    source/
+    processed/
+    dds/
+  export/
+    mesh/
+    anim/
+  validation/
+  evidence/
+  logs/
+  runtime/
+    handoff.md
+    crosswalk.md
+```
 
-Choose one profile before provider work: `static_prop`, `building`, `humanoid_unit`, `nonhumanoid_creature`, `vehicle_land`, `aircraft`, `naval`, or `articulated_attachment`.
+Use the same derived path every time and pass job-relative paths to provider and adapter calls after root-containment checks. Do not use chat assumptions, timestamps, random IDs, pilot names, or workstation paths as the primary path. Keep append-only task history, manifest state, checksums, copy provenance, and dependency records inside the job root; never archive secrets. Final runtime files must not remain runtime-referenced from `docs/assets/`.
 
-For a humanoid unit, define the unit or sub-unit consumer, entity key, .asset key, mesh key, material paths, icon or text-icon requirements, idle action, move action, attack action, death action when relevant, and the country/province/state test that exposes it.
+## Exactly one Meshy reference image
 
-For a building or map entity, define the building key, entity key, mesh key, state and province placement, valid state-to-province pair, construction or level behavior, zoom visibility, rotation, runtime scale, and a test location that is not hidden by an existing building.
+Meshy receives exactly one clean final reference image. If the parent supplies one, preserve it and use it only after checksum and rights preflight. If no image is supplied, generate exactly one production reference through the approved image-generation route, save it as `refs/original/meshy_input.png`, and retain its prompt, source mode, checksum, and approval note. If that route is unavailable, mark the job as `required installation/verification` or `blocked` rather than substituting.
 
-For a nonhumanoid creature, vehicle, aircraft, or naval object, define the domain-specific coordinate axes, ground/water contact, orientation, required actions, camera/zoom expectation, rigid or deforming parts, and live consumer before export.
+Do not create or submit a turnaround sheet, multi-view board, collage, side-profile set, or separate front/rear images. Vanilla references may be imported into Blender read-only for calibration, and Blender may render front, rear, side, top, underside, wireframe, or material QA views after generation, but none of those views is a Meshy input or may be sent back to the provider.
 
-For every custom unit profile, define applicable sound roles such as selection, movement or engine, idle, attack, impact, special action, and death or destruction, along with the animation actions or runtime moments that synchronize each role.
+Preflight the one input for silhouette, cropped parts, limb/component separation, dark gaps, strong shadows, background complexity, thin structures, painted details that may be mistaken for geometry, symmetry/asymmetry, unseen-side ambiguity, and source rights. An approved derived image may clarify exposure, background, or an accidental seam; it may not silently redesign the subject. Keep the original and both checksums.
 
-## 5. Reference-image gate
+## Provider generation and lineage
 
-If a ready reference image is supplied, preserve it unchanged, record its provenance or user authorization, compute its checksum, and use it as the sole provider input.
+The normal provider sequence is:
 
-If only an asset brief is supplied, autonomously generate exactly one clean Meshy-ready reference image and save it as the single approved input in the job's original-reference folder. Record the generation request, output checksum, dimensions, and approval.
+```text
+verified balance -> image-to-3D -> status -> immediate download
+                 -> optional remesh/retexture
+                 -> optional suitable humanoid rig/animation candidate
+```
 
-Never generate or send side-profile sheets, turnaround boards, collages, or multi-view boards to Meshy. Blender renders, QA angles, contact sheets, and comparison boards may be created later for review but are never provider inputs.
+Before every paid tranche, check the live balance through the verified provider route and record the estimate, hard limit, attempt number, and consumed credits. Inspect the live schema before paid calls; do not promise a general geometry prompt when the current Image-to-3D surface exposes only texture-direction text. Record the exact verified arguments and response/task IDs without exposing the API key.
 
-Do not create a second provider reference to compensate for a failed task without recording a new approved attempt and its reason. Do not hide a paid retry or claim that multiple images were one input.
+Prefer smart topology when suitable, triangular output, PBR maps when textures are required, removal of baked lighting when supported, and A/T pose for a riggable humanoid. Use the suitable provider pose or `none` for static or mechanical assets. Download every successful artifact immediately, retain the GLB as the canonical provider archive, retain FBX when a rig/action route needs it, and record exact arguments, checksums, provider version, task IDs, request/response lineage, credits, and local download paths. Remote URLs are never the only accepted copy.
 
-## 6. Provider sequence
+Treat every provider result as a candidate. Review front, rear, sides, top, and underside where relevant, plus wireframe, untextured shading, and textured views. Block or retry within the approved budget for missing major components, floating critical parts, fused limbs/weapons/turrets/wings, open holes, identity mismatch, broken thin structures, or unacceptable unseen-side invention. Do not spend retexture, rig, or animation credits on rejected geometry. High-detail generation followed by controlled reduction is allowed only when the job explicitly permits it and the lineage records both candidates.
 
-Before each paid tranche, check the live Meshy balance and record estimated and consumed credits. Save the exact tool name, schema version, arguments, request, response, provider task id, timestamps, status transitions, download URL host, and output checksums.
+Tutorial values near 10,000 vertices and the 25,000–30,000 caution band are seed heuristics only. Local vanilla calibration and measured runtime evidence decide the profile target.
 
-Use this sequence:
+## Blender processing and checkpoints
 
-1. Preflight the one reference image and job manifest.
-2. Check provider balance and record the result.
-3. Submit image-to-3D using the latest verified official route and live schema.
-4. Poll task status until success or a recorded terminal failure.
-5. Download GLB/FBX and textures immediately and checksum them.
-6. Review the candidate from front, rear, side, top, and underside views where relevant, plus wireframe, untextured shading, and textured material views, before spending on remesh, retexture, rig, or animation.
-7. Use remesh, retexture, rig, or animation only when the profile and QA gates justify the paid tranche.
+Use a versioned scene template with protected provider-source, working, rig, action, export, reference, and evidence collections. Unattended work must use the verified repository-owned allowlisted adapter. Do not expose unrestricted Blender Python, shell commands, arbitrary URLs, or paths outside the job and approved reference roots. A development-only Blender route is allowed only in the isolated profile and only after the parent verifies its installation and actual callable interface.
 
-Provider actions are candidates, not final runtime files. Preserve rejected candidates and reason codes in the job evidence.
+Required stages:
 
-## 7. Blender checkpoints and calibration
+1. import the approved GLB or FBX and preserve provider objects
+2. duplicate into the working collection
+3. import named vanilla references read-only; humanoid land units must include the installed vanilla infantry reference and its entity scale, and building jobs must include the installed mesh and exact map-building entity scale
+4. inspect scene and geometry
+5. normalize orientation, scale, origin, and ground/water contact
+6. measure and enforce the profile runtime footprint budget for static map buildings
+7. perform only bounded local repairs
+8. triangulate before final rig and export QA
+9. convert PBR inputs to the locally verified PDX material convention
+10. process textures and record DDS paths
+11. create or validate the rig
+12. create, retarget, clean, and bake actions
+13. save checkpoints, export, and build evidence
 
-Create and retain at least these checkpoints: provider source import, normalized, repaired, material-processed, rigged, action-cleaned, and pre-export. Protect provider source objects and work on duplicates.
+Save stable checkpoint stages in `blender/checkpoints/` (source import, normalized, repaired, material, rigged, actions, and pre-export). Preserve source checkpoints, working checkpoints, Blender version, adapter version, checksums, and stage transitions. Never edit provider-source objects in place. Substantial missing geometry is not an automatic repair: regenerate, request explicit manual modeling scope, or block.
 
-Import the named vanilla model/entity/material/action reference read-only and measure it before adjusting the custom asset. Record axes, forward direction, origin, source geometry height, entity scale, effective runtime height, ground/water contact, and any exporter coordinate conversion.
+## Geometry, materials, rigging, and actions
 
-For humanoid units, match the custom source geometry to the measured vanilla source mesh height and apply the entity scale exactly once. Do not guess a real-world height, use a generic 1.8m target, or compensate for a wrong source height with an arbitrary runtime scale.
+Record triangles, vertices, objects, material slots, loose components, non-manifold and boundary edges, holes, degenerates, normals, UV layers and relevant overlap, transforms, negative scale, bounds, origin, ground/water contact, reference comparison, and profile semantic checks. Repair or reject holes, loose components, non-manifold edges, and degenerate geometry before acceptance; any intentional open surface must be named by the profile and marked for review. Final topology is triangular unless a verified local engine path says otherwise.
 
-Do not apply nonuniform scale, leave negative transforms, or allow the mesh to float, shrink on movement, change orientation between actions, or exceed the intended runtime footprint. The scale crosswalk must distinguish source geometry height from effective in-game height.
+Retain provider source maps unchanged. Convert through the exact local PDX material precedent and record shader, channel mapping, color space, alpha behavior, texture dimensions, DDS paths, and unsupported maps. For the latest installed PDX packed specular route, use the recorded layout of red unused or mask zero, green specular level, blue metallic, and alpha roughness; never use a raw grayscale roughness map as the PDX specular map. Use the repository converter at `.agents/skills/hoi4-feature-assets/tools/convert_to_dds.py` for final PNG to DDS conversion and follow that skill's complete DDS-header and alpha validation. For HOI4 model textures, enforce the profile's verified maximum dimension, currently 1024 pixels for the local vanilla model surface unless fresh installed references prove otherwise, and record any resize. If the provider diffuse is too dark, derive a documented deterministic grade from the immutable provider base and rebuild the runtime derivative from that base on every run; never compound a grade from an older processed or runtime texture. Do not pass materials QA with missing, black, magenta, invisible, accidentally transparent, or implausibly reflective surfaces.
 
-Repair or reject the working geometry so it has no holes, loose components, non-manifold edges, boundary defects, degenerate triangles, missing body parts, invalid normals, duplicate shells, or zero-weight deforming vertices. Record the geometry counts, bounds, transforms, material slots, UV layers, ground/water contact, and repair results. Triangulate unless a verified local export path requires another topology.
+Use one profile's calibrated axes, scale, triangle range, material/texture limits, rig route, action roles, root policy, instance density, semantic checks, export preset, and runtime pattern. A profile must be calibrated before paid or export work begins.
 
-## 8. PDX materials and textures
+For map buildings, the profile's footprint budget is a hard runtime gate. The default policy is `reject`; `fit_to_budget` is allowed only when the job explicitly requests it and applies a uniform X/Y fit after height normalization. The adapter report must retain `runtime_dimensions_before_fit_m`, `runtime_dimensions_after_fit_m`, `fit_factor_xy`, `runtime_footprint_before_m`, and `runtime_footprint_after_m`.
 
-Use the local vanilla shader, UV, texture names, dimensions, and entity material pattern as the authority. Do not assume that a provider preview is a runtime-ready PDX material.
+The reusable pilot runner treats `building` and `static_building` as static routes, prepares their `Image_0`/`Image_1`/`Image_2` texture sources, and never sends them through humanoid rig or action continuation. A building job without a named installed vanilla reference is rejected before Blender preparation.
 
-For the installed vanilla PdxMeshAdvanced pattern, verify the packed specular convention against the local precedent before export. The tested convention is R=0, G=32, B=metallic, and A=roughness; raw grayscale roughness in the specular texture produces chrome-black or incorrectly lit surfaces. Record the shader, channel semantics, color space, alpha behavior, texture dimensions, and DDS format rather than trusting a provider preview.
+For static map-building materials, use the shader from the installed vanilla building consumer. With the current vanilla surface this is `PdxMeshAdvancedSnow`. The GFX `meshsettings.name` must equal the actual exported mesh object name, such as `Mesh_0.001`; provider labels, job slugs, and guessed names are not accepted. Verify packed PDX normal and specular channel statistics before synchronizing runtime DDS files.
 
-Keep provider textures immutable and derive all processed maps from those originals. If the provider diffuse is too dark, apply a deterministic documented grade from the immutable source on every run and never compound an older processed texture. Use the local vanilla model dimension limit, currently 1024 pixels unless local installed references prove otherwise, and the repository DDS converter. Process and checksum the PNG and DDS files, record shader slots and channel semantics, and compare the final runtime copy against the approved source hash immediately before wiring.
+For humanoids, provider rigging is a candidate only for a clear standard humanoid biped within the verified endpoint's constraints; inspect and map it in Blender. For nonhumanoids, create a custom rig with a written rig map. For mechanical assets, use rigid components and deliberate pivots: turrets, barrels, recoil, propellers, rotors, doors, wheels, and tracks must not bend from blended weights.
 
-## 9. Skeletal animation
+If a custom `common/units` subunit identifier is introduced, the parent runtime handoff must register its generated `unit_<subunit_id>_icon_small` texticon (and any other emitted icon token) against a verified vanilla sprite. A missing custom texticon is a runtime failure even when the `.mesh` loads.
 
-Treat requested animations as required outputs, not optional polish. Define semantic action names, FPS, frame ranges, loop policy, root-motion or in-place policy, ground contacts, deformation expectations, runtime binding, and acceptance evidence for every action.
+Require no zero-weight deforming vertices, normalized weights, influence counts within local precedent, no unapproved opposite-side stretch, rigid assignment for rigid parts, and deformation tests in representative poses. Automatic weights are only a seed where the profile allows them.
 
-Provider humanoid actions are candidates. Clean, retarget, bake, and validate them in Blender. Normalize armature transforms, scale keyed location channels deliberately when the source and target scales differ, lock or remove unintended root translation for in-place locomotion, and check first/last-frame ground contact.
+Every requested action must have a semantic role, final name, source route, FPS, frame range, loop state, root policy, preview, exported `.anim`, proposed runtime binding, and validation result. For humanoid animation candidates, clean, retarget, and bake the action in Blender, normalize armature object and pose transforms deliberately, inspect and sanitize scale F-curves, and scale keyed location channels deliberately when the provider and calibrated mesh units differ. Define in-place or root-motion policy before editing keys, apply any location conversion exactly once, and record the factor and before/after channels. Check foot and ground contacts at representative frames and validate the required idle, move, and attack roles as real skeletal actions. Provider animations are source candidates and missing actions must be authored in Blender when the job allows it. Do not replace a requested action with a static pose. For loops, compare first and last evaluated poses, root/contact drift, and the result at normal HOI4 map zoom. A skeleton change invalidates weights, actions, exports, and downstream evidence.
 
-Use a custom Blender rig for non-humanoid, mechanical, building, aircraft, naval, or creature assets when animation is required. Do not use hoi4-frame-animation for skeletal .anim work; that skill is for 2D frame-sheet assets.
+## Custom unit sound-design companion
 
-Export real .anim files for every requested action and reimport or parse those actual files. A still image, static mesh, camera movement, transform-only mockup, or GIF preview cannot satisfy a requested skeletal action.
+Every new custom unit package must define a coherent custom sound identity. Do not leave a distinctive unit silent or attach an unrelated default sound family. A vanilla sound family may be reused only when the accepted design says it genuinely matches the unit.
 
-## 10. Sourced unit sound design
+Inspect the exact vanilla consumer before planning the package because land units, creatures, vehicles, aircraft, and ships do not necessarily expose the same sound roles. Include the applicable roles:
 
-Search the Internet for each required unit sound role after the parent brief and local vanilla sound precedents are known. Prefer sources with explicit permission for the intended mod use, and reject unclear licenses, unclear recordings, or sources that cannot be preserved and attributed.
+- selection and order acknowledgements or unit voice
+- idle, ambient, engine, rotor, mechanical, or creature loops
+- movement
+- weapon discharge and attack
+- impact, hit, or contact
+- special actions
+- death, destruction, shutdown, or disappearance
 
-For every candidate and selected file, preserve the original download and record the source URL, original download URL when different, title or description, creator or recording source, license, usage terms, access date, source checksum, derived checksum, and any attribution requirement. Keep the original file immutable. Trim, crop, resample, normalize, or convert only as a mechanical transformation that the license permits, and record the exact operation and tool.
+Use the repository web-search workflow to locate candidate files on the Internet, inspect the source page and direct download terms, and save only approved candidates under the deterministic job evidence root. Prefer public-domain, Creative Commons, official archive, institutional, user-authorized, or otherwise clearly licensed sources. Reject unclear provenance, unclear recording rights, unclear modification rights, vague royalty-free claims, and sources that do not permit the intended mod use.
 
-Map every selected role to the animation action and frame or to a documented runtime lifecycle point. Record whether the cue is looped, one-shot, attached to an action phase, or parent-triggered. If the required role has no defensible source, stop that role or package as `blocked` rather than inventing audio or silently reusing an unlicensed file.
+Download and preserve the original source file under the deterministic job evidence root. Record the source page URL, direct download URL when distinct, title, creator or performer, license, usage terms, download date, original format and duration, and SHA-256 checksum. Keep the source file immutable and link every derived file back to it.
 
-## 11. Export and reimport
+Mechanical transformations such as trimming, fading, silence removal, normalization, channel conversion, resampling, and codec conversion are permitted only when the source license allows them. Keep the original source, transformation recipe, derived checksum, and final format in the evidence package. These operations must never become a way to create audio from scratch.
 
-Use only the latest verified io_pdx_mesh extension resolved by bootstrap and record its export settings, Blender build, extension version, release URL, and archive checksum in the generated dependency record.
+The sound handoff must define:
 
-Export .mesh and .anim files into the job export folders first. Reimport or parse each approved export, inspect identity, bounds, material slots, skeleton, actions, FPS, frame range, contacts, and warnings, and save the proof beside the job manifest.
+- the unit or subunit id and runtime consumer
+- the chosen vanilla sound and voice precedents
+- proposed sound, soundeffect, wrapper, and file identifiers
+- one-shot or loop behavior
+- the animation action and exact frame or phase that each sound should follow
+- source mode, provenance, licence status, and forbidden substitutions
+- expected final file format and runtime path based on verified local precedent
+- any volume, range, variation, or randomization behavior supported by that precedent
+- the Internet source URL, attribution, license, original file path, derived file path, and checksums for every sourced audio candidate
+- the parent-owned files that must be wired and the validation still required
 
-Do not copy exports to the live mod root until the parent has selected the final candidate. Synchronize the final runtime copy in one hash-aware step and record source and destination hashes for every mesh, animation, texture, entity, and .asset file.
+Custom vocal units should have voice direction that matches their culture, language, body, and role. Nonhuman or impossible units should use purpose-built, sourced vocalizations or mechanical sounds instead of ordinary soldier acknowledgements. Do not manufacture final audio from test tones, primitive oscillators, placeholder beeps, or unrelated stock effects.
 
-Treat selected source exports, staged runtime copies, and active consumer files as separate surfaces. Select the final geometry, material maps, and actions first, then lock the selected source paths in the manifest before copying. Never synchronize from an older provider or processed path, never let a filename choose the source, and compare destination hashes after synchronization.
+The model worker does not claim the sound package complete merely because synchronization points and identifiers are documented. It must provide sourced audio candidates and licensing evidence or mark the role blocked. Sound definitions, entity or unit wiring, and in-game playback validation remain parent-owned unless the task explicitly grants that production scope.
 
-## 12. Runtime integration handoff
+## PDX export and reimport evidence
 
-For a unit, the parent must wire the unit or sub-unit to the correct model, entity, material, and action names and verify the required unit_<id>_icon_small text icon when the engine emits that token. Spawn the unit through a supported country scope and test it while stationary and moving.
+Before export, ensure the export collection contains only approved objects and that transforms, topology, materials, armature, actions, exporter version, and preset pass. Export `.mesh` and required `.anim` files using the checksum-locked verified `io_pdx_mesh` route. Capture every warning, output path, byte size, and checksum.
 
-For a building, the parent must wire the building to an existing entity key, verify the .gfx/.asset chain, place it in a province that belongs to the specified state, use the correct building syntax and argument count, and test visibility at the intended zoom and level.
+For every output, retain the export log and reimport or parse the actual `.mesh` or `.anim` bytes through the locked stack, saving the proof scene or parser report, measured geometry/action facts, output checksum, and any warnings. If the verified stack cannot re-import or parse that format, record an explicit `required installation/verification` or `blocked` result. A Blender viewport, provider preview, file existence, or plausible filename is not reimport evidence. Do not silently ignore exporter warnings, missing actions, unsupported material channels, or an absent parser.
 
-For all profiles, the handoff must list exact source paths, runtime paths, identifiers, actions, sound roles, animation synchronization points, source and derived audio paths, licenses, access dates, hashes, live-consumer commands or effects, and the remaining parent-owned work. Never point runtime source to a temporary evidence folder.
+For static map buildings, also audit the runtime consumer after reimport: the `.gfx` scale and shader, meshsettings object name, runtime mesh and DDS paths, building definition, and spawn policy must agree. A custom map building must not use vanilla `special_project_facility_spawn`. Use a dedicated `type = province` spawn pool for a direct map consumer, and define the matching `building_<spawn_point>` entity in the active `.asset` file. Different meshes must never share one spawn point because HOI4 resolves one map entity per spawn point. When every gameplay building level must appear, wire the gameplay building directly and provide one explicit spawn position per possible rendered level. Use a hidden provincial anchor only for an intentional single visual independent of gameplay level, place it with state-scoped `set_building_level`, and explicitly clean it up on conversion, dismantlement, annexation, or deletion. Leave automatic nudging enabled unless complete `map/buildings.txt` coverage is maintained; if nudging fails, preserve every vanilla row in a deterministic generated override and add complete custom coverage.
 
-## 13. Completion evidence
+## Evidence package and handoff
 
-Do not mark the model complete until the manifest, provider lineage, dependency lock, one-image reference proof, Blender checkpoint ledger, processed textures, sourced unit sound package, original and derived audio checksums, sound-role synchronization map, .mesh/.anim outputs, reimport proof, runtime crosswalk, final hashes, and parent handoff exist.
+The job package must contain, as applicable:
 
-The parent must add the live consumer and in-game screenshot or equivalent runtime proof for the requested surface. The final report must list meaningful validation, skipped validation and why, blockers, needs_user_review items, credits, versions, selected vanilla references, changed files, and simplifications.
+- job intake and append-only history
+- source reference, preflight, provenance, license, and checksums
+- provider requests, responses, task IDs, versions, balance, credits, and downloads
+- source and checkpoint `.blend` files
+- geometry, material, rig, weight, action, and export reports
+- source and final textures, animation previews, `.mesh`, and `.anim`
+- immutable Internet-sourced unit audio candidates, licensing records, derived files, transformations, and checksums
+- export/reimport evidence, manifest, and requirement-to-runtime crosswalk
+- a runtime handoff with proposed stable names, paths, material/shader mapping, action mapping, and the exact files/identifiers the parent must wire
+- for every custom unit, a sound-design handoff with sourced audio files, source URLs, attribution, licensing evidence, sound roles, voice direction where applicable, vanilla precedents, animation synchronization points, proposed runtime identifiers, and remaining parent-owned wiring
+- for static buildings, footprint/scale evidence, meshsettings object-name evidence, dedicated spawn or provincial-anchor evidence, and runtime-consumer evidence
 
-Never hide a missing route, missing action, bad texture, invalid placement, failed reimport, unresolved scale, missing entity, stale runtime copy, or absent screenshot behind a fallback. Report it as blocked or incomplete and keep the job evidence.
+Each model manifest entry records the asset ID/slug, profile, source reference and checksum, provider lineage, selected candidate, checkpoint, geometry counts, objects/materials, armature/bones, actions/frame data, custom-unit sound requirements and synchronization points where applicable, source/final textures, exports/checksums, exporter version/settings, proposed runtime identifiers, actual runtime registration only after parent wiring, live consumer, in-game evidence only after parent validation, and status. Use `complete`, `needs_user_review`, `blocked`, or `canceled`; never create a fallback completion state.
+
+When the event/system owner and slug are known, place the subagent handoff under the parent-provided `docs/plans/<owner_id>_<owner_slug>_plans/subagent_handoffs/` path. The parent must review every artifact and either wire it, queue it with a reason, reject it with a reason, or carry its blocker forward.
+
+## Runtime copy synchronization
+
+Treat the selected source exports, staged runtime copies, and active consumer files as separate surfaces. A runtime file can be stale or be overwritten by an older mapped texture even when the current source export is correct. Select the final geometry, material maps, and actions first, then lock the selected source paths in the manifest before synchronizing any runtime copy. Record each source and destination path, source and destination SHA-256, copy tool or actor, copy time, and provenance link, then compare destination hashes after synchronization. Never synchronize from an older provider or processed path, never let a filename alone choose the source, and never synchronize before final source selection. The parent owns active runtime copies, `.asset`, entity, `.gfx`, gameplay wiring, live consumers, and in-game screenshots; the worker owns the evidence and exact handoff needed to perform that work.
+
+## Bounded subagent route
+
+Use `hoi4_3d_model_pipeline` only when the parent provides the exact job root, reference path or asset brief, output folders, handoff path, profile, named vanilla references, scale relationship, required actions, custom-unit sound roles and Internet-source requirements, synchronization requirements where applicable, source permissions, credit and attempt limits, dependency lock, and forbidden simplifications. Spawn it with `fork_context=false`; put every needed conversation constraint into the prompt or named repository files.
+
+The subagent may produce source models, Blender files, textures, `.mesh`, `.anim`, sourced unit-audio candidates, mechanically derived audio, previews, manifests, reports, crosswalk rows, and handoffs. It must not perform final gameplay/GFX/entity/sound-definition/localisation/spreadsheet wiring or claim in-game completion. The parent owns those changes, the live consumer, in-game evidence, and the overall completion claim.
+
+## Final state and fallback disclosure
+
+Mark each requested 3D requirement as `complete`, `needs_user_review`, `blocked`, or `canceled` in the package. For a custom unit, the package must also record the sourced sound candidates, licensing evidence, synchronization handoff, and the status of parent-owned audio wiring. A package-level `complete` means the worker's requested source, processing, export, sound-source research, and evidence outputs are present; it does not mean the repository runtime feature is complete. Report every omitted component, rejected candidate, unverified capability, budget stop, missing reimport proof, missing sound source, and proposed static companion explicitly. Never hide a simplification behind a successful export or a parent-owned runtime handoff.

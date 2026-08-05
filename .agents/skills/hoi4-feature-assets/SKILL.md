@@ -126,8 +126,21 @@ When moving or adding an asset, update every `.gfx`, `.gui`, event, idea, decisi
 
 Researched presentation audio belongs to `hoi4-text-audio-research`. Use feature-scoped music and sound paths only when the repository already uses that convention or the parent prompt asks for it. Preserve source downloads under a documented source-audio path instead of burying them among final game files.
 
+## 2.3 Temporary feature-workspace lifecycle
+
+Treat project-root `docs/assets/<feature_slug>/` as temporary evidence and working material, except for explicitly durable archives such as the portrait source archive described below. Keep source files, previews, contact sheets, manifests, provenance, research notes, and handoffs while work is active, blocked, awaiting review, or undergoing acceptance scenarios.
+
+Before declaring the feature fully complete:
+
+1. Promote durable provenance, licensing, attribution, requirement-to-runtime crosswalks, review results, accepted handoff facts, and blocker or exception notes into permanent feature, plan, spec, super-event, or system documentation.
+2. Move final runtime assets into engine-facing folders and verify every `.gfx`, `.gui`, audio, or gameplay reference.
+3. Verify that no runtime reference points into `docs/assets/`.
+4. Delete the complete feature-scoped temporary workspace, including empty subfolders, and verify that it is absent. Never delete a separately designated durable archive as part of this cleanup.
+
+An absent temporary workspace is expected after a fully complete goal. If the feature is incomplete or blocked, retain it and report the blocker. Never delete skill-local reference libraries or another feature's workspace.
+
 <!-- HOI4_MOD_SETUP_PORTRAITS_START -->
-## 2.3 Optional provider portrait handoff
+## 2.4 Optional provider portrait handoff
 
 Use this handoff whenever the project has portrait production enabled. The
 provider-neutral `hoi4-portrait-production` skill owns the common contract,
