@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "d1127cd3c42f2f462048005deee85d6ef236c91f",
+  "generated_for_revision": "a04c543fc14065e17850f4075506133004963bdc",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -2524,8 +2524,8 @@
         },
         {
           "path": ".codex/agents/hoi4_event_ui_worker.toml",
-          "sha256": "cf65a7155a74a54b18e55fe9a7f7d1305fa8ddeb4eceb89822c42274e1bad7b9",
-          "size": 8426
+          "sha256": "b110e9d9846ef5cdc681256b436d5e02cd8559bef7895b87bffdde11e303ca78",
+          "size": 8424
         },
         {
           "path": ".codex/agents/hoi4_feature_completion_auditor.toml",
