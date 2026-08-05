@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "f6e29a021e5a7c0a6efc93d5e0bbbaef7e44dd87",
+  "generated_for_revision": "d1127cd3c42f2f462048005deee85d6ef236c91f",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "8f420af9604e37d2967d8d397a245bd269d6d82372c9c1abb155f42d958a461e",
-          "size": 42989
+          "sha256": "a87453342458c331fe99756dde89bbd94ae409d5595f249cf856fc6d7ba81e26",
+          "size": 44165
         }
       ]
     },
@@ -124,13 +124,13 @@
         },
         {
           "path": ".agents/skills/hoi4-decisions-missions/SKILL.md",
-          "sha256": "6845c8a129d40956eab9a5f8228734a3f767b196a4fc21d7cc7b327d88019d9c",
-          "size": 56065
+          "sha256": "796745594d4d811853545901ba230d17cecbc19e82906a9e6621b2ab8647abef",
+          "size": 56648
         },
         {
           "path": ".agents/skills/hoi4-events/SKILL.md",
-          "sha256": "18b571165a07465cb3a82812c7649e74a67c06f8a0c078342440cfc9b7a410b7",
-          "size": 43031
+          "sha256": "961ff96e1494f31837b9546c1bc0131d29eb0e8b457f691323ff6136f7d63bb6",
+          "size": 43923
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
@@ -2399,8 +2399,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "f94c7d8f53f6dd91ab405935ae5a983935fc010ac4f07c17ac43011dd2370c1b",
-          "size": 154767
+          "sha256": "dfcfab078fadfdae2022db63d492d02da8f5f2e21fb656d55fb18ea36f592b5b",
+          "size": 155899
         },
         {
           "path": ".agents/skills/hoi4-focus-trees/SKILL.md",
@@ -2424,8 +2424,8 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "31034d04b29089455f673066382990a512072919969b542f74e4c5ae7e968c1b",
-          "size": 29715
+          "sha256": "41c4cf14037099d2c87fb40a64c1c0cc25e4d32c050a1a8cb65482f586b38bf2",
+          "size": 32121
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
@@ -2483,7 +2483,8 @@
         "bounded research",
         "audits",
         "AI probability analysis",
-        "planning"
+        "planning",
+        "event-owned scripted GUI implementation"
       ],
       "expected_files": [
         {
@@ -2513,8 +2514,8 @@
         },
         {
           "path": ".codex/agents/hoi4_decision_mission_auditor.toml",
-          "sha256": "fdff0c2705b785b4d6f1f1d146d06d6c64885411429f3165a2b860acb766ead8",
-          "size": 5591
+          "sha256": "21f573734b620602a9b8cf8a8e7df13c316602fb325d085d48bcdc450bb0c3e7",
+          "size": 5929
         },
         {
           "path": ".codex/agents/hoi4_documentation_curator.toml",
@@ -2522,9 +2523,14 @@
           "size": 9949
         },
         {
+          "path": ".codex/agents/hoi4_event_ui_worker.toml",
+          "sha256": "cf65a7155a74a54b18e55fe9a7f7d1305fa8ddeb4eceb89822c42274e1bad7b9",
+          "size": 8426
+        },
+        {
           "path": ".codex/agents/hoi4_feature_completion_auditor.toml",
-          "sha256": "1f941700897b76f29a12f62090b7c7f64a7afbc792fd7fd77dce6bb8f9500507",
-          "size": 5161
+          "sha256": "ce218540e265bda5aaa544cce2bae15142df10944aef6a82659d27cbb507865c",
+          "size": 5565
         },
         {
           "path": ".codex/agents/hoi4_focus_tree_auditor.toml",
@@ -2634,8 +2640,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "9a577e2704debbf870d3c4fcdfeb1cce4ff84f10c388ec2fb7d0e026e6b9f951",
-          "size": 8757
+          "sha256": "e8e005c4ed5f694e68b32d55bf66070ee603977f3af41395b7bf4e4358562b06",
+          "size": 9228
         }
       ]
     },
@@ -2755,8 +2761,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "632ec5ce175aeb8cb0d5b42a5e3989aad224a149ebc51df02f442048c2068d01",
-          "size": 17714
+          "sha256": "34976a295d2bafce715936272250da542a6c82abbce67f2fc387eebd5eba0250",
+          "size": 18615
         }
       ]
     },
