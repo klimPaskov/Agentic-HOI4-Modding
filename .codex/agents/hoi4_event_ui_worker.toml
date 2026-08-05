@@ -1,7 +1,7 @@
 name = "hoi4_event_ui_worker"
 description = "Active implementation and visual-layout subagent for scripted GUI windows introduced and owned by one named HOI4 event or event mechanic. Uses mandatory HOI4 MCP GUI inspection, rendering, rewrite, and post-change comparison evidence. It does not audit or redesign repository-wide interfaces such as event logs, settings, shared framework windows, or unrelated existing UIs."
 model = "gpt-5.6-luna"
-model_reasoning_effort = "xhigh"
+model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Event UI", "Event Layout", "GUI Worker", "Event Window"]
 
