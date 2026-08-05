@@ -4,6 +4,9 @@ Generated from installed vanilla HOI4 assets. Review PNGs are lossless local ref
 They are not runtime mod assets and must not be wired, traced, recolored, or copied into final art.
 Every tracked type has a local `contact_sheet.png`; common icon families target 15 references and other families target at least 5.
 
+The checksum- and frame-level provenance for the 2026-08-04 synchronized expansion is recorded in
+`REFERENCE_MANIFEST.md`.
+
 ## Coverage
 
 | Asset type | References | Minimum | Contact sheet |
@@ -14,36 +17,36 @@ Every tracked type has a local `contact_sheet.png`; common icon families target 
 | `icons/achievements` | 15 | 15 | `icons/achievements/contact_sheet.png` |
 | `icons/balance_of_power` | 12 | 5 | `icons/balance_of_power/contact_sheet.png` |
 | `icons/buildings` | 5 | 5 | `icons/buildings/contact_sheet.png` |
-| `icons/commander_traits` | 5 | 5 | `icons/commander_traits/contact_sheet.png` |
+| `icons/commander_traits` | 15 | 15 | `icons/commander_traits/contact_sheet.png` |
 | `icons/decision_categories` | 15 | 15 | `icons/decision_categories/contact_sheet.png` |
 | `icons/decisions` | 15 | 15 | `icons/decisions/contact_sheet.png` |
 | `icons/factions` | 5 | 5 | `icons/factions/contact_sheet.png` |
 | `icons/ideas` | 15 | 15 | `icons/ideas/contact_sheet.png` |
-| `icons/intelligence_agency` | 5 | 5 | `icons/intelligence_agency/contact_sheet.png` |
-| `icons/intelligence_operations` | 5 | 5 | `icons/intelligence_operations/contact_sheet.png` |
-| `icons/medals` | 5 | 5 | `icons/medals/contact_sheet.png` |
-| `icons/military_industrial_organizations` | 5 | 5 | `icons/military_industrial_organizations/contact_sheet.png` |
-| `icons/military_raids` | 5 | 5 | `icons/military_raids/contact_sheet.png` |
+| `icons/intelligence_agency` | 15 | 15 | `icons/intelligence_agency/contact_sheet.png` |
+| `icons/intelligence_operations` | 15 | 15 | `icons/intelligence_operations/contact_sheet.png` |
+| `icons/medals` | 15 | 15 | `icons/medals/contact_sheet.png` |
+| `icons/military_industrial_organizations` | 15 | 15 | `icons/military_industrial_organizations/contact_sheet.png` |
+| `icons/military_raids` | 15 | 15 | `icons/military_raids/contact_sheet.png` |
 | `icons/missions` | 5 | 5 | `icons/missions/contact_sheet.png` |
 | `icons/modifiers` | 5 | 5 | `icons/modifiers/contact_sheet.png` |
 | `icons/national_focus` | 16 | 15 | `icons/national_focus/contact_sheet.png` |
-| `icons/officer_corps_spirits` | 5 | 5 | `icons/officer_corps_spirits/contact_sheet.png` |
-| `icons/special_projects` | 6 | 5 | `icons/special_projects/contact_sheet.png` |
-| `icons/state_modifiers` | 5 | 5 | `icons/state_modifiers/contact_sheet.png` |
+| `icons/officer_corps_spirits` | 15 | 15 | `icons/officer_corps_spirits/contact_sheet.png` |
+| `icons/special_projects` | 15 | 15 | `icons/special_projects/contact_sheet.png` |
+| `icons/state_modifiers` | 15 | 15 | `icons/state_modifiers/contact_sheet.png` |
 | `icons/technologies` | 2 | 15 | `icons/technologies/contact_sheet.png` |
-| `portraits/advisors` | 9 | 5 | `portraits/advisors/contact_sheet.png` |
+| `portraits/advisors` | 15 | 5 | `portraits/advisors/contact_sheet.png` |
 | `portraits/commanders` | 5 | 5 | `portraits/commanders/contact_sheet.png` |
 | `portraits/leaders` | 5 | 5 | `portraits/leaders/contact_sheet.png` |
-| `portraits/operatives` | 5 | 5 | `portraits/operatives/contact_sheet.png` |
-| `units/air/map_counters` | 5 | 5 | `units/air/map_counters/contact_sheet.png` |
-| `units/equipment/technology_art` | 5 | 5 | `units/equipment/technology_art/contact_sheet.png` |
+| `portraits/operatives` | 15 | 5 | `portraits/operatives/contact_sheet.png` |
+| `units/air/map_counters` | 15 | 5 | `units/air/map_counters/contact_sheet.png` |
+| `units/equipment/technology_art` | 17 | 5 | `units/equipment/technology_art/contact_sheet.png` |
 | `units/land/counters_large` | 6 | 5 | `units/land/counters_large/contact_sheet.png` |
-| `units/land/division_template_emblems` | 5 | 5 | `units/land/division_template_emblems/contact_sheet.png` |
+| `units/land/division_template_emblems` | 15 | 5 | `units/land/division_template_emblems/contact_sheet.png` |
 | `units/land/map_counters` | 5 | 5 | `units/land/map_counters/contact_sheet.png` |
 | `units/models_3d/air_materials` | 5 | 5 | `units/models_3d/air_materials/contact_sheet.png` |
 | `units/models_3d/land_materials` | 5 | 5 | `units/models_3d/land_materials/contact_sheet.png` |
 | `units/models_3d/naval_materials` | 5 | 5 | `units/models_3d/naval_materials/contact_sheet.png` |
-| `units/naval/map_counters` | 5 | 5 | `units/naval/map_counters/contact_sheet.png` |
+| `units/naval/map_counters` | 15 | 5 | `units/naval/map_counters/contact_sheet.png` |
 
 ## Portraits and flags
 

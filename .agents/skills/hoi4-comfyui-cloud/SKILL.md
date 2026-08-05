@@ -28,7 +28,7 @@ irm https://raw.githubusercontent.com/Comfy-Org/comfy-cloud-mcp/main/install.ps1
 ```
 
 Use the provider subscription required for custom model import. Import the
-exact current LoRA filename from the upstream lock:
+exact current LoRA filename from the pinned upstream model manifest:
 `hoi4_portraits_flux2_klein_9b_lora_000002500.safetensors`.
 
 The source and processing graphs also use the upstream

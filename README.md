@@ -135,7 +135,9 @@ installs the `hoi4-super-events` skill plus the reusable runtime under
 `interface/`, `common/`, `events/`, `localisation/`, `gfx/`, and
 `docs/super_events/`.
 
-The installer adapts all scripted identifiers to the confirmed mod namespace.
+The installer adapts all scripted identifiers and runtime filenames to the
+confirmed mod prefix. The upstream `hoi4ms_*` names are source-package names;
+installed files use the project's actual `<mod_prefix>_*` names.
 The package includes one hidden console-test event, a default image and
 background, the response button texture, and both full-composition and
 `457x328` image Photoshop templates. New registrations add one stable integer
@@ -151,8 +153,8 @@ identity-preserving source or processing workflow from the pinned
 portraits use native ImageGen and never enter the ComfyUI workflow. The current
 workflow uses eight pinned model files, about 19.42 GB of model storage, and a
 24 GB GPU as the practical target. A 16 GB GPU is limited to slower reduced
-tests, and RunPod should use a 30 GB volume. See the provider skill and
-`docs/portrait_pipeline/upstream-lock.json` for the exact revision and checks.
+tests, and RunPod should use a 30 GB volume. See the selected provider skill and
+`.codex/portrait_pipeline.toml` for the persisted revision and checks.
 
 ### 7. Keep asset ownership clear
 

@@ -4,9 +4,10 @@ This folder documents the optional reusable Super Events runtime installed by
 HOI4 Mod Setup. The package stays absent unless the user selects the Super
 Events workflow.
 
-The installed runtime uses the confirmed project namespace in every scripted
-identifier. Its filenames remain stable so updates can compare installed,
-local, and incoming content safely.
+The installed runtime uses the confirmed project prefix in every runtime
+filename and scripted identifier. The upstream package keeps `hoi4ms_*` source
+names for manifest evidence; installation writes `<mod_prefix>_*` destinations
+and managed updates compare those adapted paths safely.
 
 The base DDS and PSD files were copied, at the maintainer’s direction, from
 the tracked Chaos Redux versions at commit
@@ -16,13 +17,13 @@ lineage without making an unsupported rights claim.
 
 ## Included runtime
 
-- `interface/hoi4ms_super_events.gui`
-- `interface/hoi4ms_super_events.gfx`
-- `common/scripted_guis/hoi4ms_super_events.txt`
-- `common/scripted_effects/hoi4ms_super_events.txt`
-- `common/scripted_localisation/hoi4ms_super_events.txt`
-- `events/hoi4ms_super_event_examples.txt`
-- `localisation/english/hoi4ms_super_events_l_english.yml`
+- `interface/<mod_prefix>_super_events.gui`
+- `interface/<mod_prefix>_super_events.gfx`
+- `common/scripted_guis/<mod_prefix>_super_events.txt`
+- `common/scripted_effects/<mod_prefix>_super_events.txt`
+- `common/scripted_localisation/<mod_prefix>_super_events.txt`
+- `events/<mod_prefix>_super_event_examples.txt`
+- `localisation/english/<mod_prefix>_super_events_l_english.yml`
 - `gfx/super_events/` background, default preview, example image, and editable Photoshop templates
 - `gfx/interface/super_event_option.dds`
 - `.agents/skills/hoi4-super-events/assets/examples/` composition references and contact sheet
@@ -41,8 +42,8 @@ visibility flag and current registration value.
 ## Register another Super Event
 
 1. Reserve a new integer ID in the project’s permanent Super Events registry.
-2. Add one sprite to `interface/hoi4ms_super_events.gfx`.
-3. Add matching ID branches to all five `defined_text` blocks in `common/scripted_localisation/hoi4ms_super_events.txt`.
+2. Add one sprite to `interface/<mod_prefix>_super_events.gfx`.
+3. Add matching ID branches to all five `defined_text` blocks in `common/scripted_localisation/<mod_prefix>_super_events.txt`.
 4. Add title, description, quote, and response localisation.
 5. Add a caller that invokes `<mod_prefix>_show_super_event` with the reserved
    ID.

@@ -60,8 +60,8 @@ fallback.
 
 ## Configuration and handoff
 
-Use the exact repository revision and workflow hashes in
-`docs/portrait_pipeline/upstream-lock.json`. The project configuration stores
+Use the exact repository revision and workflow hashes in the enabled
+provider's `.codex/portrait_pipeline.toml`. The project configuration stores
 only non-secret provider state and the selected `provider_skill`; credentials
 remain outside the project, lock, logs, prompts, screenshots, and runtime
 files.
