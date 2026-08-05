@@ -547,6 +547,8 @@ Treat every unit visual as a domain-and-surface-specific pipeline. Inspect the m
 - `units/air/map_counters/` and `units/naval/map_counters/` contain domain-specific map-counter art. Do not substitute land counters or resized equipment art.
 - `units/models_3d/land_materials/`, `units/models_3d/air_materials/`, and `units/models_3d/naval_materials/` contain UV model materials paired with cataloged `.mesh`, `.asset`, and entity definitions. They are not 2D icons, finished renders, or concept sheets.
 
+Every new custom unit must receive bespoke counter art for every large or map-counter surface it uses. Before production, inspect the exact closest installed-vanilla counter definition and DDS plus the matching skill-local counter family and contact sheet. Match the inspected vanilla green palette, canvas, frame order, alpha, border treatment, silhouette scale, shading, contrast, and state/inverted behavior while creating original unit-specific art. A copied vanilla counter, renamed existing counter, generic placeholder, arbitrary green, or counter produced without the recorded vanilla inspection is incomplete. If the reference cannot be inspected, mark the counter blocked.
+
 Classify the requested deliverable before creating art: equipment/technology illustration, large land counter, land/air/naval map counter, division-template emblem, or land/air/naval 3D model package. Give each class its own brief, source art, native canvas or UV layout, frame metadata, final path, and handoff. A 3D task must keep model geometry, materials, entity wiring, and any separately produced concept reference distinct. Do not derive one unit pipeline by resizing, relabeling, or recoloring another.
 
 ### 3D model package handoff

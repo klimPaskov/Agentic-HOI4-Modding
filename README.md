@@ -16,7 +16,7 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 - Example repo skills for repeated HOI4 workflows.
 - Optional custom Codex subagent patterns for bounded research, asset work, audits, and documentation.
 - A model for separating main-agent implementation from helper-agent production and audits.
-- The mod-agnostic `hoi4-3d-model-pipeline` skill and `hoi4_3d_model_pipeline` subagent for verified Meshy-to-Blender-to-io_pdx_mesh model production plus rights-checked Internet-sourced unit sound design synchronized to actions.
+- The mod-agnostic `hoi4-3d-model-pipeline` skill and `hoi4_3d_model_pipeline` subagent for Meshy 6-first, verified Meshy-to-Blender-to-io_pdx_mesh model production plus rights-checked Internet-sourced unit sound design and bespoke vanilla-green unit counters.
 - The read-only `hoi4_ai_probability_auditor` subagent for MCP-backed scenario analysis and before/after comparison of AI weights, MTTH, event chances, random lists, strategy factors, and other declared weighted systems.
 - The optional mod-agnostic `hoi4-super-events` package: a project-adapted GUI/GFX runtime, dynamic registration pattern, hidden smoke-test event, default DDS assets, editable Photoshop templates, research guidance, and complete presentation workflow.
 - The optional provider-selected ComfyUI portrait workflow: a source and prompt contract, Cloud, Local, and RunPod skills, a bounded portrait subagent, durable source archives, and source-based fallback handling.
@@ -237,9 +237,15 @@ When a feature needs 3D work, the agent runs .tools/3d_pipeline/bootstrap_3d_wor
 
 When a brief has no ready reference, the workflow generates exactly one final Meshy-ready image for the asset and never sends side-profile sheets, turnaround boards, collages, or multi-view boards to Meshy.
 
+Meshy 6 is the default image-to-3D generation model. The worker records the exact live model identifier and does not silently downgrade to an older model when Meshy 6 is unavailable.
+
+Normal planned model generation, remesh/retexture, rigging, conversion, and required animation credit use is pre-authorized. The worker checks and records the live balance and consumed credits without asking for confirmation. It asks only before additional paid recovery caused by a failed or rejected operation; otherwise it must not ask for credit-spend confirmation.
+
 Humanoid units are calibrated against a named installed vanilla source mesh and entity scale with source geometry height and effective runtime height recorded separately and the scale applied exactly once.
 
 For custom units, the 3D worker also researches sound files on the Internet, preserves original downloads and source URLs, records licensing and usage terms, access dates, and checksums, and maps sound roles and synchronization points to animation actions or frames. It may make only license-permitted mechanical edits. It must never generate, synthesize, record, manually author, fabricate placeholder or test-tone audio, or use an unlicensed file; lack of a defensible source is a blocker.
+
+Every custom unit also requires original counters for every runtime counter surface it uses. The counter artist must inspect the exact installed-vanilla definition and DDS plus the matching reference family, sample and match the vanilla green palette and frame behavior, and produce the final large and map-counter variants required by the consumer. Reused counters, arbitrary green, placeholders, and unreferenced imitations are incomplete.
 
 The package retains provider lineage, immutable source downloads, Blender checkpoints, topology repair evidence, locally verified PDX material packing, processed textures, real mesh and skeletal animation exports, sourced-audio evidence for custom units, reimport proof, source-to-runtime hashes, and a parent-owned runtime handoff.
 

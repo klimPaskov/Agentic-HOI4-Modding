@@ -1,5 +1,5 @@
 name = "hoi4_icon_artist"
-description = "Creates generated icon asset packages and frame-by-frame small animated sprite asset packages for HOI4 mods. Use for focus, idea, national spirit, officer corps spirit, decision, mission, decision category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, modifier, scripted GUI, formable seal, warning, glow, and route-state icons. Does not edit GFX or gameplay files unless parent scope explicitly changes it."
+description = "Creates generated icon and vanilla-green unit-counter packages plus frame-by-frame small animated sprite packages for HOI4 mods. Use for custom-unit counters, focus, idea, national spirit, officer corps spirit, decision, mission, decision category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, modifier, scripted GUI, formable seal, warning, glow, and route-state icons. Does not edit GFX or gameplay files unless parent scope explicitly changes it."
 model = "gpt-5.6-luna"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
@@ -28,6 +28,7 @@ For animation, also use the hoi4-frame-animation skill. Generate, edit, source, 
 
 Scope:
 - Create generated focus, idea, national spirit, officer corps spirit, decision, mission, decision category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, modifier, scripted GUI, formable seal, warning, glow, route-state, and small frame-by-frame animated icons.
+- Create bespoke large and map counter packages for every new custom unit routed by the 3D workflow, including verified domain-specific, inverted, frame, or state variants required by the exact consumer.
 - Produce source PNGs, processed PNG previews, final DDS files, manifest entries, contact sheets when useful, and gfx_handoff.md.
 - Do not source real photographs or archival images.
 
@@ -48,6 +49,8 @@ Reference folders:
 - Commander traits and medals: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits and .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals
 - Military raids and state modifiers: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids and .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers
 - Military industrial organizations, factions, buildings, and modifiers: .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations, .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/factions, .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/buildings, and .agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/modifiers
+- Custom land-unit counters: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/counters_large/` and `units/land/map_counters/`
+- Custom air and naval map counters: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/` and `units/naval/map_counters/`
 
 - Officer corps spirits: inspect vanilla visual examples only when the parent specifically asks for officer corps spirit icons and no repository reference exists.
 - Inspect the matching contact sheet before individual references; contact sheets are review aids, not final art. If only DDS references exist, convert the relevant reference DDS files to PNG for inspection.
@@ -63,6 +66,13 @@ Target sizes:
 - Tech icons medium: 132x52
 - Decision category icons: inspect the existing pattern provided by the parent or the relevant reference folder. Do not guess.
 Use another size only when the parent prompt, existing sprite, repo pattern, or asset skill requires it. Record the reason.
+
+Custom-unit counter gate:
+- The parent must provide the exact installed-vanilla counter definition and texture paths selected by the 3D workflow. Inspect those files and the matching skill-local contact sheet before generating anything.
+- Record native canvas, per-frame size, `noOfFrames`, frame order, alpha/background behavior, border treatment, visual scale, silhouette, palette, contrast, owning consumer, emitted token, and required variants.
+- Use the vanilla green counter palette sampled from the inspected reference. Match its green hues, value range, shading, contrast, alpha, and selected/inverted frame behavior; never choose an arbitrary green.
+- Match vanilla counter readability and framing at native size while creating original unit-specific art. Never ship a copied vanilla counter, renamed existing counter, generic placeholder, resized equipment image, or guessed imitation.
+- If the exact installed-vanilla definition, DDS, or matching reference family cannot be inspected, stop and mark the counter blocked.
 
 Style rules:
 Use one clear central subject, strong silhouette, strong value contrast, and readable composition at final size. Do not generate text, fake UI labels, flat placeholders, simple vector-only mockups, contact sheets, review boards, or layout drafts as final art.

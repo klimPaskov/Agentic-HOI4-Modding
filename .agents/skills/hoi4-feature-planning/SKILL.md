@@ -916,20 +916,22 @@ For every planned new unit family, define:
 - custom sub-unit, support unit, unit category, equipment, modifier, technology, doctrine, and script-enum needs
 - manpower, equipment, supply, fuel, training, reinforcement, availability, cap, upgrade, conversion, and cleanup rules
 - AI template priorities, role ratios, production needs, recruitment limits, and operational use
-- localisation, map-counter, icon, and runtime-consumer requirements
+- localisation, bespoke vanilla-green large/map-counter art, exact counter tokens, and runtime-consumer requirements
 - 3D entity, model, material, idle, movement, attack, death, and validation requirements when the unit should look different on the map
 
 Every custom unit family also needs a sourced voice and sound-design pass. Define the applicable selection, acknowledgement, movement, idle, attack, retreat, impact, damage, destruction, and death roles; variation needs; runtime identifiers and consumers; looping, distance, volume, mix, and animation synchronization; and the exact vanilla or Internet-sourced files that may satisfy them. Recording, generation, synthesis, and manual authoring are forbidden. Every external file needs provenance, licensing, attribution, intended-use evidence, and an immutable original. If a suitable source cannot be found, the role remains blocked.
+
+Every custom unit family also needs bespoke counter art for every large or map-counter surface it uses. The plan must name the exact installed-vanilla counter definition and DDS to inspect, the matching skill-local counter family, required tokens, frames, states, sizes, final paths, and `hoi4_icon_artist` handoff. Require the vanilla green counter palette sampled from the inspected reference. If the reference cannot be inspected, counter production is blocked; a reused vanilla counter or generic placeholder is not final.
 
 Treat the unit package as part of the country package. A new military country archetype represented only by renamed vanilla formations is a planning failure unless the spec provides a concrete mechanical, visual, and audio justification.
 
 ## 3.13.1 3D model and skeletal animation planning standard
 
-When a feature adds a visible unit, building, creature, vehicle, aircraft, naval object, map entity, or other 3D surface, plan the model package as a first-class feature surface rather than treating it as an optional render. A custom unit package also requires a sourced sound-design handoff.
+When a feature adds a visible unit, building, creature, vehicle, aircraft, naval object, map entity, or other 3D surface, plan the model package as a first-class feature surface rather than treating it as an optional render. A custom unit package also requires a sourced sound-design handoff and bespoke vanilla-green counter package.
 
 Classify the asset before writing the brief: static prop, building, humanoid unit, non-humanoid creature, vehicle, aircraft, naval object, or articulated attachment.
 
-For a unit, define the gameplay consumer, unit category or sub-unit, entity key, `.asset` key, `.mesh` key, material and texture paths, icon or text-icon requirements, idle action, movement action, attack action, death or destruction action when relevant, and the exact country, province, state, or map test that will show it.
+For a unit, define the gameplay consumer, unit category or sub-unit, entity key, `.asset` key, `.mesh` key, material and texture paths, large/map-counter consumers and tokens, idle action, movement action, attack action, death or destruction action when relevant, and the exact country, province, state, or map test that will show it.
 
 For a building or map entity, define the building key, entity key, mesh key, state and province placement, valid state-to-province relationship, level or construction behavior, zoom visibility, rotation, runtime scale, and a test location that is inside the intended state and does not hide the model behind an existing building.
 
@@ -943,13 +945,15 @@ For humanoid units, the custom source geometry must match the named vanilla sour
 
 For every requested skeletal action, define the semantic role, action name, FPS, frame range, loop policy, root-motion or in-place policy, ground-contact requirement, retarget or authoring route, static fallback policy, runtime binding, and acceptance evidence. For every custom-unit sound role, define the Internet source-search requirement, selection or movement or engine or idle or attack or impact or special-action or death role when applicable, and the animation action and frame or runtime lifecycle synchronization point.
 
+For every custom-unit counter, define the installed-vanilla definition and DDS reference, matching skill-local contact sheet, native canvas, per-frame size, frame order, alpha/background behavior, exact green palette, silhouette and contrast target, emitted token, required variants, final DDS path, and parent-owned GFX wiring.
+
 Do not let a static render or still mesh stand in for a requested skeletal animation. If an action cannot be produced, the implementation handoff must mark it blocked or needs_user_review with the reason.
 
 The model package must plan provider lineage, Blender source and normalized/repaired/material/rigged/action/pre-export checkpoints, processed textures, PDX material channel mapping, `.mesh` and `.anim` exports, reimport proof, runtime hashes, and final live-consumer screenshots. The sound package must preserve original downloads, original URLs, license and usage terms, access dates, source and derived checksums, and mechanically transformed files only when the license permits. No generated, synthesized, recorded, manually authored, placeholder, test-tone, or unlicensed audio is allowed, and a missing defensible source is a blocker.
 
 The asset plan must distinguish provider source files from final runtime copies. It must require a final hash-aware synchronization step so an older mapped texture, mesh, entity, or animation cannot overwrite the approved runtime candidate.
 
-Route production to `hoi4_3d_model_pipeline` with `fork_context=false` and give it the exact job root, reference status, asset profile, vanilla references, scale relationship, action list, custom-unit sound roles, dependency lock, credit limits, and handoff path. The parent owns final sound definitions, runtime wiring, and live validation.
+Route production to `hoi4_3d_model_pipeline` with `fork_context=false` and give it the exact job root, reference status, asset profile, vanilla references, scale relationship, action list, custom-unit sound roles, custom-unit counter consumers/tokens and inspected vanilla paths, dependency lock, baseline planned paid operations, extra-recovery credit limits, and handoff path. Require Meshy 6 as the default generation model. Normal planned model and required animation spend is pre-authorized and must not trigger a confirmation prompt; only additional paid recovery caused by a failed or rejected attempt requires confirmation. The parent owns final sound definitions, runtime wiring, and live validation.
 
 The main implementation agent owns `.asset`, entity, `.gfx`, unit/building/gameplay wiring, valid province and state placement, live runtime validation, and in-game evidence.
 

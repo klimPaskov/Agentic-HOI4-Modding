@@ -16,7 +16,7 @@ default_tools_approval_mode = "auto"
 # materializes concrete Meshy and Blender entries without user editing.
 
 [agents.hoi4_3d_model_pipeline]
-description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through the verified Meshy-to-Blender-to-io_pdx_mesh workflow, including rights-checked Internet-sourced custom-unit sound design synchronized to actions. Never creates audio manually or through generation. Produces source models, checkpoints, PDX textures, mesh and animation exports, sourced-audio evidence, reimport evidence, manifests, and runtime handoffs without claiming final gameplay completion."
+description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through a Meshy 6-first verified Meshy-to-Blender-to-io_pdx_mesh workflow, including rights-checked Internet-sourced custom-unit sound design and bespoke vanilla-green unit-counter handoffs. Normal model and required animation credit use is pre-authorized; only failed-attempt recovery requires confirmation. Never creates audio manually or through generation and never claims final gameplay completion."
 config_file = "agents/hoi4_3d_model_pipeline.toml"
 
 [agents.hoi4_ai_probability_auditor]
@@ -56,7 +56,7 @@ description = "Generates and processes non-icon fictional, symbolic, supernatura
 config_file = "agents/hoi4_generated_feature_art.toml"
 
 [agents.hoi4_icon_artist]
-description = "Creates generated icon asset packages and frame-by-frame small animated sprite asset packages for HOI4 mods. Use for focus, idea, national spirit, officer corps spirit, decision, mission, decision category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, modifier, scripted GUI, formable seal, warning, glow, and route-state icons. Does not edit GFX or gameplay files unless parent scope explicitly changes it."
+description = "Creates generated icon asset packages, bespoke vanilla-green custom-unit counter packages, and frame-by-frame small animated sprite packages for HOI4 mods. Unit counters require exact installed-vanilla definition/DDS inspection and matching reference-family evidence before production. Use for focus, idea, decision, achievement, technology, special-project, scripted GUI, formable seal, route-state, and other gameplay icon surfaces. Does not edit GFX or gameplay files unless parent scope explicitly changes it."
 config_file = "agents/hoi4_icon_artist.toml"
 
 [agents.hoi4_improvement_loop_planner]
