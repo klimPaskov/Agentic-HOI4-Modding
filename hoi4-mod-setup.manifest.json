@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "d82fd18bf8cf45d2bc6ff81d18a43e27ed553a99",
+  "generated_for_revision": "f6e29a021e5a7c0a6efc93d5e0bbbaef7e44dd87",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "983a553b19cdfebf5d5fe2c0746dc59df0f6cb62bc990addac62fa1ae4dd2e4a",
-          "size": 41762
+          "sha256": "8f420af9604e37d2967d8d397a245bd269d6d82372c9c1abb155f42d958a461e",
+          "size": 42989
         }
       ]
     },
@@ -119,8 +119,8 @@
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "7a2a71274faee4134e8f748fd52400b03fb365162c32f8ed04d506efdc14bc15",
-          "size": 33826
+          "sha256": "8aa8829372e07dea3bdecf849aaef67b23e991ec5f49939a408a9d87ee9c3e43",
+          "size": 38959
         },
         {
           "path": ".agents/skills/hoi4-decisions-missions/SKILL.md",
@@ -134,8 +134,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "0b00ff92798adf5cf3bf32612ea03bd5ab80d23a4d1187c3ff7e2e3f038cc29b",
-          "size": 77421
+          "sha256": "ebc95cb7c80d462c50643f294642bb7358feb6eee1757d7091697d3ed5028ec6",
+          "size": 78107
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -2399,8 +2399,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "0b575715448590b8a8433b3ff1b1a7280cb009c60ecea91d78f5aa9f57c313d5",
-          "size": 153439
+          "sha256": "f94c7d8f53f6dd91ab405935ae5a983935fc010ac4f07c17ac43011dd2370c1b",
+          "size": 154767
         },
         {
           "path": ".agents/skills/hoi4-focus-trees/SKILL.md",
@@ -2424,8 +2424,8 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "f9b4ecb8ef1da777b8d88363d91c2fe7979dd7393fa4dc4b0091da454fa21540",
-          "size": 28792
+          "sha256": "31034d04b29089455f673066382990a512072919969b542f74e4c5ae7e968c1b",
+          "size": 29715
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
@@ -2488,8 +2488,8 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_3d_model_pipeline.toml",
-          "sha256": "cd787101d2061fe3294575ecebbe9ec6ced12af31d679966a74753f4a89c07ce",
-          "size": 15613
+          "sha256": "93533138e3f226c2622919cc4d025cd961720e85a6288a9b23e9206299683215",
+          "size": 19074
         },
         {
           "path": ".codex/agents/hoi4_ai_probability_auditor.toml",
@@ -2523,8 +2523,8 @@
         },
         {
           "path": ".codex/agents/hoi4_feature_completion_auditor.toml",
-          "sha256": "168d20443128a88efbc019ecf3f1e6653a9d1eb15433575aec800db0ba7bb4dc",
-          "size": 4683
+          "sha256": "1f941700897b76f29a12f62090b7c7f64a7afbc792fd7fd77dce6bb8f9500507",
+          "size": 5161
         },
         {
           "path": ".codex/agents/hoi4_focus_tree_auditor.toml",
@@ -2538,8 +2538,8 @@
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
-          "sha256": "c73d71c4ca35cf538bfcc8a9ca909907448f22137b99c2353cbf501bdd7334bf",
-          "size": 9415
+          "sha256": "4d518a4fb3756a08088cd2b399160df47af98a9d8079f1590873e4a153a8c302",
+          "size": 11007
         },
         {
           "path": ".codex/agents/hoi4_improvement_loop_planner.toml",
@@ -2634,8 +2634,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "feb76f28759a0369e0b17de9fcf55dce96368af7218f0ed15055ea7fef0c1a91",
-          "size": 8791
+          "sha256": "9a577e2704debbf870d3c4fcdfeb1cce4ff84f10c388ec2fb7d0e026e6b9f951",
+          "size": 8757
         }
       ]
     },
@@ -2755,8 +2755,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "e0e55868c6009f17e9bcd27ee33b9856a30ca51b5a51942111343d6156b2617a",
-          "size": 16679
+          "sha256": "632ec5ce175aeb8cb0d5b42a5e3989aad224a149ebc51df02f442048c2068d01",
+          "size": 17714
         }
       ]
     },
