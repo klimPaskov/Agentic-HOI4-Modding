@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "b9e92b1f6659e96bc6c9ae45d1b357a4872442cc",
+  "generated_for_revision": "7a01862b246ef5ae4525c20c20ddd6a978706cc4",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "1ba9afad6e31772088f542ccd9c4277aae973cf9353c9e3d7df3c2e2d34d71c2",
-          "size": 43020
+          "sha256": "e11117c4e6ea33212a47024fc270b5f6d65b20370581511fddb46d5ea8b019e1",
+          "size": 43078
         }
       ]
     },
@@ -134,8 +134,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "b5d734dbb3f032c1922ac3d26936aabb2826e62cd84307d59bedb5d9319ea9ef",
-          "size": 75130
+          "sha256": "4a0caf76c36309c7e632bc60e43dba0bfb20f520edfbb2f18c855af384ec29ff",
+          "size": 75423
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -2399,13 +2399,13 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "925ff3e302b21b1f6e4529ae5fff6fccb4f8a9fb71cc6c9f2fd876fc4f570c35",
-          "size": 154019
+          "sha256": "afb0c4b5d337aa6ab09468a329c85c2630ed64fc005e780f17e2c0689591748a",
+          "size": 154089
         },
         {
           "path": ".agents/skills/hoi4-focus-trees/SKILL.md",
-          "sha256": "999390ecec365667b83e21c6cef4b1f8a6a20b0c6bcad584d100c35e138229df",
-          "size": 79792
+          "sha256": "d2a2f70939d39fc73dea6982f97dc101be8d73fe8dd9aead8f94f0b21c896ad7",
+          "size": 79694
         },
         {
           "path": ".agents/skills/hoi4-frame-animation/SKILL.md",
@@ -2424,8 +2424,8 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "724b1680b5fa5bc239882b7e9732a6eff1e409d177303b26fc2cd41e641b0c73",
-          "size": 31740
+          "sha256": "e3437cea12c9b6c79913c260be034051cddfdc513d959b5e895a5d5158b3dca7",
+          "size": 31829
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
@@ -2499,8 +2499,8 @@
         },
         {
           "path": ".codex/agents/hoi4_asset_source_researcher.toml",
-          "sha256": "644d675e9de0b7fabf72d3883843f4ee17c66f73e2a1555e1926cb1fd9f80b13",
-          "size": 4786
+          "sha256": "8715ac9a7d46df2fc57306c1c3c6929ad1cb4ceea00767a09969207dea87ddb2",
+          "size": 4086
         },
         {
           "path": ".codex/agents/hoi4_audio_researcher.toml",
@@ -2509,8 +2509,8 @@
         },
         {
           "path": ".codex/agents/hoi4_country_package_auditor.toml",
-          "sha256": "2805488166e130eb2cecd92dacd40ead8de73ae332ef323edda672e0f2f6c1ea",
-          "size": 7717
+          "sha256": "3e4ee2ca5e26da8d4e784eff8c7cd2ef448c7ffe00362d4e3ae12b9a9c5f0ad2",
+          "size": 7765
         },
         {
           "path": ".codex/agents/hoi4_decision_mission_auditor.toml",
@@ -2529,8 +2529,8 @@
         },
         {
           "path": ".codex/agents/hoi4_feature_completion_auditor.toml",
-          "sha256": "715985b2f019482944931ec052bcf3c3562eccce92e81b30da16e0bb193f3c06",
-          "size": 5558
+          "sha256": "6db604ab0fee533f335f5100f61e63be0803a20abcb8bf96da82cdcdcdf5efc0",
+          "size": 5542
         },
         {
           "path": ".codex/agents/hoi4_focus_tree_auditor.toml",
@@ -2539,8 +2539,8 @@
         },
         {
           "path": ".codex/agents/hoi4_generated_feature_art.toml",
-          "sha256": "9f406e31785642fee5b7eb65a9f59bba87f736d046e2364cd853e36e2de016d2",
-          "size": 5972
+          "sha256": "05e90134d2b329dcd3bc164f41b5e57cc33ea0c8c764a8813e7a40ce4113ab2c",
+          "size": 5872
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
@@ -2640,8 +2640,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "5e3a9e5b1fddd5c8eedb12b9d38af7382bdde6f03d94180b9a324db8da3f57f2",
-          "size": 9143
+          "sha256": "4987ee9798092b1e026e043afe90f87b7fc11ccefcd3b3619a0ff435abb69459",
+          "size": 9067
         }
       ]
     },
@@ -2761,8 +2761,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "7d75ceb9a79aa744519f3d120741b13a730b8e50a8e2a53f39a841be65100d8a",
-          "size": 18194
+          "sha256": "266aaa0c36217fa2874073487f85d78e14cedcd4910f059bf3ce6ee120f47bff",
+          "size": 18241
         }
       ]
     },
@@ -2810,8 +2810,8 @@
       "expected_files": [
         {
           "path": "AGENTS_chaos_redux.md",
-          "sha256": "9f714fb60f518cf707261a2a7337568624449cddd5356c31bd7c39e2cc2abc67",
-          "size": 38407
+          "sha256": "5ed223b2051da3bd5e31e3f7f50a79d2a10b424adafc88a1f1f307d25ac6ec6a",
+          "size": 38620
         }
       ]
     },
@@ -5797,8 +5797,8 @@
     },
     {
       "id": "workflow.portraits.core",
-      "display_name": "Sourced portrait workflow",
-      "description": "Install the concise sourced-portrait archive, placeholder, and user-supplied replacement contract.",
+      "display_name": "Complete portrait production contract",
+      "description": "Install the complete grounded-source and fictional-ImageGen portrait production, processing, wiring, manifest, and handoff contract.",
       "category": "workflow",
       "optional": true,
       "platforms": [
@@ -5834,19 +5834,22 @@
         "preserve_local_additions": true
       },
       "capabilities": [
-        "durable sourced portrait archive",
-        "source placeholder wiring",
-        "user-supplied final replacement"
+        "grounded portrait source research and placeholders",
+        "fictional native ImageGen portraits",
+        "provider-result validation",
+        "portrait processing and runtime wiring",
+        "portrait manifests and handoffs"
       ],
       "notes": [
-        "The generic package supports selectable Cloud, Local, and RunPod routes.",
+        "The generic package supports selectable Cloud, Local, and RunPod routes for grounded styled results.",
+        "The portrait worker owns all character portrait production; general asset workers exclude portraits.",
         "Provider credentials remain outside the project and installation lock."
       ],
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-portrait-production/SKILL.md",
-          "sha256": "7be16eef5038f748b7daa79eefdb89233f00ac225e75778e607c063d120f978f",
-          "size": 1568
+          "sha256": "68e6cdb43499a8ae213102ed6d419c8edb97648d91c41b3ffacec8aab8e4272a",
+          "size": 1661
         }
       ]
     },
@@ -5993,8 +5996,8 @@
     },
     {
       "id": "workflow.portraits.subagent",
-      "display_name": "Portrait replacement subagent",
-      "description": "Install the bounded user-supplied portrait validation and replacement subagent.",
+      "display_name": "Complete portrait production subagent",
+      "description": "Install the bounded portrait worker for sourcing or ImageGen generation, processing, DDS conversion, portrait wiring, manifests, and handoffs.",
       "category": "subagent",
       "optional": true,
       "platforms": [
@@ -6024,15 +6027,17 @@
         "preserve_local_additions": true
       },
       "capabilities": [
-        "user-supplied final validation",
-        "DDS conversion",
-        "source placeholder replacement"
+        "grounded source research and placeholders",
+        "fictional ImageGen production",
+        "provider output validation",
+        "DDS conversion and portrait wiring",
+        "portrait manifests and handoffs"
       ],
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_portrait_creator.toml",
-          "sha256": "53298810f9a904b14837a89f9c42bf53fc450ab3a569e86da078cb3f3647e9f8",
-          "size": 1629
+          "sha256": "2a57a940286bb2cbc487c5273c9d90a5a251881fb0c964ca6b13f517bc65d232",
+          "size": 1979
         }
       ]
     },
