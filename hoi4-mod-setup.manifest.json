@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "8f01184fbf6c4ebce6d850e17d752925b76d6182",
+  "generated_for_revision": "59bf7f23c25951ec613b0f36a6921277d16f1354",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -139,13 +139,18 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
-          "sha256": "aa29770cfb84dc1f211eeaff04bb02cf2ed475843dfc7f807c37ad223731c360",
-          "size": 59888
+          "sha256": "2a62cc0a614ac2a9748c852c1b3a71646f46795c2be1164200c679a146eacc64",
+          "size": 60036
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md",
-          "sha256": "aa5c76c5f75eabac78da06ce54884b915e0d4ad2ffcd17bb6f71aea60a19c0d7",
-          "size": 1360
+          "sha256": "5be42284c20488bcf3cd20cd6c0a0769e80fe25258f24ca14b587f0c86c354e6",
+          "size": 1697
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/REFERENCE_MANIFEST.md",
+          "sha256": "2d67974a6657016ac3b0413a72843bc87caa323695c1f7fd0515f2df6808599f",
+          "size": 58306
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art/news/contact_sheet.png",
@@ -499,8 +504,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/contact_sheet.png",
-          "sha256": "4fdabc1e4756aabe9af22b9ff5e6b0e13049707f9f1e3940d8c9b348cabe9769",
-          "size": 10316
+          "sha256": "f1dc7d90d671babea43d50adbccc5d29aa5cc64176c3d938bb250a83e997b8db",
+          "size": 51329
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_adaptable.png",
@@ -518,14 +523,64 @@
           "size": 1318
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_carrier_officer.png",
+          "sha256": "7e41d8f2e2d54a5b08fa087a20852524caca622ef4fa8c9beca31ce918ba099a",
+          "size": 1457
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_cavalry_leader.png",
+          "sha256": "d9d8068dc32a20402a9c37972b40b96f6d3fe23b285307d10102b1d7ea0c0890",
+          "size": 1721
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_commando.png",
+          "sha256": "76959c64d4947918e33978b08e2bd426aab22ec8603868f7b5c2e2c257ebd874",
+          "size": 1666
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_engineer.png",
+          "sha256": "e763a971c69ea850d719272505bae98bcc39fdc970100db531d581489bc8da8e",
+          "size": 1733
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_fortress_buster.png",
+          "sha256": "89fb62761311b0ed578d4b1e1acefa11ce956704597889b67cf0f3129113d46b",
+          "size": 1260
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_guerilla_fighter.png",
+          "sha256": "709ebbc0da192c1a780eb98b7d0d9e0fcca9ab70e055e42901a30b9235932008",
+          "size": 1696
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_infantry_officer.png",
           "sha256": "0ea5ff735dba635b0e9766be9ba97214212813b2ffc1ad133d6a42f683ce538b",
           "size": 1363
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_logistics_wizard.png",
+          "sha256": "a189bd0f393c6f10cbf5f727e53b9c2feff573ded786ce9a8261a248db752acb",
+          "size": 1350
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_organizer.png",
+          "sha256": "a991bd962ae0ed5f24026d032ae53030897d54b495f59c70dfd7dee3047b3e53",
+          "size": 1719
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_panzer_leader.png",
           "sha256": "522e3d0096ac50974f679f6c77986c1daf1df99e42b958987eadba7d6b599d8a",
           "size": 1458
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_submarine_officer.png",
+          "sha256": "a2a88d25a060f57d3be1972869b2906a72932fef2fee934358d001cf52b359e3",
+          "size": 1438
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/commander_traits/trait_trickster.png",
+          "sha256": "8001ec4d3e34da341b2f0b1e813678fa341f2eced5f01f8d120b8d0da525fb16",
+          "size": 1682
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/decision_categories/contact_sheet.png",
@@ -818,14 +873,64 @@
           "size": 5861
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/agency_decryption_boost_1.png",
+          "sha256": "bae0524fe20ca7db4ee95fffe001c993582a2f348128f947697012bf41b70ed7",
+          "size": 7331
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/agency_decryption_boost_2.png",
+          "sha256": "61ae14690824e2ec94dd108b3e1c1058e3cbf99a61ca574c2d99395581d60001",
+          "size": 6861
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/agency_diplomatic_training.png",
+          "sha256": "6a47f707a777ff3a08661b4b747cc6f01141d929cead2839a8598ed7f43333c9",
+          "size": 6839
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/agency_interrogation_techniques.png",
+          "sha256": "986b1074fdf763536de99aab322596beb312d19c782671e6ff6fd4a2a5256046",
+          "size": 6737
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/agency_invisible_ink.png",
           "sha256": "74e5f9fcea23d2e0ac4bf101c970e3637582b83ee31b44a9d5fc9d7ea01d3faf",
           "size": 6339
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/agency_localized_training_center.png",
+          "sha256": "f03a621a2ce62ccae0c1064b9205af7381b9c3da69cb94217a9e28faa6d941a0",
+          "size": 6230
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/agency_plastic_explosives.png",
+          "sha256": "aeba469644ee8b23e50e21b3d5bc34e548d16a9d6bf7a5d74eefd68f9b8e809b",
+          "size": 7186
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/agency_portable_radios.png",
+          "sha256": "23019f2fc269fcfdb968b42986acadef1e9adf589e07f7f76d630baff88ee16b",
+          "size": 6505
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/agency_psychological_warfare.png",
+          "sha256": "0e3420e0a1dc4cb0635b6af5e59dde80f8e1d83342279c99ad1b3930a707bb55",
+          "size": 6653
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/agency_steal_blueprints.png",
+          "sha256": "ec967a6ac06536a81be7a10681a5d6cc584cba3bcdafc93e54b42049a3e0b025",
+          "size": 7041
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/agency_suicide_pills.png",
+          "sha256": "e02b46c6c0c4f3a9b05b361055da32a4ea571b9256e56d12a065b3e2672b3574",
+          "size": 7021
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_agency/contact_sheet.png",
-          "sha256": "624a625c956990ec4495b38d8ed2d2f37af97b7578cff52aa30f3be384acd79c",
-          "size": 33527
+          "sha256": "89d09c55d2e2c963a63f498a6adf3a24a99c559b01ae631f1fd81917c39a7cf4",
+          "size": 122599
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/boost_resistance.png",
@@ -844,8 +949,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/contact_sheet.png",
-          "sha256": "cba9ca232911e4179382de56f1d23c34337d5d4d2d33c0ac9e315521f3597105",
-          "size": 75022
+          "sha256": "eec0a391cd019500b1c402b4b2e55b49bce9c3edf03b530c9707ae8102ff9f4c",
+          "size": 245615
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/coordinated_strike.png",
@@ -853,14 +958,64 @@
           "size": 14604
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/coup_government.png",
+          "sha256": "9db5aa3c01012ca716a390ff545af3bd435afb9984ac4147f451ce97aa1be816",
+          "size": 14841
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/fake_intel.png",
+          "sha256": "dbf420e2b0f65b1f6b0b1ef2cbe6e08e49aa3a066c7f05a9640edbf22046716b",
+          "size": 14471
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/infiltrate_air_forces.png",
+          "sha256": "c215d5c4b63889293de99ad2e06e4a134675d7ebf8544e3ffa45f268f0e9650e",
+          "size": 15717
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/infiltrate_armed_forces.png",
           "sha256": "b688f8295a532a8b4c152e4f48b73e35c4ab9bc92697e2fea647f76e747480ab",
           "size": 16614
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/infiltrate_civilian_govt.png",
+          "sha256": "e19f9428d5058e6b84f4c4b9d8119596dad6477ebf5990dba6dd1ea6b68da387",
+          "size": 12641
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/infiltrate_naval_forces.png",
+          "sha256": "522f873473da84f0d4c3ddb3f993dbf36bd7fe58af753707a13c886e5dac53eb",
+          "size": 14746
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/make_resistance_contacts.png",
+          "sha256": "43b403d69368ec43a6ae532e31ce2e9d15ec4ac740438870b1cfcbac8c11ddd7",
+          "size": 12020
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/murder_trotsky.png",
+          "sha256": "dbf29866766ced761ef93155fbc5c2d911175a6b01bf4212dc2eaee0fae2d3fe",
+          "size": 15388
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/raid_trotskys_villa.png",
+          "sha256": "3cb63ca3808aaf5099bc52648accb7cf611c03bc6972d3c124c26b53c2db16cd",
+          "size": 14627
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/rescue_captured_general.png",
+          "sha256": "07e8be2c9f3d9b73a0ffd470d99b1570e71b0bc28d4c9cd78ea1eb670045d3a1",
+          "size": 15304
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/intelligence_operations/steal_blueprints.png",
+          "sha256": "9f86ef92c42d037e8410e7c154e855c006adfadec2de235ef1c4145c56c7a447",
+          "size": 14799
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/contact_sheet.png",
-          "sha256": "ba2c26b071cd0c70c3041b6ad6bcfcd63c8d0ebda083b1be69ff9ddbdfea6498",
-          "size": 9789
+          "sha256": "df67c575758babdafb2d4f83fd6e20342e1b4936c7d2a4ab4498dc14ea2ad573",
+          "size": 46297
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/eng_medal_1.png",
@@ -878,9 +1033,29 @@
           "size": 1142
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/eng_medal_4.png",
+          "sha256": "906e02a389960181d27f470afc14248c5b32fed62fef9508d9477cab0a4e5010",
+          "size": 1033
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/fra_medal_1.png",
           "sha256": "c2197d0f3d88faa5bb3891183aafce8a4ba67e274be96032f7a38f6a5b310e51",
           "size": 1237
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/fra_medal_2.png",
+          "sha256": "815a9791843a66d240cf54fd2c582aa162eaa61c97742538e36ea34527dbf71a",
+          "size": 1259
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/fra_medal_3.png",
+          "sha256": "6be53d136ea0c9a63d8b167055a0846679305c54987ddf28d72fba589a2a8199",
+          "size": 1039
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/fra_medal_4.png",
+          "sha256": "16de595daad470f1285a5fd024fcd7d51a177fcd0cdcc07a274599cb6239979a",
+          "size": 1253
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/generic_communism_medal_1.png",
@@ -888,9 +1063,39 @@
           "size": 1470
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/generic_communism_medal_2.png",
+          "sha256": "7cae104138a133f91370e7c02df9eef06ca4fc9c76839d0bf9aeee15d0e76300",
+          "size": 870
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/generic_communism_medal_3.png",
+          "sha256": "1694e3bf9eeb8c6935497220502366146b220bfb690fa420c98da8628b221a80",
+          "size": 1473
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/generic_communism_medal_4.png",
+          "sha256": "ea19414fe06148ae4bc399599f9dd0365ab210a86f39de005867574e265fdc57",
+          "size": 1409
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/generic_democratic_medal_1.png",
+          "sha256": "c2754fb0f695346d5071ac58d25556f249a8a01f1c11957a087917d7c0458a42",
+          "size": 1390
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/generic_democratic_medal_2.png",
+          "sha256": "8be4aa462744de8e9cd07f970b0a45ad7fa0d554e3414f67d7fcf36a09462bc1",
+          "size": 1448
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/medals/generic_democratic_medal_3.png",
+          "sha256": "3e6358c3c5d133707c8ccbc1bb205695e41faee2d8be3065f0d0528ccb4257a9",
+          "size": 1314
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/contact_sheet.png",
-          "sha256": "efeecfc00ddd88b3b493b8d3662269a7d2e3d341af4db0622ccacdf8911d76fc",
-          "size": 20327
+          "sha256": "4b01d844d4dc68a9e4a3668195bccb8ba1f949ceb09e1dcd3d3a0baf208afbb8",
+          "size": 85320
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/department_air_transport.png",
@@ -913,14 +1118,64 @@
           "size": 4353
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/generic_mio_trait_icon_air_agility.png",
+          "sha256": "302ebd672d399b06632a1ad14c8c75a7054f22a3919217b79b8d3337b636e4c9",
+          "size": 2812
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/generic_mio_trait_icon_armor_value.png",
+          "sha256": "010572ddcadbb194f6ad713252d20fcbb529c262203017f3c632ef70ca8df057",
+          "size": 2206
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/generic_mio_trait_icon_breakthrough.png",
+          "sha256": "2df1bcc2d95a7a9fc3d74b7dc28996171e119b758e42429d209c4095177b3ae8",
+          "size": 2855
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/generic_mio_trait_icon_reliability.png",
+          "sha256": "83cc5babccb8787642d1fb7f98b960b80204842a7c5e2c055a6d08f027fa7bb6",
+          "size": 2001
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/generic_mio_trait_icon_soft_attack.png",
+          "sha256": "c98928a0bc7bf105e0f584864f1b2b5a84f40ccd0f20d50cd0b9159fe290e043",
+          "size": 3264
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/generic_trait_facilities.png",
           "sha256": "f4b6d28bff290fb44608388f60bb8431017c8958db5f24d597e93294a651b299",
           "size": 1164
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/mio_policy_assembly_line_optimisers.png",
+          "sha256": "d9cd11adf24ead6b60e7f5a30714d0c271e2740cd97a4dc96e3157b185042a58",
+          "size": 5246
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/mio_policy_cutting_corners.png",
+          "sha256": "04e53ab5c6f57f4f5a94964184d15b5d7f729a47a55f9a0e0a18cc2903df8f59",
+          "size": 5836
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/mio_policy_experimental_development_teams.png",
+          "sha256": "d5f0fd0c97d8e190c88f7e19cea14cead111ef61890ec9194dacb327a93177f1",
+          "size": 5811
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/mio_policy_mechanical_genius.png",
+          "sha256": "340d7fb148c7983a838b004f91ec566d5e13027722b79a6f7c88842fa08f4a23",
+          "size": 6028
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_industrial_organizations/mio_policy_perfect_finish.png",
+          "sha256": "8a3436c15ae1fe27d835dfa4952aca7d1d21aad2e86dff8f6986c8faf1d73249",
+          "size": 4745
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/contact_sheet.png",
-          "sha256": "8442bb876d7b8cb0cc89be317cf3e7035de05e763ff9ad1fae602cb386b631eb",
-          "size": 19800
+          "sha256": "b0b9a7935e067cd02a860f266eb0ff0a40fdcb87aee00a09c2c60c01304f23b9",
+          "size": 59493
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_outcome_critical_success.png",
@@ -933,14 +1188,64 @@
           "size": 5208
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_outcome_limited_success.png",
+          "sha256": "53ac352940eb9890943dbdb01aae0586daf74752e837d700c0cab5a6127690d0",
+          "size": 4662
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_outcome_success.png",
           "sha256": "8012d95df5aa19a18335e0b2b57bda3c118b9ec8cabf03da767136a9efe154fc",
           "size": 4426
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_type_icon_airfield_raid.png",
+          "sha256": "54d872ea5dc0f33ca7e2258354717849e8734dcb7ae809593d1505b8c0c08184",
+          "size": 843
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_type_icon_dam_bombing_raid.png",
+          "sha256": "d32ab2697bec5d74155c8ce7aebf38d32258d86ed33d443fae76042603bda92c",
+          "size": 857
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_type_icon_naval_facility_raid.png",
+          "sha256": "b25ba2494c66bca7a90aef06ad8a04e87799e28ac82aa2f87d14460e854a3ee5",
+          "size": 1133
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_type_icon_port_raid.png",
+          "sha256": "abee4eb25cfa9a244579c623761634aa1ed729e33bd0cd421cbc9020061257d5",
+          "size": 1053
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_type_icon_rescue_general.png",
+          "sha256": "6300669d8ccda4517d13ea0509501379ffdca8e0f05d8cca83e978be13e743b0",
+          "size": 926
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_unit_air_raids.png",
           "sha256": "bb272915f4692b24aea9bec33676a4be9d88e294ca67b6731545a9a977d9b2c9",
           "size": 1625
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_unit_icon_land_infiltration_raids.png",
+          "sha256": "380962611ea51f821c3e80bc1e80cc6dfdf5bdf25368973567655edef4a16d3d",
+          "size": 1600
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_unit_icon_naval_commando_raids.png",
+          "sha256": "a5f7900f41e8c1c93933807dbe530e6ffc3ce62a6cff5273c00469d9b06a42e1",
+          "size": 1871
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_unit_icon_nuclear_raids.png",
+          "sha256": "5615d482404a95b42194a1f27b5bb3acc0414465297aa18cd394acd64ffe9aa0",
+          "size": 2048
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_unit_icon_paratrooper_raids.png",
+          "sha256": "8f1c6f85836c0f4c757c96cbb41c4ebb23690d4a995b64181894033f98d07e92",
+          "size": 1620
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/military_raids/raid_unit_paratrooper.png",
@@ -1094,8 +1399,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/contact_sheet.png",
-          "sha256": "72cff9ab32b608b71c0176ccbc91674f93502b7961a14c2155cf08814b0b9753",
-          "size": 21436
+          "sha256": "da9403da287c8c252ad47d5007998c68668fbc1f032b56927bb2060b24d9f8a3",
+          "size": 83281
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_aa_curtain.png",
@@ -1108,9 +1413,19 @@
           "size": 5287
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_adaptable_modernizers.png",
+          "sha256": "b72f6a724a7fd19255695f0043af9e049a8a9ce3dd4fa586fa3d8c7b9fbec5f8",
+          "size": 5208
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_aggressive_reconnaissance.png",
           "sha256": "575dd8191715632c35e0b97f2c12943a83707020f716dcae2d208885f861283f",
           "size": 3975
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_air_massed_strike.png",
+          "sha256": "d74d0fae123d473b0d9ace7d62eabd72c7b8f02e58cf7f68b82d2179d423c154",
+          "size": 3805
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_air_power_projection.png",
@@ -1118,19 +1433,69 @@
           "size": 3465
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_all_arms_at_defense.png",
+          "sha256": "badd775a75c273928331b4f99ee5fdb17addacef1af586da7df551408894cbfe",
+          "size": 3517
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_big_gun_club.png",
           "sha256": "24b964c1691899db406efa015412fc0789226c90b378fe8a978cea82d358c9f4",
           "size": 2586
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_blue_water.png",
+          "sha256": "b1b36ac027616146fdaa8389c402a2bc0b875bde4cd256d29b4c77fa0786da9e",
+          "size": 5237
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_bold_attack.png",
+          "sha256": "07300eb15964412dc99d1f47be981bd6e0f0e3b8fd9b9317fddee811091f7402",
+          "size": 3610
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_brave_commanders.png",
+          "sha256": "76c9be400dc0c107fd7892a4857cf474635ac5d3c5076b0b743f03a82027d412",
+          "size": 4258
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_close_combat.png",
+          "sha256": "7eb70805d32e7798a38ac2a2c140ec43bf3ca31c46cd470c82e7d89aeca43352",
+          "size": 3715
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_convoy_warfare.png",
+          "sha256": "0e92d1de0cd41bb0920fe1e1c7d2cfc575572f03a66f7d69cb3c17d15b4f33ca",
+          "size": 3902
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_fleet_in_being.png",
+          "sha256": "eefc63191528dbb93140a89235396fd26c42e28f886f43ab66c136575e73b952",
+          "size": 2790
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/officer_corps_spirits/spirit_idea_mobile_force.png",
+          "sha256": "834c4d439a6cee1e3f5694e2f39776c861f627b4a3c0bd749f2c5cd2de9eab07",
+          "size": 3317
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/contact_sheet.png",
-          "sha256": "2e79e9ed9811a09d2d4bd208aa86369c0805be3220e58ad8312de90c37f819c2",
-          "size": 42724
+          "sha256": "35f3de09e5dc2c98823e5a1978ac92d76b1eaac590466b474bcbf7357d24007e",
+          "size": 149824
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_air_axial_jet_engine.png",
           "sha256": "c6f2a4fe1666e7205fbbca37aab1fc5f6a0dee6290d65fa7df8023ecfcb1154f",
           "size": 5185
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_air_bouncing_bomb.png",
+          "sha256": "c1ed90f5b247bc77b5487f8841f3aaba5b74a77536169e2ecf90b6991bcff5b6",
+          "size": 4995
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_air_jet_engine.png",
+          "sha256": "d47c01eb205dd063c163dd188903bfc584b949e8d8f3f7dc8bd51a3e3cfa7516",
+          "size": 6548
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_commercial_nuclear_reactor.png",
@@ -1143,6 +1508,31 @@
           "size": 7082
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_land_land_cruiser.png",
+          "sha256": "71877c6c43eb4403a6fa204ec78a4b43740b8bc5d48d3b95137542cecd529daf",
+          "size": 4082
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_land_stronghold_network.png",
+          "sha256": "8ce7e0a8f82d1ccf365b440180bd056fc65b1e7b4b4814432434d4ebbe0ea547",
+          "size": 6098
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_naval_cruiser_submarine.png",
+          "sha256": "0b528daca2551c8ee79f8ffceb3881ec0397189e3824995a23a3b5c105c0ae5b",
+          "size": 2330
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_naval_modern_battleship.png",
+          "sha256": "50d6e6a79be8a46638753f631aae8ce8429a87a3aa5a39adc2a0176e91fb4a10",
+          "size": 4112
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_naval_nuclear_submarine.png",
+          "sha256": "a27d828000d5746156fad18e9d29a562d6c355a0e69c58f15963ce40ab3ef154",
+          "size": 2178
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_naval_rocket_launching_submarine.png",
           "sha256": "abc0c495e48f98e9ec6ab404dcbde24ac85e37d54c3129abaa79548406a0da17",
           "size": 9290
@@ -1151,6 +1541,16 @@
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_nuclear_bomb.png",
           "sha256": "8c10948a77ffee8b00b4f8395a62abc7cddde0511ca9c7ec5f754436cfb0ed21",
           "size": 4505
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_rockets_ballistic_missile.png",
+          "sha256": "e06f597f3243b7a4349749ae5e4d6ffa10068ad10e430f4e61ef6ad367f50cf5",
+          "size": 4488
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_rockets_flying_bomb.png",
+          "sha256": "3dd50ebf0408845aece7e1d199a52875a2bda1bdd62d0bc3c35dadca5a1a7371",
+          "size": 4902
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/sp_rockets_rocket_interceptor.png",
@@ -1164,8 +1564,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/contact_sheet.png",
-          "sha256": "349159f2bfb9ba1fa0fc178b848ebcc05bab62f0317a0e60b62575cb4d99dd91",
-          "size": 16471
+          "sha256": "655a36c040e16b85d17b694d481abff59272213a573be05764000ec2e84c6b4f",
+          "size": 63370
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/cze_sudetenland_separatism.png",
@@ -1186,6 +1586,56 @@
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/modifier_generic_state_assault.png",
           "sha256": "c5b97c722ef0ed10955ebdde6f46208e9efa3e7a37419c96206b7842013dab62",
           "size": 1700
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/modifiers_bel_eben_emael_raided.png",
+          "sha256": "d76ca2b7f34b81b6ec13bca521b6a878a7accd77484096a6c9052cb126ff7ae6",
+          "size": 1986
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/modifiers_cze_economic_investment_in_state.png",
+          "sha256": "d0bc8ddc1bee6bfbc349a0c86c3d6813f081d24154bb3009e94bb44be11c2d61",
+          "size": 2212
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/modifiers_demilitarize_zone.png",
+          "sha256": "5e72feeaeb6e5caae86def62cb4adcfbce734bfbc7463dea05284b0a5f69f3d7",
+          "size": 1959
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/modifiers_generic_bunker_build_speed.png",
+          "sha256": "060e3d6265380edc4d5d0861df0a91014733c09cbaa8ab48c252f6d951832127",
+          "size": 1524
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/modifiers_generic_city_construction.png",
+          "sha256": "01b981f3f09e99d297392c73ef775895652e54b985a61bcb49fa6de8c460969a",
+          "size": 2253
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/modifiers_generic_defense.png",
+          "sha256": "312af27ba565fcedb6975ad7e1c5acf29fb9d202398f48cf26ee2dbda04c972a",
+          "size": 1742
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/modifiers_generic_industry.png",
+          "sha256": "9f4b1f8ba3aee93971599555f4a408a2c06706a6756a23a8421ec638ba18e517",
+          "size": 1786
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/modifiers_generic_resistance.png",
+          "sha256": "849b500eb10a0b0f5a7a283f5ffe4c545cc628b2cf171db7e2d89a5af5edf97f",
+          "size": 2414
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/modifiers_generic_supply.png",
+          "sha256": "8ade5aa25dc766782f7f562c5b29fdf45d04275aa6c6c8d75b2da9c0b6b76175",
+          "size": 1868
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/state_modifiers/modifiers_radiation.png",
+          "sha256": "c138e46223fc701d71a990efde9d122bb045f994a1506a47393bc013e49d813c",
+          "size": 1904
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/technologies/basic_machine_tools.png",
@@ -1224,8 +1674,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/contact_sheet.png",
-          "sha256": "444d4c1ea83d63aaed1e4db126f697ce64818348b5eac2cec5a1c7ace6a1c8ae",
-          "size": 88429
+          "sha256": "151eac6b31bc1c735ff88fce00e86a7b55da7e9e3f441d1b90c873a069f46d1e",
+          "size": 108327
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_africa_1.png",
@@ -1233,9 +1683,24 @@
           "size": 7538
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_africa_2.png",
+          "sha256": "d836950682ba9e6fc5ab167c7c1abd8f5947b147589b020fcdb876ff7506156c",
+          "size": 7413
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_arab_1.png",
+          "sha256": "96117b483152bb047aa2da530021861d77c264672d82610f1446a68589a1d018",
+          "size": 7491
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_asia_1.png",
           "sha256": "0daaeee97f241e8b4bfe5ed99da44bd26fd5a60669874f55ccef6c47ed65910f",
           "size": 7689
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_asia_2.png",
+          "sha256": "47044730c2874b0d3e3c45e48e894acd88fd5dc7b6f19ca034a995a863468334",
+          "size": 7496
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_europe_1.png",
@@ -1248,14 +1713,29 @@
           "size": 7574
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_female_asia.png",
+          "sha256": "dcdecd4ff79e49e3f8e0cd4b8c44577b3fba5a559d8146f401abe868e7f81a27",
+          "size": 7667
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/generic_female_europe.png",
           "sha256": "6c2ae2cf867a620eb0855a05adfde73550ef84528b876d4d4019ba6488c8bafb",
           "size": 8274
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/high_command_eth_conservative.png",
+          "sha256": "5c73664c3571e662bd0b59f178ee1ed0d8384aefd259cd204e035da8148e4c23",
+          "size": 8555
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/high_command_fevzi_cakmak.png",
           "sha256": "e73bc81a0060f22e9881353306fe69f5e783d777a814c304acc752e49df85881",
           "size": 7602
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/military_small_cam_norodom_sihanouk.png",
+          "sha256": "1bf88cbce1d6cf6886a9761ba718ed7d27c5ea42a71d6be729005931a4820109",
+          "size": 7778
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/commanders/contact_sheet.png",
@@ -1328,9 +1808,39 @@
           "size": 41231
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/africa_generic_operative_female_3.png",
+          "sha256": "f35d3e74b0ee1e47af65892e08c4d30b4e130a0343a14b619bd5644aa058724e",
+          "size": 42602
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/africa_generic_operative_male_1.png",
           "sha256": "362a2ba00d8737592cb209c0c2b960f28c3582a4941f9e866ac4287e926a9414",
           "size": 35967
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/africa_generic_operative_male_2.png",
+          "sha256": "f18df2c60d1a904081cdf8f888539ecb306dcdf06e9939080b2cf29af27b4177",
+          "size": 30671
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/arabia_generic_operative_female_1.png",
+          "sha256": "51064f99d2f6a0b29503e04aa4218330a1c3533d57357f755b655e016c46f7af",
+          "size": 43978
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/arabia_generic_operative_male_1.png",
+          "sha256": "36605e5a46e714c9c3aef3295dbe9a54b446847e8a9a38c2366af15aad79b239",
+          "size": 49923
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/asia_generic_operative_female_1.png",
+          "sha256": "f0e64ceb26126436342434a784d27ff51efff3932acf45c1962fbce9b4f7358d",
+          "size": 44011
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/asia_generic_operative_male_1.png",
+          "sha256": "81494ad3e136a7b96c4c956b023b27ab1767f822c70546f08a2e57447ed5a559",
+          "size": 39056
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/aus_erwin_von_lahousen.png",
@@ -1339,8 +1849,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/contact_sheet.png",
-          "sha256": "f2487986b287b7aadcef4acaf969656870f5ba13bb5ebd7b8f9e10d948b9f4fa",
-          "size": 86060
+          "sha256": "57c3d08890997b86a3451d0ceccfc349e53a5cee62469838507517ca0408f0a7",
+          "size": 448722
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/den_flemming_muus.png",
@@ -1348,14 +1858,39 @@
           "size": 46036
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/europe_generic_operative_female_1.png",
+          "sha256": "dffa1b5235a0996ec6a5db5eb5d494a672893f9b0e5e3e36d48d381bfb9ecca5",
+          "size": 51898
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/europe_generic_operative_male_1.png",
+          "sha256": "57dba1b3a9afc68436644eca3afd32602e27b2ab96d1df95a93ef63b78032ca3",
+          "size": 39088
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/india_generic_operative_female_1.png",
+          "sha256": "1edf8669277ef37b98219663c31c192a241c7e4fa975818577e482b50d81361c",
+          "size": 44136
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/operatives/india_generic_operative_male_1.png",
+          "sha256": "4b390b37f734ae73a2068604ecb3b7ed8feb98c23b60e7ed9d3274c1fbf8e980",
+          "size": 49629
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/contact_sheet.png",
-          "sha256": "f35021a371280702452380920fc1a52ef4f2dbe0dc3673533b07c99f024e5dc9",
-          "size": 6467
+          "sha256": "59a5d8e9f259f47b0abae3dd24297487b1ac869ebd69669dbc18e17e0ee47b25",
+          "size": 43488
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_cas.png",
           "sha256": "6a36dc2642c1cbc49d4f444dc74bbbe3fd5245f1668827106531f5f39387c537",
           "size": 522
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_cas_inverted.png",
+          "sha256": "84cdcc92d29c5b9e93c73b916fd2d2849e9a208814bddd8372a034c55e336255",
+          "size": 492
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_fighter.png",
@@ -1373,6 +1908,51 @@
           "size": 540
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_jet_fighter.png",
+          "sha256": "dabeb6d763da2390605b61fbaf959e4ea64b6e70f17fcc4e52f898bf86b403ed",
+          "size": 585
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_jet_fighter_inverted.png",
+          "sha256": "43f3ccf7d35bf0c8a5b31ba87afeb2cfd69538ce224127aa029db3993f050bf3",
+          "size": 537
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_jet_strat_bomber.png",
+          "sha256": "979d9cb7872538a424abc6fbe1fb5cab43342750540f48b7f7a5b1821f93b70b",
+          "size": 713
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_jet_strat_bomber_inverted.png",
+          "sha256": "89ff9949852762ed012da978b7d64b11f580889236ed7cf999dd833fbe24596d",
+          "size": 749
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_maritime_patrol_plane.png",
+          "sha256": "b2c604f3f560fdb7db81d26993f4712d1b2204576018d4ef1342a3c668ef1f95",
+          "size": 761
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_maritime_patrol_plane_inverted.png",
+          "sha256": "4af9ac41e13befc02584818c80d9cf9f03f6f19535cd370c95cbb30e3472e803",
+          "size": 784
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_nav_bomber.png",
+          "sha256": "49af5c47c82f535d22923c571ab731a4e518099b24889da1a1485ea6ea303616",
+          "size": 716
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_nav_bomber_inverted.png",
+          "sha256": "60863ed7380e2d9199972f94408dc850553f334ac7a46cccc67a9ba53a65cc83",
+          "size": 617
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_tac_bomber.png",
+          "sha256": "a563dc78d272d1848574dff9ac0acef2b5a362778f79d9890efcf33e43c5260f",
+          "size": 625
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/air/map_counters/onmap_tactical_bomber_inverted.png",
           "sha256": "1247ca9ecced4e36dfc0f51accf0f59d94beb52c3d752c5c07c329b256574c2c",
           "size": 630
@@ -1388,9 +1968,54 @@
           "size": 6256
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/artillery2.png",
+          "sha256": "e92905c6c65aed3b5031012943aa0c01e77c2925e621f370cb9691e585cfd00a",
+          "size": 5869
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/basic_battleship.png",
+          "sha256": "bec8b05e425767af759bf57128d434f5cf575e2edd3c5336876baf32508a06b8",
+          "size": 21126
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/basic_carrier.png",
+          "sha256": "e56132909085783f87ff5820698995d5a88248c8b1ba8467a2c8523ad26777f7",
+          "size": 18345
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/basic_destroyer.png",
+          "sha256": "f87ff0d778757188fb5ecce67a60bbf2ad7b9ab76ed4deacc899f2f56dbb8534",
+          "size": 19045
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/basic_light_cruiser.png",
+          "sha256": "cbd2a20e7d0543094c945cdd49f5f3d73a859328f3aec0e0367378070d1a49c8",
+          "size": 21355
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/basic_light_tank.png",
+          "sha256": "8976343953be4e2a1324262f8442df2702d1ac07826142a2ac9ce059c2658c28",
+          "size": 4900
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/cas1.png",
+          "sha256": "9cb5aa924b80351b1f6e3db311a2149495f3943d25ffc57c5344691dc0de183c",
+          "size": 5140
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/contact_sheet.png",
-          "sha256": "993521ea6f72b6a97ab0ebb64dfca726237667ff0bec06df80a695e77b4ee383",
-          "size": 38398
+          "sha256": "b8a2f2cd641bba79b9f49d71df3b4b3fbab7df05ff6c5787da750121391ea80e",
+          "size": 174254
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/fighter1.png",
+          "sha256": "75782540c21e2b2c4328b51e71c1ea8aa1ca2531a075a2f42d2a4fa251c17889",
+          "size": 4000
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/infantry1.png",
+          "sha256": "dc2857e9c8e7d4fcc1574af166b74c8541b26947b829f93c4be0113aecd7f520",
+          "size": 4024
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/infantry_equipment_0.png",
@@ -1398,14 +2023,29 @@
           "size": 4914
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/motorized_equipment_0.png",
+          "sha256": "1a94a467bbf33156eaf4fa6404cff28215af6dc73e1e22d7f93e1cd4aed4899a",
+          "size": 6482
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/motorized_equipment_1.png",
           "sha256": "f19d4fc36aa7cd0ed49c9b1a73cdff76ca5cf44db94719edee3b76fda1414be6",
           "size": 9656
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/naval_bomber1.png",
+          "sha256": "4d357f754dd522547c54c209a87084b7a50afd9d591b7049bfaef7ed4fc4bb0d",
+          "size": 5724
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/support_equipment_1.png",
           "sha256": "2d2ecf2693c96a431ecb4cb0f2daf59ef66d5694ec8f27d2f61614f241002180",
           "size": 12214
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/equipment/technology_art/tactical_bomber1.png",
+          "sha256": "0247d59659576dcd5ea682a4b3dcf4868807e1a4db23cc60adbb9b83e9d29264",
+          "size": 4993
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/counters_large/contact_sheet.png",
@@ -1444,8 +2084,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/contact_sheet.png",
-          "sha256": "89081d03d02ce21741d4781357b5e9a0417bc33cf9197e6f508bd9685248060f",
-          "size": 14370
+          "sha256": "fb07d98f6a07015decc1d361ffb921426b23dc889acd460ef2796b0a1618d064",
+          "size": 62718
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_000.png",
@@ -1471,6 +2111,56 @@
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_004.png",
           "sha256": "dde893988de797e6faab372e05fb42f7633bb733dead5d96a1d8c1bccd89ebd0",
           "size": 1877
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_005.png",
+          "sha256": "0142a3d6799a0020aa1813ebc6eeb5fe1c182a41e6ae7164b771decd898a092e",
+          "size": 1777
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_006.png",
+          "sha256": "eb364789fdccd8ca41f0c57e5113fe85cf8ac821fa37f7ebfc6fe43adadcc421",
+          "size": 1708
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_007.png",
+          "sha256": "9079fec015051c539b671cafa5b77b8374a567b6f6dfc0bdcded783b97dc1764",
+          "size": 1398
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_008.png",
+          "sha256": "42e37da1c36c4dc6b3d32e9871acddec2532722a3086bc0607297bcda9d2ec67",
+          "size": 2117
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_009.png",
+          "sha256": "881d464a481ef20ffa0b548336f6b7ccc7e6f959f5fdb35a73207fb6d5308ae7",
+          "size": 2104
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_010.png",
+          "sha256": "6feada38c47ad4b5c0d3409389481009c0dd08d6b33732ac382c1144c656c87d",
+          "size": 1979
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_011.png",
+          "sha256": "e63cf70527f46dbcddefe19f2a1f6c03aeb51fbc3f4077f49f3e183252439118",
+          "size": 2540
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_012.png",
+          "sha256": "868370d1bda7f46d87ab57793ca139e93b480e7955100aae75e4eaa568171ac4",
+          "size": 2864
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_013.png",
+          "sha256": "71d096a98d354b9f4541b2a90b8525f3b8a5c8cad4137f6a0deb6303a69c9e64",
+          "size": 2377
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/division_template_emblems/custom_template_014.png",
+          "sha256": "8ea4d51203baa85b75ad4a6919b4cd00538a53ad6a842db3bf3e5c4aec413a37",
+          "size": 2317
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/land/map_counters/amphibious_mechanized.png",
@@ -1594,8 +2284,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/contact_sheet.png",
-          "sha256": "53b2a08a6a28cf5838b461557a12fd70725a34e3f7873ae732ab2ff65c41e564",
-          "size": 6680
+          "sha256": "736d99e54e48fd5d56656f70be67e7c2731414fa73916ac4de297d79fb65523a",
+          "size": 39592
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_battlecruiser.png",
@@ -1608,6 +2298,16 @@
           "size": 721
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_carrier.png",
+          "sha256": "f2d76d8891ca7f38aa29785e0f1d1aa4d19d10c929d4a6cdbac14c1a18940a69",
+          "size": 715
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_carrier_inverted.png",
+          "sha256": "b87bbda61195dcc6562c6b66d09272afc509e477d5e610fb12bcb284546651c0",
+          "size": 376
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_destroyer.png",
           "sha256": "e21ffe93e037085574a3bfb97373e7eb6915965fa9032083bec71dada9294dee",
           "size": 467
@@ -1618,9 +2318,49 @@
           "size": 246
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_heavy_cruiser.png",
+          "sha256": "7ee587dd53fa7519b8f88db86b3a6e6505a4c37f8f6c69157bcd3709f02509fa",
+          "size": 850
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_heavy_cruiser_inverted.png",
+          "sha256": "0151123a5076957d8742b7d47038d0e3da85acb22a9e35b97e0edb001b9102c3",
+          "size": 368
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_light_cruiser.png",
+          "sha256": "ddbc2cf18eb013085fb280cedd0644bacbc39e419cf27192d618c766df75b387",
+          "size": 616
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_light_cruiser_inverted.png",
+          "sha256": "1222476ad9c60f0d2dc6f2eb5636d027c1c4ba2ef6bb7d9723a2046184101146",
+          "size": 306
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_sh_battleship.png",
+          "sha256": "618228d0a2d0b2378f83915f53a6f7274307428bafb9ed811f44ce1faac7ba2c",
+          "size": 745
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_sh_battleship_inverted.png",
+          "sha256": "c293cb3b9997d33439a41236b4a87a3f4dbb40f8bf159045bc1afbfb348e1c58",
+          "size": 387
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_submarine.png",
           "sha256": "f63f6e97be28b44a400ae3aee164aedac0399f063496ea2fc0edf9c7a8d696b6",
           "size": 569
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_transport.png",
+          "sha256": "71aa6f453e6fee0f030cf393a8a5becf3c1c45e3c48a4aaa9c0507e3bc9bd338",
+          "size": 644
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/units/naval/map_counters/onmap_transport_inverted.png",
+          "sha256": "43279ee42ca0001092adcf82518416da2602a2424d03931173ad793649542dfe",
+          "size": 270
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/tools/README.md",
@@ -2009,8 +2749,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "c6c1f386a87752e2a5e753de3dfcb9a82c6e9314263657d26fb4679fe04eebed",
-          "size": 14585
+          "sha256": "a7b74a6071c171ca9af632aa762ca612ad154f6ee6186163883e0316e11c1782",
+          "size": 14726
         }
       ]
     },
@@ -5094,8 +5834,8 @@
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-portrait-production/SKILL.md",
-          "sha256": "72b6d1673556fbbe4960fc8a5723c56c86b914361823e806ae5e417902ee9056",
-          "size": 3410
+          "sha256": "624e4a32635ad15c4eb27f040187240b709d1240c314a98b2436bb34a2e4a163",
+          "size": 3421
         }
       ]
     },
@@ -5141,8 +5881,8 @@
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md",
-          "sha256": "2bad44802abaaa936f4458e18012da0e8639965f3deba366e3425a247a852c41",
-          "size": 2009
+          "sha256": "9e7f86979a8e1644251048c037546d5f7d75b34858ac5736a7c38482d7cd1f55",
+          "size": 2026
         }
       ]
     },
@@ -5280,8 +6020,8 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_portrait_creator.toml",
-          "sha256": "13f1baa66f833ebd9dc0a8a694675a5bc20315e056310c087f4a26459980078c",
-          "size": 2315
+          "sha256": "ca2bae6196c522b5039d28a9f79daa0e9b9b75975bc9164c2832cdd64f0e28a7",
+          "size": 2362
         }
       ]
     },
@@ -5517,8 +6257,8 @@
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-super-events/SKILL.md",
-          "sha256": "ecab1936f9a30391d6ca9ab7fdc5f1f551f99de51220c078355d96512f9980bc",
-          "size": 16666
+          "sha256": "f41b772e2ea41299845e6da939d07efce1dd15a65bf9ee652ffff67ce87ab492",
+          "size": 17108
         },
         {
           "path": ".agents/skills/hoi4-super-events/agents/openai.yaml",
@@ -5967,8 +6707,8 @@
       "expected_files": [
         {
           "path": "docs/super_events/README.md",
-          "sha256": "2d20b8c7931a19e521bbb2691c77d188455cd92117e8e20b84178811983aec56",
-          "size": 2416
+          "sha256": "5cd083ece9692eb55a8ff20aacdff5d4ba6151267337ed45021f8001dbeefdef",
+          "size": 2570
         }
       ]
     }
