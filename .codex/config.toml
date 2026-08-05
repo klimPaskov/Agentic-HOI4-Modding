@@ -105,9 +105,6 @@ config_file = "agents/hoi4_super_event_quote_researcher.toml"
 
 # HOI4_MOD_SETUP_PORTRAITS_START
 [agents.hoi4_portrait_creator]
-description = "Prepares locked HOI4 portrait jobs and validates user-supplied provider outputs, replacing source placeholders and packaging approved DDS files without silently queueing generation or editing runtime wiring."
+description = "Validates user-supplied HOI4-style portraits, converts approved PNGs to DDS, replaces sourced placeholders, and writes portrait handoffs without changing runtime wiring."
 config_file = "agents/hoi4_portrait_creator.toml"
-
-[mcp_servers.comfy_cloud_portraits]
-url = "https://cloud.comfy.org/mcp"
 # HOI4_MOD_SETUP_PORTRAITS_END

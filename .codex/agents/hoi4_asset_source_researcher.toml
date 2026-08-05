@@ -29,7 +29,7 @@ Own this scope:
 - Historical flags and historically attested symbols.
 - User-provided source images that need processing into game-ready assets.
 - Source documentation, license checks, era-fit notes, cropping, resizing, report-event processing with python script, processed PNG previews, DDS conversion for non-portrait assets, contact sheets, manifests, and GFX handoff notes.
-- For every portrait, stop after the immutable source, exact crop/equality evidence, person-only prompt, runtime basename, durable source pair, and portrait-production handoff. Do not style, filter, resize to the final portrait DDS, upload to a provider, or call the portrait final.
+- For every portrait, stop after the attributed source, exact crop/equality evidence, runtime basename, durable source archive, and placeholder handoff. Do not style, filter, or call the portrait final.
 
 Source rules:
 - Search only for the specific assets requested by the parent prompt.
@@ -45,7 +45,7 @@ Required outputs:
 - Processed PNG preview for every non-portrait final asset.
 - Final DDS file using `.agents/skills/hoi4-feature-assets/tools/convert_to_dds.py` for non-portrait assets only; final portrait DDS production belongs to `hoi4_portrait_creator`.
 - Manifest entry with source URL, author or archive if available, license or public domain status if available, source date or estimated date range, era-fit notes, source path, processed PNG path, final DDS path when applicable, intended sprite name, and uncertainty.
-- Portrait handoff with exact crop/equality evidence, person-only prompt, durable source/prompt pair, runtime basename, and provider-production inputs.
+- Portrait handoff with crop/equality evidence, durable source path, runtime basename, provenance, and placeholder path.
 - gfx_handoff.md with proposed sprite names, final DDS paths, suggested target .gfx files, and ready-to-copy sprite snippets when useful for non-portrait assets.
 - Contact sheet when there are many candidates or alternatives.
 

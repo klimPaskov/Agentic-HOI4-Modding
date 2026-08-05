@@ -20,7 +20,7 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 - The read-only `hoi4_ai_probability_auditor` subagent for MCP-backed scenario analysis and before/after comparison of AI weights, MTTH, event chances, random lists, strategy factors, and other declared weighted systems.
 - The Luna Max `hoi4_event_ui_worker` for implementing and visually refining only the scripted GUI that a named event specifically adds, with mandatory MCP GUI inspection, rendering, rewrite, and post-change comparison evidence.
 - The optional mod-agnostic `hoi4-super-events` package: a project-adapted GUI/GFX runtime, dynamic registration pattern, hidden smoke-test event, default DDS assets, editable Photoshop templates, research guidance, and complete presentation workflow.
-- The optional provider-selected ComfyUI portrait workflow: a source and prompt contract, Cloud, Local, and RunPod skills, a bounded portrait subagent, durable source archives, and source-based fallback handling.
+- A concise sourced-portrait workflow: archive and wire the source, then install the user-supplied HOI4-style final.
 
 ## Recommended setup
 
@@ -149,13 +149,9 @@ background, the response button texture, and both full-composition and
 `457x328` image Photoshop templates. New registrations add one stable integer
 ID and matching image, title, description, quote, response, caller, unique rights-verified Internet-sourced audio, and documentation. Audio is never synthesized, generated, recorded, or manually authored by an agent.
 
-## Optional portrait workflow
+## Sourced portrait workflow
 
-Generic projects may select Comfy Cloud, Local ComfyUI, RunPod, or Disabled.
-Only the selected provider skill is installed. Sourced portraits use the
-identity-preserving source or processing workflow from the pinned
-`comfyui-hoi4-portraits` revision; non-sourced fictional or impossible
-portraits use native ImageGen and never enter the ComfyUI workflow. Generation is user-owned by default: the agent prepares the locked job and placeholder, the user runs the selected workflow and supplies the outputs, and the portrait worker validates and installs them. Browser or computer control is opt-in and never silently queues generation. See the selected provider skill and `.codex/portrait_pipeline.toml` for the persisted revision and checks.
+Archive and wire the attributed source portrait under `docs/assets/portraits/<feature_slug>/`. The user alone creates the HOI4-style final externally. When supplied, the portrait worker validates it, converts it to DDS, and replaces the source placeholder without changing runtime wiring. Agents never operate RunPod or another external portrait service.
 
 ### 7. Keep asset ownership clear
 

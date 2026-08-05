@@ -18,7 +18,7 @@ These values are already filled in this template and should normally be left as-
 - Offline Paradox wiki snapshot: `paradox_wiki/`
 - Local vanilla Hearts of Iron IV install: `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`
 - Default documentation folder: `docs/`
-- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-mtth`, `hoi4-super-events`, `hoi4-3d-model-pipeline`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-portrait-production`, `hoi4-comfyui-cloud`, `hoi4-comfyui-local`, `hoi4-comfyui-runpod`, `hoi4-subagents`, and `hoi4-improvement-loop`
+- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-mtth`, `hoi4-super-events`, `hoi4-3d-model-pipeline`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-portrait-production`, `hoi4-subagents`, and `hoi4-improvement-loop`
 - Generic HOI4 subagents from `.codex/agents/`: `hoi4_repo_explorer`, `hoi4_feature_completion_auditor`, `hoi4_ai_probability_auditor`, `hoi4_scripted_system_architect`, `hoi4_localisation_auditor`, `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_event_ui_worker`, `hoi4_country_package_auditor`, `hoi4_improvement_loop_planner`, `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_3d_model_pipeline`, `hoi4_portrait_creator`, `hoi4_quote_remark_researcher`, `hoi4_audio_researcher`, `hoi4_super_event_art_researcher`, `hoi4_super_event_audio_researcher`, `hoi4_super_event_quote_researcher`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, and `hoi4_skill_maintainer`
 
 ---
@@ -99,19 +99,9 @@ Use repo skills as required implementation guidance, not as optional notes.
 - Use `hoi4-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
 
 <!-- HOI4_MOD_SETUP_PORTRAITS_START -->
-### Optional portrait production
+### Sourced portraits
 
-When the project lock enables portrait production, read
-`.agents/skills/hoi4-portrait-production/SKILL.md`, then read only the provider
-skill named by `provider_skill` in `.codex/portrait_pipeline.toml`. Route
-real-person source work to `hoi4_asset_source_researcher` and selected-provider
-job preparation and supplied-output validation through `hoi4_portrait_creator`. Non-sourced fictional or
-impossible portraits use native ImageGen under the parent brief and never
-enter the ComfyUI workflow. Provider status is evidence and does not bypass
-source, prompt, output, archive, DDS, or runtime validation. Disabled projects
-omit this section and all portrait workflow files.
-
-Portrait generation is user-owned by default. The agent prepares the locked job and placeholder, the user runs the selected workflow and supplies the final outputs, and the portrait worker validates and installs them. The worker must never silently queue or generate a portrait. Browser or computer control is opt-in for the current user-run job.
+Use `hoi4-portrait-production` for sourced or grounded portraits. Archive and wire the source portrait, then validate and install the HOI4-style final when the user supplies it. External portrait styling, including RunPod, is user-only and must never be operated by an agent. Non-sourced fictional or impossible portraits use parent-owned native ImageGen.
 <!-- HOI4_MOD_SETUP_PORTRAITS_END -->
 
 ### HOI4 MCP setup (bootstrap; remove after setup)
@@ -414,7 +404,7 @@ For final visual assets, use `hoi4-feature-assets`. That skill is the detailed s
 
 For animated visual assets, use `hoi4-frame-animation` in addition to `hoi4-feature-assets` for frame-sheet animation. Use `hoi4-3d-model-pipeline` for skeletal unit or entity actions. Final animation assets must be built from real planned frames or real exported skeletal actions and must not be transform-only mockups.
 
-Use `hoi4-subagents` for detailed asset subagent routing. Asset subagents create source files, processed PNGs, DDS files, manifests, and handoff notes. The optional portrait worker owns only locked-job preparation, user handoff, supplied-output validation, and portrait packaging; non-sourced fictional or impossible portraits are parent-owned native ImageGen work. It does not edit gameplay or runtime wiring. The main agent owns `.gfx` edits, gameplay references, localisation references, documentation alignment, and final validation. Native advisor and high-command cards use the `65x67` compositor and independent-review contract in `hoi4-feature-assets`. For 3D packages, the model worker owns bounded model production, rights-checked Internet sourcing and animation synchronization design for custom-unit sounds, and the mandatory bespoke-counter requirement/handoff; it never creates audio manually or through generation. `hoi4_icon_artist` produces the original vanilla-green counter art only after the exact installed-vanilla counter definition, DDS, and matching reference family are inspected. The main agent owns `.asset`, entity, counter GFX, sound definitions, runtime wiring, and live proof.
+Use `hoi4-subagents` for detailed asset routing. For sourced portraits, archive and wire the source; `hoi4_portrait_creator` validates and converts only the user-supplied HOI4-style final. The parent owns runtime wiring and final validation. Native advisor and high-command cards use the `65x67` contract in `hoi4-feature-assets`. For 3D packages, the model worker owns bounded model production, rights-checked Internet sourcing and synchronization design for custom-unit sounds, and the mandatory counter handoff; it never creates audio. `hoi4_icon_artist` produces original vanilla-green counters only after exact installed-vanilla and matching reference-family inspection. The parent owns `.asset`, entity, counter GFX, sound definitions, runtime wiring, and live proof.
 
 ## 8. Skill Maintenance
 
