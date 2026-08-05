@@ -5,6 +5,11 @@ description: Use when designing, researching, registering, wiring, testing, or d
 
 # HOI4 Super Events
 
+The upstream package uses `hoi4ms_*` only as stable source and manifest names.
+During installation, each runtime filename is renamed to the confirmed
+`<mod_prefix>_*` form and its contents are adapted to the same prefix and
+project name.
+
 Use this skill only when the optional Super Events workflow is installed or the repository already has an accepted Super Event architecture. A Super Event is a large campaign presentation moment, not a substitute for an ordinary event popup.
 
 The HOI4 Mod Setup package provides a neutral runtime derived from a proven mod architecture and adapted to the project’s confirmed namespace. It includes GUI, GFX, scripted GUI, scripted localisation, one hidden smoke-test event, default assets, editable Photoshop templates, and a registration guide.
@@ -31,13 +36,13 @@ Subagents do not edit the registry, scripted localisation, GUI, GFX, callers, so
 The optional package installs these managed surfaces:
 
 ```text
-interface/hoi4ms_super_events.gui
-interface/hoi4ms_super_events.gfx
-common/scripted_guis/hoi4ms_super_events.txt
-common/scripted_effects/hoi4ms_super_events.txt
-common/scripted_localisation/hoi4ms_super_events.txt
-events/hoi4ms_super_event_examples.txt
-localisation/english/hoi4ms_super_events_l_english.yml
+interface/<mod_prefix>_super_events.gui
+interface/<mod_prefix>_super_events.gfx
+common/scripted_guis/<mod_prefix>_super_events.txt
+common/scripted_effects/<mod_prefix>_super_events.txt
+common/scripted_localisation/<mod_prefix>_super_events.txt
+events/<mod_prefix>_super_event_examples.txt
+localisation/english/<mod_prefix>_super_events_l_english.yml
 gfx/interface/super_event_option.dds
 gfx/super_events/super_event_bg.dds
 gfx/super_events/super_event_default.dds
@@ -48,7 +53,11 @@ docs/super_events/README.md
 .agents/skills/hoi4-super-events/assets/examples/
 ```
 
-Filenames stay stable for managed update and repair. Scripted identifiers, event namespace, sprite names, flags, localisation keys, and example text are adapted from `[MOD_PREFIX]` and `[MOD_NAME]` during installation.
+The installed runtime filenames use the confirmed project prefix. Managed
+update and repair follow those adapted destinations; the upstream `hoi4ms_*`
+names remain only in source and manifest evidence. Scripted identifiers, event
+namespace, sprite names, flags, localisation keys, and example text are
+adapted from `[MOD_PREFIX]` and `[MOD_NAME]` during installation.
 
 Never copy identifiers or event-specific content from another mod. Never silently replace an existing custom Super Event architecture. Compare base, local, and incoming files through the setup transaction and honor the user’s conflict choices.
 
@@ -106,8 +115,8 @@ The helper stores the ID as the value of `<mod_prefix>_super_event_visible`. The
 
 For every new ID:
 
-1. Add one sprite in `interface/hoi4ms_super_events.gfx`.
-2. Add one matching branch to each of the five `defined_text` blocks in `common/scripted_localisation/hoi4ms_super_events.txt`.
+1. Add one sprite in `interface/<mod_prefix>_super_events.gfx`.
+2. Add one matching branch to each of the five `defined_text` blocks in `common/scripted_localisation/<mod_prefix>_super_events.txt`.
 3. Add all player-facing keys to the project localisation file.
 4. Call `<mod_prefix>_show_super_event` from the accepted gameplay moment.
 5. Add optional audio only after its source and usage rights are verified.

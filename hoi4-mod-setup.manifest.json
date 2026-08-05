@@ -5120,8 +5120,7 @@
       "dependencies": [
         "workflow.portraits.core",
         "workflow.portraits.subagent",
-        "workflow.portraits.config",
-        "workflow.portraits.docs"
+        "workflow.portraits.config"
       ],
       "conflicts": [
         "another portrait provider skill"
@@ -5168,8 +5167,7 @@
       "dependencies": [
         "workflow.portraits.core",
         "workflow.portraits.subagent",
-        "workflow.portraits.config",
-        "workflow.portraits.docs"
+        "workflow.portraits.config"
       ],
       "conflicts": [
         "another portrait provider skill"
@@ -5216,8 +5214,7 @@
       "dependencies": [
         "workflow.portraits.core",
         "workflow.portraits.subagent",
-        "workflow.portraits.config",
-        "workflow.portraits.docs"
+        "workflow.portraits.config"
       ],
       "conflicts": [
         "another portrait provider skill"
@@ -5327,47 +5324,6 @@
           "path": ".codex/portrait_pipeline.toml",
           "sha256": "dc07b67ea5c540732ce616212c87217a2a3aa65455d95f7b0b3e3301a15cac9d",
           "size": 611
-        }
-      ]
-    },
-    {
-      "id": "workflow.portraits.docs",
-      "display_name": "Portrait upstream lock",
-      "description": "Install the exact canonical portrait repository and workflow hash evidence.",
-      "category": "documentation",
-      "optional": true,
-      "platforms": [
-        "all"
-      ],
-      "source": {
-        "kind": "file",
-        "path": "docs/portrait_pipeline/upstream-lock.json"
-      },
-      "destination": {
-        "path": "docs/portrait_pipeline/upstream-lock.json",
-        "ownership": "managed",
-        "outside_project": false
-      },
-      "dependencies": [],
-      "conflicts": [
-        "existing portrait upstream lock"
-      ],
-      "conflict_policy": "replace_if_unmodified",
-      "validation": [],
-      "update": {
-        "strategy": "replace_if_unmodified",
-        "remove_obsolete": true,
-        "preserve_local_additions": true
-      },
-      "capabilities": [
-        "exact commit pinning",
-        "workflow and model hash evidence"
-      ],
-      "expected_files": [
-        {
-          "path": "docs/portrait_pipeline/upstream-lock.json",
-          "sha256": "5670dd8764896bc4dff8f9f0b12fc65b5b6ba67bf96af23c39ac182eb97cfa6e",
-          "size": 1909
         }
       ]
     },
@@ -5555,6 +5511,7 @@
       ],
       "notes": [
         "The runtime is adapted to the confirmed project namespace during installation.",
+        "Upstream hoi4ms_* source names are renamed to the confirmed project prefix in installed runtime destinations.",
         "Audio remains optional and is added only from sources with verified usage rights."
       ],
       "expected_files": [
@@ -5712,7 +5669,7 @@
         "Super Events GFX declarations"
       ],
       "notes": [
-        "Text identifiers are adapted to the confirmed project namespace during installation."
+        "Text identifiers and hoi4ms_* runtime filenames are adapted to the confirmed project prefix during installation."
       ],
       "expected_files": [
         {
@@ -5768,7 +5725,7 @@
         "close-state cleanup"
       ],
       "notes": [
-        "Text identifiers are adapted to the confirmed project namespace during installation."
+        "Text identifiers and hoi4ms_* runtime filenames are adapted to the confirmed project prefix during installation."
       ],
       "expected_files": [
         {
@@ -5828,7 +5785,7 @@
         "example Super Event caller"
       ],
       "notes": [
-        "Text identifiers are adapted to the confirmed project namespace during installation."
+        "Text identifiers and hoi4ms_* runtime filenames are adapted to the confirmed project prefix during installation."
       ],
       "expected_files": [
         {
@@ -5878,7 +5835,7 @@
         "example title, description, quote, and response"
       ],
       "notes": [
-        "Localisation is distributed with the required UTF-8 BOM and adapted to the confirmed project name and namespace."
+        "Localisation is distributed with the required UTF-8 BOM and adapted to the confirmed project name, prefix, and namespace."
       ],
       "expected_files": [
         {

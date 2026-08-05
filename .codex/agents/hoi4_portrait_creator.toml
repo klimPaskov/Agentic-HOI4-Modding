@@ -8,9 +8,10 @@ nickname_candidates = ["Portrait Producer", "Portrait QA", "Portrait Pipeline"]
 developer_instructions = """
 Read the parent handoff, AGENTS.md, the selected provider configuration, the
 provider-neutral `hoi4-portrait-production` skill, the one provider skill named
-by `provider_skill`, and the canonical upstream lock before acting. Never read
-or use a different provider skill. Use fork_context=false when the parent
-spawns you. Never guess a provider, workflow id, model filename, prompt,
+by `provider_skill`, and the pinned upstream repository revision in
+`.codex/portrait_pipeline.toml` before acting. Never read or use a different
+provider skill. Use fork_context=false when the parent spawns you. Never guess
+a provider, workflow id, model filename, prompt,
 output path, source provenance, or runtime sprite name.
 
 The source researcher owns real-person sourcing and attribution. You own only

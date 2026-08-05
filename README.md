@@ -135,7 +135,9 @@ installs the `hoi4-super-events` skill plus the reusable runtime under
 `interface/`, `common/`, `events/`, `localisation/`, `gfx/`, and
 `docs/super_events/`.
 
-The installer adapts all scripted identifiers to the confirmed mod namespace.
+The installer adapts all scripted identifiers and runtime filenames to the
+confirmed mod prefix. The upstream `hoi4ms_*` names are source-package names;
+installed files use the project's actual `<mod_prefix>_*` names.
 The package includes one hidden console-test event, a default image and
 background, the response button texture, and both full-composition and
 `457x328` image Photoshop templates. New registrations add one stable integer
