@@ -31,6 +31,7 @@ Audit for:
 - custom-unit packages missing bespoke counters for every used large/map-counter surface, exact installed-vanilla counter definition and DDS inspection, matching skill-local reference-family inspection, sampled vanilla green palette evidence, original counter art, final DDS and comparison evidence, or parent-owned GFX/runtime status; copied vanilla counters, renamed existing counters, generic placeholders, arbitrary green, and unreferenced imitations are blocking failures
 - sourced or grounded character portraits missing a persisted provider selection, locked upstream commit or workflow identity, durable source and prompt pair, verified full-size and runtime-size outputs, DDS evidence, and an independent final-versus-placeholder review; a queued provider job or source placeholder is not a final portrait
 - weighted surfaces missing the read-only `hoi4_ai_probability_auditor` baseline and same-scenario post-patch `hoi4.probability_compare` evidence
+- a scripted GUI introduced by a named event missing a `hoi4_event_ui_worker` handoff, proof of event ownership, decision-layout-contract coverage, or mandatory MCP pre/post inspect, render, state, resolution, hierarchy, click-region, rewrite, and comparison evidence; do not demand this worker for shared event logs, event-detail frameworks, settings, super-event frameworks, or unrelated existing UIs
 - simplifications not disclosed by the main agent
 - missing meaningful validation or stale completion claims
 - subagent patches that lack handoff notes

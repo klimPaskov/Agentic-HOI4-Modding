@@ -50,7 +50,7 @@ Use this skill with:
 - `hoi4-text-audio-research` when an event needs sourced quotes, cultural references, title-like references, slogans, or music and audio research
 - `hoi4-focus-trees` when the event creates, unlocks, modifies, or depends on focus trees
 - `hoi4-decisions-missions` when the event creates or depends on decisions, missions, timed objectives, formables, or decision-driven mechanics
-- `hoi4-subagents` when bounded research, asset production, small patches, or completion audits should be delegated
+- `hoi4-subagents` when bounded research, asset production, event-owned UI layout work, small patches, or completion audits should be delegated
 - `hoi4_3d_model_pipeline` for bounded model geometry, textures, rigs, skeletal actions, sourced custom-unit audio research and synchronization design, `.mesh`/`.anim` exports, reimport proof, and runtime handoff when the event owns a 3D unit or building surface
 - `hoi4-improvement-loop` when an implemented event works but is still shallow, generic, disconnected, or underdeveloped
 - the installed `hoi4-agent-tools` MCP route for mandatory event-chain inspection, rendering, comparison, and lint-mode diagnostics without replacing the source-editing workflow
@@ -264,6 +264,8 @@ Hidden formables should still have implementation coverage. They need reveal eve
 
 Major event mechanics can use scripted GUI windows, decision-category interfaces, animated category art, animated leader portraits, or custom buttons when they make the system easier to play. Treat that UI as part of the event contract, not as decoration added later.
 
+When the event specifically adds a dedicated scripted GUI or mechanic window, route its bounded layout implementation and visual-quality pass to `hoi4_event_ui_worker`. The worker must use `hoi4.gui_inspect`, thorough `hoi4.gui_render` state/resolution/hierarchy/click-region views, an in-scope `hoi4.gui_rewrite`, and post-change comparison evidence, and it must follow the full layout contract in `hoi4-decisions-missions`. Do not send shared event logs, event-detail frameworks, settings, super-event frameworks, shared registries, or unrelated existing UIs to this worker. A UI is eligible only when the accepted event spec or source proves that the event introduces and owns it.
+
 When an event uses a custom interface, align these surfaces:
 
 - decision category or entry button
@@ -335,7 +337,7 @@ Before closing an event task, verify the surfaces that actually exist for the fe
 4. Shared effects, triggers, script constants, and event targets are updated when needed.
 5. Localisation exists for titles, descriptions, options, tooltips, news/report text, and dynamic values.
 6. News events, report events, and researched text or audio packages are wired only when they are real surfaces in the design.
-7. Supporting decisions, missions, ideas, focuses, AI, country setup, or scripted GUI surfaces are aligned when relevant.
+7. Supporting decisions, missions, ideas, focuses, AI, country setup, or scripted GUI surfaces are aligned when relevant. Every event-owned scripted GUI has a reviewed `hoi4_event_ui_worker` handoff with mandatory MCP before-and-after layout evidence; shared UIs remain outside that worker's scope.
 8. Event pictures, report images, news images, icons, flags, portraits, animated sprites, and fallbacks exist when required.
 9. Generated or sourced assets are resized, converted, moved into correct folders, wired in `.gfx`, and recorded in manifests when they are part of the task.
 10. Documentation, specs, plans, manifests, and any explicitly scoped external records are updated only when the repository actually uses those surfaces.

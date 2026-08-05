@@ -43,6 +43,10 @@ config_file = "agents/hoi4_decision_mission_auditor.toml"
 description = "Documentation cleanup and consistency subagent for HOI4 mods. Reconciles specs, plans, docs, handoffs, manifests, prompts, reports, README files, and accidental Markdown hard wraps with accepted decisions and current implementation evidence. Does not edit gameplay files or external tabular data files."
 config_file = "agents/hoi4_documentation_curator.toml"
 
+[agents.hoi4_event_ui_worker]
+description = "Luna Max implementation and visual-layout worker for a scripted GUI introduced by one named event or event-owned mechanic. It must use the HOI4 MCP GUI inspect, render, rewrite, and post-change comparison workflow and follow the decision-layout contract. It never audits shared interfaces such as event logs, event-detail frameworks, settings, or unrelated existing UIs."
+config_file = "agents/hoi4_event_ui_worker.toml"
+
 [agents.hoi4_feature_completion_auditor]
 description = "Read-only completion auditor for HOI4 mod feature implementation. Compares specs, plans, prompts, and repo files, then flags missing mechanics, fallbacks, simplifications, docs gaps, asset gaps, validation gaps, and unresolved addenda."
 config_file = "agents/hoi4_feature_completion_auditor.toml"

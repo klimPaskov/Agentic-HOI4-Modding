@@ -710,6 +710,8 @@ When a decision category controls a major mechanic, consider attaching a scripte
 
 Use `hoi4.gui_inspect` to map linked layout, states, resolutions, click regions, localisation, sprites, fonts, animation, and background ownership. Then call `hoi4.gui_render` for deterministic full-window, cropped, annotated, state, resolution, click-region, hierarchy, and comparison views. MCP diagnostics expose bad alignment, uneven spacing, overlapping controls, clipping, overflow, broken click regions, state mismatches, resolution drift, missing assets, and other layout defects. Full-window and comparison renders also make poor use of the background visible, but the implementation agent must still review whether every painted region and visual anchor is being used as intended. Use `hoi4.gui_rewrite` for an in-scope GUI change after reviewing those diagnostics and the render fidelity report. Keep gameplay validation and balance review in this skill.
 
+When a named event or event-owned mechanic specifically introduces its own scripted GUI, route the bounded layout implementation or visual-quality pass to `hoi4_event_ui_worker`. That worker must apply every rule in this section and return mandatory MCP before-and-after evidence. The decision owner retains costs, effects, availability, AI equivalents, cleanup, and balance. Do not route repository-wide interfaces, event logs, event-detail frameworks, settings, shared windows, or an unrelated existing GUI to the event UI worker merely because an event opens or references it.
+
 A scripted GUI or custom window must have a gameplay reason. It should expose useful choices and state clearly. It must not exist only to make a small mechanic look larger.
 
 ### GUI action integrity

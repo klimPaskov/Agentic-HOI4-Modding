@@ -59,6 +59,8 @@ Use `hoi4_focus_tree_auditor` for focus tree audits and active small patches cov
 
 Use `hoi4_decision_mission_auditor` for decision and mission audits and active small patches covering category lifecycle, objective quality, costs, tooltips, scripted GUI decision hooks, AI behavior, cleanup, balance, and exploit risk.
 
+Use `hoi4_event_ui_worker` to create or improve the scripted GUI window that one named event or event-owned mechanic specifically adds. It uses Luna Max and the mandatory HOI4 MCP GUI inspect, render, rewrite, and post-change comparison workflow, then applies the visual-layout contract from `hoi4-decisions-missions`. It must not audit event logs, event-detail frameworks, settings, shared framework windows, or unrelated existing UIs.
+
 Use `hoi4_country_package_auditor` for country package audits and active small patches covering tags, history, states, leaders, portraits, flags, parties, focus loading, ideas, advisors, units, technologies, claims, cores, localisation, AI, formables, and playable setup.
 
 Use `hoi4_localisation_auditor` for localisation and scripted localisation audits and active small patches covering missing keys, duplicate keys, encoding, tooltip quality, broken dynamic text, namespace consistency, dynamic cost text, and cross-surface text mismatch.
@@ -74,6 +76,16 @@ Use `hoi4_ai_probability_auditor` for read-only audits of AI weights, MTTH, even
 Use `hoi4_spreadsheet_doc_worker` only for mod-maintained spreadsheets, CSV exports, or workbooks when the repository actually has them or the parent explicitly requests them. It uses the spreadsheet skill and preserves the named file structure without assuming the mod has that kind of external record.
 
 Do not route new work to obsolete planner aliases. Use `hoi4_improvement_loop_planner` and the `hoi4-improvement-loop` skill.
+
+## Event UI worker gate
+
+Spawn `hoi4_event_ui_worker` with `fork_context=false` only when the accepted event spec or implementation explicitly introduces a dedicated scripted GUI or mechanic window. The parent prompt must provide the event id or stable feature slug, exact GUI identifiers and owning files, entry point, accepted layout brief, intended states and resolutions, linked decisions and scripted-GUI identifiers, approved asset handoffs, allowed files, and handoff path.
+
+The worker is patch-capable for the accepted event-owned `.gui`, presentation-only `common/scripted_guis` wiring, event-owned `.gfx`, and event-owned GUI localisation. It owns layout implementation, visual hierarchy, spacing, alignment, background coverage, state presentation, click-region accuracy, and MCP before-and-after evidence. The parent and decision worker retain event outcomes, decision costs, AI, balance, reusable helper logic, final integration, and in-game validation.
+
+Do not route a GUI to this worker merely because an event references or opens it. Event logs, event-detail frameworks, settings, super-event frameworks, shared registries, generic utility windows, debug windows, and unrelated existing UIs remain out of scope. The prompt must identify the exact source or accepted specification proving that the named event owns the UI.
+
+Mandatory event-UI evidence includes `hoi4.gui_inspect`, pre-change `hoi4.gui_render` full-window and relevant cropped, annotated, state, resolution, hierarchy, click-region, and comparison views, an in-scope `hoi4.gui_rewrite`, then post-change inspect/render comparison over the same relevant states and resolutions. If a required route is unavailable, the worker records the exact blocker and does not substitute source-only review.
 
 ## Repo explorer use gate
 
@@ -159,6 +171,7 @@ These agents are patch-capable by default inside the current task scope:
 - `hoi4_focus_tree_auditor`
 - `hoi4_country_package_auditor`
 - `hoi4_localisation_auditor`
+- `hoi4_event_ui_worker` for an accepted event-owned UI only
 
 They do not need a separate permission prompt to fix small, local issues that are clearly connected to the current feature, mechanic, country, focus tree, decision category, GUI surface, or localisation surface.
 
@@ -185,7 +198,7 @@ Active small patches do not include:
 - adding a full event chain
 - replacing a focus route family
 - designing a new formable suite
-- building a new scripted GUI system
+- inventing an unplanned or shared scripted GUI system; implementing the accepted bounded UI introduced by a named event belongs to `hoi4_event_ui_worker`
 - creating a new country package from scratch
 - changing broad balance philosophy
 - rewriting large localisation sets for tone only

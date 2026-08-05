@@ -18,6 +18,7 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 - A model for separating main-agent implementation from helper-agent production and audits.
 - The mod-agnostic `hoi4-3d-model-pipeline` skill and `hoi4_3d_model_pipeline` subagent for Meshy 6-first, verified Meshy-to-Blender-to-io_pdx_mesh model production plus rights-checked Internet-sourced unit sound design and bespoke vanilla-green unit counters.
 - The read-only `hoi4_ai_probability_auditor` subagent for MCP-backed scenario analysis and before/after comparison of AI weights, MTTH, event chances, random lists, strategy factors, and other declared weighted systems.
+- The Luna Max `hoi4_event_ui_worker` for implementing and visually refining only the scripted GUI that a named event specifically adds, with mandatory MCP GUI inspection, rendering, rewrite, and post-change comparison evidence.
 - The optional mod-agnostic `hoi4-super-events` package: a project-adapted GUI/GFX runtime, dynamic registration pattern, hidden smoke-test event, default DDS assets, editable Photoshop templates, research guidance, and complete presentation workflow.
 - The optional provider-selected ComfyUI portrait workflow: a source and prompt contract, Cloud, Local, and RunPod skills, a bounded portrait subagent, durable source archives, and source-based fallback handling.
 
@@ -126,9 +127,12 @@ Use subagents for work such as:
 - AI-weight, MTTH, and probability audits
 - scripted system architecture
 - event completion audits
+- event-owned scripted GUI implementation and visual-layout passes
 - documentation updates
 
 The main agent should still own final implementation, final wiring, final review, final validation, and the completion report.
+
+The event UI worker is deliberately narrow. It follows the scripted-GUI layout rules in `hoi4-decisions-missions` and may work only on a dedicated window introduced and owned by the named event in its prompt. It must not perform a repository-wide GUI audit or modify event logs, event-detail frameworks, settings, super-event frameworks, shared registries, or unrelated existing interfaces. The worker uses HOI4 Agent Tools to inspect and render the exact UI before editing, applies an in-scope GUI rewrite, and repeats the relevant state, resolution, hierarchy, and click-region evidence afterward.
 
 ## Optional Super Events workflow
 

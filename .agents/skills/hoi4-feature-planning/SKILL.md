@@ -595,6 +595,8 @@ Do not spend excessive planning effort forcing exact graph coordinates if the re
 
 When the planned feature includes a focus tree, event chain, technology or doctrine tree, weighted logic, scripted GUI, or map surface supported by `hoi4-agent-tools`, make the matching MCP pass mandatory in the implementation prompt. Require inspect and render evidence before source edits, compare evidence after edits, and bounded rewrite operations only where that route exists. For weighted logic, require `hoi4_ai_probability_auditor` to establish named baseline scenarios, the owner to apply the bounded patch, and mandatory `hoi4.probability_compare` against the same scenarios. If any required route is unavailable, record the exact blocker and do not treat source-only review as equivalent. The normal owning skill still controls design, source review, assets, and final validation.
 
+If the feature is a named event that specifically introduces a dedicated scripted GUI, include a bounded `hoi4_event_ui_worker` handoff in the implementation prompt. Name the event-owned GUI identifiers, files, entry point, layout regions, states, resolutions, decisions, assets, and handoff path. Require the worker's mandatory MCP inspect/render/rewrite/post-comparison workflow and the complete layout contract from `hoi4-decisions-missions`. Do not route shared event logs, event-detail frameworks, settings, super-event frameworks, or unrelated existing UIs to that worker.
+
 
 ## 3.7 Achievement design standard
 
@@ -1128,6 +1130,8 @@ A mechanic UI spec should include:
 - what animated state communicates, such as available action, rising pressure, critical danger, selected target, active ritual, foreign influence spread, reform momentum, hidden route reveal, route corruption, or completion
 - which animation surfaces are state-driven and which are decorative
 - which static fallback appears when animation is disabled, unsupported, not yet produced, or hidden by route state
+- whether the UI is introduced and owned by one named event; when it is, the exact `hoi4_event_ui_worker` scope, allowed files, MCP evidence set, and handoff path
+- explicit exclusion of any shared interface the event merely opens or references, including event logs, event-detail frameworks, settings, and shared framework windows
 
 The spec should not make an interactive window for every small modifier. Use custom UI when it improves readability, choice, atmosphere, or management of a living system.
 
@@ -1718,6 +1722,7 @@ Before finishing a major feature spec, ask:
 - Does each formable have concrete map requirements and a clear post-formation identity?
 - Do formation rewards avoid free core spam, free war-goal spam, and instant runaway snowballing?
 - Does the decision category need a scripted GUI, progress meter, custom window, or animated presentation?
+- If a named event introduces that UI, does the plan route only the event-owned window to `hoi4_event_ui_worker` with exact identifiers and mandatory MCP before-and-after evidence while excluding shared interfaces?
 - Has every important mechanic, formable route, extreme-route route, hidden reveal, faction board, patron network, crisis meter, and major transformation received an animation planning pass?
 - Are animated sprites, leader portraits, particles, glow, float loops, warning pulses, selected states, hover states, or button states planned where they would make the mechanic clearer?
 - If a major surface stays static, does the spec explain why motion would add clutter instead of clarity?
