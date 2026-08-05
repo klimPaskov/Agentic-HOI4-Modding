@@ -41,9 +41,9 @@ Use `hoi4_repo_explorer` only for read-only repo exploration when touched-file m
 
 Use `hoi4_improvement_loop_planner` for feature improvement loop planning, detailed expansion specs, historical and regional research notes, and implementation-ready improvement handoffs. This replaces the old mechanic-expander role. It writes plans and addenda. It does not patch gameplay files.
 
-Use `hoi4_asset_source_researcher` for real or archival image sourcing, real leader, commander, operative, advisor, and officeholder portraits, historical flags, historical symbols, user-provided source photos, source-image processing, animated portrait bases, and report, news, or custom feature images that must depict real historical material.
+Use `hoi4_asset_source_researcher` for non-portrait real or archival image sourcing, historical flags, historical symbols, user-provided source photos, source-image processing, and report, news, or custom feature images that must depict real historical material.
 
-Use `hoi4_portrait_creator` after the user supplies an HOI4-style replacement from the Cloud, Local, or RunPod route selected in `.codex/portrait_pipeline.toml`. It validates the final, converts it to DDS, replaces the source placeholder, and does not change runtime wiring. Non-sourced fictional or impossible portraits use parent-owned native ImageGen.
+Use `hoi4_portrait_creator` for every character portrait. It researches and archives grounded sources, creates crops and placeholders, validates styled finals from the selected Cloud, Local, or RunPod route, invokes native ImageGen for fictional or impossible subjects, processes PNG/DDS outputs, installs portrait-specific wiring, and writes manifests and handoffs.
 
 Use `hoi4_generated_feature_art` for generated non-icon art, including fictional or alternate-history report images, news images, large presentation images, custom feature images, fictional flags, faction emblems, UI panels, dossier art, progression-state base art, and animated non-icon presentation pieces. Do not route final character portraits through this worker.
 
@@ -262,7 +262,7 @@ Do not use one broad asset worker for mixed visual packages.
 Use:
 
 - `hoi4_asset_source_researcher` for real, archival, historical, documentary, or public-source images when the asset must show real historical material
-- `hoi4_portrait_creator` for validating and installing user-supplied HOI4-style replacements for archived sourced portraits
+- `hoi4_portrait_creator` for complete grounded and fictional character portrait production
 - `hoi4_generated_feature_art` for generated non-icon fictional, alternate-history, symbolic, extreme-route, or unique event art that is not a final character portrait
 - `hoi4_icon_artist` for generated gameplay icon families, formable seals, decision category icons, and small animated icon or button sprites; follow `hoi4-feature-assets` for exact asset-family routing
 
@@ -270,7 +270,7 @@ The parent agent must give each asset subagent a bounded prompt with exact asset
 
 For flags, the parent prompt must state whether each flag is a base flag, ideology variant, route variant, cosmetic-tag flag, historical flag, or fictional flag. Base flags for existing countries must be preserved unless explicitly in scope. Ideology variants must be distinct designs, not recolors or copied emblems. Historical flags and attested symbols belong with `hoi4_asset_source_researcher`. Fictional or alternate-history variants belong with `hoi4_generated_feature_art`.
 
-Asset subagents may create source files, PNG previews, DDS files, contact sheets, manifests, and `gfx_handoff.md`. The portrait worker validates and converts only user-supplied finals and never owns gameplay or runtime wiring. It must not edit `.gfx`, localisation, GUI, event, focus, idea, decision, script, history, country, or workbook files unless the parent explicitly expands scope.
+Asset subagents may create source files, PNG previews, DDS files, contact sheets, manifests, and `gfx_handoff.md`. The portrait worker additionally owns portrait research or ImageGen generation, portrait-specific `.gfx`, and existing character portrait references. It must not edit unrelated localisation, GUI, event, focus, idea, decision, script, history, country, or workbook files unless the parent explicitly expands scope.
 
 ## Quote, remark, and audio research routing
 
@@ -280,9 +280,9 @@ Use `hoi4_quote_remark_researcher` for quotes, exact wording, attribution confid
 
 Use `hoi4_audio_researcher` for audio research, license verification, download, `.ogg` conversion, and audio handoff notes.
 
-Use `hoi4_asset_source_researcher`, `hoi4_portrait_creator`, or `hoi4_generated_feature_art` for image work according to the source mode required by `hoi4-feature-assets`.
+Use `hoi4_portrait_creator` for every character portrait. Use `hoi4_asset_source_researcher` or `hoi4_generated_feature_art` only for non-portrait image work according to the source mode required by `hoi4-feature-assets`.
 
-The main agent owns final wording, localisation, GUI/GFX, audio wiring, playback helpers, caller effects, docs alignment, and live validation.
+The main agent owns final wording, localisation, non-portrait GUI/GFX, audio wiring, playback helpers, caller effects, docs alignment, and live validation. The portrait worker owns portrait-specific `.gfx` and existing character portrait references.
 
 ## Improvement routing
 

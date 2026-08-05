@@ -27,7 +27,7 @@ description = "Read-only scenario auditor for HOI4 AI weights, MTTH, event optio
 config_file = "agents/hoi4_ai_probability_auditor.toml"
 
 [agents.hoi4_asset_source_researcher]
-description = "Finds, verifies, and documents real or archival visual source assets for HOI4 mods. Use for report, news, and large presentation images plus source packages for real portraits, historical flags, and attested symbols. Portrait sourcing stops before final styling or runtime production. Does not edit GFX or gameplay files."
+description = "Finds, verifies, and documents non-portrait real or archival visual source assets for HOI4 mods, including report, news, presentation, historical-flag, and attested-symbol assets. Character portraits belong entirely to hoi4_portrait_creator."
 config_file = "agents/hoi4_asset_source_researcher.toml"
 
 [agents.hoi4_audio_researcher]
@@ -108,6 +108,6 @@ config_file = "agents/hoi4_super_event_quote_researcher.toml"
 
 # HOI4_MOD_SETUP_PORTRAITS_START
 [agents.hoi4_portrait_creator]
-description = "Validates user-supplied HOI4-style portraits, converts approved PNGs to DDS, replaces sourced placeholders, and writes portrait handoffs without changing runtime wiring."
+description = "Owns complete HOI4 portrait production: source research, fictional ImageGen, provider-result validation, processing, DDS conversion, portrait wiring, manifests, and handoffs."
 config_file = "agents/hoi4_portrait_creator.toml"
 # HOI4_MOD_SETUP_PORTRAITS_END

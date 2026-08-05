@@ -404,7 +404,7 @@ When planning a major focus tree, define more than politics and industry. A larg
 
 Expansion branches should define real strategic effects, such as claims, cores, war goals, protectorates, guarantees, declarations, leagues, border settlements, ultimatum decisions, or postwar integration choices. Do not reduce expansion to generic bonuses.
 
-Political branches should change politics directly. Define ideology paths, ruling party shifts, party popularity changes, leader changes, advisor unlocks, advisor discounts, laws, councils, juntas, congresses, committees, faction struggles, cosmetic names, and flag changes where they fit. Leader changes imply portrait needs. Real leaders need sourced portraits. Fictional leaders and symbolic councils can use generated portraits through the asset skill.
+Political branches should change politics directly. Define ideology paths, ruling party shifts, party popularity changes, leader changes, advisor unlocks, advisor discounts, laws, councils, juntas, congresses, committees, faction struggles, cosmetic names, and flag changes where they fit. Leader changes imply portrait needs. Route both sourced real portraits and generated fictional or symbolic portraits to `hoi4_portrait_creator`.
 
 Fixed-purpose special feature-created countries can have narrower politics when their identity demands it. A death-state, plague-state, machine-state, or pure destruction actor may have one ideological purpose. Even then, the tree should still provide meaningful internal choices inside that purpose, such as doctrine, expansion method, recruitment, economy, hierarchy, or endgame ambition.
 
@@ -979,7 +979,7 @@ Every country package must include flags. Required flag coverage includes normal
 
 Historical and real-world flags should not be invented with `$imagegen` by default. If a country, movement, party, military authority, or restoration path has a real historical flag or a well-attested symbolic design, the asset prompt should instruct the asset agent to source that flag or symbol from a reliable source, document it, and convert it into HOI4 flag sizes. Use `$imagegen` only for fictional, alternate, supernatural, or deliberately invented flag identities when generated art is appropriate.
 
-Historical or real leaders should not be generated. The spec should identify likely real portrait needs and instruct the asset agent to source real images, document source and license status, and crop them to HOI4 portrait size. Fictional leaders, council portraits, cult leaders, alternate invented officers, and symbolic committee portraits can use `$imagegen` when generated art is appropriate.
+Historical or real leaders should not be generated. The spec should route every portrait to `hoi4_portrait_creator`, which sources and archives real images, records provenance and rights status, creates crops and placeholders, and processes user-supplied styled finals. For fictional leaders, council portraits, cult leaders, alternate invented officers, and symbolic committee portraits, the portrait worker invokes native ImageGen and completes production.
 
 When an asset source is historically sensitive, disputed, or politically loaded, the asset prompt must require source notes, and a clear distinction between sourced historical use and fictional alternate-history invention.
 
@@ -1361,7 +1361,7 @@ Asset generation, sourcing, cropping, resizing, DDS conversion, file placement, 
 
 This skill should define what assets are needed, what they should represent, what source mode they require, and which visible states should be animated. If a major mechanic has no animated sprite plan, the spec should explain why the static presentation is stronger.
 
-Historical or real-world assets need special care. Historical flags, historical symbols, and real leader portraits should be sourced from reliable references and converted to HOI4 style rather than generated. Generated art is appropriate for fictional flags, fictional leaders, symbolic council portraits, invented extreme-route identities, idea icons, focus icons, decision icons, achievements, faction emblems, UI art, and fictional or alternate-history report, news, or custom feature images unless the user says otherwise.
+Historical or real-world assets need special care. Historical flags and symbols should be sourced from reliable references. `hoi4_portrait_creator` owns sourced real portraits and native-ImageGen fictional portraits, including processing and wiring. Generated non-portrait art is appropriate for fictional flags, invented extreme-route identities, idea icons, focus icons, decision icons, achievements, faction emblems, UI art, and fictional or alternate-history report, news, or custom feature images unless the user says otherwise.
 
 ### Reference examples for asset planning
 
@@ -1740,7 +1740,7 @@ The final response should include:
 - assets defined when needed, including country identity assets
 - animation planning pass completed for important mechanics, custom UI, formables, route reveals, extreme-route states, and major leader transformations
 - animated sprite and animated portrait needs mapped with static fallbacks, state logic, and `hoi4-frame-animation` handoff expectations when relevant
-- historical flags, real symbols, and real leader portraits marked for sourced asset work when relevant
+- historical flags and real symbols marked for sourced asset work, with real leader portraits routed to `hoi4_portrait_creator`
 - quote, remark, image, or audio direction defined when needed
 - general localisation handoff uses direction only for feature titles, options, descriptions, decision text, focus text, achievement text, GUI labels, feature-detail text, and external record wording
 - researched text research gates used when final title, button text, quote, cultural remark, or audio has not been researched

@@ -99,9 +99,9 @@ Use repo skills as required implementation guidance, not as optional notes.
 - Use `hoi4-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
 
 <!-- HOI4_MOD_SETUP_PORTRAITS_START -->
-### Sourced portraits
+### Character portraits
 
-Use `hoi4-portrait-production` for sourced or grounded portraits. Select Cloud, Local, or RunPod in `.codex/portrait_pipeline.toml` and use the matching provider skill. Archive and wire the source portrait, then validate and install the HOI4-style final when the user supplies it. Non-sourced fictional or impossible portraits use parent-owned native ImageGen.
+Use `hoi4-portrait-production` and `hoi4_portrait_creator` for every character portrait. The portrait worker researches and archives grounded sources, creates placeholders, and validates the user-supplied final from the configured Cloud, Local, or RunPod route. It invokes native ImageGen for fictional or impossible portraits, then processes PNG/DDS variants, installs portrait-specific wiring, and writes manifests and handoffs.
 <!-- HOI4_MOD_SETUP_PORTRAITS_END -->
 
 ### HOI4 MCP setup (bootstrap; remove after setup)
@@ -404,7 +404,7 @@ For final visual assets, use `hoi4-feature-assets`. That skill is the detailed s
 
 For animated visual assets, use `hoi4-frame-animation` in addition to `hoi4-feature-assets` for frame-sheet animation. Use `hoi4-3d-model-pipeline` for skeletal unit or entity actions. Final animation assets must be built from real planned frames or real exported skeletal actions and must not be transform-only mockups.
 
-Use `hoi4-subagents` for detailed asset routing. For sourced portraits, archive and wire the source; `hoi4_portrait_creator` validates and converts only the user-supplied HOI4-style final. The parent owns runtime wiring and final validation. Native advisor and high-command cards use the `65x67` contract in `hoi4-feature-assets`. For 3D packages, the model worker owns bounded model production, rights-checked Internet sourcing and synchronization design for custom-unit sounds, and the mandatory counter handoff; it never creates audio. `hoi4_icon_artist` produces original vanilla-green counters only after exact installed-vanilla and matching reference-family inspection. The parent owns `.asset`, entity, counter GFX, sound definitions, runtime wiring, and live proof.
+Use `hoi4-subagents` for detailed asset routing. `hoi4_portrait_creator` owns all character portrait source research or fictional ImageGen generation, processing, DDS variants, portrait-specific wiring, manifests, and handoffs. Native advisor and high-command cards use the `65x67` contract in `hoi4-feature-assets`. For 3D packages, the model worker owns bounded model production, rights-checked Internet sourcing and synchronization design for custom-unit sounds, and the mandatory counter handoff; it never creates audio. `hoi4_icon_artist` produces original vanilla-green counters only after exact installed-vanilla and matching reference-family inspection. The parent owns `.asset`, entity, counter GFX, sound definitions, runtime wiring, and live proof.
 
 ## 8. Skill Maintenance
 

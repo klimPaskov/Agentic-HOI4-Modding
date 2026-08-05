@@ -290,7 +290,7 @@ Political routes should update the visible country package where relevant:
 - AI strategy
 - diplomacy behavior
 
-Leader changes require portrait handling. Real leaders use sourced portraits. Fictional leaders, councils, symbolic leaders, or high-chaos authorities can use generated portraits through the asset skill.
+Leader changes require portrait handling. Route sourced real portraits and generated fictional, council, symbolic, or high-chaos portraits to `hoi4_portrait_creator`.
 
 Expansion branches should create consequences. Claims, cores, and war goals should usually interact with diplomacy, factions, resistance, foreign guarantees, local leagues, legitimacy, threat, or postwar settlement decisions.
 
@@ -1007,7 +1007,7 @@ Focus rewards should not:
 
 Focus trees should consider animated portraits or animated route emblems for major political transformations. Use them for route payoffs such as a supernatural leader reveal, a restored dynasty, a revolutionary cult, a final formable proclamation, or a high-chaos state identity.
 
-Animated portraits need static fallbacks. They should be assigned through the same leader, character, or cosmetic identity logic as the route itself. Real historical portraits require sourced material and careful treatment. Fictional or symbolic leaders can use generated animated portrait packages through the asset skill.
+Animated portraits need static fallbacks. They should be assigned through the same leader, character, or cosmetic identity logic as the route itself. `hoi4_portrait_creator` owns the sourced or generated base portrait before `hoi4-frame-animation` creates the animation package.
 
 Do not make every leader animated. Animation should signal a special route, a high-chaos identity, a super-event-level transformation, or a rare hidden outcome.
 
@@ -1149,7 +1149,7 @@ Every focus needs:
 
 Every political route needs localisation that makes the route identity clear.
 
-Leader changes require leader portraits. Real leaders use sourced portraits. Fictional leaders and symbolic councils can use generated portraits through the asset skill.
+Leader changes require leader portraits. Route both sourced real portraits and generated fictional or symbolic council portraits to `hoi4_portrait_creator`.
 
 Flag or cosmetic-name changes require flag and localisation coverage.
 

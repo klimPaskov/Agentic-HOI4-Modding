@@ -1,20 +1,16 @@
 ---
 name: hoi4-portrait-production
-description: Use for sourced or grounded HOI4 portraits that are archived and wired as source placeholders, then replaced with user-supplied HOI4-style finals.
+description: "Use for complete HOI4 character portrait production: real-source research and placeholders, selectable Cloud/Local/RunPod styled replacements, fictional ImageGen portraits, processing, DDS conversion, portrait wiring, manifests, and handoffs."
 ---
 
-# HOI4 sourced portraits
+# HOI4 portrait production
 
-1. Find and verify an attributed source portrait. Never generate or substitute a real person's identity.
-2. Save the source under `docs/assets/portraits/<feature_slug>/` using the runtime portrait basename. Record its provenance.
-3. Crop and convert the source to the runtime portrait DDS size, wire it at the final path, and mark it as a pending source placeholder.
-4. Read `.codex/portrait_pipeline.toml` and the selected provider skill: `hoi4-comfyui-cloud`, `hoi4-comfyui-local`, or `hoi4-comfyui-runpod`. The user runs that workflow and supplies the final outputs.
-5. When the user supplies the HOI4-style final, verify identity, framing, dimensions, and provenance; convert it to DDS and replace the placeholder without changing the runtime basename or wiring.
+`hoi4_portrait_creator` owns every character portrait from brief to installed runtime asset.
 
-Keep the durable source archive after replacement. Runtime files must never reference `docs/assets/portraits/`.
+1. Inspect matching installed-vanilla portrait references and lock the role, dimensions, basename, and consumers.
+2. Classify the subject. Real or grounded subjects require attributed Internet source research; fictional or impossible subjects use native ImageGen.
+3. For a grounded portrait, find and verify the source, record provenance and rights status, archive it under `docs/assets/portraits/<feature_slug>/`, create the explicit crop, and install a source placeholder. Read `.codex/portrait_pipeline.toml` and the selected Cloud, Local, or RunPod provider skill; the user runs that workflow and supplies the styled final.
+4. For a fictional or impossible portrait, invoke native ImageGen, review the full-resolution result against the brief and vanilla references, and retain prompt/source evidence.
+5. Process the approved portrait, create required PNG/DDS variants, preserve stable identifiers, update portrait-specific `.gfx` and existing character portrait references, and write the manifest and handoff.
 
-`hoi4_asset_source_researcher` owns source research and provenance. `hoi4_portrait_creator` validates and converts the user-supplied final. The parent owns character, `.gfx`, localisation, gameplay, and runtime wiring.
-
-Provider choice is project configuration. Never silently replace the selected Cloud, Local, or RunPod route with another provider.
-
-Non-sourced fictional or impossible portraits use parent-owned native ImageGen and do not use this workflow.
+Never generate or substitute the identity of a real person. If no defensible grounded source exists, mark the portrait blocked. Never silently switch configured providers. Do not edit unrelated gameplay, localisation, or UI.

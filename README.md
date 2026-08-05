@@ -20,7 +20,7 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 - The read-only `hoi4_ai_probability_auditor` subagent for MCP-backed scenario analysis and before/after comparison of AI weights, MTTH, event chances, random lists, strategy factors, and other declared weighted systems.
 - The Luna Max `hoi4_event_ui_worker` for implementing and visually refining only the scripted GUI that a named event specifically adds, with mandatory MCP GUI inspection, rendering, rewrite, and post-change comparison evidence.
 - The optional mod-agnostic `hoi4-super-events` package: a project-adapted GUI/GFX runtime, dynamic registration pattern, hidden smoke-test event, default DDS assets, editable Photoshop templates, research guidance, and complete presentation workflow.
-- A concise sourced-portrait workflow with selectable Comfy Cloud, Local ComfyUI, and RunPod routes: archive and wire the source, then install the user-supplied HOI4-style final.
+- A dedicated portrait worker that finds grounded sources, generates fictional portraits, processes and wires final assets, and supports selectable Comfy Cloud, Local ComfyUI, and RunPod styling routes.
 
 ## Recommended setup
 
@@ -149,9 +149,9 @@ background, the response button texture, and both full-composition and
 `457x328` image Photoshop templates. New registrations add one stable integer
 ID and matching image, title, description, quote, response, caller, unique rights-verified Internet-sourced audio, and documentation. Audio is never synthesized, generated, recorded, or manually authored by an agent.
 
-## Sourced portrait workflow
+## Portrait workflow
 
-Archive and wire the attributed source portrait under `docs/assets/portraits/<feature_slug>/`. Select Comfy Cloud, Local ComfyUI, or RunPod in `.codex/portrait_pipeline.toml`; the matching provider skill defines that route. When the user supplies the HOI4-style final, the portrait worker validates it, converts it to DDS, and replaces the source placeholder without changing runtime wiring.
+Route every character portrait to `hoi4_portrait_creator`. It researches and archives grounded sources, creates placeholders, and validates user-supplied styled results from the selected Comfy Cloud, Local ComfyUI, or RunPod route. For fictional or impossible subjects it invokes native ImageGen. It processes the approved assets, creates DDS variants, installs portrait-specific wiring, and writes manifests and handoffs.
 
 ### 7. Keep asset ownership clear
 
