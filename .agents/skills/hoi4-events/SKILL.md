@@ -51,16 +51,16 @@ Use this skill with:
 - `hoi4-focus-trees` when the event creates, unlocks, modifies, or depends on focus trees
 - `hoi4-decisions-missions` when the event creates or depends on decisions, missions, timed objectives, formables, or decision-driven mechanics
 - `hoi4-subagents` when bounded research, asset production, small patches, or completion audits should be delegated
-- `hoi4_3d_model_pipeline` for bounded model geometry, textures, rigs, skeletal actions, `.mesh`/`.anim` exports, reimport proof, and runtime handoff when the event owns a 3D unit or building surface
+- `hoi4_3d_model_pipeline` for bounded model geometry, textures, rigs, skeletal actions, sourced custom-unit audio research and synchronization design, `.mesh`/`.anim` exports, reimport proof, and runtime handoff when the event owns a 3D unit or building surface
 - `hoi4-improvement-loop` when an implemented event works but is still shallow, generic, disconnected, or underdeveloped
-- MCP event tools to inspect, trace, render, compare, and lint event chains without replacing the source-editing workflow
+- the installed `hoi4-agent-tools` MCP route for mandatory event-chain inspection, rendering, comparison, and lint-mode diagnostics without replacing the source-editing workflow
 
 The parent agent remains responsible for final integration, final validation, and completion claims. Subagents and helper skills provide evidence, patches, assets, or plans. They do not replace parent review.
 
 
 ## MCP event-chain pass
 
-Use the event viewer for unfamiliar, large, or cross-file chains and whenever a change can affect callers, descendants, state flow, targets, timing, or scope.
+For every event-chain surface supported by the installed MCP server, use the event tools as mandatory evidence before and after source edits. If the required route is unavailable, record the exact blocker and do not treat source-only review as equivalent engine evidence.
 
 1. Before any parent or subagent source write, call `hoi4.event_inspect` in `scan` or `roots` mode and record the returned revision as the comparison baseline.
 2. Use a narrow selector with `trace`, `explain_path`, `state_flow`, or `impact`.
@@ -70,7 +70,7 @@ Use the event viewer for unfamiliar, large, or cross-file chains and whenever a 
 
 The event tools are read-only. Comparison refreshes edited source by default. Use bounded depth and node limits so MCP remains one small part of the larger skills, subagent, and repository workflow.
 
-For event-option `ai_chance`, event MTTH, direct random chance, and `random_list` logic, use `hoi4.probability_inspect` before choosing scenarios, then use `hoi4.probability_evaluate`, `hoi4.probability_sweep`, `hoi4.probability_simulate`, or `hoi4.probability_compare` only for the surface being reviewed. Use `hoi4.probability_sequence` only when a complete custom-pool manifest explicitly declares cadence, recovery, caps, cooldowns, removals, resets, timer changes, and terminal states. Use `hoi4.probability_render` for timing, matrix, sensitivity, sequence, comparison, or unresolved views when they make the result easier to audit. Provide complete option or list pools when normalization applies, and provide scheduled state changes for timing questions. Treat exact, bounded, sampled, score-only, and unresolved results as different evidence; the analyzer does not choose balance targets or edit event source.
+For every event-option `ai_chance`, event MTTH, direct random chance, or `random_list` surface, route the read-only probability pass through `hoi4_ai_probability_auditor`. Establish named baseline scenarios with `hoi4.probability_inspect`, let the owning agent apply any bounded patch, then run mandatory `hoi4.probability_compare` against the same scenarios. Use `hoi4.probability_evaluate`, `hoi4.probability_sweep`, `hoi4.probability_simulate`, `hoi4.probability_sequence`, and `hoi4.probability_render` only when their declared evidence conditions apply. Provide complete option or list pools when normalization applies, and provide scheduled state changes for timing questions. Treat exact, bounded, sampled, score-only, and unresolved results as different evidence. The auditor does not choose balance targets or edit event source. If the probability route is unavailable, record the exact blocker and leave the conclusion unresolved.
 
 Give patch-capable subagents disjoint file ownership. Serialize overlapping edits and run the final comparison only after their handoffs are integrated.
 
@@ -623,5 +623,5 @@ Do not fill the final report with boilerplate checks that only restate repo-wide
 
 When the installed `hoi4-super-events` workflow is selected, treat the owning gameplay transition and its presentation registration as one feature. Read `hoi4-super-events`, establish the announced state before showing the presentation, reserve one stable unused registration ID, add every required title, description, quote, response, image, and optional audio branch, call the project-scoped show effect from one reachable owner, suppress duplicate callers, and clear visibility, registration, and playback state through the installed close path.
 
-Validate the live caller, state ordering, registration uniqueness, sprite and texture resolution, localisation coverage, duplicate suppression, cleanup, permanent documentation, and one named in-game scenario. Never invent helpers, commands, sound conventions, or Chaos Redux paths. Optional audio must not break the visual package; audio marked required by the accepted project plan remains a completion blocker until its source, rights, sound ID, definition, playback, and documentation agree.
+Validate the live caller, state ordering, registration uniqueness, sprite and texture resolution, localisation coverage, duplicate suppression, cleanup, permanent documentation, and one named in-game scenario. Never invent helpers, commands, sound conventions, or project-specific paths. Optional audio must not break the visual package; audio marked required by the accepted project plan remains a completion blocker until its source, rights, sound ID, definition, playback, and documentation agree.
 <!-- HOI4_MOD_SETUP_SUPER_EVENTS_END -->

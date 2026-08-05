@@ -17,7 +17,7 @@ Use this skill together with:
 - `hoi4-feature-assets` when focus icons, leader portraits, flags, or idea icons are required
 - `improvement-loop` when a tree needs broader route depth or a near-completion anti-bloat pass
 - `subagents` before routing focus audits, improvement plans, or active small patches
-- the installed `hoi4-agent-tools` MCP server for `hoi4.focus_inspect`, `hoi4.focus_render`, and bounded `hoi4.focus_rewrite` work. Use it to inspect, render, lint, compare, and improve focus-tree structure, then review every returned layout and diagnostic. MCP supports this skill and does not replace required source, wiki, vanilla, balance, localisation, asset, or AI review.
+- the installed `hoi4-agent-tools` MCP server for mandatory `hoi4.focus_inspect` and `hoi4.focus_render` work, plus bounded `hoi4.focus_rewrite` work. Use it to inspect, render, lint, compare, and improve every supported focus-tree surface, then review every returned layout and diagnostic. If a required route is unavailable, record the exact blocker and do not treat source-only review as equivalent. MCP does not replace required source, wiki, vanilla, balance, localisation, asset, or AI review.
 
 ## 1. Required checks
 
@@ -32,7 +32,7 @@ Before editing focus files:
 
 Do not rely on memory for prerequisite behavior, layout behavior, AI syntax, or search filters.
 
-Use `hoi4.focus_inspect` and `hoi4.focus_render` before major layout work or complex audits. Use bounded `hoi4.focus_rewrite` only after the route design and ownership are clear. Review the returned source diff, diagnostics, and rendered artifacts before accepting any MCP write.
+Use `hoi4.focus_inspect` and `hoi4.focus_render` before every supported focus-tree edit or audit. Use bounded `hoi4.focus_rewrite` only after the route design and ownership are clear. Review the returned source diff, diagnostics, and rendered artifacts before accepting any MCP write.
 
 
 ## 2. Prerequisite semantics
@@ -680,7 +680,7 @@ Good rewards include:
 - crisis value effects
 - event chains
 
-When a focus grants, unlocks, removes, or redirects a technology, doctrine, or research bonus, use `hoi4.tech_inspect` in `impact`, `unlocks`, or `bonus_coverage` mode to verify the linked graph and references. Render the affected folder or branch with `hoi4.tech_render`, then use `hoi4.tech_compare` after source edits. Treat missing assets, disconnected prerequisites, misplaced items, exclusivity errors, and unresolved dynamic behavior as implementation findings instead of guessing.
+When a focus grants, unlocks, removes, or redirects a technology, doctrine, or research bonus, mandatory technology MCP evidence requires `hoi4.tech_inspect` in `impact`, `unlocks`, or `bonus_coverage` mode, `hoi4.tech_render` for the affected folder or branch, and `hoi4.tech_compare` after source edits. If a required technology route is unavailable, record the exact blocker and do not treat source-only review as equivalent. Treat missing assets, disconnected prerequisites, misplaced items, exclusivity errors, and unresolved dynamic behavior as implementation findings instead of guessing.
 
 Small numeric modifiers can support a focus, but they should not be the main point of most focuses.
 
@@ -1021,7 +1021,7 @@ AI should consider:
 
 Avoid flat AI weights when campaign state matters.
 
-When focus selection probabilities, route dominance, or starvation matter, use `hoi4.probability_inspect` to identify the candidate pool and required scenario inputs. Evaluate named campaign states with `hoi4.probability_evaluate`, sweep thresholds and rank reversals with `hoi4.probability_sweep`, compare a proposed change with `hoi4.probability_compare`, and use `hoi4.probability_simulate` only for explicitly declared uncertain inputs. Use `hoi4.probability_render` when a ranking, matrix, sensitivity, comparison, or unresolved view is clearer than a compact trace. The focus adapter models the verified independent score race, not weight divided by the sum of weights. Supply the complete available-focus pool and declare prerequisite, bypass, strategy, and external factors; keep anything the analyzer cannot resolve visible as uncertainty. Use the result as balance evidence while this skill retains ownership of route design and tuning decisions.
+For every focus-selection or focus-AI weight, route the mandatory probability pass through `hoi4_ai_probability_auditor`. Establish named baseline scenarios with `hoi4.probability_inspect`, supply the complete available-focus pool and declare prerequisite, bypass, strategy, and external factors, let the owner apply any bounded patch, then run mandatory `hoi4.probability_compare` against the same scenarios. Use `hoi4.probability_evaluate`, `hoi4.probability_sweep`, and `hoi4.probability_render` for the evidence needed, and use `hoi4.probability_simulate` only for explicitly declared uncertain inputs. The focus adapter models the verified independent score race, not weight divided by the sum of weights. Keep anything the analyzer cannot resolve visible as uncertainty. The auditor does not choose balance targets or patch source. If the probability route is unavailable, record the exact blocker and leave the conclusion unresolved.
 
 AI should not accidentally choose suicidal or nonsensical routes just because they are visible.
 

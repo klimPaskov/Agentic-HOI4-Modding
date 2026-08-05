@@ -73,7 +73,7 @@ Before editing:
 6. Check whether an ID, sprite, localisation key, audio cue, or presentation moment already exists.
 7. Identify every player-visible and AI path that can invoke the moment.
 
-Use `hoi4.gui_inspect` before changing a scripted GUI you do not understand. Use `hoi4.gui_render` after wiring when the available scenario can represent the window. Keep tool output as evidence; it does not replace source review or live in-game validation.
+For every supported Super Event scripted-GUI surface, use `hoi4.gui_inspect` and `hoi4.gui_render` as mandatory evidence before edits and after wiring. If the required GUI route or representable scenario is unavailable, record the exact blocker and leave the engine-layout claim unresolved; source-only review is not equivalent. Keep tool output as evidence; it does not replace source review or live in-game validation.
 
 If the installed runtime is absent, do not fabricate its paths or claim it is available. Either use the repository’s accepted custom architecture or ask the user to add the optional workflow through HOI4 Mod Setup.
 

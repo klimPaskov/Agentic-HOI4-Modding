@@ -1,11 +1,11 @@
 ---
 name: hoi4-3d-model-pipeline
-description: Create, rig, animate, convert, export, audit, and integrate Hearts of Iron IV 3D units, buildings, props, creatures, vehicles, aircraft, and naval objects through a verified Meshy-to-Blender-to-io_pdx_mesh workflow. Use when a HOI4 mod needs .mesh, .anim, PDX model textures, entity or .asset handoffs, scale calibration, skeletal actions, or runtime model QA.
+description: Create, rig, animate, convert, export, audit, and integrate Hearts of Iron IV 3D units, buildings, props, creatures, vehicles, aircraft, and naval objects through a verified Meshy-to-Blender-to-io_pdx_mesh workflow, including sourced sound-design handoffs for custom unit packages. Use when a HOI4 mod needs .mesh, .anim, PDX model textures, entity or .asset handoffs, scale calibration, skeletal actions, companion unit audio, or runtime model QA.
 ---
 
 # HOI4 3D Model Pipeline
 
-Use this skill for a complete model package from one approved reference image through Meshy, Blender, PDX conversion, runtime wiring, and live evidence. Treat geometry, materials, animation, entity registration, gameplay consumers, and map placement as one contract with explicit ownership.
+Use this skill for a complete model package from one approved reference image through Meshy, Blender, PDX conversion, sourced unit sound design, runtime wiring, and live evidence. Treat geometry, materials, animation, sound roles, entity registration, gameplay consumers, and map placement as one contract with explicit ownership.
 
 ## 1. Hard start gates
 
@@ -31,11 +31,15 @@ Read the repository AGENTS.md, the local offline wiki pages for entities, graphi
 
 ## 2. Ownership and scope
 
-The 3D worker owns the deterministic job, one-image reference gate, provider lineage, downloaded source models, Blender source and checkpoints, geometry repair, materials, processed textures, rigs, skeletal actions, .mesh/.anim exports, reimport evidence, manifests, QA reports, and runtime handoff.
+The 3D worker owns the deterministic job, one-image reference gate, provider lineage, downloaded source models, Blender source and checkpoints, geometry repair, materials, processed textures, rigs, skeletal actions, sourced unit sound research, original and derived audio files, .mesh/.anim exports, reimport evidence, manifests, QA reports, and runtime handoff.
 
 The parent implementation agent owns .asset, entity, .gfx, unit and building definitions, gameplay effects, text icons, province/state placement, final runtime synchronization, live consumers, in-game screenshots, and the overall completion claim.
 
 Do not edit gameplay or runtime registration from the 3D worker unless the parent explicitly grants a narrow file scope. A provider task, .blend, preview, or export is not in-game completion.
+
+Every custom unit, sub-unit, creature, vehicle, aircraft, or naval package requires a sourced sound-design handoff. The worker must search the Internet for a defensible, legally usable source for each applicable sound role, preserve the original download and source evidence, and record the original URL, license, usage terms, access date, and SHA-256 checksums. Mechanical trimming or format conversion is allowed only when the license permits the transformation, and the original must remain unchanged beside any derived file. Map each sound role and synchronization point to the relevant animation action and frame, or to the named runtime lifecycle when no animation exists. If no defensible source exists, mark the role or package `blocked`.
+
+The worker must never generate, synthesize, record, manually author, fabricate, or use unlicensed audio. Test tones, primitive waveforms, placeholder beeps, noise beds, stock effects with unclear rights, and silent stand-ins are not acceptable unit audio. The parent owns final sound definitions, runtime wiring, and live validation.
 
 ## 3. Resolve the job root
 
@@ -55,6 +59,8 @@ provider/tasks/
 provider/credits/
 provider/downloads/
 provider/rejected/
+sound/source/
+sound/derived/
 blender/source/
 blender/reference/
 blender/working/
@@ -72,7 +78,7 @@ runtime/
 logs/
 ~~~
 
-Keep an append-only history, a manifest, a provider task ledger, a dependency record, a requirement-to-runtime crosswalk, and a handoff under the job root. Record absolute paths only in local evidence and portable relative paths in manifests.
+Keep an append-only history, a manifest, a provider task ledger, a dependency record, a sound-source ledger, a requirement-to-runtime crosswalk, and a handoff under the job root. Record absolute paths only in local evidence and portable relative paths in manifests.
 
 ## 4. Classify the model profile
 
@@ -83,6 +89,8 @@ For a humanoid unit, define the unit or sub-unit consumer, entity key, .asset ke
 For a building or map entity, define the building key, entity key, mesh key, state and province placement, valid state-to-province pair, construction or level behavior, zoom visibility, rotation, runtime scale, and a test location that is not hidden by an existing building.
 
 For a nonhumanoid creature, vehicle, aircraft, or naval object, define the domain-specific coordinate axes, ground/water contact, orientation, required actions, camera/zoom expectation, rigid or deforming parts, and live consumer before export.
+
+For every custom unit profile, define applicable sound roles such as selection, movement or engine, idle, attack, impact, special action, and death or destruction, along with the animation actions or runtime moments that synchronize each role.
 
 ## 5. Reference-image gate
 
@@ -140,7 +148,15 @@ Use a custom Blender rig for non-humanoid, mechanical, building, aircraft, naval
 
 Export real .anim files for every requested action and reimport or parse those actual files. A still image, static mesh, camera movement, transform-only mockup, or GIF preview cannot satisfy a requested skeletal action.
 
-## 10. Export and reimport
+## 10. Sourced unit sound design
+
+Search the Internet for each required unit sound role after the parent brief and local vanilla sound precedents are known. Prefer sources with explicit permission for the intended mod use, and reject unclear licenses, unclear recordings, or sources that cannot be preserved and attributed.
+
+For every candidate and selected file, preserve the original download and record the source URL, original download URL when different, title or description, creator or recording source, license, usage terms, access date, source checksum, derived checksum, and any attribution requirement. Keep the original file immutable. Trim, crop, resample, normalize, or convert only as a mechanical transformation that the license permits, and record the exact operation and tool.
+
+Map every selected role to the animation action and frame or to a documented runtime lifecycle point. Record whether the cue is looped, one-shot, attached to an action phase, or parent-triggered. If the required role has no defensible source, stop that role or package as `blocked` rather than inventing audio or silently reusing an unlicensed file.
+
+## 11. Export and reimport
 
 Use only the latest verified io_pdx_mesh extension resolved by bootstrap and record its export settings, Blender build, extension version, release URL, and archive checksum in the generated dependency record.
 
@@ -150,17 +166,17 @@ Do not copy exports to the live mod root until the parent has selected the final
 
 Treat selected source exports, staged runtime copies, and active consumer files as separate surfaces. Select the final geometry, material maps, and actions first, then lock the selected source paths in the manifest before copying. Never synchronize from an older provider or processed path, never let a filename choose the source, and compare destination hashes after synchronization.
 
-## 11. Runtime integration handoff
+## 12. Runtime integration handoff
 
 For a unit, the parent must wire the unit or sub-unit to the correct model, entity, material, and action names and verify the required unit_<id>_icon_small text icon when the engine emits that token. Spawn the unit through a supported country scope and test it while stationary and moving.
 
 For a building, the parent must wire the building to an existing entity key, verify the .gfx/.asset chain, place it in a province that belongs to the specified state, use the correct building syntax and argument count, and test visibility at the intended zoom and level.
 
-For all profiles, the handoff must list exact source paths, runtime paths, identifiers, actions, scale values, texture slots, hashes, live-consumer commands or effects, and the remaining parent-owned work. Never point runtime source to a temporary evidence folder.
+For all profiles, the handoff must list exact source paths, runtime paths, identifiers, actions, sound roles, animation synchronization points, source and derived audio paths, licenses, access dates, hashes, live-consumer commands or effects, and the remaining parent-owned work. Never point runtime source to a temporary evidence folder.
 
-## 12. Completion evidence
+## 13. Completion evidence
 
-Do not mark the model complete until the manifest, provider lineage, dependency lock, one-image reference proof, Blender checkpoint ledger, processed textures, .mesh/.anim outputs, reimport proof, runtime crosswalk, final hashes, and parent handoff exist.
+Do not mark the model complete until the manifest, provider lineage, dependency lock, one-image reference proof, Blender checkpoint ledger, processed textures, sourced unit sound package, original and derived audio checksums, sound-role synchronization map, .mesh/.anim outputs, reimport proof, runtime crosswalk, final hashes, and parent handoff exist.
 
 The parent must add the live consumer and in-game screenshot or equivalent runtime proof for the requested surface. The final report must list meaningful validation, skipped validation and why, blockers, needs_user_review items, credits, versions, selected vanilla references, changed files, and simplifications.
 

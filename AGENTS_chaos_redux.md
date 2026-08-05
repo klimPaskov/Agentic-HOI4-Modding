@@ -66,8 +66,9 @@ Use repo skills as required implementation guidance.
 
 - Use `chaos-redux-events` for Chaos Redux event implementation, event logs, evolutions, event details, documentation, and spreadsheet alignment.
 - Use `chaos-redux-event-assets` when an event needs visual assets, icons, flags, portraits, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes; route 3D geometry, materials, skeletal actions, `.mesh`/`.anim` exports, and reimport evidence to `chaos-redux-3d-model-pipeline`.
+- Use `chaos-redux-comfyui` for sourced or grounded character portraits. The user runs the RunPod workflow and supplies final outputs; the agent validates and installs them. Computer control is opt-in. Non-sourced fictional or impossible portraits use native ImageGen and never ComfyUI.
 - Use `chaos-redux-event-planning` to plan 3D unit and building profiles, exact-one-image Meshy inputs, vanilla scale calibration, action roles, entity consumers, map placement, and runtime acceptance evidence whenever a feature needs a model.
-- Use `chaos-redux-3d-model-pipeline` when creating, rigging, animating, converting, exporting, auditing, or documenting Chaos Redux HOI4 3D models; route bounded production work to `chaosx_3d_model_pipeline` with `fork_context=false`.
+- Use `chaos-redux-3d-model-pipeline` when creating, rigging, animating, converting, exporting, auditing, or documenting Chaos Redux HOI4 3D models and companion sourced unit sound-design handoffs; route bounded production work to `chaosx_3d_model_pipeline` with `fork_context=false`.
 - Use `chaos-redux-frame-animation` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
 - Use `chaos-redux-super-events` when a task creates, updates, researches, or wires a super-event.
 - Use `hoi4-focus-trees` before editing national focus trees.
@@ -83,11 +84,11 @@ The installed `hoi4-agent-tools` server is the coding-agent tool for focus trees
 - Focus work: inspect, render, lint, and use `hoi4.focus_rewrite` for cleanup or a complete new route plan; review the returned layout and diagnostics.
 - Event work: use narrow `hoi4.event_inspect` queries and the read-only render and compare tools, then edit source files through the normal workflow.
 - Technology work: inspect, render, and compare technology and doctrine trees, including their prerequisites, placements, unlocks, bonuses, references, and missing assets.
-- Weighted-logic work: inspect and evaluate event MTTH, event options, decision and mission scores, focus and research selection, random blocks, AI strategy factors, and declared custom pools under explicit scenarios; use sweeps, seeded simulation, sequence analysis, and comparisons when needed.
+- Weighted-logic work: always start with `hoi4.probability_inspect`, then inspect and evaluate event MTTH, event options, decision and mission scores, focus and research selection, random blocks, AI strategy factors, and declared custom pools under explicit scenarios; use sweeps, seeded simulation, sequence analysis, comparisons, and rendered evidence according to the scenario contract.
 - GUI work: inspect and render the linked layout, states, resolutions, and click regions before an in-scope `hoi4.gui_rewrite`.
 - Map work: inspect connected province, state, region, adjacency, supply, and railway data before a declarative `hoi4.map_rewrite`.
 
-The agent may call MCP autonomously as part of the larger skills, source review, wiki and vanilla-documentation checks, tests, audits, and subagent handoffs. MCP does not replace those repository requirements.
+MCP use is mandatory for every in-scope focus, event, technology or doctrine, weighted-logic, scripted GUI, and map surface supported by the installed server. If the required route is unavailable, record the exact blocker and do not treat source-only review as equivalent engine evidence. MCP does not replace the required source review, wiki and vanilla-documentation checks, tests, audits, or parent review.
 
 ### Subagents
 
@@ -103,9 +104,12 @@ Use these high-level routing rules:
 
 - Use `chaosx_repo_explorer` only when file locations, existing patterns, vanilla references, likely touchpoints, missing-file recovery, or implementation order are unclear. Do not use it for small known-file edits, provided-file edits, direct skill or prompt updates, localisation-only cleanup, asset-only production, or tasks already bounded to exact files. The parent should inspect the known files directly for those cases.
 - Use asset subagents for visual production: `chaosx_asset_source_researcher`, `chaosx_generated_event_art`, and `chaosx_icon_artist`.
+- Use `chaosx_portrait_creator` after the source handoff to prepare and validate the user-run RunPod result, replace the source placeholder, and write the portrait handoff. It must not queue or generate a portrait automatically. Non-sourced fictional or impossible portraits are generated only through the parent's explicitly assigned native ImageGen call.
 - When an asset subagent is asked to produce animation, the parent prompt must require `chaos-redux-frame-animation` for 2D frame-sheet assets and `chaos-redux-3d-model-pipeline` for skeletal `.anim` actions; 3D prompts must include the Meshy hard gate, one-image rule, vanilla scale crosswalk, material packing, reimport proof, and parent-owned runtime wiring.
 - Use super-event subagents for specialised research: `chaosx_super_event_text_researcher` and `chaosx_super_event_audio_researcher`.
-- Use audit subagents before completion claims: `chaosx_focus_tree_auditor`, `chaosx_decision_mission_auditor`, `chaosx_country_package_auditor`, `chaosx_localisation_auditor`, and `chaosx_event_completion_auditor`.
+- Use audit subagents before completion claims: `chaosx_focus_tree_auditor`, `chaosx_decision_mission_auditor`, `chaosx_country_package_auditor`, `chaosx_localisation_auditor`, `chaosx_event_completion_auditor`, and `chaosx_ai_probability_auditor` for every weighted AI or probability surface.
+- Use `chaosx_ai_probability_auditor` for read-only audits of AI weights, MTTH, event `ai_chance`, random lists, focus and research selection, decision and mission scores, AI strategy factors, and declared custom weighted pools; it must use the HOI4 MCP probability workflow and return scenario-specific evidence.
+- Any AI weight, probability-bearing modifier, MTTH-backed score, random-selection weight, strategy factor, or weighted target patch requires a baseline audit, an owner-applied patch, and a mandatory `hoi4.probability_compare` pass through `chaosx_ai_probability_auditor` using the same named scenarios. The auditor remains read-only and does not choose balance targets.
 - Use `chaosx_scripted_system_architect` for reusable scripted effects, triggers, script constants, event targets, meta effects, variable patterns, and dynamic helper design.
 - Use `chaosx_documentation_curator` during long implementation when specs, plans, docs, manifests, prompts, reports, or subagent handoffs may be stale, duplicated, contradictory, or too numerous. It patches documentation surfaces only, writes source-of-truth maps and resume packets, and does not edit gameplay files or spreadsheets.
 - Use `chaosx_spreadsheet_doc_worker` only after implementation facts are available. Spreadsheet event-detail, evolution-detail, and cluster-detail fields must match the in-game localisation wording.
@@ -291,7 +295,7 @@ When implementing any new mechanic, follow this checklist:
 13. Respect the repository style and naming rules so new content blends with existing Chaos Redux code.
 14. For systems that touch or are related to bio/chemical warfare, review any related docs, and verify integration across events, on_actions, decisions, contamination effects, scripted logic, etc.
 15. When the user reports an issue after new changes were made, assume the game has already been reloaded. Do not default to restart/reload advice. Do not ask for, request, or search for logs. If the user did not paste any error lines, treat it as having no error lines to use. Do not tell the user to run in-game validation. Assume they will always verify changes in a live session and in a new save. Do not mention old saves. Agents must not launch or run Hearts of Iron IV for in-game testing; all in-game testing and live consumer validation belong to the user.
-16. Fallbacks are never allowed and MUST ALWAYS be discussed with the user.
+16. Unapproved fallbacks are forbidden and MUST ALWAYS be discussed with the user; the only approved exception is the grounded provider-unavailable `source_placeholder`/`replacement_pending` state defined by `chaos-redux-comfyui`.
 17. When the user reports that something is wrong and you can't figure out what exactly, then add temporary debug code (for example: `log = "my debug log"`) that exposes the relevant runtime values needed to understand the issue, and remove every debug line you added once the issue is resolved.
 18. When an error is reported or discovered after your changes, treat it as caused by your current change set. Do not speculate that the project was already broken before your work.
 19. When updating content (for example reworking an event), write as if the feature has always existed. Do not use meta wording like “now it is,” “now it has been reworked,” “newly added,” or similar update-history phrasing.
@@ -356,6 +360,14 @@ Before claiming focus-tree completion, use the appropriate audit route from `cha
 ## 8. Agent-generated Visual Assets
 
 For final visual assets, use `chaos-redux-event-assets`. That skill is the detailed source of truth for image generation rules, 2D asset classification, and the handoff boundary for 3D model packages.
+
+ComfyUI production is mandatory for every final sourced or grounded Chaos Redux character portrait. The user runs the pinned workflow through RunPod and supplies the final portraits; the agent prepares the job, validates the supplied outputs, replaces the source placeholders, and handles PNG/DDS evidence. Computer control is opt-in and never starts generation by default. Non-sourced fictional or impossible portraits use native ImageGen. The source researcher owns provenance, crop evidence, and durable source storage; `chaosx_portrait_creator` owns supplied-output review, placeholder replacement, PNG/DDS handling, and the handoff. The parent owns `.gfx`, character, gameplay, localisation, and runtime wiring.
+
+The project portrait provider is persisted in `.codex/config.toml` under `[portrait_pipeline]`. The current upstream branch and exact commit, workflow hashes, model manifest hash, defaults, and canonical documents are recorded in `docs/systems/comfyui_portrait_pipeline/upstream-lock.json`. Read that lock before changing any workflow default or provider setup. Do not copy a floating portrait-workflow snapshot into the mod.
+
+Every ComfyUI job requires a grounded source, RunPod provider, workflow, runtime identifiers, prompt, both output sizes, review, and DDS validation. The user's final outputs are required before the agent replaces a source-only DDS. A source-only DDS is `source_placeholder`; `replacement_pending` means the styled replacement is incomplete. Native ImageGen portraits follow the parent-owned review gate.
+
+The durable source archive is `docs/assets/portraits/<event_id>_<event_slug>/` with matching runtime-basename PNG/TXT pairs. Runtime files must never reference this archive. Temporary event workspaces may be removed according to `chaos-redux-event-assets`, but the durable portrait source archive is retained.
 
 For animated visual assets, use `chaos-redux-frame-animation` in addition to `chaos-redux-event-assets` for frame-sheet animation. Use `chaos-redux-3d-model-pipeline` for skeletal unit or entity actions. Final animation assets must be built from real planned frames or real exported skeletal actions and must not be transform-only mockups.
 

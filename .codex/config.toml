@@ -16,8 +16,12 @@ default_tools_approval_mode = "auto"
 # materializes concrete Meshy and Blender entries without user editing.
 
 [agents.hoi4_3d_model_pipeline]
-description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through the verified Meshy-to-Blender-to-io_pdx_mesh workflow. Produces source models, checkpoints, PDX textures, mesh and animation exports, reimport evidence, manifests, and runtime handoffs without claiming final gameplay completion."
+description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through the verified Meshy-to-Blender-to-io_pdx_mesh workflow, including rights-checked Internet-sourced custom-unit sound design synchronized to actions. Never creates audio manually or through generation. Produces source models, checkpoints, PDX textures, mesh and animation exports, sourced-audio evidence, reimport evidence, manifests, and runtime handoffs without claiming final gameplay completion."
 config_file = "agents/hoi4_3d_model_pipeline.toml"
+
+[agents.hoi4_ai_probability_auditor]
+description = "Read-only scenario auditor for HOI4 AI weights, MTTH, event option chances, random lists, focus and research selection, decision and mission scores, AI strategy factors, and declared weighted pools. Uses the mandatory HOI4 MCP probability workflow and does not patch source or choose balance targets."
+config_file = "agents/hoi4_ai_probability_auditor.toml"
 
 [agents.hoi4_asset_source_researcher]
 description = "Finds, verifies, and documents real or archival visual source assets for HOI4 mods. Use for report, news, and large presentation images plus source packages for real portraits, historical flags, and attested symbols. Portrait sourcing stops before final styling or runtime production. Does not edit GFX or gameplay files."

@@ -1,4 +1,4 @@
-"""Autonomously resolve and materialize the optional HOI4 3D MCP routes."""
+"""Autonomously resolve and materialize feature-gated HOI4 3D MCP routes."""
 
 from __future__ import annotations
 

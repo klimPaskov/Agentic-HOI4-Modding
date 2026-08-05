@@ -353,7 +353,7 @@ Good focus reward types include:
 - objective completion bonuses
 - features or feature chains
 
-When a specification adds or changes technologies, doctrines, folders, prerequisites, unlocks, grants, or research bonuses, require the implementation handoff to inspect the affected graph with `hoi4.tech_inspect`, render the relevant folder or branch with `hoi4.tech_render`, and compare the implemented source with `hoi4.tech_compare`. The plan must identify intended placement, prerequisites, exclusivity, unlocks, bonuses, and asset needs so the implementation agent has a concrete result to verify.
+When a specification adds or changes technologies, doctrines, folders, prerequisites, unlocks, grants, or research bonuses, require mandatory MCP evidence in the implementation handoff: inspect the affected graph with `hoi4.tech_inspect`, render the relevant folder or branch with `hoi4.tech_render`, and compare the implemented source with `hoi4.tech_compare`. If a required technology route is unavailable, the handoff must record the exact blocker and leave engine evidence unresolved. The plan must identify intended placement, prerequisites, exclusivity, unlocks, bonuses, and asset needs so the implementation agent has a concrete result to verify.
 
 Every focus path should have a distinct purpose. If two focus groups would grant nearly the same effect, merge them, rewrite one, or make one an upgrade of the other.
 
@@ -593,7 +593,7 @@ Do not spend excessive planning effort forcing exact graph coordinates if the re
 
 ### MCP implementation handoff
 
-When the planned feature includes a focus tree, scripted GUI, or map work, add an implementation note for the MCP tools: after planning, inspect the target mod, render a review artifact, and apply the complete focus plan or map and GUI operation set. The normal owning skill still controls design, source review, assets, and final validation.
+When the planned feature includes a focus tree, event chain, technology or doctrine tree, weighted logic, scripted GUI, or map surface supported by `hoi4-agent-tools`, make the matching MCP pass mandatory in the implementation prompt. Require inspect and render evidence before source edits, compare evidence after edits, and bounded rewrite operations only where that route exists. For weighted logic, require `hoi4_ai_probability_auditor` to establish named baseline scenarios, the owner to apply the bounded patch, and mandatory `hoi4.probability_compare` against the same scenarios. If any required route is unavailable, record the exact blocker and do not treat source-only review as equivalent. The normal owning skill still controls design, source review, assets, and final validation.
 
 
 ## 3.7 Achievement design standard
@@ -764,7 +764,7 @@ For each important AI actor or actor group, define:
 - how it behaves when it is player-adjacent, major-power-adjacent, or a possible snowball threat
 - what cleanup or fallback behavior it should use if its preferred route becomes impossible
 
-For weighted behavior, give the implementation agent named scenarios and the expected ordering, timing band, dominance limit, or starvation limit to test. Direct it to begin with `hoi4.probability_inspect`, use `hoi4.probability_evaluate` for the scenario matrix, `hoi4.probability_sweep` for thresholds and rank reversals, and `hoi4.probability_compare` after implementation. Reserve `hoi4.probability_simulate` for explicitly declared uncertain inputs and `hoi4.probability_sequence` for a complete declared custom pool with cadence and state transitions. Request `hoi4.probability_render` when a ranking, matrix, timing, sensitivity, sequence, comparison, or unresolved view will make the handoff easier to review. Do not specify an exact selection probability when the candidate pool or external factors are not complete.
+For weighted behavior, give the implementation agent named scenarios and the expected ordering, timing band, dominance limit, or starvation limit to test. Route the pass through `hoi4_ai_probability_auditor`, which must establish the named baseline with `hoi4.probability_inspect`, use `hoi4.probability_evaluate` for the scenario matrix and `hoi4.probability_sweep` for thresholds or rank reversals, let the owner apply a bounded patch, and run mandatory `hoi4.probability_compare` after implementation against the same scenarios. Reserve `hoi4.probability_simulate` for explicitly declared uncertain inputs and `hoi4.probability_sequence` for a complete declared custom pool with cadence and state transitions. Request `hoi4.probability_render` when a ranking, matrix, timing, sensitivity, sequence, comparison, or unresolved view will make the handoff easier to review. The auditor does not choose balance targets or patch source. If the route is unavailable, record the exact blocker and leave the result unresolved. Do not specify an exact selection probability when the candidate pool or external factors are not complete.
 
 For focus trees, the spec must define AI path behavior at the branch level and for key individual focuses. If a large tree has mutually exclusive paths, secret routes, or dangerous extreme-route paths, specify which AI personalities or campaign states can choose them. Extreme-route AI should be allowed to make strange or extreme choices when that is the point, but ordinary AI should not accidentally choose suicidal or nonsensical branches.
 
@@ -906,7 +906,7 @@ For focus trees, military growth should be integrated into branches. Some focuse
 
 ## 3.13.1 3D model and skeletal animation planning standard
 
-When a feature adds a visible unit, building, creature, vehicle, aircraft, naval object, map entity, or other 3D surface, plan the model package as a first-class feature surface rather than treating it as an optional render.
+When a feature adds a visible unit, building, creature, vehicle, aircraft, naval object, map entity, or other 3D surface, plan the model package as a first-class feature surface rather than treating it as an optional render. A custom unit package also requires a sourced sound-design handoff.
 
 Classify the asset before writing the brief: static prop, building, humanoid unit, non-humanoid creature, vehicle, aircraft, naval object, or articulated attachment.
 
@@ -922,15 +922,15 @@ The brief must name the installed vanilla mesh and entity that establish axes, o
 
 For humanoid units, the custom source geometry must match the named vanilla source mesh height and the entity scale must be applied exactly once. Record source height, entity scale, effective runtime height, coordinate axes, facing direction, origin, and the measurement evidence in the plan.
 
-For every requested skeletal action, define the semantic role, action name, FPS, frame range, loop policy, root-motion or in-place policy, ground-contact requirement, retarget or authoring route, static fallback policy, runtime binding, and acceptance evidence.
+For every requested skeletal action, define the semantic role, action name, FPS, frame range, loop policy, root-motion or in-place policy, ground-contact requirement, retarget or authoring route, static fallback policy, runtime binding, and acceptance evidence. For every custom-unit sound role, define the Internet source-search requirement, selection or movement or engine or idle or attack or impact or special-action or death role when applicable, and the animation action and frame or runtime lifecycle synchronization point.
 
 Do not let a static render or still mesh stand in for a requested skeletal animation. If an action cannot be produced, the implementation handoff must mark it blocked or needs_user_review with the reason.
 
-The model package must plan provider lineage, Blender source and normalized/repaired/material/rigged/action/pre-export checkpoints, processed textures, PDX material channel mapping, `.mesh` and `.anim` exports, reimport proof, runtime hashes, and final live-consumer screenshots.
+The model package must plan provider lineage, Blender source and normalized/repaired/material/rigged/action/pre-export checkpoints, processed textures, PDX material channel mapping, `.mesh` and `.anim` exports, reimport proof, runtime hashes, and final live-consumer screenshots. The sound package must preserve original downloads, original URLs, license and usage terms, access dates, source and derived checksums, and mechanically transformed files only when the license permits. No generated, synthesized, recorded, manually authored, placeholder, test-tone, or unlicensed audio is allowed, and a missing defensible source is a blocker.
 
 The asset plan must distinguish provider source files from final runtime copies. It must require a final hash-aware synchronization step so an older mapped texture, mesh, entity, or animation cannot overwrite the approved runtime candidate.
 
-Route production to `hoi4_3d_model_pipeline` with `fork_context=false` and give it the exact job root, reference status, asset profile, vanilla references, scale relationship, action list, dependency lock, credit limits, and handoff path.
+Route production to `hoi4_3d_model_pipeline` with `fork_context=false` and give it the exact job root, reference status, asset profile, vanilla references, scale relationship, action list, custom-unit sound roles, dependency lock, credit limits, and handoff path. The parent owns final sound definitions, runtime wiring, and live validation.
 
 The main implementation agent owns `.asset`, entity, `.gfx`, unit/building/gameplay wiring, valid province and state placement, live runtime validation, and in-game evidence.
 

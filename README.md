@@ -10,13 +10,14 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 
 ## What this repo provides
 
-- `AGENTS_chaos_redux.md`, a real, full project instruction for a large HOI4 mod, Chaos Redux.
+- `AGENTS_chaos_redux.md`, a literal copy of the current Chaos Redux `AGENTS.md`, retained as the full real-project reference rather than adapted as a generic template.
 - `AGENTS_template.md`, a template `AGENTS.md` file that can be adapted to your own mod. Just replace the placeholders.
 - Offline Paradox wiki references for syntax and engine behavior.
 - Example repo skills for repeated HOI4 workflows.
 - Optional custom Codex subagent patterns for bounded research, asset work, audits, and documentation.
 - A model for separating main-agent implementation from helper-agent production and audits.
-- The mod-agnostic hoi4-3d-model-pipeline skill and hoi4_3d_model_pipeline subagent for verified Meshy-to-Blender-to-io_pdx_mesh model production.
+- The mod-agnostic `hoi4-3d-model-pipeline` skill and `hoi4_3d_model_pipeline` subagent for verified Meshy-to-Blender-to-io_pdx_mesh model production plus rights-checked Internet-sourced unit sound design synchronized to actions.
+- The read-only `hoi4_ai_probability_auditor` subagent for MCP-backed scenario analysis and before/after comparison of AI weights, MTTH, event chances, random lists, strategy factors, and other declared weighted systems.
 - The optional mod-agnostic `hoi4-super-events` package: a project-adapted GUI/GFX runtime, dynamic registration pattern, hidden smoke-test event, default DDS assets, editable Photoshop templates, research guidance, and complete presentation workflow.
 - The optional provider-selected ComfyUI portrait workflow: a source and prompt contract, Cloud, Local, and RunPod skills, a bounded portrait subagent, durable source archives, and source-based fallback handling.
 
@@ -80,7 +81,7 @@ If a value cannot be discovered confidently after inspection, stop and ask me fo
 
 Instructions:
 1. Replace all template placeholders with discovered project values.
-2. Remove optional sections for tools, skills, subagents, reference mods, or workflows this project does not use.
+2. Remove only genuinely optional sections for skills, subagents, reference mods, or workflows this project does not use. Keep the HOI4 MCP setup and mandatory in-scope routing rules.
 3. Keep core general instructions as is.
 4. Preserve the structure and style of the template.
 5. Report what you changed and list any values that still need confirmation.
@@ -122,6 +123,7 @@ Use subagents for work such as:
 - decision and mission audits
 - country package audits
 - localisation audits
+- AI-weight, MTTH, and probability audits
 - scripted system architecture
 - event completion audits
 - documentation updates
@@ -204,7 +206,7 @@ Start Codex from the repository root so it can see `AGENTS.md`, `.agents/skills/
 
 HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, lint, render, create, and rewrite focus trees; inspect and rewrite scripted GUIs; inspect and edit connected map data; trace, compare, render, and lint event chains; view technology and doctrine trees; and analyze AI weights, MTTH, random outcomes, and declared weighted systems under explicit scenarios. It is one tool in the existing skills and source workflow.
 
-`AGENTS_template.md` includes instructions for the coding agent to install and register the server when a mod needs it, so users do not need to install it manually. For reference, the published package command is:
+`AGENTS_template.md` includes instructions for the coding agent to install and register the required server, so users do not need to install it manually. For reference, the published package command is:
 
 ```powershell
 npm install --global hoi4-agent-tools@latest
@@ -218,13 +220,13 @@ command = "hoi4-agent-tools.cmd"
 cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iron IV\\mod\\<your_mod>"
 ```
 
-Agents use MCP when they need structural diagnostics, deterministic renders, broad edits, or source-linked probability and timing evidence. The owning skills still define design, research, source review, assets, tests, audits, and handoffs. Large MCP artifacts are returned as linked resources instead of placed in the prompt.
+Agents must use MCP for every in-scope focus tree, event chain, technology or doctrine tree, weighted-logic system, scripted GUI, and map surface that HOI4 Agent Tools supports. Source review remains required but is not a substitute for the corresponding MCP inspection, render, lint, evaluation, comparison, or post-change validation. If a required route is unavailable, the agent records the exact blocker instead of silently downgrading to source-only review. The owning skills still define design, research, source review, assets, tests, audits, and handoffs. Large MCP artifacts are returned as linked resources instead of placed in the prompt.
 
 ## Autonomous 3D model workflow
 
 The reusable 3D workflow lives in .agents/skills/hoi4-3d-model-pipeline/SKILL.md and .codex/agents/hoi4_3d_model_pipeline.toml.
 
-This workflow is optional. Mods that do not add new 3D models, entities, unit actions, or skeletal animations do not install or enable the 3D routes.
+This workflow is optional at the project level. Mods that do not add new 3D models, entities, unit actions, or skeletal animations do not install or enable the 3D routes. Once a feature requires the workflow, its declared Meshy and Blender MCP routes and evidence gates are mandatory.
 
 The workflow stops before any path discovery, brief read, reference generation, balance check, or provider call unless the process environment already exposes a nonblank MESHY_API_KEY.
 
@@ -242,11 +244,13 @@ When a brief has no ready reference, the workflow generates exactly one final Me
 
 Humanoid units are calibrated against a named installed vanilla source mesh and entity scale with source geometry height and effective runtime height recorded separately and the scale applied exactly once.
 
-The package retains provider lineage, immutable source downloads, Blender checkpoints, topology repair evidence, locally verified PDX material packing, processed textures, real mesh and skeletal animation exports, reimport proof, source-to-runtime hashes, and a parent-owned runtime handoff.
+For custom units, the 3D worker also researches sound files on the Internet, preserves original downloads and source URLs, records licensing and usage terms, access dates, and checksums, and maps sound roles and synchronization points to animation actions or frames. It may make only license-permitted mechanical edits. It must never generate, synthesize, record, manually author, fabricate placeholder or test-tone audio, or use an unlicensed file; lack of a defensible source is a blocker.
+
+The package retains provider lineage, immutable source downloads, Blender checkpoints, topology repair evidence, locally verified PDX material packing, processed textures, real mesh and skeletal animation exports, sourced-audio evidence for custom units, reimport proof, source-to-runtime hashes, and a parent-owned runtime handoff.
 
 The parent agent owns entity, asset, GFX, gameplay, placement, live-consumer wiring, and in-game proof, so an export alone never counts as a completed feature.
 
-Users provide only MESHY_API_KEY. The agent must not ask the user to copy, edit, or replace MCP configuration; if optional setup cannot finish, it must report the blocker and leave the 3D routes disabled.
+Users provide only MESHY_API_KEY. The agent must not ask the user to copy, edit, or replace MCP configuration; if required setup for an in-scope 3D feature cannot finish, it must report the blocker and leave the 3D routes disabled.
 
 ## Optional super-event workflow
 

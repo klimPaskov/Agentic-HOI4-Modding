@@ -544,7 +544,7 @@ Before any provider or paid work, and only when the feature actually needs 3D ou
 
 When a ready reference is absent, the route creates exactly one clean `meshy_input.png` for the asset. Never create or send side-profile sheets, turnaround boards, collages, or multi-view boards to Meshy. Contact sheets and Blender renders are QA evidence only.
 
-Every 3D asset brief must identify the asset profile, deterministic job root, provider task lineage, reference checksum, named vanilla mesh and entity precedent, source geometry height, entity scale, effective runtime height, axes, origin, contact plane, required actions, root-motion policy, PDX material channels, texture dimensions, `.mesh` and `.anim` outputs, reimport proof, runtime hashes, and live consumer.
+Every 3D asset brief must identify the asset profile, deterministic job root, provider task lineage, reference checksum, named vanilla mesh and entity precedent, source geometry height, entity scale, effective runtime height, axes, origin, contact plane, required actions, root-motion policy, PDX material channels, texture dimensions, `.mesh` and `.anim` outputs, reimport proof, runtime hashes, and live consumer. A custom-unit brief must also identify applicable sound roles, the closest vanilla sound consumers, Internet source and licensing requirements, and action/frame or lifecycle synchronization points.
 
 For humanoid units, calibrate against the installed vanilla infantry source mesh and entity rather than an assumed real-world height or arbitrary entity scale. Apply the entity scale exactly once and record the source-height-to-runtime-height crosswalk.
 
@@ -552,7 +552,7 @@ Provider source files are immutable evidence. Working geometry must be repaired 
 
 For animated units, provider actions are candidates that must be cleaned, retargeted or authored, baked, checked for root policy, grounded contacts, deformation, FPS, frame range, and loop behavior, then exported and reimported as real `.anim` files. A static image or still mesh is not an acceptable substitute for a requested skeletal action.
 
-The asset worker owns source files, checkpoints, processed textures, previews, exports, manifests, reports, reimport evidence, and a runtime handoff. The main implementation agent owns `.asset`, entity, `.gfx`, unit/building/gameplay wiring, final runtime synchronization, and in-game screenshots.
+The 3D worker owns source files, checkpoints, processed textures, previews, exports, manifests, reports, reimport evidence, and a runtime handoff. For custom units, it also owns Internet research for legally usable sound files, immutable original downloads, source URLs, licensing and usage evidence, access dates, checksums, license-permitted mechanical derivatives, and animation synchronization design. It must never generate, synthesize, record, manually author, fabricate placeholder or test-tone audio, or use unlicensed audio; a missing defensible source is a blocker. The main implementation agent owns `.asset`, entity, `.gfx`, sound definitions, unit/building/gameplay wiring, final runtime synchronization, and in-game screenshots.
 
 When unsure, inspect the existing repository pattern and vanilla HOI4 assets before choosing.
 
@@ -1045,7 +1045,7 @@ The implementation must still follow HOI4 UI rules and existing repo patterns.
 
 For a decision category with a scripted GUI or mechanic window, the asset handoff should cover the full interface state set.
 
-When the asset package belongs to a focus-tree or scripted-GUI change, use the corresponding MCP inspect and render tools after placement to verify references and produce a deterministic review artifact. For technology or doctrine icons, use `hoi4.tech_inspect` in `explain` or `lint` mode to verify sprite and texture references, then use the `assets` or affected folder view in `hoi4.tech_render`. This skill still owns source art, processing, DDS conversion, placement, manifests, and `.gfx`/`.gui` handoff.
+When the asset package belongs to a focus-tree or scripted-GUI change, the corresponding MCP inspect and render evidence is mandatory before and after placement. For technology or doctrine icons, mandatory evidence uses `hoi4.tech_inspect` in `explain` or `lint` mode to verify sprite and texture references, then the `assets` or affected folder view in `hoi4.tech_render`, followed by `hoi4.tech_compare` after source edits. If a required route is unavailable, record the exact blocker and leave the linked asset surface unresolved; source-only review is not equivalent. This skill still owns source art, processing, DDS conversion, placement, manifests, and `.gfx`/`.gui` handoff.
 
 Useful assets include:
 

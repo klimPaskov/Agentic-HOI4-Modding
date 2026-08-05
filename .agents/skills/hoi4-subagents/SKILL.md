@@ -49,7 +49,7 @@ Use `hoi4_generated_feature_art` for generated non-icon art, including fictional
 
 Use `hoi4_icon_artist` for generated gameplay icon families, formable seals, scripted GUI icons, and small animated icon or button sprites. Follow `hoi4-feature-assets` for the exact owning UI surface and reference folder.
 
-Use `hoi4_3d_model_pipeline` for bounded custom HOI4 3D model work covering provider candidates, Blender processing, model textures, rigs, skeletal actions, `.mesh`/`.anim` export, QA evidence, and runtime handoffs.
+Use `hoi4_3d_model_pipeline` for bounded custom HOI4 3D model work covering provider candidates, Blender processing, model textures, rigs, skeletal actions, sourced custom-unit audio research and synchronization design, `.mesh`/`.anim` export, QA evidence, and runtime handoffs.
 
 Use `hoi4_quote_remark_researcher` for main quotes, exact wording checks, attribution confidence, source comparison, button text, cultural remarks, slogans, allusions, and short references.
 
@@ -68,6 +68,8 @@ Use `hoi4_scripted_system_architect` for reusable scripted system design and act
 Use `hoi4_documentation_curator` for documentation cleanup and consistency during long implementation. It reconciles specs, plans, docs, handoffs, manifests, prompts, reports, and README files, writes source-of-truth maps and resume packets, marks superseded docs, records plan dispositions, and flags contradictions. It patches documentation surfaces only and does not edit gameplay files, localisation, assets, external tabular data files, or workbooks unless explicitly in scope.
 
 Use `hoi4_feature_completion_auditor` for read-only spec-versus-implementation audits covering events, mechanics, assets, docs, text and audio packages, focus trees, decisions, validation, and accepted plan addenda.
+
+Use `hoi4_ai_probability_auditor` for read-only audits of AI weights, MTTH, event `ai_chance`, random lists, focus and research selection, decision and mission scores, AI strategy factors, and declared custom weighted pools. It must use the HOI4 MCP probability workflow and return scenario-specific evidence; do not treat another focus, decision, country, or completion audit as a substitute for this specialized pass.
 
 Use `hoi4_spreadsheet_doc_worker` only for mod-maintained spreadsheets, CSV exports, or workbooks when the repository actually has them or the parent explicitly requests them. It uses the spreadsheet skill and preserves the named file structure without assuming the mod has that kind of external record.
 
@@ -108,6 +110,7 @@ These agents do not patch gameplay files:
 
 - `hoi4_repo_explorer`
 - `hoi4_feature_completion_auditor`
+- `hoi4_ai_probability_auditor`
 
 They may write reports only when a report path is provided or obvious from the task.
 
@@ -133,15 +136,17 @@ Asset subagents create source files, processed previews, final DDS outputs, cont
 
 ### 3D model-production agents
 
-Route `hoi4_3d_model_pipeline` only when the feature actually needs a 3D output, with `fork_context=false` and a context-complete prompt containing the exact deterministic job root, reference-image path or approved asset brief, output folders, handoff path, asset profile, named vanilla references, scale relationship, required action roles, credit and paid-attempt limits, dependency lock, and forbidden simplifications.
+Route `hoi4_3d_model_pipeline` only when the feature actually needs a 3D output, with `fork_context=false` and a context-complete prompt containing the exact deterministic job root, reference-image path or approved asset brief, output folders, handoff path, asset profile, named vanilla references, scale relationship, required action roles, custom-unit sound roles, Internet source and licensing requirements, credit and paid-attempt limits, dependency lock, and forbidden simplifications.
 
 Before spawning it, the parent must run `.tools/3d_pipeline/bootstrap_3d_workflow.py` if the feature needs 3D work and the concrete Meshy/Blender entries are not already present in `.codex/config.toml`. This keeps ordinary mods free of 3D setup while ensuring the 3D worker starts only after its routes and dependency record exist.
 
-The parent prompt must require the `MESHY_API_KEY` hard gate and autonomous 3D bootstrap before path discovery or provider work, exactly one Meshy input image when no ready image exists, no multi-view provider board, immediate provider download and checksum, protected provider source, topology repair, PDX packed-material validation, hash-aware runtime synchronization, and `.mesh`/`.anim` reimport evidence. For humanoids, name the installed vanilla source mesh and entity and pass the source-height/entity-scale/effective-runtime crosswalk; for buildings, pass the valid state/province pair and entity visibility test.
+The parent prompt must require the `MESHY_API_KEY` hard gate and autonomous 3D bootstrap before path discovery or provider work, exactly one Meshy input image when no ready image exists, no multi-view provider board, immediate provider download and checksum, protected provider source, topology repair, PDX packed-material validation, hash-aware runtime synchronization, and `.mesh`/`.anim` reimport evidence. For custom units, require Internet sound-source research, immutable original downloads, source URLs, licensing and usage evidence, access dates, checksums, animation synchronization points, and a blocked state when no defensible sourced file exists; generated, synthesized, recorded, manually authored, placeholder, test-tone, and unlicensed audio is forbidden. For humanoids, name the installed vanilla source mesh and entity and pass the source-height/entity-scale/effective-runtime crosswalk; for buildings, pass the valid state/province pair and entity visibility test.
 
-The subagent owns source/reference preservation, provider candidates, downloaded GLB/FBX and lineage, Blender source and checkpoints, bounded geometry/material/rig/weight/action work, processed model textures and DDS files, `.mesh`/`.anim` exports, previews, manifests, QA/reimport evidence, crosswalk rows, and handoffs. It must not edit gameplay, GFX, `.gfx`, `.gui`, `.asset`, entity, localisation, events, focuses, decisions, country/history/AI, on_actions, or external records.
+The subagent owns source/reference preservation, provider candidates, downloaded GLB/FBX and lineage, Blender source and checkpoints, bounded geometry/material/rig/weight/action work, processed model textures and DDS files, sourced unit-audio candidates, license-permitted mechanical audio derivatives, source/licensing manifests, `.mesh`/`.anim` exports, previews, QA/reimport evidence, crosswalk rows, and handoffs. It must not create audio from scratch or use generated, synthesized, recorded, manually authored, placeholder, test-tone, or unlicensed audio. It must not edit gameplay, GFX, `.gfx`, `.gui`, `.asset`, entity, sound definitions, localisation, events, focuses, decisions, country/history/AI, on_actions, or external records.
 
-The parent alone owns `.asset`/entity/GFX/runtime source wiring, province/state placement, live-consumer and in-game validation, runtime evidence, and the overall completion claim. A successful provider task, `.blend`, preview, or export never authorizes the subagent to claim the feature is complete or to silently use a fallback.
+The 3D handoff must list files and checksums, provider task lineage and credits, verified dependency versions, Blender checkpoint stages, geometry/material/rig/weight/action/export results, Internet audio source URLs, attribution, licenses and usage terms, access dates, original and derived audio checksums, permitted transformations, sound roles and animation synchronization points, reimport or parser evidence, proposed runtime identifiers, statuses, skipped meaningful validation, and remaining risks.
+
+The parent alone owns `.asset`/entity/GFX/runtime source wiring, sound definitions and runtime audio wiring, province/state placement, live-consumer and in-game validation, runtime evidence, and the overall completion claim. A successful provider task, `.blend`, preview, export, or sound-source handoff never authorizes the subagent to claim the feature is complete or to silently use a fallback.
 
 ### Active small-patch agents
 
@@ -169,6 +174,8 @@ Active small patches include:
 - adding a narrow scripted helper plus a few direct call sites when repeated logic is already present
 - fixing an existing formable decision check, reveal condition, or state-control requirement
 - correcting country package references such as focus loading, party names, leader ids, tag setup, localisation, and simple starting setup
+
+Any patch to an AI weight, probability-bearing modifier, MTTH-backed score, random-selection weight, strategy factor, or weighted target check requires an audit-patch-compare cycle. Run `hoi4_ai_probability_auditor` first to establish named baseline scenarios, let the owning patch-capable agent or parent apply the bounded change, then run the auditor again with `hoi4.probability_compare` against the same scenarios. The probability auditor remains read-only, does not choose the intended balance target, and does not patch source.
 
 Active small patches do not include:
 
@@ -209,9 +216,9 @@ Do not fill handoffs with passing boilerplate checks that only restate AGENTS.md
 
 ## MCP evidence in handoffs
 
-When a routed task touches focus trees, event chains, technology or doctrine trees, weighted logic, scripted GUI, or maps, use MCP as the shared evidence surface. Pass only the diagnostics, revision, scenario hash, comparison, or linked artifact URI the parent needs instead of copying a complete graph or matrix into the prompt.
+When a routed task touches focus trees, event chains, technology or doctrine trees, weighted logic, scripted GUI, or maps, MCP use is mandatory as the shared evidence surface. Pass only the diagnostics, revision, scenario hash, comparison, or linked artifact URI the parent needs instead of copying a complete graph or matrix into the prompt. If the required MCP route is unavailable, mark the affected work blocked or unresolved and carry the exact limitation to the parent; source-only review is not equivalent.
 
-For probability work, name the analyzed surface and scenario ids, state whether the candidate pool and external factors were complete, and distinguish exact, bounded, sampled, score-only, and unresolved results. For technology or doctrine work, list the affected technology, folder, unlock, grant, bonus, or asset ids and include the relevant `hoi4.tech_compare` result when source changed.
+For probability work, `hoi4_ai_probability_auditor` must start with `hoi4.probability_inspect`, name the analyzed surface and scenario ids, state whether the candidate pool and external factors were complete, and distinguish exact, bounded, sampled, score-only, and unresolved results. It must use `hoi4.probability_evaluate`, `hoi4.probability_sweep`, and `hoi4.probability_compare` according to the scenario, with simulation, sequence analysis, and rendering only under their declared evidence conditions. For technology or doctrine work, list the affected technology, folder, unlock, grant, bonus, or asset ids and include the relevant `hoi4.tech_compare` result when source changed.
 
 If a patch touches localisation, list the keys changed. If it touches decisions or focuses, list affected ids. If it touches scripted helpers, list helper names and call sites. If it touches country setup, list tags and state ids or state groups.
 
@@ -304,6 +311,7 @@ Before final completion, the parent should check:
 - plan handoffs are either implemented, queued, or rejected with a reason
 - documentation curator handoffs identify promoted, queued, rejected, superseded, and unresolved documents when one was used
 - assets are wired or reported as pending
+- custom-unit sound packages include defensible Internet sources, immutable originals, licensing evidence, checksums, synchronization maps, and parent-owned runtime status, or are explicitly blocked
 - validation reflects the final repo state
 - docs, specs, plans, and any explicitly scoped external records agree
 

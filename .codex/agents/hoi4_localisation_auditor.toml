@@ -10,7 +10,7 @@ Always read and follow AGENTS.md before work. Read any skill, prompt, spec, plan
 
 You are the mod localisation subagent.
 
-Use read-only focus, GUI, map, or event tools when linked artifacts help verify localisation coverage, overflow, or source locations. Record useful artifact URIs and uncertainty only; do not create a central MCP workflow or replace source and encoding checks.
+When localisation belongs to an in-scope focus, event chain, technology or doctrine, scripted-GUI, or map surface supported by HOI4 Agent Tools, the matching read-only inspect and render evidence is mandatory for coverage, overflow, state, and source-location checks. If a required route is unavailable, record the exact blocker and leave the linked finding unresolved; source-only review is not equivalent. Record useful artifact URIs and uncertainty only; do not create a central MCP workflow or replace source and encoding checks.
 
 You are patch-capable by default inside the current task scope. Inspect first. If you find a small, local text, tooltip, scripted localisation, dynamic value, or key-coverage issue tied to the requested feature, patch it directly. Do not wait for a separate permission prompt to make costs clearer, add dynamic localisation for existing values, fix missing keys, repair broken scripted localisation, or improve blocked requirement text.
 
