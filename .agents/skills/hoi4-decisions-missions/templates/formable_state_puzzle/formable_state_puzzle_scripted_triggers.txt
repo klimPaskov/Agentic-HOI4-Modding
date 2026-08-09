@@ -1,0 +1,59 @@
+# ============================================================================
+# FORMABLE STATE PUZZLE SCRIPTED-TRIGGER TEMPLATE
+# ============================================================================
+# Documentation-only scaffold. Replace every angle-bracket token before copy.
+# The state helper is the only owner/controller/core policy source. Generated
+# wrappers call it for each installed state. The territory helper composes fixed
+# states and alternate groups, and is reused by decision availability, summary,
+# and AI decision logic.
+# ============================================================================
+
+scripted_triggers = {
+	# State scope. ROOT is the prospective formable carrier country.
+	# Replace this policy only from the owning manifest and keep all call sites on
+	# this helper. Subject, ally, and occupation exceptions belong here explicitly.
+	formable_<FORMABLE_ID>_state_qualifies = {
+		is_owned_by = ROOT
+		is_controlled_by = ROOT
+		is_core_of = ROOT
+	}
+
+	# Country wrappers generated one-for-one from manifest state entries.
+	formable_<FORMABLE_ID>_state_<STATE_ID_A>_qualifies = {
+		<STATE_ID_A> = {
+			formable_<FORMABLE_ID>_state_qualifies = yes
+		}
+	}
+	formable_<FORMABLE_ID>_state_<STATE_ID_B>_qualifies = {
+		<STATE_ID_B> = {
+			formable_<FORMABLE_ID>_state_qualifies = yes
+		}
+	}
+	formable_<FORMABLE_ID>_state_<STATE_ID_C>_qualifies = {
+		<STATE_ID_C> = {
+			formable_<FORMABLE_ID>_state_qualifies = yes
+		}
+	}
+
+	# The alternate group is explicit. This example requires one qualifying
+	# member from the two-state group and the fixed state C wrapper below.
+	formable_<FORMABLE_ID>_alternate_<ALTERNATE_GROUP_ID>_qualifies = {
+		OR = {
+			formable_<FORMABLE_ID>_state_<STATE_ID_A>_qualifies = yes
+			formable_<FORMABLE_ID>_state_<STATE_ID_B>_qualifies = yes
+		}
+	}
+
+	# Final formation eligibility. Keep unrelated route, reveal, ideology, cost,
+	# and cooldown gates around this helper in the owning decision.
+	formable_<FORMABLE_ID>_territory_qualifies = {
+		formable_<FORMABLE_ID>_state_<STATE_ID_C>_qualifies = yes
+		formable_<FORMABLE_ID>_alternate_<ALTERNATE_GROUP_ID>_qualifies = yes
+	}
+
+	# The formation decision's available block and AI willingness block both call
+	# this same helper. The GUI does not provide another eligibility path.
+	formable_<FORMABLE_ID>_decision_available = {
+		formable_<FORMABLE_ID>_territory_qualifies = yes
+	}
+}

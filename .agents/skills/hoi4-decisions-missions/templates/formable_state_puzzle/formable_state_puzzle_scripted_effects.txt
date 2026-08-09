@@ -1,0 +1,65 @@
+# ============================================================================
+# FORMABLE STATE PUZZLE SCRIPTED-EFFECT TEMPLATE
+# ============================================================================
+# Documentation-only scaffold. Replace every angle-bracket token before copy.
+# Refresh is bounded to the manifest state list and is called only from the
+# decision open/visibility path and already-scoped state-changing effects.
+# No whole-world iterator, periodic on-action, event target, or map mutation is
+# allowed in this package. Formation completion and cancellation use clear.
+# ============================================================================
+
+scripted_effects = {
+	formable_<FORMABLE_ID>_puzzle_refresh = {
+		set_variable = {
+			formable_<FORMABLE_ID>_qualifying_count = constant:<CONSTANT_NAMESPACE>.zero
+		}
+		set_variable = {
+			formable_<FORMABLE_ID>_required_count = constant:<CONSTANT_NAMESPACE>.display_required_count
+		}
+
+		# One bounded branch per manifest state. Each branch calls the shared state
+		# helper through its generated numeric state scope.
+		if = {
+			limit = {
+				<STATE_ID_A> = {
+					formable_<FORMABLE_ID>_state_qualifies = yes
+				}
+			}
+			add_to_variable = {
+				formable_<FORMABLE_ID>_qualifying_count = constant:<CONSTANT_NAMESPACE>.one
+			}
+		}
+		if = {
+			limit = {
+				<STATE_ID_B> = {
+					formable_<FORMABLE_ID>_state_qualifies = yes
+				}
+			}
+			add_to_variable = {
+				formable_<FORMABLE_ID>_qualifying_count = constant:<CONSTANT_NAMESPACE>.one
+			}
+		}
+		if = {
+			limit = {
+				<STATE_ID_C> = {
+					formable_<FORMABLE_ID>_state_qualifies = yes
+				}
+			}
+			add_to_variable = {
+				formable_<FORMABLE_ID>_qualifying_count = constant:<CONSTANT_NAMESPACE>.one
+			}
+		}
+
+		# The dirty value is a country-scoped revision marker for the attached GUI.
+		add_to_variable = {
+			formable_<FORMABLE_ID>_puzzle_dirty = constant:<CONSTANT_NAMESPACE>.one
+		}
+	}
+
+	formable_<FORMABLE_ID>_puzzle_clear = {
+		clear_variable = formable_<FORMABLE_ID>_qualifying_count
+		clear_variable = formable_<FORMABLE_ID>_required_count
+		clear_variable = formable_<FORMABLE_ID>_puzzle_dirty
+		# Clear any owner-defined selected-state variable here if the owner adds one.
+	}
+}

@@ -1,0 +1,53 @@
+# ============================================================================
+# FORMABLE STATE PUZZLE SCRIPTED-GUI TEMPLATE
+# ============================================================================
+# Documentation-only scaffold. Replace every angle-bracket token before copy.
+# This is a compact decision_category presentation layer. It evaluates current
+# state helpers for image and summary presentation, but it never performs the
+# formation action and never owns cost, route, or cleanup logic.
+# ============================================================================
+
+scripted_gui = {
+	formable_<FORMABLE_ID>_state_puzzle_ui = {
+		context_type = decision_category
+		window_name = "<FORMABLE_ID>_state_puzzle_window"
+		dirty = formable_<FORMABLE_ID>_puzzle_dirty
+
+		visible = {
+			is_ai = no
+		}
+
+		triggers = {
+			# These are presentation states only. Both map variants remain visible;
+			# the image property selects the current composite mask for each piece.
+			formable_<FORMABLE_ID>_formation_ready_visible = {
+				formable_<FORMABLE_ID>_territory_qualifies = yes
+			}
+			formable_<FORMABLE_ID>_formation_blocked_visible = {
+				NOT = { formable_<FORMABLE_ID>_territory_qualifies = yes }
+			}
+		}
+
+		properties = {
+			formable_<FORMABLE_ID>_formation_status_badge = {
+				image = "[formable_<FORMABLE_ID>_status_badge_sprite]"
+			}
+			formable_<FORMABLE_ID>_state_piece_<STATE_ID_A> = {
+				image = "[formable_<FORMABLE_ID>_state_<STATE_ID_A>_piece_sprite]"
+			}
+			formable_<FORMABLE_ID>_state_piece_<STATE_ID_B> = {
+				image = "[formable_<FORMABLE_ID>_state_<STATE_ID_B>_piece_sprite]"
+			}
+			formable_<FORMABLE_ID>_state_piece_<STATE_ID_C> = {
+				image = "[formable_<FORMABLE_ID>_state_<STATE_ID_C>_piece_sprite]"
+			}
+		}
+
+		# AI must use formable_<FORMABLE_ID>_territory_qualifies in the formation
+		# decision available block and its AI willingness block. The AI never
+		# opens or clicks this informational GUI.
+		ai_enabled = {
+			always = no
+		}
+	}
+}

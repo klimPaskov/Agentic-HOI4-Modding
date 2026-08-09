@@ -1,0 +1,63 @@
+# ============================================================================
+# FORMABLE STATE PUZZLE GUI TEMPLATE
+# ============================================================================
+# Documentation-only scaffold. Replace every angle-bracket token before copy.
+# The three entries below are the filled example shape: emit one iconType per
+# manifest state with the manifest canvas position and transparent bounding box.
+# Each icon is informational and has no click action or button-shaped control.
+# The unresolved and qualifying textures are composite masks that retain the
+# outline and the required hatch or check/keyline cue.
+# ============================================================================
+
+guiTypes = {
+	containerWindowType = {
+		name = "<FORMABLE_ID>_state_puzzle_window"
+		position = { x = 0 y = 0 }
+		size = { width = <CANVAS_WIDTH> height = <CANVAS_HEIGHT> }
+		Orientation = upper_left
+		clipping = yes
+
+		instantTextBoxType = {
+			name = "<FORMABLE_ID>_summary_line"
+			position = { x = 0 y = <SUMMARY_Y> }
+			font = "hoi_16mbs"
+			text = "<FORMABLE_ID>_summary_line"
+			format = center
+			maxWidth = <SUMMARY_WIDTH>
+			maxHeight = <SUMMARY_HEIGHT>
+			fixedsize = yes
+			pdx_tooltip_delayed = "<FORMABLE_ID>_formation_requirements_tt"
+		}
+
+		iconType = {
+			name = "formable_<FORMABLE_ID>_formation_status_badge"
+			spriteType = "GFX_<FORMABLE_ID>_formation_status_blocked"
+			position = { x = <STATUS_BADGE_X> y = <STATUS_BADGE_Y> }
+			pdx_tooltip_delayed = "<FORMABLE_ID>_formation_requirements_tt"
+		}
+
+		# Generated state piece A. Keep the transparent bounds tight to state A.
+		iconType = {
+			name = "formable_<FORMABLE_ID>_state_piece_<STATE_ID_A>"
+			spriteType = "GFX_<FORMABLE_ID>_state_<STATE_ID_A>_unresolved"
+			position = { x = <STATE_A_X> y = <STATE_A_Y> }
+			pdx_tooltip_delayed = "<FORMABLE_ID>_state_<STATE_ID_A>_hover"
+		}
+
+		# Generated state piece B. Keep the transparent bounds tight to state B.
+		iconType = {
+			name = "formable_<FORMABLE_ID>_state_piece_<STATE_ID_B>"
+			spriteType = "GFX_<FORMABLE_ID>_state_<STATE_ID_B>_unresolved"
+			position = { x = <STATE_B_X> y = <STATE_B_Y> }
+			pdx_tooltip_delayed = "<FORMABLE_ID>_state_<STATE_ID_B>_hover"
+		}
+
+		# Generated state piece C. Keep the transparent bounds tight to state C.
+		iconType = {
+			name = "formable_<FORMABLE_ID>_state_piece_<STATE_ID_C>"
+			spriteType = "GFX_<FORMABLE_ID>_state_<STATE_ID_C>_unresolved"
+			position = { x = <STATE_C_X> y = <STATE_C_Y> }
+			pdx_tooltip_delayed = "<FORMABLE_ID>_state_<STATE_ID_C>_hover"
+		}
+	}
+}

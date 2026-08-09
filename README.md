@@ -130,7 +130,7 @@ Use subagents for work such as:
 - event-owned scripted GUI implementation and visual-layout passes
 - documentation updates
 
-The main agent should still own final implementation, final wiring, final review, final validation, and the completion report.
+The main agent should still own final implementation, final wiring, final review, final validation, and the completion report. Spawn every project custom subagent without inherited conversation context and pass every required path, constraint, correction, accepted decision, ownership boundary, and handoff destination explicitly in its prompt.
 
 The event UI worker is deliberately narrow. It follows the scripted-GUI layout rules in `hoi4-decisions-missions` and may work only on a dedicated window introduced and owned by the named event in its prompt. It must not perform a repository-wide GUI audit or modify event logs, event-detail frameworks, settings, super-event frameworks, shared registries, or unrelated existing interfaces. The worker uses HOI4 Agent Tools to inspect and render the exact UI before editing, applies an in-scope GUI rewrite, and repeats the relevant state, resolution, hierarchy, and click-region evidence afterward.
 
@@ -151,11 +151,11 @@ ID and matching image, title, description, quote, response, caller, unique right
 
 ## Portrait workflow
 
-Route every character portrait to `hoi4_portrait_creator`. It researches and archives grounded sources, creates placeholders, and validates user-supplied styled results from the selected Comfy Cloud, Local ComfyUI, or RunPod route. For fictional or impossible subjects it invokes native ImageGen. It processes the approved assets, creates DDS variants, installs portrait-specific wiring, and writes manifests and handoffs.
+Route every character portrait to `hoi4_portrait_creator`. It researches and archives grounded sources, creates and wires explicit source placeholders, and validates user-supplied styled results from the selected Comfy Cloud, Local ComfyUI, or RunPod route. The user runs the selected grounded-subject provider workflow; agents never operate RunPod. For fictional or impossible subjects the portrait worker invokes native ImageGen. It processes approved assets, creates DDS variants, installs portrait-specific wiring, and writes manifests and handoffs.
 
 ### 7. Keep asset ownership clear
 
-Asset subagents should produce source files, processed PNG previews, DDS files, manifests, contact sheets when useful, and `gfx_handoff.md`.
+Non-portrait asset subagents should produce source files, processed PNG previews, DDS files, manifests, contact sheets when useful, and `gfx_handoff.md`. Every character portrait belongs to `hoi4_portrait_creator`, which has the narrow standing ownership needed for portrait-specific wiring and manifests.
 
 The main agent should own `.gfx` edits, event references, focus icon assignments, idea icon assignments, decision icon assignments, localisation references, GUI references, documentation alignment, and validation.
 
@@ -275,11 +275,13 @@ A good subagent has:
 
 Use subagents before completion claims, not after claiming the work is done. A subagent report is evidence, not final proof. The main agent must inspect it and fix the issues.
 
+Every weighted AI or probability change requires the same named-scenario cycle: a read-only baseline through `hoi4_ai_probability_auditor`, an owner-applied patch, and a mandatory `hoi4.probability_compare` pass. The auditor never patches source or chooses the balance target.
+
 ## Completion proof
 
 A goal should not be marked complete unless the implementation is actually complete.
 
-For large events, mechanics, focus trees, country packages, UI work, balance passes, and asset goals, require a concrete completion report. It should list files changed, systems touched, checks run, assets created or reused, docs updated, audits performed, and blockers.
+For large events, mechanics, focus trees, country packages, UI work, balance passes, and asset goals, require a concrete completion report. It should list files changed, systems touched, meaningful scenarios or comparisons, assets created or reused, docs updated, audits performed, and blockers. A named event-owned scripted GUI is incomplete without the UI worker handoff and matching MCP before-and-after layout evidence.
 
 Every simplification should be reported. If no simplifications were made, the agent should say so and provide evidence.
 

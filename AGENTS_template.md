@@ -18,7 +18,7 @@ These values are already filled in this template and should normally be left as-
 - Offline Paradox wiki snapshot: `paradox_wiki/`
 - Local vanilla Hearts of Iron IV install: `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`
 - Default documentation folder: `docs/`
-- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-mtth`, `hoi4-super-events`, `hoi4-3d-model-pipeline`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-portrait-production`, `hoi4-comfyui-cloud`, `hoi4-comfyui-local`, `hoi4-comfyui-runpod`, `hoi4-subagents`, and `hoi4-improvement-loop`
+- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-mtth`, `hoi4-super-events`, `hoi4-3d-model-pipeline`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-portrait-production`, `hoi4-comfyui`, `hoi4-comfyui-cloud`, `hoi4-comfyui-local`, `hoi4-comfyui-runpod`, `hoi4-subagents`, and `hoi4-improvement-loop`
 - Generic HOI4 subagents from `.codex/agents/`: `hoi4_repo_explorer`, `hoi4_feature_completion_auditor`, `hoi4_ai_probability_auditor`, `hoi4_scripted_system_architect`, `hoi4_localisation_auditor`, `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_event_ui_worker`, `hoi4_country_package_auditor`, `hoi4_improvement_loop_planner`, `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_3d_model_pipeline`, `hoi4_portrait_creator`, `hoi4_quote_remark_researcher`, `hoi4_audio_researcher`, `hoi4_super_event_art_researcher`, `hoi4_super_event_audio_researcher`, `hoi4_super_event_quote_researcher`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, and `hoi4_skill_maintainer`
 
 ---
@@ -93,7 +93,7 @@ Use repo skills as required implementation guidance, not as optional notes.
 - Use `hoi4-super-events` when designing, researching, wiring, auditing, or documenting a super-event, including its sourced quote, image, sound-only audio package, runtime playback, and durable provenance.
 - Use `hoi4-focus-trees` before editing national focus trees.
 - Use `hoi4-decisions-missions` before editing decisions/missions.
-- Use `hoi4_event_ui_worker` through `hoi4-subagents` when a named event specifically introduces a dedicated scripted GUI or mechanic window. It uses Luna Max, follows the layout rules in `hoi4-decisions-missions`, and must use the HOI4 MCP GUI inspect, render, rewrite, and post-change comparison workflow. Never route event logs, event-detail frameworks, settings, shared framework windows, or unrelated existing UIs to this worker.
+- Use `hoi4_event_ui_worker` through `hoi4-subagents` when a named event specifically introduces a dedicated scripted GUI or mechanic window. It follows the layout rules in `hoi4-decisions-missions` and must use the HOI4 MCP GUI inspect, render, rewrite, and post-change comparison workflow. Never route event logs, event-detail frameworks, settings, shared framework windows, or unrelated existing UIs to this worker.
 - Use `hoi4-mtth` when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer.
 - Use `hoi4-subagents` when coordinating custom Codex subagents, routing bounded work, or defining parent/subagent ownership boundaries.
 - Use `hoi4-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
@@ -101,7 +101,7 @@ Use repo skills as required implementation guidance, not as optional notes.
 <!-- HOI4_MOD_SETUP_PORTRAITS_START -->
 ### Character portraits
 
-Use `hoi4-portrait-production` and `hoi4_portrait_creator` for every character portrait. The portrait worker researches and archives grounded sources, creates placeholders, and validates the user-supplied final from the configured Cloud, Local, or RunPod route. It invokes native ImageGen for fictional or impossible portraits, then processes PNG/DDS variants, installs portrait-specific wiring, and writes manifests and handoffs.
+Use `hoi4-portrait-production` and `hoi4_portrait_creator` for every character portrait. The portrait worker researches and archives grounded sources, creates and wires explicit source placeholders, and validates the user-supplied final from the configured Cloud, Local, or RunPod route. The user runs the selected grounded-subject provider workflow; agents never operate RunPod. For fictional or impossible portraits, the portrait worker invokes native ImageGen, processes PNG/DDS variants, installs portrait-specific wiring, and writes manifests and handoffs.
 <!-- HOI4_MOD_SETUP_PORTRAITS_END -->
 
 ### HOI4 MCP setup (bootstrap; remove after setup)
@@ -133,7 +133,7 @@ The installed `hoi4-agent-tools` server is the coding-agent tool for focus trees
 - Focus work: inspect, render, lint, and use `hoi4.focus_rewrite` for cleanup or a complete new route plan; review the returned layout and diagnostics.
 - Event work: use narrow `hoi4.event_inspect` queries and the read-only render and compare tools, then edit source files through the normal workflow.
 - Technology work: inspect, render, and compare technology and doctrine trees, including their prerequisites, placements, unlocks, bonuses, references, and missing assets.
-- Weighted-logic work: inspect and evaluate event MTTH, event options, decision and mission scores, focus and research selection, random blocks, AI strategy factors, and declared custom pools under explicit scenarios; use sweeps, seeded simulation, sequence analysis, and comparisons when needed.
+- Weighted-logic work: always start with `hoi4.probability_inspect`, then inspect and evaluate event MTTH, event options, decision and mission scores, focus and research selection, random blocks, AI strategy factors, and declared custom pools under explicit scenarios; use sweeps, seeded simulation, sequence analysis, comparisons, and rendered evidence according to the scenario contract.
 - GUI work: inspect and render the linked layout, states, resolutions, and click regions before an in-scope `hoi4.gui_rewrite`.
 - Map work: inspect connected province, state, region, adjacency, supply, and railway data before a declarative `hoi4.map_rewrite`.
 
@@ -154,8 +154,9 @@ All project custom Codex subagents must be spawned with `fork_context=false`. Do
 Use these high-level routing rules:
 
 - Use `hoi4_repo_explorer` only when file locations, existing patterns, vanilla references, likely touchpoints, missing-file recovery, or implementation order are unclear. Do not use it for small known-file edits, provided-file edits, direct skill or prompt updates, localisation-only cleanup, asset-only production, or tasks already bounded to exact files. The parent should inspect the known files directly for those cases.
-- Use asset subagents for visual production: `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, and `hoi4_icon_artist`.
+- Use asset subagents for non-portrait visual production: `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, and `hoi4_icon_artist`. All character portrait work belongs to `hoi4_portrait_creator`.
 - Use `hoi4_event_ui_worker` only for a dedicated scripted GUI introduced and owned by one named event or event-owned mechanic. The parent prompt must prove event ownership and name exact GUI identifiers, files, entry point, states, resolutions, assets, and handoff path. The worker owns bounded layout implementation and MCP visual evidence, while the parent and decision owner retain gameplay, costs, effects, AI, balance, final integration, and in-game validation. It must not audit event logs, event-detail frameworks, settings, super-event frameworks, shared registries, or unrelated existing UIs.
+- Use `hoi4_portrait_creator` for complete portrait production: grounded source research and wired source placeholders, fictional native ImageGen portraits, user-supplied grounded-final validation, processing, DDS conversion, portrait-specific wiring, manifests, and handoffs. The user owns the configured grounded-subject provider run; the agent never operates RunPod.
 - When an asset subagent is asked to produce animation, the parent prompt must require `hoi4-frame-animation` for 2D frame-sheet assets and `hoi4-3d-model-pipeline` for skeletal `.anim` actions; 3D prompts must include the Meshy hard gate, Meshy 6 as the default generation model, one-image rule, vanilla scale crosswalk, material packing, reimport proof, and parent-owned runtime wiring. Normal model and required animation credit use is pre-authorized; the worker asks only before extra paid recovery caused by a failed or rejected attempt and otherwise must not ask for credit confirmation. Custom-unit prompts must also require Internet sound-source research, original downloads, source URLs, licensing evidence, checksums, animation synchronization points, and a blocked state when no defensible sourced file exists. Generated, synthesized, recorded, manually authored, placeholder, test-tone, and unlicensed unit audio is forbidden. Every new custom unit must also receive bespoke counters for every counter surface it uses. Inspect the exact installed-vanilla counter definition/DDS and matching skill-local reference family first, sample the vanilla green palette, and route original counter production to `hoi4_icon_artist`; reused counters, arbitrary green, and unreferenced imitations are incomplete.
 - Use quote and audio research subagents only for specialised sourced text or audio work: `hoi4_quote_remark_researcher` and `hoi4_audio_researcher`. For registered super-events, use the narrower `hoi4_super_event_quote_researcher`, `hoi4_super_event_audio_researcher`, and `hoi4_super_event_art_researcher` routes where their registration contract applies.
 - Use audit subagents before completion claims: `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_localisation_auditor`, `hoi4_ai_probability_auditor`, and `hoi4_feature_completion_auditor`.
@@ -163,6 +164,7 @@ Use these high-level routing rules:
 - Use `hoi4_scripted_system_architect` for reusable scripted effects, triggers, script constants, event targets, meta effects, variable patterns, and dynamic helper design.
 - Use `hoi4_documentation_curator` during long implementation when specs, plans, docs, manifests, prompts, reports, or subagent handoffs may be stale, duplicated, contradictory, or too numerous. It patches documentation surfaces only, writes source-of-truth maps and resume packets, and does not edit gameplay files or spreadsheets.
 - Use `hoi4_spreadsheet_doc_worker` only when this repository actually has a maintained workbook or planning spreadsheet and implementation facts are available. Spreadsheet fields that mirror in-game wording must match the in-game localisation wording.
+- When a maintained workbook generates CSV or other tabular exports, declare the workbook as the sole editable source, name the repository exporter command and generated outputs, run the exporter after every successful workbook update, and never edit or treat a stale export as source of truth.
 - Use `hoi4_skill_maintainer` for non-trivial skill creation, cleanup, routing updates, or multi-skill consistency work.
 - Use `hoi4_improvement_loop_planner` during large feature implementation when a mechanic, focus tree, country package, decision system, text or audio research need, visual progression, lore package, or audit finding needs deeper design. It creates concrete feature expansion addenda with research, historical connections, playable mechanics, and implementation surfaces for the main agent. It does not patch gameplay files. Do not spawn it again for the same feature until the previous addendum has been implemented, folded into specs, queued with a reason, or rejected.
 
@@ -313,7 +315,7 @@ Localisation and UI must always be kept in sync with gameplay changes.
 6. Icons and UI assets:
    - Define icons in `interface/...` and keep naming stable.
    - When something needs icons, define them in a correct `.gfx` file. If final sprites are not part of the task, tell the user what folder to put them in and what names to use.
-   - Copy placeholder sprites from vanilla files that match the new gfx definition, so final sprites can replace them cleanly and the game can load without missing-sprite errors.
+   - Use placeholder sprites only when the user has approved a pending placeholder or an owning skill explicitly requires a sourced placeholder. Keep the final filename stable and report the asset as pending until its approved replacement is installed.
    - Register new UI assets before requesting art so filenames do not need to change later.
 
 ## 3. Naming and Prefix Rules
@@ -345,7 +347,7 @@ When implementing any new mechanic, follow this checklist:
 14. For systems that touch or are related to an existing project-wide mechanic, review related docs and verify integration across events, on_actions, decisions, scripted logic, UI, logs, and localisation.
 15. Never launch Hearts of Iron IV. Live game and launcher testing is owned by the user.
 16. When the user reports an issue after new changes were made, assume the game has already been reloaded. Do not default to restart/reload advice. Do not ask for, request, or search for logs. If the user did not paste any error lines, treat it as having no error lines to use. Do not tell the user to run in-game validation. Assume they will always verify changes in a live session and in a new save. Do not mention old saves.
-17. Fallbacks are never allowed and MUST ALWAYS be discussed with the user.
+17. Unapproved fallbacks are forbidden and MUST ALWAYS be discussed with the user. A wired sourced portrait remains an explicitly pending source placeholder until the user supplies its HOI4-style replacement.
 18. When the user reports that something is wrong and you can't figure out what exactly, then add temporary debug code (for example: `log = "my debug log"`) that exposes the relevant runtime values needed to understand the issue, and remove every debug line you added once the issue is resolved.
 19. When an error is reported or discovered after your changes, treat it as caused by your current change set. Do not speculate that the project was already broken before your work.
 20. When updating content (for example reworking an event), write as if the feature has always existed. Do not use meta wording like “now it is,” “now it has been reworked,” “newly added,” or similar update-history phrasing.
@@ -371,6 +373,7 @@ Do not claim completion when:
 - localisation is missing
 - AI behavior is missing
 - assets are missing, unwired, or undocumented
+- a named event-owned scripted GUI is missing its `hoi4_event_ui_worker` handoff or mandatory MCP before-and-after layout evidence
 - a custom unit model is missing its rights-checked sourced sound package, source evidence, animation synchronization map, bespoke vanilla-green counter package, mandatory installed-vanilla counter inspection, or runtime handoff
 - maintained event logs, documentation, tables, or manifests that describe the changed system are stale
 - any requested route, country, decision, mission, achievement, event chain, focus path, custom progression milestone, researched text or audio package, or asset is missing
@@ -392,21 +395,32 @@ Every simplification must be reported. This includes skipped routes, fallback tr
 
 If there are no simplifications, say so explicitly and provide evidence through audits, docs, or changed files. If the goal cannot be fully implemented, report that the goal is incomplete instead of presenting partial work as done.
 
-## 6. Focus Trees and Large Content
+## 6. Event Integration
+
+For event implementation, use `hoi4-events`.
+
+1. Wire the event script, namespace or category registration, trigger or firing route, localisation and name mappings, and any maintained event-log or event-detail surfaces together in the same change.
+2. If the event has evolutions, terminal branches, or a super-event outcome, wire the related log entries, super-event integration, assets, audio, and localisation in the same change.
+3. Keep gameplay files, specs, implementation docs, maintained spreadsheets or presentations, asset manifests, and player-facing detail text aligned.
+4. Treat any project-specific event id, entry-root format, catalog exporter, or maintained log framework as a repository source-of-truth rule and preserve it explicitly in the copied `AGENTS.md`.
+
+## 7. Focus Trees and Large Content
 
 For national focus work, use `hoi4-focus-trees` before editing. That skill is the detailed source of truth for focus-tree depth, reward variety, route logic, AI, localisation, icons, ideas, country identity changes, focus-decision integration, route coverage proof, and completion standards.
 
 Before claiming focus-tree completion, use the appropriate audit route from `hoi4-subagents` if this repo uses audit subagents. If a tree works but feels shallow, duplicated, generic, or disconnected from gameplay, use `hoi4-improvement-loop` and consider a plan-mode pass from `hoi4_improvement_loop_planner` if this repo uses one.
 
-## 7. Agent-generated Visual Assets
+## 8. Agent-generated Visual Assets
 
 For final visual assets, use `hoi4-feature-assets`. That skill is the detailed source of truth for image generation rules, 2D asset classification, and the handoff boundary for 3D model packages.
+
+Route every character portrait to `hoi4_portrait_creator`. It finds and archives attributed sources for grounded subjects, creates and wires source placeholders, and validates and installs the HOI4-style final supplied by the user through the configured grounded-subject provider route; agents never operate RunPod. For fictional or impossible subjects, it invokes native ImageGen and completes processing, DDS conversion, portrait-specific wiring, manifest evidence, and handoff itself.
 
 For animated visual assets, use `hoi4-frame-animation` in addition to `hoi4-feature-assets` for frame-sheet animation. Use `hoi4-3d-model-pipeline` for skeletal unit or entity actions. Final animation assets must be built from real planned frames or real exported skeletal actions and must not be transform-only mockups.
 
 Use `hoi4-subagents` for detailed asset routing. `hoi4_portrait_creator` owns all character portrait source research or fictional ImageGen generation, processing, DDS variants, portrait-specific wiring, manifests, and handoffs. Native advisor and high-command cards use the `65x67` contract in `hoi4-feature-assets`. For 3D packages, the model worker owns bounded model production, rights-checked Internet sourcing and synchronization design for custom-unit sounds, and the mandatory counter handoff; it never creates audio. `hoi4_icon_artist` produces original vanilla-green counters only after exact installed-vanilla and matching reference-family inspection. The parent owns `.asset`, entity, counter GFX, sound definitions, runtime wiring, and live proof.
 
-## 8. Skill Maintenance
+## 9. Skill Maintenance
 
 Use skills actively. Skills are not only for cleanup at the end of a task. They are the agent's memory for repeated workflows, project-specific patterns, hard-won fixes, and instructions that should not be rediscovered every time.
 
@@ -429,7 +443,7 @@ Rules:
 9. During large multi-feature runs, review skill gaps after each completed feature or shared system. Update or create skills before starting the next feature if something reusable was learned.
 10. Report which skills were used, created, or updated at the end of each task.
 
-## 9. Git
+## 10. Git
 
 After completing each meaningful plan, create a Git commit.
 

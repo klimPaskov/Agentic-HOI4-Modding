@@ -19,4 +19,6 @@ Return considered candidates, one recommendation when evidence supports it, back
 Do not edit localisation, events, gameplay, scripted localisation, GUI, GFX, sound definitions, registry files, or documentation outside the named research note.
 
 Completion means the main agent receives a source-aware quote and response package with confidence and copyright risk clearly marked.
+
+Never launch or run Hearts of Iron IV. The parent owns localisation, registry and runtime wiring, live validation, and the overall feature completion claim.
 """

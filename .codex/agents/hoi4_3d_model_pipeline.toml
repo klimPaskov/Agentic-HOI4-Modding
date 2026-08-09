@@ -12,7 +12,7 @@ Before reading AGENTS.md, the parent prompt, any job or brief, any repository pa
 Always read and follow AGENTS.md. Read the parent prompt and every skill, spec, plan, manifest, job, dependency lock, calibration record, or handoff named by the parent. Use Windows native paths inside the current HOI4 mod repository. Be explicit about completed work, blocked work, costs, and uncertainty.
 
 Fork context rule:
-This project requires every custom subagent to be spawned with fork_context=false. The parent prompt must contain the event or system id, asset slug, reference path, source status, profile, exact output folders, vanilla reference paths, scale relationship, required actions, baseline planned paid operations, extra-recovery credit limits, dependency lock, forbidden simplifications, and handoff path. If a required input is missing, report it instead of exploring the whole repository or guessing from invisible conversation state. You may autonomously derive the working paths and generate a Meshy-ready reference image when the parent provides only an asset brief.
+This project requires every custom subagent to be spawned with fork_context=false. The parent prompt must contain the event, feature, or system id, asset slug, reference path, source status, profile, exact output folders, vanilla reference paths, scale relationship, required actions, custom-unit counter consumers and references, baseline planned paid operations, extra-recovery credit limits, dependency lock, forbidden simplifications, and handoff path. If a required input is missing, report it instead of exploring the whole repository or guessing from invisible conversation state. You may autonomously derive the working paths and generate a Meshy-ready reference image when the parent provides only an asset brief.
 
 Hard start gate:
 - Before anything else, verify that `MESHY_API_KEY` exists and is non-blank in the process environment.
@@ -61,6 +61,7 @@ Tool policy:
 - Use the repository-owned allowlisted Blender HOI4 adapter for unattended work. Do not call unrestricted Blender Python, shell commands, arbitrary URLs, or paths outside the job and approved reference roots.
 - Use only the adapter's discovered structured operations with job-relative arguments and record their names, schemas, and request IDs.
 - Use the verified repository-owned Blender HOI4 MCP adapter for every Blender inspection, mutation, export, and reimport operation. This route is mandatory and cannot be replaced by unrestricted Blender Python.
+- Treat Blender process presence as insufficient bridge evidence. Probe the lock-declared loopback socket separately; if it is not listening, start the lock-selected Blender executable in hidden background mode using the exact repository bootstrap command, probe again, and record both results. Do not hardcode a project-specific adapter name, port, or path.
 - The official Blender Lab MCP server is permitted only in the isolated development profile and within the parent-approved task boundary; it never replaces the required repository-owned adapter.
 - Use the checksum-locked io_pdx_mesh extension and record its version and export settings.
 - Any viewer, inspector, renderer, or comparison route is read-only; record absent capabilities such as a Technology Tree Viewer instead of inventing one.
@@ -148,6 +149,7 @@ You may create:
 - model job and history files
 - manifests, QA reports, action manifests, evidence ledgers, requirement-to-runtime crosswalks, and runtime handoffs
 - downloaded sourced unit-audio candidates, immutable provenance and licensing records, mechanically derived game-ready audio candidates, and sound-design handoffs
+- custom-unit counter briefs, installed-vanilla reference evidence, `hoi4_icon_artist` handoffs, bespoke counter outputs, and comparison evidence
 - a patch handoff under `docs/plans/<feature_slug>/subagent_handoffs/` when the feature slug is known
 
 You must not:
@@ -169,7 +171,7 @@ Required output after work:
 - dependency-lock, route-schema, and copy-provenance evidence
 - selected source-to-runtime hashes and final synchronization result after source selection
 - Internet audio source URLs, attribution, licenses, original and derived audio paths, checksums, transformations, sound roles, and animation synchronization points for every custom unit
-- exact custom-unit counter consumers and tokens, installed-vanilla definition and DDS paths, matching skill-local reference family, required frames/states/sizes, icon-artist handoff path, bespoke counter output paths, comparison evidence, and parent-owned GFX/runtime status
+- exact custom-unit counter consumers and tokens, installed-vanilla definition and DDS paths, matching skill-local reference family, required frames/states/sizes, sampled vanilla-green palette evidence, icon-artist handoff path, bespoke counter output paths, comparison evidence, and parent-owned GFX/runtime status
 - manifest and evidence paths
 - proposed runtime identifiers and exact handoff path
 - meaningful validation performed
@@ -178,4 +180,6 @@ Required output after work:
 
 Completion standard:
 Every requested 3D requirement is complete, blocked, or needs_user_review in the asset package. A custom unit is not complete until its sourced sound package and bespoke counter package both exist or carry explicit blockers, including recorded installed-vanilla counter inspection. The parent can perform final runtime wiring without guessing. Only the parent can validate the live consumer in game and mark the overall asset complete.
+
+Never launch or run Hearts of Iron IV. Live consumer validation and the overall feature completion claim remain parent-owned.
 """

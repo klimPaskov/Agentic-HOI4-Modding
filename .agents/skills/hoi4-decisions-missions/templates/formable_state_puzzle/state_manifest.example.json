@@ -1,0 +1,338 @@
+{
+  "schema_version": "1.0",
+  "formable_id": "example_northern_union",
+  "owner_tag": "ENU",
+  "decision_category_id": "example_northern_union_formation_category",
+  "formation_decision_id": "example_northern_union_formation_decision",
+  "map_revision": {
+    "revision_id": "steam-map-2026-08-09-e131d30e",
+    "game_build": "installed-steam-build",
+    "map_root": "C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV",
+    "provinces_bmp_path": "map/provinces.bmp",
+    "provinces_bmp_sha256": "e131d30e5dcb13d9c2a8598f820a2de0ae9828f3a24f2bddc1bcfff40f71660a",
+    "definition_csv_path": "map/definition.csv",
+    "definition_csv_sha256": "86846be71198d6772c651638aa22e3656133198de9b7c49c6234ed48cf33d87b",
+    "state_history_files": {
+      "121": "370f7de563feecc254ca0d95560bcf7c4c470918cde146076d2e33a728ae5831",
+      "122": "be5a809465c67461b8c3bd9287248b16649217d7048230b149227e229e55ab44",
+      "123": "264a0ad89e8e732f4b73e516b1625a8df1211b9494700f983e90183af5561fe9"
+    },
+    "combined_source_sha256": "5e4e415bfdfc5a0fa747c164c158ddd57f0dc4fc40c1903308d2e535069d7452",
+    "geometry_artifact": {
+      "kind": "reproducible_row_run_report",
+      "path": "owner_package_docs/example_northern_union/map-province-geometry-2026-08-09.json",
+      "sha256": "5e4e415bfdfc5a0fa747c164c158ddd57f0dc4fc40c1903308d2e535069d7452"
+    }
+  },
+  "counting_rules": {
+    "owner_policy": "prospective_carrier",
+    "controller_policy": "prospective_carrier",
+    "core_policy": "prospective_carrier",
+    "subject_policy": "does_not_count",
+    "ally_policy": "does_not_count",
+    "occupied_policy": "does_not_count",
+    "display_count_mode": "all_manifest_states",
+    "display_required_count": 3,
+    "formation_rule": {
+      "fixed_state_ids": [
+        123
+      ],
+      "alternate_group_ids": [
+        "northern_anchor_choice"
+      ],
+      "territory_helper": "formable_example_northern_union_territory_qualifies",
+      "decision_available_helper": "formable_example_northern_union_decision_available",
+      "ai_uses_same_helper": true
+    }
+  },
+  "projection": {
+    "source_dimensions": {
+      "width": 5632,
+      "height": 2048
+    },
+    "origin": {
+      "x": 2707,
+      "y": 377
+    },
+    "scale": 2.0,
+    "canvas_dimensions": {
+      "width": 120,
+      "height": 300
+    },
+    "coordinate_system": "top_left_y_down",
+    "rounding": "nearest_integer"
+  },
+  "states": [
+    {
+      "state_id": 121,
+      "localization_key": "STATE_121",
+      "state_history_file": "history/states/121-Scottish Lowlands.txt",
+      "province_ids": [
+        159,
+        6300,
+        9314,
+        9383,
+        9392,
+        11378
+      ],
+      "geometry": {
+        "source": "installed_map_province_colors",
+        "source_revision": "steam-map-2026-08-09-e131d30e",
+        "row_run_count": 39,
+        "row_runs_sha256": "2c7472e4edb8799aa93c601409cc00ff667a018b0f8df08a6455cff31eea3772",
+        "mask_sha256": "765fc952874894807d14a697e15da8ef3ecf81f21561b75439af2ad908530754",
+        "pixel_count": 554,
+        "source_bbox": {
+          "x": 2730,
+          "y": 377,
+          "width": 34,
+          "height": 34,
+          "coordinate_space": "source_map"
+        },
+        "row_run_samples": {
+          "first": [
+            [
+              377,
+              2735,
+              2738
+            ],
+            [
+              378,
+              2730,
+              2740
+            ],
+            [
+              379,
+              2730,
+              2740
+            ]
+          ],
+          "last": [
+            [
+              408,
+              2751,
+              2754
+            ],
+            [
+              409,
+              2752,
+              2753
+            ],
+            [
+              410,
+              2752,
+              2752
+            ]
+          ]
+        },
+        "shared_border_rule": "single_owner_mask_outline"
+      },
+      "canvas_position": {
+        "x": 46,
+        "y": 0
+      },
+      "transparent_bbox": {
+        "x": 2730,
+        "y": 377,
+        "width": 34,
+        "height": 34,
+        "coordinate_space": "source_map"
+      },
+      "sprites": {
+        "unresolved": "GFX_example_northern_union_state_121_unresolved",
+        "unresolved_hatch": "GFX_example_northern_union_state_121_unresolved_hatch",
+        "unresolved_border": "GFX_example_northern_union_state_121_unresolved_border",
+        "qualifying": "GFX_example_northern_union_state_121_qualifying",
+        "qualifying_check": "GFX_example_northern_union_state_121_qualifying_check",
+        "qualifying_keyline": "GFX_example_northern_union_state_121_qualifying_keyline"
+      }
+    },
+    {
+      "state_id": 122,
+      "localization_key": "STATE_122",
+      "state_history_file": "history/states/122-Wales.txt",
+      "province_ids": [
+        253,
+        311,
+        377,
+        407,
+        3274,
+        6363,
+        9364,
+        11361
+      ],
+      "geometry": {
+        "source": "installed_map_province_colors",
+        "source_revision": "steam-map-2026-08-09-e131d30e",
+        "row_run_count": 57,
+        "row_runs_sha256": "cba05c0fb546bfecaff081af4abaffa06cda9da5b3fa121c13ac742b41c7ed5c",
+        "mask_sha256": "ce53cc193e4e3798abc743d7f5c5c18d4ac9f32b6d6fc516a44b630babbd9b58",
+        "pixel_count": 873,
+        "source_bbox": {
+          "x": 2714,
+          "y": 447,
+          "width": 39,
+          "height": 43,
+          "coordinate_space": "source_map"
+        },
+        "row_run_samples": {
+          "first": [
+            [
+              447,
+              2726,
+              2729
+            ],
+            [
+              448,
+              2725,
+              2729
+            ],
+            [
+              449,
+              2725,
+              2731
+            ]
+          ],
+          "last": [
+            [
+              487,
+              2739,
+              2747
+            ],
+            [
+              488,
+              2739,
+              2746
+            ],
+            [
+              489,
+              2741,
+              2746
+            ]
+          ]
+        },
+        "shared_border_rule": "single_owner_mask_outline"
+      },
+      "canvas_position": {
+        "x": 14,
+        "y": 140
+      },
+      "transparent_bbox": {
+        "x": 2714,
+        "y": 447,
+        "width": 39,
+        "height": 43,
+        "coordinate_space": "source_map"
+      },
+      "sprites": {
+        "unresolved": "GFX_example_northern_union_state_122_unresolved",
+        "unresolved_hatch": "GFX_example_northern_union_state_122_unresolved_hatch",
+        "unresolved_border": "GFX_example_northern_union_state_122_unresolved_border",
+        "qualifying": "GFX_example_northern_union_state_122_qualifying",
+        "qualifying_check": "GFX_example_northern_union_state_122_qualifying_check",
+        "qualifying_keyline": "GFX_example_northern_union_state_122_qualifying_keyline"
+      }
+    },
+    {
+      "state_id": 123,
+      "localization_key": "STATE_123",
+      "state_history_file": "history/states/123-Cornwall.txt",
+      "province_ids": [
+        540,
+        3422,
+        3463,
+        6526,
+        9562,
+        11406
+      ],
+      "geometry": {
+        "source": "installed_map_province_colors",
+        "source_revision": "steam-map-2026-08-09-e131d30e",
+        "row_run_count": 38,
+        "row_runs_sha256": "d07ec3e7b1beec0d21beccedc431c56fb5f95d6a91fbcd3ab277b37b72668217",
+        "mask_sha256": "a640b2e7b303dffa22d563c3872c0e201e805d5e9f11517b41e8e2dd30b141c1",
+        "pixel_count": 579,
+        "source_bbox": {
+          "x": 2707,
+          "y": 493,
+          "width": 59,
+          "height": 25,
+          "coordinate_space": "source_map"
+        },
+        "row_run_samples": {
+          "first": [
+            [
+              493,
+              2731,
+              2741
+            ],
+            [
+              493,
+              2748,
+              2749
+            ],
+            [
+              494,
+              2730,
+              2750
+            ]
+          ],
+          "last": [
+            [
+              515,
+              2708,
+              2712
+            ],
+            [
+              516,
+              2707,
+              2709
+            ],
+            [
+              516,
+              2713,
+              2716
+            ]
+          ]
+        },
+        "shared_border_rule": "single_owner_mask_outline"
+      },
+      "canvas_position": {
+        "x": 0,
+        "y": 232
+      },
+      "transparent_bbox": {
+        "x": 2707,
+        "y": 493,
+        "width": 59,
+        "height": 25,
+        "coordinate_space": "source_map"
+      },
+      "sprites": {
+        "unresolved": "GFX_example_northern_union_state_123_unresolved",
+        "unresolved_hatch": "GFX_example_northern_union_state_123_unresolved_hatch",
+        "unresolved_border": "GFX_example_northern_union_state_123_unresolved_border",
+        "qualifying": "GFX_example_northern_union_state_123_qualifying",
+        "qualifying_check": "GFX_example_northern_union_state_123_qualifying_check",
+        "qualifying_keyline": "GFX_example_northern_union_state_123_qualifying_keyline"
+      }
+    }
+  ],
+  "alternate_groups": [
+    {
+      "group_id": "northern_anchor_choice",
+      "member_state_ids": [
+        121,
+        122
+      ],
+      "minimum_qualifying": 1,
+      "counting_note": "One of the two northern anchors qualifies; the fixed southern anchor remains required. Both anchors remain visible as separate map pieces and count toward the display denominator."
+    }
+  ],
+  "sprite_root": "gfx/interface/formables/example_northern_union/states",
+  "notes": [
+    "The example uses installed state-history province membership for states 121, 122, and 123.",
+    "The display denominator is all three visible pieces while formation eligibility is one fixed state plus one qualifying member of the alternate group.",
+		"Each unresolved texture must include a grey fill, hatch, and outline; each qualifying texture must include a green fill and check or solid keyline."
+	]
+}

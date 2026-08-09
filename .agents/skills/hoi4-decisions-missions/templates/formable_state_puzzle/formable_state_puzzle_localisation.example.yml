@@ -1,0 +1,40 @@
+﻿l_english:
+  <FORMABLE_ID>_formable_category: "Formation Territory"
+  <FORMABLE_ID>_formable_category_desc: "The territory proof is shown as exact installed-map state pieces. Grey hatched pieces are unresolved; green pieces carry a check or solid keyline when they qualify."
+  <FORMABLE_ID>_summary_line: "Qualifying states: [formable_<FORMABLE_ID>_qualifying_count_text] / <REQUIRED_COUNT> — [formable_<FORMABLE_ID>_summary_status_text]"
+  <FORMABLE_ID>_qualifying_count_0: "0"
+  <FORMABLE_ID>_qualifying_count_1: "1"
+  <FORMABLE_ID>_qualifying_count_2: "2"
+  <FORMABLE_ID>_qualifying_count_3: "3"
+  <FORMABLE_ID>_summary_ready: "Formation ready"
+  <FORMABLE_ID>_summary_blocked: "Formation blocked"
+  <FORMABLE_ID>_formation_requirements_tt: "The formation decision checks the fixed state and the alternate group through formable_<FORMABLE_ID>_territory_qualifies. The count is presentation only and never bypasses the decision availability trigger."
+
+  # Generic dynamic-list state-scope hover keys.
+  <FORMABLE_ID>_state_hover_qualifying: "[This.GetName] — owner: [formable_<FORMABLE_ID>_state_owner_name]; controller: [formable_<FORMABLE_ID>_state_controller_name]; control: [formable_<FORMABLE_ID>_state_control_result]; core: [formable_<FORMABLE_ID>_state_core_result]; status: [<FORMABLE_ID>_state_status_qualifies]."
+  <FORMABLE_ID>_state_hover_unresolved: "[This.GetName] — owner: [formable_<FORMABLE_ID>_state_owner_name]; controller: [formable_<FORMABLE_ID>_state_controller_name]; control: [formable_<FORMABLE_ID>_state_control_result]; core: [formable_<FORMABLE_ID>_state_core_result]; status: [<FORMABLE_ID>_state_status_unresolved]."
+  <FORMABLE_ID>_state_owner_present: "[This.owner.GetNameDef]"
+  <FORMABLE_ID>_state_controller_present: "[This.controller.GetNameDef]"
+  <FORMABLE_ID>_state_owner_absent: "No current owner"
+  <FORMABLE_ID>_state_controller_absent: "No current controller"
+  <FORMABLE_ID>_state_control_yes: "Controlled by the forming country"
+  <FORMABLE_ID>_state_control_no: "Not controlled by the forming country"
+  <FORMABLE_ID>_state_core_yes: "Core of the forming country"
+  <FORMABLE_ID>_state_core_no: "Not a core of the forming country"
+  <FORMABLE_ID>_state_status_qualifies: "Qualifies"
+  <FORMABLE_ID>_state_status_unresolved: "Unresolved"
+
+  # Fixed generated state A hover keys.
+  <FORMABLE_ID>_state_<STATE_ID_A>_hover: "[<STATE_ID_A>.GetName] — owner: [formable_<FORMABLE_ID>_state_<STATE_ID_A>_owner_name]; controller: [formable_<FORMABLE_ID>_state_<STATE_ID_A>_controller_name]; control: [formable_<FORMABLE_ID>_state_<STATE_ID_A>_control_result]; core: [formable_<FORMABLE_ID>_state_<STATE_ID_A>_core_result]; status: [formable_<FORMABLE_ID>_state_<STATE_ID_A>_qualification_status]."
+  <FORMABLE_ID>_state_<STATE_ID_A>_owner_present: "[<STATE_ID_A>.owner.GetNameDef]"
+  <FORMABLE_ID>_state_<STATE_ID_A>_controller_present: "[<STATE_ID_A>.controller.GetNameDef]"
+
+  # Fixed generated state B hover keys.
+  <FORMABLE_ID>_state_<STATE_ID_B>_hover: "[<STATE_ID_B>.GetName] — owner: [formable_<FORMABLE_ID>_state_<STATE_ID_B>_owner_name]; controller: [formable_<FORMABLE_ID>_state_<STATE_ID_B>_controller_name]; control: [formable_<FORMABLE_ID>_state_<STATE_ID_B>_control_result]; core: [formable_<FORMABLE_ID>_state_<STATE_ID_B>_core_result]; status: [formable_<FORMABLE_ID>_state_<STATE_ID_B>_qualification_status]."
+  <FORMABLE_ID>_state_<STATE_ID_B>_owner_present: "[<STATE_ID_B>.owner.GetNameDef]"
+  <FORMABLE_ID>_state_<STATE_ID_B>_controller_present: "[<STATE_ID_B>.controller.GetNameDef]"
+
+  # Fixed generated state C hover keys.
+  <FORMABLE_ID>_state_<STATE_ID_C>_hover: "[<STATE_ID_C>.GetName] — owner: [formable_<FORMABLE_ID>_state_<STATE_ID_C>_owner_name]; controller: [formable_<FORMABLE_ID>_state_<STATE_ID_C>_controller_name]; control: [formable_<FORMABLE_ID>_state_<STATE_ID_C>_control_result]; core: [formable_<FORMABLE_ID>_state_<STATE_ID_C>_core_result]; status: [formable_<FORMABLE_ID>_state_<STATE_ID_C>_qualification_status]."
+  <FORMABLE_ID>_state_<STATE_ID_C>_owner_present: "[<STATE_ID_C>.owner.GetNameDef]"
+  <FORMABLE_ID>_state_<STATE_ID_C>_controller_present: "[<STATE_ID_C>.controller.GetNameDef]"

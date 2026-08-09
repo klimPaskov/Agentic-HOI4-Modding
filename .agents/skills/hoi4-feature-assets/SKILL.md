@@ -46,6 +46,7 @@ Use this skill for:
 - custom feature images
 - decision icons
 - decision category icons
+- static and animated decision category pictures
 - idea icons
 - national spirit icons
 - officer corps spirit icons
@@ -77,10 +78,10 @@ The main agent decides which subagent to spawn, gives it a bounded asset prompt,
 
 Use:
 
-- `hoi4_asset_source_researcher` for non-portrait real or archival image sourcing, historical flag-design research, historically attested symbols, user-provided source photos, and report, news, or custom feature images that must depict real photographed material
-- `hoi4_portrait_creator` for every character portrait: grounded source research and placeholders, fictional native ImageGen generation, provider-result validation, processing, DDS conversion, portrait-specific wiring, manifests, and handoffs
-- `hoi4_generated_feature_art` for generated non-icon feature art, including fictional or alternate-history report images, news images, large presentation images, flat fictional flag designs, faction emblems, UI panels, and progression-state base art; it does not own final character portraits
-- `hoi4_icon_artist` for focus icons, idea icons, national spirit icons, officer corps spirit icons, decision icons, decision category icons, achievement icons, and tech icons
+- `hoi4_asset_source_researcher` for non-portrait real or archival image sourcing, historical flag-design research, historically attested symbols, user-provided source photos, archival decision category pictures, and report, news, or custom feature images that must depict real photographed material
+- `hoi4_portrait_creator` for every character portrait: grounded source research, durable archival storage, explicit source placeholders, fictional native ImageGen production, user-supplied styled-result validation, processing, DDS conversion, portrait-specific wiring, manifests, and handoffs
+- `hoi4_generated_feature_art` for generated non-icon feature art, including fictional or alternate-history report images, news images, large presentation images, generated decision category pictures, flat fictional flag designs, faction emblems, UI panels, and progression-state base art; it does not own final character portraits
+- `hoi4_icon_artist` for focus icons, idea icons, national spirit icons, officer corps spirit icons, decision icons, decision category icons, achievement icons, tech icons, custom-unit counters, and exact state-piece graphics derived from verified map geometry
 
 For animated work, route by asset type first. Then require the chosen asset subagent to follow `hoi4-frame-animation` for frame plans, per-frame source art, normalization, contact sheets, preview GIFs, frame sheets, static fallbacks, and animation handoffs.
 
@@ -142,7 +143,7 @@ An absent temporary workspace is expected after a fully complete goal. If the fe
 <!-- HOI4_MOD_SETUP_PORTRAITS_START -->
 ## 2.4 Sourced portrait handoff
 
-`hoi4_portrait_creator` researches each grounded source, archives it under `docs/assets/portraits/<feature_slug>/`, wires a source placeholder at the final runtime path, and keeps the basename stable. It validates and installs the user-supplied final from the selected Cloud, Local, or RunPod route. For fictional or impossible subjects it invokes native ImageGen and completes processing and wiring itself.
+`hoi4_portrait_creator` researches each grounded source, archives it under `docs/assets/portraits/<feature_slug>/`, wires an explicit pending source placeholder at the final runtime path, and keeps the basename stable. The user runs the selected Cloud, Local, or RunPod styled-replacement workflow and supplies the final result; the portrait worker validates and installs it. Agents never open, configure, queue, monitor, or otherwise operate RunPod. For fictional or impossible subjects the portrait worker invokes native ImageGen and completes processing and wiring itself.
 
 Resolve the stable runtime basename first:
 
@@ -301,7 +302,8 @@ Canonical gameplay-icon paths:
 - ideas and national spirits: `icons/ideas/`
 - decisions: `icons/decisions/`
 - missions: `icons/missions/`
-- decision categories: `icons/decision_categories/`
+- decision category icons: `icons/decision_categories/`
+- decision category pictures: `icons/decision_categories/pictures/`
 - achievement state triplets: `icons/achievements/`
 - officer corps spirits: `icons/officer_corps_spirits/`
 - technologies: `icons/technologies/`
@@ -310,6 +312,10 @@ Canonical gameplay-icon paths:
 - intelligence agencies and operations: `icons/intelligence_agency/` and `icons/intelligence_operations/`
 - commander traits, medals, and military raids: their separate folders under `icons/`
 - state modifiers, military industrial organizations, factions, buildings, and modifiers: their separate folders under `icons/`
+
+The decision category picture family contains the larger visual pictures used to establish a category's theme or territorial context. It is separate from the small category icon family. The current references use a native `114x101` canvas, but that is a reference-family canvas rather than a universal runtime prescription; inspect the active sprite and GUI consumer before selecting a target.
+
+The picture folder must contain its own labeled `contact_sheet.png`. If it is missing, create it before category-picture work and update the reference `README.md` and `CATALOG.md` with filenames, native dimensions, provenance, and surface ownership. Reference images and the contact sheet are review-only; never wire, recolour, trace, copy, or ship them as runtime art.
 
 Canonical unit-visual paths:
 
@@ -530,7 +536,7 @@ Treat every unit visual as a domain-and-surface-specific pipeline. Inspect the m
 - `units/air/map_counters/` and `units/naval/map_counters/` contain domain-specific map-counter art. Do not substitute land counters or resized equipment art.
 - `units/models_3d/land_materials/`, `units/models_3d/air_materials/`, and `units/models_3d/naval_materials/` contain UV model materials paired with cataloged `.mesh`, `.asset`, and entity definitions. They are not 2D icons, finished renders, or concept sheets.
 
-Every new custom unit must receive bespoke counter art for every large or map-counter surface it uses. Before production, inspect the exact closest installed-vanilla counter definition and DDS plus the matching skill-local counter family and contact sheet. Match the inspected vanilla green palette, canvas, frame order, alpha, border treatment, silhouette scale, shading, contrast, and state/inverted behavior while creating original unit-specific art. A copied vanilla counter, renamed existing counter, generic placeholder, arbitrary green, or counter produced without the recorded vanilla inspection is incomplete. If the reference cannot be inspected, mark the counter blocked.
+Every new custom unit must receive bespoke counter art for every large or map-counter surface it uses. Before production, inspect the exact closest installed-vanilla counter definition and DDS plus the matching skill-local counter family and contact sheet. Match the sampled exact vanilla green palette, canvas, frame order, alpha, border treatment, silhouette scale, shading, contrast, and state/inverted behavior while creating original unit-specific art. Require the icon worker's original source PNG, saved prompt, processed alpha PNG, final DDS, native-size contact sheet, decoded DDS round-trip evidence, hashes and lineage, manifest entry, and `gfx_handoff.md`. A copied vanilla counter, renamed existing counter, generic placeholder, arbitrary green, or counter produced without recorded vanilla inspection is forbidden even as a temporary runtime fallback. If the reference cannot be inspected or the bespoke package is missing, mark the counter `needs_user_review` or `blocked`; do not promote the unit package as complete before parent visual review.
 
 Classify the requested deliverable before creating art: equipment/technology illustration, large land counter, land/air/naval map counter, division-template emblem, or land/air/naval 3D model package. Give each class its own brief, source art, native canvas or UV layout, frame metadata, final path, and handoff. A 3D task must keep model geometry, materials, entity wiring, and any separately produced concept reference distinct. Do not derive one unit pipeline by resizing, relabeling, or recoloring another.
 
@@ -538,11 +544,11 @@ Classify the requested deliverable before creating art: equipment/technology ill
 
 Route 3D model production to `hoi4-3d-model-pipeline` and `hoi4_3d_model_pipeline`. This is a separate pipeline from 2D equipment art, map counters, division emblems, and frame-sheet animation.
 
-Before any provider or paid work, and only when the feature actually needs 3D output, the 3D route must pass the `MESHY_API_KEY` gate, run the autonomous bootstrap, and verify the selected pinned Meshy MCP route, generated Blender MCP route or verified narrow adapter, installed Blender version, and checksum-locked `io_pdx_mesh` setup.
+Before any provider or paid work, and only when the feature actually needs 3D output, the 3D route must pass the `MESHY_API_KEY` gate, run the autonomous bootstrap, and verify the lock-resolved Meshy MCP route, generated Blender MCP route or verified narrow adapter, installed Blender version, and checksum-locked `io_pdx_mesh` setup. Read the authoritative adapter version from the generated dependency lock. Probe the configured loopback bridge socket separately from the Blender process, start the lock-selected Blender build in hidden background mode when the socket is absent, re-probe, and record both results; a running Blender process alone is not bridge evidence.
 
 When a ready reference is absent, the route creates exactly one clean `meshy_input.png` for the asset. Never create or send side-profile sheets, turnaround boards, collages, or multi-view boards to Meshy. Contact sheets and Blender renders are QA evidence only.
 
-Every 3D asset brief must identify the asset profile, deterministic job root, provider task lineage, reference checksum, named vanilla mesh and entity precedent, source geometry height, entity scale, effective runtime height, axes, origin, contact plane, required actions, root-motion policy, PDX material channels, texture dimensions, `.mesh` and `.anim` outputs, reimport proof, runtime hashes, and live consumer. A custom-unit brief must also identify applicable sound roles, the closest vanilla sound consumers, Internet source and licensing requirements, and action/frame or lifecycle synchronization points.
+Every 3D asset brief must identify the asset profile, deterministic job root, provider task lineage, reference checksum, named vanilla mesh and entity precedent, source geometry height, entity scale, effective runtime height, axes, origin, contact plane, required actions, root-motion policy, PDX material channels, texture dimensions, `.mesh` and `.anim` outputs, byte-level reimport or parser proof through the locked stack, runtime hashes, and live consumer. A custom-unit brief must also identify applicable sound roles, the closest vanilla sound consumers, Internet source and licensing requirements, immutable original and derived checksums, and action/frame or lifecycle synchronization points.
 
 For humanoid units, calibrate against the installed vanilla infantry source mesh and entity rather than an assumed real-world height or arbitrary entity scale. Apply the entity scale exactly once and record the source-height-to-runtime-height crosswalk.
 
@@ -550,7 +556,7 @@ Provider source files are immutable evidence. Working geometry must be repaired 
 
 For animated units, provider actions are candidates that must be cleaned, retargeted or authored, baked, checked for root policy, grounded contacts, deformation, FPS, frame range, and loop behavior, then exported and reimported as real `.anim` files. A static image or still mesh is not an acceptable substitute for a requested skeletal action.
 
-The 3D worker owns source files, checkpoints, processed textures, previews, exports, manifests, reports, reimport evidence, and a runtime handoff. For custom units, it also owns Internet research for legally usable sound files, immutable original downloads, source URLs, licensing and usage evidence, access dates, checksums, license-permitted mechanical derivatives, and animation synchronization design. It must never generate, synthesize, record, manually author, fabricate placeholder or test-tone audio, or use unlicensed audio; a missing defensible source is a blocker. The main implementation agent owns `.asset`, entity, `.gfx`, sound definitions, unit/building/gameplay wiring, final runtime synchronization, and in-game screenshots.
+The 3D worker owns source files, checkpoints, processed textures, previews, exports, manifests, reports, reimport evidence, and a runtime handoff. For custom units, it also owns Internet research for legally usable sound files, immutable original downloads, source URLs, licensing and usage evidence, access dates, checksums, license-permitted mechanical derivatives, and animation synchronization design. It must never generate, synthesize, record, manually author, fabricate placeholder or test-tone audio, or use unlicensed audio; a missing defensible source is a blocker. The handoff must distinguish selected source exports, staged runtime copies, and active consumer files and record source/destination paths and hashes after synchronization. The main implementation agent owns `.asset`, entity, `.gfx`, sound definitions, unit/building/gameplay wiring, final runtime synchronization, and in-game screenshots.
 
 When unsure, inspect the existing repository pattern and vanilla HOI4 assets before choosing.
 
@@ -829,6 +835,22 @@ Follow the `$imagegen` skill's transparent image workflow when the icon should h
 
 Inspect `icons/decisions/`, `icons/missions/`, or `icons/decision_categories/` as appropriate before generating or processing decision-system icons. Missions use the decision icon pipeline but still need mission-specific semantic readability.
 
+## 18.1 Decision category pictures
+
+A decision category picture is a larger visual surface used inside or beside a decision category. It is not a `32x32` decision icon, a small category icon, a custom-window background, or a substitute for an interactive scripted GUI.
+
+Use a category picture when the normal decision list already carries the actions but the category benefits from identity, historical context, propaganda, territorial orientation, or a readable theme. Suitable subjects include propaganda and public campaigns; civil-war mobilization, insurgency, and preparedness; elections, ideology, monarchy, party control, and trade-union politics; faction management, treaties, naval agreements, and intervention; formable territory maps; and documentary or symbolic scenes.
+
+Choose the source route by content:
+
+- use `hoi4_asset_source_researcher` for real propaganda posters, photographs, archival maps, documents, and other verifiable historical material
+- use `hoi4_generated_feature_art` for fictional or alternate-history posters, symbolic category pictures, generated documentary scenes, and non-icon illustrated panels
+- use deterministic installed-map data and exact state geometry for formable territory pictures and state-puzzle pieces; never ask ImageGen to invent state borders
+
+Generated category pictures must not contain fake controls, meters, buttons, unreadable generated text, modern UI, or decoration that implies a click action. A static picture is the normal choice. Use an animated picture only when motion communicates a changing state or supports an active propaganda, mobilization, crisis, or transformation theme. Animated pictures follow `hoi4-frame-animation` and require real source frames, a static fallback, a sheet, preview, manifest, and sprite handoff.
+
+Before production, inspect `assets/vanilla_reference/icons/decision_categories/pictures/contact_sheet.png` and the exact active consumer. The manifest and handoff must classify the output as a small category icon, static category picture, animated category picture, compact scripted GUI display, or full mechanic-window asset.
+
 ## Additional gameplay icon families
 
 Route additional icon work by the exact UI surface:
@@ -1081,6 +1103,16 @@ Progression-state variants may include:
 
 Progression-state variants should use the same target size as the base asset.
 
+## Formable state-puzzle visual assets
+
+When a formable uses the reusable state-puzzle presentation from `hoi4-decisions-missions`, preserve exact state geometry and one shared geographic projection.
+
+Each package must include a manifest with formable id, state ids and names, alternate requirement groups, counting rules, source map data, projection bounds, anchors, and proposed sprite names; one exact mask or sprite region per required state; grey unmet and green qualifying states with a second non-colour cue; a composed geographic preview; hover-region notes; and final runtime, `.gfx`, and GUI ownership.
+
+Derive shapes from the installed map's state and province geometry. Do not trace screenshots by hand, generate borders with ImageGen, simplify the pieces into generic tiles, or substitute a modern political map. Keep one projection, scale, origin, edge treatment, and border width so neighbouring states meet cleanly.
+
+Copy and adapt `.agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/`. The asset handoff must match its manifest and naming rules. Skill-local templates are reference scaffolding and must never become runtime consumers. Use the static category-picture option when a formable only needs a territorial overview rather than per-state interaction.
+
 ## Formable nation asset coverage
 
 Every formable nation needs visible identity assets.
@@ -1238,14 +1270,17 @@ Before finishing, confirm:
 10. The asset manifest exists.
 11. Internet-sourced assets record source links, source date or estimated date range, license or public domain status if available, and era-fit notes for Second World War-era assets.
 12. Fictional or non-human portraits produced through native ImageGen are clearly marked as fictional or generated in the manifest.
-13. Docs are updated where relevant.
-14. The feature implementation or parent handoff knows which sprite names to use.
-15. No final asset remains only in a temporary folder.
-16. Focus, idea, national spirit, officer corps spirit, decision, decision category, achievement, and tech icons were treated as separate asset types. No idea or decision icon is only a resized, cropped, recolored, padded, or lightly edited focus icon.
-17. Every animated asset used `hoi4-frame-animation`, has real source frames, has a static fallback, and has no transform-only final motion.
-18. Every unit visual is classified by domain and surface as equipment/technology art, a large land counter, a land/air/naval map counter, a division-template emblem, or a land/air/naval 3D model package; one pipeline was not resized or relabeled to substitute for another. A 3D package also proves the one-image Meshy input rule, provider lineage, vanilla scale calibration, PDX material mapping, topology repair, required skeletal actions, `.mesh`/`.anim` reimport, hash-aware runtime synchronization, parent-owned wiring, and a live consumer.
-19. Every advisor, theorist, high-command, officer-corps, or army-small card uses the native `65x67` advisor workflow, the exact accepted template, retained transforms and hashes, and independent native/4x review; it is not a shrunken leader texture.
-20. Every sourced portrait has a durable source under `docs/assets/portraits/<feature_slug>/`, a stable runtime basename, a recorded pending/final state, and no runtime reference into the archive.
+13. Decision category pictures are classified separately from small category icons, scripted GUI backgrounds, and full mechanic-window assets; their canonical reference folder and labeled contact sheet were inspected.
+14. Simple categories were not expanded into full scripted GUI asset packs when a static or animated category picture was sufficient.
+15. Every formable state-puzzle asset uses exact installed-map state geometry, one shared projection, grey and green qualification states with non-colour cues, clean neighbouring edges, and a manifest aligned with the reusable template.
+16. Docs are updated where relevant.
+17. The feature implementation or parent handoff knows which sprite names to use.
+18. No final asset remains only in a temporary folder.
+19. Focus, idea, national spirit, officer corps spirit, decision, decision category, achievement, and tech icons were treated as separate asset types. No idea or decision icon is only a resized, cropped, recolored, padded, or lightly edited focus icon.
+20. Every animated asset used `hoi4-frame-animation`, has real source frames, has a static fallback, and has no transform-only final motion.
+21. Every unit visual is classified by domain and surface as equipment/technology art, a large land counter, a land/air/naval map counter, a division-template emblem, or a land/air/naval 3D model package; one pipeline was not resized or relabeled to substitute for another. A 3D package also proves the one-image Meshy input rule, provider lineage, vanilla scale calibration, PDX material mapping, topology repair, required skeletal actions, `.mesh`/`.anim` reimport, hash-aware runtime synchronization, parent-owned wiring, and a live consumer.
+22. Every advisor, theorist, high-command, officer-corps, or army-small card uses the native `65x67` advisor workflow, the exact accepted template, retained transforms and hashes, and independent native/4x review; it is not a shrunken leader texture.
+23. Every sourced portrait has a durable source under `docs/assets/portraits/<feature_slug>/`, a stable runtime basename, an explicit pending source-placeholder or validated final state, and no runtime reference into the archive.
 
 <!-- HOI4_MOD_SETUP_SUPER_EVENTS_START -->
 ## Super Events images

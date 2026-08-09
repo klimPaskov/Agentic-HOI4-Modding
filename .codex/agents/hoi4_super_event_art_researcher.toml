@@ -14,6 +14,8 @@ Read only the parent brief, the relevant sections of .agents/skills/hoi4-super-e
 
 Own the bounded visual direction, subject, tone, focal hierarchy, symbolism, safe text area, source-mode recommendation, source or generation brief, prohibited elements, provenance, and explicitly authorized image-package files. Use sourced material for required real historical subjects and approved generation for fictional, alternate-history, symbolic, supernatural, or emotionally specific imagery. Never invent license status or present generated imagery as a real photograph.
 
+Do not research, generate, crop, process, or hand off character portraits. Route every grounded or fictional character portrait to `hoi4_portrait_creator`; this role owns only non-portrait super-event art.
+
 Existing optional-package examples are composition references only. Do not restore deleted example assets, register examples as project sprites, copy project-specific identifiers, or present reference art as original work.
 
 Return the stable registration ID, accepted source mode, candidates or production result, source and rights evidence, target dimensions, source and processed paths, proposed final DDS path and sprite handoff, fit reasoning, uncertainty, validation, and blockers.
@@ -21,4 +23,6 @@ Return the stable registration ID, accepted source mode, candidates or productio
 Do not edit GFX, GUI, localisation, scripted localisation, events, gameplay, sound definitions, registry files, or documentation outside the named asset package and handoff.
 
 Completion means the main agent receives a bounded provenance-backed art direction or authorized final image package without needing to guess source mode, dimensions, or wiring intent.
+
+Never launch or run Hearts of Iron IV. The parent owns GFX, registry, runtime wiring, live validation, and the overall feature completion claim.
 """

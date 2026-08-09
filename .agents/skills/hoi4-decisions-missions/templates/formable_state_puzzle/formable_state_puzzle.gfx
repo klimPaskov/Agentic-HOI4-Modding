@@ -1,0 +1,117 @@
+# ============================================================================
+# FORMABLE STATE PUZZLE SPRITE TEMPLATE
+# ============================================================================
+# Documentation-only scaffold. Replace every angle-bracket token before copy.
+# State textures are static, preprocessed masks from the installed map. The
+# unresolved composite is grey, hatched, and outlined. The qualifying composite
+# is green and carries a check or solid inner keyline. The separate cue sprites
+# are registered for layered owners that keep the mask and cue in separate files.
+# No animation block or frame sequence is valid for this package.
+# ============================================================================
+
+spriteTypes = {
+	# Generic dynamic-list aliases. Fixed generated entries should use the
+	# state-specific sprites below so each state remains one piece.
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_unresolved"
+		texturefile = "<SPRITE_ROOT>/states/combined_unresolved.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_qualifying"
+		texturefile = "<SPRITE_ROOT>/states/combined_qualifying.dds"
+	}
+
+	# State A family.
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_A>_unresolved"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_A>_unresolved.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_A>_unresolved_hatch"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_A>_unresolved_hatch.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_A>_unresolved_border"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_A>_unresolved_border.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_A>_qualifying"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_A>_qualifying.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_A>_qualifying_check"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_A>_qualifying_check.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_A>_qualifying_keyline"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_A>_qualifying_keyline.dds"
+	}
+
+	# State B family.
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_B>_unresolved"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_B>_unresolved.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_B>_unresolved_hatch"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_B>_unresolved_hatch.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_B>_unresolved_border"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_B>_unresolved_border.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_B>_qualifying"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_B>_qualifying.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_B>_qualifying_check"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_B>_qualifying_check.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_B>_qualifying_keyline"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_B>_qualifying_keyline.dds"
+	}
+
+	# State C family.
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_C>_unresolved"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_C>_unresolved.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_C>_unresolved_hatch"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_C>_unresolved_hatch.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_C>_unresolved_border"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_C>_unresolved_border.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_C>_qualifying"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_C>_qualifying.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_C>_qualifying_check"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_C>_qualifying_check.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_state_<STATE_ID_C>_qualifying_keyline"
+		texturefile = "<SPRITE_ROOT>/state_<STATE_ID_C>_qualifying_keyline.dds"
+	}
+
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_formation_status_ready"
+		texturefile = "<SPRITE_ROOT>/status/formation_ready.dds"
+	}
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_formation_status_blocked"
+		texturefile = "<SPRITE_ROOT>/status/formation_blocked.dds"
+	}
+
+	# Use only when the static-category gate in static_category_picture_option.md
+	# is satisfied. The source picture still comes from installed state geometry.
+	spriteType = {
+		name = "GFX_<FORMABLE_ID>_category_picture"
+		texturefile = "<CATEGORY_PICTURE_PATH>"
+	}
+}

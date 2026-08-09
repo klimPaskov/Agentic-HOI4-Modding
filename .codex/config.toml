@@ -4,6 +4,10 @@ sandbox_mode = "danger-full-access"
 
 project_doc_max_bytes = 184320
 
+[agents]
+max_threads = 24
+max_depth = 2
+
 [mcp_servers.hoi4_agent_tools]
 command = "hoi4-agent-tools.cmd"
 cwd = "."
@@ -27,7 +31,7 @@ description = "Read-only scenario auditor for HOI4 AI weights, MTTH, event optio
 config_file = "agents/hoi4_ai_probability_auditor.toml"
 
 [agents.hoi4_asset_source_researcher]
-description = "Finds, verifies, and documents non-portrait real or archival visual source assets for HOI4 mods, including report, news, presentation, historical-flag, and attested-symbol assets. Character portraits belong entirely to hoi4_portrait_creator."
+description = "Finds, verifies, processes, and documents non-portrait real or archival visual source assets for HOI4 mods, including report, news, presentation, historical-flag, and attested-symbol assets. Character portraits belong entirely to hoi4_portrait_creator."
 config_file = "agents/hoi4_asset_source_researcher.toml"
 
 [agents.hoi4_audio_researcher]
@@ -108,6 +112,6 @@ config_file = "agents/hoi4_super_event_quote_researcher.toml"
 
 # HOI4_MOD_SETUP_PORTRAITS_START
 [agents.hoi4_portrait_creator]
-description = "Owns complete HOI4 portrait production: source research, fictional ImageGen, provider-result validation, processing, DDS conversion, portrait wiring, manifests, and handoffs."
+description = "Owns complete HOI4 portrait production: grounded-source research and source placeholders, fictional ImageGen portraits, user-supplied styled-result validation, processing, DDS conversion, portrait wiring, manifests, and handoffs. Never operates RunPod."
 config_file = "agents/hoi4_portrait_creator.toml"
 # HOI4_MOD_SETUP_PORTRAITS_END

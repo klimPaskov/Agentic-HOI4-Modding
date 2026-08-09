@@ -662,6 +662,34 @@ The reusable selected-target pattern is:
 
 Do not leave stale, invalid, or irrelevant decisions visible simply because their scripted trigger is easy to write.
 
+## Decision category presentation hierarchy
+
+A complex scripted GUI is not the default presentation for a decision category. Choose the least complex surface that communicates the category's current state, purpose, and available actions clearly.
+
+Use this order:
+
+1. ordinary category icon with concise category text
+2. static category picture
+3. animated category picture with a static fallback
+4. compact attached display or category header
+5. full scripted GUI or separate mechanic window
+
+Do not move to a more complex layer only because the category is important. A static or animated category picture is often stronger for a category that needs identity and atmosphere but does not require the player to manage several live values or targets.
+
+Category pictures are especially suitable for propaganda and public campaigns; civil-war preparation, insurgency, and preparedness; ideology, elections, monarchism, party control, and trade-union politics; faction management, diplomatic blocs, treaties, and intervention campaigns; formables where a territorial overview is useful but individual state pieces do not need interaction; and one-theme crisis categories whose decisions already explain the actionable details.
+
+A category picture must remain presentation. Do not draw fake buttons, meters, values, or controls into it. Use a full scripted GUI only when the player must manage a living system that cannot be read cleanly from ordinary decisions, category text, tooltips, and a category picture, such as several interacting values, target selection, repeated map interaction, competing factions, a state-by-state formable display, or a persistent board whose state changes often.
+
+### Decision category picture reference workflow
+
+Before designing or auditing a category picture, inspect:
+
+`.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/decision_categories/pictures/`
+
+This is the canonical larger-picture reference family and is separate from `icons/decision_categories/`, which contains small category icons. The folder must contain a labeled `contact_sheet.png`. If the sheet is missing, create it from the references, label every filename and native dimension, and update the reference `README.md` and `CATALOG.md` with provenance and surface ownership. Reference images and the contact sheet are review material only and must never be wired into runtime GFX.
+
+When reviewing an existing mod, record category id, owner system, current presentation, recommended layer, the picture-or-GUI reason, and any missing asset or implementation. Do not add a picture to every category. Keep ordinary categories ordinary when a picture would add no useful identity, territorial context, or state feedback.
+
 ## Formable nation decisions
 
 Use decisions for formable nations when the player should prove control over land, complete a political route, or spend resources before changing the country identity. A formable decision should feel like a proclamation, settlement, congress, coronation, constitutional act, annexation settlement, liberation charter, or administrative project. It should not be only a hidden tag switch.
@@ -682,6 +710,24 @@ A formable decision must define:
 - cleanup for obsolete formation decisions after the formable is created
 
 State requirements must be readable. Use named state groups and custom trigger tooltips. Do not expose raw state id lists to the player unless the existing UI pattern already does that cleanly. If several alternate maps can qualify, create clear requirement groups.
+
+### Formable state-puzzle presentation standard
+
+When exact territorial control is the central proof for a formable, use the reusable formable state-puzzle presentation. Show the required territory assembled from the exact in-game shapes of its states, arranged in their real geographic positions like pieces of one map.
+
+Each required state must be represented separately. A state that does not satisfy the requirement is grey; a qualifying state is green; borders, texture, labels, or another non-colour cue must distinguish the states; hovering a piece names the state and explains its status; and the panel shows the qualifying count, required count, and final eligibility without exposing raw internal variables.
+
+Derive every piece from the installed map data. Do not approximate outlines by hand, generate them with ImageGen, replace them with generic tiles, or use province blobs that differ from the actual requirement. Every piece must share one projection, scale, origin, and border treatment.
+
+The display must refresh from current ownership, control, subject or ally counting, alternate state-set rules, route locks, and eligibility. Do not cache a green state after it stops qualifying, and do not add a whole-world daily scan unless the user explicitly authorizes it. Use the same scripted eligibility helpers for the pieces, summary, and formation decision so the GUI and decision can never disagree.
+
+Keep the display compact. Do not add unrelated meters, fake controls, or lore panels around the map. The human-facing puzzle must not become an AI dependency; AI uses the same formation conditions and decision logic directly.
+
+Copy and adapt the reusable scaffolding from:
+
+`.agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/`
+
+The package contains manifest, `.gui`, `.gfx`, scripted GUI, scripted trigger/effect, localisation, static-picture, and validation templates. Skill-local templates are reference scaffolding and must never be wired directly into a mod.
 
 Hidden formables need extra care. A hidden formable can be locked behind an event, secret focus, rare ideology, high chaos, special leader, historical artifact, super-event, achievement route, or scripted GUI investigation. Hidden does not mean undocumented. The implementation handoff must still define all triggers, effects, assets, and cleanup.
 
@@ -706,7 +752,7 @@ Formation systems should support partial success and failure. A country can form
 
 ## Scripted GUI decision categories and mechanic windows
 
-When a decision category controls a major mechanic, consider attaching a scripted GUI or opening a custom mechanic window from a category button. This is appropriate when the player needs to manage values, targets, meters, factions, sponsors, province groups, formable requirements, investment tracks, or competing internal blocs.
+Choose the presentation layer from the hierarchy above before creating a custom window. A major mechanic does not automatically need a full scripted GUI. Use an ordinary category with a strong static or animated picture when the player mainly needs theme, territorial context, or a clear visual identity. A scripted GUI is appropriate when the player must manage values, targets, meters, factions, sponsors, province groups, exact interactive formable requirements, investment tracks, or competing internal blocs.
 
 Use `hoi4.gui_inspect` to map linked layout, states, resolutions, click regions, localisation, sprites, fonts, animation, and background ownership. Then call `hoi4.gui_render` for deterministic full-window, cropped, annotated, state, resolution, click-region, hierarchy, and comparison views. MCP diagnostics expose bad alignment, uneven spacing, overlapping controls, clipping, overflow, broken click regions, state mismatches, resolution drift, missing assets, and other layout defects. Full-window and comparison renders also make poor use of the background visible, but the implementation agent must still review whether every painted region and visual anchor is being used as intended. Use `hoi4.gui_rewrite` for an in-scope GUI change after reviewing those diagnostics and the render fidelity report. Keep gameplay validation and balance review in this skill.
 
@@ -861,7 +907,7 @@ AI should understand:
 
 Avoid flat `ai_will_do` when campaign state matters.
 
-For complex decision or mission weights, route the analysis through `hoi4_ai_probability_auditor`. It must use `hoi4.probability_inspect` to find required inputs, `hoi4.probability_evaluate` for named campaign states, `hoi4.probability_sweep` for thresholds and rank reversals, and `hoi4.probability_compare` after a source change. Use `hoi4.probability_simulate` only for explicitly declared uncertain inputs, and use `hoi4.probability_render` when the ranking, matrix, sensitivity, comparison, or unresolved view improves review. Decision and mission `ai_will_do` results are willingness scores, so do not present them as click probabilities. Include availability, target, cost, cooldown, and route state where relevant, and retain unresolved engine state in the result. If the probability route is unavailable, record the exact blocker and do not substitute source-only analysis.
+For complex decision or mission weights, route the analysis through `hoi4_ai_probability_auditor`. Establish named baseline campaign scenarios before any patch with `hoi4.probability_inspect`, `hoi4.probability_evaluate`, and `hoi4.probability_sweep` as appropriate. The gameplay owner chooses targets and applies the patch; the auditor remains read-only. After the source change, require `hoi4.probability_compare` against the same named scenarios so the before-and-after evidence is directly comparable. Use `hoi4.probability_simulate` only for explicitly declared uncertain inputs, and use `hoi4.probability_render` when the ranking, matrix, sensitivity, comparison, or unresolved view improves review. Decision and mission `ai_will_do` results are willingness scores, so do not present them as click probabilities. Include availability, target, cost, cooldown, and route state where relevant, and retain unresolved engine state in the result. If the probability route is unavailable, record the exact blocker and do not substitute source-only analysis.
 
 AI should not take suicidal or nonsensical decisions just because they are available.
 

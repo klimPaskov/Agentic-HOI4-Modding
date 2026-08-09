@@ -1,0 +1,601 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-hoi4-modding.invalid/skills/formable-state-puzzle/state_manifest.schema.json",
+  "title": "Generic HOI4 formable state-puzzle manifest",
+  "description": "Machine-readable source contract for an exact installed-map state puzzle. This file is documentation scaffolding and is never loaded by Hearts of Iron IV.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "formable_id",
+    "owner_tag",
+    "decision_category_id",
+    "formation_decision_id",
+    "map_revision",
+    "counting_rules",
+    "projection",
+    "states",
+    "alternate_groups",
+    "sprite_root"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "formable_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
+    "owner_tag": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{3}$"
+    },
+    "decision_category_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
+    "formation_decision_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
+    "map_revision": {
+      "$ref": "#/$defs/map_revision"
+    },
+    "counting_rules": {
+      "$ref": "#/$defs/counting_rules"
+    },
+    "projection": {
+      "$ref": "#/$defs/projection"
+    },
+    "states": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/state_entry"
+      }
+    },
+    "alternate_groups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/alternate_group"
+      }
+    },
+    "sprite_root": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\n\\r]+$"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "positive_integer": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "non_negative_integer": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "coordinate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "type": "integer"
+        },
+        "y": {
+          "type": "integer"
+        }
+      }
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "width",
+        "height"
+      ],
+      "properties": {
+        "width": {
+          "$ref": "#/$defs/positive_integer"
+        },
+        "height": {
+          "$ref": "#/$defs/positive_integer"
+        }
+      }
+    },
+    "bbox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "width": {
+          "$ref": "#/$defs/positive_integer"
+        },
+        "height": {
+          "$ref": "#/$defs/positive_integer"
+        },
+        "coordinate_space": {
+          "type": "string",
+          "enum": [
+            "source_map",
+            "canvas"
+          ]
+        }
+      }
+    },
+    "map_revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision_id",
+        "game_build",
+        "map_root",
+        "provinces_bmp_path",
+        "provinces_bmp_sha256",
+        "definition_csv_path",
+        "definition_csv_sha256",
+        "state_history_files",
+        "combined_source_sha256"
+      ],
+      "properties": {
+        "revision_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "game_build": {
+          "type": "string",
+          "minLength": 1
+        },
+        "map_root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provinces_bmp_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provinces_bmp_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "definition_csv_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definition_csv_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "state_history_files": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "#/$defs/sha256"
+          }
+        },
+        "combined_source_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "geometry_artifact": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "hoi4_mcp_map_province_geometry",
+                "reproducible_row_run_report"
+              ]
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        }
+      }
+    },
+    "counting_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner_policy",
+        "controller_policy",
+        "core_policy",
+        "subject_policy",
+        "ally_policy",
+        "occupied_policy",
+        "display_count_mode",
+        "display_required_count",
+        "formation_rule"
+      ],
+      "properties": {
+        "owner_policy": {
+          "type": "string",
+          "enum": [
+            "prospective_carrier",
+            "original_owner",
+            "named_country",
+            "custom_scripted_policy"
+          ]
+        },
+        "controller_policy": {
+          "type": "string",
+          "enum": [
+            "prospective_carrier",
+            "owner",
+            "named_country",
+            "custom_scripted_policy"
+          ]
+        },
+        "core_policy": {
+          "type": "string",
+          "enum": [
+            "prospective_carrier",
+            "original_owner",
+            "named_country",
+            "custom_scripted_policy"
+          ]
+        },
+        "subject_policy": {
+          "type": "string",
+          "enum": [
+            "does_not_count",
+            "subject_counts",
+            "custom_scripted_policy"
+          ]
+        },
+        "ally_policy": {
+          "type": "string",
+          "enum": [
+            "does_not_count",
+            "ally_counts",
+            "custom_scripted_policy"
+          ]
+        },
+        "occupied_policy": {
+          "type": "string",
+          "enum": [
+            "does_not_count",
+            "full_control_counts",
+            "custom_scripted_policy"
+          ]
+        },
+        "display_count_mode": {
+          "type": "string",
+          "enum": [
+            "all_manifest_states",
+            "formation_qualifying_states",
+            "custom_scripted_policy"
+          ]
+        },
+        "display_required_count": {
+          "$ref": "#/$defs/positive_integer"
+        },
+        "formation_rule": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fixed_state_ids",
+            "alternate_group_ids",
+            "territory_helper",
+            "decision_available_helper",
+            "ai_uses_same_helper"
+          ],
+          "properties": {
+            "fixed_state_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/positive_integer"
+              }
+            },
+            "alternate_group_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9_]+$"
+              }
+            },
+            "territory_helper": {
+              "type": "string",
+              "minLength": 1
+            },
+            "decision_available_helper": {
+              "type": "string",
+              "minLength": 1
+            },
+            "ai_uses_same_helper": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        }
+      }
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_dimensions",
+        "origin",
+        "scale",
+        "canvas_dimensions",
+        "coordinate_system",
+        "rounding"
+      ],
+      "properties": {
+        "source_dimensions": {
+          "$ref": "#/$defs/dimensions"
+        },
+        "origin": {
+          "$ref": "#/$defs/coordinate"
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "canvas_dimensions": {
+          "$ref": "#/$defs/dimensions"
+        },
+        "coordinate_system": {
+          "type": "string",
+          "enum": [
+            "top_left_y_down"
+          ]
+        },
+        "rounding": {
+          "type": "string",
+          "enum": [
+            "nearest_integer",
+            "floor",
+            "ceil"
+          ]
+        }
+      }
+    },
+    "state_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state_id",
+        "localization_key",
+        "state_history_file",
+        "province_ids",
+        "geometry",
+        "canvas_position",
+        "transparent_bbox",
+        "sprites"
+      ],
+      "properties": {
+        "state_id": {
+          "$ref": "#/$defs/positive_integer"
+        },
+        "localization_key": {
+          "type": "string",
+          "pattern": "^STATE_[0-9]+$"
+        },
+        "state_history_file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "province_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/positive_integer"
+          },
+          "uniqueItems": true
+        },
+        "geometry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "source_revision",
+            "row_run_count",
+            "row_runs_sha256",
+            "mask_sha256",
+            "pixel_count",
+            "source_bbox",
+            "shared_border_rule"
+          ],
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": [
+                "installed_map_province_colors"
+              ]
+            },
+            "source_revision": {
+              "type": "string",
+              "minLength": 1
+            },
+            "row_run_count": {
+              "$ref": "#/$defs/positive_integer"
+            },
+            "row_runs_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "mask_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "pixel_count": {
+              "$ref": "#/$defs/positive_integer"
+            },
+            "source_bbox": {
+              "$ref": "#/$defs/bbox"
+            },
+            "row_run_samples": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "first",
+                "last"
+              ],
+              "properties": {
+                "first": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "$ref": "#/$defs/non_negative_integer"
+                      },
+                      {
+                        "$ref": "#/$defs/non_negative_integer"
+                      },
+                      {
+                        "$ref": "#/$defs/non_negative_integer"
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 3,
+                    "maxItems": 3
+                  }
+                },
+                "last": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "$ref": "#/$defs/non_negative_integer"
+                      },
+                      {
+                        "$ref": "#/$defs/non_negative_integer"
+                      },
+                      {
+                        "$ref": "#/$defs/non_negative_integer"
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 3,
+                    "maxItems": 3
+                  }
+                }
+              }
+            },
+            "shared_border_rule": {
+              "type": "string",
+              "enum": [
+                "single_owner_mask_outline",
+                "explicit_seam_deduplicated",
+                "no_shared_border"
+              ]
+            }
+          }
+        },
+        "canvas_position": {
+          "$ref": "#/$defs/coordinate"
+        },
+        "transparent_bbox": {
+          "$ref": "#/$defs/bbox"
+        },
+        "sprites": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "unresolved",
+            "unresolved_hatch",
+            "unresolved_border",
+            "qualifying",
+            "qualifying_check",
+            "qualifying_keyline"
+          ],
+          "properties": {
+            "unresolved": {
+              "type": "string",
+              "pattern": "^GFX_[A-Za-z0-9_]+$"
+            },
+            "unresolved_hatch": {
+              "type": "string",
+              "pattern": "^GFX_[A-Za-z0-9_]+$"
+            },
+            "unresolved_border": {
+              "type": "string",
+              "pattern": "^GFX_[A-Za-z0-9_]+$"
+            },
+            "qualifying": {
+              "type": "string",
+              "pattern": "^GFX_[A-Za-z0-9_]+$"
+            },
+            "qualifying_check": {
+              "type": "string",
+              "pattern": "^GFX_[A-Za-z0-9_]+$"
+            },
+            "qualifying_keyline": {
+              "type": "string",
+              "pattern": "^GFX_[A-Za-z0-9_]+$"
+            }
+          }
+        }
+      }
+    },
+    "alternate_group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group_id",
+        "member_state_ids",
+        "minimum_qualifying",
+        "counting_note"
+      ],
+      "properties": {
+        "group_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "member_state_ids": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/positive_integer"
+          },
+          "uniqueItems": true
+        },
+        "minimum_qualifying": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "counting_note": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+		}
+	}
+}

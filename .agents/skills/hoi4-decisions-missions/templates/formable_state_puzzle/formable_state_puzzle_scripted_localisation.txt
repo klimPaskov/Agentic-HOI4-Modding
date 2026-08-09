@@ -1,0 +1,368 @@
+# ============================================================================
+# FORMABLE STATE PUZZLE SCRIPTED-LOCALISATION TEMPLATE
+# ============================================================================
+# Documentation-only scaffold. Replace every angle-bracket token before copy.
+# Generic definitions are for a verified state-scope dynamic-list owner. The
+# fixed state definitions below support the generated iconType pattern in the
+# companion GUI and keep owner/controller absence factual without stale names.
+# No formatting colour codes belong in this file.
+# ============================================================================
+
+# Generic state-scope path.
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_piece_sprite
+	text = {
+		trigger = {
+			formable_<FORMABLE_ID>_state_qualifies = yes
+		}
+		localization_key = "GFX_<FORMABLE_ID>_state_qualifying"
+	}
+	text = {
+		localization_key = "GFX_<FORMABLE_ID>_state_unresolved"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_hover
+	text = {
+		trigger = {
+			formable_<FORMABLE_ID>_state_qualifies = yes
+		}
+		localization_key = "<FORMABLE_ID>_state_hover_qualifying"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_hover_unresolved"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_owner_name
+	text = {
+		trigger = {
+			owner = { scope_exists = yes }
+		}
+		localization_key = "<FORMABLE_ID>_state_owner_present"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_owner_absent"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_controller_name
+	text = {
+		trigger = {
+			controller = { scope_exists = yes }
+		}
+		localization_key = "<FORMABLE_ID>_state_controller_present"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_controller_absent"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_control_result
+	text = {
+		trigger = {
+			is_controlled_by = ROOT
+		}
+		localization_key = "<FORMABLE_ID>_state_control_yes"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_control_no"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_core_result
+	text = {
+		trigger = {
+			is_core_of = ROOT
+		}
+		localization_key = "<FORMABLE_ID>_state_core_yes"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_core_no"
+	}
+}
+
+# Fixed three-state count example. Generate one descending text branch per
+# possible count, and include every manifest state wrapper in each count_triggers
+# block. The first matching threshold is the exact live numerator.
+defined_text = {
+	name = formable_<FORMABLE_ID>_qualifying_count_text
+	text = {
+		trigger = {
+			count_triggers = {
+				amount > 2
+				formable_<FORMABLE_ID>_state_<STATE_ID_A>_qualifies = yes
+				formable_<FORMABLE_ID>_state_<STATE_ID_B>_qualifies = yes
+				formable_<FORMABLE_ID>_state_<STATE_ID_C>_qualifies = yes
+			}
+		}
+		localization_key = "<FORMABLE_ID>_qualifying_count_3"
+	}
+	text = {
+		trigger = {
+			count_triggers = {
+				amount > 1
+				formable_<FORMABLE_ID>_state_<STATE_ID_A>_qualifies = yes
+				formable_<FORMABLE_ID>_state_<STATE_ID_B>_qualifies = yes
+				formable_<FORMABLE_ID>_state_<STATE_ID_C>_qualifies = yes
+			}
+		}
+		localization_key = "<FORMABLE_ID>_qualifying_count_2"
+	}
+	text = {
+		trigger = {
+			count_triggers = {
+				amount > 0
+				formable_<FORMABLE_ID>_state_<STATE_ID_A>_qualifies = yes
+				formable_<FORMABLE_ID>_state_<STATE_ID_B>_qualifies = yes
+				formable_<FORMABLE_ID>_state_<STATE_ID_C>_qualifies = yes
+			}
+		}
+		localization_key = "<FORMABLE_ID>_qualifying_count_1"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_qualifying_count_0"
+	}
+}
+
+# Summary and status badge definitions call the same territory helper as the
+# formation decision, while the numerator calls the same state wrappers.
+defined_text = {
+	name = formable_<FORMABLE_ID>_summary_status_text
+	text = {
+		trigger = {
+			formable_<FORMABLE_ID>_territory_qualifies = yes
+		}
+		localization_key = "<FORMABLE_ID>_summary_ready"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_summary_blocked"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_status_badge_sprite
+	text = {
+		trigger = {
+			formable_<FORMABLE_ID>_territory_qualifies = yes
+		}
+		localization_key = "GFX_<FORMABLE_ID>_formation_status_ready"
+	}
+	text = {
+		localization_key = "GFX_<FORMABLE_ID>_formation_status_blocked"
+	}
+}
+
+# Fixed generated state A entry. Repeat this complete family for every manifest
+# state if the owner cannot provide a verified state-scope dynamic list.
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_A>_piece_sprite
+	text = {
+		trigger = {
+			formable_<FORMABLE_ID>_state_<STATE_ID_A>_qualifies = yes
+		}
+		localization_key = "GFX_<FORMABLE_ID>_state_<STATE_ID_A>_qualifying"
+	}
+	text = {
+		localization_key = "GFX_<FORMABLE_ID>_state_<STATE_ID_A>_unresolved"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_A>_owner_name
+	text = {
+		trigger = {
+			<STATE_ID_A> = { owner = { scope_exists = yes } }
+		}
+		localization_key = "<FORMABLE_ID>_state_<STATE_ID_A>_owner_present"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_owner_absent"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_A>_controller_name
+	text = {
+		trigger = {
+			<STATE_ID_A> = { controller = { scope_exists = yes } }
+		}
+		localization_key = "<FORMABLE_ID>_state_<STATE_ID_A>_controller_present"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_controller_absent"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_A>_control_result
+	text = {
+		trigger = { formable_<FORMABLE_ID>_state_<STATE_ID_A>_qualifies = yes }
+		localization_key = "<FORMABLE_ID>_state_control_yes"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_control_no"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_A>_core_result
+	text = {
+		trigger = {
+			<STATE_ID_A> = { is_core_of = ROOT }
+		}
+		localization_key = "<FORMABLE_ID>_state_core_yes"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_core_no"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_A>_qualification_status
+	text = {
+		trigger = { formable_<FORMABLE_ID>_state_<STATE_ID_A>_qualifies = yes }
+		localization_key = "<FORMABLE_ID>_state_status_qualifies"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_status_unresolved"
+	}
+}
+# Fixed generated state B entry.
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_B>_piece_sprite
+	text = {
+		trigger = { formable_<FORMABLE_ID>_state_<STATE_ID_B>_qualifies = yes }
+		localization_key = "GFX_<FORMABLE_ID>_state_<STATE_ID_B>_qualifying"
+	}
+	text = {
+		localization_key = "GFX_<FORMABLE_ID>_state_<STATE_ID_B>_unresolved"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_B>_owner_name
+	text = {
+		trigger = { <STATE_ID_B> = { owner = { scope_exists = yes } } }
+		localization_key = "<FORMABLE_ID>_state_<STATE_ID_B>_owner_present"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_owner_absent"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_B>_controller_name
+	text = {
+		trigger = { <STATE_ID_B> = { controller = { scope_exists = yes } } }
+		localization_key = "<FORMABLE_ID>_state_<STATE_ID_B>_controller_present"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_controller_absent"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_B>_control_result
+	text = {
+		trigger = { formable_<FORMABLE_ID>_state_<STATE_ID_B>_qualifies = yes }
+		localization_key = "<FORMABLE_ID>_state_control_yes"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_control_no"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_B>_core_result
+	text = {
+		trigger = { <STATE_ID_B> = { is_core_of = ROOT } }
+		localization_key = "<FORMABLE_ID>_state_core_yes"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_core_no"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_B>_qualification_status
+	text = {
+		trigger = { formable_<FORMABLE_ID>_state_<STATE_ID_B>_qualifies = yes }
+		localization_key = "<FORMABLE_ID>_state_status_qualifies"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_status_unresolved"
+	}
+}
+
+# Fixed generated state C entry.
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_C>_piece_sprite
+	text = {
+		trigger = { formable_<FORMABLE_ID>_state_<STATE_ID_C>_qualifies = yes }
+		localization_key = "GFX_<FORMABLE_ID>_state_<STATE_ID_C>_qualifying"
+	}
+	text = {
+		localization_key = "GFX_<FORMABLE_ID>_state_<STATE_ID_C>_unresolved"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_C>_owner_name
+	text = {
+		trigger = { <STATE_ID_C> = { owner = { scope_exists = yes } } }
+		localization_key = "<FORMABLE_ID>_state_<STATE_ID_C>_owner_present"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_owner_absent"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_C>_controller_name
+	text = {
+		trigger = { <STATE_ID_C> = { controller = { scope_exists = yes } } }
+		localization_key = "<FORMABLE_ID>_state_<STATE_ID_C>_controller_present"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_controller_absent"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_C>_control_result
+	text = {
+		trigger = { formable_<FORMABLE_ID>_state_<STATE_ID_C>_qualifies = yes }
+		localization_key = "<FORMABLE_ID>_state_control_yes"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_control_no"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_C>_core_result
+	text = {
+		trigger = { <STATE_ID_C> = { is_core_of = ROOT } }
+		localization_key = "<FORMABLE_ID>_state_core_yes"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_core_no"
+	}
+}
+
+defined_text = {
+	name = formable_<FORMABLE_ID>_state_<STATE_ID_C>_qualification_status
+	text = {
+		trigger = { formable_<FORMABLE_ID>_state_<STATE_ID_C>_qualifies = yes }
+		localization_key = "<FORMABLE_ID>_state_status_qualifies"
+	}
+	text = {
+		localization_key = "<FORMABLE_ID>_state_status_unresolved"
+	}
+}
