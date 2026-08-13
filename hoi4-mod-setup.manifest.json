@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "4bea55897d1520c4ecd59d43183d374fcbdf509e",
+  "generated_for_revision": "0c826ab620e15752279f8b81e5d09d198cc22c75",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "a2869663fd444a8b4f59aa92800703e41b7aa15e86436c420391774b436e807d",
-          "size": 45665
+          "sha256": "347651849a9f0c4878a9ece87a495d4850a1898a66a4e03ebbb7dc24f7324edc",
+          "size": 47750
         }
       ]
     },
@@ -80,7 +80,9 @@
           "hoi4-super-events*/**",
           "hoi4-comfyui*/**",
           "hoi4-portrait-production*/**",
-          "**/.DS_Store"
+          "**/.DS_Store",
+          "**/__pycache__/**",
+          "**/*.pyc"
         ]
       },
       "destination": {
@@ -119,18 +121,28 @@
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "565301997c740df34c4de37c8054a04434f6084f1912b4012c0be7ba7d6a6fba",
-          "size": 40118
+          "sha256": "8c05e5e5539b9874f1811dbefcec6bd2b4eb10f29eb4e15e9d6775dd5822b17f",
+          "size": 42922
+        },
+        {
+          "path": ".agents/skills/hoi4-debug-playtest/SKILL.md",
+          "sha256": "de26983c62748effc02bd23741fd09c168d0e552ba05a14397880ffbb47a4955",
+          "size": 19795
         },
         {
           "path": ".agents/skills/hoi4-decisions-missions/SKILL.md",
-          "sha256": "cad819d4aab0c9daae43a7b73c063b48eec2745dc7f2bd6855bfe0e2d13ec5ed",
-          "size": 61724
+          "sha256": "a7dbed86daaca47f2dc65e4a5369ebdf4676840b5b5984f9246d8c6ed0bb0c57",
+          "size": 62682
         },
         {
           "path": ".agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/README.md",
           "sha256": "7e7e7d5044dbac80b9871cab6b1a947b3fc6bb8f99322347ea7a9d8612f9672b",
           "size": 19400
+        },
+        {
+          "path": ".agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/category_attachment_audit.md",
+          "sha256": "e5b9a2f548b581524faaf544224fcb8475fca90a7bf65460439c81b604a2e96c",
+          "size": 3063
         },
         {
           "path": ".agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/formable_state_puzzle.gfx",
@@ -183,19 +195,24 @@
           "size": 2866
         },
         {
+          "path": ".agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/universal_state_registry_workflow.md",
+          "sha256": "0ffaeb0024633953ef41a599c33a343c560f6072b6cc31049d949b85321df85b",
+          "size": 3989
+        },
+        {
           "path": ".agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/validation_checklist.md",
           "sha256": "18a3dda5332064a23492b10c1d07f065e87c77d488a8c609ccf588d77f31599d",
           "size": 4820
         },
         {
           "path": ".agents/skills/hoi4-events/SKILL.md",
-          "sha256": "40244668f4c6b9450373c468cc16fc9174359ee7cc61708a5f083d0a543fb251",
-          "size": 43292
+          "sha256": "0d9f42b48258e54d41a73e813cda377d413aac7f773134ee004e47c74d1afa3f",
+          "size": 44197
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "9e3d8769845251883399a3e413c7fd6f6fa63687c6d8e0914aca270929021083",
-          "size": 81688
+          "sha256": "b9ada7d9aa486c0dafc0f09933b1ffe788856dd9c8789082cc40900b92e44bc0",
+          "size": 82715
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -2494,8 +2511,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/tools/README.md",
-          "sha256": "1d7750e0994ed486fe56762cd5fd2419068d55023aeef02f8d7f32437be7591a",
-          "size": 5557
+          "sha256": "615b5aeb0d48e204f282682172d34c6e7ad30fd78fdfcf5afe65ca0b73146097",
+          "size": 4693
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/tools/convert_to_dds.py",
@@ -2504,13 +2521,23 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/tools/create_advisor_icon.py",
-          "sha256": "54139230eec069f423e8dbd7d920f7e32836a0cc0b1f772bbd42c6274302ed45",
-          "size": 5899
+          "sha256": "237ad345a051a7ad298a883eb7fd2596aa1ed84dc678943beb12ecb664558a23",
+          "size": 30658
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py",
-          "sha256": "70f5888d849b96e0eeceff24376c0dd9767bcb0bcae0e4ba7694b1073f348443",
-          "size": 12076
+          "sha256": "49a0b862f48a40338c6d31996a026324af49e1aeaf4c54dbd04b6b2e5b002a58",
+          "size": 35999
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/tools/models/LICENSE",
+          "sha256": "2ad92c7a6eb7aebede4e19f5ec4930c8bd9d614dbb8e75be1f740edae346734c",
+          "size": 1086
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/tools/models/face_detection_yunet_2026may.onnx",
+          "sha256": "ebafce4e3c118d6554634be5c27ab333b4c047a9a8c3faf1d7cf93101c22f0f0",
+          "size": 229738
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/tools/process_report_event_image.py",
@@ -2519,23 +2546,23 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/tools/tests/test_create_advisor_icon.py",
-          "sha256": "cebb22d33995f2e9c50da0b350976f20d3eb31b6eee1e6324b2f660363910390",
-          "size": 2419
+          "sha256": "71402254e41cb04c64c7f60665b21d182e44931b835499ff347e09690aa6e79e",
+          "size": 12471
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/tools/tests/test_extract_portrait_source_crop.py",
-          "sha256": "23d241fbe5dfc5bd8869a3727bb14f8100d06246dda49977e08fc0c915b6b849",
-          "size": 3227
+          "sha256": "ff574cac5573738e20bd65fb3c7c41bca9e076bc5a3408bbc928c1e4b3df971c",
+          "size": 7026
         },
         {
           "path": ".agents/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "afb0c4b5d337aa6ab09468a329c85c2630ed64fc005e780f17e2c0689591748a",
-          "size": 154089
+          "sha256": "722ae13640889ccb4d6b5489243240a69dc1f7b10c39e6c1b7696d515252107c",
+          "size": 157280
         },
         {
           "path": ".agents/skills/hoi4-focus-trees/SKILL.md",
-          "sha256": "694b309ccd2e0ff7d10fdf7844826c937314793d787bcec0ea4783469afef0c9",
-          "size": 79762
+          "sha256": "3a2154634580aa162886a73f1adf0d52e6286360b8fe9705bddb10a8bdadc856",
+          "size": 81927
         },
         {
           "path": ".agents/skills/hoi4-frame-animation/SKILL.md",
@@ -2544,8 +2571,8 @@
         },
         {
           "path": ".agents/skills/hoi4-improvement-loop/SKILL.md",
-          "sha256": "168318cb44d2575147adbbeb77257b57351a083ce782f84b8d6a0ce21453f771",
-          "size": 28016
+          "sha256": "21ef78482d94365c0f4c4dd6f20000875f543148843d174cc988253d9a90b888",
+          "size": 28281
         },
         {
           "path": ".agents/skills/hoi4-mtth/SKILL.md",
@@ -2554,8 +2581,8 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "e3437cea12c9b6c79913c260be034051cddfdc513d959b5e895a5d5158b3dca7",
-          "size": 31829
+          "sha256": "b90f26d0142b71e071cf194f53348276d609dfd20ad34a79b8b4c56d3956e016",
+          "size": 32651
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
@@ -2619,8 +2646,8 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_3d_model_pipeline.toml",
-          "sha256": "9a668ef551e9755078a1f6ad69f0f1b2575e4e78005afc33a8851c43536e8973",
-          "size": 19746
+          "sha256": "5ae3c30d98fae75b465c3182eadd399fd3b6b6fbd1f4f50eda7f2547b8e2b3a4",
+          "size": 21348
         },
         {
           "path": ".codex/agents/hoi4_ai_probability_auditor.toml",
@@ -2694,8 +2721,8 @@
         },
         {
           "path": ".codex/agents/hoi4_repo_explorer.toml",
-          "sha256": "eeb2b2863b2cf9cccd1288aeaa1fc4d5f21b3c0b28a109f836e07941dab3e75a",
-          "size": 12192
+          "sha256": "8cabb8e6a1881b1459f74a549a98866272c4e6a9f2d532a2cf71519778164023",
+          "size": 12619
         },
         {
           "path": ".codex/agents/hoi4_scripted_system_architect.toml",
@@ -2848,6 +2875,57 @@
       "expected_files": []
     },
     {
+      "id": "docs.mcp_integration",
+      "display_name": "HOI4 Agent Tools integration guide",
+      "description": "Install the MCP capability, evidence, probability, recovery, and troubleshooting contract referenced by the generic agent instructions.",
+      "category": "documentation",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": "docs/systems/hoi4_agent_tools_mcp_integration.md"
+      },
+      "destination": {
+        "path": "docs/systems/hoi4_agent_tools_mcp_integration.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing HOI4 Agent Tools integration guide"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "mcp.docs.exists",
+          "severity": "warn",
+          "kind": "exists",
+          "target": "docs/systems/hoi4_agent_tools_mcp_integration.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "MCP capability and evidence contract",
+        "probability scenario guidance",
+        "rewrite recovery guidance"
+      ],
+      "expected_files": [
+        {
+          "path": "docs/systems/hoi4_agent_tools_mcp_integration.md",
+          "sha256": "b6e22f5e19d8442cd6540facc70e8a1a1a4f358b11632d1d7aa5ed67dae1a972",
+          "size": 14176
+        }
+      ]
+    },
+    {
       "id": "docs.source",
       "display_name": "Source workflow documentation",
       "description": "Install the source README as a reviewed project reference.",
@@ -2891,8 +2969,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "22f8a22d1b6d83e17634aef25adb0c836cd9351cb8da96e217976c069818dada",
-          "size": 19183
+          "sha256": "14e9f607b129d660e555320e45b70c68916df3b6b92cd26467a344649795c9bf",
+          "size": 20831
         }
       ]
     },
@@ -2940,8 +3018,8 @@
       "expected_files": [
         {
           "path": "AGENTS_chaos_redux.md",
-          "sha256": "c4ae07867dd3f3d22c56363543762498ec16c4d9bee177acd429399c6bc444a5",
-          "size": 38624
+          "sha256": "2241c4fe85aa92562eebeb6f9c6d0a7efce4d4f410558b88031e136591dbb017",
+          "size": 38668
         }
       ]
     },
@@ -5984,6 +6062,52 @@
       ]
     },
     {
+      "id": "workflow.portraits.router",
+      "display_name": "ComfyUI portrait-provider router",
+      "description": "Install the explicit Cloud, Local, or user-run RunPod provider-selection contract for grounded portrait replacements.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".agents/skills/hoi4-comfyui/SKILL.md"
+      },
+      "destination": {
+        "path": ".agents/skills/hoi4-comfyui/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "workflow.portraits.core"
+      ],
+      "conflicts": [
+        "existing portrait provider router"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "explicit portrait-provider selection",
+        "provider authorization boundary"
+      ],
+      "notes": [
+        "Provider selection is explicit; agents never operate RunPod and never silently switch providers."
+      ],
+      "expected_files": [
+        {
+          "path": ".agents/skills/hoi4-comfyui/SKILL.md",
+          "sha256": "f836e7b1a24ab0d56029a6c925a8282a455ead51a25df177e7a64fe8529a3d92",
+          "size": 1538
+        }
+      ]
+    },
+    {
       "id": "workflow.portraits.cloud",
       "display_name": "Comfy Cloud portrait production",
       "description": "Install only the Comfy Cloud MCP portrait route selected for this project.",
@@ -6003,6 +6127,7 @@
       },
       "dependencies": [
         "workflow.portraits.core",
+        "workflow.portraits.router",
         "workflow.portraits.subagent",
         "workflow.portraits.config"
       ],
@@ -6050,6 +6175,7 @@
       },
       "dependencies": [
         "workflow.portraits.core",
+        "workflow.portraits.router",
         "workflow.portraits.subagent",
         "workflow.portraits.config"
       ],
@@ -6097,6 +6223,7 @@
       },
       "dependencies": [
         "workflow.portraits.core",
+        "workflow.portraits.router",
         "workflow.portraits.subagent",
         "workflow.portraits.config"
       ],
@@ -6231,7 +6358,9 @@
         "exclude": [
           "vendor/**",
           "runtime/**",
-          "__pycache__/**"
+          "**/__pycache__/**",
+          "adapter/.venv/**",
+          "adapter/uv.lock"
         ]
       },
       "destination": {
@@ -6314,18 +6443,40 @@
       },
       "capabilities": [
         "one-image Meshy generation",
+        "job-root-bounded Blender production adapter",
         "Blender normalization",
         "PDX mesh and animation export"
       ],
       "notes": [
         "Missing MESHY_API_KEY leaves this optional workflow incomplete.",
+        "The repository-owned blender_hoi4 adapter is the production route; unrestricted Blender Lab is disabled and development-only.",
         "The inspected repository implementation is Windows oriented; no macOS route is declared."
       ],
       "expected_files": [
         {
+          "path": ".tools/3d_pipeline/adapter/blender_worker.py",
+          "sha256": "475ece070e623377dafee7a591c4988821c85935fc46d9581e56eef238f59c41",
+          "size": 193308
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/hoi4_blender_mcp.py",
+          "sha256": "97517630a3ea071086000b743ed5f1bfabd9b8b6bd9359ad852884f29bfdd928",
+          "size": 22249
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/pyproject.toml",
+          "sha256": "4e3e491ea9e6d9b5bb3f6d0fc362bf7f707330c719ece021987b885105793f61",
+          "size": 276
+        },
+        {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "147d27371063e537c9cb13828ba7c0ff9515910420dd87cb2875d14a8873bfca",
-          "size": 34623
+          "sha256": "6f6b9850d88466bf01f80262c7bc48a2ca8b6e22cc50516fb9be54a8e5b84224",
+          "size": 41451
+        },
+        {
+          "path": ".tools/3d_pipeline/config/asset_profiles.json",
+          "sha256": "77050619a4772621e5f059c52f179064c8e7589c5111e5a6285ae60cd6267feb",
+          "size": 8034
         },
         {
           "path": ".tools/3d_pipeline/config/dependencies.lock.json",
@@ -6333,14 +6484,24 @@
           "size": 675
         },
         {
+          "path": ".tools/3d_pipeline/config/meshy_tool_contract.json",
+          "sha256": "33dd52ea3c05d539985a928aa656b779d02e6af398907f37c324e4c4e0cb6dbd",
+          "size": 1457
+        },
+        {
+          "path": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
+          "sha256": "7d8ade6c62a2d72958f91a05d7a6aa5302ac6affbe08810ced803c30c5f0d25b",
+          "size": 942
+        },
+        {
           "path": ".tools/3d_pipeline/wrappers/run_blender_lab_mcp.cmd",
-          "sha256": "dfef12ca198a7aad0ef66a9b830a9be967e729dee781d0c3e637a6ef4659b676",
-          "size": 2262
+          "sha256": "75860ea3d3b46141e37987cbeab49886f5498775a70b129ad89503e7e1afebcc",
+          "size": 2472
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_meshy_mcp.cmd",
-          "sha256": "42589b4959c365dc2986d7e6d0137772711964fd807cbd5bc00e05433340fb12",
-          "size": 1293
+          "sha256": "c0fe454de08cfc57acc3aa2b22b4e51081c6a9acc818a2846058219cbdafe925",
+          "size": 1291
         }
       ]
     },
@@ -6869,6 +7030,7 @@
         "core.subagents",
         "codex.config",
         "mcp.hoi4_agent_tools",
+        "docs.mcp_integration",
         "wiki.snapshot"
       ],
       "default": true
@@ -6882,6 +7044,7 @@
         "core.subagents",
         "codex.config",
         "mcp.hoi4_agent_tools",
+        "docs.mcp_integration",
         "wiki.snapshot",
         "workflow.3d"
       ],
