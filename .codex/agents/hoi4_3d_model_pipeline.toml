@@ -95,6 +95,10 @@ Required source discipline:
 - Do not invent unseen geometry silently.
 - Do not treat an AI result as accepted until it passes the generation gate.
 
+Temporary-workspace rule:
+- Keep event- or system-owned source, provider, Blender, export, manifest, and evidence files in the deterministic owner workspace while the package is active, blocked, or under review.
+- Promote durable provenance, licensing, checksums, QA/reimport results, crosswalk facts, and runtime-handoff facts before removing a complete temporary workspace. Retain blocked or incomplete work and report the blocker; never delete another owner's workspace or skill-local references.
+
 Meshy rules:
 - The normal route uses exactly one final image.
 - Meshy 6 is the default generation model. Do not silently use an older model when Meshy 6 is unavailable.
@@ -123,15 +127,19 @@ Animation rules:
 - Clean, retarget, and bake humanoid candidates, normalize armature object and pose transforms, scale keyed location channels deliberately exactly once when units differ, and record the conversion.
 - Define in-place or root-motion policy before editing keys, check foot and ground contacts, and validate real idle, move, and attack actions when those roles are required.
 - Root policy, FPS, frame range, loop behavior, deformation, preview, exported .anim, and proposed runtime binding are required for every action.
+- For loop actions, sample first, quarter, middle, three-quarter, and last phases; first/middle/last alone are insufficient when the midpoint returns to neutral. Retain pose, decoded-pixel, or actor-bounds evidence for quarter phases and endpoint return.
 
 Custom-unit sound rules:
 - Every custom unit, subunit, creature, vehicle, aircraft, or ship requires a sound-design package before the model package can be marked complete.
+- Selection audio is mandatory. Provide a sourced one-shot, stable identifier, exact consumer/binding scope, effective country or original tag, and actual selection evidence; idle or entity-state evidence is not sufficient.
 - Use the repository web-search workflow to search the Internet for sourced sound files for every required role, inspect each source page and direct-download license, and save only approved candidates under the job-relative evidence root. Prefer public-domain, Creative Commons, official archive, institutional, or otherwise clearly licensed recordings, and reject unclear provenance or usage terms.
 - Download and preserve the original source file in the deterministic job evidence root. Record the source URL, title, creator or performer, license, usage terms, download date, source checksum, and any allowed transformation.
 - Never create, synthesize, record, generate, or manually author final audio. Never use test tones, primitive waveforms, placeholder beeps, noise beds, or an unlicensed stock substitute. If no defensible sourced file exists, mark the role or package blocked.
 - Trimming, fading, silence removal, normalization, channel conversion, resampling, and codec conversion are allowed only as mechanical transformations of a sourced file when the license permits them. Preserve the original and document every transformation and checksum.
 - Inspect the exact vanilla unit, entity, sound, soundeffect, and voice consumer for the closest matching surface. Define the applicable selection, acknowledgement, movement, idle or engine loop, attack, impact, special-action, and death or destruction roles.
+- Recheck installed infantry voice templates and bindings for the game version. A dedicated-country infantry family must resolve the exact `<TAG>_infantry_idle` selection soundeffect and enumerate every infantry consumer under that tag; if ordinary and custom infantry share a tag but require distinct selection voices, mark per-subunit selection blocked.
 - Map every one-shot or loop to the animation action and exact frame or phase it follows, then propose stable sound, soundeffect, wrapper, and file identifiers for the parent-owned runtime wiring.
+- Before claiming family-wide coverage, enumerate every `common/units` subunit resolving the custom sprite token. Entity-state sound evidence reaches only consumers resolving that entity; shared-family consumers must share the binding and exclusions must be recorded.
 
 Custom-unit counter rules:
 - Every new custom unit or subunit requires original counter art for every counter surface it uses before the model package can be marked complete.

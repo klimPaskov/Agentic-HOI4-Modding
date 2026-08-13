@@ -1,31 +1,19 @@
-# HOI4 Feature-Asset Tools
+# HOI4 feature-asset tools
 
-These are the active reusable tools for the `hoi4-feature-assets` skill. Call
-them from the mod root. Canonical engine-surface reference lookups use:
-
-`.agents/skills/hoi4-feature-assets/assets/vanilla_reference/`
-
-Select the role-specific leader, commander, operative, or advisor family before
-production. Advisor dossier cards use the separate canonical references under
-`.agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/`.
-
-There is no bundled full-size portrait processor. After the immutable crop, create
-the deterministic `156x210` country-leader, commander, operative, or named-officeholder
-candidate with a reproducible task-specific/manual image workflow. Inspect the
-canonical role family (`leaders/`, `commanders/`, or `operatives/`). Retain the processed source or
-ImageGen result, candidate PNG, exact dimensions, crop metadata, hashes, role-specific
-comparison sheet, and independent likeness/style/provenance review. Do not hand off
-a raw, filtered, or merely resized photograph as runtime art.
-
-Use the canonical role-specific references as style-family controls only. An
-independent auditor must compare the archival master, explicit archival crop, raw
-ImageGen result, processed candidate, and role-specific references separately.
+These deterministic tools belong to the `hoi4-feature-assets` skill. Run them from the current mod root and keep outputs in the owner-approved asset workspace. They prepare evidence and processed assets; they do not approve identity, rights, likeness, role fit, or runtime completion.
 
 ## `extract_portrait_source_crop.py`
 
-This is the only accepted immutable crop stage for a real-person archival photograph. It decodes the photographic master and crops it with Pillow, preserves the decoded source mode in a lossless PNG, reopens that PNG, and proves exact decoded-pixel equality against the same master rectangle in RGBA form before committing the PNG and JSON evidence together. It never resizes, enhances, recolours, retouches, or replaces an existing artifact without `--force`. Illustrations and generated reconstructions cannot be used as real-person identity masters.
+The grounded-portrait source stage preserves the unchanged archival master and writes a lossless crop, exact-pixel JSON evidence, a deterministic RGB `156x210` candidate, and a co-located provenance contract. Automatic mode uses the bundled YuNet model at `tools/models/face_detection_yunet_2026may.onnx` and fails closed unless exactly one usable face is detected. A detector is a framing aid, never identity approval. Zero/multiple detections, missing OpenCV support, missing model, unsafe geometry, or a write collision blocks the automatic route.
 
-Run it before ImageGen with the measured boundary in decoded master pixels:
+Run automatic mode with an output crop path in the durable owner package:
+
+```powershell
+python -B .agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py `
+	<archival_master.jpg> <subject_source_crop.png>
+```
+
+The command writes co-located source copy, JSON, processed `156x210` PNG, and provenance files. For an independently reviewed detector miss or known boundary, use the explicit recovery rectangle:
 
 ```powershell
 python -B .agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py `
@@ -34,64 +22,50 @@ python -B .agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.
 	--metadata <archival_crop.json>
 ```
 
-Keep the PNG and JSON together. The JSON records the Pillow/tool versions and hash, master/output hashes and dimensions, decode modes, crop rectangle, equality hashes/result, and a normalized command. `ffmpeg` or ImageMagick crops are not immutable source crops unless an independent check proves exact equality of their decoded output pixels against the same decoded master rectangle and retains equivalent evidence; when that proof is unavailable, reject the crop and return to this utility.
+Manual mode records `manual_crop_override` and does not claim a face detection. Keep the original, lossless crop, JSON, processed PNG, and provenance contract together. The user supplies any grounded HOI4-style final; agents do not operate RunPod or another external provider on the user's behalf.
 
-## `convert_to_dds.py`
+The vendored YuNet model is from the MIT-licensed OpenCV Zoo `face_detection_yunet` project. Retain `tools/models/LICENSE` and the recorded SHA-256; do not replace the model with an unverified detector.
 
-Converts an approved PNG to the legacy one-level uncompressed BGRA DDS layout
-used by the relevant vanilla HOI4 UI assets.
+## `create_advisor_icon.py`
 
-```powershell
-python -B .agents/skills/hoi4-feature-assets/tools/convert_to_dds.py `
-	--input <approved.png> --output <runtime.dds> `
-	--width <pixels> --height <pixels>
-```
+Advisor, theorist, high-command, officer-corps, and army-small dossier portraits are a native `65x67` family. Inspect the matching vanilla reference and the exact `advisor_template.png` before processing.
 
-The command above is the supported converter; `.tools/convert_to_dds.py` is
-obsolete and must not be restored or used by active workflows. Follow the matching vanilla
-catalog entry for dimensions and compression.
+The compositor loads the complete source canvas without a pre-crop or warp, measures the opening on every run, and applies one uniform aspect-preserving cover scale. It expands the opening with the centralized under-frame bleed and portrait-edge guard, masks the portrait to that safe region, and composites the untouched template as the final top layer. Exact-opening clipping is forbidden because translucent antialiased frame edges require portrait coverage beneath them. Anisotropic stretch, matte strips, exterior leakage, and frame redraw are rejected.
 
-## Advisor and high-command dossier portraits
-
-Advisor, theorist, military-high-command, officer-corps, and army-small portraits are a separate, explicitly authorized asset family.
-
-Inspect the canonical native `65x67` references under `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/`.
-
-Use `create_advisor_icon.py` when the accepted design calls for the shared `advisor_template.png` dossier surface.
-
-The tool loads the complete source portrait without cropping, resizes the complete source to a `65x67` intermediate, applies the requested transformed size, rotation, and opening-center offset, and composites the untouched template once as the top layer.
-
-Run it from the mod root:
+Run it with all review artifacts:
 
 ```powershell
 python -B .agents/skills/hoi4-feature-assets/tools/create_advisor_icon.py `
-	--source <approved_portrait.dds> `
+	--source <approved_portrait> `
 	--portrait-size <width> <height> `
 	--rotation <degrees> `
 	--portrait-offset <right> <down> `
+	--study-candidate <width> <height> <right> <down> <rotation> `
+	--placement-study <placement_study.png> `
+	--alignment-preview <alignment_8x.png> `
 	--preview <review.png> `
+	--review-preview <review_4x.png> `
+	--metadata <placement_metadata.json> `
 	--output <runtime.dds>
 ```
 
-Negative `--portrait-offset` values move left or up.
+The native preview, nearest-neighbour `4x` review, placement study, alignment overlay, metadata, and staged DDS are required outputs. Record opening geometry, source/template hashes, cover geometry, bleed/guard constants, selected placement, alpha coverage (`opening_alpha_gap_pixels=0`, `inner_edge_alpha_gap_pixels=0`, `exterior_alpha_leak_pixels=0`), and output hashes. Review native and `4x` renders against solid and checker backgrounds and the matching vanilla reference family. Automated checks are evidence, not visual approval.
 
-Use a coarse placement grid followed by a fine grid against the actual template opening when the first supplied transform does not fit.
+## `convert_to_dds.py`
 
-Keep the complete head and shoulders readable, prevent portrait pixels from appearing outside the frame, keep the face clear of the paper, and retain the exact template as the final top layer.
+Convert only an approved processed PNG to the repository's verified one-level uncompressed 32-bit BGRA DDS contract:
 
-Record the source hash, template hash, complete-source resize, selected dimensions, center, offset, rotation, sepia strength, candidate grids, independent review, processed PNG hash, and runtime DDS hash.
+```powershell
+python -B .agents/skills/hoi4-feature-assets/tools/convert_to_dds.py `
+	--input <processed.png> --output <runtime.dds> `
+	--width <pixels> --height <pixels>
+```
 
-For grounded real people, complete the shared sourced identity gate through an independently approved `156x210` candidate first; fictional high-chaos or impossible or supernatural subjects may use an approved generated master.
-
-Review the candidate at native size and at `4x` nearest-neighbour size against the canonical advisor and high-command family.
-
-The producer may not approve the candidate.
+Retain native dimensions, header checks, alpha checks, source and DDS hashes, and decoded round-trip evidence. Runtime wiring remains parent-owned.
 
 ## `process_report_event_image.py`
 
-Processes report-event source art according to the report-event workflow
-documented in the skill. It is not a portrait, flag, icon, or generic-image
-fallback.
+Use only for report-event image processing, as described in the skill. It is not a portrait, icon, flag, or generic fallback.
 
 ```powershell
 python -B .agents/skills/hoi4-feature-assets/tools/process_report_event_image.py `

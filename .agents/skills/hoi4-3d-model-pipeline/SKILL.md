@@ -127,6 +127,8 @@ docs/assets/<owner_id>/models_3d/<asset_slug>/
 
 Use the same derived path every time and pass job-relative paths to provider and adapter calls after root-containment checks. Do not use chat assumptions, timestamps, random IDs, pilot names, or workstation paths as the primary path. Keep append-only task history, manifest state, checksums, copy provenance, and dependency records inside the job root; never archive secrets. Final runtime files must not remain runtime-referenced from `docs/assets/`.
 
+When the owner id identifies an event or another temporary system workspace, keep source files, provider downloads, Blender checkpoints, exports, manifests, QA evidence, and handoffs in that workspace while work is active, blocked, awaiting review, or undergoing acceptance scenarios. Promote durable provenance, licensing, checksums, QA/reimport results, crosswalk facts, and runtime-handoff facts into owner-approved permanent documentation before completion. Place final runtime files in engine-facing folders, verify that no runtime reference points into `docs/assets/`, and remove a temporary workspace only after the complete package is accepted. Retain incomplete or blocked work and report the blocker; never delete skill-local references, durable source archives, or another owner's workspace.
+
 ## Exactly one Meshy reference image
 
 Meshy receives exactly one clean final reference image. If the parent supplies one, preserve it and use it only after checksum and rights preflight. If no image is supplied, generate exactly one production reference through the approved image-generation route, save it as `refs/original/meshy_input.png`, and retain its prompt, source mode, checksum, and approval note. If that route is unavailable, mark the job as `required installation/verification` or `blocked` rather than substituting.
@@ -209,11 +211,13 @@ Keep the counter source, processed evidence, and runtime copy distinct, report t
 
 Require no zero-weight deforming vertices, normalized weights, influence counts within local precedent, no unapproved opposite-side stretch, rigid assignment for rigid parts, and deformation tests in representative poses. Automatic weights are only a seed where the profile allows them.
 
-Every requested action must have a semantic role, final name, source route, FPS, frame range, loop state, root policy, preview, exported `.anim`, proposed runtime binding, and validation result. For humanoid animation candidates, clean, retarget, and bake the action in Blender, normalize armature object and pose transforms deliberately, inspect and sanitize scale F-curves, and scale keyed location channels deliberately when the provider and calibrated mesh units differ. Define in-place or root-motion policy before editing keys, apply any location conversion exactly once, and record the factor and before/after channels. Check foot and ground contacts at representative frames and validate the required idle, move, and attack roles as real skeletal actions. Provider animations are source candidates and missing actions must be authored in Blender when the job allows it. Do not replace a requested action with a static pose. For loops, compare first and last evaluated poses, root/contact drift, and the result at normal HOI4 map zoom. A skeleton change invalidates weights, actions, exports, and downstream evidence.
+Every requested action must have a semantic role, final name, source route, FPS, frame range, loop state, root policy, preview, exported `.anim`, proposed runtime binding, and validation result. For humanoid animation candidates, clean, retarget, and bake the action in Blender, normalize armature object and pose transforms deliberately, inspect and sanitize scale F-curves, and scale keyed location channels deliberately when the provider and calibrated mesh units differ. Define in-place or root-motion policy before editing keys, apply any location conversion exactly once, and record the factor and before/after channels. Check foot and ground contacts at representative frames and validate the required idle, move, and attack roles as real skeletal actions. Provider animations are source candidates and missing actions must be authored in Blender when the job allows it. Do not replace a requested action with a static pose. For loop actions, sample at least the first, quarter, middle, three-quarter, and last phases; first/middle/last screenshots alone are insufficient because a midpoint may intentionally return to neutral. Retain pose, decoded-pixel, or actor-bounds comparisons that prove the quarter phases differ as intended and the endpoints return appropriately. For non-loop terminal actions, retain start/mid/end or another role-appropriate sample set. A skeleton change invalidates weights, actions, exports, and downstream evidence.
 
 ## Custom unit sound-design companion
 
 Every new custom unit package must define a coherent custom sound identity. Do not leave a distinctive unit silent or attach an unrelated default sound family. A vanilla sound family may be reused only when the accepted design says it genuinely matches the unit.
+
+Selection audio is mandatory for every custom unit package. Provide at least one sourced selection one-shot, a stable runtime identifier, and an exact consumer/binding plan; do not treat idle entry, entity creation, or another animation-state event as unit selection. Acceptance requires evidence from the actual selection consumer, not an idle or entity-state inference.
 
 Inspect the exact vanilla consumer before planning the package because land units, creatures, vehicles, aircraft, and ships do not necessarily expose the same sound roles. Include the applicable roles:
 
@@ -225,6 +229,8 @@ Inspect the exact vanilla consumer before planning the package because land unit
 - special actions
 - death, destruction, shutdown, or disappearance
 
+For infantry voices, recheck the installed vanilla templates and bindings for the current game version. Common templates include `TAG_infantry_idle`, `TAG_infantry_move_out`, `TAG_infantry_neutral_combat`, `TAG_infantry_positive_combat`, and `TAG_infantry_retreat`. A custom infantry family owned by a dedicated country or original tag must identify the exact `<TAG>_infantry_idle` selection soundeffect in the installed voice category, verify the effective tag or `original_tag` for dynamic and cosmetic transitions, and enumerate every infantry division under that identity. This is country/original-tag routing, not subunit or sprite routing. If ordinary and custom infantry under one tag require distinct selection voices, mark per-subunit selection blocked rather than replacing the other family.
+
 Use the repository web-search workflow to locate candidate files on the Internet, inspect the source page and direct download terms, and save only approved candidates under the deterministic job evidence root. Prefer public-domain, Creative Commons, official archive, institutional, user-authorized, or otherwise clearly licensed sources. Reject unclear provenance, unclear recording rights, unclear modification rights, vague royalty-free claims, and sources that do not permit the intended mod use.
 
 Download and preserve the original source file under the deterministic job evidence root. Record the source page URL, direct download URL when distinct, title, creator or performer, license, usage terms, download date, original format and duration, and SHA-256 checksum. Keep the source file immutable and link every derived file back to it.
@@ -235,6 +241,7 @@ The sound handoff must define:
 
 - the unit or subunit id and runtime consumer
 - the chosen vanilla sound and voice precedents
+- the mandatory selection source, soundeffect identifier, exact engine consumer, binding scope, resolved country or original tag, and every infantry consumer under that identity
 - proposed sound, soundeffect, wrapper, and file identifiers
 - one-shot or loop behavior
 - the animation action and exact frame or phase that each sound should follow
@@ -243,6 +250,8 @@ The sound handoff must define:
 - any volume, range, variation, or randomization behavior supported by that precedent
 - the Internet source URL, attribution, license, original file path, derived file path, and checksums for every sourced audio candidate
 - the parent-owned files that must be wired and the validation still required
+
+Before claiming family-wide model or sound coverage, enumerate every `common/units` subunit that resolves the custom sprite token. An entity-state sound package reaches only consumers that resolve that entity; shared-family consumers must share the binding and deliberate exclusions must be recorded in the handoff.
 
 Custom vocal units should have voice direction that matches their culture, language, body, and role. Nonhuman or impossible units should use purpose-built, sourced vocalizations or mechanical sounds instead of ordinary soldier acknowledgements. Do not manufacture final audio from test tones, primitive oscillators, placeholder beeps, or unrelated stock effects.
 

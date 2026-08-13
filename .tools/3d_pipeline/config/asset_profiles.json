@@ -1,0 +1,249 @@
+{
+  "schema_version": "1.0.0",
+  "profiles": {
+    "static_prop": {
+      "axis": "z_up",
+      "scale_reference": "1.5m overall height unless the named runtime reference requires another value",
+      "texture_max_dimension": 1024,
+      "triangle_range": {
+        "preferred_min": 5000,
+        "preferred_max": 30000,
+        "hard_max": 60000,
+        "working_triangle_target": 5000
+      },
+      "controlled_reduction_allowed": true,
+      "materials": {
+        "max_slots": 4,
+        "required_channels": [
+          "diff",
+          "spec",
+          "n"
+        ],
+        "shader": "PdxMeshAdvanced",
+        "specular_packing": {
+          "red": 0,
+          "green": 32,
+          "blue": "metallic",
+          "alpha": "roughness"
+        },
+        "raw_roughness_as_specular": false
+      },
+      "rig_route": "none",
+      "actions": [],
+      "root_policy": "world_origin_on_ground",
+        "runtime_consumer": "map/building-style static entity handoff"
+      },
+    "building": {
+      "axis": "z_up",
+      "scale_reference": "installed vanilla facility_land.mesh/facility_land entity used by the map-building consumer",
+      "scale_policy": "match a named installed vanilla building consumer's source height and entity scale exactly once; height-only calibration is invalid",
+      "vanilla_reference": {
+        "mesh": "gfx/models/buildings/facility_land.mesh",
+        "entity": "building_land_facility",
+        "mesh_height_m": 3.4697628021,
+        "entity_scale": 0.6,
+        "runtime_height_m": 2.0818576813,
+        "runtime_dimensions_m": [3.6194131851, 3.1972126007, 2.0818576813],
+        "measurement": "io_pdx_mesh import of the installed facility_land.mesh and vanilla gfx/entities/buildings.gfx"
+      },
+      "footprint": {
+        "axes": ["x", "y"],
+        "max_runtime_footprint_m": 4.0,
+        "policy": "reject_unless_explicit_fit_to_budget",
+        "comparison": "keep custom map buildings close to the installed vanilla facility footprint; 4.0m is the hard runtime ceiling"
+      },
+      "placement": {
+        "shared_spawn_points_allowed": false,
+        "default_policy": "dedicated_spawn_point_or_provincial_anchor",
+        "one_visual_per_state_requires": "province_building_max_1_and_random_province_construction"
+      },
+      "texture_max_dimension": 1024,
+      "triangle_range": {
+        "preferred_min": 8000,
+        "preferred_max": 45000,
+        "hard_max": 60000,
+        "working_triangle_target": 30000
+      },
+      "controlled_reduction_allowed": true,
+      "materials": {
+        "max_slots": 4,
+        "required_channels": [
+          "diff",
+          "spec",
+          "n"
+        ],
+        "shader": "PdxMeshAdvancedSnow",
+        "specular_packing": {
+          "red": 0,
+          "green": 32,
+          "blue": "metallic",
+          "alpha": "roughness"
+        },
+        "raw_roughness_as_specular": false
+      },
+      "rig_route": "none",
+      "actions": [],
+      "root_policy": "world_origin_on_ground",
+      "runtime_consumer": "static map building entity"
+    },
+    "humanoid_unit": {
+      "axis": "z_up",
+      "scale_reference": "western_european_infantry.mesh source height 7.351824 with infantry_rifle_entity scale 0.8",
+      "runtime_entity_scale": 0.8,
+      "runtime_diffuse_gamma": 0.72,
+      "vanilla_reference": {
+        "mesh": "gfx/models/units/western_european_infantry.mesh",
+        "entity": "gfx/entities/units_infantry.asset#infantry_rifle_entity",
+        "mesh_object_names": [
+          "polySurface106"
+        ],
+        "exclude_name_patterns": [
+          "collision"
+        ],
+        "forward_axis": "-Y",
+        "up_axis": "+Z",
+        "mesh_height": 7.3518242835,
+        "entity_scale": 0.8,
+        "runtime_height": 5.8814594268,
+        "measurement": "io_pdx_mesh import, main polySurface106 object, collision object excluded"
+      },
+      "texture_max_dimension": 1024,
+      "triangle_range": {
+        "preferred_min": 12000,
+        "preferred_max": 50000,
+        "hard_max": 90000,
+        "working_triangle_target": 30000
+      },
+      "controlled_reduction_allowed": true,
+      "materials": {
+        "max_slots": 6,
+        "required_channels": [
+          "diff",
+          "spec",
+          "n"
+        ],
+        "shader": "PdxMeshAdvanced",
+        "specular_packing": {
+          "red": 0,
+          "green": 32,
+          "blue": "metallic",
+          "alpha": "roughness"
+        },
+        "raw_roughness_as_specular": false
+      },
+      "rig_route": "meshy_humanoid_candidate_then_blender_audit",
+      "actions": [
+        {
+          "role": "idle",
+          "provider_action_id": 0,
+          "fps": 24,
+          "loop": true,
+          "root_policy": "in_place"
+        },
+        {
+          "role": "attack",
+          "provider_action_id": 4,
+          "fps": 24,
+          "loop": false,
+          "root_policy": "in_place"
+        },
+        {
+          "role": "move",
+          "provider_action_id": null,
+          "fps": 24,
+          "loop": true,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        }
+      ],
+      "root_policy": "root_bone_at_ground_origin",
+      "runtime_consumer": "land-unit entity"
+    },
+    "nonhumanoid_creature": {
+      "axis": "z_up",
+      "scale_reference": "western_european_infantry.mesh source height 7.351824 with infantry_rifle_entity baseline scale 0.8; job-supplied entity scale derived from the named runtime consumer",
+      "runtime_entity_scale": 1.0,
+      "runtime_diffuse_gamma": 0.72,
+      "vanilla_reference": {
+        "mesh": "gfx/models/units/western_european_infantry.mesh",
+        "entity": "gfx/entities/units_infantry.asset#infantry_rifle_entity",
+        "mesh_object_names": [
+          "polySurface106"
+        ],
+        "exclude_name_patterns": [
+          "collision"
+        ],
+        "forward_axis": "-Y",
+        "up_axis": "+Z",
+        "mesh_height": 7.3518242835,
+        "entity_scale": 0.8,
+        "runtime_height": 5.8814594268,
+        "measurement": "io_pdx_mesh import, main polySurface106 object, collision object excluded"
+      },
+      "texture_max_dimension": 1024,
+      "triangle_range": {
+        "preferred_min": 10000,
+        "preferred_max": 45000,
+        "hard_max": 90000,
+        "working_triangle_target": 30000
+      },
+      "controlled_reduction_allowed": true,
+      "materials": {
+        "max_slots": 6,
+        "required_channels": [
+          "diff",
+          "spec",
+          "n"
+        ],
+        "shader": "PdxMeshAdvanced",
+        "specular_packing": {
+          "red": 0,
+          "green": 32,
+          "blue": "metallic",
+          "alpha": "roughness"
+        },
+        "raw_roughness_as_specular": false
+      },
+      "rig_route": "blender_custom_creature_rig",
+      "actions": [
+        {
+          "role": "idle",
+          "fps": 24,
+          "loop": true,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        },
+        {
+          "role": "attack",
+          "fps": 24,
+          "loop": false,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        },
+        {
+          "role": "move",
+          "fps": 24,
+          "loop": true,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        },
+        {
+          "role": "retreat",
+          "fps": 24,
+          "loop": true,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        },
+        {
+          "role": "death",
+          "fps": 24,
+          "loop": false,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        }
+      ],
+      "root_policy": "custom_creature_root_at_ground_origin",
+      "runtime_consumer": "land-unit entity"
+    }
+  }
+}

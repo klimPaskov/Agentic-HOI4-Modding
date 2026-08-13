@@ -1,7 +1,8 @@
 @echo off
 setlocal
 
-if "%MESHY_API_KEY:~0,1%"=="" goto missing_meshy_key
+if not defined MESHY_API_KEY goto missing_meshy_key
+if /i not "%HOI4_3D_PROFILE%"=="development" goto development_only
 
 set "PIPELINE_ROOT=%~dp0.."
 set "BOOTSTRAP=%PIPELINE_ROOT%\bootstrap_3d_workflow.py"
@@ -50,6 +51,10 @@ if not exist "%BLENDER_MCP_PROJECT%\pyproject.toml" (
 
 "%UV_EXE%" --directory "%BLENDER_MCP_PROJECT%" run blender-mcp
 exit /b %errorlevel%
+
+:development_only
+echo Blender Lab MCP is disabled for production. Set HOI4_3D_PROFILE=development only in an isolated development session.
+exit /b 5
 
 :missing_meshy_key
 echo MESHY_API_KEY is missing. Stop before starting the workflow.

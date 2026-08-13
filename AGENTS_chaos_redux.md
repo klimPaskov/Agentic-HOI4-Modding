@@ -71,10 +71,10 @@ Use repo skills as required implementation guidance.
 - Use `chaos-redux-3d-model-pipeline` for Chaos Redux HOI4 3D models and required sound/counter handoffs: Meshy 6 by default, sourced unit audio, and vanilla-green counters. Planned model/animation spend needs no confirmation; ask only for extra paid recovery after failure or rejection. Route to `chaosx_3d_model_pipeline`.
 - Use `chaos-redux-frame-animation` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
 - Use `chaos-redux-super-events` when a task creates, updates, researches, or wires a super-event.
-- Use `hoi4-focus-trees` before editing national focus trees.
-- Use `hoi4-decisions-missions` before editing decisions/missions
-- Use `chaosx_event_ui_worker` when a named event specifically introduces a dedicated scripted GUI or mechanic window. It follows the layout rules in `hoi4-decisions-missions`, and must use the HOI4 MCP GUI inspect, render, rewrite, and post-change comparison workflow. Never route the shared event log, event-details framework, settings UI, super-event framework, shared registries, or unrelated existing UIs to this worker.
-- Use `hoi4-mtth` when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer.
+- Use `chaos-redux-focus-trees` before editing/viewing national focus trees.
+- Use `chaos-redux-decisions-missions` before editing decisions/missions
+- Use `chaosx_event_ui_worker` when a named event specifically introduces a dedicated scripted GUI or mechanic window. It follows the layout rules in `chaos-redux-decisions-missions`, and must use the HOI4 MCP GUI inspect, render, rewrite, and post-change comparison workflow. Never route the shared event log, event-details framework, settings UI, super-event framework, shared registries, or unrelated existing UIs to this worker.
+- Use `chaos-redux-mtth` when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer.
 - Use `chaos-redux-subagents` when coordinating custom Codex subagents, routing bounded work, or defining parent/subagent ownership boundaries.
 - Use `chaos-redux-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
 
@@ -182,7 +182,7 @@ Clausewitz script is picky. Follow these rules strictly.
     - First check existing dynamic effects (in `common/scripted_effects/chaosx_dynamic_effects.txt`) and use them instead of duplicating logic.
     - If no existing effect fits, create a new dynamic effect and document it in the markdown file of the same name (`common/scripted_effects/chaosx_dynamic_effects.md`) in the same change.
     - Keep effect docs explicit: purpose, scope, inputs/outputs, defaults, side effects, and a usage example.
-14. If MTTH (mean time to happen) variables are required to reduce AI/script clutter (especially in ai_will_do blocks) by centralizing weighted logic, use the `hoi4-mtth` skill and follow its MTTH guidance before implementing.
+14. If MTTH (mean time to happen) variables are required to reduce AI/script clutter (especially in ai_will_do blocks) by centralizing weighted logic, use the `chaos-redux-mtth` skill and follow its MTTH guidance before implementing.
 
 ### Meta effect example
 
@@ -356,7 +356,7 @@ For Chaos Redux event implementation, use the repo skill `chaos-redux-events`.
 
 ## 7. Focus Trees and Large Content
 
-For national focus work, use `hoi4-focus-trees` before editing. That skill is the detailed source of truth for focus-tree depth, reward variety, route logic, AI, localisation, icons, ideas, country identity changes, focus-decision integration, route coverage proof, and completion standards.
+For national focus work, use `chaos-redux-focus-trees` before editing. That skill is the detailed source of truth for focus-tree depth, reward variety, route logic, AI, localisation, icons, ideas, country identity changes, focus-decision integration, route coverage proof, and completion standards.
 
 Before claiming focus-tree completion, use the appropriate audit route from `chaos-redux-subagents`. If a tree works but feels shallow, duplicated, generic, or disconnected from gameplay, use `chaos-redux-improvement-loop` and consider a plan-mode pass from `chaosx_improvement_loop_planner`.
 

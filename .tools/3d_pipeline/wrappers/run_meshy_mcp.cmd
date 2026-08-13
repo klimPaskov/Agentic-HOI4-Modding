@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-if "%MESHY_API_KEY:~0,1%"=="" goto missing_meshy_key
+if not defined MESHY_API_KEY goto missing_meshy_key
 
 set "PIPELINE_ROOT=%~dp0.."
 set "BOOTSTRAP=%PIPELINE_ROOT%\bootstrap_3d_workflow.py"

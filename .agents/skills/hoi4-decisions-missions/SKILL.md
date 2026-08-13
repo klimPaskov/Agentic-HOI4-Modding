@@ -27,6 +27,7 @@ Before editing decisions or missions, read:
 - vanilla decision files from `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/`
 - vanilla documentation in `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`
 - existing repository decision categories and scripted effects that do similar work
+- `.agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/README.md` and its category-attachment audit when exact state control is the formation proof
 
 Do not rely on memory when syntax or UI behavior is documented.
 
@@ -69,7 +70,7 @@ Timed missions are good for:
 
 Use goal-style missions when the player should not click again after doing the work.
 
-If the objective is “place divisions here,” “hold this capital,” “secure this rail hub,” or “reach this influence threshold,” it should auto-complete when conditions are met.
+If the objective is "place divisions here," "hold this capital," "secure this rail hub," or "reach this influence threshold," it should auto-complete when conditions are met.
 
 Do not make the player pay a second click after already satisfying the goal.
 
@@ -715,7 +716,7 @@ State requirements must be readable. Use named state groups and custom trigger t
 
 When exact territorial control is the central proof for a formable, use the reusable formable state-puzzle presentation. Show the required territory assembled from the exact in-game shapes of its states, arranged in their real geographic positions like pieces of one map.
 
-Each required state must be represented separately. A state that does not satisfy the requirement is grey; a qualifying state is green; borders, texture, labels, or another non-colour cue must distinguish the states; hovering a piece names the state and explains its status; and the panel shows the qualifying count, required count, and final eligibility without exposing raw internal variables.
+Each required state must be represented separately. A state that does not satisfy the requirement is grey; a qualifying state is green; borders, texture, labels, or another non-colour cue must distinguish the states; hovering a piece names the state and explains its status; and the panel shows the qualifying count, required count, and final eligibility without exposing raw internal variables. When a formable family spans shared or phase-specific decision categories, enumerate every in-scope category in `templates/formable_state_puzzle/category_attachment_audit.md` and record the exact generated `scripted_gui` identifier attached to each category. A valid state-piece render never proves category coverage by itself.
 
 Derive every piece from the installed map data. Do not approximate outlines by hand, generate them with ImageGen, replace them with generic tiles, or use province blobs that differ from the actual requirement. Every piece must share one projection, scale, origin, and border treatment.
 
@@ -727,7 +728,9 @@ Copy and adapt the reusable scaffolding from:
 
 `.agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/`
 
-The package contains manifest, `.gui`, `.gfx`, scripted GUI, scripted trigger/effect, localisation, static-picture, and validation templates. Skill-local templates are reference scaffolding and must never be wired directly into a mod.
+If the repository provides a canonical installed-map state registry and consumer compiler, treat that registry as immutable build input and record its map revision, content hash, ordered map roots, consumer manifest, generated runtime outputs, and provenance checks. If those tools are not available in the current repository, do not invent them: document the exact gap and keep the state puzzle blocked until exact geometry can be reproduced and validated.
+
+The package contains manifest, `.gui`, `.gfx`, scripted GUI, scripted trigger/effect, localisation, static-picture, category-attachment audit, and validation templates. Skill-local templates are reference scaffolding and must never be wired directly into a mod.
 
 Hidden formables need extra care. A hidden formable can be locked behind an event, secret focus, rare ideology, high chaos, special leader, historical artifact, super-event, achievement route, or scripted GUI investigation. Hidden does not mean undocumented. The implementation handoff must still define all triggers, effects, assets, and cleanup.
 
@@ -978,7 +981,7 @@ Review:
 - edge cases
 - cleanup behavior
 
-Document test scenarios or observations. Do not only say “balanced.”
+Document test scenarios or observations. Do not only say `balanced`.
 
 ## Improvement addenda for decisions and mechanic windows
 

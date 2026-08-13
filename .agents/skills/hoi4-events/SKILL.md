@@ -259,6 +259,8 @@ Use scripted helpers for formation effects. Do not duplicate formation logic in 
 
 Hidden formables should still have implementation coverage. They need reveal events, hidden flags, visibility triggers, localisation, assets, AI rules, and cleanup.
 
+When exact state control is the formation proof, use the manifest-driven state-puzzle workflow under `.agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/`. Keep generated state pieces, the shared territory helper, formation decision, AI path, and every in-scope decision category synchronized. Complete `category_attachment_audit.md`; under a strict family policy every category metadata block must attach the generated `context_type = decision_category` scripted GUI. A category picture or text-only description does not replace that attachment.
+
 
 ## Scripted GUI and animated event presentation
 
@@ -277,6 +279,8 @@ When an event uses a custom interface, align these surfaces:
 - AI fallback behavior
 - cleanup and invalidation rules
 - documentation and asset manifest
+
+For a formable state puzzle, add the manifest-to-category attachment crosswalk to the event handoff and verify every in-scope category against the generated scripted-GUI identifier and window. Use the actual read-only map and GUI inspect/render routes for the linked category; a state-piece render alone never proves category coverage.
 
 Every player-clickable GUI button that changes gameplay must validate the same requirements as a normal decision. It must show costs and missing requirements clearly. It must call scripted effects that can also be used by AI, decisions, focuses, and cleanup systems.
 

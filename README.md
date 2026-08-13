@@ -19,6 +19,7 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 - The mod-agnostic `hoi4-3d-model-pipeline` skill and `hoi4_3d_model_pipeline` subagent for Meshy 6-first, verified Meshy-to-Blender-to-io_pdx_mesh model production plus rights-checked Internet-sourced unit sound design and bespoke vanilla-green unit counters.
 - The read-only `hoi4_ai_probability_auditor` subagent for MCP-backed scenario analysis and before/after comparison of AI weights, MTTH, event chances, random lists, strategy factors, and other declared weighted systems.
 - The Luna Max `hoi4_event_ui_worker` for implementing and visually refining only the scripted GUI that a named event specifically adds, with mandatory MCP GUI inspection, rendering, rewrite, and post-change comparison evidence.
+- The explicit-invocation-only `hoi4-debug-playtest` skill for bounded Windows desktop launch, fresh-log attribution, gameplay and UI checks, screenshot evidence, repair loops, and relaunch verification when the user expressly authorizes live testing.
 - The optional mod-agnostic `hoi4-super-events` package: a project-adapted GUI/GFX runtime, dynamic registration pattern, hidden smoke-test event, default DDS assets, editable Photoshop templates, research guidance, and complete presentation workflow.
 - A dedicated portrait worker that finds grounded sources, generates fictional portraits, processes and wires final assets, and supports selectable Comfy Cloud, Local ComfyUI, and RunPod styling routes.
 
@@ -134,6 +135,8 @@ The main agent should still own final implementation, final wiring, final review
 
 The event UI worker is deliberately narrow. It follows the scripted-GUI layout rules in `hoi4-decisions-missions` and may work only on a dedicated window introduced and owned by the named event in its prompt. It must not perform a repository-wide GUI audit or modify event logs, event-detail frameworks, settings, super-event frameworks, shared registries, or unrelated existing interfaces. The worker uses HOI4 Agent Tools to inspect and render the exact UI before editing, applies an in-scope GUI rewrite, and repeats the relevant state, resolution, hierarchy, and click-region evidence afterward.
 
+The debug-playtest skill is also deliberately gated. Installing it does not authorize live testing: the user must name the skill or explicitly authorize autonomous desktop playtesting for the current task. Normal implementation and completion work leaves HOI4 launch, saves, and live validation to the user.
+
 ## Optional Super Events workflow
 
 HOI4 Mod Setup leaves Super Events out by default. Selecting the workflow
@@ -199,7 +202,7 @@ Start Codex from the repository root so it can see `AGENTS.md`, `.agents/skills/
 
 ## MCP in agent workflows
 
-HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, lint, render, create, and rewrite focus trees; inspect and rewrite scripted GUIs; inspect and edit connected map data; trace, compare, render, and lint event chains; view technology and doctrine trees; and analyze AI weights, MTTH, random outcomes, and declared weighted systems under explicit scenarios. It is one tool in the existing skills and source workflow.
+HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, lint, render, create, and rewrite focus trees; inspect and rewrite scripted GUIs; inspect and edit connected map data; trace, compare, render, and lint event chains; and analyze AI weights, MTTH, random outcomes, and declared weighted systems under explicit scenarios. It is one tool in the existing skills and source workflow. The package revision documented here does not expose a Technology Tree Viewer, so agents must record that gap instead of inventing a route or claiming viewer evidence.
 
 `AGENTS_template.md` includes instructions for the coding agent to install and register the required server, so users do not need to install it manually. For reference, the published package command is:
 
@@ -217,6 +220,8 @@ cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iro
 
 Agents must use MCP for every in-scope focus tree, event chain, technology or doctrine tree, weighted-logic system, scripted GUI, and map surface that HOI4 Agent Tools supports. Source review remains required but is not a substitute for the corresponding MCP inspection, render, lint, evaluation, comparison, or post-change validation. If a required route is unavailable, the agent records the exact blocker instead of silently downgrading to source-only review. The owning skills still define design, research, source review, assets, tests, audits, and handoffs. Large MCP artifacts are returned as linked resources instead of placed in the prompt.
 
+See `docs/systems/hoi4_agent_tools_mcp_integration.md` for the capability matrix, artifact and source-authority rules, probability scenario contract, rewrite and recovery lifecycle, and local or HTTP troubleshooting guidance.
+
 ## Autonomous 3D model workflow
 
 The reusable 3D workflow lives in .agents/skills/hoi4-3d-model-pipeline/SKILL.md and .codex/agents/hoi4_3d_model_pipeline.toml.
@@ -233,7 +238,9 @@ If the key is missing, the agent must show this PowerShell command and then requ
         "User"
     )
 
-When a feature needs 3D work, the agent runs .tools/3d_pipeline/bootstrap_3d_workflow.py after the key gate. The bootstrap autonomously discovers the mod and Blender paths, installs or verifies the pinned Meshy and Blender MCP dependencies, installs the checksum-locked io_pdx_mesh extension, writes concrete entries into .codex/config.toml, records the resolved setup, and removes .codex/3d_mcp_config.template.toml.
+When a feature needs 3D work, the agent runs `.tools/3d_pipeline/bootstrap_3d_workflow.py` after the key gate. The bootstrap resolves and records the latest supported Meshy, Blender Lab, Blender build, repository-owned allowlisted HOI4 adapter, and io_pdx_mesh dependencies, verifies the Blender bridge separately from the process, writes the concrete production and development MCP entries into `.codex/config.toml`, and records versions and checksums in the generated lock.
+
+Unattended production uses the narrow repository-owned HOI4 Blender adapter. The unrestricted Blender Lab route remains disabled and development-only. The production adapter confines file access to the declared job and reference roots and exposes only the bounded health, candidate preparation, inspection, texture processing, mesh and animation export, locomotion authoring, reimport, and checkpoint operations required by the workflow.
 
 When a brief has no ready reference, the workflow generates exactly one final Meshy-ready image for the asset and never sends side-profile sheets, turnaround boards, collages, or multi-view boards to Meshy.
 
@@ -243,7 +250,7 @@ Normal planned model generation, remesh/retexture, rigging, conversion, and requ
 
 Humanoid units are calibrated against a named installed vanilla source mesh and entity scale with source geometry height and effective runtime height recorded separately and the scale applied exactly once.
 
-For custom units, the 3D worker also researches sound files on the Internet, preserves original downloads and source URLs, records licensing and usage terms, access dates, and checksums, and maps sound roles and synchronization points to animation actions or frames. It may make only license-permitted mechanical edits. It must never generate, synthesize, record, manually author, fabricate placeholder or test-tone audio, or use an unlicensed file; lack of a defensible source is a blocker.
+For custom units, the 3D worker also researches sound files on the Internet, preserves original downloads and source URLs, records licensing and usage terms, access dates, and checksums, and maps sound roles and synchronization points to animation actions or frames. Selection audio and its exact engine consumer are mandatory. Country or original-tag infantry voice templates must be audited across every consumer under that identity, and per-subunit selection is reported blocked when the engine surface cannot bind it independently. The worker may make only license-permitted mechanical edits and must never generate, synthesize, record, manually author, fabricate placeholder or test-tone audio, or use an unlicensed file.
 
 Every custom unit also requires original counters for every runtime counter surface it uses. The counter artist must inspect the exact installed-vanilla definition and DDS plus the matching reference family, sample and match the vanilla green palette and frame behavior, and produce the final large and map-counter variants required by the consumer. Reused counters, arbitrary green, placeholders, and unreferenced imitations are incomplete.
 

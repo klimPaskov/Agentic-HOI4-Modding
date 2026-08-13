@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "server_package": "@meshy-ai/meshy-mcp-server",
+  "resolution_policy": "latest_at_bootstrap",
+  "required_tools": {
+    "meshy_check_balance": {"paid": false, "required_arguments": []},
+    "meshy_image_to_3d": {
+      "paid": true,
+      "required_argument_groups": [["file_path", "image_url", "input_task_id"]],
+      "input_exclusivity": ["file_path", "image_url", "input_task_id"],
+      "forbidden_arguments": ["multi_view_thumbnails"]
+    },
+    "meshy_get_task_status": {"paid": false, "required_arguments": ["task_id"]},
+    "meshy_download_model": {"paid": false, "required_arguments": ["task_id"]},
+    "meshy_remesh": {"paid": true, "input_exclusivity": ["input_task_id", "model_url"]},
+    "meshy_rig": {"paid": true, "input_exclusivity": ["input_task_id", "model_url"]},
+    "meshy_convert": {
+      "paid": true,
+      "required_arguments": ["target_formats"],
+      "required_argument_groups": [["input_task_id", "model_url"]],
+      "input_exclusivity": ["input_task_id", "model_url"]
+    },
+    "meshy_animate": {"paid": true, "required_arguments": ["rig_task_id", "action_id"]}
+  },
+  "provider_policy": {
+    "input_image_count": 1,
+    "allow_multi_view_thumbnails": false,
+    "default_generation_model": "Meshy 6 when exposed by the verified live schema",
+    "silent_model_downgrade": false,
+    "planned_paid_operations_pre_authorized": true,
+    "failure_recovery_requires_confirmation": true
+  }
+}

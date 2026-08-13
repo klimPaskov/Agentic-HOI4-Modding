@@ -953,13 +953,7 @@ source. One-person generated portraits are reserved for wholly fictional,
 impossible, or supernatural identities. Missing or contradictory identity
 classification fails closed.
 
-For a real person, `hoi4_portrait_creator` preserves the unchanged archival master and creates the
-explicit head-and-shoulders crop with
-`.agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py`.
-Retain its exact-pixel JSON evidence and wire the source placeholder. Require an
-independent likeness, style, and provenance review before DDS conversion or
-wiring. The user alone creates the HOI4-style final; when supplied,
-`hoi4_portrait_creator` validates, installs, and updates portrait-specific wiring.
+For a real person, `hoi4_portrait_creator` preserves the unchanged archival master and runs `.agents/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py`. Automatic mode uses the bundled YuNet detector and fails closed unless exactly one subject is detected; it writes the unchanged source copy, lossless crop, deterministic `156x210` PNG, exact-pixel JSON evidence, and a co-located provenance contract. Use the explicit `--crop` recovery path only for an independently reviewed boundary or detector miss. The detector is a framing aid, never identity approval. Retain the source placeholder and require independent likeness, style, identity, and provenance review before DDS conversion or wiring. The user alone supplies the HOI4-style final; when supplied, `hoi4_portrait_creator` validates, installs, and updates portrait-specific wiring.
 
 Record source URL, author or archive, rights status when available, source and
 candidate hashes, crop coordinates, review evidence, processed PNG, final DDS,
@@ -1000,17 +994,9 @@ python -B .agents/skills/hoi4-feature-assets/tools/create_advisor_icon.py `
   --output <runtime.dds>
 ```
 
-The tool resizes the complete source to a native intermediate, applies the
-reviewed size, rotation, and opening-center offset, then composites the exact
-`advisor_template.png` once as the untouched top layer. Use a placement study
-when the first transform does not fit. Do not redraw the frame, paper, seal,
-bevel, patina, or shadows.
+The tool loads the complete approved source without a pre-crop or warp, measures the template opening, and uses one uniform aspect-preserving cover scale. It expands the opening with the centralized under-frame bleed and portrait-edge guard, masks the covering portrait to that safe region, and composites the exact `advisor_template.png` once as the untouched top layer. Never clip to the exact visible opening: translucent antialiased inner-edge pixels need portrait coverage beneath the frame. Do not anisotropically stretch, redraw, recolour, or replace the frame, paper, seal, bevel, patina, or shadows.
 
-Record source and template hashes, complete-source resize, transformed
-dimensions, center, offset, rotation, sepia strength, preview hash, DDS hash,
-runtime path, and independent reviewer. Review at native size and at `4x`
-nearest-neighbour scale. Automated dimension and alpha checks are evidence,
-not visual approval.
+Require a per-person placement study, native preview, nearest-neighbour `4x` review preview, alignment overlay, metadata, and staged DDS. Record source/template hashes, measured opening center/size/angle, uniform cover geometry, bleed/guard constants, transformed dimensions, center, offset, rotation, alpha coverage (`opening_alpha_gap_pixels`, `inner_edge_alpha_gap_pixels`, `exterior_alpha_leak_pixels`), preview and DDS hashes, runtime path, and independent reviewer. Review against solid and checker backgrounds at native and `4x` size. Automated dimension and alpha checks are evidence, not visual approval. Reject gaps, matte pixels, exterior leakage, padded strips, visible stretching, or a neutral transform that recreates a frame-only card.
 
 When a character defines `army.large` and `army.small`, keep the approved
 `156x210` commander texture for `large` and create a separate native `65x67`

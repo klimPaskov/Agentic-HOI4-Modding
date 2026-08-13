@@ -557,11 +557,23 @@ def ensure_blender_bridge(blender_executable: Path, bridge: dict) -> dict:
     started_by_bootstrap = False
     blender_process = None
     if not bridge_reachable(probe_host, port):
+        command = [
+            str(blender_executable),
+            "--background",
+            "--online-mode",
+            "--command",
+            "blender_mcp",
+            "--host",
+            probe_host,
+            "--port",
+            str(port),
+        ]
         blender_process = subprocess.Popen(
-            [str(blender_executable)],
+            command,
             cwd=str(blender_executable.parent),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
         started_by_bootstrap = True
         deadline = time.monotonic() + 60.0
@@ -581,6 +593,113 @@ def ensure_blender_bridge(blender_executable: Path, bridge: dict) -> dict:
         "reachable": True,
         "started_by_bootstrap": started_by_bootstrap,
         "process_id": blender_process.pid if blender_process else None,
+        "start_command": command if started_by_bootstrap else None,
+    }
+
+
+def sha256_path(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest().upper()
+
+
+def materialize_hoi4_adapter(
+    root: Path,
+    pipeline_root: Path,
+    uv_executable: Path,
+    blender_executable: Path,
+    io_pdx_mesh: dict,
+) -> dict:
+    """Install and lock the repository-owned production adapter without exposing arbitrary Python."""
+
+    adapter_root = pipeline_root / "adapter"
+    pyproject = adapter_root / "pyproject.toml"
+    module = adapter_root / "hoi4_blender_mcp.py"
+    worker = adapter_root / "blender_worker.py"
+    wrapper = pipeline_root / "wrappers/run_blender_hoi4_adapter.cmd"
+    for required in (pyproject, module, worker, wrapper):
+        if not required.is_file():
+            raise SetupError(f"Repository-owned Blender HOI4 adapter file is missing: {required}")
+
+    pyproject_text = pyproject.read_text(encoding="utf-8")
+    version_match = re.search(r'^version\s*=\s*["\']([^"\']+)', pyproject_text, re.MULTILINE)
+    if not version_match:
+        raise SetupError("The Blender HOI4 adapter pyproject has no version.")
+    adapter_version = version_match.group(1)
+    run([str(uv_executable), "lock", "--upgrade"], cwd=adapter_root)
+    run([str(uv_executable), "sync", "--locked"], cwd=adapter_root)
+    uv_lock = adapter_root / "uv.lock"
+    if not uv_lock.is_file():
+        raise SetupError("uv did not materialize the Blender HOI4 adapter dependency lock.")
+
+    game_root = Path(
+        os.environ.get(
+            "HOI4_GAME_ROOT",
+            "C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV",
+        )
+    ).resolve()
+    job_root = Path(os.environ.get("HOI4_3D_JOB_ROOT", str(root / "docs/assets"))).resolve()
+    try:
+        job_root.relative_to(root.resolve())
+    except ValueError as exc:
+        raise SetupError("HOI4_3D_JOB_ROOT must remain inside the repository.") from exc
+
+    operations = re.findall(r'^def (hoi4_blender_[a-z0-9_]+)\(', module.read_text(encoding="utf-8"), re.MULTILINE)
+    if not operations:
+        raise SetupError("The Blender HOI4 adapter exposes no structured tools.")
+    worker_operations = [name.removeprefix("hoi4_blender_") for name in operations]
+    config_path = pipeline_root / "config/blender_hoi4_adapter.json"
+    config = {
+        "schema_version": "1.0.0",
+        "adapter_id": "hoi4_blender_adapter",
+        "adapter_version": adapter_version,
+        "repository_root": root.resolve().as_posix(),
+        "job_root": job_root.as_posix(),
+        "blender_executable": blender_executable.resolve().as_posix(),
+        "io_pdx_mesh_root": Path(io_pdx_mesh["install_root"]).resolve().as_posix(),
+        "allowed_read_roots": [
+            root.resolve().as_posix(),
+            game_root.as_posix(),
+            Path(io_pdx_mesh["install_root"]).resolve().as_posix(),
+        ],
+        "approved_reference_roots": {
+            "vanilla": game_root.as_posix(),
+        },
+        "allowed_write_roots": [job_root.as_posix()],
+        "operations": worker_operations,
+        "forbidden_inputs": [
+            "arbitrary_python",
+            "arbitrary_shell",
+            "arbitrary_url",
+            "unrestricted_absolute_write_path",
+            "provider_secret",
+            "runtime_gameplay_wiring",
+        ],
+        "runtime_boundary": "parent_owned",
+    }
+    write_json(config_path, config)
+    return {
+        "id": "hoi4_blender_adapter",
+        "version": adapter_version,
+        "project": adapter_root.resolve().as_posix(),
+        "module": "hoi4_blender_mcp",
+        "wrapper": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
+        "config": config_path.resolve().as_posix(),
+        "tool_identifiers": operations,
+        "worker_operations": worker_operations,
+        "dependency_lock": uv_lock.resolve().as_posix(),
+        "checksums": {
+            "pyproject_sha256": sha256_path(pyproject),
+            "module_sha256": sha256_path(module),
+            "worker_sha256": sha256_path(worker),
+            "wrapper_sha256": sha256_path(wrapper),
+            "config_sha256": sha256_path(config_path),
+            "uv_lock_sha256": sha256_path(uv_lock),
+        },
+        "unrestricted_blender_python": False,
+        "runtime_wiring": "parent_owned",
     }
 
 
@@ -692,16 +811,29 @@ startup_timeout_sec = 120.0
 tool_timeout_sec = 1800.0
 default_tools_approval_mode = "auto"
 
-[mcp_servers.blender_lab]
+[mcp_servers.blender_hoi4]
 enabled = true
 required = true
+command = "cmd.exe"
+args = ["/d", "/c", "call", ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd"]
+cwd = "."
+env_vars = ["MESHY_API_KEY"]
+startup_timeout_sec = 120.0
+tool_timeout_sec = 1800.0
+default_tools_approval_mode = "auto"
+
+# Unrestricted Blender Lab is retained only as an isolated development aid.
+# Production 3D work must use the repository-owned blender_hoi4 route above.
+[mcp_servers.blender_lab]
+enabled = false
+required = false
 command = "cmd.exe"
 args = ["/d", "/c", "call", ".tools/3d_pipeline/wrappers/run_blender_lab_mcp.cmd"]
 cwd = "."
 env_vars = ["MESHY_API_KEY"]
 startup_timeout_sec = 120.0
 tool_timeout_sec = 1800.0
-default_tools_approval_mode = "auto"
+default_tools_approval_mode = "prompt"
 """
     rendered = existing.rstrip() + "\n\n" + generated
     if re.search(r"<[^>]+>", rendered):
@@ -727,16 +859,24 @@ def write_dependency_record(root: Path, payload: dict) -> Path:
             previous = json.loads(lock_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             previous = {}
-    policy = previous.get(
-        "policy",
-        {
-            "provider_input_image_count": 1,
-            "allow_meshy_multiview_thumbnails": False,
-            "paid_generation_attempts_per_pilot": 1,
-            "retry_paid_calls": False,
-            "runtime_sources_must_not_reference_docs_assets": True,
-        },
-    )
+    previous_policy = previous.get("policy", {})
+    legacy_attempt_key = "paid_generation_attempts_per_" + "pilot"
+    previous_policy.pop(legacy_attempt_key, None)
+    policy = {
+        **previous_policy,
+        "provider_input_image_count": 1,
+        "allow_meshy_multiview_thumbnails": False,
+        "default_generation_model": "Meshy 6 when exposed by the verified live schema",
+        "silent_generation_model_downgrade": False,
+        "planned_paid_operations_pre_authorized": True,
+        "failure_recovery_requires_confirmation": True,
+        "runtime_sources_must_not_reference_docs_assets": True,
+        "runtime_copy_requires_selected_source_hash": True,
+        "mesh_and_anim_reimport_required": True,
+        "loop_phase_samples": [0.0, 0.25, 0.5, 0.75, 1.0],
+        "building_footprint_and_object_name_evidence_required": True,
+        "runtime_wiring_owner": "parent",
+    }
     record = {
         "schema_version": "1.0.0",
         "lock_name": "hoi4-3d-model-pipeline",
@@ -745,11 +885,15 @@ def write_dependency_record(root: Path, payload: dict) -> Path:
         "bootstrap": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
         "routes": {
             "meshy_mcp": payload["meshy"],
+            "meshy_tool_contract": payload["meshy_tool_contract"],
             "blender_lab_mcp": {
                 **payload["blender_mcp"],
                 "project": payload["blender_mcp_project"],
                 "wrapper": ".tools/3d_pipeline/wrappers/run_blender_lab_mcp.cmd",
+                "profile": "development_only",
+                "enabled_in_production": False,
             },
+            "blender_hoi4_adapter": payload["blender_hoi4_adapter"],
             "blender_mcp_addon": payload["blender_mcp_addon"],
             "blender_bridge": payload["blender_bridge"],
             "blender": {
@@ -779,10 +923,26 @@ def main() -> int:
         blender_executable, blender_shortcut, blender_version = find_blender()
         uv_executable = ensure_uv()
         meshy = resolve_meshy(npx_executable)
+        meshy_contract_path = pipeline_root / "config/meshy_tool_contract.json"
+        if not meshy_contract_path.is_file():
+            raise SetupError(f"Meshy tool contract is missing: {meshy_contract_path}")
+        meshy_tool_contract = {
+            "path": meshy_contract_path.resolve().as_posix(),
+            "sha256": sha256_path(meshy_contract_path),
+            "contract": json.loads(meshy_contract_path.read_text(encoding="utf-8")),
+            "live_schema_verification_required_before_provider_calls": True,
+        }
         blender_mcp = resolve_blender_mcp()
         blender_mcp_project = ensure_blender_mcp(pipeline_root, blender_mcp)
         io_resolution = resolve_io_pdx_mesh()
         io_pdx_mesh = ensure_io_pdx_mesh(pipeline_root, blender_executable, io_resolution)
+        blender_hoi4_adapter = materialize_hoi4_adapter(
+            root,
+            pipeline_root,
+            uv_executable,
+            blender_executable,
+            io_pdx_mesh,
+        )
         addon_source = pipeline_root / "vendor" / "blender_mcp" / "addon" / "blender_mcp_addon"
         bridge = resolve_blender_bridge_settings(addon_source)
         blender_mcp_addon = ensure_blender_mcp_addon(
@@ -807,10 +967,12 @@ def main() -> int:
             "uv_executable": uv_executable.as_posix(),
             "blender_mcp_project": blender_mcp_project.as_posix(),
             "meshy": meshy,
+            "meshy_tool_contract": meshy_tool_contract,
             "blender_mcp": blender_mcp,
             "blender_mcp_addon": blender_mcp_addon,
             "blender_bridge": blender_bridge,
             "io_pdx_mesh": io_pdx_mesh,
+            "blender_hoi4_adapter": blender_hoi4_adapter,
             "config_path": config_path.as_posix(),
             "template_removed": True,
         }

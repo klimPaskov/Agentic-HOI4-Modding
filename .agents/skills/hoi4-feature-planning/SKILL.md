@@ -9,6 +9,8 @@ Use this skill to design or expand features for a Hearts of Iron IV mod.
 
 This skill creates feature specifications. It does not implement code. Implementation belongs to the owning implementation skill for the surface being designed, such as `hoi4-events` for event content, `hoi4-focus-trees` for focus trees, `hoi4-decisions-missions` for decisions and missions, and repository-specific implementation rules for other systems. Visual asset generation and processing belongs to `hoi4-feature-assets`. Animated sprite planning, frame-sheet requirements, animated portrait packages, and animation handoff details belong to `hoi4-frame-animation` when motion is needed. Quote, remark, and audio research belongs to `hoi4-text-audio-research`.
 
+Treat the accepted specification as the design source of truth. Plans, prompts, manifests, audits, and handoffs may refine or report it, but an accepted design change must be promoted into the relevant spec or explicitly queued/rejected with a reason. Keep implementation prompts context-complete: pass stable feature identifiers, exact spec/plan paths, file ownership, outputs, dependencies, named MCP evidence requirements, known blockers, and forbidden simplifications instead of relying on inherited chat context.
+
 ## 1. Required reading
 
 Before writing the feature specification, use the following as the design baseline:
@@ -549,6 +551,10 @@ Good planning patterns include:
 
 A decision category should feel curated by the current route and campaign state, not like a debug menu.
 
+### Decision category presentation choice
+
+Plan the least complex surface that communicates a category's purpose and current state: ordinary category icon and text, static category picture, animated category picture with a static fallback, compact attached display, then full scripted GUI. Do not plan a full window merely because a category is important. Pictures suit propaganda, ideology, preparedness, treaties, faction identity, and territorial overview; they are presentation and must not contain fake buttons, meters, or controls. Use a full GUI only for several interacting values, repeated target selection, competing factions, persistent state changes, or exact live state pieces that ordinary decisions and one picture cannot explain. Record the choice, intended content regions, visible value/action budget, and the canonical vanilla references in the implementation prompt.
+
 ### What the implementation agent owns
 
 The implementation agent is responsible for the final exact focus tree shape unless the user asks otherwise.
@@ -804,6 +810,10 @@ For every new country, and every existing country that is meaningfully changed, 
 
 Do not treat a custom country as complete because it has a tag and one flag. A serious country needs identity, politics, names, flags, leaders, starting forces, force-growth routes, mechanics, decisions, AI, localisation, assets, and route changes. If the country is only temporary and does not need a full package, the spec must explain why.
 
+### Relevance-gated country detail pass
+
+Assess capitals and settlement names, culture and naming changes, intelligence or military-industrial identity, distinctive characters, navy/air forces, research, economy, stockpiles, laws, subject status, equipment identity, and DLC compatibility deliberately. Include details when they support the country's identity, starting position, military role, route logic, or player experience; omit optional surfaces that would exist only to inflate the package. Persistent playable countries need the deepest assessment, while short-lived emergency actors may use shared setup when custom content adds no value. Dynamic generation does not excuse a valid capital, economy, army, laws, research base, or equipment package when those are required for play.
+
 Political identity should be dynamic when the content supports it. Focus routes, ideology changes, coups, faction victories, foreign puppeting, religious transformations, extreme-route mutations, monarchist restorations, military takeovers, revolutionary councils, or international-order paths should be able to change the country name, flag, ruling party, leader, leader portrait, leader trait, cosmetic tag, national spirits, available decisions, and available recruitment systems when appropriate.
 
 ### Country naming rules
@@ -855,6 +865,8 @@ A formable design should define:
 Do not write vague lines such as `can form a greater country`. Define the concrete formation web. If the player must control this state, this state, and this state, name those states or name the scripted state group and explain what it contains. If the exact state ids are left to implementation, describe the intended geographic set clearly enough that the implementation agent can build a scripted trigger without guessing.
 
 Hidden formables should still be designed fully. The spec can hide player-facing names and spoilers, but the implementation handoff must describe the unlock route, required flags, reveal feature, decision visibility, AI behavior, rewards, assets, and disqualifiers.
+
+When exact state control is the central formation proof, plan the manifest-driven state-puzzle workflow in `.agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/`. Name the finite state set, live qualification helper, projection/geometry evidence, generated outputs, and every shared or phase-specific category that must attach the generated `context_type = decision_category` GUI. Complete the category attachment crosswalk; a state-piece render does not prove category coverage. If the repository lacks a canonical registry/compiler, require the owner to record that capability gap instead of hand-drawing or silently falling back.
 
 Formation routes should interact with focus trees and decisions. A focus can reveal or prepare the claim, while a decision performs the formation after the map requirement is met. A decision can form the country directly, while later focuses stabilize it, core it, claim further territory, or resolve internal factions. Avoid giving a formable through a focus alone when the player should prove control over named land first.
 
@@ -921,7 +933,7 @@ For every planned new unit family, define:
 - localisation, bespoke vanilla-green large/map-counter art, exact counter tokens, and runtime-consumer requirements
 - 3D entity, model, material, idle, movement, attack, death, and validation requirements when the unit should look different on the map
 
-Every custom unit family also needs a sourced voice and sound-design pass. Define the applicable selection, acknowledgement, movement, idle, attack, retreat, impact, damage, destruction, and death roles; variation needs; runtime identifiers and consumers; looping, distance, volume, mix, and animation synchronization; and the exact vanilla or Internet-sourced files that may satisfy them. Recording, generation, synthesis, and manual authoring are forbidden. Every external file needs provenance, licensing, attribution, intended-use evidence, and an immutable original. If a suitable source cannot be found, the role remains blocked.
+Every custom unit family also needs a sourced voice and sound-design pass. Selection audio is mandatory: define the source, stable identifier, exact engine consumer, binding scope, effective country/original tag, and every consumer under that identity before planning other roles. Recheck the installed infantry voice templates and bindings for the current game version; do not infer selection from idle or entity creation. Define the applicable acknowledgement, movement, idle, attack, retreat, impact, damage, destruction, and death roles; variation needs; runtime identifiers and consumers; looping, distance, volume, mix, and animation synchronization; and the exact vanilla or Internet-sourced files that may satisfy them. Recording, generation, synthesis, and manual authoring are forbidden. Every external file needs provenance, licensing, attribution, intended-use evidence, and an immutable original. If a suitable source cannot be found, the role remains blocked.
 
 Every custom unit family also needs bespoke counter art for every large or map-counter surface it uses. The plan must name the exact installed-vanilla counter definition and DDS to inspect, the matching skill-local counter family, required tokens, frames, states, sizes, final paths, and `hoi4_icon_artist` handoff. Require the vanilla green counter palette sampled from the inspected reference. If the reference cannot be inspected, counter production is blocked; a reused vanilla counter or generic placeholder is not final.
 

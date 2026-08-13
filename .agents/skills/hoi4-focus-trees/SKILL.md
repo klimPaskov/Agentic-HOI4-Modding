@@ -34,6 +34,10 @@ A strong focus tree should:
 - end major goals with a visible payoff such as territory, cores, a formable, a new government, a faction, or a lasting mechanic
 - use a compact, symmetrical layout with short direct connectors that show the real route structure without visual tricks
 
+At normal in-game zoom, a reviewer should be able to identify every supported major family from the render alone: opening trunk, politics and its forks, industry/economy, military with army/navy/air where relevant, diplomacy or faction, expansion or settlement, special mechanics, and late-game payoff. Give every visible focus one primary branch home or an explicit convergence role. If a branch cannot be understood without tracing every connector or reading every tooltip, redesign the route, names, icons, or layout before completion.
+
+Large trees must use the current engine's focus search filters consistently. Give each focus accurate `search_filters` tags that match its primary role, and use Focus Navigation shortcuts for spatially separate major branch families. Each shortcut needs a localized label, distinct icon, stable branch anchor, useful pan/zoom target, and reveal-safe visibility. Navigation does not excuse interleaved or meaningless routes.
+
 Reject trees that:
 
 - overload the opening with penalties, currencies, national spirits, templates, or specialist mechanics
@@ -538,6 +542,8 @@ Special mechanics must be visible somewhere the player can understand them. A me
 When a mechanic is important enough for a custom scripted GUI, consider visual presentation beyond static text. Useful presentation can include progress bars, meter fill variants, state icons, status frames, warning frames, selected and locked variants, animated frames, or frame-by-frame visual changes that make the mechanic feel alive. The visuals should clarify the mechanic, not clutter it.
 
 Special mechanics may hide future surprises. Basic cause and effect must remain clear. The player should understand why a visible value rose or fell, which public action changed it, and what broad type of response is available.
+
+When a mechanic must remain visible while the player reads and chooses focuses, use a focus inlay window only when it materially improves tree-local decisions. Verify the current vanilla `focus_inlay_windows` syntax and precedent, reserve its footprint before final coordinates, and keep the inlay aligned with its GUI container and `inlay_window` tree attachment. It must not cover focuses, connectors, filters, Focus Navigation controls, or continuous focuses, and must update from real state with readable tooltips and visibility rules. Use `hoi4.focus_render` plus `hoi4.gui_inspect`/`hoi4.gui_render` for tree and inlay evidence; a clean focus graph alone is insufficient.
 
 AI strategy must respect route validity. AI should not pick a branch that requires a missing state, dead sponsor, non-existent faction, unavailable ideology, disabled evolution, impossible border, or absent enemy. Invalid routes should be hidden, bypassed, or weighted to zero.
 
@@ -1060,8 +1066,13 @@ Focus boxes must never overlap. Connector lines must not overlap each other, int
 
 Use the MCP focus tools to find layout deformities before rewriting. `hoi4.focus_inspect` and `hoi4.focus_render` report overlapping focus boxes, excessive gaps, cramped spacing, connector crossings, path lines that run through focuses or stretch too far, dangling connectors, bad prerequisite presentation, unbalanced branches, off-center layouts, and related diagnostics. Review the artifacts, then call `hoi4.focus_rewrite` with `layoutMode: "compact"` for cleanup or a complete route plan for creation. Review the rewritten artifacts and source diff. MCP supplies shared parsing, layout, rendering, and writes. This skill owns design, prerequisites, localisation, AI, icons, balance, and completion.
 
+Repeat inspect, render, rewrite, and render until the first-glance branch review passes. One clean render is not completion evidence.
+
 Required layout checks:
 
+- every supported major branch family is recognizable at normal zoom, with a visible root, meaningful fork, and payoff or convergence
+- every focus has accurate search-filter tags and every spatially separate major branch family has a correct Focus Navigation shortcut
+- any focus inlay window has a reserved footprint, correct visibility, readable state, and no obstruction of tree controls
 - prerequisite parents are above children
 - no duplicate coordinates
 - no focus boxes overlap, including hidden and continuous focuses
