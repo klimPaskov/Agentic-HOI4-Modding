@@ -212,7 +212,7 @@ Start Codex from the repository root so it can see `AGENTS.md`, `.agents/skills/
 
 ## MCP in agent workflows
 
-HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, lint, render, create, and rewrite focus trees; inspect and rewrite scripted GUIs; inspect and edit connected map data; trace, compare, render, and lint event chains; and analyze AI weights, MTTH, random outcomes, and declared weighted systems under explicit scenarios. It is one tool in the existing skills and source workflow. The package revision documented here does not expose a Technology Tree Viewer, so agents must record that gap instead of inventing a route or claiming viewer evidence.
+HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, lint, render, create, and rewrite focus trees; inspect and rewrite scripted GUIs; inspect and edit connected map data; trace, compare, render, and lint event chains; analyze AI weights, MTTH, random outcomes, and declared weighted systems under explicit scenarios; and inspect, render, and compare technology and doctrine trees through `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_compare`. It is one tool in the existing skills and source workflow.
 
 `AGENTS_template.md` includes instructions for the coding agent to install and register the required server, so users do not need to install it manually. For reference, the published package command is:
 

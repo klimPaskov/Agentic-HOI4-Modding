@@ -2866,7 +2866,9 @@
         "event chain inspection",
         "GUI rendering",
         "map tools",
-        "technology viewer",
+        "technology and doctrine inspection via hoi4.tech_inspect",
+        "technology and doctrine rendering via hoi4.tech_render",
+        "technology and doctrine comparison via hoi4.tech_compare",
         "probability analysis"
       ],
       "notes": [
@@ -6360,7 +6362,8 @@
           "runtime/**",
           "**/__pycache__/**",
           "adapter/.venv/**",
-          "adapter/uv.lock"
+          "adapter/uv.lock",
+          "config/dependencies.lock.json"
         ]
       },
       "destination": {
@@ -6400,6 +6403,17 @@
           ]
         },
         {
+          "id": "uv",
+          "required": true,
+          "version_policy": "repository_script",
+          "commands": [
+            "python -m pip install --user uv"
+          ],
+          "health_checks": [
+            "uv --version"
+          ]
+        },
+        {
           "id": "blender",
           "required": true,
           "version_policy": "repository_script",
@@ -6433,7 +6447,34 @@
           "id": "3d.bootstrap",
           "severity": "warn",
           "kind": "command",
-          "target": ".tools/3d_pipeline/bootstrap_3d_workflow.py"
+          "target": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
+          "parameters": {
+            "arguments": [
+              "--project-root",
+              "<project_root>",
+              "--verify-reviewed-config",
+              "--quiet"
+            ],
+            "network_access": "Required to resolve and download the latest verified Meshy, Blender MCP, and io_pdx_mesh dependencies.",
+            "expected_writes": [
+              ".tools/3d_pipeline/adapter/.venv/**",
+              ".tools/3d_pipeline/adapter/uv.lock",
+              ".tools/3d_pipeline/cache/**",
+              ".tools/3d_pipeline/config/dependencies.lock.json",
+              ".tools/3d_pipeline/config/runtime.json",
+              ".tools/3d_pipeline/config/*_executable.txt",
+              ".tools/3d_pipeline/config/*_host.txt",
+              ".tools/3d_pipeline/config/*_port.txt",
+              ".tools/3d_pipeline/config/*_project.txt",
+              ".tools/3d_pipeline/config/*_version.txt",
+              ".tools/3d_pipeline/runtime/**",
+              ".tools/3d_pipeline/vendor/**",
+              "the current user's Blender extensions directory",
+              "the current user's Python package directory when uv is missing"
+            ],
+            "privilege": "current_user",
+            "rollback_boundary": "Managed project files roll back transactionally. Downloaded dependencies, user-level uv, and Blender extensions are external tool state and are reported but not removed automatically."
+          }
         }
       ],
       "update": {

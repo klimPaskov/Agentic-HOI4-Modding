@@ -789,6 +789,82 @@ def ensure_io_pdx_mesh(pipeline_root: Path, blender_executable: Path, resolution
     }
 
 
+THREE_D_MCP_ROUTES = {
+    "meshy": {
+        "enabled": True,
+        "required": True,
+        "command": "cmd.exe",
+        "args": ["/d", "/c", "call", ".tools/3d_pipeline/wrappers/run_meshy_mcp.cmd"],
+        "cwd": ".",
+        "env_vars": ["MESHY_API_KEY"],
+        "startup_timeout_sec": 120.0,
+        "tool_timeout_sec": 1800.0,
+        "default_tools_approval_mode": "auto",
+    },
+    "blender_hoi4": {
+        "enabled": True,
+        "required": True,
+        "command": "cmd.exe",
+        "args": ["/d", "/c", "call", ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd"],
+        "cwd": ".",
+        "env_vars": ["MESHY_API_KEY"],
+        "startup_timeout_sec": 120.0,
+        "tool_timeout_sec": 1800.0,
+        "default_tools_approval_mode": "auto",
+    },
+    "blender_lab": {
+        "enabled": False,
+        "required": False,
+        "command": "cmd.exe",
+        "args": ["/d", "/c", "call", ".tools/3d_pipeline/wrappers/run_blender_lab_mcp.cmd"],
+        "cwd": ".",
+        "env_vars": ["MESHY_API_KEY"],
+        "startup_timeout_sec": 120.0,
+        "tool_timeout_sec": 1800.0,
+        "default_tools_approval_mode": "prompt",
+    },
+}
+
+
+def parse_reviewed_mcp_routes(config_text: str) -> dict[str, dict]:
+    routes: dict[str, dict] = {}
+    current: dict | None = None
+    for line in config_text.splitlines():
+        stripped = line.strip()
+        section = re.fullmatch(r"\[mcp_servers\.([A-Za-z0-9_-]+)\]", stripped)
+        if section:
+            current = routes.setdefault(section.group(1), {})
+            continue
+        if stripped.startswith("["):
+            current = None
+            continue
+        if current is None or not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, raw_value = (part.strip() for part in stripped.split("=", 1))
+        try:
+            current[key] = json.loads(raw_value)
+        except json.JSONDecodeError as exc:
+            raise SetupError(f"Reviewed Codex config has an unsupported value for {key}: {exc}") from exc
+    return routes
+
+
+def verify_reviewed_config(root: Path) -> Path:
+    config_path = root / ".codex/config.toml"
+    if not config_path.is_file():
+        raise SetupError("The reviewed Codex config is missing.")
+    routes = parse_reviewed_mcp_routes(config_path.read_text(encoding="utf-8"))
+    for route_id, expected in THREE_D_MCP_ROUTES.items():
+        actual = routes.get(route_id)
+        if actual is None:
+            raise SetupError(f"The reviewed Codex config is missing mcp_servers.{route_id}.")
+        for key, value in expected.items():
+            if actual.get(key) != value:
+                raise SetupError(
+                    f"The reviewed Codex config has an unexpected mcp_servers.{route_id}.{key}."
+                )
+    return config_path.resolve()
+
+
 def materialize_config(root: Path) -> Path:
     config_path = root / ".codex/config.toml"
     existing = config_path.read_text(encoding="utf-8") if config_path.exists() else ""
@@ -911,12 +987,20 @@ def write_dependency_record(root: Path, payload: dict) -> Path:
 
 def main() -> int:
     try:
-        require_meshy_key()
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument("--quiet", action="store_true")
+        parser.add_argument("--project-root", type=Path)
+        parser.add_argument(
+            "--verify-reviewed-config",
+            action="store_true",
+            help="Validate the transaction-reviewed MCP routes instead of rewriting Codex config.",
+        )
         args = parser.parse_args()
-        root = repository_root()
+        require_meshy_key()
+        root = (args.project_root or repository_root()).resolve()
         pipeline_root = root / ".tools/3d_pipeline"
+        if not (pipeline_root / "bootstrap_3d_workflow.py").is_file():
+            raise SetupError(f"The selected project has no installed 3D workflow: {pipeline_root}")
         pipeline_root.joinpath("config").mkdir(parents=True, exist_ok=True)
 
         npx_executable = ensure_npx()
@@ -954,7 +1038,11 @@ def main() -> int:
             bridge,
         )
         blender_bridge = ensure_blender_bridge(blender_executable, bridge)
-        config_path = materialize_config(root)
+        config_path = (
+            verify_reviewed_config(root)
+            if args.verify_reviewed_config
+            else materialize_config(root)
+        )
         resolved_at = utc_now()
 
         payload = {
