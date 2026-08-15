@@ -214,10 +214,10 @@ Start Codex from the repository root so it can see `AGENTS.md`, `.agents/skills/
 
 HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, lint, render, create, and rewrite focus trees; inspect and rewrite scripted GUIs; inspect and edit connected map data; trace, compare, render, and lint event chains; analyze AI weights, MTTH, random outcomes, and declared weighted systems under explicit scenarios; and inspect, render, and compare technology and doctrine trees through `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_compare`. It is one tool in the existing skills and source workflow.
 
-`AGENTS_template.md` includes instructions for the coding agent to install and register the required server, so users do not need to install it manually. For reference, the published package command is:
+HOI4 Mod Setup installs and verifies the exact manifest-pinned public package automatically when this component is selected. The reviewed Windows bootstrap installs user-scoped Node.js LTS when it is missing, requires npm registry integrity to match the published release, installs the package under the current user's npm prefix, verifies the runtime-entry size and SHA-256, and then requires every source-advertised route to appear in the MCP `tools/list` response. The current source revision is pinned to:
 
 ```powershell
-npm install --global hoi4-agent-tools@latest
+npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@2.5.2
 ```
 
 A Codex server entry looks like this:
@@ -229,6 +229,8 @@ cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iro
 ```
 
 Agents must use MCP for every in-scope focus tree, event chain, technology or doctrine tree, weighted-logic system, scripted GUI, and map surface that HOI4 Agent Tools supports. Source review remains required but is not a substitute for the corresponding MCP inspection, render, lint, evaluation, comparison, or post-change validation. If a required route is unavailable, the agent records the exact blocker instead of silently downgrading to source-only review. The owning skills still define design, research, source review, assets, tests, audits, and handoffs. Large MCP artifacts are returned as linked resources instead of placed in the prompt.
+
+The Technology Tree Viewer is a required part of that health gate: `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_compare` must all be present. A package that initializes but omits any of those routes is incomplete, not Ready.
 
 See `docs/systems/hoi4_agent_tools_mcp_integration.md` for the capability matrix, artifact and source-authority rules, probability scenario contract, rewrite and recovery lifecycle, and local or HTTP troubleshooting guidance.
 
