@@ -1,29 +1,50 @@
 # Agentic HOI4 Modding
 
-A starter kit for using coding agents on Hearts of Iron IV mods.
+[![Discord](https://img.shields.io/badge/Discord-Join%20Community-7289da?logo=discord&logoColor=white)](https://discord.gg/rAXesGcT2t)
 
-This repo gives you a reusable `AGENTS_template.md` to copy as `AGENTS.md`,
-offline wiki references, repo skills, and optional Codex subagent configs that
-can be adapted into your own mod repo.
+A reusable source package for preparing Hearts of Iron IV mod repositories for
+agentic development. Its project instructions, references, skills, tools,
+optional workflows, and helper-agent profiles can be adapted to a new or
+existing mod.
 
 Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3
 
 ## What this repo provides
 
-- `AGENTS_chaos_redux.md`, a literal copy of the current Chaos Redux `AGENTS.md`, retained as the full real-project reference rather than adapted as a generic template.
-- `AGENTS_template.md`, a template `AGENTS.md` file that can be adapted to your own mod. Just replace the placeholders.
-- Offline Paradox wiki references for syntax and engine behavior.
-- Example repo skills for repeated HOI4 workflows.
-- Optional custom Codex subagent patterns for bounded research, asset work, audits, and documentation.
-- A model for separating main-agent implementation from helper-agent production and audits.
-- The mod-agnostic `hoi4-3d-model-pipeline` skill and `hoi4_3d_model_pipeline` subagent for Meshy 6-first, verified Meshy-to-Blender-to-io_pdx_mesh model production plus rights-checked Internet-sourced unit sound design and bespoke vanilla-green unit counters.
-- The read-only `hoi4_ai_probability_auditor` subagent for MCP-backed scenario analysis and before/after comparison of AI weights, MTTH, event chances, random lists, strategy factors, and other declared weighted systems.
-- The Luna Max `hoi4_event_ui_worker` for implementing and visually refining only the scripted GUI that a named event specifically adds, with mandatory MCP GUI inspection, rendering, rewrite, and post-change comparison evidence.
-- The explicit-invocation-only `hoi4-debug-playtest` skill for bounded Windows desktop launch, fresh-log attribution, gameplay and UI checks, screenshot evidence, repair loops, and relaunch verification when the user expressly authorizes live testing.
-- The optional mod-agnostic `hoi4-super-events` package: a project-adapted GUI/GFX runtime, dynamic registration pattern, hidden smoke-test event, default DDS assets, editable Photoshop templates, research guidance, and complete presentation workflow.
-- A dedicated portrait worker that finds grounded sources, generates fictional portraits, processes and wires final assets, and supports selectable Comfy Cloud, Local ComfyUI, and RunPod styling routes.
+- Adaptable project instructions, together with a full real-project example.
+- An offline Paradox wiki snapshot and supporting technical documentation.
+- Reusable skills, tools, examples, and optional workflow packages for common
+  and specialized HOI4 modding work.
+- A growing collection of bounded helper-agent profiles for research,
+  production, implementation support, review, validation, and documentation.
+  The authoritative set is the `.codex/agents/` directory rather than a list in
+  this README.
+- A source manifest used by the setup application to select, verify, and adapt
+  these components for a specific mod.
+
+## Complete package download
+
+[Download the complete Agentic HOI4 Modding package](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/Agentic-HOI4-Modding.zip).
+The ZIP is a clean snapshot of the version-controlled source package without
+Git history or machine-local files.
 
 ## Recommended setup
+
+The recommended way to use this repository is
+[HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup). The desktop
+wizard can create a new mod or prepare an existing one, discover and adapt the
+project identity, install the selected instructions, skills, helper agents,
+tools, and offline references, configure optional workflows, preview every
+change before applying it, and later update or repair the managed setup. This
+keeps project-specific names and paths consistent and avoids manually copying
+an evolving set of files.
+
+[Download the latest HOI4 Mod Setup release](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest),
+then choose whether to create a new mod or import an existing one. The manual
+steps below remain useful when you deliberately do not want to use the setup
+application.
+
+## Manual setup
 
 ### 1. Put the mod in git
 
@@ -106,7 +127,12 @@ The point is to stop the agent from rediscovering the same process every time. I
 
 ### 6. Add optional Codex subagents
 
-Custom Codex subagents are useful when a task can be split into bounded helper work.
+Custom Codex subagents are useful when a task can be split into bounded helper
+work. This repository includes profiles across several broad kinds of work,
+including discovery, research, planning, implementation support, visual and
+audio production, audits, validation, and documentation. The collection evolves
+with the workflows, so inspect `.codex/agents/` for the current set instead of
+relying on a static list here.
 
 Put subagent TOML files under:
 
@@ -114,28 +140,7 @@ Put subagent TOML files under:
 .codex/agents/
 ```
 
-Use subagents for work such as:
-
-- repo exploration before edits
-- archival image sourcing
-- generated event art
-- icon production
-- quote, remark, and audio research, including Super Events
-- focus tree audits
-- decision and mission audits
-- country package audits
-- localisation audits
-- AI-weight, MTTH, and probability audits
-- scripted system architecture
-- event completion audits
-- event-owned scripted GUI implementation and visual-layout passes
-- documentation updates
-
 The main agent should still own final implementation, final wiring, final review, final validation, and the completion report. Spawn every project custom subagent without inherited conversation context and pass every required path, constraint, correction, accepted decision, ownership boundary, and handoff destination explicitly in its prompt.
-
-The event UI worker is deliberately narrow. It follows the scripted-GUI layout rules in `hoi4-decisions-missions` and may work only on a dedicated window introduced and owned by the named event in its prompt. It must not perform a repository-wide GUI audit or modify event logs, event-detail frameworks, settings, super-event frameworks, shared registries, or unrelated existing interfaces. The worker uses HOI4 Agent Tools to inspect and render the exact UI before editing, applies an in-scope GUI rewrite, and repeats the relevant state, resolution, hierarchy, and click-region evidence afterward.
-
-The debug-playtest skill is also deliberately gated. Installing it does not authorize live testing: the user must name the skill or explicitly authorize autonomous desktop playtesting for the current task. Normal implementation and completion work leaves HOI4 launch, saves, and live validation to the user.
 
 ## Optional Super Events workflow
 
@@ -154,11 +159,16 @@ ID and matching image, title, description, quote, response, caller, unique right
 
 ## Portrait workflow
 
-Route every character portrait to `hoi4_portrait_creator`. It researches and archives grounded sources, creates and wires explicit source placeholders, and validates user-supplied styled results from the selected Comfy Cloud, Local ComfyUI, or RunPod route. The user runs the selected grounded-subject provider workflow; agents never operate RunPod. For fictional or impossible subjects the portrait worker invokes native ImageGen. It processes approved assets, creates DDS variants, installs portrait-specific wiring, and writes manifests and handoffs.
+The portrait workflow separates grounded-source research, fictional generation,
+provider-assisted styling, asset processing, wiring, provenance, and validation.
+It supports selectable Comfy Cloud, Local ComfyUI, and RunPod routes while
+keeping provider operation and approval boundaries explicit.
 
 ### 7. Keep asset ownership clear
 
-Non-portrait asset subagents should produce source files, processed PNG previews, DDS files, manifests, contact sheets when useful, and `gfx_handoff.md`. Every character portrait belongs to `hoi4_portrait_creator`, which has the narrow standing ownership needed for portrait-specific wiring and manifests.
+Asset helpers should produce source files, processed PNG previews, DDS files,
+manifests, contact sheets when useful, and a clear handoff. Portrait work follows
+the dedicated portrait workflow and its ownership rules.
 
 The main agent should own `.gfx` edits, event references, focus icon assignments, idea icon assignments, decision icon assignments, localisation references, GUI references, documentation alignment, and validation.
 
@@ -282,13 +292,18 @@ A good subagent has:
 
 Use subagents before completion claims, not after claiming the work is done. A subagent report is evidence, not final proof. The main agent must inspect it and fix the issues.
 
-Every weighted AI or probability change requires the same named-scenario cycle: a read-only baseline through `hoi4_ai_probability_auditor`, an owner-applied patch, and a mandatory `hoi4.probability_compare` pass. The auditor never patches source or chooses the balance target.
+Specialized helper profiles may impose additional evidence and ownership gates.
+Follow the selected profile and owning skill rather than treating the generic
+rules here as a replacement for them.
 
 ## Completion proof
 
 A goal should not be marked complete unless the implementation is actually complete.
 
-For large events, mechanics, focus trees, country packages, UI work, balance passes, and asset goals, require a concrete completion report. It should list files changed, systems touched, meaningful scenarios or comparisons, assets created or reused, docs updated, audits performed, and blockers. A named event-owned scripted GUI is incomplete without the UI worker handoff and matching MCP before-and-after layout evidence.
+For large events, mechanics, focus trees, country packages, UI work, balance
+passes, and asset goals, require a concrete completion report. It should list
+files changed, systems touched, meaningful scenarios or comparisons, assets
+created or reused, docs updated, audits performed, and blockers.
 
 Every simplification should be reported. If no simplifications were made, the agent should say so and provide evidence.
 
