@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "dda5359c0c7813a48c058696608e0955aaf20645",
+  "generated_for_revision": "7059dafae853f46eeb8970dec40b161290c7c0dc",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -2922,8 +2922,8 @@
       "expected_files": [
         {
           "path": "docs/systems/hoi4_agent_tools_mcp_integration.md",
-          "sha256": "b6e22f5e19d8442cd6540facc70e8a1a1a4f358b11632d1d7aa5ed67dae1a972",
-          "size": 14176
+          "sha256": "b6d4db71064260fa07045cb45bd5a5f87d109698529819fbcbbff75d80de3619",
+          "size": 14137
         }
       ]
     },
@@ -2971,8 +2971,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "34d341b56e870991ff82d22f9f79ebd167fea07cd2dae62f22c4d43e3bf74f56",
-          "size": 18820
+          "sha256": "daf11be573dafb8863ea40746f2113f7af2cbd888f4954fe980b5c5c90498bd7",
+          "size": 18785
         }
       ]
     },
@@ -6511,18 +6511,13 @@
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "081d251aab979fbc052e6ba329c9c7457533855e7376aa1bb8d1e5db6ede4e45",
-          "size": 40643
+          "sha256": "970c9b38e0e8fa08dbbc69365927dc3a3f534b33b33685a1ee9fa56b2277736e",
+          "size": 44057
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
           "sha256": "e52344c83fabedd2d053a6b8f9624b8bc025d426ec3efea22ba50d3a864a99a0",
           "size": 7902
-        },
-        {
-          "path": ".tools/3d_pipeline/config/dependencies.lock.json",
-          "sha256": "d5673cac65cbeee2b4cce1538bed3d9eacc6d9e2e308069565713bcffbd2240c",
-          "size": 657
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_tool_contract.json",
