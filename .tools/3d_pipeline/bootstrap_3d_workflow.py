@@ -11,17 +11,36 @@ import re
 import shutil
 import site
 import socket
+import stat
 import subprocess
 import sys
 import time
+import urllib.parse
 import urllib.request
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 
 MESHY_PACKAGE = "@meshy-ai/meshy-mcp-server"
 BLENDER_MCP_REPOSITORY = "https://projects.blender.org/lab/blender_mcp.git"
 IO_PDX_LATEST_API = "https://api.github.com/repos/ross-g/io_pdx_mesh/releases/latest"
+MESHY_BALANCE_API = "https://api.meshy.ai/openapi/v1/balance"
+MAX_JSON_RESPONSE_BYTES = 1024 * 1024
+MAX_MESHY_RESPONSE_BYTES = 16 * 1024
+MAX_DOWNLOAD_BYTES = 256 * 1024 * 1024
+MAX_ARCHIVE_FILES = 4096
+MAX_ARCHIVE_ENTRY_BYTES = 64 * 1024 * 1024
+MAX_ARCHIVE_EXPANDED_BYTES = 512 * 1024 * 1024
+MAX_ARCHIVE_COMPRESSION_RATIO = 200
+GITHUB_API_HOSTS = frozenset({"api.github.com"})
+GITHUB_DOWNLOAD_HOSTS = frozenset(
+    {
+        "github.com",
+        "objects.githubusercontent.com",
+        "release-assets.githubusercontent.com",
+    }
+)
+MESHY_API_HOSTS = frozenset({"api.meshy.ai"})
 
 
 class SetupError(RuntimeError):
@@ -47,33 +66,146 @@ def run(command: list[str], *, cwd: Path | None = None) -> str:
     return completed.stdout
 
 
-def fetch_json(url: str) -> dict:
+def _validate_https_url(url: str, allowed_hosts: frozenset[str]) -> None:
+    parsed = urllib.parse.urlsplit(url)
+    try:
+        port = parsed.port
+    except ValueError as exc:
+        raise SetupError("Refusing an unapproved dependency URL or redirect target.") from exc
+    if (
+        parsed.scheme.lower() != "https"
+        or not parsed.hostname
+        or parsed.hostname.lower() not in allowed_hosts
+        or parsed.username is not None
+        or parsed.password is not None
+        or port not in (None, 443)
+    ):
+        raise SetupError("Refusing an unapproved dependency URL or redirect target.")
+
+
+class _BoundedRedirectHandler(urllib.request.HTTPRedirectHandler):
+    max_redirections = 5
+
+    def __init__(self, allowed_hosts: frozenset[str]) -> None:
+        super().__init__()
+        self.allowed_hosts = allowed_hosts
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[no-untyped-def]
+        _validate_https_url(newurl, self.allowed_hosts)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def _read_bounded_response(response, max_bytes: int) -> bytes:  # type: ignore[no-untyped-def]
+    declared = response.headers.get("Content-Length")
+    if declared:
+        try:
+            if int(declared) > max_bytes:
+                raise SetupError("The dependency response exceeds its reviewed byte limit.")
+        except ValueError as exc:
+            raise SetupError("The dependency response has an invalid Content-Length.") from exc
+    data = bytearray()
+    while True:
+        chunk = response.read(min(1024 * 1024, max_bytes + 1 - len(data)))
+        if not chunk:
+            return bytes(data)
+        data.extend(chunk)
+        if len(data) > max_bytes:
+            raise SetupError("The dependency response exceeds its reviewed byte limit.")
+
+
+def _fetch_bytes(
+    url: str,
+    *,
+    allowed_hosts: frozenset[str],
+    max_bytes: int,
+    timeout: int,
+    headers: dict[str, str] | None = None,
+) -> bytes:
+    _validate_https_url(url, allowed_hosts)
     request = urllib.request.Request(
         url,
-        headers={
-            "Accept": "application/json",
-            "User-Agent": "hoi4-3d-model-pipeline",
-        },
+        headers={"User-Agent": "hoi4-3d-model-pipeline", **(headers or {})},
     )
+    opener = urllib.request.build_opener(_BoundedRedirectHandler(allowed_hosts))
     try:
-        with urllib.request.urlopen(request, timeout=120) as response:
-            return json.loads(response.read().decode("utf-8"))
+        with opener.open(request, timeout=timeout) as response:
+            _validate_https_url(response.geturl(), allowed_hosts)
+            return _read_bounded_response(response, max_bytes)
+    except SetupError:
+        raise
     except Exception as exc:  # pragma: no cover - provider/network-specific
-        raise SetupError(f"Unable to resolve the latest dependency from {url}: {exc}") from exc
+        raise SetupError("The reviewed dependency endpoint could not be reached safely.") from exc
+
+
+def fetch_json(
+    url: str,
+    *,
+    allowed_hosts: frozenset[str] = GITHUB_API_HOSTS,
+    max_bytes: int = MAX_JSON_RESPONSE_BYTES,
+    headers: dict[str, str] | None = None,
+) -> dict:
+    try:
+        value = json.loads(
+            _fetch_bytes(
+                url,
+                allowed_hosts=allowed_hosts,
+                max_bytes=max_bytes,
+                timeout=120,
+                headers={"Accept": "application/json", **(headers or {})},
+            ).decode("utf-8")
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SetupError("The reviewed endpoint returned malformed JSON.") from exc
+    if not isinstance(value, dict):
+        raise SetupError("The reviewed endpoint returned an unexpected JSON value.")
+    return value
 
 
 def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "hoi4-3d-model-pipeline"})
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_name(f".{destination.name}.{os.getpid()}.tmp")
+    if temporary.exists():
+        temporary.unlink()
     try:
-        with urllib.request.urlopen(request, timeout=300) as response:
-            destination.write_bytes(response.read())
-    except Exception as exc:  # pragma: no cover - provider/network-specific
-        raise SetupError(f"Unable to download the latest dependency from {url}: {exc}") from exc
+        _validate_https_url(url, GITHUB_DOWNLOAD_HOSTS)
+        request = urllib.request.Request(url, headers={"User-Agent": "hoi4-3d-model-pipeline"})
+        opener = urllib.request.build_opener(_BoundedRedirectHandler(GITHUB_DOWNLOAD_HOSTS))
+        with opener.open(request, timeout=300) as response, temporary.open("xb") as stream:
+            _validate_https_url(response.geturl(), GITHUB_DOWNLOAD_HOSTS)
+            declared = response.headers.get("Content-Length")
+            if declared:
+                try:
+                    if int(declared) > MAX_DOWNLOAD_BYTES:
+                        raise SetupError("The dependency download exceeds its reviewed byte limit.")
+                except ValueError as exc:
+                    raise SetupError("The dependency download has an invalid Content-Length.") from exc
+            total = 0
+            while True:
+                chunk = response.read(1024 * 1024)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > MAX_DOWNLOAD_BYTES:
+                    raise SetupError("The dependency download exceeds its reviewed byte limit.")
+                stream.write(chunk)
+            stream.flush()
+            os.fsync(stream.fileno())
+        temporary.replace(destination)
+    except SetupError:
+        temporary.unlink(missing_ok=True)
+        raise
+    except Exception:
+        temporary.unlink(missing_ok=True)
+        raise SetupError("The reviewed dependency could not be downloaded safely.")
 
 
-def require_meshy_key() -> None:
-    if os.environ.get("MESHY_API_KEY", "").strip():
-        return
+def require_meshy_key() -> str:
+    # Remove the credential from the inherited environment immediately. Only
+    # the bounded Meshy balance request below receives it; winget, pip, npm,
+    # Git, uv, Blender, and downloaded setup code never inherit the secret.
+    key = os.environ.pop("MESHY_API_KEY", "").strip()
+    if key:
+        return key
     print("MESHY_API_KEY is missing. Stop before any 3D setup begins.")
     print("Run this PowerShell command:")
     print(
@@ -85,6 +217,18 @@ def require_meshy_key() -> None:
     )
     print("Then restart the shell or Codex.")
     raise SetupError("MESHY_API_KEY is missing")
+
+
+def verify_meshy_key(key: str) -> None:
+    payload = fetch_json(
+        MESHY_BALANCE_API,
+        allowed_hosts=MESHY_API_HOSTS,
+        max_bytes=MAX_MESHY_RESPONSE_BYTES,
+        headers={"Authorization": f"Bearer {key}"},
+    )
+    balance = payload.get("balance")
+    if isinstance(balance, bool) or not isinstance(balance, (int, float)):
+        raise SetupError("Meshy authentication did not return a valid account balance.")
 
 
 def repository_root() -> Path:
@@ -199,7 +343,10 @@ def ensure_npx() -> Path:
                     winget,
                     "install",
                     "OpenJS.NodeJS.LTS",
+                    "--scope",
+                    "user",
                     "--silent",
+                    "--disable-interactivity",
                     "--accept-source-agreements",
                     "--accept-package-agreements",
                 ]
@@ -338,14 +485,74 @@ def ensure_blender_mcp(pipeline_root: Path, resolution: dict) -> Path:
 
 
 def safe_extract(archive: zipfile.ZipFile, destination: Path) -> None:
+    members = archive.infolist()
+    if len(members) > MAX_ARCHIVE_FILES:
+        raise SetupError("The io_pdx_mesh archive contains too many entries.")
+    if destination.exists() and any(destination.iterdir()):
+        raise SetupError("The io_pdx_mesh extraction destination is not empty.")
+    destination.mkdir(parents=True, exist_ok=True)
     root = destination.resolve()
-    for member in archive.infolist():
-        target = (destination / member.filename).resolve()
-        try:
-            target.relative_to(root)
-        except ValueError as exc:
-            raise SetupError(f"Refusing an io_pdx_mesh archive path outside its destination: {member.filename}") from exc
-    archive.extractall(destination)
+    seen: set[str] = set()
+    expanded = 0
+    try:
+        for member in members:
+            name = member.filename
+            relative = PurePosixPath(name)
+            if (
+                not name
+                or "\\" in name
+                or relative.is_absolute()
+                or any(part in ("", ".", "..") for part in relative.parts)
+            ):
+                raise SetupError("The io_pdx_mesh archive contains an unsafe path.")
+            collision_key = relative.as_posix().casefold()
+            if collision_key in seen:
+                raise SetupError("The io_pdx_mesh archive contains duplicate or case-colliding paths.")
+            seen.add(collision_key)
+            mode = (member.external_attr >> 16) & 0o170000
+            if mode == stat.S_IFLNK:
+                raise SetupError("The io_pdx_mesh archive contains a symbolic link.")
+            if mode not in (0, stat.S_IFREG, stat.S_IFDIR):
+                raise SetupError("The io_pdx_mesh archive contains a special file.")
+            if member.flag_bits & 0x1:
+                raise SetupError("The io_pdx_mesh archive contains an encrypted entry.")
+            if member.file_size > MAX_ARCHIVE_ENTRY_BYTES:
+                raise SetupError("The io_pdx_mesh archive contains an oversized entry.")
+            expanded += member.file_size
+            if expanded > MAX_ARCHIVE_EXPANDED_BYTES:
+                raise SetupError("The io_pdx_mesh archive expands beyond its reviewed byte limit.")
+            if (
+                member.file_size > 1024 * 1024
+                and (
+                    member.compress_size == 0
+                    or member.file_size / member.compress_size > MAX_ARCHIVE_COMPRESSION_RATIO
+                )
+            ):
+                raise SetupError("The io_pdx_mesh archive has an unsafe compression ratio.")
+            target = (destination / Path(*relative.parts)).resolve()
+            try:
+                target.relative_to(root)
+            except ValueError as exc:
+                raise SetupError("The io_pdx_mesh archive escaped its destination.") from exc
+            if member.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+                continue
+            target.parent.mkdir(parents=True, exist_ok=True)
+            written = 0
+            with archive.open(member, "r") as source, target.open("xb") as output:
+                while True:
+                    chunk = source.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    written += len(chunk)
+                    if written > member.file_size or written > MAX_ARCHIVE_ENTRY_BYTES:
+                        raise SetupError("The io_pdx_mesh archive entry exceeded its declared size.")
+                    output.write(chunk)
+            if written != member.file_size:
+                raise SetupError("The io_pdx_mesh archive entry size did not match its evidence.")
+    except Exception:
+        shutil.rmtree(destination, ignore_errors=True)
+        raise
 
 
 def manifest_version(install_root: Path) -> str | None:
@@ -704,7 +911,7 @@ def materialize_hoi4_adapter(
 
 
 def resolve_io_pdx_mesh() -> dict:
-    release = fetch_json(IO_PDX_LATEST_API)
+    release = fetch_json(IO_PDX_LATEST_API, allowed_hosts=GITHUB_API_HOSTS)
     tag = str(release.get("tag_name", "")).strip()
     assets = release.get("assets", [])
     asset = next(
@@ -718,10 +925,18 @@ def resolve_io_pdx_mesh() -> dict:
     )
     if not tag or not asset or not asset.get("browser_download_url"):
         raise SetupError("The latest io_pdx_mesh release has no usable Blender archive asset.")
+    asset_name = str(asset["name"]).strip()
+    download_url = str(asset["browser_download_url"]).strip()
+    if (
+        not re.fullmatch(r"blender-io_pdx_mesh[A-Za-z0-9._-]*\.zip", asset_name, re.IGNORECASE)
+        or not download_url
+    ):
+        raise SetupError("The latest io_pdx_mesh archive evidence is malformed.")
+    _validate_https_url(download_url, GITHUB_DOWNLOAD_HOSTS)
     return {
         "release": tag,
-        "download_url": asset["browser_download_url"],
-        "asset_name": asset["name"],
+        "download_url": download_url,
+        "asset_name": asset_name,
         "published_at": release.get("published_at"),
         "resolution": "GitHub latest release",
     }
@@ -996,7 +1211,9 @@ def main() -> int:
             help="Validate the transaction-reviewed MCP routes instead of rewriting Codex config.",
         )
         args = parser.parse_args()
-        require_meshy_key()
+        meshy_key = require_meshy_key()
+        verify_meshy_key(meshy_key)
+        del meshy_key
         root = (args.project_root or repository_root()).resolve()
         pipeline_root = root / ".tools/3d_pipeline"
         if not (pipeline_root / "bootstrap_3d_workflow.py").is_file():

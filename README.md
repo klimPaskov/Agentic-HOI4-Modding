@@ -238,7 +238,7 @@ The reusable 3D workflow lives in .agents/skills/hoi4-3d-model-pipeline/SKILL.md
 
 This workflow is optional at the project level. Mods that do not add new 3D models, entities, unit actions, or skeletal animations do not install or enable the 3D routes. Once a feature requires the workflow, its declared Meshy and Blender MCP routes and evidence gates are mandatory.
 
-The workflow stops before any path discovery, brief read, reference generation, balance check, or provider call unless the process environment already exposes a nonblank MESHY_API_KEY.
+The workflow stops before dependency setup unless the process environment exposes a nonblank MESHY_API_KEY and Meshy's bounded authenticated balance endpoint accepts it. The bootstrap removes the key from its inherited environment before starting winget, pip, npm, Git, uv, Blender, or downloaded setup code.
 
 If the key is missing, the agent must show this PowerShell command and then require a shell or Codex restart:
 
@@ -248,7 +248,7 @@ If the key is missing, the agent must show this PowerShell command and then requ
         "User"
     )
 
-When a feature needs 3D work, the agent runs `.tools/3d_pipeline/bootstrap_3d_workflow.py` after the key gate. The bootstrap resolves and records the latest supported Meshy, Blender Lab, Blender build, repository-owned allowlisted HOI4 adapter, and io_pdx_mesh dependencies, verifies the Blender bridge separately from the process, writes the concrete production and development MCP entries into `.codex/config.toml`, and records versions and checksums in the generated lock.
+When a feature needs 3D work, the agent runs `.tools/3d_pipeline/bootstrap_3d_workflow.py` after the credential gate. The bootstrap verifies the Meshy key before creating workflow state, installs Node.js LTS and uv only in the current-user scope when missing, resolves and records the latest supported Meshy, Blender Lab, Blender build, repository-owned allowlisted HOI4 adapter, and io_pdx_mesh dependencies, bounds approved HTTPS downloads and archive extraction, verifies the Blender bridge separately from the process, writes the concrete production and development MCP entries into `.codex/config.toml`, and records versions and checksums in the generated lock.
 
 Unattended production uses the narrow repository-owned HOI4 Blender adapter. The unrestricted Blender Lab route remains disabled and development-only. The production adapter confines file access to the declared job and reference roots and exposes only the bounded health, candidate preparation, inspection, texture processing, mesh and animation export, locomotion authoring, reimport, and checkpoint operations required by the workflow.
 
