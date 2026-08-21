@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "8fb298bbfbef4665bf828f5ad4ad72fccb4e93ff",
+  "generated_for_revision": "61ccdfb0292f025136b4119de65976379f4bdec2",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -6564,8 +6564,8 @@
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "ca13873c0b59475117424ee5efb1eaff1b7da35f7872a2302a96d5449187ee69",
-          "size": 53319
+          "sha256": "4aca6ac5a8cd1592b8ef1583719197e7405eb059b9f2392b84fe264944f95cfd",
+          "size": 53534
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
