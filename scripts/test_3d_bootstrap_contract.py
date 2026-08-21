@@ -15,33 +15,38 @@ SPEC = importlib.util.spec_from_file_location("three_d_bootstrap", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 BOOTSTRAP = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BOOTSTRAP)
-LAUNCHER_SCRIPT = Path(__file__).parents[1] / ".tools/3d_pipeline/run_verified_meshy.py"
-LAUNCHER_SPEC = importlib.util.spec_from_file_location("verified_meshy", LAUNCHER_SCRIPT)
-assert LAUNCHER_SPEC is not None and LAUNCHER_SPEC.loader is not None
-LAUNCHER = importlib.util.module_from_spec(LAUNCHER_SPEC)
-LAUNCHER_SPEC.loader.exec_module(LAUNCHER)
 
 
 class ReviewedConfigTests(unittest.TestCase):
     def test_materialized_routes_pass_reviewed_config_verification(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            config = BOOTSTRAP.materialize_config(root)
+            root = Path(temporary) / "project"
+            root.mkdir()
+            launcher = Path(temporary) / "installed/trusted-setup.exe"
+            launcher.parent.mkdir()
+            launcher.write_bytes(b"app")
+            config = BOOTSTRAP.materialize_config(root, launcher)
 
             self.assertEqual(BOOTSTRAP.verify_reviewed_config(root), config)
 
     def test_changed_reviewed_route_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            config = BOOTSTRAP.materialize_config(root)
+            root = Path(temporary) / "project"
+            root.mkdir()
+            launcher = Path(temporary) / "installed/trusted-setup.exe"
+            launcher.parent.mkdir()
+            launcher.write_bytes(b"app")
+            config = BOOTSTRAP.materialize_config(root, launcher)
             config.write_text(
                 config.read_text(encoding="utf-8").replace(
-                    'command = "cmd.exe"', 'command = "unreviewed.exe"', 1
+                    f"command = {BOOTSTRAP.json.dumps(str(launcher.resolve()))}",
+                    'command = "unreviewed.exe"',
+                    1,
                 ),
                 encoding="utf-8",
             )
 
-            with self.assertRaisesRegex(BOOTSTRAP.SetupError, "unexpected"):
+            with self.assertRaisesRegex(BOOTSTRAP.SetupError, "app-owned"):
                 BOOTSTRAP.verify_reviewed_config(root)
 
     def test_only_meshy_route_receives_the_meshy_credential(self) -> None:
@@ -145,34 +150,19 @@ class DependencyBoundaryTests(unittest.TestCase):
                 ), self.assertRaisesRegex(BOOTSTRAP.SetupError, "ambiguous"):
                 BOOTSTRAP.ensure_meshy_runtime(pipeline, Path("C:/node/npx.cmd"))
 
-    def test_meshy_wrapper_uses_isolated_verified_launcher_not_mutable_records(self) -> None:
-        wrapper = (
-            Path(__file__).parents[1]
-            / ".tools/3d_pipeline/wrappers/run_meshy_mcp.cmd"
-        ).read_text(encoding="utf-8")
-        self.assertIn("python -I", wrapper)
-        self.assertNotIn("meshy_mcp_version.txt", wrapper)
-        self.assertNotIn("npx_executable.txt", wrapper)
-        self.assertNotIn("npx", wrapper.lower())
-
-    def test_tampered_meshy_runtime_tree_is_rejected_before_execution(self) -> None:
+    def test_meshy_route_uses_only_the_external_app_owned_launcher(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            source = root / "source"
-            destination = root / "private"
-            source.mkdir()
-            destination.mkdir()
-            runtime = source / "index.js"
-            runtime.write_bytes(b"reviewed")
-            digest = BOOTSTRAP.hashlib.sha256()
-            digest.update(b"index.js\0")
-            digest.update(b"8\0reviewed")
-            with mock.patch.object(LAUNCHER, "MESHY_TREE_SHA256", digest.hexdigest()), \
-                mock.patch.object(LAUNCHER, "MESHY_TREE_FILE_COUNT", 1):
-                LAUNCHER._copy_verified_tree(source, destination)
-                runtime.write_bytes(b"tampered")
-                with self.assertRaisesRegex(LAUNCHER.LaunchError, "reviewed lock"):
-                    LAUNCHER._copy_verified_tree(source, root / "second")
+            root = Path(temporary) / "project"
+            root.mkdir()
+            launcher = Path(temporary) / "installed/HOI4 Mod Setup.exe"
+            launcher.parent.mkdir()
+            launcher.write_bytes(b"app")
+            config = BOOTSTRAP.materialize_config(root, launcher).read_text(encoding="utf-8")
+        self.assertIn("--run-verified-meshy-mcp", config)
+        self.assertNotIn("run_meshy_mcp.cmd", config)
+        self.assertNotIn("run_verified_meshy.py", config)
+        self.assertNotIn('command = "python', config.lower())
+
 
     def test_tampered_cached_io_pdx_archive_is_deleted_before_extraction(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

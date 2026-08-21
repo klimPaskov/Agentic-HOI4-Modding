@@ -6565,7 +6565,7 @@
         }
       ],
       "conflicts": [
-        "existing 3D bootstrap or wrapper files"
+        "existing 3D bootstrap, runtime lock, or Blender wrapper files"
       ],
       "conflict_policy": "replace_if_unmodified",
       "validation": [

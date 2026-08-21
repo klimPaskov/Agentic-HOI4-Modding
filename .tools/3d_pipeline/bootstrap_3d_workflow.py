@@ -1081,8 +1081,7 @@ THREE_D_MCP_ROUTES = {
     "meshy": {
         "enabled": True,
         "required": True,
-        "command": "cmd.exe",
-        "args": ["/d", "/c", "call", ".tools/3d_pipeline/wrappers/run_meshy_mcp.cmd"],
+        "args": ["--run-verified-meshy-mcp"],
         "cwd": ".",
         "env_vars": ["MESHY_API_KEY"],
         "startup_timeout_sec": 120.0,
@@ -1145,6 +1144,15 @@ def verify_reviewed_config(root: Path) -> Path:
         actual = routes.get(route_id)
         if actual is None:
             raise SetupError(f"The reviewed Codex config is missing mcp_servers.{route_id}.")
+        if route_id == "meshy":
+            command = actual.get("command")
+            if (
+                not isinstance(command, str)
+                or not Path(command).is_absolute()
+                or not Path(command).is_file()
+                or root in Path(command).resolve().parents
+            ):
+                raise SetupError("The reviewed Meshy route is not app-owned.")
         for key, value in expected.items():
             if actual.get(key) != value:
                 raise SetupError(
@@ -1153,7 +1161,10 @@ def verify_reviewed_config(root: Path) -> Path:
     return config_path.resolve()
 
 
-def materialize_config(root: Path) -> Path:
+def materialize_config(root: Path, trusted_launcher: Path) -> Path:
+    trusted_launcher = trusted_launcher.resolve()
+    if not trusted_launcher.is_file() or root in trusted_launcher.parents:
+        raise SetupError("The Meshy credential route requires an external app-owned launcher.")
     config_path = root / ".codex/config.toml"
     existing = config_path.read_text(encoding="utf-8") if config_path.exists() else ""
     existing = existing.replace("<mod_root>", root.as_posix())
@@ -1167,8 +1178,8 @@ def materialize_config(root: Path) -> Path:
 [mcp_servers.meshy]
 enabled = true
 required = true
-command = "cmd.exe"
-args = ["/d", "/c", "call", ".tools/3d_pipeline/wrappers/run_meshy_mcp.cmd"]
+command = {json.dumps(str(trusted_launcher))}
+args = ["--run-verified-meshy-mcp"]
 cwd = "."
 env_vars = ["MESHY_API_KEY"]
 startup_timeout_sec = 120.0
@@ -1278,6 +1289,7 @@ def main() -> int:
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument("--quiet", action="store_true")
         parser.add_argument("--project-root", type=Path)
+        parser.add_argument("--trusted-launcher", type=Path)
         parser.add_argument(
             "--verify-reviewed-config",
             action="store_true",
@@ -1331,7 +1343,13 @@ def main() -> int:
         config_path = (
             verify_reviewed_config(root)
             if args.verify_reviewed_config
-            else materialize_config(root)
+            else materialize_config(
+                root,
+                args.trusted_launcher
+                or (_ for _ in ()).throw(
+                    SetupError("An app-owned --trusted-launcher is required.")
+                ),
+            )
         )
         resolved_at = utc_now()
 
