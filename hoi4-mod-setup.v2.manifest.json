@@ -17,7 +17,7 @@
       "display_name": "Project instructions",
       "description": "Adapt the repository AGENTS template into project-specific instructions.",
       "category": "core",
-      "optional": true,
+      "optional": false,
       "platforms": [
         "all"
       ],
@@ -2807,7 +2807,7 @@
       "display_name": "HOI4 Agent Tools automatic bootstrap",
       "description": "Install and verify the exact public HOI4 Agent Tools package through a bounded Windows bootstrap.",
       "category": "script",
-      "optional": false,
+      "optional": true,
       "platforms": [
         "windows"
       ],
