@@ -6474,7 +6474,7 @@
     {
       "id": "workflow.3d",
       "display_name": "3D models workflow",
-      "description": "Install the source-declared 3D workflow files and bootstrap records.",
+      "description": "Install the source-declared 3D workflow and its execution-locked Meshy runtime contract.",
       "category": "workflow",
       "optional": true,
       "platforms": [
@@ -6587,7 +6587,7 @@
               "--verify-reviewed-config",
               "--quiet"
             ],
-            "network_access": "Required to authenticate the Meshy credential with the bounded balance endpoint, install user-scoped Node.js LTS or uv when missing, and resolve and download the latest verified Meshy, Blender MCP, and io_pdx_mesh dependencies from approved HTTPS hosts.",
+            "network_access": "Required to authenticate the Meshy credential with the bounded balance endpoint, install user-scoped Node.js LTS or uv when missing, install the exact lockfile-resolved Meshy runtime, resolve Blender MCP to an exact commit, and download pinned io_pdx_mesh 0.91 from approved HTTPS hosts.",
             "expected_writes": [
               ".tools/3d_pipeline/adapter/.venv/**",
               ".tools/3d_pipeline/adapter/uv.lock",
@@ -6601,12 +6601,13 @@
               ".tools/3d_pipeline/config/*_version.txt",
               ".tools/3d_pipeline/runtime/**",
               ".tools/3d_pipeline/vendor/**",
+              "%LOCALAPPDATA%/HOI4 Mod Setup/runtimes/meshy-0.4.0/**",
               "the current user's Blender extensions directory",
               "the current user's winget-managed Node.js LTS installation when npx is missing",
               "the current user's Python package directory when uv is missing"
             ],
             "privilege": "current_user",
-            "rollback_boundary": "Managed project files roll back transactionally. Downloaded dependencies, the user-scoped Node.js LTS package, user-level uv, and Blender extensions are external tool state and are reported but not removed automatically."
+            "rollback_boundary": "Managed project files roll back transactionally. The execution-locked Meshy runtime, downloaded dependencies, user-scoped Node.js LTS, user-level uv, and Blender extensions are external tool state and are reported but not removed automatically."
           }
         }
       ],
