@@ -39,6 +39,11 @@ class ReviewedConfigTests(unittest.TestCase):
             with self.assertRaisesRegex(BOOTSTRAP.SetupError, "unexpected"):
                 BOOTSTRAP.verify_reviewed_config(root)
 
+    def test_only_meshy_route_receives_the_meshy_credential(self) -> None:
+        self.assertEqual(BOOTSTRAP.THREE_D_MCP_ROUTES["meshy"]["env_vars"], ["MESHY_API_KEY"])
+        self.assertEqual(BOOTSTRAP.THREE_D_MCP_ROUTES["blender_hoi4"]["env_vars"], [])
+        self.assertEqual(BOOTSTRAP.THREE_D_MCP_ROUTES["blender_lab"]["env_vars"], [])
+
 
 class CredentialBoundaryTests(unittest.TestCase):
     def test_meshy_key_is_removed_before_dependency_children_can_inherit_it(self) -> None:
@@ -69,6 +74,26 @@ class CredentialBoundaryTests(unittest.TestCase):
 
 
 class DependencyBoundaryTests(unittest.TestCase):
+    def test_meshy_package_is_pinned_to_exact_registry_integrity(self) -> None:
+        with mock.patch.object(BOOTSTRAP, "npm_for_npx", return_value=Path("C:/node/npm.cmd")), \
+            mock.patch.object(BOOTSTRAP, "run", return_value=f'"{BOOTSTRAP.MESHY_INTEGRITY}"'):
+            resolution = BOOTSTRAP.resolve_meshy(Path("C:/node/npx.cmd"))
+        self.assertEqual(resolution["version"], BOOTSTRAP.MESHY_VERSION)
+        self.assertEqual(resolution["integrity"], BOOTSTRAP.MESHY_INTEGRITY)
+
+    def test_tampered_cached_io_pdx_archive_is_deleted_before_extraction(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            resolution = BOOTSTRAP.resolve_io_pdx_mesh()
+            cache = root / "vendor/io_pdx_mesh" / f"{resolution['release']}-{resolution['asset_name']}"
+            cache.parent.mkdir(parents=True)
+            cache.write_bytes(b"tampered")
+            with mock.patch.object(BOOTSTRAP, "run", return_value="Blender 4.3.0"), \
+                mock.patch.dict(os.environ, {"APPDATA": str(root / "appdata")}, clear=False), \
+                self.assertRaisesRegex(BOOTSTRAP.SetupError, "SHA-256"):
+                BOOTSTRAP.ensure_io_pdx_mesh(root, Path("C:/Blender/blender.exe"), resolution)
+            self.assertFalse(cache.exists())
+
     def test_node_install_is_current_user_scoped(self) -> None:
         installed = False
 

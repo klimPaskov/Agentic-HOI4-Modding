@@ -17,6 +17,8 @@ PACKAGE_NAME = "hoi4-agent-tools"
 PACKAGE_VERSION = "2.5.2"
 PACKAGE_SPEC = f"{PACKAGE_NAME}@{PACKAGE_VERSION}"
 PACKAGE_INTEGRITY = "sha512-/2CmEDqkEbRsA9CcgnV0KKF8pHWOaATsAlIZexo/2D9BMbIYfYHdimAa5ZMSQiXahCGvCBA1Pq2a9ANZnp8Waw=="
+PACKAGE_TREE_SHA256 = "9da372df1c7870728f80e850c1c7fd6b5470285f27e1ef8e0841fcde60e0a208"
+PACKAGE_FILE_COUNT = 181
 RUNTIME_ENTRY = "dist/bin/stdio.js"
 RUNTIME_ENTRY_SHA256 = "7ddc78a8c518957dea6e737663c2be5e8852795d6662fc607166f15f4fb719a8"
 RUNTIME_ENTRY_SIZE = 1916
@@ -173,6 +175,28 @@ def read_json(path: Path, maximum: int) -> dict:
     return value
 
 
+def package_tree_sha256(package_root: Path) -> tuple[str, int]:
+    files: list[tuple[str, bytes]] = []
+    for path in package_root.rglob("*"):
+        if path.is_symlink():
+            raise BootstrapError("The installed MCP package contains a link.")
+        if not path.is_file():
+            continue
+        relative = path.relative_to(package_root).as_posix()
+        data = path.read_bytes()
+        if len(data) > 16 * 1024 * 1024:
+            raise BootstrapError("The installed MCP package contains an oversized file.")
+        files.append((relative, data))
+    digest = hashlib.sha256()
+    for relative, data in sorted(files):
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(str(len(data)).encode("ascii"))
+        digest.update(b"\0")
+        digest.update(data)
+    return digest.hexdigest(), len(files)
+
+
 def verify_installation(prefix: Path) -> Path:
     modules = prefix / "node_modules"
     package_root = modules / PACKAGE_NAME
@@ -184,6 +208,9 @@ def verify_installation(prefix: Path) -> Path:
     installed = packages.get(f"node_modules/{PACKAGE_NAME}") if isinstance(packages, dict) else None
     if not isinstance(installed, dict) or installed.get("integrity") != PACKAGE_INTEGRITY:
         raise BootstrapError("The installed MCP package does not retain the reviewed integrity.")
+    tree_digest, file_count = package_tree_sha256(package_root)
+    if tree_digest != PACKAGE_TREE_SHA256 or file_count != PACKAGE_FILE_COUNT:
+        raise BootstrapError("The installed MCP package tree does not match the reviewed release.")
     entry = package_root / RUNTIME_ENTRY
     if not entry.is_file() or entry.stat().st_size != RUNTIME_ENTRY_SIZE:
         raise BootstrapError("The installed MCP runtime entry has the wrong size.")

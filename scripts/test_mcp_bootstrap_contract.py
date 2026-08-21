@@ -20,6 +20,8 @@ class McpBootstrapContractTests(unittest.TestCase):
     def test_public_release_identity_is_exact(self) -> None:
         self.assertEqual(bootstrap.PACKAGE_SPEC, "hoi4-agent-tools@2.5.2")
         self.assertTrue(bootstrap.PACKAGE_INTEGRITY.startswith("sha512-"))
+        self.assertEqual(len(bootstrap.PACKAGE_TREE_SHA256), 64)
+        self.assertEqual(bootstrap.PACKAGE_FILE_COUNT, 181)
         self.assertEqual(bootstrap.RUNTIME_ENTRY, "dist/bin/stdio.js")
         self.assertEqual(len(bootstrap.RUNTIME_ENTRY_SHA256), 64)
         self.assertGreater(bootstrap.RUNTIME_ENTRY_SIZE, 0)
@@ -63,13 +65,25 @@ class McpBootstrapContractTests(unittest.TestCase):
                 encoding="utf-8",
             )
             (prefix / "hoi4-agent-tools.cmd").write_text("@echo off\n", encoding="utf-8")
-            with mock.patch.object(bootstrap, "RUNTIME_ENTRY_SIZE", len(b"verified-entry")), mock.patch.object(
-                bootstrap,
-                "RUNTIME_ENTRY_SHA256",
-                __import__("hashlib").sha256(b"verified-entry").hexdigest(),
-            ):
+            tree_digest, file_count = bootstrap.package_tree_sha256(package)
+            with mock.patch.object(bootstrap, "RUNTIME_ENTRY_SIZE", len(b"verified-entry")), \
+                mock.patch.object(bootstrap, "RUNTIME_ENTRY_SHA256", __import__("hashlib").sha256(b"verified-entry").hexdigest()), \
+                mock.patch.object(bootstrap, "PACKAGE_TREE_SHA256", tree_digest), \
+                mock.patch.object(bootstrap, "PACKAGE_FILE_COUNT", file_count):
                 wrapper = bootstrap.verify_installation(prefix)
             self.assertEqual(wrapper, prefix / "hoi4-agent-tools.cmd")
+
+    def test_imported_module_mutation_changes_package_tree_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "dist/bin").mkdir(parents=True)
+            (root / "dist/bin/stdio.js").write_text("import '../core.js'\n", encoding="utf-8")
+            sibling = root / "dist/core.js"
+            sibling.write_text("export const value = 1\n", encoding="utf-8")
+            before = bootstrap.package_tree_sha256(root)
+            sibling.write_text("export const value = 2\n", encoding="utf-8")
+            after = bootstrap.package_tree_sha256(root)
+            self.assertNotEqual(before, after)
 
 
 if __name__ == "__main__":

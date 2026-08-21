@@ -2978,7 +2978,9 @@
             "network_access": "None. This read-only health action runs the already installed exact package.",
             "expected_writes": [],
             "privilege": "current_user",
-            "rollback_boundary": "The health action performs no writes and starts no tool call."
+            "rollback_boundary": "The health action performs no writes and starts no tool call.",
+            "package_tree_sha256": "9da372df1c7870728f80e850c1c7fd6b5470285f27e1ef8e0841fcde60e0a208",
+            "package_file_count": 181
           }
         }
       ],

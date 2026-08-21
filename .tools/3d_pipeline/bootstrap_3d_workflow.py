@@ -22,8 +22,14 @@ from pathlib import Path, PurePosixPath
 
 
 MESHY_PACKAGE = "@meshy-ai/meshy-mcp-server"
+MESHY_VERSION = "0.4.0"
+MESHY_INTEGRITY = "sha512-py2xFIrrBcU4SW7ked90/qjRqa6bheVn0fNLEW8Lnki3BCJTFaVvWN0W6a9mJYr26+M9y0WezGsTCKalzWrGtg=="
 BLENDER_MCP_REPOSITORY = "https://projects.blender.org/lab/blender_mcp.git"
-IO_PDX_LATEST_API = "https://api.github.com/repos/ross-g/io_pdx_mesh/releases/latest"
+IO_PDX_RELEASE = "0.91"
+IO_PDX_ASSET_NAME = "blender-io_pdx_mesh.zip"
+IO_PDX_DOWNLOAD_URL = "https://github.com/ross-g/io_pdx_mesh/releases/download/0.91/blender-io_pdx_mesh.zip"
+IO_PDX_SHA256 = "a683df08318cb700014c7fe9a3d15139e5fb2313c7e98715204263e48931f7c2"
+IO_PDX_SIZE = 235195
 MESHY_BALANCE_API = "https://api.meshy.ai/openapi/v1/balance"
 MAX_JSON_RESPONSE_BYTES = 1024 * 1024
 MAX_MESHY_RESPONSE_BYTES = 16 * 1024
@@ -390,14 +396,19 @@ def npm_for_npx(npx: Path) -> Path:
 
 def resolve_meshy(npx: Path) -> dict:
     npm = npm_for_npx(npx)
-    output = run([str(npm), "view", MESHY_PACKAGE, "version", "--json"])
-    matches = re.findall(r"\d+\.\d+\.\d+", output)
-    if not matches:
-        raise SetupError(f"npm did not return a usable latest version for {MESHY_PACKAGE}: {output.strip()}")
+    package_spec = f"{MESHY_PACKAGE}@{MESHY_VERSION}"
+    output = run([str(npm), "view", package_spec, "dist.integrity", "--json"])
+    try:
+        integrity = json.loads(output)
+    except json.JSONDecodeError as exc:
+        raise SetupError("npm returned malformed Meshy integrity evidence.") from exc
+    if integrity != MESHY_INTEGRITY:
+        raise SetupError("The pinned Meshy package integrity does not match the reviewed release.")
     return {
         "package": MESHY_PACKAGE,
-        "version": matches[-1],
-        "resolution": "npm latest dist-tag",
+        "version": MESHY_VERSION,
+        "integrity": MESHY_INTEGRITY,
+        "resolution": "pinned npm version and integrity",
     }
 
 
@@ -911,34 +922,14 @@ def materialize_hoi4_adapter(
 
 
 def resolve_io_pdx_mesh() -> dict:
-    release = fetch_json(IO_PDX_LATEST_API, allowed_hosts=GITHUB_API_HOSTS)
-    tag = str(release.get("tag_name", "")).strip()
-    assets = release.get("assets", [])
-    asset = next(
-        (
-            item
-            for item in assets
-            if str(item.get("name", "")).lower().startswith("blender-io_pdx_mesh")
-            and str(item.get("name", "")).lower().endswith(".zip")
-        ),
-        None,
-    )
-    if not tag or not asset or not asset.get("browser_download_url"):
-        raise SetupError("The latest io_pdx_mesh release has no usable Blender archive asset.")
-    asset_name = str(asset["name"]).strip()
-    download_url = str(asset["browser_download_url"]).strip()
-    if (
-        not re.fullmatch(r"blender-io_pdx_mesh[A-Za-z0-9._-]*\.zip", asset_name, re.IGNORECASE)
-        or not download_url
-    ):
-        raise SetupError("The latest io_pdx_mesh archive evidence is malformed.")
-    _validate_https_url(download_url, GITHUB_DOWNLOAD_HOSTS)
+    _validate_https_url(IO_PDX_DOWNLOAD_URL, GITHUB_DOWNLOAD_HOSTS)
     return {
-        "release": tag,
-        "download_url": download_url,
-        "asset_name": asset_name,
-        "published_at": release.get("published_at"),
-        "resolution": "GitHub latest release",
+        "release": IO_PDX_RELEASE,
+        "download_url": IO_PDX_DOWNLOAD_URL,
+        "asset_name": IO_PDX_ASSET_NAME,
+        "sha256": IO_PDX_SHA256,
+        "size": IO_PDX_SIZE,
+        "resolution": "pinned GitHub release asset with SHA-256",
     }
 
 
@@ -957,7 +948,11 @@ def ensure_io_pdx_mesh(pipeline_root: Path, blender_executable: Path, resolution
     cache.parent.mkdir(parents=True, exist_ok=True)
     if not cache.exists():
         download(resolution["download_url"], cache)
-    archive_hash = hashlib.sha256(cache.read_bytes()).hexdigest().upper()
+    archive_bytes = cache.read_bytes()
+    archive_hash = hashlib.sha256(archive_bytes).hexdigest()
+    if len(archive_bytes) != resolution["size"] or archive_hash != resolution["sha256"]:
+        cache.unlink(missing_ok=True)
+        raise SetupError("The pinned io_pdx_mesh archive failed size or SHA-256 verification.")
     desired_version = version_tuple(resolution["release"])
     installed_version = manifest_version(install_root)
     installed_matches = (
@@ -1022,7 +1017,7 @@ THREE_D_MCP_ROUTES = {
         "command": "cmd.exe",
         "args": ["/d", "/c", "call", ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd"],
         "cwd": ".",
-        "env_vars": ["MESHY_API_KEY"],
+        "env_vars": [],
         "startup_timeout_sec": 120.0,
         "tool_timeout_sec": 1800.0,
         "default_tools_approval_mode": "auto",
@@ -1033,7 +1028,7 @@ THREE_D_MCP_ROUTES = {
         "command": "cmd.exe",
         "args": ["/d", "/c", "call", ".tools/3d_pipeline/wrappers/run_blender_lab_mcp.cmd"],
         "cwd": ".",
-        "env_vars": ["MESHY_API_KEY"],
+        "env_vars": [],
         "startup_timeout_sec": 120.0,
         "tool_timeout_sec": 1800.0,
         "default_tools_approval_mode": "prompt",
@@ -1108,7 +1103,7 @@ required = true
 command = "cmd.exe"
 args = ["/d", "/c", "call", ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd"]
 cwd = "."
-env_vars = ["MESHY_API_KEY"]
+env_vars = []
 startup_timeout_sec = 120.0
 tool_timeout_sec = 1800.0
 default_tools_approval_mode = "auto"
@@ -1121,7 +1116,7 @@ required = false
 command = "cmd.exe"
 args = ["/d", "/c", "call", ".tools/3d_pipeline/wrappers/run_blender_lab_mcp.cmd"]
 cwd = "."
-env_vars = ["MESHY_API_KEY"]
+env_vars = []
 startup_timeout_sec = 120.0
 tool_timeout_sec = 1800.0
 default_tools_approval_mode = "prompt"
@@ -1292,6 +1287,9 @@ def main() -> int:
         write_json(runtime_path, runtime)
         (pipeline_root / "config/meshy_mcp_version.txt").write_text(
             f"{meshy['version']}\n", encoding="utf-8"
+        )
+        (pipeline_root / "config/npx_executable.txt").write_text(
+            f"{npx_executable.resolve().as_posix()}\n", encoding="utf-8"
         )
         (pipeline_root / "config/blender_mcp_project.txt").write_text(
             f"{blender_mcp_project.as_posix()}\n", encoding="utf-8"

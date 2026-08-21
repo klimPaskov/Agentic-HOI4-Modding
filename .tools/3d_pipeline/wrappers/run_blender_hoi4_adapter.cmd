@@ -1,8 +1,6 @@
 @echo off
 setlocal
 
-if not defined MESHY_API_KEY goto missing_meshy_key
-
 set "PIPELINE_ROOT=%~dp0.."
 set "ADAPTER_ROOT=%PIPELINE_ROOT%\adapter"
 set "HOI4_3D_CONFIG=%PIPELINE_ROOT%\config\blender_hoi4_adapter.json"
@@ -25,7 +23,3 @@ if not exist "%HOI4_3D_CONFIG%" (
 
 "%UV_EXE%" --directory "%ADAPTER_ROOT%" run python -m hoi4_blender_mcp %*
 exit /b %errorlevel%
-
-:missing_meshy_key
-echo MESHY_API_KEY is missing. Stop before starting the 3D workflow.
-exit /b 2

@@ -1,7 +1,6 @@
 @echo off
 setlocal
 
-if not defined MESHY_API_KEY goto missing_meshy_key
 if /i not "%HOI4_3D_PROFILE%"=="development" goto development_only
 
 set "PIPELINE_ROOT=%~dp0.."
@@ -55,14 +54,3 @@ exit /b %errorlevel%
 :development_only
 echo Blender Lab MCP is disabled for production. Set HOI4_3D_PROFILE=development only in an isolated development session.
 exit /b 5
-
-:missing_meshy_key
-echo MESHY_API_KEY is missing. Stop before starting the workflow.
-echo Run:
-echo [Environment]::SetEnvironmentVariable^(
-echo     "MESHY_API_KEY",
-echo     "msy_your_actual_key_here",
-echo     "User"
-echo ^)
-echo Then restart the shell or Codex.
-exit /b 2
