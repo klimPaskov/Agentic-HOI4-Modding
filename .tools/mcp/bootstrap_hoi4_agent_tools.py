@@ -177,6 +177,7 @@ def read_json(path: Path, maximum: int) -> dict:
 
 def package_tree_sha256(package_root: Path) -> tuple[str, int]:
     files: list[tuple[str, bytes]] = []
+    total_bytes = 0
     for path in package_root.rglob("*"):
         if path.is_symlink():
             raise BootstrapError("The installed MCP package contains a link.")
@@ -184,7 +185,8 @@ def package_tree_sha256(package_root: Path) -> tuple[str, int]:
             continue
         relative = path.relative_to(package_root).as_posix()
         data = path.read_bytes()
-        if len(data) > 16 * 1024 * 1024:
+        total_bytes += len(data)
+        if len(data) > 16 * 1024 * 1024 or total_bytes > 256 * 1024 * 1024:
             raise BootstrapError("The installed MCP package contains an oversized file.")
         files.append((relative, data))
     digest = hashlib.sha256()
