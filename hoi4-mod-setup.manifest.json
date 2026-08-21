@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "3562696c57905e6ed50f377a4ab46d5ac5ca8766",
+  "generated_for_revision": "ca21ee191f37f19f357eb3a258d9a6215ed23c40",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -6564,8 +6564,8 @@
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "4aca6ac5a8cd1592b8ef1583719197e7405eb059b9f2392b84fe264944f95cfd",
-          "size": 53534
+          "sha256": "ef19bc84cabb2f084f570fba9f93f6c86c513b48e98997d5939bfb206bb9dcd0",
+          "size": 56383
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -6576,6 +6576,21 @@
           "path": ".tools/3d_pipeline/config/meshy_tool_contract.json",
           "sha256": "33dd52ea3c05d539985a928aa656b779d02e6af398907f37c324e4c4e0cb6dbd",
           "size": 1457
+        },
+        {
+          "path": ".tools/3d_pipeline/meshy_runtime/package-lock.json",
+          "sha256": "3f70a2384d25e338c6a03a1547218cca97320c4087cee14a8def4793fd24d3ce",
+          "size": 64987
+        },
+        {
+          "path": ".tools/3d_pipeline/meshy_runtime/package.json",
+          "sha256": "dc41c1df4d4243b435362fd0a4406433e728307e88815acfbf1183ce7c38ef11",
+          "size": 151
+        },
+        {
+          "path": ".tools/3d_pipeline/run_verified_meshy.py",
+          "sha256": "b6c0c63cd13c2176a135e94e10207188cfc55c688577ee43d64bc56796363a33",
+          "size": 7533
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
@@ -6589,8 +6604,8 @@
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_meshy_mcp.cmd",
-          "sha256": "6f3e3cf4c07daf1208614059c2d8f53e0d2cdbdc997d52a8846757b4fe463e28",
-          "size": 1066
+          "sha256": "c954ee698573ef0f723c3f53bd56c5d2b3457bee1e11a56fa31e632d7c6aad96",
+          "size": 449
         }
       ]
     },
