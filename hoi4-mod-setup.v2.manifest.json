@@ -17,7 +17,7 @@
       "display_name": "Project instructions",
       "description": "Adapt the repository AGENTS template into project-specific instructions.",
       "category": "core",
-      "optional": false,
+      "optional": true,
       "platforms": [
         "all"
       ],
