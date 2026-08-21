@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "562b09a62b62006dfc7f07c8a2f81310d1fa3cd8",
+  "generated_for_revision": "14ebc614f875c0b1a4e971bd4210c47dd520b2c3",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -121,8 +121,8 @@
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "09f96cbf92ee62bb0412ad1c1199d8aaee6adeb2f425dbc523d1b50130f46ea9",
-          "size": 43038
+          "sha256": "f23e03cbdf13a7994f62b835ad4a4f97c8442bbe376f459fb288f781982e16e7",
+          "size": 43342
         },
         {
           "path": ".agents/skills/hoi4-debug-playtest/SKILL.md",
@@ -3048,8 +3048,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "a9a13da72a78401f58e886e11bb0c2589aa060481673e927acb0e7601cac186b",
-          "size": 19906
+          "sha256": "65d3dc7fe77d2801ca97ad79a9b0e1f031bc619d1eb9cbca283c1c21c0eb0ddf",
+          "size": 20053
         }
       ]
     },
@@ -6513,7 +6513,7 @@
         }
       ],
       "conflicts": [
-        "existing 3D bootstrap or wrapper files"
+        "existing 3D bootstrap, runtime lock, or Blender wrapper files"
       ],
       "conflict_policy": "replace_if_unmodified",
       "validation": [
@@ -6564,8 +6564,8 @@
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "f502d82772db6a588da35da73b24ed76bcf72eaae04dcfde00e60a2ec7c500bd",
-          "size": 56625
+          "sha256": "dd24ecaa83802c644f959fcde5df861190d051ca24c7ae89d562f94820447be5",
+          "size": 57443
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -6588,11 +6588,6 @@
           "size": 151
         },
         {
-          "path": ".tools/3d_pipeline/run_verified_meshy.py",
-          "sha256": "b6c0c63cd13c2176a135e94e10207188cfc55c688577ee43d64bc56796363a33",
-          "size": 7533
-        },
-        {
           "path": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
           "sha256": "b1559651ae35ff7ebfcad5bbcf3edc9537022dcbcdcea4f81169296d8ab04db9",
           "size": 790
@@ -6601,11 +6596,6 @@
           "path": ".tools/3d_pipeline/wrappers/run_blender_lab_mcp.cmd",
           "sha256": "b2c47afb79fd6ea4022dcc07c2d452774ce5f2bbf8993c380beb209edc698e95",
           "size": 2088
-        },
-        {
-          "path": ".tools/3d_pipeline/wrappers/run_meshy_mcp.cmd",
-          "sha256": "c954ee698573ef0f723c3f53bd56c5d2b3457bee1e11a56fa31e632d7c6aad96",
-          "size": 449
         }
       ]
     },
