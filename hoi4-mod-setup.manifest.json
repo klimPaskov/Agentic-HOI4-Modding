@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "cfcf55caa7b0ac97defc26cb658171341c2b4413",
+  "generated_for_revision": "c99c12bd9eeffdca34691cc37b8f1c4b01303e1a",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -121,8 +121,8 @@
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "8c05e5e5539b9874f1811dbefcec6bd2b4eb10f29eb4e15e9d6775dd5822b17f",
-          "size": 42922
+          "sha256": "09f96cbf92ee62bb0412ad1c1199d8aaee6adeb2f425dbc523d1b50130f46ea9",
+          "size": 43038
         },
         {
           "path": ".agents/skills/hoi4-debug-playtest/SKILL.md",
@@ -3048,8 +3048,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "2cc163eeffcdcb5ec9d3d3ab815eb7be148f141a08e5b66bd1a9b3b66f11e0c3",
-          "size": 19726
+          "sha256": "a9a13da72a78401f58e886e11bb0c2589aa060481673e927acb0e7601cac186b",
+          "size": 19906
         }
       ]
     },
@@ -6422,7 +6422,7 @@
     {
       "id": "workflow.3d",
       "display_name": "3D models workflow",
-      "description": "Install the source-declared 3D workflow files and bootstrap records.",
+      "description": "Install the source-declared 3D workflow and its execution-locked Meshy runtime contract.",
       "category": "workflow",
       "optional": true,
       "platforms": [
