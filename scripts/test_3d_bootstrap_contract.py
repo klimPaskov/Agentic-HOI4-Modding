@@ -61,6 +61,13 @@ class CredentialBoundaryTests(unittest.TestCase):
             headers={"Authorization": "Bearer msy_test_value"},
         )
 
+    def test_dependency_child_environment_never_contains_meshy_key(self) -> None:
+        completed = mock.Mock(returncode=0, stdout="ok")
+        with mock.patch.dict(os.environ, {"MESHY_API_KEY": "msy_test_value"}, clear=False), \
+            mock.patch.object(BOOTSTRAP.subprocess, "run", return_value=completed) as run:
+            self.assertEqual(BOOTSTRAP.run(["C:/approved/tool.exe"]), "ok")
+        self.assertNotIn("MESHY_API_KEY", run.call_args.kwargs["env"])
+
     def test_provider_rejection_stops_before_project_writes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"

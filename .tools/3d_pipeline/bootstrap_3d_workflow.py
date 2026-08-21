@@ -58,6 +58,8 @@ def utc_now() -> str:
 
 
 def run(command: list[str], *, cwd: Path | None = None) -> str:
+    child_environment = os.environ.copy()
+    child_environment.pop("MESHY_API_KEY", None)
     completed = subprocess.run(
         command,
         cwd=str(cwd) if cwd else None,
@@ -65,6 +67,7 @@ def run(command: list[str], *, cwd: Path | None = None) -> str:
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         check=False,
+        env=child_environment,
     )
     if completed.returncode != 0:
         output = completed.stdout.strip()
@@ -792,6 +795,7 @@ def ensure_blender_bridge(blender_executable: Path, bridge: dict) -> dict:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            env={key: value for key, value in os.environ.items() if key != "MESHY_API_KEY"},
         )
         started_by_bootstrap = True
         deadline = time.monotonic() + 60.0
