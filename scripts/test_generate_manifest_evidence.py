@@ -4,6 +4,7 @@ import importlib.util
 import subprocess
 import tempfile
 import unittest
+import json
 from pathlib import Path
 
 
@@ -49,6 +50,19 @@ class ManifestGeneratorTests(unittest.TestCase):
                 {"source": {"kind": "file", "path": "missing.txt"}},
                 {"present.txt": b"present"},
             )
+
+    def test_legacy_manifest_removes_v2_validation_parameters(self) -> None:
+        manifest = {
+            "schema_version": "2.0.0",
+            "components": [{"validation": [{"kind": "command", "parameters": {"arguments": ["--quiet"]}}]}],
+        }
+        legacy = json.loads(json.dumps(manifest))
+        legacy["schema_version"] = "1.0.0"
+        for component in legacy["components"]:
+            for validation in component.get("validation", []):
+                validation.pop("parameters", None)
+        self.assertEqual(legacy["schema_version"], "1.0.0")
+        self.assertNotIn("parameters", legacy["components"][0]["validation"][0])
 
 
 if __name__ == "__main__":

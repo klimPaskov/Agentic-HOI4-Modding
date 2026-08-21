@@ -151,6 +151,7 @@ def validate_offline_wiki_links(snapshot: dict[str, bytes]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--legacy-manifest", type=Path)
     parser.add_argument("--source-root", type=Path, required=True)
     parser.add_argument("--revision", required=True)
     args = parser.parse_args()
@@ -163,6 +164,15 @@ def main() -> None:
     args.manifest.write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
+    if args.legacy_manifest is not None:
+        legacy = json.loads(json.dumps(manifest))
+        legacy["schema_version"] = "1.0.0"
+        for component in legacy["components"]:
+            for validation in component.get("validation", []):
+                validation.pop("parameters", None)
+        args.legacy_manifest.write_text(
+            json.dumps(legacy, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
 
 
 if __name__ == "__main__":
