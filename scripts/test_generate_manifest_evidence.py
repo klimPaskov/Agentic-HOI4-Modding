@@ -64,6 +64,13 @@ class ManifestGeneratorTests(unittest.TestCase):
         self.assertEqual(legacy["schema_version"], "1.0.0")
         self.assertNotIn("parameters", legacy["components"][0]["validation"][0])
 
+    def test_windows_mcp_bootstrap_is_optional_for_cross_platform_profiles(self) -> None:
+        manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.v2.manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+        components = {component["id"]: component for component in manifest["components"]}
+        self.assertFalse(components["core.agents"]["optional"])
+        self.assertTrue(components["mcp.hoi4_agent_tools.bootstrap"]["optional"])
+
 
 if __name__ == "__main__":
     unittest.main()
