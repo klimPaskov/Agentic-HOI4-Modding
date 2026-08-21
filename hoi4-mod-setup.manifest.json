@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "4d9c10c8e6ffb04ce6f539033ad8058d08e92dec",
+  "generated_for_revision": "9e38bb1ed0a6130672b6ece948582ea2813f1f7b",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -2807,7 +2807,7 @@
       "display_name": "HOI4 Agent Tools automatic bootstrap",
       "description": "Install and verify the exact public HOI4 Agent Tools package through a bounded Windows bootstrap.",
       "category": "script",
-      "optional": false,
+      "optional": true,
       "platforms": [
         "windows"
       ],
