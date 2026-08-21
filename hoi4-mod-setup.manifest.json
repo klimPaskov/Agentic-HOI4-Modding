@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "9e38bb1ed0a6130672b6ece948582ea2813f1f7b",
+  "generated_for_revision": "8fb298bbfbef4665bf828f5ad4ad72fccb4e93ff",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -2868,8 +2868,8 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "f1a5f38cba8f3c39550566f5d2cfeaab7e784885169c1bf48ae19b877d666144",
-          "size": 8183
+          "sha256": "d9dfb2d24cb3b169e87321933f1a85c0003f2025893c9b7b5a433df5f40e0e5a",
+          "size": 9413
         }
       ]
     },
@@ -6564,8 +6564,8 @@
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "3e41245be80b17ce0ee21c215abd924dac016779d0ca748663be40b9fa2e1222",
-          "size": 53258
+          "sha256": "ca13873c0b59475117424ee5efb1eaff1b7da35f7872a2302a96d5449187ee69",
+          "size": 53319
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -6579,18 +6579,18 @@
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
-          "sha256": "7d8ade6c62a2d72958f91a05d7a6aa5302ac6affbe08810ced803c30c5f0d25b",
-          "size": 942
+          "sha256": "b1559651ae35ff7ebfcad5bbcf3edc9537022dcbcdcea4f81169296d8ab04db9",
+          "size": 790
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_blender_lab_mcp.cmd",
-          "sha256": "a79d2188006f999270e64a81914731d2f889fc163e6b10c62949ef4dd11b32bd",
-          "size": 2416
+          "sha256": "b2c47afb79fd6ea4022dcc07c2d452774ce5f2bbf8993c380beb209edc698e95",
+          "size": 2088
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_meshy_mcp.cmd",
-          "sha256": "57f6f91d40d287a74f3c999b1f7d78290e47b8375076b52f3ae526617eef4913",
-          "size": 1248
+          "sha256": "6f3e3cf4c07daf1208614059c2d8f53e0d2cdbdc997d52a8846757b4fe463e28",
+          "size": 1066
         }
       ]
     },
