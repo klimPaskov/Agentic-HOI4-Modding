@@ -1,6 +1,7 @@
 name: Validate HOI4 Mod Setup manifests
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
