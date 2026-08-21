@@ -422,10 +422,17 @@ def ensure_meshy_runtime(pipeline_root: Path, npx: Path) -> dict:
     npm = npm_for_npx(npx)
     package_spec = f"{MESHY_PACKAGE}@{MESHY_VERSION}"
     output = run([str(npm), "view", package_spec, "dist.integrity", "--json"])
-    try:
-        integrity = json.loads(output)
-    except json.JSONDecodeError as exc:
-        raise SetupError("npm returned malformed Meshy integrity evidence.") from exc
+    candidates: list[str] = []
+    for line in output.splitlines():
+        try:
+            value = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, str) and value.startswith("sha512-"):
+            candidates.append(value)
+    if len(candidates) != 1:
+        raise SetupError("npm returned ambiguous Meshy integrity evidence.")
+    integrity = candidates[0]
     if integrity != MESHY_INTEGRITY:
         raise SetupError("The pinned Meshy package integrity does not match the reviewed release.")
     source = pipeline_root / "meshy_runtime"

@@ -112,6 +112,39 @@ class DependencyBoundaryTests(unittest.TestCase):
         self.assertEqual(resolution["integrity"], BOOTSTRAP.MESHY_INTEGRITY)
         self.assertEqual(resolution["runtime_tree_sha256"], BOOTSTRAP.MESHY_RUNTIME_TREE_SHA256)
 
+    def test_meshy_integrity_parsing_tolerates_npm_notice_but_rejects_ambiguity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            pipeline = Path(temporary) / "pipeline"
+            source = pipeline / "meshy_runtime"
+            source.mkdir(parents=True)
+            (source / "package.json").write_text("{}", encoding="utf-8")
+            (source / "package-lock.json").write_text("{}", encoding="utf-8")
+            common = [
+                mock.patch.object(BOOTSTRAP, "npm_for_npx", return_value=Path("C:/node/npm.cmd")),
+                mock.patch.object(BOOTSTRAP, "sha256_path", side_effect=[
+                    BOOTSTRAP.MESHY_RUNTIME_PACKAGE_SHA256,
+                    BOOTSTRAP.MESHY_RUNTIME_LOCK_SHA256,
+                ]),
+                mock.patch.object(BOOTSTRAP, "mesh_y_tree_identity", return_value=(
+                    BOOTSTRAP.MESHY_RUNTIME_TREE_SHA256,
+                    BOOTSTRAP.MESHY_RUNTIME_FILE_COUNT,
+                )),
+                mock.patch.dict(os.environ, {"LOCALAPPDATA": str(Path(temporary) / "local")}, clear=False),
+            ]
+            with common[0], common[1], common[2], common[3], mock.patch.object(
+                BOOTSTRAP,
+                "run",
+                return_value=f'npm notice update available\n"{BOOTSTRAP.MESHY_INTEGRITY}"\n',
+            ):
+                BOOTSTRAP.ensure_meshy_runtime(pipeline, Path("C:/node/npx.cmd"))
+            with mock.patch.object(BOOTSTRAP, "npm_for_npx", return_value=Path("C:/node/npm.cmd")), \
+                mock.patch.object(
+                    BOOTSTRAP,
+                    "run",
+                    return_value=f'"{BOOTSTRAP.MESHY_INTEGRITY}"\n"{BOOTSTRAP.MESHY_INTEGRITY}"',
+                ), self.assertRaisesRegex(BOOTSTRAP.SetupError, "ambiguous"):
+                BOOTSTRAP.ensure_meshy_runtime(pipeline, Path("C:/node/npx.cmd"))
+
     def test_meshy_wrapper_uses_isolated_verified_launcher_not_mutable_records(self) -> None:
         wrapper = (
             Path(__file__).parents[1]
