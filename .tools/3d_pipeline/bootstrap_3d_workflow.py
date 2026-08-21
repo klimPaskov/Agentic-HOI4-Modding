@@ -24,6 +24,10 @@ from pathlib import Path, PurePosixPath
 MESHY_PACKAGE = "@meshy-ai/meshy-mcp-server"
 MESHY_VERSION = "0.4.0"
 MESHY_INTEGRITY = "sha512-py2xFIrrBcU4SW7ked90/qjRqa6bheVn0fNLEW8Lnki3BCJTFaVvWN0W6a9mJYr26+M9y0WezGsTCKalzWrGtg=="
+MESHY_RUNTIME_PACKAGE_SHA256 = "dc41c1df4d4243b435362fd0a4406433e728307e88815acfbf1183ce7c38ef11"
+MESHY_RUNTIME_LOCK_SHA256 = "3f70a2384d25e338c6a03a1547218cca97320c4087cee14a8def4793fd24d3ce"
+MESHY_RUNTIME_TREE_SHA256 = "720075e2b1e266208f435b08d8ab81609f5e5e1a247ca4680c51b5a4f00f2011"
+MESHY_RUNTIME_FILE_COUNT = 3916
 BLENDER_MCP_REPOSITORY = "https://projects.blender.org/lab/blender_mcp.git"
 IO_PDX_RELEASE = "0.91"
 IO_PDX_ASSET_NAME = "blender-io_pdx_mesh.zip"
@@ -397,7 +401,24 @@ def npm_for_npx(npx: Path) -> Path:
     raise SetupError("npm could not be discovered next to the resolved npx executable.")
 
 
-def resolve_meshy(npx: Path) -> dict:
+def mesh_y_tree_identity(root: Path) -> tuple[str, int]:
+    files = sorted(
+        (path.relative_to(root).as_posix(), path)
+        for path in root.rglob("*")
+        if path.is_file() and not path.is_symlink()
+    )
+    digest = hashlib.sha256()
+    for relative, path in files:
+        data = path.read_bytes()
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(str(len(data)).encode("ascii"))
+        digest.update(b"\0")
+        digest.update(data)
+    return digest.hexdigest(), len(files)
+
+
+def ensure_meshy_runtime(pipeline_root: Path, npx: Path) -> dict:
     npm = npm_for_npx(npx)
     package_spec = f"{MESHY_PACKAGE}@{MESHY_VERSION}"
     output = run([str(npm), "view", package_spec, "dist.integrity", "--json"])
@@ -407,11 +428,54 @@ def resolve_meshy(npx: Path) -> dict:
         raise SetupError("npm returned malformed Meshy integrity evidence.") from exc
     if integrity != MESHY_INTEGRITY:
         raise SetupError("The pinned Meshy package integrity does not match the reviewed release.")
+    source = pipeline_root / "meshy_runtime"
+    package_json = source / "package.json"
+    package_lock = source / "package-lock.json"
+    if (
+        not package_json.is_file()
+        or sha256_path(package_json).lower() != MESHY_RUNTIME_PACKAGE_SHA256
+        or not package_lock.is_file()
+        or sha256_path(package_lock).lower() != MESHY_RUNTIME_LOCK_SHA256
+    ):
+        raise SetupError("The reviewed Meshy runtime lock files do not match their evidence.")
+    local_app_data = os.environ.get("LOCALAPPDATA", "").strip()
+    if not local_app_data:
+        raise SetupError("LOCALAPPDATA is unavailable for the reviewed Meshy runtime.")
+    runtime_root = (
+        Path(local_app_data) / "HOI4 Mod Setup" / "runtimes" / f"meshy-{MESHY_VERSION}"
+    ).resolve()
+    runtime_root.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(package_json, runtime_root / "package.json")
+    shutil.copy2(package_lock, runtime_root / "package-lock.json")
+    node_modules = runtime_root / "node_modules"
+    identity = mesh_y_tree_identity(node_modules) if node_modules.is_dir() else ("", 0)
+    if identity != (MESHY_RUNTIME_TREE_SHA256, MESHY_RUNTIME_FILE_COUNT):
+        if node_modules.exists():
+            if node_modules.is_symlink() or runtime_root not in node_modules.resolve().parents:
+                raise SetupError("Refusing an unsafe Meshy runtime replacement target.")
+            shutil.rmtree(node_modules)
+        run(
+            [
+                str(npm),
+                "ci",
+                "--prefix",
+                str(runtime_root),
+                "--ignore-scripts",
+                "--no-audit",
+                "--no-fund",
+            ]
+        )
+        identity = mesh_y_tree_identity(node_modules)
+    if identity != (MESHY_RUNTIME_TREE_SHA256, MESHY_RUNTIME_FILE_COUNT):
+        raise SetupError("The installed Meshy runtime does not match the reviewed lock.")
     return {
         "package": MESHY_PACKAGE,
         "version": MESHY_VERSION,
         "integrity": MESHY_INTEGRITY,
-        "resolution": "pinned npm version and integrity",
+        "runtime_root": runtime_root.as_posix(),
+        "runtime_tree_sha256": MESHY_RUNTIME_TREE_SHA256,
+        "runtime_file_count": MESHY_RUNTIME_FILE_COUNT,
+        "resolution": "pinned npm lock and verified complete runtime tree",
     }
 
 
@@ -952,9 +1016,12 @@ def ensure_io_pdx_mesh(pipeline_root: Path, blender_executable: Path, resolution
     cache.parent.mkdir(parents=True, exist_ok=True)
     if not cache.exists():
         download(resolution["download_url"], cache)
+    if cache.stat().st_size != resolution["size"]:
+        cache.unlink(missing_ok=True)
+        raise SetupError("The pinned io_pdx_mesh archive failed size verification.")
     archive_bytes = cache.read_bytes()
     archive_hash = hashlib.sha256(archive_bytes).hexdigest()
-    if len(archive_bytes) != resolution["size"] or archive_hash != resolution["sha256"]:
+    if archive_hash != resolution["sha256"]:
         cache.unlink(missing_ok=True)
         raise SetupError("The pinned io_pdx_mesh archive failed size or SHA-256 verification.")
     desired_version = version_tuple(resolution["release"])
@@ -1222,7 +1289,7 @@ def main() -> int:
         npx_executable = ensure_npx()
         blender_executable, blender_shortcut, blender_version = find_blender()
         uv_executable = ensure_uv()
-        meshy = resolve_meshy(npx_executable)
+        meshy = ensure_meshy_runtime(pipeline_root, npx_executable)
         meshy_contract_path = pipeline_root / "config/meshy_tool_contract.json"
         if not meshy_contract_path.is_file():
             raise SetupError(f"Meshy tool contract is missing: {meshy_contract_path}")
@@ -1289,12 +1356,6 @@ def main() -> int:
         }
         runtime_path = pipeline_root / "config/runtime.json"
         write_json(runtime_path, runtime)
-        (pipeline_root / "config/meshy_mcp_version.txt").write_text(
-            f"{meshy['version']}\n", encoding="utf-8"
-        )
-        (pipeline_root / "config/npx_executable.txt").write_text(
-            f"{npx_executable.resolve().as_posix()}\n", encoding="utf-8"
-        )
         (pipeline_root / "config/blender_mcp_project.txt").write_text(
             f"{blender_mcp_project.as_posix()}\n", encoding="utf-8"
         )

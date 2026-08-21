@@ -15,6 +15,11 @@ SPEC = importlib.util.spec_from_file_location("three_d_bootstrap", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 BOOTSTRAP = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BOOTSTRAP)
+LAUNCHER_SCRIPT = Path(__file__).parents[1] / ".tools/3d_pipeline/run_verified_meshy.py"
+LAUNCHER_SPEC = importlib.util.spec_from_file_location("verified_meshy", LAUNCHER_SCRIPT)
+assert LAUNCHER_SPEC is not None and LAUNCHER_SPEC.loader is not None
+LAUNCHER = importlib.util.module_from_spec(LAUNCHER_SPEC)
+LAUNCHER_SPEC.loader.exec_module(LAUNCHER)
 
 
 class ReviewedConfigTests(unittest.TestCase):
@@ -82,11 +87,59 @@ class CredentialBoundaryTests(unittest.TestCase):
 
 class DependencyBoundaryTests(unittest.TestCase):
     def test_meshy_package_is_pinned_to_exact_registry_integrity(self) -> None:
-        with mock.patch.object(BOOTSTRAP, "npm_for_npx", return_value=Path("C:/node/npm.cmd")), \
-            mock.patch.object(BOOTSTRAP, "run", return_value=f'"{BOOTSTRAP.MESHY_INTEGRITY}"'):
-            resolution = BOOTSTRAP.resolve_meshy(Path("C:/node/npx.cmd"))
+        with tempfile.TemporaryDirectory() as temporary:
+            pipeline = Path(temporary) / "pipeline"
+            source = pipeline / "meshy_runtime"
+            source.mkdir(parents=True)
+            (source / "package.json").write_text("{}", encoding="utf-8")
+            (source / "package-lock.json").write_text("{}", encoding="utf-8")
+            with mock.patch.object(BOOTSTRAP, "npm_for_npx", return_value=Path("C:/node/npm.cmd")), \
+                mock.patch.object(BOOTSTRAP, "sha256_path", side_effect=[
+                    BOOTSTRAP.MESHY_RUNTIME_PACKAGE_SHA256,
+                    BOOTSTRAP.MESHY_RUNTIME_LOCK_SHA256,
+                ]), mock.patch.object(
+                    BOOTSTRAP, "mesh_y_tree_identity", return_value=(
+                        BOOTSTRAP.MESHY_RUNTIME_TREE_SHA256,
+                        BOOTSTRAP.MESHY_RUNTIME_FILE_COUNT,
+                    )
+                ), mock.patch.object(
+                    BOOTSTRAP, "run", return_value=f'"{BOOTSTRAP.MESHY_INTEGRITY}"'
+                ), mock.patch.dict(
+                    os.environ, {"LOCALAPPDATA": str(Path(temporary) / "local")}, clear=False
+                ):
+                resolution = BOOTSTRAP.ensure_meshy_runtime(pipeline, Path("C:/node/npx.cmd"))
         self.assertEqual(resolution["version"], BOOTSTRAP.MESHY_VERSION)
         self.assertEqual(resolution["integrity"], BOOTSTRAP.MESHY_INTEGRITY)
+        self.assertEqual(resolution["runtime_tree_sha256"], BOOTSTRAP.MESHY_RUNTIME_TREE_SHA256)
+
+    def test_meshy_wrapper_uses_isolated_verified_launcher_not_mutable_records(self) -> None:
+        wrapper = (
+            Path(__file__).parents[1]
+            / ".tools/3d_pipeline/wrappers/run_meshy_mcp.cmd"
+        ).read_text(encoding="utf-8")
+        self.assertIn("python -I", wrapper)
+        self.assertNotIn("meshy_mcp_version.txt", wrapper)
+        self.assertNotIn("npx_executable.txt", wrapper)
+        self.assertNotIn("npx", wrapper.lower())
+
+    def test_tampered_meshy_runtime_tree_is_rejected_before_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source"
+            destination = root / "private"
+            source.mkdir()
+            destination.mkdir()
+            runtime = source / "index.js"
+            runtime.write_bytes(b"reviewed")
+            digest = BOOTSTRAP.hashlib.sha256()
+            digest.update(b"index.js\0")
+            digest.update(b"8\0reviewed")
+            with mock.patch.object(LAUNCHER, "MESHY_TREE_SHA256", digest.hexdigest()), \
+                mock.patch.object(LAUNCHER, "MESHY_TREE_FILE_COUNT", 1):
+                LAUNCHER._copy_verified_tree(source, destination)
+                runtime.write_bytes(b"tampered")
+                with self.assertRaisesRegex(LAUNCHER.LaunchError, "reviewed lock"):
+                    LAUNCHER._copy_verified_tree(source, root / "second")
 
     def test_tampered_cached_io_pdx_archive_is_deleted_before_extraction(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -97,7 +150,7 @@ class DependencyBoundaryTests(unittest.TestCase):
             cache.write_bytes(b"tampered")
             with mock.patch.object(BOOTSTRAP, "run", return_value="Blender 4.3.0"), \
                 mock.patch.dict(os.environ, {"APPDATA": str(root / "appdata")}, clear=False), \
-                self.assertRaisesRegex(BOOTSTRAP.SetupError, "SHA-256"):
+                self.assertRaisesRegex(BOOTSTRAP.SetupError, "size"):
                 BOOTSTRAP.ensure_io_pdx_mesh(root, Path("C:/Blender/blender.exe"), resolution)
             self.assertFalse(cache.exists())
 
