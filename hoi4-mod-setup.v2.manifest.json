@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "61ccdfb0292f025136b4119de65976379f4bdec2",
+  "generated_for_revision": "3562696c57905e6ed50f377a4ab46d5ac5ca8766",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -2881,8 +2881,8 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "d9dfb2d24cb3b169e87321933f1a85c0003f2025893c9b7b5a433df5f40e0e5a",
-          "size": 9413
+          "sha256": "484a510c714cfbee82113e81d5e58b5c8352cdbfcdc7d493acd3e18cb749889d",
+          "size": 9501
         }
       ]
     },
