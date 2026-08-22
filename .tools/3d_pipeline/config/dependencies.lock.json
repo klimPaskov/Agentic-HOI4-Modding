@@ -11,6 +11,8 @@
   "policy": {
     "provider_input_image_count": 1,
     "allow_meshy_multiview_thumbnails": false,
+    "required_generation_model": "meshy-7",
+    "default_generation_model": "Meshy 7 via explicit ai_model=meshy-7",
     "paid_generation_attempts_per_pilot": 1,
     "retry_paid_calls": false,
     "runtime_sources_must_not_reference_docs_assets": true

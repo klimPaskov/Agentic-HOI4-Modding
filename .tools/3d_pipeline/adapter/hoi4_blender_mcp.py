@@ -29,6 +29,10 @@ CONFIG_PATH = Path(
 ).resolve()
 CONFIG = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
 JOB_ROOT = Path(CONFIG["job_root"]).resolve()
+JOB_OVERRIDES = {
+    job_id: Path(path).resolve()
+    for job_id, path in CONFIG.get("job_overrides", {}).items()
+}
 BLENDER = Path(CONFIG["blender_executable"]).resolve()
 ADAPTER_VERSION = CONFIG["adapter_version"]
 ALLOWED_OPERATIONS = set(CONFIG["operations"])
@@ -38,16 +42,16 @@ mcp = FastMCP("hoi4-blender-adapter")
 
 
 def _job(job_id: str) -> Path:
-    if not job_id or Path(job_id).is_absolute() or ":" in job_id:
-        raise ValueError("job_id must be a repository-relative job path.")
-    relative = Path(job_id.replace("/", os.sep))
-    if ".." in relative.parts:
-        raise ValueError("job_id must not contain traversal segments.")
-    candidate = (JOB_ROOT / relative).resolve()
-    try:
-        candidate.relative_to(JOB_ROOT)
-    except ValueError as exc:
-        raise ValueError("job_id escaped the configured job root.") from exc
+    if not job_id or Path(job_id).is_absolute() or ":" in job_id or ".." in Path(job_id).parts:
+        raise ValueError("job_id must be a job-root-relative path without traversal.")
+    if job_id in JOB_OVERRIDES:
+        candidate = JOB_OVERRIDES[job_id]
+    else:
+        candidate = (JOB_ROOT / Path(job_id.replace("/", os.sep))).resolve()
+        try:
+            candidate.relative_to(JOB_ROOT)
+        except ValueError as exc:
+            raise ValueError("job_id escaped the configured job root.") from exc
     if not candidate.exists():
         raise FileNotFoundError(candidate)
     return candidate
@@ -98,7 +102,6 @@ def _run(job_id: str, operation: str, payload: Dict[str, Any]) -> Dict[str, Any]
         "adapter_version": ADAPTER_VERSION,
         "job_id": job_id,
         "job_root": str(job),
-        "approved_reference_roots": CONFIG.get("approved_reference_roots", {}),
         "operation": operation,
         "payload": payload,
     }
@@ -201,7 +204,7 @@ def _process_textures(job_id: str, blend_rel: str) -> Dict[str, Any]:
 
     extracted = _run(job_id, "process_textures", {"blend_rel": blend_rel})
     job = _job(job_id)
-    converter = REPO_ROOT / ".agents" / "skills" / "hoi4-feature-assets" / "tools" / "convert_to_dds.py"
+    converter = REPO_ROOT / ".agents" / "skills" / "hoi4-event-assets" / "tools" / "convert_to_dds.py"
     if not converter.exists():
         raise FileNotFoundError(converter)
     dds_map: Dict[str, str] = {}
@@ -375,6 +378,50 @@ def hoi4_blender_process_textures(
 
 
 @mcp.tool()
+def hoi4_blender_bake_static_mesh_transforms(
+    job_id: str,
+    blend_rel: str,
+    output_blend_rel: str,
+    asset_kind: str,
+    bounds_tolerance: float = 1e-5,
+) -> Dict[str, Any]:
+    """Bake transforms for approved static-building working meshes only."""
+
+    return _run(
+        job_id,
+        "bake_static_mesh_transforms",
+        {
+            "blend_rel": blend_rel,
+            "output_blend_rel": output_blend_rel,
+            "asset_kind": asset_kind,
+            "bounds_tolerance": bounds_tolerance,
+        },
+    )
+
+
+@mcp.tool()
+def hoi4_blender_partition_static_mesh_export_batches(
+    job_id: str,
+    blend_rel: str,
+    output_blend_rel: str,
+    asset_kind: str,
+    max_export_vertices_per_batch: int = 60000,
+) -> Dict[str, Any]:
+    """Partition a static building into bounded material-backed PDX mesh streams."""
+
+    return _run(
+        job_id,
+        "partition_static_mesh_export_batches",
+        {
+            "blend_rel": blend_rel,
+            "output_blend_rel": output_blend_rel,
+            "asset_kind": asset_kind,
+            "max_export_vertices_per_batch": max_export_vertices_per_batch,
+        },
+    )
+
+
+@mcp.tool()
 def hoi4_blender_export_mesh(
     job_id: str,
     blend_rel: str,
@@ -476,6 +523,158 @@ def hoi4_blender_author_locomotion_action(
 
 
 @mcp.tool()
+def hoi4_blender_author_humanoid_rig(
+    job_id: str,
+    blend_rel: str,
+    checkpoint_rel: str,
+    rig_name: str = "",
+) -> Dict[str, Any]:
+    """Create the bounded HOI4 24-bone humanoid rig on approved geometry."""
+
+    return _run(
+        job_id,
+        "author_humanoid_rig",
+        {
+            "blend_rel": blend_rel,
+            "checkpoint_rel": checkpoint_rel,
+            "rig_name": rig_name,
+        },
+    )
+
+
+@mcp.tool()
+def hoi4_blender_author_humanoid_actions(
+    job_id: str,
+    blend_rel: str,
+    checkpoint_rel: str,
+    action_names: Dict[str, str] | None = None,
+    fps: int = 24,
+    fused_weapon_grip: bool = False,
+) -> Dict[str, Any]:
+    """Author humanoid actions, optionally preserving a fused two-hand weapon grip."""
+
+    return _run(
+        job_id,
+        "author_humanoid_actions",
+        {
+            "blend_rel": blend_rel,
+            "checkpoint_rel": checkpoint_rel,
+            "action_names": action_names or {},
+            "fps": fps,
+            "fused_weapon_grip": fused_weapon_grip,
+        },
+    )
+
+
+@mcp.tool()
+def hoi4_blender_review_humanoid_components(
+    job_id: str,
+    blend_rel: str,
+    component_indices: list[int],
+    runtime_stem: str = "humanoid_component_review",
+    view_names: list[str] | None = None,
+    render_group: bool = False,
+) -> Dict[str, Any]:
+    """Render explicit loose-component indices highlighted over a dim humanoid."""
+
+    return _run(
+        job_id,
+        "review_humanoid_components",
+        {
+            "blend_rel": blend_rel,
+            "component_indices": component_indices,
+            "runtime_stem": runtime_stem,
+            "view_names": view_names or ["rear"],
+            "render_group": render_group,
+        },
+    )
+
+
+@mcp.tool()
+def hoi4_blender_isolate_humanoid_weapon(
+    job_id: str,
+    blend_rel: str,
+    checkpoint_rel: str,
+    weapon_component_indices: list[int],
+    component_prefix: str,
+    stock_component_indices: list[int] | None = None,
+    stock_link_component_indices: list[int] | None = None,
+    body_object_name: str = "humanoid_body",
+    weapon_object_name: str = "humanoid_weapon",
+    stock_x_fraction: float = 0.03,
+    stock_y_front_offset_fraction: float = -0.18,
+    stock_z_fraction: float = 0.64,
+    aim_down_degrees: float = 2.0,
+    stock_advance_m: float = 1.25,
+    stock_link_advance_m: float = 0.55,
+) -> Dict[str, Any]:
+    """Isolate reviewed loose components and place the recovered weapon at the right shoulder."""
+
+    return _run(
+        job_id,
+        "isolate_humanoid_weapon",
+        {
+            "blend_rel": blend_rel,
+            "checkpoint_rel": checkpoint_rel,
+            "weapon_component_indices": weapon_component_indices,
+            "component_prefix": component_prefix,
+            "stock_component_indices": stock_component_indices or [],
+            "stock_link_component_indices": stock_link_component_indices or [],
+            "body_object_name": body_object_name,
+            "weapon_object_name": weapon_object_name,
+            "stock_x_fraction": stock_x_fraction,
+            "stock_y_front_offset_fraction": stock_y_front_offset_fraction,
+            "stock_z_fraction": stock_z_fraction,
+            "aim_down_degrees": aim_down_degrees,
+            "stock_advance_m": stock_advance_m,
+            "stock_link_advance_m": stock_link_advance_m,
+        },
+    )
+
+
+@mcp.tool()
+def hoi4_blender_attach_rigid_weapon_from_checkpoint(
+    job_id: str,
+    source_blend_rel: str,
+    target_blend_rel: str,
+    output_blend_rel: str,
+    source_object_name: str,
+    target_object_name: str,
+    target_armature_name: str,
+    parent_bone_name: str,
+    create_weapon_bone_name: str = "",
+    translation: list[float] | None = None,
+    rotation_euler_degrees: list[float] | None = None,
+    scale: list[float] | None = None,
+    collision_policy: str = "reject",
+    action_name: str = "",
+    render_views: list[str] | None = None,
+) -> Dict[str, Any]:
+    """Append one named mesh checkpoint object and rigidly parent it to one explicit rig bone."""
+
+    return _run(
+        job_id,
+        "attach_rigid_weapon_from_checkpoint",
+        {
+            "source_blend_rel": source_blend_rel,
+            "target_blend_rel": target_blend_rel,
+            "output_blend_rel": output_blend_rel,
+            "source_object_name": source_object_name,
+            "target_object_name": target_object_name,
+            "target_armature_name": target_armature_name,
+            "parent_bone_name": parent_bone_name,
+            "create_weapon_bone_name": create_weapon_bone_name,
+            "translation": translation or [0.0, 0.0, 0.0],
+            "rotation_euler_degrees": rotation_euler_degrees or [0.0, 0.0, 0.0],
+            "scale": scale or [1.0, 1.0, 1.0],
+            "collision_policy": collision_policy,
+            "action_name": action_name,
+            "render_views": render_views or ["three_quarter"],
+        },
+    )
+
+
+@mcp.tool()
 def hoi4_blender_segment_creature_components(
     job_id: str,
     blend_rel: str,
@@ -487,8 +686,9 @@ def hoi4_blender_segment_creature_components(
     rider_x_half_fraction: float = 0.38,
     rider_y_center_fraction: float = 0.5,
     rider_y_half_fraction: float = 0.42,
-    rider_object_name: str = "creature_rider_region",
-    body_object_name: str = "creature_body_region",
+    rider_object_name: str = "elephant_rider_region",
+    body_object_name: str = "elephant_body_region",
+    component_prefix: str = "elephant_component",
 ) -> Dict[str, Any]:
     """Split a nonhumanoid candidate into loose, rider-region, or semantic spatial components."""
 
@@ -507,6 +707,7 @@ def hoi4_blender_segment_creature_components(
             "rider_y_half_fraction": rider_y_half_fraction,
             "rider_object_name": rider_object_name,
             "body_object_name": body_object_name,
+            "component_prefix": component_prefix,
         },
     )
 
@@ -543,6 +744,7 @@ def hoi4_blender_author_creature_rig(
     rider_component_names: list[str] | None = None,
     weight_mode: str = "semantic",
     rig_name: str = "",
+    creature_rig_family: str = "elephant",
 ) -> Dict[str, Any]:
     """Create and checkpoint a bounded custom rig for a nonhumanoid creature candidate."""
 
@@ -555,6 +757,7 @@ def hoi4_blender_author_creature_rig(
             "rider_component_names": rider_component_names or [],
             "weight_mode": weight_mode,
             "rig_name": rig_name,
+            "creature_rig_family": creature_rig_family,
         },
     )
 
@@ -566,6 +769,7 @@ def hoi4_blender_author_creature_action(
     checkpoint_rel: str,
     action_role: str,
     action_name: str,
+    creature_rig_family: str = "elephant",
 ) -> Dict[str, Any]:
     """Author one real skeletal creature action and checkpoint its contact-checked result."""
 
@@ -577,6 +781,7 @@ def hoi4_blender_author_creature_action(
             "checkpoint_rel": checkpoint_rel,
             "action_role": action_role,
             "action_name": action_name,
+            "creature_rig_family": creature_rig_family,
         },
     )
 
@@ -657,23 +862,13 @@ def hoi4_blender_reimport_export(
     mesh_rel: str,
     anim_rel: str = "",
     proof_name: str = "",
-    texture_names: list[str] | None = None,
-    loop_expected: bool | None = None,
-    loop_endpoint_tolerance_m: float = 0.01,
 ) -> Dict[str, Any]:
     """Reimport exported PDX assets and save proof into the job."""
 
     return _run(
         job_id,
         "reimport_export",
-        {
-            "mesh_rel": mesh_rel,
-            "anim_rel": anim_rel,
-            "proof_name": proof_name,
-            "texture_names": texture_names or [],
-            "loop_expected": loop_expected,
-            "loop_endpoint_tolerance_m": loop_endpoint_tolerance_m,
-        },
+        {"mesh_rel": mesh_rel, "anim_rel": anim_rel, "proof_name": proof_name},
     )
 
 

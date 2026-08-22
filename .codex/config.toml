@@ -23,7 +23,7 @@ url = "https://cloud.comfy.org/mcp"
 # materializes concrete Meshy and Blender entries without user editing.
 
 [agents.hoi4_3d_model_pipeline]
-description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through a Meshy 6-first verified Meshy-to-Blender-to-io_pdx_mesh workflow, including rights-checked Internet-sourced custom-unit sound design and bespoke vanilla-green unit-counter handoffs. Normal model and required animation credit use is pre-authorized; only failed-attempt recovery requires confirmation. Never creates audio manually or through generation and never claims final gameplay completion."
+description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through an explicit Meshy 7 verified Meshy-to-Blender-to-io_pdx_mesh workflow, including substantive approved-action provenance, rights-checked Internet-sourced custom-unit sound design, and bespoke vanilla-green unit-counter handoffs. Normal model and required animation credit use is pre-authorized; only failed-attempt recovery requires confirmation. Never creates audio manually or through generation and never claims final gameplay completion."
 config_file = "agents/hoi4_3d_model_pipeline.toml"
 
 [agents.hoi4_ai_probability_auditor]

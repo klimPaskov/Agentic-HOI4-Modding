@@ -17,3 +17,4 @@
 # Generated Python bytecode from reusable skill tools.
 /.agents/skills/**/__pycache__/
 *.pyc
+.qoder/

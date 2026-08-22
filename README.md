@@ -2,10 +2,7 @@
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20Community-7289da?logo=discord&logoColor=white)](https://discord.gg/rAXesGcT2t)
 
-A reusable source package for preparing Hearts of Iron IV mod repositories for
-agentic development. Its project instructions, references, skills, tools,
-optional workflows, and helper-agent profiles can be adapted to a new or
-existing mod.
+A reusable source package for preparing Hearts of Iron IV mod repositories for agentic development. Its project instructions, references, skills, tools, optional workflows, and helper-agent profiles can be adapted to a new or existing mod.
 
 Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3
 
@@ -15,34 +12,20 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 - An offline Paradox wiki snapshot and supporting technical documentation.
 - Reusable skills, tools, examples, and optional workflow packages for common
   and specialized HOI4 modding work.
-- A growing collection of bounded helper-agent profiles for research,
-  production, implementation support, review, validation, and documentation.
-  The authoritative set is the `.codex/agents/` directory rather than a list in
-  this README.
+- A growing collection of bounded helper-agent profiles for research, production, implementation support, review, validation, and documentation. The authoritative set is the `.codex/agents/` directory rather than a list in this README.
 - A source manifest used by the setup application to select, verify, and adapt
   these components for a specific mod.
 
 ## Complete package download
 
 [Download the complete Agentic HOI4 Modding package](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/Agentic-HOI4-Modding.zip).
-The ZIP is a clean snapshot of the version-controlled source package without
-Git history or machine-local files.
+The ZIP is a clean snapshot of the version-controlled source package without Git history or machine-local files.
 
 ## Recommended setup
 
-The recommended way to use this repository is
-[HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup). The desktop
-wizard can create a new mod or prepare an existing one, discover and adapt the
-project identity, install the selected instructions, skills, helper agents,
-tools, and offline references, configure optional workflows, preview every
-change before applying it, and later update or repair the managed setup. This
-keeps project-specific names and paths consistent and avoids manually copying
-an evolving set of files.
+The recommended way to use this repository is [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup). The desktop wizard can create a new mod or prepare an existing one, discover and adapt the project identity, install the selected instructions, skills, helper agents, tools, and offline references, configure optional workflows, preview every change before applying it, and later update or repair the managed setup. This keeps project-specific names and paths consistent and avoids manually copying an evolving set of files.
 
-[Download the latest HOI4 Mod Setup release](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest),
-then choose whether to create a new mod or import an existing one. The manual
-steps below remain useful when you deliberately do not want to use the setup
-application.
+[Download the latest HOI4 Mod Setup release](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest), then choose whether to create a new mod or import an existing one. The manual steps below remain useful when you deliberately do not want to use the setup application.
 
 ## Manual setup
 
@@ -127,12 +110,7 @@ The point is to stop the agent from rediscovering the same process every time. I
 
 ### 6. Add optional Codex subagents
 
-Custom Codex subagents are useful when a task can be split into bounded helper
-work. This repository includes profiles across several broad kinds of work,
-including discovery, research, planning, implementation support, visual and
-audio production, audits, validation, and documentation. The collection evolves
-with the workflows, so inspect `.codex/agents/` for the current set instead of
-relying on a static list here.
+Custom Codex subagents are useful when a task can be split into bounded helper work. This repository includes profiles across several broad kinds of work, including discovery, research, planning, implementation support, visual and audio production, audits, validation, and documentation. The collection evolves with the workflows, so inspect `.codex/agents/` for the current set instead of relying on a static list here.
 
 Put subagent TOML files under:
 
@@ -142,33 +120,29 @@ Put subagent TOML files under:
 
 The main agent should still own final implementation, final wiring, final review, final validation, and the completion report. Spawn every project custom subagent without inherited conversation context and pass every required path, constraint, correction, accepted decision, ownership boundary, and handoff destination explicitly in its prompt.
 
+## Optional Qoder dual-runtime workflow
+
+Some projects run Qoder alongside Codex. When the optional Qoder component is installed, `.codex/agents/*.toml` remains the canonical authoring source and `.qoder/agents/*.md` is generated output produced by the repository's `sync_qoder_agents.py` tool.
+
+Never hand-edit generated Qoder agent files. Update the matching Codex TOML and rerun the synchronization command so name mapping, authority labels, and generated banners remain consistent.
+
+The two runtimes share skills, gameplay, docs, specs, plans, handoffs, and declared wrappers, but they keep runtime configuration separate. During a Qoder session treat `.codex/**` as read-only reference; during a Codex session leave `.qoder/**` untouched. If the optional component is not installed, Codex remains the only active runtime and no Qoder files or configuration should be invented.
+
 ## Optional Super Events workflow
 
-HOI4 Mod Setup leaves Super Events out by default. Selecting the workflow
-installs the `hoi4-super-events` skill plus the reusable runtime under
-`interface/`, `common/`, `events/`, `localisation/`, `gfx/`, and
-`docs/super_events/`.
+HOI4 Mod Setup leaves Super Events out by default. Selecting the workflow installs the `hoi4-super-events` skill plus the reusable runtime under `interface/`, `common/`, `events/`, `localisation/`, `gfx/`, and `docs/super_events/`.
 
-The installer adapts all scripted identifiers and runtime filenames to the
-confirmed mod prefix. The upstream `hoi4ms_*` names are source-package names;
-installed files use the project's actual `<mod_prefix>_*` names.
-The package includes one hidden console-test event, a default image and
-background, the response button texture, and both full-composition and
-`457x328` image Photoshop templates. New registrations add one stable integer
-ID and matching image, title, description, quote, response, caller, unique rights-verified Internet-sourced audio, and documentation. Audio is never synthesized, generated, recorded, or manually authored by an agent.
+The installer adapts all scripted identifiers and runtime filenames to the confirmed mod prefix. The upstream `hoi4ms_*` names are source-package names; installed files use the project's actual `<mod_prefix>_*` names.
+The package includes one hidden console-test event, a default image and background, the response button texture, and both full-composition and `457x328` image Photoshop templates. New registrations add one stable integer ID and matching image, title, description, quote, response, caller, unique rights-verified Internet-sourced audio, and documentation. Audio is never synthesized, generated, recorded, or manually authored by an agent.
 
 ## Portrait workflow
 
-The portrait workflow separates grounded-source research, fictional generation,
-provider-assisted styling, asset processing, wiring, provenance, and validation.
-It supports selectable Comfy Cloud, Local ComfyUI, and RunPod routes while
-keeping provider operation and approval boundaries explicit.
+The portrait workflow separates grounded-source research, fictional generation, provider-assisted styling, asset processing, wiring, provenance, and validation.
+It supports selectable Comfy Cloud, Local ComfyUI, and RunPod routes while keeping provider operation and approval boundaries explicit.
 
 ### 7. Keep asset ownership clear
 
-Asset helpers should produce source files, processed PNG previews, DDS files,
-manifests, contact sheets when useful, and a clear handoff. Portrait work follows
-the dedicated portrait workflow and its ownership rules.
+Asset helpers should produce source files, processed PNG previews, DDS files, manifests, contact sheets when useful, and a clear handoff. Portrait work follows the dedicated portrait workflow and its ownership rules.
 
 The main agent should own `.gfx` edits, event references, focus icon assignments, idea icon assignments, decision icon assignments, localisation references, GUI references, documentation alignment, and validation.
 
@@ -254,9 +228,9 @@ When a feature needs 3D work, the agent runs `.tools/3d_pipeline/bootstrap_3d_wo
 
 Unattended production uses the narrow repository-owned HOI4 Blender adapter. The unrestricted Blender Lab route remains disabled and development-only. The production adapter confines file access to the declared job and reference roots and exposes only the bounded health, candidate preparation, inspection, texture processing, mesh and animation export, locomotion authoring, reimport, and checkpoint operations required by the workflow.
 
-When a brief has no ready reference, the workflow generates exactly one final Meshy-ready image for the asset and never sends side-profile sheets, turnaround boards, collages, or multi-view boards to Meshy.
+When a brief has no authoritative ready reference, the workflow first searches eligible modern designed artwork—game, tabletop or miniature, fantasy or horror, and professional design sources—while excluding archival, museum, historical, archaeological, ethnographic, reenactment, and documentary material from the model-reference pool. It archives the selected source unchanged, records rights and AI-use restrictions, produces only a faithful single-subject ImageGen cleanup with a visual-fidelity comparison, and requires explicit approval before Meshy. A from-scratch reference is permitted only after a documented failed search and explicit user direction. Meshy receives exactly one approved final image and never a source page, comparison sheet, turnaround, collage, or multi-view board.
 
-Meshy 6 is the default image-to-3D generation model. The worker records the exact live model identifier and does not silently downgrade to an older model when Meshy 6 is unavailable.
+Meshy 7 is the required image-to-3D generation model. The worker records the exact live model identifier and does not silently downgrade to an older model when Meshy 7 is unavailable.
 
 Normal planned model generation, remesh/retexture, rigging, conversion, and required animation credit use is pre-authorized. The worker checks and records the live balance and consumed credits without asking for confirmation. It asks only before additional paid recovery caused by a failed or rejected operation; otherwise it must not ask for credit-spend confirmation.
 
@@ -294,18 +268,13 @@ A good subagent has:
 
 Use subagents before completion claims, not after claiming the work is done. A subagent report is evidence, not final proof. The main agent must inspect it and fix the issues.
 
-Specialized helper profiles may impose additional evidence and ownership gates.
-Follow the selected profile and owning skill rather than treating the generic
-rules here as a replacement for them.
+Specialized helper profiles may impose additional evidence and ownership gates. Follow the selected profile and owning skill rather than treating the generic rules here as a replacement for them.
 
 ## Completion proof
 
 A goal should not be marked complete unless the implementation is actually complete.
 
-For large events, mechanics, focus trees, country packages, UI work, balance
-passes, and asset goals, require a concrete completion report. It should list
-files changed, systems touched, meaningful scenarios or comparisons, assets
-created or reused, docs updated, audits performed, and blockers.
+For large events, mechanics, focus trees, country packages, UI work, balance passes, and asset goals, require a concrete completion report. It should list files changed, systems touched, meaningful scenarios or comparisons, assets created or reused, docs updated, audits performed, and blockers.
 
 Every simplification should be reported. If no simplifications were made, the agent should say so and provide evidence.
 

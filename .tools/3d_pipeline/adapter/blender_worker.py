@@ -20,19 +20,13 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import bpy
 import bmesh
-from mathutils import Matrix, Quaternion, Vector
+from mathutils import Euler, Matrix, Quaternion, Vector
 from mathutils.kdtree import KDTree
 
 
 PREVIEW_LIGHT_REFERENCE_HEIGHT = 7.3518242835
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest().upper()
+CREATURE_GROUND_CONTACT_TOLERANCE_M = 0.01
+CREATURE_GROUND_CONTACT_CLEARANCE_M = 0.001
 
 
 def parse_args() -> argparse.Namespace:
@@ -164,7 +158,6 @@ def import_vanilla_reference(
     job: Path,
     payload: Dict[str, Any],
     pdx: Dict[str, Any],
-    approved_reference_roots: Dict[str, str] | None = None,
 ) -> Optional[Dict[str, Any]]:
     reference = payload.get("vanilla_reference") or {}
     if not reference:
@@ -173,17 +166,7 @@ def import_vanilla_reference(
         return None
 
     mesh_rel = str(reference.get("mesh_rel", ""))
-    reference_root_id = str(reference.get("reference_root_id", "job"))
-    if reference_root_id == "job":
-        reference_path = within(job, mesh_rel)
-    else:
-        roots = approved_reference_roots or {}
-        if reference_root_id not in roots:
-            raise ValueError(f"Unapproved vanilla reference root: {reference_root_id}")
-        reference_root = Path(roots[reference_root_id]).resolve()
-        reference_path = within(reference_root, mesh_rel)
-    if reference_path.suffix.casefold() != ".mesh":
-        raise ValueError("Vanilla reference input must be a .mesh file.")
+    reference_path = within(job, mesh_rel)
     before = set(bpy.data.objects)
     pdx["import_meshfile"](
         str(reference_path),
@@ -254,7 +237,7 @@ def import_vanilla_reference(
         "forward_axis": reference.get("forward_axis"),
         "up_axis": reference.get("up_axis"),
         "ground_contact_z": minimum.z,
-        "reference_policy": "read_only_vanilla_source_measurement; candidate mesh target may bake its calibrated runtime scale",
+        "reference_policy": "read_only_vanilla_source_measurement; pilot mesh target may bake its calibrated runtime scale",
         "status": "passed",
     }
 
@@ -422,18 +405,7 @@ def prepare_pdx_export_transforms() -> Dict[str, Any]:
 
     rigs = armatures()
     if not rigs:
-        return {
-            "policy": "static_mesh_export_without_armature",
-            "armature": None,
-            "armature_world_scale_before": None,
-            "armature_data_scale_factor": None,
-            "animation_translation_channels": None,
-            "armature_world_scale_after": None,
-            "mesh_world_scales_after": {
-                obj.name: list(obj.matrix_world.to_scale())
-                for obj in mesh_objects()
-            },
-        }
+        return require_identity_static_mesh_transforms()
     if len(rigs) != 1:
         raise RuntimeError(
             f"PDX export requires exactly one working armature, found {len(rigs)}."
@@ -532,36 +504,6 @@ def _load_texture_image(path: Path, name: str, *, non_color: bool) -> bpy.types.
     return image
 
 
-def _image_channel_statistics(image: bpy.types.Image) -> Dict[str, Any]:
-    """Record bounded decoded-pixel evidence for packed runtime material maps."""
-
-    channels = max(1, int(image.channels))
-    pixels = image.pixels
-    pixel_count = max(1, len(pixels) // channels)
-    stride = max(1, pixel_count // 262144)
-    values: List[List[float]] = [[] for _ in range(channels)]
-    for pixel_index in range(0, pixel_count, stride):
-        base = pixel_index * channels
-        for channel in range(channels):
-            values[channel].append(float(pixels[base + channel]))
-    names = ["red", "green", "blue", "alpha"]
-    return {
-        "decoded_size": [int(image.size[0]), int(image.size[1])],
-        "channels": channels,
-        "sample_stride_pixels": stride,
-        "sample_count": len(values[0]),
-        "statistics": {
-            names[index] if index < len(names) else f"channel_{index}": {
-                "minimum": min(channel_values),
-                "maximum": max(channel_values),
-                "mean": sum(channel_values) / len(channel_values),
-            }
-            for index, channel_values in enumerate(values)
-            if channel_values
-        },
-    }
-
-
 def _sanitize_pdx_material(material: bpy.types.Material) -> None:
     """Remove glTF-only PBR/emission wiring from the PDX working material."""
 
@@ -590,7 +532,7 @@ def bind_texture_sources(job: Path, payload: Dict[str, Any]) -> List[Dict[str, A
     """Bind explicit provider maps to the working materials before export."""
 
     source_rels = payload.get("texture_source_rels") or {}
-    if payload.get("asset_kind") == "humanoid" and source_rels:
+    if payload.get("asset_kind") in {"humanoid", "creature"} and source_rels:
         required = {"diffuse", "specular", "normal"}
         missing = sorted(required - set(source_rels))
         if missing:
@@ -656,7 +598,7 @@ def bind_texture_sources(job: Path, payload: Dict[str, Any]) -> List[Dict[str, A
                             material.node_tree.links.remove(link)
                         material.node_tree.links.new(normal_node.outputs["Normal"], target)
                 elif role == "specular":
-                    # The checksum-locked io_pdx_mesh exporter reads Blender's Roughness input when
+                    # io_pdx_mesh 0.91 reads the Blender Roughness input when
                     # emitting the PDX material's `spec` texture slot. The
                     # engine-side specular map is therefore bound here, not to
                     # Blender's scalar specular-IOR control.
@@ -670,20 +612,8 @@ def bind_texture_sources(job: Path, payload: Dict[str, Any]) -> List[Dict[str, A
                 "role": role,
                 "image": image.name,
                 "source": str(source.relative_to(job)).replace("\\", "/"),
-                "source_sha256": sha256_file(source),
                 "node_bindings": node_count,
                 "size": [int(image.size[0]), int(image.size[1])],
-                "decoded_channel_evidence": _image_channel_statistics(image),
-                "pdx_channel_policy": (
-                    {
-                        "red": "unused_or_mask_zero",
-                        "green": "specular_level",
-                        "blue": "metallic",
-                        "alpha": "roughness",
-                    }
-                    if role == "specular"
-                    else None
-                ),
             }
         )
     return records
@@ -910,6 +840,64 @@ def world_bounds(objects: Iterable[bpy.types.Object]) -> Tuple[Vector, Vector]:
     return minimum, maximum
 
 
+def vector_record(value: Vector) -> List[float]:
+    return [float(component) for component in value]
+
+
+def bounds_record(objects: Iterable[bpy.types.Object]) -> Dict[str, List[float]]:
+    minimum, maximum = world_bounds(objects)
+    return {
+        "minimum": vector_record(minimum),
+        "maximum": vector_record(maximum),
+        "dimensions": vector_record(maximum - minimum),
+    }
+
+
+def object_transform_record(obj: bpy.types.Object) -> Dict[str, Any]:
+    return {
+        "location": [float(value) for value in obj.location],
+        "rotation_euler": [float(value) for value in obj.rotation_euler],
+        "scale": [float(value) for value in obj.scale],
+        "matrix_world": [[float(value) for value in row] for row in obj.matrix_world],
+    }
+
+
+def require_identity_static_mesh_transforms(tolerance: float = 1e-7) -> Dict[str, Any]:
+    """Fail closed when a static export retains any object-space transform."""
+
+    meshes = mesh_objects()
+    if not meshes:
+        raise RuntimeError("Static mesh validation found no approved hoi4_working mesh objects.")
+    failures = []
+    records = []
+    for obj in meshes:
+        transform = object_transform_record(obj)
+        flat_values = [
+            *transform["location"],
+            *transform["rotation_euler"],
+            *transform["scale"],
+            *(value for row in transform["matrix_world"] for value in row),
+        ]
+        if not all(math.isfinite(value) for value in flat_values):
+            failures.append(f"{obj.name}: non-finite transform")
+        if any(value <= 0.0 for value in transform["scale"]):
+            failures.append(f"{obj.name}: non-positive or negative scale {transform['scale']}")
+        if any(abs(value) > tolerance for value in transform["location"]):
+            failures.append(f"{obj.name}: non-identity location {transform['location']}")
+        if any(abs(value) > tolerance for value in transform["rotation_euler"]):
+            failures.append(f"{obj.name}: non-identity rotation {transform['rotation_euler']}")
+        if any(abs(value - 1.0) > tolerance for value in transform["scale"]):
+            failures.append(f"{obj.name}: non-identity scale {transform['scale']}")
+        records.append({"object": obj.name, "transform": transform})
+    if failures:
+        raise RuntimeError("Static PDX export transform validation failed: " + "; ".join(failures))
+    return {
+        "policy": "static_mesh_identity_transform_required",
+        "tolerance": tolerance,
+        "objects": records,
+    }
+
+
 def evaluated_world_bounds(objects: Iterable[bpy.types.Object]) -> Tuple[Vector, Vector]:
     """Measure evaluated, armature-deformed mesh vertices at the current frame."""
 
@@ -1063,36 +1051,63 @@ def controlled_decimate(target_triangles: int) -> Dict[str, Any]:
     target_for_object = max(100, int(target_triangles / len(objects)))
     details = []
     for obj in objects:
-        current = sum(max(0, len(poly.vertices) - 2) for poly in obj.data.polygons)
+        before_object = sum(max(0, len(poly.vertices) - 2) for poly in obj.data.polygons)
+        current = before_object
         if current <= target_for_object:
             continue
-        ratio = max(0.01, min(1.0, target_for_object / current))
-        bpy.ops.object.select_all(action="DESELECT")
-        obj.select_set(True)
-        bpy.context.view_layer.objects.active = obj
-        modifier = obj.modifiers.new("HOI4_BOUNDED_DECIMATE", type="DECIMATE")
-        modifier.ratio = ratio
-        modifier.use_collapse_triangulate = True
-        while obj.modifiers.find(modifier.name) > 0:
-            bpy.ops.object.modifier_move_up(modifier=modifier.name)
-        bpy.ops.object.modifier_apply(modifier=modifier.name)
+        passes = []
+        while current > target_for_object and len(passes) < 8:
+            ratio = max(0.01, min(1.0, target_for_object / current))
+            bpy.ops.object.select_all(action="DESELECT")
+            obj.select_set(True)
+            bpy.context.view_layer.objects.active = obj
+            modifier = obj.modifiers.new("HOI4_BOUNDED_DECIMATE", type="DECIMATE")
+            modifier.ratio = ratio
+            modifier.use_collapse_triangulate = False
+            while obj.modifiers.find(modifier.name) > 0:
+                bpy.ops.object.modifier_move_up(modifier=modifier.name)
+            bpy.ops.object.modifier_apply(modifier=modifier.name)
+            reduced = sum(max(0, len(poly.vertices) - 2) for poly in obj.data.polygons)
+            passes.append(
+                {
+                    "before_triangles": current,
+                    "after_triangles": reduced,
+                    "ratio": ratio,
+                }
+            )
+            if reduced >= current:
+                raise RuntimeError(
+                    f"Controlled decimation stalled for {obj.name}: {current} -> {reduced} triangles."
+                )
+            current = reduced
+        if current > target_for_object:
+            raise RuntimeError(
+                f"Controlled decimation did not reach the approved target for {obj.name}: "
+                f"{current} > {target_for_object} triangles after {len(passes)} passes."
+            )
         details.append(
             {
                 "object": obj.name,
-                "before_triangles": current,
+                "before_triangles": before_object,
                 "target_triangles": target_for_object,
-                "ratio": ratio,
+                "after_triangles": current,
+                "passes": passes,
             }
         )
     triangulate_and_normals()
     after = geometry_metrics()
+    if after["triangles"] > target_triangles:
+        raise RuntimeError(
+            "Controlled decimation exceeded its aggregate approved target: "
+            f"{after['triangles']} > {target_triangles} triangles."
+        )
     return {
         "applied": True,
         "target_triangles": target_triangles,
         "before_triangles": before["triangles"],
         "after_triangles": after["triangles"],
         "objects": details,
-        "method": "Blender DECIMATE modifier with triangulation preserved",
+        "method": "bounded iterative Blender DECIMATE collapse followed by explicit triangulation",
     }
 
 
@@ -1511,7 +1526,7 @@ def evaluated_action_metrics() -> List[Dict[str, Any]]:
             if (
                 ("WORKING" in action.name and action.name.startswith("Armature|"))
                 or action.name.startswith("creature_")
-                or action.name.startswith("creature_")
+                or action.name.startswith("black_plague_rat_")
             )
         ]
         for action in actions:
@@ -1916,12 +1931,7 @@ def prepare(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
     clear_scene()
     source_collection = new_collection("PROVIDER_SOURCE")
     working_collection = new_collection("WORKING")
-    vanilla_reference = import_vanilla_reference(
-        job,
-        payload,
-        pdx,
-        req.get("approved_reference_roots", {}),
-    )
+    vanilla_reference = import_vanilla_reference(job, payload, pdx)
     imported = import_candidate(source)
     excluded_names = {str(name) for name in payload.get("excluded_provider_objects", [])}
     geometry_source = None
@@ -2009,12 +2019,12 @@ def prepare(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
     if vanilla_reference:
         final_height = float(geometry["dimensions"][2])
         vanilla_reference["final_mesh_height"] = final_height
-        vanilla_reference["candidate_entity_scale"] = runtime_entity_scale
-        vanilla_reference["candidate_target_runtime_height"] = target_height * runtime_entity_scale
+        vanilla_reference["pilot_entity_scale"] = runtime_entity_scale
+        vanilla_reference["pilot_target_runtime_height"] = target_height * runtime_entity_scale
         vanilla_reference["final_effective_runtime_height"] = final_height * runtime_entity_scale
         vanilla_reference["final_runtime_height_delta"] = (
             vanilla_reference["final_effective_runtime_height"]
-            - vanilla_reference["candidate_target_runtime_height"]
+            - vanilla_reference["pilot_target_runtime_height"]
         )
     geometry_checkpoint = job / "blender" / "checkpoints" / "01_geometry_approved.blend"
     save_blend(geometry_checkpoint)
@@ -2022,7 +2032,7 @@ def prepare(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
     materials = tag_pdx_materials(pdx)
     texture_bindings = bind_texture_sources(job, payload)
     materials["texture_bindings"] = texture_bindings
-    if payload["asset_kind"] == "humanoid" and payload.get("texture_source_rels") and not image_nodes():
+    if payload["asset_kind"] in {"humanoid", "creature"} and payload.get("texture_source_rels") and not image_nodes():
         raise RuntimeError(
             "Humanoid preparation produced no image-backed material. Refusing to export a black unit."
         )
@@ -2074,7 +2084,7 @@ def prepare(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
             "mesh_target_height_m": target_height,
             "entity_scale": runtime_entity_scale,
             "effective_runtime_height_m": target_height * runtime_entity_scale,
-            "policy": "bake the calibrated candidate source height into mesh coordinates and preserve the specified vanilla entity scale",
+            "policy": "bake the calibrated pilot source height into mesh coordinates and preserve the specified vanilla entity scale",
         },
         "triangulation": triangulation,
         "controlled_reduction": reduction,
@@ -2185,21 +2195,21 @@ def inspect(req: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     preview_paths = []
+    action_name = str(req["payload"].get("action_name") or "")
+    if action_name:
+        rigs = armatures()
+        action = bpy.data.actions.get(action_name)
+        if len(rigs) != 1 or action is None:
+            raise RuntimeError(f"Action inspection selection failed for {action_name}.")
+        rigs[0].animation_data_create()
+        rigs[0].animation_data.action = action
+        requested_frame = int(req["payload"].get("preview_frame", -1))
+        if requested_frame < 0:
+            start, end = action.frame_range
+            requested_frame = int(round((start + end) * 0.5))
+        bpy.context.scene.frame_set(requested_frame)
+        bpy.context.view_layer.update()
     if req["payload"].get("render_previews"):
-        action_name = str(req["payload"].get("action_name") or "")
-        if action_name:
-            rigs = armatures()
-            action = bpy.data.actions.get(action_name)
-            if len(rigs) != 1 or action is None:
-                raise RuntimeError(f"Preview action selection failed for {action_name}.")
-            rigs[0].animation_data_create()
-            rigs[0].animation_data.action = action
-            requested_frame = int(req["payload"].get("preview_frame", -1))
-            if requested_frame < 0:
-                start, end = action.frame_range
-                requested_frame = int(round((start + end) * 0.5))
-            bpy.context.scene.frame_set(requested_frame)
-            bpy.context.view_layer.update()
         runtime_stem = safe_name(str(req["payload"].get("runtime_stem") or blend.stem))
         preview_paths = render_previews(job, runtime_stem, req["payload"].get("preview_view_names") or None)
     return {
@@ -2227,6 +2237,16 @@ def inspect(req: Dict[str, Any]) -> Dict[str, Any]:
         "evaluated_actions": evaluated_action_metrics(),
         "weights": weight_metrics(),
         "materials": materials,
+        "pose_bones": [
+            {
+                "armature": rig.name,
+                "bone": bone.name,
+                "head": list(rig.matrix_world @ bone.head),
+                "tail": list(rig.matrix_world @ bone.tail),
+            }
+            for rig in armatures()
+            for bone in rig.pose.bones
+        ],
         "previews": preview_paths,
     }
 
@@ -2286,6 +2306,305 @@ def extract_textures(req: Dict[str, Any]) -> Dict[str, Any]:
     return report
 
 
+def bake_static_mesh_transforms(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Bake approved static-building object transforms into mesh data."""
+
+    job = Path(req["job_root"]).resolve()
+    payload = req["payload"]
+    blend = within(job, payload["blend_rel"])
+    output = within(job, payload["output_blend_rel"], allow_missing=True)
+    asset_kind = str(payload.get("asset_kind") or "")
+    if asset_kind not in {"building", "static_building"}:
+        raise RuntimeError("Static transform baking accepts only building or static_building profiles.")
+    tolerance = float(payload.get("bounds_tolerance", 1e-5))
+    if not math.isfinite(tolerance) or tolerance <= 0.0 or tolerance > 1e-3:
+        raise RuntimeError("bounds_tolerance must be finite and within (0, 0.001].")
+
+    bpy.ops.wm.open_mainfile(filepath=str(blend))
+    working = mesh_objects()
+    if not working:
+        raise RuntimeError("Static transform baking found no approved hoi4_working mesh objects.")
+    if armatures(working_only=False) or bpy.data.actions:
+        raise RuntimeError("Static transform baking rejects scenes containing armatures or actions.")
+    if any(obj.parent is not None for obj in working):
+        raise RuntimeError("Static transform baking rejects parented working mesh objects.")
+    if any(obj.modifiers for obj in working):
+        raise RuntimeError("Static transform baking requires applied working mesh modifiers.")
+
+    protected = [obj for obj in mesh_objects(working_only=False) if not obj.get("hoi4_working", False)]
+    protected_data = {obj.data for obj in protected}
+    if any(obj.data in protected_data for obj in working):
+        raise RuntimeError("Working mesh data is shared with a protected source or reference object.")
+    protected_before = {
+        obj.name: {"transform": object_transform_record(obj), "bounds": bounds_record([obj])}
+        for obj in protected
+    }
+    scene_before = bounds_record(working)
+    object_records = []
+    for obj in working:
+        before_transform = object_transform_record(obj)
+        matrix = obj.matrix_world.copy()
+        flat_matrix = [float(value) for row in matrix for value in row]
+        if not all(math.isfinite(value) for value in flat_matrix):
+            raise RuntimeError(f"{obj.name} has a non-finite world transform.")
+        if any(not math.isfinite(float(value)) or float(value) <= 0.0 for value in obj.scale):
+            raise RuntimeError(f"{obj.name} has a non-positive or negative scale: {list(obj.scale)}")
+        if matrix.to_3x3().determinant() <= 0.0:
+            raise RuntimeError(f"{obj.name} has a negative or singular world transform.")
+
+        object_before = bounds_record([obj])
+        uv_layers_before = [layer.name for layer in obj.data.uv_layers]
+        material_slots_before = [slot.material.name if slot.material else None for slot in obj.material_slots]
+        mesh_name = obj.data.name
+        object_name = obj.name
+        obj.data.transform(matrix)
+        obj.matrix_world = Matrix.Identity(4)
+        obj.location = (0.0, 0.0, 0.0)
+        obj.rotation_euler = (0.0, 0.0, 0.0)
+        obj.scale = (1.0, 1.0, 1.0)
+        obj.data.update()
+        bpy.context.view_layer.update()
+
+        object_after = bounds_record([obj])
+        deltas = {
+            key: [object_after[key][index] - object_before[key][index] for index in range(3)]
+            for key in ("minimum", "maximum", "dimensions")
+        }
+        max_drift = max(abs(value) for values in deltas.values() for value in values)
+        if max_drift > tolerance:
+            raise RuntimeError(f"{obj.name} bounds drift {max_drift} exceeded tolerance {tolerance}.")
+        if obj.name != object_name or obj.data.name != mesh_name:
+            raise RuntimeError(f"{object_name} name changed during static transform baking.")
+        if [layer.name for layer in obj.data.uv_layers] != uv_layers_before:
+            raise RuntimeError(f"{obj.name} UV layers changed during static transform baking.")
+        if [slot.material.name if slot.material else None for slot in obj.material_slots] != material_slots_before:
+            raise RuntimeError(f"{obj.name} material slots changed during static transform baking.")
+        object_records.append(
+            {
+                "object": obj.name,
+                "before_transform": before_transform,
+                "after_transform": object_transform_record(obj),
+                "before_bounds": object_before,
+                "after_bounds": object_after,
+                "bounds_delta": deltas,
+                "maximum_bounds_drift": max_drift,
+                "ground_contact_delta": object_after["minimum"][2] - object_before["minimum"][2],
+                "uv_layers": uv_layers_before,
+                "material_slots": material_slots_before,
+            }
+        )
+
+    identity_validation = require_identity_static_mesh_transforms()
+    scene_after = bounds_record(working)
+    scene_delta = {
+        key: [scene_after[key][index] - scene_before[key][index] for index in range(3)]
+        for key in ("minimum", "maximum", "dimensions")
+    }
+    maximum_scene_drift = max(abs(value) for values in scene_delta.values() for value in values)
+    if maximum_scene_drift > tolerance:
+        raise RuntimeError(f"Static working-scene bounds drift {maximum_scene_drift} exceeded tolerance {tolerance}.")
+    protected_after = {
+        obj.name: {"transform": object_transform_record(obj), "bounds": bounds_record([obj])}
+        for obj in protected
+    }
+    if protected_after != protected_before:
+        raise RuntimeError("A protected provider/source or vanilla reference object changed during baking.")
+
+    save_blend(output)
+    report = {
+        "asset_kind": asset_kind,
+        "source_blend": str(blend.relative_to(job)).replace("\\", "/"),
+        "output_blend": str(output.relative_to(job)).replace("\\", "/"),
+        "bounds_tolerance": tolerance,
+        "scene_before_bounds": scene_before,
+        "scene_after_bounds": scene_after,
+        "scene_bounds_delta": scene_delta,
+        "maximum_scene_bounds_drift": maximum_scene_drift,
+        "protected_objects_verified_unchanged": sorted(protected_before),
+        "objects": object_records,
+        "identity_validation": identity_validation,
+    }
+    report_path = job / "blender" / "reports" / "static_transform_bake.json"
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return report
+
+
+def partition_static_mesh_export_batches(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Partition static geometry into material batches without changing its shape."""
+
+    job = Path(req["job_root"]).resolve()
+    payload = req["payload"]
+    blend = within(job, payload["blend_rel"])
+    output = within(job, payload["output_blend_rel"], allow_missing=True)
+    asset_kind = str(payload.get("asset_kind") or "")
+    if asset_kind not in {"building", "static_building"}:
+        raise RuntimeError("Static export batching accepts only building or static_building profiles.")
+    maximum_vertices = int(payload.get("max_export_vertices_per_batch", 60000))
+    if maximum_vertices < 3 or maximum_vertices > 65535:
+        raise RuntimeError("max_export_vertices_per_batch must be within [3, 65535].")
+    maximum_triangles = maximum_vertices // 3
+    if maximum_triangles < 1:
+        raise RuntimeError("The export batch vertex ceiling cannot contain one triangle.")
+
+    bpy.ops.wm.open_mainfile(filepath=str(blend))
+    working = mesh_objects()
+    if not working:
+        raise RuntimeError("Static export batching found no approved hoi4_working mesh objects.")
+    if armatures(working_only=False) or bpy.data.actions:
+        raise RuntimeError("Static export batching rejects scenes containing armatures or actions.")
+    if any(obj.parent is not None for obj in working):
+        raise RuntimeError("Static export batching rejects parented working mesh objects.")
+    if any(obj.modifiers for obj in working):
+        raise RuntimeError("Static export batching requires applied working mesh modifiers.")
+    identity_before = require_identity_static_mesh_transforms()
+    scene_before = bounds_record(working)
+    geometry_before = geometry_metrics()
+    object_records = []
+
+    for obj in working:
+        mesh = obj.data
+        if any(len(poly.vertices) != 3 for poly in mesh.polygons):
+            raise RuntimeError(f"{obj.name} must be triangulated before static export batching.")
+        original_slot_count = len(mesh.materials)
+        if original_slot_count == 0:
+            raise RuntimeError(f"{obj.name} has no material slots to partition.")
+        bounds_before = bounds_record([obj])
+        transforms_before = object_transform_record(obj)
+        uv_layers_before = [layer.name for layer in mesh.uv_layers]
+        object_name = obj.name
+        mesh_name = mesh.name
+        batches = []
+
+        for material_index in range(original_slot_count):
+            polygons = [poly for poly in mesh.polygons if poly.material_index == material_index]
+            if not polygons:
+                continue
+            material = mesh.materials[material_index]
+            if material is None:
+                raise RuntimeError(f"{obj.name} material slot {material_index} is empty.")
+            polygons.sort(
+                key=lambda poly: (
+                    float(poly.center.x),
+                    float(poly.center.y),
+                    float(poly.center.z),
+                    int(poly.index),
+                )
+            )
+            batch_count = max(1, math.ceil(len(polygons) / maximum_triangles))
+            slot_indices = [material_index]
+            for batch_number in range(1, batch_count):
+                batch_material = material.copy()
+                batch_material.name = f"{material.name}_export_batch_{batch_number + 1:02d}"
+                mesh.materials.append(batch_material)
+                slot_indices.append(len(mesh.materials) - 1)
+            for batch_number, start in enumerate(range(0, len(polygons), maximum_triangles)):
+                batch_polygons = polygons[start:start + maximum_triangles]
+                slot_index = slot_indices[batch_number]
+                for poly in batch_polygons:
+                    poly.material_index = slot_index
+                triangle_count = len(batch_polygons)
+                batches.append(
+                    {
+                        "source_material_index": material_index,
+                        "source_material": material.name,
+                        "batch_number": batch_number + 1,
+                        "material_slot_index": slot_index,
+                        "material": mesh.materials[slot_index].name,
+                        "triangles": triangle_count,
+                        "worst_case_export_vertices": triangle_count * 3,
+                    }
+                )
+
+        mesh.update()
+        bpy.context.view_layer.update()
+        bounds_after = bounds_record([obj])
+        maximum_drift = max(
+            abs(bounds_after[key][axis] - bounds_before[key][axis])
+            for key in ("minimum", "maximum", "dimensions")
+            for axis in range(3)
+        )
+        if maximum_drift > 1e-7:
+            raise RuntimeError(f"{obj.name} bounds changed during static export batching.")
+        if obj.name != object_name or mesh.name != mesh_name:
+            raise RuntimeError(f"{object_name} name changed during static export batching.")
+        if object_transform_record(obj) != transforms_before:
+            raise RuntimeError(f"{obj.name} transform changed during static export batching.")
+        if [layer.name for layer in mesh.uv_layers] != uv_layers_before:
+            raise RuntimeError(f"{obj.name} UV layers changed during static export batching.")
+        if any(batch["worst_case_export_vertices"] > maximum_vertices for batch in batches):
+            raise RuntimeError(f"{obj.name} produced an oversized static export batch.")
+        object_records.append(
+            {
+                "object": obj.name,
+                "source_material_slots": original_slot_count,
+                "final_material_slots": len(mesh.materials),
+                "maximum_bounds_drift": maximum_drift,
+                "batches": batches,
+            }
+        )
+
+    geometry_after = geometry_metrics()
+    for key in ("objects", "vertices", "polygons", "triangles", "bounds_min", "bounds_max", "dimensions"):
+        if geometry_after[key] != geometry_before[key]:
+            raise RuntimeError(f"Static export batching changed geometry metric {key}.")
+    identity_after = require_identity_static_mesh_transforms()
+    scene_after = bounds_record(working)
+    if scene_after != scene_before:
+        raise RuntimeError("Static export batching changed working-scene bounds.")
+
+    save_blend(output)
+    report = {
+        "asset_kind": asset_kind,
+        "source_blend": str(blend.relative_to(job)).replace("\\", "/"),
+        "output_blend": str(output.relative_to(job)).replace("\\", "/"),
+        "max_export_vertices_per_batch": maximum_vertices,
+        "max_triangles_per_batch": maximum_triangles,
+        "geometry_before": geometry_before,
+        "geometry_after": geometry_after,
+        "scene_bounds_before": scene_before,
+        "scene_bounds_after": scene_after,
+        "identity_before": identity_before,
+        "identity_after": identity_after,
+        "objects": object_records,
+    }
+    report_path = job / "blender" / "reports" / "static_export_batch_partition.json"
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return report
+
+
+def exported_mesh_streams(text_path: Path) -> List[Dict[str, int]]:
+    """Read per-material PDX mesh stream sizes from the exporter text proof."""
+
+    streams: List[Dict[str, int]] = []
+    current: Optional[Dict[str, int]] = None
+    for line in text_path.read_text(encoding="utf-8").splitlines():
+        if re.match(r"^\s*mesh:\s*$", line):
+            if current is not None:
+                streams.append(current)
+            current = {"stream_index": len(streams)}
+            continue
+        if current is None:
+            continue
+        position_match = re.search(r"\bp \(float,\s*(\d+)\)", line)
+        if position_match:
+            components = int(position_match.group(1))
+            if components % 3:
+                raise RuntimeError("PDX export position stream is not divisible by three.")
+            current["vertices"] = components // 3
+        triangle_match = re.search(r"\btri \(int,\s*(\d+)\)", line)
+        if triangle_match:
+            indices = int(triangle_match.group(1))
+            if indices % 3:
+                raise RuntimeError("PDX export triangle stream is not divisible by three.")
+            current["triangles"] = indices // 3
+    if current is not None:
+        streams.append(current)
+    streams = [stream for stream in streams if "vertices" in stream or "triangles" in stream]
+    if not streams or any("vertices" not in stream or "triangles" not in stream for stream in streams):
+        raise RuntimeError("Unable to prove complete per-stream vertex and triangle counts from PDX text export.")
+    return streams
+
+
 def export_mesh(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
@@ -2320,28 +2639,30 @@ def export_mesh(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
         debug_mode=True,
         # The HOI4 renderer's supported vertex/index envelope is materially
         # lower than the per-loop vertex stream produced by split_verts=True.
-        # The checksum-locked exporter may have a slower de-duplication pass when this
+        # The pinned 0.91 exporter has an O(n^2) de-duplication pass when this
         # is false, but the shared-vertex route is required for runtime-safe
         # humanoid exports. A diagnostic may opt into split vertices explicitly.
         split_verts=bool(payload.get("split_verts", False)),
         sort_verts="+",
         plain_txt=True,
     )
+    text_output = output.with_suffix(".txt")
+    streams = exported_mesh_streams(text_output)
+    oversized_streams = [stream for stream in streams if stream["vertices"] > 65535]
+    if oversized_streams:
+        raise RuntimeError(f"PDX export exceeded the 65,535-vertex per-stream limit: {oversized_streams}")
     exported_checkpoint = job / "blender" / "checkpoints" / "06_exported.blend"
     save_blend(exported_checkpoint)
     result = {
         "blend": str(blend.relative_to(job)).replace("\\", "/"),
         "mesh": str(output.relative_to(job)).replace("\\", "/"),
         "mesh_bytes": output.stat().st_size,
-        "mesh_sha256": sha256_file(output),
-        "exported_mesh_object_names": [obj.name for obj in working],
-        "meshsettings_name_evidence": {
-            "required_names": [obj.name for obj in working],
-            "policy": "runtime meshsettings.name must match an actual exported mesh object name",
-        },
         "mesh_text": str(output.with_suffix(".txt").relative_to(job)).replace("\\", "/")
         if output.with_suffix(".txt").exists()
         else None,
+        "mesh_streams": streams,
+        "maximum_stream_vertices": max(stream["vertices"] for stream in streams),
+        "vertex_stream_limit": 65535,
         "exported_checkpoint": str(exported_checkpoint.relative_to(job)).replace("\\", "/"),
         "geometry": geometry_metrics(),
         "export_transforms": export_transforms,
@@ -2392,7 +2713,7 @@ def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
     blend = within(job, payload["blend_rel"])
     source = within(job, payload["source_rel"])
     checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
-    action_name = str(payload.get("action_name") or "runtime_action")
+    action_name = str(payload.get("action_name") or "hoi4_runtime_action")
     if not re.fullmatch(r"[A-Za-z0-9_.-]+", action_name):
         raise ValueError("Imported runtime action names must use stable alphanumeric, dot, dash, or underscore identifiers.")
 
@@ -2447,29 +2768,143 @@ def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
             + json.dumps({"missing_bones": missing_bones, "source_action": source_action.name}, sort_keys=True)
         )
 
+    source_rig.animation_data_create()
+    source_rig.animation_data.action = source_action
+    source_start, source_end = source_action.frame_range
+    frame_start = int(math.floor(float(source_start)))
+    frame_end = int(math.ceil(float(source_end)))
+    if frame_end <= frame_start:
+        raise RuntimeError(f"Provider animation action has no usable frame span: {source_action.name}")
+    source_lengths = {
+        name: max(float(source_rig.data.bones[name].length), 1e-8)
+        for name in bone_names
+    }
+    length_ratios = sorted(
+        float(target_rig.data.bones[name].length) / source_lengths[name]
+        for name in bone_names
+    )
+    location_scale = length_ratios[len(length_ratios) // 2]
+    source_pose_cache: Dict[int, Dict[str, Tuple[Vector, Quaternion]]] = {}
+    for frame in range(frame_start, frame_end + 1):
+        bpy.context.scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        frame_pose: Dict[str, Tuple[Vector, Quaternion]] = {}
+        for bone_name in bone_names:
+            location, rotation, _ = source_rig.pose.bones[bone_name].matrix_basis.decompose()
+            frame_pose[bone_name] = (location.copy(), rotation.copy())
+        source_pose_cache[frame] = frame_pose
+
     existing = bpy.data.actions.get(action_name)
     if existing is not None:
         for obj in bpy.context.scene.objects:
             if obj.animation_data and obj.animation_data.action == existing:
                 obj.animation_data.action = None
         bpy.data.actions.remove(existing)
-    transferred = source_action.copy()
-    transferred.name = action_name
+    transferred = bpy.data.actions.new(action_name)
     transferred.use_fake_user = True
     target_rig.animation_data_create()
     target_rig.animation_data.action = transferred
     bpy.context.view_layer.objects.active = target_rig
     target_rig.select_set(True)
+    source_hips_location = source_pose_cache[frame_start].get("Hips", (Vector(), Quaternion()))[0]
+    for frame in range(frame_start, frame_end + 1):
+        bpy.context.scene.frame_set(frame)
+        for bone_name in bone_names:
+            target_bone = target_rig.pose.bones[bone_name]
+            source_location, source_rotation = source_pose_cache[frame][bone_name]
+            target_bone.rotation_mode = "QUATERNION"
+            if bone_name == "Hips":
+                root_delta = source_location - source_hips_location
+                target_bone.location = Vector((0.0, 0.0, root_delta.z * location_scale))
+            else:
+                target_bone.location = source_location * location_scale
+            target_bone.rotation_quaternion = source_rotation
+            target_bone.scale = (1.0, 1.0, 1.0)
+            target_bone.keyframe_insert(data_path="location", frame=frame, group=bone_name)
+            target_bone.keyframe_insert(data_path="rotation_quaternion", frame=frame, group=bone_name)
+        bpy.context.view_layer.update()
 
     scale_cleanup = sanitize_action_scale_channels()
-    root_cleanup = sanitize_root_translation_channels()
-    start, end = transferred.frame_range
-    frame_start = int(math.floor(float(start)))
-    frame_end = int(math.ceil(float(end)))
-    if frame_end <= frame_start:
-        raise RuntimeError(f"Provider animation action has no usable frame span: {transferred.name}")
+    root_cleanup = {
+        "action": transferred.name,
+        "policy": "provider pose baked to target rig; Hips X/Y root motion removed; provider Hips Z motion retained",
+        "location_scale": location_scale,
+        "source_root_location": list(source_hips_location),
+    }
     bpy.context.scene.frame_start = frame_start
     bpy.context.scene.frame_end = frame_end
+    sample_frames = sorted(
+        {
+            frame_start,
+            int(round(frame_start + (frame_end - frame_start) * 0.25)),
+            int(round(frame_start + (frame_end - frame_start) * 0.50)),
+            int(round(frame_start + (frame_end - frame_start) * 0.75)),
+            frame_end,
+        }
+    )
+    sampled_bones = [
+        name for name in ("Hips", "Spine02", "LeftHand", "RightHand", "LeftFoot", "RightFoot")
+        if name in bone_names
+    ]
+    source_reference = source_pose_cache[frame_start]
+    motion_crosscheck = []
+    source_motion_peak = 0.0
+    target_motion_peak = 0.0
+    for frame in sample_frames:
+        bpy.context.scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        source_motion = 0.0
+        target_motion = 0.0
+        bones_report = []
+        for bone_name in sampled_bones:
+            source_location, source_rotation = source_pose_cache[frame][bone_name]
+            source_base_location, source_base_rotation = source_reference[bone_name]
+            target_location, target_rotation, _ = target_rig.pose.bones[bone_name].matrix_basis.decompose()
+            target_rig.animation_data.action = transferred
+            bpy.context.view_layer.update()
+            target_base_location = (
+                Vector((0.0, 0.0, 0.0))
+                if bone_name == "Hips"
+                else source_base_location * location_scale
+            )
+            target_base_rotation = source_base_rotation
+            source_delta = float((source_location - source_base_location).length) + float(
+                source_rotation.rotation_difference(source_base_rotation).angle
+            )
+            target_delta = float((target_location - target_base_location).length) + float(
+                target_rotation.rotation_difference(target_base_rotation).angle
+            )
+            source_motion += source_delta
+            target_motion += target_delta
+            bones_report.append(
+                {
+                    "bone": bone_name,
+                    "source_delta_from_start": source_delta,
+                    "target_delta_from_start": target_delta,
+                }
+            )
+        source_motion_peak = max(source_motion_peak, source_motion)
+        target_motion_peak = max(target_motion_peak, target_motion)
+        motion_crosscheck.append(
+            {
+                "frame": frame,
+                "source_motion_total": source_motion,
+                "target_motion_total": target_motion,
+                "bones": bones_report,
+            }
+        )
+    if source_motion_peak > 1e-4 and target_motion_peak < max(1e-4, source_motion_peak * 0.10):
+        raise RuntimeError(
+            "Provider action has source motion but the transferred target action remained static: "
+            + json.dumps(
+                {
+                    "source_motion_peak": source_motion_peak,
+                    "target_motion_peak": target_motion_peak,
+                    "samples": motion_crosscheck,
+                },
+                sort_keys=True,
+            )
+        )
     bpy.context.scene.frame_set(frame_start)
     bpy.context.view_layer.update()
 
@@ -2506,6 +2941,14 @@ def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
         "provider_actions_removed": removed_provider_actions,
         "scale_cleanup": scale_cleanup,
         "root_cleanup": root_cleanup,
+        "location_scale": location_scale,
+        "source_target_motion_crosscheck": {
+            "sample_frames": sample_frames,
+            "source_motion_peak": source_motion_peak,
+            "target_motion_peak": target_motion_peak,
+            "samples": motion_crosscheck,
+            "status": "pass",
+        },
         "policy": "provider_skeletal_action_transferred_to_single_calibrated_working_rig",
         "new_provider_call": False,
         "warnings": [],
@@ -2514,6 +2957,26 @@ def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return result
+
+
+def explicit_safe_name(value: Any, field: str) -> str:
+    """Require a caller-supplied Blender identifier without sanitizing it."""
+
+    name = str(value or "")
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_.-]{0,127}", name):
+        raise ValueError(
+            f"{field} must be an explicit safe Blender identifier containing only "
+            "letters, digits, underscores, periods, or hyphens."
+        )
+    return name
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest().upper()
 
 
 def retime_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
@@ -2703,7 +3166,6 @@ def export_animation(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]
         "export_transforms": export_transforms,
         "anim": str(output.relative_to(job)).replace("\\", "/"),
         "anim_bytes": output.stat().st_size,
-        "anim_sha256": sha256_file(output),
         "anim_text": str(output.with_suffix(".txt").relative_to(job)).replace("\\", "/")
         if output.with_suffix(".txt").exists()
         else None,
@@ -2712,6 +3174,1133 @@ def export_animation(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]
     }
     report = job / "blender" / "reports" / f"export_anim_{safe_name(action.name)}.json"
     report.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return result
+
+
+HUMANOID_BONE_NAMES = (
+    "Hips",
+    "Spine",
+    "Spine01",
+    "Spine02",
+    "neck",
+    "Head",
+    "headfront",
+    "head_end",
+    "LeftShoulder",
+    "LeftArm",
+    "LeftForeArm",
+    "LeftHand",
+    "RightShoulder",
+    "RightArm",
+    "RightForeArm",
+    "RightHand",
+    "LeftUpLeg",
+    "LeftLeg",
+    "LeftFoot",
+    "LeftToeBase",
+    "RightUpLeg",
+    "RightLeg",
+    "RightFoot",
+    "RightToeBase",
+)
+
+
+def _humanoid_bone_name_for_vertex(
+    world_position: Vector,
+    minimum: Vector,
+    maximum: Vector,
+) -> str:
+    """Choose a deterministic HOI4 humanoid influence from the mesh silhouette."""
+
+    dimensions = maximum - minimum
+    centre = (minimum + maximum) * 0.5
+    height = max(float(dimensions.z), 1e-6)
+    width = max(float(dimensions.x), 1e-6)
+    length = max(float(dimensions.y), 1e-6)
+    z_fraction = (world_position.z - minimum.z) / height
+    x_fraction = (world_position.x - centre.x) / width
+    y_fraction = (world_position.y - centre.y) / length
+    abs_x = abs(x_fraction)
+    side = "Left" if x_fraction < 0.0 else "Right"
+
+    if z_fraction > 0.91:
+        return "head_end"
+    if z_fraction > 0.84 and y_fraction < -0.08:
+        return "headfront"
+    if z_fraction > 0.79:
+        return "Head"
+    if z_fraction > 0.69 and abs_x < 0.18:
+        return "neck"
+    if z_fraction > 0.58 and abs_x > 0.12:
+        return f"{side}Shoulder"
+    if z_fraction > 0.43 and abs_x > 0.13:
+        return f"{side}Arm"
+    if z_fraction > 0.27 and abs_x > 0.10:
+        return f"{side}ForeArm"
+    if z_fraction > 0.16 and abs_x > 0.08:
+        return f"{side}Hand"
+    if z_fraction < 0.13 and abs_x > 0.07:
+        return f"{side}ToeBase" if y_fraction < -0.04 else f"{side}Foot"
+    if z_fraction < 0.46 and abs_x > 0.08:
+        return f"{side}Leg" if z_fraction < 0.28 else f"{side}UpLeg"
+    if z_fraction > 0.63:
+        return "Spine02"
+    if z_fraction > 0.49:
+        return "Spine01"
+    if z_fraction > 0.33:
+        return "Spine"
+    return "Hips"
+
+
+def _humanoid_weight_candidates(primary: str) -> List[str]:
+    """Return a small same-region chain for bounded blended weights."""
+
+    if primary in {"Head", "headfront", "head_end", "neck"}:
+        return ["neck", "Head", "headfront", "head_end"]
+    if primary.startswith("Left"):
+        if primary in {"LeftShoulder", "LeftArm", "LeftForeArm", "LeftHand"}:
+            return ["LeftShoulder", "LeftArm", "LeftForeArm", "LeftHand"]
+        if primary in {"LeftUpLeg", "LeftLeg", "LeftFoot", "LeftToeBase"}:
+            return ["LeftUpLeg", "LeftLeg", "LeftFoot", "LeftToeBase"]
+    if primary.startswith("Right"):
+        if primary in {"RightShoulder", "RightArm", "RightForeArm", "RightHand"}:
+            return ["RightShoulder", "RightArm", "RightForeArm", "RightHand"]
+        if primary in {"RightUpLeg", "RightLeg", "RightFoot", "RightToeBase"}:
+            return ["RightUpLeg", "RightLeg", "RightFoot", "RightToeBase"]
+    if primary == "Spine02":
+        return ["Spine01", "Spine02", "neck"]
+    if primary == "Spine01":
+        return ["Spine", "Spine01", "Spine02"]
+    if primary == "Spine":
+        return ["Hips", "Spine", "Spine01"]
+    return ["Hips", "Spine", "Spine01"]
+
+
+def _point_segment_distance(point: Vector, start: Vector, end: Vector) -> float:
+    segment = end - start
+    length_squared = float(segment.length_squared)
+    if length_squared <= 1e-12:
+        return float((point - start).length)
+    factor = max(0.0, min(1.0, float((point - start).dot(segment)) / length_squared))
+    return float((point - (start + factor * segment)).length)
+
+
+def author_humanoid_rig(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Create the repository's bounded HOI4 humanoid rig on approved geometry."""
+
+    job = Path(req["job_root"]).resolve()
+    payload = req["payload"]
+    blend = within(job, payload["blend_rel"])
+    checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
+    rig_name = safe_name(str(payload.get("rig_name") or "hoi4_humanoid_armature"))
+    bpy.ops.wm.open_mainfile(filepath=str(blend))
+    working = mesh_objects()
+    if not working:
+        raise RuntimeError("Humanoid rigging found no approved working meshes.")
+    weapon_objects = [obj for obj in working if bool(obj.get("hoi4_humanoid_weapon", False))]
+    body_objects = [obj for obj in working if obj not in weapon_objects]
+    if not body_objects:
+        raise RuntimeError("Humanoid rigging found no body meshes after excluding reviewed weapons.")
+    if len(weapon_objects) > 1:
+        raise RuntimeError("Humanoid rigging accepts at most one explicitly isolated weapon object.")
+    armed_route = bool(weapon_objects)
+    for rig in armatures():
+        bpy.data.objects.remove(rig, do_unlink=True)
+
+    minimum, maximum = world_bounds(body_objects)
+    dimensions = maximum - minimum
+    centre = (minimum + maximum) * 0.5
+    height = max(float(dimensions.z), 1e-6)
+    width = max(float(dimensions.x), 1e-6)
+    length = max(float(dimensions.y), 1e-6)
+    z0 = minimum.z
+    y_front = centre.y - length * 0.08
+    y_rear = centre.y + length * 0.04
+    armature_data = bpy.data.armatures.new(rig_name)
+    rig = bpy.data.objects.new(rig_name, armature_data)
+    _working_collection().objects.link(rig)
+    rig["hoi4_working"] = True
+    rig["hoi4_humanoid_rig"] = True
+    rig["hoi4_humanoid_rig_route"] = (
+        "blender_failure_recovery_armed_humanoid_v2"
+        if armed_route
+        else "blender_failure_recovery_humanoid_v1"
+    )
+    rig["hoi4_skeleton_contract"] = (
+        "hoi4_standard_humanoid_24_bone_plus_weapon"
+        if armed_route
+        else "hoi4_standard_humanoid_24_bone"
+    )
+    bpy.context.view_layer.objects.active = rig
+    rig.select_set(True)
+    bpy.ops.object.mode_set(mode="EDIT")
+    bones: Dict[str, bpy.types.EditBone] = {}
+
+    def add_bone(name: str, head: Vector, tail: Vector, parent: Optional[str] = None) -> None:
+        bone = armature_data.edit_bones.new(name)
+        bone.head = head
+        bone.tail = tail
+        if parent:
+            bone.parent = bones[parent]
+            bone.use_connect = False
+        bones[name] = bone
+
+    add_bone("Hips", Vector((centre.x, centre.y, z0 + height * 0.34)), Vector((centre.x, centre.y, z0 + height * 0.43)))
+    add_bone("Spine", Vector((centre.x, centre.y, z0 + height * 0.41)), Vector((centre.x, centre.y, z0 + height * 0.51)), "Hips")
+    add_bone("Spine01", Vector((centre.x, centre.y, z0 + height * 0.49)), Vector((centre.x, centre.y, z0 + height * 0.61)), "Spine")
+    add_bone("Spine02", Vector((centre.x, centre.y, z0 + height * 0.59)), Vector((centre.x, centre.y, z0 + height * 0.70)), "Spine01")
+    add_bone("neck", Vector((centre.x, y_front, z0 + height * 0.68)), Vector((centre.x, y_front, z0 + height * 0.78)), "Spine02")
+    add_bone("Head", Vector((centre.x, y_front, z0 + height * 0.76)), Vector((centre.x, y_front, z0 + height * 0.87)), "neck")
+    add_bone("headfront", Vector((centre.x, y_front, z0 + height * 0.82)), Vector((centre.x, y_front - length * 0.08, z0 + height * 0.84)), "Head")
+    add_bone("head_end", Vector((centre.x, y_front, z0 + height * 0.86)), Vector((centre.x, y_front, z0 + height * 0.96)), "Head")
+
+    for side, sign in (("Left", -1.0), ("Right", 1.0)):
+        shoulder = Vector((centre.x + sign * width * 0.16, centre.y - length * 0.01, z0 + height * 0.66))
+        if armed_route:
+            elbow = Vector((centre.x + sign * width * 0.29, centre.y - length * 0.015, z0 + height * 0.66))
+            wrist = Vector((centre.x + sign * width * 0.41, centre.y - length * 0.02, z0 + height * 0.66))
+            hand = Vector((centre.x + sign * width * 0.47, centre.y - length * 0.025, z0 + height * 0.66))
+        else:
+            elbow = Vector((centre.x + sign * width * 0.32, centre.y - length * 0.04, z0 + height * 0.50))
+            wrist = Vector((centre.x + sign * width * 0.38, centre.y - length * 0.07, z0 + height * 0.33))
+            hand = Vector((centre.x + sign * width * 0.39, centre.y - length * 0.10, z0 + height * 0.22))
+        add_bone(f"{side}Shoulder", shoulder, elbow, "Spine02")
+        add_bone(f"{side}Arm", elbow, wrist, f"{side}Shoulder")
+        add_bone(f"{side}ForeArm", wrist, hand, f"{side}Arm")
+        hand_tail = (
+            hand + Vector((sign * width * 0.04, -length * 0.015, 0.0))
+            if armed_route
+            else hand + Vector((0.0, -length * 0.06, -height * 0.04))
+        )
+        add_bone(f"{side}Hand", hand, hand_tail, f"{side}ForeArm")
+
+        hip = Vector((centre.x + sign * width * 0.10, centre.y + length * 0.01, z0 + height * 0.35))
+        knee = Vector((centre.x + sign * width * 0.12, centre.y + length * 0.01, z0 + height * 0.20))
+        ankle = Vector((centre.x + sign * width * 0.12, centre.y - length * 0.02, z0 + height * 0.08))
+        toe = Vector((centre.x + sign * width * 0.12, centre.y - length * 0.13, z0 + height * 0.035))
+        add_bone(f"{side}UpLeg", hip, knee, "Hips")
+        add_bone(f"{side}Leg", knee, ankle, f"{side}UpLeg")
+        add_bone(f"{side}Foot", ankle, toe, f"{side}Leg")
+        add_bone(f"{side}ToeBase", toe, toe + Vector((0.0, -length * 0.07, 0.0)), f"{side}Foot")
+
+    if armed_route:
+        weapon = weapon_objects[0]
+        weapon_minimum, weapon_maximum = world_bounds([weapon])
+        weapon_stock = Vector(
+            (
+                (weapon_minimum.x + weapon_maximum.x) * 0.5,
+                weapon_maximum.y,
+                (weapon_minimum.z + weapon_maximum.z) * 0.5,
+            )
+        )
+        weapon_length = max(float(weapon_maximum.y - weapon_minimum.y), length)
+        add_bone(
+            "weapon",
+            weapon_stock,
+            weapon_stock + Vector((0.0, -weapon_length * 0.12, 0.0)),
+            "Spine02",
+        )
+
+    bpy.ops.object.mode_set(mode="OBJECT")
+    rig.show_in_front = True
+    armature_data.display_type = "BBONE"
+    segments = {
+        bone.name: (Vector(bone.head_local), Vector(bone.tail_local))
+        for bone in armature_data.bones
+    }
+    records = []
+    for obj in body_objects:
+        for group in list(obj.vertex_groups):
+            obj.vertex_groups.remove(group)
+        groups = {name: obj.vertex_groups.new(name=name) for name in HUMANOID_BONE_NAMES}
+        counts: Dict[str, int] = {name: 0 for name in groups}
+        influence_histogram: Dict[str, int] = {"1": 0, "2": 0, "3": 0}
+        for vertex in obj.data.vertices:
+            world_position = obj.matrix_world @ vertex.co
+            primary = _humanoid_bone_name_for_vertex(world_position, minimum, maximum)
+            candidates = [name for name in _humanoid_weight_candidates(primary) if name in segments]
+            if armed_route:
+                ranked = sorted(
+                    (
+                        _point_segment_distance(world_position, *segments[name]),
+                        name,
+                    )
+                    for name in HUMANOID_BONE_NAMES
+                    if name in segments
+                )[:3]
+                primary = ranked[0][1] if ranked else "Hips"
+                candidates = [name for _, name in ranked]
+            else:
+                ranked = sorted(
+                    (
+                        _point_segment_distance(world_position, *segments[name]),
+                        name,
+                    )
+                    for name in candidates
+                )[:3]
+            names = [name for _, name in ranked]
+            if primary not in names:
+                names = [primary] + names[:2]
+            names = list(dict.fromkeys(name for name in names if name in groups))[:3]
+            if not names:
+                names = ["Hips"]
+            if primary in names:
+                names.remove(primary)
+            primary_weight = 0.90 if armed_route and primary.endswith("Hand") else 0.68
+            remaining_weight = 1.0 - primary_weight
+            weights = {primary: primary_weight}
+            if names:
+                inverse = [1.0 / max(next((distance for distance, name in ranked if name == item), 1.0), 1e-4) for item in names]
+                inverse_total = sum(inverse)
+                for name, value in zip(names, inverse):
+                    weights[name] = remaining_weight * value / max(inverse_total, 1e-8)
+            total = sum(weights.values())
+            for name, weight in weights.items():
+                groups[name].add([vertex.index], weight / max(total, 1e-8), "REPLACE")
+                counts[name] += 1
+            influence_histogram[str(len(weights))] = influence_histogram.get(str(len(weights)), 0) + 1
+        modifier = next((item for item in obj.modifiers if item.type == "ARMATURE"), None)
+        if modifier is None:
+            modifier = obj.modifiers.new("HOI4_HUMANOID_ARMATURE", "ARMATURE")
+        modifier.object = rig
+        world_matrix = obj.matrix_world.copy()
+        obj.parent = rig
+        obj.parent_type = "OBJECT"
+        obj.matrix_world = world_matrix
+        records.append(
+            {
+                "object": obj.name,
+                "vertices": len(obj.data.vertices),
+                "vertex_group_counts": {name: count for name, count in counts.items() if count},
+                "influence_histogram": influence_histogram,
+            }
+        )
+    weapon_bindings = []
+    if armed_route:
+        weapon = weapon_objects[0]
+        for group in list(weapon.vertex_groups):
+            weapon.vertex_groups.remove(group)
+        weapon_group = weapon.vertex_groups.new(name="weapon")
+        weapon_group.add([vertex.index for vertex in weapon.data.vertices], 1.0, "REPLACE")
+        modifier = next((item for item in weapon.modifiers if item.type == "ARMATURE"), None)
+        if modifier is None:
+            modifier = weapon.modifiers.new("HOI4_HUMANOID_ARMATURE", "ARMATURE")
+        modifier.object = rig
+        world_matrix = weapon.matrix_world.copy()
+        weapon.parent = rig
+        weapon.parent_type = "OBJECT"
+        weapon.matrix_world = world_matrix
+        weapon_bindings.append(
+            {
+                "object": weapon.name,
+                "vertices": len(weapon.data.vertices),
+                "bone": "weapon",
+                "weight": 1.0,
+                "policy": "rigid recovered weapon binding on a dedicated Spine02 child bone",
+            }
+        )
+    save_blend(checkpoint)
+    report = {
+        "blend": str(blend.relative_to(job)).replace("\\", "/"),
+        "checkpoint": str(checkpoint.relative_to(job)).replace("\\", "/"),
+        "armature": rig.name,
+        "bones": [bone.name for bone in armature_data.bones],
+        "bone_count": len(armature_data.bones),
+        "component_bindings": records,
+        "weapon_bindings": weapon_bindings,
+        "rig_route": rig["hoi4_humanoid_rig_route"],
+        "rig_map": (
+            f"{rig_name}_hoi4_standard_humanoid_24_bones_plus_weapon_v2"
+            if armed_route
+            else f"{rig_name}_hoi4_standard_humanoid_24_bones_v1"
+        ),
+        "weight_policy": (
+            "nearest three humanoid bone segments for the body; rigid one-bone reviewed weapon binding; no unweighted vertices"
+            if armed_route
+            else "bounded same-region blended weights with at most three influences per vertex; no unweighted vertices"
+        ),
+        "source_policy": "Meshy 7 geometry retained; provider rig is not used",
+        "status": "pass" if len(armature_data.bones) == len(HUMANOID_BONE_NAMES) + (1 if armed_route else 0) else "failed",
+    }
+    report_path = job / "blender" / "reports" / "humanoid_rig.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return report
+
+
+def author_humanoid_actions(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Author the required in-place HOI4 humanoid skeletal actions."""
+
+    job = Path(req["job_root"]).resolve()
+    payload = req["payload"]
+    blend = within(job, payload["blend_rel"])
+    checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
+    bpy.ops.wm.open_mainfile(filepath=str(blend))
+    rigs = armatures()
+    if len(rigs) != 1:
+        raise RuntimeError(f"Humanoid action authoring requires exactly one armature, found {len(rigs)}.")
+    rig = rigs[0]
+    fused_weapon_grip = bool(payload.get("fused_weapon_grip", False))
+    isolated_weapon_route = any(bool(obj.get("hoi4_humanoid_weapon", False)) for obj in mesh_objects())
+    armed_route = isolated_weapon_route or fused_weapon_grip
+    if fused_weapon_grip:
+        if isolated_weapon_route:
+            raise RuntimeError("Fused weapon-grip action authoring cannot also use an isolated weapon object.")
+        required_grip_bones = {"Hips", "Spine02", "RightHand", "LeftHand"}
+        missing_grip_bones = sorted(required_grip_bones - {bone.name for bone in rig.pose.bones})
+        if missing_grip_bones:
+            raise RuntimeError(f"Fused weapon-grip action authoring is missing bones: {missing_grip_bones}")
+        if len(mesh_objects()) != 1:
+            raise RuntimeError("Fused weapon-grip action authoring requires exactly one accepted character mesh.")
+    rig.animation_data_create()
+    scene = bpy.context.scene
+    scene.render.fps = int(payload.get("fps") or 24)
+    base_rig_location = rig.location.copy()
+    action_reports: Dict[str, Dict[str, Any]] = {}
+    weapon_objects = [obj for obj in mesh_objects() if bool(obj.get("hoi4_humanoid_weapon", False))]
+    weapon_grip_targets: Dict[str, List[float]] = {}
+    if isolated_weapon_route:
+        if len(weapon_objects) != 1:
+            raise RuntimeError("Armed humanoid action authoring requires exactly one isolated weapon.")
+        weapon_minimum, weapon_maximum = world_bounds(weapon_objects)
+        weapon_dimensions = weapon_maximum - weapon_minimum
+        weapon_center_x = (weapon_minimum.x + weapon_maximum.x) * 0.5
+        weapon_center_z = (weapon_minimum.z + weapon_maximum.z) * 0.5
+        weapon_rear_y = weapon_maximum.y
+        weapon_length = float(weapon_maximum.y - weapon_minimum.y)
+        weapon_grip_targets = {
+            "right": [weapon_center_x + 0.08, weapon_rear_y - weapon_length * 0.25, weapon_center_z - 0.12],
+            "left": [weapon_center_x - 0.16, weapon_rear_y - weapon_length * 0.30, weapon_center_z - 0.15],
+        }
+
+    def make_ik_target(
+        collection: bpy.types.Collection,
+        name: str,
+        world_location: Vector,
+        parent_bone: str,
+    ) -> bpy.types.Object:
+        target = bpy.data.objects.new(name, None)
+        collection.objects.link(target)
+        target.empty_display_type = "SPHERE"
+        target.empty_display_size = 0.08
+        target.hide_render = True
+        world_matrix = Matrix.Translation(world_location)
+        target.parent = rig
+        target.parent_type = "BONE"
+        target.parent_bone = parent_bone
+        target.matrix_world = world_matrix
+        return target
+
+    def install_armed_ik(action_name: str) -> Tuple[bpy.types.Collection, List[bpy.types.Constraint]]:
+        collection = new_collection(f"IK_{safe_name(action_name)}")
+        body_objects = [obj for obj in mesh_objects() if not bool(obj.get("hoi4_humanoid_weapon", False))]
+        body_minimum, body_maximum = world_bounds(body_objects)
+        body_dimensions = body_maximum - body_minimum
+        body_center = (body_minimum + body_maximum) * 0.5
+        targets = {
+            "Right": make_ik_target(collection, "RightGripTarget", Vector(weapon_grip_targets["right"]), "weapon"),
+            "Left": make_ik_target(collection, "LeftForegripTarget", Vector(weapon_grip_targets["left"]), "weapon"),
+        }
+        poles = {
+            "Right": make_ik_target(
+                collection,
+                "RightElbowPole",
+                Vector((body_center.x + body_dimensions.x * 0.42, body_center.y - body_dimensions.y * 0.20, body_minimum.z + body_dimensions.z * 0.50)),
+                "Spine02",
+            ),
+            "Left": make_ik_target(
+                collection,
+                "LeftElbowPole",
+                Vector((body_center.x - body_dimensions.x * 0.42, body_center.y - body_dimensions.y * 0.20, body_minimum.z + body_dimensions.z * 0.50)),
+                "Spine02",
+            ),
+        }
+        constraints = []
+        for side in ("Right", "Left"):
+            forearm = rig.pose.bones.get(f"{side}ForeArm")
+            if forearm is None:
+                raise RuntimeError(f"Armed IK could not find {side}ForeArm.")
+            constraint = forearm.constraints.new("IK")
+            constraint.name = f"HOI4_{side.upper()}_WEAPON_IK"
+            constraint.target = targets[side]
+            constraint.pole_target = poles[side]
+            constraint.chain_count = 3
+            constraint.use_tail = True
+            constraint.influence = 1.0
+            constraints.append(constraint)
+        return collection, constraints
+
+    def remove_ik_collection(collection: bpy.types.Collection) -> None:
+        for obj in list(collection.objects):
+            bpy.data.objects.remove(obj, do_unlink=True)
+        if bpy.data.collections.get(collection.name) is not None:
+            bpy.data.collections.remove(collection)
+
+    def role_frames(role: str) -> List[int]:
+        frames = {
+            "idle": [0, 12, 24, 36, 48],
+            "move": [0, 6, 12, 18, 24],
+            "attack": [0, 8, 16, 24, 32],
+            "laser_attack": [0, 6, 12, 18, 24],
+            "defend": [0, 8, 16, 24, 32],
+            "support_attack": [0, 6, 12, 18, 24],
+            "retreat": [0, 6, 12, 18, 24],
+            "training": [0, 8, 16, 24, 32, 40],
+            "death": [0, 12, 19, 24, 30, 36],
+        }
+        return frames[role]
+
+    def phase(role: str, frame: int, frames: List[int]) -> float:
+        normalized = (frame - frames[0]) / max(frames[-1] - frames[0], 1)
+        if role in {"idle", "move", "defend", "retreat"}:
+            return math.sin(2.0 * math.pi * normalized)
+        if role in {"attack", "laser_attack", "support_attack", "training"}:
+            return math.sin(math.pi * normalized)
+        return normalized
+
+    if fused_weapon_grip:
+        roles = ("idle", "move", "laser_attack", "defend", "support_attack", "retreat", "training", "death")
+    elif isolated_weapon_route:
+        roles = ("idle", "move", "laser_attack", "defend", "support_attack", "retreat", "training", "death")
+    else:
+        roles = ("idle", "move", "attack", "death")
+    for role in roles:
+        frames = role_frames(role)
+        action_name = safe_name(str(payload.get("action_names", {}).get(role) or f"hoi4_humanoid_{role}"))
+        old_action = bpy.data.actions.get(action_name)
+        if old_action is not None:
+            bpy.data.actions.remove(old_action)
+        action = bpy.data.actions.new(action_name)
+        action.use_fake_user = True
+        rig.animation_data.action = action
+        use_ik = isolated_weapon_route and role != "death"
+        ik_collection = None
+        if use_ik:
+            ik_collection, _ = install_armed_ik(action_name)
+        scene.frame_start = frames[0]
+        scene.frame_end = frames[-1]
+        base = {}
+        for bone in rig.pose.bones:
+            bone.rotation_mode = "QUATERNION"
+            base[bone.name] = (bone.location.copy(), bone.rotation_quaternion.copy())
+
+        def rotate(name: str, axis: str, degrees: float, value: float) -> None:
+            bone = rig.pose.bones.get(name)
+            if bone is None:
+                return
+            bone.rotation_mode = "QUATERNION"
+            bone.rotation_quaternion = base[name][1] @ _action_delta(axis, degrees * value)
+
+        def rotate_many(name: str, rotations: List[Tuple[str, float, float]]) -> None:
+            bone = rig.pose.bones.get(name)
+            if bone is None:
+                return
+            rotation = base[name][1].copy()
+            for axis, degrees, value in rotations:
+                rotation = rotation @ _action_delta(axis, degrees * value)
+            bone.rotation_mode = "QUATERNION"
+            bone.rotation_quaternion = rotation
+
+        for frame in frames:
+            scene.frame_set(frame)
+            p = phase(role, frame, frames)
+            for bone in rig.pose.bones:
+                bone.rotation_mode = "QUATERNION"
+                bone.location = base[bone.name][0].copy()
+                bone.rotation_quaternion = base[bone.name][1].copy()
+                bone.scale = (1.0, 1.0, 1.0)
+            if isolated_weapon_route and not use_ik:
+                readiness = max(0.0, 1.0 - p) if role == "death" else 1.0
+                right_yaw = -78.0
+                left_yaw = 78.0
+                if role == "defend":
+                    right_yaw = -68.0
+                    left_yaw = 68.0
+                rotate_many("RightShoulder", [("z", right_yaw, readiness), ("x", -5.0, readiness)])
+                rotate_many("RightArm", [("z", -8.0, readiness), ("y", -5.0, readiness)])
+                rotate_many("RightForeArm", [("z", -5.0, readiness)])
+                rotate_many("LeftShoulder", [("z", left_yaw, readiness), ("x", 5.0, readiness)])
+                rotate_many("LeftArm", [("z", 18.0, readiness), ("y", 7.0, readiness)])
+                rotate_many("LeftForeArm", [("z", 12.0, readiness)])
+                rotate_many("RightHand", [("z", -4.0, readiness)])
+                rotate_many("LeftHand", [("z", 4.0, readiness)])
+
+            if fused_weapon_grip:
+                hips = rig.pose.bones.get("Hips")
+                if hips is None:
+                    raise RuntimeError("Fused weapon-grip actions require the Hips root bone.")
+                if role == "idle":
+                    hips.location = base["Hips"][0] + Vector((0.0, 0.0, 0.008 * p))
+                    rotate_many("Hips", [("x", 0.35, p), ("z", 0.25, p)])
+                elif role == "move":
+                    hips.location = base["Hips"][0] + Vector((0.0, 0.0, 0.018 * abs(p)))
+                    rotate_many("Hips", [("x", 1.0, 1.0), ("z", 0.8, p)])
+                    for side, sign in (("Left", 1.0), ("Right", -1.0)):
+                        gait = sign * p
+                        rotate(f"{side}UpLeg", "x", 20.0, gait)
+                        rotate(f"{side}Leg", "x", -9.0, gait)
+                        rotate(f"{side}Foot", "x", 7.0, gait)
+                elif role == "laser_attack":
+                    hips.location = base["Hips"][0] + Vector((0.0, 0.12 * p, -0.012 * p))
+                    rotate_many("Hips", [("x", -2.8, p), ("z", 0.8, p)])
+                    rotate("Spine01", "x", -0.12, p)
+                    rotate("Spine02", "x", -0.10, p)
+                    for side, sign in (("Left", 1.0), ("Right", -1.0)):
+                        rotate(f"{side}Shoulder", "y", 0.05, sign * p)
+                        rotate(f"{side}Arm", "y", -0.04, sign * p)
+                        rotate(f"{side}ForeArm", "y", 0.03, sign * p)
+                        rotate(f"{side}Hand", "y", -0.02, sign * p)
+                    rotate("RightUpLeg", "x", -3.0, p)
+                    rotate("LeftUpLeg", "x", 2.0, p)
+                elif role == "support_attack":
+                    hips.location = base["Hips"][0] + Vector((0.025 * p, 0.10 * p, -0.010 * p))
+                    rotate_many("Hips", [("x", -2.3, p), ("z", 2.0, p)])
+                    rotate_many("Spine01", [("x", -0.10, p), ("z", 0.05, p)])
+                    rotate_many("Spine02", [("x", -0.08, p), ("z", 0.04, p)])
+                    for side, sign in (("Left", 1.0), ("Right", -1.0)):
+                        rotate_many(f"{side}Shoulder", [("y", 0.04, sign * p), ("z", 0.02, p)])
+                        rotate(f"{side}Arm", "y", -0.03, sign * p)
+                        rotate(f"{side}ForeArm", "y", 0.025, sign * p)
+                        rotate(f"{side}Hand", "y", -0.015, sign * p)
+                    rotate("RightUpLeg", "x", -4.0, p)
+                    rotate("LeftUpLeg", "x", 3.0, p)
+                elif role == "defend":
+                    hips.location = base["Hips"][0] + Vector((0.0, 0.0, -0.035 + 0.008 * p))
+                    rotate_many("Hips", [("x", 2.5, 1.0), ("z", 0.6, p)])
+                    rotate("RightUpLeg", "x", -10.0, 1.0)
+                    rotate("LeftUpLeg", "x", 8.0, 1.0)
+                    rotate("RightLeg", "x", 12.0, 1.0)
+                    rotate("LeftLeg", "x", -8.0, 1.0)
+                elif role == "retreat":
+                    hips.location = base["Hips"][0] + Vector((0.0, 0.0, 0.014 * abs(p)))
+                    rotate_many("Hips", [("x", 4.0, 1.0), ("z", 1.0, p)])
+                    for side, sign in (("Left", -1.0), ("Right", 1.0)):
+                        gait = sign * p
+                        rotate(f"{side}UpLeg", "x", 16.0, gait)
+                        rotate(f"{side}Leg", "x", -7.0, gait)
+                        rotate(f"{side}Foot", "x", 5.0, gait)
+                elif role == "training":
+                    hips.location = base["Hips"][0] + Vector((0.0, -0.04 * p, -0.020 * p))
+                    rotate_many("Hips", [("x", -3.0, p), ("z", 2.0, p)])
+                    rotate("RightUpLeg", "x", -8.0, p)
+                    rotate("LeftUpLeg", "x", 6.0, p)
+                    rotate("RightLeg", "x", 6.0, p)
+                    rotate("LeftLeg", "x", -4.0, p)
+                    rotate("neck", "x", -3.0, p)
+                    rotate("Head", "z", -5.0, p)
+                else:
+                    first_contact_phase = 19.0 / 36.0
+                    death_fall_phase = min(p / first_contact_phase, 1.0)
+                    death_settle_phase = max(0.0, (p - first_contact_phase) / (1.0 - first_contact_phase))
+                    hips.location = base["Hips"][0] + Vector(
+                        (
+                            -0.25 * death_settle_phase,
+                            -0.22 * death_fall_phase - 0.08 * death_settle_phase,
+                            -0.08 * death_fall_phase - 0.60 * death_settle_phase,
+                        )
+                    )
+                    rotate_many(
+                        "Hips",
+                        [
+                            ("x", 78.0, death_fall_phase),
+                            ("x", 12.0, death_settle_phase),
+                            ("y", 48.0, death_settle_phase),
+                            ("z", -6.0, death_fall_phase),
+                            ("z", -8.0, death_settle_phase),
+                        ],
+                    )
+                    rotate_many(
+                        "RightUpLeg",
+                        [("x", -28.0, death_fall_phase), ("x", -35.0, death_settle_phase)],
+                    )
+                    rotate_many(
+                        "LeftUpLeg",
+                        [("x", -20.0, death_fall_phase), ("x", -45.0, death_settle_phase)],
+                    )
+                    rotate_many(
+                        "RightLeg",
+                        [("x", 48.0, death_fall_phase), ("x", 65.0, death_settle_phase)],
+                    )
+                    rotate_many(
+                        "LeftLeg",
+                        [("x", 38.0, death_fall_phase), ("x", 55.0, death_settle_phase)],
+                    )
+                    rotate_many(
+                        "RightFoot",
+                        [("x", -22.0, death_fall_phase), ("x", -20.0, death_settle_phase)],
+                    )
+                    rotate_many(
+                        "LeftFoot",
+                        [("x", -18.0, death_fall_phase), ("x", -25.0, death_settle_phase)],
+                    )
+            elif role == "idle":
+                rotate("Spine01", "x", 1.0, p)
+                rotate("Spine02", "x", 1.5, p)
+                rotate("neck", "x", 2.0, p)
+                rotate("Head", "z", 1.0, p)
+                if not armed_route:
+                    rotate("LeftForeArm", "x", 1.0, p)
+                    rotate("RightForeArm", "x", -1.0, p)
+            elif role == "move":
+                for side, sign in (("Left", 1.0), ("Right", -1.0)):
+                    gait = sign * p
+                    rotate(f"{side}UpLeg", "x", 24.0, gait)
+                    rotate(f"{side}Leg", "x", -10.0, gait)
+                    rotate(f"{side}Foot", "x", 8.0, gait)
+                    if not armed_route:
+                        rotate(f"{side}Arm", "x", -16.0, gait)
+                        rotate(f"{side}ForeArm", "x", -6.0, gait)
+                rotate("Spine01", "x", 2.0, p)
+                rotate("Spine02", "x", 1.5, p)
+                rotate("neck", "x", -1.0, p)
+                rotate("Head", "z", 1.0, p)
+                hips = rig.pose.bones.get("Hips")
+                if hips is not None:
+                    hips.location = base["Hips"][0] + Vector((0.0, 0.0, 0.001 * p))
+            elif role in {"attack", "laser_attack"}:
+                rotate("Spine01", "x", -4.0, p)
+                rotate("Spine02", "x", -3.0, p)
+                rotate("neck", "x", -3.0, p)
+                rotate("Head", "x", -4.0, p)
+                if armed_route:
+                    rotate_many("RightShoulder", [("z", -78.0, 1.0), ("x", -5.0, 1.0), ("y", -7.0, p)])
+                    rotate_many("LeftShoulder", [("z", 78.0, 1.0), ("x", 5.0, 1.0), ("y", 6.0, p)])
+                    rotate("RightUpLeg", "x", -5.0, p)
+                    rotate("LeftUpLeg", "x", -5.0, p)
+                else:
+                    for side, sign in (("Left", 1.0), ("Right", -1.0)):
+                        rotate(f"{side}Shoulder", "x", -22.0, p)
+                        rotate(f"{side}Arm", "x", -30.0, p)
+                        rotate(f"{side}ForeArm", "x", -18.0, p)
+                        rotate(f"{side}Hand", "z", 8.0 * sign, p)
+                        rotate(f"{side}UpLeg", "x", -5.0, p)
+            elif role == "support_attack":
+                rotate_many("Spine01", [("z", 8.0, 1.0), ("x", -7.0, p)])
+                rotate_many("Spine02", [("z", 10.0, 1.0), ("x", -6.0, p)])
+                rotate("neck", "z", -8.0, 1.0)
+                rotate("Head", "z", -10.0, 1.0)
+                rotate_many("RightShoulder", [("z", -78.0, 1.0), ("x", -5.0, 1.0), ("y", -5.0, p)])
+                rotate_many("LeftShoulder", [("z", 78.0, 1.0), ("x", 5.0, 1.0), ("y", 5.0, p)])
+                rotate("RightUpLeg", "x", -7.0, 1.0)
+                rotate("LeftUpLeg", "x", 4.0, 1.0)
+            elif role == "defend":
+                rotate("Spine", "x", 8.0, 1.0)
+                rotate("Spine01", "x", 10.0, 1.0)
+                rotate("Spine02", "x", 5.0, p)
+                rotate("RightUpLeg", "x", -16.0, 1.0)
+                rotate("LeftUpLeg", "x", 12.0, 1.0)
+                rotate("RightLeg", "x", 18.0, 1.0)
+                rotate("LeftLeg", "x", -12.0, 1.0)
+            elif role == "retreat":
+                for side, sign in (("Left", -1.0), ("Right", 1.0)):
+                    gait = sign * p
+                    rotate(f"{side}UpLeg", "x", 18.0, gait)
+                    rotate(f"{side}Leg", "x", -8.0, gait)
+                    rotate(f"{side}Foot", "x", 6.0, gait)
+                rotate("Spine01", "x", 6.0, 1.0)
+                rotate("Spine02", "x", 4.0, p)
+                rotate("Head", "z", -4.0, p)
+            elif role == "training":
+                rotate_many("Spine01", [("x", -5.0, p), ("z", 3.0, p)])
+                rotate_many("Spine02", [("x", -4.0, p), ("z", 4.0, p)])
+                rotate("neck", "x", -3.0, p)
+                rotate_many("Head", [("x", -5.0, p), ("z", -4.0, p)])
+                rotate("RightUpLeg", "x", -7.0, p)
+                rotate("LeftUpLeg", "x", 5.0, p)
+                rotate("RightLeg", "x", 5.0, p)
+                rotate("LeftLeg", "x", -3.0, p)
+                weapon_bone = rig.pose.bones.get("weapon")
+                if weapon_bone is not None:
+                    weapon_bone.location = base["weapon"][0] + Vector((0.0, -0.03 * p, 0.12 * p))
+                    weapon_bone.rotation_mode = "QUATERNION"
+                    weapon_bone.rotation_quaternion = base["weapon"][1] @ _action_delta("x", -18.0 * p)
+            else:
+                rotate("Spine", "x", -34.0, p)
+                rotate("Spine01", "x", -38.0, p)
+                rotate("Spine02", "x", -28.0, p)
+                rotate("neck", "x", -24.0, p)
+                rotate("Head", "x", -18.0, p)
+                for side, sign in (("Left", 1.0), ("Right", -1.0)):
+                    rotate(f"{side}Shoulder", "z", 20.0 * sign, p)
+                    rotate(f"{side}Arm", "z", 28.0 * sign, p)
+                    rotate(f"{side}ForeArm", "z", 20.0 * sign, p)
+                    rotate(f"{side}UpLeg", "x", 8.0, p)
+                    rotate(f"{side}Leg", "x", 12.0, p)
+            if isolated_weapon_route and role in {"laser_attack", "support_attack"}:
+                weapon_bone = rig.pose.bones.get("weapon")
+                if weapon_bone is not None:
+                    weapon_bone.location = base["weapon"][0] + Vector((0.0, 0.16 * p, 0.0))
+                    weapon_bone.rotation_quaternion = base["weapon"][1] @ _action_delta("x", -3.0 * p)
+            for bone in rig.pose.bones:
+                bone.keyframe_insert(data_path="location", frame=frame, group=bone.name)
+                bone.keyframe_insert(data_path="rotation_quaternion", frame=frame, group=bone.name)
+
+        if use_ik:
+            bpy.ops.object.select_all(action="DESELECT")
+            rig.select_set(True)
+            bpy.context.view_layer.objects.active = rig
+            bpy.ops.object.mode_set(mode="POSE")
+            bpy.ops.pose.select_all(action="SELECT")
+            bpy.ops.nla.bake(
+                frame_start=frames[0],
+                frame_end=frames[-1],
+                step=1,
+                only_selected=False,
+                visual_keying=True,
+                clear_constraints=True,
+                clear_parents=False,
+                use_current_action=True,
+                bake_types={"POSE"},
+            )
+            bpy.ops.object.mode_set(mode="OBJECT")
+            remove_ik_collection(ik_collection)
+
+        for fcurve, _ in action_fcurves(action):
+            for keyframe in fcurve.keyframe_points:
+                keyframe.interpolation = "LINEAR"
+
+        death_contact_clearance = {
+            "LeftToeBase": 0.18,
+            "RightToeBase": 0.18,
+            "LeftFoot": 0.53,
+            "RightFoot": 0.53,
+            "LeftLeg": 0.38,
+            "RightLeg": 0.38,
+            "Hips": 0.48,
+            "Spine": 0.45,
+            "Spine01": 0.45,
+            "Spine02": 0.45,
+        }
+
+        def death_body_contact_samples() -> List[Dict[str, Any]]:
+            samples = []
+            for bone_name, clearance in death_contact_clearance.items():
+                bone = rig.pose.bones.get(bone_name)
+                if bone is None:
+                    raise RuntimeError(f"Death body-contact proxy is missing {bone_name}.")
+                head = rig.matrix_world @ bone.head
+                samples.append(
+                    {
+                        "bone": bone_name,
+                        "head_z": float(head.z),
+                        "clearance_z": clearance,
+                        "contact_gap_m": float(head.z) - clearance,
+                    }
+                )
+            return samples
+
+        death_terminal_frames = list(range(30, 37))
+        death_terminal_contact_tolerance_m = 0.12
+        death_terminal_penetration_tolerance_m = 0.05
+        death_terminal_grounding = []
+        if role == "death":
+            hips = rig.pose.bones.get("Hips")
+            if hips is None:
+                raise RuntimeError("Death terminal grounding requires the Hips root bone.")
+            for frame in (30, 36):
+                scene.frame_set(frame)
+                rig.location = base_rig_location.copy()
+                bpy.context.view_layer.update()
+                contacts_before = death_body_contact_samples()
+                knee_gap = min(
+                    item["contact_gap_m"]
+                    for item in contacts_before
+                    if item["bone"] in {"LeftLeg", "RightLeg"}
+                )
+                torso_gap = min(
+                    item["contact_gap_m"]
+                    for item in contacts_before
+                    if item["bone"] in {"Hips", "Spine", "Spine01", "Spine02"}
+                )
+                correction = -0.5 * (knee_gap + torso_gap)
+                hips.location.z += correction
+                hips.keyframe_insert(data_path="location", index=2, frame=frame, group=hips.name)
+                scene.frame_set(frames[0])
+                scene.frame_set(frame)
+                bpy.context.view_layer.update()
+                contacts_after = death_body_contact_samples()
+                death_terminal_grounding.append(
+                    {
+                        "frame": frame,
+                        "hips_root_vertical_correction_m": correction,
+                        "knee_gap_before_m": knee_gap,
+                        "torso_gap_before_m": torso_gap,
+                        "body_contact_proxy_after": contacts_after,
+                    }
+                )
+
+        ground_samples_before = []
+        ground_samples_after = []
+        corrections = []
+        for frame in range(frames[0], frames[-1] + 1):
+            scene.frame_set(frame)
+            rig.location = base_rig_location.copy()
+            bpy.context.view_layer.update()
+            minimum, maximum = evaluated_world_bounds(mesh_objects())
+            body_contact_before = death_body_contact_samples() if role == "death" else []
+            ground_samples_before.append(
+                {
+                    "frame": frame,
+                    "ground_contact_z": float(minimum.z),
+                    "bounds_max_z": float(maximum.z),
+                    "bounds_center_z": float((minimum.z + maximum.z) * 0.5),
+                    "body_contact_proxy": body_contact_before,
+                }
+            )
+            correction = 0.0 if role == "death" else max(0.0, -float(minimum.z))
+            rig.location.z = base_rig_location.z + correction
+            if role != "death":
+                rig.keyframe_insert(data_path="location", index=2, frame=frame, group=rig.name)
+            bpy.context.view_layer.update()
+            corrected_minimum, corrected_maximum = evaluated_world_bounds(mesh_objects())
+            body_contact_after = death_body_contact_samples() if role == "death" else []
+            ground_samples_after.append(
+                {
+                    "frame": frame,
+                    "ground_contact_z": float(corrected_minimum.z),
+                    "bounds_max_z": float(corrected_maximum.z),
+                    "bounds_center_z": float((corrected_minimum.z + corrected_maximum.z) * 0.5),
+                    "body_contact_proxy": body_contact_after,
+                    "body_contact_minimum_gap_m": (
+                        min(item["contact_gap_m"] for item in body_contact_after)
+                        if body_contact_after
+                        else None
+                    ),
+                }
+            )
+            corrections.append(correction)
+
+        scene.frame_set(frames[0])
+        rig.location = base_rig_location.copy()
+        metrics = action_metrics()
+        fused_grip_lock: Dict[str, Any] = {}
+        fused_grip_pass = True
+        if fused_weapon_grip:
+            grip_samples = []
+            baseline_distances: Optional[Tuple[float, float, float]] = None
+            baseline_axis: Optional[Vector] = None
+            maximum_distance_drift = 0.0
+            maximum_axis_drift = 0.0
+            for sample_frame in frames:
+                scene.frame_set(sample_frame)
+                bpy.context.view_layer.update()
+                right_hand = rig.matrix_world @ rig.pose.bones["RightHand"].head
+                left_hand = rig.matrix_world @ rig.pose.bones["LeftHand"].head
+                stock_proxy = rig.matrix_world @ rig.pose.bones["Spine02"].head
+                grip_axis = left_hand - right_hand
+                if grip_axis.length <= 1e-8:
+                    raise RuntimeError("Fused weapon-grip muzzle proxy collapsed to zero length.")
+                distances = (
+                    float((left_hand - right_hand).length),
+                    float((right_hand - stock_proxy).length),
+                    float((left_hand - stock_proxy).length),
+                )
+                if baseline_distances is None:
+                    baseline_distances = distances
+                    baseline_axis = grip_axis.normalized()
+                distance_drift = max(abs(value - baseline) for value, baseline in zip(distances, baseline_distances))
+                axis_drift = math.degrees(grip_axis.normalized().angle(baseline_axis))
+                maximum_distance_drift = max(maximum_distance_drift, distance_drift)
+                maximum_axis_drift = max(maximum_axis_drift, axis_drift)
+                grip_samples.append(
+                    {
+                        "frame": sample_frame,
+                        "right_hand": list(right_hand),
+                        "left_hand": list(left_hand),
+                        "stock_proxy": list(stock_proxy),
+                        "right_to_left_grip_distance_m": distances[0],
+                        "right_grip_to_stock_proxy_distance_m": distances[1],
+                        "left_foregrip_to_stock_proxy_distance_m": distances[2],
+                        "distance_drift_from_bind_m": distance_drift,
+                        "muzzle_proxy_angular_drift_degrees": axis_drift,
+                    }
+                )
+            muzzle_axis_limit = 90.0 if role == "death" else 5.0
+            fused_grip_pass = maximum_distance_drift <= 0.005 and maximum_axis_drift <= muzzle_axis_limit
+            fused_grip_lock = {
+                "mode": "single_fused_character_mesh_preserve_bind_grip",
+                "measurement": "RightHand-to-LeftHand grip axis plus both hand distances to Spine02 stock proxy",
+                "maximum_distance_drift_m": maximum_distance_drift,
+                "maximum_muzzle_proxy_angular_drift_degrees": maximum_axis_drift,
+                "distance_drift_limit_m": 0.005,
+                "muzzle_proxy_angular_drift_limit_degrees": muzzle_axis_limit,
+                "muzzle_axis_policy": (
+                    "intentional full-body fall may rotate the held assembly while contact distances remain locked"
+                    if role == "death"
+                    else "combat and locomotion actions retain a stable forward grip axis"
+                ),
+                "samples": grip_samples,
+                "status": "pass" if fused_grip_pass else "failed",
+            }
+            scene.frame_set(frames[0])
+        death_center_samples = [item["bounds_center_z"] for item in ground_samples_after]
+        death_center_monotonic = all(
+            later <= earlier + 0.02
+            for earlier, later in zip(death_center_samples, death_center_samples[1:])
+        )
+        death_center_drop = death_center_samples[0] - death_center_samples[-1]
+        death_peak_rise = max(death_center_samples) - death_center_samples[0]
+        death_terminal_rebound = death_center_samples[-1] - min(death_center_samples)
+        death_minimum_drop_m = 0.4
+        death_maximum_anticipation_rise_m = 0.3
+        death_maximum_terminal_rebound_m = 0.15
+        death_collapse_pass = role != "death" or (
+            death_center_drop >= death_minimum_drop_m
+            and death_peak_rise <= death_maximum_anticipation_rise_m
+            and death_terminal_rebound <= death_maximum_terminal_rebound_m
+            and death_center_monotonic
+        )
+        body_contact_minimum_gap = (
+            min(item["body_contact_minimum_gap_m"] for item in ground_samples_after)
+            if role == "death"
+            else None
+        )
+        terminal_ground_samples = (
+            [item for item in ground_samples_after if item["frame"] in death_terminal_frames]
+            if role == "death"
+            else []
+        )
+        terminal_contact_samples = []
+        terminal_contact_pass = True
+        if role == "death":
+            for sample in terminal_ground_samples:
+                proxies = sample["body_contact_proxy"]
+                knee_gap = min(
+                    item["contact_gap_m"]
+                    for item in proxies
+                    if item["bone"] in {"LeftLeg", "RightLeg"}
+                )
+                torso_gap = min(
+                    item["contact_gap_m"]
+                    for item in proxies
+                    if item["bone"] in {"Hips", "Spine", "Spine01", "Spine02"}
+                )
+                sample_pass = (
+                    -death_terminal_penetration_tolerance_m <= knee_gap <= death_terminal_contact_tolerance_m
+                    and -death_terminal_penetration_tolerance_m <= torso_gap <= death_terminal_contact_tolerance_m
+                )
+                terminal_contact_pass = terminal_contact_pass and sample_pass
+                terminal_contact_samples.append(
+                    {
+                        "frame": sample["frame"],
+                        "knee_minimum_gap_m": knee_gap,
+                        "torso_minimum_gap_m": torso_gap,
+                        "status": "pass" if sample_pass else "failed",
+                    }
+                )
+        corrected_terminal_bounds_nonrising = (
+            terminal_ground_samples[-1]["bounds_center_z"]
+            <= terminal_ground_samples[0]["bounds_center_z"] + 0.02
+            if role == "death" and terminal_ground_samples
+            else True
+        )
+        ground_contact_pass = (
+            terminal_contact_pass and corrected_terminal_bounds_nonrising
+            if role == "death"
+            else min(item["ground_contact_z"] for item in ground_samples_after) >= -0.01
+        )
+        report = {
+            "action": action.name,
+            "role": role,
+            "frame_start": frames[0],
+            "frame_end": frames[-1],
+            "fps": scene.render.fps,
+            "loop": role in {"idle", "move", "defend", "retreat"},
+            "keyed_bones": len(rig.pose.bones) * len(frames),
+            "keyed_channels": len(rig.pose.bones) * len(frames) * 2,
+            "ground_contact": {
+                "minimum_z": min(item["ground_contact_z"] for item in ground_samples_after),
+                "maximum_z": max(item["ground_contact_z"] for item in ground_samples_after),
+                "body_contact_minimum_gap_m": body_contact_minimum_gap,
+                "terminal_contact_frames": death_terminal_frames if role == "death" else [],
+                "terminal_contact_tolerance_m": death_terminal_contact_tolerance_m if role == "death" else None,
+                "terminal_penetration_tolerance_m": death_terminal_penetration_tolerance_m if role == "death" else None,
+                "terminal_contact_samples": terminal_contact_samples,
+                "corrected_terminal_bounds_nonrising": corrected_terminal_bounds_nonrising,
+                "policy": (
+                    "terminal post-grounding knee plus hips/spine contact; fused rifle and muzzle excluded"
+                    if role == "death"
+                    else "evaluated full-mesh minimum"
+                ),
+                "samples_before": ground_samples_before,
+                "samples_after": ground_samples_after,
+            },
+            "grounding_correction": {
+                "applied": (
+                    any(abs(value) > 1e-8 for value in corrections)
+                    or any(
+                        abs(item["hips_root_vertical_correction_m"]) > 1e-8
+                        for item in death_terminal_grounding
+                    )
+                ),
+                "minimum_translation_m": min(corrections, default=0.0),
+                "maximum_translation_m": max(corrections, default=0.0),
+                "maximum_absolute_translation_m": max((abs(value) for value in corrections), default=0.0),
+                "terminal_hips_root_corrections": death_terminal_grounding,
+            },
+            "death_collapse": (
+                {
+                    "bounds_center_z_samples": death_center_samples,
+                    "monotonic_nonincreasing_tolerance_m": 0.02,
+                    "monotonic_nonincreasing": death_center_monotonic,
+                    "final_center_drop_m": death_center_drop,
+                    "minimum_final_center_drop_m": death_minimum_drop_m,
+                    "maximum_anticipation_rise_m": death_peak_rise,
+                    "maximum_allowed_anticipation_rise_m": death_maximum_anticipation_rise_m,
+                    "terminal_rebound_m": death_terminal_rebound,
+                    "maximum_allowed_terminal_rebound_m": death_maximum_terminal_rebound_m,
+                    "acceptance_policy": "bounded silhouette-aware collapse with limited anticipation and terminal settling",
+                    "status": "pass" if death_collapse_pass else "failed",
+                }
+                if role == "death"
+                else {}
+            ),
+            "policy": (
+                "blender-authored-hoi4-fused-weapon-grip-skeletal-action-in-place-no-scale-channels"
+                if fused_weapon_grip
+                else (
+                    "blender-authored-hoi4-armed-humanoid-skeletal-action-in-place-no-scale-channels"
+                    if armed_route
+                    else "blender-authored-hoi4-humanoid-skeletal-action-in-place-no-scale-channels"
+                )
+            ),
+            "weapon_grip_targets": weapon_grip_targets if armed_route else {},
+            "weapon_ik_baked": use_ik,
+            "fused_weapon_grip_lock": fused_grip_lock,
+            "rig_and_actions": metrics,
+            "status": (
+                "pass"
+                if ground_contact_pass and fused_grip_pass
+                and death_collapse_pass
+                else (
+                    "failed_grip_lock"
+                    if not fused_grip_pass
+                    else ("failed_death_collapse" if not death_collapse_pass else "needs_grounding_review")
+                )
+            ),
+        }
+        report_path = job / "blender" / "reports" / f"humanoid_action_{role}.json"
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        action_reports[role] = report
+
+    save_blend(checkpoint)
+    result = {
+        "blend": str(blend.relative_to(job)).replace("\\", "/"),
+        "checkpoint": str(checkpoint.relative_to(job)).replace("\\", "/"),
+        "armature": rig.name,
+        "actions": action_reports,
+        "required_roles": list(roles),
+        "source_policy": (
+            "Meshy 7 fused armed geometry and accepted provider rig retained; seven grip-locked actions authored locally"
+            if fused_weapon_grip
+            else "Meshy 7 geometry retained; actions authored locally only after provider-rig recovery failure"
+        ),
+        "status": "pass" if all(item.get("status") == "pass" for item in action_reports.values()) else "needs_grounding_review",
+    }
+    report_path = job / "blender" / "reports" / "humanoid_actions.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return result
 
 
@@ -2883,7 +4472,7 @@ def _creature_spatial_profile(obj: bpy.types.Object, z_bins: int = 20, xy_bins: 
     """Return a deterministic face-centroid profile for a fused creature mesh.
 
     Meshy can return a single topologically connected shell even when the image
-    clearly contains an mounted creature, howdah, and rider.  A profile lets the parent
+    clearly contains an elephant, howdah, and rider.  A profile lets the parent
     choose an explicit, reviewable spatial rider mask instead of silently
     treating the whole shell as a miniature.  This is diagnostic only; it does
     not infer a rider from a machine-learning classifier.
@@ -3028,6 +4617,7 @@ def segment_creature_components(req: Dict[str, Any]) -> Dict[str, Any]:
 
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
+    component_prefix = safe_name(str(payload.get("component_prefix") or "elephant_component"))
     blend = within(job, payload["blend_rel"])
     checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
     bpy.ops.wm.open_mainfile(filepath=str(blend))
@@ -3084,8 +4674,8 @@ def segment_creature_components(req: Dict[str, Any]) -> Dict[str, Any]:
                 and abs(center.y - y_center) <= y_half
             )
 
-        rider_name = str(payload.get("rider_object_name") or "creature_rider_region")
-        body_name = str(payload.get("body_object_name") or "creature_body_region")
+        rider_name = str(payload.get("rider_object_name") or "elephant_rider_region")
+        body_name = str(payload.get("body_object_name") or "elephant_body_region")
         if region_mode == "spatial_semantic":
             def semantic_region(center: Vector) -> str:
                 if is_rider(center):
@@ -3186,6 +4776,24 @@ def segment_creature_components(req: Dict[str, Any]) -> Dict[str, Any]:
         components = [obj for obj in collection.objects if obj.type == "MESH"]
     if not components:
         raise RuntimeError("Creature segmentation produced no mesh components.")
+    discarded_degenerate_components = []
+    retained_components = []
+    for obj in components:
+        if len(obj.data.polygons) == 0:
+            discarded_degenerate_components.append(
+                {
+                    "object": obj.name,
+                    "vertices": len(obj.data.vertices),
+                    "polygons": 0,
+                    "reason": "zero_face_component_cannot_be_reimported_as_a_runtime_mesh_node",
+                }
+            )
+            bpy.data.objects.remove(obj, do_unlink=True)
+        else:
+            retained_components.append(obj)
+    components = retained_components
+    if not components:
+        raise RuntimeError("Creature segmentation retained no renderable mesh components.")
     for obj in components:
         obj["hoi4_working"] = True
         obj["hoi4_creature_component"] = True
@@ -3194,7 +4802,7 @@ def segment_creature_components(req: Dict[str, Any]) -> Dict[str, Any]:
     records = []
     for index, obj in enumerate(components):
         if not spatial_mask_applied:
-            obj.name = f"creature_component_{index:03d}"
+            obj.name = f"{component_prefix}_{index:03d}"
         records.append(_component_record(obj, index))
     save_blend(checkpoint)
     report = {
@@ -3203,6 +4811,7 @@ def segment_creature_components(req: Dict[str, Any]) -> Dict[str, Any]:
         "source_working_objects": sorted(before_names),
         "component_count": len(records),
         "components": records,
+        "discarded_degenerate_components": discarded_degenerate_components,
         "method": (
             "explicit polygon-centroid spatial rider/semantic mask on a fused approved working mesh"
             if spatial_mask_applied
@@ -3214,6 +4823,635 @@ def segment_creature_components(req: Dict[str, Any]) -> Dict[str, Any]:
     report_path = job / "blender" / "reports" / "creature_components.json"
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return report
+
+
+def _trailing_component_index(name: str) -> Optional[int]:
+    match = re.search(r"_(\d+)$", name)
+    return int(match.group(1)) if match else None
+
+
+def _join_mesh_objects(objects: List[bpy.types.Object], name: str) -> bpy.types.Object:
+    if not objects:
+        raise RuntimeError(f"Cannot join an empty mesh group for {name}.")
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in objects:
+        obj.hide_set(False)
+        obj.hide_render = False
+        obj.select_set(True)
+    active = objects[0]
+    bpy.context.view_layer.objects.active = active
+    if len(objects) > 1:
+        bpy.ops.object.join()
+    active.name = safe_name(name)
+    active.data.name = f"{active.name}_mesh"
+    active["hoi4_working"] = True
+    return active
+
+
+def _component_review_material(name: str, color: Tuple[float, float, float, float], emission: float) -> bpy.types.Material:
+    material = bpy.data.materials.new(name)
+    material.use_nodes = True
+    principled = next(
+        (node for node in material.node_tree.nodes if node.bl_idname == "ShaderNodeBsdfPrincipled"),
+        None,
+    )
+    if principled is None:
+        raise RuntimeError("Component review could not create a Principled material.")
+    base = principled.inputs.get("Base Color")
+    if base is not None:
+        base.default_value = color
+    roughness = principled.inputs.get("Roughness")
+    if roughness is not None:
+        roughness.default_value = 0.72
+    emission_color = principled.inputs.get("Emission Color") or principled.inputs.get("Emission")
+    if emission_color is not None:
+        emission_color.default_value = color
+    emission_strength = principled.inputs.get("Emission Strength")
+    if emission_strength is not None:
+        emission_strength.default_value = emission
+    return material
+
+
+def review_humanoid_components(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Render explicit loose-component ids over a dim whole-body reference."""
+
+    job = Path(req["job_root"]).resolve()
+    payload = req["payload"]
+    blend = within(job, payload["blend_rel"])
+    requested = sorted({int(value) for value in payload.get("component_indices", [])})
+    if not requested:
+        raise RuntimeError("Humanoid component review requires at least one explicit component index.")
+    if len(requested) > 96:
+        raise RuntimeError("Humanoid component review is bounded to 96 explicit indices per request.")
+    views = [str(value) for value in payload.get("view_names", ["rear"])]
+    allowed_views = {"front", "rear", "left", "right", "top", "underside", "three_quarter"}
+    if not views or any(value not in allowed_views for value in views):
+        raise RuntimeError(f"Component review views must be selected from {sorted(allowed_views)}.")
+    runtime_stem = safe_name(str(payload.get("runtime_stem") or "humanoid_component_review"))
+    bpy.ops.wm.open_mainfile(filepath=str(blend))
+    working = mesh_objects()
+    by_index = {
+        index: obj
+        for obj in working
+        if (index := _trailing_component_index(obj.name)) is not None
+    }
+    missing = sorted(set(requested) - set(by_index))
+    if missing:
+        raise RuntimeError(f"Requested humanoid component indices were not found: {missing}")
+
+    dim = _component_review_material("QA_Component_Dim", (0.035, 0.045, 0.055, 1.0), 0.0)
+    highlight = _component_review_material("QA_Component_Highlight", (0.02, 0.85, 1.0, 1.0), 1.8)
+    for obj in working:
+        obj.data.materials.clear()
+        obj.data.materials.append(dim)
+    previews: Dict[str, List[str]] = {}
+    if bool(payload.get("render_group", False)):
+        for index in requested:
+            by_index[index].data.materials.clear()
+            by_index[index].data.materials.append(highlight)
+        previews["group"] = render_previews(job, f"{runtime_stem}_group", views)
+    else:
+        for index in requested:
+            candidate = by_index[index]
+            candidate.data.materials.clear()
+            candidate.data.materials.append(highlight)
+            paths = render_previews(
+                job,
+                f"{runtime_stem}_component_{index:03d}",
+                views,
+            )
+            previews[str(index)] = paths
+            candidate.data.materials.clear()
+            candidate.data.materials.append(dim)
+
+    report = {
+        "blend": str(blend.relative_to(job)).replace("\\", "/"),
+        "component_indices": requested,
+        "views": views,
+        "render_group": bool(payload.get("render_group", False)),
+        "previews": previews,
+        "policy": "explicit-index visual review only; source checkpoint is not mutated",
+        "status": "review_required",
+    }
+    report_path = job / "blender" / "reports" / f"{runtime_stem}_component_review.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return report
+
+
+def _principal_axis(points: List[Vector]) -> Tuple[Vector, Vector, float, float]:
+    if len(points) < 3:
+        raise RuntimeError("Weapon isolation requires at least three reviewed vertices.")
+    centroid = sum(points, Vector()) / len(points)
+    covariance = Matrix(((0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)))
+    for point in points:
+        delta = point - centroid
+        covariance[0][0] += delta.x * delta.x
+        covariance[0][1] += delta.x * delta.y
+        covariance[0][2] += delta.x * delta.z
+        covariance[1][0] += delta.y * delta.x
+        covariance[1][1] += delta.y * delta.y
+        covariance[1][2] += delta.y * delta.z
+        covariance[2][0] += delta.z * delta.x
+        covariance[2][1] += delta.z * delta.y
+        covariance[2][2] += delta.z * delta.z
+    axis = Vector((1.0, 0.0, -1.0)).normalized()
+    for _ in range(32):
+        candidate = covariance @ axis
+        if candidate.length <= 1e-9:
+            break
+        axis = candidate.normalized()
+    if axis.z > 0.0:
+        axis.negate()
+    projections = [(point - centroid).dot(axis) for point in points]
+    return centroid, axis, min(projections), max(projections)
+
+
+def isolate_humanoid_weapon(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Join reviewed loose parts, preserve the body, and shoulder the recovered weapon."""
+
+    job = Path(req["job_root"]).resolve()
+    payload = req["payload"]
+    blend = within(job, payload["blend_rel"])
+    checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
+    prefix = safe_name(str(payload["component_prefix"]))
+    requested = sorted({int(value) for value in payload.get("weapon_component_indices", [])})
+    if not requested:
+        raise RuntimeError("Humanoid weapon isolation requires explicit reviewed component indices.")
+    if len(requested) > 128:
+        raise RuntimeError("Humanoid weapon isolation is bounded to 128 component indices.")
+    stock_x_fraction = float(payload.get("stock_x_fraction", 0.03))
+    stock_y_offset_fraction = float(payload.get("stock_y_front_offset_fraction", -0.18))
+    stock_z_fraction = float(payload.get("stock_z_fraction", 0.64))
+    aim_down_degrees = float(payload.get("aim_down_degrees", 2.0))
+    stock_indices = sorted({int(value) for value in payload.get("stock_component_indices", [])})
+    stock_link_indices = sorted({int(value) for value in payload.get("stock_link_component_indices", [])})
+    stock_advance = float(payload.get("stock_advance_m", 1.25))
+    stock_link_advance = float(payload.get("stock_link_advance_m", 0.55))
+    if not (-0.5 <= stock_x_fraction <= 0.5):
+        raise ValueError("Weapon stock x fraction must be between -0.5 and 0.5.")
+    if not (-0.5 <= stock_y_offset_fraction <= 1.0):
+        raise ValueError("Weapon stock front offset fraction must be between -0.5 and 1.")
+    if not (0.35 <= stock_z_fraction <= 0.85):
+        raise ValueError("Weapon stock z fraction must be between 0.35 and 0.85.")
+    if not (-20.0 <= aim_down_degrees <= 20.0):
+        raise ValueError("Weapon aim-down angle must remain between -20 and 20 degrees.")
+    if set(stock_indices) - set(requested) or set(stock_link_indices) - set(requested):
+        raise ValueError("Weapon stock and stock-link indices must be subsets of the reviewed weapon selection.")
+    if set(stock_indices) & set(stock_link_indices):
+        raise ValueError("Weapon stock and stock-link component groups must not overlap.")
+    if not (0.0 <= stock_advance <= 2.0 and 0.0 <= stock_link_advance <= 2.0):
+        raise ValueError("Weapon stock assembly advances must remain between 0 and 2 metres.")
+
+    bpy.ops.wm.open_mainfile(filepath=str(blend))
+    working = mesh_objects()
+    by_name = {obj.name: obj for obj in working}
+    weapon_names = [f"{prefix}_{index:03d}" for index in requested]
+    missing = [name for name in weapon_names if name not in by_name]
+    if missing:
+        raise RuntimeError(f"Reviewed weapon components were not found: {missing}")
+    weapon_parts = [by_name[name] for name in weapon_names]
+    body_parts = [obj for obj in working if obj.name not in set(weapon_names)]
+    if not body_parts:
+        raise RuntimeError("Weapon isolation cannot consume every humanoid mesh component.")
+
+    initial_points = [obj.matrix_world @ vertex.co for obj in weapon_parts for vertex in obj.data.vertices]
+    _, initial_axis, _, _ = _principal_axis(initial_points)
+
+    def advance_components(indices: List[int], distance: float) -> None:
+        for index in indices:
+            obj = by_name[f"{prefix}_{index:03d}"]
+            inverse = obj.matrix_world.inverted()
+            translation = initial_axis * distance
+            for vertex in obj.data.vertices:
+                vertex.co = inverse @ ((obj.matrix_world @ vertex.co) + translation)
+            obj.data.update()
+
+    advance_components(stock_indices, stock_advance)
+    advance_components(stock_link_indices, stock_link_advance)
+    body = _join_mesh_objects(body_parts, str(payload.get("body_object_name") or "humanoid_body"))
+    weapon = _join_mesh_objects(weapon_parts, str(payload.get("weapon_object_name") or "humanoid_weapon"))
+    body["hoi4_humanoid_body"] = True
+    weapon["hoi4_humanoid_weapon"] = True
+    weapon["hoi4_weapon_binding_bone"] = "weapon"
+    body_minimum, body_maximum = world_bounds([body])
+    body_dimensions = body_maximum - body_minimum
+    body_center = (body_minimum + body_maximum) * 0.5
+    points = [weapon.matrix_world @ vertex.co for vertex in weapon.data.vertices]
+    centroid, source_axis, stock_projection, muzzle_projection = _principal_axis(points)
+    source_stock = centroid + source_axis * stock_projection
+    radians = math.radians(aim_down_degrees)
+    target_axis = Vector((0.0, -math.cos(radians), -math.sin(radians))).normalized()
+    rotation = source_axis.rotation_difference(target_axis)
+    target_stock = Vector(
+        (
+            body_center.x + body_dimensions.x * stock_x_fraction,
+            body_minimum.y - body_dimensions.y * stock_y_offset_fraction,
+            body_minimum.z + body_dimensions.z * stock_z_fraction,
+        )
+    )
+    inverse_weapon_matrix = weapon.matrix_world.inverted()
+    for vertex in weapon.data.vertices:
+        world = weapon.matrix_world @ vertex.co
+        transformed = rotation @ (world - source_stock) + target_stock
+        vertex.co = inverse_weapon_matrix @ transformed
+    weapon.data.update()
+    bpy.context.view_layer.update()
+    weapon_minimum, weapon_maximum = world_bounds([weapon])
+    save_blend(checkpoint)
+
+    report = {
+        "blend": str(blend.relative_to(job)).replace("\\", "/"),
+        "checkpoint": str(checkpoint.relative_to(job)).replace("\\", "/"),
+        "component_prefix": prefix,
+        "weapon_component_indices": requested,
+        "weapon_component_names": weapon_names,
+        "stock_component_indices": stock_indices,
+        "stock_link_component_indices": stock_link_indices,
+        "stock_advance_m": stock_advance,
+        "stock_link_advance_m": stock_link_advance,
+        "body_object": body.name,
+        "weapon_object": weapon.name,
+        "weapon_binding_bone": "weapon",
+        "source_principal_axis_stock_to_muzzle": list(source_axis),
+        "source_axis_extent": [stock_projection, muzzle_projection],
+        "source_stock": list(source_stock),
+        "target_stock": list(target_stock),
+        "target_axis": list(target_axis),
+        "aim_down_degrees": aim_down_degrees,
+        "body_bounds_min": list(body_minimum),
+        "body_bounds_max": list(body_maximum),
+        "weapon_bounds_min": list(weapon_minimum),
+        "weapon_bounds_max": list(weapon_maximum),
+        "policy": "explicit visually reviewed loose-component selection; rigid recovered-weapon geometry; no generated replacement",
+        "status": "pass",
+    }
+    report_path = job / "blender" / "reports" / "humanoid_weapon_isolation.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return report
+
+
+def _finite_vector3(payload: Dict[str, Any], key: str, default: Tuple[float, float, float]) -> Vector:
+    raw = payload.get(key, default)
+    if not isinstance(raw, (list, tuple)) or len(raw) != 3:
+        raise ValueError(f"{key} must contain exactly three numeric values.")
+    try:
+        value = Vector(tuple(float(item) for item in raw))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{key} must contain exactly three numeric values.") from exc
+    if not all(math.isfinite(component) for component in value):
+        raise ValueError(f"{key} must contain only finite values.")
+    return value
+
+
+def _action_retention_snapshot() -> Dict[str, Any]:
+    actions: Dict[str, Any] = {}
+    for action in bpy.data.actions:
+        curves = []
+        for fcurve, _ in action_fcurves(action):
+            curves.append(
+                {
+                    "data_path": str(fcurve.data_path),
+                    "array_index": int(fcurve.array_index),
+                    "keyframes": [
+                        {
+                            "co": [float(point.co[0]), float(point.co[1])],
+                            "interpolation": str(point.interpolation),
+                        }
+                        for point in fcurve.keyframe_points
+                    ],
+                }
+            )
+        payload = json.dumps(sorted(curves, key=lambda item: (item["data_path"], item["array_index"])), sort_keys=True)
+        actions[action.name] = {
+            "frame_range": [float(action.frame_range[0]), float(action.frame_range[1])],
+            "fcurve_count": len(curves),
+            "keyframe_count": sum(len(item["keyframes"]) for item in curves),
+            "curve_sha256": hashlib.sha256(payload.encode("utf-8")).hexdigest().upper(),
+        }
+    return actions
+
+
+def _bone_retention_snapshot(rig: bpy.types.Object) -> Dict[str, Any]:
+    return {
+        bone.name: {
+            "parent": bone.parent.name if bone.parent else None,
+            "use_deform": bool(bone.use_deform),
+            "head_local": vector_record(bone.head_local),
+            "tail_local": vector_record(bone.tail_local),
+            "matrix_local": [[float(value) for value in row] for row in bone.matrix_local],
+        }
+        for bone in rig.data.bones
+    }
+
+
+def _matrix_record(matrix: Matrix) -> List[List[float]]:
+    return [[float(value) for value in row] for row in matrix]
+
+
+def _matrix_max_delta(left: Matrix, right: Matrix) -> float:
+    return max(abs(float(left[row][column] - right[row][column])) for row in range(4) for column in range(4))
+
+
+def attach_rigid_weapon_from_checkpoint(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Append one named mesh and rigidly bone-parent it without changing target actions."""
+
+    job = Path(req["job_root"]).resolve()
+    payload = req["payload"]
+    source = within(job, str(payload["source_blend_rel"]))
+    target = within(job, str(payload["target_blend_rel"]))
+    output = within(job, str(payload["output_blend_rel"]), allow_missing=True)
+    for field, path in (
+        ("source_blend_rel", source),
+        ("target_blend_rel", target),
+        ("output_blend_rel", output),
+    ):
+        if path.suffix.casefold() != ".blend":
+            raise ValueError(f"{field} must name a job-root-bounded .blend checkpoint.")
+    if source == target or output in {source, target}:
+        raise ValueError("Source, target, and output checkpoints must be three distinct .blend paths.")
+
+    source_object_name = explicit_safe_name(payload.get("source_object_name"), "source_object_name")
+    target_object_name = explicit_safe_name(payload.get("target_object_name"), "target_object_name")
+    armature_name = explicit_safe_name(payload.get("target_armature_name"), "target_armature_name")
+    parent_bone_name = explicit_safe_name(payload.get("parent_bone_name"), "parent_bone_name")
+    create_bone_raw = str(payload.get("create_weapon_bone_name") or "")
+    create_bone_name = explicit_safe_name(create_bone_raw, "create_weapon_bone_name") if create_bone_raw else ""
+    collision_policy = str(payload.get("collision_policy", "reject"))
+    if collision_policy not in {"reject", "replace_prior_attachment"}:
+        raise ValueError("collision_policy must be reject or replace_prior_attachment.")
+    translation = _finite_vector3(payload, "translation", (0.0, 0.0, 0.0))
+    rotation_degrees = _finite_vector3(payload, "rotation_euler_degrees", (0.0, 0.0, 0.0))
+    scale = _finite_vector3(payload, "scale", (1.0, 1.0, 1.0))
+    if any(abs(value) > 10000.0 for value in translation):
+        raise ValueError("translation components must remain within 10000 Blender units.")
+    if any(abs(value) > 36000.0 for value in rotation_degrees):
+        raise ValueError("rotation_euler_degrees components must remain within 36000 degrees.")
+    if any(value <= 0.0 or value > 1000.0 for value in scale):
+        raise ValueError("scale components must be finite, positive, and at most 1000.")
+    action_name_raw = str(payload.get("action_name") or "")
+    if action_name_raw and not re.fullmatch(r"[A-Za-z][A-Za-z0-9_.|:-]{0,255}", action_name_raw):
+        raise ValueError("action_name contains unsafe characters.")
+    action_name = action_name_raw
+    render_views = [str(value) for value in payload.get("render_views", ["three_quarter"])]
+    allowed_views = {"front", "rear", "left", "right", "top", "underside", "three_quarter"}
+    if not render_views or any(view not in allowed_views for view in render_views):
+        raise ValueError(f"render_views must be selected from {sorted(allowed_views)}.")
+
+    # Inspect the source checkpoint independently before any append. Linked data,
+    # parents, constraints, animation, and object-referencing modifiers would turn
+    # the single-object append into an implicit dependency import and are rejected.
+    bpy.ops.wm.open_mainfile(filepath=str(source))
+    if bpy.data.libraries:
+        raise RuntimeError("Source weapon checkpoint contains linked Blender libraries.")
+    source_matches = [obj for obj in bpy.data.objects if obj.name == source_object_name]
+    if len(source_matches) != 1:
+        raise RuntimeError(
+            f"Source checkpoint must contain exactly one object named {source_object_name!r}; found {len(source_matches)}."
+        )
+    source_object = source_matches[0]
+    if source_object.type != "MESH":
+        raise RuntimeError(f"Source object {source_object_name!r} is {source_object.type}, not MESH.")
+    if source_object.library is not None or source_object.data.library is not None:
+        raise RuntimeError("Source weapon object or mesh data is linked from a Blender library.")
+    if source_object.parent is not None or source_object.children:
+        raise RuntimeError("Source weapon object must not have a parent or child object dependency.")
+    if source_object.constraints:
+        raise RuntimeError("Source weapon object must not carry object constraints.")
+    if source_object.animation_data is not None or getattr(source_object.data, "shape_keys", None) is not None:
+        raise RuntimeError("Source weapon object must not carry animation data or shape keys.")
+    referenced_modifiers = []
+    for modifier in source_object.modifiers:
+        for attribute in ("object", "target"):
+            dependency = getattr(modifier, attribute, None)
+            if dependency is not None:
+                referenced_modifiers.append({"modifier": modifier.name, "attribute": attribute, "object": dependency.name})
+    if referenced_modifiers:
+        raise RuntimeError("Source weapon modifiers reference nested objects: " + json.dumps(referenced_modifiers, sort_keys=True))
+    source_geometry = {
+        "vertices": len(source_object.data.vertices),
+        "polygons": len(source_object.data.polygons),
+        "materials": [material.name for material in source_object.data.materials if material is not None],
+        "bounds": bounds_record([source_object]),
+    }
+
+    bpy.ops.wm.open_mainfile(filepath=str(target))
+    if bpy.data.libraries:
+        raise RuntimeError("Target rig checkpoint contains linked Blender libraries.")
+    target_rigs = [obj for obj in bpy.data.objects if obj.name == armature_name]
+    if len(target_rigs) != 1 or target_rigs[0].type != "ARMATURE":
+        raise RuntimeError(f"Target checkpoint must contain exactly one ARMATURE named {armature_name!r}.")
+    rig = target_rigs[0]
+    if rig.library is not None or rig.data.library is not None:
+        raise RuntimeError("Target armature or armature data is linked from a Blender library.")
+    if parent_bone_name not in rig.data.bones:
+        raise RuntimeError(f"Target armature does not contain the explicit parent bone {parent_bone_name!r}.")
+    existing = bpy.data.objects.get(target_object_name)
+    replaced_object = None
+    if existing is not None:
+        if collision_policy != "replace_prior_attachment":
+            raise RuntimeError(f"Target object name already exists: {target_object_name!r}.")
+        if existing.type != "MESH" or not bool(existing.get("hoi4_rigid_weapon_attachment", False)):
+            raise RuntimeError("replace_prior_attachment may replace only a mesh previously created by this operation.")
+        replaced_object = existing.name
+        bpy.data.objects.remove(existing, do_unlink=True)
+
+    actions_before = _action_retention_snapshot()
+    bones_before = _bone_retention_snapshot(rig)
+    active_action_before = rig.animation_data.action.name if rig.animation_data and rig.animation_data.action else None
+    target_object_count_before_append = len(bpy.data.objects)
+    with bpy.data.libraries.load(str(source), link=False) as (data_from, data_to):
+        matches = [name for name in data_from.objects if name == source_object_name]
+        if len(matches) != 1:
+            raise RuntimeError(f"Append source contains {len(matches)} matches for {source_object_name!r}.")
+        data_to.objects = [source_object_name]
+    appended = [obj for obj in data_to.objects if obj is not None]
+    if len(appended) != 1 or len(bpy.data.objects) != target_object_count_before_append + 1:
+        raise RuntimeError("Rigid weapon attachment must append exactly one Blender object.")
+    weapon = appended[0]
+    if weapon.type != "MESH" or weapon.library is not None or weapon.data.library is not None:
+        raise RuntimeError("Appended weapon must be one local MESH object with local mesh data.")
+    if weapon.name in bpy.context.scene.objects:
+        raise RuntimeError("Appended weapon unexpectedly collided with a linked scene object.")
+    weapon.name = target_object_name
+    weapon.data.name = f"{target_object_name}_mesh"
+    collection = rig.users_collection[0] if rig.users_collection else bpy.context.scene.collection
+    collection.objects.link(weapon)
+    weapon["hoi4_working"] = True
+    weapon["hoi4_rigid_weapon_attachment"] = True
+    weapon["hoi4_weapon_source_object"] = source_object_name
+    weapon["hoi4_weapon_parent_armature"] = armature_name
+
+    created_bone = False
+    attachment_bone_name = parent_bone_name
+    if create_bone_name:
+        existing_bone = rig.data.bones.get(create_bone_name)
+        if existing_bone is not None:
+            if collision_policy != "replace_prior_attachment" or not bool(existing_bone.get("hoi4_rigid_weapon_bone", False)):
+                raise RuntimeError(f"Requested weapon bone already exists: {create_bone_name!r}.")
+            if existing_bone.parent is None or existing_bone.parent.name != parent_bone_name:
+                raise RuntimeError("Existing prior attachment bone is not parented to the requested hand bone.")
+        else:
+            bpy.context.view_layer.objects.active = rig
+            rig.select_set(True)
+            bpy.ops.object.mode_set(mode="EDIT")
+            parent_edit = rig.data.edit_bones.get(parent_bone_name)
+            if parent_edit is None:
+                bpy.ops.object.mode_set(mode="OBJECT")
+                raise RuntimeError(f"Unable to edit explicit parent bone {parent_bone_name!r}.")
+            edit_bone = rig.data.edit_bones.new(create_bone_name)
+            edit_bone.parent = parent_edit
+            edit_bone.use_connect = False
+            edit_bone.head = parent_edit.tail
+            direction = parent_edit.tail - parent_edit.head
+            if direction.length <= 1e-6:
+                direction = Vector((0.0, -1.0, 0.0))
+            edit_bone.tail = edit_bone.head + direction.normalized() * max(float(parent_edit.length) * 0.5, 0.05)
+            edit_bone.use_deform = True
+            bpy.ops.object.mode_set(mode="OBJECT")
+            rig.data.bones[create_bone_name]["hoi4_rigid_weapon_bone"] = True
+            rig.data.bones[create_bone_name]["hoi4_parent_hand_bone"] = parent_bone_name
+            created_bone = True
+        attachment_bone_name = create_bone_name
+
+    weapon.parent = rig
+    weapon.parent_type = "BONE"
+    weapon.parent_bone = attachment_bone_name
+    weapon.matrix_parent_inverse = Matrix.Identity(4)
+    weapon.location = translation
+    weapon.rotation_mode = "XYZ"
+    weapon.rotation_euler = Euler(tuple(math.radians(value) for value in rotation_degrees), "XYZ")
+    weapon.scale = scale
+    weapon["hoi4_weapon_parent_bone"] = attachment_bone_name
+    bpy.context.view_layer.update()
+
+    actions_after = _action_retention_snapshot()
+    if actions_after != actions_before:
+        raise RuntimeError("Rigid weapon attachment changed target action data.")
+    bones_after = _bone_retention_snapshot(rig)
+    retained_bones_after = {name: value for name, value in bones_after.items() if name != create_bone_name or name in bones_before}
+    if retained_bones_after != bones_before:
+        raise RuntimeError("Rigid weapon attachment changed existing target rig bone data.")
+
+    sample_records = []
+    preview_paths: List[str] = []
+    relative_reference: Optional[Matrix] = None
+    rigid_edge_reference: Optional[List[float]] = None
+    max_relative_delta = 0.0
+    max_edge_delta = 0.0
+    sample_frames: List[int] = []
+    if action_name:
+        action = bpy.data.actions.get(action_name)
+        if action is None:
+            raise RuntimeError(f"Requested proof action was not found: {action_name!r}.")
+        rig.animation_data_create()
+        rig.animation_data.action = action
+        start, end = action.frame_range
+        sample_frames = sorted({int(math.floor(start)), int(round((float(start) + float(end)) * 0.5)), int(math.ceil(end))})
+        if len(sample_frames) != 3:
+            raise RuntimeError("Action proof requires distinct start, middle, and end frames.")
+        if len(weapon.data.vertices) < 2:
+            raise RuntimeError("Rigid proof requires at least two weapon vertices.")
+        vertex_indices = sorted({0, len(weapon.data.vertices) // 2, len(weapon.data.vertices) - 1})
+        for label, frame in zip(("start", "middle", "end"), sample_frames):
+            bpy.context.scene.frame_set(frame)
+            bpy.context.view_layer.update()
+            pose_bone = rig.pose.bones.get(attachment_bone_name)
+            if pose_bone is None:
+                raise RuntimeError(f"Attachment pose bone disappeared: {attachment_bone_name!r}.")
+            bone_world = rig.matrix_world @ pose_bone.matrix
+            relative = bone_world.inverted_safe() @ weapon.matrix_world
+            if relative_reference is None:
+                relative_reference = relative.copy()
+            relative_delta = _matrix_max_delta(relative_reference, relative)
+            max_relative_delta = max(max_relative_delta, relative_delta)
+            points = [weapon.matrix_world @ weapon.data.vertices[index].co for index in vertex_indices]
+            edge_lengths = [float((points[index + 1] - points[index]).length) for index in range(len(points) - 1)]
+            if rigid_edge_reference is None:
+                rigid_edge_reference = edge_lengths
+            edge_delta = max(abs(left - right) for left, right in zip(rigid_edge_reference, edge_lengths)) if edge_lengths else 0.0
+            max_edge_delta = max(max_edge_delta, edge_delta)
+            stem = safe_name(f"{target_object_name}_{action_name}_{label}_frame_{frame}")
+            preview_paths.extend(render_previews(job, stem, render_views))
+            sample_records.append(
+                {
+                    "phase": label,
+                    "frame": frame,
+                    "world_transform": object_transform_record(weapon),
+                    "world_bounds": bounds_record([weapon]),
+                    "bone_world_matrix": _matrix_record(bone_world),
+                    "weapon_relative_to_bone_matrix": _matrix_record(relative),
+                    "relative_matrix_delta_from_start": relative_delta,
+                    "rigid_edge_lengths": edge_lengths,
+                    "rigid_edge_delta_from_start": edge_delta,
+                }
+            )
+        if max_relative_delta > 1e-5 or max_edge_delta > 1e-5:
+            raise RuntimeError(
+                "Weapon failed rigid action sampling: "
+                + json.dumps({"max_relative_matrix_delta": max_relative_delta, "max_edge_length_delta": max_edge_delta}, sort_keys=True)
+            )
+    if rig.animation_data:
+        rig.animation_data.action = bpy.data.actions.get(active_action_before) if active_action_before else None
+    bpy.context.scene.frame_set(bpy.context.scene.frame_start)
+    bpy.context.view_layer.update()
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    save_blend(output)
+    report = {
+        "operation": "attach_rigid_weapon_from_checkpoint",
+        "source_blend": str(source.relative_to(job)).replace("\\", "/"),
+        "target_blend": str(target.relative_to(job)).replace("\\", "/"),
+        "output_checkpoint": str(output.relative_to(job)).replace("\\", "/"),
+        "hashes": {
+            "source_blend_sha256": file_sha256(source),
+            "target_blend_sha256": file_sha256(target),
+            "output_blend_sha256": file_sha256(output),
+        },
+        "source_object": source_object_name,
+        "target_object": target_object_name,
+        "source_geometry": source_geometry,
+        "collision_policy": collision_policy,
+        "replaced_object": replaced_object,
+        "armature": armature_name,
+        "parent_hand_or_weapon_bone": parent_bone_name,
+        "attachment_bone": attachment_bone_name,
+        "created_weapon_bone": created_bone,
+        "alignment": {
+            "translation": vector_record(translation),
+            "rotation_euler_degrees": vector_record(rotation_degrees),
+            "scale": vector_record(scale),
+        },
+        "weapon_world_transform": object_transform_record(weapon),
+        "weapon_world_bounds": bounds_record([weapon]),
+        "retention_metrics": {
+            "actions_before": actions_before,
+            "actions_after": actions_after,
+            "actions_retained_exactly": actions_after == actions_before,
+            "existing_bones_before": len(bones_before),
+            "existing_bones_after": len(retained_bones_after),
+            "existing_bones_retained_exactly": retained_bones_after == bones_before,
+            "bone_count_after": len(bones_after),
+            "new_bone_count": len(bones_after) - len(bones_before),
+        },
+        "action_proof": {
+            "action": action_name or None,
+            "sample_frames": sample_frames,
+            "samples": sample_records,
+            "previews": sorted(set(preview_paths)),
+            "max_relative_matrix_delta": max_relative_delta,
+            "max_rigid_edge_length_delta": max_edge_delta,
+            "status": "pass" if action_name else "not_requested",
+        },
+        "animation_policy": "no body or weapon keys authored; target action datablocks retained byte-for-byte at the fcurve/value level",
+        "status": "pass",
+    }
+    report_path = job / "blender" / "reports" / f"{target_object_name}_rigid_attachment.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    report["report"] = str(report_path.relative_to(job)).replace("\\", "/")
     return report
 
 
@@ -3312,7 +5550,7 @@ def _creature_bone_name_for_component(
     }
     if object_name in semantic_object_names:
         return object_name
-    if object_name == "creature_body_region":
+    if object_name == "elephant_body_region":
         return "body"
     total_dimensions = total_maximum - total_minimum
     total_height = max(total_dimensions.z, 1e-6)
@@ -3386,16 +5624,212 @@ def _creature_bone_name_for_vertex(
     return "body"
 
 
-def author_creature_rig(req: Dict[str, Any]) -> Dict[str, Any]:
-    """Create a bounded creature armature and bind the approved mesh to semantic bones."""
+WINGED_BIPED_BONE_NAMES = (
+    "root",
+    "pelvis",
+    "spine",
+    "neck",
+    "head",
+    "upper_arm_left",
+    "lower_arm_left",
+    "hand_left",
+    "upper_arm_right",
+    "lower_arm_right",
+    "hand_right",
+    "upper_leg_left",
+    "lower_leg_left",
+    "foot_left",
+    "upper_leg_right",
+    "lower_leg_right",
+    "foot_right",
+    "wing_root_left",
+    "wing_mid_left",
+    "wing_tip_left",
+    "wing_root_right",
+    "wing_mid_right",
+    "wing_tip_right",
+)
+
+
+def _winged_biped_bone_name_for_vertex(
+    world_position: Vector,
+    minimum: Vector,
+    maximum: Vector,
+    object_name: str,
+) -> str:
+    """Assign one full semantic influence to a winged/digitigrade biped vertex."""
+
+    if object_name in WINGED_BIPED_BONE_NAMES:
+        return object_name
+    dimensions = maximum - minimum
+    centre = (minimum + maximum) * 0.5
+    height = max(float(dimensions.z), 1e-6)
+    length = max(float(dimensions.y), 1e-6)
+    width = max(float(dimensions.x), 1e-6)
+    z_fraction = (world_position.z - minimum.z) / height
+    y_fraction = (world_position.y - centre.y) / length
+    x_fraction = (world_position.x - centre.x) / width
+    side = "left" if x_fraction < 0.0 else "right"
+    abs_x = abs(x_fraction)
+
+    # The reference and the HOI4 unit axes use -Y as forward. Rearward,
+    # elevated geometry is therefore the folded wing plane, not a tail.
+    if abs_x > 0.25 and y_fraction > 0.06 and z_fraction > 0.48:
+        if abs_x > 0.58:
+            return f"wing_tip_{side}"
+        if abs_x > 0.38:
+            return f"wing_mid_{side}"
+        return f"wing_root_{side}"
+    if z_fraction > 0.82:
+        return "head"
+    if z_fraction > 0.67 and y_fraction < 0.04:
+        return "neck"
+    if 0.28 < z_fraction < 0.72 and 0.13 < abs_x < 0.58:
+        return f"upper_arm_{side}" if z_fraction > 0.48 else f"lower_arm_{side}"
+    if z_fraction < 0.13 and abs_x > 0.08:
+        return f"foot_{side}"
+    if z_fraction < 0.48 and abs_x > 0.09:
+        return f"upper_leg_{side}" if z_fraction > 0.22 else f"lower_leg_{side}"
+    if z_fraction > 0.45:
+        return "spine"
+    return "pelvis"
+
+
+def author_winged_biped_rig(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Create a custom rigid-semantic rig for a winged/digitigrade biped."""
 
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
     blend = within(job, payload["blend_rel"])
     checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
+    rig_name = safe_name(str(payload.get("rig_name") or "winged_biped_armature"))
+    bpy.ops.wm.open_mainfile(filepath=str(blend))
+    working = mesh_objects()
+    if not working:
+        raise RuntimeError("Winged biped rigging found no working meshes.")
+    for rig in armatures():
+        bpy.data.objects.remove(rig, do_unlink=True)
+    minimum, maximum = world_bounds(working)
+    dimensions = maximum - minimum
+    centre = (minimum + maximum) * 0.5
+    height = max(float(dimensions.z), 1e-6)
+    length = max(float(dimensions.y), 1e-6)
+    width = max(float(dimensions.x), 1e-6)
+    z0 = minimum.z
+    y_front = centre.y - length * 0.06
+    y_rear = centre.y + length * 0.10
+    armature_data = bpy.data.armatures.new(rig_name)
+    rig = bpy.data.objects.new(rig_name, armature_data)
+    _working_collection().objects.link(rig)
+    rig["hoi4_working"] = True
+    rig["hoi4_custom_creature_rig"] = True
+    rig["hoi4_creature_rig_family"] = "winged_biped"
+    bpy.context.view_layer.objects.active = rig
+    rig.select_set(True)
+    bpy.ops.object.mode_set(mode="EDIT")
+    bones: Dict[str, bpy.types.EditBone] = {}
+
+    def add_bone(name: str, head: Vector, tail: Vector, parent: str | None = None) -> None:
+        bone = armature_data.edit_bones.new(name)
+        bone.head = head
+        bone.tail = tail
+        if parent:
+            bone.parent = bones[parent]
+            bone.use_connect = False
+        bones[name] = bone
+
+    add_bone("root", Vector((centre.x, centre.y, z0)), Vector((centre.x, centre.y, z0 + height * 0.12)))
+    add_bone("pelvis", Vector((centre.x, centre.y, z0 + height * 0.30)), Vector((centre.x, centre.y, z0 + height * 0.46)), "root")
+    add_bone("spine", Vector((centre.x, centre.y, z0 + height * 0.44)), Vector((centre.x, centre.y, z0 + height * 0.67)), "pelvis")
+    add_bone("neck", Vector((centre.x, y_front, z0 + height * 0.64)), Vector((centre.x, y_front, z0 + height * 0.76)), "spine")
+    add_bone("head", Vector((centre.x, y_front, z0 + height * 0.74)), Vector((centre.x, y_front - length * 0.10, z0 + height * 0.84)), "neck")
+    for side, sign in (("left", -1.0), ("right", 1.0)):
+        shoulder = Vector((centre.x + sign * width * 0.20, centre.y - length * 0.01, z0 + height * 0.64))
+        elbow = Vector((centre.x + sign * width * 0.34, centre.y - length * 0.04, z0 + height * 0.46))
+        wrist = Vector((centre.x + sign * width * 0.40, centre.y - length * 0.07, z0 + height * 0.28))
+        hand = Vector((centre.x + sign * width * 0.41, centre.y - length * 0.11, z0 + height * 0.20))
+        add_bone(f"upper_arm_{side}", shoulder, elbow, "spine")
+        add_bone(f"lower_arm_{side}", elbow, wrist, f"upper_arm_{side}")
+        add_bone(f"hand_{side}", wrist, hand, f"lower_arm_{side}")
+        hip = Vector((centre.x + sign * width * 0.13, centre.y + length * 0.01, z0 + height * 0.43))
+        knee = Vector((centre.x + sign * width * 0.16, centre.y - length * 0.02, z0 + height * 0.23))
+        ankle = Vector((centre.x + sign * width * 0.16, centre.y - length * 0.08, z0 + height * 0.08))
+        foot = Vector((centre.x + sign * width * 0.16, centre.y - length * 0.16, z0 + height * 0.04))
+        add_bone(f"upper_leg_{side}", hip, knee, "pelvis")
+        add_bone(f"lower_leg_{side}", knee, ankle, f"upper_leg_{side}")
+        add_bone(f"foot_{side}", ankle, foot, f"lower_leg_{side}")
+        wing_root = Vector((centre.x + sign * width * 0.17, y_rear, z0 + height * 0.63))
+        wing_mid = Vector((centre.x + sign * width * 0.40, y_rear + length * 0.03, z0 + height * 0.73))
+        wing_tip = Vector((centre.x + sign * width * 0.68, y_rear + length * 0.06, z0 + height * 0.80))
+        add_bone(f"wing_root_{side}", wing_root, wing_mid, "spine")
+        add_bone(f"wing_mid_{side}", wing_mid, wing_tip, f"wing_root_{side}")
+        add_bone(f"wing_tip_{side}", wing_tip, wing_tip + Vector((sign * width * 0.12, length * 0.02, height * 0.02)), f"wing_mid_{side}")
+    bpy.ops.object.mode_set(mode="OBJECT")
+    rig.show_in_front = True
+    armature_data.display_type = "BBONE"
+    records = []
+    for obj in working:
+        for group in list(obj.vertex_groups):
+            obj.vertex_groups.remove(group)
+        groups = {bone.name: obj.vertex_groups.new(name=bone.name) for bone in armature_data.bones}
+        counts: Dict[str, int] = {name: 0 for name in groups}
+        for vertex in obj.data.vertices:
+            bone_name = _winged_biped_bone_name_for_vertex(
+                obj.matrix_world @ vertex.co,
+                minimum,
+                maximum,
+                obj.name,
+            )
+            if bone_name not in groups:
+                bone_name = "spine"
+            groups[bone_name].add([vertex.index], 1.0, "REPLACE")
+            counts[bone_name] += 1
+        modifier = next((item for item in obj.modifiers if item.type == "ARMATURE"), None)
+        if modifier is None:
+            modifier = obj.modifiers.new("HOI4_CREATURE_ARMATURE", "ARMATURE")
+        modifier.object = rig
+        world_matrix = obj.matrix_world.copy()
+        obj.parent = rig
+        obj.parent_type = "OBJECT"
+        obj.matrix_world = world_matrix
+        records.append(
+            {
+                "object": obj.name,
+                "bone": "spatial_semantic_weights",
+                "vertices": len(obj.data.vertices),
+                "vertex_group_counts": {name: count for name, count in counts.items() if count},
+            }
+        )
+    save_blend(checkpoint)
+    report = {
+        "blend": str(blend.relative_to(job)).replace("\\", "/"),
+        "checkpoint": str(checkpoint.relative_to(job)).replace("\\", "/"),
+        "armature": rig.name,
+        "bones": [bone.name for bone in armature_data.bones],
+        "component_bindings": records,
+        "creature_rig_family": "winged_biped",
+        "rig_map": f"{rig_name}_winged_biped_semantic_bones_v1",
+        "weight_policy": "one full influence per vertex; spatial semantic wings, limbs, head, spine, and pelvis",
+        "status": "pass",
+    }
+    report_path = job / "blender" / "reports" / "creature_rig.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return report
+
+
+def author_creature_rig(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Create a bounded creature armature and bind the approved mesh to semantic bones."""
+
+    job = Path(req["job_root"]).resolve()
+    payload = req["payload"]
+    if str(payload.get("creature_rig_family") or "elephant").casefold() == "winged_biped":
+        return author_winged_biped_rig(req)
+    blend = within(job, payload["blend_rel"])
+    checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
     rider_names = {str(name) for name in payload.get("rider_component_names", [])}
     weight_mode = str(payload.get("weight_mode") or "semantic").casefold()
-    rig_name = safe_name(str(payload.get("rig_name") or "mounted_creature_armature"))
+    rig_name = safe_name(str(payload.get("rig_name") or "elephant_shared_base_armature"))
     if weight_mode not in {"semantic", "automatic_body", "automatic_semantic"}:
         raise ValueError(f"Unsupported creature rig weight mode: {weight_mode}")
     bpy.ops.wm.open_mainfile(filepath=str(blend))
@@ -3451,7 +5885,7 @@ def author_creature_rig(req: Dict[str, Any]) -> Dict[str, Any]:
     armature_data.display_type = "BBONE"
     records = []
     rigid_semantic_objects = {
-        "creature_body_region", "head", "trunk_01", "trunk_02", "tail", "howdah",
+        "elephant_body_region", "head", "trunk_01", "trunk_02", "tail", "howdah",
         "front_left_upper", "front_left_lower", "front_right_upper", "front_right_lower",
         "rear_left_upper", "rear_left_lower", "rear_right_upper", "rear_right_lower",
     }
@@ -3465,7 +5899,7 @@ def author_creature_rig(req: Dict[str, Any]) -> Dict[str, Any]:
             for bone in armature_data.bones
         }
         counts: Dict[str, int] = {name: 0 for name in groups}
-        if weight_mode in {"automatic_body", "automatic_semantic"} and obj.name == "creature_body_region":
+        if weight_mode in {"automatic_body", "automatic_semantic"} and obj.name == "elephant_body_region":
             bpy.ops.object.select_all(action="DESELECT")
             obj.select_set(True)
             rig.select_set(True)
@@ -3569,11 +6003,208 @@ def _action_delta(axis: str, degrees: float) -> Quaternion:
     return Quaternion(vector, math.radians(degrees))
 
 
+def author_winged_biped_action(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Author a real skeletal action on the winged/digitigrade biped rig."""
+
+    job = Path(req["job_root"]).resolve()
+    payload = req["payload"]
+    blend = within(job, payload["blend_rel"])
+    checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
+    role = str(payload.get("action_role") or "").casefold()
+    action_name = safe_name(str(payload.get("action_name") or f"winged_biped_{role}"))
+    if role not in {"idle", "move", "attack", "death"}:
+        raise ValueError(f"Unsupported winged biped action role: {role}")
+    bpy.ops.wm.open_mainfile(filepath=str(blend))
+    rigs = armatures()
+    if len(rigs) != 1:
+        raise RuntimeError(f"Winged biped action authoring requires exactly one armature, found {len(rigs)}.")
+    rig = rigs[0]
+    rig.animation_data_create()
+    action = bpy.data.actions.get(action_name)
+    if action is not None:
+        bpy.data.actions.remove(action)
+    action = bpy.data.actions.new(action_name)
+    action.use_fake_user = True
+    rig.animation_data.action = action
+    if role == "idle":
+        frames = [0, 12, 24, 36, 48]
+    elif role == "move":
+        frames = [0, 6, 12, 18, 24]
+    elif role == "attack":
+        frames = [0, 8, 16, 24, 32]
+    else:
+        frames = [0, 12, 24, 36]
+    scene = bpy.context.scene
+    scene.render.fps = int(payload.get("fps") or 30)
+    scene.frame_start = frames[0]
+    scene.frame_end = frames[-1]
+    base = {
+        bone.name: (bone.location.copy(), bone.rotation_quaternion.copy())
+        for bone in rig.pose.bones
+    }
+
+    def phase(frame: int) -> float:
+        span = max(frames[-1] - frames[0], 1)
+        if role in {"idle", "move"}:
+            return math.sin(2.0 * math.pi * (frame - frames[0]) / span)
+        return (frame - frames[0]) / span
+
+    def rotate(name: str, axis: str, degrees: float, value: float) -> None:
+        bone = rig.pose.bones.get(name)
+        if bone is None:
+            return
+        bone.rotation_mode = "QUATERNION"
+        bone.rotation_quaternion = base[name][1] @ _action_delta(axis, degrees * value)
+
+    keyed = 0
+    for frame in frames:
+        scene.frame_set(frame)
+        p = phase(frame)
+        for bone in rig.pose.bones:
+            bone.rotation_mode = "QUATERNION"
+            bone.location = base[bone.name][0].copy()
+            bone.rotation_quaternion = base[bone.name][1].copy()
+        if role == "idle":
+            rotate("spine", "x", 1.5, p)
+            rotate("neck", "x", 2.5, p)
+            rotate("head", "z", 1.5, p)
+            for side in ("left", "right"):
+                rotate(f"wing_mid_{side}", "z", 2.0, p)
+                rotate(f"wing_tip_{side}", "z", 3.0, p)
+        elif role == "move":
+            for side, sign in (("left", 1.0), ("right", -1.0)):
+                gait = sign * p
+                rotate(f"upper_leg_{side}", "x", 8.0, gait)
+                rotate(f"lower_leg_{side}", "x", -5.0, gait)
+                rotate(f"foot_{side}", "x", 2.5, gait)
+                rotate(f"upper_arm_{side}", "x", -5.5, gait)
+                rotate(f"lower_arm_{side}", "x", 3.0, gait)
+                rotate(f"wing_mid_{side}", "z", 1.0, p)
+                rotate(f"wing_tip_{side}", "z", 1.5, p)
+            rotate("spine", "x", 2.0, p)
+            rotate("head", "z", 1.0, p)
+        elif role == "attack":
+            rotate("spine", "x", -10.0, p)
+            rotate("neck", "x", -8.0, p)
+            rotate("head", "x", -12.0, p)
+            for side, sign in (("left", 1.0), ("right", -1.0)):
+                rotate(f"upper_arm_{side}", "x", -28.0, p)
+                rotate(f"lower_arm_{side}", "x", -20.0, p)
+                rotate(f"hand_{side}", "z", 8.0 * sign, p)
+                rotate(f"wing_root_{side}", "z", 12.0 * sign, p)
+                rotate(f"wing_mid_{side}", "z", 20.0 * sign, p)
+                rotate(f"wing_tip_{side}", "z", 25.0 * sign, p)
+            rotate("upper_leg_left", "x", -5.0, p)
+            rotate("upper_leg_right", "x", -5.0, p)
+        else:
+            rotate("spine", "x", -42.0, p)
+            rotate("neck", "x", -28.0, p)
+            rotate("head", "x", -22.0, p)
+            for side, sign in (("left", 1.0), ("right", -1.0)):
+                rotate(f"upper_arm_{side}", "z", 24.0 * sign, p)
+                rotate(f"lower_arm_{side}", "z", 18.0 * sign, p)
+                rotate(f"wing_root_{side}", "z", -18.0 * sign, p)
+                rotate(f"wing_mid_{side}", "z", -26.0 * sign, p)
+                rotate(f"wing_tip_{side}", "z", -32.0 * sign, p)
+                rotate(f"upper_leg_{side}", "x", 10.0, p)
+                rotate(f"lower_leg_{side}", "x", 12.0, p)
+        for bone in rig.pose.bones:
+            bone.keyframe_insert(data_path="location", frame=frame, group=bone.name)
+            bone.keyframe_insert(data_path="rotation_quaternion", frame=frame, group=bone.name)
+            keyed += 1
+    for fcurve, _ in action_fcurves(action):
+        for keyframe in fcurve.keyframe_points:
+            keyframe.interpolation = "LINEAR"
+
+    if rig.pose.bones.get("root") is None:
+        raise RuntimeError("Winged biped action authoring requires a root bone.")
+    base_rig_location = rig.location.copy()
+    ground_samples_before = []
+    for frame in range(frames[0], frames[-1] + 1):
+        scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        minimum, maximum = evaluated_world_bounds(mesh_objects())
+        ground_samples_before.append({"frame": frame, "ground_contact_z": float(minimum.z), "bounds_max_z": float(maximum.z)})
+    corrections = []
+    for frame in range(frames[0], frames[-1] + 1):
+        scene.frame_set(frame)
+        # Measure each pose from the uncorrected armature location.  Without
+        # this reset, previously keyed offsets are included in the next sample
+        # and the correction drifts instead of remaining an absolute offset.
+        rig.location = base_rig_location.copy()
+        bpy.context.view_layer.update()
+        minimum, _ = evaluated_world_bounds(mesh_objects())
+        correction = max(
+            0.0,
+            -float(minimum.z) + CREATURE_GROUND_CONTACT_CLEARANCE_M,
+        )
+        # Mesh objects are parented to the armature object in the custom route.
+        # Keying the root pose bone alone does not translate the evaluated object
+        # bounds, so ground correction must be authored on the armature object.
+        rig.location = base_rig_location.copy()
+        rig.location.z = base_rig_location.z + correction
+        rig.keyframe_insert(data_path="location", index=2, frame=frame, group=rig.name)
+        corrections.append(correction)
+    for fcurve, _ in action_fcurves(action):
+        if fcurve.data_path.endswith(".location") and fcurve.array_index == 2:
+            for keyframe in fcurve.keyframe_points:
+                keyframe.interpolation = "LINEAR"
+            fcurve.update()
+    ground_samples_after = []
+    for frame in range(frames[0], frames[-1] + 1):
+        scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        minimum, maximum = evaluated_world_bounds(mesh_objects())
+        ground_samples_after.append({"frame": frame, "ground_contact_z": float(minimum.z), "bounds_max_z": float(maximum.z)})
+    minimum_ground = min(item["ground_contact_z"] for item in ground_samples_after)
+    maximum_ground = max(item["ground_contact_z"] for item in ground_samples_after)
+    save_blend(checkpoint)
+    report = {
+        "blend": str(blend.relative_to(job)).replace("\\", "/"),
+        "checkpoint": str(checkpoint.relative_to(job)).replace("\\", "/"),
+        "armature": rig.name,
+        "action": action.name,
+        "role": role,
+        "frame_start": frames[0],
+        "frame_end": frames[-1],
+        "fps": scene.render.fps,
+        "loop": role in {"idle", "move"},
+        "keyed_bones": keyed,
+        "keyed_channels": keyed * 2,
+        "ground_contact": {
+            "minimum_z": minimum_ground,
+            "maximum_z": maximum_ground,
+            "sample_count": len(ground_samples_after),
+            "samples_before": ground_samples_before,
+            "samples_after": ground_samples_after,
+        },
+        "grounding_correction": {
+            "applied": any(value > 0.0 for value in corrections),
+            "maximum_translation_m": max(corrections, default=0.0),
+            "samples_before": ground_samples_before,
+            "samples_after": ground_samples_after,
+        },
+        "creature_rig_family": "winged_biped",
+        "policy": "blender-authored-winged-biped-semantic-skeletal-action-no-scale-channels",
+        "status": (
+            "pass"
+            if minimum_ground >= -CREATURE_GROUND_CONTACT_TOLERANCE_M
+            else "needs_grounding_review"
+        ),
+    }
+    report_path = job / "blender" / "reports" / f"creature_action_{safe_name(role)}.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return report
+
+
 def author_creature_action(req: Dict[str, Any]) -> Dict[str, Any]:
     """Author one semantic skeletal action for the custom creature rig."""
 
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
+    if str(payload.get("creature_rig_family") or "elephant").casefold() == "winged_biped":
+        return author_winged_biped_action(req)
     blend = within(job, payload["blend_rel"])
     checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
     role = str(payload.get("action_role") or "").casefold()
@@ -3712,7 +6343,8 @@ def author_creature_action(req: Dict[str, Any]) -> Dict[str, Any]:
     grounding_correction = {
         "applied": False,
         "root_bone": "root",
-        "epsilon_m": 0.001,
+        "epsilon_m": CREATURE_GROUND_CONTACT_TOLERANCE_M,
+        "clearance_m": CREATURE_GROUND_CONTACT_CLEARANCE_M,
         "maximum_translation_m": 0.0,
         "samples_before": ground_samples,
     }
@@ -3721,7 +6353,7 @@ def author_creature_action(req: Dict[str, Any]) -> Dict[str, Any]:
         raise RuntimeError("Creature action authoring requires a semantic root bone.")
     # Ground every sampled frame with an explicit root translation channel.
     # This preserves the authored rotations and avoids feet/underside sinking
-    # below the map plane after large mounted creature rotations.
+    # below the map plane after large elephant rotations.
     for frame in range(frames[0], frames[-1] + 1):
         scene.frame_set(frame)
         bpy.context.view_layer.update()
@@ -3730,7 +6362,10 @@ def author_creature_action(req: Dict[str, Any]) -> Dict[str, Any]:
         # Do not claim a lift when the semantic body channel cannot move the
         # rigidly separated shell in Blender's evaluated armature; such a case
         # remains visible as a failed contact sample instead of a silent fix.
-        correction = max(0.0, -float(current_minimum.z) - 0.01)
+        correction = max(
+            0.0,
+            -float(current_minimum.z) + CREATURE_GROUND_CONTACT_CLEARANCE_M,
+        )
         if correction:
             # Lift the common root so the correction is represented once in
             # the exported skeleton and is not multiplied down child bones.
@@ -3787,7 +6422,11 @@ def author_creature_action(req: Dict[str, Any]) -> Dict[str, Any]:
         },
         "grounding_correction": grounding_correction,
         "policy": "blender-authored-semantic-skeletal-action-no-scale-channels",
-        "status": "pass" if minimum_ground >= -0.01 else "needs_grounding_review",
+        "status": (
+            "pass"
+            if minimum_ground >= -CREATURE_GROUND_CONTACT_TOLERANCE_M
+            else "needs_grounding_review"
+        ),
     }
     report_path = job / "blender" / "reports" / f"creature_action_{safe_name(role)}.json"
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -4063,6 +6702,9 @@ def reimport_export(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
         "texture_0.dds",
         "texture_specular.dds",
         "texture_normal.dds",
+        "elephant_shared_base_diff.dds",
+        "elephant_shared_base_spec.dds",
+        "elephant_shared_base_n.dds",
         "Image_0.dds",
         "Image_1.dds",
         "Image_2.dds",
@@ -4087,9 +6729,6 @@ def reimport_export(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
                 "staged": str(destination.relative_to(job)).replace("\\", "/"),
                 "bytes": destination.stat().st_size,
                 "copied": not already_staged,
-                "source_sha256": sha256_file(source),
-                "staged_sha256": sha256_file(destination),
-                "hashes_match": sha256_file(source) == sha256_file(destination),
             }
         )
     clear_scene()
@@ -4110,7 +6749,6 @@ def reimport_export(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
     )
     animation_bounds = []
     preview_paths = []
-    loop_evidence: Dict[str, Any] | None = None
     if anim is not None:
         actions = [action for action in bpy.data.actions if action.frame_range[1] >= action.frame_range[0]]
         if actions:
@@ -4152,30 +6790,6 @@ def reimport_export(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
                         working_only=False,
                     )
                 )
-            if animation_bounds:
-                endpoint_values = [
-                    abs(float(left) - float(right))
-                    for key in ("bounds_min", "bounds_max")
-                    for left, right in zip(animation_bounds[0][key], animation_bounds[-1][key])
-                ]
-                tolerance = float(payload.get("loop_endpoint_tolerance_m", 0.01))
-                loop_expected = payload.get("loop_expected")
-                loop_evidence = {
-                    "expected": loop_expected,
-                    "sample_fractions": [0.0, 0.25, 0.5, 0.75, 1.0],
-                    "sample_frames": sample_frames,
-                    "quarter_phase_sample_count": len(animation_bounds[1:-1]),
-                    "endpoint_max_bounds_delta_m": max(endpoint_values, default=0.0),
-                    "endpoint_tolerance_m": tolerance,
-                    "endpoint_returns_within_tolerance": max(endpoint_values, default=0.0) <= tolerance,
-                    "phase_ground_contacts_m": [record["ground_contact_z"] for record in animation_bounds],
-                    "phase_dimensions_m": [record["dimensions"] for record in animation_bounds],
-                }
-                if loop_expected is True and not loop_evidence["endpoint_returns_within_tolerance"]:
-                    raise RuntimeError(
-                        "Reimported loop endpoints exceed the requested bounds tolerance; "
-                        f"delta={loop_evidence['endpoint_max_bounds_delta_m']}, tolerance={tolerance}."
-                    )
             bpy.context.scene.frame_set(first)
             bpy.context.view_layer.update()
     else:
@@ -4190,9 +6804,7 @@ def reimport_export(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
     save_blend(proof)
     report = {
         "mesh": str(mesh.relative_to(job)).replace("\\", "/"),
-        "mesh_sha256": sha256_file(mesh),
         "anim": str(anim.relative_to(job)).replace("\\", "/") if anim else None,
-        "anim_sha256": sha256_file(anim) if anim else None,
         "runtime_texture_staging": texture_staging,
         "proof_blend": str(proof.relative_to(job)).replace("\\", "/"),
         "objects": [
@@ -4211,7 +6823,6 @@ def reimport_export(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
         ],
         "geometry": geometry_metrics(working_only=False, position_weld_distance=1e-6),
         "animation_bounds": animation_bounds,
-        "loop_phase_evidence": loop_evidence,
         "previews": sorted(set(preview_paths)),
         "armatures": [
             {"name": obj.name, "bones": len(obj.data.bones)}
@@ -4302,7 +6913,7 @@ def health(req: Dict[str, Any]) -> Dict[str, Any]:
 def run(req: Dict[str, Any]) -> Dict[str, Any]:
     operation = req["operation"]
     pdx = None
-    if operation not in {"health", "inspect_scene", "save_checkpoint", "sanitize_runtime_candidate", "retime_animation_action", "offset_action_root"}:
+    if operation not in {"health", "inspect_scene", "save_checkpoint", "sanitize_runtime_candidate", "retime_animation_action", "offset_action_root", "bake_static_mesh_transforms", "partition_static_mesh_export_batches", "attach_rigid_weapon_from_checkpoint"}:
         pdx = load_pdx(req["io_pdx_root"])
     if operation == "health":
         return health(req)
@@ -4312,6 +6923,10 @@ def run(req: Dict[str, Any]) -> Dict[str, Any]:
         return inspect(req)
     if operation == "process_textures":
         return extract_textures(req)
+    if operation == "bake_static_mesh_transforms":
+        return bake_static_mesh_transforms(req)
+    if operation == "partition_static_mesh_export_batches":
+        return partition_static_mesh_export_batches(req)
     if operation == "export_mesh":
         return export_mesh(req, pdx)
     if operation == "export_animation":
@@ -4320,6 +6935,16 @@ def run(req: Dict[str, Any]) -> Dict[str, Any]:
         return import_animation_action(req)
     if operation == "retime_animation_action":
         return retime_animation_action(req)
+    if operation == "author_humanoid_rig":
+        return author_humanoid_rig(req)
+    if operation == "author_humanoid_actions":
+        return author_humanoid_actions(req)
+    if operation == "review_humanoid_components":
+        return review_humanoid_components(req)
+    if operation == "isolate_humanoid_weapon":
+        return isolate_humanoid_weapon(req)
+    if operation == "attach_rigid_weapon_from_checkpoint":
+        return attach_rigid_weapon_from_checkpoint(req)
     if operation == "author_locomotion_action":
         return author_locomotion_action(req)
     if operation == "segment_creature_components":

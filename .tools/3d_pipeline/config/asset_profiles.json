@@ -159,6 +159,85 @@
       "root_policy": "root_bone_at_ground_origin",
       "runtime_consumer": "land-unit entity"
     },
+    "nonhumanoid_winged_biped": {
+      "axis": "z_up",
+      "scale_reference": "western_european_infantry.mesh source height 7.351824 with infantry_rifle_entity scale 0.8; overall creature height is calibrated to the same runtime height",
+      "runtime_entity_scale": 0.8,
+      "runtime_diffuse_gamma": 0.72,
+      "vanilla_reference": {
+        "mesh": "gfx/models/units/western_european_infantry.mesh",
+        "entity": "gfx/entities/units_infantry.asset#infantry_rifle_entity",
+        "mesh_object_names": [
+          "polySurface106"
+        ],
+        "exclude_name_patterns": [
+          "collision"
+        ],
+        "forward_axis": "-Y",
+        "up_axis": "+Z",
+        "mesh_height": 7.3518242835,
+        "entity_scale": 0.8,
+        "runtime_height": 5.8814594268,
+        "measurement": "io_pdx_mesh import, main polySurface106 object, collision object excluded"
+      },
+      "texture_max_dimension": 1024,
+      "triangle_range": {
+        "preferred_min": 10000,
+        "preferred_max": 45000,
+        "hard_max": 90000,
+        "working_triangle_target": 30000
+      },
+      "controlled_reduction_allowed": true,
+      "materials": {
+        "max_slots": 6,
+        "required_channels": [
+          "diff",
+          "spec",
+          "n"
+        ],
+        "shader": "PdxMeshAdvanced",
+        "specular_packing": {
+          "red": 0,
+          "green": 32,
+          "blue": "metallic",
+          "alpha": "roughness"
+        },
+        "raw_roughness_as_specular": false
+      },
+      "rig_route": "blender_custom_winged_biped_rig",
+      "actions": [
+        {
+          "role": "idle",
+          "fps": 30,
+          "loop": true,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        },
+        {
+          "role": "move",
+          "fps": 30,
+          "loop": true,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        },
+        {
+          "role": "attack",
+          "fps": 30,
+          "loop": false,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        },
+        {
+          "role": "death",
+          "fps": 30,
+          "loop": false,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        }
+      ],
+      "root_policy": "custom_creature_root_at_ground_origin",
+      "runtime_consumer": "land-unit entity"
+    },
     "nonhumanoid_creature": {
       "axis": "z_up",
       "scale_reference": "western_european_infantry.mesh source height 7.351824 with infantry_rifle_entity baseline scale 0.8; job-supplied entity scale derived from the named runtime consumer",

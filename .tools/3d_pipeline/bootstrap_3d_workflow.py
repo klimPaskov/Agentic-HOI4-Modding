@@ -1241,7 +1241,8 @@ def write_dependency_record(root: Path, payload: dict) -> Path:
         **previous_policy,
         "provider_input_image_count": 1,
         "allow_meshy_multiview_thumbnails": False,
-        "default_generation_model": "Meshy 6 when exposed by the verified live schema",
+        "required_generation_model": "meshy-7",
+        "default_generation_model": "Meshy 7 via explicit ai_model=meshy-7",
         "silent_generation_model_downgrade": False,
         "planned_paid_operations_pre_authorized": True,
         "failure_recovery_requires_confirmation": True,
@@ -1318,6 +1319,9 @@ def main() -> int:
             "contract": json.loads(meshy_contract_path.read_text(encoding="utf-8")),
             "live_schema_verification_required_before_provider_calls": True,
         }
+        provider_policy = meshy_tool_contract["contract"].get("provider_policy", {})
+        if provider_policy.get("required_generation_model") != "meshy-7":
+            raise SetupError("The checked-in Meshy contract does not require meshy-7.")
         blender_mcp = resolve_blender_mcp()
         blender_mcp_project = ensure_blender_mcp(pipeline_root, blender_mcp)
         io_resolution = resolve_io_pdx_mesh()

@@ -6,6 +6,9 @@
     "meshy_check_balance": {"paid": false, "required_arguments": []},
     "meshy_image_to_3d": {
       "paid": true,
+      "required_arguments": ["ai_model"],
+      "required_ai_model": "meshy-7",
+      "accepted_ai_models": ["meshy-7"],
       "required_argument_groups": [["file_path", "image_url", "input_task_id"]],
       "input_exclusivity": ["file_path", "image_url", "input_task_id"],
       "forbidden_arguments": ["multi_view_thumbnails"]
@@ -25,7 +28,8 @@
   "provider_policy": {
     "input_image_count": 1,
     "allow_multi_view_thumbnails": false,
-    "default_generation_model": "Meshy 6 when exposed by the verified live schema",
+    "required_generation_model": "meshy-7",
+    "default_generation_model": "Meshy 7 via explicit ai_model=meshy-7",
     "silent_model_downgrade": false,
     "planned_paid_operations_pre_authorized": true,
     "failure_recovery_requires_confirmation": true
