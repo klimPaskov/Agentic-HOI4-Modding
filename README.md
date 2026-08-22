@@ -120,14 +120,6 @@ Put subagent TOML files under:
 
 The main agent should still own final implementation, final wiring, final review, final validation, and the completion report. Spawn every project custom subagent without inherited conversation context and pass every required path, constraint, correction, accepted decision, ownership boundary, and handoff destination explicitly in its prompt.
 
-## Optional Qoder dual-runtime workflow
-
-Some projects run Qoder alongside Codex. When the optional Qoder component is installed, `.codex/agents/*.toml` remains the canonical authoring source and `.qoder/agents/*.md` is generated output produced by the repository's `sync_qoder_agents.py` tool.
-
-Never hand-edit generated Qoder agent files. Update the matching Codex TOML and rerun the synchronization command so name mapping, authority labels, and generated banners remain consistent.
-
-The two runtimes share skills, gameplay, docs, specs, plans, handoffs, and declared wrappers, but they keep runtime configuration separate. During a Qoder session treat `.codex/**` as read-only reference; during a Codex session leave `.qoder/**` untouched. If the optional component is not installed, Codex remains the only active runtime and no Qoder files or configuration should be invented.
-
 ## Optional Super Events workflow
 
 HOI4 Mod Setup leaves Super Events out by default. Selecting the workflow installs the `hoi4-super-events` skill plus the reusable runtime under `interface/`, `common/`, `events/`, `localisation/`, `gfx/`, and `docs/super_events/`.
