@@ -58,28 +58,20 @@ class ManifestGeneratorTests(unittest.TestCase):
                 {"present.txt": b"present"},
             )
 
-    def test_legacy_manifest_removes_v2_validation_parameters(self) -> None:
-        manifest = {
-            "schema_version": "2.0.0",
-            "components": [{"validation": [{"kind": "command", "parameters": {"arguments": ["--quiet"]}}]}],
-        }
-        legacy = json.loads(json.dumps(manifest))
-        legacy["schema_version"] = "1.0.0"
-        for component in legacy["components"]:
-            for validation in component.get("validation", []):
-                validation.pop("parameters", None)
-        self.assertEqual(legacy["schema_version"], "1.0.0")
-        self.assertNotIn("parameters", legacy["components"][0]["validation"][0])
+    def test_canonical_manifest_uses_schema_two(self) -> None:
+        manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+        self.assertEqual(manifest["schema_version"], "2.0.0")
 
     def test_windows_mcp_bootstrap_is_optional_for_cross_platform_profiles(self) -> None:
-        manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.v2.manifest.json"
+        manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
         components = {component["id"]: component for component in manifest["components"]}
         self.assertFalse(components["core.agents"]["optional"])
         self.assertTrue(components["mcp.hoi4_agent_tools.bootstrap"]["optional"])
 
     def test_published_setup_has_no_qoder_runtime(self) -> None:
-        manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.v2.manifest.json"
+        manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
         component_ids = {component["id"] for component in manifest["components"]}
         profile_ids = {profile["id"] for profile in manifest["profiles"]}

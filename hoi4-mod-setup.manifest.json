@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
   "generated_for_revision": "c0d1504e6165d3f295bdfc452f8283010c99eb27",
   "repository": {
@@ -2857,7 +2857,20 @@
           "id": "mcp.bootstrap",
           "severity": "block",
           "kind": "command",
-          "target": ".tools/mcp/bootstrap_hoi4_agent_tools.py"
+          "target": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
+          "parameters": {
+            "arguments": [
+              "--quiet"
+            ],
+            "network_access": "Required to install current-user Node.js LTS when missing and resolve the exact hoi4-agent-tools@2.5.2 package from https://registry.npmjs.org.",
+            "expected_writes": [
+              "the current user's winget-managed Node.js LTS installation when Node is missing",
+              "the current user's AppData/Roaming/npm package prefix",
+              "the current user's npm cache"
+            ],
+            "privilege": "current_user",
+            "rollback_boundary": "Managed project files roll back transactionally. The user-scoped Node.js LTS package, npm cache, and exact global hoi4-agent-tools package are external tool state and are reported but not removed automatically."
+          }
         }
       ],
       "update": {
@@ -2934,7 +2947,46 @@
           "id": "mcp.hoi4.health",
           "severity": "block",
           "kind": "command",
-          "target": "hoi4-agent-tools.cmd"
+          "target": "hoi4-agent-tools.cmd",
+          "parameters": {
+            "package_name": "hoi4-agent-tools",
+            "package_version": "2.5.2",
+            "package_integrity": "sha512-/2CmEDqkEbRsA9CcgnV0KKF8pHWOaATsAlIZexo/2D9BMbIYfYHdimAa5ZMSQiXahCGvCBA1Pq2a9ANZnp8Waw==",
+            "runtime_entry": "dist/bin/stdio.js",
+            "runtime_entry_sha256": "7ddc78a8c518957dea6e737663c2be5e8852795d6662fc607166f15f4fb719a8",
+            "runtime_entry_size": 1916,
+            "required_tools": [
+              "hoi4.focus_inspect",
+              "hoi4.focus_render",
+              "hoi4.focus_raster",
+              "hoi4.focus_rewrite",
+              "hoi4.gui_inspect",
+              "hoi4.gui_render",
+              "hoi4.gui_rewrite",
+              "hoi4.map_inspect",
+              "hoi4.map_render",
+              "hoi4.map_rewrite",
+              "hoi4.event_inspect",
+              "hoi4.event_render",
+              "hoi4.event_compare",
+              "hoi4.tech_inspect",
+              "hoi4.tech_render",
+              "hoi4.tech_compare",
+              "hoi4.probability_inspect",
+              "hoi4.probability_evaluate",
+              "hoi4.probability_sweep",
+              "hoi4.probability_simulate",
+              "hoi4.probability_sequence",
+              "hoi4.probability_compare",
+              "hoi4.probability_render"
+            ],
+            "network_access": "None. This read-only health action runs the already installed exact package.",
+            "expected_writes": [],
+            "privilege": "current_user",
+            "rollback_boundary": "The health action performs no writes and starts no tool call.",
+            "package_tree_sha256": "9da372df1c7870728f80e850c1c7fd6b5470285f27e1ef8e0841fcde60e0a208",
+            "package_file_count": 181
+          }
         }
       ],
       "update": {
@@ -6532,7 +6584,36 @@
           "id": "3d.bootstrap",
           "severity": "warn",
           "kind": "command",
-          "target": ".tools/3d_pipeline/bootstrap_3d_workflow.py"
+          "target": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
+          "parameters": {
+            "arguments": [
+              "--project-root",
+              "<project_root>",
+              "--verify-reviewed-config",
+              "--quiet"
+            ],
+            "network_access": "Required to authenticate the Meshy credential with the bounded balance endpoint, install user-scoped Node.js LTS or uv when missing, install the exact lockfile-resolved Meshy runtime, resolve Blender MCP to an exact commit, and download pinned io_pdx_mesh 0.91 from approved HTTPS hosts.",
+            "expected_writes": [
+              ".tools/3d_pipeline/adapter/.venv/**",
+              ".tools/3d_pipeline/adapter/uv.lock",
+              ".tools/3d_pipeline/cache/**",
+              ".tools/3d_pipeline/config/dependencies.lock.json",
+              ".tools/3d_pipeline/config/runtime.json",
+              ".tools/3d_pipeline/config/*_executable.txt",
+              ".tools/3d_pipeline/config/*_host.txt",
+              ".tools/3d_pipeline/config/*_port.txt",
+              ".tools/3d_pipeline/config/*_project.txt",
+              ".tools/3d_pipeline/config/*_version.txt",
+              ".tools/3d_pipeline/runtime/**",
+              ".tools/3d_pipeline/vendor/**",
+              "%LOCALAPPDATA%/HOI4 Mod Setup/runtimes/meshy-0.4.0/**",
+              "the current user's Blender extensions directory",
+              "the current user's winget-managed Node.js LTS installation when npx is missing",
+              "the current user's Python package directory when uv is missing"
+            ],
+            "privilege": "current_user",
+            "rollback_boundary": "Managed project files roll back transactionally. The execution-locked Meshy runtime, downloaded dependencies, user-scoped Node.js LTS, user-level uv, and Blender extensions are external tool state and are reported but not removed automatically."
+          }
         }
       ],
       "update": {

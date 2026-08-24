@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths-ignore:
       - hoi4-mod-setup.manifest.json
-      - hoi4-mod-setup.v2.manifest.json
 
 concurrency:
   group: hoi4-mod-setup-manifest-main
@@ -31,15 +30,14 @@ jobs:
       - name: Regenerate exact-revision evidence
         run: >-
           python scripts/generate_manifest_evidence.py
-          --manifest hoi4-mod-setup.v2.manifest.json
-          --legacy-manifest hoi4-mod-setup.manifest.json
+          --manifest hoi4-mod-setup.manifest.json
           --source-root .
           --revision "$GITHUB_SHA"
       - name: Verify bounded change
         shell: bash
         run: |
           set -euo pipefail
-          unexpected="$(git diff --name-only -- . ':!hoi4-mod-setup.manifest.json' ':!hoi4-mod-setup.v2.manifest.json')"
+          unexpected="$(git diff --name-only -- . ':!hoi4-mod-setup.manifest.json')"
           test -z "$unexpected" || { echo "Unexpected generated changes: $unexpected"; exit 1; }
           git diff --check
       - name: Publish generated manifest
@@ -50,7 +48,7 @@ jobs:
           test "$remote_main" = "$GITHUB_SHA" || { echo "main advanced; a newer run will publish the manifest"; exit 1; }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- hoi4-mod-setup.manifest.json hoi4-mod-setup.v2.manifest.json
+          git add -- hoi4-mod-setup.manifest.json
           git diff --cached --quiet && exit 0
           git commit -m "chore: refresh setup package manifest"
           git push origin HEAD:main
