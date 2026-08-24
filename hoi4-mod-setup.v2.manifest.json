@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "78da3473fa7a6260944ed1df9febdab85644083e",
+  "generated_for_revision": "c0d1504e6165d3f295bdfc452f8283010c99eb27",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "d6a02217509f73b2bc1a655374798168071c35509fe0b2f321939c850f0c55d1",
-          "size": 47355
+          "sha256": "82c6d5c0979093b6bd92eb88f7ecf47fb6845f082983cfaff4227233e4e01cfd",
+          "size": 48554
         }
       ]
     },
@@ -121,8 +121,13 @@
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "f23e03cbdf13a7994f62b835ad4a4f97c8442bbe376f459fb288f781982e16e7",
-          "size": 43342
+          "sha256": "2e42d717649af198dac82360b64bf1a97e9eb2adfb0eb654cb3ed4c1bbd12c36",
+          "size": 50569
+        },
+        {
+          "path": ".agents/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
+          "sha256": "fe8799b3d5f49c53011897160f5bb94c7e2bc785dbbfb18fb1252364134cfe33",
+          "size": 3891
         },
         {
           "path": ".agents/skills/hoi4-debug-playtest/SKILL.md",
@@ -2556,8 +2561,8 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "722ae13640889ccb4d6b5489243240a69dc1f7b10c39e6c1b7696d515252107c",
-          "size": 157280
+          "sha256": "2c44acd80c4c091e09bc764969fea913dc4e14dec6e552812f2b893f42d8b0b6",
+          "size": 157629
         },
         {
           "path": ".agents/skills/hoi4-focus-trees/SKILL.md",
@@ -2571,8 +2576,8 @@
         },
         {
           "path": ".agents/skills/hoi4-improvement-loop/SKILL.md",
-          "sha256": "21ef78482d94365c0f4c4dd6f20000875f543148843d174cc988253d9a90b888",
-          "size": 28281
+          "sha256": "1398305ef183e5d578e42ed3b85448bd74ae19a426db1e52716ae1ee337bf52c",
+          "size": 28361
         },
         {
           "path": ".agents/skills/hoi4-mtth/SKILL.md",
@@ -2581,8 +2586,8 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "b59ce5baae0cb5c1175ae04276ba2f3295b0fcd0b0e4d443d5925cf9ff92b3bf",
-          "size": 32361
+          "sha256": "1375fb18dee63f4e369db28ff80b2e2fce92d4858b5045953f8fd5ab3941812b",
+          "size": 32882
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
@@ -2646,8 +2651,8 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_3d_model_pipeline.toml",
-          "sha256": "7b1f14055233e8323b0f82cf64379f2595680ff7b694db1fb0158e24be751d3e",
-          "size": 21225
+          "sha256": "ddf895fb02027069179456c1ddd17b08e584eca2e3d5d534e4ddd5796abe9712",
+          "size": 25110
         },
         {
           "path": ".codex/agents/hoi4_ai_probability_auditor.toml",
@@ -2711,8 +2716,8 @@
         },
         {
           "path": ".codex/agents/hoi4_localisation_auditor.toml",
-          "sha256": "c7d92df49b9e99a644be700074131bf444e5ab03c5f830702d52a9468c398a6a",
-          "size": 9296
+          "sha256": "475090befa68c69225e154fb96e9bb4a1c15906d00bd9e9686fa818e176c2632",
+          "size": 9367
         },
         {
           "path": ".codex/agents/hoi4_quote_remark_researcher.toml",
@@ -2721,8 +2726,8 @@
         },
         {
           "path": ".codex/agents/hoi4_repo_explorer.toml",
-          "sha256": "8cabb8e6a1881b1459f74a549a98866272c4e6a9f2d532a2cf71519778164023",
-          "size": 12619
+          "sha256": "127d3481ee178147f58bc0314c10dd768893d6aad7bdc264abaf9b061b5ff47c",
+          "size": 12638
         },
         {
           "path": ".codex/agents/hoi4_scripted_system_architect.toml",
@@ -2797,8 +2802,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "e0ca4e1a46dcd1bf9bcdba9a4fa8776ea1be32438ff49c09a5af3eb29766339d",
-          "size": 9132
+          "sha256": "707670c0b309a44dda8191129866f5dec4060a626deb181dffe9701391f0561c",
+          "size": 9177
         }
       ]
     },
@@ -3100,8 +3105,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "65d3dc7fe77d2801ca97ad79a9b0e1f031bc619d1eb9cbca283c1c21c0eb0ddf",
-          "size": 20053
+          "sha256": "28be952f8010866c8fcb70055cf28b8041194f8a171f94fb7e476031064809fe",
+          "size": 20640
         }
       ]
     },
@@ -3149,8 +3154,8 @@
       "expected_files": [
         {
           "path": "AGENTS_chaos_redux.md",
-          "sha256": "da1b5606aab784526b420d8de0c2d845819a5c687a73efc8999c2ff8f798ccbd",
-          "size": 38270
+          "sha256": "dec6c0ec355c9c3129946b50fe9d745d7262dce559c1e0e2c31b26f4d634d6d6",
+          "size": 42560
         }
       ]
     },
@@ -6629,34 +6634,74 @@
       ],
       "expected_files": [
         {
+          "path": ".tools/3d_pipeline/README.md",
+          "sha256": "239bb7a10175a0a0372867413e30fc4061ece19da563d797ab6d9a95cafeb0b3",
+          "size": 7237
+        },
+        {
           "path": ".tools/3d_pipeline/adapter/blender_worker.py",
-          "sha256": "03c31a609e08cee20e8d605c9464d876faf79830fbead7d536ac08d425208edb",
-          "size": 190700
+          "sha256": "d91db4f766f03f89fbaec9939fa333d63b323ab82e1325d3561c9d00e8981182",
+          "size": 320051
         },
         {
           "path": ".tools/3d_pipeline/adapter/hoi4_blender_mcp.py",
-          "sha256": "a2be0d99c5c334772acf210da88c284f5adfe2a1b49df28655d03aaab8520b04",
-          "size": 21870
+          "sha256": "522a5ec80db24aa0c88342dc8d1f6ec171815b5f90d407415e80f7d0f4493424",
+          "size": 27998
         },
         {
           "path": ".tools/3d_pipeline/adapter/pyproject.toml",
-          "sha256": "4e3e491ea9e6d9b5bb3f6d0fc362bf7f707330c719ece021987b885105793f61",
-          "size": 276
+          "sha256": "4723167464b53389b996fc16c3828203febc5fa499989d52f5de00f7989c972f",
+          "size": 267
+        },
+        {
+          "path": ".tools/3d_pipeline/blender_client.py",
+          "sha256": "a212f555876095f5b1664d8b768de2f89035027e70c5be8c19ebe64ab55fdccc",
+          "size": 18855
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "dd24ecaa83802c644f959fcde5df861190d051ca24c7ae89d562f94820447be5",
-          "size": 57443
+          "sha256": "e2340e2340d567b905a529e34eeee3cfa636a51087dc1e5483fcd0fe84a7f511",
+          "size": 57727
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
-          "sha256": "e52344c83fabedd2d053a6b8f9624b8bc025d426ec3efea22ba50d3a864a99a0",
-          "size": 7902
+          "sha256": "82482841e5328bd5b06ee33a78689ca4c3ef85983dd910712721e11d3f01ab29",
+          "size": 10357
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_tool_contract.json",
-          "sha256": "33dd52ea3c05d539985a928aa656b779d02e6af398907f37c324e4c4e0cb6dbd",
-          "size": 1457
+          "sha256": "1649396f6c1ada52ae4a913626cd9002de815819ffe377a25c663bf96db7a2f6",
+          "size": 1611
+        },
+        {
+          "path": ".tools/3d_pipeline/config/meshy_tool_schema.lock.json",
+          "sha256": "eec52ac8a572865526f895395d321ca945ecaf6696cedde375ebb2b4c8d8b3d9",
+          "size": 4179
+        },
+        {
+          "path": ".tools/3d_pipeline/init_pilot_jobs.py",
+          "sha256": "c580f1e736770c89ce97215c652d0d3eb1927464fd0e2c80858b9c841e242a20",
+          "size": 13115
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/__init__.py",
+          "sha256": "b9f05673b4c2e79ec597a17d4964bc0dbe8d22ad55e6ccf67f677cd6b882146c",
+          "size": 57
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/mcp_stdio.py",
+          "sha256": "b9a6d26bc2d72091acea09bce2f8ab43620f3e99255e3b53851ad79fbfbaf0df",
+          "size": 10352
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/paths.py",
+          "sha256": "d0973be672ad74c3e0f285d2f49a28b2f2fdac5602d6401d5169a8e3dcf03619",
+          "size": 7265
+        },
+        {
+          "path": ".tools/3d_pipeline/meshy_client.py",
+          "sha256": "449b2963bc119004651ca5c9d8ab8db0c9d22f65ab103046b2fc9c481e602f32",
+          "size": 20385
         },
         {
           "path": ".tools/3d_pipeline/meshy_runtime/package-lock.json",
@@ -6667,6 +6712,31 @@
           "path": ".tools/3d_pipeline/meshy_runtime/package.json",
           "sha256": "dc41c1df4d4243b435362fd0a4406433e728307e88815acfbf1183ce7c38ef11",
           "size": 151
+        },
+        {
+          "path": ".tools/3d_pipeline/pack_pdx_material.py",
+          "sha256": "7edcb4129e3af7c80f877b6ce36ba614410c00f449cd965a2926113413d870ac",
+          "size": 11801
+        },
+        {
+          "path": ".tools/3d_pipeline/run_pilot.py",
+          "sha256": "4923eb305298a135c00903fe249836f7bebf318aa2e7465a2962d49cb1bd7753",
+          "size": 99878
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/blender_rigid_weapon_attachment_integration.py",
+          "sha256": "2d8f96ddbe2b8378a9ba8e4a5a906cc74f367ac8839347e69016cbf273506314",
+          "size": 3987
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_rigid_weapon_attachment_tool.py",
+          "sha256": "1cc4c5c22b6a6a10c38184ad730db7396a80dcdf4f4c1ae8988531cc8c1042be",
+          "size": 4163
+        },
+        {
+          "path": ".tools/3d_pipeline/verify_environment.py",
+          "sha256": "b13a2bc1fe0c89fe5246895b7b930c21c2f3eeea2b7ec4d149f0529212a02036",
+          "size": 4183
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
@@ -7189,8 +7259,8 @@
       "expected_files": [
         {
           "path": "docs/super_events/README.md",
-          "sha256": "5cd083ece9692eb55a8ff20aacdff5d4ba6151267337ed45021f8001dbeefdef",
-          "size": 2570
+          "sha256": "4fc8d97f7dd4a840a36cb3ebb4482be4d6d6e193c9ce170393fb1438f0f395ba",
+          "size": 2567
         }
       ]
     }
