@@ -3103,108 +3103,6 @@
       ]
     },
     {
-      "id": "runtime.qoder.agents",
-      "display_name": "Optional Qoder runtime",
-      "description": "Install generated Qoder subagent definitions and the project-local Qoder MCP registration alongside the canonical Codex runtime.",
-      "category": "workflow",
-      "optional": true,
-      "platforms": [
-        "all"
-      ],
-      "source": {
-        "kind": "tree",
-        "path": ".qoder",
-        "include": [
-          "agents/**",
-          "mcp.json"
-        ],
-        "exclude": [
-          "**/.DS_Store"
-        ]
-      },
-      "destination": {
-        "path": ".qoder/",
-        "ownership": "managed",
-        "outside_project": false
-      },
-      "dependencies": [
-        "core.subagents",
-        "runtime.qoder.sync"
-      ],
-      "conflicts": [
-        "existing Qoder runtime files"
-      ],
-      "conflict_policy": "replace_if_unmodified",
-      "validation": [
-        {
-          "id": "qoder.generated",
-          "severity": "block",
-          "kind": "command",
-          "target": ".tools/sync_qoder_agents.py"
-        }
-      ],
-      "update": {
-        "strategy": "replace_if_unmodified",
-        "remove_obsolete": true,
-        "preserve_local_additions": true
-      },
-      "capabilities": [
-        "generated Qoder subagent definitions",
-        "runtime-specific MCP registration",
-        "Codex-to-Qoder drift detection"
-      ],
-      "notes": [
-        "Codex TOML files remain the canonical authoring source; Qoder Markdown files are generated outputs and must not be hand-edited.",
-        "The optional runtime is intentionally absent from the default core profile."
-      ],
-      "expected_files": []
-    },
-    {
-      "id": "runtime.qoder.sync",
-      "display_name": "Qoder agent synchronization tool",
-      "description": "Install the repository-owned checker and generator that keeps Qoder agent outputs synchronized with canonical Codex TOMLs.",
-      "category": "script",
-      "optional": true,
-      "platforms": [
-        "all"
-      ],
-      "source": {
-        "kind": "file",
-        "path": ".tools/sync_qoder_agents.py"
-      },
-      "destination": {
-        "path": ".tools/sync_qoder_agents.py",
-        "ownership": "managed",
-        "outside_project": false
-      },
-      "dependencies": [
-        "core.subagents"
-      ],
-      "conflicts": [
-        "existing Qoder synchronization tool"
-      ],
-      "conflict_policy": "replace_if_unmodified",
-      "validation": [
-        {
-          "id": "qoder.sync.exists",
-          "severity": "block",
-          "kind": "exists",
-          "target": ".tools/sync_qoder_agents.py"
-        }
-      ],
-      "update": {
-        "strategy": "replace_if_unmodified",
-        "remove_obsolete": false,
-        "preserve_local_additions": true
-      },
-      "capabilities": [
-        "Qoder generation",
-        "generated-output drift checks",
-        "canonical-agent name validation"
-      ],
-      "expected_files": []
-    },
-    {
       "id": "wiki.snapshot",
       "display_name": "Offline Hearts of Iron IV Paradox wiki",
       "description": "Install the repository snapshot under paradox_wiki/.",
@@ -7243,22 +7141,6 @@
         "docs.mcp_integration",
         "wiki.snapshot",
         "workflow.3d"
-      ],
-      "default": false
-    },
-    {
-      "id": "core_with_qoder",
-      "display_name": "Core plus Qoder runtime",
-      "components": [
-        "core.agents",
-        "core.skills",
-        "core.subagents",
-        "codex.config",
-        "mcp.hoi4_agent_tools",
-        "docs.mcp_integration",
-        "wiki.snapshot",
-        "runtime.qoder.sync",
-        "runtime.qoder.agents"
       ],
       "default": false
     }

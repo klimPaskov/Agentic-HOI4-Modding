@@ -51,6 +51,13 @@ class ManifestGeneratorTests(unittest.TestCase):
                 {"present.txt": b"present"},
             )
 
+    def test_empty_declared_tree_fails_closed(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "tree source has no files"):
+            GENERATOR.git_evidence_for(
+                {"source": {"kind": "tree", "path": ".qoder", "include": ["**"]}},
+                {"present.txt": b"present"},
+            )
+
     def test_legacy_manifest_removes_v2_validation_parameters(self) -> None:
         manifest = {
             "schema_version": "2.0.0",
@@ -70,6 +77,14 @@ class ManifestGeneratorTests(unittest.TestCase):
         components = {component["id"]: component for component in manifest["components"]}
         self.assertFalse(components["core.agents"]["optional"])
         self.assertTrue(components["mcp.hoi4_agent_tools.bootstrap"]["optional"])
+
+    def test_published_setup_has_no_qoder_runtime(self) -> None:
+        manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.v2.manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+        component_ids = {component["id"] for component in manifest["components"]}
+        profile_ids = {profile["id"] for profile in manifest["profiles"]}
+        self.assertFalse(any(component_id.startswith("runtime.qoder.") for component_id in component_ids))
+        self.assertNotIn("core_with_qoder", profile_ids)
 
 
 if __name__ == "__main__":

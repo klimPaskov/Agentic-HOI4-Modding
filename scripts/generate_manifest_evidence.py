@@ -102,6 +102,10 @@ def git_evidence_for(component: dict, snapshot: dict[str, bytes]) -> list[dict]:
     missing = [name for name in names if name not in snapshot]
     if missing:
         raise SystemExit(f"declared source file is missing at the selected revision: {missing[0]}")
+    if not names:
+        raise SystemExit(
+            f"declared {source['kind']} source has no files at the selected revision: {prefix}"
+        )
     return [
         {
             "path": name,

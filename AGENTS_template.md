@@ -173,16 +173,6 @@ Use these high-level routing rules:
 - Use `hoi4_skill_maintainer` for non-trivial skill creation, cleanup, routing updates, or multi-skill consistency work.
 - Use `hoi4_improvement_loop_planner` during large feature implementation when a mechanic, focus tree, country package, decision system, text or audio research need, visual progression, lore package, or audit finding needs deeper design. It creates concrete feature expansion addenda with research, historical connections, playable mechanics, and implementation surfaces for the main agent. It does not patch gameplay files. Do not spawn it again for the same feature until the previous addendum has been implemented, folded into specs, queued with a reason, or rejected.
 
-### Optional dual-runtime workflow (Codex + Qoder)
-
-Some repositories may install a Qoder adapter alongside Codex. When `.qoder/agents/` and the repository's Qoder synchronization tool are present, the Codex TOMLs in `.codex/agents/` remain the canonical authoring source and the Qoder Markdown files are generated outputs.
-
-- Never hand-edit generated `.qoder/agents/*.md` files; update the matching `.codex/agents/*.toml` source and run the repository-declared synchronization command.
-- Preserve the canonical snake_case Codex identifier in routing rules; generated Qoder identifiers may use lowercase hyphens when the Qoder runtime requires them.
-- Keep `.agents/skills/`, gameplay, docs, specs, plans, handoffs, and shared wrappers runtime-agnostic unless a project-specific instruction explicitly scopes a runtime.
-- During a Qoder session treat `.codex/**` as read-only reference; during a Codex session leave `.qoder/**` untouched. Subagent prompts must preserve the same ownership, evidence, and handoff boundaries in both runtimes.
-- If the optional Qoder package is not installed, Codex remains the only active runtime and no Qoder files or configuration should be invented.
-
 Before accepting a new country tag, cosmetic identity, or country-identity asset package, audit the candidate against vanilla, the current mod, sibling local mods, and every installed Workshop mod. Reuse a vanilla tag and preserve its meaningful content when the national identity already exists; remap a conflicting new tag before asset production or runtime wiring begins.
 
 Patch-capable subagents are allowed to make small, local improvements by default when the change is inside the current task surface and directly improves the feature. They may vary costs, add clearer dynamic localisation, improve tooltips, adjust safe AI weights, add narrow helper calls, fix route locks, add cleanup hooks, or correct existing formable checks. `hoi4_event_ui_worker` may implement the accepted bounded GUI introduced by a named event, but no subagent may invent an unplanned or shared scripted GUI system, expand a whole mechanic, redesign a route family, add a new country package, or change the requested design on its own. Broad gaps become a plan under `docs/plans/<feature_slug>/`. Every subagent edit needs a handoff that lists changed files, identifiers, meaningful validation when it affects confidence, and remaining risks. Documentation cleanup work should also record which specs, plans, handoffs, manifests, or reports were promoted, queued, rejected, superseded, or left unresolved.
