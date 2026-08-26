@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "882f9a6562c196ed243adbc8b9eb7a8cef309c83",
+  "generated_for_revision": "bb9d1510fd39c76aa6ea268195e4fc2382ef24da",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -2894,7 +2894,7 @@
     {
       "id": "mcp.hoi4_agent_tools",
       "display_name": "HOI4 Agent Tools MCP",
-      "description": "Register the repository-declared HOI4 tools server; installation remains platform-gated.",
+      "description": "Install and verify the provider-neutral HOI4 tools server; Codex registration is added when Codex is selected.",
       "category": "mcp",
       "optional": true,
       "platforms": [
@@ -2911,7 +2911,6 @@
         "outside_project": false
       },
       "dependencies": [
-        "codex.config",
         "mcp.hoi4_agent_tools.bootstrap"
       ],
       "required_tools": [
@@ -6508,7 +6507,7 @@
       "dependencies": [
         "core.skills",
         "core.subagents",
-        "codex.config"
+        "core.agents"
       ],
       "required_tools": [
         {
@@ -7268,7 +7267,7 @@
   "profiles": [
     {
       "id": "core",
-      "display_name": "Core Codex setup",
+      "display_name": "Core agentic setup",
       "components": [
         "core.agents",
         "core.skills",
@@ -7282,7 +7281,7 @@
     },
     {
       "id": "core_with_3d",
-      "display_name": "Core plus 3D workflow",
+      "display_name": "Core agentic setup plus 3D workflow",
       "components": [
         "core.agents",
         "core.skills",
