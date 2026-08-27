@@ -402,8 +402,7 @@
         "outside_project": false
       },
       "dependencies": [
-        "runtime.claude",
-        "mcp.hoi4_agent_tools"
+        "runtime.claude"
       ],
       "conflicts": [
         "existing Claude Code project MCP server id"
