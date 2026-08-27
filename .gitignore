@@ -18,10 +18,5 @@
 /.agents/skills/**/__pycache__/
 *.pyc
 
-# Generated alternate-runtime agent definitions. Canonical prompts live in .codex/agents/.
-/.qoder/
-/.cursor/
-/.opencode/
-
 # Claude Code project definitions are tracked; personal overrides are not.
 /.claude/settings.local.json

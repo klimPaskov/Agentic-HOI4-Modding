@@ -65,7 +65,8 @@
       "id": "core.claude.instructions",
       "display_name": "Claude Code project instructions",
       "description": "Install the Claude Code entry instructions that import the adapted AGENTS workflow authority.",
-      "category": "core",
+      "category": "environment",
+      "coding_environment": "claude_code",
       "optional": false,
       "platforms": [
         "all"
@@ -198,7 +199,8 @@
       "id": "runtime.claude",
       "display_name": "Claude Code runtime",
       "description": "Install tracked Claude Code subagents and shared project settings generated from canonical Codex definitions.",
-      "category": "subagent",
+      "category": "environment",
+      "coding_environment": "claude_code",
       "optional": false,
       "platforms": [
         "all"
@@ -384,7 +386,8 @@
       "id": "runtime.claude.mcp",
       "display_name": "Claude Code HOI4 MCP configuration",
       "description": "Install the project-scoped Claude Code registration for the verified HOI4 Agent Tools server.",
-      "category": "mcp",
+      "category": "environment",
+      "coding_environment": "claude_code",
       "optional": false,
       "platforms": [
         "windows"
@@ -433,6 +436,246 @@
           "size": 156
         }
       ]
+    },
+    {
+      "id": "runtime.cursor",
+      "display_name": "Cursor coding environment",
+      "description": "Install the complete Cursor project package projected from canonical Codex agents.",
+      "category": "environment",
+      "coding_environment": "cursor",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".cursor",
+        "include": [
+          "settings.json",
+          "mcp.json",
+          "agent-map.md",
+          "agents/*.md"
+        ]
+      },
+      "destination": {
+        "path": ".cursor/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "runtime.agent_sync"
+      ],
+      "conflicts": [
+        "existing Cursor project configuration, MCP configuration, or agent with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "cursor.settings.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".cursor/settings.json"
+        },
+        {
+          "id": "cursor.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".cursor/mcp.json"
+        },
+        {
+          "id": "cursor.agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".cursor/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Cursor project configuration",
+        "Cursor MCP configuration",
+        "Cursor subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qoder",
+      "display_name": "Qoder coding environment",
+      "description": "Install the complete Qoder project package projected from canonical Codex agents.",
+      "category": "environment",
+      "coding_environment": "qoder",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".qoder",
+        "include": [
+          "settings.json",
+          "mcp.json",
+          "agent-map.md",
+          "agents/*.md"
+        ]
+      },
+      "destination": {
+        "path": ".qoder/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "runtime.agent_sync"
+      ],
+      "conflicts": [
+        "existing Qoder project configuration, MCP configuration, or agent with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "qoder.settings.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".qoder/settings.json"
+        },
+        {
+          "id": "qoder.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".qoder/mcp.json"
+        },
+        {
+          "id": "qoder.agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".qoder/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Qoder project configuration",
+        "Qoder MCP configuration",
+        "Qoder subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.opencode",
+      "display_name": "OpenCode coding environment",
+      "description": "Install the complete OpenCode project package projected from canonical Codex agents.",
+      "category": "environment",
+      "coding_environment": "opencode",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".opencode",
+        "include": [
+          "settings.json",
+          "mcp.json",
+          "agent-map.md",
+          "agent/*.md"
+        ]
+      },
+      "destination": {
+        "path": ".opencode/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "runtime.agent_sync"
+      ],
+      "conflicts": [
+        "existing OpenCode project configuration, MCP configuration, or agent with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "opencode.settings.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".opencode/settings.json"
+        },
+        {
+          "id": "opencode.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".opencode/mcp.json"
+        },
+        {
+          "id": "opencode.agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".opencode/agent"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "OpenCode project configuration",
+        "OpenCode MCP configuration",
+        "OpenCode subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.opencode.config",
+      "display_name": "OpenCode project manifest",
+      "description": "Install the OpenCode project-level configuration and provider-neutral HOI4 MCP route.",
+      "category": "environment",
+      "coding_environment": "opencode",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": "opencode.json"
+      },
+      "destination": {
+        "path": "opencode.json",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.opencode"
+      ],
+      "conflicts": [
+        "existing OpenCode project manifest"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "opencode.config.json",
+          "severity": "block",
+          "kind": "json_parse",
+          "target": "opencode.json"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "OpenCode project manifest",
+        "provider-neutral MCP registration"
+      ],
+      "expected_files": []
     },
     {
       "id": "core.skills",
@@ -3123,7 +3366,8 @@
       "id": "codex.config",
       "display_name": "Codex project configuration",
       "description": "Merge project Codex settings while preserving user-owned settings.",
-      "category": "codex",
+      "category": "environment",
+      "coding_environment": "codex",
       "optional": false,
       "platforms": [
         "all"
@@ -3268,7 +3512,8 @@
       "id": "mcp.hoi4_agent_tools",
       "display_name": "HOI4 Agent Tools MCP",
       "description": "Install and verify the provider-neutral HOI4 tools server; Codex registration follows the independently installed Codex configuration.",
-      "category": "mcp",
+      "category": "environment",
+      "coding_environment": "codex",
       "optional": true,
       "platforms": [
         "windows"
@@ -7653,14 +7898,9 @@
       "display_name": "Core agentic setup",
       "components": [
         "core.agents",
-        "core.claude.instructions",
         "core.skills",
         "core.subagents",
         "runtime.agent_sync",
-        "runtime.claude",
-        "codex.config",
-        "mcp.hoi4_agent_tools",
-        "runtime.claude.mcp",
         "docs.mcp_integration",
         "wiki.snapshot"
       ],
@@ -7671,14 +7911,9 @@
       "display_name": "Core agentic setup plus 3D workflow",
       "components": [
         "core.agents",
-        "core.claude.instructions",
         "core.skills",
         "core.subagents",
         "runtime.agent_sync",
-        "runtime.claude",
-        "codex.config",
-        "mcp.hoi4_agent_tools",
-        "runtime.claude.mcp",
         "docs.mcp_integration",
         "wiki.snapshot",
         "workflow.3d"

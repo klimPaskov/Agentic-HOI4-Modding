@@ -1,0 +1,6 @@
+{
+  "instructions": ["AGENTS.md"],
+  "agents": {
+    "source": ".codex/agents"
+  }
+}
