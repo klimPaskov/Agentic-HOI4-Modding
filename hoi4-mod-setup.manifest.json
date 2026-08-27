@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "e36edfe07f0630e1e39c85ef4840adbb82c7404d",
+  "generated_for_revision": "5758b87124b95d66870626c89baa407e26848cac",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -170,8 +170,8 @@
         },
         {
           "path": ".tools/sync/agent_sync_common.py",
-          "sha256": "0da206621a30ac3590f69844ff3c6c6295c35c7e8091dde3baf267c4da41b792",
-          "size": 9658
+          "sha256": "59ff00503d4d40455c2777884d6ff60803c51d77154620f25258a1df7705dca2",
+          "size": 9650
         },
         {
           "path": ".tools/sync/sync_claude_agents.py",
@@ -500,7 +500,138 @@
         "Cursor MCP configuration",
         "Cursor subagents"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".cursor/agent-map.md",
+          "sha256": "8e4da23c93be53fcc92212be77177f0ea35d06add612797d4d00af58dc6e5f41",
+          "size": 2417
+        },
+        {
+          "path": ".cursor/agents/hoi4-3d-model-pipeline.md",
+          "sha256": "d2e55fd584c20aa63c4054ad79061468da900d123fa5aeb8f8dac1493427455a",
+          "size": 25145
+        },
+        {
+          "path": ".cursor/agents/hoi4-ai-probability-auditor.md",
+          "sha256": "c3e5d16cf0fd345f51c07dd1e887cd31d46bf75f1bd912c1103ccc4fcf064a97",
+          "size": 8060
+        },
+        {
+          "path": ".cursor/agents/hoi4-asset-source-researcher.md",
+          "sha256": "2b582fd686972fa3d2fdb5451f8e5eeefde082ac5435ea233b059fa8fd48efb8",
+          "size": 4639
+        },
+        {
+          "path": ".cursor/agents/hoi4-audio-researcher.md",
+          "sha256": "e21347f15977f933e09343c9900e4bcce116c9b2d2780464e0ecc87cd3652e7a",
+          "size": 4723
+        },
+        {
+          "path": ".cursor/agents/hoi4-country-package-auditor.md",
+          "sha256": "3833052ea24999dc3b782f9dd360bbbe22921f26983471c0685d197934c6148c",
+          "size": 8575
+        },
+        {
+          "path": ".cursor/agents/hoi4-decision-mission-auditor.md",
+          "sha256": "f95dfecb9637599a40595a41654e3e94ddcfdb78759d0477fe9e1d89eddd2dad",
+          "size": 6443
+        },
+        {
+          "path": ".cursor/agents/hoi4-documentation-curator.md",
+          "sha256": "a69f9966c93951c8139401120995b639201ba4c83d0b94db1ba30a96851fd3c3",
+          "size": 10086
+        },
+        {
+          "path": ".cursor/agents/hoi4-event-ui-worker.md",
+          "sha256": "123351be3980699bce2a9e31c7a6dc7979040155599e450ee76debcdf4fbb201",
+          "size": 8878
+        },
+        {
+          "path": ".cursor/agents/hoi4-feature-completion-auditor.md",
+          "sha256": "5e53cf7dd08a2165de299c4219c33fac79617e9928e6c298620043491eeddba4",
+          "size": 6410
+        },
+        {
+          "path": ".cursor/agents/hoi4-focus-tree-auditor.md",
+          "sha256": "a2157b3fbd07d0363c80f625612839b18b7f66bcc6740963d70cb81aa98daaad",
+          "size": 5136
+        },
+        {
+          "path": ".cursor/agents/hoi4-generated-feature-art.md",
+          "sha256": "274c82a25646a1b14beeb843dfc9b16ead1c3211171f70a765da99de72fb6644",
+          "size": 6253
+        },
+        {
+          "path": ".cursor/agents/hoi4-icon-artist.md",
+          "sha256": "9b59b2d0effc62a615c2c9eb1b8af95cfb171e876d226544396e88ae68124987",
+          "size": 11854
+        },
+        {
+          "path": ".cursor/agents/hoi4-improvement-loop-planner.md",
+          "sha256": "e15c5c03062ea73385361d732ff17ec0368553ade8dff7f1b06a5cbb3e2838ba",
+          "size": 7387
+        },
+        {
+          "path": ".cursor/agents/hoi4-localisation-auditor.md",
+          "sha256": "926ce70dfd4d4250fdf3f2903298d81fd8284db909148e7716cb89dd20e310f9",
+          "size": 9343
+        },
+        {
+          "path": ".cursor/agents/hoi4-portrait-creator.md",
+          "sha256": "10b28940a4629df98e8443f84d680bd9196501b6fc6bc119fbaaad8905c9e9ff",
+          "size": 2813
+        },
+        {
+          "path": ".cursor/agents/hoi4-quote-remark-researcher.md",
+          "sha256": "660dc8555fc6b40f0be809564707b1108427bb87b1989a1945bbb99069e0f552",
+          "size": 4378
+        },
+        {
+          "path": ".cursor/agents/hoi4-repo-explorer.md",
+          "sha256": "b11b3a65bf93b31c6478bf1ded06c6ad0246e3058a8dd73d20672e1c1b6c9ca8",
+          "size": 12672
+        },
+        {
+          "path": ".cursor/agents/hoi4-scripted-system-architect.md",
+          "sha256": "8c1efdbccea8bc5e3905bba2042115242a33507465229b58d16f3494ab26c046",
+          "size": 5750
+        },
+        {
+          "path": ".cursor/agents/hoi4-skill-maintainer.md",
+          "sha256": "a48dafcc1f42a000d00427ee915b837337b66521ddc82bf0b51c9f1a3b03285c",
+          "size": 4323
+        },
+        {
+          "path": ".cursor/agents/hoi4-spreadsheet-doc-worker.md",
+          "sha256": "45f26ef2e8481919ff2cb0288d6cc380f6c4943f8c9b0b06c9d9c1f777595208",
+          "size": 4402
+        },
+        {
+          "path": ".cursor/agents/hoi4-super-event-art-researcher.md",
+          "sha256": "ed6a73e6b5b20c9f13e4e1cc02df1fe6f2508fb4357aa04c8449f466feaa597a",
+          "size": 2968
+        },
+        {
+          "path": ".cursor/agents/hoi4-super-event-audio-researcher.md",
+          "sha256": "332167c204d3b43c5a32da54b8b168c3394b80b3c1c48a49146cc110c83959ab",
+          "size": 2736
+        },
+        {
+          "path": ".cursor/agents/hoi4-super-event-quote-researcher.md",
+          "sha256": "7cd03e230e894f71a16b0ae4fb56a33beaba821b7da4f0e01587ec1d8893f5a0",
+          "size": 2270
+        },
+        {
+          "path": ".cursor/mcp.json",
+          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
+          "size": 116
+        },
+        {
+          "path": ".cursor/settings.json",
+          "sha256": "3fa1fca0b43a7e4b091491816fedea27d16b7e49e90919875f8677476ca9219b",
+          "size": 85
+        }
+      ]
     },
     {
       "id": "runtime.qoder",
@@ -565,7 +696,138 @@
         "Qoder MCP configuration",
         "Qoder subagents"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".qoder/agent-map.md",
+          "sha256": "23909008847748d0cb540ad839a79edc1b6736fa4b7a0a4bfc00ae8194527a60",
+          "size": 2413
+        },
+        {
+          "path": ".qoder/agents/hoi4-3d-model-pipeline.md",
+          "sha256": "e43df10c9792fe2bff1138db6ef3711c17ecbece77cccf210f89bc81aaacdf44",
+          "size": 25200
+        },
+        {
+          "path": ".qoder/agents/hoi4-ai-probability-auditor.md",
+          "sha256": "4d7c0d4c121a6d711b678f9ef4fe31a3100681a9c80a24dc500428b0a602db15",
+          "size": 8088
+        },
+        {
+          "path": ".qoder/agents/hoi4-asset-source-researcher.md",
+          "sha256": "a3022e587f746150c24f7218794abab179fdbb9d6fd369cd6fe49e3cfe0147ca",
+          "size": 4694
+        },
+        {
+          "path": ".qoder/agents/hoi4-audio-researcher.md",
+          "sha256": "6f11196b8267d20c6bc5d06798fc1cbe72812293c5b7f6c637acb3e1d0b54a22",
+          "size": 4778
+        },
+        {
+          "path": ".qoder/agents/hoi4-country-package-auditor.md",
+          "sha256": "93f698c05666ce6912e9549c113e54bc013625c71177007bf4054b1e0bd71960",
+          "size": 8609
+        },
+        {
+          "path": ".qoder/agents/hoi4-decision-mission-auditor.md",
+          "sha256": "a41f9a3d2fb3c4a37fbc9113530065c2c99d4a9d961aff2785746ca68d8dd6ba",
+          "size": 6477
+        },
+        {
+          "path": ".qoder/agents/hoi4-documentation-curator.md",
+          "sha256": "1eac9077df2b6e39adb450ea796591f3368134629b2ee3aae5537308c0e56663",
+          "size": 10120
+        },
+        {
+          "path": ".qoder/agents/hoi4-event-ui-worker.md",
+          "sha256": "e7f231b2e2ae77c9318d7a31e8d3fbfb1c63c68a820242524aaaf10b4d58f2ab",
+          "size": 8912
+        },
+        {
+          "path": ".qoder/agents/hoi4-feature-completion-auditor.md",
+          "sha256": "60908c6fb19628b7ac6cfb61ea343d97031cf9388b7614d8e8174609f8303ffb",
+          "size": 6438
+        },
+        {
+          "path": ".qoder/agents/hoi4-focus-tree-auditor.md",
+          "sha256": "105648dbeae656d82bf9a84f97858bd349b5413f33081ec7b8ac7c587d25b7c1",
+          "size": 5170
+        },
+        {
+          "path": ".qoder/agents/hoi4-generated-feature-art.md",
+          "sha256": "11aab1f238141164eb481847a8f7cece28ebbfe481e33eeb563ee33e0d140c94",
+          "size": 6308
+        },
+        {
+          "path": ".qoder/agents/hoi4-icon-artist.md",
+          "sha256": "3a93a19d2e21d2b904fe6f791dd5cd099d7d0abf1c29f95d0422220dba8ae38f",
+          "size": 11909
+        },
+        {
+          "path": ".qoder/agents/hoi4-improvement-loop-planner.md",
+          "sha256": "f2578107fbdb01e581c6ed50a4b80c5e4080b2252a0cee9fd3d32a4fcb15dc88",
+          "size": 7415
+        },
+        {
+          "path": ".qoder/agents/hoi4-localisation-auditor.md",
+          "sha256": "46070f744867369e205cd5387963b15468c4026753476218a8c071ba3ec86f69",
+          "size": 9377
+        },
+        {
+          "path": ".qoder/agents/hoi4-portrait-creator.md",
+          "sha256": "dc9cf7cd4cfeee2d5f596c1e27ab92944399e208f64466fdaf2b1e39fa0356e9",
+          "size": 2868
+        },
+        {
+          "path": ".qoder/agents/hoi4-quote-remark-researcher.md",
+          "sha256": "15b53ba07b2502463cce7cb681250015a4b7b42d65eb089366c7451f42cdd939",
+          "size": 4433
+        },
+        {
+          "path": ".qoder/agents/hoi4-repo-explorer.md",
+          "sha256": "06dd935b83b22fe038a329c934a909439561002b81fe0ca88daf5d80ea9eb467",
+          "size": 12700
+        },
+        {
+          "path": ".qoder/agents/hoi4-scripted-system-architect.md",
+          "sha256": "a3c5c42c4f1839545906d00dbe61d3c943c23b3ae22a47d149a676703fe51efa",
+          "size": 5784
+        },
+        {
+          "path": ".qoder/agents/hoi4-skill-maintainer.md",
+          "sha256": "5f4c98fc5706bea1dcc469903214b86f63d57667f46ecfbee662c9e42bbe3cdf",
+          "size": 4357
+        },
+        {
+          "path": ".qoder/agents/hoi4-spreadsheet-doc-worker.md",
+          "sha256": "323f07f11a19ef014ed7b770946b8f74dabd94fcb754efc83c4968cc7b510bf0",
+          "size": 4436
+        },
+        {
+          "path": ".qoder/agents/hoi4-super-event-art-researcher.md",
+          "sha256": "ddfffa094598867b3c97121d46e6ce67fa12a8bd69370fcf71976d5bf5e0d185",
+          "size": 3023
+        },
+        {
+          "path": ".qoder/agents/hoi4-super-event-audio-researcher.md",
+          "sha256": "7693468167bac4da9a9065a2b24042691e4e23f0d5acb0f248f0994aa6487c10",
+          "size": 2791
+        },
+        {
+          "path": ".qoder/agents/hoi4-super-event-quote-researcher.md",
+          "sha256": "218a7600d0bab6844a5c22cefe327b59f3c888af594cdca17451c7312a2e46c7",
+          "size": 2325
+        },
+        {
+          "path": ".qoder/mcp.json",
+          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
+          "size": 116
+        },
+        {
+          "path": ".qoder/settings.json",
+          "sha256": "9983644a2bffb342e1979fe07db99f1ec5582e279d39ee8accb043d47a301c8c",
+          "size": 198
+        }
+      ]
     },
     {
       "id": "runtime.opencode",
@@ -630,7 +892,138 @@
         "OpenCode MCP configuration",
         "OpenCode subagents"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".opencode/agent-map.md",
+          "sha256": "759dc48b663a13aff4660e70f717817d65a9f789fde14e629edf7b5d5b16f493",
+          "size": 2424
+        },
+        {
+          "path": ".opencode/agent/hoi4-3d-model-pipeline.md",
+          "sha256": "8e0b4a412d1b7bc17d0a2d80c79eb2260c3b1675eec3d0298ceab3709591fcb5",
+          "size": 25133
+        },
+        {
+          "path": ".opencode/agent/hoi4-ai-probability-auditor.md",
+          "sha256": "d5bd145ee52f2ee307397096de545abfc19a6447801ac34520f5ee5ea9f3c4a0",
+          "size": 8043
+        },
+        {
+          "path": ".opencode/agent/hoi4-asset-source-researcher.md",
+          "sha256": "63be7cd40ee41165c16f7d8081fefe96ba29f1c9a6a92fe57c19c04a7b64c90d",
+          "size": 4621
+        },
+        {
+          "path": ".opencode/agent/hoi4-audio-researcher.md",
+          "sha256": "28fc9ad033477bb22dc1a89cd4171ee8755b2adff25b584384d85ada291f57cc",
+          "size": 4712
+        },
+        {
+          "path": ".opencode/agent/hoi4-country-package-auditor.md",
+          "sha256": "c2d12ffbeeee4b98b99ac76c6183643e3daa903f808dab799248959d405d6533",
+          "size": 8557
+        },
+        {
+          "path": ".opencode/agent/hoi4-decision-mission-auditor.md",
+          "sha256": "2b1e7bc5eeeaf0ef21feda7d28ad61198efa67f8bf0c7bd0dce287d2c5fe73f3",
+          "size": 6424
+        },
+        {
+          "path": ".opencode/agent/hoi4-documentation-curator.md",
+          "sha256": "53d2f52cecff400da096b370437cd662fd63123874d88c153f47fcf17cc99c75",
+          "size": 10070
+        },
+        {
+          "path": ".opencode/agent/hoi4-event-ui-worker.md",
+          "sha256": "f947a190ae5f932830a5638090e21c84f01a3a4865b6897a24c3da61cbc1be6b",
+          "size": 8868
+        },
+        {
+          "path": ".opencode/agent/hoi4-feature-completion-auditor.md",
+          "sha256": "19efd7a7dc534feae6842cfb35f1ab6e6464748b0387773bc44a10344ef5a0aa",
+          "size": 6389
+        },
+        {
+          "path": ".opencode/agent/hoi4-focus-tree-auditor.md",
+          "sha256": "8d4ea49a1b9cf5946869fc9c0d6336698aa9e2bc2ae33e7555a4e9ee9648faa1",
+          "size": 5123
+        },
+        {
+          "path": ".opencode/agent/hoi4-generated-feature-art.md",
+          "sha256": "3cb19ab4d70d20c1b7b9bd9bdaea60f1dcc679f7e9626b9e24dd5b4c0140b5e0",
+          "size": 6237
+        },
+        {
+          "path": ".opencode/agent/hoi4-icon-artist.md",
+          "sha256": "3fa592da43a6a362b87d002bc1ce684903f5a73eb8ebf1004cabe5aa31ec2b01",
+          "size": 11848
+        },
+        {
+          "path": ".opencode/agent/hoi4-improvement-loop-planner.md",
+          "sha256": "7163482f23c3b65fa74338883d0651055592de551da8dcd7f05a059e577df583",
+          "size": 7368
+        },
+        {
+          "path": ".opencode/agent/hoi4-localisation-auditor.md",
+          "sha256": "da2acb10bc59e0142e13a9e202147251bd8a1abef7229ef4d1165496ef005c93",
+          "size": 9328
+        },
+        {
+          "path": ".opencode/agent/hoi4-portrait-creator.md",
+          "sha256": "b6dd101b89b7bc382205f7c3b104d0cd4bfc4717c1beb7f153e39b43bf9160db",
+          "size": 2802
+        },
+        {
+          "path": ".opencode/agent/hoi4-quote-remark-researcher.md",
+          "sha256": "816a76a130a3d2f1d9be741069a9348fdcd19263122bd97da6a18e751f503c63",
+          "size": 4360
+        },
+        {
+          "path": ".opencode/agent/hoi4-repo-explorer.md",
+          "sha256": "033bea642e18b298b36c2e95787ce3eeefc94113a53dccef7d0c377e8dd1fde6",
+          "size": 12664
+        },
+        {
+          "path": ".opencode/agent/hoi4-scripted-system-architect.md",
+          "sha256": "5babfadbfa83a5c75694f4b7438039b47cf90de9a165555861ba4a2622a02de2",
+          "size": 5730
+        },
+        {
+          "path": ".opencode/agent/hoi4-skill-maintainer.md",
+          "sha256": "6a66be3199295a1fe5107d55e7bcbcb72db6658724a3085e4972881ad368ffb5",
+          "size": 4312
+        },
+        {
+          "path": ".opencode/agent/hoi4-spreadsheet-doc-worker.md",
+          "sha256": "3dfab2714b8078eb6104c9fca13b2ce347abae7b923df7dcb21cf85b82cb95d5",
+          "size": 4385
+        },
+        {
+          "path": ".opencode/agent/hoi4-super-event-art-researcher.md",
+          "sha256": "56aceafac144f4af8a3bf34fbfb3ae1b0c4ad36114d88e82c77b891e8acf26bc",
+          "size": 2947
+        },
+        {
+          "path": ".opencode/agent/hoi4-super-event-audio-researcher.md",
+          "sha256": "8c269190277de6905bed352f79ea01834bd93f47cce79c870af50cb0989fee3c",
+          "size": 2713
+        },
+        {
+          "path": ".opencode/agent/hoi4-super-event-quote-researcher.md",
+          "sha256": "4807e6ee2668dd8c2d62f31e7bd231411158f8119bb380eb6776dc2154374744",
+          "size": 2247
+        },
+        {
+          "path": ".opencode/mcp.json",
+          "sha256": "dfedf4270213b4d3d1fedf2e1719efe3619c7940132f3a6d48952ea29a6e6506",
+          "size": 100
+        },
+        {
+          "path": ".opencode/settings.json",
+          "sha256": "3fa1fca0b43a7e4b091491816fedea27d16b7e49e90919875f8677476ca9219b",
+          "size": 85
+        }
+      ]
     },
     {
       "id": "runtime.opencode.config",
@@ -662,7 +1055,7 @@
         {
           "id": "opencode.config.json",
           "severity": "block",
-          "kind": "json_parse",
+          "kind": "custom",
           "target": "opencode.json"
         }
       ],
@@ -675,7 +1068,13 @@
         "OpenCode project manifest",
         "provider-neutral MCP registration"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": "opencode.json",
+          "sha256": "544eda73b9c1d8997a7d56b3cf38eb1c8f41f43f18e2c073c620941ba069de58",
+          "size": 220
+        }
+      ]
     },
     {
       "id": "core.skills",
