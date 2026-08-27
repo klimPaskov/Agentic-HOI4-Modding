@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "7bcd62bba40474d5e0ea3a27b24a7bd2cc9b0edb",
+  "generated_for_revision": "c0996750ee8d0a97b5db3a54be12a42d951f34e9",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "b0d38a8ad508b7fea1f01a8e0eccdaae911ed42cc257085ed4153a052a36f7d7",
-          "size": 49958
+          "sha256": "9c083a653b5de1ead9543e1fbabfe07d8f54b5df00f4fde1eeb77ce3c5137a47",
+          "size": 50383
         }
       ]
     },
@@ -103,7 +103,13 @@
         "Claude Code project instructions",
         "shared AGENTS import"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": "CLAUDE_template.md",
+          "sha256": "a21e7c913c59872ea7cf909f7ce36d0c8c1c0bff787afd8d40bbb932212b440b",
+          "size": 1256
+        }
+      ]
     },
     {
       "id": "runtime.agent_sync",
@@ -155,7 +161,38 @@
         "subagent generation",
         "runtime drift checking"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".tools/sync/README.md",
+          "sha256": "3b0a796e20209ad0525bcd8bf39d0c2567e603065fac9459db2eaaef6c444d0d",
+          "size": 968
+        },
+        {
+          "path": ".tools/sync/agent_sync_common.py",
+          "sha256": "0da206621a30ac3590f69844ff3c6c6295c35c7e8091dde3baf267c4da41b792",
+          "size": 9658
+        },
+        {
+          "path": ".tools/sync/sync_claude_agents.py",
+          "sha256": "34e6d508ef8da2c64672c771f6372eac596c8ea40f22d17a7811859c401ce5ff",
+          "size": 189
+        },
+        {
+          "path": ".tools/sync/sync_cursor_agents.py",
+          "sha256": "dd38ee1d0049d48182efb329b75db0b0e54e1923c3584177094bc4ea64d1212e",
+          "size": 184
+        },
+        {
+          "path": ".tools/sync/sync_opencode_agents.py",
+          "sha256": "274b669d19ec86795fb51eb4554e493f3b069b2c70999a01aaf992d8599b861c",
+          "size": 188
+        },
+        {
+          "path": ".tools/sync/sync_qoder_agents.py",
+          "sha256": "68dc2235bfeca80096a7ed5d97ced8978c34757d529cac47d5f7c15cbb55c31b",
+          "size": 182
+        }
+      ]
     },
     {
       "id": "runtime.claude",
@@ -215,7 +252,133 @@
         "Claude Code project settings",
         "read-only agent tool restrictions"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".claude/agent-map.md",
+          "sha256": "bae757561af35f800c7c1220ca3c1488ee7144fea14eef78e0c9e8b1b622184d",
+          "size": 2417
+        },
+        {
+          "path": ".claude/agents/hoi4-3d-model-pipeline.md",
+          "sha256": "2ff680b07092f444b09842aeb8dc0c7251d69f63ac4533370d9f90fa398c0d8b",
+          "size": 25145
+        },
+        {
+          "path": ".claude/agents/hoi4-ai-probability-auditor.md",
+          "sha256": "9e4d06415ad5b378daf8a0d1cc5e847b200568f6b8301c957465a354afe9c8c1",
+          "size": 8103
+        },
+        {
+          "path": ".claude/agents/hoi4-asset-source-researcher.md",
+          "sha256": "ffe241994ba398af85bbc9d73793bcca45e6193a3b5afda6321f61a7a3f03121",
+          "size": 4639
+        },
+        {
+          "path": ".claude/agents/hoi4-audio-researcher.md",
+          "sha256": "58675a3cd62e23e0b4f303e7da9ed03daaf7667537189251776f9a21aafa79b1",
+          "size": 4723
+        },
+        {
+          "path": ".claude/agents/hoi4-country-package-auditor.md",
+          "sha256": "614daa5e1368ce661e67171c5c9973c5cc22088176bebaf5521b4908f4930e96",
+          "size": 8575
+        },
+        {
+          "path": ".claude/agents/hoi4-decision-mission-auditor.md",
+          "sha256": "dfa954142a7db639e8526092efc86d21c6985874799b7a4e9f2a46e32b00078a",
+          "size": 6443
+        },
+        {
+          "path": ".claude/agents/hoi4-documentation-curator.md",
+          "sha256": "87dc5ab42de05f52556d653936ec33a480b17440b34679895763c77d8af499d9",
+          "size": 10086
+        },
+        {
+          "path": ".claude/agents/hoi4-event-ui-worker.md",
+          "sha256": "839c33196fb9408af135a33f25d129e4dfe06201ff66f1d1ccc8805b88fbaaeb",
+          "size": 8878
+        },
+        {
+          "path": ".claude/agents/hoi4-feature-completion-auditor.md",
+          "sha256": "4da6f428cd4c597be2feffafe5a980046a1813b098523e372d2f096acccbc4f5",
+          "size": 6453
+        },
+        {
+          "path": ".claude/agents/hoi4-focus-tree-auditor.md",
+          "sha256": "29998280ab5500187e31c22315334b5330ecc136d4ef033a84e51f63565663f9",
+          "size": 5136
+        },
+        {
+          "path": ".claude/agents/hoi4-generated-feature-art.md",
+          "sha256": "e4aa02cdd27ee10e90c7e553d4554689d70fe9655894d0bf63e098feeafa3ab7",
+          "size": 6253
+        },
+        {
+          "path": ".claude/agents/hoi4-icon-artist.md",
+          "sha256": "8dc69f9756b8d4c9c2bdeb1d6684dcab376585f0cdf009770398f1ed147d8f9e",
+          "size": 11854
+        },
+        {
+          "path": ".claude/agents/hoi4-improvement-loop-planner.md",
+          "sha256": "2a4a60debab5c07b1d5ed60a95074aedb7fbd3c8dab674b03078792a97e69cd0",
+          "size": 7430
+        },
+        {
+          "path": ".claude/agents/hoi4-localisation-auditor.md",
+          "sha256": "aa658b6b119b7cdacb73aeffab73c424292213657f1a25833e8346d2401d6b3e",
+          "size": 9343
+        },
+        {
+          "path": ".claude/agents/hoi4-portrait-creator.md",
+          "sha256": "1c7f96896454584fe66961d9576f7d44c5aa25171481afccd4eae7ac3461f261",
+          "size": 2813
+        },
+        {
+          "path": ".claude/agents/hoi4-quote-remark-researcher.md",
+          "sha256": "662713178c407ff9f24a0ea14bc4e0b004b95348d3907a03133e98b8f3c86ec1",
+          "size": 4378
+        },
+        {
+          "path": ".claude/agents/hoi4-repo-explorer.md",
+          "sha256": "cdeef1573f47e4a7f322c0774e6124345bb2c556f85a5693b6cde21cc330a191",
+          "size": 12715
+        },
+        {
+          "path": ".claude/agents/hoi4-scripted-system-architect.md",
+          "sha256": "54b486d5140d88c579ccae8632c16d498cd1cd04425c7e7bbdd3ef6c8d2fda37",
+          "size": 5750
+        },
+        {
+          "path": ".claude/agents/hoi4-skill-maintainer.md",
+          "sha256": "5b48f928ebd75dd956866cf26df22cb89bd7bee7a4c109b285d8e0060d5c2cfc",
+          "size": 4323
+        },
+        {
+          "path": ".claude/agents/hoi4-spreadsheet-doc-worker.md",
+          "sha256": "27207f1fa0a4b81e5ae7ac07f24af1a321c822d01d00127a135edc67cd277d81",
+          "size": 4402
+        },
+        {
+          "path": ".claude/agents/hoi4-super-event-art-researcher.md",
+          "sha256": "00931e9839eea131a81e8af762c9c722370021d166226829066ebdf970c18647",
+          "size": 2968
+        },
+        {
+          "path": ".claude/agents/hoi4-super-event-audio-researcher.md",
+          "sha256": "1dd629c47d1c36e2fb234630acd7695365ad56db4670b22d064ab2e00b84056c",
+          "size": 2736
+        },
+        {
+          "path": ".claude/agents/hoi4-super-event-quote-researcher.md",
+          "sha256": "f0aeecb5d336a5f970f4ba34e9d250323f8811dcc76f6331f0fe828ee66e1eb4",
+          "size": 2270
+        },
+        {
+          "path": ".claude/settings.json",
+          "sha256": "1260d635699f8332a94aac8335a2f358b0cd4d060840c987468a6a989a62a86c",
+          "size": 163
+        }
+      ]
     },
     {
       "id": "runtime.claude.mcp",
@@ -263,7 +426,13 @@
       "notes": [
         "Claude Code requires a one-time project trust decision before starting a project-scoped MCP server."
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".mcp.json",
+          "sha256": "04db1cc3d24be5535ca8f6223db94b2570f77753ab6f666f1e0481101f7bb602",
+          "size": 156
+        }
+      ]
     },
     {
       "id": "core.skills",
@@ -2790,8 +2959,8 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "7f5be95b783edd221fa7f30fca31e995653a50dc7375b758b65da5c71b3c2cf9",
-          "size": 33937
+          "sha256": "e9a8a8d8df1910bcaf8a1691afc25d31340ae2e386848d7061b466de1006daa6",
+          "size": 33950
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
@@ -3308,8 +3477,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "2e9f3e6513cbe3c61ba18d2c474ab2f6204e23d74c551b8c7fe8f9c05392d953",
-          "size": 21405
+          "sha256": "ced6e3a92759a2c5ac87d6564a8dfff133f4a92ad0fdd980a66230502f0dd3ec",
+          "size": 22125
         }
       ]
     },
@@ -3357,8 +3526,8 @@
       "expected_files": [
         {
           "path": "AGENTS_chaos_redux.md",
-          "sha256": "229048e6a2f170749072d4e2db276e58729fbddc7b4757ec89bf602b3e4444e7",
-          "size": 42763
+          "sha256": "4e10c99d465560b17f5d026c38c536bb47600e01611171e52497a897c80a85a7",
+          "size": 43402
         }
       ]
     },
