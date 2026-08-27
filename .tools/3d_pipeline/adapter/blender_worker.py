@@ -18,10 +18,15 @@ import traceback
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+ADAPTER_ROOT = Path(__file__).resolve().parent
+if str(ADAPTER_ROOT) not in sys.path:
+    sys.path.insert(0, str(ADAPTER_ROOT))
+
 import bpy
 import bmesh
 from mathutils import Euler, Matrix, Quaternion, Vector
 from mathutils.kdtree import KDTree
+from normalization_convergence import evaluate_convergence_step
 
 
 PREVIEW_LIGHT_REFERENCE_HEIGHT = 7.3518242835
@@ -924,6 +929,12 @@ def root_objects(objects: List[bpy.types.Object]) -> List[bpy.types.Object]:
     return [obj for obj in objects if obj.parent not in object_set]
 
 
+def is_humanoid_asset_kind(asset_kind: str) -> bool:
+    """Recognize both legacy and repository job-profile humanoid identifiers."""
+
+    return asset_kind in {"humanoid", "humanoid_unit"}
+
+
 def normalize_geometry(target_height: float) -> Dict[str, Any]:
     objects = [obj for obj in bpy.context.scene.objects if obj.get("hoi4_working", False)]
     meshes = mesh_objects()
@@ -946,6 +957,85 @@ def normalize_geometry(target_height: float) -> Dict[str, Any]:
         "bounds_max": list(world_bounds(meshes)[1]),
         "ground_contact_z": world_bounds(meshes)[0].z,
     }
+
+
+def verify_saved_normalization(checkpoint: Path, target_height: float) -> Dict[str, Any]:
+    """Reopen a checkpoint and fail if its persisted height differs from its report."""
+
+    bpy.ops.wm.open_mainfile(filepath=str(checkpoint))
+    persisted_geometry = geometry_metrics()
+    persisted_height = float(persisted_geometry["dimensions"][2])
+    tolerance = max(1e-5, abs(target_height) * 1e-5)
+    height_delta = persisted_height - target_height
+    if abs(height_delta) > tolerance:
+        raise RuntimeError(
+            "Saved normalization checkpoint does not preserve the requested mesh height: "
+            f"target={target_height}, persisted={persisted_height}, delta={height_delta}."
+        )
+    return {
+        "policy": "save_reopen_and_remeasure_working_world_bounds",
+        "checkpoint": str(checkpoint),
+        "target_height_m": target_height,
+        "persisted_height_m": persisted_height,
+        "height_delta_m": height_delta,
+        "tolerance_m": tolerance,
+        "geometry": persisted_geometry,
+        "armatures": [
+            {"name": rig.name, "world_scale": list(rig.matrix_world.to_scale())}
+            for rig in armatures()
+        ],
+    }
+
+
+def stabilize_saved_normalization(
+    checkpoint: Path,
+    target_height: float,
+) -> Dict[str, Any]:
+    """Converge a dual-source checkpoint after dependency-graph reloads."""
+
+    corrections = []
+    previous_delta = None
+    max_corrections = 8
+    for corrections_applied in range(max_corrections + 1):
+        bpy.ops.wm.open_mainfile(filepath=str(checkpoint))
+        persisted_geometry = geometry_metrics()
+        persisted_height = float(persisted_geometry["dimensions"][2])
+        tolerance = max(1e-5, abs(target_height) * 1e-5)
+        step = evaluate_convergence_step(
+            target=target_height,
+            persisted=persisted_height,
+            tolerance=tolerance,
+            previous_delta=previous_delta,
+            corrections_applied=corrections_applied,
+            max_corrections=max_corrections,
+        )
+        record = {
+            "pass": corrections_applied,
+            "target_height_m": target_height,
+            "persisted_height_m": persisted_height,
+            "height_delta_m": step["delta"],
+            "correction_factor": step["correction_factor"],
+        }
+        corrections.append(record)
+        if step["status"] == "accepted":
+            return {
+                "policy": "reopen_monotonic_convergence_and_strict_reverify",
+                "checkpoint": str(checkpoint),
+                "target_height_m": target_height,
+                "persisted_height_m": persisted_height,
+                "height_delta_m": step["delta"],
+                "tolerance_m": tolerance,
+                "geometry": persisted_geometry,
+                "armatures": [
+                    {"name": rig.name, "world_scale": list(rig.matrix_world.to_scale())}
+                    for rig in armatures()
+                ],
+                "dependency_graph_corrections": corrections,
+            }
+        record["normalization"] = normalize_geometry(target_height)
+        save_blend(checkpoint)
+        previous_delta = float(step["delta"])
+    raise RuntimeError("Normalization convergence exhausted its correction cap.")
 
 
 def constrain_runtime_footprint(
@@ -1988,6 +2078,16 @@ def prepare(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
     imported_checkpoint = job / "blender" / "checkpoints" / "00_imported_candidate.blend"
     save_blend(imported_checkpoint)
 
+    asset_kind = str(payload["asset_kind"])
+    humanoid_asset = is_humanoid_asset_kind(asset_kind)
+    # Provider FBX files commonly key the armature object's import scale. Remove
+    # those curves before normalization so evaluation cannot restore the old
+    # scale after the measured checkpoint is saved.
+    scale_sanitization = (
+        sanitize_action_scale_channels()
+        if humanoid_asset
+        else {"policy": "not_applicable", "actions": [], "remaining_scale_fcurves": 0}
+    )
     target_height = float(payload["target_height_m"])
     runtime_entity_scale = float(payload.get("runtime_entity_scale", 1.0))
     if runtime_entity_scale <= 0.0:
@@ -2032,29 +2132,24 @@ def prepare(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
     materials = tag_pdx_materials(pdx)
     texture_bindings = bind_texture_sources(job, payload)
     materials["texture_bindings"] = texture_bindings
-    if payload["asset_kind"] in {"humanoid", "creature"} and payload.get("texture_source_rels") and not image_nodes():
+    if (humanoid_asset or asset_kind == "creature") and payload.get("texture_source_rels") and not image_nodes():
         raise RuntimeError(
             "Humanoid preparation produced no image-backed material. Refusing to export a black unit."
         )
     material_checkpoint = job / "blender" / "checkpoints" / "02_materials_approved.blend"
     save_blend(material_checkpoint)
 
-    scale_sanitization = (
-        sanitize_action_scale_channels()
-        if payload["asset_kind"] == "humanoid"
-        else {"policy": "not_applicable", "actions": [], "remaining_scale_fcurves": 0}
-    )
     actions = action_metrics()
     actions["scale_sanitization"] = scale_sanitization
     actions["root_translation_sanitization"] = (
         sanitize_root_translation_channels()
-        if payload["asset_kind"] == "humanoid"
+        if humanoid_asset
         else {"policy": "not_applicable", "actions": []}
     )
-    if payload["asset_kind"] == "humanoid" and scale_sanitization["remaining_scale_fcurves"]:
+    if humanoid_asset and scale_sanitization["remaining_scale_fcurves"]:
         raise RuntimeError("Humanoid action export still contains scale channels after sanitization.")
     rig_checkpoint = None
-    if payload["asset_kind"] == "humanoid":
+    if humanoid_asset:
         rig_checkpoint = job / "blender" / "checkpoints" / "03_rig_approved.blend"
         save_blend(rig_checkpoint)
         action_checkpoint = job / "blender" / "checkpoints" / "04_actions_approved.blend"
@@ -2062,6 +2157,13 @@ def prepare(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
     pre_export = job / "blender" / "checkpoints" / "05_pre_export.blend"
     previews = render_previews(job, runtime_stem) if payload.get("render_previews", True) else []
     save_blend(pre_export)
+    normalization_persistence = (
+        stabilize_saved_normalization(pre_export, target_height)
+        if geometry_source is not None
+        else verify_saved_normalization(pre_export, target_height)
+    )
+    normalization_persistence["checkpoint"] = str(pre_export.relative_to(job)).replace("\\", "/")
+    geometry = normalization_persistence["geometry"]
 
     report = {
         "asset_kind": payload["asset_kind"],
@@ -2079,6 +2181,7 @@ def prepare(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
         "geometry_transfer": geometry_transfer,
         "imported_geometry": imported_metrics,
         "normalization": normalize,
+        "normalization_persistence": normalization_persistence,
         "runtime_footprint": footprint,
         "runtime_calibration": {
             "mesh_target_height_m": target_height,
@@ -2697,6 +2800,23 @@ def select_armature_and_action(action_name: str) -> Tuple[bpy.types.Object, bpy.
     return rig, action, int(math.floor(start)), int(math.ceil(end))
 
 
+def scale_aware_retarget_location_scale(
+    source_world_scale: Vector,
+    target_world_scale: Vector,
+) -> float:
+    """Convert source pose-basis translation units to target pose-basis units."""
+
+    for label, scale in (("source", source_world_scale), ("target", target_world_scale)):
+        if max(scale) - min(scale) > 1e-5 or min(scale) <= 0.0:
+            raise RuntimeError(
+                f"Animation transfer requires a positive uniform {label} armature world scale: "
+                + json.dumps(list(scale))
+            )
+    source_uniform = float(sum(source_world_scale) / 3.0)
+    target_uniform = float(sum(target_world_scale) / 3.0)
+    return source_uniform / target_uniform
+
+
 def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
     """Transfer one provider skeletal action onto the approved working rig.
 
@@ -2712,37 +2832,122 @@ def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
     payload = req["payload"]
     blend = within(job, payload["blend_rel"])
     source = within(job, payload["source_rel"])
+    provenance_path = within(job, payload["provenance_rel"])
     checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
-    action_name = str(payload.get("action_name") or "hoi4_runtime_action")
-    if not re.fullmatch(r"[A-Za-z0-9_.-]+", action_name):
-        raise ValueError("Imported runtime action names must use stable alphanumeric, dot, dash, or underscore identifiers.")
+    source_action_name = explicit_source_action_name(
+        payload.get("source_action_name"), "source_action_name"
+    )
+    requested_source_armature = (
+        explicit_safe_name(payload.get("source_armature_name"), "source_armature_name")
+        if payload.get("source_armature_name")
+        else ""
+    )
+    target_armature_name = explicit_safe_name(
+        payload.get("target_armature_name"), "target_armature_name"
+    )
+    action_name = explicit_action_name(payload.get("target_action_name"), "target_action_name")
+    source_kind = str(payload.get("source_kind") or "")
+    if source_kind not in {"meshy_animate", "professional_source"}:
+        raise ValueError("source_kind must be meshy_animate or professional_source.")
+    source_reference_id = explicit_reference_id(
+        payload.get("source_reference_id"), "source_reference_id"
+    )
+    expected_source_sha256 = str(payload.get("source_sha256") or "").upper()
+    if not re.fullmatch(r"[0-9A-F]{64}", expected_source_sha256):
+        raise ValueError("source_sha256 must be an explicit 64-character SHA-256 digest.")
+    actual_source_sha256 = file_sha256(source)
+    if actual_source_sha256 != expected_source_sha256:
+        raise RuntimeError(
+            "Animation source checksum did not match the verified provenance receipt: "
+            f"expected {expected_source_sha256}, observed {actual_source_sha256}."
+        )
+    try:
+        provenance = json.loads(provenance_path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError(
+            f"Animation provenance receipt is not valid JSON: {provenance_path.name}"
+        ) from exc
+    required_provenance = {
+        "verification_status": "verified",
+        "source_kind": source_kind,
+        "source_reference_id": source_reference_id,
+        "source_action_name": source_action_name,
+        "source_sha256": expected_source_sha256,
+    }
+    mismatched_provenance = {
+        key: {"expected": value, "observed": provenance.get(key)}
+        for key, value in required_provenance.items()
+        if provenance.get(key) != value
+    }
+    if mismatched_provenance:
+        raise ValueError(
+            "Animation provenance receipt does not verify the requested source action: "
+            + json.dumps(mismatched_provenance, sort_keys=True)
+        )
 
     bpy.ops.wm.open_mainfile(filepath=str(blend))
     target_rigs = armatures()
-    if len(target_rigs) != 1:
+    matching_target_rigs = [rig for rig in target_rigs if rig.name == target_armature_name]
+    if len(target_rigs) != 1 or len(matching_target_rigs) != 1:
         raise RuntimeError(
-            "Animation transfer requires exactly one calibrated working armature; "
-            f"found {len(target_rigs)}."
+            "Animation transfer requires exactly one calibrated working armature with the explicit target name; "
+            + json.dumps(
+                {
+                    "requested_target_armature": target_armature_name,
+                    "available_armatures": sorted(rig.name for rig in target_rigs),
+                },
+                sort_keys=True,
+            )
         )
-    target_rig = target_rigs[0]
+    target_rig = matching_target_rigs[0]
     before_objects = set(bpy.data.objects)
     before_actions = set(bpy.data.actions)
     imported = import_candidate(source)
     imported_rigs = [obj for obj in imported if obj.type == "ARMATURE"]
-    if len(imported_rigs) != 1:
+    if requested_source_armature:
+        matching_source_rigs = [
+            rig for rig in imported_rigs if rig.name == requested_source_armature
+        ]
+        if len(matching_source_rigs) != 1:
+            raise RuntimeError(
+                "Provider animation import did not expose the explicitly named source armature: "
+                + json.dumps(
+                    {
+                        "requested_source_armature": requested_source_armature,
+                        "available_source_armatures": sorted(rig.name for rig in imported_rigs),
+                    },
+                    sort_keys=True,
+                )
+            )
+        source_rig = matching_source_rigs[0]
+    elif len(imported_rigs) == 1:
+        source_rig = imported_rigs[0]
+    else:
         raise RuntimeError(
-            "Provider animation import must expose exactly one source armature; "
+            "Provider animation import must expose exactly one source armature when source_armature_name is omitted; "
             f"found {len(imported_rigs)} from {source.name}."
         )
-    source_rig = imported_rigs[0]
     source_armature_name = source_rig.name
-    source_action = source_rig.animation_data.action if source_rig.animation_data else None
+    source_actions = [action for action in bpy.data.actions if action not in before_actions]
+    source_action = next(
+        (action for action in source_actions if action.name == source_action_name),
+        None,
+    )
+    if source_action is None and source_rig.animation_data:
+        active_source_action = source_rig.animation_data.action
+        if active_source_action is not None and active_source_action.name == source_action_name:
+            source_action = active_source_action
     if source_action is None:
-        source_actions = [action for action in bpy.data.actions if action not in before_actions]
-        if len(source_actions) == 1:
-            source_action = source_actions[0]
-    if source_action is None:
-        raise RuntimeError(f"Provider animation import exposed no action: {source}")
+        raise RuntimeError(
+            "Verified animation source did not expose the explicitly named source action: "
+            + json.dumps(
+                {
+                    "requested_source_action": source_action_name,
+                    "available_source_actions": sorted(action.name for action in source_actions),
+                },
+                sort_keys=True,
+            )
+        )
     source_action_name = source_action.name
 
     source_curves = list(action_fcurves(source_action))
@@ -2783,7 +2988,13 @@ def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
         float(target_rig.data.bones[name].length) / source_lengths[name]
         for name in bone_names
     )
-    location_scale = length_ratios[len(length_ratios) // 2]
+    data_length_ratio = length_ratios[len(length_ratios) // 2]
+    source_world_scale = source_rig.matrix_world.to_scale()
+    target_world_scale = target_rig.matrix_world.to_scale()
+    location_scale = scale_aware_retarget_location_scale(
+        source_world_scale,
+        target_world_scale,
+    )
     source_pose_cache: Dict[int, Dict[str, Tuple[Vector, Quaternion]]] = {}
     for frame in range(frame_start, frame_end + 1):
         bpy.context.scene.frame_set(frame)
@@ -2827,7 +3038,13 @@ def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
     scale_cleanup = sanitize_action_scale_channels()
     root_cleanup = {
         "action": transferred.name,
-        "policy": "provider pose baked to target rig; Hips X/Y root motion removed; provider Hips Z motion retained",
+        "policy": "verified provider/professional pose baked to target rig; Hips X/Y root motion removed; provider Hips Z motion retained; pose-basis translations converted by source-world-scale divided by target-world-scale",
+        "location_coordinate_space": "pose_bone_matrix_basis_translation",
+        "location_scale_formula": "source_armature_uniform_world_scale / target_armature_uniform_world_scale",
+        "rest_data_length_ratio_applied_to_location": False,
+        "data_length_ratio": data_length_ratio,
+        "source_armature_world_scale": list(source_world_scale),
+        "target_armature_world_scale": list(target_world_scale),
         "location_scale": location_scale,
         "source_root_location": list(source_hips_location),
     }
@@ -2941,6 +3158,20 @@ def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
         "provider_actions_removed": removed_provider_actions,
         "scale_cleanup": scale_cleanup,
         "root_cleanup": root_cleanup,
+        "source_verification": {
+            "verification_status": "verified",
+            "source_kind": source_kind,
+            "source_reference_id": source_reference_id,
+            "source_action_name": source_action_name,
+            "source_sha256": actual_source_sha256,
+            "provenance": str(provenance_path.relative_to(job)).replace("\\", "/"),
+        },
+        "location_coordinate_space": "pose_bone_matrix_basis_translation",
+        "location_scale_formula": "source_armature_uniform_world_scale / target_armature_uniform_world_scale",
+        "rest_data_length_ratio_applied_to_location": False,
+        "data_length_ratio": data_length_ratio,
+        "source_armature_world_scale": list(source_world_scale),
+        "target_armature_world_scale": list(target_world_scale),
         "location_scale": location_scale,
         "source_target_motion_crosscheck": {
             "sample_frames": sample_frames,
@@ -2968,6 +3199,49 @@ def explicit_safe_name(value: Any, field: str) -> str:
             f"{field} must be an explicit safe Blender identifier containing only "
             "letters, digits, underscores, periods, or hyphens."
         )
+    return name
+
+
+def explicit_action_name(value: Any, field: str) -> str:
+    """Require a stable runtime action identifier."""
+
+    name = str(value or "")
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_.-]{0,127}", name):
+        raise ValueError(
+            f"{field} must be a stable action identifier containing only letters, digits, "
+            "underscores, periods, or hyphens."
+        )
+    return name
+
+
+def explicit_reference_id(value: Any, field: str) -> str:
+    """Require a provider task/action id or approved professional-source id."""
+
+    reference = str(value or "")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:/-]{0,191}", reference):
+        raise ValueError(f"{field} must be an explicit stable source reference identifier.")
+    return reference
+
+
+def explicit_source_action_name(value: Any, field: str) -> str:
+    """Require an exact source action id with balanced parenthetical qualifiers."""
+
+    name = str(value or "")
+    if name != name.strip() or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_.|: ()-]{0,191}", name):
+        raise ValueError(
+            f"{field} must be an explicit source action identifier containing only letters, digits, "
+            "spaces, underscores, periods, vertical bars, colons, hyphens, or balanced parentheses."
+        )
+    depth = 0
+    for character in name:
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth < 0:
+                break
+    if depth != 0:
+        raise ValueError(f"{field} must contain balanced parentheses.")
     return name
 
 

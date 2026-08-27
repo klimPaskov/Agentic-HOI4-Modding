@@ -2894,7 +2894,7 @@
     {
       "id": "mcp.hoi4_agent_tools",
       "display_name": "HOI4 Agent Tools MCP",
-      "description": "Install and verify the provider-neutral HOI4 tools server; Codex registration is added when Codex is selected.",
+      "description": "Install and verify the provider-neutral HOI4 tools server; Codex registration follows the independently installed Codex configuration.",
       "category": "mcp",
       "optional": true,
       "platforms": [

@@ -1875,13 +1875,55 @@ def continue_humanoid_shared(
     )
 
     action_reports: Dict[str, Dict[str, Any]] = {}
-    idle_source = "provider/shared_humanoid/animation_idle_provider.glb"
+    verified_actions = spec.get("verified_actions")
+    target_armature_name = str(spec.get("target_armature_name") or "")
+    if not isinstance(verified_actions, dict) or not target_armature_name:
+        raise RuntimeError(
+            "Humanoid continuation requires verified_actions receipts and an explicit target_armature_name."
+        )
+
+    def import_verified_action(
+        role: str,
+        source_checkpoint: str,
+        checkpoint: str,
+        target_action_name: str,
+    ) -> Dict[str, Any]:
+        receipt = verified_actions.get(role)
+        if not isinstance(receipt, dict):
+            raise RuntimeError(f"Missing verified animation-source receipt for role: {role}")
+        required = (
+            "source_rel",
+            "provenance_rel",
+            "source_action_name",
+            "source_kind",
+            "source_reference_id",
+            "source_sha256",
+        )
+        missing = [key for key in required if not str(receipt.get(key) or "")]
+        if missing:
+            raise RuntimeError(
+                f"Verified animation-source receipt for {role} is missing fields: {missing}"
+            )
+        return blender.import_animation_action(
+            slug,
+            source_checkpoint,
+            str(receipt["source_rel"]),
+            str(receipt["provenance_rel"]),
+            checkpoint,
+            str(receipt["source_action_name"]),
+            target_armature_name,
+            target_action_name,
+            str(receipt["source_kind"]),
+            str(receipt["source_reference_id"]),
+            str(receipt["source_sha256"]),
+            source_armature_name=str(receipt.get("source_armature_name") or ""),
+        )
+
     idle_checkpoint = "blender/checkpoints/shared_idle_pre_export.blend"
     idle_action_name = f"{spec['runtime_stem']}_idle"
-    idle = blender.import_animation_action(
-        slug,
+    idle = import_verified_action(
+        "idle",
         prep["checkpoints"]["pre_export"],
-        idle_source,
         idle_checkpoint,
         idle_action_name,
     )
@@ -1896,8 +1938,8 @@ def continue_humanoid_shared(
 
     move_checkpoint = "blender/checkpoints/shared_move_pre_export.blend"
     move_action_name = f"{spec['runtime_stem']}_move"
-    move = blender.author_locomotion_action(
-        slug,
+    move = import_verified_action(
+        "move",
         idle_checkpoint,
         move_checkpoint,
         move_action_name,
@@ -1907,16 +1949,15 @@ def continue_humanoid_shared(
         "action_name": move["action"],
         "source_checkpoint": idle_checkpoint,
         "checkpoint": move_checkpoint,
-        "authoring": move,
+        "import": move,
         "loop": True,
     }
 
     attack_checkpoint = "blender/checkpoints/shared_attack_pre_export.blend"
     attack_action_name = f"{spec['runtime_stem']}_attack"
-    attack = blender.import_animation_action(
-        slug,
+    attack = import_verified_action(
+        "attack",
         move_checkpoint,
-        "provider/shared_humanoid/animation_attack_provider.glb",
         attack_checkpoint,
         attack_action_name,
     )
@@ -1931,10 +1972,9 @@ def continue_humanoid_shared(
 
     death_checkpoint = "blender/checkpoints/shared_death_pre_export.blend"
     death_action_name = f"{spec['runtime_stem']}_death"
-    death = blender.import_animation_action(
-        slug,
+    death = import_verified_action(
+        "death",
         attack_checkpoint,
-        "provider/shared_humanoid/animation_death_provider.glb",
         death_checkpoint,
         death_action_name,
     )

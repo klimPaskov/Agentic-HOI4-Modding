@@ -6,6 +6,7 @@ import json
 import os
 import subprocess
 import ctypes
+import time
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Sequence
 
@@ -103,6 +104,89 @@ def _assign_windows_kill_job(job_handle: Optional[int], process: subprocess.Pope
         )
 
 
+def _windows_job_process_ids(job_handle: Optional[int]) -> list[int]:
+    """Return the exact live PIDs assigned to one client-owned Job Object."""
+
+    if job_handle is None:
+        return []
+
+    from ctypes import wintypes
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.QueryInformationJobObject.argtypes = [
+        wintypes.HANDLE,
+        ctypes.c_int,
+        ctypes.c_void_p,
+        wintypes.DWORD,
+        ctypes.POINTER(wintypes.DWORD),
+    ]
+    kernel32.QueryInformationJobObject.restype = wintypes.BOOL
+
+    buffer_size = 64 * 1024
+    buffer = ctypes.create_string_buffer(buffer_size)
+    returned = wintypes.DWORD()
+    if not kernel32.QueryInformationJobObject(
+        wintypes.HANDLE(job_handle),
+        3,
+        buffer,
+        buffer_size,
+        ctypes.byref(returned),
+    ):
+        raise MCPRouteError(
+            f"Unable to inspect MCP cleanup job (Windows error {ctypes.get_last_error()})."
+        )
+
+    assigned_count = ctypes.c_uint32.from_buffer(buffer, 0).value
+    listed_count = ctypes.c_uint32.from_buffer(buffer, 4).value
+    pid_size = ctypes.sizeof(ctypes.c_size_t)
+    if listed_count > assigned_count or 8 + listed_count * pid_size > buffer_size:
+        raise MCPRouteError("The MCP cleanup job returned an invalid process-id list.")
+    process_ids = (ctypes.c_size_t * listed_count).from_buffer(buffer, 8)
+    return [int(process_ids[index]) for index in range(listed_count)]
+
+
+def _windows_pid_is_alive(pid: int) -> bool:
+    """Check one exact PID without enumerating or mutating unrelated processes."""
+
+    if os.name != "nt":
+        return False
+
+    from ctypes import wintypes
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+    kernel32.GetExitCodeProcess.restype = wintypes.BOOL
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel32.CloseHandle.restype = wintypes.BOOL
+
+    process_handle = kernel32.OpenProcess(0x1000, False, pid)
+    if not process_handle:
+        return False
+    try:
+        exit_code = wintypes.DWORD()
+        return bool(
+            kernel32.GetExitCodeProcess(process_handle, ctypes.byref(exit_code))
+        ) and exit_code.value == 259
+    finally:
+        kernel32.CloseHandle(process_handle)
+
+
+def _wait_windows_pids_exit(
+    process_ids: Iterable[int], timeout_seconds: float = 5.0
+) -> list[int]:
+    """Wait briefly for only the supplied job-owned PIDs to disappear."""
+
+    remaining = {int(pid) for pid in process_ids if int(pid) > 0}
+    deadline = time.monotonic() + timeout_seconds
+    while remaining and time.monotonic() < deadline:
+        remaining = {pid for pid in remaining if _windows_pid_is_alive(pid)}
+        if remaining:
+            time.sleep(0.05)
+    return sorted(pid for pid in remaining if _windows_pid_is_alive(pid))
+
+
 def _close_windows_handle(handle: Optional[int]) -> None:
     """Close a Windows job handle, triggering kill-on-close for its process tree."""
 
@@ -184,6 +268,7 @@ def call_stdio(
     timeout_seconds: int = 1800,
     cwd: Optional[Path] = None,
     env: Optional[Dict[str, str]] = None,
+    lifecycle_receipt: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Initialize an MCP server, call one tool, and close the stdio session.
 
@@ -226,6 +311,20 @@ def call_stdio(
 
     process: Optional[subprocess.Popen[str]] = None
     windows_job = _create_windows_kill_job()
+    owned_at_cleanup: list[int] = []
+    surviving_process_ids: list[int] = []
+    cleanup_inspection_error: Optional[MCPRouteError] = None
+    if lifecycle_receipt is not None:
+        lifecycle_receipt.clear()
+        lifecycle_receipt.update(
+            {
+                "ownership": "windows_job_object" if os.name == "nt" else "direct_process",
+                "root_pid": None,
+                "owned_process_ids_at_cleanup": [],
+                "surviving_process_ids": [],
+                "cleanup_inspection_error": None,
+            }
+        )
     try:
         process = subprocess.Popen(
             list(command),
@@ -238,6 +337,8 @@ def call_stdio(
             cwd=str(cwd) if cwd else None,
             env=process_env,
         )
+        if lifecycle_receipt is not None:
+            lifecycle_receipt["root_pid"] = process.pid
         _assign_windows_kill_job(windows_job, process)
         stdout_text, stderr_text = process.communicate(request, timeout=timeout_seconds)
         completed = subprocess.CompletedProcess(
@@ -255,8 +356,14 @@ def call_stdio(
         raise MCPRouteError(f"Unable to start MCP route: {command}") from exc
     finally:
         if process is not None:
-            _close_windows_handle(windows_job)
-            windows_job = None
+            try:
+                owned_at_cleanup = _windows_job_process_ids(windows_job)
+            except MCPRouteError as exc:
+                cleanup_inspection_error = exc
+                owned_at_cleanup = [process.pid]
+            finally:
+                _close_windows_handle(windows_job)
+                windows_job = None
             _terminate_windows_descendants(process.pid)
             if process.poll() is None:
                 try:
@@ -264,7 +371,25 @@ def call_stdio(
                     process.wait(timeout=5)
                 except (OSError, subprocess.SubprocessError):
                     pass
+            surviving_process_ids = _wait_windows_pids_exit(
+                set(owned_at_cleanup) | {process.pid}
+            )
+            if lifecycle_receipt is not None:
+                lifecycle_receipt["owned_process_ids_at_cleanup"] = sorted(owned_at_cleanup)
+                lifecycle_receipt["surviving_process_ids"] = surviving_process_ids
+                lifecycle_receipt["cleanup_inspection_error"] = (
+                    str(cleanup_inspection_error) if cleanup_inspection_error else None
+                )
         _close_windows_handle(windows_job)
+
+    if cleanup_inspection_error is not None:
+        raise MCPRouteError(
+            "MCP route cleanup could not verify the exact Windows Job Object process list."
+        ) from cleanup_inspection_error
+    if surviving_process_ids:
+        raise MCPRouteError(
+            f"MCP route cleanup left owned process IDs alive: {surviving_process_ids}"
+        )
 
     responses = list(_json_lines(completed.stdout))
     response = next((item for item in reversed(responses) if item.get("id") == 2), None)

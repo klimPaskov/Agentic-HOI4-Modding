@@ -1,5 +1,7 @@
 # Qoder synchronization handoff
 
+> Historical handoff, superseded on 2026-08-27 by the shared Qoder, Cursor, and OpenCode synchronizer under `.tools/sync/`. Canonical `.codex/agents/*.toml` files remain authoritative, generated alternate-runtime folders are now ignored and machine-local, and the current commands and validation contract live in `.tools/sync/README.md`. The deleted root `.tools/sync_qoder_agents.py`, tracked generated Qoder files, and optional manifest components described below are not current implementation requirements.
+
 ## Scope and result
 
 Added a reusable, one-way Codex-to-Qoder agent workflow to the general HOI4

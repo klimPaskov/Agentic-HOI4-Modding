@@ -365,8 +365,15 @@ class BlenderAdapterClient:
         job_id: str,
         blend_rel: str,
         source_rel: str,
+        provenance_rel: str,
         checkpoint_rel: str,
-        action_name: str,
+        source_action_name: str,
+        target_armature_name: str,
+        target_action_name: str,
+        source_kind: str,
+        source_reference_id: str,
+        source_sha256: str,
+        source_armature_name: str = "",
     ) -> Dict[str, Any]:
         return self.call(
             "hoi4_blender_import_animation_action",
@@ -374,8 +381,15 @@ class BlenderAdapterClient:
                 "job_id": job_id,
                 "blend_rel": blend_rel,
                 "source_rel": source_rel,
+                "provenance_rel": provenance_rel,
                 "checkpoint_rel": checkpoint_rel,
-                "action_name": action_name,
+                "source_action_name": source_action_name,
+                "source_armature_name": source_armature_name,
+                "target_armature_name": target_armature_name,
+                "target_action_name": target_action_name,
+                "source_kind": source_kind,
+                "source_reference_id": source_reference_id,
+                "source_sha256": source_sha256,
             },
         )
 

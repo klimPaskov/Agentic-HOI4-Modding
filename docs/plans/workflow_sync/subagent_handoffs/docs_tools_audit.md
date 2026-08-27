@@ -1,5 +1,7 @@
 # Starter documentation and tools audit handoff
 
+> Historical handoff, partially superseded on 2026-08-27. The repository now uses one shared renderer with Qoder, Cursor, and OpenCode wrappers under `.tools/sync/`, while generated runtime folders remain ignored and machine-local. References below to a deleted root synchronizer, tracked Qoder outputs, a separate v2 manifest filename, or optional Qoder manifest components describe the earlier tranche and are not current source-of-truth instructions.
+
 ## Scope and result
 
 Audited the reusable starter documentation, setup manifests, and target tool surface against the current Chaos Redux repository without modifying Chaos Redux and without editing executable or tool files.

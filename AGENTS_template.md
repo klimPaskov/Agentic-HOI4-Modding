@@ -18,7 +18,7 @@ These values are already filled in this template and should normally be left as-
 - Offline Paradox wiki snapshot: `paradox_wiki/`
 - Local vanilla Hearts of Iron IV install: `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`
 - Default documentation folder: `docs/`
-- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-mtth`, `hoi4-state-ledgers`, `hoi4-super-events`, `hoi4-3d-model-pipeline`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-portrait-production`, `hoi4-comfyui`, `hoi4-comfyui-cloud`, `hoi4-comfyui-local`, `hoi4-comfyui-runpod`, `hoi4-subagents`, `hoi4-improvement-loop`, and the explicit-invocation-only `hoi4-debug-playtest`
+- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-mtth`, `hoi4-super-events`, `hoi4-3d-model-pipeline`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-portrait-production`, `hoi4-comfyui`, `hoi4-comfyui-cloud`, `hoi4-comfyui-local`, `hoi4-comfyui-runpod`, `hoi4-subagents`, `hoi4-improvement-loop`, and the explicit-invocation-only `hoi4-debug-playtest`
 - Generic HOI4 subagents from `.codex/agents/`: `hoi4_repo_explorer`, `hoi4_feature_completion_auditor`, `hoi4_ai_probability_auditor`, `hoi4_scripted_system_architect`, `hoi4_localisation_auditor`, `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_event_ui_worker`, `hoi4_country_package_auditor`, `hoi4_improvement_loop_planner`, `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_3d_model_pipeline`, `hoi4_portrait_creator`, `hoi4_quote_remark_researcher`, `hoi4_audio_researcher`, `hoi4_super_event_art_researcher`, `hoi4_super_event_audio_researcher`, `hoi4_super_event_quote_researcher`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, and `hoi4_skill_maintainer`
 
 ---
@@ -87,7 +87,7 @@ Use repo skills as required implementation guidance, not as optional notes.
 - Use `hoi4-feature-planning` when designing or expanding feature ideas, feature mechanics, country packages, focus-tree route plans, decision plans, achievements, AI behavior, asset needs, text and audio research gates, and implementation-ready specifications before coding.
 - Use `hoi4-feature-assets` when a task needs visual assets, icons, flags, portraits, native advisor or high-command cards, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes; route 3D geometry, materials, skeletal actions, `.mesh`/`.anim` exports, and reimport evidence to `hoi4-3d-model-pipeline`.
 - Use `hoi4-feature-planning` to plan 3D unit and building profiles, exact-one-image Meshy inputs, vanilla scale calibration, action roles, entity consumers, map placement, and runtime acceptance evidence whenever a feature needs a model.
-- Use `hoi4-3d-model-pipeline` for bounded custom HOI4 model production with a modern-designed-art source-first search, immutable provenance and faithful-edit evidence, explicit approval before any from-scratch reference fallback, Meshy 7 as the required generation model, provider lineage, Blender processing, PDX textures, rigs, skeletal actions, sourced custom-unit sound design, bespoke vanilla-green custom-unit counters, `.mesh`/`.anim` export, reimport proof, and runtime handoffs. Normal model and required animation credit use is pre-authorized; ask only before extra paid recovery caused by a failed or rejected attempt, and otherwise do not ask for credit confirmation.
+- Use `hoi4-3d-model-pipeline` for bounded custom HOI4 model production with a modern-designed-art source-first search, immutable provenance and faithful-edit evidence, explicit approval before any from-scratch reference fallback, Meshy 7 as the required generation model, provider lineage, Blender processing, PDX textures, rigs, skeletal actions, sourced custom-unit sound design, bespoke vanilla-green custom-unit counters, `.mesh`/`.anim` export, reimport proof, and runtime handoffs. Planned model, required animation, and bounded failure-driven provider recovery are pre-authorized while live balance and verified provider capability permit them; record every attempt and stop at the declared limits or provider stop conditions without asking for credit confirmation.
 - Use `hoi4-frame-animation` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
 - Use `hoi4-text-audio-research` when a task needs sourced quotes, cultural references, title-like references, slogans, or music and audio research.
 - Use `hoi4-super-events` when designing, researching, wiring, auditing, or documenting a super-event, including its sourced quote, image, sound-only audio package, runtime playback, and durable provenance.
@@ -95,7 +95,6 @@ Use repo skills as required implementation guidance, not as optional notes.
 - Use `hoi4-decisions-missions` before editing decisions/missions.
 - Use `hoi4_event_ui_worker` through `hoi4-subagents` when a named event specifically introduces a dedicated scripted GUI or mechanic window. It follows the layout rules in `hoi4-decisions-missions` and must use the HOI4 MCP GUI inspect, render, rewrite, and post-change comparison workflow. Never route event logs, event-detail frameworks, settings, shared framework windows, or unrelated existing UIs to this worker.
 - Use `hoi4-mtth` when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer.
-- Use `hoi4-state-ledgers` when implementing or auditing exact state-to-state civilian transfers, sparse aligned cohort registries, state-and-country reception ledgers, or transaction-time state mapmode projections.
 - Use `hoi4-subagents` when coordinating custom Codex subagents, routing bounded work, or defining parent/subagent ownership boundaries.
 - Use `hoi4-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
 
@@ -146,15 +145,26 @@ The agent may call MCP autonomously as part of the larger skills, source review,
 
 Keep the detailed capability, artifact-authority, probability-scenario, rewrite-recovery, and troubleshooting contract in `docs/systems/hoi4_agent_tools_mcp_integration.md` when that package document is installed.
 
+### Agent runtimes
+
+Codex is the canonical authoring runtime. Maintain each custom subagent only in `.codex/agents/*.toml`; Qoder, Cursor, and OpenCode definitions are generated projections and never separate prompt sources.
+
+- Run `python .tools/sync/sync_qoder_agents.py`, `python .tools/sync/sync_cursor_agents.py`, and `python .tools/sync/sync_opencode_agents.py` after every canonical agent change. Run the same commands with `--check` during validation.
+- Qoder uses generated `.qoder/agents/*.md`, Cursor uses generated `.cursor/agents/*.md`, and OpenCode uses generated `.opencode/agent/*.md`. Canonical snake-case names become hyphen-case runtime names.
+- Generated runtime directories are machine-local and ignored. Do not hand-edit, commit, or treat them as authority; edit the TOML source and regenerate.
+- Each runtime owns its own MCP registration. Do not copy Codex-only approval, sandbox, absolute path, environment, or tool-allowlist settings into another runtime unless that runtime has a verified equivalent.
+- During a non-Codex session, treat `.codex/**` as read-only canonical input. During a Codex session, leave generated alternate-runtime definitions untouched except through the synchronizers.
+- Every runtime must give a custom subagent a fully explicit, self-contained prompt with no inherited conversation context. Runtime isolation does not remove the parent's responsibility to pass paths, accepted decisions, constraints, handoffs, and scope boundaries.
+
 ### Subagents
 
-Use project custom Codex agents when a task needs bounded research, asset production, audit, recursive expansion, or documentation work that can be separated from main implementation.
+Use project custom subagents when a task needs bounded research, asset production, audit, recursive expansion, or documentation work that can be separated from main implementation.
 
 `hoi4-subagents` is the detailed source of truth for subagent routing, ownership boundaries, handoff quality, audit cadence, asset routing, text and audio research routing, and the recursive mechanic expansion loop.
 
 The main agent remains responsible for final implementation, final wiring, final review, validation, and completion claims. Subagents return evidence, files, manifests, spec addenda, patches, or handoff notes depending on the parent-granted mode. The main agent must review their outputs and carry blockers or uncertainty into the final report.
 
-All project custom Codex subagents must be spawned with `fork_context=false`. Do not spawn any project subagent with inherited parent-thread context. If a subagent needs a user correction, task constraint, current implementation status, or prior handoff detail, the parent must pass it explicitly in the subagent prompt or write it into the relevant spec, plan, handoff, or repo file before spawning.
+All project custom subagents must receive a fully explicit, self-contained prompt and no inherited conversation context. In Codex this means `fork_context=false`; alternate runtimes use their isolated generated-agent route. If a subagent needs a user correction, task constraint, current implementation status, or prior handoff detail, the parent must pass it explicitly in the prompt or write it into the relevant spec, plan, handoff, or repo file before spawning.
 
 Use these high-level routing rules:
 

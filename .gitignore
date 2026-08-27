@@ -17,3 +17,8 @@
 # Generated Python bytecode from reusable skill tools.
 /.agents/skills/**/__pycache__/
 *.pyc
+
+# Generated alternate-runtime agent definitions. Canonical prompts live in .codex/agents/.
+/.qoder/
+/.cursor/
+/.opencode/

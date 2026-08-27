@@ -39,6 +39,18 @@ Treat every event as a contract across some or all of these surfaces:
 If a task seems to need custom one-off plumbing, first check whether the behavior should become a reusable helper for future events. Repeated target selection, weighted random actor choice, cleanup, event target storage, scripted localisation selectors, variable formatting, dynamic costs, and common option effects usually belong in scripted helpers.
 
 
+### Shared unit-family provider integration
+
+Apply this section only when the destination repository already has a shared, extensible unit-family registry or provider API.
+
+When an event or owning system integrates with that API, declare whether the new land sub-unit or equipment-backed family is a standalone provider, a support attachment under an existing provider, or intentionally parent-owned because the engine cannot expose it independently.
+A standalone family must use the repository's idempotent owner-registration contract and implement only the callbacks the verified shared consumer exposes, such as eligibility, template construction, sustainment, equipment-token publication, presentation, management, derivatives, removal, and cleanup.
+A support attachment remains in the provider-owned transaction or template; a parent-owned disposition records the engine constraint and retains unlock, equipment, sustainment, presentation, and cleanup behavior in the parent package.
+
+Audit every in-scope family and support definition against the repository's actual provider, token, presentation, localisation, and cleanup contracts.
+Do not extend a central consumer-maintained switch when the verified owner-provider API can supply the same data; a missing provider row is an integration failure, not permission to add an undocumented fallback.
+
+
 ## Relationship with other skills
 
 Use this skill with:
@@ -349,7 +361,8 @@ Before closing an event task, verify the surfaces that actually exist for the fe
 12. Dynamic values, concrete costs, mechanic visibility, decision filtering, cleanup, AI behavior, and effect strength are checked where the spec calls for them.
 13. Focus trees preserve route structure, focus filters, varied rewards, idea lifecycles, route-specific AI, and visible branch payoffs where relevant.
 14. New fighting countries have dynamic starting forces, template assumptions, equipment and manpower handling, and reinforcement pathways.
-15. No fallback, placeholder, missing localisation, missing asset, missing AI behavior, or shallow substitute is hidden in the completion report.
+15. When the repository has a shared unit-family provider API, every in-scope family has an explicit standalone-provider, support-attachment, or parent-owned disposition, idempotent owner registration or documented engine constraint, and concrete token and presentation coverage.
+16. No fallback, placeholder, missing localisation, missing asset, missing AI behavior, or shallow substitute is hidden in the completion report.
 
 
 ## Event anatomy

@@ -108,7 +108,7 @@ Use skills for workflows that repeat, such as events, assets, super-events, focu
 
 The point is to stop the agent from rediscovering the same process every time. If a workflow repeats, turn it into a skill or improve an existing one.
 
-### 6. Add optional Codex subagents
+### 6. Add optional project subagents
 
 Custom Codex subagents are useful when a task can be split into bounded helper work. This repository includes profiles across several broad kinds of work, including discovery, research, planning, implementation support, visual and audio production, audits, validation, and documentation. The collection evolves with the workflows, so inspect `.codex/agents/` for the current set instead of relying on a static list here.
 
@@ -117,6 +117,19 @@ Put subagent TOML files under:
 ```text
 .codex/agents/
 ```
+
+Codex TOML files are the canonical source even when the same project is opened in Qoder, Cursor, or OpenCode.
+Generate those runtime-specific definitions after any subagent change:
+
+```powershell
+python .tools/sync/sync_qoder_agents.py
+python .tools/sync/sync_cursor_agents.py
+python .tools/sync/sync_opencode_agents.py
+```
+
+Each command also accepts `--check` for a read-only drift gate.
+Generated `.qoder/`, `.cursor/`, and `.opencode/` folders are ignored and should not be edited or committed.
+MCP registration remains runtime- and project-specific; the generators synchronize subagent names, descriptions, prompt bodies, and authority classes without copying Codex-only settings or Chaos Redux paths.
 
 The main agent should still own final implementation, final wiring, final review, final validation, and the completion report. Spawn every project custom subagent without inherited conversation context and pass every required path, constraint, correction, accepted decision, ownership boundary, and handoff destination explicitly in its prompt.
 
@@ -224,7 +237,7 @@ When a brief has no authoritative ready reference, the workflow first searches e
 
 Meshy 7 is the required image-to-3D generation model. The worker records the exact live model identifier and does not silently downgrade to an older model when Meshy 7 is unavailable.
 
-Normal planned model generation, remesh/retexture, rigging, conversion, and required animation credit use is pre-authorized. The worker checks and records the live balance and consumed credits without asking for confirmation. It asks only before additional paid recovery caused by a failed or rejected operation; otherwise it must not ask for credit-spend confirmation.
+Normal planned model generation, remesh/retexture, rigging, conversion, required animation credit use, and bounded failure-driven provider recovery are pre-authorized while the live balance and verified provider capability permit them. The worker records every attempt and stops for insufficient credits, provider refusal, unavailable capability, or exhausted task-defined limits without asking for credit-spend confirmation.
 
 Humanoid units are calibrated against a named installed vanilla source mesh and entity scale with source geometry height and effective runtime height recorded separately and the scale applied exactly once.
 

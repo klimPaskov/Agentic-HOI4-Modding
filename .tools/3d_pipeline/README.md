@@ -56,9 +56,14 @@ surviving exact-route process blocks paid work.
 The verified tool family is `meshy_check_balance`, `meshy_image_to_3d`,
 `meshy_get_task_status`, `meshy_download_model`, `meshy_remesh`, `meshy_rig`,
 `meshy_convert`, and `meshy_animate`. Use only live-listed tools and arguments.
-Planned paid operations are pre-authorized; failure-driven extra paid recovery
-still requires explicit approval. Download each successful GLB immediately and
-retain FBX when a rig or action route requires it.
+Planned paid operations and bounded failure-driven provider recovery are pre-authorized while live balance and verified provider capability permit them. Record every attempt and stop for insufficient credits, provider refusal, unavailable capability, or exhausted task-defined limits. Download each successful GLB immediately and retain FBX when a rig or action route requires it.
+
+Every project-side stdio call records an exact process-ownership receipt. The
+receipt includes the launcher PID, Windows Job Object process IDs, and any
+surviving owned PIDs after cleanup; a survivor is a hard failure. Provider
+artifact repair and persistence remain app-launcher responsibilities. The
+project runner only accepts completed downloads after atomic `.partial`
+replacement and checksum recording.
 
 ## Job intake and layout
 
@@ -121,6 +126,21 @@ or another explicitly approved professional source. Blender may import,
 retarget, clean, correct contact/root placement, normalize scale, bake,
 validate, and export it. Static aliases, shared-root transforms, and manually
 keyed replacement motion are not accepted final actions.
+
+Animation import is fail-closed. Its repository-owned provenance receipt must
+name a verified source kind, reference ID, source file checksum, exact source
+action, exact source armature when supplied, and exact target armature. Action
+names may include balanced parenthetical qualifiers and are matched exactly.
+Retargeted location channels use `source_world_scale / target_world_scale`;
+rest-data ratios are audit evidence, not the coordinate conversion.
+
+Preparation persists normalization through a saved-checkpoint reopen. It
+verifies applied scale, axes, origin, grounding, and expected dimensions from
+the saved file. When a geometry source is available, bounded convergence may
+correct a persisted mismatch, but stalls, divergence, sign changes, invalid
+measurements, and correction-cap exhaustion all fail closed. Shared humanoid
+continuation requires verified receipts for idle, move, attack, and death; it
+does not author replacement locomotion locally.
 
 ## HOI4 validation rules
 
