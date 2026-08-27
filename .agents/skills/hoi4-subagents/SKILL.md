@@ -17,7 +17,7 @@ Do not use subagents to hide uncertainty or pass off responsibility. A subagent 
 
 All custom Codex subagents must be spawned with `fork_context=false`.
 
-When the repository has generated alternate-runtime definitions, Qoder, Cursor, and OpenCode subagents are isolated by their runtime. Invoke the generated named specialist through that runtime's native route and do not substitute a generic built-in agent for a named HOI4 specialist. Keep canonical snake_case names in `.codex/agents/*.toml`; generated alternate-runtime files and maps are projections and must not be hand-edited.
+When the repository has generated alternate-runtime definitions, Qoder, Cursor, OpenCode, and Claude Code subagents are isolated by their runtime. Invoke the generated named specialist through that runtime's native route and do not substitute a generic built-in agent for a named HOI4 specialist. Keep canonical snake_case names in `.codex/agents/*.toml`; generated alternate-runtime files and maps are projections and must not be hand-edited.
 
 Do not spawn any subagent with inherited parent-thread context. The parent prompt must include every path, user correction, task constraint, scope boundary, previous handoff status, accepted plan, queued plan, and design rule the subagent needs.
 

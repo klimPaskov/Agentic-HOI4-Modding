@@ -78,6 +78,22 @@ class ManifestGeneratorTests(unittest.TestCase):
         self.assertFalse(any(component_id.startswith("runtime.qoder.") for component_id in component_ids))
         self.assertNotIn("core_with_qoder", profile_ids)
 
+    def test_default_profiles_install_complete_claude_runtime(self) -> None:
+        manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+        components = {component["id"]: component for component in manifest["components"]}
+        required = {
+            "core.claude.instructions",
+            "runtime.agent_sync",
+            "runtime.claude",
+            "runtime.claude.mcp",
+        }
+        self.assertTrue(required.issubset(components))
+        for profile in manifest["profiles"]:
+            self.assertTrue(required.issubset(profile["components"]))
+        self.assertEqual(components["runtime.claude"]["source"]["path"], ".claude")
+        self.assertEqual(components["runtime.claude.mcp"]["source"]["path"], ".mcp.json")
+
 
 if __name__ == "__main__":
     unittest.main()

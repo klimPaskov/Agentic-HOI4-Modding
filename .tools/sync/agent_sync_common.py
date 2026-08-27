@@ -60,6 +60,8 @@ BODY_SUBSTITUTIONS = (
     ),
     (r"Agent Nudger writes", "UI-assisted writes"),
     (r"native ImageGen", "the configured image-generation route"),
+    (r"Codex's official \$imagegen skill", "the runtime's configured image-generation route"),
+    (r"restart the shell or Codex", "restart the shell or current agent runtime"),
 )
 
 
@@ -86,6 +88,7 @@ RUNTIMES = {
     "qoder": Runtime("qoder", MOD_ROOT / ".qoder" / "agents", MOD_ROOT / ".qoder" / "agents" / "README.md"),
     "cursor": Runtime("cursor", MOD_ROOT / ".cursor" / "agents", MOD_ROOT / ".cursor" / "agent-map.md"),
     "opencode": Runtime("opencode", MOD_ROOT / ".opencode" / "agent", MOD_ROOT / ".opencode" / "agent-map.md"),
+    "claude": Runtime("claude", MOD_ROOT / ".claude" / "agents", MOD_ROOT / ".claude" / "agent-map.md"),
 }
 
 
@@ -155,7 +158,7 @@ def render_agent(runtime: Runtime, agent: Agent) -> str:
             agent.body.rstrip(),
             "",
         ]
-    else:
+    elif runtime.key == "opencode":
         lines = [
             "---",
             f"# Generated from .codex/agents/{source} by .tools/sync/sync_opencode_agents.py. Do not hand-edit.",
@@ -167,6 +170,22 @@ def render_agent(runtime: Runtime, agent: Agent) -> str:
             agent.body.rstrip(),
             "",
         ]
+    else:
+        lines = [
+            "---",
+            f"# Generated from .codex/agents/{source} by .tools/sync/sync_claude_agents.py. Do not hand-edit.",
+            f"name: {name}",
+            f"description: {yaml_quote(agent.description)}",
+            "model: inherit",
+        ]
+        if AUTHORITY[agent.name] == READ_ONLY:
+            lines.append("disallowedTools: Write, Edit, NotebookEdit")
+        lines.extend([
+            "---",
+            "",
+            agent.body.rstrip(),
+            "",
+        ])
     return "\n".join(lines)
 
 

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "hoi4_agent_tools": {
+      "type": "stdio",
+      "command": "hoi4-agent-tools.cmd",
+      "args": [],
+      "env": {}
+    }
+  }
+}

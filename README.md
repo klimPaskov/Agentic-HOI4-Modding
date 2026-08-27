@@ -58,6 +58,7 @@ The agent should consult the offline wiki before editing systems that depend on 
 ### 4. Copy the project instructions
 
 Copy `AGENTS_template.md` into the root of your mod repo as `AGENTS.md`.
+For Claude Code, also copy `CLAUDE_template.md` as `CLAUDE.md`, retain the imported `@AGENTS.md` line, install `.claude/`, and install the root `.mcp.json` project MCP configuration.
 
 Then adapt it to your real project. Replace project-specific names, paths, skills, subagents, docs policy, asset folders, validation rules, and any workflow rules that only apply to the example project. Codex can do the first adaptation pass by inspecting the repo and local setup.
 
@@ -118,18 +119,21 @@ Put subagent TOML files under:
 .codex/agents/
 ```
 
-Codex TOML files are the canonical source even when the same project is opened in Qoder, Cursor, or OpenCode.
+Codex TOML files are the canonical source even when the same project is opened in Qoder, Cursor, OpenCode, or Claude Code.
 Generate those runtime-specific definitions after any subagent change:
 
 ```powershell
 python .tools/sync/sync_qoder_agents.py
 python .tools/sync/sync_cursor_agents.py
 python .tools/sync/sync_opencode_agents.py
+python .tools/sync/sync_claude_agents.py
 ```
 
 Each command also accepts `--check` for a read-only drift gate.
-Generated `.qoder/`, `.cursor/`, and `.opencode/` folders are ignored and should not be edited or committed.
+Generated `.qoder/`, `.cursor/`, and `.opencode/` folders are ignored and should not be edited or committed. Generated `.claude/agents/` definitions are tracked for immediate Claude Code discovery but remain non-authoritative and must not be hand-edited.
 MCP registration remains runtime- and project-specific; the generators synchronize subagent names, descriptions, prompt bodies, and authority classes without copying Codex-only settings or Chaos Redux paths.
+
+Claude Code additionally loads shared project settings from `.claude/settings.json`, project MCP servers from `.mcp.json`, and root instructions from `CLAUDE.md`. The included `CLAUDE_template.md` imports the adapted `AGENTS.md`, so workflow policy remains single-sourced while Claude-specific invocation and trust rules stay explicit.
 
 The main agent should still own final implementation, final wiring, final review, final validation, and the completion report. Spawn every project custom subagent without inherited conversation context and pass every required path, constraint, correction, accepted decision, ownership boundary, and handoff destination explicitly in its prompt.
 

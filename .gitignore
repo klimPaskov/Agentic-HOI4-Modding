@@ -22,3 +22,6 @@
 /.qoder/
 /.cursor/
 /.opencode/
+
+# Claude Code project definitions are tracked; personal overrides are not.
+/.claude/settings.local.json

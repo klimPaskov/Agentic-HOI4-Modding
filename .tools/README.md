@@ -18,19 +18,21 @@ Its package version, integrity, runtime-entry evidence, manifest declaration, an
 
 ### Agent synchronization
 
-The scripts under `sync/` generate Qoder, Cursor, and OpenCode subagents from canonical `.codex/agents/*.toml` definitions.
-Run all three after a canonical definition changes, then rerun them with `--check`:
+The scripts under `sync/` generate Qoder, Cursor, OpenCode, and Claude Code subagents from canonical `.codex/agents/*.toml` definitions.
+Run all four after a canonical definition changes, then rerun them with `--check`:
 
 ```powershell
 python -B .tools/sync/sync_qoder_agents.py
 python -B .tools/sync/sync_cursor_agents.py
 python -B .tools/sync/sync_opencode_agents.py
+python -B .tools/sync/sync_claude_agents.py
 python -B .tools/sync/sync_qoder_agents.py --check
 python -B .tools/sync/sync_cursor_agents.py --check
 python -B .tools/sync/sync_opencode_agents.py --check
+python -B .tools/sync/sync_claude_agents.py --check
 ```
 
-Generated runtime directories are ignored and machine-local.
+Qoder, Cursor, and OpenCode generated directories are ignored and machine-local. Claude Code project agents are generated but tracked for immediate project discovery.
 Never hand-edit generated agent files or copy project-specific MCP paths between runtimes.
 
 ### 3D model pipeline

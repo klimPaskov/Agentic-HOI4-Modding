@@ -2,8 +2,8 @@
 
 ## Result
 
-The general workflow now treats `.codex/agents/*.toml` as the only subagent authoring source and can generate Qoder, Cursor, and OpenCode definitions from one shared authority map.
-The runtime projections are generic, ignored, and machine-local; no Chaos Redux identifier, absolute path, environment variable, MCP registration, generated repo wiki, package cache, or provider sidecar was copied.
+The general workflow now treats `.codex/agents/*.toml` as the only subagent authoring source and can generate Qoder, Cursor, OpenCode, and Claude Code definitions from one shared authority map.
+The runtime projections are generic. Qoder, Cursor, and OpenCode projections remain ignored and machine-local; Claude Code project agents are tracked for immediate discovery. No Chaos Redux identifier, absolute path, generated repo wiki, package cache, or provider sidecar was copied.
 
 ## Files
 
@@ -11,9 +11,14 @@ The runtime projections are generic, ignored, and machine-local; no Chaos Redux 
 - `.tools/sync/sync_qoder_agents.py`
 - `.tools/sync/sync_cursor_agents.py`
 - `.tools/sync/sync_opencode_agents.py`
+- `.tools/sync/sync_claude_agents.py`
 - `.tools/sync/README.md`
 - `.tools/README.md`
 - `.tools/.gitignore`
+- `.claude/settings.json`
+- `.claude/agents/*.md`
+- `.mcp.json`
+- `CLAUDE_template.md`
 - `scripts/test_agent_sync_contract.py`
 - `.gitignore`
 - `AGENTS_template.md`
@@ -33,8 +38,8 @@ Chaos Redux `.qoder/repowiki`, generated runtime folders, absolute MCP configura
 
 ## Validation
 
-- Generated and checked 23 agents in each of Qoder, Cursor, and OpenCode.
-- `scripts/test_agent_sync_contract.py` checks 23 canonical authority mappings, three runtime renderers, required frontmatter, and runtime-neutral prompt substitutions.
+- Generated and checked 23 agents in each of Qoder, Cursor, OpenCode, and Claude Code.
+- `scripts/test_agent_sync_contract.py` checks 23 canonical authority mappings, four runtime renderers, Claude settings and MCP configuration, required frontmatter, and runtime-neutral prompt substitutions.
 - Published manifest evidence remains pinned to its exact committed revision and was not falsified with uncommitted hashes.
 
 ## Publication follow-up

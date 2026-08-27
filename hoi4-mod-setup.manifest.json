@@ -62,6 +62,210 @@
       ]
     },
     {
+      "id": "core.claude.instructions",
+      "display_name": "Claude Code project instructions",
+      "description": "Install the Claude Code entry instructions that import the adapted AGENTS workflow authority.",
+      "category": "core",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": "CLAUDE_template.md"
+      },
+      "destination": {
+        "path": "CLAUDE.md",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.agents"
+      ],
+      "conflicts": [
+        "existing CLAUDE.md"
+      ],
+      "conflict_policy": "three_way_merge",
+      "validation": [
+        {
+          "id": "claude.instructions.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": "CLAUDE.md"
+        }
+      ],
+      "update": {
+        "strategy": "three_way_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Claude Code project instructions",
+        "shared AGENTS import"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.agent_sync",
+      "display_name": "Multi-runtime agent synchronizers",
+      "description": "Install the one-way generators for Qoder, Cursor, OpenCode, and Claude Code subagents.",
+      "category": "script",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".tools/sync",
+        "include": [
+          "README.md",
+          "*.py"
+        ],
+        "exclude": [
+          "**/__pycache__/**",
+          "**/*.pyc"
+        ]
+      },
+      "destination": {
+        "path": ".tools/sync/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents"
+      ],
+      "conflicts": [
+        "existing runtime synchronizer with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "runtime.agent_sync.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".tools/sync/agent_sync_common.py"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "subagent generation",
+        "runtime drift checking"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.claude",
+      "display_name": "Claude Code runtime",
+      "description": "Install tracked Claude Code subagents and shared project settings generated from canonical Codex definitions.",
+      "category": "subagent",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude",
+        "include": [
+          "settings.json",
+          "agent-map.md",
+          "agents/*.md"
+        ],
+        "exclude": [
+          "settings.local.json"
+        ]
+      },
+      "destination": {
+        "path": ".claude/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.claude.instructions",
+        "runtime.agent_sync"
+      ],
+      "conflicts": [
+        "existing Claude Code agent or shared setting with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "claude.settings.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".claude/settings.json"
+        },
+        {
+          "id": "claude.agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".claude/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Claude Code subagents",
+        "Claude Code project settings",
+        "read-only agent tool restrictions"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.claude.mcp",
+      "display_name": "Claude Code HOI4 MCP configuration",
+      "description": "Install the project-scoped Claude Code registration for the verified HOI4 Agent Tools server.",
+      "category": "mcp",
+      "optional": false,
+      "platforms": [
+        "windows"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".mcp.json"
+      },
+      "destination": {
+        "path": ".mcp.json",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.claude",
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing Claude Code project MCP server id"
+      ],
+      "conflict_policy": "three_way_merge",
+      "validation": [
+        {
+          "id": "claude.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".mcp.json"
+        }
+      ],
+      "update": {
+        "strategy": "three_way_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Claude Code MCP registration",
+        "HOI4 Agent Tools"
+      ],
+      "notes": [
+        "Claude Code requires a one-time project trust decision before starting a project-scoped MCP server."
+      ],
+      "expected_files": []
+    },
+    {
       "id": "core.skills",
       "display_name": "HOI4 workflow skills",
       "description": "Install the repository-declared generic skill trees and helper files.",
@@ -7280,10 +7484,14 @@
       "display_name": "Core agentic setup",
       "components": [
         "core.agents",
+        "core.claude.instructions",
         "core.skills",
         "core.subagents",
+        "runtime.agent_sync",
+        "runtime.claude",
         "codex.config",
         "mcp.hoi4_agent_tools",
+        "runtime.claude.mcp",
         "docs.mcp_integration",
         "wiki.snapshot"
       ],
@@ -7294,10 +7502,14 @@
       "display_name": "Core agentic setup plus 3D workflow",
       "components": [
         "core.agents",
+        "core.claude.instructions",
         "core.skills",
         "core.subagents",
+        "runtime.agent_sync",
+        "runtime.claude",
         "codex.config",
         "mcp.hoi4_agent_tools",
+        "runtime.claude.mcp",
         "docs.mcp_integration",
         "wiki.snapshot",
         "workflow.3d"
