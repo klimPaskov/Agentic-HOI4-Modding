@@ -130,10 +130,10 @@ python .tools/sync/sync_claude_agents.py
 ```
 
 Each command also accepts `--check` for a read-only drift gate.
-Generated `.qoder/`, `.cursor/`, and `.opencode/` folders are ignored and should not be edited or committed. Generated `.claude/agents/` definitions are tracked for immediate Claude Code discovery but remain non-authoritative and must not be hand-edited.
-MCP registration remains runtime- and project-specific; the generators synchronize subagent names, descriptions, prompt bodies, and authority classes without copying Codex-only settings or Chaos Redux paths.
+All four runtime projections are checked in so a fresh checkout works immediately. They are generated artifacts, not authoring sources, and must not be edited by hand. The complete native packages also include each client's project settings, agent map, and provider-neutral MCP configuration.
+MCP registration remains runtime- and project-specific; the generators synchronize subagent names, descriptions, prompt bodies, and authority classes without copying Codex-only settings or Chaos Redux paths. `.codex/agents/*.toml` is the one canonical source for every projection, and `--check` fails on drift.
 
-Claude Code additionally loads shared project settings from `.claude/settings.json`, project MCP servers from `.mcp.json`, and root instructions from `CLAUDE.md`. The included `CLAUDE_template.md` imports the adapted `AGENTS.md`, so workflow policy remains single-sourced while Claude-specific invocation and trust rules stay explicit.
+Claude Code additionally loads shared project settings from `.claude/settings.json`, project MCP servers from `.mcp.json`, and root instructions from `CLAUDE.md`. Cursor uses `.cursor/settings.json` and `.cursor/mcp.json`; Qoder uses `.qoder/settings.json` and `.qoder/mcp.json`; OpenCode uses `.opencode/settings.json`, `.opencode/mcp.json`, and the root `opencode.json`. These files all point at the same provider-neutral HOI4 Agent Tools command.
 
 The main agent should still own final implementation, final wiring, final review, final validation, and the completion report. Spawn every project custom subagent without inherited conversation context and pass every required path, constraint, correction, accepted decision, ownership boundary, and handoff destination explicitly in its prompt.
 

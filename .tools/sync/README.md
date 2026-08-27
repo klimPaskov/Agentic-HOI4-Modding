@@ -12,7 +12,7 @@ python .tools/sync/sync_claude_agents.py
 
 Run all four after changing a Codex definition.
 After generation, use `--check` to fail on missing, outdated, stale, or authority-unmapped generated files.
-Qoder, Cursor, and OpenCode runtime folders are machine-local and ignored. Claude Code project agents are generated and tracked so a checkout works immediately; they still must not be edited by hand.
+All four runtime projections are checked in so a fresh checkout works immediately. They are generated artifacts, not authoring sources, and must not be edited by hand. Qoder's map lives at `.qoder/agent-map.md`; its project and MCP settings are `.qoder/settings.json` and `.qoder/mcp.json`.
 
 The generators translate only runtime mechanics.
-The prompt body remains the scope and authority contract, and repository-specific MCP registration stays a separate runtime setup step.
+The prompt body remains the scope and authority contract. Native project settings and MCP registration are distributed with the selected runtime package and remain provider-neutral.
