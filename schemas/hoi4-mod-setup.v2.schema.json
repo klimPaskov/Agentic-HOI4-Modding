@@ -412,6 +412,7 @@
         "category": {
           "enum": [
             "core",
+            "environment",
             "skill",
             "subagent",
             "codex",
@@ -422,6 +423,15 @@
             "documentation",
             "wiki",
             "workflow"
+          ]
+        },
+        "coding_environment": {
+          "enum": [
+            "codex",
+            "claude_code",
+            "cursor",
+            "qoder",
+            "opencode"
           ]
         },
         "optional": {

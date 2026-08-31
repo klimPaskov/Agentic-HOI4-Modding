@@ -85,7 +85,7 @@ class Runtime:
 
 
 RUNTIMES = {
-    "qoder": Runtime("qoder", MOD_ROOT / ".qoder" / "agents", MOD_ROOT / ".qoder" / "agents" / "README.md"),
+    "qoder": Runtime("qoder", MOD_ROOT / ".qoder" / "agents", MOD_ROOT / ".qoder" / "agent-map.md"),
     "cursor": Runtime("cursor", MOD_ROOT / ".cursor" / "agents", MOD_ROOT / ".cursor" / "agent-map.md"),
     "opencode": Runtime("opencode", MOD_ROOT / ".opencode" / "agent", MOD_ROOT / ".opencode" / "agent-map.md"),
     "claude": Runtime("claude", MOD_ROOT / ".claude" / "agents", MOD_ROOT / ".claude" / "agent-map.md"),

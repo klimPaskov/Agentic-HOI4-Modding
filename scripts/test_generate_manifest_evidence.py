@@ -70,29 +70,38 @@ class ManifestGeneratorTests(unittest.TestCase):
         self.assertFalse(components["core.agents"]["optional"])
         self.assertTrue(components["mcp.hoi4_agent_tools.bootstrap"]["optional"])
 
-    def test_published_setup_has_no_qoder_runtime(self) -> None:
-        manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
-        component_ids = {component["id"] for component in manifest["components"]}
-        profile_ids = {profile["id"] for profile in manifest["profiles"]}
-        self.assertFalse(any(component_id.startswith("runtime.qoder.") for component_id in component_ids))
-        self.assertNotIn("core_with_qoder", profile_ids)
-
-    def test_default_profiles_install_complete_claude_runtime(self) -> None:
+    def test_published_setup_declares_all_coding_environments(self) -> None:
         manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
         components = {component["id"]: component for component in manifest["components"]}
-        required = {
-            "core.claude.instructions",
-            "runtime.agent_sync",
-            "runtime.claude",
-            "runtime.claude.mcp",
+        environments = {
+            component["coding_environment"]
+            for component in manifest["components"]
+            if "coding_environment" in component
         }
-        self.assertTrue(required.issubset(components))
+        self.assertEqual(environments, {"codex", "claude_code", "cursor", "qoder", "opencode"})
+        for environment, component_id in {
+            "codex": "codex.config",
+            "claude_code": "runtime.claude",
+            "cursor": "runtime.cursor",
+            "qoder": "runtime.qoder",
+            "opencode": "runtime.opencode",
+        }.items():
+            self.assertEqual(components[component_id]["coding_environment"], environment)
+
+    def test_profiles_keep_environment_selection_composable(self) -> None:
+        manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+        components = {component["id"]: component for component in manifest["components"]}
+        required = {"core.agents", "core.skills", "core.subagents", "runtime.agent_sync"}
         for profile in manifest["profiles"]:
             self.assertTrue(required.issubset(profile["components"]))
-        self.assertEqual(components["runtime.claude"]["source"]["path"], ".claude")
-        self.assertEqual(components["runtime.claude.mcp"]["source"]["path"], ".mcp.json")
+            environment_components = [
+                component_id
+                for component_id in profile["components"]
+                if components[component_id].get("coding_environment")
+            ]
+            self.assertEqual(environment_components, [])
 
 
 if __name__ == "__main__":
