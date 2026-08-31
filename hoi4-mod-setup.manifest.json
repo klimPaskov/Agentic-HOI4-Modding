@@ -67,7 +67,7 @@
       "description": "Install the Claude Code entry instructions that import the adapted AGENTS workflow authority.",
       "category": "environment",
       "coding_environment": "claude_code",
-      "optional": false,
+      "optional": true,
       "platforms": [
         "all"
       ],
@@ -214,7 +214,9 @@
           "agents/*.md"
         ],
         "exclude": [
-          "settings.local.json"
+          "settings.local.json",
+          "agents/hoi4-portrait-creator.md",
+          "agents/hoi4-super-event-*.md"
         ]
       },
       "destination": {
@@ -388,7 +390,7 @@
       "description": "Install the project-scoped Claude Code registration for the verified HOI4 Agent Tools server.",
       "category": "environment",
       "coding_environment": "claude_code",
-      "optional": false,
+      "optional": true,
       "platforms": [
         "windows"
       ],
@@ -402,7 +404,8 @@
         "outside_project": false
       },
       "dependencies": [
-        "runtime.claude"
+        "runtime.claude",
+        "mcp.hoi4_agent_tools"
       ],
       "conflicts": [
         "existing Claude Code project MCP server id"
@@ -451,9 +454,12 @@
         "path": ".cursor",
         "include": [
           "settings.json",
-          "mcp.json",
           "agent-map.md",
           "agents/*.md"
+        ],
+        "exclude": [
+          "agents/hoi4-portrait-creator.md",
+          "agents/hoi4-super-event-*.md"
         ]
       },
       "destination": {
@@ -477,12 +483,6 @@
           "target": ".cursor/settings.json"
         },
         {
-          "id": "cursor.mcp.exists",
-          "severity": "block",
-          "kind": "exists",
-          "target": ".cursor/mcp.json"
-        },
-        {
           "id": "cursor.agents.exists",
           "severity": "block",
           "kind": "exists",
@@ -496,7 +496,6 @@
       },
       "capabilities": [
         "Cursor project configuration",
-        "Cursor MCP configuration",
         "Cursor subagents"
       ],
       "expected_files": [
@@ -647,9 +646,12 @@
         "path": ".qoder",
         "include": [
           "settings.json",
-          "mcp.json",
           "agent-map.md",
           "agents/*.md"
+        ],
+        "exclude": [
+          "agents/hoi4-portrait-creator.md",
+          "agents/hoi4-super-event-*.md"
         ]
       },
       "destination": {
@@ -673,12 +675,6 @@
           "target": ".qoder/settings.json"
         },
         {
-          "id": "qoder.mcp.exists",
-          "severity": "block",
-          "kind": "exists",
-          "target": ".qoder/mcp.json"
-        },
-        {
           "id": "qoder.agents.exists",
           "severity": "block",
           "kind": "exists",
@@ -692,7 +688,6 @@
       },
       "capabilities": [
         "Qoder project configuration",
-        "Qoder MCP configuration",
         "Qoder subagents"
       ],
       "expected_files": [
@@ -843,9 +838,12 @@
         "path": ".opencode",
         "include": [
           "settings.json",
-          "mcp.json",
           "agent-map.md",
           "agent/*.md"
+        ],
+        "exclude": [
+          "agent/hoi4-portrait-creator.md",
+          "agent/hoi4-super-event-*.md"
         ]
       },
       "destination": {
@@ -869,12 +867,6 @@
           "target": ".opencode/settings.json"
         },
         {
-          "id": "opencode.mcp.exists",
-          "severity": "block",
-          "kind": "exists",
-          "target": ".opencode/mcp.json"
-        },
-        {
           "id": "opencode.agents.exists",
           "severity": "block",
           "kind": "exists",
@@ -888,7 +880,6 @@
       },
       "capabilities": [
         "OpenCode project configuration",
-        "OpenCode MCP configuration",
         "OpenCode subagents"
       ],
       "expected_files": [
@@ -1027,7 +1018,7 @@
     {
       "id": "runtime.opencode.config",
       "display_name": "OpenCode project manifest",
-      "description": "Install the OpenCode project-level configuration and provider-neutral HOI4 MCP route.",
+      "description": "Install the cross-platform OpenCode project-level configuration.",
       "category": "environment",
       "coding_environment": "opencode",
       "optional": false,
@@ -1064,8 +1055,7 @@
         "preserve_local_additions": true
       },
       "capabilities": [
-        "OpenCode project manifest",
-        "provider-neutral MCP registration"
+        "OpenCode project manifest"
       ],
       "expected_files": [
         {
@@ -1074,6 +1064,295 @@
           "size": 220
         }
       ]
+    },
+    {
+      "id": "runtime.cursor.mcp",
+      "display_name": "Cursor HOI4 MCP configuration",
+      "description": "Install the Windows project registration for the verified HOI4 Agent Tools server.",
+      "category": "environment",
+      "coding_environment": "cursor",
+      "optional": true,
+      "platforms": [
+        "windows"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".cursor/mcp.json"
+      },
+      "destination": {
+        "path": ".cursor/mcp.json",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.cursor",
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing Cursor project MCP server id"
+      ],
+      "conflict_policy": "three_way_merge",
+      "validation": [
+        {
+          "id": "cursor.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".cursor/mcp.json"
+        }
+      ],
+      "update": {
+        "strategy": "three_way_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Cursor MCP registration",
+        "HOI4 Agent Tools"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qoder.mcp",
+      "display_name": "Qoder HOI4 MCP configuration",
+      "description": "Install the Windows project registration for the verified HOI4 Agent Tools server.",
+      "category": "environment",
+      "coding_environment": "qoder",
+      "optional": true,
+      "platforms": [
+        "windows"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".qoder/mcp.json"
+      },
+      "destination": {
+        "path": ".qoder/mcp.json",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qoder",
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing Qoder project MCP server id"
+      ],
+      "conflict_policy": "three_way_merge",
+      "validation": [
+        {
+          "id": "qoder.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".qoder/mcp.json"
+        }
+      ],
+      "update": {
+        "strategy": "three_way_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Qoder MCP registration",
+        "HOI4 Agent Tools"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.opencode.mcp",
+      "display_name": "OpenCode HOI4 MCP configuration",
+      "description": "Install the Windows project registration for the verified HOI4 Agent Tools server.",
+      "category": "environment",
+      "coding_environment": "opencode",
+      "optional": true,
+      "platforms": [
+        "windows"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".opencode/mcp.json"
+      },
+      "destination": {
+        "path": ".opencode/mcp.json",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.opencode",
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing OpenCode project MCP server id"
+      ],
+      "conflict_policy": "three_way_merge",
+      "validation": [
+        {
+          "id": "opencode.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".opencode/mcp.json"
+        }
+      ],
+      "update": {
+        "strategy": "three_way_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "OpenCode MCP registration",
+        "HOI4 Agent Tools"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.claude.portrait_agent",
+      "display_name": "Claude Code portrait subagent",
+      "description": "Install the Claude Code projection only when Portrait Production is selected.",
+      "category": "environment",
+      "coding_environment": "claude_code",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {
+        "kind": "file",
+        "path": ".claude/agents/hoi4-portrait-creator.md"
+      },
+      "destination": {
+        "path": ".claude/agents/hoi4-portrait-creator.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": ["runtime.claude", "workflow.portraits.subagent"],
+      "conflicts": ["existing Claude Code portrait subagent"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [{"id": "claude.portrait_agent.exists", "severity": "block", "kind": "exists", "target": ".claude/agents/hoi4-portrait-creator.md"}],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["Claude Code portrait subagent"],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.claude.super_event_agents",
+      "display_name": "Claude Code Super Events subagents",
+      "description": "Install the Claude Code projections only when Super Events is selected.",
+      "category": "environment",
+      "coding_environment": "claude_code",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "tree", "path": ".claude/agents", "include": ["hoi4-super-event-*.md"]},
+      "destination": {"path": ".claude/agents/", "ownership": "managed", "outside_project": false},
+      "dependencies": ["runtime.claude", "workflow.super_events.subagents"],
+      "conflicts": ["existing Claude Code Super Events subagent"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [{"id": "claude.super_event_agents.exists", "severity": "block", "kind": "exists", "target": ".claude/agents"}],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["Claude Code Super Events subagents"],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.cursor.portrait_agent",
+      "display_name": "Cursor portrait subagent",
+      "description": "Install the Cursor projection only when Portrait Production is selected.",
+      "category": "environment",
+      "coding_environment": "cursor",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "file", "path": ".cursor/agents/hoi4-portrait-creator.md"},
+      "destination": {"path": ".cursor/agents/hoi4-portrait-creator.md", "ownership": "managed", "outside_project": false},
+      "dependencies": ["runtime.cursor", "workflow.portraits.subagent"],
+      "conflicts": ["existing Cursor portrait subagent"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [{"id": "cursor.portrait_agent.exists", "severity": "block", "kind": "exists", "target": ".cursor/agents/hoi4-portrait-creator.md"}],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["Cursor portrait subagent"],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.cursor.super_event_agents",
+      "display_name": "Cursor Super Events subagents",
+      "description": "Install the Cursor projections only when Super Events is selected.",
+      "category": "environment",
+      "coding_environment": "cursor",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "tree", "path": ".cursor/agents", "include": ["hoi4-super-event-*.md"]},
+      "destination": {"path": ".cursor/agents/", "ownership": "managed", "outside_project": false},
+      "dependencies": ["runtime.cursor", "workflow.super_events.subagents"],
+      "conflicts": ["existing Cursor Super Events subagent"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [{"id": "cursor.super_event_agents.exists", "severity": "block", "kind": "exists", "target": ".cursor/agents"}],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["Cursor Super Events subagents"],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qoder.portrait_agent",
+      "display_name": "Qoder portrait subagent",
+      "description": "Install the Qoder projection only when Portrait Production is selected.",
+      "category": "environment",
+      "coding_environment": "qoder",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "file", "path": ".qoder/agents/hoi4-portrait-creator.md"},
+      "destination": {"path": ".qoder/agents/hoi4-portrait-creator.md", "ownership": "managed", "outside_project": false},
+      "dependencies": ["runtime.qoder", "workflow.portraits.subagent"],
+      "conflicts": ["existing Qoder portrait subagent"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [{"id": "qoder.portrait_agent.exists", "severity": "block", "kind": "exists", "target": ".qoder/agents/hoi4-portrait-creator.md"}],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["Qoder portrait subagent"],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qoder.super_event_agents",
+      "display_name": "Qoder Super Events subagents",
+      "description": "Install the Qoder projections only when Super Events is selected.",
+      "category": "environment",
+      "coding_environment": "qoder",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "tree", "path": ".qoder/agents", "include": ["hoi4-super-event-*.md"]},
+      "destination": {"path": ".qoder/agents/", "ownership": "managed", "outside_project": false},
+      "dependencies": ["runtime.qoder", "workflow.super_events.subagents"],
+      "conflicts": ["existing Qoder Super Events subagent"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [{"id": "qoder.super_event_agents.exists", "severity": "block", "kind": "exists", "target": ".qoder/agents"}],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["Qoder Super Events subagents"],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.opencode.portrait_agent",
+      "display_name": "OpenCode portrait subagent",
+      "description": "Install the OpenCode projection only when Portrait Production is selected.",
+      "category": "environment",
+      "coding_environment": "opencode",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "file", "path": ".opencode/agent/hoi4-portrait-creator.md"},
+      "destination": {"path": ".opencode/agent/hoi4-portrait-creator.md", "ownership": "managed", "outside_project": false},
+      "dependencies": ["runtime.opencode", "workflow.portraits.subagent"],
+      "conflicts": ["existing OpenCode portrait subagent"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [{"id": "opencode.portrait_agent.exists", "severity": "block", "kind": "exists", "target": ".opencode/agent/hoi4-portrait-creator.md"}],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["OpenCode portrait subagent"],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.opencode.super_event_agents",
+      "display_name": "OpenCode Super Events subagents",
+      "description": "Install the OpenCode projections only when Super Events is selected.",
+      "category": "environment",
+      "coding_environment": "opencode",
+      "optional": true,
+      "platforms": ["all"],
+      "source": {"kind": "tree", "path": ".opencode/agent", "include": ["hoi4-super-event-*.md"]},
+      "destination": {"path": ".opencode/agent/", "ownership": "managed", "outside_project": false},
+      "dependencies": ["runtime.opencode", "workflow.super_events.subagents"],
+      "conflicts": ["existing OpenCode Super Events subagent"],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [{"id": "opencode.super_event_agents.exists", "severity": "block", "kind": "exists", "target": ".opencode/agent"}],
+      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
+      "capabilities": ["OpenCode Super Events subagents"],
+      "expected_files": []
     },
     {
       "id": "core.skills",

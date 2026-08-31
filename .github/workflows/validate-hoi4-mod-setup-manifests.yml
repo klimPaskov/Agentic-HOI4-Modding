@@ -10,6 +10,12 @@ on:
       - "scripts/generate_manifest_evidence.py"
       - "scripts/validate_published_manifests.py"
       - "scripts/test_generate_manifest_evidence.py"
+      - ".codex/agents/**"
+      - ".claude/**"
+      - ".cursor/**"
+      - ".qoder/**"
+      - ".opencode/**"
+      - ".tools/sync/**"
       - ".tools/mcp/**"
       - ".tools/3d_pipeline/**"
   pull_request:
@@ -17,6 +23,12 @@ on:
       - "hoi4-mod-setup.manifest.json"
       - "schemas/hoi4-mod-setup.v2.schema.json"
       - "scripts/**"
+      - ".codex/agents/**"
+      - ".claude/**"
+      - ".cursor/**"
+      - ".qoder/**"
+      - ".opencode/**"
+      - ".tools/sync/**"
       - ".tools/mcp/**"
       - ".tools/3d_pipeline/**"
 
@@ -35,4 +47,9 @@ jobs:
           python-version: "3.13"
       - run: python -m pip install --disable-pip-version-check "jsonschema==4.25.1"
       - run: python -m unittest discover -s scripts -p "test_*.py"
+      - run: python scripts/test_agent_sync_contract.py
+      - run: python .tools/sync/sync_claude_agents.py --check
+      - run: python .tools/sync/sync_cursor_agents.py --check
+      - run: python .tools/sync/sync_qoder_agents.py --check
+      - run: python .tools/sync/sync_opencode_agents.py --check
       - run: python scripts/validate_published_manifests.py
