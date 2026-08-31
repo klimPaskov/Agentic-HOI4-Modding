@@ -133,6 +133,8 @@ class ManifestGeneratorTests(unittest.TestCase):
             self.assertIn("mcp.hoi4_agent_tools", component["dependencies"])
         opencode = json.loads((root / "opencode.json").read_text(encoding="utf-8"))
         self.assertNotIn("mcp", opencode)
+        qoder = json.loads((root / ".qoder/settings.json").read_text(encoding="utf-8"))
+        self.assertNotIn("mcpServers", qoder)
 
 
 if __name__ == "__main__":
