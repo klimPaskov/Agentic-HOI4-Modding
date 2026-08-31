@@ -88,6 +88,7 @@ class ManifestGeneratorTests(unittest.TestCase):
             "opencode": "runtime.opencode",
         }.items():
             self.assertEqual(components[component_id]["coding_environment"], environment)
+        self.assertNotIn("coding_environment", components["mcp.hoi4_agent_tools"])
 
     def test_profiles_keep_environment_selection_composable(self) -> None:
         manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"

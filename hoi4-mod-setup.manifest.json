@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "1b6039d9f2fb3c50325403cafd3f37b77192ec85",
+  "generated_for_revision": "707af7ee8d552ae24f83b04edcaca69f59c331a5",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -4422,7 +4422,6 @@
       "display_name": "HOI4 Agent Tools MCP",
       "description": "Install and verify the provider-neutral HOI4 tools server; Codex registration follows the independently installed Codex configuration.",
       "category": "environment",
-      "coding_environment": "codex",
       "optional": true,
       "platforms": [
         "windows"
