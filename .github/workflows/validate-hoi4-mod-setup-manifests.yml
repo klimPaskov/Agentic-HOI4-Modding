@@ -19,18 +19,6 @@ on:
       - ".tools/mcp/**"
       - ".tools/3d_pipeline/**"
   pull_request:
-    paths:
-      - "hoi4-mod-setup.manifest.json"
-      - "schemas/hoi4-mod-setup.v2.schema.json"
-      - "scripts/**"
-      - ".codex/agents/**"
-      - ".claude/**"
-      - ".cursor/**"
-      - ".qoder/**"
-      - ".opencode/**"
-      - ".tools/sync/**"
-      - ".tools/mcp/**"
-      - ".tools/3d_pipeline/**"
 
 permissions:
   contents: read

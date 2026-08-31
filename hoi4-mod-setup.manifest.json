@@ -4422,7 +4422,6 @@
       "display_name": "HOI4 Agent Tools MCP",
       "description": "Install and verify the provider-neutral HOI4 tools server; Codex registration follows the independently installed Codex configuration.",
       "category": "environment",
-      "coding_environment": "codex",
       "optional": true,
       "platforms": [
         "windows"
