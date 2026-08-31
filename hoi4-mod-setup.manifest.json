@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "64c337c5fd0553027940982af7f51a954de1df40",
+  "generated_for_revision": "886a246a1199425c23e32c32e5764ffd49d86b11",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -165,8 +165,8 @@
       "expected_files": [
         {
           "path": ".tools/sync/README.md",
-          "sha256": "f1fe1559cbe543f7b7081f0ce2c2dddf932a6bdde4e9e6d0a23db0b1ca2808a3",
-          "size": 1105
+          "sha256": "aa3117f11955c2b15f02c0c4d098c20eaf52dc194cba895dd27f3656255ca5dd",
+          "size": 1248
         },
         {
           "path": ".tools/sync/agent_sync_common.py",
@@ -333,11 +333,6 @@
           "size": 9343
         },
         {
-          "path": ".claude/agents/hoi4-portrait-creator.md",
-          "sha256": "1c7f96896454584fe66961d9576f7d44c5aa25171481afccd4eae7ac3461f261",
-          "size": 2813
-        },
-        {
           "path": ".claude/agents/hoi4-quote-remark-researcher.md",
           "sha256": "662713178c407ff9f24a0ea14bc4e0b004b95348d3907a03133e98b8f3c86ec1",
           "size": 4378
@@ -361,21 +356,6 @@
           "path": ".claude/agents/hoi4-spreadsheet-doc-worker.md",
           "sha256": "27207f1fa0a4b81e5ae7ac07f24af1a321c822d01d00127a135edc67cd277d81",
           "size": 4402
-        },
-        {
-          "path": ".claude/agents/hoi4-super-event-art-researcher.md",
-          "sha256": "00931e9839eea131a81e8af762c9c722370021d166226829066ebdf970c18647",
-          "size": 2968
-        },
-        {
-          "path": ".claude/agents/hoi4-super-event-audio-researcher.md",
-          "sha256": "1dd629c47d1c36e2fb234630acd7695365ad56db4670b22d064ab2e00b84056c",
-          "size": 2736
-        },
-        {
-          "path": ".claude/agents/hoi4-super-event-quote-researcher.md",
-          "sha256": "f0aeecb5d336a5f970f4ba34e9d250323f8811dcc76f6331f0fe828ee66e1eb4",
-          "size": 2270
         },
         {
           "path": ".claude/settings.json",
@@ -575,11 +555,6 @@
           "size": 9343
         },
         {
-          "path": ".cursor/agents/hoi4-portrait-creator.md",
-          "sha256": "10b28940a4629df98e8443f84d680bd9196501b6fc6bc119fbaaad8905c9e9ff",
-          "size": 2813
-        },
-        {
           "path": ".cursor/agents/hoi4-quote-remark-researcher.md",
           "sha256": "660dc8555fc6b40f0be809564707b1108427bb87b1989a1945bbb99069e0f552",
           "size": 4378
@@ -603,26 +578,6 @@
           "path": ".cursor/agents/hoi4-spreadsheet-doc-worker.md",
           "sha256": "45f26ef2e8481919ff2cb0288d6cc380f6c4943f8c9b0b06c9d9c1f777595208",
           "size": 4402
-        },
-        {
-          "path": ".cursor/agents/hoi4-super-event-art-researcher.md",
-          "sha256": "ed6a73e6b5b20c9f13e4e1cc02df1fe6f2508fb4357aa04c8449f466feaa597a",
-          "size": 2968
-        },
-        {
-          "path": ".cursor/agents/hoi4-super-event-audio-researcher.md",
-          "sha256": "332167c204d3b43c5a32da54b8b168c3394b80b3c1c48a49146cc110c83959ab",
-          "size": 2736
-        },
-        {
-          "path": ".cursor/agents/hoi4-super-event-quote-researcher.md",
-          "sha256": "7cd03e230e894f71a16b0ae4fb56a33beaba821b7da4f0e01587ec1d8893f5a0",
-          "size": 2270
-        },
-        {
-          "path": ".cursor/mcp.json",
-          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
-          "size": 116
         },
         {
           "path": ".cursor/settings.json",
@@ -767,11 +722,6 @@
           "size": 9377
         },
         {
-          "path": ".qoder/agents/hoi4-portrait-creator.md",
-          "sha256": "dc9cf7cd4cfeee2d5f596c1e27ab92944399e208f64466fdaf2b1e39fa0356e9",
-          "size": 2868
-        },
-        {
           "path": ".qoder/agents/hoi4-quote-remark-researcher.md",
           "sha256": "15b53ba07b2502463cce7cb681250015a4b7b42d65eb089366c7451f42cdd939",
           "size": 4433
@@ -795,26 +745,6 @@
           "path": ".qoder/agents/hoi4-spreadsheet-doc-worker.md",
           "sha256": "323f07f11a19ef014ed7b770946b8f74dabd94fcb754efc83c4968cc7b510bf0",
           "size": 4436
-        },
-        {
-          "path": ".qoder/agents/hoi4-super-event-art-researcher.md",
-          "sha256": "ddfffa094598867b3c97121d46e6ce67fa12a8bd69370fcf71976d5bf5e0d185",
-          "size": 3023
-        },
-        {
-          "path": ".qoder/agents/hoi4-super-event-audio-researcher.md",
-          "sha256": "7693468167bac4da9a9065a2b24042691e4e23f0d5acb0f248f0994aa6487c10",
-          "size": 2791
-        },
-        {
-          "path": ".qoder/agents/hoi4-super-event-quote-researcher.md",
-          "sha256": "218a7600d0bab6844a5c22cefe327b59f3c888af594cdca17451c7312a2e46c7",
-          "size": 2325
-        },
-        {
-          "path": ".qoder/mcp.json",
-          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
-          "size": 116
         },
         {
           "path": ".qoder/settings.json",
@@ -959,11 +889,6 @@
           "size": 9328
         },
         {
-          "path": ".opencode/agent/hoi4-portrait-creator.md",
-          "sha256": "b6dd101b89b7bc382205f7c3b104d0cd4bfc4717c1beb7f153e39b43bf9160db",
-          "size": 2802
-        },
-        {
           "path": ".opencode/agent/hoi4-quote-remark-researcher.md",
           "sha256": "816a76a130a3d2f1d9be741069a9348fdcd19263122bd97da6a18e751f503c63",
           "size": 4360
@@ -987,26 +912,6 @@
           "path": ".opencode/agent/hoi4-spreadsheet-doc-worker.md",
           "sha256": "3dfab2714b8078eb6104c9fca13b2ce347abae7b923df7dcb21cf85b82cb95d5",
           "size": 4385
-        },
-        {
-          "path": ".opencode/agent/hoi4-super-event-art-researcher.md",
-          "sha256": "56aceafac144f4af8a3bf34fbfb3ae1b0c4ad36114d88e82c77b891e8acf26bc",
-          "size": 2947
-        },
-        {
-          "path": ".opencode/agent/hoi4-super-event-audio-researcher.md",
-          "sha256": "8c269190277de6905bed352f79ea01834bd93f47cce79c870af50cb0989fee3c",
-          "size": 2713
-        },
-        {
-          "path": ".opencode/agent/hoi4-super-event-quote-researcher.md",
-          "sha256": "4807e6ee2668dd8c2d62f31e7bd231411158f8119bb380eb6776dc2154374744",
-          "size": 2247
-        },
-        {
-          "path": ".opencode/mcp.json",
-          "sha256": "dfedf4270213b4d3d1fedf2e1719efe3619c7940132f3a6d48952ea29a6e6506",
-          "size": 100
         },
         {
           "path": ".opencode/settings.json",
@@ -1060,8 +965,8 @@
       "expected_files": [
         {
           "path": "opencode.json",
-          "sha256": "544eda73b9c1d8997a7d56b3cf38eb1c8f41f43f18e2c073c620941ba069de58",
-          "size": 220
+          "sha256": "45335604b5f6263a4c0e01c75e5b4171528466b515efed440e7c2fa1d09cd6d9",
+          "size": 84
         }
       ]
     },
@@ -1109,7 +1014,13 @@
         "Cursor MCP registration",
         "HOI4 Agent Tools"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".cursor/mcp.json",
+          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
+          "size": 116
+        }
+      ]
     },
     {
       "id": "runtime.qoder.mcp",
@@ -1155,7 +1066,13 @@
         "Qoder MCP registration",
         "HOI4 Agent Tools"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".qoder/mcp.json",
+          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
+          "size": 116
+        }
+      ]
     },
     {
       "id": "runtime.opencode.mcp",
@@ -1201,7 +1118,13 @@
         "OpenCode MCP registration",
         "HOI4 Agent Tools"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".opencode/mcp.json",
+          "sha256": "dfedf4270213b4d3d1fedf2e1719efe3619c7940132f3a6d48952ea29a6e6506",
+          "size": 100
+        }
+      ]
     },
     {
       "id": "runtime.claude.portrait_agent",
@@ -1210,7 +1133,9 @@
       "category": "environment",
       "coding_environment": "claude_code",
       "optional": true,
-      "platforms": ["all"],
+      "platforms": [
+        "all"
+      ],
       "source": {
         "kind": "file",
         "path": ".claude/agents/hoi4-portrait-creator.md"
@@ -1220,13 +1145,37 @@
         "ownership": "managed",
         "outside_project": false
       },
-      "dependencies": ["runtime.claude", "workflow.portraits.subagent"],
-      "conflicts": ["existing Claude Code portrait subagent"],
+      "dependencies": [
+        "runtime.claude",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing Claude Code portrait subagent"
+      ],
       "conflict_policy": "replace_if_unmodified",
-      "validation": [{"id": "claude.portrait_agent.exists", "severity": "block", "kind": "exists", "target": ".claude/agents/hoi4-portrait-creator.md"}],
-      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
-      "capabilities": ["Claude Code portrait subagent"],
-      "expected_files": []
+      "validation": [
+        {
+          "id": "claude.portrait_agent.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".claude/agents/hoi4-portrait-creator.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Claude Code portrait subagent"
+      ],
+      "expected_files": [
+        {
+          "path": ".claude/agents/hoi4-portrait-creator.md",
+          "sha256": "1c7f96896454584fe66961d9576f7d44c5aa25171481afccd4eae7ac3461f261",
+          "size": 2813
+        }
+      ]
     },
     {
       "id": "runtime.claude.super_event_agents",
@@ -1235,16 +1184,62 @@
       "category": "environment",
       "coding_environment": "claude_code",
       "optional": true,
-      "platforms": ["all"],
-      "source": {"kind": "tree", "path": ".claude/agents", "include": ["hoi4-super-event-*.md"]},
-      "destination": {"path": ".claude/agents/", "ownership": "managed", "outside_project": false},
-      "dependencies": ["runtime.claude", "workflow.super_events.subagents"],
-      "conflicts": ["existing Claude Code Super Events subagent"],
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/agents",
+        "include": [
+          "hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".claude/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.claude",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing Claude Code Super Events subagent"
+      ],
       "conflict_policy": "replace_if_unmodified",
-      "validation": [{"id": "claude.super_event_agents.exists", "severity": "block", "kind": "exists", "target": ".claude/agents"}],
-      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
-      "capabilities": ["Claude Code Super Events subagents"],
-      "expected_files": []
+      "validation": [
+        {
+          "id": "claude.super_event_agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".claude/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Claude Code Super Events subagents"
+      ],
+      "expected_files": [
+        {
+          "path": ".claude/agents/hoi4-super-event-art-researcher.md",
+          "sha256": "00931e9839eea131a81e8af762c9c722370021d166226829066ebdf970c18647",
+          "size": 2968
+        },
+        {
+          "path": ".claude/agents/hoi4-super-event-audio-researcher.md",
+          "sha256": "1dd629c47d1c36e2fb234630acd7695365ad56db4670b22d064ab2e00b84056c",
+          "size": 2736
+        },
+        {
+          "path": ".claude/agents/hoi4-super-event-quote-researcher.md",
+          "sha256": "f0aeecb5d336a5f970f4ba34e9d250323f8811dcc76f6331f0fe828ee66e1eb4",
+          "size": 2270
+        }
+      ]
     },
     {
       "id": "runtime.cursor.portrait_agent",
@@ -1253,16 +1248,49 @@
       "category": "environment",
       "coding_environment": "cursor",
       "optional": true,
-      "platforms": ["all"],
-      "source": {"kind": "file", "path": ".cursor/agents/hoi4-portrait-creator.md"},
-      "destination": {"path": ".cursor/agents/hoi4-portrait-creator.md", "ownership": "managed", "outside_project": false},
-      "dependencies": ["runtime.cursor", "workflow.portraits.subagent"],
-      "conflicts": ["existing Cursor portrait subagent"],
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".cursor/agents/hoi4-portrait-creator.md"
+      },
+      "destination": {
+        "path": ".cursor/agents/hoi4-portrait-creator.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.cursor",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing Cursor portrait subagent"
+      ],
       "conflict_policy": "replace_if_unmodified",
-      "validation": [{"id": "cursor.portrait_agent.exists", "severity": "block", "kind": "exists", "target": ".cursor/agents/hoi4-portrait-creator.md"}],
-      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
-      "capabilities": ["Cursor portrait subagent"],
-      "expected_files": []
+      "validation": [
+        {
+          "id": "cursor.portrait_agent.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".cursor/agents/hoi4-portrait-creator.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Cursor portrait subagent"
+      ],
+      "expected_files": [
+        {
+          "path": ".cursor/agents/hoi4-portrait-creator.md",
+          "sha256": "10b28940a4629df98e8443f84d680bd9196501b6fc6bc119fbaaad8905c9e9ff",
+          "size": 2813
+        }
+      ]
     },
     {
       "id": "runtime.cursor.super_event_agents",
@@ -1271,16 +1299,62 @@
       "category": "environment",
       "coding_environment": "cursor",
       "optional": true,
-      "platforms": ["all"],
-      "source": {"kind": "tree", "path": ".cursor/agents", "include": ["hoi4-super-event-*.md"]},
-      "destination": {"path": ".cursor/agents/", "ownership": "managed", "outside_project": false},
-      "dependencies": ["runtime.cursor", "workflow.super_events.subagents"],
-      "conflicts": ["existing Cursor Super Events subagent"],
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".cursor/agents",
+        "include": [
+          "hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".cursor/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.cursor",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing Cursor Super Events subagent"
+      ],
       "conflict_policy": "replace_if_unmodified",
-      "validation": [{"id": "cursor.super_event_agents.exists", "severity": "block", "kind": "exists", "target": ".cursor/agents"}],
-      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
-      "capabilities": ["Cursor Super Events subagents"],
-      "expected_files": []
+      "validation": [
+        {
+          "id": "cursor.super_event_agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".cursor/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Cursor Super Events subagents"
+      ],
+      "expected_files": [
+        {
+          "path": ".cursor/agents/hoi4-super-event-art-researcher.md",
+          "sha256": "ed6a73e6b5b20c9f13e4e1cc02df1fe6f2508fb4357aa04c8449f466feaa597a",
+          "size": 2968
+        },
+        {
+          "path": ".cursor/agents/hoi4-super-event-audio-researcher.md",
+          "sha256": "332167c204d3b43c5a32da54b8b168c3394b80b3c1c48a49146cc110c83959ab",
+          "size": 2736
+        },
+        {
+          "path": ".cursor/agents/hoi4-super-event-quote-researcher.md",
+          "sha256": "7cd03e230e894f71a16b0ae4fb56a33beaba821b7da4f0e01587ec1d8893f5a0",
+          "size": 2270
+        }
+      ]
     },
     {
       "id": "runtime.qoder.portrait_agent",
@@ -1289,16 +1363,49 @@
       "category": "environment",
       "coding_environment": "qoder",
       "optional": true,
-      "platforms": ["all"],
-      "source": {"kind": "file", "path": ".qoder/agents/hoi4-portrait-creator.md"},
-      "destination": {"path": ".qoder/agents/hoi4-portrait-creator.md", "ownership": "managed", "outside_project": false},
-      "dependencies": ["runtime.qoder", "workflow.portraits.subagent"],
-      "conflicts": ["existing Qoder portrait subagent"],
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".qoder/agents/hoi4-portrait-creator.md"
+      },
+      "destination": {
+        "path": ".qoder/agents/hoi4-portrait-creator.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qoder",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing Qoder portrait subagent"
+      ],
       "conflict_policy": "replace_if_unmodified",
-      "validation": [{"id": "qoder.portrait_agent.exists", "severity": "block", "kind": "exists", "target": ".qoder/agents/hoi4-portrait-creator.md"}],
-      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
-      "capabilities": ["Qoder portrait subagent"],
-      "expected_files": []
+      "validation": [
+        {
+          "id": "qoder.portrait_agent.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".qoder/agents/hoi4-portrait-creator.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Qoder portrait subagent"
+      ],
+      "expected_files": [
+        {
+          "path": ".qoder/agents/hoi4-portrait-creator.md",
+          "sha256": "dc9cf7cd4cfeee2d5f596c1e27ab92944399e208f64466fdaf2b1e39fa0356e9",
+          "size": 2868
+        }
+      ]
     },
     {
       "id": "runtime.qoder.super_event_agents",
@@ -1307,16 +1414,62 @@
       "category": "environment",
       "coding_environment": "qoder",
       "optional": true,
-      "platforms": ["all"],
-      "source": {"kind": "tree", "path": ".qoder/agents", "include": ["hoi4-super-event-*.md"]},
-      "destination": {"path": ".qoder/agents/", "ownership": "managed", "outside_project": false},
-      "dependencies": ["runtime.qoder", "workflow.super_events.subagents"],
-      "conflicts": ["existing Qoder Super Events subagent"],
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".qoder/agents",
+        "include": [
+          "hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".qoder/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qoder",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing Qoder Super Events subagent"
+      ],
       "conflict_policy": "replace_if_unmodified",
-      "validation": [{"id": "qoder.super_event_agents.exists", "severity": "block", "kind": "exists", "target": ".qoder/agents"}],
-      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
-      "capabilities": ["Qoder Super Events subagents"],
-      "expected_files": []
+      "validation": [
+        {
+          "id": "qoder.super_event_agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".qoder/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Qoder Super Events subagents"
+      ],
+      "expected_files": [
+        {
+          "path": ".qoder/agents/hoi4-super-event-art-researcher.md",
+          "sha256": "ddfffa094598867b3c97121d46e6ce67fa12a8bd69370fcf71976d5bf5e0d185",
+          "size": 3023
+        },
+        {
+          "path": ".qoder/agents/hoi4-super-event-audio-researcher.md",
+          "sha256": "7693468167bac4da9a9065a2b24042691e4e23f0d5acb0f248f0994aa6487c10",
+          "size": 2791
+        },
+        {
+          "path": ".qoder/agents/hoi4-super-event-quote-researcher.md",
+          "sha256": "218a7600d0bab6844a5c22cefe327b59f3c888af594cdca17451c7312a2e46c7",
+          "size": 2325
+        }
+      ]
     },
     {
       "id": "runtime.opencode.portrait_agent",
@@ -1325,16 +1478,49 @@
       "category": "environment",
       "coding_environment": "opencode",
       "optional": true,
-      "platforms": ["all"],
-      "source": {"kind": "file", "path": ".opencode/agent/hoi4-portrait-creator.md"},
-      "destination": {"path": ".opencode/agent/hoi4-portrait-creator.md", "ownership": "managed", "outside_project": false},
-      "dependencies": ["runtime.opencode", "workflow.portraits.subagent"],
-      "conflicts": ["existing OpenCode portrait subagent"],
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".opencode/agent/hoi4-portrait-creator.md"
+      },
+      "destination": {
+        "path": ".opencode/agent/hoi4-portrait-creator.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.opencode",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing OpenCode portrait subagent"
+      ],
       "conflict_policy": "replace_if_unmodified",
-      "validation": [{"id": "opencode.portrait_agent.exists", "severity": "block", "kind": "exists", "target": ".opencode/agent/hoi4-portrait-creator.md"}],
-      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
-      "capabilities": ["OpenCode portrait subagent"],
-      "expected_files": []
+      "validation": [
+        {
+          "id": "opencode.portrait_agent.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".opencode/agent/hoi4-portrait-creator.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "OpenCode portrait subagent"
+      ],
+      "expected_files": [
+        {
+          "path": ".opencode/agent/hoi4-portrait-creator.md",
+          "sha256": "b6dd101b89b7bc382205f7c3b104d0cd4bfc4717c1beb7f153e39b43bf9160db",
+          "size": 2802
+        }
+      ]
     },
     {
       "id": "runtime.opencode.super_event_agents",
@@ -1343,16 +1529,62 @@
       "category": "environment",
       "coding_environment": "opencode",
       "optional": true,
-      "platforms": ["all"],
-      "source": {"kind": "tree", "path": ".opencode/agent", "include": ["hoi4-super-event-*.md"]},
-      "destination": {"path": ".opencode/agent/", "ownership": "managed", "outside_project": false},
-      "dependencies": ["runtime.opencode", "workflow.super_events.subagents"],
-      "conflicts": ["existing OpenCode Super Events subagent"],
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".opencode/agent",
+        "include": [
+          "hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".opencode/agent/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.opencode",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing OpenCode Super Events subagent"
+      ],
       "conflict_policy": "replace_if_unmodified",
-      "validation": [{"id": "opencode.super_event_agents.exists", "severity": "block", "kind": "exists", "target": ".opencode/agent"}],
-      "update": {"strategy": "replace_if_unmodified", "remove_obsolete": true, "preserve_local_additions": true},
-      "capabilities": ["OpenCode Super Events subagents"],
-      "expected_files": []
+      "validation": [
+        {
+          "id": "opencode.super_event_agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".opencode/agent"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "OpenCode Super Events subagents"
+      ],
+      "expected_files": [
+        {
+          "path": ".opencode/agent/hoi4-super-event-art-researcher.md",
+          "sha256": "56aceafac144f4af8a3bf34fbfb3ae1b0c4ad36114d88e82c77b891e8acf26bc",
+          "size": 2947
+        },
+        {
+          "path": ".opencode/agent/hoi4-super-event-audio-researcher.md",
+          "sha256": "8c269190277de6905bed352f79ea01834bd93f47cce79c870af50cb0989fee3c",
+          "size": 2713
+        },
+        {
+          "path": ".opencode/agent/hoi4-super-event-quote-researcher.md",
+          "sha256": "4807e6ee2668dd8c2d62f31e7bd231411158f8119bb380eb6776dc2154374744",
+          "size": 2247
+        }
+      ]
     },
     {
       "id": "core.skills",
@@ -4399,8 +4631,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "dd545769e0e4365d4b299b7c0befab446624405f07895beb3d765d5c8d561de5",
-          "size": 22380
+          "sha256": "00a5627e58b63da9aea0ecb487ea29b611af668bf065d016fa26e8ce4cfa34d6",
+          "size": 22709
         }
       ]
     },
