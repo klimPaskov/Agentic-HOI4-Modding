@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "1df27270037bb63df9fd53acfe5680e8103ed203",
+  "generated_for_revision": "bfc9036d727c99b14126e5ae4a73195df24bf269",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -748,8 +748,8 @@
         },
         {
           "path": ".qoder/settings.json",
-          "sha256": "9983644a2bffb342e1979fe07db99f1ec5582e279d39ee8accb043d47a301c8c",
-          "size": 198
+          "sha256": "3fa1fca0b43a7e4b091491816fedea27d16b7e49e90919875f8677476ca9219b",
+          "size": 85
         }
       ]
     },
