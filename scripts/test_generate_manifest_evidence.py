@@ -103,6 +103,37 @@ class ManifestGeneratorTests(unittest.TestCase):
             ]
             self.assertEqual(environment_components, [])
 
+    def test_runtime_packages_keep_optional_agents_composable(self) -> None:
+        manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+        components = {component["id"]: component for component in manifest["components"]}
+        for runtime in ("claude", "cursor", "qoder", "opencode"):
+            base = components[f"runtime.{runtime}"]
+            excluded = set(base["source"].get("exclude", []))
+            agent_prefix = "agent" if runtime == "opencode" else "agents"
+            self.assertIn(f"{agent_prefix}/hoi4-portrait-creator.md", excluded)
+            self.assertIn(f"{agent_prefix}/hoi4-super-event-*.md", excluded)
+            portrait = components[f"runtime.{runtime}.portrait_agent"]
+            super_events = components[f"runtime.{runtime}.super_event_agents"]
+            self.assertTrue(portrait["optional"])
+            self.assertTrue(super_events["optional"])
+            self.assertIn("workflow.portraits.subagent", portrait["dependencies"])
+            self.assertIn("workflow.super_events.subagents", super_events["dependencies"])
+
+    def test_windows_mcp_registration_is_not_claimed_cross_platform(self) -> None:
+        root = SCRIPT.parents[1]
+        manifest = json.loads(
+            (root / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8-sig")
+        )
+        components = {component["id"]: component for component in manifest["components"]}
+        for runtime in ("claude", "cursor", "qoder", "opencode"):
+            component = components[f"runtime.{runtime}.mcp"]
+            self.assertEqual(component["platforms"], ["windows"])
+            self.assertTrue(component["optional"])
+            self.assertIn("mcp.hoi4_agent_tools", component["dependencies"])
+        opencode = json.loads((root / "opencode.json").read_text(encoding="utf-8"))
+        self.assertNotIn("mcp", opencode)
+
 
 if __name__ == "__main__":
     unittest.main()

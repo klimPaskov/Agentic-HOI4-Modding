@@ -26,7 +26,13 @@ jobs:
         with:
           python-version: "3.13"
       - name: Test manifest generator
-        run: python -m unittest discover -s scripts -p "test_*.py"
+        run: |
+          python -m unittest discover -s scripts -p "test_*.py"
+          python scripts/test_agent_sync_contract.py
+          python .tools/sync/sync_claude_agents.py --check
+          python .tools/sync/sync_cursor_agents.py --check
+          python .tools/sync/sync_qoder_agents.py --check
+          python .tools/sync/sync_opencode_agents.py --check
       - name: Regenerate exact-revision evidence
         run: >-
           python scripts/generate_manifest_evidence.py
