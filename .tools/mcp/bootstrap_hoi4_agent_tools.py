@@ -14,16 +14,18 @@ import sys
 
 
 PACKAGE_NAME = "hoi4-agent-tools"
-PACKAGE_VERSION = "2.5.2"
+PACKAGE_VERSION = "3.0.5"
 PACKAGE_SPEC = f"{PACKAGE_NAME}@{PACKAGE_VERSION}"
-PACKAGE_INTEGRITY = "sha512-/2CmEDqkEbRsA9CcgnV0KKF8pHWOaATsAlIZexo/2D9BMbIYfYHdimAa5ZMSQiXahCGvCBA1Pq2a9ANZnp8Waw=="
-PACKAGE_TREE_SHA256 = "9da372df1c7870728f80e850c1c7fd6b5470285f27e1ef8e0841fcde60e0a208"
-PACKAGE_FILE_COUNT = 181
+PACKAGE_INTEGRITY = "sha512-6V1gfjoON2py8/p2eWiXnBaZWQSL/WElGQzLk8o5FarczC5sQBa58aiNlgG+QlOCEtjW85vjzL84cG2AI+W2lQ=="
+PACKAGE_TREE_SHA256 = "08b5c890d7874d5bf7e73e63b31debacadadef7f7d84f927ddffe6dea98896c3"
+PACKAGE_FILE_COUNT = 4846
 RUNTIME_ENTRY = "dist/bin/stdio.js"
 RUNTIME_ENTRY_SHA256 = "7ddc78a8c518957dea6e737663c2be5e8852795d6662fc607166f15f4fb719a8"
 RUNTIME_ENTRY_SIZE = 1916
 REGISTRY = "https://registry.npmjs.org"
 MAX_OUTPUT_BYTES = 2 * 1024 * 1024
+MAX_PACKAGE_FILE_BYTES = 32 * 1024 * 1024
+MAX_PACKAGE_TREE_BYTES = 256 * 1024 * 1024
 
 
 class BootstrapError(RuntimeError):
@@ -186,7 +188,7 @@ def package_tree_sha256(package_root: Path) -> tuple[str, int]:
         relative = path.relative_to(package_root).as_posix()
         data = path.read_bytes()
         total_bytes += len(data)
-        if len(data) > 16 * 1024 * 1024 or total_bytes > 256 * 1024 * 1024:
+        if len(data) > MAX_PACKAGE_FILE_BYTES or total_bytes > MAX_PACKAGE_TREE_BYTES:
             raise BootstrapError("The installed MCP package contains an oversized file.")
         files.append((relative, data))
     digest = hashlib.sha256()
@@ -205,11 +207,13 @@ def verify_installation(prefix: Path) -> Path:
     package = read_json(package_root / "package.json", 1024 * 1024)
     if package.get("name") != PACKAGE_NAME or package.get("version") != PACKAGE_VERSION:
         raise BootstrapError("The installed MCP package name or version is incorrect.")
-    lock = read_json(modules / ".package-lock.json", 16 * 1024 * 1024)
-    packages = lock.get("packages")
-    installed = packages.get(f"node_modules/{PACKAGE_NAME}") if isinstance(packages, dict) else None
-    if not isinstance(installed, dict) or installed.get("integrity") != PACKAGE_INTEGRITY:
-        raise BootstrapError("The installed MCP package does not retain the reviewed integrity.")
+    lock_path = modules / ".package-lock.json"
+    if lock_path.exists():
+        lock = read_json(lock_path, 16 * 1024 * 1024)
+        packages = lock.get("packages")
+        installed = packages.get(f"node_modules/{PACKAGE_NAME}") if isinstance(packages, dict) else None
+        if not isinstance(installed, dict) or installed.get("integrity") != PACKAGE_INTEGRITY:
+            raise BootstrapError("The installed MCP package does not retain the reviewed integrity.")
     tree_digest, file_count = package_tree_sha256(package_root)
     if tree_digest != PACKAGE_TREE_SHA256 or file_count != PACKAGE_FILE_COUNT:
         raise BootstrapError("The installed MCP package tree does not match the reviewed release.")

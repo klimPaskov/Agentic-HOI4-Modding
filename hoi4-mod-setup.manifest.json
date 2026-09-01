@@ -4388,7 +4388,7 @@
             "arguments": [
               "--quiet"
             ],
-            "network_access": "Required to install current-user Node.js LTS when missing and resolve the exact hoi4-agent-tools@2.5.2 package from https://registry.npmjs.org.",
+            "network_access": "Required to install current-user Node.js LTS when missing and resolve the exact hoi4-agent-tools@3.0.5 package from https://registry.npmjs.org.",
             "expected_writes": [
               "the current user's winget-managed Node.js LTS installation when Node is missing",
               "the current user's AppData/Roaming/npm package prefix",
@@ -4456,7 +4456,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "2.5.2",
+          "version": "3.0.5",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -4475,8 +4475,8 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "2.5.2",
-            "package_integrity": "sha512-/2CmEDqkEbRsA9CcgnV0KKF8pHWOaATsAlIZexo/2D9BMbIYfYHdimAa5ZMSQiXahCGvCBA1Pq2a9ANZnp8Waw==",
+            "package_version": "3.0.5",
+            "package_integrity": "sha512-6V1gfjoON2py8/p2eWiXnBaZWQSL/WElGQzLk8o5FarczC5sQBa58aiNlgG+QlOCEtjW85vjzL84cG2AI+W2lQ==",
             "runtime_entry": "dist/bin/stdio.js",
             "runtime_entry_sha256": "7ddc78a8c518957dea6e737663c2be5e8852795d6662fc607166f15f4fb719a8",
             "runtime_entry_size": 1916,
@@ -4509,8 +4509,8 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "9da372df1c7870728f80e850c1c7fd6b5470285f27e1ef8e0841fcde60e0a208",
-            "package_file_count": 181
+            "package_tree_sha256": "08b5c890d7874d5bf7e73e63b31debacadadef7f7d84f927ddffe6dea98896c3",
+            "package_file_count": 4846
           }
         }
       ],

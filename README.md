@@ -197,10 +197,10 @@ Start Codex from the repository root so it can see `AGENTS.md`, `.agents/skills/
 
 HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, lint, render, create, and rewrite focus trees; inspect and rewrite scripted GUIs; inspect and edit connected map data; trace, compare, render, and lint event chains; analyze AI weights, MTTH, random outcomes, and declared weighted systems under explicit scenarios; and inspect, render, and compare technology and doctrine trees through `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_compare`. It is one tool in the existing skills and source workflow.
 
-HOI4 Mod Setup installs and verifies the exact manifest-pinned public package automatically when this component is selected. The reviewed Windows bootstrap installs user-scoped Node.js LTS when it is missing, requires npm registry integrity to match the published release, installs the package under the current user's npm prefix, verifies the runtime-entry size and SHA-256, and then requires every source-advertised route to appear in the MCP `tools/list` response. The current source revision is pinned to:
+HOI4 Mod Setup installs and verifies the exact manifest-pinned public package automatically when this component is selected. The reviewed Windows bootstrap installs user-scoped Node.js LTS when it is missing, requires npm registry integrity to match the published release, installs the package under the current user's npm prefix, verifies the complete package-tree identity plus runtime-entry size and SHA-256, and then requires every source-advertised route to appear in the MCP `tools/list` response. A hidden global npm lock is checked when npm emits one, but the exact full-tree identity remains mandatory either way. The current source revision is pinned to:
 
 ```powershell
-npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@2.5.2
+npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.0.5
 ```
 
 A Codex server entry looks like this:
