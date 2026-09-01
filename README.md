@@ -200,7 +200,7 @@ HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, li
 HOI4 Mod Setup installs and verifies the exact manifest-pinned public package automatically when this component is selected. The reviewed Windows bootstrap installs user-scoped Node.js LTS when it is missing, requires npm registry integrity to match the published release, installs the package under the current user's npm prefix, verifies the complete package-tree identity plus runtime-entry size and SHA-256, and then requires every source-advertised route to appear in the MCP `tools/list` response. A hidden global npm lock is checked when npm emits one, but the exact full-tree identity remains mandatory either way. The current source revision is pinned to:
 
 ```powershell
-npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.0.5
+npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.0.7
 ```
 
 A Codex server entry looks like this:

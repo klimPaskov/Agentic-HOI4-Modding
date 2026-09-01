@@ -18,10 +18,10 @@ SPEC.loader.exec_module(bootstrap)
 
 class McpBootstrapContractTests(unittest.TestCase):
     def test_public_release_identity_is_exact(self) -> None:
-        self.assertEqual(bootstrap.PACKAGE_SPEC, "hoi4-agent-tools@3.0.5")
+        self.assertEqual(bootstrap.PACKAGE_SPEC, "hoi4-agent-tools@3.0.7")
         self.assertTrue(bootstrap.PACKAGE_INTEGRITY.startswith("sha512-"))
         self.assertEqual(len(bootstrap.PACKAGE_TREE_SHA256), 64)
-        self.assertEqual(bootstrap.PACKAGE_FILE_COUNT, 4846)
+        self.assertEqual(bootstrap.PACKAGE_FILE_COUNT, 4848)
         self.assertGreaterEqual(bootstrap.MAX_PACKAGE_FILE_BYTES, 18_406_400)
         self.assertEqual(bootstrap.RUNTIME_ENTRY, "dist/bin/stdio.js")
         self.assertEqual(len(bootstrap.RUNTIME_ENTRY_SHA256), 64)
@@ -35,7 +35,7 @@ class McpBootstrapContractTests(unittest.TestCase):
         self.assertIn("--ignore-scripts", arguments)
         self.assertIn("--prefix", arguments)
         self.assertIn("--registry=https://registry.npmjs.org", arguments)
-        self.assertEqual(arguments[-1], "hoi4-agent-tools@3.0.5")
+        self.assertEqual(arguments[-1], "hoi4-agent-tools@3.0.7")
 
     def test_registry_integrity_mismatch_fails_closed(self) -> None:
         with mock.patch.object(bootstrap, "npm", return_value='"sha512-wrong"'):
