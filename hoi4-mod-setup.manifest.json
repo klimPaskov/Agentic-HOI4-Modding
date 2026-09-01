@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "99a9cf40a9d9c5da8a40502b7dad6b0a8bfe2339",
+  "generated_for_revision": "c418ac3e7beeefa899ce2eeb1263b626c27fb914",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,7 +56,7 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "9c083a653b5de1ead9543e1fbabfe07d8f54b5df00f4fde1eeb77ce3c5137a47",
+          "sha256": "55f99079db116b27c7e53c935afa185d421bbebd318ce0c7ee9b46190d0d2a9f",
           "size": 50383
         }
       ]
@@ -4412,8 +4412,8 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "484a510c714cfbee82113e81d5e58b5c8352cdbfcdc7d493acd3e18cb749889d",
-          "size": 9501
+          "sha256": "0a110984e0e07b9b15527ea4bd83d300e9c03cecf5ce976fcdf4b9b9bd64e8ab",
+          "size": 9671
         }
       ]
     },
@@ -4630,8 +4630,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "00a5627e58b63da9aea0ecb487ea29b611af668bf065d016fa26e8ce4cfa34d6",
-          "size": 22709
+          "sha256": "8baa3094e909671a49a37e470d9086d90dce3a367d52fe4c8c78d6a47a78b854",
+          "size": 22864
         }
       ]
     },
