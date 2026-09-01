@@ -18,10 +18,11 @@ SPEC.loader.exec_module(bootstrap)
 
 class McpBootstrapContractTests(unittest.TestCase):
     def test_public_release_identity_is_exact(self) -> None:
-        self.assertEqual(bootstrap.PACKAGE_SPEC, "hoi4-agent-tools@2.5.2")
+        self.assertEqual(bootstrap.PACKAGE_SPEC, "hoi4-agent-tools@3.0.5")
         self.assertTrue(bootstrap.PACKAGE_INTEGRITY.startswith("sha512-"))
         self.assertEqual(len(bootstrap.PACKAGE_TREE_SHA256), 64)
-        self.assertEqual(bootstrap.PACKAGE_FILE_COUNT, 181)
+        self.assertEqual(bootstrap.PACKAGE_FILE_COUNT, 4846)
+        self.assertGreaterEqual(bootstrap.MAX_PACKAGE_FILE_BYTES, 18_406_400)
         self.assertEqual(bootstrap.RUNTIME_ENTRY, "dist/bin/stdio.js")
         self.assertEqual(len(bootstrap.RUNTIME_ENTRY_SHA256), 64)
         self.assertGreater(bootstrap.RUNTIME_ENTRY_SIZE, 0)
@@ -34,7 +35,7 @@ class McpBootstrapContractTests(unittest.TestCase):
         self.assertIn("--ignore-scripts", arguments)
         self.assertIn("--prefix", arguments)
         self.assertIn("--registry=https://registry.npmjs.org", arguments)
-        self.assertEqual(arguments[-1], "hoi4-agent-tools@2.5.2")
+        self.assertEqual(arguments[-1], "hoi4-agent-tools@3.0.5")
 
     def test_registry_integrity_mismatch_fails_closed(self) -> None:
         with mock.patch.object(bootstrap, "npm", return_value='"sha512-wrong"'):
@@ -72,6 +73,39 @@ class McpBootstrapContractTests(unittest.TestCase):
                 mock.patch.object(bootstrap, "PACKAGE_FILE_COUNT", file_count):
                 wrapper = bootstrap.verify_installation(prefix)
             self.assertEqual(wrapper, prefix / "hoi4-agent-tools.cmd")
+
+    def test_missing_optional_npm_lock_still_requires_exact_full_tree(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            prefix = Path(temporary)
+            package = prefix / "node_modules" / bootstrap.PACKAGE_NAME
+            entry = package / bootstrap.RUNTIME_ENTRY
+            entry.parent.mkdir(parents=True)
+            entry.write_bytes(b"verified-entry")
+            (package / "package.json").write_text(
+                json.dumps({"name": bootstrap.PACKAGE_NAME, "version": bootstrap.PACKAGE_VERSION}),
+                encoding="utf-8",
+            )
+            (prefix / "hoi4-agent-tools.cmd").write_text("@echo off\n", encoding="utf-8")
+            tree_digest, file_count = bootstrap.package_tree_sha256(package)
+            with mock.patch.object(bootstrap, "RUNTIME_ENTRY_SIZE", len(b"verified-entry")), \
+                mock.patch.object(bootstrap, "RUNTIME_ENTRY_SHA256", __import__("hashlib").sha256(b"verified-entry").hexdigest()), \
+                mock.patch.object(bootstrap, "PACKAGE_TREE_SHA256", tree_digest), \
+                mock.patch.object(bootstrap, "PACKAGE_FILE_COUNT", file_count):
+                wrapper = bootstrap.verify_installation(prefix)
+            self.assertEqual(wrapper, prefix / "hoi4-agent-tools.cmd")
+
+    def test_manifest_and_bootstrap_identity_agree(self) -> None:
+        manifest = json.loads((ROOT / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
+        component = next(item for item in manifest["components"] if item["id"] == "mcp.hoi4_agent_tools")
+        parameters = next(rule for rule in component["validation"] if rule["id"] == "mcp.hoi4.health")["parameters"]
+        self.assertEqual(parameters["package_name"], bootstrap.PACKAGE_NAME)
+        self.assertEqual(parameters["package_version"], bootstrap.PACKAGE_VERSION)
+        self.assertEqual(parameters["package_integrity"], bootstrap.PACKAGE_INTEGRITY)
+        self.assertEqual(parameters["package_tree_sha256"], bootstrap.PACKAGE_TREE_SHA256)
+        self.assertEqual(parameters["package_file_count"], bootstrap.PACKAGE_FILE_COUNT)
+        self.assertEqual(parameters["runtime_entry"], bootstrap.RUNTIME_ENTRY)
+        self.assertEqual(parameters["runtime_entry_sha256"], bootstrap.RUNTIME_ENTRY_SHA256)
+        self.assertEqual(parameters["runtime_entry_size"], bootstrap.RUNTIME_ENTRY_SIZE)
 
     def test_imported_module_mutation_changes_package_tree_identity(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

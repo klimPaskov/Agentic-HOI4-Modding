@@ -113,7 +113,7 @@ This section is only for first-time setup. After the package is installed and th
 For manual setup, install the exact package version declared by the current setup manifest and repository bootstrap. The current starter revision uses the following reproducible Windows command; update the version and integrity evidence together when the manifest changes:
 
 ```powershell
-npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@2.5.2
+npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.0.5
 ```
 
 If the exact package is unavailable from npm, stop and record the package/version blocker instead of silently substituting an unpinned clone or an older release.
