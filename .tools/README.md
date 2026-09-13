@@ -7,7 +7,7 @@ It is not storage for generated output, temporary experiments, editor state, Pyt
 
 Keep a tool here when it validates or generates shared source-of-truth artifacts, enforces a repository-wide contract, or is a maintained runtime entry point used by the reusable workflow.
 Move or remove one-time migrations, superseded generators, feature-local evidence, temporary reports, caches, and unreferenced presets.
-Before retiring a tool, search its filename, module name, generated headers, and output signatures across project instructions, skills, agent definitions, docs, configuration, runtime source, and Git history.
+Before retiring a tool, search its filename, module name, generated headers, and output signatures across project instructions, skills, agent definitions, docs, configuration, runtime source, and Git history. Preserve uncertain or recently active tooling until its owner and replacement are clear.
 
 ## Supported tools
 
@@ -32,7 +32,7 @@ python -B .tools/sync/sync_opencode_agents.py --check
 python -B .tools/sync/sync_claude_agents.py --check
 ```
 
-Qoder, Cursor, and OpenCode generated directories are ignored and machine-local. Claude Code project agents are generated but tracked for immediate project discovery.
+Qoder, Cursor, OpenCode, and Claude Code project agent projections are generated but tracked for immediate project discovery. Personal overrides and machine-local caches remain untracked.
 Never hand-edit generated agent files or copy project-specific MCP paths between runtimes.
 
 ### 3D model pipeline

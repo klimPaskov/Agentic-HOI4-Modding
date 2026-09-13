@@ -10,11 +10,9 @@ Watch the video tutorials: https://www.youtube.com/playlist?list=PLh6JmuEabQioc4
 
 - Adaptable project instructions, together with a full real-project example.
 - An offline Paradox wiki snapshot and supporting technical documentation.
-- Reusable skills, tools, examples, and optional workflow packages for common
-  and specialized HOI4 modding work.
+- Reusable skills, tools, examples, and optional workflow packages for common and specialized HOI4 modding work.
 - A growing collection of bounded helper-agent profiles for research, production, implementation support, review, validation, and documentation. The authoritative set is the `.codex/agents/` directory rather than a list in this README.
-- A source manifest used by the setup application to select, verify, and adapt
-  these components for a specific mod.
+- A source manifest used by the setup application to select, verify, and adapt these components for a specific mod.
 
 ## Complete package download
 
@@ -108,6 +106,8 @@ Put skills under:
 Use skills for workflows that repeat, such as events, assets, super-events, focus trees, decisions, country packages, scripted systems, localisation, and documentation.
 
 The point is to stop the agent from rediscovering the same process every time. If a workflow repeats, turn it into a skill or improve an existing one.
+
+The package also includes a bounded `xlsx` repository skill for mod-maintained workbooks and delimited tables. It preserves declared source-of-truth ownership, workbook structure, formulas, and formatting, and includes a LibreOffice recalculation helper that reports formula errors instead of trusting stale cached values.
 
 ### 6. Add optional project subagents
 
@@ -213,9 +213,16 @@ cwd = "C:\\Users\\<you>\\OneDrive\\Documents\\Paradox Interactive\\Hearts of Iro
 
 Agents must use MCP for every in-scope focus tree, event chain, technology or doctrine tree, weighted-logic system, scripted GUI, and map surface that HOI4 Agent Tools supports. Source review remains required but is not a substitute for the corresponding MCP inspection, render, lint, evaluation, comparison, or post-change validation. If a required route is unavailable, the agent records the exact blocker instead of silently downgrading to source-only review. The owning skills still define design, research, source review, assets, tests, audits, and handoffs. Large MCP artifacts are returned as linked resources instead of placed in the prompt.
 
-The Technology Tree Viewer is a required part of that health gate: `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_compare` must all be present. A package that initializes but omits any of those routes is incomplete, not Ready.
+The technology MCP routes are a required part of that health gate: `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_compare` must all be advertised and usable. A package that initializes but omits any of those routes is incomplete, not Ready.
+Exposed tool names do not prove service health or the availability of a standalone Technology Tree Viewer application. Verify standalone viewer availability separately when needed and record an absent viewer as a package gap; it neither proves nor replaces the mandatory MCP routes.
 
 See `docs/systems/hoi4_agent_tools_mcp_integration.md` for the capability matrix, artifact and source-authority rules, probability scenario contract, rewrite and recovery lifecycle, and local or HTTP troubleshooting guidance.
+
+## Scripted GUI workflow
+
+Use `.agents/skills/hoi4-scripted-gui/SKILL.md` whenever a feature introduces, repairs, or reviews a scripted GUI window. Start from a named reference image and a reference map covering background regions, content hierarchy, controls, live values, click regions, and target resolutions/UI scales. Ordinary decisions remain preferable when they can communicate the mechanic without a custom window.
+
+After every meaningful layout or styling tranche, render a live preview through the installed HOI4 Agent Tools route, inspect the actual image, record the visible defect and correction, then rerender. Direct source edits and the optional `hoi4.gui_rewrite` route are both valid implementation methods; rewrite success is never visual acceptance. Final evidence compares the same scenario, resolution, and UI scale against the approved reference and includes content/action-budget, interaction, clipping, overlap, contrast, and state checks.
 
 ## Autonomous 3D model workflow
 
@@ -223,7 +230,7 @@ The reusable 3D workflow lives in .agents/skills/hoi4-3d-model-pipeline/SKILL.md
 
 This workflow is optional at the project level. Mods that do not add new 3D models, entities, unit actions, or skeletal animations do not install or enable the 3D routes. Once a feature requires the workflow, its declared Meshy and Blender MCP routes and evidence gates are mandatory.
 
-The workflow stops before dependency setup unless the process environment exposes a nonblank MESHY_API_KEY and Meshy's bounded authenticated balance endpoint accepts it. The bootstrap removes the key from its inherited environment before starting winget, pip, npm, Git, uv, Blender, or downloaded setup code.
+Provider-dependent work stops before provider setup unless the process environment exposes a nonblank MESHY_API_KEY and Meshy's bounded authenticated balance endpoint accepts it. An explicitly requested existing non-firearm Blender-only repair may inspect its approved job, source checkpoint, dependency lock, adapter schemas, bridge, and export route without that key and must not invoke Meshy. The bootstrap removes the key from its inherited environment before starting winget, pip, npm, Git, uv, Blender, or downloaded setup code.
 
 If the key is missing, the agent must show this PowerShell command and then require a shell or Codex restart:
 
@@ -235,13 +242,13 @@ If the key is missing, the agent must show this PowerShell command and then requ
 
 When a feature needs 3D work, the agent runs `.tools/3d_pipeline/bootstrap_3d_workflow.py` after the credential gate. The bootstrap verifies the Meshy key before creating workflow state, installs Node.js LTS and uv only in the current-user scope when missing, installs Meshy MCP 0.4.0 from the checked-in exact npm lock, verifies the complete 3,916-file runtime tree, resolves Blender Lab to an exact commit, pins io_pdx_mesh 0.91 by size and SHA-256, bounds approved HTTPS downloads and archive extraction, verifies the Blender bridge separately from the process, and records versions and checksums in the generated lock. The generated Codex route invokes the installed, signed HOI4 Mod Setup executable directly; no project batch file or PATH Python process receives the credential. Every Meshy start revalidates the complete runtime, copies and exactly publisher-verifies private package and Node bytes, re-hashes them immediately before execution, and only then passes the API key to Node.
 
-Unattended production uses the narrow repository-owned HOI4 Blender adapter. The unrestricted Blender Lab route remains disabled and development-only. The production adapter confines file access to the declared job and reference roots and exposes only the bounded health, candidate preparation, inspection, texture processing, mesh and animation export, locomotion authoring, reimport, and checkpoint operations required by the workflow.
+Unattended production uses the narrow repository-owned HOI4 Blender adapter. The unrestricted Blender Lab route remains disabled and development-only. The production adapter confines file access to the declared job and reference roots and exposes bounded candidate preparation and inspection, material-visibility probing, fitted humanoid and measured-creature authoring, explicit skin/vertex/material/mesh/winding repair, static and skeletal stream partitioning, locator creation, action-phase repair, accepted-reimport promotion, texture processing, PDX export/reimport, and checkpoint operations.
 
-When a brief has no authoritative ready reference, the workflow first searches eligible modern designed artwork—game, tabletop or miniature, fantasy or horror, and professional design sources—while excluding archival, museum, historical, archaeological, ethnographic, reenactment, and documentary material from the model-reference pool. It archives the selected source unchanged, records rights and AI-use restrictions, produces only a faithful single-subject ImageGen cleanup with a visual-fidelity comparison, and requires explicit approval before Meshy. A from-scratch reference is permitted only after a documented failed search and explicit user direction. Meshy receives exactly one approved final image and never a source page, comparison sheet, turnaround, collage, or multi-view board.
+When a brief has no authoritative ready reference, the workflow first searches eligible modern designed artwork—game, tabletop or miniature, fantasy or horror, and professional design sources—while excluding archival, museum, historical, archaeological, ethnographic, reenactment, and documentary material from the model-reference pool. It archives the selected source unchanged, records rights and AI-use restrictions, and creates one substantially original, model-ready ImageGen refinement informed by the selected concept traits with a source-to-refinement comparison and explicit approval before Meshy. A source-free reference is permitted only after a documented failed search and explicit user direction. Meshy receives exactly one approved final image and never a source page, comparison sheet, turnaround, collage, or multi-view board.
 
 Meshy 7 is the required image-to-3D generation model. The worker records the exact live model identifier and does not silently downgrade to an older model when Meshy 7 is unavailable.
 
-Normal planned model generation, remesh/retexture, rigging, conversion, required animation credit use, and bounded failure-driven provider recovery are pre-authorized while the live balance and verified provider capability permit them. The worker records every attempt and stops for insufficient credits, provider refusal, unavailable capability, or exhausted task-defined limits without asking for credit-spend confirmation.
+Normal planned generation, remesh/retexture, conversion, one supported rig attempt, one supported animation attempt per missing role, and bounded geometry recovery are pre-authorized while the live balance and verified provider capability permit them. There are no paid rig or animation retries: new non-firearm models switch failed, unusable, or unsupported stages to bounded Blender rig/weight/action authoring; firearm-bearing units use a fresh weapon-free Meshy body followed directly by Blender-authored equipment, rigs, weights, and substantive actions; existing non-firearm repairs use Blender directly. Missing required components are completed in Blender, while static, transform-only, whole-rig-only, or semantically aliased motion remains invalid.
 
 Humanoid units are calibrated against a named installed vanilla source mesh and entity scale with source geometry height and effective runtime height recorded separately and the scale applied exactly once.
 

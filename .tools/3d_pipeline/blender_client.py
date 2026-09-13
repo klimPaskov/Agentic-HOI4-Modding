@@ -5,11 +5,10 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
 from lib.mcp_stdio import MCPRouteError, call_stdio
 from lib.paths import resolve_job_root
-from meshy_client import require_meshy_key
 
 
 def _structured(result: Dict[str, Any]) -> Dict[str, Any]:
@@ -33,7 +32,6 @@ def _structured(result: Dict[str, Any]) -> Dict[str, Any]:
 
 class BlenderAdapterClient:
     def __init__(self, repo_root: Path):
-        require_meshy_key()
         self.repo_root = repo_root.resolve()
         self.wrapper = self.repo_root / ".tools" / "3d_pipeline" / "wrappers" / "run_blender_hoi4_adapter.cmd"
         if not self.wrapper.exists():
@@ -52,7 +50,9 @@ class BlenderAdapterClient:
             arguments["job_id"] = resolve_job_root(raw_job_id).relative_to(configured_root).as_posix()
         command = ["cmd.exe", "/d", "/c", "call", str(self.wrapper)]
         result: Optional[Dict[str, Any]] = None
-        for attempt in range(3):
+        read_only_tools = {"hoi4_blender_health", "hoi4_blender_inspect_scene", "hoi4_blender_inspect_mesh_landmarks", "hoi4_blender_inspect_mesh_winding", "hoi4_blender_inspect_fitted_humanoid_source", "hoi4_blender_review_humanoid_components", "hoi4_blender_inspect_animation_source", "hoi4_blender_preview_explicit_skin_selection"}
+        attempt_limit = 3 if tool in read_only_tools else 1
+        for attempt in range(attempt_limit):
             try:
                 result = call_stdio(
                     command,
@@ -62,8 +62,11 @@ class BlenderAdapterClient:
                     cwd=self.repo_root,
                 )
                 break
-            except MCPRouteError:
-                if attempt == 2:
+            except MCPRouteError as exc:
+                if attempt == attempt_limit - 1:
+                    if tool not in read_only_tools:
+                        receipts = self._matching_mutation_receipts(tool, arguments)
+                        raise MCPRouteError(f"Mutation response uncertain; no automatic retry for {tool}. Inspect saved checkpoint/report before any new call. Matching adapter request evidence: {receipts}. Transport: {exc}") from exc
                     raise
         if result is None:
             raise RuntimeError(f"Blender adapter returned no result for {tool}.")
@@ -73,6 +76,34 @@ class BlenderAdapterClient:
         if "error" in value:
             raise RuntimeError(str(value))
         return value
+
+    def _matching_mutation_receipts(self, tool: str, arguments: Dict[str, Any]) -> list[dict[str, Any]]:
+        """Read bounded matching job-local request headers; never replay a mutation."""
+        try:
+            config = json.loads((self.repo_root / ".tools/3d_pipeline/config/blender_hoi4_adapter.json").read_text(encoding="utf-8"))
+            job_id = arguments.get("job_id", "")
+            if not isinstance(job_id, str) or not job_id or Path(job_id).is_absolute() or ":" in job_id or ".." in Path(job_id).parts:
+                return []
+            root = Path(config["job_root"]).resolve()
+            overrides = config.get("job_overrides", {})
+            job = Path(overrides.get(job_id, root / job_id)).resolve()
+            if job_id not in overrides:
+                job.relative_to(root)
+            directory = job / "logs/adapter"
+            candidates = sorted((p for p in directory.glob("*.json") if not p.name.endswith(".result.json")), key=lambda p: p.stat().st_mtime, reverse=True)[:16]
+            expected = {k: v for k, v in arguments.items() if k != "job_id"}
+            result = []
+            for path in candidates:
+                path.resolve().relative_to(job)
+                if path.stat().st_size > 16_000_000:
+                    continue
+                request = json.loads(path.read_text(encoding="utf-8"))
+                payload = request.get("payload", {})
+                if request.get("operation") == tool.removeprefix("hoi4_blender_") and all(payload.get(k) == v for k, v in expected.items()):
+                    result.append({"request_id": request.get("request_id", path.stem), "request_rel": path.relative_to(job).as_posix(), "worker_result_exists": path.with_suffix(".result.json").exists()})
+            return result
+        except (OSError, ValueError, KeyError, TypeError):
+            return []
 
     def health(self, job_id: str) -> Dict[str, Any]:
         return self.call("hoi4_blender_health", {"job_id": job_id})
@@ -91,6 +122,17 @@ class BlenderAdapterClient:
         vanilla_reference: Optional[Dict[str, Any]] = None,
         texture_source_rels: Optional[Dict[str, str]] = None,
         geometry_source_rel: Optional[str] = None,
+        geometry_object_name: str = "",
+        dual_source_base_rig: bool = False,
+        geometry_weight_mode: Literal[
+            "four_nearest",
+            "nearest_face_interpolated",
+            "automatic_bone_heat",
+            "bone_distance",
+        ] = "four_nearest",
+        source_armature_name: str = "",
+        source_mesh_names: Optional[list[str]] = None,
+        preserve_geometry_topology: bool = False,
         repair_before_reduction: bool = False,
         topology_weld_distance: float = 1e-5,
         max_runtime_footprint_m: Optional[float] = None,
@@ -110,6 +152,12 @@ class BlenderAdapterClient:
                 "vanilla_reference": vanilla_reference or {},
                 "texture_source_rels": texture_source_rels or {},
                 "geometry_source_rel": geometry_source_rel or "",
+                "geometry_object_name": geometry_object_name,
+                "dual_source_base_rig": dual_source_base_rig,
+                "geometry_weight_mode": geometry_weight_mode,
+                "source_armature_name": source_armature_name,
+                "source_mesh_names": source_mesh_names or [],
+                "preserve_geometry_topology": preserve_geometry_topology,
                 "repair_before_reduction": repair_before_reduction,
                 "topology_weld_distance": topology_weld_distance,
                 "max_runtime_footprint_m": max_runtime_footprint_m,
@@ -137,13 +185,63 @@ class BlenderAdapterClient:
             },
         )
 
-    def export_mesh(self, job_id: str, blend_rel: str, output_rel: str) -> Dict[str, Any]:
+    def promote_accepted_reimport(
+        self,
+        job_id: str,
+        blend_rel: str,
+        expected_source_sha256: str,
+        validation_rel: str,
+        expected_validation_sha256: str,
+        checkpoint_rel: str,
+        target_armature_name: str,
+        target_mesh_names: list[str],
+        mesh_rel: str,
+        expected_mesh_sha256: str,
+        anim_rel: str,
+        expected_anim_sha256: str,
+    ) -> Dict[str, Any]:
+        return self.call("hoi4_blender_promote_accepted_reimport", {
+            "job_id": job_id, "blend_rel": blend_rel, "expected_source_sha256": expected_source_sha256,
+            "validation_rel": validation_rel, "expected_validation_sha256": expected_validation_sha256,
+            "checkpoint_rel": checkpoint_rel, "target_armature_name": target_armature_name,
+            "target_mesh_names": list(target_mesh_names), "mesh_rel": mesh_rel,
+            "expected_mesh_sha256": expected_mesh_sha256, "anim_rel": anim_rel,
+            "expected_anim_sha256": expected_anim_sha256,
+        })
+
+    def author_locator(
+        self,
+        job_id: str,
+        blend_rel: str,
+        checkpoint_rel: str,
+        target_armature_name: str,
+        parent_bone: str,
+        locator_name: str,
+        bone_local_position: tuple[float, float, float],
+        bone_local_rotation_xyzw: tuple[float, float, float, float],
+    ) -> Dict[str, Any]:
+        return self.call(
+            "hoi4_blender_author_locator",
+            {
+                "job_id": job_id,
+                "blend_rel": blend_rel,
+                "checkpoint_rel": checkpoint_rel,
+                "target_armature_name": target_armature_name,
+                "parent_bone": parent_bone,
+                "locator_name": locator_name,
+                "bone_local_position": list(bone_local_position),
+                "bone_local_rotation_xyzw": list(bone_local_rotation_xyzw),
+            },
+        )
+
+    def export_mesh(self, job_id: str, blend_rel: str, output_rel: str, split_verts: bool = False) -> Dict[str, Any]:
         return self.call(
             "hoi4_blender_export_mesh",
             {
                 "job_id": job_id,
                 "blend_rel": blend_rel,
                 "output_rel": output_rel,
+                "split_verts": split_verts,
             },
         )
 
@@ -198,6 +296,23 @@ class BlenderAdapterClient:
             },
         )
 
+    def patch_existing_humanoid_action_phases(
+        self, job_id: str, blend_rel: str, checkpoint_rel: str,
+        expected_source_sha256: str, expected_action_sha256: str,
+        target_armature_name: str, source_action_name: str, target_action_name: str,
+        semantic_role: str, source_fps: int, source_fps_base: float,
+        frame_start: int, frame_end: int, phase_frames: Dict[str, int],
+        allowed_bones: list[str], motion_bone_chain: list[str], bone_patches: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        return self.call("hoi4_blender_patch_existing_humanoid_action_phases", {
+            "job_id": job_id, "blend_rel": blend_rel, "checkpoint_rel": checkpoint_rel,
+            "expected_source_sha256": expected_source_sha256, "expected_action_sha256": expected_action_sha256,
+            "target_armature_name": target_armature_name, "source_action_name": source_action_name, "target_action_name": target_action_name,
+            "semantic_role": semantic_role, "source_fps": source_fps, "source_fps_base": source_fps_base,
+            "frame_start": frame_start, "frame_end": frame_end, "phase_frames": phase_frames,
+            "allowed_bones": allowed_bones, "motion_bone_chain": motion_bone_chain, "bone_patches": bone_patches,
+        })
+
     def author_humanoid_actions(
         self,
         job_id: str,
@@ -219,26 +334,8 @@ class BlenderAdapterClient:
             },
         )
 
-    def review_humanoid_components(
-        self,
-        job_id: str,
-        blend_rel: str,
-        component_indices: list[int],
-        runtime_stem: str = "humanoid_component_review",
-        view_names: Optional[list[str]] = None,
-        render_group: bool = False,
-    ) -> Dict[str, Any]:
-        return self.call(
-            "hoi4_blender_review_humanoid_components",
-            {
-                "job_id": job_id,
-                "blend_rel": blend_rel,
-                "component_indices": component_indices,
-                "runtime_stem": runtime_stem,
-                "view_names": view_names or ["rear"],
-                "render_group": render_group,
-            },
-        )
+
+
 
     def isolate_humanoid_weapon(
         self,
@@ -280,6 +377,7 @@ class BlenderAdapterClient:
             },
         )
 
+
     def attach_rigid_weapon_from_checkpoint(
         self,
         job_id: str,
@@ -320,6 +418,7 @@ class BlenderAdapterClient:
             },
         )
 
+
     def bake_static_mesh_transforms(
         self,
         job_id: str,
@@ -339,6 +438,18 @@ class BlenderAdapterClient:
                 "bounds_tolerance": bounds_tolerance,
             },
         )
+
+    def partition_skeletal_mesh_export_batches(
+        self, *, job_id: str, blend_rel: str, expected_source_sha256: str,
+        checkpoint_rel: str, target_armature_name: str, target_mesh_names: list[str],
+        max_export_vertices_per_batch: int = 24000,
+    ) -> Dict[str, Any]:
+        return self.call("hoi4_blender_partition_skeletal_mesh_export_batches", {
+            "job_id": job_id, "blend_rel": blend_rel,
+            "expected_source_sha256": expected_source_sha256, "checkpoint_rel": checkpoint_rel,
+            "target_armature_name": target_armature_name, "target_mesh_names": target_mesh_names,
+            "max_export_vertices_per_batch": max_export_vertices_per_batch,
+        })
 
     def partition_static_mesh_export_batches(
         self,
@@ -370,10 +481,13 @@ class BlenderAdapterClient:
         source_action_name: str,
         target_armature_name: str,
         target_action_name: str,
-        source_kind: str,
+        source_kind: Literal["meshy_animate", "meshy_text_to_motion", "professional_source"],
         source_reference_id: str,
         source_sha256: str,
+        bone_chains: Optional[Dict[str, list[str]]] = None,
+        promote_audited_target: bool = False,
         source_armature_name: str = "",
+        root_scale_reference: Optional[Dict[str, list[str]]] = None,
     ) -> Dict[str, Any]:
         return self.call(
             "hoi4_blender_import_animation_action",
@@ -390,6 +504,32 @@ class BlenderAdapterClient:
                 "source_kind": source_kind,
                 "source_reference_id": source_reference_id,
                 "source_sha256": source_sha256,
+                "bone_chains": bone_chains or {},
+                "root_scale_reference": root_scale_reference,
+                "promote_audited_target": promote_audited_target,
+            },
+        )
+
+    def retime_animation_action(
+        self,
+        job_id: str,
+        blend_rel: str,
+        checkpoint_rel: str,
+        action_name: str,
+        target_armature_name: str,
+        source_fps: float,
+        target_fps: float,
+    ) -> Dict[str, Any]:
+        return self.call(
+            "hoi4_blender_retime_animation_action",
+            {
+                "job_id": job_id,
+                "blend_rel": blend_rel,
+                "checkpoint_rel": checkpoint_rel,
+                "action_name": action_name,
+                "target_armature_name": target_armature_name,
+                "source_fps": source_fps,
+                "target_fps": target_fps,
             },
         )
 
@@ -499,7 +639,10 @@ class BlenderAdapterClient:
         blend_rel: str,
         checkpoint_rel: str,
         action_name: str,
+        target_armature_name: str = "",
+        grounding_policy: Literal["per_frame_root_contact_zero_clearance"] = "per_frame_root_contact_zero_clearance",
         root_bone: str = "Hips",
+        excluded_contact_bones: Optional[list[str]] = None,
     ) -> Dict[str, Any]:
         return self.call(
             "hoi4_blender_correct_action_grounding",
@@ -508,7 +651,97 @@ class BlenderAdapterClient:
                 "blend_rel": blend_rel,
                 "checkpoint_rel": checkpoint_rel,
                 "action_name": action_name,
+                "target_armature_name": target_armature_name,
+                "grounding_policy": grounding_policy,
                 "root_bone": root_bone,
+                "excluded_contact_bones": excluded_contact_bones or [],
+            },
+        )
+
+    def import_bvh_animation_action(
+        self,
+        job_id: str,
+        blend_rel: str,
+        source_rel: str,
+        provenance_rel: str,
+        checkpoint_rel: str,
+        source_action_name: str,
+        target_armature_name: str,
+        target_action_name: str,
+        semantic_role: str,
+        source_reference_id: str,
+        source_sha256: str,
+        source_fps: float,
+        target_fps: float,
+        bone_chains: Dict[str, list[str]],
+        root_motion_policy: Literal["in_place_xy_preserve_z"],
+        global_scale: float = 1.0,
+        axis_forward: Literal["X", "Y", "Z", "-X", "-Y", "-Z"] = "-Z",
+        axis_up: Literal["X", "Y", "Z", "-X", "-Y", "-Z"] = "Y",
+        promote_audited_target: bool = False,
+    ) -> Dict[str, Any]:
+        return self.call(
+            "hoi4_blender_import_bvh_animation_action",
+            {
+                "job_id": job_id,
+                "blend_rel": blend_rel,
+                "source_rel": source_rel,
+                "provenance_rel": provenance_rel,
+                "checkpoint_rel": checkpoint_rel,
+                "source_action_name": source_action_name,
+                "target_armature_name": target_armature_name,
+                "target_action_name": target_action_name,
+                "semantic_role": semantic_role,
+                "source_reference_id": source_reference_id,
+                "source_sha256": source_sha256,
+                "source_fps": source_fps,
+                "target_fps": target_fps,
+                "bone_chains": bone_chains,
+                "root_motion_policy": root_motion_policy,
+                "global_scale": global_scale,
+                "axis_forward": axis_forward,
+                "axis_up": axis_up,
+                "promote_audited_target": promote_audited_target,
+            },
+        )
+
+    def prepare_export_coordinate_checkpoint(
+        self,
+        job_id: str,
+        blend_rel: str,
+        checkpoint_rel: str,
+        action_name: str,
+        target_armature_name: str,
+    ) -> Dict[str, Any]:
+        return self.call(
+            "hoi4_blender_prepare_export_coordinate_checkpoint",
+            {
+                "job_id": job_id,
+                "blend_rel": blend_rel,
+                "checkpoint_rel": checkpoint_rel,
+                "action_name": action_name,
+                "target_armature_name": target_armature_name,
+            },
+        )
+
+    def sanitize_runtime_candidate(
+        self,
+        job_id: str,
+        blend_rel: str,
+        output_blend_rel: str = "blender/checkpoints/07_runtime_candidate_sanitized.blend",
+        target_height_m: Optional[float] = None,
+        weight_only: bool = False,
+        max_influences_per_vertex: int = 4,
+    ) -> Dict[str, Any]:
+        return self.call(
+            "hoi4_blender_sanitize_runtime_candidate",
+            {
+                "job_id": job_id,
+                "blend_rel": blend_rel,
+                "output_blend_rel": output_blend_rel,
+                "target_height_m": target_height_m,
+                "weight_only": weight_only,
+                "max_influences_per_vertex": max_influences_per_vertex,
             },
         )
 
@@ -518,6 +751,7 @@ class BlenderAdapterClient:
         mesh_rel: str,
         anim_rel: str = "",
         proof_name: str = "",
+        stage_default_textures: bool = True,
     ) -> Dict[str, Any]:
         return self.call(
             "hoi4_blender_reimport_export",
@@ -526,6 +760,7 @@ class BlenderAdapterClient:
                 "mesh_rel": mesh_rel,
                 "anim_rel": anim_rel,
                 "proof_name": proof_name,
+                "stage_default_textures": stage_default_textures,
             },
         )
 
@@ -536,8 +771,16 @@ class BlenderAdapterClient:
         render_previews: bool = False,
         runtime_stem: str = "",
         action_name: str = "",
+        target_armature_name: str = "",
         preview_frame: int = -1,
         preview_view_names: Optional[list[str]] = None,
+        mesh_region: Optional[Dict[str, Any]] = None,
+        material_visibility: Optional[Dict[str, Any]] = None,
+        include_action_channels: bool = False,
+        expected_source_sha256: str = "",
+        preview_region: Optional[Dict[str, Any]] = None,
+        preview_resolution: int = 512,
+        evaluated_frames: Optional[list[int]] = None,
     ) -> Dict[str, Any]:
         return self.call(
             "hoi4_blender_inspect_scene",
@@ -547,7 +790,42 @@ class BlenderAdapterClient:
                 "render_previews": render_previews,
                 "runtime_stem": runtime_stem,
                 "action_name": action_name,
+                "evaluated_frames": evaluated_frames,
+                "target_armature_name": target_armature_name,
                 "preview_frame": preview_frame,
+                "preview_view_names": preview_view_names or [],
+                "preview_region": preview_region,
+                "preview_resolution": preview_resolution,
+                "expected_source_sha256": expected_source_sha256,
+                **({"mesh_region": mesh_region} if mesh_region is not None else {}),
+                **({"material_visibility": material_visibility} if material_visibility is not None else {}),
+                **({"include_action_channels": True, "expected_source_sha256": expected_source_sha256} if include_action_channels else {}),
+            },
+        )
+
+    def review_humanoid_components(
+        self,
+        job_id: str,
+        blend_rel: str,
+        expected_source_sha256: str,
+        mesh_name: str,
+        render_group: bool = True,
+        component_ids: Optional[list[str]] = None,
+        component_offset: int = 0,
+        component_limit: int = 16,
+        preview_view_names: Optional[list[str]] = None,
+    ) -> Dict[str, Any]:
+        return self.call(
+            "hoi4_blender_review_humanoid_components",
+            {
+                "job_id": job_id,
+                "blend_rel": blend_rel,
+                "expected_source_sha256": expected_source_sha256,
+                "mesh_name": mesh_name,
+                "render_group": render_group,
+                "component_ids": component_ids or [],
+                "component_offset": component_offset,
+                "component_limit": component_limit,
                 "preview_view_names": preview_view_names or [],
             },
         )

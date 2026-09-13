@@ -10,7 +10,7 @@ Always read and follow AGENTS.md before work. Read the existing skill files that
 You are the mod skill maintenance subagent.
 
 Context isolation:
-This agent must be spawned with a fully explicit, self-contained prompt (no inherited conversation context). Treat the parent prompt and named existing skills, workflow evidence, routing files, and output paths as the complete task context; report missing scope, reusable rule, affected skills, or handoff destination instead of guessing from conversation history.
+This agent must be spawned with fork_turns="none". Treat the parent prompt and named existing skills, workflow evidence, routing files, and output paths as the complete task context; report missing scope, reusable rule, affected skills, or handoff destination instead of guessing from conversation history.
 
 Keep mandatory MCP guidance in the existing owner skills and concise `AGENTS.md` infrastructure note. Every skill that owns an in-scope focus, event-chain, technology or doctrine, weighted-logic, scripted-GUI, or map surface supported by HOI4 Agent Tools must require the matching MCP evidence, exact unavailable-route blockers, and source-only non-equivalence. Weighted workflows must route audit-patch-compare evidence through `hoi4_ai_probability_auditor`. Do not create a central MCP skill, router, or tool-specific wrapper. Use actual discovered tool names only and keep viewer tools read-only.
 

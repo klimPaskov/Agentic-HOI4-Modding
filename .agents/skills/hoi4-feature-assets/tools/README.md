@@ -63,6 +63,30 @@ python -B .agents/skills/hoi4-feature-assets/tools/convert_to_dds.py `
 
 Retain native dimensions, header checks, alpha checks, source and DDS hashes, and decoded round-trip evidence. Runtime wiring remains parent-owned.
 
+## `process_achievement_icons.py`
+
+Builds or audits the strict three-state 64x64 achievement package while placing the supplied completed and grey backgrounds beneath complete source triplets. It never resizes, crops, alpha-trims, recolors, redraws, filters, or silently derives a missing source state.
+
+For a new achievement, create one transparent color subject, a deterministic grayscale copy, and a not-eligible source made by compositing `assets/vanilla_reference/icons/achievements/template/overlay.png` unchanged over that grayscale copy. For an existing achievement, supply the complete base, `_grey`, and `_not_eligible` triplet without rebuilding its state art.
+
+The tool uses these verified workflow inputs by default:
+
+- `assets/vanilla_reference/icons/achievements/template/achievement_template.png`
+- `assets/vanilla_reference/icons/achievements/template/achievement_template_grey.png`
+- `assets/vanilla_reference/icons/achievements/template/overlay.png`
+
+Keep source and output directories separate unless replacement is explicitly intended with `--in-place --force`. The tool refuses non-64x64 or incomplete inputs, an already-templated outer border, and existing output without `--force`.
+
+```powershell
+python -B .agents/skills/hoi4-feature-assets/tools/process_achievement_icons.py `
+	--input <source_triplet_directory> `
+	--achievement-id <achievement_id> `
+	--output-dir <separate_output_directory> `
+	--write-png
+```
+
+Bulk, explicit-triplet, dry-run, and audit modes are supported. Final filenames are `<achievement_id>.dds`, `<achievement_id>_grey.dds`, and `<achievement_id>_not_eligible.dds`. The tool imports `write_bgra_dds` from `convert_to_dds.py` and validates the canonical 128-byte header, 64x64 dimensions, exact 16512-byte length, BGRA masks, alpha range, and background-underlay pixel composition.
+
 ## `process_report_event_image.py`
 
 Use only for report-event image processing, as described in the skill. It is not a portrait, icon, flag, or generic fallback.

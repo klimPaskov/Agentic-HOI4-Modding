@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import datetime as dt
 import hashlib
 import json
@@ -898,6 +899,37 @@ def sha256_path(path: Path) -> str:
     return digest.hexdigest().upper()
 
 
+def adapter_source_hashes(adapter_root: Path) -> dict[str, str]:
+    """Bind the complete flat adapter source closure, rejecting missing local imports."""
+    sources = sorted(adapter_root.glob("*.py"), key=lambda path: path.name)
+    local_modules = {path.stem for path in sources}
+    external_modules = {"bpy", "bmesh", "mathutils", "mcp", "io_pdx_mesh", "io_anim_bvh"}
+    allowed_modules = set(sys.stdlib_module_names) | external_modules | local_modules
+    for source in sources:
+        if source.is_symlink():
+            raise SetupError(f"Blender adapter source must not be a symlink: {source.name}")
+        try:
+            tree = ast.parse(source.read_text(encoding="utf-8"), filename=source.name)
+        except (SyntaxError, UnicodeError) as exc:
+            raise SetupError(f"Invalid Blender adapter source: {source.name}") from exc
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imports = [alias.name.split(".", 1)[0] for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                if node.level:
+                    raise SetupError(f"Flat Blender adapter has a relative import: {source.name}")
+                imports = [node.module.split(".", 1)[0]] if node.module else []
+            else:
+                continue
+            missing = set(imports) - allowed_modules
+            if missing:
+                raise SetupError(
+                    f"Blender adapter source closure is missing or unreviewed: "
+                    f"{source.name} imports {', '.join(sorted(missing))}"
+                )
+    return {source.name: sha256_path(source) for source in sources}
+
+
 def materialize_hoi4_adapter(
     root: Path,
     pipeline_root: Path,
@@ -921,6 +953,7 @@ def materialize_hoi4_adapter(
     if not version_match:
         raise SetupError("The Blender HOI4 adapter pyproject has no version.")
     adapter_version = version_match.group(1)
+    source_files_sha256 = adapter_source_hashes(adapter_root)
     run([str(uv_executable), "lock", "--upgrade"], cwd=adapter_root)
     run([str(uv_executable), "sync", "--locked"], cwd=adapter_root)
     uv_lock = adapter_root / "uv.lock"
@@ -943,6 +976,8 @@ def materialize_hoi4_adapter(
     if not operations:
         raise SetupError("The Blender HOI4 adapter exposes no structured tools.")
     worker_operations = [name.removeprefix("hoi4_blender_") for name in operations]
+    if len(operations) != len(set(operations)):
+        raise SetupError("Duplicate registered Blender adapter tool names.")
     config_path = pipeline_root / "config/blender_hoi4_adapter.json"
     config = {
         "schema_version": "1.0.0",
@@ -962,6 +997,7 @@ def materialize_hoi4_adapter(
         },
         "allowed_write_roots": [job_root.as_posix()],
         "operations": worker_operations,
+        "source_files_sha256": source_files_sha256,
         "forbidden_inputs": [
             "arbitrary_python",
             "arbitrary_shell",
@@ -982,6 +1018,7 @@ def materialize_hoi4_adapter(
         "config": config_path.resolve().as_posix(),
         "tool_identifiers": operations,
         "worker_operations": worker_operations,
+        "source_files_sha256": source_files_sha256,
         "dependency_lock": uv_lock.resolve().as_posix(),
         "checksums": {
             "pyproject_sha256": sha256_path(pyproject),

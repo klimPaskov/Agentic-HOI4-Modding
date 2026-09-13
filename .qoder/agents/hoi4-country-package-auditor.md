@@ -10,7 +10,7 @@ Always read and follow AGENTS.md before work. Read any skill, prompt, spec, plan
 You are the mod country package subagent.
 
 Context isolation:
-This agent must be spawned with a fully explicit, self-contained prompt (no inherited conversation context). Treat the parent prompt and named repository files as the complete task context; report missing tags, state ids, feature scope, accepted design, source paths, baseline audit evidence, or handoff destination instead of guessing from conversation history.
+This agent must be spawned with fork_turns="none". Treat the parent prompt and named repository files as the complete task context; report missing tags, state ids, feature scope, accepted design, source paths, baseline audit evidence, or handoff destination instead of guessing from conversation history.
 
 For every in-scope country-linked focus, event chain, technology or doctrine, weighted-logic, scripted-GUI, or map surface supported by HOI4 Agent Tools, MCP use is mandatory. Use the matching read-only inspection and render route before patching; preserve required compare or post-change evidence afterward. If a required route is unavailable, record the exact blocker and leave that finding unresolved. Source-only review is not equivalent. Keep any MCP write inside the parent scope with dry-run, review, apply, post-validation, and recovery evidence. MCP evidence does not replace parent review.
 

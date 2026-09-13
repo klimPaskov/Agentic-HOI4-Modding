@@ -68,12 +68,13 @@ Use repo skills as required implementation guidance.
 - Use `chaos-redux-event-assets` when an event needs visual assets, icons, flags, portraits, UI art, report images, news images, achievement icons, final DDS files, asset manifests, or sprite handoff notes.
 - Use `chaos-redux-comfyui` and `chaosx_portrait_creator` for every character portrait. The portrait worker researches and archives grounded sources, creates placeholders, generates fictional or impossible portraits with native ImageGen, processes PNG/DDS variants, installs portrait wiring, and writes manifests and handoffs. The user alone runs RunPod for grounded HOI4-style finals; the agent never operates it.
 - Use `chaos-redux-event-planning` to plan 3D unit and building profiles, exact-one-image Meshy inputs, vanilla scale calibration, action roles, entity consumers, map placement, and runtime acceptance evidence whenever a feature needs a model.
-- Use `chaos-redux-3d-model-pipeline` for Chaos Redux HOI4 3D models and required sound/counter handoffs: Meshy 7 exclusively, sourced unit audio, and vanilla-green counters. Planned model/animation spend and failure-driven provider recovery need no additional confirmation while live balance and provider capability permit them. Route to `chaosx_3d_model_pipeline`.
+- Use `chaos-redux-3d-model-pipeline` for Chaos Redux HOI4 3D models and required sound/counter handoffs: Meshy 7 body generation, Blender component modeling, sourced unit audio, and vanilla-green counters. Try Meshy rigging once per model and animation once per required action; on first failure, unusable output, or unsupported stage, continue through direct Blender rigging, weighting, and substantive action work without a paid retry. Existing non-firearm repairs route directly to Blender. Every firearm-bearing unit uses a fresh weapon-free Meshy body and separate Meshy geometry tasks for each firearm, followed by direct Blender rigging, animation, firearm fitting/attachment, and held-prop completion. Route to `chaosx_3d_model_pipeline`.
 - Use `chaos-redux-frame-animation` when a task needs animated sprites, frame sequences, sprite sheets, GIF previews, animated UI pieces, animated portraits, hover loops, pulse loops, route emblems, or frame-by-frame visual packages. This skill forbids final animation made only by moving, scaling, rotating, warping, blurring, recoloring, or filtering one still image.
 - Use `chaos-redux-super-events` when a task creates, updates, researches, or wires a super-event.
 - Use `chaos-redux-focus-trees` before editing/viewing national focus trees.
 - Use `chaos-redux-decisions-missions` before editing decisions/missions
-- Use `chaosx_event_ui_worker` when a named event specifically introduces a dedicated scripted GUI or mechanic window. It follows the layout rules in `chaos-redux-decisions-missions`, and must use the HOI4 MCP GUI inspect, render, rewrite, and post-change comparison workflow. Never route the shared event log, event-details framework, settings UI, super-event framework, shared registries, or unrelated existing UIs to this worker.
+- Use `chaos-redux-scripted-gui` for scripted GUI reference images, native layout, content and action budgets, interaction-state review, iterative live MCP previews, and matched final comparison evidence.
+- Use `chaosx_event_ui_worker` when a named event specifically introduces a dedicated scripted GUI or mechanic window. It follows `chaos-redux-scripted-gui`, renders and inspects each meaningful implementation tranche, and uses the HOI4 MCP GUI inspect, render, and post-change comparison workflow; `gui_rewrite` is an optional application route. Never route the shared event log, event-details framework, settings UI, super-event framework, shared registries, or unrelated existing UIs to this worker.
 - Use `chaos-redux-mtth` when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer.
 - Use `chaos-redux-subagents` when coordinating project custom subagents, routing bounded work, or defining parent/subagent ownership boundaries.
 - Use `chaos-redux-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
@@ -81,12 +82,13 @@ Use repo skills as required implementation guidance.
 ### HOI4 MCP
 
 The installed `hoi4-agent-tools` server is the coding-agent tool for focus trees, event chains, technology trees, weighted logic, scripted GUIs, and maps.
+Exposed tool names do not prove service health or standalone viewer availability. Verify the required MCP routes as actual usable capabilities, check standalone Technology Tree Viewer availability separately when needed, and record an absent viewer without inventing capabilities or weakening the mandatory route requirements.
 
 - Focus work: inspect, render, lint, and use `hoi4.focus_rewrite` for cleanup or a complete new route plan; review the returned layout and diagnostics.
 - Event work: use narrow `hoi4.event_inspect` queries and the read-only render and compare tools, then edit source files through the normal workflow.
-- Technology work: inspect, render, and compare technology and doctrine trees, including their prerequisites, placements, unlocks, bonuses, references, and missing assets.
+- Technology work: use the read-only `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_compare` routes for technology and doctrine trees, including their prerequisites, placements, unlocks, bonuses, references, and missing assets. If any required route is unavailable, record the exact package/version blocker and keep the affected conclusion blocked or unresolved rather than substituting source-only review.
 - Weighted-logic work: always start with `hoi4.probability_inspect`, then inspect and evaluate event MTTH, event options, decision and mission scores, focus and research selection, random blocks, AI strategy factors, and declared custom pools under explicit scenarios; use sweeps, seeded simulation, sequence analysis, comparisons, and rendered evidence according to the scenario contract.
-- GUI work: inspect and render the linked layout, states, resolutions, and click regions before an in-scope `hoi4.gui_rewrite`.
+- GUI work: follow `chaos-redux-scripted-gui`; create or name the intended reference, inspect and render the linked layout, states, resolutions, and click regions, apply the reviewed change directly or optionally through `hoi4.gui_rewrite`, inspect every returned production preview, correct visible defects and rerender, then compare matching final scenarios. Rewrite success is not visual acceptance.
 - Map work: inspect connected province, state, region, adjacency, supply, and railway data before a declarative `hoi4.map_rewrite`.
 
 MCP use is mandatory for every in-scope focus, event, technology or doctrine, weighted-logic, scripted GUI, and map surface supported by the installed server. If the required route is unavailable, record the exact blocker and do not treat source-only review as equivalent engine evidence. MCP does not replace the required source review, wiki and vanilla-documentation checks, tests, audits, or parent review.
@@ -110,7 +112,7 @@ Use project custom subagents when a task needs bounded research, asset productio
 
 The main agent remains responsible for final implementation, final wiring, final review, validation, and completion claims. Subagents return evidence, files, manifests, spec addenda, patches, or handoff notes depending on the parent-granted mode. The main agent must review their outputs and carry blockers or uncertainty into the final report.
 
-All project custom subagents must be spawned with a fully explicit, self-contained prompt and no inherited parent-thread context. In the Codex runtime this means `fork_context=false`. Qoder, Cursor, OpenCode, and Claude Code subagents are isolated by design, and the parent prompt must still carry every needed input. Spawn the generated hyphen-case specialist for the selected runtime rather than substituting a generic built-in agent. If a subagent needs a user correction, task constraint, current implementation status, or prior handoff detail, the parent must pass it explicitly in the subagent prompt or write it into the relevant spec, plan, handoff, or repo file before spawning.
+All project custom subagents must be spawned with a fully explicit, self-contained prompt and no inherited parent-thread context. With the current Codex collaboration tool this means `fork_turns="none"`. Qoder, Cursor, OpenCode, and Claude Code subagents are isolated by design, and the parent prompt must still carry every needed input. Spawn the generated hyphen-case specialist for the selected runtime rather than substituting a generic built-in agent. If a subagent needs a user correction, task constraint, current implementation status, or prior handoff detail, the parent must pass it explicitly in the subagent prompt or write it into the relevant spec, plan, handoff, or repo file before spawning.
 
 Use these high-level routing rules:
 
@@ -118,7 +120,7 @@ Use these high-level routing rules:
 - Use asset subagents for non-portrait visual production: `chaosx_asset_source_researcher`, `chaosx_generated_event_art`, and `chaosx_icon_artist`. All character portrait work belongs to `chaosx_portrait_creator`.
 - Use `chaosx_event_ui_worker` only for a dedicated scripted GUI introduced and owned by one named event or event-owned mechanic. The parent prompt must prove event ownership and name exact GUI identifiers, files, entry point, states, resolutions, assets, and handoff path. The worker owns bounded layout implementation and mandatory MCP visual evidence, while the parent and decision owner retain gameplay, costs, effects, AI, balance, final integration, and in-game validation. It must not audit the shared event log, event details, settings, super-events, shared registries, or unrelated existing UIs.
 - Use `chaosx_portrait_creator` for complete portrait production: grounded source research and placeholders, fictional native ImageGen portraits, user-supplied final validation, processing, DDS conversion, portrait-specific wiring, manifests, and handoffs. It never operates RunPod.
-- For asset animation, route 2D frame sheets to `chaos-redux-frame-animation` and skeletal `.anim` actions to `chaos-redux-3d-model-pipeline`. 3D prompts require Meshy 7, one approved image, vanilla scale, packed materials, reimport proof, parent-owned wiring, sourced-audio provenance/checksums/sync, and bespoke green counters. Normal spend and failure-driven provider recovery need no additional confirmation while live balance and provider capability permit them.
+- For asset animation, route 2D frame sheets to `chaos-redux-frame-animation` and skeletal `.anim` actions to `chaos-redux-3d-model-pipeline`. 3D prompts require Meshy 7, one approved image, vanilla scale, packed materials, reimport proof, parent-owned wiring, sourced-audio provenance/checksums/sync, and bespoke green counters. Use direct Blender rigging and substantive role-specific action work after the first failed or unusable Meshy rig/action attempt, for unsupported stages, and for existing repairs; do not repeat paid rigging or animation attempts to avoid that route.
 - Use super-event subagents for specialised research: `chaosx_super_event_text_researcher` and `chaosx_super_event_audio_researcher`.
 - Use audit subagents before completion claims: `chaosx_focus_tree_auditor`, `chaosx_decision_mission_auditor`, `chaosx_country_package_auditor`, `chaosx_localisation_auditor`, `chaosx_event_completion_auditor`, and `chaosx_ai_probability_auditor` for every weighted AI or probability surface.
 - Use `chaosx_ai_probability_auditor` for read-only audits of AI weights, MTTH, event `ai_chance`, random lists, focus and research selection, decision and mission scores, AI strategy factors, and declared custom weighted pools; it must use the HOI4 MCP probability workflow and return scenario-specific evidence.
@@ -146,7 +148,13 @@ Event source specifications belong under `docs/specs/<event_id>_<event_slug>_spe
 
 Subagent plans, improvement addenda, audit follow-up notes, and implementation handoffs belong under `docs/plans/<event_id>_<event_slug>_plans/`.
 
-The plans folder is a working area. The specs folder is the source-of-truth design area. If an accepted plan changes the event design, the main agent should merge it into the relevant spec or report that it remains queued.
+The plans folder is a working area. The specs folder holds source design, with acceptance recorded for each relevant claim.
+Distinguish explicit user decisions, accepted design with its acceptance basis, implementation evidence, and proposals.
+A spec location, date, status label, or old handoff does not prove approval.
+Record the user decision or parent acceptance within the user-authorized scope that supports accepted design.
+If that basis is missing or conflicting, keep the claim unresolved rather than promoting it through documentation cleanup.
+Give every plan or addendum one disposition: implemented with evidence, promoted to a named spec, queued with a reason, rejected with a reason, superseded by a named document, or blocked by an exact limitation.
+If an accepted plan changes the event design, the main agent should merge it into the relevant spec or report that it remains queued.
 
 ## 1. Coding Style
 
@@ -279,6 +287,7 @@ Localisation and UI must always be kept in sync with gameplay changes.
    - Define icons in `interface/...` and keep naming stable.
    - When something needs icons, define them in a correct `.gfx` file.
    - Register new UI assets before requesting art so filenames do not need to change later.
+   - Static or animated decision-category pictures are eligible only for simple categories containing a description, ordinary decisions, and at most basic formatted value tables. Do not add them alongside complex UI, meters, extra custom controls, rich interactive panels, or other animations. Ordinary decision-list buttons and basic tables remain allowed; an animated picture is a simple-category alternative, needs a static fallback, and must not accompany existing animated GUI. Follow `chaos-redux-decisions-missions` for the complete eligibility and presentation contract.
 
 ## 3. Naming and Prefix Rules
 

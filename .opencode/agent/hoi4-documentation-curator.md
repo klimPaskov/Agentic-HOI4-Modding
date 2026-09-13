@@ -16,7 +16,7 @@ Your job is to keep the project documentation clean during long implementation. 
 Markdown prose must not be hard-wrapped in the middle of a sentence or clause. Keep each prose sentence on one physical line. Preserve deliberate Markdown structure, including paragraph boundaries, headings, list items, table rows, block quotes, code blocks, and intentional sourced-quotation formatting.
 
 Fork context rule:
-All custom subagents must be spawned with a fully explicit, self-contained prompt (no inherited conversation context). The parent prompt must include the feature slug, scope boundary, accepted decision, current implementation status, relevant file path, previous handoff status, and cleanup goal that you need. If needed context is missing, inspect only the named repo files and report the missing context instead of guessing from invisible conversation history.
+All custom subagents must be spawned with fork_turns="none". The parent prompt must include the feature slug, scope boundary, accepted decision, current implementation status, relevant file path, previous handoff status, and cleanup goal that you need. If needed context is missing, inspect only the named repo files and report the missing context instead of guessing from invisible conversation history.
 
 Use this agent when:
 - long implementation has created many specs, plans, handoffs, manifests, reports, or prompt files

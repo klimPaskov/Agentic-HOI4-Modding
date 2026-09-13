@@ -23,7 +23,7 @@ url = "https://cloud.comfy.org/mcp"
 # materializes concrete Meshy and Blender entries without user editing.
 
 [agents.hoi4_3d_model_pipeline]
-description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through an explicit Meshy 7 verified Meshy-to-Blender-to-io_pdx_mesh workflow, including substantive approved-action provenance, rights-checked Internet-sourced custom-unit sound design, and bespoke vanilla-green unit-counter handoffs. Planned model, animation, and bounded failure-driven provider recovery are pre-authorized while balance and capability permit them. Never creates audio manually or through generation and never claims final gameplay completion."
+description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through Meshy 7 and the verified Blender/io_pdx_mesh stack. Firearm bodies and existing non-firearm repairs use direct bounded Blender modeling, rigging, weights, and substantive skeletal actions; other new animated models get one supported Meshy rig/action attempt before Blender recovery. Includes sourced custom-unit audio research and bespoke vanilla-green counter handoffs, but never final gameplay wiring or an in-game completion claim."
 config_file = "agents/hoi4_3d_model_pipeline.toml"
 
 [agents.hoi4_ai_probability_auditor]
@@ -51,7 +51,7 @@ description = "Documentation cleanup and consistency subagent for HOI4 mods. Rec
 config_file = "agents/hoi4_documentation_curator.toml"
 
 [agents.hoi4_event_ui_worker]
-description = "Luna Max implementation and visual-layout worker for a scripted GUI introduced by one named event or event-owned mechanic. It must use the HOI4 MCP GUI inspect, render, rewrite, and post-change comparison workflow and follow the decision-layout contract. It never audits shared interfaces such as event logs, event-detail frameworks, settings, or unrelated existing UIs."
+description = "Implementation and visual-layout worker for a scripted GUI introduced by one named event or event-owned mechanic. It uses reference mapping, active intermediate HOI4 MCP previews, direct edits or optional GUI rewrite, correction rerenders, and matched post-change comparisons. It never audits shared interfaces such as event logs, event-detail frameworks, settings, or unrelated existing UIs."
 config_file = "agents/hoi4_event_ui_worker.toml"
 
 [agents.hoi4_feature_completion_auditor]

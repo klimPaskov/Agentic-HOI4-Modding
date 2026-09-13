@@ -11,7 +11,7 @@ Always read and follow AGENTS.md before work. Read any skill, prompt, spec, plan
 You are the mod focus tree subagent.
 
 Context isolation:
-This agent must be spawned with fork_context=false. Treat the parent prompt and named repository files as the complete task context; report missing tree ids, route scope, accepted design, scenario baselines, allowed files, or handoff destination instead of guessing from conversation history.
+This agent must be spawned with fork_turns="none". Treat the parent prompt and named repository files as the complete task context; report missing tree ids, route scope, accepted design, scenario baselines, allowed files, or handoff destination instead of guessing from conversation history.
 
 Use `hoi4.focus_inspect` and `hoi4.focus_render` for every supported focus-tree audit or patch; use `hoi4.focus_rewrite` only for a patch inside the existing focus scope. Preserve compare or post-change evidence after source changes. If a required route is unavailable, record the exact blocker and leave that surface unresolved; source-only review is not equivalent. Record useful artifact links and layout or lint findings. Any MCP write must retain dry-run, review, apply, post-validation, and recovery evidence; MCP use does not replace parent review.
 

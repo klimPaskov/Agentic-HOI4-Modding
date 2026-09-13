@@ -62,6 +62,7 @@ Use this skill with:
 - `hoi4-text-audio-research` when an event needs sourced quotes, cultural references, title-like references, slogans, or music and audio research
 - `hoi4-focus-trees` when the event creates, unlocks, modifies, or depends on focus trees
 - `hoi4-decisions-missions` when the event creates or depends on decisions, missions, timed objectives, formables, or decision-driven mechanics
+- `hoi4-scripted-gui` when the event owns or opens a scripted GUI; that skill owns reference-image mapping, layout, iterative MCP previews, and visual acceptance while this event skill retains gameplay and lifecycle ownership
 - `hoi4-subagents` when bounded research, asset production, event-owned UI layout work, small patches, or completion audits should be delegated
 - `hoi4_3d_model_pipeline` for bounded model geometry, textures, rigs, skeletal actions, sourced custom-unit audio research and synchronization design, `.mesh`/`.anim` exports, reimport proof, and runtime handoff when the event owns a 3D unit or building surface
 - `hoi4-improvement-loop` when an implemented event works but is still shallow, generic, disconnected, or underdeveloped
@@ -82,7 +83,13 @@ For every event-chain surface supported by the installed MCP server, use the eve
 
 The event tools are read-only. Comparison refreshes edited source by default. Use bounded depth and node limits so MCP remains one small part of the larger skills, subagent, and repository workflow.
 
-For every event-option `ai_chance`, event MTTH, direct random chance, or `random_list` surface, route the read-only probability pass through `hoi4_ai_probability_auditor`. Establish named baseline scenarios with `hoi4.probability_inspect`, let the owning agent apply any bounded patch, then run mandatory `hoi4.probability_compare` against the same scenarios. Use `hoi4.probability_evaluate`, `hoi4.probability_sweep`, `hoi4.probability_simulate`, `hoi4.probability_sequence`, and `hoi4.probability_render` only when their declared evidence conditions apply. Provide complete option or list pools when normalization applies, and provide scheduled state changes for timing questions. Treat exact, bounded, sampled, score-only, and unresolved results as different evidence. The auditor does not choose balance targets or edit event source. If the probability route is unavailable, record the exact blocker and leave the conclusion unresolved.
+### MCP evidence gate
+
+Before treating an event inspection or render as lifecycle evidence, read its `analysisMode`, `complete`, indexed helper count, files-scanned or source-hash inventory, unresolved entries, and diagnostics. In the installed event service, `trace` and `explain_path` use focused analysis, and `scan`, `roots`, `lint`, or `event_render` use focused analysis when a selector is supplied. Focused analysis reads only the bounded event and on-action sources, disables workspace-wide helper projections and lifecycle passes, and keeps the focused-boundary blocker even when helper expansion is requested. `state_flow` and `impact` request full analysis even when narrowed, while selector-free `scan` requests full analysis. Use a full route when helper or lifecycle coverage is required, and do not treat a focused trace or zero helper count as proof that a chain has no helpers.
+
+`event_compare` accepts cached revisions, validated event-graph artifacts, or proposed source overlays. Report-only trace artifacts and render or manifest artifacts may fail artifact graph validation because they do not contain an event-graph payload. Use a graph-bearing artifact or another supported compare input when available. If none is available, preserve the exact blocker and do not invent a conversion or comparison result.
+
+For every event-option `ai_chance`, event MTTH, direct random chance, or `random_list` surface, route the read-only probability pass through `hoi4_ai_probability_auditor`. Establish named baseline scenarios with `hoi4.probability_inspect`, let the owning agent apply any bounded patch, then run mandatory `hoi4.probability_compare` against the same scenarios. Use `hoi4.probability_evaluate`, `hoi4.probability_sweep`, `hoi4.probability_simulate`, `hoi4.probability_sequence`, and `hoi4.probability_render` only when their declared evidence conditions apply. Provide complete option or list pools when normalization applies, and provide scheduled state changes for timing questions. Treat exact, bounded, sampled, score-only, and unresolved results as different evidence. For `hoi4.probability_compare`, pass both `before` and `after` as probability-source objects with a source identifier or path, inline Clausewitz, or virtual patch, or pass before and after manifests under an identical scenario set. Do not put a cached `analysisId` in a source identifier; it belongs only to rendering. The auditor does not choose balance targets or edit event source. If the probability route is unavailable, record the exact blocker and leave the conclusion unresolved.
 
 Give patch-capable subagents disjoint file ownership. Serialize overlapping edits and run the final comparison only after their handoffs are integrated.
 
@@ -276,9 +283,9 @@ When exact state control is the formation proof, use the manifest-driven state-p
 
 ## Scripted GUI and animated event presentation
 
-Major event mechanics can use scripted GUI windows, decision-category interfaces, animated category art, animated leader portraits, or custom buttons when they make the system easier to play. Treat that UI as part of the event contract, not as decoration added later.
+Major event mechanics can use scripted GUI windows, decision-category interfaces, animated leader portraits, or custom buttons when they make the system easier to play. Treat that UI as part of the event contract, not as decoration added later. Static and animated category pictures must pass the simple-category eligibility gate in `hoi4-decisions-missions`: description, ordinary decision list, and at most basic formatted value tables, with no complex GUI, meters, extra custom controls, rich panels, or other animations alongside the picture.
 
-When the event specifically adds a dedicated scripted GUI or mechanic window, route its bounded layout implementation and visual-quality pass to `hoi4_event_ui_worker`. The worker must use `hoi4.gui_inspect`, thorough `hoi4.gui_render` state/resolution/hierarchy/click-region views, an in-scope `hoi4.gui_rewrite`, and post-change comparison evidence, and it must follow the full layout contract in `hoi4-decisions-missions`. Do not send shared event logs, event-detail frameworks, settings, super-event frameworks, shared registries, or unrelated existing UIs to this worker. A UI is eligible only when the accepted event spec or source proves that the event introduces and owns it.
+When the event specifically adds a dedicated scripted GUI or mechanic window, route its bounded layout implementation and visual-quality pass to `hoi4_event_ui_worker`. The worker must follow `hoi4-scripted-gui` for the accepted reference, native-element mapping, mandatory `hoi4.gui_inspect`, iterative `hoi4.gui_render` state/resolution/hierarchy/click-region views, corrections, and matched post-change comparison evidence. Reviewed source edits may be applied directly or through optional `hoi4.gui_rewrite`. Do not send shared event logs, event-detail frameworks, settings, super-event frameworks, shared registries, or unrelated existing UIs to this worker. A UI is eligible only when the accepted event spec or source proves that the event introduces and owns it.
 
 When an event uses a custom interface, align these surfaces:
 
@@ -353,7 +360,7 @@ Before closing an event task, verify the surfaces that actually exist for the fe
 4. Shared effects, triggers, script constants, and event targets are updated when needed.
 5. Localisation exists for titles, descriptions, options, tooltips, news/report text, and dynamic values.
 6. News events, report events, and researched text or audio packages are wired only when they are real surfaces in the design.
-7. Supporting decisions, missions, ideas, focuses, AI, country setup, or scripted GUI surfaces are aligned when relevant. Every event-owned scripted GUI has a reviewed `hoi4_event_ui_worker` handoff with mandatory MCP before-and-after layout evidence; shared UIs remain outside that worker's scope.
+7. Supporting decisions, missions, ideas, focuses, AI, country setup, or scripted GUI surfaces are aligned when relevant. Every event-owned scripted GUI has a reviewed `hoi4_event_ui_worker` handoff with intermediate MCP preview evidence, corrected defects, and matched before-and-after layout evidence under `hoi4-scripted-gui`; shared UIs remain outside that worker's scope.
 8. Event pictures, report images, news images, icons, flags, portraits, animated sprites, and fallbacks exist when required.
 9. Generated or sourced assets are resized, converted, moved into correct folders, wired in `.gfx`, and recorded in manifests when they are part of the task.
 10. Documentation, specs, plans, manifests, and any explicitly scoped external records are updated only when the repository actually uses those surfaces.
@@ -482,6 +489,10 @@ Before writing an effect, identify the expected scope:
 - global scope only for intentionally shared values
 
 If an effect chain needs a scope later, save it as an event target. Use regular event targets for short chains and global event targets only when persistence is required. Clean global event targets when the system ends.
+
+For country activation, deferred setup, player transfer, or coalesced refreshes, read [country-activation.md](references/country-activation.md) before implementing the receiver chain.
+
+When inlining a multi-condition scripted trigger inside `NOT`, retain an explicit `AND` around its conditions because sibling conditions in `NOT` use NOR semantics. Preserve rejection when either a shared precondition or native legality check fails. State-scoped diagnostics must check country flags through the intended country scope.
 
 ### 6. Put real effects in the right place
 

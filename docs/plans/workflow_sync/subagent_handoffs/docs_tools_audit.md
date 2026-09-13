@@ -1,6 +1,6 @@
 # Starter documentation and tools audit handoff
 
-> Historical handoff, partially superseded on 2026-08-27. The repository now uses one shared renderer with Qoder, Cursor, and OpenCode wrappers under `.tools/sync/`, while generated runtime folders remain ignored and machine-local. References below to a deleted root synchronizer, tracked Qoder outputs, a separate v2 manifest filename, or optional Qoder manifest components describe the earlier tranche and are not current source-of-truth instructions.
+> Historical handoff. The [September 13 integrated sync](latest_workflow_sync_2026_09_13.md) supersedes current-status claims below. The starter now uses one canonical renderer with four wrappers under `.tools/sync/`, and all four generated runtime projections are tracked. Earlier synchronizer locations, dual-manifest architecture and machine-local tracking claims describe prior tranches, not active instructions.
 
 ## Scope and result
 

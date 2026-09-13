@@ -7,6 +7,7 @@ The mod source remains authoritative for implementation, while accepted specific
 MCP output is supporting evidence and never replaces source review, the offline wiki, vanilla documentation, tests, owning skills, specialist audits, or parent review.
 
 This document describes an integration contract rather than a live server run, so every user must confirm the installed package version and advertised routes before relying on a capability.
+Tool exposure does not prove service health or the availability of a standalone viewer application. Verify standalone Technology Tree Viewer availability separately when needed, record a missing viewer as a package gap, and do not confuse it with the required read-only technology MCP routes.
 
 ## Evidence contract
 
@@ -34,9 +35,9 @@ Tool availability is version-dependent, so confirm each name from the installed 
 | --- | --- | --- | --- | --- |
 | National focus trees | `hoi4.focus_inspect`, `hoi4.focus_render` | `hoi4.focus_rewrite` when advertised | Inspect and render the exact tree before editing, review any proposal, then inspect and render again after source changes and retain paired evidence. | Layout and diagnostics are evidence, not a completion claim; complex focus weights also require the probability contract. |
 | Event chains | `hoi4.event_inspect`, `hoi4.event_render`, `hoi4.event_compare` | None in the installed package | Run a narrow inspect and render before editing, then rerun them after editing and compare the same selector or revision when available. | Analysis is bounded and static, so dynamic destinations and runtime behavior can remain unresolved. |
-| Technology and doctrine trees | `hoi4.tech_inspect` | `hoi4.tech_render`, `hoi4.tech_compare` | Inspect the selected tree, render a reviewable layout, and compare related trees or variants. | Keep source review and MCP evidence together; a missing advertised route is a blocker rather than permission to invent viewer evidence. |
+| Technology and doctrine trees | `hoi4.tech_inspect`, `hoi4.tech_render`, `hoi4.tech_compare` | None; these routes are read-only | Inspect the selected tree, render a reviewable layout, and compare related trees or variants. | Keep source review and MCP evidence together; a missing required route is a blocker rather than permission to invent viewer evidence. |
 | Weighted logic | `hoi4.probability_inspect`, `hoi4.probability_evaluate`, `hoi4.probability_sweep`, `hoi4.probability_compare`, `hoi4.probability_simulate`, `hoi4.probability_sequence`, `hoi4.probability_render` | None; the probability auditor remains read-only | Start with inspect, evaluate named scenarios, sweep sensitivities, compare the same scenarios before and after a source patch, and add simulation, sequence, or rendering only under the scenario contract. | A score is not a probability; incomplete pools or external factors make exact conclusions invalid. |
-| Scripted GUI | `hoi4.gui_inspect`, `hoi4.gui_render` | `hoi4.gui_rewrite` when the GUI is explicitly in scope | Inspect the exact GUI before editing, render relevant states and resolutions, review the proposed rewrite, then inspect, render, and compare the same states and resolutions after editing. | Do not use a GUI route to redesign shared framework surfaces without an owning scope and parent approval. |
+| Scripted GUI | `hoi4.gui_inspect`, `hoi4.gui_render` | Optional `hoi4.gui_rewrite` when the GUI is explicitly in scope | Inspect the exact GUI before editing, render relevant states and resolutions, apply the reviewed edit directly or through the optional rewrite, then inspect, render, and compare the same states and resolutions after editing. | Do not use a GUI route to redesign shared framework surfaces without an owning scope and parent approval. Rewrite success is not visual acceptance. |
 | Map and connected map data | `hoi4.map_inspect`, `hoi4.map_render` | `hoi4.map_rewrite` through Agent Nudger or an equivalent declarative writer | Inspect connected provinces, states, regions, adjacency, supply, and rail data before a proposal, complete dry-run and review before apply, then post-validate and retain recovery evidence. | A map render is offline evidence and does not prove in-game pathing, supply, or consumer behavior. |
 
 If a route is absent, record the exact tool, selector, package version, and error, and mark the affected conclusion blocked or unresolved.
@@ -86,6 +87,7 @@ The lifecycle applies to focus, GUI, and map rewrites, including Agent Nudger or
 7. Rollback or recovery: if the write or post-validation fails, retain the exact-byte recovery data and transaction or recovery reference, roll back to the prior source automatically when the engine supports it, and report the failure.
 
 A blocked proposal must not mutate source.
+For scripted GUI work, the optional rewrite's automatic transaction success or post-write/index validation is not itself a completion gate. An authorized reviewed GUI edit may be applied directly without another fallback approval solely because that optional rewrite blocks or rolls back; required inspect/render evidence, matched comparisons, and correction of visible in-scope defects remain mandatory. This rule does not disable the server's internal validation.
 
 The public MCP surface does not provide caller-managed transaction, apply, or rollback commands in the installed package, so intentional reversal of a successful edit is a new authorized source change, normally through version control.
 
@@ -105,7 +107,13 @@ Technology and doctrine work uses the advertised `hoi4.tech_inspect`, `hoi4.tech
 
 ## Registration and troubleshooting
 
-Install the published package with `npm install --global hoi4-agent-tools`, or use a deliberately pinned version that is compatible with the client and record that version in the evidence record.
+Install the exact published package version declared by the current setup manifest and repository bootstrap, keeping version, registry integrity, runtime-entry evidence, and documentation aligned. The current starter revision uses:
+
+```powershell
+npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@2.5.2
+```
+
+If that exact package version is unavailable or fails verification, record the package/version blocker instead of silently substituting an unpinned clone or another release.
 
 For a local mod, register `hoi4-agent-tools.cmd` with the mod directory as its working directory; a mod-local working directory normally lets the server detect the source without a separate selection call.
 

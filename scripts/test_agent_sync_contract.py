@@ -37,6 +37,11 @@ def main():
     for runtime_key, runtime in module.RUNTIMES.items():
         outputs = module.expected_outputs(runtime, agents)
         assert len(outputs) == 24
+        # The projections are checked against the files committed in the
+        # source repository, not only against the renderer's in-memory output.
+        # This keeps every native runtime package derived from the canonical
+        # Codex TOMLs and makes drift fail the source validation workflow.
+        assert module.synchronize(runtime_key, check=True) == 0
         assert runtime.map_path in outputs
         for agent in agents:
             path = runtime.agent_dir / f"{agent.runtime_name}.md"

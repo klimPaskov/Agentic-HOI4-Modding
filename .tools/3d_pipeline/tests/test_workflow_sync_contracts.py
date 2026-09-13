@@ -29,6 +29,16 @@ def function_arguments(path: Path, name: str) -> list[str]:
 
 
 class WorkflowSyncContractTests(unittest.TestCase):
+    def test_adapter_has_no_source_project_identifiers(self) -> None:
+        forbidden = ("chaos" + "-redux", "chaos" + "_redux", "chaos" + "x")
+        for path in (PIPELINE_ROOT / "adapter").glob("*.py"):
+            source = path.read_text(encoding="utf-8").lower()
+            for token in forbidden:
+                with self.subTest(path=path.name, token=token):
+                    self.assertNotIn(token, source)
+        source = (PIPELINE_ROOT / "adapter/hoi4_blender_mcp.py").read_text(encoding="utf-8")
+        self.assertIn('"skills" / "hoi4-feature-assets" / "tools" / "convert_to_dds.py"', source)
+
     def test_normalization_convergence_accepts_and_corrects(self) -> None:
         accepted = evaluate_convergence_step(
             target=8.0,
@@ -116,7 +126,9 @@ class WorkflowSyncContractTests(unittest.TestCase):
         source = (PIPELINE_ROOT / "adapter" / "blender_worker.py").read_text(encoding="utf-8")
         self.assertIn("stabilize_saved_normalization(pre_export, target_height)", source)
         self.assertIn("verify_saved_normalization(pre_export, target_height)", source)
-        self.assertIn("source_armature_uniform_world_scale / target_armature_uniform_world_scale", source)
+        self.assertIn("root_scale_reference", source)
+        self.assertIn("anatomical_scale = lengths[1] / lengths[0]", source)
+        self.assertIn('"policy": "measured_world_joint_head_span"', source)
         self.assertIn('"verification_status": "verified"', source)
         self.assertIn("Animation source checksum did not match the verified provenance receipt", source)
         self.assertIn("balanced parenthetical qualifiers", source)

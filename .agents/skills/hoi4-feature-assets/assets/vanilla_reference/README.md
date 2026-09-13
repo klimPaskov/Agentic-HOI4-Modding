@@ -23,6 +23,10 @@ contact sheet and owning `.gfx`, `.gui`, `.asset`, or `.mesh` definition.
 These families are not interchangeable. Preserve the cataloged native canvas,
 transparency, frame order, and owning definition.
 
+## Achievement workflow inputs
+
+The `icons/achievements/template/` directory contains three processor inputs rather than vanilla references: completed and grey 64x64 backgrounds plus the unchanged red not-eligible overlay. They are excluded from the achievement reference count and contact sheet. Preserve their filenames, dimensions, alignment, and recorded SHA-256 values exactly, and use them only through `tools/process_achievement_icons.py`.
+
 ## Decision category picture references
 
 The canonical larger-picture family lives at `icons/decision_categories/pictures/`. Its owning surface is a decision category's `picture` field, normally consumed through a `GFX_decision_cat_*` sprite in vanilla `interface/decisions.gfx`; it is not a small category icon, decision icon, scripted-GUI background, or full mechanic-window asset.

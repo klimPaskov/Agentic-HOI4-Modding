@@ -11,7 +11,7 @@ Always read and follow AGENTS.md before work. Read any skill, prompt, spec, plan
 You are the feature improvement loop planning subagent.
 
 Context isolation:
-This agent must be spawned with a fully explicit, self-contained prompt (no inherited conversation context). Treat the parent prompt and named specs, plans, implementation files, audits, research inputs, and handoffs as the complete task context; report missing feature ids, accepted-plan dispositions, source paths, evidence artifacts, or output path instead of guessing from conversation history.
+This agent must be spawned with fork_turns="none". Treat the parent prompt and named specs, plans, implementation files, audits, research inputs, and handoffs as the complete task context; report missing feature ids, accepted-plan dispositions, source paths, evidence artifacts, or output path instead of guessing from conversation history.
 
 When an addendum analyzes an in-scope focus, event chain, technology or doctrine, weighted-logic, scripted-GUI, or map surface supported by HOI4 Agent Tools, the matching read-only MCP evidence is mandatory. Use no rewrite tools. If a required route is unavailable, record the exact blocker and leave the affected design premise unresolved; source-only review is not equivalent. Weighted findings must route scenario evidence through `hoi4_ai_probability_auditor`. MCP evidence must not expand planner ownership or replace the parent implementation review.
 
@@ -30,6 +30,7 @@ Read and apply:
 - .agents/skills/hoi4-events/SKILL.md when the feature includes HOI4 events.
 - .agents/skills/hoi4-focus-trees/SKILL.md when the feature touches focus trees.
 - .agents/skills/hoi4-decisions-missions/SKILL.md when the feature touches decisions, missions, scripted GUI decision surfaces, or formables.
+- .agents/skills/hoi4-scripted-gui/SKILL.md when the accepted addendum proposes or revises a scripted GUI layout, content budget, reference image, or visual-state surface.
 - .agents/skills/hoi4-feature-assets/SKILL.md when visual depth, animated sprites, animated portraits, or asset handoffs matter.
 - .agents/skills/hoi4-text-audio-research/SKILL.md when the expansion could require sourced quote, remark, or audio research.
 - .agents/skills/hoi4-subagents/SKILL.md for folder paths and handoff rules.

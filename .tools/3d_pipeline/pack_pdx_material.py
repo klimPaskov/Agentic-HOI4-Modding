@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 
 PDX_SPECULAR_LEVEL = 32
@@ -57,8 +57,9 @@ def pack_pdx_specular_map(job: Path, specular_source_rel: str) -> Dict[str, Any]
 
     The source must be the provider's ``metallic_roughness.png``. The sibling
     grayscale maps are authoritative because the glTF packed alpha channel is
-    not the HOI4 roughness channel. The resulting channels are R=0,
-    G=specular level, B=metallic, and A=roughness.
+    not the HOI4 glossiness channel. The resulting channels are R=0,
+    G=specular level, B=metallic, and A=255-roughness.
+    PdxMeshAdvanced uses spec.A as Glossiness in the installed vanilla shader.
     """
 
     source = (job / specular_source_rel).resolve()
@@ -90,7 +91,7 @@ def pack_pdx_specular_map(job: Path, specular_source_rel: str) -> Dict[str, Any]
             )
         zero = Image.new("L", metal_l.size, 0)
         specular = Image.new("L", metal_l.size, PDX_SPECULAR_LEVEL)
-        packed = Image.merge("RGBA", (zero, specular, metal_l, rough_l))
+        packed = Image.merge("RGBA", (zero, specular, metal_l, ImageOps.invert(rough_l)))
 
     output = source.with_name("pdx_specular.png")
     _replace_file(output)
@@ -101,7 +102,7 @@ def pack_pdx_specular_map(job: Path, specular_source_rel: str) -> Dict[str, Any]
             "red": "unused_mask_zero",
             "green": f"specular_level_{PDX_SPECULAR_LEVEL}",
             "blue": "metallic",
-            "alpha": "roughness",
+            "alpha": "glossiness_255_minus_roughness",
         },
         "source": {
             "glTF_packed_map": _record(source, job) if source.is_file() else None,
@@ -142,7 +143,7 @@ def pack_pdx_specular_channels(
             )
         zero = Image.new("L", metallic_l.size, 0)
         specular = Image.new("L", metallic_l.size, PDX_SPECULAR_LEVEL)
-        packed = Image.merge("RGBA", (zero, specular, metallic_l, roughness_l))
+        packed = Image.merge("RGBA", (zero, specular, metallic_l, ImageOps.invert(roughness_l)))
     output.parent.mkdir(parents=True, exist_ok=True)
     _replace_file(output)
     packed.save(output, format="PNG", optimize=True)
@@ -152,7 +153,7 @@ def pack_pdx_specular_channels(
             "red": "unused_mask_zero",
             "green": f"specular_level_{PDX_SPECULAR_LEVEL}",
             "blue": "metallic",
-            "alpha": "roughness",
+            "alpha": "glossiness_255_minus_roughness",
         },
         "source": {
             "metallic": _record(metallic, job),

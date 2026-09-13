@@ -7,6 +7,8 @@ description: Use when creating, sourcing, processing, converting, organizing, wi
 
 Use this skill when a HOI4 modding task requires final visual assets.
 
+Asset coverage follows accepted spec rows, manifest requirements, or explicit user instructions. Do not infer optional advisor, high-command, officer-corps, dossier-card, portrait, emblem, or animation families merely because a character or gameplay consumer exists. Record the required family before production.
+
 This includes event pictures, UI assets, focus tree assets, country assets, achievement assets, generated icons, sourced feature art, generated icon art, animated sprites, animated portraits, sprite sheets, GIF previews, and any asset package that must be wired into the mod.
 
 ## Canonical reference root
@@ -140,8 +142,20 @@ Before declaring the feature fully complete:
 
 An absent temporary workspace is expected after a fully complete goal. If the feature is incomplete or blocked, retain it and report the blocker. Never delete skill-local reference libraries or another feature's workspace.
 
+## 2.4 Asset repository preflight and Git LFS hydration
+
+Before processing a large asset set, classify paths by role: `.gfx` files are text registries, while `.png`, `.dds`, `.wav`, and other artwork or audio paths are binary candidates, and modified files outside the requested scope must remain untouched.
+
+- Detect Git LFS pointer stubs from the exact pointer signature, not byte size: the first line is exactly `version https://git-lfs.github.com/spec/v1`, followed by `oid sha256:<hex>` and `size <integer>` lines.
+- File size alone is not validity evidence; legitimate tiny images such as 10x7 flags may be under 1 KB.
+- If the required objects are present in `.git/lfs/objects`, run a scoped `git lfs checkout <paths>` first, limited to the requested binary paths; `git lfs checkout` preserves modified files.
+- Use `git lfs fetch` or `git pull` only when objects are missing and the task explicitly authorizes network or repository updates; never broaden the scope or discard local edits.
+- For every expected LFS path, compare the working file's SHA-256 to its index OID from `git lfs ls-files -l`, then confirm zero remaining pointer stubs.
+- If checkout reports an index-refresh warning after writing real content, retain the content/OID verification as authoritative and record the warning in the handoff.
+- After hydration, validate image and audio containers with format-aware decoders or parsers, such as DDS header and pixel checks or WAV metadata checks, rather than size heuristics.
+
 <!-- HOI4_MOD_SETUP_PORTRAITS_START -->
-## 2.4 Sourced portrait handoff
+## 2.5 Sourced portrait handoff
 
 `hoi4_portrait_creator` researches each grounded source, archives it under `docs/assets/portraits/<feature_slug>/`, wires an explicit pending source placeholder at the final runtime path, and keeps the basename stable. The user runs the selected Cloud, Local, or RunPod styled-replacement workflow and supplies the final result; the portrait worker validates and installs it. Agents never open, configure, queue, monitor, or otherwise operate RunPod. For fictional or impossible subjects the portrait worker invokes native ImageGen and completes processing and wiring itself.
 
@@ -208,6 +222,8 @@ Use Codex's official `$imagegen` skill by default for:
 - other symbolic or fictional static assets
 
 When creating generated assets, follow the `$imagegen` skill workflow. Do not define a separate image generation route in this skill.
+
+Read [generation-and-review.md](references/generation-and-review.md) before generated source production or editing. It defines reference roles, focused revision, native transparency, truthful model-selection evidence, and acceptance checks.
 
 For transparent icons, ask `$imagegen` for the required transparent output and follow the `$imagegen` skill's transparent image workflow. The final PNG must have real transparency, no fake checkerboard, no white halo, no white outline, and no opaque square background unless the asset type explicitly uses a painted backdrop.
 
@@ -296,6 +312,8 @@ Canonical flag and event-art paths:
 - news-event art: `event_art/news/`
 - large presentation art: use the closest report, news, or custom feature reference set for the owning UI surface
 
+For interface composition, use the [vanilla interface review shelf](assets/vanilla_reference/interface/README.md) and its actual `interface/vanilla/` families, then inspect paired installed-vanilla `.gui` and `common/scripted_guis` sources under `hoi4-scripted-gui`. Structural precedents and inherited reference renders do not replace the new window's accepted compositional reference or current MCP evidence. Do not redirect callers to missing migration folders.
+
 Canonical gameplay-icon paths:
 
 - national focus: `icons/national_focus/`
@@ -327,7 +345,11 @@ Canonical unit-visual paths:
 - naval map counters: `units/naval/map_counters/`
 - land, air, and naval model materials: their separate folders under `units/models_3d/`
 
-These families are not interchangeable. Follow the cataloged native canvas, transparency, frame order, and owning `.gfx`, `.gui`, `.asset`, or `.mesh` definition. Reference PNGs are never final assets: do not copy, wire, recolor, or trace them. The only reusable achievement overlay is `icons/achievements/overlay.png` within the canonical root.
+These families are not interchangeable. Follow the cataloged native canvas, transparency, frame order, and owning `.gfx`, `.gui`, `.asset`, or `.mesh` definition. Reference PNGs are never final assets: do not copy, wire, recolor, or trace them.
+
+The reusable achievement creation inputs live under `icons/achievements/template/`: `achievement_template.png` is the completed background, `achievement_template_grey.png` is the grey and not-eligible background, and `overlay.png` is the unchanged red-cross overlay. They are workflow inputs rather than reference examples, so exclude them from the achievement contact sheet and coverage count and preserve them byte-for-byte at native alignment.
+
+When validating inherited GUI or GFX references, check both the mod and installed vanilla roots before declaring a DDS or other resource missing. A missing literal `effectFile` `.lua` path alone does not prove a missing asset. Inspect matching installed-vanilla `.gfx` declarations and the associated shader resource before reporting a missing source. Record the exact declaration, resource path, and lookup evidence without assuming a generic `.lua` to `.shader` mapping. Source linkage evidence does not prove rendered behavior or live-game correctness.
 
 If no category matches, inspect the closest canonical category plus direct
 vanilla or established repository precedents before choosing a style.
@@ -422,6 +444,8 @@ Do not mark assets complete until the DDS files exist, the manifest is written, 
 When an improvement addendum asks for richer presentation, the asset handoff should name the visual states instead of asking for generic polish. A good asset request says what the player sees before activation, while active, when locked, when dangerous, when complete, and when the route has failed.
 
 For scripted GUI, plan asset families. A panel usually needs a background, header, button states, value icons, warning indicators, progress frames, locked overlays, selected overlays, hover states, and any animated glow, particle, float, or pulse layers. The main agent owns `.gui` and `.gfx` wiring, but the asset package must provide clear sprite names, sizes, frame counts, static fallbacks, and contact sheets.
+
+Use [hoi4-scripted-gui](../hoi4-scripted-gui/SKILL.md) for the accepted reference-to-native mapping, background-region contract, iterative MCP live previews, click-region inspection, state and resolution coverage, and final visual acceptance. Asset production alone does not prove a GUI layout complete.
 
 ## 7. Asset package structure
 
@@ -554,7 +578,7 @@ For humanoid units, calibrate against the installed vanilla infantry source mesh
 
 Provider source files are immutable evidence. Working geometry must be repaired so it has no holes, loose or non-manifold geometry, degenerate triangles, missing components, or zero-weight deforming vertices. Use the verified PDX shader and packed specular map convention; never route raw grayscale roughness into the PDX specular channel because that creates chrome-black surfaces.
 
-For animated units, provider actions are candidates that must be cleaned, retargeted or authored, baked, checked for root policy, grounded contacts, deformation, FPS, frame range, and loop behavior, then exported and reimported as real `.anim` files. A static image or still mesh is not an acceptable substitute for a requested skeletal action.
+For animated units, choose the route before provider calls. Firearm-bearing units use a fresh weapon-free Meshy 7 body plus a separate Meshy 7 geometry task/input for each firearm, then bounded Blender rigging, weights, substantive skeletal actions, firearm fitting/attachment, rigid controls, locators, contacts, and other props. Existing non-firearm repairs proceed directly in Blender. Other new animated models get one supported Meshy rig attempt and one action attempt per missing role, then switch the failed, unusable, or unsupported stage to Blender while preserving passing outputs. The Blender adapter may author or repair anatomy-appropriate rigs, weights, components, and substantive articulated actions; simple transform-only motion, static poses, semantic aliases, and whole-rig-only clips cannot pass. Every required action still needs deformation, contact, phase, FPS, loop/root policy, export, and byte-level reimport evidence.
 
 The 3D worker owns source files, checkpoints, processed textures, previews, exports, manifests, reports, reimport evidence, and a runtime handoff. For custom units, it also owns Internet research for legally usable sound files, immutable original downloads, source URLs, licensing and usage evidence, access dates, checksums, license-permitted mechanical derivatives, and animation synchronization design. It must never generate, synthesize, record, manually author, fabricate placeholder or test-tone audio, or use unlicensed audio; a missing defensible source is a blocker. The handoff must distinguish selected source exports, staged runtime copies, and active consumer files and record source/destination paths and hashes after synchronization. The main implementation agent owns `.asset`, entity, `.gfx`, sound definitions, unit/building/gameplay wiring, final runtime synchronization, and in-game screenshots.
 
@@ -841,6 +865,8 @@ A decision category picture is a larger visual surface used inside or beside a d
 
 Use a category picture when the normal decision list already carries the actions but the category benefits from identity, historical context, propaganda, territorial orientation, or a readable theme. Suitable subjects include propaganda and public campaigns; civil-war mobilization, insurgency, and preparedness; elections, ideology, monarchy, party control, and trade-union politics; faction management, treaties, naval agreements, and intervention; formable territory maps; and documentary or symbolic scenes.
 
+Apply the [category-picture eligibility gate](../hoi4-decisions-missions/SKILL.md#decision-category-presentation-hierarchy) before requesting static or animated art. Only simple categories with a description, ordinary decision list, and at most basic formatted value tables qualify. Existing complex UI, meters, extra custom controls, rich interactive panels, or other animations exclude an additional category picture. Ordinary decision buttons are allowed, and the picture itself may be animated. An interactive state puzzle cannot also receive a category picture.
+
 Choose the source route by content:
 
 - use `hoi4_asset_source_researcher` for real propaganda posters, photographs, archival maps, documents, and other verifiable historical material
@@ -867,16 +893,35 @@ Read the matching canonical catalog entries and inspect the owning `.gfx`, `.gui
 
 Achievement icons should be compact and readable at 64x64.
 
-Generate the completed achievement icon first with `$imagegen`.
+Inspect `assets/vanilla_reference/icons/achievements/contact_sheet.png` and matching individual references before creating an achievement icon. The contact sheet and references are review material. The separate `template/` folder is excluded from the reference count.
 
-Then create:
+### New achievement creation
 
-- grey variant (simply black and white)
-- not-eligible variant by copying the grey variant and compositing `icons/achievements/overlay.png` on top
+Use `$imagegen` to design one original subject on a genuinely transparent background, guided by the inspected achievement references for framing, density, contrast, and readability. Request no achievement frame, square background, red cross, text, or fake checkerboard. Process the result into one centered 64x64 color subject layer. Retain the native generated source PNG, prompt, processed PNG, and candidate lineage. Do not independently generate three state artworks or borrow another icon type.
 
-The variants may be created after the completed icon exists.
+Use these exact supplied workflow inputs and do not rename, move, resize, crop, trim, recolor, redraw, filter, or replace them:
 
-Do not create not-eligible achievement icons by red-tinting, filtering, darkening, recoloring, or manually redrawing the grey icon. If the overlay file is missing or cannot be applied cleanly, stop and report the asset as blocked instead of substituting another treatment.
+```text
+assets/vanilla_reference/icons/achievements/template/achievement_template.png
+assets/vanilla_reference/icons/achievements/template/achievement_template_grey.png
+assets/vanilla_reference/icons/achievements/template/overlay.png
+```
+
+Their verified SHA-256 values are respectively `248DB006611EB3942550C43DF83802AA6FB24761035FC928B5D34586C0C4C5BA`, `70E073694C1A7D9FE40C63B1EB2E987A8A45B3FFD15CCF789EEAA5B843B90022`, and `89BC80C6AC975BF6F1FF000FF3070B20C337BFB8B8AE966AE35A5540C004D6DD`.
+
+Build one complete transparent source triplet deterministically from the color subject, preserving the 64x64 canvas, exact position, and alpha alignment:
+
+1. Completed source: the processed transparent color subject unchanged.
+2. Grey source: a deterministic grayscale conversion of the same subject.
+3. Not-eligible source: the grey source with the unchanged `template/overlay.png` composited on top at exact alignment.
+
+Then use `tools/process_achievement_icons.py` to place the supplied completed background beneath the completed source and the supplied grey background beneath the grey and not-eligible sources. Normal alpha compositing is the only pixel interaction. Do not derive not-eligible state from a completed or runtime grey output, recolor or resize the red cross, or feed a processed output back as a source layer.
+
+### Existing-triplet migration
+
+For an existing achievement, provide the complete `<achievement_id>.{png,dds}`, `<achievement_id>_grey.{png,dds}`, and `<achievement_id>_not_eligible.{png,dds}` source triplet. Migration preserves each supplied state at its native 64x64 canvas and exact position without resizing, cropping, alpha trimming, grayscale conversion, recoloring, redrawing, filtering, or other preprocessing. It never derives a missing state.
+
+Every decoded source state must be exactly 64x64. The processor fails closed when a state is missing or a source exposes an already-applied template border. Keep source triplets separate from processed outputs and use `--in-place --force` only for intentional replacement.
 
 Target size:
 
@@ -896,7 +941,7 @@ gfx/achievements/<achievement_id>_not_eligible.dds
 
 When renaming or adding achievement ids, update `common/achievements/`, `localisation/english/<mod_namespace>_achievements_l_english.yml`, `interface/<mod_namespace>_achievements.gfx`, the three DDS variants in `gfx/achievements/`, and any docs or manifests that list the final DDS paths. If the achievement registry owns a single `unique_id`, keep it as one root-level registry file and group feature-owned achievements by feature section inside the file instead of splitting it into per-feature achievement files.
 
-Inspect `icons/achievements/` before generating or processing achievement icons.
+Validation and handoff must retain the source color subject, deterministic grey source, not-eligible source with unchanged overlay, all three composited review PNGs, a native-size contact sheet, three template hashes, strict DDS decode and pixel-equality evidence, and final root-only DDS paths. Identify the exact achievement id, runtime triplet, registered sprite aliases, source and processed paths, and any remaining review or blocked state. The parent reviews the contact sheet before wiring or completion.
 
 ## 20. Flags
 
@@ -1097,7 +1142,7 @@ Each package must include a manifest with formable id, state ids and names, alte
 
 Derive shapes from the installed map's state and province geometry. Do not trace screenshots by hand, generate borders with ImageGen, simplify the pieces into generic tiles, or substitute a modern political map. Keep one projection, scale, origin, edge treatment, and border width so neighbouring states meet cleanly.
 
-Copy and adapt `.agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/`. The asset handoff must match its manifest and naming rules. Skill-local templates are reference scaffolding and must never become runtime consumers. Use the static category-picture option when a formable only needs a territorial overview rather than per-state interaction.
+Copy and adapt `.agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/`. The asset handoff must match its manifest and naming rules. Skill-local templates are reference scaffolding and must never become runtime consumers. The static category-picture alternative also requires the simple-category eligibility gate and cannot accompany the interactive puzzle.
 
 ## Formable nation asset coverage
 

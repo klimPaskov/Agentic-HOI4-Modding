@@ -75,10 +75,13 @@ A closure handoff should not claim implementation completion on its own. It tell
 
 Use the system skill that owns the surface being improved.
 
+When an addendum affects any supported focus, event-chain, technology/doctrine, weighted-logic, scripted-GUI, or map surface, require the matching MCP baseline and post-change evidence under its owner skill. Weighted audit-patch-compare evidence must route through `hoi4_ai_probability_auditor`. Exact unavailable routes remain blockers or unresolved evidence, and source-only review is not equivalent.
+
 - `hoi4-feature-planning` is the standard for expansion spec quality. The addendum should be idea-first, detailed, and implementation-ready, but not forced into a rigid template.
 - `hoi4-events` owns event chains, event details, escalation variants, optional mod-specific logging surfaces when event work uses them, docs, and documentation alignment.
 - `hoi4-focus-trees` owns route depth, branch interaction, focus rewards, route AI, focus icons, and focus documentation.
-- `hoi4-decisions-missions` owns decisions, missions, costs, objectives, scripted GUI decision surfaces, hidden decision visibility, tooltips, AI actions, and cleanup.
+- `hoi4-decisions-missions` owns decisions, missions, costs, objectives, gameplay-changing GUI actions, hidden decision visibility, tooltips, AI actions, and cleanup.
+- `hoi4-scripted-gui` owns scripted GUI reference mapping, layout and content budgets, iterative MCP preview and comparison, click-region and state review, and visual acceptance.
 - `hoi4-feature-assets` owns visual assets, animated sprites, animated portraits, source rules, DDS outputs, manifests, contact sheets, and sprite handoffs.
 - `hoi4-text-audio-research` owns sourced quotes, cultural remarks, slogans, title-like references, audio source checks, license checks, attribution notes, and copyright-risk notes. The owning implementation skill handles wiring and alignment with any explicitly scoped repository surfaces.
 - `hoi4-subagents` explains when to use a planner subagent, a patch-capable system subagent, an asset worker, a read-only auditor, or other subagents.
@@ -115,9 +118,9 @@ Improvement addenda, audit follow-up plans, subagent handoffs, and implementatio
 docs/plans/<feature_slug>/
 ```
 
-The plans folder is where subagents add working handoffs. The specs folder is where accepted source-of-truth feature specs live.
+The plans folder holds working handoffs. A spec path, status label, old handoff, or implementation evidence does not establish design approval. Record the explicit user decision or parent acceptance within existing authorization that supports each accepted claim. Preserve unsupported or conflicting claims as unresolved.
 
-If an improvement addendum is accepted as source design, the main agent should either implement it or fold the design into the relevant spec file under `docs/specs/<feature_slug>/`. Do not let accepted design live only as a loose plan if the final spec is meant to be complete.
+If an improvement addendum is accepted as source design, fold it into the relevant spec under `docs/specs/<feature_slug>/` or record it as accepted and queued with its acceptance basis and reason. Record implementation evidence separately. Do not let accepted design live only as an unclassified loose plan.
 
 ## The improvement question
 
@@ -212,7 +215,11 @@ Do not grant every core for free unless the story and balance justify it. Prefer
 
 A scripted GUI is useful when the player needs to manage a living system visually. It is not useful when a normal decision category would be clearer.
 
+Apply the decision skill's category-picture eligibility gate before proposing static or animated pictures. Basic value tables and ordinary decisions can remain simple, while meters, extra custom controls, rich panels, interactive state puzzles, and other animations exclude an additional picture. Choose animation for useful state feedback rather than as a depth requirement.
+
 A GUI addendum should describe what the player sees, what values matter, what buttons can be clicked, what costs they use, what tooltips explain, what states or targets are locked, what warning states appear, what animation communicates, and how the UI closes or changes when the mechanic ends.
+
+Follow [hoi4-scripted-gui](../hoi4-scripted-gui/SKILL.md): choose or create a reference before implementation, map it to native controls and background regions, define coherent review scenarios and supported resolutions, and require live MCP previews throughout construction rather than only a final screenshot.
 
 Good scripted GUI use cases include congress vote boards, patron influence networks, formable progress panels, crisis meters, corruption webs, occult pressure seals, expedition logistics boards, faction cohesion screens, target cards, and reform panels with competing factions.
 
@@ -236,7 +243,7 @@ Visual improvement should support mechanic clarity. It should not become decorat
 
 When an improvement changes a unit, building, creature, vehicle, aircraft, naval object, or map entity, include a 3D model review instead of treating the model as a final-render detail. Check whether the feature needs a static prop, a calibrated humanoid unit, a domain-specific mesh, or a building entity, then name the vanilla mesh/entity precedent, source-height/entity-scale crosswalk, one-image Meshy input rule, PDX material mapping, required skeletal actions, `.mesh`/`.anim` exports, reimport evidence, runtime hashes, valid map placement, and live consumer.
 
-Route bounded production to `hoi4_3d_model_pipeline` with `fork_context=false`. Require the designed-source/rights gate, native alpha where needed, and Meshy 7 (`meshy-7`) by default, with pre-authorized normal model/animation spend and failure-driven provider recovery without another confirmation while live balance and verified provider capability permit them; record every attempt and stop for insufficient credits, provider refusal, or unavailable capability. Required motion must retain substantive `meshy_animate` or explicitly approved professional-source actions, Internet-sourced-only unit audio, and bespoke vanilla-green counters backed by exact installed-vanilla inspection. Keep provider source, Blender checkpoints, processed textures, counter and sound handoffs, and runtime evidence separate from the parent-owned `.asset`, entity, `.gfx`, gameplay wiring, and in-game proof.
+Route bounded production to `hoi4_3d_model_pipeline` with `fork_turns="none"`. Require the designed-source/rights gate, a substantially original source-informed refinement with a source-to-refinement comparison, explicit approval before any source-free fallback, native alpha where needed, and Meshy 7 (`meshy-7`). Firearm-bearing units use a fresh weapon-free body plus direct Blender component/rig/weight/action authoring; existing non-firearm repairs use Blender directly; other new animated models get one supported Meshy rig/action attempt before Blender recovery without paid retries. Require substantive multi-phase motion, complete required components, Internet-sourced-only unit audio, and bespoke vanilla-green counters backed by exact installed-vanilla inspection. Keep provider source, Blender checkpoints, processed textures, counter and sound handoffs, and runtime evidence separate from the parent-owned `.asset`, entity, `.gfx`, gameplay wiring, and in-game proof.
 
 An asset addendum can define route-specific report images, decision icons, idea icons, focus icon families, flags, portraits, faction emblems, scripted GUI panels, animated sprites, animated portrait variants, progression states, and contact sheets.
 

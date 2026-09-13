@@ -54,7 +54,15 @@ Use this skill with `hoi4-feature-assets`.
 
 Use `$imagegen` for generated frame art. If `$imagegen` is unavailable, stop and report the blocker. Do not invent another image generation route.
 
+Read [generated source art and review](../hoi4-feature-assets/references/generation-and-review.md) before seed or frame production. Use its model preference only when the actual tool exposes selection. After accepting a seed, use that seed or a neighbouring accepted frame as each edit target, name the exact motion-state delta, and preserve subject, camera, palette, canvas, anchor, and alpha. Record each frame's input candidate and repair lineage. Compare every accepted frame with the seed to detect accumulated drift and loop discontinuity. Each frame still needs its own real visual state.
+
+For every alpha-backed animation family, request a genuine transparent background in the initial ImageGen call for every generated source frame and preserve the alpha through normalization, sheet assembly, preview creation, and DDS conversion. Do not generate opaque or chroma-backed frames as the normal route. Use the fallback background-removal workflow in `hoi4-feature-assets` only when native transparency fails or an inherited, sourced, or user-provided frame begins with an unwanted opaque backdrop.
+
 Use `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-events`, or the relevant repository-specific implementation skill for the gameplay surface that uses the animation.
+
+When the animation belongs to a scripted GUI, also use `hoi4-scripted-gui` for the accepted reference mapping, native placement, iterative MCP render review, state and resolution coverage, click-region safety, and final visual acceptance. This animation skill owns the frame package, not the enclosing GUI layout.
+
+Use the owning surface's mandatory MCP evidence whenever frame assets change an in-scope focus, event-chain, technology/doctrine, GUI, or map consumer. Preserve matching baseline and post-change evidence, report the exact unavailable route, and keep the affected surface unresolved if required evidence is missing. Source-only checks or a GIF do not replace that pass.
 
 3D skeletal `.anim` actions are not frame-sheet assets. Route model rigs, retargeting, baked actions, root-motion policy, `.anim` export, reimport proof, and unit or entity runtime binding to `hoi4-3d-model-pipeline`; do not manufacture a skeletal action by moving or filtering one still image, and do not replace a requested action with a 2D frame sheet.
 
@@ -131,6 +139,7 @@ The brief must include:
 - `play_on_show` expectation when relevant
 - anchor point, usually center or bottom-center
 - source mode for each frame
+- background mode for the family and every exception: `native_transparent`, `consumer_opaque`, or `fallback_removed`
 - whether the subject is real, fictional, symbolic, supernatural, UI-only, or route-state art
 - reference folder or existing repo example inspected
 - final DDS, PNG, sheet, and preview paths
@@ -166,9 +175,12 @@ For generated frames:
 2. Keep one subject, one camera angle, one palette, and one composition across all frames.
 3. Use the same target framing and anchor language in every frame prompt.
 4. Vary only the planned motion state, light state, expression, particle state, or route-state element.
-5. Do not ask for text in generated frames.
-6. Save every source frame before processing.
-7. Reject frames with drifted silhouettes, wrong subject identity, wrong palette, opaque background when transparency is required, visible generated text, or broken loop behavior.
+5. For an alpha-backed family, request real transparency in the first ImageGen call for every frame and retain the native-alpha source. Do not plan routine background removal.
+6. Do not ask for text in generated frames.
+7. Save every source frame before processing.
+8. Reject frames with drifted silhouettes, wrong subject identity, wrong palette, opaque background for an alpha-backed family, fake checkerboards, halos, matte pixels, alpha drift, visible generated text, or broken loop behavior.
+
+If a frame fails native-transparency validation, use the `hoi4-feature-assets` fallback order: targeted built-in ImageGen edit-to-transparency first, then an actually available verified local removal process only if necessary. Preserve the untouched source, record the fallback and settings, and reject clipped silhouettes, coloured spill, internal holes, or edge drift. Never allow one repaired frame to use materially different alpha bounds from the rest of the family without an explicit motion reason.
 
 For real people, do not generate fake motion that implies real footage, speech, or new real-world behavior. Use sourced stills and subtle symbolic layers only when the parent scope allows it. Keep the result clearly an in-game portrait or UI asset.
 
@@ -201,7 +213,7 @@ For the common `frameAnimatedSpriteType` pattern, build a one-row horizontal she
 Rules:
 
 - every processed frame must have identical dimensions
-- each frame must use the same transparent or opaque background rule as the target asset type
+- each frame must use the target asset type's background rule; alpha-backed families default to native ImageGen transparency, while deliberately painted full-canvas families remain opaque only when their inspected consumer requires it
 - frame order is left to right
 - sheet width must be `frame_width * noOfFrames`
 - sheet height must be `frame_height`
@@ -449,7 +461,7 @@ Before marking an animation complete, verify:
 
 - every frame has a source PNG
 - every processed frame has the same exact dimensions
-- transparent assets have real transparent unused pixels
+- alpha-backed assets retain real native transparent unused pixels, or contain a documented and edge-validated fallback repair
 - subject identity, silhouette, palette, camera, and scale stay consistent
 - the anchor is stable across frames
 - the loop returns cleanly to the starting state
@@ -477,6 +489,7 @@ Before marking an animation complete, verify:
 Stop and report a blocker when:
 
 - `$imagegen` is unavailable for generated frame art
+- required native transparency cannot be obtained or fallback removal damages the subject, silhouette, or frame-to-frame alpha bounds
 - required source frames for a sourced animation cannot be found
 - the offline HOI4 wiki page, vanilla file, or existing repository example needed for wiring cannot be inspected
 - the repo has no safe known pattern for the requested animated sprite type and the parent did not authorize exploration

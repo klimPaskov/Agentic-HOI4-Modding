@@ -49,6 +49,16 @@ The checksum- and frame-level provenance for the 2026-08-04 synchronized expansi
 | `units/models_3d/naval_materials` | 5 | 5 | `units/models_3d/naval_materials/contact_sheet.png` |
 | `units/naval/map_counters` | 15 | 5 | `units/naval/map_counters/contact_sheet.png` |
 
+## Achievement workflow inputs (excluded from coverage and contact sheets)
+
+These exact 64x64 PNGs are processor inputs rather than vanilla reference art. They are stored separately under `icons/achievements/template/`, excluded from the `icons/achievements` count and contact sheet, and preserved byte-for-byte.
+
+| Role | Workflow PNG | Source kind | SHA-256 (PNG) |
+| --- | --- | --- | --- |
+| Completed background | `icons/achievements/template/achievement_template.png` | Reusable workflow input | `248DB006611EB3942550C43DF83802AA6FB24761035FC928B5D34586C0C4C5BA` |
+| Grey and not-eligible background | `icons/achievements/template/achievement_template_grey.png` | Reusable workflow input | `70E073694C1A7D9FE40C63B1EB2E987A8A45B3FFD15CCF789EEAA5B843B90022` |
+| Not-eligible red-cross overlay | `icons/achievements/template/overlay.png` | Unchanged reusable workflow input | `89BC80C6AC975BF6F1FF000FF3070B20C337BFB8B8AE966AE35A5540C004D6DD` |
+
 ## Decision category pictures
 
 This is the canonical review-only family for larger decision-category pictures, separate from the small `icons/decision_categories/` category-icon family and from scripted-GUI or full mechanic-window backgrounds. The owning surface is a decision category's `picture = GFX_decision_cat_*` field, with the installed vanilla consumer defined in `interface/decisions.gfx` and the relevant `common/decisions/categories/*.txt` file.

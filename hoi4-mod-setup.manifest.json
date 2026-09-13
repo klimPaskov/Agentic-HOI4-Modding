@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "cbdc5f06ff4ca71c2e1c6ef3c5befd8adc1332bb",
+  "generated_for_revision": "59cc276cd79db5e69b0b39280f09c831d86a2348",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1088,7 +1088,8 @@
         "kind": "tree",
         "path": ".agents/skills",
         "include": [
-          "hoi4-*/**"
+          "hoi4-*/**",
+          "xlsx/**"
         ],
         "exclude": [
           "hoi4-super-events*/**",
@@ -1130,7 +1131,9 @@
         "decisions",
         "assets",
         "3D planning",
-        "subagent routing"
+        "subagent routing",
+        "scripted GUI",
+        "spreadsheets"
       ],
       "expected_files": [
         {
@@ -7637,14 +7640,19 @@
         "preserve_local_additions": true
       },
       "capabilities": [
-        "one-image Meshy generation",
+        "one approved input per Meshy geometry task, including separate firearm tasks",
         "job-root-bounded Blender production adapter",
         "Blender normalization",
+        "bounded mesh, skin, material, action and retarget repair with source-closure verification",
+        "response-safe Blender transport and non-replayed paid mutations",
+        "optional Meshy text-to-motion client gated by actual app-owned launcher tool schemas",
         "PDX mesh and animation export"
       ],
       "notes": [
         "Missing or provider-rejected MESHY_API_KEY leaves this optional workflow incomplete before dependency setup begins.",
         "The repository-owned blender_hoi4 adapter is the production route; unrestricted Blender Lab is disabled and development-only.",
+        "Optional motion client support does not prove launcher exposure; missing actual tools use bounded Blender continuation without patching the pinned runtime.",
+        "Adapter source changes require rebootstrap; publication evidence must be regenerated from the committed revision containing those changes.",
         "The inspected repository implementation is Windows oriented; no macOS route is declared."
       ],
       "expected_files": [

@@ -7,6 +7,8 @@ import os
 import subprocess
 import ctypes
 import time
+import queue
+import threading
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Sequence
 
@@ -259,6 +261,80 @@ def _json_lines(output: str) -> Iterable[Dict[str, Any]]:
             yield value
 
 
+def _is_repository_blender_adapter(command: Sequence[str]) -> bool:
+    """Select only the canonical repository adapter; other routes stay unchanged."""
+    expected = Path(__file__).resolve().parents[1] / "wrappers" / "run_blender_hoi4_adapter.cmd"
+    return (
+        len(command) == 5
+        and [str(value).casefold() for value in command[:4]] == ["cmd.exe", "/d", "/c", "call"]
+        and os.path.normcase(str(Path(command[4]).resolve())) == os.path.normcase(str(expected.resolve()))
+    )
+
+
+def _exchange_blender_response(process, messages, timeout_seconds, receipt=None):
+    """Keep adapter stdin open until its matching response, with one deadline.
+
+    FastMCP can cancel a pending request when the client's stdin reaches EOF.
+    Drain both pipes concurrently, initialize before requesting, and send EOF
+    only after the response. This performs no retry or request replay.
+    """
+    output, diagnostics, incoming = [], [], queue.Queue()
+    deadline = time.monotonic() + timeout_seconds
+    def read(stream, destination, notify=False):
+        try:
+            for line in stream:
+                destination.append(line)
+                if notify:
+                    for value in _json_lines(line):
+                        incoming.put(value)
+        finally:
+            if notify:
+                incoming.put(None)
+    readers = [threading.Thread(target=read, args=(process.stdout, output, True), daemon=True),
+               threading.Thread(target=read, args=(process.stderr, diagnostics), daemon=True)]
+    for reader in readers:
+        reader.start()
+    def send(message):
+        process.stdin.write(json.dumps(message, separators=(",", ":")) + "\n")
+        process.stdin.flush()
+    def receive(identifier):
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise MCPRouteError(f"Blender adapter timed out after {timeout_seconds}s awaiting JSON-RPC id {identifier}; no request was replayed.")
+            try:
+                value = incoming.get(timeout=remaining)
+            except queue.Empty as exc:
+                raise MCPRouteError(f"Blender adapter timed out after {timeout_seconds}s awaiting JSON-RPC id {identifier}; no request was replayed.") from exc
+            if value is None:
+                raise MCPRouteError(f"Blender adapter stdout EOF before JSON-RPC id {identifier}. {''.join(diagnostics).strip()[-4000:]}")
+            if value.get("id") == identifier:
+                return value
+    send(messages[0])
+    initialized = receive(1)
+    if "error" in initialized:
+        raise MCPRouteError(json.dumps(initialized["error"], sort_keys=True))
+    if not isinstance(initialized.get("result"), dict):
+        raise MCPRouteError("Blender adapter initialize response has no result object.")
+    send(messages[1])
+    response_id = 1
+    if len(messages) == 3:
+        send(messages[2])
+        response_id = messages[2]["id"]
+        receive(response_id)
+    if receipt is not None:
+        receipt.update(exchange="blender_response_drained", initialized_before_request=True,
+                       response_id_before_stdin_eof=response_id, request_replays=0)
+    process.stdin.close()
+    try:
+        process.wait(timeout=max(0.001, deadline - time.monotonic()))
+    except subprocess.TimeoutExpired as exc:
+        raise MCPRouteError("Blender adapter responded but did not exit before the session deadline; no request was replayed.") from exc
+    for reader in readers:
+        reader.join(timeout=2)
+    return "".join(output), "".join(diagnostics)
+
+
 def call_stdio(
     command: Sequence[str],
     *,
@@ -310,6 +386,7 @@ def call_stdio(
     request = "\n".join(json.dumps(message, separators=(",", ":")) for message in messages) + "\n"
 
     process: Optional[subprocess.Popen[str]] = None
+    adapter_exchange = _is_repository_blender_adapter(command)
     windows_job = _create_windows_kill_job()
     owned_at_cleanup: list[int] = []
     surviving_process_ids: list[int] = []
@@ -340,7 +417,10 @@ def call_stdio(
         if lifecycle_receipt is not None:
             lifecycle_receipt["root_pid"] = process.pid
         _assign_windows_kill_job(windows_job, process)
-        stdout_text, stderr_text = process.communicate(request, timeout=timeout_seconds)
+        if adapter_exchange:
+            stdout_text, stderr_text = _exchange_blender_response(process, messages, timeout_seconds, lifecycle_receipt)
+        else:
+            stdout_text, stderr_text = process.communicate(request, timeout=timeout_seconds)
         completed = subprocess.CompletedProcess(
             list(command),
             process.returncode,
@@ -380,6 +460,13 @@ def call_stdio(
                 lifecycle_receipt["cleanup_inspection_error"] = (
                     str(cleanup_inspection_error) if cleanup_inspection_error else None
                 )
+            if adapter_exchange:
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        try:
+                            stream.close()
+                        except OSError:
+                            pass
         _close_windows_handle(windows_job)
 
     if cleanup_inspection_error is not None:

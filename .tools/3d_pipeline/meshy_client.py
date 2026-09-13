@@ -8,8 +8,10 @@ credential routes.
 from __future__ import annotations
 
 import json
+import math
 import os
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 from urllib.parse import urlparse
@@ -90,6 +92,10 @@ def _first_key(value: Any, names: Tuple[str, ...]) -> Optional[Any]:
 
 def task_id_from(result: Dict[str, Any]) -> str:
     value = _first_key(result, ("task_id", "taskid", "id"))
+    if not value:
+        payload = _payload(result)
+        if isinstance(payload.get("result"), str):
+            value = payload["result"]
     if not value:
         raise MCPRouteError("Meshy response did not contain a task id.")
     return str(value)
@@ -185,7 +191,7 @@ class MeshyClient:
                 "arguments": redacted_arguments,
             })
             write_json(self.job_root / "provider" / "responses" / f"{stamp}.json", redacted_result)
-            credits_value = _first_key(result, ("credits_used", "credit_cost", "cost"))
+            credits_value = _first_key(result, ("consumed_credits", "credits_used", "credit_cost", "cost"))
             credit_record = {
                 "timestamp": record["timestamp"],
                 "tool": tool,
@@ -219,13 +225,30 @@ class MeshyClient:
         timeout_seconds: int = 1800,
     ) -> Dict[str, Any]:
         require_meshy_key()
-        result = call_stdio(
-            self._command(),
-            tool=tool,
-            arguments=arguments,
-            timeout_seconds=timeout_seconds,
-            cwd=self.repo_root,
-        )
+        journal = None
+        if paid:
+            if self.job_root is None:
+                raise RuntimeError("Paid submissions require a job-local upfront journal.")
+            journal = self.job_root / "provider/submissions" / f"{uuid.uuid4().hex}.json"
+            entry = {"timestamp": utc_now(), "tool": tool, "arguments": redact(arguments),
+                     "estimate_credits": estimate_credits, "state": "submission_started",
+                     "automatic_retry": False}
+            write_json(journal, entry)
+        lifecycle = {}
+        try:
+            result = call_stdio(self._command(), tool=tool, arguments=arguments,
+                                timeout_seconds=timeout_seconds, cwd=self.repo_root,
+                                lifecycle_receipt=lifecycle)
+            if journal:
+                entry.update(state="uncertain" if result.get("isError") else "response_received",
+                             response=redact(result), lifecycle=lifecycle)
+                write_json(journal, entry)
+        except Exception:
+            if journal:
+                entry.update(state="uncertain", lifecycle=lifecycle,
+                             recovery="Inspect task inventory before any further paid submission; do not retry blindly.")
+                write_json(journal, entry)
+            raise
         return self._record(
             tool,
             arguments,
@@ -540,14 +563,82 @@ class MeshyClient:
             timeout_seconds=1800,
         )
 
-    def animate(self, *, rig_task_id: str, action_id: int, estimate_credits: int) -> Dict[str, Any]:
+    def _require_motion_tools(self, *, generated_retarget: bool = False) -> None:
+        """Verify optional live exposure through the app launcher; never patch its runtime."""
+        require_meshy_key()
+        listed = call_stdio(self._command(), list_tools=True, timeout_seconds=300, cwd=self.repo_root)
+        live = {item.get("name"): item for item in listed.get("tools", []) if isinstance(item, dict)}
+        expected = {
+            "meshy_text_to_motion": {"prompt", "mode", "duration"},
+            "meshy_get_motion_status": {"task_id"},
+            "meshy_list_motion_tasks": {"page_num", "page_size"},
+            "meshy_download_motion": {"task_id", "format", "save_to"},
+            "meshy_animation_library": set(),
+        }
+        if generated_retarget:
+            expected["meshy_animate"] = {"rig_task_id", "motion_task_id"}
+        missing = []
+        for name, arguments in expected.items():
+            properties = live.get(name, {}).get("inputSchema", {}).get("properties", {})
+            if name not in live or not arguments.issubset(properties):
+                missing.append(name)
+        if missing:
+            raise MCPRouteError(f"Required installation/verification: app-owned Meshy launcher lacks optional motion tools/schema: {sorted(missing)}. Do not use a project wrapper or direct REST; use the authorized Blender recovery route where applicable.")
+
+    def animation_library(self) -> Dict[str, Any]:
+        self._require_motion_tools()
+        return self.call("meshy_animation_library", {}, timeout_seconds=300)
+
+    def text_to_motion(self, *, prompt: str, mode: str, duration: float) -> Dict[str, Any]:
+        if not isinstance(prompt, str) or not prompt.strip() or not 1 <= len(prompt) <= 400 or mode not in {"prime", "swift"}:
+            raise ValueError("Motion requires prompt 1–400 characters and prime/swift mode.")
+        if type(duration) not in (int, float) or not math.isfinite(duration) or not 2 <= duration <= 10 or duration * 2 != int(duration * 2):
+            raise ValueError("Motion duration must be 2–10 seconds in half-second steps.")
+        self._require_motion_tools()
+        return self.call("meshy_text_to_motion", {"prompt": prompt, "mode": mode, "duration": duration},
+                         paid=True, estimate_credits=10 if mode == "prime" else 3, timeout_seconds=300)
+
+    def motion_status(self, task_id: str) -> Dict[str, Any]:
+        self._require_motion_tools()
+        return self.call("meshy_get_motion_status", {"task_id": task_id}, timeout_seconds=300)
+
+    def list_motion_tasks(self, *, page_num: int = 1, page_size: int = 20) -> Dict[str, Any]:
+        if type(page_num) is not int or page_num < 1 or type(page_size) is not int or not 1 <= page_size <= 100:
+            raise ValueError("Motion pagination requires positive integer page and size 1..100.")
+        self._require_motion_tools()
+        return self.call("meshy_list_motion_tasks", {"page_num": page_num, "page_size": page_size}, timeout_seconds=300)
+
+    def download_motion(self, *, task_id: str, format_name: str, destination: Path) -> Dict[str, Any]:
+        if self.job_root is None:
+            raise RuntimeError("Motion download requires job root.")
+        if not isinstance(task_id, str) or not task_id.strip() or format_name not in {"fbx", "bvh"}:
+            raise ValueError("Motion download requires exact task id and fbx/bvh format.")
+        destination = destination.resolve()
+        job_path(self.job_root, destination.relative_to(self.job_root).as_posix())
+        if destination.exists():
+            raise FileExistsError(destination)
+        self._require_motion_tools()
+        result = self.call("meshy_download_motion", {"task_id": task_id, "format": format_name,
+                           "save_to": str(destination)}, timeout_seconds=300)
+        receipt = _payload(result)
+        if result.get("isError") or not destination.exists() or receipt.get("task_id") != task_id or str(receipt.get("sha256", "")).lower() != sha256_file(destination).lower():
+            raise MCPRouteError("Motion download missing or receipt identity/SHA-256 mismatch.")
+        write_json(self.job_root / "provider/downloads" / f"{destination.name}.manifest.json", receipt)
+        return receipt
+
+    def animate(self, *, rig_task_id: str, estimate_credits: int, action_id: Optional[int] = None,
+                motion_task_id: Optional[str] = None) -> Dict[str, Any]:
+        if (action_id is None) == (motion_task_id is None):
+            raise ValueError("Animation requires exactly one of action_id or motion_task_id.")
+        if motion_task_id is not None:
+            if not isinstance(motion_task_id, str) or not motion_task_id.strip():
+                raise ValueError("Generated-motion retarget requires a nonblank task id.")
+            self._require_motion_tools(generated_retarget=True)
+        arguments = {"rig_task_id": rig_task_id, "response_format": "json"}
+        arguments.update({"action_id": action_id} if action_id is not None else {"motion_task_id": motion_task_id})
         return self.call(
             "meshy_animate",
-            {
-                "rig_task_id": rig_task_id,
-                "action_id": action_id,
-                "response_format": "json",
-            },
+            arguments,
             paid=True,
             estimate_credits=estimate_credits,
             timeout_seconds=1800,

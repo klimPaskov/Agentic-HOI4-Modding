@@ -25,6 +25,14 @@
     },
     "meshy_animate": {"paid": true, "required_arguments": ["rig_task_id", "action_id"]}
   },
+  "optional_capabilities": {
+    "text_to_motion": {
+      "requires_live_verified_app_launcher_exposure": true,
+      "tool_names": ["meshy_text_to_motion", "meshy_get_motion_status", "meshy_list_motion_tasks", "meshy_download_motion", "meshy_animation_library"],
+      "generated_retarget_requires": {"tool": "meshy_animate", "arguments": ["rig_task_id", "motion_task_id"], "exclusive_with": "action_id"},
+      "missing_capability_policy": "exact blocker; authorized Blender recovery, no project credential wrapper or direct REST"
+    }
+  },
   "provider_policy": {
     "input_image_count": 1,
     "allow_multi_view_thumbnails": false,
@@ -32,6 +40,10 @@
     "default_generation_model": "Meshy 7 via explicit ai_model=meshy-7",
     "silent_model_downgrade": false,
     "planned_paid_operations_pre_authorized": true,
-    "failure_recovery_requires_confirmation": true
+    "max_rig_attempts": 1,
+    "max_action_attempts_per_role": 1,
+    "blender_recovery_pre_authorized": true,
+    "geometry_recovery_within_declared_limits_pre_authorized": true,
+    "provider_source_substitution_requires_confirmation": true
   }
 }

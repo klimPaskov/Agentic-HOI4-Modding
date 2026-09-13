@@ -555,6 +555,8 @@ A decision category should feel curated by the current route and campaign state,
 
 Plan the least complex surface that communicates a category's purpose and current state: ordinary category icon and text, static category picture, animated category picture with a static fallback, compact attached display, then full scripted GUI. Do not plan a full window merely because a category is important. Pictures suit propaganda, ideology, preparedness, treaties, faction identity, and territorial overview; they are presentation and must not contain fake buttons, meters, or controls. Use a full GUI only for several interacting values, repeated target selection, competing factions, persistent state changes, or exact live state pieces that ordinary decisions and one picture cannot explain. Record the choice, intended content regions, visible value/action budget, and the canonical vanilla references in the implementation prompt.
 
+Apply the `hoi4-decisions-missions` category-picture eligibility gate before choosing either static or animated pictures. Eligible categories contain a description, ordinary decision list, and at most basic formatted value tables. Complex UI, meters, extra custom controls, rich panels, or other animations exclude an additional picture. Ordinary decision buttons and basic value tables alone do not require richer GUI. An interactive state puzzle cannot also receive a category picture. Include eligibility in asset briefs and acceptance criteria.
+
 ### What the implementation agent owns
 
 The implementation agent is responsible for the final exact focus tree shape unless the user asks otherwise.
@@ -601,7 +603,7 @@ Do not spend excessive planning effort forcing exact graph coordinates if the re
 
 When the planned feature includes a focus tree, event chain, technology or doctrine tree, weighted logic, scripted GUI, or map surface supported by `hoi4-agent-tools`, make the matching MCP pass mandatory in the implementation prompt. Require the matching read-only inspect and render evidence before source edits, compare evidence after edits, and bounded rewrite operations only where the discovered route exists. For weighted logic, require `hoi4_ai_probability_auditor` to establish named baseline scenarios, the owner to apply the bounded patch, and mandatory `hoi4.probability_compare` against the same scenarios. If any required route is unavailable, record the exact missing tool or selector and do not treat source-only review as equivalent. The normal owning skill still controls design, source review, assets, and final validation.
 
-If the feature is a named event that specifically introduces a dedicated scripted GUI, include a bounded `hoi4_event_ui_worker` handoff in the implementation prompt. Name the event-owned GUI identifiers, files, entry point, layout regions, states, resolutions, decisions, assets, and handoff path. Require the worker's mandatory MCP inspect/render/rewrite/post-comparison workflow and the complete layout contract from `hoi4-decisions-missions`. Do not route shared event logs, event-detail frameworks, settings, super-event frameworks, or unrelated existing UIs to that worker.
+If the feature is a named event that specifically introduces a dedicated scripted GUI, include a bounded `hoi4_event_ui_worker` handoff in the implementation prompt. Name the event-owned GUI identifiers, files, entry point, layout regions, states, resolutions, decisions, assets, and handoff path. Require the accepted reference, native-element mapping, iterative MCP inspection/render/correction loop, and matched final comparison under `hoi4-scripted-gui`. Reviewed source edits may be applied directly or with optional rewrite. Do not route shared event logs, event-detail frameworks, settings, super-event frameworks, or unrelated existing UIs to that worker.
 
 
 ## 3.7 Achievement design standard
@@ -752,6 +754,8 @@ Costs should be dynamic. The amount and type of cost should react to country siz
 Map blocked localisation for nonstandard costs. The player should understand whether they lack infantry equipment, support equipment, divisions in the right state, local support, army XP, fuel, rail control, relations, foreign route access, or another requirement.
 
 For every major decision family, include at least one cost or requirement that is not political power or command power unless the spec explains why that family is purely bureaucratic.
+
+Plan at most four distinct spendable cost types per action, with non-consumed requirements identified separately. The inline native row shows at most three values and at most four ordinary words, using proper texticons and no duplicate native payment. Require the complete cost tooltip and longest available/blocked native-render checks under `hoi4-decisions-missions`.
 
 
 ## 3.11 AI strategy and behavior mapping standard
@@ -957,7 +961,7 @@ The brief must name the installed vanilla mesh and entity that establish axes, o
 
 For humanoid units, the custom source geometry must match the named vanilla source mesh height and the entity scale must be applied exactly once. Record source height, entity scale, effective runtime height, coordinate axes, facing direction, origin, and the measurement evidence in the plan.
 
-For every requested skeletal action, define the semantic role, action name, FPS, frame range, loop policy, root-motion or in-place policy, ground-contact requirement, retarget or authoring route, static fallback policy, runtime binding, and acceptance evidence. Required motion must retain substantive actions from verified `meshy_animate` or an explicitly approved professional source; Blender may process, retarget, clean, correct contacts or roots, bake, validate, and export that source but may not author final replacement motion. For every custom-unit sound role, define the Internet source-search requirement, selection or movement or engine or idle or attack or impact or special-action or death role when applicable, and the animation action and frame or runtime lifecycle synchronization point.
+For every requested skeletal action, define the semantic role, action name, FPS, frame range, loop policy, root-motion or in-place policy, ground-contact requirement, production/recovery route, runtime binding, and acceptance evidence. Firearm-bearing units plan a weapon-free Meshy 7 body plus separate Meshy 7 geometry tasks/approved firearm-only inputs for each gun, independent task/credit/download lineage, and direct Blender rigging, weights, substantive actions, firearm fitting/attachment, rigid controls, locators, contacts, and other props. Existing non-firearm repairs plan direct Blender work. Other new animated models plan one supported Meshy rig attempt and one action attempt per missing role, then Blender recovery without paid rig/action retries. Require meaningful multi-phase articulated motion, deformation/contact checks, export, and reimport proof; static, transform-only, whole-rig-only, or semantically aliased clips cannot pass. For every custom-unit sound role, define the Internet source-search requirement, selection or movement or engine or idle or attack or impact or special-action or death role when applicable, and the animation action and frame or runtime lifecycle synchronization point.
 
 For every custom-unit counter, define the installed-vanilla definition and DDS reference, matching skill-local contact sheet, native canvas, per-frame size, frame order, alpha/background behavior, exact green palette, silhouette and contrast target, emitted token, required variants, final DDS path, and parent-owned GFX wiring.
 
@@ -967,7 +971,7 @@ The model package must plan provider lineage, Blender source and normalized/repa
 
 The asset plan must distinguish provider source files from final runtime copies. It must require a final hash-aware synchronization step so an older mapped texture, mesh, entity, or animation cannot overwrite the approved runtime candidate.
 
-Route production to `hoi4_3d_model_pipeline` with `fork_context=false` and give it the exact job root, reference status or authorized modern-artwork search scope, asset profile, vanilla references, scale relationship, action list, custom-unit sound roles, custom-unit counter consumers/tokens and inspected vanilla paths, dependency lock, baseline planned paid operations, extra-recovery credit limits, and handoff path. Require the designed-source/rights gate, immutable source and search records, exclusion of historical/documentary source families from the model-reference pool, faithful ImageGen cleanup with visual-fidelity comparison, explicit approval before any from-scratch fallback, native alpha where needed, and Meshy 7 (`meshy-7`) as the default generation model. Normal planned model and required animation spend plus failure-driven provider recovery are pre-authorized while live balance and verified provider capability permit them; record every attempt and stop for insufficient credits, provider refusal, or unavailable capability. The parent owns final sound definitions, runtime wiring, and live validation.
+Route production to `hoi4_3d_model_pipeline` with `fork_turns="none"` and give it the exact job root, reference status or authorized modern-artwork search scope, asset profile, vanilla references, scale relationship, component/action list, selected firearm/non-firearm/repair route, custom-unit sound roles, custom-unit counter consumers/tokens and inspected vanilla paths, dependency lock, baseline planned paid operations, geometry-recovery credit limits, and handoff path. Require the designed-source/rights gate, immutable source and search records, exclusion of historical/documentary source families from the model-reference pool, a substantially original source-informed ImageGen refinement with a source-to-refinement comparison, explicit approval before any source-free fallback, native alpha where needed, and Meshy 7 (`meshy-7`) as the generation model. Normal planned provider calls and bounded geometry recovery are pre-authorized while live balance and capability permit them; rig/action calls are limited to one supported attempt before Blender recovery. The parent owns final sound definitions, runtime wiring, and live validation.
 
 The main implementation agent owns `.asset`, entity, `.gfx`, unit/building/gameplay wiring, valid province and state placement, live runtime validation, and in-game evidence.
 
@@ -1125,7 +1129,9 @@ Map the UI states if the UI represents pressure, route choice, threat, stage, fa
 
 When a feature has an important mechanic, decide whether the decision category needs a richer scripted GUI or a separate mechanic window. The spec should define the player-facing interface when the system is important enough to manage visually.
 
-For major features, important decision categories, custom mechanic windows, formable routes, extreme-route route reveals, active crisis meters, special leader transformations, faction boards, patron influence networks, or occult and supernatural systems, run an animation planning pass by default. The pass must either define useful animated sprites or state why static presentation is better for that exact surface. Do not skip the question simply because static assets are easier.
+Use [hoi4-scripted-gui](../hoi4-scripted-gui/SKILL.md) as the source of truth for reference images before implementation, native element and background mapping, content and interaction budgets, iterative MCP live previews, scenario and resolution coverage, and visual acceptance. The plan must give any event-owned UI worker enough exact scope and acceptance context to follow that workflow without guessing.
+
+For major features, important decision categories, custom mechanic windows, formable routes, route reveals, crisis meters, leader transformations, and faction boards, run a presentation-choice pass. Choose ordinary category presentation, an eligible static or animated picture, a compact attached display, or a full GUI. Plan animation only when it clarifies a changing state or materially supports the accepted presentation. Static presentation needs no defensive justification when it is clearer.
 
 A mechanic UI spec should include:
 
@@ -1147,7 +1153,7 @@ A mechanic UI spec should include:
 
 The spec should not make an interactive window for every small modifier. Use custom UI when it improves readability, choice, atmosphere, or management of a living system.
 
-Animated presentation should be planned more often than static-only presentation for mechanics that feel alive. Use it for pressure rising, corruption spreading, a council activating, an occult meter pulsing, a patron influence network glowing, a formable seal becoming available, a faction board entering crisis mode, a route emblem changing after a focus, or a warning frame appearing near failure. Animation should clarify the mechanic and improve presentation. It should not hide information or add noise.
+Animation can make pressure changes, council activation, available actions, crisis states, route changes, or failure thresholds easier to notice. Choose it for that useful feedback, preserve static fallbacks, and avoid noise. These GUI animation examples do not authorize adding category pictures alongside complex or already animated GUI.
 
 Animation is especially useful when the player needs to notice a changed state without reading a long tooltip. Good default candidates include decision category seals, category headers, scripted GUI buttons, meter frames, status cards, selected target cards, warning borders, hidden route seals, formable progress emblems, faction cohesion panels, patron influence nodes, and extreme-route route emblems.
 
@@ -1371,7 +1377,7 @@ Consider whether the feature needs:
 
 Asset generation, sourcing, cropping, resizing, DDS conversion, file placement, sprite handoff notes, and manifests belong to `hoi4-feature-assets`. Animated frame planning and frame-sheet handoff requirements belong to `hoi4-frame-animation`. Final `.gfx` wiring belongs to the main implementation agent unless a parent prompt explicitly grants that scope.
 
-This skill should define what assets are needed, what they should represent, what source mode they require, and which visible states should be animated. If a major mechanic has no animated sprite plan, the spec should explain why the static presentation is stronger.
+This skill defines required assets, their meaning, source mode, and any visible states that benefit from animation. Do not infer an optional family solely from a gameplay consumer. Record the accepted requirement before requesting its production.
 
 Historical or real-world assets need special care. Historical flags and symbols should be sourced from reliable references. `hoi4_portrait_creator` owns sourced real portraits and native-ImageGen fictional portraits, including processing and wiring. Generated non-portrait art is appropriate for fictional flags, invented extreme-route identities, idea icons, focus icons, decision icons, achievements, faction emblems, UI art, and fictional or alternate-history report, news, or custom feature images unless the user says otherwise.
 
@@ -1398,7 +1404,7 @@ Reference mapping:
 - report event images: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/event_art/report/`
 - large presentation art: use the report, news, or custom feature reference set that matches the owning UI surface
 - technology and special-project icons: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/technologies/` and `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/`
-- achievement icons: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/`; the reusable not-eligible overlay is `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/overlay.png`
+- achievement icons: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/`; the reusable not-eligible overlay is `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/template/overlay.png`
 - decisions, missions, and decision-category icons: their separate folders under `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/`
 - flags: complete normal, medium, and small sets under `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/flags/`
 - focus icons: `.agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus/`
@@ -1436,7 +1442,7 @@ It must also state the relevant reference folder from the list above when a matc
 
 Use `hoi4-feature-assets` rules for source selection. Symbolic icons usually use `$imagegen`. News event images, report event images, and custom feature images may be sourced or generated. prefer generated assets for fictional, alternate-history, symbolic, extreme-route, or unique scenes, and sourced assets for real historical people, real photographed events, and real archival artifacts. Historical flags and historically attested symbols should be sourced and documented, then converted to HOI4 flag sizes. Fictional, supernatural, invented, or alternate-history flags can use `$imagegen` through `hoi4-feature-assets` when appropriate.
 
-Do not make the asset prompt vague. If a country has multiple cosmetic identities, ideology names, focus-route transformations, or leader changes, the asset prompt must list the required assets for each visible identity state. If any visible identity state is important enough to feel like a reveal, crisis mode, extreme-route form, completed formable, or living mechanic state, the asset prompt should usually include an animated sprite or animated portrait plan plus a static fallback.
+Do not make the asset prompt vague. If a country has multiple cosmetic identities, ideology names, focus-route transformations, or leader changes, list the required assets for each visible identity state. Include animation and a static fallback only when the presentation-choice pass supports motion. Apply the category-picture eligibility gate to every requested picture.
 
 ## 15. HOI4 asset size reference
 
@@ -1521,7 +1527,7 @@ Before any feature-planning goal is treated as near complete, the coding agent m
 
 Run this pass after the main design is mostly assembled and before the final completion report. The loop planner should inspect the current spec, accepted plans, unresolved handoffs, asset needs, AI plans, mechanic surfaces, and implementation handoff needs. Its job is to find remaining shallow systems, disconnected mechanics, missing route depth, missing AI behavior, missing asset states, missing aftermath, or scope bloat.
 
-Spawn the loop planner with `fork_context=false`. The parent prompt must explicitly pass the feature slug, current goal, user constraints, current spec paths, relevant plan paths, known unresolved decisions, and the exact question to answer. Do not rely on inherited conversation context.
+Spawn the loop planner with `fork_turns="none"`. The parent prompt must explicitly pass the feature slug, current goal, user constraints, current spec paths, relevant plan paths, known unresolved decisions, and the exact question to answer. Do not rely on inherited conversation context.
 
 The loop planner may return either an expansion addendum or a closure handoff. If it returns an expansion addendum, the parent must resolve it before completion by folding accepted content into `docs/specs/<feature_slug>/`, implementing or queuing it with a clear reason, or rejecting it with a clear reason. If it returns a closure handoff, record that closure and proceed with final checks.
 
@@ -1695,7 +1701,7 @@ The prompt must tell the coding agent to:
 - keep all mod systems aligned
 - report anything that cannot be implemented cleanly
 - keep iterating until the full spec is implemented to its fullest extent
-- spawn `hoi4_improvement_loop_planner` with `fork_context=false` before claiming the goal is near complete, then resolve its addendum or closure handoff before final completion
+- spawn `hoi4_improvement_loop_planner` with `fork_turns="none"` before claiming the goal is near complete, then resolve its addendum or closure handoff before final completion
 - avoid fallbacks, simplifications, temporary versions, and good-enough approximations
 - not claim completion until the implemented files satisfy the spec
 
@@ -1735,9 +1741,9 @@ Before finishing a major feature spec, ask:
 - Do formation rewards avoid free core spam, free war-goal spam, and instant runaway snowballing?
 - Does the decision category need a scripted GUI, progress meter, custom window, or animated presentation?
 - If a named event introduces that UI, does the plan route only the event-owned window to `hoi4_event_ui_worker` with exact identifiers and mandatory MCP before-and-after evidence while excluding shared interfaces?
-- Has every important mechanic, formable route, extreme-route route, hidden reveal, faction board, patron network, crisis meter, and major transformation received an animation planning pass?
+- Has every important mechanic, formable route, reveal, faction board, crisis meter, and major transformation received a presentation-choice pass?
 - Are animated sprites, leader portraits, particles, glow, float loops, warning pulses, selected states, hover states, or button states planned where they would make the mechanic clearer?
-- If a major surface stays static, does the spec explain why motion would add clutter instead of clarity?
+- Are static and animated category pictures restricted to eligible simple categories, with no extra picture alongside complex or animated GUI?
 - Does the asset prompt include all static and animated UI pieces, frame-sheet needs, sprite names, state logic, and fallbacks?
 - Does the goal prompt tell the implementation agent to verify formables, UI windows, animated sprites, frame-sheet handoffs, and fallbacks?
 
@@ -1750,7 +1756,7 @@ The final response should include:
 - repo context inspected
 - linked feature group role defined when relevant
 - assets defined when needed, including country identity assets
-- animation planning pass completed for important mechanics, custom UI, formables, route reveals, extreme-route states, and major leader transformations
+- presentation-choice pass completed for important mechanics, custom UI, formables, route reveals, and leader transformations, with category-picture eligibility recorded
 - animated sprite and animated portrait needs mapped with static fallbacks, state logic, and `hoi4-frame-animation` handoff expectations when relevant
 - historical flags and real symbols marked for sourced asset work, with real leader portraits routed to `hoi4_portrait_creator`
 - quote, remark, image, or audio direction defined when needed
@@ -1863,7 +1869,7 @@ Reject the draft if it has any of these problems:
 - achievements that unlock too easily or only reward the obvious route
 - achievements without conditions, disqualifiers, icon directions, or tracking notes
 - missing asset handoff for required assets
-- major mechanic, formable, hidden reveal, extreme-route route, scripted GUI, or dramatic leader transformation with no animation planning pass and no reason for staying static
+- major mechanic, formable, reveal, scripted GUI, or leader transformation with no presentation-choice pass, or category pictures requested for ineligible complex or animated categories
 - animated asset plan that lacks static fallback, state logic, frame-sheet handoff, target surface, sprite names, or `hoi4-frame-animation` ownership
 - missing asset coverage for country names, cosmetic identities, ideology flags, focus-route flags, leader changes, portraits, faction emblems, decisions, focuses, ideas, achievements, and UI where relevant
 - missing AI route matrix for major features, country-creation features, or foreign-influence systems

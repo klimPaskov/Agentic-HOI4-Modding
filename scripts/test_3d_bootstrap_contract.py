@@ -17,6 +17,30 @@ BOOTSTRAP = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BOOTSTRAP)
 
 
+class AdapterSourceClosureTests(unittest.TestCase):
+    def test_real_adapter_has_complete_source_closure(self) -> None:
+        adapter = SCRIPT.parent / "adapter"
+        hashes = BOOTSTRAP.adapter_source_hashes(adapter)
+        self.assertEqual(set(hashes), {path.name for path in adapter.glob("*.py")})
+        self.assertIn("identity_leaf_alias.py", hashes)
+
+    def test_missing_local_import_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            adapter = Path(temporary)
+            (adapter / "worker.py").write_text("from missing_repair import repair\n", encoding="utf-8")
+            with self.assertRaisesRegex(BOOTSTRAP.SetupError, "missing_repair"):
+                BOOTSTRAP.adapter_source_hashes(adapter)
+
+    def test_source_changes_are_bound_by_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            adapter = Path(temporary)
+            worker = adapter / "worker.py"
+            worker.write_text("import math\n", encoding="utf-8")
+            before = BOOTSTRAP.adapter_source_hashes(adapter)
+            worker.write_text("import math\nvalue = 1\n", encoding="utf-8")
+            self.assertNotEqual(before, BOOTSTRAP.adapter_source_hashes(adapter))
+
+
 class ReviewedConfigTests(unittest.TestCase):
     def test_materialized_routes_pass_reviewed_config_verification(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

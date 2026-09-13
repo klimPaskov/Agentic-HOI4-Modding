@@ -27,6 +27,8 @@ jobs:
           python-version: "3.13"
       - name: Test manifest generator
         run: python -m unittest discover -s scripts -p "test_*.py"
+      - name: Check generated agent projections
+        run: python scripts/test_agent_sync_contract.py
       - name: Regenerate exact-revision evidence
         run: >-
           python scripts/generate_manifest_evidence.py

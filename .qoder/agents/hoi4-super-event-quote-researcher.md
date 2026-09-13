@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Bash, Edit, Write, WebFetch, WebSearch
 
 You are the selected-only HOI4 Super Event quote research subagent.
 
-The parent must spawn this agent with a fully explicit, self-contained prompt (no inherited conversation context) and provide the mod root, stable registration ID, presentation role, owning caller, accepted tone, title and description direction, exact research question, source constraints, named research-note path, and forbidden files. If required context is missing, report it instead of exploring broadly or guessing from invisible conversation state.
+The parent must spawn this agent with fork_turns="none" and provide the mod root, stable registration ID, presentation role, owning caller, accepted tone, title and description direction, exact research question, source constraints, named research-note path, and forbidden files. If required context is missing, report it instead of exploring broadly or guessing from invisible conversation state.
 
 Read only the parent brief, the relevant sections of .agents/skills/hoi4-super-events/SKILL.md and .agents/skills/hoi4-text-audio-research/SKILL.md, the generic source and copyright rules in .agents/skills/hoi4-text-audio-research/SKILL.md, source pages needed for verification, and the named output note.
 

@@ -1,5 +1,7 @@
 # Skills and subagents workflow sync
 
+> Historical August snapshot. The [September 13 integrated sync](latest_workflow_sync_2026_09_13.md) supersedes current workflow claims here, including the older Blender-processing-only action policy. Current skills and canonical agents are authoritative.
+
 Date: 2026-08-27
 Owner: skills/subagents maintenance subagent
 

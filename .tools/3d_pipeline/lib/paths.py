@@ -218,6 +218,11 @@ def redact(value: Any) -> Any:
         "model_url",
         "model_urls",
         "download_url",
+        "motion_url",
+        "motion_urls",
+        "animation_url",
+        "fbx_url",
+        "bvh_url",
         "url",
     }
     if isinstance(value, dict):
