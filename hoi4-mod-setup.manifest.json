@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "7e50711580a3fa377f1acb834bb19a51128eacd2",
+  "generated_for_revision": "92e7590f1d1d44404712feaf5bd8db51992e21f8",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "022486e59f4698a64c34ba856fb80b387f5f337d4fbc3206c15cfe2372030a2e",
-          "size": 50383
+          "sha256": "c991804e8612e65bf34cb87417267517dcc7a944dffaaf9f1a67023369e04558",
+          "size": 53459
         }
       ]
     },
@@ -264,98 +264,98 @@
         },
         {
           "path": ".claude/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "2ff680b07092f444b09842aeb8dc0c7251d69f63ac4533370d9f90fa398c0d8b",
-          "size": 25145
+          "sha256": "dd6e91777261284661c716a6ef75303013fb8cacb2c7cb131e66c3dfdad95302",
+          "size": 26560
         },
         {
           "path": ".claude/agents/hoi4-ai-probability-auditor.md",
-          "sha256": "9e4d06415ad5b378daf8a0d1cc5e847b200568f6b8301c957465a354afe9c8c1",
-          "size": 8103
+          "sha256": "e3ebea5358ce4bb9c07908cce7f7344c8f80250a05ef0019c2f58ecadff18ddf",
+          "size": 8045
         },
         {
           "path": ".claude/agents/hoi4-asset-source-researcher.md",
-          "sha256": "ffe241994ba398af85bbc9d73793bcca45e6193a3b5afda6321f61a7a3f03121",
-          "size": 4639
+          "sha256": "788d13d3a695474ff3cde6a636fc3d20a75b43b81b6dfe02c674d982e8831e42",
+          "size": 4581
         },
         {
           "path": ".claude/agents/hoi4-audio-researcher.md",
-          "sha256": "58675a3cd62e23e0b4f303e7da9ed03daaf7667537189251776f9a21aafa79b1",
-          "size": 4723
+          "sha256": "1b1924321aaac69912d725b93eb560dc90b7b25376cfe1cd10f2d888542b7d38",
+          "size": 4665
         },
         {
           "path": ".claude/agents/hoi4-country-package-auditor.md",
-          "sha256": "614daa5e1368ce661e67171c5c9973c5cc22088176bebaf5521b4908f4930e96",
-          "size": 8575
+          "sha256": "df24a720cc074da8320738092317fdac09062d6682c801626e7f1e662c91c7e0",
+          "size": 8517
         },
         {
           "path": ".claude/agents/hoi4-decision-mission-auditor.md",
-          "sha256": "dfa954142a7db639e8526092efc86d21c6985874799b7a4e9f2a46e32b00078a",
-          "size": 6443
+          "sha256": "ffa66341864f17508aeded190a4ea97d4705147532fcdf412a4f977e3ba96c6e",
+          "size": 6779
         },
         {
           "path": ".claude/agents/hoi4-documentation-curator.md",
-          "sha256": "87dc5ab42de05f52556d653936ec33a480b17440b34679895763c77d8af499d9",
-          "size": 10086
+          "sha256": "d99dde847d6df8587d19d4ed1e5fb00eb6ed8715f36b2f7cfdd0c33298050588",
+          "size": 10028
         },
         {
           "path": ".claude/agents/hoi4-event-ui-worker.md",
-          "sha256": "839c33196fb9408af135a33f25d129e4dfe06201ff66f1d1ccc8805b88fbaaeb",
-          "size": 8878
+          "sha256": "c5e954721cd7227b563090a112881f3e6c936feb7260d81b1c3ea87e96fd13f0",
+          "size": 10523
         },
         {
           "path": ".claude/agents/hoi4-feature-completion-auditor.md",
-          "sha256": "4da6f428cd4c597be2feffafe5a980046a1813b098523e372d2f096acccbc4f5",
-          "size": 6453
+          "sha256": "020d78896b6d7aca6ec586ed8c8003d8d92a927eafbb6a66e36ff45093a9a6dd",
+          "size": 6521
         },
         {
           "path": ".claude/agents/hoi4-focus-tree-auditor.md",
-          "sha256": "29998280ab5500187e31c22315334b5330ecc136d4ef033a84e51f63565663f9",
-          "size": 5136
+          "sha256": "71993133b0134bc227aa7bf12f15c4bcf88e76fa29e12053f9cbcb5bbabcb553",
+          "size": 5078
         },
         {
           "path": ".claude/agents/hoi4-generated-feature-art.md",
-          "sha256": "e4aa02cdd27ee10e90c7e553d4554689d70fe9655894d0bf63e098feeafa3ab7",
-          "size": 6253
+          "sha256": "cd623d197cbccc21fb7d14e08c63424b6ccdfa4b913a92bd32ce23b50df15c66",
+          "size": 6195
         },
         {
           "path": ".claude/agents/hoi4-icon-artist.md",
-          "sha256": "8dc69f9756b8d4c9c2bdeb1d6684dcab376585f0cdf009770398f1ed147d8f9e",
-          "size": 11854
+          "sha256": "eed583f1a6c79fdadbc9ad1877e6ebb86ec55adbd7bc0f64247eff58b912a5da",
+          "size": 11796
         },
         {
           "path": ".claude/agents/hoi4-improvement-loop-planner.md",
-          "sha256": "2a4a60debab5c07b1d5ed60a95074aedb7fbd3c8dab674b03078792a97e69cd0",
-          "size": 7430
+          "sha256": "7bc7fed73c25ac6192b8fde0f1714478a7fec7662af0a546547b4fd89fb6209a",
+          "size": 7544
         },
         {
           "path": ".claude/agents/hoi4-localisation-auditor.md",
-          "sha256": "aa658b6b119b7cdacb73aeffab73c424292213657f1a25833e8346d2401d6b3e",
-          "size": 9343
+          "sha256": "98c22b6bed28cfdd9670fce3f58da94cbbdd6044b25210760cb4cba76b322403",
+          "size": 9529
         },
         {
           "path": ".claude/agents/hoi4-quote-remark-researcher.md",
-          "sha256": "662713178c407ff9f24a0ea14bc4e0b004b95348d3907a03133e98b8f3c86ec1",
-          "size": 4378
+          "sha256": "95aa1050c5e1f36fc0d2c833d8fa59eaaa70e7ace93f129ae58de8e1948e0e79",
+          "size": 4320
         },
         {
           "path": ".claude/agents/hoi4-repo-explorer.md",
-          "sha256": "cdeef1573f47e4a7f322c0774e6124345bb2c556f85a5693b6cde21cc330a191",
-          "size": 12715
+          "sha256": "73198466d6f3e46a1a159b1f7077069dbd8115e973c496c5b1d2f9d475f43e3e",
+          "size": 12657
         },
         {
           "path": ".claude/agents/hoi4-scripted-system-architect.md",
-          "sha256": "54b486d5140d88c579ccae8632c16d498cd1cd04425c7e7bbdd3ef6c8d2fda37",
-          "size": 5750
+          "sha256": "4c37c9acc31cb9694cd649184ee5b39397dc2c7ae28a58e26740114b31e024a2",
+          "size": 5692
         },
         {
           "path": ".claude/agents/hoi4-skill-maintainer.md",
-          "sha256": "5b48f928ebd75dd956866cf26df22cb89bd7bee7a4c109b285d8e0060d5c2cfc",
-          "size": 4323
+          "sha256": "730c4e552bac9e86c33b6ebe74bb8fa5c99f6f97a37fbebefd17cf61d4b0e279",
+          "size": 4265
         },
         {
           "path": ".claude/agents/hoi4-spreadsheet-doc-worker.md",
-          "sha256": "27207f1fa0a4b81e5ae7ac07f24af1a321c822d01d00127a135edc67cd277d81",
-          "size": 4402
+          "sha256": "e3f4268170f683ca4de2cc0cd2a185bd944aec92243fa65502db1326f441160d",
+          "size": 4329
         },
         {
           "path": ".claude/settings.json",
@@ -486,98 +486,98 @@
         },
         {
           "path": ".cursor/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "d2e55fd584c20aa63c4054ad79061468da900d123fa5aeb8f8dac1493427455a",
-          "size": 25145
+          "sha256": "6e4ee66c8ad7dab1566f22f8044f5e9ed2949d806a5cfcdbb46114f2238591e9",
+          "size": 26560
         },
         {
           "path": ".cursor/agents/hoi4-ai-probability-auditor.md",
-          "sha256": "c3e5d16cf0fd345f51c07dd1e887cd31d46bf75f1bd912c1103ccc4fcf064a97",
-          "size": 8060
+          "sha256": "87481b1659f04a8d015c23c969de17efd0025093150b5e5adaa9b34470fdcba7",
+          "size": 8002
         },
         {
           "path": ".cursor/agents/hoi4-asset-source-researcher.md",
-          "sha256": "2b582fd686972fa3d2fdb5451f8e5eeefde082ac5435ea233b059fa8fd48efb8",
-          "size": 4639
+          "sha256": "bda6ce2ea54a78631ee536761a551778ccdfd2cb140131de271a53b4edae867e",
+          "size": 4581
         },
         {
           "path": ".cursor/agents/hoi4-audio-researcher.md",
-          "sha256": "e21347f15977f933e09343c9900e4bcce116c9b2d2780464e0ecc87cd3652e7a",
-          "size": 4723
+          "sha256": "39d691f3dbdf20c529cf6a2d455e9d364c750d61c80d7bc88d6051d10fb3e04f",
+          "size": 4665
         },
         {
           "path": ".cursor/agents/hoi4-country-package-auditor.md",
-          "sha256": "3833052ea24999dc3b782f9dd360bbbe22921f26983471c0685d197934c6148c",
-          "size": 8575
+          "sha256": "875eefede38c73fe1c2131174e5165df8638d67899318308cc513a33ecbb59a5",
+          "size": 8517
         },
         {
           "path": ".cursor/agents/hoi4-decision-mission-auditor.md",
-          "sha256": "f95dfecb9637599a40595a41654e3e94ddcfdb78759d0477fe9e1d89eddd2dad",
-          "size": 6443
+          "sha256": "577efcf6ff5a887cf89183878cefdefcdc71b49339050ce5f8acd42c42e1d157",
+          "size": 6779
         },
         {
           "path": ".cursor/agents/hoi4-documentation-curator.md",
-          "sha256": "a69f9966c93951c8139401120995b639201ba4c83d0b94db1ba30a96851fd3c3",
-          "size": 10086
+          "sha256": "d989120003c3f44e0cb8230ec7cdd26cf0360e2a0b7f798dd4b8631e2c1e6abd",
+          "size": 10028
         },
         {
           "path": ".cursor/agents/hoi4-event-ui-worker.md",
-          "sha256": "123351be3980699bce2a9e31c7a6dc7979040155599e450ee76debcdf4fbb201",
-          "size": 8878
+          "sha256": "541c9c6a72cbdfc405ac850ef33e61f5cb08cad3f40f51a88cc09c60995ad3a6",
+          "size": 10523
         },
         {
           "path": ".cursor/agents/hoi4-feature-completion-auditor.md",
-          "sha256": "5e53cf7dd08a2165de299c4219c33fac79617e9928e6c298620043491eeddba4",
-          "size": 6410
+          "sha256": "25e20408743a0c3d5b6789d3c8a2bd96f000c263502f749cefa8124464552e94",
+          "size": 6478
         },
         {
           "path": ".cursor/agents/hoi4-focus-tree-auditor.md",
-          "sha256": "a2157b3fbd07d0363c80f625612839b18b7f66bcc6740963d70cb81aa98daaad",
-          "size": 5136
+          "sha256": "f0c07757d58b1fe6eef16d9fffb07ec9a54f544c07250c30df4bf63aa62a6cbf",
+          "size": 5078
         },
         {
           "path": ".cursor/agents/hoi4-generated-feature-art.md",
-          "sha256": "274c82a25646a1b14beeb843dfc9b16ead1c3211171f70a765da99de72fb6644",
-          "size": 6253
+          "sha256": "3414e2a5bc1d44da00329c83a60a7e4a69fd4cbda773697b3a67efd0b6630334",
+          "size": 6195
         },
         {
           "path": ".cursor/agents/hoi4-icon-artist.md",
-          "sha256": "9b59b2d0effc62a615c2c9eb1b8af95cfb171e876d226544396e88ae68124987",
-          "size": 11854
+          "sha256": "7f7b7b158f9e38709a8b7a49f8b58274a83ea638b4783b1ca6f21e9e004a9b8e",
+          "size": 11796
         },
         {
           "path": ".cursor/agents/hoi4-improvement-loop-planner.md",
-          "sha256": "e15c5c03062ea73385361d732ff17ec0368553ade8dff7f1b06a5cbb3e2838ba",
-          "size": 7387
+          "sha256": "2a79c84cacd9e8872d17ab3f0085dab733c8ec4a79ac9a9d6274a8597f5844f1",
+          "size": 7501
         },
         {
           "path": ".cursor/agents/hoi4-localisation-auditor.md",
-          "sha256": "926ce70dfd4d4250fdf3f2903298d81fd8284db909148e7716cb89dd20e310f9",
-          "size": 9343
+          "sha256": "0d821aeba997ae1a83c3b41a86736818adf13af8dccb8bb033e72fa6ab687341",
+          "size": 9529
         },
         {
           "path": ".cursor/agents/hoi4-quote-remark-researcher.md",
-          "sha256": "660dc8555fc6b40f0be809564707b1108427bb87b1989a1945bbb99069e0f552",
-          "size": 4378
+          "sha256": "264f7b606b2363a52ee8874bb1220e34c65597a94dc2b8edc00735d8e5ad3478",
+          "size": 4320
         },
         {
           "path": ".cursor/agents/hoi4-repo-explorer.md",
-          "sha256": "b11b3a65bf93b31c6478bf1ded06c6ad0246e3058a8dd73d20672e1c1b6c9ca8",
-          "size": 12672
+          "sha256": "69a3bfab10ce40ac3855294f5c4772f9a624207606e946c4794664fefba60613",
+          "size": 12614
         },
         {
           "path": ".cursor/agents/hoi4-scripted-system-architect.md",
-          "sha256": "8c1efdbccea8bc5e3905bba2042115242a33507465229b58d16f3494ab26c046",
-          "size": 5750
+          "sha256": "05de4b1cf7b8e5d99c7a2134462ab93fef3c6b652214c8b4a638a31faed3fa93",
+          "size": 5692
         },
         {
           "path": ".cursor/agents/hoi4-skill-maintainer.md",
-          "sha256": "a48dafcc1f42a000d00427ee915b837337b66521ddc82bf0b51c9f1a3b03285c",
-          "size": 4323
+          "sha256": "a51a42eb2449df050bfd8c98813c3a7e3466c12ddd983512ad4faf761b9836ef",
+          "size": 4265
         },
         {
           "path": ".cursor/agents/hoi4-spreadsheet-doc-worker.md",
-          "sha256": "45f26ef2e8481919ff2cb0288d6cc380f6c4943f8c9b0b06c9d9c1f777595208",
-          "size": 4402
+          "sha256": "946484386b7751a4a990a587ce32a811b555d188f359b3576d62adf6c84662c7",
+          "size": 4329
         },
         {
           "path": ".cursor/settings.json",
@@ -653,98 +653,98 @@
         },
         {
           "path": ".qoder/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "e43df10c9792fe2bff1138db6ef3711c17ecbece77cccf210f89bc81aaacdf44",
-          "size": 25200
+          "sha256": "5695913c661b6872d540b00efb60e30282622bdf4d086e668eaa6603a48b5b72",
+          "size": 26615
         },
         {
           "path": ".qoder/agents/hoi4-ai-probability-auditor.md",
-          "sha256": "4d7c0d4c121a6d711b678f9ef4fe31a3100681a9c80a24dc500428b0a602db15",
-          "size": 8088
+          "sha256": "37dfeb50b00984ede008da53599bb3246b3d95c9dcd88dd282571ea92f363819",
+          "size": 8030
         },
         {
           "path": ".qoder/agents/hoi4-asset-source-researcher.md",
-          "sha256": "a3022e587f746150c24f7218794abab179fdbb9d6fd369cd6fe49e3cfe0147ca",
-          "size": 4694
+          "sha256": "3b54cc48357e3db15641150d60e29e4d8ae0f0e6304dec8b93e5674ed9e7285a",
+          "size": 4636
         },
         {
           "path": ".qoder/agents/hoi4-audio-researcher.md",
-          "sha256": "6f11196b8267d20c6bc5d06798fc1cbe72812293c5b7f6c637acb3e1d0b54a22",
-          "size": 4778
+          "sha256": "f2fcf0e89e75fc0866925369ef21927e7c4592645c1d55e69d2f6d996516d1a4",
+          "size": 4720
         },
         {
           "path": ".qoder/agents/hoi4-country-package-auditor.md",
-          "sha256": "93f698c05666ce6912e9549c113e54bc013625c71177007bf4054b1e0bd71960",
-          "size": 8609
+          "sha256": "12cfe95efaa82b90756739942f9675e88dcabea3a7e1a58f107e2e01f47f4e0b",
+          "size": 8551
         },
         {
           "path": ".qoder/agents/hoi4-decision-mission-auditor.md",
-          "sha256": "a41f9a3d2fb3c4a37fbc9113530065c2c99d4a9d961aff2785746ca68d8dd6ba",
-          "size": 6477
+          "sha256": "8f0d7032b0130d915135cb57afa010c508ecaed4019dcf3264ebc352060be3bd",
+          "size": 6813
         },
         {
           "path": ".qoder/agents/hoi4-documentation-curator.md",
-          "sha256": "1eac9077df2b6e39adb450ea796591f3368134629b2ee3aae5537308c0e56663",
-          "size": 10120
+          "sha256": "31123dc997dcaf849738893ebb68a1e992b61912532a6396c0fa8523245c17f0",
+          "size": 10062
         },
         {
           "path": ".qoder/agents/hoi4-event-ui-worker.md",
-          "sha256": "e7f231b2e2ae77c9318d7a31e8d3fbfb1c63c68a820242524aaaf10b4d58f2ab",
-          "size": 8912
+          "sha256": "8ce2f3f43194ed993794b80b7dad62fb34e156189bdaf4437e5456f1b1ff4647",
+          "size": 10557
         },
         {
           "path": ".qoder/agents/hoi4-feature-completion-auditor.md",
-          "sha256": "60908c6fb19628b7ac6cfb61ea343d97031cf9388b7614d8e8174609f8303ffb",
-          "size": 6438
+          "sha256": "ce98554d612d456d7dc6721221887a7a838b16c26d5370fda4dc03723171c3d7",
+          "size": 6506
         },
         {
           "path": ".qoder/agents/hoi4-focus-tree-auditor.md",
-          "sha256": "105648dbeae656d82bf9a84f97858bd349b5413f33081ec7b8ac7c587d25b7c1",
-          "size": 5170
+          "sha256": "00253797c41967a4066ddf28bb71615293a956562ec4f4c2ead0e6a08dd48819",
+          "size": 5112
         },
         {
           "path": ".qoder/agents/hoi4-generated-feature-art.md",
-          "sha256": "11aab1f238141164eb481847a8f7cece28ebbfe481e33eeb563ee33e0d140c94",
-          "size": 6308
+          "sha256": "f26962caa548d3219eeeacf32b790bd742d3fd46c0cf42abb14f8a93661346a7",
+          "size": 6250
         },
         {
           "path": ".qoder/agents/hoi4-icon-artist.md",
-          "sha256": "3a93a19d2e21d2b904fe6f791dd5cd099d7d0abf1c29f95d0422220dba8ae38f",
-          "size": 11909
+          "sha256": "da5195eb181d067ccbd2a06737fa21f87393844a69cf96db07d3d3869b776af2",
+          "size": 11851
         },
         {
           "path": ".qoder/agents/hoi4-improvement-loop-planner.md",
-          "sha256": "f2578107fbdb01e581c6ed50a4b80c5e4080b2252a0cee9fd3d32a4fcb15dc88",
-          "size": 7415
+          "sha256": "c88215347df63dc6a782c709e84509c7582e01c3d1708931d659b9108f3fc718",
+          "size": 7529
         },
         {
           "path": ".qoder/agents/hoi4-localisation-auditor.md",
-          "sha256": "46070f744867369e205cd5387963b15468c4026753476218a8c071ba3ec86f69",
-          "size": 9377
+          "sha256": "06a9c479d64f3c1367a1a39a6ebbc5c31168691a4f78417ea3af38e216c08c1c",
+          "size": 9563
         },
         {
           "path": ".qoder/agents/hoi4-quote-remark-researcher.md",
-          "sha256": "15b53ba07b2502463cce7cb681250015a4b7b42d65eb089366c7451f42cdd939",
-          "size": 4433
+          "sha256": "6477f1f4ea1cdc1033b3113b0941551a56ba02c13b9b9fcddb7c587c782d7071",
+          "size": 4375
         },
         {
           "path": ".qoder/agents/hoi4-repo-explorer.md",
-          "sha256": "06dd935b83b22fe038a329c934a909439561002b81fe0ca88daf5d80ea9eb467",
-          "size": 12700
+          "sha256": "ef42d5e747cb851129fcb3bb1121ba9265eba9761bf971d79e41617f02195008",
+          "size": 12642
         },
         {
           "path": ".qoder/agents/hoi4-scripted-system-architect.md",
-          "sha256": "a3c5c42c4f1839545906d00dbe61d3c943c23b3ae22a47d149a676703fe51efa",
-          "size": 5784
+          "sha256": "35b403a4e84007bf81ecf07336d110e46718734718c7f0ddca9543c849279d52",
+          "size": 5726
         },
         {
           "path": ".qoder/agents/hoi4-skill-maintainer.md",
-          "sha256": "5f4c98fc5706bea1dcc469903214b86f63d57667f46ecfbee662c9e42bbe3cdf",
-          "size": 4357
+          "sha256": "78f0787c859c4066b83ed694ef890cd01828c1a512cfe5f899107c377beb06ad",
+          "size": 4299
         },
         {
           "path": ".qoder/agents/hoi4-spreadsheet-doc-worker.md",
-          "sha256": "323f07f11a19ef014ed7b770946b8f74dabd94fcb754efc83c4968cc7b510bf0",
-          "size": 4436
+          "sha256": "f9341f99c8c82586a159c797e0ab37e8614d42402ad1ce29a19a554af4207c84",
+          "size": 4363
         },
         {
           "path": ".qoder/settings.json",
@@ -820,98 +820,98 @@
         },
         {
           "path": ".opencode/agent/hoi4-3d-model-pipeline.md",
-          "sha256": "8e0b4a412d1b7bc17d0a2d80c79eb2260c3b1675eec3d0298ceab3709591fcb5",
-          "size": 25133
+          "sha256": "af480d7300fcfaa7630b1436faa55e02eb7809642fa881d44aeef184d2f07977",
+          "size": 26548
         },
         {
           "path": ".opencode/agent/hoi4-ai-probability-auditor.md",
-          "sha256": "d5bd145ee52f2ee307397096de545abfc19a6447801ac34520f5ee5ea9f3c4a0",
-          "size": 8043
+          "sha256": "c603a6e313b2f7db436040ab2c12e709d61c5121f5eca4f7f1118b2d3e7279c3",
+          "size": 7985
         },
         {
           "path": ".opencode/agent/hoi4-asset-source-researcher.md",
-          "sha256": "63be7cd40ee41165c16f7d8081fefe96ba29f1c9a6a92fe57c19c04a7b64c90d",
-          "size": 4621
+          "sha256": "cfefed5c396aa52d84534ee38b9f61c69e0cd7d60549f9c696689c3f13b17a61",
+          "size": 4563
         },
         {
           "path": ".opencode/agent/hoi4-audio-researcher.md",
-          "sha256": "28fc9ad033477bb22dc1a89cd4171ee8755b2adff25b584384d85ada291f57cc",
-          "size": 4712
+          "sha256": "90a234dd266cff45646cf949e67dbafee813dddbad7c31e784af4dc88dea0c7a",
+          "size": 4654
         },
         {
           "path": ".opencode/agent/hoi4-country-package-auditor.md",
-          "sha256": "c2d12ffbeeee4b98b99ac76c6183643e3daa903f808dab799248959d405d6533",
-          "size": 8557
+          "sha256": "0a55d0ff167bfc0d368df1544ac6fe92223d10bbcd5baa8a6c6779d868714422",
+          "size": 8499
         },
         {
           "path": ".opencode/agent/hoi4-decision-mission-auditor.md",
-          "sha256": "2b1e7bc5eeeaf0ef21feda7d28ad61198efa67f8bf0c7bd0dce287d2c5fe73f3",
-          "size": 6424
+          "sha256": "cdfbcb4d21404ee2eb405d903300e868e7d6d86eb43c0d6b3f2cece240a5f080",
+          "size": 6760
         },
         {
           "path": ".opencode/agent/hoi4-documentation-curator.md",
-          "sha256": "53d2f52cecff400da096b370437cd662fd63123874d88c153f47fcf17cc99c75",
-          "size": 10070
+          "sha256": "da2be4e8043bdbab8530467a2b00215d9c3591a34cf2c3264d115c4d8530cffb",
+          "size": 10012
         },
         {
           "path": ".opencode/agent/hoi4-event-ui-worker.md",
-          "sha256": "f947a190ae5f932830a5638090e21c84f01a3a4865b6897a24c3da61cbc1be6b",
-          "size": 8868
+          "sha256": "4b132c1f7ab4bb8f7944199406ebd5d76a01616aac35326ab6ff3cd6e5196a79",
+          "size": 10513
         },
         {
           "path": ".opencode/agent/hoi4-feature-completion-auditor.md",
-          "sha256": "19efd7a7dc534feae6842cfb35f1ab6e6464748b0387773bc44a10344ef5a0aa",
-          "size": 6389
+          "sha256": "fb7f90503a677664687d815a4159cc3c70ba71331cba2eca59fcc98ba2c23ce0",
+          "size": 6457
         },
         {
           "path": ".opencode/agent/hoi4-focus-tree-auditor.md",
-          "sha256": "8d4ea49a1b9cf5946869fc9c0d6336698aa9e2bc2ae33e7555a4e9ee9648faa1",
-          "size": 5123
+          "sha256": "9eb9f8179de30c82e655b6b69119e53c4e2d5d68aa07087f00c3b84dfb6b1874",
+          "size": 5065
         },
         {
           "path": ".opencode/agent/hoi4-generated-feature-art.md",
-          "sha256": "3cb19ab4d70d20c1b7b9bd9bdaea60f1dcc679f7e9626b9e24dd5b4c0140b5e0",
-          "size": 6237
+          "sha256": "fac3a7c571722c0d2e8b8aeb7d4e06fd15bc2c7d0d4a907d67712b82b8ab667d",
+          "size": 6179
         },
         {
           "path": ".opencode/agent/hoi4-icon-artist.md",
-          "sha256": "3fa592da43a6a362b87d002bc1ce684903f5a73eb8ebf1004cabe5aa31ec2b01",
-          "size": 11848
+          "sha256": "2aa66eb6d445823f82590fd2a0877c49cfb5c44d969b61ead95f1e779d01b633",
+          "size": 11790
         },
         {
           "path": ".opencode/agent/hoi4-improvement-loop-planner.md",
-          "sha256": "7163482f23c3b65fa74338883d0651055592de551da8dcd7f05a059e577df583",
-          "size": 7368
+          "sha256": "6d4878102c4cd8e16968f0c4f8c7fd5cb0ba3b77064512b417259f8b75248d41",
+          "size": 7482
         },
         {
           "path": ".opencode/agent/hoi4-localisation-auditor.md",
-          "sha256": "da2acb10bc59e0142e13a9e202147251bd8a1abef7229ef4d1165496ef005c93",
-          "size": 9328
+          "sha256": "f6a96cf83fd1c09837d5be1274c6253d14cc8117f47d454555e8b39eb53b13c2",
+          "size": 9514
         },
         {
           "path": ".opencode/agent/hoi4-quote-remark-researcher.md",
-          "sha256": "816a76a130a3d2f1d9be741069a9348fdcd19263122bd97da6a18e751f503c63",
-          "size": 4360
+          "sha256": "00a97b01a688976402436d86cad70d255cad5c2d59d406529c4d9078f2b76ba5",
+          "size": 4302
         },
         {
           "path": ".opencode/agent/hoi4-repo-explorer.md",
-          "sha256": "033bea642e18b298b36c2e95787ce3eeefc94113a53dccef7d0c377e8dd1fde6",
-          "size": 12664
+          "sha256": "f5bd47ad610948b09bba508de41f1cb453419fff4082ad6ced14055186e3b451",
+          "size": 12606
         },
         {
           "path": ".opencode/agent/hoi4-scripted-system-architect.md",
-          "sha256": "5babfadbfa83a5c75694f4b7438039b47cf90de9a165555861ba4a2622a02de2",
-          "size": 5730
+          "sha256": "6a2a6b51d3ba32d16a5391a4db9a1105cade76a175dbbe4c62bd7fa9cd74329e",
+          "size": 5672
         },
         {
           "path": ".opencode/agent/hoi4-skill-maintainer.md",
-          "sha256": "6a66be3199295a1fe5107d55e7bcbcb72db6658724a3085e4972881ad368ffb5",
-          "size": 4312
+          "sha256": "d7fb6782494b27cfb742c6adad45c373f5e861b4b2b52503b11d48e3211fdd3f",
+          "size": 4254
         },
         {
           "path": ".opencode/agent/hoi4-spreadsheet-doc-worker.md",
-          "sha256": "3dfab2714b8078eb6104c9fca13b2ce347abae7b923df7dcb21cf85b82cb95d5",
-          "size": 4385
+          "sha256": "c3c5f69142f3e4d93d2c9b99b16f3f5c108f6a2b91ec8702905143f0eed92055",
+          "size": 4312
         },
         {
           "path": ".opencode/settings.json",
@@ -1172,8 +1172,8 @@
       "expected_files": [
         {
           "path": ".claude/agents/hoi4-portrait-creator.md",
-          "sha256": "1c7f96896454584fe66961d9576f7d44c5aa25171481afccd4eae7ac3461f261",
-          "size": 2813
+          "sha256": "2aa8d435fe4c5f0a41343e2ee148b8577a4400a78baf8f35838d87161a720e55",
+          "size": 2755
         }
       ]
     },
@@ -1226,18 +1226,18 @@
       "expected_files": [
         {
           "path": ".claude/agents/hoi4-super-event-art-researcher.md",
-          "sha256": "00931e9839eea131a81e8af762c9c722370021d166226829066ebdf970c18647",
-          "size": 2968
+          "sha256": "e36884492abd4a52d4182b6e2270b20dac85f95670a6963fbe7173607aebc765",
+          "size": 2910
         },
         {
           "path": ".claude/agents/hoi4-super-event-audio-researcher.md",
-          "sha256": "1dd629c47d1c36e2fb234630acd7695365ad56db4670b22d064ab2e00b84056c",
-          "size": 2736
+          "sha256": "51c48bdd1725f76a3739d37b7efd101d9c55a099e7731f98b0d1716a3cc97545",
+          "size": 2678
         },
         {
           "path": ".claude/agents/hoi4-super-event-quote-researcher.md",
-          "sha256": "f0aeecb5d336a5f970f4ba34e9d250323f8811dcc76f6331f0fe828ee66e1eb4",
-          "size": 2270
+          "sha256": "985c8a44f6df919629016c4004ce11d5e10adcd540276aa80307be838147132b",
+          "size": 2212
         }
       ]
     },
@@ -1287,8 +1287,8 @@
       "expected_files": [
         {
           "path": ".cursor/agents/hoi4-portrait-creator.md",
-          "sha256": "10b28940a4629df98e8443f84d680bd9196501b6fc6bc119fbaaad8905c9e9ff",
-          "size": 2813
+          "sha256": "c6e47010041d8f2e67e9960bce6744ac4464233f19bb79209db7fd03d816dc53",
+          "size": 2755
         }
       ]
     },
@@ -1341,18 +1341,18 @@
       "expected_files": [
         {
           "path": ".cursor/agents/hoi4-super-event-art-researcher.md",
-          "sha256": "ed6a73e6b5b20c9f13e4e1cc02df1fe6f2508fb4357aa04c8449f466feaa597a",
-          "size": 2968
+          "sha256": "cd8952aacdc71e178dcd64aec9901f69cc1dc6b996cf60ad716ad9fef0498627",
+          "size": 2910
         },
         {
           "path": ".cursor/agents/hoi4-super-event-audio-researcher.md",
-          "sha256": "332167c204d3b43c5a32da54b8b168c3394b80b3c1c48a49146cc110c83959ab",
-          "size": 2736
+          "sha256": "cecf41d9c4da5e7c7b56145ba60dcde927413d20c862b0e5521657d2acbf9253",
+          "size": 2678
         },
         {
           "path": ".cursor/agents/hoi4-super-event-quote-researcher.md",
-          "sha256": "7cd03e230e894f71a16b0ae4fb56a33beaba821b7da4f0e01587ec1d8893f5a0",
-          "size": 2270
+          "sha256": "3baeb957325090e6ee51b34f908873616e634b789136edaffc665e18e70a311a",
+          "size": 2212
         }
       ]
     },
@@ -1402,8 +1402,8 @@
       "expected_files": [
         {
           "path": ".qoder/agents/hoi4-portrait-creator.md",
-          "sha256": "dc9cf7cd4cfeee2d5f596c1e27ab92944399e208f64466fdaf2b1e39fa0356e9",
-          "size": 2868
+          "sha256": "86ac102203416eaf790f01a8c977ca4a12a9708c36eb84673b9b680d40e01322",
+          "size": 2810
         }
       ]
     },
@@ -1456,18 +1456,18 @@
       "expected_files": [
         {
           "path": ".qoder/agents/hoi4-super-event-art-researcher.md",
-          "sha256": "ddfffa094598867b3c97121d46e6ce67fa12a8bd69370fcf71976d5bf5e0d185",
-          "size": 3023
+          "sha256": "8f3d71c36a943eb2ac5cc109f54d9018f5a947f9c2b7f08307d65c37bd1659b1",
+          "size": 2965
         },
         {
           "path": ".qoder/agents/hoi4-super-event-audio-researcher.md",
-          "sha256": "7693468167bac4da9a9065a2b24042691e4e23f0d5acb0f248f0994aa6487c10",
-          "size": 2791
+          "sha256": "e4bedc42ad0c8e0294c62c6a5ce2f4bad26f16749ca9718319680c38be09d347",
+          "size": 2733
         },
         {
           "path": ".qoder/agents/hoi4-super-event-quote-researcher.md",
-          "sha256": "218a7600d0bab6844a5c22cefe327b59f3c888af594cdca17451c7312a2e46c7",
-          "size": 2325
+          "sha256": "eb16c94ac74b23c9608dc97d6a46f2e9f2a1a84954977dc469d681afa774519c",
+          "size": 2267
         }
       ]
     },
@@ -1517,8 +1517,8 @@
       "expected_files": [
         {
           "path": ".opencode/agent/hoi4-portrait-creator.md",
-          "sha256": "b6dd101b89b7bc382205f7c3b104d0cd4bfc4717c1beb7f153e39b43bf9160db",
-          "size": 2802
+          "sha256": "f1f047de2b13f86b0058753989b691be1b9da8e9c2462fc691ecb0f78042038f",
+          "size": 2744
         }
       ]
     },
@@ -1571,18 +1571,18 @@
       "expected_files": [
         {
           "path": ".opencode/agent/hoi4-super-event-art-researcher.md",
-          "sha256": "56aceafac144f4af8a3bf34fbfb3ae1b0c4ad36114d88e82c77b891e8acf26bc",
-          "size": 2947
+          "sha256": "a4621a8c76b2b139988ecb6fc1e697f78e75d94736179ca38dc94ea98c2ec403",
+          "size": 2889
         },
         {
           "path": ".opencode/agent/hoi4-super-event-audio-researcher.md",
-          "sha256": "8c269190277de6905bed352f79ea01834bd93f47cce79c870af50cb0989fee3c",
-          "size": 2713
+          "sha256": "c09484ece15a0260de58f52ae4227e6fe71676ce72a9743f589b5a938dd82b3e",
+          "size": 2655
         },
         {
           "path": ".opencode/agent/hoi4-super-event-quote-researcher.md",
-          "sha256": "4807e6ee2668dd8c2d62f31e7bd231411158f8119bb380eb6776dc2154374744",
-          "size": 2247
+          "sha256": "cbf1442afc1d1398cfcd9f14bd22c5801426485e370cf638cdfcef86824a5d4f",
+          "size": 2189
         }
       ]
     },
@@ -1649,23 +1649,33 @@
       "expected_files": [
         {
           "path": ".agents/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "e38817f7ecdce7274cb48eab5237bcee3529caa9c5d80337b474098246a82015",
-          "size": 51547
+          "sha256": "477a52169b5a4c0ff43ecf6cdc39a919faee882035e21a3728bb8a9f0ef17019",
+          "size": 4351
+        },
+        {
+          "path": ".agents/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
+          "sha256": "b0d0d18eaff8c01dfd21deb5d55370231c7a200bc0a6aa371afe8c826ed38228",
+          "size": 6959
+        },
+        {
+          "path": ".agents/skills/hoi4-3d-model-pipeline/references/production-guide.md",
+          "sha256": "397b88510841ba057bad1c90dabd05b3b3b3189a3b894811294ebf9c3980726b",
+          "size": 57855
         },
         {
           "path": ".agents/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
-          "sha256": "fe8799b3d5f49c53011897160f5bb94c7e2bc785dbbfb18fb1252364134cfe33",
-          "size": 3891
+          "sha256": "b59c49c1ab0297dcaa0ad324a9586d264a8f5d87c0b623427530dc5eb6b6078d",
+          "size": 3831
         },
         {
           "path": ".agents/skills/hoi4-debug-playtest/SKILL.md",
-          "sha256": "de26983c62748effc02bd23741fd09c168d0e552ba05a14397880ffbb47a4955",
-          "size": 19795
+          "sha256": "27b3314f5409cdefac6478d2fe38438ae491ce535fc35eb4c6014cfbe833b4d4",
+          "size": 23118
         },
         {
           "path": ".agents/skills/hoi4-decisions-missions/SKILL.md",
-          "sha256": "e4441c940a174ff2d4093eb8937c954161a26cd7e762cc097d748a0796a85387",
-          "size": 61687
+          "sha256": "084be7524480bcf23fc8d012b748d8352b903f0f3c4a1e0c017835c419a9f231",
+          "size": 64359
         },
         {
           "path": ".agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/README.md",
@@ -1739,23 +1749,28 @@
         },
         {
           "path": ".agents/skills/hoi4-events/SKILL.md",
-          "sha256": "4e407c7a4b80c0f2e8bfadc87b95db1f501b261f1b79e2af5859d0598676ccb6",
-          "size": 45832
+          "sha256": "62e7aaf625758b61ff871595cebbdfa33a91c5723c046819ad73768686cb0ed8",
+          "size": 48674
+        },
+        {
+          "path": ".agents/skills/hoi4-events/references/country-activation.md",
+          "sha256": "4d6fc24429d35c18ef245c1bee60bbb968d2b751fd6443a9b9b93c0278f953c9",
+          "size": 2186
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "735792099d7fb2677b113ce8ed2bce10e59e0d2e67533d0d9524381db5754d6e",
-          "size": 81547
+          "sha256": "36de5ef071e7c0cfaed9ce351dcc4923206acf96496582b37e8b52adac1f960c",
+          "size": 89311
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
-          "sha256": "1579a152012d11b35b7f829f94de48e3afef17de8957d67733437d660779ee45",
-          "size": 68198
+          "sha256": "4ed8f8f66dd5eea7ceb2cc2a0b96238d0f2de7780a0ced3cea18de4873b53ded",
+          "size": 69148
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/README.md",
-          "sha256": "d7f94556b69a78f2a0e9bf73b52141a11c37312db5f815b100a2c1f0284d6f02",
-          "size": 2461
+          "sha256": "cdfe26a538c796fa1c144fd6f98c4a451b226bf371e7a2ce08229933746e7389",
+          "size": 2909
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/REFERENCE_MANIFEST.md",
@@ -1998,7 +2013,17 @@
           "size": 6540
         },
         {
-          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/overlay.png",
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/template/achievement_template.png",
+          "sha256": "248db006611eb3942550c43df83802aa6fb24761035fc928b5d34586c0c4c5ba",
+          "size": 7095
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/template/achievement_template_grey.png",
+          "sha256": "70e073694c1a7d9fe40c63b1eb2e987a8a45b3ffd15ccf789eeaa5b843b90022",
+          "size": 4667
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/template/overlay.png",
           "sha256": "89bc80c6ac975bf6f1ff000ff3070b20c337bfb8b8ae966ae35a5540c004d6dd",
           "size": 3025
         },
@@ -3333,6 +3358,221 @@
           "size": 7578
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/README.md",
+          "sha256": "77686293645eed5251f9bcd6cb7c65ed3c96c4f3eb366e3dc8940f24af7dda6e",
+          "size": 1428
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/_review_contact_sheet.png",
+          "sha256": "e6a9bbdcdeb82323fbf7cadd349dd0cad10de9d92d5759b7b8cb6d3bfd1cae36",
+          "size": 363978
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/design_and_organization/countryequipmentdesignerview.png",
+          "sha256": "5075df6078218dbd3d00c20215943dc85a4380bf2838352a0b77243d7e48d35a",
+          "size": 1097660
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/design_and_organization/industrial_organisation_detail_window.png",
+          "sha256": "75e9befe3942fbc4104df40c759e2899f21da7d942af1cc48f63013b9854944f",
+          "size": 190136
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/design_and_organization/skoda_priority.full.png",
+          "sha256": "2a43a07e0423788c4d78f606e4bd6a4c9b0e0abf325809fb0b104ba739302ad8",
+          "size": 205441
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/design_and_organization/skoda_priority.png",
+          "sha256": "68b3dd3a0289c947e1b9b4ced46d55fb781933569dd6d0d68687f91ac32b0f62",
+          "size": 192523
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/design_and_organization/skoda_priority.svg",
+          "sha256": "a07a2d8d3e7e445afd49c932ccf9317a3efa41b8e1d50b931cf26670e36dfcb4",
+          "size": 749635
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/design_and_organization/unitleader_trait_tree_window.full.png",
+          "sha256": "513382e9560627811cbee6b07126e8dba66c5645a8ef02aff674ada9777bf704",
+          "size": 978957
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/design_and_organization/unitleader_trait_tree_window.png",
+          "sha256": "b644a0bb9d3459039fe823d420cbd8524431949fa1e80fc4bf923e8dbae423a6",
+          "size": 1039205
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/design_and_organization/unitleader_trait_tree_window.svg",
+          "sha256": "2d942dcd051acfb05a14a5719c2db54f59218b77cee7edf0c509aa104caf2925",
+          "size": 2326875
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/diplomacy_and_outcomes/peaceconference_full_window.png",
+          "sha256": "61390ce281e3271b5b7b317c5ef60c26c7dc384f8f658e200ec431109714347c",
+          "size": 189198
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/market_and_inventory/edit_market_stockpile_window.png",
+          "sha256": "2335321f99979d561867d6d7611c8afb551a0ff670525f8c7ddd9e5772e756fe",
+          "size": 303504
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/market_and_inventory/market_equipment_stockpile_window.png",
+          "sha256": "44c1a947cd8854d3bf89cc138aff6553c64dc85f22bb8b3a6037b3e9970bb79c",
+          "size": 82743
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/market_and_inventory/market_purchasable_equipment_window.png",
+          "sha256": "9f8b2212fcc3be7b29bc4db13f2a3d41fbe52f3e2f58ba6201c7ae79afdfe92d",
+          "size": 72364
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/market_and_inventory/market_purchase_draft_window.png",
+          "sha256": "aae25034300f260408dcc85d0b21df3366ddb0fb27f5ac96f111d53aaa0d7771",
+          "size": 313263
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/market_and_inventory/tradeoffer_window.full.png",
+          "sha256": "291d8f264a029777db1cbbbb293447610a736ecd5a25c8e5317d0c090389059c",
+          "size": 217456
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/market_and_inventory/tradeoffer_window.png",
+          "sha256": "712dc6cfc80988fa2c3ddcb07eaaaa345eaaf72eb9c7c45578b479cdeb3b287c",
+          "size": 207577
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/market_and_inventory/tradeoffer_window.svg",
+          "sha256": "22b8e1e5fef53e87b75e2a04471275a20e7751ce96de64f3802b0d207a8390e0",
+          "size": 730829
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/projects_and_research/detailed_project_history_window.png",
+          "sha256": "7c39cd05b787a8454daf6f216016b34dfac8ec8991abaaa8d84fda80eb8f404a",
+          "size": 129963
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/projects_and_research/program_window.png",
+          "sha256": "070f3b69a22f995b36961a28b430c24e2579a159ff6ab9e8d0fedc6e5302f87d",
+          "size": 215317
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/projects_and_research/scientist_roster_window.full.png",
+          "sha256": "3eab5b76126d7cc9af2fe6f3a7631408b5b974fa9761ecd985f491de7d8e26c2",
+          "size": 34307
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/projects_and_research/scientist_roster_window.png",
+          "sha256": "64aa70bcfd9623cf727c495591a2853b4474800418721d33576ef5451cf7d365",
+          "size": 33084
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/projects_and_research/scientist_roster_window.svg",
+          "sha256": "301ef8abb73070d1368fae562f21b5e87ea65535b632a0ca4a76a6d0cdca9936",
+          "size": 624351
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/projects_and_research/scientist_roster_window_clean.full.png",
+          "sha256": "bd3ef3220a14772eb912f790aa61c234bdefe05d04f0f424e9037f0a3c6d968e",
+          "size": 327803
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/projects_and_research/scientist_roster_window_clean.png",
+          "sha256": "25c3b282cff3ecb1bb51ba10816f2852bdd3be8decb9ae013ebde01472448199",
+          "size": 323722
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/projects_and_research/scientist_roster_window_clean.svg",
+          "sha256": "0ede36867b12addb173d3cd8a4d474a48d5f16e4ea73c5920ffa487c9dc1d187",
+          "size": 1113411
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/projects_and_research/scientist_roster_window_v4.full.png",
+          "sha256": "9ecad375dbd4cb2d485f9db533d299a4454f5a7f794684ed3d7afb84bbafefd0",
+          "size": 98781
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/projects_and_research/scientist_roster_window_v4.png",
+          "sha256": "4d54418e030bd9df7525c03ba6c3f341f2101f50d1ab00587b91b3c24b1d09af",
+          "size": 91083
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/ingamemenu.full.png",
+          "sha256": "3e37234fb7890404f6746f800f88499744cc6ef3d70fb57baf6525a181436183",
+          "size": 157880
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/ingamemenu.png",
+          "sha256": "29705e9de0d777eeb8f0d6c2e4ec31a69c0bca2ccce946d56adb1636ff745889",
+          "size": 136482
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/ingamemenu.svg",
+          "sha256": "f865dbb14faba28d72ee830e85cbb7adad0a0120c365a84bb5281793d3e3adef",
+          "size": 544407
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_accessibility.full.png",
+          "sha256": "a00e5e5ff9621555e11e40803001125cd04cc428146b05744ae1e84b0d773193",
+          "size": 405342
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_accessibility.png",
+          "sha256": "1bfdeca816d73c6e637e98df9363253c76fb369e04fee2762958e29a8e79ccb5",
+          "size": 390896
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_accessibility.svg",
+          "sha256": "8c8e888b354cb2d66ce4969767fa644920b529b93534889ba800db8410556bc4",
+          "size": 1163262
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_audio.full.png",
+          "sha256": "f68064c6467430d67311bbe5472bd722ab2fbdf2d4cbdb117683fcac70c82844",
+          "size": 386581
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_audio.png",
+          "sha256": "5b03fa436d66bfcab9d8d23f7a329ecda3d639f3d44979a5d227cbfee3de86ce",
+          "size": 371872
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_audio.svg",
+          "sha256": "971880ff6967ec600d83501d2985dae018f87a31bbe9a3a285ddaabd6cdf9bec",
+          "size": 1148503
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_ingame.full.png",
+          "sha256": "29801502735a4edf0975a7ecb12978247afddc6b24861e7ca986226b653dec83",
+          "size": 408551
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_ingame.png",
+          "sha256": "7d55a0e3ba60256ee6ad2fb26697141c506e3c031202331ff927ee7745d01bff",
+          "size": 393674
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_ingame.svg",
+          "sha256": "1f601bd93898c65ee491954677027dffce9a836b5afd149dc3c4c501b687cace",
+          "size": 1154787
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_video.full.png",
+          "sha256": "295f12c62bec4ffce64b817c6bf5fba7c75de36ca174af5ea251d3855871ac4d",
+          "size": 383804
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_video.png",
+          "sha256": "ede74849a488be80db1dc9dca7f964002c259f7c70be9dabf74b4ac950b42afc",
+          "size": 369262
+        },
+        {
+          "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/interface/vanilla/settings_and_controls/menu_settings_video.svg",
+          "sha256": "7f7f6bb685251cf3b6ebd3b4f329a6d41255d13065771847ddd08f753c35df01",
+          "size": 1243737
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/advisor_template.png",
           "sha256": "8f594ef62afba6fdec58de66a80609350dcfe884320b11e6cb6220f1a0e19f58",
           "size": 7891
@@ -4043,9 +4283,14 @@
           "size": 270
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/references/generation-and-review.md",
+          "sha256": "17ff4fbbfce4a96e5efb26633df202eacbab684c72becf1deacc430ab7a88000",
+          "size": 4066
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/tools/README.md",
-          "sha256": "615b5aeb0d48e204f282682172d34c6e7ad30fd78fdfcf5afe65ca0b73146097",
-          "size": 4693
+          "sha256": "9281c33aa2b4960f8c69146dbf6e29ad5d7c9122746f5838a58c901de6516a79",
+          "size": 6527
         },
         {
           "path": ".agents/skills/hoi4-feature-assets/tools/convert_to_dds.py",
@@ -4073,6 +4318,11 @@
           "size": 229738
         },
         {
+          "path": ".agents/skills/hoi4-feature-assets/tools/process_achievement_icons.py",
+          "sha256": "b41e31f1d4cf7495b74e08fc8aa7112d653a07ba22f368200ace4f437d2b199c",
+          "size": 26432
+        },
+        {
           "path": ".agents/skills/hoi4-feature-assets/tools/process_report_event_image.py",
           "sha256": "042d261adb6d17ea986a3244d08cb9c8991bd3003b8fd2dc252be65ef730ae54",
           "size": 9969
@@ -4089,38 +4339,63 @@
         },
         {
           "path": ".agents/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "0cb3163789f9edaef5e133a5b26f62b6f0c6db844ae841c64fd53e8ffd638e1f",
-          "size": 158022
+          "sha256": "030b07c97f5f931b35f3c269aaaf21da7b7cd56d2f35a37974e77d8c5ec621ad",
+          "size": 159614
         },
         {
           "path": ".agents/skills/hoi4-focus-trees/SKILL.md",
-          "sha256": "9d1b5bba8c86f1eceb143176dc11674888c0dd39c85e6bcfcf6288497ed20184",
-          "size": 80610
+          "sha256": "1b96e1de3d3f57b87ec5ca0993490a8ed6f5157a293c9ca941ccd67711d09716",
+          "size": 81402
         },
         {
           "path": ".agents/skills/hoi4-frame-animation/SKILL.md",
-          "sha256": "61c9d0563c263fdd2be466a4e470a8c715bb14274e09a5037a0025992ea2ee41",
-          "size": 24682
+          "sha256": "2c01f1517a80b405db2e9e9ed1b69bafe3a7343157ac63c7dffe040b9b7827f1",
+          "size": 27669
         },
         {
           "path": ".agents/skills/hoi4-improvement-loop/SKILL.md",
-          "sha256": "373a6937a0ce46ae56c8aa907aa19d4d9d71c801461d1a50bd5a99c74e4609d5",
-          "size": 28644
+          "sha256": "982f079a55d0954431e9377ca2af02d1a0e4fa3d387db908f93936568ebce144",
+          "size": 30227
         },
         {
           "path": ".agents/skills/hoi4-mtth/SKILL.md",
-          "sha256": "fed241a9f19facf547194ff7173e549e5c0e618ec17153f0ff0bac34bd920705",
-          "size": 2208
+          "sha256": "3051999cd59a5909c477a3bd0954ed4534c0cf2fffc03d229d5ff05f62ea65ea",
+          "size": 2268
+        },
+        {
+          "path": ".agents/skills/hoi4-scripted-gui/SKILL.md",
+          "sha256": "db7fff9144e7254e625c92ea1cc94296dd1f6c19ecf3226e75d01ac72f40368e",
+          "size": 14318
+        },
+        {
+          "path": ".agents/skills/hoi4-scripted-gui/references/visual-review.md",
+          "sha256": "3978f831e9007a52426aa2a4df4b9a444fc7147bad72d9aa68685592df01a23b",
+          "size": 9521
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "e9a8a8d8df1910bcaf8a1691afc25d31340ae2e386848d7061b466de1006daa6",
-          "size": 33950
+          "sha256": "5b717e37a6acc218da65331050f387ceef283337aadcbcf0a9a8c86f652ff0bb",
+          "size": 35892
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
           "sha256": "34ee6e42d76373a42da95612dd0400b17ff5e92c9c12ab7cc15b7aa9e0c5dde2",
           "size": 17943
+        },
+        {
+          "path": ".agents/skills/xlsx/SKILL.md",
+          "sha256": "ba308eb529adc1a7d3759accbe8676c42980caf1f0818a3575cb90488d807813",
+          "size": 4689
+        },
+        {
+          "path": ".agents/skills/xlsx/recalc.py",
+          "sha256": "96558b26b8dddd94e8049ddbcac301f496e80f926829de8aef8596853532b9de",
+          "size": 6342
+        },
+        {
+          "path": ".agents/skills/xlsx/tests/test_recalc.py",
+          "sha256": "00ed76a28ee207cbf7e9976e3019aa60e2bddef9f716008b2b79916ea3999eb7",
+          "size": 2668
         }
       ]
     },
@@ -4179,98 +4454,98 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_3d_model_pipeline.toml",
-          "sha256": "17e42a3f62957bf18f878022707843f81d877ba9b10ac392617053c669f42163",
-          "size": 25169
+          "sha256": "981b62f51f90b92194ee336b8aeaaaafb2c01b399579158e9edfb2ffe57d5f22",
+          "size": 26595
         },
         {
           "path": ".codex/agents/hoi4_ai_probability_auditor.toml",
-          "sha256": "75535b9368dac6991ae6c9a75c8679a9d3acffffc29aa7680afe5524e9514096",
-          "size": 8096
+          "sha256": "46b0d52c8585e5412ceaa48233bd337bee34f8853bd97717ab86e1c432d2c721",
+          "size": 8095
         },
         {
           "path": ".codex/agents/hoi4_asset_source_researcher.toml",
-          "sha256": "40206ffd93d9e3054e2b09095d7bb19a3154976dd3fa1ede5e5ae36d29ca5ea1",
-          "size": 4605
+          "sha256": "44b33e1b05edd75bd562c970a3c2c2a1c6ee93171bce1dfbf28c261b3ad74861",
+          "size": 4604
         },
         {
           "path": ".codex/agents/hoi4_audio_researcher.toml",
-          "sha256": "55f6957d89d2e9efd4df8ca7d5842af3b9b774f9714be6a56388d4d13a9cb168",
-          "size": 4736
+          "sha256": "4c66862351b04351bb7ff1f61c7b328b990eca968209217c8a61c4fb817d82e5",
+          "size": 4735
         },
         {
           "path": ".codex/agents/hoi4_country_package_auditor.toml",
-          "sha256": "310340a85ee909322f00b277b9c00e95643d24806f7cb0db06276df6585a637e",
-          "size": 8620
+          "sha256": "d20969d997ea3af7794a4a62e2eeeece02b902ad106a0bc8669b666a53ebfdbe",
+          "size": 8619
         },
         {
           "path": ".codex/agents/hoi4_decision_mission_auditor.toml",
-          "sha256": "b367686449f871614a040b03671fb5866b21158ef82b9817ae7a656a2a79aae6",
-          "size": 6458
+          "sha256": "5ea7a71264f57ce232ce8530ad24832069f6e60eea07659ead9f93e3318c1690",
+          "size": 6851
         },
         {
           "path": ".codex/agents/hoi4_documentation_curator.toml",
-          "sha256": "a77be5b535439b7ec726bfc5db3df63954258c542fd256e9060d548e10c3db87",
-          "size": 10077
+          "sha256": "cdd2edb0e08ebbf984f08b0e6890918b65e5b8fcca86ac93517e5aa2b669905a",
+          "size": 10076
         },
         {
           "path": ".codex/agents/hoi4_event_ui_worker.toml",
-          "sha256": "a26154a609821e23de2582fdc2c28bcc4fa36f0b26b9d5c9f62978fe943cdd31",
-          "size": 8890
+          "sha256": "38a7eb7e51d1d0b73334b0b02d0aae365584f001d9471ec59f7045d4e084a4b8",
+          "size": 10592
         },
         {
           "path": ".codex/agents/hoi4_feature_completion_auditor.toml",
-          "sha256": "57246d9aea45776ca81b44b3d490dd116cfa501f8e8cc72c1915dc7331a9bd72",
-          "size": 6376
+          "sha256": "54ebdbdb3b353e9c0f5e0db8e29c3187d76432c425efb25cdedc28ffc7a79bfa",
+          "size": 6501
         },
         {
           "path": ".codex/agents/hoi4_focus_tree_auditor.toml",
-          "sha256": "04da76e6eb0c92bda5516c4b77923742ac36a6c91b9a295371213c32dca0cf30",
-          "size": 5117
+          "sha256": "9ff7edb3c44ce7b923868dff00211fdf5a0fad23861e2fcca4bcc4898fb219b1",
+          "size": 5116
         },
         {
           "path": ".codex/agents/hoi4_generated_feature_art.toml",
-          "sha256": "f86a52590908a20075bbbfa2b176cd7fc5d82471f6bff9ddf5846054c29d2ef7",
-          "size": 6253
+          "sha256": "9b5d4f24763535944324af3792fbce3fcaab86c88f4a1f6e102f4cc97aef3710",
+          "size": 6250
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
-          "sha256": "20ceb786d2fd198260423bc04cfba38451b67890a3e8555f45166371bf83dd57",
-          "size": 11896
+          "sha256": "61ea33ed9bd247febf60e8cdfca62d8b15928bcc86a382f31616dc577d856a80",
+          "size": 11893
         },
         {
           "path": ".codex/agents/hoi4_improvement_loop_planner.toml",
-          "sha256": "674b0b7ab393bbd869494e2da6c5b3d49cb6854f941e53236b3d61bbdb5f8d92",
-          "size": 7349
+          "sha256": "d856a15a53e8b0a05728422365bc97cf5f36006098f92213d213dbd27a8eed1f",
+          "size": 7520
         },
         {
           "path": ".codex/agents/hoi4_localisation_auditor.toml",
-          "sha256": "475090befa68c69225e154fb96e9bb4a1c15906d00bd9e9686fa818e176c2632",
-          "size": 9367
+          "sha256": "a4aa29c1d56223be23110ea2f5f9a014f0dea3a59e1c5ef508eac2220385e4dc",
+          "size": 9610
         },
         {
           "path": ".codex/agents/hoi4_quote_remark_researcher.toml",
-          "sha256": "044e2f73090b248305e6b8e23588555c0fc4f36c8edf7087e4e544856fb8cc7b",
-          "size": 4384
+          "sha256": "76714629fefa6c2fa05e6072be0dca731d615796aa3e6176e7cea9e34f212312",
+          "size": 4383
         },
         {
           "path": ".codex/agents/hoi4_repo_explorer.toml",
-          "sha256": "127d3481ee178147f58bc0314c10dd768893d6aad7bdc264abaf9b061b5ff47c",
-          "size": 12638
+          "sha256": "5b641f3a7653c8e82f0815c2251eede02795002079e2a5f5717910822415265b",
+          "size": 12637
         },
         {
           "path": ".codex/agents/hoi4_scripted_system_architect.toml",
-          "sha256": "cae3da0830849a04592ce3552b046793c401e842148a3f6f9d499cb4f00745be",
-          "size": 5787
+          "sha256": "845a9286dd8deebd863747267316f58cc8f3e6e753d35dc79a78f6ea7305e24d",
+          "size": 5786
         },
         {
           "path": ".codex/agents/hoi4_skill_maintainer.toml",
-          "sha256": "4ed8ccdb52267ca6f283902400d2c39d4461f83d423d9d316aba07fd73737151",
-          "size": 4296
+          "sha256": "5588f12b7d05f0120758ea7d1a08369e17f3c7efde86df00c2c68bf476205dae",
+          "size": 4295
         },
         {
           "path": ".codex/agents/hoi4_spreadsheet_doc_worker.toml",
-          "sha256": "5173b215cc3210b58beeecd948fbf9e36f3742cd494154340236f09030741206",
-          "size": 4373
+          "sha256": "d237de06964ecbf59c2501ee92cdfffffaddbc656030f55d82fb99d3dd7b0aa7",
+          "size": 4355
         }
       ]
     },
@@ -4331,8 +4606,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "6d54e5505804378c4511e91864aa38c7c3e9465c2d3ba2dd064763f421d5e5ce",
-          "size": 9191
+          "sha256": "564dc10d40dd0ee46c564f9af9646c6b5e837d6d288e5c80048c4e1b955f1122",
+          "size": 9193
         }
       ]
     },
@@ -4584,8 +4859,8 @@
       "expected_files": [
         {
           "path": "docs/systems/hoi4_agent_tools_mcp_integration.md",
-          "sha256": "b6d4db71064260fa07045cb45bd5a5f87d109698529819fbcbbff75d80de3619",
-          "size": 14137
+          "sha256": "13b74875f2684e9f36da6462654900c883f4cb249752666bc0afb5f4b19977fc",
+          "size": 15373
         }
       ]
     },
@@ -4633,8 +4908,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "8b981272e7e9d8daef2ed98d8e7e0e1cfb4acda7df4836bcecd035b0e6e241a8",
-          "size": 22864
+          "sha256": "8a7ed9b6d89bcc6b187502a70ed17305dcfd63c871cda5d0032608474b0f2353",
+          "size": 25217
         }
       ]
     },
@@ -4682,8 +4957,8 @@
       "expected_files": [
         {
           "path": "AGENTS_chaos_redux.md",
-          "sha256": "4e10c99d465560b17f5d026c38c536bb47600e01611171e52497a897c80a85a7",
-          "size": 43402
+          "sha256": "5783aef0eff50f8ca21fd69ec169694f0feaef2470327cac631eda4868ae3ec5",
+          "size": 46291
         }
       ]
     },
@@ -7957,8 +8232,8 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_portrait_creator.toml",
-          "sha256": "bf785c00057b89f4ed4c28f37fa7e7665fde9412ce3471b2f6a179e2df9df848",
-          "size": 2780
+          "sha256": "62b96759fdf63a69ddd3a10e963e7fe11794ed6c3c4e9f84d8aae925b1052809",
+          "size": 2779
         }
       ]
     },
@@ -8168,18 +8443,83 @@
       "expected_files": [
         {
           "path": ".tools/3d_pipeline/README.md",
-          "sha256": "23dff295e1c2af76313ae49d80d09ce0489916c521f2afed29b1e1ce3cd0e57a",
-          "size": 8785
+          "sha256": "0f90195a823fec0664488484442d03a1be28fa7f3f47432ca7c8492e33e95c3d",
+          "size": 12706
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/animation_root_export.py",
+          "sha256": "d03799e55f410e2f60c2d51957910dd0573a5956bbb4d0ad460c567c3ea8b6b0",
+          "size": 4949
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/assembly_yaw.py",
+          "sha256": "1c53102a3923e367d01cb723aa7a4f6db18d7e87a6a66a8dcaca2362b2c9a57d",
+          "size": 7653
         },
         {
           "path": ".tools/3d_pipeline/adapter/blender_worker.py",
-          "sha256": "c625f9e3e20890bd2310154b6b8da28391e30e0f042fffe38e0ca8b9d212cf3c",
-          "size": 332019
+          "sha256": "17c9077f579ba7ea400d3068818784ec38e1f4d92c9828f8c01daff931977ed1",
+          "size": 535962
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/explicit_batch_repair.py",
+          "sha256": "ebd3ce21e5502a876114614b49b2bfcb493676dbd90c242fad0333f354fd7624",
+          "size": 26663
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/explicit_skin_repair.py",
+          "sha256": "f5b7ac956c22aff07c4db1cde52851aa16ea0a76125d9ac13f9ee9c89d2be788",
+          "size": 14371
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/explicit_vertex_remap.py",
+          "sha256": "7bb930e54efcffa8ccfe5bfd2a46fb4448737301dc18be43213ba3d0653b3423",
+          "size": 11536
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/fitted_humanoid_repair.py",
+          "sha256": "0459cd347d3a387c79c737a1eadec1f550716e23ab978d67f1bd234af705d699",
+          "size": 31816
         },
         {
           "path": ".tools/3d_pipeline/adapter/hoi4_blender_mcp.py",
-          "sha256": "a7c80f7aec406ecb3bbc72f790356028e630f040c6cf2d029c9a71721e6e47a3",
-          "size": 28585
+          "sha256": "b2cb7798dcb10081dfe46821615b7157ad06d2c66e7845a199cb0c8e6019fc62",
+          "size": 56196
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/identity_leaf_alias.py",
+          "sha256": "77f4d984dbe0b3c033f375569f25ad09ed0877058ce790e671b28ff0497552f9",
+          "size": 15172
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/manual_creature_rig.py",
+          "sha256": "1b91a65c7654e7f1b0c84e1f1f6156a79193a2ef301259806a307391c780449a",
+          "size": 49716
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/material_visibility_probe.py",
+          "sha256": "b69aac8c92a335f3b686e13c45ebae5b9b915888d112d4eeeb15188563c3cbfb",
+          "size": 14250
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/mesh_patch_repair.py",
+          "sha256": "6e5c981dbb375156643547960e5ef1e8d27d2651c2d122654b5de3163e364489",
+          "size": 13456
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/mesh_vertex_material_repair.py",
+          "sha256": "57f65be8638c253962cb5654a86970c3c649fafb460892a1d74a548b839de175",
+          "size": 12419
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/mesh_winding_repair.py",
+          "sha256": "2d5934d36c3e5700816164123257c19ba7527a514b1762348c06fd7e73925f74",
+          "size": 22648
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/mesh_winding_seam.py",
+          "sha256": "9a3976844a3f6d5eea83deb110b9381b08b82a342d3001f9881e151b0da15a9e",
+          "size": 27564
         },
         {
           "path": ".tools/3d_pipeline/adapter/normalization_convergence.py",
@@ -8187,19 +8527,34 @@
           "size": 1988
         },
         {
+          "path": ".tools/3d_pipeline/adapter/pdx_skin_membership.py",
+          "sha256": "3365a7a3d596a6a1018d171cbd0138ce3f38f58e0b1f5dbb4a92596fae10b130",
+          "size": 7796
+        },
+        {
           "path": ".tools/3d_pipeline/adapter/pyproject.toml",
-          "sha256": "9673bbec47faf6601e61fe6fdb10c03585ac26bc310712a91d64ffce60dba857",
+          "sha256": "e717f59735a98dff3c4d38a1d0cf5d0a306e804ca4ed2836ebdd91cf2a9438b8",
           "size": 267
         },
         {
+          "path": ".tools/3d_pipeline/adapter/retarget_root_motion.py",
+          "sha256": "1b8834f5ef6c83ca00ea32392f415243b58c8165c93f826f9785ef17459be899",
+          "size": 4486
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/skeletal_export_partition.py",
+          "sha256": "8a0eb171af4e06b965e864a2999440c81884aa7f8e139fe6098e4b898c87eb08",
+          "size": 23975
+        },
+        {
           "path": ".tools/3d_pipeline/blender_client.py",
-          "sha256": "37c72904e60c76bce4230b39d6df0fbf01a5fc56e6d433185705109f73a42797",
-          "size": 19485
+          "sha256": "059821977db86ef8362a0e8cd5ef7820f595cfd69bba00bdffb3d0da240a896a",
+          "size": 32949
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "e2340e2340d567b905a529e34eeee3cfa636a51087dc1e5483fcd0fe84a7f511",
-          "size": 57727
+          "sha256": "e3a0270f5cbc189220e116d8e5e077774e389f14bc8cf1ecb68d6c366389d461",
+          "size": 59698
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -8208,8 +8563,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_tool_contract.json",
-          "sha256": "1649396f6c1ada52ae4a913626cd9002de815819ffe377a25c663bf96db7a2f6",
-          "size": 1611
+          "sha256": "d4a209c1d2d8716a023b4b23593c033c7e5aed9d3b4dd5a9723ff1d5f7b8b5d4",
+          "size": 2348
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_tool_schema.lock.json",
@@ -8228,18 +8583,18 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/mcp_stdio.py",
-          "sha256": "806a493607bc402ad9a95c7b2b79ac5acf763ea22407bd28cbc017efdaf92d1e",
-          "size": 15242
+          "sha256": "bce5f752dba33f6d3f96ab9861327a5e72f2506d2b08a0e53a7712b7c65d19bb",
+          "size": 19405
         },
         {
           "path": ".tools/3d_pipeline/lib/paths.py",
-          "sha256": "d0973be672ad74c3e0f285d2f49a28b2f2fdac5602d6401d5169a8e3dcf03619",
-          "size": 7265
+          "sha256": "40e567eedd10e14e52ea0075e5a702f65ce3577805bc8b31f570ebcce6d648a8",
+          "size": 7373
         },
         {
           "path": ".tools/3d_pipeline/meshy_client.py",
-          "sha256": "449b2963bc119004651ca5c9d8ab8db0c9d22f65ab103046b2fc9c481e602f32",
-          "size": 20385
+          "sha256": "4878f51474674ff0e1a5cf8a3198cac5d1b4bf8dc0dbbc5e2b96d4d4dd9afb1e",
+          "size": 26531
         },
         {
           "path": ".tools/3d_pipeline/meshy_runtime/package-lock.json",
@@ -8253,8 +8608,8 @@
         },
         {
           "path": ".tools/3d_pipeline/pack_pdx_material.py",
-          "sha256": "7edcb4129e3af7c80f877b6ce36ba614410c00f449cd965a2926113413d870ac",
-          "size": 11801
+          "sha256": "3a1af2d567852a4f03d3b61732c1df1e43f1b7cbcebc6f1216ee9d7751eedab5",
+          "size": 11971
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
@@ -8267,14 +8622,129 @@
           "size": 3987
         },
         {
+          "path": ".tools/3d_pipeline/tests/fixtures/skeletal_material_streams.md",
+          "sha256": "2c2df78515953f9d27d38cf70c63e855768e89082518d8bcb08e6ddbcf93afb5",
+          "size": 1041
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/skeletal_material_streams.txt",
+          "sha256": "2ffa1d1c6263835f1d980ae0a4acfc3d05ac7ca45f50b78d600336ceca24af40",
+          "size": 1892
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_action_phase_patch.py",
+          "sha256": "58eaea29b09ce425e17a409f3926de442e60b718896c365146b9bd017cae06dd",
+          "size": 11831
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_animation_retarget.py",
+          "sha256": "8bb220f255f13a086c2121e49c788274238fb2693b9e61ada57ce83fa0cd2bd7",
+          "size": 4541
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_blender_stdio_response.py",
+          "sha256": "b4b3c0833df398eef77fe0e116bb693c5af248c338acd1f60965701fd3ff35f5",
+          "size": 5635
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_bounded_recovery_primitives.py",
+          "sha256": "524ff6c9d3d7257ad6e4c52ce99b73f56c3f0e9cfa6b29a4d3082991484c439c",
+          "size": 9153
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_explicit_batch_repair.py",
+          "sha256": "0076ecf1b1bc62194b1847bf8fd1b6f3c8b6190eff49ff3d04554e2f179a200c",
+          "size": 6191
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_explicit_skin_repair.py",
+          "sha256": "9bb4aa3fb25ed44edcf83b887eddc5d4644898063131dfa1b3378743df784ef9",
+          "size": 2226
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_fitted_humanoid_repair.py",
+          "sha256": "adc34ffa5c1483a7ece07cf932ba07926e7cd61f429d5fcce212444ee5ce204c",
+          "size": 9051
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_humanoid_component_review.py",
+          "sha256": "66e17762b868a84bbd50bd4c7ad61eb9da06dfb53284a21a6e80d72c6c71e8cd",
+          "size": 16659
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_locator_adapter_contract.py",
+          "sha256": "99e39649bc55c5b242852ca03d690d055534432d324e629d416f3f7546fc1cee",
+          "size": 28895
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_manual_creature_rig_contract.py",
+          "sha256": "fe07256a68bd4843e81e7fc2813e3f5112b711c0e067413c0fab7bf6cecfe3a0",
+          "size": 2962
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_material_visibility_probe.py",
+          "sha256": "b57bdf895c978266d99f5ab37127dde9ec369851ad3e2e42edebae8d7373b9a2",
+          "size": 4998
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_mesh_region_inspection.py",
+          "sha256": "ba250bcd48092013f47927ddcc342cb8bb166635c101dc392851e285591790ec",
+          "size": 11469
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_mesh_winding_repair.py",
+          "sha256": "a756db6e089b2c1ecf14aa18582af4e395594b89fb709dc22e04d8261fd0495c",
+          "size": 4803
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_mesh_winding_seam.py",
+          "sha256": "acb9a1c5abb3741bad15ec9dbf60d804875a4ee3af581c620a2c709bc5973d3a",
+          "size": 3347
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_optional_motion_contract.py",
+          "sha256": "9eea5d2e9731225dcabfb07a8d1b36fafc0f760ded12b1da49f3e61226a06da1",
+          "size": 7382
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_orphan_image_retention.py",
+          "sha256": "a1b8334eea5d64fa432010bc046c4b88a1df16ec5672c1fda770c2f312028531",
+          "size": 10645
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_partition_image_consumers.py",
+          "sha256": "3ddd7dee7d88f6f16fb09cace8e90110bb5df9e3106469d9298ae69dbac36c42",
+          "size": 9537
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_pdx_material_glossiness.py",
+          "sha256": "d71045a5ca9b7088823d363a8b71b0300b304faeb814adfaa35014c18bb37088",
+          "size": 2120
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_reimport_promotion_contract.py",
+          "sha256": "272194534cf77f86ee053aae6469c2137ae10ae139f1a3f6e49ac4b8b931ae18",
+          "size": 31850
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_reusable_adapter_advances.py",
+          "sha256": "52b9384da794c2d272d0bc8b2e22f6f946b7cae37d1c149fe0028a0ba9286d25",
+          "size": 5069
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_rigid_weapon_attachment_tool.py",
           "sha256": "1cc4c5c22b6a6a10c38184ad730db7396a80dcdf4f4c1ae8988531cc8c1042be",
           "size": 4163
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_skeletal_export_streams.py",
+          "sha256": "b3e5a421aa6ff01e684c4c8910a42fb13089bff7ee7cf38fafda0b99131d8caa",
+          "size": 9012
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_workflow_sync_contracts.py",
-          "sha256": "56d024c2ef1eebedc65921fd307c6ef2169cf51bb5d7d1e2bde5a807ee684c8a",
-          "size": 6448
+          "sha256": "3851b3b0dba7b73acb75a555fd9dc11c9cb98c221a81ab054212a12beb1741bc",
+          "size": 7161
         },
         {
           "path": ".tools/3d_pipeline/verify_environment.py",
@@ -8449,18 +8919,18 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_super_event_art_researcher.toml",
-          "sha256": "8f1c85d114b298080f62d82dfd95087ef54c6b4ff3a9694c3dc448789877c9b1",
-          "size": 2930
+          "sha256": "f85506f275429306e3c7999e97b73b58b4e5ecd1884d2273f496e053869c1d08",
+          "size": 2929
         },
         {
           "path": ".codex/agents/hoi4_super_event_audio_researcher.toml",
-          "sha256": "ea52d307186d93aaed0691678cba22a38cc879a6c8a5fc53a80f036870d40111",
-          "size": 2698
+          "sha256": "cfb5a15b9bebdea2b4fac05ce9361d407c8b874b4e32f3eac0aa9dd9c596780c",
+          "size": 2697
         },
         {
           "path": ".codex/agents/hoi4_super_event_quote_researcher.toml",
-          "sha256": "03feb99e0a951b9964943580ffbc08accff4657081088dc9ee5c0a69fd831039",
-          "size": 2233
+          "sha256": "f96411d423d027baa327f57a42bd54f19a9933f05d44be15ac267843e186d98d",
+          "size": 2232
         }
       ]
     },
