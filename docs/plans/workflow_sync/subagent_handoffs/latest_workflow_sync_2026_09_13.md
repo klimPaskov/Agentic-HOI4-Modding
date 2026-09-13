@@ -104,3 +104,9 @@ No provider operation, package setup, Blender session, HOI4 launch, live GUI pre
 This report is the current integrated synchronization status. The September 8 report and August handoffs remain historical evidence; their old runtime, model, firearm and Blender-policy descriptions are not current instructions. The actual skills, canonical TOMLs, synchronizers, template and current tool contracts are authoritative.
 
 The separate September 13 documentation handoff records that worker's bounded edits. Its unresolved parent-owned model, skill and manifest follow-ups are disposed here, except real-runtime checks and post-commit publication evidence, which remain explicitly unperformed.
+
+## Commit/push follow-up
+
+The user subsequently authorized commit and push. The workflow snapshot was committed as `293ff43`. A fetch found 14 newer commits on remote `main`, through `0bb4917`; these are preserved through a normal merge, not overwritten. Their composable/provider-neutral environment components, Windows-only registration boundaries, complete package-tree verification and updated `hoi4-agent-tools@3.0.7` pin remain intact. The MCP guide's manual command was aligned with that pin. CI combines the workflow sync's trigger coverage with upstream's unfiltered pull-request validation and explicit checks for all four projections.
+
+Staging exposed trailing EOF blank lines in 11 newly tracked files that an unstaged diff check had not covered; these were removed without semantic changes before the workflow commit. Exact manifest file evidence is regenerated after the integrated source commit and validated before pushing. The earlier uncommitted/publication notes above describe the repository-sync handoff time, not this later authorized publishing follow-up. No live provider, Blender or game checks were added.

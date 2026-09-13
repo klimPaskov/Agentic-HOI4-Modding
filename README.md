@@ -130,10 +130,10 @@ python .tools/sync/sync_claude_agents.py
 ```
 
 Each command also accepts `--check` for a read-only drift gate.
-All four runtime projections are checked in so a fresh checkout works immediately. They are generated artifacts, not authoring sources, and must not be edited by hand. The complete native packages also include each client's project settings, agent map, and provider-neutral MCP configuration.
+All four runtime projections are checked in so a fresh checkout works immediately. They are generated artifacts, not authoring sources, and must not be edited by hand. Core packages exclude Portrait Production and Super Events projections; those agents are separate manifest components activated only with their workflow. Native packages also include each client's project settings and agent map. The verified HOI4 Agent Tools registration is a separate Windows component because the reviewed bootstrap and command wrapper are Windows-only.
 MCP registration remains runtime- and project-specific; the generators synchronize subagent names, descriptions, prompt bodies, and authority classes without copying Codex-only settings or Chaos Redux paths. `.codex/agents/*.toml` is the one canonical source for every projection, and `--check` fails on drift.
 
-Claude Code additionally loads shared project settings from `.claude/settings.json`, project MCP servers from `.mcp.json`, and root instructions from `CLAUDE.md`. Cursor uses `.cursor/settings.json` and `.cursor/mcp.json`; Qoder uses `.qoder/settings.json` and `.qoder/mcp.json`; OpenCode uses `.opencode/settings.json`, `.opencode/mcp.json`, and the root `opencode.json`. These files all point at the same provider-neutral HOI4 Agent Tools command.
+Claude Code additionally loads shared project settings from `.claude/settings.json`, project MCP servers from `.mcp.json`, and root instructions from `CLAUDE.md`. Cursor uses `.cursor/settings.json` and `.cursor/mcp.json`; Qoder uses `.qoder/settings.json` and `.qoder/mcp.json`; OpenCode uses `.opencode/settings.json`, `.opencode/mcp.json`, and the root `opencode.json`. On Windows, the MCP files all point at the same provider-neutral HOI4 Agent Tools command. The manifest does not install those `.cmd` registrations on macOS.
 
 The main agent should still own final implementation, final wiring, final review, final validation, and the completion report. Spawn every project custom subagent without inherited conversation context and pass every required path, constraint, correction, accepted decision, ownership boundary, and handoff destination explicitly in its prompt.
 
@@ -197,10 +197,10 @@ Start Codex from the repository root so it can see `AGENTS.md`, `.agents/skills/
 
 HOI4 Agent Tools is an MCP server for coding agents. It helps agents inspect, lint, render, create, and rewrite focus trees; inspect and rewrite scripted GUIs; inspect and edit connected map data; trace, compare, render, and lint event chains; analyze AI weights, MTTH, random outcomes, and declared weighted systems under explicit scenarios; and inspect, render, and compare technology and doctrine trees through `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_compare`. It is one tool in the existing skills and source workflow.
 
-HOI4 Mod Setup installs and verifies the exact manifest-pinned public package automatically when this component is selected. The reviewed Windows bootstrap installs user-scoped Node.js LTS when it is missing, requires npm registry integrity to match the published release, installs the package under the current user's npm prefix, verifies the runtime-entry size and SHA-256, and then requires every source-advertised route to appear in the MCP `tools/list` response. The current source revision is pinned to:
+HOI4 Mod Setup installs and verifies the exact manifest-pinned public package automatically when this component is selected. The reviewed Windows bootstrap installs user-scoped Node.js LTS when it is missing, requires npm registry integrity to match the published release, installs the package under the current user's npm prefix, verifies the complete package-tree identity plus runtime-entry size and SHA-256, and then requires every source-advertised route to appear in the MCP `tools/list` response. A hidden global npm lock is checked when npm emits one, but the exact full-tree identity remains mandatory either way. The current source revision is pinned to:
 
 ```powershell
-npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@2.5.2
+npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.0.7
 ```
 
 A Codex server entry looks like this:

@@ -110,7 +110,7 @@ Technology and doctrine work uses the advertised `hoi4.tech_inspect`, `hoi4.tech
 Install the exact published package version declared by the current setup manifest and repository bootstrap, keeping version, registry integrity, runtime-entry evidence, and documentation aligned. The current starter revision uses:
 
 ```powershell
-npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@2.5.2
+npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.0.7
 ```
 
 If that exact package version is unavailable or fails verification, record the package/version blocker instead of silently substituting an unpinned clone or another release.

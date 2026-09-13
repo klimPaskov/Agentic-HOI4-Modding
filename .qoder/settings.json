@@ -2,11 +2,5 @@
   "instructions": ["AGENTS.md"],
   "agents": {
     "source": ".codex/agents"
-  },
-  "mcpServers": {
-    "hoi4_agent_tools": {
-      "command": "hoi4-agent-tools.cmd",
-      "args": []
-    }
   }
 }
