@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "4593cd5aadd795331a392e97d7d81d7bb5062577",
+  "generated_for_revision": "785dc8dd7bdfddcb118c970014fcdb733c65fb25",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -5017,13 +5017,13 @@
         },
         {
           "path": "paradox_wiki/AI modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "2e38620294c4ce70860482eec3a308cc5a1f9bd19003b1b9afcec084db0e03eb",
-          "size": 78915
+          "sha256": "917cd261f7da51fe4d8687c5d7663e768a09c5c101ac130ce646bc64637aa818",
+          "size": 82215
         },
         {
           "path": "paradox_wiki/Achievement modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "7648edcfa062f67aea82fc4bc18cb9282abb4edba03b8d2c808c64dcc54d02a5",
-          "size": 8843
+          "sha256": "cb5adb0014425da3ec733243063b04e5e5984bb9db30d69d2c0d449faad21fc2",
+          "size": 8904
         },
         {
           "path": "paradox_wiki/Autonomy state modding - Hearts of Iron 4 Wiki.md",
@@ -5032,8 +5032,8 @@
         },
         {
           "path": "paradox_wiki/Balance of power modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "ad6512eaabfc1db6a62a7c9eb822db43c4fe52497d39222a6bcf0a158c1afb9b",
-          "size": 24946
+          "sha256": "b407b547818a49db081676b59a209ced2c96d52fb4809b0dc475f30f23a8a2d5",
+          "size": 25649
         },
         {
           "path": "paradox_wiki/Bookmark modding - Hearts of Iron 4 Wiki.md",
@@ -5047,13 +5047,13 @@
         },
         {
           "path": "paradox_wiki/Character modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "fdb336845d9968eb3ea54a2cde27ef27c83b5fc6347e7f34fc91534f643e8f25",
-          "size": 61555
+          "sha256": "8ef3d5f9923026dd81f239944710b7331a8d06ad42e4345b32fce4e86dd95d98",
+          "size": 62308
         },
         {
           "path": "paradox_wiki/Console commands - Hearts of Iron 4 Wiki.md",
-          "sha256": "4b5e445e6ffc19cbf5215c9786255a1c16c4386bf1a631fd8d0eae6fde80479a",
-          "size": 36089
+          "sha256": "93206f1ccd110b9d0e0ce60a064309608318eac75aa81ddf3d536aeb03e6fca3",
+          "size": 36117
         },
         {
           "path": "paradox_wiki/Cosmetic tag modding - Hearts of Iron 4 Wiki.md",
@@ -5067,8 +5067,8 @@
         },
         {
           "path": "paradox_wiki/Data structures - Hearts of Iron 4 Wiki.md",
-          "sha256": "a3b230b110c03d6cc5717d20bed1be7742c2b390d23a2499e5c403fb41d51503",
-          "size": 151906
+          "sha256": "62273f37ed30e5479acb331a8973f48dadc1867c4913c8a940e3e790e7af32d4",
+          "size": 153223
         },
         {
           "path": "paradox_wiki/Decision modding - Hearts of Iron 4 Wiki.md",
@@ -5092,8 +5092,8 @@
         },
         {
           "path": "paradox_wiki/Effects - Hearts of Iron 4 Wiki.md",
-          "sha256": "fc9a0698e9dcd1d163de39797db4d050c322c81c4f22f2badbd28fbff1347568",
-          "size": 286812
+          "sha256": "997ddb09bfd63efb41a425149c46bd812d5f8953217a403386b2f6c85196aa0c",
+          "size": 299125
         },
         {
           "path": "paradox_wiki/Entity modding - Hearts of Iron 4 Wiki.md",
@@ -5162,8 +5162,8 @@
         },
         {
           "path": "paradox_wiki/Military industrial organization modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "dea63aa1e199a4e6cf51313e2cf84af496e5c9f771c57ca2e5f901cba4c15067",
-          "size": 28799
+          "sha256": "6d0a87c0cd738de48e4cde4296c0c38e035ab11a0f8afa24cdc05b5b15703121",
+          "size": 29365
         },
         {
           "path": "paradox_wiki/Mod structure - Hearts of Iron 4 Wiki.md",
@@ -5207,8 +5207,8 @@
         },
         {
           "path": "paradox_wiki/On actions - Hearts of Iron 4 Wiki.md",
-          "sha256": "762602ffa0a9046518f166c0c7c7da99837083be8e7b38362e8b77de8e0da335",
-          "size": 37618
+          "sha256": "6822adc85a374a1c1364f2def6f32c6d66da9fb0280319ddd6af4b84b33d882a",
+          "size": 38570
         },
         {
           "path": "paradox_wiki/Particle modding - Hearts of Iron 4 Wiki.md",
@@ -5232,8 +5232,8 @@
         },
         {
           "path": "paradox_wiki/Scopes - Hearts of Iron 4 Wiki.md",
-          "sha256": "9a49be858f1193fc3b9bbcc7c85ceb49e9f7d5ec1a932c8695eb06d430933a4b",
-          "size": 74363
+          "sha256": "18ef5249e4991f5427eca9ec4a2f66dd47f51e26a491c730adc622f1f5db1b49",
+          "size": 75435
         },
         {
           "path": "paradox_wiki/Scripted GUI modding - Hearts of Iron 4 Wiki.md",
@@ -5267,8 +5267,8 @@
         },
         {
           "path": "paradox_wiki/Triggers - Hearts of Iron 4 Wiki.md",
-          "sha256": "5a7679a7344984160e5bd96b6bdfd54a843e894579db5a0258cdb86d3b410c99",
-          "size": 183403
+          "sha256": "abc51ad18a2c46e46d47baa795c5a840ebaf7c4ae3e777426c64a9f4c0c0ce06",
+          "size": 189240
         },
         {
           "path": "paradox_wiki/Troubleshooting - Hearts of Iron 4 Wiki.md",
