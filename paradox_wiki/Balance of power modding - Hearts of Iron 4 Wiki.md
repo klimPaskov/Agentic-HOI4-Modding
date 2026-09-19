@@ -224,12 +224,66 @@ Balance of power-related country-scoped effects:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| remove_power_balance | `id = <BoP ID>`<br>Balance of power to modify. | `remove_power_balance = {`<br>`    id = my_bop`<br>`}` | Removes the balance of power in entirety. |  | 1.12 |
-| add_power_balance_value | `id = <BoP ID>`<br>Balance of power to modify.<br> `value = <decimal>`<br>The value to add.<br> `tooltip_side = <BoP side ID>`<br>The side to show in the tooltip. Optional.<br> | `add_power_balance_value = {`<br>`    id = my_bop`<br>`    value = -0.1`<br>`    tooltip_side = my_bop_side`<br>`}` | Pushes the balance of power towards one side. |  | 1.12 |
-| add_power_balance_modifier | `id = <BoP ID>`<br>Balance of power to modify.<br> `modifier = <static modifier>`<br>The [static modifier](<Modifiers - Hearts of Iron 4 Wiki.md>) to apply. | `add_power_balance_modifier = {`<br>`    id = my_bop`<br>`    modifier = my_static_modifier`<br>`}` | Applies a balance of power modifier. |  | 1.12 |
-| remove_power_balance_modifier | `id = <BoP ID>`<br>Balance of power to modify.<br> `modifier = <static modifier>`<br>The [static modifier](<Modifiers - Hearts of Iron 4 Wiki.md>) to apply. | `remove_power_balance_modifier = {`<br>`    id = my_bop`<br>`    modifier = my_static_modifier`<br>`}` | Cancels a balance of power modifier. |  | 1.12 |
-| remove_all_power_balance_modifiers | `id = <BoP ID>`<br>Balance of power to modify. | `remove_all_power_balance_modifiers = {`<br>`    id = my_bop`<br>`}` | Cancels all balance of power modifiers. |  | 1.12 |
-| set_power_balance_gfx | `id = <BoP ID>`<br>Balance of power to modify.<br> `side = <BoP side ID>`<br>The side whose GFX to change.<br> `gfx = <sprite>`<br>The sprite to change the GFX to. | `set_power_balance_gfx = {`<br>`    id = my_bop`<br>`    side = my_bop_side`<br>`    gfx = GFX_my_bop_side_new`<br>`}` | Changes the appearance of one of the sides within the balance of power. | Sprites are defined within `/Hearts of Iron IV/interface/*.gfx` files. | 1.12 |
+| remove_power_balance | `id = <BoP ID>`<br>Balance of power to modify. | *(example below)* | Removes the balance of power in entirety. |  | 1.12 |
+| add_power_balance_value | `id = <BoP ID>`<br>Balance of power to modify.<br> `value = <decimal>`<br>The value to add.<br> `tooltip_side = <BoP side ID>`<br>The side to show in the tooltip. Optional.<br> | *(example below)* | Pushes the balance of power towards one side. |  | 1.12 |
+| add_power_balance_modifier | `id = <BoP ID>`<br>Balance of power to modify.<br> `modifier = <static modifier>`<br>The [static modifier](<Modifiers - Hearts of Iron 4 Wiki.md>) to apply. | *(example below)* | Applies a balance of power modifier. |  | 1.12 |
+| remove_power_balance_modifier | `id = <BoP ID>`<br>Balance of power to modify.<br> `modifier = <static modifier>`<br>The [static modifier](<Modifiers - Hearts of Iron 4 Wiki.md>) to apply. | *(example below)* | Cancels a balance of power modifier. |  | 1.12 |
+| remove_all_power_balance_modifiers | `id = <BoP ID>`<br>Balance of power to modify. | *(example below)* | Cancels all balance of power modifiers. |  | 1.12 |
+| set_power_balance_gfx | `id = <BoP ID>`<br>Balance of power to modify.<br> `side = <BoP side ID>`<br>The side whose GFX to change.<br> `gfx = <sprite>`<br>The sprite to change the GFX to. | *(example below)* | Changes the appearance of one of the sides within the balance of power. | Sprites are defined within `/Hearts of Iron IV/interface/*.gfx` files. | 1.12 |
+
+**Example: remove_power_balance**
+
+```text
+remove_power_balance = {
+    id = my_bop
+}
+```
+
+**Example: add_power_balance_value**
+
+```text
+add_power_balance_value = {
+    id = my_bop
+    value = -0.1
+    tooltip_side = my_bop_side
+}
+```
+
+**Example: add_power_balance_modifier**
+
+```text
+add_power_balance_modifier = {
+    id = my_bop
+    modifier = my_static_modifier
+}
+```
+
+**Example: remove_power_balance_modifier**
+
+```text
+remove_power_balance_modifier = {
+    id = my_bop
+    modifier = my_static_modifier
+}
+```
+
+**Example: remove_all_power_balance_modifiers**
+
+```text
+remove_all_power_balance_modifiers = {
+    id = my_bop
+}
+```
+
+**Example: set_power_balance_gfx**
+
+```text
+set_power_balance_gfx = {
+    id = my_bop
+    side = my_bop_side
+    gfx = GFX_my_bop_side_new
+}
+```
 
 ## Triggers <a id="Triggers"></a>
 
@@ -241,14 +295,76 @@ Balance of power-related country-scoped triggers:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| has_power_balance | `id = <bop ID>`<br>The balance to check for. | `has_power_balance = {`<br>`    id = TAG_my_bop`<br>`}` | Checks if the current scope has the specified balance of power active. |  | 1.12 |
+| has_power_balance | `id = <bop ID>`<br>The balance to check for. | *(example below)* | Checks if the current scope has the specified balance of power active. |  | 1.12 |
 | has_any_power_balance | `<bool>`<br>Boolean. | `has_any_power_balance = yes` | Checks if the current scope has any balance of power active. |  | 1.12 |
-| power_balance_value | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | `power_balance_value = {`<br>`    id = TAG_my_bop`<br>`    value > 0.7`<br>`}` | Checks if the current scope has the specified value within the balance of power. | Either =, >, or < operators are allowed. | 1.12 |
-| power_balance_daily_change | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | `power_balance_daily_change = {`<br>`    id = TAG_my_bop`<br>`    value < -0.01`<br>`}` | Checks if the current scope's balance of power changes each day by the specified value. | Either =, >, or < operators are allowed. | 1.12 |
-| power_balance_weekly_change | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | `power_balance_weekly_change = {`<br>`    id = TAG_my_bop`<br>`    value < -0.01`<br>`}` | Checks if the current scope's balance of power changes each week by the specified value. | Either =, >, or < operators are allowed. | 1.12 |
-| is_power_balance_in_range | `id = <bop ID>`<br>The balance to check in.<br> `range = <range ID>`<br>The range to check for. | `is_power_balance_in_range = {`<br>`    id = TAG_my_bop`<br>`    range > TAG_my_bop_right_range`<br>`}` | Checks if the current scope's balance of power value lies within the specified range. | Ranges are defined within the balance of power. Can use either =, >, and < operators. In case of > or <, the comparison is 'strict', i.e. excluding the range itself. | 1.12 |
-| is_power_balance_side_active | `id = <bop ID>`<br>The balance to check in.<br> `side = <side ID>`<br>The side to check. | `is_power_balance_side_active = {`<br>`    id = TAG_my_bop`<br>`    side = TAG_my_bop_right_range`<br>`}` | Checks if the specified balance of power has a side active. | Sides are defined within the balance of power. "Active" means that the side is among those that are currently visible instead of relying on the current value. | 1.12 |
-| has_power_balance_modifier | `id = <bop ID>`<br>The balance to check in.<br> `modifier = <modifier ID>`<br>The [static modifier](<Modifiers - Hearts of Iron 4 Wiki.md>). | `has_power_balance_modifier = {`<br>`    id = TAG_my_bop`<br>`    modifier = TAG_my_bop_modifier`<br>`}` | Checks if the current scope's balance of power value activates a modifier. | BoP modifiers are defined within `/Hearts of Iron IV/common/modifiers/*.txt` files, while they're activated in the balance of power definition. | 1.12 |
+| power_balance_value | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | *(example below)* | Checks if the current scope has the specified value within the balance of power. | Either =, >, or < operators are allowed. | 1.12 |
+| power_balance_daily_change | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | *(example below)* | Checks if the current scope's balance of power changes each day by the specified value. | Either =, >, or < operators are allowed. | 1.12 |
+| power_balance_weekly_change | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | *(example below)* | Checks if the current scope's balance of power changes each week by the specified value. | Either =, >, or < operators are allowed. | 1.12 |
+| is_power_balance_in_range | `id = <bop ID>`<br>The balance to check in.<br> `range = <range ID>`<br>The range to check for. | *(example below)* | Checks if the current scope's balance of power value lies within the specified range. | Ranges are defined within the balance of power. Can use either =, >, and < operators. In case of > or <, the comparison is 'strict', i.e. excluding the range itself. | 1.12 |
+| is_power_balance_side_active | `id = <bop ID>`<br>The balance to check in.<br> `side = <side ID>`<br>The side to check. | *(example below)* | Checks if the specified balance of power has a side active. | Sides are defined within the balance of power. "Active" means that the side is among those that are currently visible instead of relying on the current value. | 1.12 |
+| has_power_balance_modifier | `id = <bop ID>`<br>The balance to check in.<br> `modifier = <modifier ID>`<br>The [static modifier](<Modifiers - Hearts of Iron 4 Wiki.md>). | *(example below)* | Checks if the current scope's balance of power value activates a modifier. | BoP modifiers are defined within `/Hearts of Iron IV/common/modifiers/*.txt` files, while they're activated in the balance of power definition. | 1.12 |
+
+**Example: has_power_balance**
+
+```text
+has_power_balance = {
+    id = TAG_my_bop
+}
+```
+
+**Example: power_balance_value**
+
+```text
+power_balance_value = {
+    id = TAG_my_bop
+    value > 0.7
+}
+```
+
+**Example: power_balance_daily_change**
+
+```text
+power_balance_daily_change = {
+    id = TAG_my_bop
+    value < -0.01
+}
+```
+
+**Example: power_balance_weekly_change**
+
+```text
+power_balance_weekly_change = {
+    id = TAG_my_bop
+    value < -0.01
+}
+```
+
+**Example: is_power_balance_in_range**
+
+```text
+is_power_balance_in_range = {
+    id = TAG_my_bop
+    range > TAG_my_bop_right_range
+}
+```
+
+**Example: is_power_balance_side_active**
+
+```text
+is_power_balance_side_active = {
+    id = TAG_my_bop
+    side = TAG_my_bop_right_range
+}
+```
+
+**Example: has_power_balance_modifier**
+
+```text
+has_power_balance_modifier = {
+    id = TAG_my_bop
+    modifier = TAG_my_bop_modifier
+}
+```
 
 ---
 

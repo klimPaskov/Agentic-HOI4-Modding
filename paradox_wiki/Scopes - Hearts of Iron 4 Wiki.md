@@ -257,17 +257,74 @@ Dual scopes:
 | <character> | not within Character scope | Character scope | `ENG_theodore_makhno = { set_nationality = UKR }` | On game versions prior to 1.12.8, the character must be already recruited by the country this is scoped from. | ✓ | 1.11 |
 | mio:<MIO> | Within country scope only | MIO scope | `mio:AST_cockatoo_doe_organization = { … }` | The MIO identified by that ID as defined within the `/Hearts of Iron IV/common/military_industrial_organization/organizations/*.txt` file. | ✓ | 1.13 |
 | sp:<special_project> | Within country scope only | Special project scope | `sp:sp_land_flamethrower_tank = { … }` | The special project identified by that ID as defined within the `/Hearts of Iron IV/common/special_projects/projects/*.txt` file. | ✓ | 1.15 |
-| ROOT | Always usable | Depends on usage | `ENG = {`<br>`    FRA = {`<br>`        GER = {`<br>`            declare_war_on = {`<br>`                target = ROOT`<br>`                type = annex_everything`<br>`            }`<br>`        }`<br>`    }`<br>`} #GER declares war on ENG (if there is no scope before ENG)` | Targets the root node of the block, an inherent property of each block. Most commonly, this is the default scope: for example, ROOT [within a national focus](<National focus modding - Hearts of Iron 4 Wiki.md>) will always refer to the country doing the focus and ROOT [within a event](<Event modding - Hearts of Iron 4 Wiki.md>) will always refer to the country getting the event. However, some blocks do distinguish between the default scope and ROOT, such as [certain scripted GUI contexts](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) or [certain on actions](<On actions - Hearts of Iron 4 Wiki.md#La_R.C3.A9sistance>). If a block doesn't have ROOT defined (such as [on_startup in on actions](<On actions - Hearts of Iron 4 Wiki.md>)), then it is impossible to use it. | ✓ | 1.0 |
+| ROOT | Always usable | Depends on usage | *(example below)* | Targets the root node of the block, an inherent property of each block. Most commonly, this is the default scope: for example, ROOT [within a national focus](<National focus modding - Hearts of Iron 4 Wiki.md>) will always refer to the country doing the focus and ROOT [within a event](<Event modding - Hearts of Iron 4 Wiki.md>) will always refer to the country getting the event. However, some blocks do distinguish between the default scope and ROOT, such as [certain scripted GUI contexts](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) or [certain on actions](<On actions - Hearts of Iron 4 Wiki.md#La_R.C3.A9sistance>). If a block doesn't have ROOT defined (such as [on_startup in on actions](<On actions - Hearts of Iron 4 Wiki.md>)), then it is impossible to use it. | ✓ | 1.0 |
 | THIS | Always usable | Depends on usage | `set_temp_variable = { target_country = THIS }` | Targets the current scope where it's used. For example, when used in every_state, it will refer to the state that's currently being evaluated. Primarily useful for [variables](<Data structures - Hearts of Iron 4 Wiki.md>) (as in the example, where omitting it wouldn't work) or for [built-in localisation commands](<Localisation - Hearts of Iron 4 Wiki.md#Namespaces>), where some scope must be specified. More rarely, this may help with scope manipulation when using PREV. Since omitting it makes no difference in how the code gets interpreted, there is little to no usage outside of these cases. | ✓ | 1.0 |
-| PREV | Always usable | Depends on usage | `FRA = {`<br>`    random_country = {`<br>`        GER = {`<br>`            declare_war_on = {`<br>`                target = PREV`<br>`                type = annex_everything`<br>`            }`<br>`        }`<br>`    }`<br>`} #Germany declares war on random_country` | Targets the scope that the current scope is contained in. Can have additional applications where the assumed default scope differs from the ROOT, such as in state events or some on_actions. Can be chained indefinitely as PREV.PREV. **Commonly results in broken-looking tooltips**: what's shown to the player doesn't always correlate with reality.<br> See also: [PREV usage](#PREV_usage). | ✓ | 1.0 |
-| FROM | Always usable | Depends on usage | `declare_war_on = {`<br>`    target = FROM`<br>`    type = annex_everything`<br>`}`<br><br>`FROM = {`<br>`    load_oob = defend_ourselves`<br>`}` | Can be chained indefinitely as FROM.FROM. Used to target various hardcoded scopes inherent to the block, often a secondary scope in addition to ROOT. For example:<br> In [events](<Event modding - Hearts of Iron 4 Wiki.md>), this refers to the country that sent the event (i.e. if the event was fired [using an effect](<Event modding - Hearts of Iron 4 Wiki.md#Effect>), then it's the ROOT scope where it was fired).<br> In [targeted decisions](<Decision modding - Hearts of Iron 4 Wiki.md>) or [diplomacy scripted triggers](<Triggers - Hearts of Iron 4 Wiki.md#Scripted_triggers>), this refers to the scope that is targeted.<br> | ✓ | 1.0 |
+| PREV | Always usable | Depends on usage | *(example below)* | Targets the scope that the current scope is contained in. Can have additional applications where the assumed default scope differs from the ROOT, such as in state events or some on_actions. Can be chained indefinitely as PREV.PREV. **Commonly results in broken-looking tooltips**: what's shown to the player doesn't always correlate with reality.<br> See also: [PREV usage](#PREV_usage). | ✓ | 1.0 |
+| FROM | Always usable | Depends on usage | *(example below)* | Can be chained indefinitely as FROM.FROM. Used to target various hardcoded scopes inherent to the block, often a secondary scope in addition to ROOT. For example:<br> In [events](<Event modding - Hearts of Iron 4 Wiki.md>), this refers to the country that sent the event (i.e. if the event was fired [using an effect](<Event modding - Hearts of Iron 4 Wiki.md#Effect>), then it's the ROOT scope where it was fired).<br> In [targeted decisions](<Decision modding - Hearts of Iron 4 Wiki.md>) or [diplomacy scripted triggers](<Triggers - Hearts of Iron 4 Wiki.md#Scripted_triggers>), this refers to the scope that is targeted.<br> | ✓ | 1.0 |
 | overlord | Within country scope only | Country scope | `overlord = { … }` | The overlord of the country if it is a subject. [Subject to the 'invalid event target' error.](#Invalid_event_target) | X | 1.3 |
 | faction_leader | Within country scope only | Country scope | `faction_leader = { add_to_faction = FROM }` | Faction leader of the faction the country is a part of. [Subject to the 'invalid event target' error.](#Invalid_event_target) | X | 1.10.1 |
 | owner | Within state, character, or combatant scope only | Country scope | `owner = { add_ideas = owns_this_state }` | In state scope, the country that owns the state. In combatant scope, the country that owns the divisions. In character scope, the country that has recruited the character. [Subject to the 'invalid event target' error](#Invalid_event_target) when used for a state. | X | 1.0 |
-| controller | Within state scope only | Country scope | `controller = {`<br>`    ROOT = {`<br>`        create_wargoal = {`<br>`            target = PREV`<br>`            type = take_state_focus`<br>`            generator = { 123 }`<br>`        }`<br>`    }`<br>`}` | The controller of the current state. [Subject to the 'invalid event target' error.](#Invalid_event_target) | X | 1.0 |
+| controller | Within state scope only | Country scope | *(example below)* | The controller of the current state. [Subject to the 'invalid event target' error.](#Invalid_event_target) | X | 1.0 |
 | capital_scope | Within country scope only | State scope | `capital_scope = { … }` | The state where the capital of the current country is located in. [Subject to the 'invalid event target' error](#Invalid_event_target) in rare cases. | X | 1.0 |
 | event_target:<event_target_key> | Always usable | Depends on usage | `event_target:my_event_target = { … }` | Saved [event target or global event target](<Data structures - Hearts of Iron 4 Wiki.md#Event_targets>), with no space after the colon. [Subject to the 'invalid event target' error.](#Invalid_event_target) | ✓ | 1.0 |
 | var:<variable> | Always usable | Depends on usage | `var:my_variable = { … }`<br>`add_to_faction = my_variable` or <br>`add_to_faction = var:my_variable` | [Variable](<Data structures - Hearts of Iron 4 Wiki.md>) set to a scope.<br> When used as a target rather than a scope, the `var:` can be omitted in most cases. | ✓ | 1.5 |
+
+**Example: ROOT**
+
+```text
+ENG = {
+    FRA = {
+        GER = {
+            declare_war_on = {
+                target = ROOT
+                type = annex_everything
+            }
+        }
+    }
+} #GER declares war on ENG (if there is no scope before ENG)
+```
+
+**Example: PREV**
+
+```text
+FRA = {
+    random_country = {
+        GER = {
+            declare_war_on = {
+                target = PREV
+                type = annex_everything
+            }
+        }
+    }
+} #Germany declares war on random_country
+```
+
+**Example: FROM**
+
+```text
+declare_war_on = {
+    target = FROM
+    type = annex_everything
+}
+
+FROM = {
+    load_oob = defend_ourselves
+}
+```
+
+**Example: controller**
+
+```text
+controller = {
+    ROOT = {
+        create_wargoal = {
+            target = PREV
+            type = take_state_focus
+            generator = { 123 }
+        }
+    }
+}
+```
 
 ### Invalid event target <a id="Invalid_event_target"></a>
 
@@ -303,8 +360,8 @@ Trigger scopes:
 | any_country | Always usable | Country | `any_country = { … }` | Checks if any country meets the triggers. | 1.0 |
 | all_other_country | Within country scope only | Country | `all_other_country = { … }` | Checks if all countries other than the one where this scope is located meet the triggers. | 1.0 |
 | any_other_country | Within country scope only | Country | `any_other_country = { … }` | Checks if any country other than the one where this scope is located meets the triggers. | 1.0 |
-| all_country_with_original_tag | Always usable | Country | `all_country_with_original_tag = {`<br>`    original_tag_to_check = TAG  #required`<br>`    …                  #triggers to check`<br>`}` | Checks if all countries originating from the specified country, including the dynamic countries created for civil wars and other purposes, meet the triggers. `original_tag_to_check = TAG` is used to specify the original tag. | 1.9 |
-| any_country_with_original_tag | Always usable | Country | `any_country_with_original_tag = {`<br>`    original_tag_to_check = TAG  #required`<br>`    …                  #triggers to check`<br>`}` | Checks if any country originating from the specified country, including the dynamic countries created for civil wars and other purposes, meets the triggers. `original_tag_to_check = TAG` is used to specify the original tag. | 1.9 |
+| all_country_with_original_tag | Always usable | Country | *(example below)* | Checks if all countries originating from the specified country, including the dynamic countries created for civil wars and other purposes, meet the triggers. `original_tag_to_check = TAG` is used to specify the original tag. | 1.9 |
+| any_country_with_original_tag | Always usable | Country | *(example below)* | Checks if any country originating from the specified country, including the dynamic countries created for civil wars and other purposes, meets the triggers. `original_tag_to_check = TAG` is used to specify the original tag. | 1.9 |
 | all_neighbor_country | Within country scope only | Country | `all_neighbor_country = { … }` | Checks if all countries that border the one where this scope is located meet the triggers. | 1.0 |
 | any_neighbor_country | Within country scope only | Country | `any_neighbor_country = { … }` | Checks if any country that borders the one where this scope is located meets the triggers. | 1.0 |
 | any_home_area_neighbor_country | Within country scope only | Country | `any_home_area_neighbor_country = { … }` | Checks if any country that borders the one where this scope is located, as well as being in its home area - meaning a direct land connection between the capitals of countries - meets the triggers. | 1.0 |
@@ -319,12 +376,12 @@ Trigger scopes:
 | all_subject_countries | Within country scope only | Country | `all_subject_countries = { … }` | Checks if all countries that are a subject of the one where this scope is located meet the triggers. Notice the plural spelling in the scope. | 1.11 |
 | any_subject_country | Within country scope only | Country | `any_subject_country = { … }` | Checks if any country that is a subject of the one where this scope is located meets the triggers. | 1.11 |
 | any_country_with_core | Within state scope only | Country | `any_country_with_core = { … }` | Checks if any country that has the current scope as a core state meets the triggers. **Does not have an equivalent for other effect/trigger scope types.** | 1.12 |
-| all_country_of | Alway usable | Country | `all_country_of = {`<br>`	tooltip = my_loc # Optional bindable localization`<br>`	target = { SWE NOR FIN DEN ICE }`<br>`	has_defensive_war = yes`<br>`}`<br><br>`all_country_of = {`<br>`    tooltip = my_loc # Optional bindable localization`<br>`	target = constant:country_groups:nordics`<br>`	has_defensive_war = yes`<br>`}` | Checks if all of the provided countries fulfill the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
-| any_country_of | Alway usable | Country | `any_country_of = {`<br>`	tooltip = my_loc # Optional bindable localization`<br>`	target = { SWE NOR FIN DEN ICE }`<br>`	has_defensive_war = yes`<br>`}`<br><br>`any_country_of = {`<br>`    tooltip = my_loc # Optional bindable localization`<br>`	target = constant:country_groups:nordics`<br>`	has_defensive_war = yes`<br>`}` | Checks if any of the provided countries fulfills the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
+| all_country_of | Alway usable | Country | *(example below)* | Checks if all of the provided countries fulfill the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
+| any_country_of | Alway usable | Country | *(example below)* | Checks if any of the provided countries fulfills the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
 | all_state | Always usable | State | `all_state = { … }` | Check if all states meet the triggers. | 1.0 |
 | any_state | Always usable | State | `any_state = { … }` | Check if any state meets the triggers. | 1.0 |
-| any_state_in | Always usable | State | `any_state_in = {`<br>`  array = array_of_states  #required`<br>`    …                  #triggers to check`<br>`}`Requires on of the following fields`array = <array_of_states>`<br>`continent = <continent_name>`<br>`ai_area = <ai_area_name>`<br>`strategic_region = <strategic_region_number>` | Check if any state in the given category meets the trigger. | 1.15 |
-| any_state_of | Alway usable | State | `any_state_of = {`<br>`	tooltip = my_loc # Optional bindable localization`<br>`	target = { 1 42 1992 }`<br>`	controller = {`<br>`		has_defensive_war = yes`<br>`	}`<br>`}`<br><br>`any_state_of = {`<br>`    tooltip = my_loc # Optional bindable localization`<br>`	target = constant:country_groups:nordics`<br>`	controller = {`<br>`		has_defensive_war = yes`<br>`	}`<br>`}` | Checks if any of the provided states fulfills the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
+| any_state_in | Always usable | State | *(example below)* Requires on of the following fields*(example below)* | Check if any state in the given category meets the trigger. | 1.15 |
+| any_state_of | Alway usable | State | *(example below)* | Checks if any of the provided states fulfills the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
 | all_neighbor_state | Within state scope only | State | `all_neighbor_state = { … }` | Check if all states that are neighbour to the one where this scope is located meet the triggers. | 1.0 |
 | any_neighbor_state | Within state scope only | State | `any_neighbor_state = { … }` | Check if any state that is neighbour to the one where this scope is located meets the triggers. | 1.0 |
 | all_owned_state | Within country scope only | State | `all_owned_state = { … }` | Check if all states that are owned by the country where this scope is located meet the triggers. | 1.0 |
@@ -354,6 +411,94 @@ Trigger scopes:
 | all_active_scientist | Within country scope only | Character | `all_active_scientist = { … }` | Checks if all active scientists of the Country in scope matches the triggers. | 1.15 |
 | any_active_scientist | Within country scope only | Character | `any_active_scientist = { … }` | Checks if at least one active scientist of the Country in scope matches the triggers. | 1.15 |
 
+**Example: all_country_with_original_tag**
+
+```text
+all_country_with_original_tag = {
+    original_tag_to_check = TAG  #required
+    …                  #triggers to check
+}
+```
+
+**Example: any_country_with_original_tag**
+
+```text
+any_country_with_original_tag = {
+    original_tag_to_check = TAG  #required
+    …                  #triggers to check
+}
+```
+
+**Example: all_country_of**
+
+```text
+all_country_of = {
+	tooltip = my_loc # Optional bindable localization
+	target = { SWE NOR FIN DEN ICE }
+	has_defensive_war = yes
+}
+
+all_country_of = {
+    tooltip = my_loc # Optional bindable localization
+	target = constant:country_groups:nordics
+	has_defensive_war = yes
+}
+```
+
+**Example: any_country_of**
+
+```text
+any_country_of = {
+	tooltip = my_loc # Optional bindable localization
+	target = { SWE NOR FIN DEN ICE }
+	has_defensive_war = yes
+}
+
+any_country_of = {
+    tooltip = my_loc # Optional bindable localization
+	target = constant:country_groups:nordics
+	has_defensive_war = yes
+}
+```
+
+**Example: any_state_in**
+
+```text
+any_state_in = {
+  array = array_of_states  #required
+    …                  #triggers to check
+}
+```
+
+**Example: any_state_in**
+
+```text
+array = <array_of_states>
+continent = <continent_name>
+ai_area = <ai_area_name>
+strategic_region = <strategic_region_number>
+```
+
+**Example: any_state_of**
+
+```text
+any_state_of = {
+	tooltip = my_loc # Optional bindable localization
+	target = { 1 42 1992 }
+	controller = {
+		has_defensive_war = yes
+	}
+}
+
+any_state_of = {
+    tooltip = my_loc # Optional bindable localization
+	target = constant:country_groups:nordics
+	controller = {
+		has_defensive_war = yes
+	}
+}
+```
+
 ## Effect scopes <a id="Effect_scopes"></a>
 
 These can only be used as [effects](<Effects - Hearts of Iron 4 Wiki.md>); trying to use them as [triggers](<Triggers - Hearts of Iron 4 Wiki.md>) will result in nothing happening.
@@ -367,8 +512,8 @@ Effect scopes:
 | random_country | Always usable | Country | `random_country = { … }` | Executes contained effects on a random country that meets the limit. | 1.0 |
 | every_other_country | Within country scope only | Country | `every_other_country = { … }` | Executes contained effects on every country that meets the limit and is not the same country as the one this is contained in. | 1.0 |
 | random_other_country | Within country scope only | Country | `random_other_country = { … }` | Executes contained effects on a random country that meets the limit and is not the same country as the one this is contained in. | 1.0 |
-| every_country_with_original_tag | Always usable | Country | `every_country_with_original_tag = {`<br>`    original_tag_to_check = TAG  #required`<br>`    …                  #effects to run`<br>`}` | Executes contained effects on every country that meets the limit and has the specified original tag. | 1.9 |
-| random_country_with_original_tag | Always usable | Country | `random_country_with_original_tag = {`<br>`    original_tag_to_check = TAG  #required`<br>`    …                  #effects to run`<br>`}` | Executes contained effects on a random country that meets the limit and has the specified original tag. |  |
+| every_country_with_original_tag | Always usable | Country | *(example below)* | Executes contained effects on every country that meets the limit and has the specified original tag. | 1.9 |
+| random_country_with_original_tag | Always usable | Country | *(example below)* | Executes contained effects on a random country that meets the limit and has the specified original tag. |  |
 | every_neighbor_country | Within country scope only | Country | `every_neighbor_country = { … }` | Executes contained effects on every country that meets the limit and borders the country this is contained in. | 1.0 |
 | random_neighbor_country | Within country scope only | Country | `random_neighbor_country = { … }` | Executes contained effects on a random country that meets the limit and borders the country this is contained in. | 1.0 |
 | every_occupied_country | Within country scope only | Country | `every_occupied_country = { … }` | Executes contained effects on every country that meets the limit and has any core states controlled by the country this is contained in. | 1.9 |
@@ -381,16 +526,16 @@ Effect scopes:
 | random_subject_country | Within country scope only | Country | `random_subject_country = { … }` | Executes contained effects on a random country that meets the limit and is a subject of the country this is contained in. | 1.11 |
 | every_faction_member | Within country scope only | Country | `every_faction_member = { … }` | Executes children effects on every faction member of the country's faction in scope, if country does not have a faction it will only work on itself. | 1.17 |
 | every_state | Always usable | State | `every_state = { … }` | Executes contained effects on every state that meets the limit. | 1.0 |
-| random_state | Always usable | State | `random_state = {`<br>`    prioritize = { 123 321 } #optional`<br>`    …    #effects to run`<br>`}` | Executes contained effects on a random state that meets the limit. | 1.0 |
+| random_state | Always usable | State | *(example below)* | Executes contained effects on a random state that meets the limit. | 1.0 |
 | every_neighbor_state | Within state scope only | State | `every_neighbor_state = { … }` | Executes contained effects on every state that meets the limit and neighbours the state this is contained in. | 1.0 |
 | random_neighbor_state | Within state scope only | State | `random_neighbor_state = { … }` | Executes contained effects on a random state that meets the limit and neighbours the state this is contained in. Does not support prioritizing. | 1.0 |
 | every_owned_state | Within country scope only | State | `every_owned_state = { … }` | Executes contained effects on every state that meets the limit and is owned by the country this is contained in. | 1.0 |
-| random_owned_state | Within country scope only | State | `random_owned_state = {`<br>`    prioritize = { 123 321 } #optional`<br>`    …    #effects to run`<br>`}` | Executes contained effects on a random state that meets the limit and is owned by the country this is contained in. | 1.0 |
+| random_owned_state | Within country scope only | State | *(example below)* | Executes contained effects on a random state that meets the limit and is owned by the country this is contained in. | 1.0 |
 | every_core_state | Within country scope only | State | `every_core_state = { … }` | Executes contained effects on every state that meets the limit and is a core of the country this is contained in. | 1.11 |
-| random_core_state | Within country scope only | State | `random_core_state = {`<br>`    prioritize = { 123 321 } #optional`<br>`    …    #effects to run`<br>`}` | Executes contained effects on a random state that meets the limit and is a core of the country this is contained in. | 1.11 |
+| random_core_state | Within country scope only | State | *(example below)* | Executes contained effects on a random state that meets the limit and is a core of the country this is contained in. | 1.11 |
 | every_controlled_state | Within country scope only | State | `every_controlled_state = { … }` | Executes contained effects on every state that meets the limit and is controlled by the country this is contained in. | 1.9 |
-| random_controlled_state | Within country scope only | State | `random_controlled_state = {`<br>`    prioritize = { 123 321 } #optional`<br>`    …    #effects to run`<br>`}` | Executes contained effects on a random state that meets the limit and is controlled by the country this is contained in. | 1.9 |
-| random_owned_controlled_state | Within country scope only | State | `random_owned_controlled_state = {`<br>`    prioritize = { 123 321 } #optional`<br>`    …    #effects to run`<br>`}` | Executes contained effects on a random state that meets the limit and is owned and controlled by the country this is contained in. | 1.3 |
+| random_controlled_state | Within country scope only | State | *(example below)* | Executes contained effects on a random state that meets the limit and is controlled by the country this is contained in. | 1.9 |
+| random_owned_controlled_state | Within country scope only | State | *(example below)* | Executes contained effects on a random state that meets the limit and is owned and controlled by the country this is contained in. | 1.3 |
 | every_unit_leader | Within country scope only | Unit Leader | `every_unit_leader = { … }` | Executes contained effects on every unit leader (corps commanders, field marshals, admirals) that meets the limit and is recruited by the country this is contained in. | 1.5 |
 | random_unit_leader | Within country scope only | Unit Leader | `random_unit_leader = { … }` | Executes contained effects on a random unit leader (corps commanders, field marshals, admirals) that meets the limit and is recruited by the country this is contained in. | 1.5 |
 | every_army_leader | Within country scope only | Unit Leader | `every_unit_leader = { … }` | Executes contained effects on every army leader that meets the limit and is recruited by the country this is contained in. | 1.5 |
@@ -414,8 +559,96 @@ Effect scopes:
 | random_scientist | Within country scope only | Character | `random_scientist = { … }` | Executes children effects on random scientists that fulfills the "limit" trigger. | 1.15 |
 | every_active_scientist | Within country scope only | Character | `every_active_scientist = { … }` | Executes children effects on every active scientist (or "random_select_amount" of random character if specified) of the country in scope, that fulfills the "limit" trigger.title. | 1.15 |
 | random_active_scientist | Within country scope only | Character | `random_active_scientist = { … }` | Executes children effects on random scientists that fulfills the "limit" trigger. | 1.15 |
-| party_leader | Within country scope only | Character | `party_leader = {`<br>`    limit = {`<br>`        has_ideology = liberalism`<br>`    }`<br>`    set_nationality = BHR`<br>`}` | Executes the effects on the party leader with the specified ideology type. Must contain a `has_ideology` in the limit that refers to a specific ideology type (e.g. Despotic), not a group that contain the type (e.g. Non-Aligned). The selected character must be the leader of a party corresponding to the ideology group. | 1.11 |
-| every_collection_element | Always usable | Collection/Any | `every_collection_element = {`<br>`    input = {`<br>`        input = collection_id # This can be a collection name or an inline definition of a collection`<br>`        limit = {`<br>`            # Trigger - limit effect execution to a subset of elements`<br>`        }`<br>`    }`<br>`    # Effects to be executed`<br>`}` | Applies arbitrary effects to all elements of a collection. To learn more about collections, see the documentation in `/Hearts of Iron IV/common/collections`. | 1.17 |
+| party_leader | Within country scope only | Character | *(example below)* | Executes the effects on the party leader with the specified ideology type. Must contain a `has_ideology` in the limit that refers to a specific ideology type (e.g. Despotic), not a group that contain the type (e.g. Non-Aligned). The selected character must be the leader of a party corresponding to the ideology group. | 1.11 |
+| every_collection_element | Always usable | Collection/Any | *(example below)* | Applies arbitrary effects to all elements of a collection. To learn more about collections, see the documentation in `/Hearts of Iron IV/common/collections`. | 1.17 |
+
+**Example: every_country_with_original_tag**
+
+```text
+every_country_with_original_tag = {
+    original_tag_to_check = TAG  #required
+    …                  #effects to run
+}
+```
+
+**Example: random_country_with_original_tag**
+
+```text
+random_country_with_original_tag = {
+    original_tag_to_check = TAG  #required
+    …                  #effects to run
+}
+```
+
+**Example: random_state**
+
+```text
+random_state = {
+    prioritize = { 123 321 } #optional
+    …    #effects to run
+}
+```
+
+**Example: random_owned_state**
+
+```text
+random_owned_state = {
+    prioritize = { 123 321 } #optional
+    …    #effects to run
+}
+```
+
+**Example: random_core_state**
+
+```text
+random_core_state = {
+    prioritize = { 123 321 } #optional
+    …    #effects to run
+}
+```
+
+**Example: random_controlled_state**
+
+```text
+random_controlled_state = {
+    prioritize = { 123 321 } #optional
+    …    #effects to run
+}
+```
+
+**Example: random_owned_controlled_state**
+
+```text
+random_owned_controlled_state = {
+    prioritize = { 123 321 } #optional
+    …    #effects to run
+}
+```
+
+**Example: party_leader**
+
+```text
+party_leader = {
+    limit = {
+        has_ideology = liberalism
+    }
+    set_nationality = BHR
+}
+```
+
+**Example: every_collection_element**
+
+```text
+every_collection_element = {
+    input = {
+        input = collection_id # This can be a collection name or an inline definition of a collection
+        limit = {
+            # Trigger - limit effect execution to a subset of elements
+        }
+    }
+    # Effects to be executed
+}
+```
 
 **NOTE:** Some of these scopes may have no countries/states that match the criteria.
 
@@ -427,8 +660,79 @@ Effects changing the scope:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| start_civil_war | `ideology = <ideology>`<br>The ideology of the breakaway country. `ruling_party = <ideology>`<br>The ruling party of the **original, player-led** country. Optional.<br> `size = <float>`<br>The size of the breakaway country and the fraction of the original stockpile and military units it will receive by default. Optional, defaults to 0.5.<br> `army_ratio = <float>`<br>The size of the land army that the breakaway country gets. Optional, defaults to being the same as size.<br> `navy_ratio = <float>`<br>The size of the naval forces that the breakaway country gets. Optional, defaults to being the same as size.<br> `air_ratio = <float>`<br>The size of the airforce that the breakaway country gets. Optional, defaults to being the same as size.<br> `capital = <state>`<br>The capital state of the breakaway country. Optional.<br> `states = { <state> }`<br>The states included in the breakway country. Optional, defaults to random states based off size. `all` will result in all states that meet the filter going to the breakaway.<br> `states_filter = { <triggers> }`<br>A trigger block checked for the state that must be met to be transferred to the breakaway. Optional.<br> `keep_unit_leaders = { <unit leader id> }`<br>List of unit leaders to be kept by their legacy_id. Optional.<br> `keep_unit_leaders_trigger = { <triggers> }`<br>Trigger block checked for every unit leader that forces them to be kept if they meet the triggers. Optional.<br> `keep_political_leader = <bool>`<br>Controls if the promoted party leader (i.e. the one that'd take power if the country were to be switched to that ideology group) of the revolting ideology group will be kept by the country or join the revolt, yes resulting in the former. Optional, defaults to false.<br> `keep_political_party_members = <bool>`<br>Controls if non-promoted party leaders of the revolting ideology group will be kept by the country or join the revolt, yes resulting in the former. Optional, defaults to false.<br> `keep_all_characters = yes`<br>If true, the revolter will have no characters from the original country transferred to them. Optional, defaults to false.<br> `<effects>`<br>An effect block executed for the breakaway country. | `start_civil_war = {`<br>`    ruling_party = communism`<br>`    # Original country's ideology changes to communism`<br>`    ideology = ROOT`<br>`    # Breakaway gets old ideology of ROOT`<br>`    size = 0.8`<br>`    capital = 282`<br>`    states = {`<br>`        282 533 536 555 529 530 528`<br>`    }`<br>`    keep_unit_leaders = {`<br>`        750 751 752`<br>`    }`<br>`    keep_political_leader = yes`<br>`    keep_political_party_members = yes`<br>`}``start_civil_war = {`<br>`    ideology = democratic`<br>`    size = 0.1`<br>`    states = all`<br>`    states_filter = {`<br>`        is_on_continent = europe`<br>`        is_capital = no`<br>`    }`<br>`    set_country_flag = TAG_my_country_tag_alias_trigger`<br>`    # Sets a country flag that gets used in a country tag alias.`<br>`}` ([See country tag aliases](<Data structures - Hearts of Iron 4 Wiki.md>)) `start_civil_war = {`<br>`    ideology = neutrality`<br>`    size = 0.1`<br>`    army_ratio = 0.5`<br>`    navy_ratio = 0`<br>`    air_ratio = 1`<br>`    keep_unit_leaders_trigger = {`<br>`        has_trait = my_trait_name`<br>`    }`<br>`    keep_all_characters = yes`<br>`    PREV = {  # Original country`<br>`        TAG_airforce_leader = { # Character`<br>`            set_nationality = PREV.PREV`<br>`            # Transfers to breakaway`<br>`        }`<br>`    }`<br>`    promote_character = TAG_airforce_leader`<br>`}` ([See usage for PREV and PREV.PREV](#PREV_usage)) | **Within country scope:** starts a civil war for the current scope with the specified parameters, changing the scope to the dynamic country. | `states = all` would include every single state controlled by the country. **If the country's current capital state is set as one of the states that the revolt can gain, it won't fire**. set_capital can be used to change the capital beforehand, with [On_actions#on_civil_war_end](<On actions - Hearts of Iron 4 Wiki.md>) being used to set it back to the default after the civil war ends. | 1.0 |
-| create_dynamic_country | `original_tag = <tag>`<br>The original tag to be used by the country.<br> `copy_tag = <tag>`<br>If specified, copies stuff from this tag rather than the original tag.<br> `<effects>`<br>Effects that will be executed on the new dynamic country.<br> | `create_dynamic_country = {`<br>`    original_tag = POL`<br>`    copy_tag = SOV`<br>`    add_political_power = 100`<br>`    transfer_state = 123`<br>`}` | **Within country scope:** Creates a new dynamic country, akin to ones used in civil wars, adding every core of the original tag as core and changing the scope to the dynamic country. | The [reserve_dynamic_country](<Effects - Hearts of Iron 4 Wiki.md>) effect can be used if the dynamic country does not yet exist in order to ensure that it does not get overwritten by other creations of dynamic countries. | 1.9 |
+| start_civil_war | `ideology = <ideology>`<br>The ideology of the breakaway country. `ruling_party = <ideology>`<br>The ruling party of the **original, player-led** country. Optional.<br> `size = <float>`<br>The size of the breakaway country and the fraction of the original stockpile and military units it will receive by default. Optional, defaults to 0.5.<br> `army_ratio = <float>`<br>The size of the land army that the breakaway country gets. Optional, defaults to being the same as size.<br> `navy_ratio = <float>`<br>The size of the naval forces that the breakaway country gets. Optional, defaults to being the same as size.<br> `air_ratio = <float>`<br>The size of the airforce that the breakaway country gets. Optional, defaults to being the same as size.<br> `capital = <state>`<br>The capital state of the breakaway country. Optional.<br> `states = { <state> }`<br>The states included in the breakway country. Optional, defaults to random states based off size. `all` will result in all states that meet the filter going to the breakaway.<br> `states_filter = { <triggers> }`<br>A trigger block checked for the state that must be met to be transferred to the breakaway. Optional.<br> `keep_unit_leaders = { <unit leader id> }`<br>List of unit leaders to be kept by their legacy_id. Optional.<br> `keep_unit_leaders_trigger = { <triggers> }`<br>Trigger block checked for every unit leader that forces them to be kept if they meet the triggers. Optional.<br> `keep_political_leader = <bool>`<br>Controls if the promoted party leader (i.e. the one that'd take power if the country were to be switched to that ideology group) of the revolting ideology group will be kept by the country or join the revolt, yes resulting in the former. Optional, defaults to false.<br> `keep_political_party_members = <bool>`<br>Controls if non-promoted party leaders of the revolting ideology group will be kept by the country or join the revolt, yes resulting in the former. Optional, defaults to false.<br> `keep_all_characters = yes`<br>If true, the revolter will have no characters from the original country transferred to them. Optional, defaults to false.<br> `<effects>`<br>An effect block executed for the breakaway country. | *(example below)* *(example below)* ([See country tag aliases](<Data structures - Hearts of Iron 4 Wiki.md>)) *(example below)* ([See usage for PREV and PREV.PREV](#PREV_usage)) | **Within country scope:** starts a civil war for the current scope with the specified parameters, changing the scope to the dynamic country. | `states = all` would include every single state controlled by the country. **If the country's current capital state is set as one of the states that the revolt can gain, it won't fire**. set_capital can be used to change the capital beforehand, with [On_actions#on_civil_war_end](<On actions - Hearts of Iron 4 Wiki.md>) being used to set it back to the default after the civil war ends. | 1.0 |
+| create_dynamic_country | `original_tag = <tag>`<br>The original tag to be used by the country.<br> `copy_tag = <tag>`<br>If specified, copies stuff from this tag rather than the original tag.<br> `<effects>`<br>Effects that will be executed on the new dynamic country.<br> | *(example below)* | **Within country scope:** Creates a new dynamic country, akin to ones used in civil wars, adding every core of the original tag as core and changing the scope to the dynamic country. | The [reserve_dynamic_country](<Effects - Hearts of Iron 4 Wiki.md>) effect can be used if the dynamic country does not yet exist in order to ensure that it does not get overwritten by other creations of dynamic countries. | 1.9 |
+
+**Example: start_civil_war**
+
+```text
+start_civil_war = {
+    ruling_party = communism
+    # Original country's ideology changes to communism
+    ideology = ROOT
+    # Breakaway gets old ideology of ROOT
+    size = 0.8
+    capital = 282
+    states = {
+        282 533 536 555 529 530 528
+    }
+    keep_unit_leaders = {
+        750 751 752
+    }
+    keep_political_leader = yes
+    keep_political_party_members = yes
+}
+```
+
+**Example: start_civil_war**
+
+```text
+start_civil_war = {
+    ideology = democratic
+    size = 0.1
+    states = all
+    states_filter = {
+        is_on_continent = europe
+        is_capital = no
+    }
+    set_country_flag = TAG_my_country_tag_alias_trigger
+    # Sets a country flag that gets used in a country tag alias.
+}
+```
+
+**Example: start_civil_war**
+
+```text
+start_civil_war = {
+    ideology = neutrality
+    size = 0.1
+    army_ratio = 0.5
+    navy_ratio = 0
+    air_ratio = 1
+    keep_unit_leaders_trigger = {
+        has_trait = my_trait_name
+    }
+    keep_all_characters = yes
+    PREV = {  # Original country
+        TAG_airforce_leader = { # Character
+            set_nationality = PREV.PREV
+            # Transfers to breakaway
+        }
+    }
+    promote_character = TAG_airforce_leader
+}
+```
+
+**Example: create_dynamic_country**
+
+```text
+create_dynamic_country = {
+    original_tag = POL
+    copy_tag = SOV
+    add_political_power = 100
+    transfer_state = 123
+}
+```
 
 ## Array scopes <a id="Array_scopes"></a>
 
@@ -440,10 +744,69 @@ Array-related scopes:
 
 | Name | Type | Parameters | Examples | Description | Notes |
 | --- | --- | --- | --- | --- | --- |
-| any_of_scopes | Trigger | `array = <array>`<br>The array to check.<br> `tooltip = <localisation key>`<br>The localisation key used for the trigger.<br> `<triggers>`<br> An AND trigger block. | `any_of_scopes = {`<br>`    array = global.majors`<br>`    tooltip = has_more_states_than_any_other_major_tt`<br>`    NOT = { tag = PREV }`<br>`    check_variable = { num_owned_controlled_states > PREV.num_owned_controlled_states }`<br>`}` | Checks if any value within the array fulfills the triggers, halting and returning true if that's the case, scoping into each element in the array. | Appending `_NOT` to the tooltip's key (such as has_more_states_than_any_other_major_tt_NOT in the example) results in the localisation key used if this any_of_scopes is put inside of `NOT = { ... }`. |
-| all_of_scopes | Trigger | `array = <array>`<br>The array to check.<br> `tooltip = <localisation key>`<br>The localisation key used for the trigger.<br> `<triggers>`<br> An AND trigger block. | `all_of_scopes = {`<br>`    array = global.majors`<br>`    tooltip = has_more_states_than_every_other_major_tt`<br>`    OR = {`<br>`        tag = PREV`<br>`        check_variable = { num_owned_controlled_states < PREV.num_owned_controlled_states }`<br>`    }`<br>`}` | Checks if every value within the array fulfills the triggers, halting and returning false if any one doesn't, scoping into each element in the array. | Appending `_NOT` to the tooltip's key (such as has_more_states_than_every_other_major_tt_NOT in the example) results in the localisation key used if this any_of_scopes is put inside of `NOT = { ... }`. |
-| for_each_scope_loop | Effect | `array = <array>`<br>The array to check.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `<effects>`<br> An effect block. | `for_each_scope_loop = {`<br>`    array = global.majors`<br>`    if = {`<br>`        limit = {`<br>`            NOT = { tag = ROOT }`<br>`        }`<br>`        random_owned_controlled_state = {`<br>`            transfer_state_to = ROOT`<br>`        }`<br>`    }`<br>`}` | Runs the effects for every scope within the array. | Equivalent to a `every_<...>` effect scope type, with additional `break`. |
-| random_scope_in_array | Effect | `array = <array>`<br>The array to check.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `limit = { <triggers> }`<br>An AND trigger block deciding which scopes can be picked.<br> `<effects>`<br> An effect block. | `random_scope_in_array = {`<br>`    array = global.countries`<br>`    break = break`<br>`    limit = {`<br>`        is_dynamic_country = no`<br>`        exists = no`<br>`        any_state = {`<br>`            is_core_of = PREV   # Is core of the currently-checked country`<br>`        }`<br>`    }`<br>`    random_core_state = {`<br>`        transfer_state_to = PREV    # Transfers to the currently-selected country.`<br>`    }`<br>`}` | Runs the effects for a random scope within the array. | Equivalent to a `random_<...>` effect scope type, with additional `break`. |
+| any_of_scopes | Trigger | `array = <array>`<br>The array to check.<br> `tooltip = <localisation key>`<br>The localisation key used for the trigger.<br> `<triggers>`<br> An AND trigger block. | *(example below)* | Checks if any value within the array fulfills the triggers, halting and returning true if that's the case, scoping into each element in the array. | Appending `_NOT` to the tooltip's key (such as has_more_states_than_any_other_major_tt_NOT in the example) results in the localisation key used if this any_of_scopes is put inside of `NOT = { ... }`. |
+| all_of_scopes | Trigger | `array = <array>`<br>The array to check.<br> `tooltip = <localisation key>`<br>The localisation key used for the trigger.<br> `<triggers>`<br> An AND trigger block. | *(example below)* | Checks if every value within the array fulfills the triggers, halting and returning false if any one doesn't, scoping into each element in the array. | Appending `_NOT` to the tooltip's key (such as has_more_states_than_every_other_major_tt_NOT in the example) results in the localisation key used if this any_of_scopes is put inside of `NOT = { ... }`. |
+| for_each_scope_loop | Effect | `array = <array>`<br>The array to check.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `<effects>`<br> An effect block. | *(example below)* | Runs the effects for every scope within the array. | Equivalent to a `every_<...>` effect scope type, with additional `break`. |
+| random_scope_in_array | Effect | `array = <array>`<br>The array to check.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `limit = { <triggers> }`<br>An AND trigger block deciding which scopes can be picked.<br> `<effects>`<br> An effect block. | *(example below)* | Runs the effects for a random scope within the array. | Equivalent to a `random_<...>` effect scope type, with additional `break`. |
+
+**Example: any_of_scopes**
+
+```text
+any_of_scopes = {
+    array = global.majors
+    tooltip = has_more_states_than_any_other_major_tt
+    NOT = { tag = PREV }
+    check_variable = { num_owned_controlled_states > PREV.num_owned_controlled_states }
+}
+```
+
+**Example: all_of_scopes**
+
+```text
+all_of_scopes = {
+    array = global.majors
+    tooltip = has_more_states_than_every_other_major_tt
+    OR = {
+        tag = PREV
+        check_variable = { num_owned_controlled_states < PREV.num_owned_controlled_states }
+    }
+}
+```
+
+**Example: for_each_scope_loop**
+
+```text
+for_each_scope_loop = {
+    array = global.majors
+    if = {
+        limit = {
+            NOT = { tag = ROOT }
+        }
+        random_owned_controlled_state = {
+            transfer_state_to = ROOT
+        }
+    }
+}
+```
+
+**Example: random_scope_in_array**
+
+```text
+random_scope_in_array = {
+    array = global.countries
+    break = break
+    limit = {
+        is_dynamic_country = no
+        exists = no
+        any_state = {
+            is_core_of = PREV   # Is core of the currently-checked country
+        }
+    }
+    random_core_state = {
+        transfer_state_to = PREV    # Transfers to the currently-selected country.
+    }
+}
+```
 
 ## PREV usage <a id="PREV_usage"></a>
 
@@ -515,20 +878,193 @@ Flow control tools:
 
 | Script | Usage | Example | Description | Notes |
 | --- | --- | --- | --- | --- |
-| AND | Within triggers | `AND = {`<br>`    original_tag = GER`<br>`    has_stability > 0.5`<br>`}` | Returns false if any sub-trigger returns false, true otherwise. Evaluation stops at the first false sub-trigger.<br> Nearly all trigger blocks (including scopes) use AND by defaults, so its primary use is with OR and NOT, which affects their function. | Usually modifies trigger tooltips to include "All of the following must be true" |
-| OR | Within triggers | `OR = {`<br>`    original_tag = ENG`<br>`    original_tag = USA`<br>`}` | Returns true if any sub-trigger returns true, false otherwise. Evaluation stops at the first true sub-trigger. By default, OR checks each contained trigger separately, AND can be used in order to check between groups of triggers. | Usually modifies trigger tooltips to include "One of the following must be true" |
-| NOT | Within triggers | `NOT = {`<br>`    has_stability > 0.5`<br>`    has_war_support > 0.5`<br>`}` | Returns false if any sub-trigger returns true, true otherwise. Evaluation stops at the first true sub-trigger.<br> This is equivalent to logical NOR, as it returns true only if all contained triggers are false.<br> There is no direct form of logical NAND (true if any contained trigger is false), however `NOT = { AND = { … } }` emulates NAND, as does `OR = { NOT = { … } NOT = { … } }`, with each contained trigger in a separate NOT block. | NOT also allows emulating greater/less than or equals in comparisions that are normally strictly greater or less than. NOT usually inverts trigger tooltips, though not always predictably or neatly. The inverted tooltip for scopes or `custom_trigger_tooltip` can be defined by appending `_NOT` to the localisation key of the tooltip. |
-| count_triggers | Within triggers | `count_triggers = {`<br>`    amount = 2`<br>`    10 = { state_population_k > 100 }`<br>`    11 = { state_population_k > 100 }`<br>`    12 = { state_population_k > 100 }`<br>`}` | Returns true if the number of contained triggers which return true is greater than or equal to the value of `amount` |  |
-| hidden_trigger | Within triggers | `hidden_trigger = {`<br>`    country_exists = GER`<br>`}` | Hides the tooltips from all contained triggers |  |
-| custom_trigger_tooltip | Within triggers | `custom_trigger_tooltip = {`<br>`    tooltip = sunrise_invasion_tt`<br>`    any_state = {`<br>`        is_owned_by = JAP`<br>`        is_on_continent = europe`<br>`        is_coastal = yes`<br>`    }`<br>`}` | Replaces the tooltips from all contained triggers with the custom localisation set by `tooltip` | If the `custom_trigger_tooltip` is negated (within NOT or a `<scripted_trigger> = no`, the negated tooltip can be customized by appending `_NOT` to the localisation key of the tooltip (e.g. `sunrise_invasion_tt_NOT`). |
-| custom_override_tooltip | Within effects and triggers | `custom_override_tooltip = {`<br>`    tooltip = MY_TOOLTIP`<br>`    not_tooltip = MY_TOOLTIP_NOT`<br>`    <triggers/effects>`<br>`}` | An AND trigger/effect that has an overriden custom tooltip. | A positive tooltip can be set with `tooltip` and the tooltip to be used inside a NOT can be set with `not_tooltip`. If no positive tooltip is provided and the root key is a localization key (not a formatter, see formatted localization), then a negative tooltip will be generated by appending `_NOT` to the root localization for the positive tooltip. Both `tooltip` and `not_tooltip` are bindable localizations. |
-| hidden_effect | Within effects | `hidden_effect = {`<br>`    declare_war_on = {`<br>`        target = PREV`<br>`        type = annex_everything`<br>`    }`<br>`}` | Hides the tooltips from all contained effects | Commonly used alongside `custom_effect_tooltip`, to avoid messy effect tooltips or hide precise effects from the player. |
-| effect_tooltip | Within effects | `effect_tooltip = {`<br>`    declare_war_on = {`<br>`        target = FROM`<br>`        type = annex_everything`<br>`    }`<br>`}` | Shows the tooltips of the contained effects, but does not execute them. | Most often useful with event chains, where the actual effect is done in a follow-up event. |
-| if | Always usable | `if = {`<br>`    limit = {`<br>`        original_tag = GER`<br>`    }`<br>`    has_political_power > 100`<br>`}`<br>`else_if = {`<br>`    limit = {`<br>`        original_tag = ENG`<br>`    }`<br>`    has_stability > 0.5`<br>`}`<br>`else = {`<br>`    has_war_support > 0.5`<br>`}` | If statements allow to conditionally check triggers or run effects. The `limit` block is used to define triggers that must be fulfilled for the effects to be run or triggers to be checked. The triggers in `limit` are *never* shown to the player: if they are unfulfilled, the if statement will have no tooltip, while, if fulfilled, the player will see the effects/triggers inside the if statement itself. In addition, `else_if` and `else` can be optionally defined to run if the limit is considered false. They can be defined as both nested (i.e. directly inside of the previous `if` or `else_if`) or unnested (i.e. directly after, but not inside of the previous `if` or `else_if`). In case of overlap, the game will prefer the unnested variant, so using that is preferred. | `else_if` is optional and can be used as many times as desired. `else` is also optional, but can only be used once per `if`.<br> The main `if` as well as any `else_if` must have a `limit`, and `else` cannot use a `limit`.<br> If statements can be used to clean up tooltips on triggers: the limit can check if the country has a specific tag, while the if statement can contain an always false custom trigger tooltip. This will restrict it from being true for that country, while other countries will not see anything in the tooltip. |
-| for_loop_effect | Within effects | `for_loop_effect = {`<br>`    start = -3`<br>`    end = 9`<br>`    compare = less_than_or_equals`<br>`    add = 3`<br>`    value = value_name`<br>`    break = break_name`<br>`    add_political_power = value_name    # Adds -3, then 0, then 3, then 6, then 9, after which the loop breaks for 15 total political power.`<br>`}` | Runs the effect in a typical for loop, with the current value of the variable kept with the [temp variable](<Data structures - Hearts of Iron 4 Wiki.md>) specified with `value`. `break` defines a [temp variable](<Data structures - Hearts of Iron 4 Wiki.md>) that can be set to 1 to break the loop instantly. | If unspecified, `start` and `end` are 0, `compare` is less_than, `add` is 1, `value` is v, and `break` is break. Can run for up to 1000 times before stopping automatically. |
-| while_loop_effect | Within effects | `while_loop_effect = {`<br>`    break = temp_break`<br>`    limit = {`<br>`        country_exists = GER`<br>`    }`<br>`    random_state = {`<br>`        limit = {`<br>`            is_owned_by = GER`<br>`        }`<br>`        random_country = {`<br>`            limit = {`<br>`                NOT = { tag = GER }`<br>`            }`<br>`            transfer_state = PREV`<br>`        }`<br>`    }`<br>`}` | Runs the effect as long as the trigger is true. `break` defines a [temp variable](<Data structures - Hearts of Iron 4 Wiki.md>) that can be set to 1 to break the loop instantly. | The trigger is checked at the start of each loop only. Can run for up to 1000 times before stopping automatically. If `break` is unspecified, assumes to be a temp variable with the name of break. |
-| random | Within effects | `random = {`<br>`    chance = 80`<br>`    add_stability = 0.8`<br>`}` | Simulates a random chance to either execute the effect or do nothing, with the `chance` used to define the chance. | Chance is defined on the scale from 0 to 100. |
-| random_list | Within effects | `random_list = {`<br>`    10 = {`<br>`        modifier = {`<br>`            factor = 0`<br>`            has_stability > 0.9`<br>`        }`<br>`        add_stability = 0.1`<br>`    }`<br>`    20 = {`<br>`        add_stability = -0.1`<br>`    }`<br>`}` | Simulates a random chance to pick one of the listed effects. | Chance for each section is proportional, doesn't have to add up to 100. Can use a variable as a chance. Modifiers can be used in the same way as in [ai_will_do blocks](<AI modding - Hearts of Iron 4 Wiki.md>). |
+| AND | Within triggers | *(example below)* | Returns false if any sub-trigger returns false, true otherwise. Evaluation stops at the first false sub-trigger.<br> Nearly all trigger blocks (including scopes) use AND by defaults, so its primary use is with OR and NOT, which affects their function. | Usually modifies trigger tooltips to include "All of the following must be true" |
+| OR | Within triggers | *(example below)* | Returns true if any sub-trigger returns true, false otherwise. Evaluation stops at the first true sub-trigger. By default, OR checks each contained trigger separately, AND can be used in order to check between groups of triggers. | Usually modifies trigger tooltips to include "One of the following must be true" |
+| NOT | Within triggers | *(example below)* | Returns false if any sub-trigger returns true, true otherwise. Evaluation stops at the first true sub-trigger.<br> This is equivalent to logical NOR, as it returns true only if all contained triggers are false.<br> There is no direct form of logical NAND (true if any contained trigger is false), however `NOT = { AND = { … } }` emulates NAND, as does `OR = { NOT = { … } NOT = { … } }`, with each contained trigger in a separate NOT block. | NOT also allows emulating greater/less than or equals in comparisions that are normally strictly greater or less than. NOT usually inverts trigger tooltips, though not always predictably or neatly. The inverted tooltip for scopes or `custom_trigger_tooltip` can be defined by appending `_NOT` to the localisation key of the tooltip. |
+| count_triggers | Within triggers | *(example below)* | Returns true if the number of contained triggers which return true is greater than or equal to the value of `amount` |  |
+| hidden_trigger | Within triggers | *(example below)* | Hides the tooltips from all contained triggers |  |
+| custom_trigger_tooltip | Within triggers | *(example below)* | Replaces the tooltips from all contained triggers with the custom localisation set by `tooltip` | If the `custom_trigger_tooltip` is negated (within NOT or a `<scripted_trigger> = no`, the negated tooltip can be customized by appending `_NOT` to the localisation key of the tooltip (e.g. `sunrise_invasion_tt_NOT`). |
+| custom_override_tooltip | Within effects and triggers | *(example below)* | An AND trigger/effect that has an overriden custom tooltip. | A positive tooltip can be set with `tooltip` and the tooltip to be used inside a NOT can be set with `not_tooltip`. If no positive tooltip is provided and the root key is a localization key (not a formatter, see formatted localization), then a negative tooltip will be generated by appending `_NOT` to the root localization for the positive tooltip. Both `tooltip` and `not_tooltip` are bindable localizations. |
+| hidden_effect | Within effects | *(example below)* | Hides the tooltips from all contained effects | Commonly used alongside `custom_effect_tooltip`, to avoid messy effect tooltips or hide precise effects from the player. |
+| effect_tooltip | Within effects | *(example below)* | Shows the tooltips of the contained effects, but does not execute them. | Most often useful with event chains, where the actual effect is done in a follow-up event. |
+| if | Always usable | *(example below)* | If statements allow to conditionally check triggers or run effects. The `limit` block is used to define triggers that must be fulfilled for the effects to be run or triggers to be checked. The triggers in `limit` are *never* shown to the player: if they are unfulfilled, the if statement will have no tooltip, while, if fulfilled, the player will see the effects/triggers inside the if statement itself. In addition, `else_if` and `else` can be optionally defined to run if the limit is considered false. They can be defined as both nested (i.e. directly inside of the previous `if` or `else_if`) or unnested (i.e. directly after, but not inside of the previous `if` or `else_if`). In case of overlap, the game will prefer the unnested variant, so using that is preferred. | `else_if` is optional and can be used as many times as desired. `else` is also optional, but can only be used once per `if`.<br> The main `if` as well as any `else_if` must have a `limit`, and `else` cannot use a `limit`.<br> If statements can be used to clean up tooltips on triggers: the limit can check if the country has a specific tag, while the if statement can contain an always false custom trigger tooltip. This will restrict it from being true for that country, while other countries will not see anything in the tooltip. |
+| for_loop_effect | Within effects | *(example below)* | Runs the effect in a typical for loop, with the current value of the variable kept with the [temp variable](<Data structures - Hearts of Iron 4 Wiki.md>) specified with `value`. `break` defines a [temp variable](<Data structures - Hearts of Iron 4 Wiki.md>) that can be set to 1 to break the loop instantly. | If unspecified, `start` and `end` are 0, `compare` is less_than, `add` is 1, `value` is v, and `break` is break. Can run for up to 1000 times before stopping automatically. |
+| while_loop_effect | Within effects | *(example below)* | Runs the effect as long as the trigger is true. `break` defines a [temp variable](<Data structures - Hearts of Iron 4 Wiki.md>) that can be set to 1 to break the loop instantly. | The trigger is checked at the start of each loop only. Can run for up to 1000 times before stopping automatically. If `break` is unspecified, assumes to be a temp variable with the name of break. |
+| random | Within effects | *(example below)* | Simulates a random chance to either execute the effect or do nothing, with the `chance` used to define the chance. | Chance is defined on the scale from 0 to 100. |
+| random_list | Within effects | *(example below)* | Simulates a random chance to pick one of the listed effects. | Chance for each section is proportional, doesn't have to add up to 100. Can use a variable as a chance. Modifiers can be used in the same way as in [ai_will_do blocks](<AI modding - Hearts of Iron 4 Wiki.md>). |
+
+**Example: AND**
+
+```text
+AND = {
+    original_tag = GER
+    has_stability > 0.5
+}
+```
+
+**Example: OR**
+
+```text
+OR = {
+    original_tag = ENG
+    original_tag = USA
+}
+```
+
+**Example: NOT**
+
+```text
+NOT = {
+    has_stability > 0.5
+    has_war_support > 0.5
+}
+```
+
+**Example: count_triggers**
+
+```text
+count_triggers = {
+    amount = 2
+    10 = { state_population_k > 100 }
+    11 = { state_population_k > 100 }
+    12 = { state_population_k > 100 }
+}
+```
+
+**Example: hidden_trigger**
+
+```text
+hidden_trigger = {
+    country_exists = GER
+}
+```
+
+**Example: custom_trigger_tooltip**
+
+```text
+custom_trigger_tooltip = {
+    tooltip = sunrise_invasion_tt
+    any_state = {
+        is_owned_by = JAP
+        is_on_continent = europe
+        is_coastal = yes
+    }
+}
+```
+
+**Example: custom_override_tooltip**
+
+```text
+custom_override_tooltip = {
+    tooltip = MY_TOOLTIP
+    not_tooltip = MY_TOOLTIP_NOT
+    <triggers/effects>
+}
+```
+
+**Example: hidden_effect**
+
+```text
+hidden_effect = {
+    declare_war_on = {
+        target = PREV
+        type = annex_everything
+    }
+}
+```
+
+**Example: effect_tooltip**
+
+```text
+effect_tooltip = {
+    declare_war_on = {
+        target = FROM
+        type = annex_everything
+    }
+}
+```
+
+**Example: if**
+
+```text
+if = {
+    limit = {
+        original_tag = GER
+    }
+    has_political_power > 100
+}
+else_if = {
+    limit = {
+        original_tag = ENG
+    }
+    has_stability > 0.5
+}
+else = {
+    has_war_support > 0.5
+}
+```
+
+**Example: for_loop_effect**
+
+```text
+for_loop_effect = {
+    start = -3
+    end = 9
+    compare = less_than_or_equals
+    add = 3
+    value = value_name
+    break = break_name
+    add_political_power = value_name    # Adds -3, then 0, then 3, then 6, then 9, after which the loop breaks for 15 total political power.
+}
+```
+
+**Example: while_loop_effect**
+
+```text
+while_loop_effect = {
+    break = temp_break
+    limit = {
+        country_exists = GER
+    }
+    random_state = {
+        limit = {
+            is_owned_by = GER
+        }
+        random_country = {
+            limit = {
+                NOT = { tag = GER }
+            }
+            transfer_state = PREV
+        }
+    }
+}
+```
+
+**Example: random**
+
+```text
+random = {
+    chance = 80
+    add_stability = 0.8
+}
+```
+
+**Example: random_list**
+
+```text
+random_list = {
+    10 = {
+        modifier = {
+            factor = 0
+            has_stability > 0.9
+        }
+        add_stability = 0.1
+    }
+    20 = {
+        add_stability = -0.1
+    }
+}
+```
 
 ---
 

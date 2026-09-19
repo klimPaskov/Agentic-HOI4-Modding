@@ -60,7 +60,7 @@ MIOs is an acronym for Military Industrial Organizations
 | FI \[amount} | Adds to faction initiative | FI 5 adds 5 faction initiative |
 | mastery `[<mastery amount>]`, `[track name]` | Give doctrine mastery, globally or to a specific track. |  |
 | gain_xp `[<amount>]` | Adds experience to selected Leader/General/Admiral | gain_xp 100000(level capped at 9) |
-| gain_xp `[<trait>]` | Adds **gainable** trait to selected Leader/General/Admiral | ie: gain_xp seawolf<br> **Note** To make it work with new, generic created Admirals:<br> 1. Open  *'Documents\Paradox Interactive\Hearts of Iron IV\settings.txt'*  with a text editor and change "save_as_binary=yes" to "save_as_binary=no".<br> 2. Start game, load savegame and save as new file, exit game.<br> 3. Open  *'Documents\Paradox Interactive\Hearts of iron IV\Save Games'* , open the newly created savegame file, search (CTRL-F) for the name of your generic created Admiral <br> 4. Go a few lines below to **max_traits=0.000** and add the following code block behind it `			in_progress={`<br>`				seawolf=0.000`<br>`				superior_tactician=0.000`<br>`				spotter=0.000`<br>`				fly_swatter=0.000`<br>`				ironside=0.000`<br>`				air_controller=0.000`<br>`			}` 5. Make sure to save the file with **ANSI** encoding format.<br> 6. Start game, load save game, use gain_xp command, enjoy.<br> (Optional turn back on binarization in settings.txt) |
+| gain_xp `[<trait>]` | Adds **gainable** trait to selected Leader/General/Admiral | ie: gain_xp seawolf<br> **Note** To make it work with new, generic created Admirals:<br> 1. Open  *'Documents\Paradox Interactive\Hearts of Iron IV\settings.txt'*  with a text editor and change "save_as_binary=yes" to "save_as_binary=no".<br> 2. Start game, load savegame and save as new file, exit game.<br> 3. Open  *'Documents\Paradox Interactive\Hearts of iron IV\Save Games'* , open the newly created savegame file, search (CTRL-F) for the name of your generic created Admiral <br> 4. Go a few lines below to **max_traits=0.000** and add the following code block behind it *(example below)* 5. Make sure to save the file with **ANSI** encoding format.<br> 6. Start game, load save game, use gain_xp command, enjoy.<br> (Optional turn back on binarization in settings.txt) |
 | cp `[<amount>]` | Adds Command Power | cp 100 (capped at 100) |
 | st `[<amount>]` | Adds Stability | st 100 (capped at 100) |
 | add_war_support(ws) `[<amount>]` | Adds War Support | ws 100 (capped at 100) |
@@ -134,6 +134,19 @@ MIOs is an acronym for Military Industrial Organizations
 | add_mines | Maximises player owned naval mines in the selected regions |  |
 | acclimization `[<climate type>]` `[<number>]` | Sets the selected division's acclimization to the specified climate type and its percentage (reduces penalties from cold/hot weather or temperature debuffs) | ex: acclimization cold_climate 75 ex: acclimization hot_climate 20 **Note** that it resets the opposite climate type to 0% |
 | debug_smooth | Toggle framesmoothing | Can increase game speed significantly, depending on system typically between 10 and 35 percent |
+
+**Example: gain_xp `[<trait>]`**
+
+```text
+			in_progress={
+				seawolf=0.000
+				superior_tactician=0.000
+				spotter=0.000
+				fly_swatter=0.000
+				ironside=0.000
+				air_controller=0.000
+			}
+```
 
 ### Modding-useful commands <a id="Modding-useful_commands"></a>
 

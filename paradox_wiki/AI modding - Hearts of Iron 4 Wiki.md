@@ -145,104 +145,887 @@ AI strategies related to diplomatic actions:
 
 | Name | Parameters | Examples | Description | Notes |
 | --- | --- | --- | --- | --- |
-| alliance | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = alliance`<br>`    id = USA`<br>`    value = -100`<br>`}` | Pursues AI to ally with a country, joining the same faction if possible. |  |
-| antagonize | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = antagonize`<br>`    id = USA`<br>`    value = -100`<br>`}` | Pursues AI to antagonize a country, refusing most diplomatic actions with them. |  |
-| asking_foreign_garrison | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = asking_foreign_garrison`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to ask for foreign manpower to fulfill garrisons, from a specific country if specified. | If `id` is not specified, will apply towards every other country. |
-| befriend | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = befriend`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to befriend a country, accepting most diplomatic actions with them. |  |
-| conquer | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = conquer`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to conquer a country, being more likely to declare war and justify wargoals. | This does *not* change how the AI will control frontlines when at war with that country. |
-| consider_weak | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = consider_weak`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to consider a country more weak, decreasing hesitation for declaration of war or making alliance less likely. |  |
-| contain | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = contain`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to contain a country, protecting any countries that it would try to antagonize or invade. |  |
-| declare_war | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = declare_war`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to declare war on a country if a wargoal already exists. |  |
-| diplo_action_acceptance | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy.<br> `target = <diplomatic action>`<br>The diplomatic action to modify. | `ai_strategy = {`<br>`    type = diplo_action_acceptance`<br>`    id = USA`<br>`    value = 100`<br>`    target = join_allies`<br>`}` | Pursues AI to accept a diplomatic action if a different country requests it. | AI will not be more likely to propose the diplomatic action in question. Names of diplomatic actions can usually be found from localisation keys used for the title, most of the time yet not always in the `/Hearts of Iron IV/localisation/english/diplomacy_l_english.yml` file: `DIPLOMACY_SEND_VOLUNTEERS_TITLE:0 "Send Volunteers"` means that the name of the diplomatic action for sending volunteers is `send_volunteers`. |
-| diplo_action_desire | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy.<br> `target = <diplomatic action>`<br>The diplomatic action to modify. | `ai_strategy = {`<br>`    type = diplo_action_desire`<br>`    id = USA`<br>`    value = 100`<br>`    target = call_allies`<br>`}` | Pursues AI to request a diplomatic action towards the specified country. | AI will not be more likely to accept the diplomatic action in question if it gets proposed to them. Names of diplomatic actions can usually be found from localisation keys used for the title, most of the time yet not always in the `/Hearts of Iron IV/localisation/english/diplomacy_l_english.yml` file: `DIPLOMACY_SEND_VOLUNTEERS_TITLE:0 "Send Volunteers"` means that the name of the diplomatic action for sending volunteers is `send_volunteers`. |
-| dont_join_wars_with | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy.<br> `target_country = <country>`<br>The country against whom the war is joined. | `ai_strategy = {`<br>`    type = dont_join_wars_with`<br>`    id = USA`<br>`    value = 100`<br>`    target_country = BHR`<br>`}` | Pursues AI to be less likely to join a war together with a specified country against a specific one. | Does not make AI less likely to join a war together with a *different* country against target_country, even if it'll result in fighting against target_country together with the specified country. |
-| ignore | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = ignore`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to be less likely to accept or desire any sort of diplomatic action with this country. |  |
-| ignore_claim | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = ignore_claim`<br>`    id = USA`<br>`    value = 1`<br>`}` | Pursues AI to ignore any claims that it has on the specified country. | The value is boolean, just set to be 1. |
-| protect | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = protect`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to protect a certain country, guaranteeing them or adding to the same faction. | A negative total value (taking every AI strategy into consideration) results in AI never guaranteeing that country. |
-| support | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = support`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to support a certain country within wars, sending lend lease, volunteers, or expeditionary forces. |  |
-| send_lend_lease_desire | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = send_lend_lease_desire`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to lend-lease equipment to the specified country. |  |
-| send_volunteers_desire | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = send_volunteers_desire`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to send volunteers to the specified country. |  |
+| alliance | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to ally with a country, joining the same faction if possible. |  |
+| antagonize | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to antagonize a country, refusing most diplomatic actions with them. |  |
+| asking_foreign_garrison | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to ask for foreign manpower to fulfill garrisons, from a specific country if specified. | If `id` is not specified, will apply towards every other country. |
+| befriend | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to befriend a country, accepting most diplomatic actions with them. |  |
+| conquer | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to conquer a country, being more likely to declare war and justify wargoals. | This does *not* change how the AI will control frontlines when at war with that country. |
+| consider_weak | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to consider a country more weak, decreasing hesitation for declaration of war or making alliance less likely. |  |
+| contain | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to contain a country, protecting any countries that it would try to antagonize or invade. |  |
+| declare_war | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to declare war on a country if a wargoal already exists. |  |
+| diplo_action_acceptance | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy.<br> `target = <diplomatic action>`<br>The diplomatic action to modify. | *(example below)* | Pursues AI to accept a diplomatic action if a different country requests it. | AI will not be more likely to propose the diplomatic action in question. Names of diplomatic actions can usually be found from localisation keys used for the title, most of the time yet not always in the `/Hearts of Iron IV/localisation/english/diplomacy_l_english.yml` file: `DIPLOMACY_SEND_VOLUNTEERS_TITLE:0 "Send Volunteers"` means that the name of the diplomatic action for sending volunteers is `send_volunteers`. |
+| diplo_action_desire | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy.<br> `target = <diplomatic action>`<br>The diplomatic action to modify. | *(example below)* | Pursues AI to request a diplomatic action towards the specified country. | AI will not be more likely to accept the diplomatic action in question if it gets proposed to them. Names of diplomatic actions can usually be found from localisation keys used for the title, most of the time yet not always in the `/Hearts of Iron IV/localisation/english/diplomacy_l_english.yml` file: `DIPLOMACY_SEND_VOLUNTEERS_TITLE:0 "Send Volunteers"` means that the name of the diplomatic action for sending volunteers is `send_volunteers`. |
+| dont_join_wars_with | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy.<br> `target_country = <country>`<br>The country against whom the war is joined. | *(example below)* | Pursues AI to be less likely to join a war together with a specified country against a specific one. | Does not make AI less likely to join a war together with a *different* country against target_country, even if it'll result in fighting against target_country together with the specified country. |
+| ignore | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to be less likely to accept or desire any sort of diplomatic action with this country. |  |
+| ignore_claim | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to ignore any claims that it has on the specified country. | The value is boolean, just set to be 1. |
+| protect | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to protect a certain country, guaranteeing them or adding to the same faction. | A negative total value (taking every AI strategy into consideration) results in AI never guaranteeing that country. |
+| support | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to support a certain country within wars, sending lend lease, volunteers, or expeditionary forces. |  |
+| send_lend_lease_desire | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to lend-lease equipment to the specified country. |  |
+| send_volunteers_desire | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to send volunteers to the specified country. |  |
+
+**Example: alliance**
+
+```text
+ai_strategy = {
+    type = alliance
+    id = USA
+    value = -100
+}
+```
+
+**Example: antagonize**
+
+```text
+ai_strategy = {
+    type = antagonize
+    id = USA
+    value = -100
+}
+```
+
+**Example: asking_foreign_garrison**
+
+```text
+ai_strategy = {
+    type = asking_foreign_garrison
+    id = USA
+    value = 100
+}
+```
+
+**Example: befriend**
+
+```text
+ai_strategy = {
+    type = befriend
+    id = USA
+    value = 100
+}
+```
+
+**Example: conquer**
+
+```text
+ai_strategy = {
+    type = conquer
+    id = USA
+    value = 100
+}
+```
+
+**Example: consider_weak**
+
+```text
+ai_strategy = {
+    type = consider_weak
+    id = USA
+    value = 100
+}
+```
+
+**Example: contain**
+
+```text
+ai_strategy = {
+    type = contain
+    id = USA
+    value = 100
+}
+```
+
+**Example: declare_war**
+
+```text
+ai_strategy = {
+    type = declare_war
+    id = USA
+    value = 100
+}
+```
+
+**Example: diplo_action_acceptance**
+
+```text
+ai_strategy = {
+    type = diplo_action_acceptance
+    id = USA
+    value = 100
+    target = join_allies
+}
+```
+
+**Example: diplo_action_desire**
+
+```text
+ai_strategy = {
+    type = diplo_action_desire
+    id = USA
+    value = 100
+    target = call_allies
+}
+```
+
+**Example: dont_join_wars_with**
+
+```text
+ai_strategy = {
+    type = dont_join_wars_with
+    id = USA
+    value = 100
+    target_country = BHR
+}
+```
+
+**Example: ignore**
+
+```text
+ai_strategy = {
+    type = ignore
+    id = USA
+    value = 100
+}
+```
+
+**Example: ignore_claim**
+
+```text
+ai_strategy = {
+    type = ignore_claim
+    id = USA
+    value = 1
+}
+```
+
+**Example: protect**
+
+```text
+ai_strategy = {
+    type = protect
+    id = USA
+    value = 100
+}
+```
+
+**Example: support**
+
+```text
+ai_strategy = {
+    type = support
+    id = USA
+    value = 100
+}
+```
+
+**Example: send_lend_lease_desire**
+
+```text
+ai_strategy = {
+    type = send_lend_lease_desire
+    id = USA
+    value = 100
+}
+```
+
+**Example: send_volunteers_desire**
+
+```text
+ai_strategy = {
+    type = send_volunteers_desire
+    id = USA
+    value = 100
+}
+```
 
 AI strategies related to land army management:
 
 | Name | Parameters | Examples | Description | Notes |  |  |  |  |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| invade | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = invade`<br>`    id = USA`<br>`    value = -100`<br>`}` | Pursues AI to do naval invasions against the specified country. |  |  |  |  |  |
-| naval_invasion_focus | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = naval_invasion_focus`<br>`    value = 100`<br>`}` | Pursues AI to launch naval invasions. |  |  |  |  |  |
-| prepare_for_war | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = prepare_for_war`<br>`    id = USA`<br>`    value = 100`<br>`}` | Pursues AI to prepare for a war against a specified country, moving troops to their border. |  |  |  |  |  |
-| area_priority | `value = <int>`<br>The weight of the strategy.<br> `id = <AI area>`<br>The [AI area](#AI_areas) to prioritise. | `ai_strategy = {`<br>`    type = area_priority`<br>`    id = europe`<br>`    value = 100`<br>`}` | Pursues AI to put more units within the specified AI area. |  |  |  |  |  |
-| strategic_air_importance | `id = <strategic_region>`<br>The strategic region to consider `value = <int>`<br>The score added or substracted.<br> | `ai_strategy = {`<br>`	type = strategic_air_importance`<br>`	id = 18 #English Channel`<br>`	value = -30000`<br>`}` | Modifies the total 'Strategic Importance' score of the specified region that the AI uses to prioritize where to perform Air Missions. | - ID of the strategic regions can be found here, in `/Hearts of Iron IV/map/strategicregions/*.txt` files, or alternatively in the game using [console command](<Console commands - Hearts of Iron 4 Wiki.md>) *tdebug* and hovering a mouse over the specific region while in the 'Default' map mode. - Current 'Strategic Importance' AI score can be found in the game using [console command](<Console commands - Hearts of Iron 4 Wiki.md>) *aiview* , while in the 'observe mode' and hovering a mouse over the desired air zone, while using the 'Strategic Air' map mode. The score shown is for the currently selected TAG. AI wants to do air missions in the regions with the highest scores, and none in the regions with low or negative score. - AI score numbers are large, in higher dozens of thousands or lower hundreds of thousands, so appropriate values need to be used to have any visible effect on the AI. |  |  |  |  |
-| dont_defend_ally_borders | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = dont_defend_ally_borders`<br>`    id = POL`<br>`    value = 10`<br>`}` | Makes AI never put troops on the border between the specified country and countries that are at war with it. | Strictly binary. If the total value (taking every AI strategy into consideration) is positive, AI will never put any troops on the border. |  |  |  |  |
-| force_defend_ally_borders | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = force_defend_ally_borders`<br>`    id = FRA`<br>`    value = 100`<br>`}` | Pursues AI to put troops on the border between the specified country and countries that are at war with it. | Also accepts [AI areas](#AI_areas) within `id`. |  |  |  |  |
-| front_armor_score | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = front_armor_score`<br>`    id = POL`<br>`    value = 100`<br>`}` | Pursues AI to put more tank units for invading the specified country. |  |  |  |  |  |
-| front_control | `state = <state>`<br>The state to target.<br> `tag = <country>`<br>The country to target.<br> `strategic_region = <ID>`<br>The strategic region to target.<br> `area = <area>`<br>The [AI area](#AI_areas) to target.<br> `country_trigger = { ... }`<br>Trigger block checked for states to have them as a target.<br> `state_trigger = { ... }`<br>Trigger block checked for countries to have them as a target.  `ratio = <decimal>`<br>How much of a frontline ratio the specified front must have **as a requirement to enable the strategy**. Defaults to 0.<br> `priority = <integer>`<br>Sets the priority of this front control strategy. If there are contradictory front control strategies, the one with a higher priority is followed.<br> `ordertype = <front | invasion>`<br>If set, this will make the AI strategy only apply on land frontlines or naval invasions respectively.<br> `execution_type = <careful | balanced | rush | rush_weak>`<br>If set, this pursues AI to make the frontline plans have the set execution type. Only for front.<br> `execute_order = <bool>`<br>If set, makes AI to either force execute the frontline order or force it being never executed.<br> `manual_attack = <bool>`<br>If set to false, prevents AI from doing small engagements that are not a part of a frontline plan. Defaults to true, only for front. | `ai_strategy = {`<br>`    type = front_control`<br>`    state_trigger = {`<br>`        industrial_complex > 1`<br>`        is_owned_by = ENG`<br>`    }`<br>`    ratio = 0.1`<br>`    ordertype = front`<br>`    execution_type = rush`<br>`    manual_attack = no`<br>`}``ai_strategy = {`<br>`    type = front_control`<br>`    area = suez`<br>`    priority = 1`<br>`    ratio = 0.2`<br>`    ordertype = invasion`<br>`    execute_order = yes`<br>`}` | Modifies the orders that AI would give to divisions on a specified frontline. | More than one target type can be used at a time, in which case each one must be met. This only changes the orders assigned to an already-existing frontline, this will not change the amount of units assigned to any particular front or force any to be created. |
-| force_concentration_front_factor | `tag = <country>`<br>The country to target. Multiple can be specified. `state = <state>`<br>The state to target. Multiple can be specified.<br>`strategic_region = <ID>`<br>The strategic region to target. Multiple can be specified.<br>`area = <area>`<br>The [AI area](#AI_areas) to target. Multiple can be specified.<br>`country_trigger = { ... }`<br>Trigger block checked for countries. Scope is enemy country, FROM scope is our country.<br>`state_trigger = { ... }`<br>Trigger block checked for states.  Scope is state. FROM scope is enemy country FROM.FROM scope is our country.  `ratio = <decimal>`<br>The strategy is enabled only if ratio of the front covered by this strategy's targets is greater than this ratio.<br>`value = <int>`<br>Factor for the normal priority. 40 means +40 %, -60 means -60 %. | `ai_strategy = {`<br>`	type = force_concentration_front_factor`<br><br>`	tag = CZE`<br>`	state = 9`<br>`	strategic_region = 22`<br>`	ratio = 0.2`<br><br>`	value = 40`<br>`}` | Used for increasing/decreasing priority score for AI force concentration on specified fronts. | All the arguments are optional, only one needs to be specified. AI primarily assigns units with 'armor' , 'heavy_armor' and 'mechanized_assault' unit roles to the attack. |  |  |  |  |
-| force_concentration_factor | `value = <int>`<br>The percentage value added or substracted. | `ai_strategy = {`<br>`	type = force_concentration_factor`<br>`	value = 20`<br>`}` | Factor added on top of the default force concentration ratio. Value of 20 means +20 %, so if the base define is 15 % the result would be 35 %. | See FORCE_CONCENTRATION_UNIT_RATIO_BASE in the [defines](<Defines - Hearts of Iron 4 Wiki.md>). A large negative value stops AI from using Force Concentration anywhere. |  |  |  |  |
-| force_concentration_target_weight | `tag = <country>`<br>The country to target. Multiple can be specified. `state = <state>`<br>The state to target. Multiple can be specified.<br>`strategic_region = <ID>`<br>The strategic region to target. Multiple can be specified.<br>`area = <area>`<br>The [AI area](#AI_areas) to target. Multiple can be specified.<br>`country_trigger = { ... }`<br>Trigger block checked for countries. Scope is enemy country, FROM scope is our country.<br>`state_trigger = { ... }`<br>Trigger block checked for states.  Scope is state. FROM scope is enemy country FROM.FROM scope is our country.  <br>`value = <int>`<br>Factor for the normal priority. 40 means +40 %, -60 means -60 %. | `ai_strategy = {`<br>`# As Germany - Avoid attacking the areas behind the Maginot line`<br>`	type = force_concentration_target_weight`<br>`	state = 18 # Champagne`<br>`	state = 17 # Franche-Comte`<br>`	state = 28 # Alsace-Lorraine`<br>`	state = 27 # Bourgogne`<br><br>`	value = -60`<br>`}` | Affects the score for offensive targets for AI Force Concentration. | All the arguments are optional, only one needs to be specified. |  |  |  |  |
-| front_unit_request | `state = <state>`<br>The state to target.<br> `tag = <country>`<br>The state to target.<br> `strategic_region = <ID>`<br>The strategic region to target.<br> `area = <state>`<br>The [AI area](#AI_areas) to target.<br> `country_trigger = { ... }`<br>Trigger block checked for states to have them as a target.<br> `state_trigger = { ... }`<br>Trigger block checked for countries to have them as a target.  `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = front_unit_request`<br>`    tag = POL`<br>`    value = 100`<br>`}``ai_strategy = {`<br>`    type = front_unit_request`<br>`    country_trigger = {`<br>`        original_tag = SPR`<br>`        has_government = fascism`<br>`    }`<br>`    value = 100`<br>`}` | Pursues AI to put more (or less - if negative value is used) units on a specified land frontline. | More than one target type can be used at a time, in which case each one must be met. |  |  |  |  |
-| invasion_unit_request | `state = <state>`<br>The state to target.<br> `tag = <country>`<br>The state to target.<br> `strategic_region = <ID>`<br>The strategic region to target.<br> `area = <state>`<br>The [AI area](#AI_areas) to target.<br> `country_trigger = { ... }`<br>Trigger block checked for states to have them as a target.<br> `state_trigger = { ... }`<br>Trigger block checked for countries to have them as a target.  `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = invasion_unit_request`<br>`    state = 123`<br>`    value = 100`<br>`}``ai_strategy = {`<br>`    type = invasion_unit_request`<br>`    strategic_region = 42`<br>`    value = 100`<br>`}` | Pursues AI to put more units on a naval invasion with the specified target. | More than one target type can be used at a time, in which case each one must be met. |  |  |  |  |
-| garrison | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = garrison`<br>`    value = 10`<br>`}` | Controls the amount of units spent on defending the victory points and ports rather than being active on the frontline. |  |  |  |  |  |
-| garrison_reinforcement_priority | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = garrison_reinforcement_priority`<br>`    value = 100`<br>`}` | Pursues AI to reinforce units that are put on garrisons, protecting victory points and naval bases, with higher priority. |  |  |  |  |  |
-| ignore_army_incompetence | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = ignore_army_incompetence`<br>`    value = 100`<br>`}` | Pursues AI to ignore the modifier given by the lack of experience of divisions in calculations. |  |  |  |  |  |
-| put_unit_buffers | `ratio = <decimal>`<br>The amount of units to buffer.<br> `order_id = 2`<br> If two put_unit_buffers strategies use the same ID, the ratio used for them will be shared rather than them being added together.<br> `states = { ... }`<br> List of states where to buffer units<br> `area = <AI area>`<br> The AI area where to buffer units.<br> `subtract_invasions_from_need = yes`<br> If true, naval invasions within the area will not count towards the ratio. Defaults to false.<br> `subtract_fronts_from_need = yes`<br> If true, land frontlines within the area will not count towards the ratio. Defaults to false. | `ai_strategy = {`<br>`    type = put_unit_buffers`<br>`    ratio = 0.2`<br>`    states = {`<br>`        123`<br>`        124`<br>`        125`<br>`        126`<br>`    }`<br>`    subtract_fronts_from_need = yes`<br>`}` | Pursues AI to keep a certain ratio of divisions on garrison duty in the specified area. |  |  |  |  |  |
-| spare_unit_factor | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = spare_unit_factor`<br>`    value = 100`<br>`}` | Pursues AI to spare more units towards defending allies. |  |  |  |  |  |
-| theatre_distribution_demand_increase | `value = <int>`<br>The weight of the strategy.<br> `id = <state>`<br>The target of the strategy.<br> | `ai_strategy = {`<br>`    type = theatre_distribution_demand_increase`<br>`    value = 10`<br>`    id = 123`<br>`}` | Pursues AI to put more units in the specified state's theater. | A value of 1 translates to 1 unit. |  |  |  |  |
+| invade | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to do naval invasions against the specified country. |  |  |  |  |  |
+| naval_invasion_focus | `value = <int>`<br>The weight of the strategy. | *(example below)* | Pursues AI to launch naval invasions. |  |  |  |  |  |
+| prepare_for_war | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to prepare for a war against a specified country, moving troops to their border. |  |  |  |  |  |
+| area_priority | `value = <int>`<br>The weight of the strategy.<br> `id = <AI area>`<br>The [AI area](#AI_areas) to prioritise. | *(example below)* | Pursues AI to put more units within the specified AI area. |  |  |  |  |  |
+| strategic_air_importance | `id = <strategic_region>`<br>The strategic region to consider `value = <int>`<br>The score added or substracted.<br> | *(example below)* | Modifies the total 'Strategic Importance' score of the specified region that the AI uses to prioritize where to perform Air Missions. | - ID of the strategic regions can be found here, in `/Hearts of Iron IV/map/strategicregions/*.txt` files, or alternatively in the game using [console command](<Console commands - Hearts of Iron 4 Wiki.md>) *tdebug* and hovering a mouse over the specific region while in the 'Default' map mode. - Current 'Strategic Importance' AI score can be found in the game using [console command](<Console commands - Hearts of Iron 4 Wiki.md>) *aiview* , while in the 'observe mode' and hovering a mouse over the desired air zone, while using the 'Strategic Air' map mode. The score shown is for the currently selected TAG. AI wants to do air missions in the regions with the highest scores, and none in the regions with low or negative score. - AI score numbers are large, in higher dozens of thousands or lower hundreds of thousands, so appropriate values need to be used to have any visible effect on the AI. |  |  |  |  |
+| dont_defend_ally_borders | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Makes AI never put troops on the border between the specified country and countries that are at war with it. | Strictly binary. If the total value (taking every AI strategy into consideration) is positive, AI will never put any troops on the border. |  |  |  |  |
+| force_defend_ally_borders | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to put troops on the border between the specified country and countries that are at war with it. | Also accepts [AI areas](#AI_areas) within `id`. |  |  |  |  |
+| front_armor_score | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The target of the strategy. | *(example below)* | Pursues AI to put more tank units for invading the specified country. |  |  |  |  |  |
+| front_control | `state = <state>`<br>The state to target.<br> `tag = <country>`<br>The country to target.<br> `strategic_region = <ID>`<br>The strategic region to target.<br> `area = <area>`<br>The [AI area](#AI_areas) to target.<br> `country_trigger = { ... }`<br>Trigger block checked for states to have them as a target.<br> `state_trigger = { ... }`<br>Trigger block checked for countries to have them as a target.  `ratio = <decimal>`<br>How much of a frontline ratio the specified front must have **as a requirement to enable the strategy**. Defaults to 0.<br> `priority = <integer>`<br>Sets the priority of this front control strategy. If there are contradictory front control strategies, the one with a higher priority is followed.<br> `ordertype = <front | invasion>`<br>If set, this will make the AI strategy only apply on land frontlines or naval invasions respectively.<br> `execution_type = <careful | balanced | rush | rush_weak>`<br>If set, this pursues AI to make the frontline plans have the set execution type. Only for front.<br> `execute_order = <bool>`<br>If set, makes AI to either force execute the frontline order or force it being never executed.<br> `manual_attack = <bool>`<br>If set to false, prevents AI from doing small engagements that are not a part of a frontline plan. Defaults to true, only for front. | *(example below)* *(example below)* | Modifies the orders that AI would give to divisions on a specified frontline. | More than one target type can be used at a time, in which case each one must be met. This only changes the orders assigned to an already-existing frontline, this will not change the amount of units assigned to any particular front or force any to be created. |
+| force_concentration_front_factor | `tag = <country>`<br>The country to target. Multiple can be specified. `state = <state>`<br>The state to target. Multiple can be specified.<br>`strategic_region = <ID>`<br>The strategic region to target. Multiple can be specified.<br>`area = <area>`<br>The [AI area](#AI_areas) to target. Multiple can be specified.<br>`country_trigger = { ... }`<br>Trigger block checked for countries. Scope is enemy country, FROM scope is our country.<br>`state_trigger = { ... }`<br>Trigger block checked for states.  Scope is state. FROM scope is enemy country FROM.FROM scope is our country.  `ratio = <decimal>`<br>The strategy is enabled only if ratio of the front covered by this strategy's targets is greater than this ratio.<br>`value = <int>`<br>Factor for the normal priority. 40 means +40 %, -60 means -60 %. | *(example below)* | Used for increasing/decreasing priority score for AI force concentration on specified fronts. | All the arguments are optional, only one needs to be specified. AI primarily assigns units with 'armor' , 'heavy_armor' and 'mechanized_assault' unit roles to the attack. |  |  |  |  |
+| force_concentration_factor | `value = <int>`<br>The percentage value added or substracted. | *(example below)* | Factor added on top of the default force concentration ratio. Value of 20 means +20 %, so if the base define is 15 % the result would be 35 %. | See FORCE_CONCENTRATION_UNIT_RATIO_BASE in the [defines](<Defines - Hearts of Iron 4 Wiki.md>). A large negative value stops AI from using Force Concentration anywhere. |  |  |  |  |
+| force_concentration_target_weight | `tag = <country>`<br>The country to target. Multiple can be specified. `state = <state>`<br>The state to target. Multiple can be specified.<br>`strategic_region = <ID>`<br>The strategic region to target. Multiple can be specified.<br>`area = <area>`<br>The [AI area](#AI_areas) to target. Multiple can be specified.<br>`country_trigger = { ... }`<br>Trigger block checked for countries. Scope is enemy country, FROM scope is our country.<br>`state_trigger = { ... }`<br>Trigger block checked for states.  Scope is state. FROM scope is enemy country FROM.FROM scope is our country.  <br>`value = <int>`<br>Factor for the normal priority. 40 means +40 %, -60 means -60 %. | *(example below)* | Affects the score for offensive targets for AI Force Concentration. | All the arguments are optional, only one needs to be specified. |  |  |  |  |
+| front_unit_request | `state = <state>`<br>The state to target.<br> `tag = <country>`<br>The state to target.<br> `strategic_region = <ID>`<br>The strategic region to target.<br> `area = <state>`<br>The [AI area](#AI_areas) to target.<br> `country_trigger = { ... }`<br>Trigger block checked for states to have them as a target.<br> `state_trigger = { ... }`<br>Trigger block checked for countries to have them as a target.  `value = <int>`<br>The weight of the strategy. | *(example below)* *(example below)* | Pursues AI to put more (or less - if negative value is used) units on a specified land frontline. | More than one target type can be used at a time, in which case each one must be met. |  |  |  |  |
+| invasion_unit_request | `state = <state>`<br>The state to target.<br> `tag = <country>`<br>The state to target.<br> `strategic_region = <ID>`<br>The strategic region to target.<br> `area = <state>`<br>The [AI area](#AI_areas) to target.<br> `country_trigger = { ... }`<br>Trigger block checked for states to have them as a target.<br> `state_trigger = { ... }`<br>Trigger block checked for countries to have them as a target.  `value = <int>`<br>The weight of the strategy. | *(example below)* *(example below)* | Pursues AI to put more units on a naval invasion with the specified target. | More than one target type can be used at a time, in which case each one must be met. |  |  |  |  |
+| garrison | `value = <int>`<br>The weight of the strategy. | *(example below)* | Controls the amount of units spent on defending the victory points and ports rather than being active on the frontline. |  |  |  |  |  |
+| garrison_reinforcement_priority | `value = <int>`<br>The weight of the strategy. | *(example below)* | Pursues AI to reinforce units that are put on garrisons, protecting victory points and naval bases, with higher priority. |  |  |  |  |  |
+| ignore_army_incompetence | `value = <int>`<br>The weight of the strategy. | *(example below)* | Pursues AI to ignore the modifier given by the lack of experience of divisions in calculations. |  |  |  |  |  |
+| put_unit_buffers | `ratio = <decimal>`<br>The amount of units to buffer.<br> `order_id = 2`<br> If two put_unit_buffers strategies use the same ID, the ratio used for them will be shared rather than them being added together.<br> `states = { ... }`<br> List of states where to buffer units<br> `area = <AI area>`<br> The AI area where to buffer units.<br> `subtract_invasions_from_need = yes`<br> If true, naval invasions within the area will not count towards the ratio. Defaults to false.<br> `subtract_fronts_from_need = yes`<br> If true, land frontlines within the area will not count towards the ratio. Defaults to false. | *(example below)* | Pursues AI to keep a certain ratio of divisions on garrison duty in the specified area. |  |  |  |  |  |
+| spare_unit_factor | `value = <int>`<br>The weight of the strategy. | *(example below)* | Pursues AI to spare more units towards defending allies. |  |  |  |  |  |
+| theatre_distribution_demand_increase | `value = <int>`<br>The weight of the strategy.<br> `id = <state>`<br>The target of the strategy.<br> | *(example below)* | Pursues AI to put more units in the specified state's theater. | A value of 1 translates to 1 unit. |  |  |  |  |
+
+**Example: invade**
+
+```text
+ai_strategy = {
+    type = invade
+    id = USA
+    value = -100
+}
+```
+
+**Example: naval_invasion_focus**
+
+```text
+ai_strategy = {
+    type = naval_invasion_focus
+    value = 100
+}
+```
+
+**Example: prepare_for_war**
+
+```text
+ai_strategy = {
+    type = prepare_for_war
+    id = USA
+    value = 100
+}
+```
+
+**Example: area_priority**
+
+```text
+ai_strategy = {
+    type = area_priority
+    id = europe
+    value = 100
+}
+```
+
+**Example: strategic_air_importance**
+
+```text
+ai_strategy = {
+	type = strategic_air_importance
+	id = 18 #English Channel
+	value = -30000
+}
+```
+
+**Example: dont_defend_ally_borders**
+
+```text
+ai_strategy = {
+    type = dont_defend_ally_borders
+    id = POL
+    value = 10
+}
+```
+
+**Example: force_defend_ally_borders**
+
+```text
+ai_strategy = {
+    type = force_defend_ally_borders
+    id = FRA
+    value = 100
+}
+```
+
+**Example: front_armor_score**
+
+```text
+ai_strategy = {
+    type = front_armor_score
+    id = POL
+    value = 100
+}
+```
+
+**Example: front_control**
+
+```text
+ai_strategy = {
+    type = front_control
+    state_trigger = {
+        industrial_complex > 1
+        is_owned_by = ENG
+    }
+    ratio = 0.1
+    ordertype = front
+    execution_type = rush
+    manual_attack = no
+}
+```
+
+**Example: front_control**
+
+```text
+ai_strategy = {
+    type = front_control
+    area = suez
+    priority = 1
+    ratio = 0.2
+    ordertype = invasion
+    execute_order = yes
+}
+```
+
+**Example: force_concentration_front_factor**
+
+```text
+ai_strategy = {
+	type = force_concentration_front_factor
+
+	tag = CZE
+	state = 9
+	strategic_region = 22
+	ratio = 0.2
+
+	value = 40
+}
+```
+
+**Example: force_concentration_factor**
+
+```text
+ai_strategy = {
+	type = force_concentration_factor
+	value = 20
+}
+```
+
+**Example: force_concentration_target_weight**
+
+```text
+ai_strategy = {
+# As Germany - Avoid attacking the areas behind the Maginot line
+	type = force_concentration_target_weight
+	state = 18 # Champagne
+	state = 17 # Franche-Comte
+	state = 28 # Alsace-Lorraine
+	state = 27 # Bourgogne
+
+	value = -60
+}
+```
+
+**Example: front_unit_request**
+
+```text
+ai_strategy = {
+    type = front_unit_request
+    tag = POL
+    value = 100
+}
+```
+
+**Example: front_unit_request**
+
+```text
+ai_strategy = {
+    type = front_unit_request
+    country_trigger = {
+        original_tag = SPR
+        has_government = fascism
+    }
+    value = 100
+}
+```
+
+**Example: invasion_unit_request**
+
+```text
+ai_strategy = {
+    type = invasion_unit_request
+    state = 123
+    value = 100
+}
+```
+
+**Example: invasion_unit_request**
+
+```text
+ai_strategy = {
+    type = invasion_unit_request
+    strategic_region = 42
+    value = 100
+}
+```
+
+**Example: garrison**
+
+```text
+ai_strategy = {
+    type = garrison
+    value = 10
+}
+```
+
+**Example: garrison_reinforcement_priority**
+
+```text
+ai_strategy = {
+    type = garrison_reinforcement_priority
+    value = 100
+}
+```
+
+**Example: ignore_army_incompetence**
+
+```text
+ai_strategy = {
+    type = ignore_army_incompetence
+    value = 100
+}
+```
+
+**Example: put_unit_buffers**
+
+```text
+ai_strategy = {
+    type = put_unit_buffers
+    ratio = 0.2
+    states = {
+        123
+        124
+        125
+        126
+    }
+    subtract_fronts_from_need = yes
+}
+```
+
+**Example: spare_unit_factor**
+
+```text
+ai_strategy = {
+    type = spare_unit_factor
+    value = 100
+}
+```
+
+**Example: theatre_distribution_demand_increase**
+
+```text
+ai_strategy = {
+    type = theatre_distribution_demand_increase
+    value = 10
+    id = 123
+}
+```
 
 AI strategies related to navy management:
 
 | Name | Parameters | Examples | Description | Notes |
 | --- | --- | --- | --- | --- |
-| naval_avoid_region | `value = <int>`<br>The weight of the strategy.<br> `id = <strategic region>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = naval_avoid_region`<br>`    id = 23`<br>`    value = 100`<br>`}` | Pursues AI to avoid a specific strategic region with its ships. |  |
-| naval_convoy_raid_region | `value = <int>`<br>The weight of the strategy.<br> `id = <strategic region>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = naval_convoy_raid_region`<br>`    id = 23`<br>`    value = 100`<br>`}` | Pursues AI to raid convoys within the specified strategic region. |  |
-| naval_mission_threshold | `value = <int>`<br>The weight of the strategy.<br> `id = <mission>`<br>The mission to change the threshold of. | `ai_strategy = {`<br>`    type = naval_mission_threshold`<br>`    id = MISSION_CONVOY_RAIDING`<br>`    value = -100`<br>`}` | Makes AI have a higher threshold for its desire to do a naval mission. | A higher value means AI is less likely to do the mission. Names of missions can be found in `/Hearts of Iron IV/localisation/english/core_l_english.yml`, where a localisation key of `NAVAL_MISSION_NAME_CONVOY_RAIDING` means the mission is called `MISSION_CONVOY_RAIDING` |
-| strike_force_home_base | `value = <int>`<br>The weight of the strategy.<br> `id = <strategic region>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = strike_force_home_base`<br>`    id = 18`<br>`    value = 70`<br>`}` | Pursues AI to do the strike force mission within the specified strategic region. |  |
+| naval_avoid_region | `value = <int>`<br>The weight of the strategy.<br> `id = <strategic region>`<br>The target of the strategy. | *(example below)* | Pursues AI to avoid a specific strategic region with its ships. |  |
+| naval_convoy_raid_region | `value = <int>`<br>The weight of the strategy.<br> `id = <strategic region>`<br>The target of the strategy. | *(example below)* | Pursues AI to raid convoys within the specified strategic region. |  |
+| naval_mission_threshold | `value = <int>`<br>The weight of the strategy.<br> `id = <mission>`<br>The mission to change the threshold of. | *(example below)* | Makes AI have a higher threshold for its desire to do a naval mission. | A higher value means AI is less likely to do the mission. Names of missions can be found in `/Hearts of Iron IV/localisation/english/core_l_english.yml`, where a localisation key of `NAVAL_MISSION_NAME_CONVOY_RAIDING` means the mission is called `MISSION_CONVOY_RAIDING` |
+| strike_force_home_base | `value = <int>`<br>The weight of the strategy.<br> `id = <strategic region>`<br>The target of the strategy. | *(example below)* | Pursues AI to do the strike force mission within the specified strategic region. |  |
+
+**Example: naval_avoid_region**
+
+```text
+ai_strategy = {
+    type = naval_avoid_region
+    id = 23
+    value = 100
+}
+```
+
+**Example: naval_convoy_raid_region**
+
+```text
+ai_strategy = {
+    type = naval_convoy_raid_region
+    id = 23
+    value = 100
+}
+```
+
+**Example: naval_mission_threshold**
+
+```text
+ai_strategy = {
+    type = naval_mission_threshold
+    id = MISSION_CONVOY_RAIDING
+    value = -100
+}
+```
+
+**Example: strike_force_home_base**
+
+```text
+ai_strategy = {
+    type = strike_force_home_base
+    id = 18
+    value = 70
+}
+```
 
 AI strategies related to intelligence:
 
 | Name | Parameters | Examples | Description | Notes |
 | --- | --- | --- | --- | --- |
-| agency_ai_base_num_factories_factor | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = agency_ai_base_num_factories_factor`<br>`    value = 70`<br>`}` | Changes the baseline used in the calculation of AI doing agency upgrades. | A value of 1 equals to a 1% increase over the baseline in [Defines](<Defines - Hearts of Iron 4 Wiki.md>). |
-| agency_ai_per_upgrade_factories_factor | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = agency_ai_per_upgrade_factories_factor`<br>`    value = 70`<br>`}` | Modifies the needed amount of factories used in the calculation of AI doing agency upgrades. | A value of 1 equals to a 1% increase over the baseline in [Defines](<Defines - Hearts of Iron 4 Wiki.md>). |
-| intelligence_agency_branch_desire_factor | `value = <int>`<br>The weight of the strategy.<br> `id = <branch>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = intelligence_agency_branch_desire_factor`<br>`    id = branch_crypto`<br>`    value = 70`<br>`}` | Modifies the needed amount of factories used in the calculation of AI doing agency upgrades. | Branches are defined in `/Hearts of Iron IV/common/intelligence_agency_upgrades/*.txt` files. |
-| intelligence_agency_usable_factories | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = intelligence_agency_usable_factories`<br>`    value = 8`<br>`}` | Modifies the amount of factories that AI would use for intelligence agencies. |  |
-| operation_equipment_priority | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = operation_equipment_priority`<br>`    value = 80`<br>`}` | Pursues the AI to prioritise equipment for funding operations over other usages. |  |
-| operative_mission | `value = <int>`<br>The weight of the strategy.<br> `mission = <mission>`<br>The mission to prioritise<br> `mission_target = <country>`<br>The country to target<br> `state = <state>`<br>The state to prioritise within the target country if valid. Optional.<br> `priority = <int>`<br>If contradictory AI strategies are defined, the one with the highest priority is picked. `num_operatives = <int>`  Number of operatives to assign to mission. Optional. | `ai_strategy = {`<br>`    type = operative_mission`<br>`    value = 80`<br>`    mission = quiet_intel_network`<br>`    state = 123`<br>`    state = 321`<br>`    mission_target = ENG`<br>`}` | Pursues the AI to do the specified mission over the target. | Multiple states can be defined, leading to one of them being prioritised. Mission names can be seen in `/Hearts of Iron IV/localisation/english/operatives_l_english.yml`. For example, `OPERATIVE_MISSION_BOOST_IDEOLOGY_TITLE:0 "Boost Ideology"` means that boosting ideology is boost_ideology. |
-| operative_operation | `value = <int>`<br>The weight of the strategy.<br> `operation = <mission>`<br>The mission to prioritise<br> `operation_target = <country>`<br>The country to target<br> `state = <state>`<br>The state to prioritise within the target country if valid. Optional.<br> `region = <strategic region>`<br>The strategic region to prioritise within the target country if valid. Optional.<br> `priority = <int>`<br>If contradictory AI strategies are defined, the one with the highest priority is picked. | `ai_strategy = {`<br>`    type = operative_operation`<br>`    value = 80`<br>`    operation = heavy_water_raid`<br>`    operation_target = ENG`<br>`}` | Pursues the AI to do the specified operation over the target. | Multiple states can be defined, leading to one of them being prioritised. Operations are defined within `/Hearts of Iron IV/common/operations/*.txt` files. |
-| become_spymaster | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = become_spymaster`<br>`    value = 30`<br>`}` | Used to set weight for a faction leader to become spymaster if not already a spymaster | Weight value for pp spend to become spymaster. Added in 1.15.2 |
+| agency_ai_base_num_factories_factor | `value = <int>`<br>The weight of the strategy. | *(example below)* | Changes the baseline used in the calculation of AI doing agency upgrades. | A value of 1 equals to a 1% increase over the baseline in [Defines](<Defines - Hearts of Iron 4 Wiki.md>). |
+| agency_ai_per_upgrade_factories_factor | `value = <int>`<br>The weight of the strategy. | *(example below)* | Modifies the needed amount of factories used in the calculation of AI doing agency upgrades. | A value of 1 equals to a 1% increase over the baseline in [Defines](<Defines - Hearts of Iron 4 Wiki.md>). |
+| intelligence_agency_branch_desire_factor | `value = <int>`<br>The weight of the strategy.<br> `id = <branch>`<br>The target of the strategy. | *(example below)* | Modifies the needed amount of factories used in the calculation of AI doing agency upgrades. | Branches are defined in `/Hearts of Iron IV/common/intelligence_agency_upgrades/*.txt` files. |
+| intelligence_agency_usable_factories | `value = <int>`<br>The weight of the strategy. | *(example below)* | Modifies the amount of factories that AI would use for intelligence agencies. |  |
+| operation_equipment_priority | `value = <int>`<br>The weight of the strategy. | *(example below)* | Pursues the AI to prioritise equipment for funding operations over other usages. |  |
+| operative_mission | `value = <int>`<br>The weight of the strategy.<br> `mission = <mission>`<br>The mission to prioritise<br> `mission_target = <country>`<br>The country to target<br> `state = <state>`<br>The state to prioritise within the target country if valid. Optional.<br> `priority = <int>`<br>If contradictory AI strategies are defined, the one with the highest priority is picked. `num_operatives = <int>`  Number of operatives to assign to mission. Optional. | *(example below)* | Pursues the AI to do the specified mission over the target. | Multiple states can be defined, leading to one of them being prioritised. Mission names can be seen in `/Hearts of Iron IV/localisation/english/operatives_l_english.yml`. For example, `OPERATIVE_MISSION_BOOST_IDEOLOGY_TITLE:0 "Boost Ideology"` means that boosting ideology is boost_ideology. |
+| operative_operation | `value = <int>`<br>The weight of the strategy.<br> `operation = <mission>`<br>The mission to prioritise<br> `operation_target = <country>`<br>The country to target<br> `state = <state>`<br>The state to prioritise within the target country if valid. Optional.<br> `region = <strategic region>`<br>The strategic region to prioritise within the target country if valid. Optional.<br> `priority = <int>`<br>If contradictory AI strategies are defined, the one with the highest priority is picked. | *(example below)* | Pursues the AI to do the specified operation over the target. | Multiple states can be defined, leading to one of them being prioritised. Operations are defined within `/Hearts of Iron IV/common/operations/*.txt` files. |
+| become_spymaster | `value = <int>`<br>The weight of the strategy. | *(example below)* | Used to set weight for a faction leader to become spymaster if not already a spymaster | Weight value for pp spend to become spymaster. Added in 1.15.2 |
+
+**Example: agency_ai_base_num_factories_factor**
+
+```text
+ai_strategy = {
+    type = agency_ai_base_num_factories_factor
+    value = 70
+}
+```
+
+**Example: agency_ai_per_upgrade_factories_factor**
+
+```text
+ai_strategy = {
+    type = agency_ai_per_upgrade_factories_factor
+    value = 70
+}
+```
+
+**Example: intelligence_agency_branch_desire_factor**
+
+```text
+ai_strategy = {
+    type = intelligence_agency_branch_desire_factor
+    id = branch_crypto
+    value = 70
+}
+```
+
+**Example: intelligence_agency_usable_factories**
+
+```text
+ai_strategy = {
+    type = intelligence_agency_usable_factories
+    value = 8
+}
+```
+
+**Example: operation_equipment_priority**
+
+```text
+ai_strategy = {
+    type = operation_equipment_priority
+    value = 80
+}
+```
+
+**Example: operative_mission**
+
+```text
+ai_strategy = {
+    type = operative_mission
+    value = 80
+    mission = quiet_intel_network
+    state = 123
+    state = 321
+    mission_target = ENG
+}
+```
+
+**Example: operative_operation**
+
+```text
+ai_strategy = {
+    type = operative_operation
+    value = 80
+    operation = heavy_water_raid
+    operation_target = ENG
+}
+```
+
+**Example: become_spymaster**
+
+```text
+ai_strategy = {
+    type = become_spymaster
+    value = 30
+}
+```
 
 AI strategies related to production, construction, and recruitment:
 
 | Name | Parameters | Examples | Description | Notes |
 | --- | --- | --- | --- | --- |
-| added_military_to_civilian_factory_ratio | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = added_military_to_civilian_factory_ratio`<br>`    value = 50`<br>`}` | Modifies the ratio of military to civilian factories that the AI desires to keep. | A positive value means more military factories. |
-| air_factory_balance | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = air_factory_balance`<br>`    value = 50`<br>`}` | Modifies the ratio of airforce to factories that the AI desires to keep. | A positive value means more airforce. |
-| dockyard_to_military_factory_ratio | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = dockyard_to_military_factory_ratio`<br>`    value = 50`<br>`}` | Modifies the ratio of dockyards to military factories that the AI desires to keep. | A positive value means more dockyards. |
-| railway_gun_divisions_ratio | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = railway_gun_divisions_ratio`<br>`    value = 5`<br>`}` | Modifies the ratio of railway guns to divisions that the AI desires to keep. | Base ratio is RAILWAY_GUN_PRODUCTION_BASE_DIVISIONS_RATIO_PERCENT in [Defines](<Defines - Hearts of Iron 4 Wiki.md>), by default 0. This gets added to it, on the 0-100 scale. |
-| build_building | `value = <int>`<br>The weight of the strategy.<br> `id = <building>`<br>The target of the strategy.<br> `target = <state> (OR) <province>`<br>The state (or province) where to build. | `ai_strategy = {`<br>`    type = build_building`<br>`    id = industrial_complex`<br>`    target = 803`<br>`    value = 1`<br>`}` | Pursues AI to construct a specific building within the specified state (or a specified province, if the building is province based). If no target is specified, AI selects a random location. | Value is an AI weight, used for weighted random selection of what to build. The AI gathers all build_building strategies (including the ones created dynamically) with non-zero values, and selects one of them. Strategy is ignored if the specified building is already being constructed. |
-| building_target | `value = <int>`<br>The weight of the strategy.<br> `id = <building>`<br>A building to consider. | `ai_strategy = {`<br>`    type = building_target`<br>`    id = industrial_complex`<br>`    value = 30`<br>`}` | Makes AI keep a minimum amount of the specified buildings. | The AI will construct the specified building until it reaches the target value (prioritizing it over other construction). **Note:** The AI uses 'total' amount of buildings. So in this specific case it will check, if it has a total of 30 Civilian Factories in its own states, in the occupied states AND from trade and received from subjects! |
-| factory_build_score_factor | `value = <int>`<br>The weight of the strategy.<br> `target = <state>`<br>The state where to build. | `ai_strategy = {`<br>`    type = factory_build_score_factor`<br>`    target = 365`<br>`    value = 1`<br>`}` | Pursues AI to construct buildings within the specified state. |  |
-| equipment_production_factor | `value = <int>`<br>The weight of the strategy.<br> `id = <equipment archetype type>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = equipment_production_factor`<br>`    id = armor`<br>`    value = 30`<br>`}` | Pursues AI to produce equipment types of the specified type. | Types are defined for each equipment archetype in `/Hearts of Iron IV/common/units/equipment/*.txt` files within `types = { ... }`. |
-| equipment_production_min_factories | `value = <int>`<br>The weight of the strategy.<br> `id = <equipment type>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = equipment_production_min_factories`<br>`    id = artillery`<br>`    value = 3`<br>`}` | Pursues AI to keep a minimum amount of factories on the production lines for the equipment of the specified **type**. If multiple strategies are used at once, they stack. | A value of 1 corresponds to 1 military factory. Types are defined for each equipment archetype in `/Hearts of Iron IV/common/units/equipment/*.txt` files within `types = { ... }`. **Note:** Multiple variants of the same 'type' of equipment may exist. This specific strategy will for example make AI have 3 lines of Artillery AND 3 lines of Rocket Artillery AND 3 lines of Motorized Rocket Artillery. |
-| equipment_production_min_factories_archetype | `value = <int>`<br>The weight of the strategy.<br> `id = <equipment archetype>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = equipment_production_min_factories_archetype`<br>`    id = artillery_equipment`<br>`    value = 4`<br>`}` | Pursues AI to keep a minimum amount of factories on the production lines for the equipment of the specified **archetype**. If multiple strategies are used at once, they stack. | A value of 1 corresponds to 1 military factory. Archetypes are defined in each file in `/Hearts of Iron IV/common/units/equipment/*.txt` with `is_archetype = yes` argument. |
-| equipment_variant_production_factor | `value = <int>`<br>The weight of the strategy.<br> `id = <equipment archetype>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = equipment_variant_production_factor`<br>`    id = light_tank_chassis`<br>`    value = -100`<br>`}` | Pursues AI to produce more of the specified equipment archetype. | Equipment archetypes are defined in `/Hearts of Iron IV/common/units/equipment/*.txt` files. |
-| equipment_stockpile_surplus_ratio | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = equipment_stockpile_surplus_ratio`<br>`    value = 30`<br>`}` | Changes the ratio of equipment that AI would hold in stockpile rather than immediately using. |  |
-| build_army | `value = <int>`<br>The weight of the strategy.<br> `id = <unit role>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = build_army`<br>`    id = infantry`<br>`    value = 200`<br>`}` | Modifies the desired division amount for AI. | The used target is roles within [AI templates](#AI_templates). This example would make the AI want exactly 200 divisions with 'infantry' role. |
-| force_build_armies | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = force_build_armies`<br>`    value = 30`<br>`}` | Forces AI to build divisions above the desired amount. |  |
-| production_upgrade_desire_offset | `value = <int>`<br>The weight of the strategy.<br> `id = <equipment type>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = production_upgrade_desire_offset`<br>`    id = artillery_equipment_2`<br>`    value = -50`<br>`}` | Pursues AI to upgrade production lines to the specified equipment type. | Equipment types are defined in `/Hearts of Iron IV/common/units/equipment/*.txt` files. |
-| role_ratio | `value = <int>`<br>The weight of the strategy.<br> `id = <role>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = role_ratio`<br>`    id = paratroopers`<br>`    value = 30`<br>`}` | Modifies the amount of templates that the AI makes for the specified role. | Roles are defined within [AI templates](#AI_templates) for unit templates and [AI equipment](#AI_equipment) for ship and tank variants. |
-| unit_ratio | `value = <int>`<br>The weight of the strategy.<br> `id = <unit>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = unit_ratio`<br>`    id = cas`<br>`    value = 30`<br>`}` | Modifies the amount of templates that the AI makes with the specified unit. | Units are defined in `/Hearts of Iron IV/common/units/*.txt` files. This includes the airforce and navy alongside land army. |
-| min_wanted_supply_trains | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = min_wanted_supply_trains`<br>`    value = 300`<br>`}` | Overrides the minimum amount of supply trains wanted by AI. |  |
-| min_wanted_supply_trucks | `value = <int>`<br>The weight of the strategy. | `ai_strategy = {`<br>`    type = min_wanted_supply_trucks`<br>`    value = 30`<br>`}` | Overrides the minimum amount of supply trucks wanted by AI. |  |
+| added_military_to_civilian_factory_ratio | `value = <int>`<br>The weight of the strategy. | *(example below)* | Modifies the ratio of military to civilian factories that the AI desires to keep. | A positive value means more military factories. |
+| air_factory_balance | `value = <int>`<br>The weight of the strategy. | *(example below)* | Modifies the ratio of airforce to factories that the AI desires to keep. | A positive value means more airforce. |
+| dockyard_to_military_factory_ratio | `value = <int>`<br>The weight of the strategy. | *(example below)* | Modifies the ratio of dockyards to military factories that the AI desires to keep. | A positive value means more dockyards. |
+| railway_gun_divisions_ratio | `value = <int>`<br>The weight of the strategy. | *(example below)* | Modifies the ratio of railway guns to divisions that the AI desires to keep. | Base ratio is RAILWAY_GUN_PRODUCTION_BASE_DIVISIONS_RATIO_PERCENT in [Defines](<Defines - Hearts of Iron 4 Wiki.md>), by default 0. This gets added to it, on the 0-100 scale. |
+| build_building | `value = <int>`<br>The weight of the strategy.<br> `id = <building>`<br>The target of the strategy.<br> `target = <state> (OR) <province>`<br>The state (or province) where to build. | *(example below)* | Pursues AI to construct a specific building within the specified state (or a specified province, if the building is province based). If no target is specified, AI selects a random location. | Value is an AI weight, used for weighted random selection of what to build. The AI gathers all build_building strategies (including the ones created dynamically) with non-zero values, and selects one of them. Strategy is ignored if the specified building is already being constructed. |
+| building_target | `value = <int>`<br>The weight of the strategy.<br> `id = <building>`<br>A building to consider. | *(example below)* | Makes AI keep a minimum amount of the specified buildings. | The AI will construct the specified building until it reaches the target value (prioritizing it over other construction). **Note:** The AI uses 'total' amount of buildings. So in this specific case it will check, if it has a total of 30 Civilian Factories in its own states, in the occupied states AND from trade and received from subjects! |
+| factory_build_score_factor | `value = <int>`<br>The weight of the strategy.<br> `target = <state>`<br>The state where to build. | *(example below)* | Pursues AI to construct buildings within the specified state. |  |
+| equipment_production_factor | `value = <int>`<br>The weight of the strategy.<br> `id = <equipment archetype type>`<br>The target of the strategy. | *(example below)* | Pursues AI to produce equipment types of the specified type. | Types are defined for each equipment archetype in `/Hearts of Iron IV/common/units/equipment/*.txt` files within `types = { ... }`. |
+| equipment_production_min_factories | `value = <int>`<br>The weight of the strategy.<br> `id = <equipment type>`<br>The target of the strategy. | *(example below)* | Pursues AI to keep a minimum amount of factories on the production lines for the equipment of the specified **type**. If multiple strategies are used at once, they stack. | A value of 1 corresponds to 1 military factory. Types are defined for each equipment archetype in `/Hearts of Iron IV/common/units/equipment/*.txt` files within `types = { ... }`. **Note:** Multiple variants of the same 'type' of equipment may exist. This specific strategy will for example make AI have 3 lines of Artillery AND 3 lines of Rocket Artillery AND 3 lines of Motorized Rocket Artillery. |
+| equipment_production_min_factories_archetype | `value = <int>`<br>The weight of the strategy.<br> `id = <equipment archetype>`<br>The target of the strategy. | *(example below)* | Pursues AI to keep a minimum amount of factories on the production lines for the equipment of the specified **archetype**. If multiple strategies are used at once, they stack. | A value of 1 corresponds to 1 military factory. Archetypes are defined in each file in `/Hearts of Iron IV/common/units/equipment/*.txt` with `is_archetype = yes` argument. |
+| equipment_variant_production_factor | `value = <int>`<br>The weight of the strategy.<br> `id = <equipment archetype>`<br>The target of the strategy. | *(example below)* | Pursues AI to produce more of the specified equipment archetype. | Equipment archetypes are defined in `/Hearts of Iron IV/common/units/equipment/*.txt` files. |
+| equipment_stockpile_surplus_ratio | `value = <int>`<br>The weight of the strategy. | *(example below)* | Changes the ratio of equipment that AI would hold in stockpile rather than immediately using. |  |
+| build_army | `value = <int>`<br>The weight of the strategy.<br> `id = <unit role>`<br>The target of the strategy. | *(example below)* | Modifies the desired division amount for AI. | The used target is roles within [AI templates](#AI_templates). This example would make the AI want exactly 200 divisions with 'infantry' role. |
+| force_build_armies | `value = <int>`<br>The weight of the strategy. | *(example below)* | Forces AI to build divisions above the desired amount. |  |
+| production_upgrade_desire_offset | `value = <int>`<br>The weight of the strategy.<br> `id = <equipment type>`<br>The target of the strategy. | *(example below)* | Pursues AI to upgrade production lines to the specified equipment type. | Equipment types are defined in `/Hearts of Iron IV/common/units/equipment/*.txt` files. |
+| role_ratio | `value = <int>`<br>The weight of the strategy.<br> `id = <role>`<br>The target of the strategy. | *(example below)* | Modifies the amount of templates that the AI makes for the specified role. | Roles are defined within [AI templates](#AI_templates) for unit templates and [AI equipment](#AI_equipment) for ship and tank variants. |
+| unit_ratio | `value = <int>`<br>The weight of the strategy.<br> `id = <unit>`<br>The target of the strategy. | *(example below)* | Modifies the amount of templates that the AI makes with the specified unit. | Units are defined in `/Hearts of Iron IV/common/units/*.txt` files. This includes the airforce and navy alongside land army. |
+| min_wanted_supply_trains | `value = <int>`<br>The weight of the strategy. | *(example below)* | Overrides the minimum amount of supply trains wanted by AI. |  |
+| min_wanted_supply_trucks | `value = <int>`<br>The weight of the strategy. | *(example below)* | Overrides the minimum amount of supply trucks wanted by AI. |  |
+
+**Example: added_military_to_civilian_factory_ratio**
+
+```text
+ai_strategy = {
+    type = added_military_to_civilian_factory_ratio
+    value = 50
+}
+```
+
+**Example: air_factory_balance**
+
+```text
+ai_strategy = {
+    type = air_factory_balance
+    value = 50
+}
+```
+
+**Example: dockyard_to_military_factory_ratio**
+
+```text
+ai_strategy = {
+    type = dockyard_to_military_factory_ratio
+    value = 50
+}
+```
+
+**Example: railway_gun_divisions_ratio**
+
+```text
+ai_strategy = {
+    type = railway_gun_divisions_ratio
+    value = 5
+}
+```
+
+**Example: build_building**
+
+```text
+ai_strategy = {
+    type = build_building
+    id = industrial_complex
+    target = 803
+    value = 1
+}
+```
+
+**Example: building_target**
+
+```text
+ai_strategy = {
+    type = building_target
+    id = industrial_complex
+    value = 30
+}
+```
+
+**Example: factory_build_score_factor**
+
+```text
+ai_strategy = {
+    type = factory_build_score_factor
+    target = 365
+    value = 1
+}
+```
+
+**Example: equipment_production_factor**
+
+```text
+ai_strategy = {
+    type = equipment_production_factor
+    id = armor
+    value = 30
+}
+```
+
+**Example: equipment_production_min_factories**
+
+```text
+ai_strategy = {
+    type = equipment_production_min_factories
+    id = artillery
+    value = 3
+}
+```
+
+**Example: equipment_production_min_factories_archetype**
+
+```text
+ai_strategy = {
+    type = equipment_production_min_factories_archetype
+    id = artillery_equipment
+    value = 4
+}
+```
+
+**Example: equipment_variant_production_factor**
+
+```text
+ai_strategy = {
+    type = equipment_variant_production_factor
+    id = light_tank_chassis
+    value = -100
+}
+```
+
+**Example: equipment_stockpile_surplus_ratio**
+
+```text
+ai_strategy = {
+    type = equipment_stockpile_surplus_ratio
+    value = 30
+}
+```
+
+**Example: build_army**
+
+```text
+ai_strategy = {
+    type = build_army
+    id = infantry
+    value = 200
+}
+```
+
+**Example: force_build_armies**
+
+```text
+ai_strategy = {
+    type = force_build_armies
+    value = 30
+}
+```
+
+**Example: production_upgrade_desire_offset**
+
+```text
+ai_strategy = {
+    type = production_upgrade_desire_offset
+    id = artillery_equipment_2
+    value = -50
+}
+```
+
+**Example: role_ratio**
+
+```text
+ai_strategy = {
+    type = role_ratio
+    id = paratroopers
+    value = 30
+}
+```
+
+**Example: unit_ratio**
+
+```text
+ai_strategy = {
+    type = unit_ratio
+    id = cas
+    value = 30
+}
+```
+
+**Example: min_wanted_supply_trains**
+
+```text
+ai_strategy = {
+    type = min_wanted_supply_trains
+    value = 300
+}
+```
+
+**Example: min_wanted_supply_trucks**
+
+```text
+ai_strategy = {
+    type = min_wanted_supply_trucks
+    value = 30
+}
+```
 
 Other AI strategies:
 
 | Name | Parameters | Examples | Description | Notes |
 | --- | --- | --- | --- | --- |
-| scorched_earth_prio | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The owner of the states where to use scorched earth.<br> `states = { ... }`<br> List of states where to use scorched earth. | `ai_strategy = {`<br>`    type = scorched_earth_prio`<br>`    value = 100`<br>`    id = ENG`<br>`    states = {`<br>`        123`<br>`        124`<br>`        125`<br>`        126`<br>`    }`<br>`}` | Pursues AI to use scorched earth within the specified states. |  |
-| land_xp_spend_priority | `value = <int>`<br>The weight of the strategy.<br> `id = <type>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = land_xp_spend_priority`<br>`    id = division_template`<br>`    value = 30`<br>`}` | Modifies the priority for AI to spend land experience. | Base game usages include `division_template` and `upgrade_xp_cutoff`. |
-| pp_spend_amount | `value = <int>`<br>The weight of the strategy.<br> `id = <type>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = pp_spend_amount`<br>`    id = idea`<br>`    value = 100`<br>`}` | Modifies the political power that AI should preserve for the specified purpose. | Base game usages include `idea` and `decision`. |
-| pp_spend_priority | `value = <int>`<br>The weight of the strategy.<br> `id = <type>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = pp_spend_priority`<br>`    id = relation`<br>`    value = 100`<br>`}` | Modifies where AI should prioritise spending political power. | Base game usages include the following:  - `admiral` - `guarantee` - `relation` - `decision` |
-| research_weight_factor | `value = <int>`<br>The weight of the strategy.<br> `id = <type>`<br>The target of the strategy. | `ai_strategy = {`<br>`    type = research_weight_factor`<br>`    id = radio_detection`<br>`    value = 2000`<br>`}` | Modifies the AI weight (score) of a specific technology. | value = 50 means 50% increase, -30 means 30% decrease, etc. |
+| scorched_earth_prio | `value = <int>`<br>The weight of the strategy.<br> `id = <country>`<br>The owner of the states where to use scorched earth.<br> `states = { ... }`<br> List of states where to use scorched earth. | *(example below)* | Pursues AI to use scorched earth within the specified states. |  |
+| land_xp_spend_priority | `value = <int>`<br>The weight of the strategy.<br> `id = <type>`<br>The target of the strategy. | *(example below)* | Modifies the priority for AI to spend land experience. | Base game usages include `division_template` and `upgrade_xp_cutoff`. |
+| pp_spend_amount | `value = <int>`<br>The weight of the strategy.<br> `id = <type>`<br>The target of the strategy. | *(example below)* | Modifies the political power that AI should preserve for the specified purpose. | Base game usages include `idea` and `decision`. |
+| pp_spend_priority | `value = <int>`<br>The weight of the strategy.<br> `id = <type>`<br>The target of the strategy. | *(example below)* | Modifies where AI should prioritise spending political power. | Base game usages include the following:  - `admiral` - `guarantee` - `relation` - `decision` |
+| research_weight_factor | `value = <int>`<br>The weight of the strategy.<br> `id = <type>`<br>The target of the strategy. | *(example below)* | Modifies the AI weight (score) of a specific technology. | value = 50 means 50% increase, -30 means 30% decrease, etc. |
+
+**Example: scorched_earth_prio**
+
+```text
+ai_strategy = {
+    type = scorched_earth_prio
+    value = 100
+    id = ENG
+    states = {
+        123
+        124
+        125
+        126
+    }
+}
+```
+
+**Example: land_xp_spend_priority**
+
+```text
+ai_strategy = {
+    type = land_xp_spend_priority
+    id = division_template
+    value = 30
+}
+```
+
+**Example: pp_spend_amount**
+
+```text
+ai_strategy = {
+    type = pp_spend_amount
+    id = idea
+    value = 100
+}
+```
+
+**Example: pp_spend_priority**
+
+```text
+ai_strategy = {
+    type = pp_spend_priority
+    id = relation
+    value = 100
+}
+```
+
+**Example: research_weight_factor**
+
+```text
+ai_strategy = {
+    type = research_weight_factor
+    id = radio_detection
+    value = 2000
+}
+```
 
 ## AI areas <a id="AI_areas"></a>
 

@@ -560,20 +560,135 @@ Variable-related arguments:
 
 | Name | Parameters | Examples | Description | Notes |  |
 | --- | --- | --- | --- | --- | --- |
-| set_variable | `var = <variable>`<br>The variable to modify or create.<br> `value = <decimal>/<variable>`<br>The value to set the variable to.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | `set_variable = {`<br>`    var = my_variable`<br>`    value = 100`<br>`    tooltip = set_var_to_100_tt`<br>`}``set_temp_variable = { temp_var = ROOT.overlord }` | Sets a variable's value to the specified amount, creating it if not defined. | Shortened version exists with `set_variable = { <variable> = <value> }`. |  |
-| set_variable_to_random | `var = <variable>`<br>The variable to modify or create.<br> `min = <decimal>`<br>The minimum possible value, defaults to 0.<br> `max = <decimal>`<br>The maximum possible value, defaults to 1.<br> `integer = <bool>`<br>Sets if the variable *must* be an integer or if it can be decimal. Defaults to false.<br> | `set_variable_to_random = {`<br>`    var = random_num`<br>`    max = 11`<br>`    integer = yes`<br>`}``set_temp_variable_to_random = my_var` | Sets a variable's value to the specified amount, creating it if not defined. The result will be greater than or equal than the minimum and strictly less than the maximum. | Shortened version exists with `set_variable_to_random = <variable>`, setting it to a decimal between 0 and 1. Can be used in triggers. |  |
+| set_variable | `var = <variable>`<br>The variable to modify or create.<br> `value = <decimal>/<variable>`<br>The value to set the variable to.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`set_temp_variable = { temp_var = ROOT.overlord }` | Sets a variable's value to the specified amount, creating it if not defined. | Shortened version exists with `set_variable = { <variable> = <value> }`. |  |
+| set_variable_to_random | `var = <variable>`<br>The variable to modify or create.<br> `min = <decimal>`<br>The minimum possible value, defaults to 0.<br> `max = <decimal>`<br>The maximum possible value, defaults to 1.<br> `integer = <bool>`<br>Sets if the variable *must* be an integer or if it can be decimal. Defaults to false.<br> | *(example below)*`set_temp_variable_to_random = my_var` | Sets a variable's value to the specified amount, creating it if not defined. The result will be greater than or equal than the minimum and strictly less than the maximum. | Shortened version exists with `set_variable_to_random = <variable>`, setting it to a decimal between 0 and 1. Can be used in triggers. |  |
 | clear_variable | `<variable>`<br>Variable to clear. | `clear_variable = my_variable` | Clears the value from the memory entirely. | Can only be used on regular variables. |  |
-| check_variable | `var = <variable>`<br>Variable to compare.<br> `value = <decimal>/<variable>`<br>The value to compare the variable to.<br> `compare = <compare type>/<variable>`<br>The comparison type. Variants are `equals`, `not_equals`, `less_than`, `less_than_or_equals`, `greater_than`, and `greater_than_or_equals`. Defaults to `greater_than_or_equals`. | `check_variable = {`<br>`    var = my_var`<br>`    value = 10`<br>`    compare = greater_than_or_equals`<br>`}``check_variable = { var_name > 10 }` | Compares the value of a variable. Used as a trigger. | Temporary and regular formatting use the exact same formatting. Shortened variant exists as `check_variable = { <variable> < <value> }`, where the operator in the middle is an equality sign (=), greater than sign (>), or a lesser than sign (<). The comparison type is always strict in this case: `check_variable = { var_name > 10 }` will come up as false if `var_name` is exactly 10. |  |
+| check_variable | `var = <variable>`<br>Variable to compare.<br> `value = <decimal>/<variable>`<br>The value to compare the variable to.<br> `compare = <compare type>/<variable>`<br>The comparison type. Variants are `equals`, `not_equals`, `less_than`, `less_than_or_equals`, `greater_than`, and `greater_than_or_equals`. Defaults to `greater_than_or_equals`. | *(example below)*`check_variable = { var_name > 10 }` | Compares the value of a variable. Used as a trigger. | Temporary and regular formatting use the exact same formatting. Shortened variant exists as `check_variable = { <variable> < <value> }`, where the operator in the middle is an equality sign (=), greater than sign (>), or a lesser than sign (<). The comparison type is always strict in this case: `check_variable = { var_name > 10 }` will come up as false if `var_name` is exactly 10. |  |
 | has_variable | `<variable>`<br>Variable to check. | `has_variable = my_variable` | Checks if the value was set, regardless of its amount. Used as a trigger. | A variable is considered set even if its value is 0, as long as it wasn't cleared. |  |
-| add_to_variable | `var = <variable>`<br>The variable to add to.<br> `value = <decimal>/<variable>`<br>The value to add to the variable.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | `add_to_variable = {`<br>`    var = my_variable`<br>`    value = 100`<br>`    tooltip = add_100_to_var_tt`<br>`}``add_to_temp_variable = { temp_var = num_owned_states }` | Increases a variable's value by the specified amount, creating it if not defined. | Shortened version exists with `add_to_variable = { <variable> = <value> }`. |  |
-| subtract_from_variable | `var = <variable>`<br>The variable to subtract from.<br> `value = <decimal>/<variable>`<br>The value to subtract from the variable.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | `subtract_from_variable = {`<br>`    var = my_variable`<br>`    value = 100`<br>`    tooltip = sub_100_from_var_tt`<br>`}``subtract_from_temp_variable = { temp_var = num_owned_states }` | Decreases a variable's value by the specified amount, creating it if not defined. | Shortened version exists with `subtract_from_variable = { <variable> = <value> }`. Equivalent to adding a negative amount. |  |
-| multiply_variable | `var = <variable>`<br>The variable to multiply.<br> `value = <decimal>/<variable>`<br>The value to multiply the variable by.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | `multiply_variable = {`<br>`    var = my_variable`<br>`    value = 100`<br>`    tooltip = multiply_var_by_100_tt`<br>`}``multiply_temp_variable = { temp_var = num_owned_states }` | Multiplies a variable's value by the specified amount. | Shortened version exists with `multiply_variable = { <variable> = <value> }`. |  |
-| divide_variable | `var = <variable>`<br>The variable to divide.<br> `value = <decimal>/<variable>`<br>The value to divide the variable by.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | `divide_variable = {`<br>`    var = my_variable`<br>`    value = 100`<br>`    tooltip = divide_var_by_100_tt`<br>`}``divide_temp_variable = { temp_var = num_owned_states }` | Divides a variable's value by the specified amount. | Shortened version exists with `divide_variable = { <variable> = <value> }`. |  |
-| modulo_variable | `var = <variable>`<br>The variable to modulo.<br> `value = <decimal>/<variable>`<br>The value to modulo the variable by.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | `modulo_variable = {`<br>`    var = my_variable`<br>`    value = 50`<br>`    tooltip = get_modulo_of_var_by_50_tt`<br>`}``modulo_temp_variable = { temp_var = num_controlled_states }` | Makes the variable become the remainder of Euclidean division of the variable by the specified value. | Shortened version exists with `modulo_variable = { <variable> = <value> }`. |  |
+| add_to_variable | `var = <variable>`<br>The variable to add to.<br> `value = <decimal>/<variable>`<br>The value to add to the variable.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`add_to_temp_variable = { temp_var = num_owned_states }` | Increases a variable's value by the specified amount, creating it if not defined. | Shortened version exists with `add_to_variable = { <variable> = <value> }`. |  |
+| subtract_from_variable | `var = <variable>`<br>The variable to subtract from.<br> `value = <decimal>/<variable>`<br>The value to subtract from the variable.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`subtract_from_temp_variable = { temp_var = num_owned_states }` | Decreases a variable's value by the specified amount, creating it if not defined. | Shortened version exists with `subtract_from_variable = { <variable> = <value> }`. Equivalent to adding a negative amount. |  |
+| multiply_variable | `var = <variable>`<br>The variable to multiply.<br> `value = <decimal>/<variable>`<br>The value to multiply the variable by.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`multiply_temp_variable = { temp_var = num_owned_states }` | Multiplies a variable's value by the specified amount. | Shortened version exists with `multiply_variable = { <variable> = <value> }`. |  |
+| divide_variable | `var = <variable>`<br>The variable to divide.<br> `value = <decimal>/<variable>`<br>The value to divide the variable by.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`divide_temp_variable = { temp_var = num_owned_states }` | Divides a variable's value by the specified amount. | Shortened version exists with `divide_variable = { <variable> = <value> }`. |  |
+| modulo_variable | `var = <variable>`<br>The variable to modulo.<br> `value = <decimal>/<variable>`<br>The value to modulo the variable by.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`modulo_temp_variable = { temp_var = num_controlled_states }` | Makes the variable become the remainder of Euclidean division of the variable by the specified value. | Shortened version exists with `modulo_variable = { <variable> = <value> }`. |  |
 | round_variable | `<variable>`<br>The variable to round. | `round_variable = my_variable``round_temp_variable = temp` | Rounds the variable towards the closest integer value. | If exactly between two integers (Such as 1.5), the option with lager absolute val gets chosen ( if -1.5,will be -2 ). |  |
-| clamp_variable | `var = <variable>`<br>The variable to clamp.<br> `min = <decimal>/<variable>`<br>The minimum value of the variable after the clamp.<br> `max = <decimal>/<variable>`<br>The maximum value of the variable after the clamp. | `clamp_variable = {`<br>`    var = my_var`<br>`    min = 0`<br>`}``clamp_temp_variable = {`<br>`    var = my_var`<br>`    min = 0`<br>`}` | Clamps the variable to ensure its value is between the two specified numbers, raising to the minimum if smaller or lowering to the maximum if larger. | Either min or max can be omitted, in which case it'll not be checked. Does nothing if the variable is already in the range between min and max. **This only changes the current value of the variable**, it can still go beyond the minimum or the maximum after the clamp. |  |
-| career_profile_set_temp_playthrough_variable | `var = <variable>`<br>The variable to modify or create. `value = <decimal>/<variable>`<br>The value to set the variable to. | `career_profile_set_temp_playthrough_variable = {`<br>`  sum = rocket_sites_built_1936`<br>`}` | Sets a temporary variable to a value or another variable. |  | ??? |
-| career_profile_set_temp_variable | `var = <variable>`<br>The variable to modify or create. `value = <decimal>/<variable>`<br>The value to set the variable to. | `career_profile_set_temp_variable = {`<br>`  var = num_dogs`<br>`  value = num_dogs_in_career_profile`<br>`}` | Sets a temporary variable to a value or another variable. |  | ??? |
+| clamp_variable | `var = <variable>`<br>The variable to clamp.<br> `min = <decimal>/<variable>`<br>The minimum value of the variable after the clamp.<br> `max = <decimal>/<variable>`<br>The maximum value of the variable after the clamp. | *(example below)* *(example below)* | Clamps the variable to ensure its value is between the two specified numbers, raising to the minimum if smaller or lowering to the maximum if larger. | Either min or max can be omitted, in which case it'll not be checked. Does nothing if the variable is already in the range between min and max. **This only changes the current value of the variable**, it can still go beyond the minimum or the maximum after the clamp. |  |
+| career_profile_set_temp_playthrough_variable | `var = <variable>`<br>The variable to modify or create. `value = <decimal>/<variable>`<br>The value to set the variable to. | *(example below)* | Sets a temporary variable to a value or another variable. |  | ??? |
+| career_profile_set_temp_variable | `var = <variable>`<br>The variable to modify or create. `value = <decimal>/<variable>`<br>The value to set the variable to. | *(example below)* | Sets a temporary variable to a value or another variable. |  | ??? |
+
+**Example: set_variable**
+
+```text
+set_variable = {
+    var = my_variable
+    value = 100
+    tooltip = set_var_to_100_tt
+}
+```
+
+**Example: set_variable_to_random**
+
+```text
+set_variable_to_random = {
+    var = random_num
+    max = 11
+    integer = yes
+}
+```
+
+**Example: check_variable**
+
+```text
+check_variable = {
+    var = my_var
+    value = 10
+    compare = greater_than_or_equals
+}
+```
+
+**Example: add_to_variable**
+
+```text
+add_to_variable = {
+    var = my_variable
+    value = 100
+    tooltip = add_100_to_var_tt
+}
+```
+
+**Example: subtract_from_variable**
+
+```text
+subtract_from_variable = {
+    var = my_variable
+    value = 100
+    tooltip = sub_100_from_var_tt
+}
+```
+
+**Example: multiply_variable**
+
+```text
+multiply_variable = {
+    var = my_variable
+    value = 100
+    tooltip = multiply_var_by_100_tt
+}
+```
+
+**Example: divide_variable**
+
+```text
+divide_variable = {
+    var = my_variable
+    value = 100
+    tooltip = divide_var_by_100_tt
+}
+```
+
+**Example: modulo_variable**
+
+```text
+modulo_variable = {
+    var = my_variable
+    value = 50
+    tooltip = get_modulo_of_var_by_50_tt
+}
+```
+
+**Example: clamp_variable**
+
+```text
+clamp_variable = {
+    var = my_var
+    min = 0
+}
+```
+
+**Example: clamp_variable**
+
+```text
+clamp_temp_variable = {
+    var = my_var
+    min = 0
+}
+```
+
+**Example: career_profile_set_temp_playthrough_variable**
+
+```text
+career_profile_set_temp_playthrough_variable = {
+  sum = rocket_sites_built_1936
+}
+```
+
+**Example: career_profile_set_temp_variable**
+
+```text
+career_profile_set_temp_variable = {
+  var = num_dogs
+  value = num_dogs_in_career_profile
+}
+```
 
 ### Math expressions <a id="Math_expressions"></a>
 
@@ -619,12 +734,12 @@ Math functions
 | cos | Sets the accumulator to the cosine of itself. The angle is expressed in radians. | `{ value = 0  cos = yes }` |  |
 | divide | Divides the accumulator by a value. | `{ value = 100  divide = 5 }` |  |
 | equals | Returns 1 if the accumulator equals the value, otherwise 0. | `{ value = 7  equals = 7 }` |  |
-| every_collection | Iterates over a named collection, applying statements to the accumulator for each element. | `{ value = 0`<br>` every_collection = {`<br>`    named_collection = my_collection`<br>`    add = element_value } }` |  |
+| every_collection | Iterates over a named collection, applying statements to the accumulator for each element. | *(example below)* |  |
 | greater_than_or_equals | Returns 1 if the accumulator is greater than or equal to the value, otherwise 0. | `{ value = 5  greater_than_or_equals = 5 }` |  |
-| if | Conditional statement that modifies the accumulator based on a condition. Note that the limit is a math expression. It is considered true if the value is anything but 0. | `{ value = x`<br>`  if = { limit = { value = x  greater_than = 10 }  add = 100 }`<br>`  else = { subtract = 1 } }` |  |
+| if | Conditional statement that modifies the accumulator based on a condition. Note that the limit is a math expression. It is considered true if the value is anything but 0. | *(example below)* |  |
 | lerp | Linearly interpolates from the accumulator towards `to` by `alpha`, where alpha is clamped between 0 and 1. An alpha of 0 keeps the accumulator, 1 returns `to`. | `{ value = 10  lerp = { to = 20  alpha = 0.5 } }` |  |
 | less_than_or_equals | Returns 1 if the accumulator is less than or equal to the value, otherwise 0. | `{ value = 5  less_than_or_equals = 5 }` |  |
-| log | Sets the accumulator to its logarithm in the given base. | `{ value = 1000  log = 10 }`<br>`{ value = 1000  log = 10  round = yes }` | This is computed with a numerical approximation and may produce small rounding errors (e.g. 3.00001 instead of 3). Follow with `round = yes` if you need an exact integer result. |
+| log | Sets the accumulator to its logarithm in the given base. | *(example below)* | This is computed with a numerical approximation and may produce small rounding errors (e.g. 3.00001 instead of 3). Follow with `round = yes` if you need an exact integer result. |
 | max | Sets the accumulator to the maximum of itself and the value. | `{ value = 9  max = 15 }` |  |
 | min | Sets the accumulator to the minimum of itself and the value. | `{ value = 9  min = 4 }` |  |
 | mod | Sets the accumulator to the remainder of dividing it by the value. | `{ value = 17  mod = 5 }` |  |
@@ -632,13 +747,52 @@ Math functions
 | not | Returns 1 if the accumulator is zero, otherwise 0. | `{ value = 0  not = yes }` |  |
 | not_equals | Returns 1 if the accumulator does not equal the value, otherwise 0. | `{ value = 7  not_equals = 5 }` |  |
 | or | Returns 1 if either the accumulator or the value is non-zero, otherwise 0. | `{ value = 0  or = 1 }` |  |
-| pow | Raises the accumulator to the given power. | `{ value = 2  pow = 10 }`<br>`{ value = 2  pow = 10  round = yes }` | Integer exponents are computed exactly by repeated multiplication. Fractional exponents (e.g. `pow = 0.5`) use a numerical approximation and may produce small rounding errors; follow with `round = yes` if you need an exact integer result. |
-| root | Takes the root of the accumulator. The argument is the degree of the root, so 2 gives the square root, 3 the cube root and so on. | `{ value = 16  root = 2 }`<br>`{ value = 27  root = 3 }`<br>`{ value = 16  root = 2  round = yes }` | This is a numerical approximation and may produce small rounding errors (e.g. 4.00001 instead of 4). Follow with `round = yes` if you need an exact integer result. |
+| pow | Raises the accumulator to the given power. | *(example below)* | Integer exponents are computed exactly by repeated multiplication. Fractional exponents (e.g. `pow = 0.5`) use a numerical approximation and may produce small rounding errors; follow with `round = yes` if you need an exact integer result. |
+| root | Takes the root of the accumulator. The argument is the degree of the root, so 2 gives the square root, 3 the cube root and so on. | *(example below)* | This is a numerical approximation and may produce small rounding errors (e.g. 4.00001 instead of 4). Follow with `round = yes` if you need an exact integer result. |
 | round | Rounds the accumulator to the nearest integer. | `{ value = 3.7  round = yes }` |  |
 | sin | Sets the accumulator to the sine of itself. The angle is expressed in radians. | `{ value = 0  sin = yes }` |  |
 | subtract | Subtracts a value from the accumulator. | `{ value = 20  subtract = 5 }` |  |
 | tan | Sets the accumulator to the tangent of itself. The angle is expressed in radians. | `{ value = 0  tan = yes }` |  |
 | xor | Returns 1 if exactly one of the accumulator and the value is non-zero, otherwise 0. | `{ value = 1  xor = 0 }` |  |
+
+**Example: every_collection**
+
+```text
+{ value = 0
+ every_collection = {
+    named_collection = my_collection
+    add = element_value } }
+```
+
+**Example: if**
+
+```text
+{ value = x
+  if = { limit = { value = x  greater_than = 10 }  add = 100 }
+  else = { subtract = 1 } }
+```
+
+**Example: log**
+
+```text
+{ value = 1000  log = 10 }
+{ value = 1000  log = 10  round = yes }
+```
+
+**Example: pow**
+
+```text
+{ value = 2  pow = 10 }
+{ value = 2  pow = 10  round = yes }
+```
+
+**Example: root**
+
+```text
+{ value = 16  root = 2 }
+{ value = 27  root = 3 }
+{ value = 16  root = 2  round = yes }
+```
 
 ### Usage examples <a id="Usage_examples"></a>
 
@@ -766,7 +920,27 @@ Debugging-related arguments:
 | Name | Parameters | Examples | Description | Notes |
 | --- | --- | --- | --- | --- |
 | log | `<string>`<br> What to write in the log. | `log = "Current value of myVar in [THIS.GetName]: [?myVar]"` | Creates an entry in the `/Hearts of Iron IV/logs/game.log` file in the [user directory](<Modding - Hearts of Iron 4 Wiki.md>) and, if console is open and debug mode is turned on, in console as well. | While it nominally has nothing to do with variables, its most common use is for variables. |
-| print_variables | `file = <string>`<br>The name of the file, not counting the file extension. Defaults to "variable_dump".<br> `text = <string>`<br>What will be printed in the beginning of the file. Defaults to "No Header".<br> `append = yes`<br>If set, will append the current variables (and the text) to the end of the file instead of overwriting.<br> `print_global = yes`<br>If true, will print the variables from the global scope as well.<br> `var_list = { ... }`<br>A whitespace-separated list of variables the values of which should be printed. Optional: every variable in the scope (and global if set) if left out. | `print_variables = {`<br>`    file = my_file`<br>`    text = "These variables are printed at [GetDateText]"`<br>`    append = yes`<br>`    print_global = yes`<br>`}``print_variables = {`<br>`    file = my_file_2`<br>`    var_list = { temp1 temp2 temp3 }`<br>`}` | Dumps the specified variables from the current scope and optionally the global scope into a log file with the specified name. | The log will be within `/Hearts of Iron IV/logs/variable_dumps/` in the [user directory](<Modding - Hearts of Iron 4 Wiki.md>). |
+| print_variables | `file = <string>`<br>The name of the file, not counting the file extension. Defaults to "variable_dump".<br> `text = <string>`<br>What will be printed in the beginning of the file. Defaults to "No Header".<br> `append = yes`<br>If set, will append the current variables (and the text) to the end of the file instead of overwriting.<br> `print_global = yes`<br>If true, will print the variables from the global scope as well.<br> `var_list = { ... }`<br>A whitespace-separated list of variables the values of which should be printed. Optional: every variable in the scope (and global if set) if left out. | *(example below)* *(example below)* | Dumps the specified variables from the current scope and optionally the global scope into a log file with the specified name. | The log will be within `/Hearts of Iron IV/logs/variable_dumps/` in the [user directory](<Modding - Hearts of Iron 4 Wiki.md>). |
+
+**Example: print_variables**
+
+```text
+print_variables = {
+    file = my_file
+    text = "These variables are printed at [GetDateText]"
+    append = yes
+    print_global = yes
+}
+```
+
+**Example: print_variables**
+
+```text
+print_variables = {
+    file = my_file_2
+    var_list = { temp1 temp2 temp3 }
+}
+```
 
 Additionally, the following console commands exist for variables. In console commands, the 'current scope' is what is currently selected: the country opened in diplomacy, the state selected, the unit leader that's selected. If left out, assumes to be the player country.
 
@@ -909,12 +1083,60 @@ Arguments for modifying arrays:
 
 | Name | Parameters | Examples | Description | Notes |
 | --- | --- | --- | --- | --- |
-| add_to_array | `array = <array>`<br>The array to modify.<br> `value = <decimal>/<variable>`<br>The variable to add.<br> `index = <integer>`<br>The index to place the variable on in the array. Optional, defaults to the end of the array. | `add_to_array = {`<br>`    array = global.my_countries`<br>`    value = THIS.id`<br>`}``add_to_temp_array = { temp_states = THIS }` | Adds an element to the array either at the specified index, defaulting to the end otherwise. | Shortened version exists with `add_to_array = { <array> = <value> }`. |
-| remove_from_array | `array = <array>`<br>The array to modify.<br> `value = <decimal>/<variable>`<br>The variable to remove. Optional.<br> `index = <integer>`<br>The index to remove the variable from in the array. Optional. | `remove_from_array = {`<br>`    array = global.my_countries`<br>`    index = 0`<br>`}``remove_from_temp_array = { temp_states = THIS }` | Removes an element from the array with the specified value or index. | Shortened version exists with `remove_from_array = { <array> = <value> }`. If neither value nor index are specified, then the last element is deleted. |
+| add_to_array | `array = <array>`<br>The array to modify.<br> `value = <decimal>/<variable>`<br>The variable to add.<br> `index = <integer>`<br>The index to place the variable on in the array. Optional, defaults to the end of the array. | *(example below)*`add_to_temp_array = { temp_states = THIS }` | Adds an element to the array either at the specified index, defaulting to the end otherwise. | Shortened version exists with `add_to_array = { <array> = <value> }`. |
+| remove_from_array | `array = <array>`<br>The array to modify.<br> `value = <decimal>/<variable>`<br>The variable to remove. Optional.<br> `index = <integer>`<br>The index to remove the variable from in the array. Optional. | *(example below)*`remove_from_temp_array = { temp_states = THIS }` | Removes an element from the array with the specified value or index. | Shortened version exists with `remove_from_array = { <array> = <value> }`. If neither value nor index are specified, then the last element is deleted. |
 | clear_array | `<array>`<br>The array to clear. | `clear_array = global.my_countries``clear_temp_array = temp_states` | Clears the array, removing every element inside. |  |
-| resize_array | `array = <array>`<br>The array to modify.<br> `value = <decimal>/<variable>`<br>The variable to add to the array if the size is larger than the array's current size. Optional, defaults to 0.<br> `size = <integer>`<br>The amount of elements inside of the array after the resizing. | `resize_array = {`<br>`    array = global.countries_by_states`<br>`    value = 10`<br>`    size = global.countries^num`<br>`}``resize_temp_array = { temp_states = 20 }` | Resizes the array, removing or adding elements in the end if necessary. | Shortened version exists with `resize_array = { <array> = <size> }`. |
-| find_highest_in_array | `array = <array>`<br>The array to modify.<br> `value = <variable>`<br>The temporary variable where the largest value will get stored.<br> `index = <variable>`<br>The temporary variable where the index of the largest value will get stored. | `find_highest_in_array = {`<br>`    array = global.countries_by_states`<br>`    value = temp_largest_country`<br>`    index = temp_country_index`<br>`}` | Finds the largest value in the array and assigns its value and index to a temporary variable. | Either value or index are optional to specify. |
-| find_lowest_in_array | `array = <array>`<br>The array to modify.<br> `value = <variable>`<br>The temporary variable where the smallest value will get stored.<br> `index = <variable>`<br>The temporary variable where the index of the smallest value will get stored. | `find_lowest_in_array = {`<br>`    array = global.countries_by_states`<br>`    value = temp_largest_country`<br>`    index = temp_country_index`<br>`}` | Finds the smallest value in the array and assigns its value and index to a temporary variable. | Either value or index are optional to specify. |
+| resize_array | `array = <array>`<br>The array to modify.<br> `value = <decimal>/<variable>`<br>The variable to add to the array if the size is larger than the array's current size. Optional, defaults to 0.<br> `size = <integer>`<br>The amount of elements inside of the array after the resizing. | *(example below)*`resize_temp_array = { temp_states = 20 }` | Resizes the array, removing or adding elements in the end if necessary. | Shortened version exists with `resize_array = { <array> = <size> }`. |
+| find_highest_in_array | `array = <array>`<br>The array to modify.<br> `value = <variable>`<br>The temporary variable where the largest value will get stored.<br> `index = <variable>`<br>The temporary variable where the index of the largest value will get stored. | *(example below)* | Finds the largest value in the array and assigns its value and index to a temporary variable. | Either value or index are optional to specify. |
+| find_lowest_in_array | `array = <array>`<br>The array to modify.<br> `value = <variable>`<br>The temporary variable where the smallest value will get stored.<br> `index = <variable>`<br>The temporary variable where the index of the smallest value will get stored. | *(example below)* | Finds the smallest value in the array and assigns its value and index to a temporary variable. | Either value or index are optional to specify. |
+
+**Example: add_to_array**
+
+```text
+add_to_array = {
+    array = global.my_countries
+    value = THIS.id
+}
+```
+
+**Example: remove_from_array**
+
+```text
+remove_from_array = {
+    array = global.my_countries
+    index = 0
+}
+```
+
+**Example: resize_array**
+
+```text
+resize_array = {
+    array = global.countries_by_states
+    value = 10
+    size = global.countries^num
+}
+```
+
+**Example: find_highest_in_array**
+
+```text
+find_highest_in_array = {
+    array = global.countries_by_states
+    value = temp_largest_country
+    index = temp_country_index
+}
+```
+
+**Example: find_lowest_in_array**
+
+```text
+find_lowest_in_array = {
+    array = global.countries_by_states
+    value = temp_largest_country
+    index = temp_country_index
+}
+```
 
 Meanwhile, the following triggers exist that are array-related. As with variables, these are the exact same for temporary and regular variables.
 
@@ -922,11 +1144,68 @@ Array-related triggers:
 
 | Name | Parameters | Examples | Description | Notes |
 | --- | --- | --- | --- | --- |
-| is_in_array | `array = <array>`<br>The array to check.<br> `value = <decimal>/<variable>`<br>The value to check for. | `is_in_array = {`<br>`    array = global.my_countries`<br>`    value = THIS.id`<br>`}``is_in_array = { temp_states = THIS }` | Checks if any value within the array is the same as the specified value. | Shortened version exists with `is_in_array = { <array> = <value> }`. |
-| any_of | `array = <array>`<br>The array to check.<br> `value = <variable>`<br>The name of the temporary variable where the value of the currently-selected element is stored.<br> `index = <variable>`<br>The name of the temporary variable where the index of the currently-selected element is stored.<br> `<triggers>`<br> An AND trigger block. | `any_of = {`<br>`    array = temp_numbers`<br>`    value = v`<br>`    index = i`<br>`    multiply_temp_variable = { v = i }`<br>`    check_variable = { v > political_power }     # Checks if the value multiplied by the index is larger than the political power of the country this is checked in.`<br>`}` | Checks if any value within the array fulfills the triggers, halting and returning true if that's the case. | The scope does not change from the one this is checked in by default, requiring one of [scopes](<Scopes - Hearts of Iron 4 Wiki.md>). |
-| any_of_scopes | `array = <array>`<br>The array to check.<br> `tooltip = <localisation key>`<br>The localisation key used for the trigger.<br> `<triggers>`<br> An AND trigger block. | `any_of_scopes = {`<br>`    array = global.majors`<br>`    tooltip = has_more_states_than_any_other_major_tt`<br>`    NOT = { tag = PREV }`<br>`    check_variable = { num_owned_controlled_states > PREV.num_owned_controlled_states }`<br>`}` | Checks if any value within the array fulfills the triggers, halting and returning true if that's the case, scoping into each element in the array. | Appending `_NOT` to the tooltip's key (such as has_more_states_than_any_other_major_tt_NOT in the example) results in the localisation key used if this any_of_scopes is put inside of `NOT = { ... }`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope this trigger is checked in. |
-| all_of | `array = <array>`<br>The array to check.<br> `value = <variable>`<br>The name of the temporary variable where the value of the currently-selected element is stored.<br> `index = <variable>`<br>The name of the temporary variable where the index of the currently-selected element is stored.<br> `<triggers>`<br> An AND trigger block. | `all_of = {`<br>`    array = temp_numbers`<br>`    value = v`<br>`    index = i`<br>`    multiply_temp_variable = { v = i }`<br>`    check_variable = { v > political_power }     # Checks if the value multiplied by the index is larger than the political power of the country this is checked in.`<br>`}` | Checks if every value within the array fulfills the triggers, halting and returning false if any one doesn't. | The scope does not change from the one this is checked in by default, requiring one of [scopes](<Scopes - Hearts of Iron 4 Wiki.md>). |
-| all_of_scopes | `array = <array>`<br>The array to check.<br> `tooltip = <localisation key>`<br>The localisation key used for the trigger.<br> `<triggers>`<br> An AND trigger block. | `all_of_scopes = {`<br>`    array = global.majors`<br>`    tooltip = has_more_states_than_every_other_major_tt`<br>`    OR = {`<br>`        tag = PREV`<br>`        check_variable = { num_owned_controlled_states < PREV.num_owned_controlled_states }`<br>`    }`<br>`}` | Checks if every value within the array fulfills the triggers, halting and returning false if any one doesn't, scoping into each element in the array. | Appending `_NOT` to the tooltip's key (such as has_more_states_than_every_other_major_tt_NOT in the example) results in the localisation key used if this any_of_scopes is put inside of `NOT = { ... }`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope this trigger is checked in. |
+| is_in_array | `array = <array>`<br>The array to check.<br> `value = <decimal>/<variable>`<br>The value to check for. | *(example below)*`is_in_array = { temp_states = THIS }` | Checks if any value within the array is the same as the specified value. | Shortened version exists with `is_in_array = { <array> = <value> }`. |
+| any_of | `array = <array>`<br>The array to check.<br> `value = <variable>`<br>The name of the temporary variable where the value of the currently-selected element is stored.<br> `index = <variable>`<br>The name of the temporary variable where the index of the currently-selected element is stored.<br> `<triggers>`<br> An AND trigger block. | *(example below)* | Checks if any value within the array fulfills the triggers, halting and returning true if that's the case. | The scope does not change from the one this is checked in by default, requiring one of [scopes](<Scopes - Hearts of Iron 4 Wiki.md>). |
+| any_of_scopes | `array = <array>`<br>The array to check.<br> `tooltip = <localisation key>`<br>The localisation key used for the trigger.<br> `<triggers>`<br> An AND trigger block. | *(example below)* | Checks if any value within the array fulfills the triggers, halting and returning true if that's the case, scoping into each element in the array. | Appending `_NOT` to the tooltip's key (such as has_more_states_than_any_other_major_tt_NOT in the example) results in the localisation key used if this any_of_scopes is put inside of `NOT = { ... }`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope this trigger is checked in. |
+| all_of | `array = <array>`<br>The array to check.<br> `value = <variable>`<br>The name of the temporary variable where the value of the currently-selected element is stored.<br> `index = <variable>`<br>The name of the temporary variable where the index of the currently-selected element is stored.<br> `<triggers>`<br> An AND trigger block. | *(example below)* | Checks if every value within the array fulfills the triggers, halting and returning false if any one doesn't. | The scope does not change from the one this is checked in by default, requiring one of [scopes](<Scopes - Hearts of Iron 4 Wiki.md>). |
+| all_of_scopes | `array = <array>`<br>The array to check.<br> `tooltip = <localisation key>`<br>The localisation key used for the trigger.<br> `<triggers>`<br> An AND trigger block. | *(example below)* | Checks if every value within the array fulfills the triggers, halting and returning false if any one doesn't, scoping into each element in the array. | Appending `_NOT` to the tooltip's key (such as has_more_states_than_every_other_major_tt_NOT in the example) results in the localisation key used if this any_of_scopes is put inside of `NOT = { ... }`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope this trigger is checked in. |
+
+**Example: is_in_array**
+
+```text
+is_in_array = {
+    array = global.my_countries
+    value = THIS.id
+}
+```
+
+**Example: any_of**
+
+```text
+any_of = {
+    array = temp_numbers
+    value = v
+    index = i
+    multiply_temp_variable = { v = i }
+    check_variable = { v > political_power }     # Checks if the value multiplied by the index is larger than the political power of the country this is checked in.
+}
+```
+
+**Example: any_of_scopes**
+
+```text
+any_of_scopes = {
+    array = global.majors
+    tooltip = has_more_states_than_any_other_major_tt
+    NOT = { tag = PREV }
+    check_variable = { num_owned_controlled_states > PREV.num_owned_controlled_states }
+}
+```
+
+**Example: all_of**
+
+```text
+all_of = {
+    array = temp_numbers
+    value = v
+    index = i
+    multiply_temp_variable = { v = i }
+    check_variable = { v > political_power }     # Checks if the value multiplied by the index is larger than the political power of the country this is checked in.
+}
+```
+
+**Example: all_of_scopes**
+
+```text
+all_of_scopes = {
+    array = global.majors
+    tooltip = has_more_states_than_every_other_major_tt
+    OR = {
+        tag = PREV
+        check_variable = { num_owned_controlled_states < PREV.num_owned_controlled_states }
+    }
+}
+```
 
 The following effects also exist in addition used, with arrays. While some are nominally unrelated to arrays, they are often used in conjunction.
 
@@ -934,11 +1213,117 @@ Array-related effects:
 
 | Name | Parameters | Examples | Description | Notes |
 | --- | --- | --- | --- | --- |
-| for_each_loop | `array = <array>`<br>The array to check.<br> `value = <variable>`<br>The name of the temporary variable where the value of the currently-selected element is stored.<br> `index = <variable>`<br>The name of the temporary variable where the index of the currently-selected element is stored.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `<effects>`<br> An effect block. | `for_each_loop = {`<br>`    array = temp_numbers`<br>`    value = v`<br>`    break = break`<br>`    random_list = {`<br>`        10 = { add_political_power = v }`<br>`        10 = {`<br>`            divide_temp_variable = { v = 100 }`<br>`            add_stability = v`<br>`        }`<br>`        10 = {`<br>`            divide_temp_variable = { v = 100 }`<br>`            add_war_support = v`<br>`        }`<br>`    }`<br>`}` | Runs an effect once for every element in the array. | The scope does not change from the one this is checked in by default, requiring one of [scopes](<Scopes - Hearts of Iron 4 Wiki.md>). You cannot remove any elements in the array with the effects block whilst the loop is running. |
-| for_each_scope_loop | `array = <array>`<br>The array to check.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `tooltip = <loc>` <br>If defined, the effect will output a tooltip for sub effects using this localization as title.<br> `<effects>`<br> An effect block. | `for_each_scope_loop = {`<br>`    array = global.majors`<br>`    if = {`<br>`        limit = {`<br>`            NOT = { tag = PREV } # Not the country where the for_each_scope_loop is executed`<br>`        }`<br>`        random_owned_controlled_state = {`<br>`            transfer_state_to = PREV.PREV`<br>`        }`<br>`    }`<br>`}` | Runs the effects for every scope within the array. | Equivalent to a `every_<...>` effect scope type, with additional `break`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope the effect is executed in. |
-| random_scope_in_array | `array = <array>`<br>The array to check.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `limit = { <triggers> }`<br>An AND trigger block deciding which scopes can be picked.<br> `<effects>`<br> An effect block. | `random_scope_in_array = {`<br>`    array = global.countries`<br>`    break = break`<br>`    limit = {`<br>`        is_dynamic_country = no`<br>`        exists = no`<br>`        any_state = {`<br>`            is_core_of = PREV   # Is core of the currently-checked country`<br>`        }`<br>`    }`<br>`    random_core_state = {`<br>`        transfer_state_to = PREV    # Transfers to the currently-selected country.`<br>`    }`<br>`}` | Runs the effects for a random scope within the array. | Equivalent to a `random_<...>` effect scope type, with additional `break`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope this effect is executed in. |
-| while_loop_effect | `limit = { <triggers> }`<br>An AND trigger block deciding when the effect would repeat.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `<effects>`<br> An effect block. | `while_loop_effect = {`<br>`    limit = {`<br>`        any_country = {`<br>`            num_owned_controlled_states > 10`<br>`        }`<br>`    }`<br>`    random_country = {`<br>`        limit = {`<br>`            num_owned_controlled_states > 10`<br>`        }`<br>`        random_other_country = {`<br>`            limit = {`<br>`                num_owned_controlled_states < 10`<br>`            }`<br>`            PREV = {`<br>`                random_owned_controlled_state = {`<br>`                    transfer_state_to = PREV.PREV`<br>`                }`<br>`            }`<br>`        }`<br>`    }`<br>`}` | Runs the effects as long as the limit is fulfilled. | The limit is only checked at the beginning and once the effect block is executed. Can't run for more than 1000 times by default[5]. |
-| for_loop_effect | `start = <decimal>/<variable>`<br>The value at which the evaluation starts. Default to 0.<br> `end = <decimal>/<variable>`<br>The value at which the evaluation ends. Default to 0.<br> `compare = <compare type>`<br>How the currently-evaluated value must compare with the `end` for the for loop to continue. Defaults to `less_than`, leading to the end value never being picked.<br> `add = <variable>`<br>How much is being added to the `start` value for every iteration. Defaults to 1.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `value = <variable>`<br>The name of the temporary variable where the current value of evaluation is stored.<br> `<effects>`<br> An effect block. | `for_loop_effect = {`<br>`    end = 4`<br>`    value = temp`<br>`    if = {`<br>`        limit = {`<br>`            NOT = {`<br>`                count_triggers = {`<br>`                    amount = 2`<br>`                    check_variable = { temparr^temp < temparr^0 }`<br>`                    check_variable = { temparr^temp < temparr^1 }`<br>`                    check_variable = { temparr^temp < temparr^2 }`<br>`                    check_variable = { temparr^temp < temparr^3 }`<br>`                }`<br>`            }`<br>`        }`<br>`        add_to_array = { potential_max = temp }`<br>`    }`<br>`}` | Runs the effects as long as the limit is fulfilled. | The limit is only checked at the beginning and once the effect block is executed. Can't run for more than 1000 times by default[5]. Comparison types are the same as used in check_variable. |
+| for_each_loop | `array = <array>`<br>The array to check.<br> `value = <variable>`<br>The name of the temporary variable where the value of the currently-selected element is stored.<br> `index = <variable>`<br>The name of the temporary variable where the index of the currently-selected element is stored.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `<effects>`<br> An effect block. | *(example below)* | Runs an effect once for every element in the array. | The scope does not change from the one this is checked in by default, requiring one of [scopes](<Scopes - Hearts of Iron 4 Wiki.md>). You cannot remove any elements in the array with the effects block whilst the loop is running. |
+| for_each_scope_loop | `array = <array>`<br>The array to check.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `tooltip = <loc>` <br>If defined, the effect will output a tooltip for sub effects using this localization as title.<br> `<effects>`<br> An effect block. | *(example below)* | Runs the effects for every scope within the array. | Equivalent to a `every_<...>` effect scope type, with additional `break`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope the effect is executed in. |
+| random_scope_in_array | `array = <array>`<br>The array to check.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `limit = { <triggers> }`<br>An AND trigger block deciding which scopes can be picked.<br> `<effects>`<br> An effect block. | *(example below)* | Runs the effects for a random scope within the array. | Equivalent to a `random_<...>` effect scope type, with additional `break`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope this effect is executed in. |
+| while_loop_effect | `limit = { <triggers> }`<br>An AND trigger block deciding when the effect would repeat.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `<effects>`<br> An effect block. | *(example below)* | Runs the effects as long as the limit is fulfilled. | The limit is only checked at the beginning and once the effect block is executed. Can't run for more than 1000 times by default[5]. |
+| for_loop_effect | `start = <decimal>/<variable>`<br>The value at which the evaluation starts. Default to 0.<br> `end = <decimal>/<variable>`<br>The value at which the evaluation ends. Default to 0.<br> `compare = <compare type>`<br>How the currently-evaluated value must compare with the `end` for the for loop to continue. Defaults to `less_than`, leading to the end value never being picked.<br> `add = <variable>`<br>How much is being added to the `start` value for every iteration. Defaults to 1.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `value = <variable>`<br>The name of the temporary variable where the current value of evaluation is stored.<br> `<effects>`<br> An effect block. | *(example below)* | Runs the effects as long as the limit is fulfilled. | The limit is only checked at the beginning and once the effect block is executed. Can't run for more than 1000 times by default[5]. Comparison types are the same as used in check_variable. |
+
+**Example: for_each_loop**
+
+```text
+for_each_loop = {
+    array = temp_numbers
+    value = v
+    break = break
+    random_list = {
+        10 = { add_political_power = v }
+        10 = {
+            divide_temp_variable = { v = 100 }
+            add_stability = v
+        }
+        10 = {
+            divide_temp_variable = { v = 100 }
+            add_war_support = v
+        }
+    }
+}
+```
+
+**Example: for_each_scope_loop**
+
+```text
+for_each_scope_loop = {
+    array = global.majors
+    if = {
+        limit = {
+            NOT = { tag = PREV } # Not the country where the for_each_scope_loop is executed
+        }
+        random_owned_controlled_state = {
+            transfer_state_to = PREV.PREV
+        }
+    }
+}
+```
+
+**Example: random_scope_in_array**
+
+```text
+random_scope_in_array = {
+    array = global.countries
+    break = break
+    limit = {
+        is_dynamic_country = no
+        exists = no
+        any_state = {
+            is_core_of = PREV   # Is core of the currently-checked country
+        }
+    }
+    random_core_state = {
+        transfer_state_to = PREV    # Transfers to the currently-selected country.
+    }
+}
+```
+
+**Example: while_loop_effect**
+
+```text
+while_loop_effect = {
+    limit = {
+        any_country = {
+            num_owned_controlled_states > 10
+        }
+    }
+    random_country = {
+        limit = {
+            num_owned_controlled_states > 10
+        }
+        random_other_country = {
+            limit = {
+                num_owned_controlled_states < 10
+            }
+            PREV = {
+                random_owned_controlled_state = {
+                    transfer_state_to = PREV.PREV
+                }
+            }
+        }
+    }
+}
+```
+
+**Example: for_loop_effect**
+
+```text
+for_loop_effect = {
+    end = 4
+    value = temp
+    if = {
+        limit = {
+            NOT = {
+                count_triggers = {
+                    amount = 2
+                    check_variable = { temparr^temp < temparr^0 }
+                    check_variable = { temparr^temp < temparr^1 }
+                    check_variable = { temparr^temp < temparr^2 }
+                    check_variable = { temparr^temp < temparr^3 }
+                }
+            }
+        }
+        add_to_array = { potential_max = temp }
+    }
+}
+```
 
 ### Scorers <a id="Scorers"></a>
 
@@ -991,8 +1376,46 @@ Scorer-related arguments:
 
 | Name | Parameters | Examples | Description | Notes |
 | --- | --- | --- | --- | --- |
-| get_highest_scored_country | `scorer = <scorer>`<br>The scorer to use.<br> `var = <variable>`<br>The variable where the result will be stored. | `get_highest_scored_country = {`<br>`    scorer = asian_countries_owned_states_scorer`<br>`    var = largest_asian_country`<br>`}``get_highest_scored_country_temp = {`<br>`    scorer = asian_countries_owned_states_scorer`<br>`    var = largest_asian_country`<br>`}` | Sets the specified variable to be the highest-scoring country within the scorer, as checked for the country where this is used. |  |
-| get_sorted_scored_countries | `scorer = <scorer>`<br>The scorer to use.<br> `array = <variable>`<br>The array where the countries will be stored.<br> `scores = <variable>`<br>The array where the scores will be stored. Optional. | `get_sorted_scored_countries = {`<br>`    scorer = asian_countries_owned_states_scorer`<br>`    array = asian_countries_by_size`<br>`    scores = asian_country_size_scores`<br>`}``get_sorted_scored_countries_temp = {`<br>`    scorer = asian_countries_owned_states_scorer`<br>`    array = asian_countries_by_size`<br>`    scores = asian_country_size_scores`<br>`}` | Creates two arrays of countries and their corresponding values, sorted in the ascending order. | Values with the same index are connected: in the example, `asian_countries_by_size^0` is the country that got `asian_countries_scores^0` points in the `majors_owned_states` scorer. |
+| get_highest_scored_country | `scorer = <scorer>`<br>The scorer to use.<br> `var = <variable>`<br>The variable where the result will be stored. | *(example below)* *(example below)* | Sets the specified variable to be the highest-scoring country within the scorer, as checked for the country where this is used. |  |
+| get_sorted_scored_countries | `scorer = <scorer>`<br>The scorer to use.<br> `array = <variable>`<br>The array where the countries will be stored.<br> `scores = <variable>`<br>The array where the scores will be stored. Optional. | *(example below)* *(example below)* | Creates two arrays of countries and their corresponding values, sorted in the ascending order. | Values with the same index are connected: in the example, `asian_countries_by_size^0` is the country that got `asian_countries_scores^0` points in the `majors_owned_states` scorer. |
+
+**Example: get_highest_scored_country**
+
+```text
+get_highest_scored_country = {
+    scorer = asian_countries_owned_states_scorer
+    var = largest_asian_country
+}
+```
+
+**Example: get_highest_scored_country**
+
+```text
+get_highest_scored_country_temp = {
+    scorer = asian_countries_owned_states_scorer
+    var = largest_asian_country
+}
+```
+
+**Example: get_sorted_scored_countries**
+
+```text
+get_sorted_scored_countries = {
+    scorer = asian_countries_owned_states_scorer
+    array = asian_countries_by_size
+    scores = asian_country_size_scores
+}
+```
+
+**Example: get_sorted_scored_countries**
+
+```text
+get_sorted_scored_countries_temp = {
+    scorer = asian_countries_owned_states_scorer
+    array = asian_countries_by_size
+    scores = asian_country_size_scores
+}
+```
 
 #### Example <a id="Example_2"></a>
 

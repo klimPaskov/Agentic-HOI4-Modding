@@ -131,6 +131,13 @@ def verify(directory, show_details=True):
                         # into a single span instead of one span per line.
                         report("flat_cell_code", name,
                                f"line {j + 1}: one code span of {longest} chars")
+                    for span in lines[j].split("`")[1::2]:
+                        if len(span) - len(span.lstrip(" ")) >= 4:
+                            # Indented code belongs in a fenced block after the
+                            # table; a renderer collapses it inside a cell.
+                            report("indented_cell_code", name,
+                                   f"line {j + 1}: {span[:50]!r}")
+                            break
                     j += 1
                 i = j
             else:

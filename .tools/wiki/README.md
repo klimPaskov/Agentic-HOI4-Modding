@@ -18,6 +18,7 @@ python -B .tools/wiki/verify_wiki_snapshot.py
 For each page it fetches the rendered article through the wiki's MediaWiki parse API — not the page skin — so the community-maintenance banners, edit links, and footer boxes never reach the markdown. The parsed HTML is then converted with:
 
 - real code fences, so multi-line examples stay inside code blocks and headings stay headings;
+- multi-line code samples hoisted out of table cells. A markdown table row is a single line, so a preformatted block cannot live in a cell: renderers collapse the indentation and copied text loses it. A cell holding a multi-line sample keeps a `*(example below)*` pointer, and the sample becomes a fenced code block labelled `**Example: <row name>**` directly after its table. Single-line samples stay inline, where they read correctly;
 - rectangular markdown tables: nested tables become lists, `colspan` is expanded, ragged rows are padded or merged, and all-empty trailing columns are dropped;
 - LaTeX math left as inline text instead of the wiki's Wikipedia-hosted formula images;
 - section anchors trailing each heading, so intra-snapshot links resolve while the heading text still reads cleanly;
@@ -52,7 +53,7 @@ python -B .tools/wiki/verify_wiki_snapshot.py .tmp/wiki-preview
 python -B .tools/wiki/verify_wiki_snapshot.py --quiet
 ```
 
-It reports unbalanced or table-breaking code fences, outbound hyperlinks, links to missing files, section links whose anchor is absent, images with no file, image files nothing references, table rows whose column count differs from their header, pages without exactly one level-1 heading, `:` definition-list lines (not CommonMark, and a four-space-indented one renders as a code block), a multi-line code sample flattened into a single code span of 300 characters or more, and encoding damage such as byte order marks, escaped punctuation, non-breaking or zero-width characters, and mojibake.
+It reports unbalanced or table-breaking code fences, outbound hyperlinks, links to missing files, section links whose anchor is absent, images with no file, image files nothing references, table rows whose column count differs from their header, pages without exactly one level-1 heading, `:` definition-list lines (not CommonMark, and a four-space-indented one renders as a code block), a multi-line code sample flattened into a single code span of 300 characters or more, code inside a table cell that is indented four spaces or more (a hoisting miss, since a renderer collapses it), and encoding damage such as byte order marks, escaped punctuation, non-breaking or zero-width characters, and mojibake.
 
 It also prints the number of table rows over 400 characters. That is a report, not a failure: a markdown table row is one line by definition, so rows carrying a code example are legitimately long.
 

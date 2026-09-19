@@ -155,9 +155,18 @@ Properties of a Full MIO
 | research_bonus | false | How much research % bonus the MIO grants by default to associated research. Defaults to the DESIGN_TEAM_RESEARCH_BONUS define value | research_bonus = 0.2 |
 | task_capacity | false | How many things the MIO can do in parallel. Defaults to the DEFAULT_INITIAL_TASK_CAPACITY define value | task_capacity = 3 |
 | ai_will_do | false | How the AI prioritizes using this MIO compared to alternatively available MIOs | na |
-| tree_header_text | false | Can be provided multiple times. The headers shown above the trait tree in the MIO menu. "x" represents how far to the right it is placed with "0" being at the left border and "9" being as right as it goes. Text can be a localization key or the straight label. | `tree_header_text = {`<br>`    text = my_flavor_text_loc_key`<br>`    x = 1`<br>`}` |
+| tree_header_text | false | Can be provided multiple times. The headers shown above the trait tree in the MIO menu. "x" represents how far to the right it is placed with "0" being at the left border and "9" being as right as it goes. Text can be a localization key or the straight label. | *(example below)* |
 | initial_trait | true | The initial trait the MIO has without having to invest anything into it. | See "Trait Layout" |
 | trait | true | Can be repeated any number of times. The individual traits of the MIO that can be unlocked. | See "Trait Layout" |
+
+**Example: tree_header_text**
+
+```text
+tree_header_text = {
+    text = my_flavor_text_loc_key
+    x = 1
+}
+```
 
 ### Trait Layout <a id="Trait_Layout"></a>
 
@@ -253,20 +262,94 @@ Properties of a trait
 | name | false | Localization key, overwriting the default key of "<mio name>_<trait token>". If defined, the system will prioritize "<tag>_<trait name>" over "<trait name>" | `name = my_MIO_gunnery_1_Name` |
 | icon | false | Icon to use for your trait. Defaults to GFX_idea_unknown. Check the icons other traits with the same boni use. | `icon = GFX_generic_mio_trait_icon_hg_attack` |
 | special_trait_background | false | If yes, trait background will be golden to indicate an interesting trait. Defaults to "no". | `special_trait_background = yes` |
-| parent | false | Provide a custom trait dependency link. This allows setting conditions such as "Have at least 2 out of these traits." See "any_parent" or "all_parents" for simpler dependencies | `parent = {`<br>`	traits = {`<br>`		gunnery_1 stealth_1 mines_1`<br>`	}`<br>`	num_parents_needed = 2`<br>`}` |
+| parent | false | Provide a custom trait dependency link. This allows setting conditions such as "Have at least 2 out of these traits." See "any_parent" or "all_parents" for simpler dependencies | *(example below)* |
 | any_parent | false | Any one of the listed traits must already have been selected. | `any_parent = { gunnery_1 stealth_1 }` |
 | all_parents | false | Every single one of the listed traits must already have been selected. | `all_parents = { gunnery_1 stealth_1 }` |
 | mutually_exclusive | false | Have multiple traits exclude each other. Must be defined in each of the traits to work as expected. | `mutually_exclusive = { heavy_guns_specialization }` |
 | position | true | Where on the board to place the trait. (x = 0 y = 0) is the upper-left corner, (x = 9 y = 4) is the lower right. It is possible (but not recommended) to go lower by using an y value greater than 4, but that requires the player to scroll and is not recommended. | `position = { x = 0 y = 0 }` |
 | relative_position_id | false | By providing this setting, turn the "position"-provided coordinates into coordinates relative to the listed trait. "position = { x=0 y=1 }" would then become "directly beneath the parent trait" | `relative_position_id = gunnery_1` |
-| visible | false | Whether the trait is shown on the MIO traits menu. The condition executes in the current MIO's scope, the country is available in the FROM scope. | `visible = {`<br>`	FROM = { has_country_flag = <flag name> }`<br>`}` |
-| available | false | Whether the trait is available (or greyed out). Useful for tying MIOs into the Focus Tree. The condition executes in the current MIO's scope, the country is available in the FROM scope. | `available = {`<br>`	FROM = { has_completed_focus = <focus name> }`<br>`}` |
-| on_complete | false | Event that happens when the player selects the trait. Again, a way to integrate the MIO into the narrative of the country. The event executes in the current MIO's scope, the country is available in the FROM scope. | `on_complete = {`<br>`	FROM = { set_country_flag = <flag name> }`<br>`}` |
+| visible | false | Whether the trait is shown on the MIO traits menu. The condition executes in the current MIO's scope, the country is available in the FROM scope. | *(example below)* |
+| available | false | Whether the trait is available (or greyed out). Useful for tying MIOs into the Focus Tree. The condition executes in the current MIO's scope, the country is available in the FROM scope. | *(example below)* |
+| on_complete | false | Event that happens when the player selects the trait. Again, a way to integrate the MIO into the narrative of the country. The event executes in the current MIO's scope, the country is available in the FROM scope. | *(example below)* |
 | limit_to_equipment_type | false | By default, Equipment and Production boni apply to all equipment types supported by the MIO. This condition allows you to narrow it down to a smaller subset. Useful for specialization traits. | `limit_to_equipment_type = { mio_cat_eq_all_light_tank }` |
-| equipment_bonus | false | Actual improvements applied to all produced equipment the MIO applies to (unless further constrained through limit_to_equipment_type) | `equipment_bonus = {`<br>`	armor_value = -0.05`<br>`	defense =-0.05`<br>`	build_cost_ic = -0.03`<br>`}` |
-| production_bonus | false | Improvements applied to the production lines, such as accelerated efficiency gains, greater output or improved conversion rates. | `production_bonus = {`<br>`	production_efficiency_gain_factor = 0.15`<br>`	production_resource_need_factor = -0.15`<br>`}` |
-| organization_modifier | false | Boni granted to the MIO itself, such as cheaper assignment, improved research boni or increased task limit. | `organization_modifier = {`<br>`	military_industrial_organization_research_bonus = 0.05`<br>`}` |
-| ai_will_do | false | Override the default prioritization weights the AI would usually apply to this trait, based on the boni given. Usually not recommended. | `ai_will_do = {`<br>`	base = 2`<br>`	modifier = {`<br>`		factor = 1.5`<br>`		date > 1937.1.1`<br>`	}`<br>`}` |
+| equipment_bonus | false | Actual improvements applied to all produced equipment the MIO applies to (unless further constrained through limit_to_equipment_type) | *(example below)* |
+| production_bonus | false | Improvements applied to the production lines, such as accelerated efficiency gains, greater output or improved conversion rates. | *(example below)* |
+| organization_modifier | false | Boni granted to the MIO itself, such as cheaper assignment, improved research boni or increased task limit. | *(example below)* |
+| ai_will_do | false | Override the default prioritization weights the AI would usually apply to this trait, based on the boni given. Usually not recommended. | *(example below)* |
+
+**Example: parent**
+
+```text
+parent = {
+	traits = {
+		gunnery_1 stealth_1 mines_1
+	}
+	num_parents_needed = 2
+}
+```
+
+**Example: visible**
+
+```text
+visible = {
+	FROM = { has_country_flag = <flag name> }
+}
+```
+
+**Example: available**
+
+```text
+available = {
+	FROM = { has_completed_focus = <focus name> }
+}
+```
+
+**Example: on_complete**
+
+```text
+on_complete = {
+	FROM = { set_country_flag = <flag name> }
+}
+```
+
+**Example: equipment_bonus**
+
+```text
+equipment_bonus = {
+	armor_value = -0.05
+	defense =-0.05
+	build_cost_ic = -0.03
+}
+```
+
+**Example: production_bonus**
+
+```text
+production_bonus = {
+	production_efficiency_gain_factor = 0.15
+	production_resource_need_factor = -0.15
+}
+```
+
+**Example: organization_modifier**
+
+```text
+organization_modifier = {
+	military_industrial_organization_research_bonus = 0.05
+}
+```
+
+**Example: ai_will_do**
+
+```text
+ai_will_do = {
+	base = 2
+	modifier = {
+		factor = 1.5
+		date > 1937.1.1
+	}
+}
+```
 
 ## Delta MIO <a id="Delta_MIO"></a>
 
@@ -282,15 +365,62 @@ Properties of a policies
 | icon | false | Icon to use for your policy. | `icon = GFX_mio_policy_my_policy` |
 | cost | false | Attach cost in political power.<br>Default is define [DEFAULT INITIAL POLICY ATTACH COST](<Defines - Hearts of Iron 4 Wiki.md>) "25". | `cost = 10` |
 | cooldown | false | Cooldown in days after attaching a policy.<br>Default is define [DEFAULT INITIAL ATTACH POLICY COOLDOWN](<Defines - Hearts of Iron 4 Wiki.md>) "180". | `cooldown = 60` |
-| allowed | true | Evaluated when starting the game.<br>If trigger returns false, the policy will never be considered later in-game. | `allowed = {`<br>`	OR = {`<br>`		has_mio_equipment_type = motorized`<br>`		has_mio_equipment_type = mechanized`<br>`	}`<br>`}` |
+| allowed | true | Evaluated when starting the game.<br>If trigger returns false, the policy will never be considered later in-game. | *(example below)* |
 | visible | false | Evaluated when displaying the policy screen.<br>Default is "always = yes". | `visible = { has_mio_size > 3 }` |
 | available | false | Evaluated when displaying the policy screen.<br>Default is "always = yes". | `available = { has_mio_size > 5}` |
-| equipment_bonus | false | Defines the bonus given when the policy is attached and the MIO is assigned to an equipment variant.<br>Note: it's different from equipment_bonus in traits. Here you have to give the equipment group/category/archetype/type. | `equipment_bonus = {`<br>`	infantry_equipment = {`<br>`		soft_attack = 0.1`<br>`	}`<br>`}` |
-| production_bonus | false | Defines the bonus given when the policy is attached and the MIO is assigned to a production line.<br>Note: it's different from production_bonus in traits. Here you have to give the equipment group/category/archetype/type. | `production_bonus = {`<br>`	infantry_equipment = {`<br>`		production_cost_factor = -0.1`<br>`	}`<br>`}` |
-| organization_modifier | false | Defines modifiers that will apply on the MIOs. | `organization_modifier = {`<br>`	military_industrial_organization_research_bonus = 0.1`<br>`}` |
+| equipment_bonus | false | Defines the bonus given when the policy is attached and the MIO is assigned to an equipment variant.<br>Note: it's different from equipment_bonus in traits. Here you have to give the equipment group/category/archetype/type. | *(example below)* |
+| production_bonus | false | Defines the bonus given when the policy is attached and the MIO is assigned to a production line.<br>Note: it's different from production_bonus in traits. Here you have to give the equipment group/category/archetype/type. | *(example below)* |
+| organization_modifier | false | Defines modifiers that will apply on the MIOs. | *(example below)* |
 | on_add | false | Effects executed when the policy is attached. | `on_add = { ... }` |
 | on_remove | false | Effects executed when the policy is un-attached. | `on_remove = { ... }` |
-| ai_will_do | false | AI weight modifier for this policy.<br>Note: this affects how likely AI is to spend PP on this policy. | `ai_will_do = {`<br>`	...`<br>`}` |
+| ai_will_do | false | AI weight modifier for this policy.<br>Note: this affects how likely AI is to spend PP on this policy. | *(example below)* |
+
+**Example: allowed**
+
+```text
+allowed = {
+	OR = {
+		has_mio_equipment_type = motorized
+		has_mio_equipment_type = mechanized
+	}
+}
+```
+
+**Example: equipment_bonus**
+
+```text
+equipment_bonus = {
+	infantry_equipment = {
+		soft_attack = 0.1
+	}
+}
+```
+
+**Example: production_bonus**
+
+```text
+production_bonus = {
+	infantry_equipment = {
+		production_cost_factor = -0.1
+	}
+}
+```
+
+**Example: organization_modifier**
+
+```text
+organization_modifier = {
+	military_industrial_organization_research_bonus = 0.1
+}
+```
+
+**Example: ai_will_do**
+
+```text
+ai_will_do = {
+	...
+}
+```
 
 ## AI Bonus Weights <a id="AI_Bonus_Weights"></a>
 

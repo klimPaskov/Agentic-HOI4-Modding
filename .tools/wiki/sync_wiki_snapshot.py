@@ -598,8 +598,51 @@ def clean_soup(title):
     unwrap_layout_tables(root, soup)
     flatten_nested_tables(root, soup)
     unwrap_indentation_lists(root)
+    hoist_cell_code_blocks(root, soup)
     finalise_article(root, soup)
     return soup, root, navboxes
+
+
+def hoist_cell_code_blocks(root, soup):
+    """Move multi-line code samples out of table cells.
+
+    A markdown table row is a single line, so a preformatted block cannot live
+    in a cell. Inline code spans hold the text but every renderer collapses the
+    leading whitespace, which is exactly what makes nested script unreadable, and
+    copied text loses it too. A cell holding a multi-line sample keeps a short
+    pointer instead, and the sample is emitted as a real fenced code block
+    directly after its table, labelled with the row it came from. Single-line
+    samples stay inline, where they read correctly.
+    """
+    for table in list(root.find_all("table")):
+        if table.find_parent("table") is not None:
+            continue
+        hoisted = []
+        for row in table.find_all("tr"):
+            if row.find_parent("table") is not table:
+                continue
+            cells = row.find_all(["td", "th"], recursive=False)
+            if not cells:
+                continue
+            label = cells[0].get_text(" ", strip=True)
+            for cell in cells:
+                for pre in cell.find_all("pre"):
+                    text = pre.get_text().strip("\n")
+                    if len(text.split("\n")) < 2:
+                        continue
+                    marker = soup.new_tag("em")
+                    marker.string = "(example below)"
+                    pre.replace_with(marker)
+                    hoisted.append((label, pre))
+        cursor = table
+        for label, block in hoisted:
+            heading = soup.new_tag("p")
+            strong = soup.new_tag("strong")
+            strong.string = f"Example: {label}" if label else "Example"
+            heading.append(strong)
+            cursor.insert_after(block)
+            cursor.insert_after(heading)
+            cursor = block
 
 
 def unwrap_indentation_lists(root):

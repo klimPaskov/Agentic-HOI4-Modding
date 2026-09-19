@@ -103,8 +103,8 @@ Trigger scopes:
 | any_country | Always usable | Country | `any_country = { … }` | Checks if any country meets the triggers. | 1.0 |
 | all_other_country | Within country scope only | Country | `all_other_country = { … }` | Checks if all countries other than the one where this scope is located meet the triggers. | 1.0 |
 | any_other_country | Within country scope only | Country | `any_other_country = { … }` | Checks if any country other than the one where this scope is located meets the triggers. | 1.0 |
-| all_country_with_original_tag | Always usable | Country | `all_country_with_original_tag = {`<br>`    original_tag_to_check = TAG  #required`<br>`    …                  #triggers to check`<br>`}` | Checks if all countries originating from the specified country, including the dynamic countries created for civil wars and other purposes, meet the triggers. `original_tag_to_check = TAG` is used to specify the original tag. | 1.9 |
-| any_country_with_original_tag | Always usable | Country | `any_country_with_original_tag = {`<br>`    original_tag_to_check = TAG  #required`<br>`    …                  #triggers to check`<br>`}` | Checks if any country originating from the specified country, including the dynamic countries created for civil wars and other purposes, meets the triggers. `original_tag_to_check = TAG` is used to specify the original tag. | 1.9 |
+| all_country_with_original_tag | Always usable | Country | *(example below)* | Checks if all countries originating from the specified country, including the dynamic countries created for civil wars and other purposes, meet the triggers. `original_tag_to_check = TAG` is used to specify the original tag. | 1.9 |
+| any_country_with_original_tag | Always usable | Country | *(example below)* | Checks if any country originating from the specified country, including the dynamic countries created for civil wars and other purposes, meets the triggers. `original_tag_to_check = TAG` is used to specify the original tag. | 1.9 |
 | all_neighbor_country | Within country scope only | Country | `all_neighbor_country = { … }` | Checks if all countries that border the one where this scope is located meet the triggers. | 1.0 |
 | any_neighbor_country | Within country scope only | Country | `any_neighbor_country = { … }` | Checks if any country that borders the one where this scope is located meets the triggers. | 1.0 |
 | any_home_area_neighbor_country | Within country scope only | Country | `any_home_area_neighbor_country = { … }` | Checks if any country that borders the one where this scope is located, as well as being in its home area - meaning a direct land connection between the capitals of countries - meets the triggers. | 1.0 |
@@ -119,12 +119,12 @@ Trigger scopes:
 | all_subject_countries | Within country scope only | Country | `all_subject_countries = { … }` | Checks if all countries that are a subject of the one where this scope is located meet the triggers. Notice the plural spelling in the scope. | 1.11 |
 | any_subject_country | Within country scope only | Country | `any_subject_country = { … }` | Checks if any country that is a subject of the one where this scope is located meets the triggers. | 1.11 |
 | any_country_with_core | Within state scope only | Country | `any_country_with_core = { … }` | Checks if any country that has the current scope as a core state meets the triggers. **Does not have an equivalent for other effect/trigger scope types.** | 1.12 |
-| all_country_of | Alway usable | Country | `all_country_of = {`<br>`	tooltip = my_loc # Optional bindable localization`<br>`	target = { SWE NOR FIN DEN ICE }`<br>`	has_defensive_war = yes`<br>`}`<br><br>`all_country_of = {`<br>`    tooltip = my_loc # Optional bindable localization`<br>`	target = constant:country_groups:nordics`<br>`	has_defensive_war = yes`<br>`}` | Checks if all of the provided countries fulfill the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
-| any_country_of | Alway usable | Country | `any_country_of = {`<br>`	tooltip = my_loc # Optional bindable localization`<br>`	target = { SWE NOR FIN DEN ICE }`<br>`	has_defensive_war = yes`<br>`}`<br><br>`any_country_of = {`<br>`    tooltip = my_loc # Optional bindable localization`<br>`	target = constant:country_groups:nordics`<br>`	has_defensive_war = yes`<br>`}` | Checks if any of the provided countries fulfills the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
+| all_country_of | Alway usable | Country | *(example below)* | Checks if all of the provided countries fulfill the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
+| any_country_of | Alway usable | Country | *(example below)* | Checks if any of the provided countries fulfills the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
 | all_state | Always usable | State | `all_state = { … }` | Check if all states meet the triggers. | 1.0 |
 | any_state | Always usable | State | `any_state = { … }` | Check if any state meets the triggers. | 1.0 |
-| any_state_in | Always usable | State | `any_state_in = {`<br>`  array = array_of_states  #required`<br>`    …                  #triggers to check`<br>`}`Requires on of the following fields`array = <array_of_states>`<br>`continent = <continent_name>`<br>`ai_area = <ai_area_name>`<br>`strategic_region = <strategic_region_number>` | Check if any state in the given category meets the trigger. | 1.15 |
-| any_state_of | Alway usable | State | `any_state_of = {`<br>`	tooltip = my_loc # Optional bindable localization`<br>`	target = { 1 42 1992 }`<br>`	controller = {`<br>`		has_defensive_war = yes`<br>`	}`<br>`}`<br><br>`any_state_of = {`<br>`    tooltip = my_loc # Optional bindable localization`<br>`	target = constant:country_groups:nordics`<br>`	controller = {`<br>`		has_defensive_war = yes`<br>`	}`<br>`}` | Checks if any of the provided states fulfills the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
+| any_state_in | Always usable | State | *(example below)* Requires on of the following fields*(example below)* | Check if any state in the given category meets the trigger. | 1.15 |
+| any_state_of | Alway usable | State | *(example below)* | Checks if any of the provided states fulfills the specified triggers. The \`target\` supports script constants and \`tooltip\` supports bindable localization. | 1.17 |
 | all_neighbor_state | Within state scope only | State | `all_neighbor_state = { … }` | Check if all states that are neighbour to the one where this scope is located meet the triggers. | 1.0 |
 | any_neighbor_state | Within state scope only | State | `any_neighbor_state = { … }` | Check if any state that is neighbour to the one where this scope is located meets the triggers. | 1.0 |
 | all_owned_state | Within country scope only | State | `all_owned_state = { … }` | Check if all states that are owned by the country where this scope is located meet the triggers. | 1.0 |
@@ -154,6 +154,94 @@ Trigger scopes:
 | all_active_scientist | Within country scope only | Character | `all_active_scientist = { … }` | Checks if all active scientists of the Country in scope matches the triggers. | 1.15 |
 | any_active_scientist | Within country scope only | Character | `any_active_scientist = { … }` | Checks if at least one active scientist of the Country in scope matches the triggers. | 1.15 |
 
+**Example: all_country_with_original_tag**
+
+```text
+all_country_with_original_tag = {
+    original_tag_to_check = TAG  #required
+    …                  #triggers to check
+}
+```
+
+**Example: any_country_with_original_tag**
+
+```text
+any_country_with_original_tag = {
+    original_tag_to_check = TAG  #required
+    …                  #triggers to check
+}
+```
+
+**Example: all_country_of**
+
+```text
+all_country_of = {
+	tooltip = my_loc # Optional bindable localization
+	target = { SWE NOR FIN DEN ICE }
+	has_defensive_war = yes
+}
+
+all_country_of = {
+    tooltip = my_loc # Optional bindable localization
+	target = constant:country_groups:nordics
+	has_defensive_war = yes
+}
+```
+
+**Example: any_country_of**
+
+```text
+any_country_of = {
+	tooltip = my_loc # Optional bindable localization
+	target = { SWE NOR FIN DEN ICE }
+	has_defensive_war = yes
+}
+
+any_country_of = {
+    tooltip = my_loc # Optional bindable localization
+	target = constant:country_groups:nordics
+	has_defensive_war = yes
+}
+```
+
+**Example: any_state_in**
+
+```text
+any_state_in = {
+  array = array_of_states  #required
+    …                  #triggers to check
+}
+```
+
+**Example: any_state_in**
+
+```text
+array = <array_of_states>
+continent = <continent_name>
+ai_area = <ai_area_name>
+strategic_region = <strategic_region_number>
+```
+
+**Example: any_state_of**
+
+```text
+any_state_of = {
+	tooltip = my_loc # Optional bindable localization
+	target = { 1 42 1992 }
+	controller = {
+		has_defensive_war = yes
+	}
+}
+
+any_state_of = {
+    tooltip = my_loc # Optional bindable localization
+	target = constant:country_groups:nordics
+	controller = {
+		has_defensive_war = yes
+	}
+}
+```
+
 ### Dual scopes <a id="Dual_scopes"></a>
 
 The following scopes can be used either as effect or trigger scopes; some can also be used as the right side of some effects and triggers as a target. If usage as a target is possible, it's marked within the table.
@@ -169,17 +257,74 @@ Dual scopes:
 | <character> | not within Character scope | Character scope | `ENG_theodore_makhno = { set_nationality = UKR }` | On game versions prior to 1.12.8, the character must be already recruited by the country this is scoped from. | ✓ | 1.11 |
 | mio:<MIO> | Within country scope only | MIO scope | `mio:AST_cockatoo_doe_organization = { … }` | The MIO identified by that ID as defined within the `/Hearts of Iron IV/common/military_industrial_organization/organizations/*.txt` file. | ✓ | 1.13 |
 | sp:<special_project> | Within country scope only | Special project scope | `sp:sp_land_flamethrower_tank = { … }` | The special project identified by that ID as defined within the `/Hearts of Iron IV/common/special_projects/projects/*.txt` file. | ✓ | 1.15 |
-| ROOT | Always usable | Depends on usage | `ENG = {`<br>`    FRA = {`<br>`        GER = {`<br>`            declare_war_on = {`<br>`                target = ROOT`<br>`                type = annex_everything`<br>`            }`<br>`        }`<br>`    }`<br>`} #GER declares war on ENG (if there is no scope before ENG)` | Targets the root node of the block, an inherent property of each block. Most commonly, this is the default scope: for example, ROOT [within a national focus](<National focus modding - Hearts of Iron 4 Wiki.md>) will always refer to the country doing the focus and ROOT [within a event](<Event modding - Hearts of Iron 4 Wiki.md>) will always refer to the country getting the event. However, some blocks do distinguish between the default scope and ROOT, such as [certain scripted GUI contexts](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) or [certain on actions](<On actions - Hearts of Iron 4 Wiki.md#La_R.C3.A9sistance>). If a block doesn't have ROOT defined (such as [on_startup in on actions](<On actions - Hearts of Iron 4 Wiki.md>)), then it is impossible to use it. | ✓ | 1.0 |
+| ROOT | Always usable | Depends on usage | *(example below)* | Targets the root node of the block, an inherent property of each block. Most commonly, this is the default scope: for example, ROOT [within a national focus](<National focus modding - Hearts of Iron 4 Wiki.md>) will always refer to the country doing the focus and ROOT [within a event](<Event modding - Hearts of Iron 4 Wiki.md>) will always refer to the country getting the event. However, some blocks do distinguish between the default scope and ROOT, such as [certain scripted GUI contexts](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) or [certain on actions](<On actions - Hearts of Iron 4 Wiki.md#La_R.C3.A9sistance>). If a block doesn't have ROOT defined (such as [on_startup in on actions](<On actions - Hearts of Iron 4 Wiki.md>)), then it is impossible to use it. | ✓ | 1.0 |
 | THIS | Always usable | Depends on usage | `set_temp_variable = { target_country = THIS }` | Targets the current scope where it's used. For example, when used in every_state, it will refer to the state that's currently being evaluated. Primarily useful for [variables](<Data structures - Hearts of Iron 4 Wiki.md>) (as in the example, where omitting it wouldn't work) or for [built-in localisation commands](<Localisation - Hearts of Iron 4 Wiki.md#Namespaces>), where some scope must be specified. More rarely, this may help with scope manipulation when using PREV. Since omitting it makes no difference in how the code gets interpreted, there is little to no usage outside of these cases. | ✓ | 1.0 |
-| PREV | Always usable | Depends on usage | `FRA = {`<br>`    random_country = {`<br>`        GER = {`<br>`            declare_war_on = {`<br>`                target = PREV`<br>`                type = annex_everything`<br>`            }`<br>`        }`<br>`    }`<br>`} #Germany declares war on random_country` | Targets the scope that the current scope is contained in. Can have additional applications where the assumed default scope differs from the ROOT, such as in state events or some on_actions. Can be chained indefinitely as PREV.PREV. **Commonly results in broken-looking tooltips**: what's shown to the player doesn't always correlate with reality.<br> See also: [PREV usage](<Scopes - Hearts of Iron 4 Wiki.md#PREV_usage>). | ✓ | 1.0 |
-| FROM | Always usable | Depends on usage | `declare_war_on = {`<br>`    target = FROM`<br>`    type = annex_everything`<br>`}`<br><br>`FROM = {`<br>`    load_oob = defend_ourselves`<br>`}` | Can be chained indefinitely as FROM.FROM. Used to target various hardcoded scopes inherent to the block, often a secondary scope in addition to ROOT. For example:<br> In [events](<Event modding - Hearts of Iron 4 Wiki.md>), this refers to the country that sent the event (i.e. if the event was fired [using an effect](<Event modding - Hearts of Iron 4 Wiki.md#Effect>), then it's the ROOT scope where it was fired).<br> In [targeted decisions](<Decision modding - Hearts of Iron 4 Wiki.md>) or [diplomacy scripted triggers](<Triggers - Hearts of Iron 4 Wiki.md#Scripted_triggers>), this refers to the scope that is targeted.<br> | ✓ | 1.0 |
+| PREV | Always usable | Depends on usage | *(example below)* | Targets the scope that the current scope is contained in. Can have additional applications where the assumed default scope differs from the ROOT, such as in state events or some on_actions. Can be chained indefinitely as PREV.PREV. **Commonly results in broken-looking tooltips**: what's shown to the player doesn't always correlate with reality.<br> See also: [PREV usage](<Scopes - Hearts of Iron 4 Wiki.md#PREV_usage>). | ✓ | 1.0 |
+| FROM | Always usable | Depends on usage | *(example below)* | Can be chained indefinitely as FROM.FROM. Used to target various hardcoded scopes inherent to the block, often a secondary scope in addition to ROOT. For example:<br> In [events](<Event modding - Hearts of Iron 4 Wiki.md>), this refers to the country that sent the event (i.e. if the event was fired [using an effect](<Event modding - Hearts of Iron 4 Wiki.md#Effect>), then it's the ROOT scope where it was fired).<br> In [targeted decisions](<Decision modding - Hearts of Iron 4 Wiki.md>) or [diplomacy scripted triggers](<Triggers - Hearts of Iron 4 Wiki.md#Scripted_triggers>), this refers to the scope that is targeted.<br> | ✓ | 1.0 |
 | overlord | Within country scope only | Country scope | `overlord = { … }` | The overlord of the country if it is a subject. [Subject to the 'invalid event target' error.](<Scopes - Hearts of Iron 4 Wiki.md#Invalid_event_target>) | X | 1.3 |
 | faction_leader | Within country scope only | Country scope | `faction_leader = { add_to_faction = FROM }` | Faction leader of the faction the country is a part of. [Subject to the 'invalid event target' error.](<Scopes - Hearts of Iron 4 Wiki.md#Invalid_event_target>) | X | 1.10.1 |
 | owner | Within state, character, or combatant scope only | Country scope | `owner = { add_ideas = owns_this_state }` | In state scope, the country that owns the state. In combatant scope, the country that owns the divisions. In character scope, the country that has recruited the character. [Subject to the 'invalid event target' error](<Scopes - Hearts of Iron 4 Wiki.md#Invalid_event_target>) when used for a state. | X | 1.0 |
-| controller | Within state scope only | Country scope | `controller = {`<br>`    ROOT = {`<br>`        create_wargoal = {`<br>`            target = PREV`<br>`            type = take_state_focus`<br>`            generator = { 123 }`<br>`        }`<br>`    }`<br>`}` | The controller of the current state. [Subject to the 'invalid event target' error.](<Scopes - Hearts of Iron 4 Wiki.md#Invalid_event_target>) | X | 1.0 |
+| controller | Within state scope only | Country scope | *(example below)* | The controller of the current state. [Subject to the 'invalid event target' error.](<Scopes - Hearts of Iron 4 Wiki.md#Invalid_event_target>) | X | 1.0 |
 | capital_scope | Within country scope only | State scope | `capital_scope = { … }` | The state where the capital of the current country is located in. [Subject to the 'invalid event target' error](<Scopes - Hearts of Iron 4 Wiki.md#Invalid_event_target>) in rare cases. | X | 1.0 |
 | event_target:<event_target_key> | Always usable | Depends on usage | `event_target:my_event_target = { … }` | Saved [event target or global event target](<Data structures - Hearts of Iron 4 Wiki.md#Event_targets>), with no space after the colon. [Subject to the 'invalid event target' error.](<Scopes - Hearts of Iron 4 Wiki.md#Invalid_event_target>) | ✓ | 1.0 |
 | var:<variable> | Always usable | Depends on usage | `var:my_variable = { … }`<br>`add_to_faction = my_variable` or <br>`add_to_faction = var:my_variable` | [Variable](<Data structures - Hearts of Iron 4 Wiki.md>) set to a scope.<br> When used as a target rather than a scope, the `var:` can be omitted in most cases. | ✓ | 1.5 |
+
+**Example: ROOT**
+
+```text
+ENG = {
+    FRA = {
+        GER = {
+            declare_war_on = {
+                target = ROOT
+                type = annex_everything
+            }
+        }
+    }
+} #GER declares war on ENG (if there is no scope before ENG)
+```
+
+**Example: PREV**
+
+```text
+FRA = {
+    random_country = {
+        GER = {
+            declare_war_on = {
+                target = PREV
+                type = annex_everything
+            }
+        }
+    }
+} #Germany declares war on random_country
+```
+
+**Example: FROM**
+
+```text
+declare_war_on = {
+    target = FROM
+    type = annex_everything
+}
+
+FROM = {
+    load_oob = defend_ourselves
+}
+```
+
+**Example: controller**
+
+```text
+controller = {
+    ROOT = {
+        create_wargoal = {
+            target = PREV
+            type = take_state_focus
+            generator = { 123 }
+        }
+    }
+}
+```
 
 ## Flow control tools <a id="Flow_control_tools"></a>
 
@@ -191,14 +336,107 @@ Flow control tools:
 
 | Name | Additional parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| AND | None | `AND = {`<br>`    original_tag = GER`<br>`    has_stability > 0.5`<br>`}` | Returns false if any sub-trigger returns false, true otherwise. Evaluation stops at the first false sub-trigger. | Only necessary within OR statements and NOT statements, as everything else is implicitly AND. | 1.0 |
-| OR | None | `OR = {`<br>`    original_tag = ENG`<br>`    original_tag = USA`<br>`}` | Returns true if any sub-trigger returns true, false otherwise. Evaluation stops at the first true sub-trigger. |  | 1.0 |
-| NOT | None | `NOT = {`<br>`    has_stability > 0.5`<br>`    has_war_support > 0.5`<br>`}` | Returns false if any sub-trigger returns true, true otherwise. Evaluation stops at the first true sub-trigger. | Equivalent to a NOR rather than a NAND. | 1.0 |
-| count_triggers | `amount = <int>`<br> The amount of triggers that need to be fulfilled. | `count_triggers = {`<br>`    amount = 2`<br>`    10 = { state_population = 100000 }`<br>`    11 = { state_population = 100000 }`<br>`    12 = { state_population = 100000 }`<br>`}` | Sums the results of all sub-triggers (false=0, true=1) and returns true if the sum is at least `amount`. |  | 1.5 |
-| if | `limit = <trigger block>`<br> `else_if = <if-trigger>`<br> Alternative condition. Optional.<br> `else = <AND-trigger>`<br> Final alternative condition. Optional. | `if = {`<br>`    limit = {`<br>`        has_dlc = "Poland: United and Ready"`<br>`    }`<br>`    has_political_power > 100`<br>`}`<br>`else_if = {`<br>`    limit = {`<br>`        has_dlc = "Waking the Tiger"`<br>`    }`<br>`    has_war_support > 0.5`<br>`}`<br>`else = {`<br>`    always = no`<br>`}` | If `limit` is true, the sub-triggers are evaluated like an AND-trigger. If `limit` is false, `else_if` blocks are tried in sequence and finally `else` (if present). *Otherwise true is returned*. | Both nested (As in inside of `if = { ... }`) and unnested (As in the example) `else` and `else_if` exist. In case of overlap, unnested is preferred. Can be useful for tooltip management: same as in effects, if the limit is unmet, nothing appears. If it is met, then the limit is hidden while the condition outside of the limit appears in the tooltip.  `if = { limit = { trigger_1 = yes } trigger_2 = yes }` is equivalent to `OR = { NOT = { trigger_1 = yes } trigger_2 = yes }`, but generates a different tooltip. | 1.0 |
-| hidden_trigger | None | `hidden_trigger = {`<br>`    country_exists = GER`<br>`}` | Hides the triggers from the tooltip shown to the player. | Also serves as an AND statement. | 1.0 |
-| custom_trigger_tooltip | `tooltip = <string>`<br>The localisation key to use. | `custom_trigger_tooltip = {`<br>`    tooltip = sunrise_invasion_tt`<br>`    any_state = {`<br>`        is_owned_by = JAP`<br>`        is_on_continent = europe`<br>`        is_coastal = yes`<br>`    }`<br>`}` | Hides the triggers from the tooltip shown to the player and instead uses the specified localisation key. | Alias for #custom_override_tooltip trigger (see that trigger for more info). Kept for backward compatibility. Prefer #custom_override_tooltip instead. Also supports [Localisation#Bindable_localisation](<Localisation - Hearts of Iron 4 Wiki.md#Bindable_localisation>). | 1.0 |
-| custom_override_tooltip | `tooltip = <string>`<br>The localisation key to use. `not_tooltip = <string>`<br>The localisation key to use for NOT block. Optional. | `custom_override_tooltip = {`<br>`    tooltip = {`<br>`      localization_key = GER_inner_circle_focus_in_progress_tt`<br>`	  CHARACTER = GER_rudolf_hess`<br>`	  FLAG_DAYS = [?GER_rally_the_industrialists_in_progress_flag:days]`<br>`    }`<br>`    not_tooltip = MY_TOOLTIP_NOT`<br>`    <triggers>`<br>`}` | An AND trigger that has an overriden custom tooltip. | A positive tooltip can be set with `tooltip` and the tooltip to be used inside a NOT can be set with `not_tooltip`. If no positive tooltip is provided and the root key is a localization key (not a formatter, see formatted localization), then a negative tooltip will be generated by appending `_NOT` to the root localization for the positive tooltip. Both `tooltip` and `not_tooltip` are bindable localizations. [Can also be used as effect.](<Effects - Hearts of Iron 4 Wiki.md>)<br> Also supports [Localisation#Bindable_localisation](<Localisation - Hearts of Iron 4 Wiki.md#Bindable_localisation>). | 1.15 |
+| AND | None | *(example below)* | Returns false if any sub-trigger returns false, true otherwise. Evaluation stops at the first false sub-trigger. | Only necessary within OR statements and NOT statements, as everything else is implicitly AND. | 1.0 |
+| OR | None | *(example below)* | Returns true if any sub-trigger returns true, false otherwise. Evaluation stops at the first true sub-trigger. |  | 1.0 |
+| NOT | None | *(example below)* | Returns false if any sub-trigger returns true, true otherwise. Evaluation stops at the first true sub-trigger. | Equivalent to a NOR rather than a NAND. | 1.0 |
+| count_triggers | `amount = <int>`<br> The amount of triggers that need to be fulfilled. | *(example below)* | Sums the results of all sub-triggers (false=0, true=1) and returns true if the sum is at least `amount`. |  | 1.5 |
+| if | `limit = <trigger block>`<br> `else_if = <if-trigger>`<br> Alternative condition. Optional.<br> `else = <AND-trigger>`<br> Final alternative condition. Optional. | *(example below)* | If `limit` is true, the sub-triggers are evaluated like an AND-trigger. If `limit` is false, `else_if` blocks are tried in sequence and finally `else` (if present). *Otherwise true is returned*. | Both nested (As in inside of `if = { ... }`) and unnested (As in the example) `else` and `else_if` exist. In case of overlap, unnested is preferred. Can be useful for tooltip management: same as in effects, if the limit is unmet, nothing appears. If it is met, then the limit is hidden while the condition outside of the limit appears in the tooltip.  `if = { limit = { trigger_1 = yes } trigger_2 = yes }` is equivalent to `OR = { NOT = { trigger_1 = yes } trigger_2 = yes }`, but generates a different tooltip. | 1.0 |
+| hidden_trigger | None | *(example below)* | Hides the triggers from the tooltip shown to the player. | Also serves as an AND statement. | 1.0 |
+| custom_trigger_tooltip | `tooltip = <string>`<br>The localisation key to use. | *(example below)* | Hides the triggers from the tooltip shown to the player and instead uses the specified localisation key. | Alias for #custom_override_tooltip trigger (see that trigger for more info). Kept for backward compatibility. Prefer #custom_override_tooltip instead. Also supports [Localisation#Bindable_localisation](<Localisation - Hearts of Iron 4 Wiki.md#Bindable_localisation>). | 1.0 |
+| custom_override_tooltip | `tooltip = <string>`<br>The localisation key to use. `not_tooltip = <string>`<br>The localisation key to use for NOT block. Optional. | *(example below)* | An AND trigger that has an overriden custom tooltip. | A positive tooltip can be set with `tooltip` and the tooltip to be used inside a NOT can be set with `not_tooltip`. If no positive tooltip is provided and the root key is a localization key (not a formatter, see formatted localization), then a negative tooltip will be generated by appending `_NOT` to the root localization for the positive tooltip. Both `tooltip` and `not_tooltip` are bindable localizations. [Can also be used as effect.](<Effects - Hearts of Iron 4 Wiki.md>)<br> Also supports [Localisation#Bindable_localisation](<Localisation - Hearts of Iron 4 Wiki.md#Bindable_localisation>). | 1.15 |
+
+**Example: AND**
+
+```text
+AND = {
+    original_tag = GER
+    has_stability > 0.5
+}
+```
+
+**Example: OR**
+
+```text
+OR = {
+    original_tag = ENG
+    original_tag = USA
+}
+```
+
+**Example: NOT**
+
+```text
+NOT = {
+    has_stability > 0.5
+    has_war_support > 0.5
+}
+```
+
+**Example: count_triggers**
+
+```text
+count_triggers = {
+    amount = 2
+    10 = { state_population = 100000 }
+    11 = { state_population = 100000 }
+    12 = { state_population = 100000 }
+}
+```
+
+**Example: if**
+
+```text
+if = {
+    limit = {
+        has_dlc = "Poland: United and Ready"
+    }
+    has_political_power > 100
+}
+else_if = {
+    limit = {
+        has_dlc = "Waking the Tiger"
+    }
+    has_war_support > 0.5
+}
+else = {
+    always = no
+}
+```
+
+**Example: hidden_trigger**
+
+```text
+hidden_trigger = {
+    country_exists = GER
+}
+```
+
+**Example: custom_trigger_tooltip**
+
+```text
+custom_trigger_tooltip = {
+    tooltip = sunrise_invasion_tt
+    any_state = {
+        is_owned_by = JAP
+        is_on_continent = europe
+        is_coastal = yes
+    }
+}
+```
+
+**Example: custom_override_tooltip**
+
+```text
+custom_override_tooltip = {
+    tooltip = {
+      localization_key = GER_inner_circle_focus_in_progress_tt
+	  CHARACTER = GER_rudolf_hess
+	  FLAG_DAYS = [?GER_rally_the_industrialists_in_progress_flag:days]
+    }
+    not_tooltip = MY_TOOLTIP_NOT
+    <triggers>
+}
+```
 
 ## Any scope <a id="Any_scope"></a>
 
@@ -212,7 +450,7 @@ General any-scoped triggers:
 | --- | --- | --- | --- | --- | --- |
 | always | `<bool>`<br>Boolean. | `always = yes` | Always returns true or false. Useful for debugging. |  | 1.0 |
 | has_global_flag | `<string>`<br>The flag to check. | `has_global_flag = my_flag` | Checks if the specified flag has been set. |  | 1.0 |
-| has_global_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | `has_global_flag = {`<br>`    flag = my_flag`<br>`    days > 30`<br>`    date > 1936.6.1`<br>`    value > 0`<br>`}` | Compares the specified flag's last set date, days since last set, and/or value. | If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.0 |
+| has_global_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | *(example below)* | Compares the specified flag's last set date, days since last set, and/or value. | If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.0 |
 | has_dlc | `<string>`<br>The DLC name to check for. | `has_dlc = "Waking the Tiger"` | Checks if the specified DLC is enabled. |  | 1.0 |
 | has_start_date | `<date>`<br>The date to check for. | `has_start_date > 1950.01.01` | Checks if the specified date was the start date used for the current game. | Year.Month.Day Must use either > or < operators. | 1.0 |
 | date | `<date>`<br>The date to check for. | `date < 1950.01.01` | Checks if the specified date against the current date. | Year.Month.Day Must use either > or < operators. | 1.0 |
@@ -227,7 +465,27 @@ General any-scoped triggers:
 | is_debug | `<bool>`<br>Boolean. | `is_debug = yes` | Checks if game is in debug mode (launched with -debug argument). |  | 1.9 |
 | threat | `<float>`<br>The amount to check for. | `threat > 0.5` | Checks if World Tension is above the specified amount. | Must use either > or < operators. | 1.0 |
 | has_game_rule | `<string>`<br>The game rule to check for.<br> `<string> / <bool>`<br>The option to check.<br> | `has_game_rule = { rule = GER_can_remilitarize_rhineland option = yes }` | Checks if a game rule is set to a particular option. |  | 1.5 |
-| has_completed_custom_achievement | `mod = <mod ID>`<br>The mod where the achievement is from.<br> `achievement = <achievement ID>`<br>The name of the achievement. | `has_completed_custom_achievement = {`<br>`    mod = my_mod_unique_id`<br>`    achievement = my_achievement_token`<br>`}` | Checks if the player controlling the current scope has completed the specified custom achievement. | The achievement (including the ID of the mod it's from) is defined within `/Hearts of Iron IV/common/achievements/*.txt` files[1]. The achievement could be completed during a previous session, not necessarily the current one.<br> If the mod defining the achievement is not loaded, the trigger evaluates as false. | 1.12.5 |
+| has_completed_custom_achievement | `mod = <mod ID>`<br>The mod where the achievement is from.<br> `achievement = <achievement ID>`<br>The name of the achievement. | *(example below)* | Checks if the player controlling the current scope has completed the specified custom achievement. | The achievement (including the ID of the mod it's from) is defined within `/Hearts of Iron IV/common/achievements/*.txt` files[1]. The achievement could be completed during a previous session, not necessarily the current one.<br> If the mod defining the achievement is not loaded, the trigger evaluates as false. | 1.12.5 |
+
+**Example: has_global_flag**
+
+```text
+has_global_flag = {
+    flag = my_flag
+    days > 30
+    date > 1936.6.1
+    value > 0
+}
+```
+
+**Example: has_completed_custom_achievement**
+
+```text
+has_completed_custom_achievement = {
+    mod = my_mod_unique_id
+    achievement = my_achievement_token
+}
+```
 
 ### Career profile <a id="Career_profile"></a>
 
@@ -235,14 +493,73 @@ Career profile-releated any-scoped triggers:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| career_profile_check_medal | `medal = <medal>`<br>Medal to check. `???`<br> | `career_profile_check_medal = {`<br>`  medal = raining_debris_medal`<br>`  ???`<br>`}` | Checks if the required medal is achieved and collected. | Provide no tooltip. | ??? |
-| career_profile_check_ribbon | `ribbon = <ribbon>`<br>Ribbon to check. `tooltip = <loc_key>`<br>Optional. | `career_profile_check_ribbon = {`<br>`  ribbon = orchestra_of_boom`<br>`  tooltip = my_loc_key`<br>`}` | Checks if the required ribbon is achieved and collected. | By default provide no tooltip. | ??? |
-| career_profile_check_playthrough_ratio | `frits = <variable>`<br> `second = <variable>`<br><br> `ratio = <int>`<br>Ratio.<br> `compare = <type>`<br>The type of comparison.<br> | `career_profile_check_playthrough_ratio = {`<br>`  first = enemy_casualties`<br>`  second = total_own_casualties`<br>`  ratio = 4`<br>`  compare = greater_than_or_equals`<br>`}` | Compares the ratio (first/second) of two playthrough values to a number. | Provide no tooltip. Possible compare types:   - less_than - less_than_or_equals - greater_than - greater_than_or_equals - equals - not_equals | ??? |
-| career_profile_check_playthrough_value | `{ ... }`<br> **OR**<br> `var = <variable>`<br>Value to compare.<br> `value = <int>`<br>Value to compare to.<br> `compare = <type>`<br>The type of comparison. Optional.<br> `tooltip = <loc_key>`<br>Optional.<br> `tooltip_value = <int>`<br>Optional. | `career_profile_check_playthrough_value = {`<br>`  plan_landlocked_battleship > 1`<br>`  plan_landlocked_carrier > 0`<br>`}``career_profile_check_playthrough_value = {`<br>`  var = deployed_airplanes_with_air_defense_gold`<br>`  value = 100`<br>`  compare = greater_than_or_equals`<br>`  tooltip = CAREER_PROFILE_TRIGGER_DEPLOYED_AIRPLANES_WITH_AIR_DEFENSE`<br>`  tooltip_value = 100` | Compares a playthrough value to a number. | By default provide no tooltip. Possible compare types:   - less_than - less_than_or_equals - greater_than - greater_than_or_equals - equals - not_equals | ??? |
-| career_profile_check_points | `value = <int>`<br>Value to compare. `compare = <type>`<br>The type of comparison.<br> `tooltip = <loc_key>`<br>Optional.<br> | `career_profile_check_points = {`<br>`  value = 5000`<br>`  compare = greater_than_or_equals`<br>`  tooltip = CAREER_PROFILE_TRIGGER_MINED_SEA_REGIONS`<br>`}` | Compares a career points value to a number. | By default provide no tooltip. Possible compare types:   - less_than - less_than_or_equals - greater_than - greater_than_or_equals - equals - not_equals | ??? |
+| career_profile_check_medal | `medal = <medal>`<br>Medal to check. `???`<br> | *(example below)* | Checks if the required medal is achieved and collected. | Provide no tooltip. | ??? |
+| career_profile_check_ribbon | `ribbon = <ribbon>`<br>Ribbon to check. `tooltip = <loc_key>`<br>Optional. | *(example below)* | Checks if the required ribbon is achieved and collected. | By default provide no tooltip. | ??? |
+| career_profile_check_playthrough_ratio | `frits = <variable>`<br> `second = <variable>`<br><br> `ratio = <int>`<br>Ratio.<br> `compare = <type>`<br>The type of comparison.<br> | *(example below)* | Compares the ratio (first/second) of two playthrough values to a number. | Provide no tooltip. Possible compare types:   - less_than - less_than_or_equals - greater_than - greater_than_or_equals - equals - not_equals | ??? |
+| career_profile_check_playthrough_value | `{ ... }`<br> **OR**<br> `var = <variable>`<br>Value to compare.<br> `value = <int>`<br>Value to compare to.<br> `compare = <type>`<br>The type of comparison. Optional.<br> `tooltip = <loc_key>`<br>Optional.<br> `tooltip_value = <int>`<br>Optional. | *(example below)* *(example below)* | Compares a playthrough value to a number. | By default provide no tooltip. Possible compare types:   - less_than - less_than_or_equals - greater_than - greater_than_or_equals - equals - not_equals | ??? |
+| career_profile_check_points | `value = <int>`<br>Value to compare. `compare = <type>`<br>The type of comparison.<br> `tooltip = <loc_key>`<br>Optional.<br> | *(example below)* | Compares a career points value to a number. | By default provide no tooltip. Possible compare types:   - less_than - less_than_or_equals - greater_than - greater_than_or_equals - equals - not_equals | ??? |
 | career_profile_check_ratio | Possible the same as #career_profile_check_playthrough_ratio. | Possible the same as #career_profile_check_playthrough_ratio. | Compares the ratio (first/second) of two career profile values to a number. | Possible the same as #career_profile_check_playthrough_ratio. | ??? |
 | career_profile_check_value | Possible the same as #career_profile_check_playthrough_value. | Possible the same as #career_profile_check_playthrough_value. | Compares a career profile value to a number. | Possible the same as #career_profile_check_playthrough_value. | ??? |
 | career_profile_has_player_flag | `<string>`<br>The flag to check. | `career_profile_has_player_flag = career_profile_overrun_infantry_flag` | Checks if the flag is set for the local player. |  | ??? |
+
+**Example: career_profile_check_medal**
+
+```text
+career_profile_check_medal = {
+  medal = raining_debris_medal
+  ???
+}
+```
+
+**Example: career_profile_check_ribbon**
+
+```text
+career_profile_check_ribbon = {
+  ribbon = orchestra_of_boom
+  tooltip = my_loc_key
+}
+```
+
+**Example: career_profile_check_playthrough_ratio**
+
+```text
+career_profile_check_playthrough_ratio = {
+  first = enemy_casualties
+  second = total_own_casualties
+  ratio = 4
+  compare = greater_than_or_equals
+}
+```
+
+**Example: career_profile_check_playthrough_value**
+
+```text
+career_profile_check_playthrough_value = {
+  plan_landlocked_battleship > 1
+  plan_landlocked_carrier > 0
+}
+```
+
+**Example: career_profile_check_playthrough_value**
+
+```text
+career_profile_check_playthrough_value = {
+  var = deployed_airplanes_with_air_defense_gold
+  value = 100
+  compare = greater_than_or_equals
+  tooltip = CAREER_PROFILE_TRIGGER_DEPLOYED_AIRPLANES_WITH_AIR_DEFENSE
+  tooltip_value = 100
+```
+
+**Example: career_profile_check_points**
+
+```text
+career_profile_check_points = {
+  value = 5000
+  compare = greater_than_or_equals
+  tooltip = CAREER_PROFILE_TRIGGER_MINED_SEA_REGIONS
+}
+```
 
 ### Variables <a id="Variables"></a>
 
@@ -251,7 +568,25 @@ Variable-related triggers:
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
 | has_variable | `<variable>`<br>The variable to check. | `has_variable = my_var` | Checks if the specified variable exists for the current scope. |  | 1.5 |
-| check_variable | `var = <variable>`<br>The variable to check.<br> `value = <float> / <variable>`<br>The value to check for.<br> `compare = <type>`<br>The type of comparison. Optional, can use < or > instead. | `check_variable = {`<br>`    var = my_var`<br>`    value = 10`<br>`    compare = greater_than_or_equals`<br>`}``check_variable = {`<br>`    my_var > 10`<br>`}` | Check the specified variable for the current scope. | Possible compare types:  - less_than - less_than_or_equals - greater_than - greater_than_or_equals - equals - not_equals | 1.5 |
+| check_variable | `var = <variable>`<br>The variable to check.<br> `value = <float> / <variable>`<br>The value to check for.<br> `compare = <type>`<br>The type of comparison. Optional, can use < or > instead. | *(example below)* *(example below)* | Check the specified variable for the current scope. | Possible compare types:  - less_than - less_than_or_equals - greater_than - greater_than_or_equals - equals - not_equals | 1.5 |
+
+**Example: check_variable**
+
+```text
+check_variable = {
+    var = my_var
+    value = 10
+    compare = greater_than_or_equals
+}
+```
+
+**Example: check_variable**
+
+```text
+check_variable = {
+    my_var > 10
+}
+```
 
 Remember that variables need to refer to the scope they were set in. This means you can't check a country variable in a state scope without scoping the variable.
 
@@ -278,7 +613,17 @@ Debugging-helpful triggers:
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
 | log | `<string>`<br>What to log. Supports dynamic localisation.<br> | `log = "Added [?temp_add] to [THIS.GetTag]'s variable [?THIS.varvalue]"` | Appends an entry into the game.log and, if open, the console when evaluating the trigger. | game.log is stored within `/Hearts of Iron IV/logs/` in the [user directory](<Modding - Hearts of Iron 4 Wiki.md>) | 1.5 |
-| print_variables | `print_global = <bool>`<br>Print global variables. Defaults to `no`.<br> `var_list = <list>`<br>The variables to print. Defaults to all variables.<br> `file = <string>`The file path to log to. Defaults to "variable_dump". Does not include the `.log` extension.<br> `text = <string>`Text to prepend. Defaults to "No Header".<br> `append = <bool>`Whether to append to the file instead of overwrite. Defaults to `yes` | `print_variables = {`<br>`    var_list = { myvar1 myvar2 }`<br>`    file = "my_dump_file"`<br>`    text = "my header"`<br>`}` | Dumps the specified variables from the current scope and optionally the global scope into a log file with the specified name. | The log will be within `/Hearts of Iron IV/logs/variable_dumps/` in the [user directory](<Modding - Hearts of Iron 4 Wiki.md>). See also [debugging variables](<Data structures - Hearts of Iron 4 Wiki.md#Debugging>). | 1.5 |
+| print_variables | `print_global = <bool>`<br>Print global variables. Defaults to `no`.<br> `var_list = <list>`<br>The variables to print. Defaults to all variables.<br> `file = <string>`The file path to log to. Defaults to "variable_dump". Does not include the `.log` extension.<br> `text = <string>`Text to prepend. Defaults to "No Header".<br> `append = <bool>`Whether to append to the file instead of overwrite. Defaults to `yes` | *(example below)* | Dumps the specified variables from the current scope and optionally the global scope into a log file with the specified name. | The log will be within `/Hearts of Iron IV/logs/variable_dumps/` in the [user directory](<Modding - Hearts of Iron 4 Wiki.md>). See also [debugging variables](<Data structures - Hearts of Iron 4 Wiki.md#Debugging>). | 1.5 |
+
+**Example: print_variables**
+
+```text
+print_variables = {
+    var_list = { myvar1 myvar2 }
+    file = "my_dump_file"
+    text = "my header"
+}
+```
 
 ## Country scope <a id="Country_scope"></a>
 
@@ -294,20 +639,59 @@ General country-scoped triggers:
 | tag | `<scope> / <variable>`<br>The country to check. | `tag = GER``tag = var:my_country` | Checks if the current scope is the specified country. | Only checks the actual tag while excluding dynamic countries, see original_tag if they should be included. | 1.0 |
 | original_tag | `<scope> / <variable>`<br>The country to check. | `original_tag = GER``original_tag = var:my_country` | Checks if the current scope originates from the specified country. | This also includes dynamic countries: civil war breakaways and countries created via [create_dynamic_country](<Effects - Hearts of Iron 4 Wiki.md>). True for the original country. | 1.0 |
 | is_ai | `<bool>`<br>Boolean. | `is_ai = yes` | Checks if the current scope is AI. |  | 1.0 |
-| has_collaboration | `target = <country>`<br>The country to check.<br> `value <> <decimal>`<br>The value of the collaboration on the 0-1 scale. | `has_collaboration = {`<br>`    target = GER`<br>`    value > 0.5`<br>`}` | Checks if the current scope has a collaboration level in the target scope. | The target is occupied by the current scope. Must use < or > in the value argument. | 1.9 |
+| has_collaboration | `target = <country>`<br>The country to check.<br> `value <> <decimal>`<br>The value of the collaboration on the 0-1 scale. | *(example below)* | Checks if the current scope has a collaboration level in the target scope. | The target is occupied by the current scope. Must use < or > in the value argument. | 1.9 |
 | has_country_flag | `<string>`<br>The flag to check. | `has_country_flag = my_flag` | Checks if the current scope has the specified flag. |  | 1.0 |
-| has_country_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | `has_country_flag = {`<br>`    flag = my_flag`<br>`    days > 30`<br>`    date > 1936.6.1`<br>`    value > 0`<br>`}` | Compares the specified flag's last set date, days since last set, and/or value. | If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.0 |
+| has_country_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | *(example below)* | Compares the specified flag's last set date, days since last set, and/or value. | If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.0 |
 | has_cosmetic_tag | `<string>`<br>The cosmetic tag to check. | `has_cosmetic_tag = SOV_custom` | Checks if the current scope has the specified cosmetic tag active. |  | 1.5 |
 | has_event_target | `<event target>`<br>The event target to check. | `has_event_target = my_var` | Checks if current scope or global scope has the specified event target saved. |  | 1.0 |
 | has_decision | `<string>`<br>The decision to check. | `has_decision = my_decision` | Checks if the current scope has the specified decision activated. |  | 1.5 |
-| has_dynamic_modifier | `modifier = <string>`<br>The dynamic_modifier to check. <br> `scope = <scope>`<br> The country to check. Optional, if the original modifier has been targeted. | `has_dynamic_modifier = {`<br>`    modifier = my_dynamic_modifier`<br>`    scope = GER`<br>`}` | Checks if the current scope has the specified dynamic modifier activated. |  | 1.6 |
+| has_dynamic_modifier | `modifier = <string>`<br>The dynamic_modifier to check. <br> `scope = <scope>`<br> The country to check. Optional, if the original modifier has been targeted. | *(example below)* | Checks if the current scope has the specified dynamic modifier activated. |  | 1.6 |
 | has_active_mission | `<string>`<br>The mission to check. | `has_active_mission = my_mission` | Checks if the current scope has the specified mission active. |  | 1.5 |
 | has_country_custom_difficulty_setting | `<bool>`<br>Boolean. | `has_country_custom_difficulty_setting = yes` | Checks if the any custom difficulty setting targeting the current scope is changed from the default value. | Custom difficulty in this case refers to `/Hearts of Iron IV/common/difficulty_settings/*.txt`, used in base game to strengthen a specific country. | 1.0 |
 | has_terrain | `<terrain>`<br>Terrain. | `has_terrain = urban` | Checks if the current scope has any provinces of the specified terrain. | Only can be used in country scope. | 1.11 |
 | is_dynamic_country | `<bool>`<br>Boolean. | `is_dynamic_country = yes` | Checks if the current scope is a dynamic country. | Dynamic countries include those generated in civil wars as well as those generated with the create_dynamic_country effect, such as collaboration governments. | 1.11 |
 | num_of_supply_nodes | `<int>`<br>The amount to check for. | `num_of_supply_nodes > 10` | Checks if the current scope has the specified amount of supply nodes under control. | Can only use < or > operators. | 1.11 |
 | <resource> (resource_count_trigger) | `<int>`<br>The amount to check for. | `tungsten > 10` | Checks if the current scope has the specified amount of the specified resource. | Must use either > or < operators for amount. Can also be used in state scope. | ??? |
-| has_resources_in_country | `resource = <resource>`<br>The resource to check for.<br> `amount = <int>`<br>The amount to check for.<br> `extracted = <bool>`<br>Limits the checked resources only to those gained from the state's base value and multiplicative modifiers on top of it if true. Optional, defaults to false.<br> `buildings = <bool>`<br>Limits the checked resources only to those gained from the state's modifiers applied by buildings. Optional, defaults to false. | `has_resources_in_country = {`<br>`    resource = oil`<br>`    amount > 10`<br>`    extracted = yes`<br>`}` | Checks if the current scope has the specified amount of the specified resource in reserve. | Must use either > or < operators for amount. 'In reserve' means that it's not spent on equipment production or exports. | 1.12 |
+| has_resources_in_country | `resource = <resource>`<br>The resource to check for.<br> `amount = <int>`<br>The amount to check for.<br> `extracted = <bool>`<br>Limits the checked resources only to those gained from the state's base value and multiplicative modifiers on top of it if true. Optional, defaults to false.<br> `buildings = <bool>`<br>Limits the checked resources only to those gained from the state's modifiers applied by buildings. Optional, defaults to false. | *(example below)* | Checks if the current scope has the specified amount of the specified resource in reserve. | Must use either > or < operators for amount. 'In reserve' means that it's not spent on equipment production or exports. | 1.12 |
+
+**Example: has_collaboration**
+
+```text
+has_collaboration = {
+    target = GER
+    value > 0.5
+}
+```
+
+**Example: has_country_flag**
+
+```text
+has_country_flag = {
+    flag = my_flag
+    days > 30
+    date > 1936.6.1
+    value > 0
+}
+```
+
+**Example: has_dynamic_modifier**
+
+```text
+has_dynamic_modifier = {
+    modifier = my_dynamic_modifier
+    scope = GER
+}
+```
+
+**Example: has_resources_in_country**
+
+```text
+has_resources_in_country = {
+    resource = oil
+    amount > 10
+    extracted = yes
+}
+```
 
 ### National focuses <a id="National_focuses"></a>
 
@@ -317,8 +701,17 @@ National focus-related country-scoped triggers:
 | --- | --- | --- | --- | --- | --- |
 | has_focus_tree | `<string>`<br>The focus tree to check. | `has_focus_tree = soviet_tree` | Checks if the current scope has the specified focus tree. |  | 1.3 |
 | has_completed_focus | `<string>`<br>The focus to check. | `has_completed_focus = my_focus` | Checks if the current scope has the specified focus completed. |  | 1.0 |
-| focus_progress | `focus = <string>`<br>The focus to check.<br> `progress = <string>`<br>The progress to check for. | `focus_progress = {`<br>`  focus = my_focus`<br>`  progress > 0.5`<br>`}` | Checks if the specified focus has been completed the specified percent for the current scope. | Must use either > or < operators for progress. | 1.0 |
+| focus_progress | `focus = <string>`<br>The focus to check.<br> `progress = <string>`<br>The progress to check for. | *(example below)* | Checks if the specified focus has been completed the specified percent for the current scope. | Must use either > or < operators for progress. | 1.0 |
 | has_shine_effect_on_focus | `<string>`<br>The focus to check. | `has_shine_effect_on_focus = GER_wunderwaffe` | Check if country has shine effect on focus (either manually achieved or by being worked on). | Note that tooltips are only shown in debug mode. Shine can be added manually by selecting focus, or via [activate_shine_on_focus](<Effects - Hearts of Iron 4 Wiki.md>) effect. | 1.15 |
+
+**Example: focus_progress**
+
+```text
+focus_progress = {
+  focus = my_focus
+  progress > 0.5
+}
+```
 
 ### Politics <a id="Politics"></a>
 
@@ -340,11 +733,20 @@ Political country-scoped triggers:
 | is_target_of_coup | `<bool>`<br>Boolean. | `is_target_of_coup = yes` | Checks if the current scope is the target of a coup. |  | 1.0 |
 | has_civil_war | `<bool>`<br>Boolean. | `has_civil_war = yes` | Checks if the current scope has a civil war active. |  | 1.0 |
 | civilwar_target | `<scope>`<br>The target country. | `civilwar_target = GER` | Checks if the specified country is a target of a civil war. |  | 1.0 |
-| has_manpower_for_recruit_change_to | `value = <float>`<br>The amount to check for. `group = <group>`<br>The group to check for. | `has_manpower_for_recruit_change_to = {`<br>`    value > 0.05`<br>`    group = mobilization_laws`<br>`}` | Checks if the current scope has the specified amount of manpower for changing the specified idea group. | **Must** use either > or < operators as = operator checks for the **exact** value | 1.0 |
+| has_manpower_for_recruit_change_to | `value = <float>`<br>The amount to check for. `group = <group>`<br>The group to check for. | *(example below)* | Checks if the current scope has the specified amount of manpower for changing the specified idea group. | **Must** use either > or < operators as = operator checks for the **exact** value | 1.0 |
 | has_rule | `<string>`<br>The rule to check for. | `has_rule = can_create_factions` | Checks if the current scope has the specified country rule. |  | 1.6 |
 | has_casualties_war_support | `<float> / <variable>`<br>The amount to check for. | `has_casualties_war_support < 0` | Checks if the current scope has the specified percentage of war support from own combat casualties. | Must use either > or < operators. | 1.12 |
 | has_convoys_war_support | `<float> / <variable>`<br>The amount to check for. | `has_convoys_war_support < 0` | Checks if the current scope has the specified percentage of war support from own convoys sunk. | Must use either > or < operators. | 1.12 |
 | has_bombing_war_support | `<float> / <variable>`<br>The amount to check for. | `has_bombing_war_support < 0` | Checks if the current scope has the specified percentage of war support from own states bombed by the enemy. | Must use either > or < operators. | 1.12 |
+
+**Example: has_manpower_for_recruit_change_to**
+
+```text
+has_manpower_for_recruit_change_to = {
+    value > 0.05
+    group = mobilization_laws
+}
+```
 
 ### Balance of power <a id="Balance_of_power"></a>
 
@@ -354,14 +756,76 @@ Balance of power-related country-scoped triggers:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| has_power_balance | `id = <bop ID>`<br>The balance to check for. | `has_power_balance = {`<br>`    id = TAG_my_bop`<br>`}` | Checks if the current scope has the specified balance of power active. |  | 1.12 |
+| has_power_balance | `id = <bop ID>`<br>The balance to check for. | *(example below)* | Checks if the current scope has the specified balance of power active. |  | 1.12 |
 | has_any_power_balance | `<bool>`<br>Boolean. | `has_any_power_balance = yes` | Checks if the current scope has any balance of power active. |  | 1.12 |
-| power_balance_value | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | `power_balance_value = {`<br>`    id = TAG_my_bop`<br>`    value > 0.7`<br>`}` | Checks if the current scope has the specified value within the balance of power. | Either =, >, or < operators are allowed. | 1.12 |
-| power_balance_daily_change | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | `power_balance_daily_change = {`<br>`    id = TAG_my_bop`<br>`    value < -0.01`<br>`}` | Checks if the current scope's balance of power changes each day by the specified value. | Either =, >, or < operators are allowed. | 1.12 |
-| power_balance_weekly_change | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | `power_balance_weekly_change = {`<br>`    id = TAG_my_bop`<br>`    value < -0.01`<br>`}` | Checks if the current scope's balance of power changes each week by the specified value. | Either =, >, or < operators are allowed. | 1.12 |
-| is_power_balance_in_range | `id = <bop ID>`<br>The balance to check in.<br> `range = <range ID>`<br>The range to check for. | `is_power_balance_in_range = {`<br>`    id = TAG_my_bop`<br>`    range > TAG_my_bop_right_range`<br>`}` | Checks if the current scope's balance of power value lies within the specified range. | Ranges are defined within the balance of power. Can use either =, >, and < operators. In case of > or <, the comparison is 'strict', i.e. excluding the range itself. | 1.12 |
-| is_power_balance_side_active | `id = <bop ID>`<br>The balance to check in.<br> `side = <side ID>`<br>The side to check. | `is_power_balance_side_active = {`<br>`    id = TAG_my_bop`<br>`    side = TAG_my_bop_right_range`<br>`}` | Checks if the specified balance of power has a side active. | Sides are defined within the balance of power. "Active" means that the side is among those that are currently visible instead of relying on the current value. | 1.12 |
-| has_power_balance_modifier | `id = <bop ID>`<br>The balance to check in.<br> `modifier = <modifier ID>`<br>The [static modifier](<Modifiers - Hearts of Iron 4 Wiki.md>). | `has_power_balance_modifier = {`<br>`    id = TAG_my_bop`<br>`    modifier = TAG_my_bop_modifier`<br>`}` | Checks if the current scope's balance of power value activates a modifier. | BoP modifiers are defined within `/Hearts of Iron IV/common/modifiers/*.txt` files, while they're activated in the balance of power definition. | 1.12 |
+| power_balance_value | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | *(example below)* | Checks if the current scope has the specified value within the balance of power. | Either =, >, or < operators are allowed. | 1.12 |
+| power_balance_daily_change | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | *(example below)* | Checks if the current scope's balance of power changes each day by the specified value. | Either =, >, or < operators are allowed. | 1.12 |
+| power_balance_weekly_change | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | *(example below)* | Checks if the current scope's balance of power changes each week by the specified value. | Either =, >, or < operators are allowed. | 1.12 |
+| is_power_balance_in_range | `id = <bop ID>`<br>The balance to check in.<br> `range = <range ID>`<br>The range to check for. | *(example below)* | Checks if the current scope's balance of power value lies within the specified range. | Ranges are defined within the balance of power. Can use either =, >, and < operators. In case of > or <, the comparison is 'strict', i.e. excluding the range itself. | 1.12 |
+| is_power_balance_side_active | `id = <bop ID>`<br>The balance to check in.<br> `side = <side ID>`<br>The side to check. | *(example below)* | Checks if the specified balance of power has a side active. | Sides are defined within the balance of power. "Active" means that the side is among those that are currently visible instead of relying on the current value. | 1.12 |
+| has_power_balance_modifier | `id = <bop ID>`<br>The balance to check in.<br> `modifier = <modifier ID>`<br>The [static modifier](<Modifiers - Hearts of Iron 4 Wiki.md>). | *(example below)* | Checks if the current scope's balance of power value activates a modifier. | BoP modifiers are defined within `/Hearts of Iron IV/common/modifiers/*.txt` files, while they're activated in the balance of power definition. | 1.12 |
+
+**Example: has_power_balance**
+
+```text
+has_power_balance = {
+    id = TAG_my_bop
+}
+```
+
+**Example: power_balance_value**
+
+```text
+power_balance_value = {
+    id = TAG_my_bop
+    value > 0.7
+}
+```
+
+**Example: power_balance_daily_change**
+
+```text
+power_balance_daily_change = {
+    id = TAG_my_bop
+    value < -0.01
+}
+```
+
+**Example: power_balance_weekly_change**
+
+```text
+power_balance_weekly_change = {
+    id = TAG_my_bop
+    value < -0.01
+}
+```
+
+**Example: is_power_balance_in_range**
+
+```text
+is_power_balance_in_range = {
+    id = TAG_my_bop
+    range > TAG_my_bop_right_range
+}
+```
+
+**Example: is_power_balance_side_active**
+
+```text
+is_power_balance_side_active = {
+    id = TAG_my_bop
+    side = TAG_my_bop_right_range
+}
+```
+
+**Example: has_power_balance_modifier**
+
+```text
+has_power_balance_modifier = {
+    id = TAG_my_bop
+    modifier = TAG_my_bop_modifier
+}
+```
 
 ### Buildings <a id="Buildings"></a>
 
@@ -380,9 +844,27 @@ Building-related country-scoped triggers:
 | num_of_controlled_factories | `<int>`<br>The amount to check for. | `num_of_controlled_factories > 10` | Checks if the current scope has the specified amount of military, civilian or dockyard factories under control. | Must use either > or < operators. | 1.11 |
 | num_of_owned_factories | `<int>`<br>The amount to check for. | `num_of_owned_factories > 10` | Checks if the current scope has the specified amount of military, civilian or dockyard factories under owned states. | Must use either > or < operators. | 1.11 |
 | num_of_civilian_factories_available_for_projects | `<int>`<br>The amount to check for. | `num_of_civilian_factories_available_for_projects > 10` | Checks if the current scope has the specified amount of civilian factories usable for projects. | Must use either > or < operators. | 1.5 |
-| ic_ratio | `tag = <scope>`<br>The country to check. `ratio = <float>`<br>The ratio to check for. | `ic_ratio = {`<br>`    tag = GER`<br>`    ratio > 0.5`<br>`}` | Checks if the current scope has the specified ratio of factories with the target country. | Must use either > or < operators for ratio. | 1.0 |
+| ic_ratio | `tag = <scope>`<br>The country to check. `ratio = <float>`<br>The ratio to check for. | *(example below)* | Checks if the current scope has the specified ratio of factories with the target country. | Must use either > or < operators for ratio. | 1.0 |
 | has_damaged_buildings | `<bool>`<br>Boolean. | `has_damaged_buildings = yes` | Checks if the current scope has any damanged buildings in their states. |  | 1.0 |
-| has_built | `type = <building>`<br>The building to check for. `value = <int>`<br>The amount to check for. | `has_built = {`<br>`    type = arms_factory`<br>`    value > 10`<br>`}` | Checks if the current scope has built the specified building the specified number of times. | Must use either > or < operators for value. | 1.0 |
+| has_built | `type = <building>`<br>The building to check for. `value = <int>`<br>The amount to check for. | *(example below)* | Checks if the current scope has built the specified building the specified number of times. | Must use either > or < operators for value. | 1.0 |
+
+**Example: ic_ratio**
+
+```text
+ic_ratio = {
+    tag = GER
+    ratio > 0.5
+}
+```
+
+**Example: has_built**
+
+```text
+has_built = {
+    type = arms_factory
+    value > 10
+}
+```
 
 ### Technology <a id="Technology"></a>
 
@@ -397,11 +879,27 @@ Technology-related country-scoped triggers:
 | amount_research_slots | `<int>`<br>The amount to check for. | `amount_research_slots > 3` | Checks if the current scope has the specified amount of research slots. | Must use either > or < operators. | 1.3 |
 | is_in_tech_sharing_group | `<string>`<br>The group to check for. | `is_in_tech_sharing_group = us_research` | Checks if the current scope is in the specified technology sharing group. |  | 1.3 |
 | num_tech_sharing_groups | `<int>`<br>The amount to check for. | `num_tech_sharing_groups > 3` | Checks if the current scope is in the specified amount of technology sharing groups. | Must use either > or < operators. | 1.3 |
-| has_tech_bonus | `technology = <string>`<br>The technology to check for. Optional.<br> `category = <string>`<br>The category to check for. Optional.<br> | `has_tech_bonus = {`<br>`    technology = my_tech`<br>`}``has_tech_bonus = {`<br>`    category = my_category`<br>`}` | Checks if the current scope has a technology bonus in the specified category, or for the specific technology. |  | 1.3 |
+| has_tech_bonus | `technology = <string>`<br>The technology to check for. Optional.<br> `category = <string>`<br>The category to check for. Optional.<br> | *(example below)* *(example below)* | Checks if the current scope has a technology bonus in the specified category, or for the specific technology. |  | 1.3 |
 | land_doctrine_level | `<int>`<br>The amount to check for. | `land_doctrine_level > 2` | Checks if the current scope has the specified amount of land doctrine technologies. | Must use either > or < operators. | 1.0 |
 | num_researched_technologies | `<int>`<br>The amount to check for. | `num_researched_technologies > 10` | Checks how many technologies the target has researched. | Must use either > or < operators. | 1.3 |
 | is_special_project_being_researched | `sp:<string>`<br>A special project to check for. | `is_special_project_being_researched = sp:sp_air_radar` | Checks if the country in scope is currently researching the special project in input. |  | 1.15 |
 | is_special_project_completed | `sp:<string>`<br>A special project to check for. | `is_special_project_completed = sp:sp_land_flamethrower_tank` | Checks if the current scope has the specified special project completed. |  | 1.15 |
+
+**Example: has_tech_bonus**
+
+```text
+has_tech_bonus = {
+    technology = my_tech
+}
+```
+
+**Example: has_tech_bonus**
+
+```text
+has_tech_bonus = {
+    category = my_category
+}
+```
 
 ### Ideas <a id="Ideas"></a>
 
@@ -411,9 +909,40 @@ Idea-related country-scoped triggers:
 | --- | --- | --- | --- | --- | --- |
 | has_idea | `<string>`<br>The idea to check for. | `has_idea = my_idea` | Checks if the current scope has the specified idea. |  |  |
 | has_idea_with_trait | `<string>`<br>The trait to check for. | `has_idea_with_trait = my_trait` | Checks if the current scope has any ideas with the specified trait. |  | 1.0 |
-| has_allowed_idea_with_traits | `idea = <string>`<br>The trait to check for.<br> `limit = <int>`<br>The amount to check for.<br> `characters = <bool>`<br>If set, will only run this on characters.<br> `ignore = { <ideas> }`<br>If set, ignores the ideas inside. Optional.<br> | `has_available_idea_with_traits = {`<br>`    idea = my_trait`<br>`    limit = 1`<br>`    ignore = { generic_head_of_intelligence }`<br>`}` | Checks if the current scope has the specified amount of ideas with the specified trait. | ignore = idea_name works for 1 idea. | 1.9.1 |
-| has_available_idea_with_traits | `idea = <string>`<br>The trait to check for.<br> `limit = <int>`<br>The amount to check for.<br> `characters = <bool>`<br>If set, will only run this on characters.<br> `ignore = { <ideas> }`<br>If set, ignores the ideas inside. Optional.<br> | `has_available_idea_with_traits = {`<br>`    idea = my_trait`<br>`    limit = 1`<br>`    ignore = { generic_head_of_intelligence }`<br>`}` | Checks if the current scope has the specified amount of ideas with the specified trait. | ignore = idea_name works for 1 idea. | 1.0 |
-| amount_taken_ideas | `amount = <int>`<br>The amount to check for. `slots = { <string> }`<br>The slot type. | `amount_taken_ideas = {`<br>`    amount > 3`<br>`    slots = {`<br>`        political_advisor`<br>`    }`<br>`}` | Checks if the current scope has the specified amount of ideas of the specified slot type. Excludes spirits, hidden ideas, and laws. | Slots types are found in `/Hearts of Iron IV/common/idea_tags/*.txt`. | 1.4 |
+| has_allowed_idea_with_traits | `idea = <string>`<br>The trait to check for.<br> `limit = <int>`<br>The amount to check for.<br> `characters = <bool>`<br>If set, will only run this on characters.<br> `ignore = { <ideas> }`<br>If set, ignores the ideas inside. Optional.<br> | *(example below)* | Checks if the current scope has the specified amount of ideas with the specified trait. | ignore = idea_name works for 1 idea. | 1.9.1 |
+| has_available_idea_with_traits | `idea = <string>`<br>The trait to check for.<br> `limit = <int>`<br>The amount to check for.<br> `characters = <bool>`<br>If set, will only run this on characters.<br> `ignore = { <ideas> }`<br>If set, ignores the ideas inside. Optional.<br> | *(example below)* | Checks if the current scope has the specified amount of ideas with the specified trait. | ignore = idea_name works for 1 idea. | 1.0 |
+| amount_taken_ideas | `amount = <int>`<br>The amount to check for. `slots = { <string> }`<br>The slot type. | *(example below)* | Checks if the current scope has the specified amount of ideas of the specified slot type. Excludes spirits, hidden ideas, and laws. | Slots types are found in `/Hearts of Iron IV/common/idea_tags/*.txt`. | 1.4 |
+
+**Example: has_allowed_idea_with_traits**
+
+```text
+has_available_idea_with_traits = {
+    idea = my_trait
+    limit = 1
+    ignore = { generic_head_of_intelligence }
+}
+```
+
+**Example: has_available_idea_with_traits**
+
+```text
+has_available_idea_with_traits = {
+    idea = my_trait
+    limit = 1
+    ignore = { generic_head_of_intelligence }
+}
+```
+
+**Example: amount_taken_ideas**
+
+```text
+amount_taken_ideas = {
+    amount > 3
+    slots = {
+        political_advisor
+    }
+}
+```
 
 ### Diplomacy <a id="Diplomacy"></a>
 
@@ -441,19 +970,46 @@ Diplomatic country-scoped triggers:
 | compare_autonomy_state | `<string>`<br>The autonomy state to check for. | `compare_autonomy_state > autonomy_dominion` | Checks if the current scope's autonomy state `min_freedom_level` is less or greater than that of the specified autonomy state. The special value "autonomy_free" compares as greater than any autonomy state. If the current scope is not a subject, it is treated as greater than any autonomy state (including "autonomy_free"). With `=`, checks if the current scope is in the specified autonomous state. |  | 1.0 |
 | compare_autonomy_progress_ratio | `<float>`<br>The amount to check for. | `compare_autonomy_progress_ratio > 0.5` | Checks if the current scope autonomy progress is at the specified ratio. If the current scope is not a subject, the ratio is 1. |  | 1.3 |
 | has_opinion_modifier | `<string>`<br>The opinion modifier to check for. | `has_opinion_modifier = my_modifier` | Checks if the current scope has the specified opinion modifier. |  | 1.0 |
-| has_opinion | `target = <scope>`<br>The country to check for. `value = <float>`<br>The amount to check for. | `has_opinion = {`<br>`    target = GER`<br>`    value > 50`<br>`}` | Checks if the current scope has the specified opinion of the target country. | Must use either > or < operators. | 1.0 |
-| has_relation_modifier | `target = <scope>`<br>The country to check for. `modifier = <modifier>`<br>The modifier to check for. | `has_relation_modifier = {`<br>`    target = GER`<br>`    modifier = my_modifier`<br>`}` | Checks if the current scope has the specified relation modifier with the specified country. |  | 1.0 |
+| has_opinion | `target = <scope>`<br>The country to check for. `value = <float>`<br>The amount to check for. | *(example below)* | Checks if the current scope has the specified opinion of the target country. | Must use either > or < operators. | 1.0 |
+| has_relation_modifier | `target = <scope>`<br>The country to check for. `modifier = <modifier>`<br>The modifier to check for. | *(example below)* | Checks if the current scope has the specified relation modifier with the specified country. |  | 1.0 |
 | has_legitimacy | `<int>`<br>Amount to check. | `has_legitimacy > 50` | Checks how much legitimacy the current government in exile has. | Must use either > or < operators. Legitimacy ranges from 0 to 100. | 1.6 |
 | is_exile_host | `<bool>`<br>Boolean. | `is_exile_host = yes` | Checks if the current country is hosting an exile. |  | 1.6 |
 | is_hosting_exile | `<tag>`<br>Country. | `is_hosting_exile = POL` | Checks if the current country is hosting a specific exile. |  | 1.6 |
 | is_government_in_exile | `<bool>`<br>Boolean. | `is_government_in_exile = yes` | Checks if the current country is exiled in a different country. |  | 1.6 |
 | is_exiled_in | `<tag>`<br>Country to be exiled in. | `is_exiled_in = POL` | Checks if the current country is exiled in a specific country. |  | 1.6 |
-| received_expeditionary_forces | `sender = <tag>`<br>Country which sent forces. `value <> <int>`<br>Amount of forces. | `received_expeditionary_forces = {`<br>`    sender = POL`<br>`    value > 10`<br>`}` | Checks if the current country received X units in expeditions from the specified country. |  | 1.6 |
+| received_expeditionary_forces | `sender = <tag>`<br>Country which sent forces. `value <> <int>`<br>Amount of forces. | *(example below)* | Checks if the current country received X units in expeditions from the specified country. |  | 1.6 |
 | can_declare_war_on | `<tag>`<br>Country to check. | `can_declare_war_on = POL` | Checks if the current scope is able to declare war on the specified country. |  | 1.9 |
 | foreign_manpower | `<int>`<br>Amount to check. | `foreign_manpower > 10000` | Checks how much foreign manpower we have received for garrisoning. | Must use either > or < operators. | 1.9 |
 | is_embargoed_by | `<tag>`<br>Country to check. | `is_embargoed_by = USA` | Checks if the current scope is embargoed by the specified country. |  | 1.12 |
 | is_embargoing | `<tag>`<br>Country to check. | `is_embargoing = CUB` | Checks if the current scope is embargoing the specified country. |  | 1.12 |
 | has_market_access_with | `<tag>`<br>Country to check. | `has_market_access_with = CUB` | Checks if the current scope has market access with the specified country. |  |  |
+
+**Example: has_opinion**
+
+```text
+has_opinion = {
+    target = GER
+    value > 50
+}
+```
+
+**Example: has_relation_modifier**
+
+```text
+has_relation_modifier = {
+    target = GER
+    modifier = my_modifier
+}
+```
+
+**Example: received_expeditionary_forces**
+
+```text
+received_expeditionary_forces = {
+    sender = POL
+    value > 10
+}
+```
 
 ### Faction <a id="Faction"></a>
 
@@ -472,7 +1028,7 @@ Faction-related country-scoped triggers:
 | has_active_rule | `<rule_id>`<br>Faction rule id. | `has_active_rule = government_in_exile_allowed` | Checks if the country's faction has a specific active rule. |  | 1.17 |
 | has_faction_goal | `<goal_id>`<br>Faction goal id. | `has_faction_goal = faction_goal_resource_control` | Checks if the country's faction has an active or completed goal. |  | 1.17 |
 | has_completed_faction_goal | `<goal_id>`<br>Faction goal id. | `has_completed_faction_goal = faction_goal_resource_control` | Checks if the country's faction has successfully completed a goal. |  | 1.17 |
-| faction_goal_fulfillment | `goal = <goal_id>`<br>Faction goal id. `value = <float> / <variable>`<br>The amount to check for. | `faction_goal_fulfillment = {`<br>`    goal = faction_goal_resource_control`<br>`    value > 0.85`<br>`}``faction_goal_fulfillment = {`<br>`    goal = faction_goal_resource_control`<br>`    value > 0.5`<br>`    value < 0.85`<br>`}` | Checks fulfillment of a faction goal for the current country's faction. | Value supports > and <, can accept variables, can be repeated multiple times. | 1.17 |
+| faction_goal_fulfillment | `goal = <goal_id>`<br>Faction goal id. `value = <float> / <variable>`<br>The amount to check for. | *(example below)* *(example below)* | Checks fulfillment of a faction goal for the current country's faction. | Value supports > and <, can accept variables, can be repeated multiple times. | 1.17 |
 | faction_manifest_fulfillment | `<float> / <variable>`<br>The amount to check for. | `faction_manifest_fulfillment > 0.95` | Checks manifest fulfillment value of current country's faction manifest. |  | 1.17 |
 | faction_upgrade_level | `<upgrade_token>`<br>Faction upgrade token. | `faction_upgrade_level > upgrade_token` | Checks the active faction member upgrade against the specified upgrade. | Works with >, <, = | 1.17 |
 | faction_power_projection | `<int> / <variable>`<br>The amount to check for. | `faction_power_projection > 100` | Checks power value of current country's faction projection. |  | 1.17 |
@@ -482,7 +1038,35 @@ Faction-related country-scoped triggers:
 | can_assign_supportive_scientist_to_faction | `<specialization>`<br>Specialization. | `can_assign_supportive_scientist_to_faction = specialization_land` | Checks if the faction from the country in scope has a free slot for a supportive scientist for the country with the specialization type. |  | 1.17 |
 | has_faction_research_unlocked | `<bool>`<br>Boolean. | `has_faction_research_unlocked = yes` | Whether the faction has unlocked the research. |  | 1.17 |
 | has_faction_military_unlocked | `<bool>`<br>Boolean. | `has_faction_military_unlocked = yes` | Whether the faction has unlocked the military operations. |  | 1.17 |
-| compare_ideology_with_faction | `value = <float> / <variable>`<br>The amount to check for. `leader = <tag>`<br>Country to check. | `compare_ideology_with_faction = {`<br>`    value > 0.5`<br>`    leader = FROM`<br>`}` | Compares the ideology support of the country's ruling party for the ideology of the faction it wants to join. | Tooltip is visible only if 'leader' is in faction. | 1.17 |
+| compare_ideology_with_faction | `value = <float> / <variable>`<br>The amount to check for. `leader = <tag>`<br>Country to check. | *(example below)* | Compares the ideology support of the country's ruling party for the ideology of the faction it wants to join. | Tooltip is visible only if 'leader' is in faction. | 1.17 |
+
+**Example: faction_goal_fulfillment**
+
+```text
+faction_goal_fulfillment = {
+    goal = faction_goal_resource_control
+    value > 0.85
+}
+```
+
+**Example: faction_goal_fulfillment**
+
+```text
+faction_goal_fulfillment = {
+    goal = faction_goal_resource_control
+    value > 0.5
+    value < 0.85
+}
+```
+
+**Example: compare_ideology_with_faction**
+
+```text
+compare_ideology_with_faction = {
+    value > 0.5
+    leader = FROM
+}
+```
 
 ### War <a id="War"></a>
 
@@ -499,27 +1083,63 @@ War-related country-scoped triggers:
 | has_defensive_war | `<bool>`<br>Boolean. | `has_defensive_war = yes` | Checks if the current scope is in a defensive war. |  | 1.0 |
 | has_war_together_with | `<scope> / <variable>`<br>The country to check for. | `has_war_together_with = GER` | Checks if the current scope is in a war alongside the specified country. |  | 1.0 |
 | has_war_with_major | `<bool>`<br>Boolean. | `has_war_with_major = yes` | Checks if the current scope is at war with any other country that is considered major. |  | 1.12 |
-| has_war_with_wargoal_against | `target = <scope> / <variable>`<br>The country to check for.<br> `type = <wargoal>`<br>The wargoal to check for. Optional. | `has_war_with_wargoal_against = {`<br>`    target = ENG`<br>`    type = independence_wargoal`<br>`}` | Checks if the current scope is at war with the specified country with the specified wargoal being active. | Wargoals are stored within `/Hearts of Iron IV/common/wargoals/*.txt` files. If no wargoal is specified, checks for *any* wargoal. Joining an ally in their war does not count as a wargoal. | 1.12 |
+| has_war_with_wargoal_against | `target = <scope> / <variable>`<br>The country to check for.<br> `type = <wargoal>`<br>The wargoal to check for. Optional. | *(example below)* | Checks if the current scope is at war with the specified country with the specified wargoal being active. | Wargoals are stored within `/Hearts of Iron IV/common/wargoals/*.txt` files. If no wargoal is specified, checks for *any* wargoal. Joining an ally in their war does not count as a wargoal. | 1.12 |
 | surrender_progress | `<float> / <variable>`<br>The amount to check for. | `surrender_progress > 0.1` | Checks if the current scope has the specified amount of surrender progress. | Must use either > or < operators. | 1.0 |
 | any_war_score | `<float>`<br>The amount to check for. | `any_war_score > 10` | Highest warscore value can be approximated by interating a variable by 1 for as long as any_war_score is greater than the variable. Checking with less than appears broken as a warscore of 0 is sometimes erroneously reported. | Must use either > or < operators. | 1.0 |
 | has_capitulated | `<bool>`<br>Boolean. | `has_capitulated = yes` | Checks if the current scope has capitulated. |  | 1.0 |
 | days_since_capitulated | `<int>`<br>Amount of days. | `days_since_capitulated > 10` | Checks the amount of days since the target last capitulated. | If the target never capitulated, the amount of days is extremely large. Recommended to combine with has_capitulated. | 1.9 |
 | has_border_war_with | `<scope> / <variable>`<br>The country to check for. | `has_border_war_with = GER` | Checks if the current scope has a border war with the specified country. |  | 1.5 |
-| has_border_war_between | `attacker = <scope> / <variable>`<br>The state to check for. `defender = <scope> / <variable>`<br>The state to check for. | `has_border_war_between = {`<br>`    attacker = 1`<br>`    defender = 2`<br>`}` | Checks if there is a border war between the two specified states. |  | 1.5 |
+| has_border_war_between | `attacker = <scope> / <variable>`<br>The state to check for. `defender = <scope> / <variable>`<br>The state to check for. | *(example below)* | Checks if there is a border war between the two specified states. |  | 1.5 |
 | has_border_war | `<bool>`<br>Boolean. | `has_border_war = yes` | Checks if the current scope has a border war active. |  | 1.5 |
 | has_added_tension_amount | `<float> / <variable>`<br>The amount to check for. | `has_added_tension_amount > 10` | Checks if the current scope has caused the specified amount of World Tension. | Must use either > or < operators. | 1.0 |
 | has_wargoal_against | `<scope> / <variable>`<br>The country to check for. | `has_wargoal_against = GER` | Checks if the current scope has any wargoal against the specified country. |  | 1.0 |
-| has_wargoal_against | `target = <scope> / <variable>`<br>The country to check for.<br> `type = <string>`<br>The type of wargoal to check for. | `has_wargoal_against = {`<br>`    target = FROM`<br>`    type = take_state`<br>`}` | Checks if the current scope has a specific wargoal type against the specified country. |  | 1.8 |
+| has_wargoal_against | `target = <scope> / <variable>`<br>The country to check for.<br> `type = <string>`<br>The type of wargoal to check for. | *(example below)* | Checks if the current scope has a specific wargoal type against the specified country. |  | 1.8 |
 | is_justifying_wargoal_against | `<scope> / <variable>`<br>The country to check for. | `is_justifying_wargoal_against = GER` | Checks if the current scope is justifying a wargoal against the specified country. |  | 1.0 |
 | has_annex_war_goal | `<scope> / <variable>`<br>The country to check for. | `has_annex_war_goal = GER` | Checks if the current scope has the Annex wargoal against the specified country. |  | 1.0 |
 | any_claim | `<bool>`<br>Boolean. | `any_claim = yes` | Will return true if  1. Is (manually) justifying on another country 2. Is being (manually) justified on 3. Has wargoal on another country 4. Another country has wargoal on the current country | Misleading name. In-game the localization says "Active or generating war goals related to `[TAG.GetNameDefCap]`" | 1.0 |
 | is_in_peace_conference | `<bool>`<br>Boolean. | `is_in_peace_conference = yes` | Checks if the current scope is in a peace conference. | Please test this in-game for 1.12. | 1.0 |
 | controls_province | `<id>`<br>The province to check for. | `controls_province = 1239` | Checks if the current scope has control of the specified province. |  | 1.9 |
 | longest_war_length | `<int>`<br>Amount of months. | `longest_war_length > 3` | Checks how long a country has been at war, in months. |  | 1.14 |
-| war_length_with | `tag = <scope> / <variable>`<br>Target country.<br> `months = <int>`<br>Amounth of months. | `war_length_with = {`<br>`    tag = GER`<br>`    months > 3`<br>`}` | Checks how long a country has been at war with specific country, in months. |  | 1.14 |
+| war_length_with | `tag = <scope> / <variable>`<br>Target country.<br> `months = <int>`<br>Amounth of months. | *(example below)* | Checks how long a country has been at war with specific country, in months. |  | 1.14 |
 | has_truce_with | `<scope> / <variable>`<br>The country to check for. | `has_truce_with = GER` | Checks if the country has truce with the specified country. |  | 1.16 |
 | has_naval_control | `<id> / <variable>`<br>The region to check in. | `has_naval_control = 16` | Checks if friendly nations and country scope together has enough naval dominance to assert control in strategic region. |  | 1.17 |
 | has_enemy_naval_control | `<id> / <variable>`<br>The region to check in. | `has_enemy_naval_control = 16` | Checks if any enemy has enough naval dominance to assert control in certain strategic region. |  | 1.17 |
+
+**Example: has_war_with_wargoal_against**
+
+```text
+has_war_with_wargoal_against = {
+    target = ENG
+    type = independence_wargoal
+}
+```
+
+**Example: has_border_war_between**
+
+```text
+has_border_war_between = {
+    attacker = 1
+    defender = 2
+}
+```
+
+**Example: has_wargoal_against**
+
+```text
+has_wargoal_against = {
+    target = FROM
+    type = take_state
+}
+```
+
+**Example: war_length_with**
+
+```text
+war_length_with = {
+    tag = GER
+    months > 3
+}
+```
 
 ### State <a id="State"></a>
 
@@ -534,15 +1154,89 @@ State-related country-scoped triggers:
 | num_of_controlled_states | `<int>`<br>The amount to check for. | `num_of_controlled_states > 5` | Checks if the current scope has the specified amount of controlled states. | Must use either > or < operators. | 1.0 |
 | num_occupied_states | `<int>`<br>The amount to check for. | `num_occupied_states > 5` | Checks if the current scope has the specified amount of occupied states. | Must use either > or < operators. | 1.0 |
 | has_full_control_of_state | `<scope> / <variable>`<br>The state to check for. | `has_full_control_of_state = 39` | Checks if the current scope has total control (100% occupation) of the specified state. |  | 1.3 |
-| has_resources_rights | `state = <scope> / <variable>`<br>The state to check in. Mandatory if used in country scope. `resources = { <resource> <...> <resource> }`<br>Resources to check for. Optional, defaults to any if unset. | `has_resources_rights = {`<br>`  state = 123`<br>`  resources = { oil steel }`<br>`}` | Checks if there are any resource rights with the specified parameters. | Can be used in either state or country scope. Always returns false if the state has no resources. Can also be used in state scope. | 1.12 |
-| core_compliance | `occupied_country_tag = <TAG>`<br>The country for which to check compliance.<br> `value = <int>`<br>The value to check for.<br> | `core_compliance = {`<br>`    occupied_country_tag = ITA`<br>`    value > 10`<br>`}` | Compares the average compliance of core states of the specified country within controlled states of the current scope. | Must use either > or < operators for value. | 1.9 |
-| core_resistance | `occupied_country_tag = <TAG>`<br>The country for which to check resistance.<br> `value = <int>`<br>The value to check for.<br> | `core_resistance = {`<br>`    occupied_country_tag = ITA`<br>`    value > 10`<br>`}` | Compares the average resistance of core states of the specified country within controlled states of the current scope. | Must use either > or < operators for value. | 1.9 |
+| has_resources_rights | `state = <scope> / <variable>`<br>The state to check in. Mandatory if used in country scope. `resources = { <resource> <...> <resource> }`<br>Resources to check for. Optional, defaults to any if unset. | *(example below)* | Checks if there are any resource rights with the specified parameters. | Can be used in either state or country scope. Always returns false if the state has no resources. Can also be used in state scope. | 1.12 |
+| core_compliance | `occupied_country_tag = <TAG>`<br>The country for which to check compliance.<br> `value = <int>`<br>The value to check for.<br> | *(example below)* | Compares the average compliance of core states of the specified country within controlled states of the current scope. | Must use either > or < operators for value. | 1.9 |
+| core_resistance | `occupied_country_tag = <TAG>`<br>The country for which to check resistance.<br> `value = <int>`<br>The value to check for.<br> | *(example below)* | Compares the average resistance of core states of the specified country within controlled states of the current scope. | Must use either > or < operators for value. | 1.9 |
 | garrison_manpower_need | `<int>`<br>Amount to check. | `garrison_manpower_need > 10000` | Checks how much garrison manpower we need for resistance in controlled states. | Must use either > or < operators. | 1.9 |
-| has_core_occupation_modifier | `occupied_country_tag = <scope> / <variable>`<br>The country to check.<br> `modifier = <token>`The modifier to check. | `has_core_occupation_modifier = {`<br>`  occupied_country_tag = ITA`<br>`  modifier = token`<br>`}` | Checks if the current scope has an occupation modifier for resistance/compliance that applies to our occupied states of a specified country. |  | 1.9 |
-| occupation_law | `<law ID>`<br>The law to check. | `POL = {`<br>`  POL = {`<br>`    occupation_law = foreign_civilian_oversight`<br>`  }`<br>`}`# Checks POL's default occupation law`HOL = {`<br>`  BEL = {`<br>`    occupation_law = foreign_civilian_oversight`<br>`  }`<br>`}`# Checks HOL's occupation law over BEL | Checks the occupation law that's either the default or applied over a specific country. | Checks [PREV's](<Scopes - Hearts of Iron 4 Wiki.md#PREV_usage>) occupation law over the current country. If they're the same scope, checks the default occupation law. Can also be used in state scope. | 1.12 |
+| has_core_occupation_modifier | `occupied_country_tag = <scope> / <variable>`<br>The country to check.<br> `modifier = <token>`The modifier to check. | *(example below)* | Checks if the current scope has an occupation modifier for resistance/compliance that applies to our occupied states of a specified country. |  | 1.9 |
+| occupation_law | `<law ID>`<br>The law to check. | *(example below)*# Checks POL's default occupation law *(example below)*# Checks HOL's occupation law over BEL | Checks the occupation law that's either the default or applied over a specific country. | Checks [PREV's](<Scopes - Hearts of Iron 4 Wiki.md#PREV_usage>) occupation law over the current country. If they're the same scope, checks the default occupation law. Can also be used in state scope. | 1.12 |
 | has_contested_owner | `<state> / <variable>`<br>State to check. | `has_contested_owner = 42` | Checks if a state has the specified country as a contested owner. The trigger can be used either from a country or a state scope and accepts the other as parameter. | Can also be used in state scope. | 1.15 |
-| owns_any_state_of | `<states>`<br>States to check. | `owns_any_state_of = {`<br>`  123`<br>`  246`<br>`}` | Check if the country owns any of the states in the list. | The same as:`OR = {`<br>`  owns_state = 123`<br>`  owns_state = 246`<br>`}` | 1.16 |
+| owns_any_state_of | `<states>`<br>States to check. | *(example below)* | Check if the country owns any of the states in the list. | The same as: *(example below)* | 1.16 |
 | is_on_same_continent_as | `<scope> / <variable>`<br>The state to check for. | `is_on_same_continent_as = 111` | Checks if the scope country is on the same continent as the given state. The capital state is used for given country tag. | Can also be used in state scope. | 1.17 |
+
+**Example: has_resources_rights**
+
+```text
+has_resources_rights = {
+  state = 123
+  resources = { oil steel }
+}
+```
+
+**Example: core_compliance**
+
+```text
+core_compliance = {
+    occupied_country_tag = ITA
+    value > 10
+}
+```
+
+**Example: core_resistance**
+
+```text
+core_resistance = {
+    occupied_country_tag = ITA
+    value > 10
+}
+```
+
+**Example: has_core_occupation_modifier**
+
+```text
+has_core_occupation_modifier = {
+  occupied_country_tag = ITA
+  modifier = token
+}
+```
+
+**Example: occupation_law**
+
+```text
+POL = {
+  POL = {
+    occupation_law = foreign_civilian_oversight
+  }
+}
+```
+
+**Example: occupation_law**
+
+```text
+HOL = {
+  BEL = {
+    occupation_law = foreign_civilian_oversight
+  }
+}
+```
+
+**Example: owns_any_state_of**
+
+```text
+owns_any_state_of = {
+  123
+  246
+}
+```
+
+**Example: owns_any_state_of**
+
+```text
+OR = {
+  owns_state = 123
+  owns_state = 246
+}
+```
 
 ### Military <a id="Military"></a>
 
@@ -554,7 +1248,7 @@ Military-related country-scoped triggers:
 | has_air_experience | `<float> / <variable>`<br>The amount to check for. | `has_air_experience > 10` | Checks if the current scope has the specified amount of Air experience. | **Must** use either > or < operators as = operator checks for the **exact** value | 1.3 |
 | has_navy_experience | `<float> / <variable>`<br>The amount to check for. | `has_navy_experience < 10` | Checks if the current scope has the specified amount of Navy experience. | **Must** use either > or < operators as = operator checks for the **exact** value | 1.3 |
 | has_manpower | `<float> / <variable>`<br>The amount to check for. | `has_manpower > 1000` | Checks if the current scope has the specified amount of manpower. | **Must** use either > or < operators as = operator checks for the **exact** value | 1.0 |
-| has_army_manpower | `size = <int>`<br>The amount to check for. | `has_army_manpower = {`<br>`    size > 1000`<br>`}` | Checks if the current scope has an army using the specified amount of manpower. | Must use either > or < operators. | 1.0 |
+| has_army_manpower | `size = <int>`<br>The amount to check for. | *(example below)* | Checks if the current scope has an army using the specified amount of manpower. | Must use either > or < operators. | 1.0 |
 | manpower_per_military_factory | `<float>`<br>The amount to check for. | `manpower_per_military_factory > 1000` | Checks if the current scope has the specified manpower times their number of military factories. | Must use either > or < operators. | 1.0 |
 | conscription_ratio | `<float> / <variable>`<br>The ratio to compare with. | `conscription_ratio < 0.2` | Checks if the current scope has the specified conscription ratio currently, not to be mixed up with the target conscription ratio. | **Must** use either > or < operators as = operator checks for the **exact** value | 1.9 |
 | current_conscription_amount | `<float> / <variable>`<br>The amount to compare with. | `current_conscription_amount > 2000` | Checks if the current scope has already conscripted that much manpower. | **Must** use either > or < operators as = operator checks for the **exact** value | 1.9 |
@@ -563,7 +1257,7 @@ Military-related country-scoped triggers:
 | num_of_nukes | `<int>`<br>The amount to check for. | `num_of_nukes > 5` | Checks if the current scope has the specified amount of nukes. | Must use either > or < operators. | 1.0 |
 | casualties | `<int>`<br>The amount to check for. | `casualties > 10000` | Checks if the current scope has suffered the specified amount of casualties. | Must use either > or < operators. | 1.0 |
 | casualties_k | `<int>`<br>The amount to check for. | `casualties_k > 10` | Checks if the current scope has suffered the specified amount of casualties in thousands. | Must use either > or < operators. | 1.0 |
-| casualties_inflicted_by | `opponent = <tag>`<br>The tag that inflicted the casualties.<br> `thousands <> <int>`<br> The amount of casualties in thousands. | `casualties_inflicted_by = {`<br>`    opponent = POL`<br>`    thousands > 10`<br>`}` | Checks if the current scope has suffered the specified amount of casualties in thousands from a specific country. | Must use either > or < operators for thousands. | 1.6 |
+| casualties_inflicted_by | `opponent = <tag>`<br>The tag that inflicted the casualties.<br> `thousands <> <int>`<br> The amount of casualties in thousands. | *(example below)* | Checks if the current scope has suffered the specified amount of casualties in thousands from a specific country. | Must use either > or < operators for thousands. | 1.6 |
 | amount_manpower_in_deployment_queue | `<float>`<br>The amount to check for. | `amount_manpower_in_deployment_queue > 1000` | Checks if the current scope has the specified amount of manpower in their deployment queue. | Must use either > or < operators. | 1.5 |
 | has_attache_from | `<scope> / <variable>`<br>The country to check for. | `has_attache_from = GER` | Checks if the current scope has an attache from the specified scope. |  | 1.5 |
 | has_attache | `<bool>`<br>Boolean. | `has_attache = yes` | Checks if the current scope has an attache. |  | 1.5 |
@@ -571,31 +1265,214 @@ Military-related country-scoped triggers:
 | has_template | `<string>`<br>The name of the template. | `has_template = "Infantry Division"` | Checks if the current scope has a division template of the specified name. |  | 1.0 |
 | has_template_majority_unit | `<string>`<br>The unit to check for. | `has_template_majority_unit = infantry` | Checks if the current scope has a division template composed mostly of the specified unit. |  | 1.0 |
 | has_template_containing_unit | `<string>`<br>The name of the unit. | `has_template_containing_unit = light_armor` | Checks if the current scope has a division template contained any of the specified unit. |  | 1.0 |
-| strength_ratio | `tag = <scope>`<br>The country to check for. `ratio <> <float>`<br>The ratio to check for. | `strength_ratio = {`<br>`    tag = GER`<br>`    ratio > 1`<br>`}` | Checks if the current scope has the specified strength ratio against the specified country. The ratio is the number of fielded divisions of the current scope divided by those of `tag` (or 1 if `tag` has no divisions). The ratio gets increased by 10% if the current scope has a stronger air forces.[2] | Must use > or < in the ratio. | 1.0 |
-| fighting_army_strength_ratio | `tag = <scope>`<br>The country to check for. `ratio <>= <float> / <variable>`<br>The ratio to check for. | `fighting_army_strength_ratio = {`<br>`    tag = GER`<br>`    ratio > 0.7`<br>`}` | Compares the total army fighting strength between the scope country and the one set with 'tag'. | Ratio can be '<','>' or '='. | 1.15 |
-| naval_strength_ratio | `tag = <scope>`<br>The country to check for. `ratio <> <float>`<br>The ratio to check for. | `naval_strength_ratio = {`<br>`    tag = GER`<br>`    ratio > 1`<br>`}` | Checks if the current scope has the specified naval strength ratio against the specified country. | Must use > or < in the ratio. | 1.0 |
-| naval_strength_comparison | `other = <scope>`<br>The country to check for.<br> `tooltip = <string>`<br>The ratio to check for. Optional.<br> `ratio <> <float>`<br>The ratio to check for.<br> `sub_unit_def_weights = { ... }` The weight to assign to each unit. Optional. | `naval_strength_comparison = {`<br>`    other = POL`<br>`    tooltip = my_loc_key_tt`<br>`    ratio > 1`<br>`    sub_unit_def_weights = {`<br>`        carrier = 1`<br>`        submarine = 2`<br>`    }`<br>`}` | Checks if the current scope has the specified naval strength ratio against the specified country. | Must use > or < in the ratio. If sub_unit_def_weights is unset, each unit is assumed to have 1 weight. If sub_unit_def_weights is set, only specified units will be counted towards strength. Units are defined in `/Hearts of Iron IV/common/units/*.txt`. | 1.6 |
+| strength_ratio | `tag = <scope>`<br>The country to check for. `ratio <> <float>`<br>The ratio to check for. | *(example below)* | Checks if the current scope has the specified strength ratio against the specified country. The ratio is the number of fielded divisions of the current scope divided by those of `tag` (or 1 if `tag` has no divisions). The ratio gets increased by 10% if the current scope has a stronger air forces.[2] | Must use > or < in the ratio. | 1.0 |
+| fighting_army_strength_ratio | `tag = <scope>`<br>The country to check for. `ratio <>= <float> / <variable>`<br>The ratio to check for. | *(example below)* | Compares the total army fighting strength between the scope country and the one set with 'tag'. | Ratio can be '<','>' or '='. | 1.15 |
+| naval_strength_ratio | `tag = <scope>`<br>The country to check for. `ratio <> <float>`<br>The ratio to check for. | *(example below)* | Checks if the current scope has the specified naval strength ratio against the specified country. | Must use > or < in the ratio. | 1.0 |
+| naval_strength_comparison | `other = <scope>`<br>The country to check for.<br> `tooltip = <string>`<br>The ratio to check for. Optional.<br> `ratio <> <float>`<br>The ratio to check for.<br> `sub_unit_def_weights = { ... }` The weight to assign to each unit. Optional. | *(example below)* | Checks if the current scope has the specified naval strength ratio against the specified country. | Must use > or < in the ratio. If sub_unit_def_weights is unset, each unit is assumed to have 1 weight. If sub_unit_def_weights is set, only specified units will be counted towards strength. Units are defined in `/Hearts of Iron IV/common/units/*.txt`. | 1.6 |
 | alliance_strength_ratio | `<float> / <variable>`<br>The ratio to check for. | `alliance_strength_ratio > 0.5` | Checks if the current scope and allies has an army strength higher than the specified ratio against estimated enemy strength. | Must use either > or < operators. | 1.0 |
 | alliance_naval_strength_ratio | `<float> / <variable>`<br>The ratio to check for. | `alliance_naval_strength_ratio > 0.5` | Checks if the current scope and allies has an naval strength ratio higher than the specified ratio against estimated enemy strength. | Must use either > or < operators. | 1.0 |
 | enemies_strength_ratio | `<float> / <variable>`<br>The ratio to check for. | `enemies_strength_ratio > 0.5` | Checks if the estimated enemy army strength ratio is higher than the specified ratio. | Must use either > or < operators. | 1.0 |
 | enemies_naval_strength_ratio | `<float> / <variable>`<br>The ratio to check for. | `enemies_naval_strength_ratio > 0.5` | Checks if the estimated enemy naval strength ratio is higher than the specified ratio. | Must use either > or < operators. | 1.0 |
-| has_army_size | `size = <float>`<br>The amount to check for.<br> `type = <string>`<br>The battalion type to check for. Divisions that are majority made up of battalions in that type count. Optional, counts all divisions by default.<br> | `has_army_size = {`<br>`    size > 10`<br>`    type = armor`<br>`}` | Checks if the current scope has the specified number of divisions, or of a specified type of division. | Battalion types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.0 |
-| has_navy_size | `size = <float> / <variable>`<br>The amount to check for.<br> `type = <string>`<br>The type to check for. Optional.<br> `archetype = <string>`<br>The ship archetype to check for. Optional.<br> | `has_navy_size = {`<br>`    size > 10`<br>`    type = capital_ship`<br>`    archetype = ship_hull_heavy`<br>`}` | Checks if the current scope has the specified number of ships, or of a specified type of ship. | Ship types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. Ship archetypes are found in `/Hearts of Iron IV/common/units/equipment/*.txt` files. | 1.0 |
-| has_deployed_air_force_size | `size = <float>`<br>The amount to check for.<br> `type = <string>`<br>The type to check for. Optional.<br> | `has_deployed_air_force_size = {`<br>`    size > 10`<br>`    type = cas`<br>`}` | Checks if the current scope has the specified number of aircraft, or of a specified type of aircraft. | Airwing types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.0 |
-| divisions_in_state | `size = <float>`<br>The amount to check for.<br> `type = <string>`<br>The battalion type to check for. Divisions that are majority made up of battalions in that type count. Optional, counts all divisions by default.<br> `unit = <string>`<br>The exact battalion to check for. Divisions that are majority made up of that battalions count. Optional, counts all divisions by default.<br> `state = <scope> / <variable>`<br>The state to check in. | `divisions_in_state = {`<br>`    type = armor`<br>`    size > 10`<br>`    state = 49`<br>`}` | Checks if the specified state contains the specified amount of divisions. | Battalions and their types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.0 |
-| army_manpower_in_state | `amount <> <float>`<br>The amount to check for.<br> `type = <string>`<br>The type to check for. Optional.<br> `state = <scope> / <variable>`<br>The state to check in. | `army_manpower_in_state = {`<br>`    type = support`<br>`    amount > 10000`<br>`    state = 49`<br>`}` | Checks if the specified state contains the specified amount of army manpower within the state. | Battalion types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.6 |
-| divisions_in_border_state | `size = <float>`<br>The amount to check for.<br> `type = <string>`<br>The battalion type to check for. Divisions that are majority made up of battalions in that type count. Optional, counts all divisions by default.<br> `state = <scope> / <variable>`<br>The state to check in.<br> `border_state = <scope> / <variable>`<br>The border state to check in. | `divisions_in_border_state = {`<br>`    type = infantry`<br>`    size > 10`<br>`    state = 49`<br>`    border_state = var:state`<br>`}` | Checks if the border provinces between the specified state and border state contain the specified amount of divisions. | Battalion types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.5 |
-| num_divisions_in_states | `count = <int>`<br>The amount to check for.<br> `states = { <int> <...> <int> }`<br>The states to check in.<br> `types = { <string> <...> <string> }`<br>The battalion types to check for. Divisions that are majority made up of battalions in that type count. Optional, counts all divisions by default.<br> `exclude = { <string> <...> <string> }`<br>The sub-units to exclude from the search. Divisions that are majority made up of specified battalions are excluded. Optional, excludes no divisions by default. | `num_divisions_in_states = {`<br>`    count > 24`<br>`    states = { 550 559 271 }`<br>`    exclude = { irregular_infantry }`<br>`}` | Checks if the specified states contain enough divisions of the specified types. | Divisions and their types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Can use either =, >, or < operators for count. The tooltip does not specify the states the check runs for nor the filtered types. | 1.12 |
-| num_battalions_in_states | `count = <int>`<br>The amount to check for.<br> `states = { <int> <...> <int> }`<br>The states to check in.<br> `types = { <string> <...> <string> }`<br>The battalion types to check for.<br> `exclude = { <string> <...> <string> }`<br>The sub-units to exclude from the search. | `num_battalions_in_states = {`<br>`    count > 24`<br>`    states = { 550 559 271 }`<br>`    exclude = { irregular_infantry }`<br>`}` | Checks if the specified states contain enough battalions (or sub-units) of the specified types. | Battalions and their types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Can use either =, >, or < operators for count. The tooltip does not specify the states the check runs for nor the filtered types. | 1.12 |
-| ships_in_state_ports | `size = <float>`<br>The amount to check for.<br> `type = <string>`<br>The type to check for. Optional.<br> `state = <scope> / <variable>`<br>The state to check in.<br> | `ships_in_state_ports = {`<br>`    type = capital_ship`<br>`    size > 10`<br>`    state = 49`<br>`}` | Checks if the specified state contains the specified amount of ships, or of ships of the specified type. | Ship types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.0 |
-| num_planes_stationed_in_regions | `value = <float>`<br>The amount to check for.<br> `regions = { <id> <...> <id> }`<br>The regions to check in.<br> | `num_planes_stationed_in_regions = {`<br>`    value > 10`<br>`    regions = { 123 321 }`<br>`}` | Checks if the current scope has the specified number of aircraft stationed within strategic regions. | Must use either =, >, or < operators for value. | 1.12 |
-| has_volunteers_amount_from | `tag = <scope>`<br>The country to check for.<br> `count = <int>`<br>The amount to check for. | `has_volunteers_amount_from = {`<br>`    tag = GER`<br>`    count > 10`<br>`}` | Checks if the current scope has recieved volunteers from the specified country of the specified amounts. | Must use either > or < operators for count. | 1.0 |
+| has_army_size | `size = <float>`<br>The amount to check for.<br> `type = <string>`<br>The battalion type to check for. Divisions that are majority made up of battalions in that type count. Optional, counts all divisions by default.<br> | *(example below)* | Checks if the current scope has the specified number of divisions, or of a specified type of division. | Battalion types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.0 |
+| has_navy_size | `size = <float> / <variable>`<br>The amount to check for.<br> `type = <string>`<br>The type to check for. Optional.<br> `archetype = <string>`<br>The ship archetype to check for. Optional.<br> | *(example below)* | Checks if the current scope has the specified number of ships, or of a specified type of ship. | Ship types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. Ship archetypes are found in `/Hearts of Iron IV/common/units/equipment/*.txt` files. | 1.0 |
+| has_deployed_air_force_size | `size = <float>`<br>The amount to check for.<br> `type = <string>`<br>The type to check for. Optional.<br> | *(example below)* | Checks if the current scope has the specified number of aircraft, or of a specified type of aircraft. | Airwing types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.0 |
+| divisions_in_state | `size = <float>`<br>The amount to check for.<br> `type = <string>`<br>The battalion type to check for. Divisions that are majority made up of battalions in that type count. Optional, counts all divisions by default.<br> `unit = <string>`<br>The exact battalion to check for. Divisions that are majority made up of that battalions count. Optional, counts all divisions by default.<br> `state = <scope> / <variable>`<br>The state to check in. | *(example below)* | Checks if the specified state contains the specified amount of divisions. | Battalions and their types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.0 |
+| army_manpower_in_state | `amount <> <float>`<br>The amount to check for.<br> `type = <string>`<br>The type to check for. Optional.<br> `state = <scope> / <variable>`<br>The state to check in. | *(example below)* | Checks if the specified state contains the specified amount of army manpower within the state. | Battalion types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.6 |
+| divisions_in_border_state | `size = <float>`<br>The amount to check for.<br> `type = <string>`<br>The battalion type to check for. Divisions that are majority made up of battalions in that type count. Optional, counts all divisions by default.<br> `state = <scope> / <variable>`<br>The state to check in.<br> `border_state = <scope> / <variable>`<br>The border state to check in. | *(example below)* | Checks if the border provinces between the specified state and border state contain the specified amount of divisions. | Battalion types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.5 |
+| num_divisions_in_states | `count = <int>`<br>The amount to check for.<br> `states = { <int> <...> <int> }`<br>The states to check in.<br> `types = { <string> <...> <string> }`<br>The battalion types to check for. Divisions that are majority made up of battalions in that type count. Optional, counts all divisions by default.<br> `exclude = { <string> <...> <string> }`<br>The sub-units to exclude from the search. Divisions that are majority made up of specified battalions are excluded. Optional, excludes no divisions by default. | *(example below)* | Checks if the specified states contain enough divisions of the specified types. | Divisions and their types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Can use either =, >, or < operators for count. The tooltip does not specify the states the check runs for nor the filtered types. | 1.12 |
+| num_battalions_in_states | `count = <int>`<br>The amount to check for.<br> `states = { <int> <...> <int> }`<br>The states to check in.<br> `types = { <string> <...> <string> }`<br>The battalion types to check for.<br> `exclude = { <string> <...> <string> }`<br>The sub-units to exclude from the search. | *(example below)* | Checks if the specified states contain enough battalions (or sub-units) of the specified types. | Battalions and their types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Can use either =, >, or < operators for count. The tooltip does not specify the states the check runs for nor the filtered types. | 1.12 |
+| ships_in_state_ports | `size = <float>`<br>The amount to check for.<br> `type = <string>`<br>The type to check for. Optional.<br> `state = <scope> / <variable>`<br>The state to check in.<br> | *(example below)* | Checks if the specified state contains the specified amount of ships, or of ships of the specified type. | Ship types are defined within `/Hearts of Iron IV/common/units/*.txt` files. Must use either > or < operators for size. | 1.0 |
+| num_planes_stationed_in_regions | `value = <float>`<br>The amount to check for.<br> `regions = { <id> <...> <id> }`<br>The regions to check in.<br> | *(example below)* | Checks if the current scope has the specified number of aircraft stationed within strategic regions. | Must use either =, >, or < operators for value. | 1.12 |
+| has_volunteers_amount_from | `tag = <scope>`<br>The country to check for.<br> `count = <int>`<br>The amount to check for. | *(example below)* | Checks if the current scope has recieved volunteers from the specified country of the specified amounts. | Must use either > or < operators for count. | 1.0 |
 | convoy_threat | `<float>`<br>The threat to compate with. | `convoy_threat > 0.5` | Checks how much the convoys are threatened. | Must use either > or < operators for count. Threat is always between 0 and 1. | 1.6 |
-| has_mined | `target = <tag>`<br>The country the coast of which is mined.<br> `value <> <int>`<br>The amount of mines to compare with. | `has_mined = {`<br>`    target = POL`<br>`    value > 1000`<br>`}` | Checks if the current scope has X mines on the coast of the specified country. | Must use either > or < operators for value. | 1.6 |
-| has_mines | `region = <ID>`<br>The strategic region that contains the mines.<br> `amount = <int>`<br>The amount of mines to compare with. | `has_mined = {`<br>`    target = POL`<br>`    amount = 1000`<br>`}` | Checks if the current scope has at least X mines within the specified strategic region. |  | 1.6 |
+| has_mined | `target = <tag>`<br>The country the coast of which is mined.<br> `value <> <int>`<br>The amount of mines to compare with. | *(example below)* | Checks if the current scope has X mines on the coast of the specified country. | Must use either > or < operators for value. | 1.6 |
+| has_mines | `region = <ID>`<br>The strategic region that contains the mines.<br> `amount = <int>`<br>The amount of mines to compare with. | *(example below)* | Checks if the current scope has at least X mines within the specified strategic region. |  | 1.6 |
 | mine_threat | `<float>`<br>The threat to compate with. | `mine_threat < 0.6` | Checks how dangerous enemy mines are. | Must use either > or < operators for count. Threat is always between 0 and 1. | 1.6 |
 | has_military_industrial_organization | `<token>`<br>The id to check for. | `has_military_industrial_organization = infantry_mio_token` | Checks if the current scope has a MIO with the specified name. | Accepts variables. | 1.13 |
 | has_tactic | `<tactic>`<br>The tactic to check for. | `has_tactic = tactic_masterful_blitz` | Check if the given tactic is unlocked (or active by default) for the country. |  | 1.17 |
+
+**Example: has_army_manpower**
+
+```text
+has_army_manpower = {
+    size > 1000
+}
+```
+
+**Example: casualties_inflicted_by**
+
+```text
+casualties_inflicted_by = {
+    opponent = POL
+    thousands > 10
+}
+```
+
+**Example: strength_ratio**
+
+```text
+strength_ratio = {
+    tag = GER
+    ratio > 1
+}
+```
+
+**Example: fighting_army_strength_ratio**
+
+```text
+fighting_army_strength_ratio = {
+    tag = GER
+    ratio > 0.7
+}
+```
+
+**Example: naval_strength_ratio**
+
+```text
+naval_strength_ratio = {
+    tag = GER
+    ratio > 1
+}
+```
+
+**Example: naval_strength_comparison**
+
+```text
+naval_strength_comparison = {
+    other = POL
+    tooltip = my_loc_key_tt
+    ratio > 1
+    sub_unit_def_weights = {
+        carrier = 1
+        submarine = 2
+    }
+}
+```
+
+**Example: has_army_size**
+
+```text
+has_army_size = {
+    size > 10
+    type = armor
+}
+```
+
+**Example: has_navy_size**
+
+```text
+has_navy_size = {
+    size > 10
+    type = capital_ship
+    archetype = ship_hull_heavy
+}
+```
+
+**Example: has_deployed_air_force_size**
+
+```text
+has_deployed_air_force_size = {
+    size > 10
+    type = cas
+}
+```
+
+**Example: divisions_in_state**
+
+```text
+divisions_in_state = {
+    type = armor
+    size > 10
+    state = 49
+}
+```
+
+**Example: army_manpower_in_state**
+
+```text
+army_manpower_in_state = {
+    type = support
+    amount > 10000
+    state = 49
+}
+```
+
+**Example: divisions_in_border_state**
+
+```text
+divisions_in_border_state = {
+    type = infantry
+    size > 10
+    state = 49
+    border_state = var:state
+}
+```
+
+**Example: num_divisions_in_states**
+
+```text
+num_divisions_in_states = {
+    count > 24
+    states = { 550 559 271 }
+    exclude = { irregular_infantry }
+}
+```
+
+**Example: num_battalions_in_states**
+
+```text
+num_battalions_in_states = {
+    count > 24
+    states = { 550 559 271 }
+    exclude = { irregular_infantry }
+}
+```
+
+**Example: ships_in_state_ports**
+
+```text
+ships_in_state_ports = {
+    type = capital_ship
+    size > 10
+    state = 49
+}
+```
+
+**Example: num_planes_stationed_in_regions**
+
+```text
+num_planes_stationed_in_regions = {
+    value > 10
+    regions = { 123 321 }
+}
+```
+
+**Example: has_volunteers_amount_from**
+
+```text
+has_volunteers_amount_from = {
+    tag = GER
+    count > 10
+}
+```
+
+**Example: has_mined**
+
+```text
+has_mined = {
+    target = POL
+    value > 1000
+}
+```
+
+**Example: has_mines**
+
+```text
+has_mined = {
+    target = POL
+    amount = 1000
+}
+```
 
 ### Doctrine <a id="Doctrine"></a>
 
@@ -608,8 +1485,26 @@ Doctrine-related country-scoped triggers:
 | has_subdoctrine_in_track | `<track>`<br>The track to check for. | `has_subdoctrine_in_track = infantry` | Checks if any subdoctrine is currently assigned to (any instance of) the given track. |  | 1.17 |
 | has_completed_subdoctrine | `<subdoctrine>`<br>The subdoctrine to check for. | `has_completed_subdoctrine = mobile_infantry` | Checks if the current country has ever completed the specified subdoctrine (even if it was later switched out). |  | 1.17 |
 | has_completed_track | `<track>`<br>The track to check for. | `has_completed_track = infantry` | Checks if the given subdoctrine track has been completed |  | 1.17 |
-| has_mastery | `amount = <int>`<br>The amout to check for. `track = <track>`<br>The track to check for. | `has_mastery = {`<br>`    amount = 200`<br>`    track = infantry`<br>`}` | Checks if any track of the given type has at least X mastery. |  | 1.17 |
-| has_mastery_level | `amount = <int>`<br>The amount to check for. `sub_doctrine = <subdoctrine>`<br>The subdoctrine to check for. | `has_mastery_level = {`<br>`    amount = 2`<br>`    sub_doctrine = mobile_infantry`<br>`}` | Checks if the country has reached the specified number of mastery levels (rewards) for the given subdoctrine. |  | 1.17 |
+| has_mastery | `amount = <int>`<br>The amout to check for. `track = <track>`<br>The track to check for. | *(example below)* | Checks if any track of the given type has at least X mastery. |  | 1.17 |
+| has_mastery_level | `amount = <int>`<br>The amount to check for. `sub_doctrine = <subdoctrine>`<br>The subdoctrine to check for. | *(example below)* | Checks if the country has reached the specified number of mastery levels (rewards) for the given subdoctrine. |  | 1.17 |
+
+**Example: has_mastery**
+
+```text
+has_mastery = {
+    amount = 200
+    track = infantry
+}
+```
+
+**Example: has_mastery_level**
+
+```text
+has_mastery_level = {
+    amount = 2
+    sub_doctrine = mobile_infantry
+}
+```
 
 ### Equipment <a id="Equipment"></a>
 
@@ -617,15 +1512,74 @@ Equipment-related country-scoped triggers:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| stockpile_ratio | `archetype = <string>`<br>The equipment archetype to check for.<br> `ratio = <float>`<br>The ratio of equipment to check for. | `stockpile_ratio = {`<br>`    archetype = infantry_equipment`<br>`    ratio > 0.5`<br>`}` | Checks if the current scope has stockpiled the specified equipment to the specified ratio against fielded equipment of the same type. | Must use either > or < operators for ratio. <br> For the convoy equipment which is not fielded as other equipments, ratio shall be not a percentage but a direct amount (for instance 256 convoys) | 1.5 |
-| has_equipment | `<equipment> = <int> / <variable>`<br>The equipment to check for, and the amount to check for. | `has_equipment = {`<br>`    infantry_equipment_1 > 10`<br>`}` | Checks if the current scope has the specified equipment to the specified amount. | Must use either > or < operators. | 1.0 |
+| stockpile_ratio | `archetype = <string>`<br>The equipment archetype to check for.<br> `ratio = <float>`<br>The ratio of equipment to check for. | *(example below)* | Checks if the current scope has stockpiled the specified equipment to the specified ratio against fielded equipment of the same type. | Must use either > or < operators for ratio. <br> For the convoy equipment which is not fielded as other equipments, ratio shall be not a percentage but a direct amount (for instance 256 convoys) | 1.5 |
+| has_equipment | `<equipment> = <int> / <variable>`<br>The equipment to check for, and the amount to check for. | *(example below)* | Checks if the current scope has the specified equipment to the specified amount. | Must use either > or < operators. | 1.0 |
 | has_any_license | `<bool>`<br>Boolean. | `has_any_license = yes` | Checks if the current scope has any licenses from other countries. |  | 1.0 |
 | is_licensing_any_to | `<scope> / <variable>`<br>The country to check for. | `is_licensing_any_to = GER` | Checks if the current scope is licensing to the specified scope. |  | 1.0 |
-| is_licensing_to | `target = <scope>`<br>The country to check for. `archetype = <string>`<br>The equipment archetype to check for. Optional.<br> **Equipment scope**<br> `type = <string>`<br>The equipment to check for. Optional.<br> `version = <int>`<br>The variant id of the equipment. Optional. | `is_licensing_to = {`<br>`    target = GER`<br>`    archetype = infantry_equipment`<br>`}``is_licensing_to = {`<br>`    target = GER`<br>`    equipment = {`<br>`        type = light_tank_equipment`<br>`        version = 1`<br>`    }`<br>`}` | Checks if the current scope is licensing the specified equipment to the specified country. |  | 1.0 |
-| has_license | `from = <scope>`<br>The country to check for. `archetype = <string>`<br>The equipment archetype to check for. Optional.<br> **Equipment scope**<br> `type = <string>`<br>The equipment to check for. Optional.<br> `version = <int>`<br>The variant id of the equipment. Optional. | `has_license = {`<br>`    from = GER`<br>`    archetype = infantry_equipment`<br>`}``has_license = {`<br>`    from = GER`<br>`    equipment = {`<br>`        type = light_tank_equipment`<br>`        version = 1`<br>`    }`<br>`}` | Checks if the current scope has a license for the specified equipment from the specified country. |  | 1.0 |
+| is_licensing_to | `target = <scope>`<br>The country to check for. `archetype = <string>`<br>The equipment archetype to check for. Optional.<br> **Equipment scope**<br> `type = <string>`<br>The equipment to check for. Optional.<br> `version = <int>`<br>The variant id of the equipment. Optional. | *(example below)* *(example below)* | Checks if the current scope is licensing the specified equipment to the specified country. |  | 1.0 |
+| has_license | `from = <scope>`<br>The country to check for. `archetype = <string>`<br>The equipment archetype to check for. Optional.<br> **Equipment scope**<br> `type = <string>`<br>The equipment to check for. Optional.<br> `version = <int>`<br>The variant id of the equipment. Optional. | *(example below)* *(example below)* | Checks if the current scope has a license for the specified equipment from the specified country. |  | 1.0 |
 | fuel_ratio | `<float> / <variable>`<br>The ratio to check with. | `fuel_ratio > 0.4` | Checks the fuel ratio of the country. | Must use either < or > operators. | 1.6 |
 | has_fuel | `<int> / <variable>`<br>The amount to compare with. | `has_fuel > 400` | Checks the fuel amount of the country. | Must use either < or > operators. | 1.6 |
 | has_design_based_on | `<archetype>`<br>The equipment archetype. | `has_design_based_on = light_tank_chassis` | Checks if the country has a builtable non-obsolete design based on the specified equipment archetype. | Equipment archetypes can be seen in `/Hearts of Iron IV/common/units/equipment/*`. | 1.11 |
+
+**Example: stockpile_ratio**
+
+```text
+stockpile_ratio = {
+    archetype = infantry_equipment
+    ratio > 0.5
+}
+```
+
+**Example: has_equipment**
+
+```text
+has_equipment = {
+    infantry_equipment_1 > 10
+}
+```
+
+**Example: is_licensing_to**
+
+```text
+is_licensing_to = {
+    target = GER
+    archetype = infantry_equipment
+}
+```
+
+**Example: is_licensing_to**
+
+```text
+is_licensing_to = {
+    target = GER
+    equipment = {
+        type = light_tank_equipment
+        version = 1
+    }
+}
+```
+
+**Example: has_license**
+
+```text
+has_license = {
+    from = GER
+    archetype = infantry_equipment
+}
+```
+
+**Example: has_license**
+
+```text
+has_license = {
+    from = GER
+    equipment = {
+        type = light_tank_equipment
+        version = 1
+    }
+}
+```
 
 ### Intelligence <a id="Intelligence"></a>
 
@@ -633,22 +1587,22 @@ Intelligence-related country-scoped triggers:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| estimated_intel_max_piercing | `tag = <scope>`<br>The country to check for.<br> `value = <int>`<br>The amount to check for. | `estimated_intel_max_piercing = {`<br>`    tag = GER`<br>`    value > 2`<br>`}` | Checks if the specified scope has the specified amount of piercing based on the current scope's intel. | Must use either > or < operators for value. | 1.0 |
-| estimated_intel_max_armor | `tag = <scope>`<br>The country to check for.<br> `value = <int>`<br>The amount to check for. | `estimated_intel_max_armor = {`<br>`    tag = GER`<br>`    value > 2`<br>`}` | Checks if the specified scope has the specified amount of armor based on the current scope's intel. | Must use either > or < operators for value. | 1.0 |
-| compare_intel_with | `target = <tag> / <variable>`<br>The target to compare with.<br> `civilian_intel <>= <float> / <variable>`<br>Comparison of civilian intel.<br> `army_intel <>= <float> / <variable>`<br>Comparison of army intel.<br> `navy_intel <>= <float> / <variable>`<br>Comparison of navy intel.<br> `airforce_intel <>= <float> / <variable>`<br>Comparison of airforce intel.<br> | `compare_intel_with = {`<br>`    target = POL`<br>`    civilian_intel > 0.5`<br>`    army_intel = 0`<br>`    navy_intel < 0`<br>`}` | Compares intel between 2 countries. | Can use < (in which case the current country has x less intel), >, and = (in which case it must be equal). | 1.9 |
-| intel_level_over | `target = <tag> / <variable>`<br>The target to compare with.<br> `civilian_intel <>= <float> / <variable>`<br>Comparison of civilian intel.<br> `army_intel <>= <float> / <variable>`<br>Comparison of army intel.<br> `navy_intel <>= <float> / <variable>`<br>Comparison of navy intel.<br> `airforce_intel <>= <float> / <variable>`<br>Comparison of airforce intel.<br> | `intel_level_over = {`<br>`    target = POL`<br>`    civilian_intel > 0.5`<br>`    army_intel = 0`<br>`    navy_intel < 0`<br>`}` | Checks the intel level from the current country over a specified country. | Can use < (in which case the current country has x less intel), >, and = (in which case it must be equal). | 1.9 |
+| estimated_intel_max_piercing | `tag = <scope>`<br>The country to check for.<br> `value = <int>`<br>The amount to check for. | *(example below)* | Checks if the specified scope has the specified amount of piercing based on the current scope's intel. | Must use either > or < operators for value. | 1.0 |
+| estimated_intel_max_armor | `tag = <scope>`<br>The country to check for.<br> `value = <int>`<br>The amount to check for. | *(example below)* | Checks if the specified scope has the specified amount of armor based on the current scope's intel. | Must use either > or < operators for value. | 1.0 |
+| compare_intel_with | `target = <tag> / <variable>`<br>The target to compare with.<br> `civilian_intel <>= <float> / <variable>`<br>Comparison of civilian intel.<br> `army_intel <>= <float> / <variable>`<br>Comparison of army intel.<br> `navy_intel <>= <float> / <variable>`<br>Comparison of navy intel.<br> `airforce_intel <>= <float> / <variable>`<br>Comparison of airforce intel.<br> | *(example below)* | Compares intel between 2 countries. | Can use < (in which case the current country has x less intel), >, and = (in which case it must be equal). | 1.9 |
+| intel_level_over | `target = <tag> / <variable>`<br>The target to compare with.<br> `civilian_intel <>= <float> / <variable>`<br>Comparison of civilian intel.<br> `army_intel <>= <float> / <variable>`<br>Comparison of army intel.<br> `navy_intel <>= <float> / <variable>`<br>Comparison of navy intel.<br> `airforce_intel <>= <float> / <variable>`<br>Comparison of airforce intel.<br> | *(example below)* | Checks the intel level from the current country over a specified country. | Can use < (in which case the current country has x less intel), >, and = (in which case it must be equal). | 1.9 |
 | has_intelligence_agency | `<boolean>`<br>The intelligence agency to check.<br> | `has_intelligence_agency = yes` | Checks if the current scope has an intelligence agency. |  | 1.9 |
-| network_national_coverage | `target = <tag> / <variable>`<br>The country which is checked.<br> `value <> <float> / <variable>`<br>The value of network. | `network_national_coverage = {`<br>`    target = POL`<br>`    value < 70`<br>`}` | Checks network national coverage over a specific country. | Must use < or > for value. |  |
-| network_strength | `target = <tag>`<br>The country which is checked.<br> `state = <id> / <variable>`<br>The state which is checked.<br> `value <> <float> / <variable>`<br>The strength of network. | `network_strength = {`<br>`    target = POL`<br>`    value < 70`<br>`}` | Checks network national coverage over a specific country. | Must use < or > for value. Can use either or both of target and state. | 1.9 |
+| network_national_coverage | `target = <tag> / <variable>`<br>The country which is checked.<br> `value <> <float> / <variable>`<br>The value of network. | *(example below)* | Checks network national coverage over a specific country. | Must use < or > for value. |  |
+| network_strength | `target = <tag>`<br>The country which is checked.<br> `state = <id> / <variable>`<br>The state which is checked.<br> `value <> <float> / <variable>`<br>The strength of network. | *(example below)* | Checks network national coverage over a specific country. | Must use < or > for value. Can use either or both of target and state. | 1.9 |
 | has_done_agency_upgrade | `<string>`<br>The agency upgrade to check. | `has_done_agency_upgrade = upgrade_army_department` | Checks if the current scope has the specified agency upgrade (to its highest level). |  | 1.9 |
 | agency_upgrade_number | `<int> / <variable>`<br>The amount of agency upgrades to check for. | `agency_upgrade_number > 4` | Checks the number of upgrades done in the current scope's intelligence agency. | Must use either > or < operators. | 1.9 |
-| decryption_progress | `target = <tag>`<br>The country to compare with.<br> `value <> <float>`<br>The value to compare. | `decryption_progress = {`<br>`    target = POL`<br>`    value < 0.5`<br>`}` | Checks the decryption progress towards a country. | Must use either > or < operators for value. | 1.9 |
+| decryption_progress | `target = <tag>`<br>The country to compare with.<br> `value <> <float>`<br>The value to compare. | *(example below)* | Checks the decryption progress towards a country. | Must use either > or < operators for value. | 1.9 |
 | has_captured_operative | `<tag>/<bool>`<br>Country whose operative was captured/Whether an operative was captured. | `has_captured_operative = POL``has_captured_operative = yes` | Checks if the current scope has captured an operative. |  | 1.9 |
-| has_finished_collecting_for_operation | `target = <tag>`<br>Country towards whom the operation is targeted.<br> `operation = <token>`<br>The operation which current scope is planning against the target. | `has_finished_collecting_for_operation = {`<br>`    target = POL`<br>`    operation = operation_infiltrate_armed_forces_navy`<br>`}` | Checks if the current scope has finished collecting resources for an operation. |  | 1.9 |
-| is_preparing_operation | `target = <tag>`<br>Country towards whom the operation is targeted.<br> `operation = <token>`<br>The operation which current scope is planning against the target. Optional. | `is_preparing_operation = {`<br>`    target = POL`<br>`    operation = operation_infiltrate_armed_forces_navy`<br>`}` | Checks if the current scope is preparing an operation against the specified country. |  | 1.9 |
-| is_running_operation | `target = <tag>`<br>Country towards whom the operation is targeted.<br> `operation = <token>`<br>The operation which current scope is planning against the target. Optional. | `is_running_operation = {`<br>`    target = POL`<br>`    operation = operation_infiltrate_armed_forces_navy`<br>`}` | Checks if the current scope is running an operation against the specified country. |  | 1.9 |
-| num_finished_operations | `target = <tag>`<br>Country towards whom the operation is targeted.<br> `operation = <token>`<br>The operation which current scope is planning against the target. Optional. | `num_finished_operations = {`<br>`    target = POL`<br>`    operation = operation_infiltrate_armed_forces_navy`<br>`}` | Checks how many finished operations the current scope had against the specified country. |  | 1.9 |
-| has_operation_token | `tag = <tag>`<br>Country towards whom the operation is targeted.<br> `token = <token>`<br>The operation token. | `has_operation_token = {`<br>`    tag = POL`<br>`    token = token_name`<br>`}` | Checks if the current scope has an operation token against an another country. |  | 1.9 |
+| has_finished_collecting_for_operation | `target = <tag>`<br>Country towards whom the operation is targeted.<br> `operation = <token>`<br>The operation which current scope is planning against the target. | *(example below)* | Checks if the current scope has finished collecting resources for an operation. |  | 1.9 |
+| is_preparing_operation | `target = <tag>`<br>Country towards whom the operation is targeted.<br> `operation = <token>`<br>The operation which current scope is planning against the target. Optional. | *(example below)* | Checks if the current scope is preparing an operation against the specified country. |  | 1.9 |
+| is_running_operation | `target = <tag>`<br>Country towards whom the operation is targeted.<br> `operation = <token>`<br>The operation which current scope is planning against the target. Optional. | *(example below)* | Checks if the current scope is running an operation against the specified country. |  | 1.9 |
+| num_finished_operations | `target = <tag>`<br>Country towards whom the operation is targeted.<br> `operation = <token>`<br>The operation which current scope is planning against the target. Optional. | *(example below)* | Checks how many finished operations the current scope had against the specified country. |  | 1.9 |
+| has_operation_token | `tag = <tag>`<br>Country towards whom the operation is targeted.<br> `token = <token>`<br>The operation token. | *(example below)* | Checks if the current scope has an operation token against an another country. |  | 1.9 |
 | is_active_decryption_bonuses_enabled | `<tag>`<br>The country towards which the bonus is enabled. | `is_active_decryption_bonuses_enabled = POL` | Checks if the current scope has any decryption bonuses towards the specified country. |  | 1.9 |
 | is_cryptology_department_active | `<bool>`<br>Boolean. | `is_cryptology_department_active = yes` | Checks if the current scope has a cryptology department active. |  | 1.9 |
 | is_decrypting | `<tag>`<br>The country which is decrypted. | `is_decrypting = POL` | Checks if the current scope is decrypting a certain country. |  | 1.9 |
@@ -658,6 +1612,118 @@ Intelligence-related country-scoped triggers:
 | num_operative_slots | `<int>`<br>Amount of slots. | `num_operative_slots > 2` | Checks the amount of operative slots. | Must use either < or >. | 1.9 |
 | num_of_operatives | `<int>`<br>Amount of operatives. | `num_of_operatives > 2` | Checks the amount of operatives. | Must use either < or >. | 1.9 |
 
+**Example: estimated_intel_max_piercing**
+
+```text
+estimated_intel_max_piercing = {
+    tag = GER
+    value > 2
+}
+```
+
+**Example: estimated_intel_max_armor**
+
+```text
+estimated_intel_max_armor = {
+    tag = GER
+    value > 2
+}
+```
+
+**Example: compare_intel_with**
+
+```text
+compare_intel_with = {
+    target = POL
+    civilian_intel > 0.5
+    army_intel = 0
+    navy_intel < 0
+}
+```
+
+**Example: intel_level_over**
+
+```text
+intel_level_over = {
+    target = POL
+    civilian_intel > 0.5
+    army_intel = 0
+    navy_intel < 0
+}
+```
+
+**Example: network_national_coverage**
+
+```text
+network_national_coverage = {
+    target = POL
+    value < 70
+}
+```
+
+**Example: network_strength**
+
+```text
+network_strength = {
+    target = POL
+    value < 70
+}
+```
+
+**Example: decryption_progress**
+
+```text
+decryption_progress = {
+    target = POL
+    value < 0.5
+}
+```
+
+**Example: has_finished_collecting_for_operation**
+
+```text
+has_finished_collecting_for_operation = {
+    target = POL
+    operation = operation_infiltrate_armed_forces_navy
+}
+```
+
+**Example: is_preparing_operation**
+
+```text
+is_preparing_operation = {
+    target = POL
+    operation = operation_infiltrate_armed_forces_navy
+}
+```
+
+**Example: is_running_operation**
+
+```text
+is_running_operation = {
+    target = POL
+    operation = operation_infiltrate_armed_forces_navy
+}
+```
+
+**Example: num_finished_operations**
+
+```text
+num_finished_operations = {
+    target = POL
+    operation = operation_infiltrate_armed_forces_navy
+}
+```
+
+**Example: has_operation_token**
+
+```text
+has_operation_token = {
+    tag = POL
+    token = token_name
+}
+```
+
 ### AI <a id="AI"></a>
 
 AI-related country-scoped triggers:
@@ -665,11 +1731,20 @@ AI-related country-scoped triggers:
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
 | ai_irrationality | `<int>`<br>The amount to check for. | `ai_irrationality > 10` | Checks if the current scope AI has the specified irrationality. | Must use either > or < operators. | 1.0 |
-| ai_liberate_desire | `target = <scope>`<br>The country to check for. `count = <float>`<br>The amount to check for. | `ai_liberate_desire = {`<br>`    target = GER`<br>`    count > 1`<br>`}` | Checks if the current scope AI has the specified liberation desire towards the specified country. | Must use either > or < operators for count. | 1.0 |
+| ai_liberate_desire | `target = <scope>`<br>The country to check for. `count = <float>`<br>The amount to check for. | *(example below)* | Checks if the current scope AI has the specified liberation desire towards the specified country. | Must use either > or < operators for count. | 1.0 |
 | ai_has_role_division | `<string>`<br>The role to check for. | `ai_has_role_division = infantry` | Checks if the current scope AI has a division with the specified role. | Roles are defined in `/Hearts of Iron IV/common/ai_templates/*.txt` | 1.0 |
 | ai_has_role_template | `<string>`<br>The role to check for. | `ai_has_role_template = armor` | Checks if the current scope AI has a division template with the specified role. | Roles are defined in `/Hearts of Iron IV/common/ai_templates/*.txt` | 1.0 |
 | ai_wants_divisions | `<int>`<br>The amount to check for. | `ai_wants_divisions > 10` | Checks if the current scope AI desires the specified amount of divisions. | Must use either > or < operators. | 1.0 |
 | has_template_ai_majority_unit | `<string>`<br>The unit to check for. | `has_template_ai_majority_unit = infantry` | Checks if the current scope AI has a division template mostly made up of the specified unit. |  | 1.0 |
+
+**Example: ai_liberate_desire**
+
+```text
+ai_liberate_desire = {
+    target = GER
+    count > 1
+}
+```
 
 ### Characters <a id="Characters"></a>
 
@@ -681,12 +1756,38 @@ Character-related country-scoped triggers:
 | --- | --- | --- | --- | --- | --- |
 | can_be_country_leader | `<character>`<br>The character to check. | `can_be_country_leader = POL_character_test` | Checks if the specified character has a country leader role, active or not, and can utilise it in this country. |  | 1.11 |
 | has_character | `<string>`<br>The character to check. | `has_character = my_character` | Checks if the current scope has the specified character recruited. The character does NOT need to be in power. |  | 1.11 |
-| has_country_leader | `ruling_only = <bool>`(default = yes) Limit check to ruling only. <br> `character = <character_token>` (recommended criteria) The character to check for. Optional. <br>`name = <string>`<br>The name to check for. Optional. <br>`id = <int>`<br>The id to check for. Optional. <br> | `has_country_leader = {`<br>`    id = 10`<br>`}``has_country_leader = {`<br>`	character = SPR_niceto_alcala_zamora`<br>`	ruling_only = yes`<br>`}``has_country_leader = {`<br>`    name = "John Smith"`<br>`    ruling_only = yes`<br>`}` | Checks if the current scope has the specified country leader. |  | 1.3 |
+| has_country_leader | `ruling_only = <bool>`(default = yes) Limit check to ruling only. <br> `character = <character_token>` (recommended criteria) The character to check for. Optional. <br>`name = <string>`<br>The name to check for. Optional. <br>`id = <int>`<br>The id to check for. Optional. <br> | *(example below)**(example below)* *(example below)* | Checks if the current scope has the specified country leader. |  | 1.3 |
 | has_country_leader_ideology | <ideology> Checks the ideology of the active country leader | `has_country_leader_ideology = nazism` | Checks if the current scope's active country leader has the specified ideology. |  | 1.11 |
 | has_country_leader_with_trait | `<string>`<br>The trait to check. | `has_country_leader_with_trait = champion_of_peace_1` | Checks if the leader of the country has a specific trait. |  | 1.6 |
 | is_female | `<bool>`<br>Boolean. | `is_female = yes` | Checks if the current country leader is female. |  | 1.9 |
 | has_unit_leader | `<int>`<br>The id to check for. | `has_unit_leader = 1` | Checks if the current scope has a unit leader with the specified id. | Only the legacy ID can be used, the character ID doesn't work. | 1.0 |
 | has_scientist_specialization | `specialization = <specialization_token>`<br>Specialization. | `has_scientist_specialization = specialization_nuclear` | Checks if the country in scope has a scientist with a skill level of at least 1 in specialization. |  | 1.15 |
+
+**Example: has_country_leader**
+
+```text
+has_country_leader = {
+    id = 10
+}
+```
+
+**Example: has_country_leader**
+
+```text
+has_country_leader = {
+	character = SPR_niceto_alcala_zamora
+	ruling_only = yes
+}
+```
+
+**Example: has_country_leader**
+
+```text
+has_country_leader = {
+    name = "John Smith"
+    ruling_only = yes
+}
+```
 
 ### Peace conferences <a id="Peace_conferences"></a>
 
@@ -730,11 +1831,11 @@ General state-scoped triggers:
 | state | `<scope> / <variable>`<br>The state to check for. | `state = 10``state = var:state` | Checks if the current scope is the specified state. |  | 1.0 |
 | region | `<int>`<br>The strategic region id to check for. | `region = 10` | Checks if the current scope is a state in the specified strategic region. |  | 1.0 |
 | <building> (building_count_trigger) | `<int>`<br>The amount of the specified building to check for. | `arms_factory > 10` | Checks if the current scope has the specified amount of the specified building. | Must use either > or < operators. Can also be used in building scope. | 1.0 |
-| free_building_slots | `building = <string>`<br>The building to check for.<br> `size = <int>`<br>The amount to check for.<br> `include_locked = <bool>`<br>Whether to include locked slots. | `free_building_slots = {`<br>`    building = arms_factory`<br>`    size > 10`<br>`    include_locked = yes`<br>`}` | Checks if the current scope has available slots for the specified amount of buildings. | Must use either > or < operators for size. | 1.0 |
-| non_damaged_building_level | `building = <string>`<br>The building to check for.<br> `level = <int>`<br>The amount to check for.<br> | `non_damaged_building_level = {`<br>`    building = arms_factory`<br>`    level > 4`<br>`}` | Checks if the current scope has the specified amount of the specified buildings that are undamaged. | Must use either > or < operators for level. | 1.9 |
-| any_province_building_level | `building = <string>`<br>The building to check for.<br> `limit = <int>`<br>The amount to check for.<br> **Province scope**<br> `id = <int>`<br>The province to check for.<br> `limit_to_border = <bool>`<br>Whether to limit check to border provinces. | `any_province_building_level = {`<br>`    province = {`<br>`        id = 445`<br>`        id = 494`<br>`        limit_to_border = yes`<br>`    }`<br>`    building = bunker`<br>`    level < 5`<br>`}` | Checks if the current scope has the specified provincal building at the specified amount in the specified provinces. | Must use either > or < operators for level. | 1.0 |
+| free_building_slots | `building = <string>`<br>The building to check for.<br> `size = <int>`<br>The amount to check for.<br> `include_locked = <bool>`<br>Whether to include locked slots. | *(example below)* | Checks if the current scope has available slots for the specified amount of buildings. | Must use either > or < operators for size. | 1.0 |
+| non_damaged_building_level | `building = <string>`<br>The building to check for.<br> `level = <int>`<br>The amount to check for.<br> | *(example below)* | Checks if the current scope has the specified amount of the specified buildings that are undamaged. | Must use either > or < operators for level. | 1.9 |
+| any_province_building_level | `building = <string>`<br>The building to check for.<br> `limit = <int>`<br>The amount to check for.<br> **Province scope**<br> `id = <int>`<br>The province to check for.<br> `limit_to_border = <bool>`<br>Whether to limit check to border provinces. | *(example below)* | Checks if the current scope has the specified provincal building at the specified amount in the specified provinces. | Must use either > or < operators for level. | 1.0 |
 | has_state_flag | `<string>`<br>The flag to check for. | `has_state_flag = my_flag` | Checks if the current scope has the specified flag. |  | 1.0 |
-| has_state_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | `has_state_flag = {`<br>`    flag = my_flag`<br>`    days > 30`<br>`    date > 1936.6.1`<br>`    value > 0`<br>`}` | Compares the specified flag's last set date, days since last set, and/or value. | If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.0 |
+| has_state_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | *(example below)* | Compares the specified flag's last set date, days since last set, and/or value. | If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.0 |
 | state_population | `<float>`<br>The amount to check for. | `state_population > 10000` | Checks if the current scope has the specified state population. | Must use either > or < operators. | 1.0 |
 | state_population_k | `<float>`<br>The amount to check for. | `state_population_k > 10` | Checks if the current scope has the specified state population in thousands. | Must use either > or < operators. | 1.0 |
 | is_capital | `<bool>`<br>Boolean. | `is_capital = yes` | Checks if the current scope is a capital. |  | 1.5 |
@@ -756,16 +1857,16 @@ General state-scoped triggers:
 | has_state_category | `<string>`<br>The category to check for. | `has_state_category = rural` | Checks if the current scope has the specified category. | State categories are found in `/Hearts of Iron IV/common/state_category/*.txt`. | 1.0 |
 | state_strategic_value | `<int>`<br>The amount to check for. | `state_strategic_value > 10` | Checks if the current scope has the specified strategic value. | Must use either > or < operators. | 1.5 |
 | state_and_terrain_strategic_value | `<int>`<br>The amount to check for. | `state_and_terrain_strategic_value > 10` | Checks if the current scope has the specified state and terrain strategic value. | Must use either > or < operators. | 1.5 |
-| num_owned_neighbour_states | `owner = <scope>`<br>The country to check for. `count = <int>`<br>The amount to check for. | `num_owned_neighbour_states = {`<br>`    owner = GER`<br>`    count > 2`<br>`}` | Checks if the current scope has the specified amount of neighbor states belonging to the specified country. | Must use either > or < operators for count. | 1.0 |
-| distance_to | `value = <float>`<br>The distance to check for. `target = <scope>`<br>The state to compare against. | `distance_to = {`<br>`    value > 1000`<br>`    target = 49`<br>`}` | Checks if the current scope is at the specified distance from the specified state. | Must use either > or < operators for distance. | 1.0 |
+| num_owned_neighbour_states | `owner = <scope>`<br>The country to check for. `count = <int>`<br>The amount to check for. | *(example below)* | Checks if the current scope has the specified amount of neighbor states belonging to the specified country. | Must use either > or < operators for count. | 1.0 |
+| distance_to | `value = <float>`<br>The distance to check for. `target = <scope>`<br>The state to compare against. | *(example below)* | Checks if the current scope is at the specified distance from the specified state. | Must use either > or < operators for distance. | 1.0 |
 | ships_in_area | `area = <int>`<br>The strategic region to check for. `size = <int>`<br>The amount to check for. | `ships_in_area = { area = 104 size > 14 }` | Checks if the current scope has the specified amount of ships in the specified strategic region. | Must use either > or < operators for count. | 1.0 |
 | <resource> (resource_count_trigger) | `<int>`<br>The amount to check for. | `tungsten > 10` | Checks if the current scope has the specified amount of the specified resource. | Must use either > or < operators for amount. Can also be used in country scope. | ??? |
-| has_resources_amount | `resource = <string>`<br>The resource to check for.<br> `amount = <int>`<br>The amount to check for.<br> `delivered = <bool>`<br>If specified, checks the amount after the modifiers are applied rather than the base resource value. | `has_resources_amount = {`<br>`    resource = oil`<br>`    amount > 10`<br>`    delivered = yes`<br>`}` | Checks if the current scope has the specified amount of the specified resource. | Must use either > or < operators for amount. | 1.3 |
-| has_resources_rights | `receiver = <scope>`<br>The receiver of the resource rights. Mandatory if used in state scope. `resources = { <resource> <...> <resource> }`<br>Resources to check for. Optional, defaults to any if unset. | `has_resources_rights = {`<br>`  receiver = POL`<br>`  resources = { oil steel }`<br>`}` | Checks if there are any resource rights with the specified parameters. | Can be used in either state or country scope. Always returns false if the state has no resources. Can also be used in country scope. | 1.12 |
+| has_resources_amount | `resource = <string>`<br>The resource to check for.<br> `amount = <int>`<br>The amount to check for.<br> `delivered = <bool>`<br>If specified, checks the amount after the modifiers are applied rather than the base resource value. | *(example below)* | Checks if the current scope has the specified amount of the specified resource. | Must use either > or < operators for amount. | 1.3 |
+| has_resources_rights | `receiver = <scope>`<br>The receiver of the resource rights. Mandatory if used in state scope. `resources = { <resource> <...> <resource> }`<br>Resources to check for. Optional, defaults to any if unset. | *(example below)* | Checks if there are any resource rights with the specified parameters. | Can be used in either state or country scope. Always returns false if the state has no resources. Can also be used in country scope. | 1.12 |
 | days_since_last_strategic_bombing | `<int>`<br>The amount to compare with. | `days_since_last_strategic_bombing < 10` | Checks how many days have passed since the last strategic bombing of the state. | Must use either > or < operators. | 1.6 |
-| has_railway_connection | `<scope> / <variable>`<br>The states to check. `<id>`  The provinces to check. Optional. | `has_railway_connection = {`<br>`	start_state = 10`<br>`	target_state = 90`<br>`}``has_railway_connection = {`<br>`	start_province = 402`<br>`	target_province = 9400`<br>`}` | Returns true if the states are connected by a railway. Can also check provinces. |  | 1.11 |
-| can_build_railway | `<scope> / <variable>`<br>The states to check. `<id>`  The provinces to check. Optional. | `can_build_railway = {`<br>`	start_state = 10`<br>`	target_state = 90`<br>`}``can_build_railway = {`<br>`	start_province = 402`<br>`	target_province = 9400`<br>`}` | Returns true if a railway can be built between states. Can also check for provinces. |  | 1.11 |
-| has_railway_level | `<scope> / <variable>`<br>The states to check. `<int>`  Railway level. | `has_railway_level = {`<br>`    	state = 114`<br>`    	level = 5`<br>`}` | Checks if a state contains a railway at or above the specified level. | Works with level 1, 2, 3, 4 or 5. Level 0 does not work. | 1.11 |
+| has_railway_connection | `<scope> / <variable>`<br>The states to check. `<id>`  The provinces to check. Optional. | *(example below)**(example below)* | Returns true if the states are connected by a railway. Can also check provinces. |  | 1.11 |
+| can_build_railway | `<scope> / <variable>`<br>The states to check. `<id>`  The provinces to check. Optional. | *(example below)**(example below)* | Returns true if a railway can be built between states. Can also check for provinces. |  | 1.11 |
+| has_railway_level | `<scope> / <variable>`<br>The states to check. `<int>`  Railway level. | *(example below)* | Checks if a state contains a railway at or above the specified level. | Works with level 1, 2, 3, 4 or 5. Level 0 does not work. | 1.11 |
 | pc_does_state_stack_demilitarized | `<bool>`<br>Boolean. | `pc_does_state_stack_demilitarized = yes` | Checks if the current scope was demilitarised during a current or previously-ended peace conference. |  | 1.12 |
 | pc_does_state_stack_dismantled | `<bool>`<br>Boolean. | `pc_does_state_stack_dismantled = yes` | Checks if the current scope was dismantled during a current or previously-ended peace conference. |  | 1.12 |
 | pc_is_state_claimed | `<scope>`<br>Country to check for. | `pc_is_state_claimed = yes` | Checks if the current scope was claimed by any country during the peace conference. | **Can only be used within peace conferences.** | 1.12.8 |
@@ -775,6 +1876,132 @@ General state-scoped triggers:
 | pc_turn | `<int>`<br>The amount of turns to check for. | `pc_turn > 20` | Compares the amount of turns that have passed during the peace conference with a number. | **Can only be used within peace conferences.** | 1.12.8 |
 | can_construct_building | `<build type>`The type of building. | `can_construct_building = bunker` | Checks if the country (as ROOT) and state in scope can build a building in the state. |  | 1.15 |
 | has_contested_owner | `<country> / <variable>`<br>Country to check. | `has_contested_owner = GER` | Checks if a state has the specified country as a contested owner. The trigger can be used either from a country or a state scope and accepts the other as parameter. | Can also be used in country scope. | 1.15 |
+
+**Example: free_building_slots**
+
+```text
+free_building_slots = {
+    building = arms_factory
+    size > 10
+    include_locked = yes
+}
+```
+
+**Example: non_damaged_building_level**
+
+```text
+non_damaged_building_level = {
+    building = arms_factory
+    level > 4
+}
+```
+
+**Example: any_province_building_level**
+
+```text
+any_province_building_level = {
+    province = {
+        id = 445
+        id = 494
+        limit_to_border = yes
+    }
+    building = bunker
+    level < 5
+}
+```
+
+**Example: has_state_flag**
+
+```text
+has_state_flag = {
+    flag = my_flag
+    days > 30
+    date > 1936.6.1
+    value > 0
+}
+```
+
+**Example: num_owned_neighbour_states**
+
+```text
+num_owned_neighbour_states = {
+    owner = GER
+    count > 2
+}
+```
+
+**Example: distance_to**
+
+```text
+distance_to = {
+    value > 1000
+    target = 49
+}
+```
+
+**Example: has_resources_amount**
+
+```text
+has_resources_amount = {
+    resource = oil
+    amount > 10
+    delivered = yes
+}
+```
+
+**Example: has_resources_rights**
+
+```text
+has_resources_rights = {
+  receiver = POL
+  resources = { oil steel }
+}
+```
+
+**Example: has_railway_connection**
+
+```text
+has_railway_connection = {
+	start_state = 10
+	target_state = 90
+}
+```
+
+**Example: has_railway_connection**
+
+```text
+has_railway_connection = {
+	start_province = 402
+	target_province = 9400
+}
+```
+
+**Example: can_build_railway**
+
+```text
+can_build_railway = {
+	start_state = 10
+	target_state = 90
+}
+```
+
+**Example: can_build_railway**
+
+```text
+can_build_railway = {
+	start_province = 402
+	target_province = 9400
+}
+```
+
+**Example: has_railway_level**
+
+```text
+has_railway_level = {
+    	state = 114
+    	level = 5
+}
+```
 
 ### Resistance and Compliance <a id="Resistance_and_Compliance"></a>
 
@@ -823,9 +2050,20 @@ General character-scoped triggers:
 | has_army_ledger | `<bool>`<br>Boolean. | `has_army_ledger = yes` | Checks if the character in the current scope has an army ledger. |  | 1.11 |
 | has_navy_ledger | `<bool>`<br>Boolean. | `has_navy_ledger = yes` | Checks if the character in the current scope has an navy ledger. |  | 1.11 |
 | has_character_flag | `<string>`<br>The flag to check for. | `has_character_flag = my_flag` | Checks if the current scope has the specified flag. |  | 1.11 |
-| has_character_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | `has_character_flag = {`<br>`    flag = my_flag`<br>`    days > 30`<br>`    date > 1936.6.1`<br>`    value > 0`<br>`}` | Compares the specified flag's last set date, days since last set, and/or value. | If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.11 |
+| has_character_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | *(example below)* | Compares the specified flag's last set date, days since last set, and/or value. | If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.11 |
 | has_trait | `<trait>`<br>The trait to check for. | `has_trait = really_good_boss` | Checks if the current scope has the specified trait. |  | 1.5 |
 | has_id | `<int>`<br>The id to check for. | `has_id = 1` | Checks if the current character has the specificed ID. |  | 1.5 |
+
+**Example: has_character_flag**
+
+```text
+has_character_flag = {
+    flag = my_flag
+    days > 30
+    date > 1936.6.1
+    value > 0
+}
+```
 
 ### Advisors <a id="Advisors"></a>
 
@@ -837,8 +2075,16 @@ Advisor-scoped triggers:
 | --- | --- | --- | --- | --- | --- |
 | is_hired_as_advisor | `<bool>`<br>Boolean.<br> | `is_hired_as_advisor = yes` | Checks if the current character is activated as an advisor in any slot. |  | 1.12.10 |
 | not_already_hired_except_as | `<slot>`<br>The slot to check in. | `not_already_hired_except_as = political_advisor` | Checks if the current character is not hired, with the exception of the specified slot. |  | 1.11 |
-| advisor_can_be_fired | `<bool>`<br>Boolean.<br> **OR**<br> `slot = <slot>`<br>The slot to check in. | `advisor_can_be_fired = no``advisor_can_be_fired = {`<br>`    slot = political_advisor`<br>`}` | Checks if the current character's `can_be_fired` attribute is set or not within a certain slot. | If an advisor is available in multiple slots, the long version is mandatory to use. | 1.12.8 |
+| advisor_can_be_fired | `<bool>`<br>Boolean.<br> **OR**<br> `slot = <slot>`<br>The slot to check in. | `advisor_can_be_fired = no`*(example below)* | Checks if the current character's `can_be_fired` attribute is set or not within a certain slot. | If an advisor is available in multiple slots, the long version is mandatory to use. | 1.12.8 |
 | has_advisor_role | `<slot>`<br>The slot to check in. | `has_advisor_role = political_advisor` | Checks if the character in scope has an advisor role for the given slot. | Possible [advisor](<Character modding - Hearts of Iron 4 Wiki.md#Advisors>) role slots. | ??? |
+
+**Example: advisor_can_be_fired**
+
+```text
+advisor_can_be_fired = {
+    slot = political_advisor
+}
+```
 
 ### Country leaders <a id="Country_leaders"></a>
 
@@ -860,7 +2106,7 @@ Unit leader-scoped triggers:
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
 | has_unit_leader_flag | `<string>`<br>The flag to check for. | `has_unit_leader_flag = my_flag` | Checks if the current scope has the specified flag. | Deprecated. Use has_character_flag instead. | 1.5 |
-| has_unit_leader_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | `has_unit_leader_flag = {`<br>`    flag = my_flag`<br>`    days > 30`<br>`    date > 1936.6.1`<br>`    value > 0`<br>`}` | Compares the specified flag's last set date, days since last set, and/or value. | Deprecated. Use has_character_flag instead. If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.5 |
+| has_unit_leader_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | *(example below)* | Compares the specified flag's last set date, days since last set, and/or value. | Deprecated. Use has_character_flag instead. If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.5 |
 | is_leading_army | `<bool>`<br>Boolean. | `is_leading_army = yes` | Checks if the current scope is leading a single army. |  | 1.5 |
 | is_leading_army_group | `<bool>`<br>Boolean. | `is_leading_army_group = yes` | Checks if the current scope is leading an army group. |  | 1.5 |
 | is_leading_volunteer_group | `<tag>`<br>Country tag. | `is_leading_volunteer_group = POL` | Checks if the current scope is leading a volunteer army within the specified country. | If the target country is in a civil war, this will only be valid for one side. | 1.11 |
@@ -883,6 +2129,17 @@ Unit leader-scoped triggers:
 | is_female | `<bool>`<br>Boolean. | `is_female = yes` | Checks if the current scope is female. | Works for aces. | 1.9 |
 | is_leading_army_in_province | `<province id>` | `is_leading_army_in_province = 1234` | Checks if the current unit leader is leading an army that has any division in a specific province |  | 1.17 |
 
+**Example: has_unit_leader_flag**
+
+```text
+has_unit_leader_flag = {
+    flag = my_flag
+    days > 30
+    date > 1936.6.1
+    value > 0
+}
+```
+
 ### Operatives <a id="Operatives"></a>
 
 These triggers only work for operatives.
@@ -904,9 +2161,18 @@ Scientist-scoped triggers:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| has_scientist_level | `level = <int>`<br>Level to check. `specialization = <specialization_token>`<br>Specialization. | `has_scientist_level = {`<br>`  level > 2`<br>`  specialization = specialization_nuclear`<br>`}` | Checks if the scientist of the character in scope matches the skill level condition for a specialization. Supports < > = operators. |  | 1.15 |
+| has_scientist_level | `level = <int>`<br>Level to check. `specialization = <specialization_token>`<br>Specialization. | *(example below)* | Checks if the scientist of the character in scope matches the skill level condition for a specialization. Supports < > = operators. |  | 1.15 |
 | is_active_scientist | `<bool>`<br> | `is_scientist_active = yes` | Checks if the scientist of the character in scope is assigned to a project. |  | 1.15 |
 | is_scientist_injured | `<bool>`<br> | `is_scientist_injured = yes` | Checks if the scientist of the character in scope is injured. |  | 1.15 |
+
+**Example: has_scientist_level**
+
+```text
+has_scientist_level = {
+  level > 2
+  specialization = specialization_nuclear
+}
+```
 
 ## Combat <a id="Combat"></a>
 
@@ -972,16 +2238,52 @@ MIO-scoped triggers:
 | is_mio_available | `<bool>`<br>Boolean. | `is_mio_available = yes` | Checks if the currently-scoped MIO is visible. |  | 1.13 |
 | is_mio_assigned_to_task | `<bool>`<br>Boolean. | `is_mio_assigned_to_task = yes` | Checks if the currently-scoped MIO is assigned to a task. |  | 1.13 |
 | has_mio_size | `<int>`<br>Integer. | `has_mio_size > 3` | Checks the size of the MIO. | Accepts [variables](<Data structures - Hearts of Iron 4 Wiki.md>). May use < or >. | 1.13 |
-| has_mio_trait | `<token>`<br>Trait to check.<br> **OR**<br> `trait = <token>`<br>Trait to check. | `has_mio_trait = my_trait_token``has_mio_trait = {`<br>`    token = my_trait_token`<br>`}` | Checks whether the MIO has the target trait in its list. |  | 1.13 |
-| is_mio_trait_available | `<token>`<br>Trait to check.<br> **OR**<br> `trait = <token>`<br>Trait to check.<br> `check_mio_parent_completed = <bool>`<br>Whether to check if the parent traits are complete. True by default. `check_mio_mutually_exclusive = <bool>`<br>Whether to check if any mutually exclusive traits are complete. True by default. | `is_mio_trait_available = my_trait_token``is_mio_trait_available = {`<br>`    token = my_trait_token`<br>`    check_mio_parent_completed = no`<br>`}` | Checks whether the MIO has the target trait in its list and whether it's available. |  | 1.13 |
-| is_mio_trait_completed | `<token>`<br>Trait to check.<br> **OR**<br> `trait = <token>`<br>Trait to check. | `is_mio_trait_completed = my_trait_token``is_mio_trait_completed = {`<br>`    token = my_trait_token`<br>`}` | Checks whether the MIO has the target trait in its list and whether it's completed. |  | 1.13 |
+| has_mio_trait | `<token>`<br>Trait to check.<br> **OR**<br> `trait = <token>`<br>Trait to check. | `has_mio_trait = my_trait_token`*(example below)* | Checks whether the MIO has the target trait in its list. |  | 1.13 |
+| is_mio_trait_available | `<token>`<br>Trait to check.<br> **OR**<br> `trait = <token>`<br>Trait to check.<br> `check_mio_parent_completed = <bool>`<br>Whether to check if the parent traits are complete. True by default. `check_mio_mutually_exclusive = <bool>`<br>Whether to check if any mutually exclusive traits are complete. True by default. | `is_mio_trait_available = my_trait_token`*(example below)* | Checks whether the MIO has the target trait in its list and whether it's available. |  | 1.13 |
+| is_mio_trait_completed | `<token>`<br>Trait to check.<br> **OR**<br> `trait = <token>`<br>Trait to check. | `is_mio_trait_completed = my_trait_token`*(example below)* | Checks whether the MIO has the target trait in its list and whether it's completed. |  | 1.13 |
 | has_mio_number_of_completed_traits | `<int>`<br>Integer. | `has_mio_number_of_completed_traits < 2` | Checks the amount of unlocked MIO traits. | Accepts [variables](<Data structures - Hearts of Iron 4 Wiki.md>). May use < or >. | 1.13 |
 | has_mio_flag | `<string>`<br>The flag to check. | `has_mio_flag = my_flag` | Checks if the current scope has the specified flag. |  | 1.13 |
-| has_mio_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | `has_mio_flag = {`<br>`    flag = my_flag`<br>`    days > 30`<br>`    date > 1936.6.1`<br>`    value > 0`<br>`}` | Compares the specified flag's last set date, days since last set, and/or value. | If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.13 |
+| has_mio_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | *(example below)* | Compares the specified flag's last set date, days since last set, and/or value. | If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.13 |
 | has_mio_policy | `<token>`<br>Policy to check. | `has_mio_policy = my_policy_token` | Checks if the currently-scoped MIO has the target policy allowed. |  | 1.13 |
 | has_mio_policy_active | `<token>`<br>Policy to check. | `has_mio_policy_active = my_policy_token` | Checks if the currently-scoped MIO has the target policy active. |  | 1.13 |
 | has_mio_research_category | `<token>`<br>Category to check. | `has_mio_research_category = my_research_category_token` | Checks if the currently-scoped MIO has the target research category. |  | 1.13 |
 | has_mio_equipment_type | `<token>`<br>Type to check. | `has_mio_equipment_type = my_equipment_type_token` | Checks if the currently-scoped MIO has the target equipment types. | The possible equipment types are defined in `script_enum_equipment_bonus_type` (in `/Hearts of Iron IV/common/script_enums.txt`) and in `/Hearts of Iron IV/common/equipment_groups.txt` files. | 1.13 |
+
+**Example: has_mio_trait**
+
+```text
+has_mio_trait = {
+    token = my_trait_token
+}
+```
+
+**Example: is_mio_trait_available**
+
+```text
+is_mio_trait_available = {
+    token = my_trait_token
+    check_mio_parent_completed = no
+}
+```
+
+**Example: is_mio_trait_completed**
+
+```text
+is_mio_trait_completed = {
+    token = my_trait_token
+}
+```
+
+**Example: has_mio_flag**
+
+```text
+has_mio_flag = {
+    flag = my_flag
+    days > 30
+    date > 1936.6.1
+    value > 0
+}
+```
 
 ## Contract scope <a id="Contract_scope"></a>
 
@@ -1002,7 +2304,18 @@ Special project-scoped triggers:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| has_project_flag | `<string>`<br>The flag to check for. **OR**<br> `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | `has_project_flag = my_flag``has_project_flag = {`<br>`  flag = my_flag`<br>`  value < 12`<br>`  date > 1936.3.25`<br>`  days > 365`<br>`}` | Check if flag has been set within the special project in scope. May checks on the value or date/days since last modified date. | If not set, the value comparison is >0. value is limited between -32768 and 32767. | 1.15 |
+| has_project_flag | `<string>`<br>The flag to check for. **OR**<br> `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | `has_project_flag = my_flag`*(example below)* | Check if flag has been set within the special project in scope. May checks on the value or date/days since last modified date. | If not set, the value comparison is >0. value is limited between -32768 and 32767. | 1.15 |
+
+**Example: has_project_flag**
+
+```text
+has_project_flag = {
+  flag = my_flag
+  value < 12
+  date > 1936.3.25
+  days > 365
+}
+```
 
 ## Meta triggers <a id="Meta_triggers"></a>
 

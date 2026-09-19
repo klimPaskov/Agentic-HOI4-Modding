@@ -92,20 +92,123 @@ on_actions = {
 
 | Name | Description | Examples | Notes | Version Added |
 | --- | --- | --- | --- | --- |
-| on_startup | Trigger the following commands at the first day of a new game, after country selection. Doesn't work with save loading. | `on_startup = {`<br>`    effect = {`<br>`        ENG = {`<br>`            news_event = { id = news_event.1 days = 31 random_days = 27 } # Fires a news event in February 1936`<br>`        }  # assuming the default start date`<br>`    }      # Scoping into ENG is necessary, since`<br>`}          # news_event is a country-scoped effect` | **Has a default scope of `none`**, instead of firing for each country individually as in other Paradox games such as Europa Universalis IV. Many effects that usually can be used in any scope will not work, without manual [scoping](<Scopes - Hearts of Iron 4 Wiki.md>) into countries, states, or elsewhere. | 1.3.3 |
-| on_daily | Triggers each day for **every country separately** (performance heavy, use carefully) | `on_daily = {`<br>`    effect = {`<br>`        if = {`<br>`            limit = { has_variable = to_be_updated_daily }`<br>`            add_to_variable = { to_be_updated_daily = 1 }`<br>`        }`<br>`    }`<br>`}` | Useful for scripted guis and mods adding new mechanics (can increment a variable daily e.g.). **Only use scoping if you're careful to avoid duplicate effects**. This being executed for every country separately means that this is essentially equivalent to a single effect executed daily inside of every_country. e.g. `effect = { GER = { add_political_power = 1 } }` will add ~100 political power to ![Flag of Germany](media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img1.png) Germany daily, as there being ~100 countries on the world map means that this will get executed ~100 times per day. | 1.5.2 |
-| on_daily_TAG | Triggers each day for the specified country only | `on_daily_SOV = {`<br>`    effect = {`<br>`        if = {`<br>`            limit = { has_war_with = GER }`<br>`            SOV_escalate_the_war_effect = yes`<br>`        }`<br>`    }`<br>`}` | Only runs the effects if the country exists. | 1.9 |
-| on_weekly | Triggers each week for every country separately | `on_weekly = {`<br>`    effect = {`<br>`        if = {`<br>`            limit = {`<br>`                has_intelligence_agency = yes`<br>`                is_ai = yes`<br>`            }`<br>`            update_operation_ai = yes`<br>`        }`<br>`    }`<br>`}` | Useful for ai scripting. Runs on the beginning of the day if the num_days variable is divisible by 7. | 1.9 |
-| on_weekly_TAG | Triggers each week for the specified country only | `on_weekly_BHR = {`<br>`    if = {`<br>`        limit = {`<br>`            has_country_flag = BHR_must_control_states`<br>`            any_owned_state = {`<br>`                NOT = { is_controlled_by = ROOT }`<br>`            }`<br>`            has_stability < 0.5`<br>`        }`<br>`        country_event = BHR_event.0`<br>`        clr_country_flag = BHR_must_control_states`<br>`    }`<br>`}` | Only runs the effects if the country exists. Runs on the beginning of the day if the num_days variable is divisible by 7. | 1.9 |
-| on_monthly | Triggers each month for every country separately | `on_monthly = {`<br>`    random_events = {`<br>`        1 = random_event.0`<br>`        99 = 0`<br>`    }`<br>`}` |  | 1.9 |
-| on_monthly_TAG | Triggers each month for the specified country only | `on_monthly_USA = {`<br>`    effect = {`<br>`        add_to_variable = { USA_unrest = 1 }`<br>`        clamp_variable = {`<br>`            var = USA_unrest`<br>`            max = 10`<br>`        }`<br>`        if = {`<br>`            limit = {`<br>`                check_variable = { USA_unrest = 10 }`<br>`            }`<br>`            country_event = usa.rebellion.0`<br>`        }`<br>`    }`<br>`}` | Only runs the effects if the country exists. | 1.9 |
+| on_startup | Trigger the following commands at the first day of a new game, after country selection. Doesn't work with save loading. | *(example below)* | **Has a default scope of `none`**, instead of firing for each country individually as in other Paradox games such as Europa Universalis IV. Many effects that usually can be used in any scope will not work, without manual [scoping](<Scopes - Hearts of Iron 4 Wiki.md>) into countries, states, or elsewhere. | 1.3.3 |
+| on_daily | Triggers each day for **every country separately** (performance heavy, use carefully) | *(example below)* | Useful for scripted guis and mods adding new mechanics (can increment a variable daily e.g.). **Only use scoping if you're careful to avoid duplicate effects**. This being executed for every country separately means that this is essentially equivalent to a single effect executed daily inside of every_country. e.g. `effect = { GER = { add_political_power = 1 } }` will add ~100 political power to ![Flag of Germany](media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img1.png) Germany daily, as there being ~100 countries on the world map means that this will get executed ~100 times per day. | 1.5.2 |
+| on_daily_TAG | Triggers each day for the specified country only | *(example below)* | Only runs the effects if the country exists. | 1.9 |
+| on_weekly | Triggers each week for every country separately | *(example below)* | Useful for ai scripting. Runs on the beginning of the day if the num_days variable is divisible by 7. | 1.9 |
+| on_weekly_TAG | Triggers each week for the specified country only | *(example below)* | Only runs the effects if the country exists. Runs on the beginning of the day if the num_days variable is divisible by 7. | 1.9 |
+| on_monthly | Triggers each month for every country separately | *(example below)* |  | 1.9 |
+| on_monthly_TAG | Triggers each month for the specified country only | *(example below)* | Only runs the effects if the country exists. | 1.9 |
+
+**Example: on_startup**
+
+```text
+on_startup = {
+    effect = {
+        ENG = {
+            news_event = { id = news_event.1 days = 31 random_days = 27 } # Fires a news event in February 1936
+        }  # assuming the default start date
+    }      # Scoping into ENG is necessary, since
+}          # news_event is a country-scoped effect
+```
+
+**Example: on_daily**
+
+```text
+on_daily = {
+    effect = {
+        if = {
+            limit = { has_variable = to_be_updated_daily }
+            add_to_variable = { to_be_updated_daily = 1 }
+        }
+    }
+}
+```
+
+**Example: on_daily_TAG**
+
+```text
+on_daily_SOV = {
+    effect = {
+        if = {
+            limit = { has_war_with = GER }
+            SOV_escalate_the_war_effect = yes
+        }
+    }
+}
+```
+
+**Example: on_weekly**
+
+```text
+on_weekly = {
+    effect = {
+        if = {
+            limit = {
+                has_intelligence_agency = yes
+                is_ai = yes
+            }
+            update_operation_ai = yes
+        }
+    }
+}
+```
+
+**Example: on_weekly_TAG**
+
+```text
+on_weekly_BHR = {
+    if = {
+        limit = {
+            has_country_flag = BHR_must_control_states
+            any_owned_state = {
+                NOT = { is_controlled_by = ROOT }
+            }
+            has_stability < 0.5
+        }
+        country_event = BHR_event.0
+        clr_country_flag = BHR_must_control_states
+    }
+}
+```
+
+**Example: on_monthly**
+
+```text
+on_monthly = {
+    random_events = {
+        1 = random_event.0
+        99 = 0
+    }
+}
+```
+
+**Example: on_monthly_TAG**
+
+```text
+on_monthly_USA = {
+    effect = {
+        add_to_variable = { USA_unrest = 1 }
+        clamp_variable = {
+            var = USA_unrest
+            max = 10
+        }
+        if = {
+            limit = {
+                check_variable = { USA_unrest = 10 }
+            }
+            country_event = usa.rebellion.0
+        }
+    }
+}
+```
 
 ## Politics <a id="Politics"></a>
 
 | Name | Description | Examples | Notes | Version Added |
 | --- | --- | --- | --- | --- |
-| on_stage_coup | For the non ![La Résistance](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img6.png)La Résistance stage coup. Trigger the following commands whenever a coup is stage. | `on_stage_coup = {`<br>`    effect = {`<br>`    }`<br>`}` | ROOT is the country that stages the coup, FROM is the target country. | 1.0 |
-| on_coup_succeeded | For the non ![La Résistance](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img6.png)La Résistance stage coup. Trigger the following commands whenever a coup succeeds. | `on_coup_succeeded = {`<br>`    effect = {`<br>`        random_other_country = {`<br>`            limit = {`<br>`                has_government = democratic`<br>`                original_tag = ROOT`<br>`            }`<br>`            set_politics = { elections_allowed = yes }`<br>`        }`<br>`    }`<br>`}` | ROOT is the country that coup succeeded in, FROM is the stager of the coup | 1.0 |
+| on_stage_coup | For the non ![La Résistance](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img6.png)La Résistance stage coup. Trigger the following commands whenever a coup is stage. | *(example below)* | ROOT is the country that stages the coup, FROM is the target country. | 1.0 |
+| on_coup_succeeded | For the non ![La Résistance](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img6.png)La Résistance stage coup. Trigger the following commands whenever a coup succeeds. | *(example below)* | ROOT is the country that coup succeeded in, FROM is the stager of the coup | 1.0 |
 | on_government_change | Trigger the following commands whenever a country switches its government. | `on_government_change = { effect = {  …  } }` | This includes `set_politics` and `start_civil_war` (always for both sides) and excludes being puppeted. Will always also trigger on_ruling_party_change. | 1.0 |
 | on_ruling_party_change | Trigger the following commands whenever a country switches its ideology. | `on_ruling_party_change = { effect = {  …  } }` | `old_ideology_token` is a [temporary variable](<Data structures - Hearts of Iron 4 Wiki.md#Variable_types>) that stores the old ideology as a token. Alongside what triggers on_government_change, also includes being puppeted or changing the ideology via a console command. | 1.9 |
 | on_new_term_election | Trigger the following commands whenever an election happens or is called by the **hold_election** command. | `on_new_term_election = { random_events = { 100 = usa.6 } }` |  | 1.0 |
@@ -113,26 +216,51 @@ on_actions = {
 | on_peaceconference_ended | Trigger the following commands whenever a peace conference ends. | `on_peaceconference_ended = { effect = { … } }` | ROOT is the winner, FROM is the loser. Is also triggered by the [white_peace](<Effects - Hearts of Iron 4 Wiki.md>) effect is used or when a conditional surrender is accepted. | 1.5 |
 | on_peaceconference_started | Trigger the following commands whenever a peace conference starts. | `on_peaceconference_started = { effect = { … } }` | ROOT is the winner, FROM is the loser. Is also triggered by the [white_peace](<Effects - Hearts of Iron 4 Wiki.md>) effect is used or when a conditional surrender is accepted. | 1.12.3 |
 
+**Example: on_stage_coup**
+
+```text
+on_stage_coup = {
+    effect = {
+    }
+}
+```
+
+**Example: on_coup_succeeded**
+
+```text
+on_coup_succeeded = {
+    effect = {
+        random_other_country = {
+            limit = {
+                has_government = democratic
+                original_tag = ROOT
+            }
+            set_politics = { elections_allowed = yes }
+        }
+    }
+}
+```
+
 ## Diplomacy/War <a id="Diplomacy.2FWar"></a><a id="Diplomacy/War"></a>
 
 | Name | Description | Examples | Notes | Version Added |
 | --- | --- | --- | --- | --- |
-| on_send_volunteers | Trigger the following commands whenever a country send volunteers to another. | `on_send_volunteers = {`<br>`    effect = { … }`<br>`}` | ROOT is sender, FROM is receiver. | 1.9 |
-| on_border_war_lost | Trigger the following commands whenever a country loses a border war. | `on_border_war_lost = {`<br>`    effect = {`<br>`        owner = {`<br>`            add_ideas = lost_conflict`<br>`        }`<br>`    }`<br>`}` | "Border war" refers to the state-based border wars enabled with [set_border_war](<Effects - Hearts of Iron 4 Wiki.md>), represented with orange stripes over the state, rather than border wars that simulate combat between countries. The default scope is the state that lost the border war. | 1.0 |
-| on_war_relation_added | fired when two countries end up at war with each other (on_war is fired when a country goes to war against anyone and is not fired again when it enters war against another country unless it went to peace first) | `on_war_relation_added = {`<br>`    effect = { … }`<br>`}` | ROOT is attacker, FROM is defender | 1.9.3 |
-| on_declare_war | Trigger the following commands whenever a country declares war. | `on_declare_war = {`<br>`    effect = {`<br>`        if = {`<br>`            limit = {`<br>`                tag = GER`<br>`                FROM = { tag = SOV }`<br>`            }`<br>`            add_ideas = GER_barbarossa`<br>`        }`<br>`    }`<br>`}` | FROM is war target. ROOT is for the country who is declaring war | 1.0 |
-| on_war | Trigger the following commands whenever a country has just entered a state of war from initially being at peace. | `on_war = {`<br>`    effect = { … }`<br>`}` | THIS is country that has just gotten into a war. | 1.7 |
-| on_peace | Trigger the following commands whenever a country is no longer at war. | `on_peace = {`<br>`    effect = { … }`<br>`}` | THIS is country that is no longer at war. | 1.7 |
-| on_capitulation | Trigger the following commands whenever a country capitulates, in the middle of the process. | `on_capitulation = {`<br>`    effect = { … }`<br>`}` | ROOT is capitulated country, FROM is winner. Several processes such as the deletion of units and transfer of equipment have already been executed by this point. | 1.0 |
-| on_capitulation_immediate | Trigger the following commands whenever a country capitulates, at the beginning of the process. | `on_capitulation_immediate = {`<br>`    effect = { … }`<br>`}` | ROOT is capitulated country, FROM is winner. | 1.11.5 |
-| on_uncapitulation | Trigger the following commands whenever a country that was previously capitulated changes its status to no longer having capitulated. | `on_uncapitulation = {`<br>`    effect = { … }`<br>`}` | ROOT is the country affected. | 1.4 |
-| on_annex | Trigger the following commands whenever a country is annexed. | `on_annex = {`<br>`    effect = { … }`<br>`}` | ROOT is winner, FROM gets annexed. For civil wars **on_civil_war_end** is also fired. | 1.3.3 |
-| on_civil_war_end_before_annexation | Trigger the following commands just before FROM gets annexed, meaning the country and everything it owns still exists. | `on_civil_war_end_before_annexation = {`<br>`    effect = { … }`<br>`}` | ROOT is winner, FROM gets annexed. It will also fire **on_annex** and **on_civil_war_end**. | 1.6 |
-| on_civil_war_end | Trigger the following commands whenever a civil war ends. | `on_civil_war_end = {`<br>`    effect = { … }`<br>`}` | ROOT is civil war winner, FROM gets annexed. This will also fire **on_annex**. | 1.0 |
-| on_puppet | Trigger the following commands whenever a country is puppeted in a **peace conference only**. | `on_puppet = {`<br>`    effect = { … }`<br>`}` | ROOT is the nation being puppeted, FROM is the overlord. | 1.0 |
-| on_liberate | Trigger the following commands whenever a country is liberated in a **peace conference only**. | `on_liberate = {`<br>`    effect = { … }`<br>`}` | ROOT is the nation being liberated, FROM is the leader of the liberators. | 1.0 |
-| on_release_as_free | Trigger the following commands whenever a country is released. | `on_release_as_free = {`<br>`    effect = { … }`<br>`}` | #ROOT is free nation FROM is releaser. | 1.3 |
-| on_release_as_puppet | Trigger the following commands whenever puppeting through the occupied territories menu during peace time (or when releasing from non-core but owned territory). | `on_release_as_puppet = {`<br>`    effect = { … }`<br>`}` | ROOT is the nation being released, FROM is the overlord. | 1.3 |
+| on_send_volunteers | Trigger the following commands whenever a country send volunteers to another. | *(example below)* | ROOT is sender, FROM is receiver. | 1.9 |
+| on_border_war_lost | Trigger the following commands whenever a country loses a border war. | *(example below)* | "Border war" refers to the state-based border wars enabled with [set_border_war](<Effects - Hearts of Iron 4 Wiki.md>), represented with orange stripes over the state, rather than border wars that simulate combat between countries. The default scope is the state that lost the border war. | 1.0 |
+| on_war_relation_added | fired when two countries end up at war with each other (on_war is fired when a country goes to war against anyone and is not fired again when it enters war against another country unless it went to peace first) | *(example below)* | ROOT is attacker, FROM is defender | 1.9.3 |
+| on_declare_war | Trigger the following commands whenever a country declares war. | *(example below)* | FROM is war target. ROOT is for the country who is declaring war | 1.0 |
+| on_war | Trigger the following commands whenever a country has just entered a state of war from initially being at peace. | *(example below)* | THIS is country that has just gotten into a war. | 1.7 |
+| on_peace | Trigger the following commands whenever a country is no longer at war. | *(example below)* | THIS is country that is no longer at war. | 1.7 |
+| on_capitulation | Trigger the following commands whenever a country capitulates, in the middle of the process. | *(example below)* | ROOT is capitulated country, FROM is winner. Several processes such as the deletion of units and transfer of equipment have already been executed by this point. | 1.0 |
+| on_capitulation_immediate | Trigger the following commands whenever a country capitulates, at the beginning of the process. | *(example below)* | ROOT is capitulated country, FROM is winner. | 1.11.5 |
+| on_uncapitulation | Trigger the following commands whenever a country that was previously capitulated changes its status to no longer having capitulated. | *(example below)* | ROOT is the country affected. | 1.4 |
+| on_annex | Trigger the following commands whenever a country is annexed. | *(example below)* | ROOT is winner, FROM gets annexed. For civil wars **on_civil_war_end** is also fired. | 1.3.3 |
+| on_civil_war_end_before_annexation | Trigger the following commands just before FROM gets annexed, meaning the country and everything it owns still exists. | *(example below)* | ROOT is winner, FROM gets annexed. It will also fire **on_annex** and **on_civil_war_end**. | 1.6 |
+| on_civil_war_end | Trigger the following commands whenever a civil war ends. | *(example below)* | ROOT is civil war winner, FROM gets annexed. This will also fire **on_annex**. | 1.0 |
+| on_puppet | Trigger the following commands whenever a country is puppeted in a **peace conference only**. | *(example below)* | ROOT is the nation being puppeted, FROM is the overlord. | 1.0 |
+| on_liberate | Trigger the following commands whenever a country is liberated in a **peace conference only**. | *(example below)* | ROOT is the nation being liberated, FROM is the leader of the liberators. | 1.0 |
+| on_release_as_free | Trigger the following commands whenever a country is released. | *(example below)* | #ROOT is free nation FROM is releaser. | 1.3 |
+| on_release_as_puppet | Trigger the following commands whenever puppeting through the occupied territories menu during peace time (or when releasing from non-core but owned territory). | *(example below)* | ROOT is the nation being released, FROM is the overlord. | 1.3 |
 | on_guarantee | Trigger the following commands whenever a country guarantees independence of another country. |  | ROOT is the country which guarantees, FROM is the country that is guaranteed. |  |
 | on_military_access | Trigger the following commands whenever a country accepts the request for military access. |  | ROOT is the country which requested, FROM is the country that accepted. |  |
 | on_offer_military_access | Trigger the following commands whenever a country accepts the offer for military access. |  | ROOT is the country which offered, FROM is the country that accepted. |  |
@@ -147,6 +275,146 @@ on_actions = {
 | on_give_state_control | Trigger the following commands whenever a country accepts being given control of a state. |  | ROOT is the giver, FROM is the receiver. |  |
 | on_peace_proposal | Trigger the following commands whenever a country accepts a conditional surrender. |  | ROOT is sender of conditional surrender, FROM is the receiver. |  |
 | on_send_attache | Triggers actions on an attache being accepted. |  | Default scope is sender, FROM = receiver |  |
+
+**Example: on_send_volunteers**
+
+```text
+on_send_volunteers = {
+    effect = { … }
+}
+```
+
+**Example: on_border_war_lost**
+
+```text
+on_border_war_lost = {
+    effect = {
+        owner = {
+            add_ideas = lost_conflict
+        }
+    }
+}
+```
+
+**Example: on_war_relation_added**
+
+```text
+on_war_relation_added = {
+    effect = { … }
+}
+```
+
+**Example: on_declare_war**
+
+```text
+on_declare_war = {
+    effect = {
+        if = {
+            limit = {
+                tag = GER
+                FROM = { tag = SOV }
+            }
+            add_ideas = GER_barbarossa
+        }
+    }
+}
+```
+
+**Example: on_war**
+
+```text
+on_war = {
+    effect = { … }
+}
+```
+
+**Example: on_peace**
+
+```text
+on_peace = {
+    effect = { … }
+}
+```
+
+**Example: on_capitulation**
+
+```text
+on_capitulation = {
+    effect = { … }
+}
+```
+
+**Example: on_capitulation_immediate**
+
+```text
+on_capitulation_immediate = {
+    effect = { … }
+}
+```
+
+**Example: on_uncapitulation**
+
+```text
+on_uncapitulation = {
+    effect = { … }
+}
+```
+
+**Example: on_annex**
+
+```text
+on_annex = {
+    effect = { … }
+}
+```
+
+**Example: on_civil_war_end_before_annexation**
+
+```text
+on_civil_war_end_before_annexation = {
+    effect = { … }
+}
+```
+
+**Example: on_civil_war_end**
+
+```text
+on_civil_war_end = {
+    effect = { … }
+}
+```
+
+**Example: on_puppet**
+
+```text
+on_puppet = {
+    effect = { … }
+}
+```
+
+**Example: on_liberate**
+
+```text
+on_liberate = {
+    effect = { … }
+}
+```
+
+**Example: on_release_as_free**
+
+```text
+on_release_as_free = {
+    effect = { … }
+}
+```
+
+**Example: on_release_as_puppet**
+
+```text
+on_release_as_puppet = {
+    effect = { … }
+}
+```
 
 ## Faction <a id="Faction"></a>
 
@@ -179,7 +447,39 @@ on_actions = {
 
 | Name | Description | Examples | Notes | Version Added |
 | --- | --- | --- | --- | --- |
-| on_state_control_changed | Trigger the following commands when a state's controller changes. | `on_state_control_changed = {`<br>`    effect = {`<br>`        if = {`<br>`            limit = {`<br>`                FROM.FROM = { state = 123 }`<br>`            }`<br>`            if =  {`<br>`                limit = {`<br>`                    tag = BHR`<br>`                }`<br>`                FROM.FROM = {`<br>`                    set_state_name = STATE_123_BHR`<br>`                    set_province_name = {`<br>`                        id = 1234`<br>`                        name = VICTORY_POINTS_1234_BHR`<br>`                    }`<br>`                }`<br>`            }`<br>`            else = { # Unnested else is preferred over nested`<br>`                FROM.FROM = {`<br>`                    reset_state_name = yes`<br>`                    reset_province_name = 1234`<br>`                }`<br>`            }`<br>`        }`<br>`    }`<br>`}` | ROOT is new controller, FROM is old controller, FROM.FROM is state ID. | 1.4 |
+| on_state_control_changed | Trigger the following commands when a state's controller changes. | *(example below)* | ROOT is new controller, FROM is old controller, FROM.FROM is state ID. | 1.4 |
+
+**Example: on_state_control_changed**
+
+```text
+on_state_control_changed = {
+    effect = {
+        if = {
+            limit = {
+                FROM.FROM = { state = 123 }
+            }
+            if =  {
+                limit = {
+                    tag = BHR
+                }
+                FROM.FROM = {
+                    set_state_name = STATE_123_BHR
+                    set_province_name = {
+                        id = 1234
+                        name = VICTORY_POINTS_1234_BHR
+                    }
+                }
+            }
+            else = { # Unnested else is preferred over nested
+                FROM.FROM = {
+                    reset_state_name = yes
+                    reset_province_name = 1234
+                }
+            }
+        }
+    }
+}
+```
 
 ## Wargoals <a id="Wargoals"></a>
 
@@ -206,12 +506,77 @@ on_actions = {
 
 | Name | Description | Examples | Notes | Version Added |
 | --- | --- | --- | --- | --- |
-| on_nuke_drop | Trigger the following commands whenever a country drops a nuke. | `on_nuke_drop = {`<br>`    effect = {`<br>`        set_global_flag = first_nuke_dropped`<br>`    }`<br>`}` | ROOT is the country that launched the nuke, FROM is the nuked state. | 1.0 |
-| on_pride_of_the_fleet_sunk | Triggers when a country's pride of the fleet is sunk | `on_pride_of_the_fleet_sunk = {`<br>`    effect = {`<br>`        if = {`<br>`            limit = {`<br>`                tag = ENG`<br>`            }`<br>`            FROM = { set_country_flag = achievements_pride_and_extreme_prejudice }`<br>`        }`<br>`    }`<br>`}` | FROM is the killer country, ROOT is the country of that lost its pride of the fleet. | 1.6 |
-| on_naval_invasion | Triggers the following commands whenever a sea invasion is made. | `on_naval_invasion = {`<br>`    effect = {`<br>`        ROOT = {    # Unlike most on_actions, ROOT isn't the default scope`<br>`            add_political_power = 100`<br>`        }`<br>`    }`<br>`}` | THIS (default scope) is the invaded state, ROOT is the country that invades, FROM is the state where the invasion started | 1.9 |
-| on_paradrop | Triggers the following commands whenever a landing occurs. | `on_paradrop = {`<br>`    effect = {`<br>`        FROM = {`<br>`            controller = {`<br>`                add_war_support = 0.01`<br>`            }`<br>`        }`<br>`    }`<br>`}` | THIS (default scope) is the invaded state, ROOT is the country that invades, FROM is the state where the invasion started | 1.9 |
-| on_units_paradropped_in_state | This differs from on_paradrop in that it is run once per paradrop, not once per unit dropped. | `on_paradrop = {`<br>`    effect = {`<br>`        FROM = {`<br>`            controller = {`<br>`                add_war_support = 0.01`<br>`            }`<br>`        }`<br>`    }`<br>`}` | ROOT is the state that was dropped into, FROM is the dropping country. |  |
+| on_nuke_drop | Trigger the following commands whenever a country drops a nuke. | *(example below)* | ROOT is the country that launched the nuke, FROM is the nuked state. | 1.0 |
+| on_pride_of_the_fleet_sunk | Triggers when a country's pride of the fleet is sunk | *(example below)* | FROM is the killer country, ROOT is the country of that lost its pride of the fleet. | 1.6 |
+| on_naval_invasion | Triggers the following commands whenever a sea invasion is made. | *(example below)* | THIS (default scope) is the invaded state, ROOT is the country that invades, FROM is the state where the invasion started | 1.9 |
+| on_paradrop | Triggers the following commands whenever a landing occurs. | *(example below)* | THIS (default scope) is the invaded state, ROOT is the country that invades, FROM is the state where the invasion started | 1.9 |
+| on_units_paradropped_in_state | This differs from on_paradrop in that it is run once per paradrop, not once per unit dropped. | *(example below)* | ROOT is the state that was dropped into, FROM is the dropping country. |  |
 | on_add_history | Triggers the following commands whenever receiving a history entry. | `on_add_history = { effect = { … } }` | ROOT is the unit. | 1.12 |
+
+**Example: on_nuke_drop**
+
+```text
+on_nuke_drop = {
+    effect = {
+        set_global_flag = first_nuke_dropped
+    }
+}
+```
+
+**Example: on_pride_of_the_fleet_sunk**
+
+```text
+on_pride_of_the_fleet_sunk = {
+    effect = {
+        if = {
+            limit = {
+                tag = ENG
+            }
+            FROM = { set_country_flag = achievements_pride_and_extreme_prejudice }
+        }
+    }
+}
+```
+
+**Example: on_naval_invasion**
+
+```text
+on_naval_invasion = {
+    effect = {
+        ROOT = {    # Unlike most on_actions, ROOT isn't the default scope
+            add_political_power = 100
+        }
+    }
+}
+```
+
+**Example: on_paradrop**
+
+```text
+on_paradrop = {
+    effect = {
+        FROM = {
+            controller = {
+                add_war_support = 0.01
+            }
+        }
+    }
+}
+```
+
+**Example: on_units_paradropped_in_state**
+
+```text
+on_paradrop = {
+    effect = {
+        FROM = {
+            controller = {
+                add_war_support = 0.01
+            }
+        }
+    }
+}
+```
 
 ## Aces <a id="Aces"></a>
 
