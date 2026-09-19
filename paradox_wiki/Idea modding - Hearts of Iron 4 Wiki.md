@@ -64,9 +64,31 @@ l_english:
 
 ### Picture <a id="Picture"></a>
 
-| General sprite overview |
-| --- |
-| For loading GFX, the game uses the sprite system. Sprites are code definitions that attach a name to an image file, as well as optionally adding additional information, such as animation, the amount of frames, the way that the image will be loaded, and so on. This means **placing an image into the gfx folder isn't enough for it to work**, a sprite has to use that image file as well. Sprites are defined in any `/Hearts of Iron IV/interface/*.gfx` file (this is separate from `gfx/interface/`), opened with a text editor. To create a new .gfx file, a text file can be created and renamed to change the extension (on Windows, the Windows Explorer needs to show the extensions, which it doesn't by default). In particular, sprites are defined within a `spriteTypes = { ... }` block, as to separate from fonts and map arrows also defined in that folder, while the simplest sprite with the least mandatory properties is a `spriteType = { ... }`. The simplest sprite definition looks like the following: `spriteTypes = {`<br>`    spriteType = {`<br>`        name = GFX_first_sprite                         # In some cases, beginning with GFX_ is mandatory for it to work.`<br>`        texturefile = gfx/interface/folder/filename.dds # The folder and filename don't matter, as long as they are correct`<br>`    }                                                   # Only the forward slash '/' (can be doubled as '//') can be used to separate folders.`<br>`    spriteType = {                                      # The image doesn't have to be .dds, as .tga and .png are acceptable.`<br>`        name = GFX_second_sprite`<br>`        texturefile = gfx/interface/folder2/filename2.dds`<br>`        noOfFrames = 2 # Splits the image into 2 halves, which may be switched between dynamically in GUI`<br>`    }`<br>`}` In this case, this creates a sprite with the name of `GFX_first_sprite` and attaches the `/Hearts of Iron IV/gfx/interface/folder/filename.dds` image to it, and a second sprite similarly. The second sprite will be split into 2 frames: this is decided by having the left half of the image as the first frame and the right half as the second frame (more frames would further split the image horizontally). This doesn't make the sprite animated, just turns on the option to switch between the two halves as needed. `GFX_second_sprite:1` serves as a reference to the first frame, and GUI can be set up to change the shown frame depending on context, such as with radio stations.<br> In order to add animation, a [frameAnimatedSpriteType](<Graphical asset modding - Hearts of Iron 4 Wiki.md#frameAnimatedSpriteType>) is used.  **It's never mandatory to copy a base game file to change a sprite**. If there are duplicate definitions of a sprite with the same name in different files, the game will prioritise the one that would be [evaluated later, based on the filename](<Modding - Hearts of Iron 4 Wiki.md#Loading_files>), and the older sprite will be ignored in entirety. This can be ensured by beginning the replacement file's name with a symbol late in the ASCII character table. Typically the lowercase letter 'z' is used for this purpose. For example, to change the amount of frames in `GFX_idea_traits_strip` to 10, it is possible to define a sprite with that name with 10 frames in the mod's `modname/interface/zz_replace.gfx` file instead of copying over the base game file.<br> Since most .gfx files define integral parts of the user interface, copying them over can lead to the mod's loaded files missing sprites upon a major game update, which would appear in-game as the default image, which is the error dog by default. As to ease the burden of needing to check the interface files, it's best to never copy over .gfx files, unless more additions would be actively harmful to the mod, such as with `interface/subuniticons.gfx` |
+**General sprite overview**
+
+For loading GFX, the game uses the sprite system. Sprites are code definitions that attach a name to an image file, as well as optionally adding additional information, such as animation, the amount of frames, the way that the image will be loaded, and so on. This means **placing an image into the gfx folder isn't enough for it to work**, a sprite has to use that image file as well.
+
+Sprites are defined in any `/Hearts of Iron IV/interface/*.gfx` file (this is separate from `gfx/interface/`), opened with a text editor. To create a new .gfx file, a text file can be created and renamed to change the extension (on Windows, the Windows Explorer needs to show the extensions, which it doesn't by default). In particular, sprites are defined within a `spriteTypes = { ... }` block, as to separate from fonts and map arrows also defined in that folder, while the simplest sprite with the least mandatory properties is a `spriteType = { ... }`. The simplest sprite definition looks like the following:
+
+```text
+spriteTypes = {
+    spriteType = {
+        name = GFX_first_sprite                         # In some cases, beginning with GFX_ is mandatory for it to work.
+        texturefile = gfx/interface/folder/filename.dds # The folder and filename don't matter, as long as they are correct
+    }                                                   # Only the forward slash '/' (can be doubled as '//') can be used to separate folders.
+    spriteType = {                                      # The image doesn't have to be .dds, as .tga and .png are acceptable.
+        name = GFX_second_sprite
+        texturefile = gfx/interface/folder2/filename2.dds
+        noOfFrames = 2 # Splits the image into 2 halves, which may be switched between dynamically in GUI
+    }
+}
+```
+
+In this case, this creates a sprite with the name of `GFX_first_sprite` and attaches the `/Hearts of Iron IV/gfx/interface/folder/filename.dds` image to it, and a second sprite similarly. The second sprite will be split into 2 frames: this is decided by having the left half of the image as the first frame and the right half as the second frame (more frames would further split the image horizontally). This doesn't make the sprite animated, just turns on the option to switch between the two halves as needed. `GFX_second_sprite:1` serves as a reference to the first frame, and GUI can be set up to change the shown frame depending on context, such as with radio stations.
+In order to add animation, a [frameAnimatedSpriteType](<Graphical asset modding - Hearts of Iron 4 Wiki.md#frameAnimatedSpriteType>) is used.
+
+**It's never mandatory to copy a base game file to change a sprite**. If there are duplicate definitions of a sprite with the same name in different files, the game will prioritise the one that would be [evaluated later, based on the filename](<Modding - Hearts of Iron 4 Wiki.md#Loading_files>), and the older sprite will be ignored in entirety. This can be ensured by beginning the replacement file's name with a symbol late in the ASCII character table. Typically the lowercase letter 'z' is used for this purpose. For example, to change the amount of frames in `GFX_idea_traits_strip` to 10, it is possible to define a sprite with that name with 10 frames in the mod's `modname/interface/zz_replace.gfx` file instead of copying over the base game file.
+Since most .gfx files define integral parts of the user interface, copying them over can lead to the mod's loaded files missing sprites upon a major game update, which would appear in-game as the default image, which is the error dog by default. As to ease the burden of needing to check the interface files, it's best to never copy over .gfx files, unless more additions would be actively harmful to the mod, such as with `interface/subuniticons.gfx`
 
 By default, an idea uses a sprite that is the same as the idea's name, but with `GFX_idea_` prepended in the beginning. For example, an idea with the name of `my_idea_1` will use the sprite with the name of `GFX_idea_my_idea_1`.
 
@@ -152,13 +174,46 @@ equipment_bonus = {
 
 `rule` modifies the set of rules that decide what the country is allowed to do. This usually includes diplomatic options (such as peace conference options or being called to war). They show up in the tooltip only if the rule differs from the value without the idea, e.g. `can_create_factions = no` will usually not appear in the tooltip as countries are already unable to create a faction by default.
 
-|  |
-| --- |
-| `rule = {`<br>`    can_join_factions = no`<br>`    can_send_volunteers = yes`<br>`}` |
+```text
+rule = {
+    can_join_factions = no
+    can_send_volunteers = yes
+}
+```
 
-|  |
-| --- |
-| - Game rule list - The following game rules exist as possible options: Internal name Localised name Notes can_access_market Can access International Market ( Puppets and Overlords can always access each other's market) can_be_spymaster Can be Spy Master can_boost_other_ideologies Can boost popularity of other ideologies can_boost_own_ideology Can boost own party popularity in other countries can_create_collaboration_government Can create collaboration governments can_create_factions Can Create Factions can_declare_war_on_same_ideology Can declare war on country with the same ideology group without a war goal can_declare_war_without_wargoal_when_in_war Can declare war on a neighbor without a wargoal when at war with a major can_decline_call_to_war Can decline call to war can_force_government Can force government of another country to adopt the same ideology can_generate_female_aces Women in your country are allowed to become military pilots can_generate_female_country_leaders Can generate female country leaders can_generate_female_unit_leaders Can generate female unit leaders can_guarantee_other_ideologies Can guarantee other ideologies can_join_factions Can join factions can_join_factions_not_allowed_diplomacy Country's name is not allowed to join factions can_join_opposite_factions Can Join Factions led by another Ideology can_lower_tension Lowers World Tension with Guarantees can_not_build_buildings CAN_NOT_BUILD_BUILDINGS Doesn't seem to work. can_not_declare_war Can not declare wars Prevents generating wargoals, but not using existing ones. can_occupy_non_war Can hold territory owned by a country they are not at war with can_only_justify_war_on_threat_country Can justify war goals against a country that have not generated world tension can_puppet Can puppet a country can_send_volunteers Can send volunteer forces can_use_kamikaze_pilots Can use kamikaze pilots contributes_operatives Contributes Operatives to Spy Master: Yes Only has an effect for subjects. units_deployed_to_overlord Control over deployed units go to overlord Only has an effect for subjects. - Internal name - Localised name - Notes - can_access_market - Can access International Market ( Puppets and Overlords can always access each other's market) - can_be_spymaster - Can be Spy Master - can_boost_other_ideologies - Can boost popularity of other ideologies - can_boost_own_ideology - Can boost own party popularity in other countries - can_create_collaboration_government - Can create collaboration governments - can_create_factions - Can Create Factions - can_declare_war_on_same_ideology - Can declare war on country with the same ideology group without a war goal - can_declare_war_without_wargoal_when_in_war - Can declare war on a neighbor without a wargoal when at war with a major - can_decline_call_to_war - Can decline call to war - can_force_government - Can force government of another country to adopt the same ideology - can_generate_female_aces - Women in your country are allowed to become military pilots - can_generate_female_country_leaders - Can generate female country leaders - can_generate_female_unit_leaders - Can generate female unit leaders - can_guarantee_other_ideologies - Can guarantee other ideologies - can_join_factions - Can join factions - can_join_factions_not_allowed_diplomacy - Country's name is not allowed to join factions - can_join_opposite_factions - Can Join Factions led by another Ideology - can_lower_tension - Lowers World Tension with Guarantees - can_not_build_buildings - CAN_NOT_BUILD_BUILDINGS - Doesn't seem to work. - can_not_declare_war - Can not declare wars - Prevents generating wargoals, but not using existing ones. - can_occupy_non_war - Can hold territory owned by a country they are not at war with - can_only_justify_war_on_threat_country - Can justify war goals against a country that have not generated world tension - can_puppet - Can puppet a country - can_send_volunteers - Can send volunteer forces - can_use_kamikaze_pilots - Can use kamikaze pilots - contributes_operatives - Contributes Operatives to Spy Master: Yes - Only has an effect for subjects. - units_deployed_to_overlord - Control over deployed units go to overlord - Only has an effect for subjects. - Internal name - Localised name - Notes - can_access_market - Can access International Market ( Puppets and Overlords can always access each other's market) - can_be_spymaster - Can be Spy Master - can_boost_other_ideologies - Can boost popularity of other ideologies - can_boost_own_ideology - Can boost own party popularity in other countries - can_create_collaboration_government - Can create collaboration governments - can_create_factions - Can Create Factions - can_declare_war_on_same_ideology - Can declare war on country with the same ideology group without a war goal - can_declare_war_without_wargoal_when_in_war - Can declare war on a neighbor without a wargoal when at war with a major - can_decline_call_to_war - Can decline call to war - can_force_government - Can force government of another country to adopt the same ideology - can_generate_female_aces - Women in your country are allowed to become military pilots - can_generate_female_country_leaders - Can generate female country leaders - can_generate_female_unit_leaders - Can generate female unit leaders - can_guarantee_other_ideologies - Can guarantee other ideologies - can_join_factions - Can join factions - can_join_factions_not_allowed_diplomacy - Country's name is not allowed to join factions - can_join_opposite_factions - Can Join Factions led by another Ideology - can_lower_tension - Lowers World Tension with Guarantees - can_not_build_buildings - CAN_NOT_BUILD_BUILDINGS - Doesn't seem to work. - can_not_declare_war - Can not declare wars - Prevents generating wargoals, but not using existing ones. - can_occupy_non_war - Can hold territory owned by a country they are not at war with - can_only_justify_war_on_threat_country - Can justify war goals against a country that have not generated world tension - can_puppet - Can puppet a country - can_send_volunteers - Can send volunteer forces - can_use_kamikaze_pilots - Can use kamikaze pilots - contributes_operatives - Contributes Operatives to Spy Master: Yes - Only has an effect for subjects. - units_deployed_to_overlord - Control over deployed units go to overlord - Only has an effect for subjects. |
+**Game rule list**
+
+The following game rules exist as possible options:
+
+| Internal name | Localised name | Notes |
+| --- | --- | --- |
+| can_access_market | Can access International Market (Puppets and Overlords can always access each other's market) |  |
+| can_be_spymaster | Can be Spy Master |  |
+| can_boost_other_ideologies | Can boost popularity of other ideologies |  |
+| can_boost_own_ideology | Can boost own party popularity in other countries |  |
+| can_create_collaboration_government | Can create collaboration governments |  |
+| can_create_factions | Can Create Factions |  |
+| can_declare_war_on_same_ideology | Can declare war on country with the same ideology group without a war goal |  |
+| can_declare_war_without_wargoal_when_in_war | Can declare war on a neighbor without a wargoal when at war with a major |  |
+| can_decline_call_to_war | Can decline call to war |  |
+| can_force_government | Can force government of another country to adopt the same ideology |  |
+| can_generate_female_aces | Women in your country are allowed to become military pilots |  |
+| can_generate_female_country_leaders | Can generate female country leaders |  |
+| can_generate_female_unit_leaders | Can generate female unit leaders |  |
+| can_guarantee_other_ideologies | Can guarantee other ideologies |  |
+| can_join_factions | Can join factions |  |
+| can_join_factions_not_allowed_diplomacy | Country's name is not allowed to join factions |  |
+| can_join_opposite_factions | Can Join Factions led by another Ideology |  |
+| can_lower_tension | Lowers World Tension with Guarantees |  |
+| can_not_build_buildings | CAN_NOT_BUILD_BUILDINGS | Doesn't seem to work. |
+| can_not_declare_war | Can not declare wars | Prevents generating wargoals, but not using existing ones. |
+| can_occupy_non_war | Can hold territory owned by a country they are not at war with |  |
+| can_only_justify_war_on_threat_country | Can justify war goals against a country that have not generated world tension |  |
+| can_puppet | Can puppet a country |  |
+| can_send_volunteers | Can send volunteer forces |  |
+| can_use_kamikaze_pilots | Can use kamikaze pilots |  |
+| contributes_operatives | Contributes Operatives to Spy Master: Yes | Only has an effect for subjects. |
+| units_deployed_to_overlord | Control over deployed units go to overlord | Only has an effect for subjects. |
 
 ### Effects <a id="Effects"></a>
 

@@ -355,6 +355,8 @@ class WikiConverter(MarkdownConverter):
         self.title = title
         self.local_title = local_title or title
         self.known = known_pages
+        # Deepest heading emitted so far, used to keep levels contiguous.
+        self.last_level = 2
         self.anchors = []
         options.setdefault("heading_style", "ATX")
         options.setdefault("bullets", "-")
@@ -539,6 +541,8 @@ class WikiConverter(MarkdownConverter):
         return super().convert_table(el, text, parent_tags)
 
     def convert_hN(self, n, el, text, parent_tags):
+        if "_inline" in parent_tags:
+            return text
         ids = []
         for node in el.find_all(True):
             if node.get("id"):
@@ -550,14 +554,19 @@ class WikiConverter(MarkdownConverter):
         clean = clean.replace("[edit]", "").strip()
         if not clean:
             return ""
+        # The article starts at level 2 because the page title owns level 1, and
+        # the wiki skips levels in places, so a heading never jumps more than one
+        # step past the previous one.
+        level = 2 if n <= 2 else min(n, self.last_level + 1)
+        self.last_level = level
         unique = list(dict.fromkeys(ids))
         anchors = "".join(f'<a id="{i}"></a>' for i in unique)
         # The anchor trails the visible title so the heading still reads as
         # plain text while wiki-style section links keep resolving.
         tail = f" {anchors}" if anchors else ""
-        self.anchors.append({"level": n, "id": unique[0] if unique else None,
+        self.anchors.append({"level": level, "id": unique[0] if unique else None,
                              "text": clean, "ids": unique})
-        return f"\n\n{'#' * n} {clean}{tail}\n\n"
+        return f"\n\n{'#' * level} {clean}{tail}\n\n"
 
     def convert_sup(self, el, text, parent_tags):
         if el.get("class") and "reference" in (el.get("class") or []):
@@ -586,16 +595,66 @@ def clean_soup(title):
             node.decompose()
 
     navboxes = extract_navboxes(root)
+    unwrap_layout_tables(root, soup)
+    flatten_nested_tables(root, soup)
+    finalise_article(root, soup)
+    return soup, root, navboxes
 
-    # Markdown cannot nest tables. A table inside a table cell becomes a list so
-    # the outer table keeps its shape and the inner data survives.
-    for table in root.find_all("table"):
-        if table.find_parent("table") is None:
+
+def unwrap_layout_tables(root, soup):
+    """Replace wiki layout tables with the blocks they were arranging.
+
+    The wiki uses tables for page layout as well as for data: floated halves, and
+    ``eu4box-inline`` boxes whose header sits in a ``th``. Markdown has no layout
+    tables, and rendering them as data tables buries the real content in a
+    one-cell row. The cells are spliced back into the flow instead, so a box
+    header becomes a bold line and any table or code sample inside it stays a
+    table or a code block.
+    """
+    for table in list(root.find_all("table")):
+        style = (table.get("style") or "").lower()
+        classes = " ".join(table.get("class") or []).lower()
+        if "float:" not in style and "eu4box-inline" not in classes:
             continue
-        headers = [th.get_text(" ", strip=True) for th in table.find_all("th")]
+
+        blocks = []
+        for row in table.find_all("tr"):
+            if row.find_parent("table") is not table:
+                continue
+            for cell in row.find_all(["td", "th"], recursive=False):
+                if cell.name == "th":
+                    label = cell.get_text(" ", strip=True)
+                    label = label.rstrip("\u25bc\u25b2 ").strip()
+                    if label:
+                        para = soup.new_tag("p")
+                        strong = soup.new_tag("strong")
+                        strong.string = label
+                        para.append(strong)
+                        blocks.append(para)
+                    continue
+                for child in list(cell.contents):
+                    blocks.append(child.extract())
+        for block in blocks:
+            table.insert_before(block)
+        table.decompose()
+
+
+def flatten_nested_tables(root, soup):
+    """Turn a table nested in a table cell into a list.
+
+    Markdown cannot nest tables. Only a table's own rows are considered, so an
+    outer wrapper never swallows the rows of a table it merely contains.
+    """
+    tables = [t for t in root.find_all("table") if t.find_parent("table") is not None]
+    for table in reversed(tables):
+        headers = [th.get_text(" ", strip=True) for th in table.find_all("th")
+                   if th.find_parent("table") is table]
         listing = soup.new_tag("ul")
         for row in table.find_all("tr"):
-            values = [c.get_text(" ", strip=True) for c in row.find_all(["td", "th"])]
+            if row.find_parent("table") is not table:
+                continue
+            values = [c.get_text(" ", strip=True)
+                      for c in row.find_all(["td", "th"], recursive=False)]
             if not any(values) or values == headers:
                 continue
             if headers and len(headers) == len(values):
@@ -608,6 +667,9 @@ def clean_soup(title):
                 listing.append(item)
         table.replace_with(listing)
 
+
+def finalise_article(root, soup):
+    """Final cleanup pass once layout boxes and nested tables are resolved."""
     # colspan makes a row shorter than its header; expand it so the markdown
     # table keeps a rectangular shape.
     for cell in root.find_all(["td", "th"]):
@@ -683,7 +745,6 @@ def clean_soup(title):
     for sup in root.find_all("sup", class_="reference"):
         label = sup.get_text(" ", strip=True).strip("[] \u00a0")
         sup.replace_with(NavigableString(f"[{label}]"))
-    return soup, root, navboxes
 
 
 def extract_navboxes(root):
@@ -795,9 +856,6 @@ def convert(local_title, source_title, known_pages):
     soup, root, navboxes = clean_soup(source_title)
     conv = WikiConverter(source_title, known_pages, local_title=local_title)
     body = conv.convert_soup(root)
-    body, shift = normalise_heading_levels(body)
-    for anchor in conv.anchors:
-        anchor["level"] = min(6, anchor["level"] + shift)
     body = fix_tables(body)
     body = body.replace("\\=", "=")
     body = unescape_safe_angles(body)
@@ -807,24 +865,6 @@ def convert(local_title, source_title, known_pages):
     body = re.sub(r"[ \t]+\n", "\n", body)
     body = body.strip() + "\n"
     return body, conv.anchors, navboxes
-
-
-def normalise_heading_levels(body):
-    """Shift in-page headings so the page title stays the only level-1 heading
-    and the article always starts at level 2. Returns (body, shift)."""
-    levels = [len(m.group(1)) for m in
-              re.finditer(r"^(#{1,6}) ", body, flags=re.M)]
-    if not levels:
-        return body, 0
-    shift = max(0, 2 - min(levels))
-    if not shift:
-        return body, 0
-
-    def bump(match):
-        level = min(6, len(match.group(1)) + shift)
-        return "#" * level + " "
-
-    return re.sub(r"^(#{1,6}) ", bump, body, flags=re.M), shift
 
 
 def build_toc(anchors):

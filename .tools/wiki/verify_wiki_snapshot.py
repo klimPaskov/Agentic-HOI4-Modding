@@ -136,7 +136,15 @@ def verify(directory, show_details=True):
                 report("broken_toc", name, m.group(1))
 
         # --- one level-1 heading per page ----------------------------------
-        h1 = sum(1 for l in lines if re.match(r"^# ", l))
+        # Heading-shaped lines inside a code fence are comments, not headings.
+        h1 = 0
+        inside = False
+        for line in lines:
+            if line.lstrip().startswith(FENCE):
+                inside = not inside
+                continue
+            if not inside and re.match(r"^# ", line):
+                h1 += 1
         if h1 != 1:
             report("h1_count", name, f"{h1} level-1 headings")
 

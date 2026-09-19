@@ -21,11 +21,11 @@
       - [Medium term goal code example](#Medium_term_goal_code_example)
       - [Long term goal code example](#Long_term_goal_code_example)
 - [Manifests](#Manifests)
-    - [Structure](#Structure_2)
+  - [Structure](#Structure_2)
     - [Progress](#Progress)
     - [Example code of manifest](#Example_code_of_manifest)
 - [Rules](#Rules)
-    - [Syntax](#Syntax)
+  - [Syntax](#Syntax)
     - [Triggers](#Triggers_2)
     - [Modifier](#Modifier)
     - [Effect](#Effect)
@@ -35,10 +35,10 @@
       - [Syntax](#Syntax_2)
     - [Code examples](#Code_examples_2)
 - [Member upgrades](#Member_upgrades)
-    - [Syntax](#Syntax_3)
+  - [Syntax](#Syntax_3)
     - [Group](#Group)
 - [Templates](#Templates)
-    - [Syntax](#Syntax_4)
+  - [Syntax](#Syntax_4)
     - [Triggers](#Triggers_3)
     - [Manifest,rules,goals](#Manifest.2Crules.2Cgoals)
     - [Code example:](#Code_example:)
@@ -204,9 +204,39 @@ ratio_progress = {
 
 `rule = { }` - rules apply to all members while a threshold is active.
 
-|  |
-| --- |
-| - Game rule list - The following game rules exist as possible options: Internal name Localised name Notes can_access_market Can access International Market ( Puppets and Overlords can always access each other's market) can_be_spymaster Can be Spy Master can_boost_other_ideologies Can boost popularity of other ideologies can_boost_own_ideology Can boost own party popularity in other countries can_create_collaboration_government Can create collaboration governments can_create_factions Can Create Factions can_declare_war_on_same_ideology Can declare war on country with the same ideology group without a war goal can_declare_war_without_wargoal_when_in_war Can declare war on a neighbor without a wargoal when at war with a major can_decline_call_to_war Can decline call to war can_force_government Can force government of another country to adopt the same ideology can_generate_female_aces Women in your country are allowed to become military pilots can_generate_female_country_leaders Can generate female country leaders can_generate_female_unit_leaders Can generate female unit leaders can_guarantee_other_ideologies Can guarantee other ideologies can_join_factions Can join factions can_join_factions_not_allowed_diplomacy Country's name is not allowed to join factions can_join_opposite_factions Can Join Factions led by another Ideology can_lower_tension Lowers World Tension with Guarantees can_not_build_buildings CAN_NOT_BUILD_BUILDINGS Doesn't seem to work. can_not_declare_war Can not declare wars Prevents generating wargoals, but not using existing ones. can_occupy_non_war Can hold territory owned by a country they are not at war with can_only_justify_war_on_threat_country Can justify war goals against a country that have not generated world tension can_puppet Can puppet a country can_send_volunteers Can send volunteer forces can_use_kamikaze_pilots Can use kamikaze pilots contributes_operatives Contributes Operatives to Spy Master: Yes Only has an effect for subjects. units_deployed_to_overlord Control over deployed units go to overlord Only has an effect for subjects. - Internal name - Localised name - Notes - can_access_market - Can access International Market ( Puppets and Overlords can always access each other's market) - can_be_spymaster - Can be Spy Master - can_boost_other_ideologies - Can boost popularity of other ideologies - can_boost_own_ideology - Can boost own party popularity in other countries - can_create_collaboration_government - Can create collaboration governments - can_create_factions - Can Create Factions - can_declare_war_on_same_ideology - Can declare war on country with the same ideology group without a war goal - can_declare_war_without_wargoal_when_in_war - Can declare war on a neighbor without a wargoal when at war with a major - can_decline_call_to_war - Can decline call to war - can_force_government - Can force government of another country to adopt the same ideology - can_generate_female_aces - Women in your country are allowed to become military pilots - can_generate_female_country_leaders - Can generate female country leaders - can_generate_female_unit_leaders - Can generate female unit leaders - can_guarantee_other_ideologies - Can guarantee other ideologies - can_join_factions - Can join factions - can_join_factions_not_allowed_diplomacy - Country's name is not allowed to join factions - can_join_opposite_factions - Can Join Factions led by another Ideology - can_lower_tension - Lowers World Tension with Guarantees - can_not_build_buildings - CAN_NOT_BUILD_BUILDINGS - Doesn't seem to work. - can_not_declare_war - Can not declare wars - Prevents generating wargoals, but not using existing ones. - can_occupy_non_war - Can hold territory owned by a country they are not at war with - can_only_justify_war_on_threat_country - Can justify war goals against a country that have not generated world tension - can_puppet - Can puppet a country - can_send_volunteers - Can send volunteer forces - can_use_kamikaze_pilots - Can use kamikaze pilots - contributes_operatives - Contributes Operatives to Spy Master: Yes - Only has an effect for subjects. - units_deployed_to_overlord - Control over deployed units go to overlord - Only has an effect for subjects. - Internal name - Localised name - Notes - can_access_market - Can access International Market ( Puppets and Overlords can always access each other's market) - can_be_spymaster - Can be Spy Master - can_boost_other_ideologies - Can boost popularity of other ideologies - can_boost_own_ideology - Can boost own party popularity in other countries - can_create_collaboration_government - Can create collaboration governments - can_create_factions - Can Create Factions - can_declare_war_on_same_ideology - Can declare war on country with the same ideology group without a war goal - can_declare_war_without_wargoal_when_in_war - Can declare war on a neighbor without a wargoal when at war with a major - can_decline_call_to_war - Can decline call to war - can_force_government - Can force government of another country to adopt the same ideology - can_generate_female_aces - Women in your country are allowed to become military pilots - can_generate_female_country_leaders - Can generate female country leaders - can_generate_female_unit_leaders - Can generate female unit leaders - can_guarantee_other_ideologies - Can guarantee other ideologies - can_join_factions - Can join factions - can_join_factions_not_allowed_diplomacy - Country's name is not allowed to join factions - can_join_opposite_factions - Can Join Factions led by another Ideology - can_lower_tension - Lowers World Tension with Guarantees - can_not_build_buildings - CAN_NOT_BUILD_BUILDINGS - Doesn't seem to work. - can_not_declare_war - Can not declare wars - Prevents generating wargoals, but not using existing ones. - can_occupy_non_war - Can hold territory owned by a country they are not at war with - can_only_justify_war_on_threat_country - Can justify war goals against a country that have not generated world tension - can_puppet - Can puppet a country - can_send_volunteers - Can send volunteer forces - can_use_kamikaze_pilots - Can use kamikaze pilots - contributes_operatives - Contributes Operatives to Spy Master: Yes - Only has an effect for subjects. - units_deployed_to_overlord - Control over deployed units go to overlord - Only has an effect for subjects. |
+**Game rule list**
+
+The following game rules exist as possible options:
+
+| Internal name | Localised name | Notes |
+| --- | --- | --- |
+| can_access_market | Can access International Market (Puppets and Overlords can always access each other's market) |  |
+| can_be_spymaster | Can be Spy Master |  |
+| can_boost_other_ideologies | Can boost popularity of other ideologies |  |
+| can_boost_own_ideology | Can boost own party popularity in other countries |  |
+| can_create_collaboration_government | Can create collaboration governments |  |
+| can_create_factions | Can Create Factions |  |
+| can_declare_war_on_same_ideology | Can declare war on country with the same ideology group without a war goal |  |
+| can_declare_war_without_wargoal_when_in_war | Can declare war on a neighbor without a wargoal when at war with a major |  |
+| can_decline_call_to_war | Can decline call to war |  |
+| can_force_government | Can force government of another country to adopt the same ideology |  |
+| can_generate_female_aces | Women in your country are allowed to become military pilots |  |
+| can_generate_female_country_leaders | Can generate female country leaders |  |
+| can_generate_female_unit_leaders | Can generate female unit leaders |  |
+| can_guarantee_other_ideologies | Can guarantee other ideologies |  |
+| can_join_factions | Can join factions |  |
+| can_join_factions_not_allowed_diplomacy | Country's name is not allowed to join factions |  |
+| can_join_opposite_factions | Can Join Factions led by another Ideology |  |
+| can_lower_tension | Lowers World Tension with Guarantees |  |
+| can_not_build_buildings | CAN_NOT_BUILD_BUILDINGS | Doesn't seem to work. |
+| can_not_declare_war | Can not declare wars | Prevents generating wargoals, but not using existing ones. |
+| can_occupy_non_war | Can hold territory owned by a country they are not at war with |  |
+| can_only_justify_war_on_threat_country | Can justify war goals against a country that have not generated world tension |  |
+| can_puppet | Can puppet a country |  |
+| can_send_volunteers | Can send volunteer forces |  |
+| can_use_kamikaze_pilots | Can use kamikaze pilots |  |
+| contributes_operatives | Contributes Operatives to Spy Master: Yes | Only has an effect for subjects. |
+| units_deployed_to_overlord | Control over deployed units go to overlord | Only has an effect for subjects. |
 
 **Additional things**
 
@@ -328,7 +358,7 @@ my_long_term_faction_goal_id =  {
 
 Manifests - global, continuous goal that used to give faction a modifier or a rule depending on the conditions. They are defined in `common/factions/goals/*.txt` Example of those conditions can be conquered land or countries that have your ideology. In comparison to goals you can't change manifest in game also manifests is set in templates of faction and every faction supposed to have one.
 
-#### Structure <a id="Structure_2"></a>
+### Structure <a id="Structure_2"></a>
 
 `manifest_id` - id of your manifest, must be unique.
 
@@ -394,22 +424,36 @@ my_manifest_id =  {
 
 Rules - set of regulations used inside of faction. Rules can define how faction operates, as well as just give modifiers based on current rule applied. Rules have their own type and groups. Types define in which situation the rule is applicable and what scope will be used. Groups used to combine same purpose rule into one category. **Rule won't show up unless it's added to at least one rule group**. Rules can be defined in `"common/factions/rules/any_name.txt."`
 
-#### Syntax <a id="Syntax"></a>
+### Syntax <a id="Syntax"></a>
 
 `faction_rule_id = { }` - id of your rule, must be unique.
 
 `type = type_token` - decides type of your rule, can be anything but game uses these predetermined tokens for in game faction rules.
 
-Special type_tokens
+**value**
 
-| value | defintion | scopes |
-| --- | --- | --- |
-| joining_rule | Checks whether a country can join the faction | ROOT = joining country, FROM = faction leader |
-| war_declaration_rule | Checks who can declare wars | ROOT = country declaring the war, FROM = target country |
-| call_to_war_rule | Checks who can call to war | ROOT = country calling to the war, FROM = target country |
-| member_rules | Checks whether a member can change faction goals (note documentation might be wrong) | ROOT = faction leader |
-| change_leader_rules | Checks which country can become the faction leader | ROOT = country that becomes the faction leader |
-| peace_conference_rules | Supposed to contain a list of peace_action_modifiers to apply during a peace conferences | ROOT = faction leader |
+**defintion**
+
+**scopes**
+
+joining_rule
+Checks whether a country can join the faction
+ROOT = joining country, FROM = faction leader
+war_declaration_rule
+Checks who can declare wars
+ROOT = country declaring the war, FROM = target country
+call_to_war_rule
+Checks who can call to war
+ROOT = country calling to the war, FROM = target country
+member_rules
+Checks whether a member can change faction goals (note documentation might be wrong)
+ROOT = faction leader
+change_leader_rules
+Checks which country can become the faction leader
+ROOT = country that becomes the faction leader
+peace_conference_rules
+Supposed to contain a list of peace_action_modifiers to apply during a peace conferences
+ROOT = faction leader
 
 #### Triggers <a id="Triggers_2"></a>
 
@@ -528,7 +572,7 @@ rule_group_my_custom_rules_2 = {
 
 Members upgrades - is mechanic used in factions, that can be changed by faction leader. Only thing it's impacts how much manpower each faction members contributes towards shared manpower pool that can be used to garrison needed manpower. **It's recommended to have 4 members upgrade in one group, since it's default value that interface made for.**
 
-#### Syntax <a id="Syntax_3"></a>
+### Syntax <a id="Syntax_3"></a>
 
 `member upgrade_id = { }` - id of member upgrade, should be unique, block used to create new instance
 
@@ -562,7 +606,7 @@ Members upgrades - is mechanic used in factions, that can be changed by faction 
 
 Faction templates - the way to combine all mentioned above things, plus add customization (name, icon). Templates can be used for two purposes, first: make predetermined faction template (e.g. Axis, Allies, Comintern), second: create a blank template for faction (e.g. fascist countries faction, south-American countries faction).
 
-#### Syntax <a id="Syntax_4"></a>
+### Syntax <a id="Syntax_4"></a>
 
 `name` - [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) key for a visible name of faction.
 

@@ -341,9 +341,40 @@ Note that, unlike countries and states, unit leaders use leader_modifier@modifie
 
 Example usage of making a modifier token create civilian factories in random core states monthly, in any [on action](<On actions - Hearts of Iron 4 Wiki.md>) file:
 
-| Example |
-| --- |
-| `on_actions = {`<br>`    on_monthly = {`<br>`        effect = {`<br>`            if = {`<br>`                limit = {`<br>`                    check_variable = { modifier@modifier_definition_example > 0 }`<br>`                }`<br>`                for_loop_effect = {`<br>`                    start = 0`<br>`                    end = modifier@modifier_definition_example`<br>`                    random_owned_controlled_state = {`<br>`                        limit = {`<br>`                            is_core_of = ROOT`<br>`                            free_building_slots = {`<br>`                                building = industrial_complex`<br>`                                size > 0`<br>`                                include_locked = no`<br>`                            }`<br>`                        }`<br>`                        add_building_construction = {`<br>`                            type = industrial_complex`<br>`                            level = 1`<br>`                            instant_build = yes`<br>`                        }`<br>`                    }`<br>`                }`<br>`            }`<br>`        }`<br>`    }`<br>`}` |
+**Example**
+
+```text
+on_actions = {
+    on_monthly = {
+        effect = {
+            if = {
+                limit = {
+                    check_variable = { modifier@modifier_definition_example > 0 }
+                }
+                for_loop_effect = {
+                    start = 0
+                    end = modifier@modifier_definition_example
+                    random_owned_controlled_state = {
+                        limit = {
+                            is_core_of = ROOT
+                            free_building_slots = {
+                                building = industrial_complex
+                                size > 0
+                                include_locked = no
+                            }
+                        }
+                        add_building_construction = {
+                            type = industrial_complex
+                            level = 1
+                            instant_build = yes
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+```
 
 ## Opinion modifiers <a id="Opinion_modifiers"></a>
 
@@ -393,9 +424,51 @@ New opinion modifiers can only be added using the [add_opinion_modifier effect](
 
 There is no way to use a modifier block to directly apply an opinion modifier, but it can be simulated by adding or removing an opinion modifier at the same time the modifier block's effects are. For example, this national spirit would simulate applying an opinion modifier towards every other country that has the idea:
 
-| Example code of a national spirit that uses opinion modifiers |
-| --- |
-| `ideas = {`<br>`    country = {`<br>`        idea_opinion_modifier = {`<br>`            on_add = { # Note: Doesn't work if the idea is added within country history or a bookmark's effect.`<br>`                every_other_country = { # If it's added in country history, then replicate the effects there as well.`<br>`                    limit = {`<br>`                        has_idea = idea_opinion_modifier`<br>`                    }`<br>`                    add_opinion_modifier = {`<br>`                        target = ROOT`<br>`                        modifier = test_diplomatic_modifier`<br>`                    }`<br>`                    reverse_add_opinion_modifier = {`<br>`                        target = ROOT`<br>`                        modifier = test_diplomatic_modifier`<br>`                    }`<br>`                }`<br>`            }`<br>`            on_remove = {`<br>`                every_other_country = {`<br>`                    limit = {`<br>`                        has_idea = idea_opinion_modifier`<br>`                    }`<br>`                    remove_opinion_modifier = {`<br>`                        target = ROOT`<br>`                        modifier = test_diplomatic_modifier`<br>`                    }`<br>`                    ROOT = {`<br>`                        remove_opinion_modifier = {`<br>`                            target = PREV`<br>`                            modifier = test_diplomatic_modifier`<br>`                        }`<br>`                    }`<br>`                }`<br>`            }`<br>`            modifier = {`<br>`                custom_modifier_tooltip = add_opinion_modifier_tt # Since on_add/on_remove aren't shown to the player`<br>`            }`<br>`        }`<br>`    }`<br>`}` |
+**Example code of a national spirit that uses opinion modifiers**
+
+```text
+ideas = {
+    country = {
+        idea_opinion_modifier = {
+            on_add = { # Note: Doesn't work if the idea is added within country history or a bookmark's effect.
+                every_other_country = { # If it's added in country history, then replicate the effects there as well.
+                    limit = {
+                        has_idea = idea_opinion_modifier
+                    }
+                    add_opinion_modifier = {
+                        target = ROOT
+                        modifier = test_diplomatic_modifier
+                    }
+                    reverse_add_opinion_modifier = {
+                        target = ROOT
+                        modifier = test_diplomatic_modifier
+                    }
+                }
+            }
+            on_remove = {
+                every_other_country = {
+                    limit = {
+                        has_idea = idea_opinion_modifier
+                    }
+                    remove_opinion_modifier = {
+                        target = ROOT
+                        modifier = test_diplomatic_modifier
+                    }
+                    ROOT = {
+                        remove_opinion_modifier = {
+                            target = PREV
+                            modifier = test_diplomatic_modifier
+                        }
+                    }
+                }
+            }
+            modifier = {
+                custom_modifier_tooltip = add_opinion_modifier_tt # Since on_add/on_remove aren't shown to the player
+            }
+        }
+    }
+}
+```
 
 ## List of modifiers <a id="List_of_modifiers"></a>
 

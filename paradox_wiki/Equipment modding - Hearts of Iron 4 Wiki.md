@@ -26,7 +26,7 @@
 
 ---
 
-### Equipment <a id="Equipment"></a>
+## Equipment <a id="Equipment"></a>
 
 Equipment is found in `/Hearts of Iron IV/common/units/equipment/*.txt`. Equipment is split into two types, archetype and regular. Archetype equipment is used to assign more general attributes that regular equipment then inherits via the *archetype* attribute.
 
@@ -140,9 +140,9 @@ equipments = {
 }
 ```
 
-#### Internal Types <a id="Internal_Types"></a>
+### Internal Types <a id="Internal_Types"></a>
 
-##### Land <a id="Land"></a>
+#### Land <a id="Land"></a>
 
 - anti_air
 - anti_tank
@@ -157,7 +157,7 @@ equipments = {
 - rocket
 - support_equipment
 
-##### Naval <a id="Naval"></a>
+#### Naval <a id="Naval"></a>
 
 - capital_ship
 - carrier
@@ -166,7 +166,7 @@ equipments = {
 - screen_ship
 - submarine
 
-##### Air <a id="Air"></a>
+#### Air <a id="Air"></a>
 
 - air_transport
 - cas
@@ -178,12 +178,12 @@ equipments = {
 - strat_bomber
 - suicide
 
-#### Group By types <a id="Group_By_types"></a>
+### Group By types <a id="Group_By_types"></a>
 
 - archetype
 - type
 
-#### Interface Categories <a id="Interface_Categories"></a>
+### Interface Categories <a id="Interface_Categories"></a>
 
 - interface_category_land
 - interface_category_armor
@@ -192,7 +192,7 @@ equipments = {
 - interface_category_other_ships
 - interface_category_air
 
-#### Equipment Designer <a id="Equipment_Designer"></a>
+### Equipment Designer <a id="Equipment_Designer"></a>
 
 Added in the Man the Guns, No Step Back and By Blood Alone, equipment designer is the interface to design equipment with different modules, allowing to change type of equipment or just add additional stats to the equipment.
 
@@ -236,7 +236,7 @@ hardness = { set = 0.5 } # additional stats new type of equipment would get
 
 **All new variants must be present in script_enums, so if you duplicate equipment archetype with 5 variants of equipment you must specified all in scripted_enums (e.g. <equipment_archetype>_my_variant, <equipment_archetype>_my_variant_0, <equipment_archetype>_my_variant_1...)**
 
-### Stats <a id="Stats"></a>
+## Stats <a id="Stats"></a>
 
 Equipment uses modifiers to determine which stats it confers to its assigned unit.
 
@@ -259,11 +259,11 @@ air_attack = <float>
 
 Note that the default *maximum_speed* is 4, so you don't need to include it when you want equipment to confer the default *maximum_speed*.
 
-### Modifiers <a id="Modifiers"></a>
+## Modifiers <a id="Modifiers"></a>
 
 The following list is all the valid modifiers for use in equipment (and units):
 
-#### All <a id="All"></a>
+### All <a id="All"></a>
 
 ```text
 lend_lease_cost = 1             # Space taken up in convoy
@@ -273,19 +273,19 @@ can_license = no                # Can be licensed
 is_convertable = yes            # Can be converted
 ```
 
-#### Land <a id="Land_2"></a>
+### Land <a id="Land_2"></a>
 
-##### Base <a id="Base"></a>
+#### Base <a id="Base"></a>
 
 ```text
 reliability = 0.9               # Reliability - The lower the reliability, the more likely the equipment will suffer random failure
 maximum_speed = 4               # Max Speed - How quickly this unit can traverse terrain under optimal circumtances, in kilometres per hour
 ```
 
-##### Offensive <a id="Offensive"></a>
+#### Offensive <a id="Offensive"></a>
 
 ```text
-## Offensive
+# Offensive
 soft_attack = -0.1              # Soft Attack - How many attacks the unit can make versus enemies with low hardness
 hard_attack = -0.5              # Hard Attack - How many attacks the unit can make versus enemies with high hardness
 air_attack = 1                  # Air Attack - How much damage we can do against airplanes. High Air Attack also helps to counter enemy Air Superiority effects
@@ -293,10 +293,10 @@ ap_attack = 1                   # Piercing - Having equal or greater Piercing to
 breakthrough = 0.5              # Breakthrough - How many enemy attacks a unit can attempt to avoid while on the offensive, effectively allowing it to stay on the offense longer.
 ```
 
-##### Defensive <a id="Defensive"></a>
+#### Defensive <a id="Defensive"></a>
 
 ```text
-## Defensive
+# Defensive
 defense = 0.1                   # Defense - How many enemy attacks a unit can avoid whilst on the defensive, effectively allowing it to stay on the defensive longer.
 max_strength = 2                # HP - Strength represents how much damage this unit can suffer before it is destroyed
 armor_value = 0                 # Armor - Armor that is higher than the opponents Piercing value reduces damage taken and allows more attacks to occur
@@ -304,13 +304,13 @@ hardness = 0.5                  # Hardness - Represents how much of your divsion
 entrenchment = 5                # Entrenchment - The ability to make proper defensive entrenchments before a hostile attack
 ```
 
-##### Unique <a id="Unique"></a>
+#### Unique <a id="Unique"></a>
 
 ```text
 recon = 1                       # Reconnaissance - Increases the chance that this unit can pick better tactics in battle
 ```
 
-#### Navy-specific <a id="Navy-specific"></a>
+### Navy-specific <a id="Navy-specific"></a>
 
 ```text
 naval_speed = 28                        # Max Speed - maximum speed in kilometres per hour of the ship, higher means faster in combat and contributes to evasion
@@ -334,7 +334,7 @@ search_and_destroy_coordination = 0.1
 convoy_raiding_coordination = 0.1
 ```
 
-#### Air-specific <a id="Air-specific"></a>
+### Air-specific <a id="Air-specific"></a>
 
 ```text
 air_attack = 50                         # Air Attack - amount of damage done against other planes
@@ -351,7 +351,7 @@ default_carrier_composition_weight = 1
 carrier_capable = yes           # Is usable in carriers (air only)
 ```
 
-### Localization <a id="Localization"></a>
+## Localization <a id="Localization"></a>
 
 Each equipment must be localized in a *.yml* file in the *localisation* folder within your mod.
 

@@ -81,13 +81,13 @@ Note that certain effects may take a value from a variable, i.e. `add_manpower =
 
 The list of effects may be outdated. A complete, but unsorted, list of effects can be found in `/Hearts of Iron IV/documentation/effects_documentation.html` or `/Hearts of Iron IV/documentation/effects_documentation.md`.
 
-### Scopes <a id="Scopes"></a>
+## Scopes <a id="Scopes"></a>
 
 :   *Main article: [Scopes](<Scopes - Hearts of Iron 4 Wiki.md>)*
 
 Scopes serve as special effect types that modify the entity that serves as the context for the effects being executed, such as `GER = { add_political_power = 150 }` adding 150 political power to ![Flag of Germany](media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img1.png) Germany.
 
-#### Effect scopes <a id="Effect_scopes"></a>
+### Effect scopes <a id="Effect_scopes"></a>
 
 These can only be used as [effects](<Effects - Hearts of Iron 4 Wiki.md>); trying to use them as [triggers](<Triggers - Hearts of Iron 4 Wiki.md>) will result in nothing happening.
 
@@ -152,14 +152,14 @@ Effect scopes:
 
 **NOTE:** Some of these scopes may have no countries/states that match the criteria.
 
-#### Effects with scopes <a id="Effects_with_scopes"></a>
+### Effects with scopes <a id="Effects_with_scopes"></a>
 
 Effects that change the scope include the following:
 
 - start_civil_war, which changes it to the rebelling dynamic country.
 - create_dynamic_country, which changes it to the newly-created dynamic country.
 
-#### Dual scopes <a id="Dual_scopes"></a>
+### Dual scopes <a id="Dual_scopes"></a>
 
 The following scopes can be used either as effect or trigger scopes; some can also be used as the right side of some effects and triggers as a target. If usage as a target is possible, it's marked within the table.
 
@@ -186,11 +186,11 @@ Dual scopes:
 | event_target:<event_target_key> | Always usable | Depends on usage | `event_target:my_event_target = { … }` | Saved [event target or global event target](<Data structures - Hearts of Iron 4 Wiki.md#Event_targets>), with no space after the colon. [Subject to the 'invalid event target' error.](<Scopes - Hearts of Iron 4 Wiki.md#Invalid_event_target>) | ✓ | 1.0 |
 | var:<variable> | Always usable | Depends on usage | `var:my_variable = { … }`<br>`add_to_faction = my_variable` or <br>`add_to_faction = var:my_variable` | [Variable](<Data structures - Hearts of Iron 4 Wiki.md>) set to a scope.<br> When used as a target rather than a scope, the `var:` can be omitted in most cases. | ✓ | 1.5 |
 
-### Any scope <a id="Any_scope"></a>
+## Any scope <a id="Any_scope"></a>
 
 Can be used in **country**, **state** or **character** scopes.
 
-#### General <a id="General"></a>
+### General <a id="General"></a>
 
 General any-scoped effects:
 
@@ -229,7 +229,7 @@ General any-scoped effects:
 | event_option_tooltip | `<option>`<br>The name of the option. | `event_option_tooltip = mtg_usa_civil_war_fascists.1.a` | Shows the tooltip usually received for hovering over an event option with the specified name. | ROOT and FROM scopes are swapped. | 1.13 |
 | create_purchase_contract | `seller = <country>`<br>The seller in the contract.<br> `buyer = <country>`<br>The buyer in the contract.<br> `civilian_factories = <int>`<br>The amount of civilian factories required by the contract.<br> `equipment = { ... }`<br>The equipment that the contract is for. In particular, contains these attributes:  `type = <archetype>`<br>The archetype of the equipment.<br>  `amount = <int>`<br>The amount of the specified equipment.<br> | `create_purchase_contract = {`<br>`    seller = ROOT`<br>`    buyer = FROM`<br>`    civilian_factories = 2`<br>`    equipment = {`<br>`        type = artillery_equipment`<br>`        amount = 300`<br>`    }`<br>`}` | Creates a purchase contract with the specified parameters. | Allows using `equipment = { ... }` several times. | 1.13 |
 
-#### Border wars <a id="Border_wars"></a>
+### Border wars <a id="Border_wars"></a>
 
 These effects refer to the border wars that simulate combat on a border between two countries, with provinces where it takes place being highlighted in white. For the state-based border wars represented with orange stripes on states, see set_border_war in the state scope.
 
@@ -242,7 +242,7 @@ Border war-related any-scoped effects:
 | cancel_border_war | `attacker = <id> / <variable>`<br>The attacker state. `defender = <id> / <variable>`<br>The defender state.<br>`dont_fire_events = <bool>`<br>Stops the events from **start_border_war** from firing. | `cancel_border_war = {`<br>`    dont_fire_events = yes`<br>`    defender = 408`<br>`    attacker = 527`<br>`}` | Cancels an on-going border war without a winner. |  | 1.5 |
 | finalize_border_war | `attacker = <id> / <variable>`<br>The attacker state. `defender = <id> / <variable>`<br>The defender state.<br>`attacker_win = <bool>`<br>Makes the attacker the winner.<br>`defender_win = <bool>`<br>Makes the defender the winner. | `finalize_border_war = {`<br>`    attacker_win = yes`<br>`    attacker = 527`<br>`    defender = 408`<br>`}` | Ends an on-going border war. |  | 1.5 |
 
-#### Variables <a id="Variables"></a>
+### Variables <a id="Variables"></a>
 
 *This section is transcluded from [Data structures § Operators](<Data structures - Hearts of Iron 4 Wiki.md#Operators>)*
 
@@ -265,7 +265,7 @@ Variable-related arguments:
 | career_profile_set_temp_playthrough_variable | `var = <variable>`<br>The variable to modify or create. `value = <decimal>/<variable>`<br>The value to set the variable to. | `career_profile_set_temp_playthrough_variable = {`<br>`  sum = rocket_sites_built_1936`<br>`}` | Sets a temporary variable to a value or another variable. |  | ??? |
 | career_profile_set_temp_variable | `var = <variable>`<br>The variable to modify or create. `value = <decimal>/<variable>`<br>The value to set the variable to. | `career_profile_set_temp_variable = {`<br>`  var = num_dogs`<br>`  value = num_dogs_in_career_profile`<br>`}` | Sets a temporary variable to a value or another variable. |  | ??? |
 
-#### Arrays <a id="Arrays"></a>
+### Arrays <a id="Arrays"></a>
 
 *See also: [Arrays](<Data structures - Hearts of Iron 4 Wiki.md>)*
 
@@ -280,11 +280,11 @@ Effects for modifying arrays:
 | find_highest_in_array | `array = <array>`<br>The array to modify.<br> `value = <variable>`<br>The temporary variable where the largest value will get stored.<br> `index = <variable>`<br>The temporary variable where the index of the largest value will get stored. | `find_highest_in_array = {`<br>`    array = global.countries_by_states`<br>`    value = temp_largest_country`<br>`    index = temp_country_index`<br>`}` | Finds the largest value in the array and assigns its value and index to a temporary variable. | Either value or index are optional to specify. |
 | find_lowest_in_array | `array = <array>`<br>The array to modify.<br> `value = <variable>`<br>The temporary variable where the smallest value will get stored.<br> `index = <variable>`<br>The temporary variable where the index of the smallest value will get stored. | `find_lowest_in_array = {`<br>`    array = global.countries_by_states`<br>`    value = temp_largest_country`<br>`    index = temp_country_index`<br>`}` | Finds the smallest value in the array and assigns its value and index to a temporary variable. | Either value or index are optional to specify. |
 
-### Country scope <a id="Country_scope"></a>
+## Country scope <a id="Country_scope"></a>
 
 The effects here must be used within a **country** scope.
 
-#### General <a id="General_2"></a>
+### General <a id="General_2"></a>
 
 General country-scoped effects:
 
@@ -297,7 +297,7 @@ General country-scoped effects:
 | news_event | `id = <event>`<br>The event to fire. `days = <int> / <variable>`<br>Fires the event in the specified number of days. Optional.<br>`hours = <int> / <variable>`<br>Fires the event in the specified number of hours. Optional.<br>`random_hours = <int> / <variable>`<br>Adds a random number (between *0* and *random_hours*, inclusive) of **hours** to the scheduled fire time. Optional.<br>`random_days = <int> / <variable>`<br>Adds a random number (between *0* and *random_days*, inclusive) of days to the scheduled fire time. Optional. | `news_event = {`<br>`    id = my_event.1`<br>`    days = 10`<br>`    random_hours = 12`<br>`    random_days = 10`<br>`}``news_event = my_event.1` | Fires the specified news event for the current country. | The news event uses a different interface to the country event.<br> Where triggers do not need to be repeatedly checked `random` can be a performance light alternative to `mean_time_to_happen` for scheduling events. Shortened variant exists if the event's ID is used instead of arguments. | 1.0 |
 | set_cosmetic_tag | `<string>`<br>The cosmetic tag to switch to. | `set_cosmetic_tag = SAF_SOV_communism` | Makes the current scope use the specified cosmetic tag, changing name and flag. |  | 1.3 |
 | drop_cosmetic_tag | `<bool>`<br>Boolean. | `drop_cosmetic_tag = yes` | Makes the current scope drop the current cosmetic tag they are using. |  | 1.3 |
-| set_rule | `<rule>`<br>Boolean.<br> `desc = <localisation key>`<br>The localisation used as the description for why the rule is set. | `set_rule = {`<br>`    desc = TAG_my_rule_description`<br>`    can_create_factions = yes`<br>`}` | Toggles the special game rules for the current scope. Note: each rule can only be toggled a few times before a reload is required. | - Game rule list - The following game rules exist as possible options: Internal name Localised name Notes can_access_market Can access International Market ( Puppets and Overlords can always access each other's market) can_be_spymaster Can be Spy Master can_boost_other_ideologies Can boost popularity of other ideologies can_boost_own_ideology Can boost own party popularity in other countries can_create_collaboration_government Can create collaboration governments can_create_factions Can Create Factions can_declare_war_on_same_ideology Can declare war on country with the same ideology group without a war goal can_declare_war_without_wargoal_when_in_war Can declare war on a neighbor without a wargoal when at war with a major can_decline_call_to_war Can decline call to war can_force_government Can force government of another country to adopt the same ideology can_generate_female_aces Women in your country are allowed to become military pilots can_generate_female_country_leaders Can generate female country leaders can_generate_female_unit_leaders Can generate female unit leaders can_guarantee_other_ideologies Can guarantee other ideologies can_join_factions Can join factions can_join_factions_not_allowed_diplomacy Country's name is not allowed to join factions can_join_opposite_factions Can Join Factions led by another Ideology can_lower_tension Lowers World Tension with Guarantees can_not_build_buildings CAN_NOT_BUILD_BUILDINGS Doesn't seem to work. can_not_declare_war Can not declare wars Prevents generating wargoals, but not using existing ones. can_occupy_non_war Can hold territory owned by a country they are not at war with can_only_justify_war_on_threat_country Can justify war goals against a country that have not generated world tension can_puppet Can puppet a country can_send_volunteers Can send volunteer forces can_use_kamikaze_pilots Can use kamikaze pilots contributes_operatives Contributes Operatives to Spy Master: Yes Only has an effect for subjects. units_deployed_to_overlord Control over deployed units go to overlord Only has an effect for subjects. - Internal name - Localised name - Notes - can_access_market - Can access International Market ( Puppets and Overlords can always access each other's market) - can_be_spymaster - Can be Spy Master - can_boost_other_ideologies - Can boost popularity of other ideologies - can_boost_own_ideology - Can boost own party popularity in other countries - can_create_collaboration_government - Can create collaboration governments - can_create_factions - Can Create Factions - can_declare_war_on_same_ideology - Can declare war on country with the same ideology group without a war goal - can_declare_war_without_wargoal_when_in_war - Can declare war on a neighbor without a wargoal when at war with a major - can_decline_call_to_war - Can decline call to war - can_force_government - Can force government of another country to adopt the same ideology - can_generate_female_aces - Women in your country are allowed to become military pilots - can_generate_female_country_leaders - Can generate female country leaders - can_generate_female_unit_leaders - Can generate female unit leaders - can_guarantee_other_ideologies - Can guarantee other ideologies - can_join_factions - Can join factions - can_join_factions_not_allowed_diplomacy - Country's name is not allowed to join factions - can_join_opposite_factions - Can Join Factions led by another Ideology - can_lower_tension - Lowers World Tension with Guarantees - can_not_build_buildings - CAN_NOT_BUILD_BUILDINGS - Doesn't seem to work. - can_not_declare_war - Can not declare wars - Prevents generating wargoals, but not using existing ones. - can_occupy_non_war - Can hold territory owned by a country they are not at war with - can_only_justify_war_on_threat_country - Can justify war goals against a country that have not generated world tension - can_puppet - Can puppet a country - can_send_volunteers - Can send volunteer forces - can_use_kamikaze_pilots - Can use kamikaze pilots - contributes_operatives - Contributes Operatives to Spy Master: Yes - Only has an effect for subjects. - units_deployed_to_overlord - Control over deployed units go to overlord - Only has an effect for subjects. - Internal name - Localised name - Notes - can_access_market - Can access International Market ( Puppets and Overlords can always access each other's market) - can_be_spymaster - Can be Spy Master - can_boost_other_ideologies - Can boost popularity of other ideologies - can_boost_own_ideology - Can boost own party popularity in other countries - can_create_collaboration_government - Can create collaboration governments - can_create_factions - Can Create Factions - can_declare_war_on_same_ideology - Can declare war on country with the same ideology group without a war goal - can_declare_war_without_wargoal_when_in_war - Can declare war on a neighbor without a wargoal when at war with a major - can_decline_call_to_war - Can decline call to war - can_force_government - Can force government of another country to adopt the same ideology - can_generate_female_aces - Women in your country are allowed to become military pilots - can_generate_female_country_leaders - Can generate female country leaders - can_generate_female_unit_leaders - Can generate female unit leaders - can_guarantee_other_ideologies - Can guarantee other ideologies - can_join_factions - Can join factions - can_join_factions_not_allowed_diplomacy - Country's name is not allowed to join factions - can_join_opposite_factions - Can Join Factions led by another Ideology - can_lower_tension - Lowers World Tension with Guarantees - can_not_build_buildings - CAN_NOT_BUILD_BUILDINGS - Doesn't seem to work. - can_not_declare_war - Can not declare wars - Prevents generating wargoals, but not using existing ones. - can_occupy_non_war - Can hold territory owned by a country they are not at war with - can_only_justify_war_on_threat_country - Can justify war goals against a country that have not generated world tension - can_puppet - Can puppet a country - can_send_volunteers - Can send volunteer forces - can_use_kamikaze_pilots - Can use kamikaze pilots - contributes_operatives - Contributes Operatives to Spy Master: Yes - Only has an effect for subjects. - units_deployed_to_overlord - Control over deployed units go to overlord - Only has an effect for subjects. | 1.0 |
+| set_rule | `<rule>`<br>Boolean.<br> `desc = <localisation key>`<br>The localisation used as the description for why the rule is set. | `set_rule = {`<br>`    desc = TAG_my_rule_description`<br>`    can_create_factions = yes`<br>`}` | Toggles the special game rules for the current scope. Note: each rule can only be toggled a few times before a reload is required. | **Game rule list** The following game rules exist as possible options:  - Internal name: can_access_market; Localised name: Can access International Market ( Puppets and Overlords can always access each other's market) - Internal name: can_be_spymaster; Localised name: Can be Spy Master - Internal name: can_boost_other_ideologies; Localised name: Can boost popularity of other ideologies - Internal name: can_boost_own_ideology; Localised name: Can boost own party popularity in other countries - Internal name: can_create_collaboration_government; Localised name: Can create collaboration governments - Internal name: can_create_factions; Localised name: Can Create Factions - Internal name: can_declare_war_on_same_ideology; Localised name: Can declare war on country with the same ideology group without a war goal - Internal name: can_declare_war_without_wargoal_when_in_war; Localised name: Can declare war on a neighbor without a wargoal when at war with a major - Internal name: can_decline_call_to_war; Localised name: Can decline call to war - Internal name: can_force_government; Localised name: Can force government of another country to adopt the same ideology - Internal name: can_generate_female_aces; Localised name: Women in your country are allowed to become military pilots - Internal name: can_generate_female_country_leaders; Localised name: Can generate female country leaders - Internal name: can_generate_female_unit_leaders; Localised name: Can generate female unit leaders - Internal name: can_guarantee_other_ideologies; Localised name: Can guarantee other ideologies - Internal name: can_join_factions; Localised name: Can join factions - Internal name: can_join_factions_not_allowed_diplomacy; Localised name: Country's name is not allowed to join factions - Internal name: can_join_opposite_factions; Localised name: Can Join Factions led by another Ideology - Internal name: can_lower_tension; Localised name: Lowers World Tension with Guarantees - Internal name: can_not_build_buildings; Localised name: CAN_NOT_BUILD_BUILDINGS; Notes: Doesn't seem to work. - Internal name: can_not_declare_war; Localised name: Can not declare wars; Notes: Prevents generating wargoals, but not using existing ones. - Internal name: can_occupy_non_war; Localised name: Can hold territory owned by a country they are not at war with - Internal name: can_only_justify_war_on_threat_country; Localised name: Can justify war goals against a country that have not generated world tension - Internal name: can_puppet; Localised name: Can puppet a country - Internal name: can_send_volunteers; Localised name: Can send volunteer forces - Internal name: can_use_kamikaze_pilots; Localised name: Can use kamikaze pilots - Internal name: contributes_operatives; Localised name: Contributes Operatives to Spy Master: Yes; Notes: Only has an effect for subjects. - Internal name: units_deployed_to_overlord; Localised name: Control over deployed units go to overlord; Notes: Only has an effect for subjects. | 1.0 |
 | set_party_rule | `ideology = <ideology group>`<br>Ideology group of the party.<br> `desc = <localisation key>`<br>A description used for the rule. Optional, defaults to being the same as default.<br> `<rule> = <bool>`<br>Rule's new value. | `set_party_rule = {`<br>`    ideology = democratic`<br>`    desc = TAG_my_rule_description`<br>`    can_create_factions = yes`<br>`}` | Toggles the special game rules for the current scope's political party. |  | 1.12 |
 | add_relation_rule_override | `target = <country>`<br>Target of the rule.<br> `usage_desc = <localisation key>`<br>A description used as the reason for the rule applying. Optional.<br> `trigger = <scripted trigger>`<br>A [scripted trigger](<Triggers - Hearts of Iron 4 Wiki.md>) deciding when the override should be active. Optional, defaults to always true.<br> `<rule> = <bool>`<br>Rule's new value. | `add_relation_rule_override = {`<br>`    target = SOV`<br>`    usage_desc = TAG_my_rule_description`<br>`    trigger = my_scripted_trigger`<br>`    can_access_market = yes`<br>`}` | Toggles the special game rules for the current scope in diplomacy towards the specified country only, if the trigger is met. | Currently `can_access_market` and `can_send_volunteers` are supported. In case of overlap, restricting actions is preferred (e.g. `can_send_volunteers = no` or `can_not_declare_war = yes` are preferred over the alternatives). In the scripted trigger, `ROOT` is the country with the override and `FROM` is the target. | 1.13 |
 | remove_relation_rule_override | `target = <country>`<br>Target of the rule.<br> `usage_desc = <localisation key>`<br>A description used as the reason for the rule applying. Optional.<br> `trigger = <scripted trigger>`<br>A [scripted trigger](<Triggers - Hearts of Iron 4 Wiki.md>) for identifying the relation rule.<br> `<rule> = <bool>`<br>Rule's new value. | `remove_relation_rule_override = {`<br>`    target = SOV`<br>`    usage_desc = TAG_my_rule_description`<br>`    can_access_market = yes`<br>`}` | Removes the toggle added with add_relation_rule_override. |  | 1.13 |
@@ -311,7 +311,7 @@ General country-scoped effects:
 | add_ai_strategy | `type = <type>`<br>The type of strategy.<br> `id = <country>`<br>What country the strategy is against.<br> `value = <int>`<br>The weighting added by the strategy. | `add_ai_strategy = {`<br>`    type = alliance`<br>`    id = GER`<br>`    value = 200`<br>`}` | Sets an AI strategy for the current scope. | See [AI Modding](<AI modding - Hearts of Iron 4 Wiki.md>) for more details. | 1.0 |
 | create_dynamic_country | `original_tag = <tag>`<br>The original tag to be used by the country.<br> `copy_tag = <tag>`<br>If specified, copies stuff from this tag rather than the original tag.<br> `<effects>`<br>Effects that will be executed on the new dynamic country.<br> | `create_dynamic_country = {`<br>`    original_tag = POL`<br>`    copy_tag = SOV`<br>`    add_political_power = 100`<br>`    transfer_state = 123`<br>`}` | Creates a new dynamic country, akin to ones used in civil wars. | The reserve_dynamic_country effect can be used if the dynamic country does not yet exist in order to ensure that it does not get overwritten by other creations of dynamic countries. If this is not done, the dynamic country will immediately stop existing if no states are transferred in the same scope.<br> Every state of the original country immediately gets set as a dynamic country's core: if that's unneeded, the cores would need to be removed after creation. | 1.9 |
 
-#### States <a id="States"></a>
+### States <a id="States"></a>
 
 These effects in particular are country-scoped effects that are related to states rather than effects within the state scope.
 
@@ -331,7 +331,7 @@ State-related country-scoped effects:
 | transfer_state | `<state> / <variable>`<br>The state to change owner and controller of. | `transfer_state = 345` | Makes the current scope the owner and controller of the specified state. | transfer_state_to exists as a state-scoped variant. | 1.0 |
 | set_province_controller | `<id>`<br>The province to change controller of. | `set_province_controller = 2999` | Changes the controller of the specified province to the current scope. | A peace conference or the controller being at peace will reset the control of the province to the owner unless the controller is at war with the owner. | 1.0 |
 
-#### Mana <a id="Mana"></a>
+### Mana <a id="Mana"></a>
 
 Mana in this usage means political power, stability, war support, and other values in the topbar. Fuel is, instead, in the [resources section](#Resources), while convoys can be added/removed with add_equipment_to_stockpile.
 
@@ -351,7 +351,7 @@ Mana-related country-scoped effects:
 | navy_experience | `<float> / <variable>`<br>The amount to add. | `navy_experience = 10` | Adds the specified amount of navy experience to the current scope. |  | 1.0 |
 | air_experience | `<float> / <variable>`<br>The amount to add. | `air_experience = 10` | Adds the specified amount of air experience to the current scope. |  | 1.0 |
 
-#### Politics <a id="Politics"></a>
+### Politics <a id="Politics"></a>
 
 Political country-scoped effects:
 
@@ -364,7 +364,7 @@ Political country-scoped effects:
 | set_party_name | `ideology = <ideology>`<br>The party to change. `long_name = <string>`<br>The new full name for the party.<br>`name = <string>`<br>The new short name for the party. | `set_party_name = {`<br>`    ideology = neutrality`<br>`    long_name = GER_neutrality_party_kaiserreich_long`<br>`    name = GER_neutrality_party_kaiserreich`<br>`}` | Changes the name of the specified political party for the current scope. | The name appears in the country politics/diplomacy view, the long name appears in the tooltip when hovering over the party. | 1.0 |
 | hold_election | `<country>`<br>The country to hold an election for. | `hold_election = ROOT` | Executes the events in the **on_new_term_election** on action for the current scope. |  | 1.0 |
 
-#### Balance of power <a id="Balance_of_power"></a>
+### Balance of power <a id="Balance_of_power"></a>
 
 Balance of power is defined in `/Hearts of Iron IV/common/bop/*.txt` files.
 
@@ -380,7 +380,7 @@ Balance of power-related country-scoped effects:
 | remove_all_power_balance_modifiers | `id = <BoP ID>`<br>Balance of power to modify. | `remove_all_power_balance_modifiers = {`<br>`    id = my_bop`<br>`}` | Cancels all balance of power modifiers. |  | 1.12 |
 | set_power_balance_gfx | `id = <BoP ID>`<br>Balance of power to modify.<br> `side = <BoP side ID>`<br>The side whose GFX to change.<br> `gfx = <sprite>`<br>The sprite to change the GFX to. | `set_power_balance_gfx = {`<br>`    id = my_bop`<br>`    side = my_bop_side`<br>`    gfx = GFX_my_bop_side_new`<br>`}` | Changes the appearance of one of the sides within the balance of power. | Sprites are defined within `/Hearts of Iron IV/interface/*.gfx` files. | 1.12 |
 
-#### Diplomacy <a id="Diplomacy"></a>
+### Diplomacy <a id="Diplomacy"></a>
 
 Diplomatic country-scoped effects:
 
@@ -410,7 +410,7 @@ Diplomatic country-scoped effects:
 | break_embargo | `<tag>`<br>The target country. | `break_embargo = ITA` | Stops embargoing the target country. | As of 1.14.7, this effect ignores country scoping and always applies to the ROOT, instead the diplomatic_relation effect can be used to break the embargoes of other countries. | 1.12 |
 | give_market_access | `<tag>`<br>The target country. | `give_market_access = ITA` | Opens market access between the two countries. |  | 1.13 |
 
-#### Faction <a id="Faction"></a>
+### Faction <a id="Faction"></a>
 
 Faction-related country-scoped effects:
 
@@ -439,7 +439,7 @@ Faction-related country-scoped effects:
 | set_faction_military_unlocked | `<bool>`<br>Boolean. | `set_faction_military_unlocked = yes` | Sets wheter the current countries faction can make changes to the faction research section. |  | 1.17 |
 | set_faction_research_unlocked | `<bool>`<br>Boolean. | `set_faction_research_unlocked = yes` | Sets wheter the current countries faction can make changes to the faction research section. |  | 1.17 |
 
-#### Autonomy <a id="Autonomy"></a>
+### Autonomy <a id="Autonomy"></a>
 
 Autonomy-related country-scoped effects:
 
@@ -451,7 +451,7 @@ Autonomy-related country-scoped effects:
 | add_autonomy_score | `value = <float>`<br>The freedom score to add. `localization = <string>`<br>The localization key for the modifier. | `add_autonomy_score = {`<br>`    value = 10`<br>`    localization = EXAMPLE`<br>`}` | Adds an exact freedom score modifier to the current scope. | Used in the subject's scope. | 1.3 |
 | set_autonomy | `target = <country> / <variable>`<br>The subject country. `autonomous_state = <type>`<br>The type of autonomy state to set.<br> `freedom_level = <float>`<br>The new freedom level value. Optional.<br> `end_wars = <yes/no>`<br>Will end any wars the subject is involved in.<br> `end_civil_wars = <yes/no>`<br>Will end any civil wars the subject is subject to<br> | `set_autonomy = {`<br>`    target = AST`<br>`    autonomous_state = autonomy_free`<br>`    end_wars = no`<br>`    end_civil_wars = no`<br>`}` | Sets the autonomy level for the specified country, **including independence**. | The autonomy_free state will free the subject, **however this effect has to be executed within the scope of the target country's current overlord** for this to have effect. The autonomy states are found in `/Hearts of Iron IV/common/autonomous_states/*.txt` files. Although end_wars is an optional argument defaulting to no, omitting it results in the country's occupied states returning to its control, stranding enemy units.<br>When setting the autonomy level in the history files, it is preferable to do it before the political effects in the subject's history file scoping to the overlord's tag, to avoid overwriting. | 1.3 |
 
-#### Governments in exile <a id="Governments_in_exile"></a>
+### Governments in exile <a id="Governments_in_exile"></a>
 
 Government in exile-related country-scoped effects:
 
@@ -462,7 +462,7 @@ Government in exile-related country-scoped effects:
 | become_exiled_in | Makes a country a government in exile in a set country, with a set starting legitimacy. | `become_exiled_in = { target = <Host tag> legitimacy = <0-100> (starting legitimacy, optional) }` | Creates a government in exile. | Must be fired from ROOT, the country that should be exiled, or a TAG specification must be used. This effect would not automatically force a country to capitulate. | 1.6 |
 | end_exile | Ends a government in exile. | `end_exile = yes` | Ends a government in exile. |  | 1.6 |
 
-#### War <a id="War"></a>
+### War <a id="War"></a>
 
 War-related country-scoped effects:
 
@@ -485,7 +485,7 @@ War-related country-scoped effects:
 | add_nuclear_bombs | Adds nuclear bomb to TAG's stockpile. | `add_nuclear_bombs = 100` | Adds specified number of nukes to the country's stockpile | Needs the Nuke tech to use. | 1.6 |
 | launch_nuke | `province = <ID>`<br>The specific province to nuke.<br> `state = <ID>`<br>The state to nuke.<br> `controller = <TAG>`<br>Prioritises provinces controlled by this country.<br> `use_nuke = <boolean>`<br>Whether a nuke should be deducted from the country's stockpile. Defaults to false. `nuke_type = <nuke_type>`<br>type of nuke to use (e.g. nuclear_bomb, thermonuclear_bomb etc.) | `launch_nuke = {`<br>`    province = 1234`<br>`}``launch_nuke = {`<br>`    state = 42`<br>`    controller = GER`<br>`    use_nuke = yes`<br>`    nuke_type = nuclear_bomb`<br>`}` | Nukes the specified province or a province in the needed state. If a state is set rather than the specific province, first prioritises the country set in `controller`, then prioritises the countries at war with the current scope, and then countries that are neutral. | If set to use a nuke, then requires at least one nuclear bomb in the stockpile. | 1.6 |
 
-#### Resources <a id="Resources"></a>
+### Resources <a id="Resources"></a>
 
 Resource-related country-scoped effects:
 
@@ -499,7 +499,7 @@ Resource-related country-scoped effects:
 | set_fuel | `<int>`<br>Fuel amount. | `set_fuel = 400` | Sets country's current fuel amount. |  | 1.6 |
 | set_fuel_ratio | `<decimal>`<br>The needed ratio of fuel. | `set_fuel_ratio = 0.5` | Set country's current fuel ratio relative to its capacity. |  | 1.6 |
 
-#### Buildings <a id="Buildings"></a>
+### Buildings <a id="Buildings"></a>
 
 Building-related country-scoped effects:
 
@@ -509,7 +509,7 @@ Building-related country-scoped effects:
 | modify_building_resources | `building = <building>`<br>The building to modify. `resource = <resource>`<br>The resource to add.<br>`amount = <amount>`<br>The amount of resource to add. | `modify_building_resources = {`<br>`    building = synthetic_refinery`<br>`    resource = oil`<br>`    amount = 1`<br>`}` | Modifies the resource output of the specified building for the current scope. |  | 1.5 |
 | damage_building | `type = <building>`<br>The building to damage. `state = <id> / <variable>`<br>The state to target.<br> `tags = <building_tag>`<br>The buildings with this tag to damage.<br> `tags = { <building_tag> }`<br>The buildings with these tags to damage.<br> `repair_speed_modifier = <float>`<br> Repair will be x% slower until building is fully repaired<br> `damage = <float>`<br>The amount of damage to inflict.<br> `province = <id> / <variable>`<br>The province to target for provincal buildings. | `damage_building = {`<br>`  type = infrastructure`<br>`  state = 123`<br>`  damage = 1`<br>`}``damage_building = {`<br>`  tags = dam_building`<br>`  damage = 1`<br>`  repair_speed_modifier = -0.8`<br>`  province = 3488`<br>`}` | Damages a building in a targeted state or province. | The health of buildings is determined by the **value** attribute in a building's definition. This is multiplied by their level to get their total health. Can also be used in state scope. | 1.3 |
 
-#### National focuses <a id="National_focuses"></a>
+### National focuses <a id="National_focuses"></a>
 
 National focus-related country-scoped effects:
 
@@ -524,7 +524,7 @@ National focus-related country-scoped effects:
 | deactivate_shine_on_focus | `<focus>`<br>The focus to deactivate a shine effect on. | `deactivate_shine_on_focus = my_focus` | Deactivate the shine effect on the focus with the given id. The current focus cannot have it's shine effect removed. | Tooltips are only shown in debug mode. | 1.15 |
 | reduce_focus_completion_cost | `focus = <focus>`<br>The focus to reduce cost time.<br> `cost = <int> / <variable>`<br>Time to reduce (in days). | `reduce_focus_completion_cost = {`<br>`  focus = focus_id`<br>`  cost = 35`<br>`}``reduce_focus_completion_cost = {`<br>`  focus = {focus_id_1 focus_id_2}`<br>`  cost = 35`<br>`}` | Reduce the cost needed to complete a specific focus. The cost accepts script constants. The focus can be a uniform list or a single token. |  | 1.17 |
 
-#### Decisions <a id="Decisions"></a>
+### Decisions <a id="Decisions"></a>
 
 Decision-related country-scoped effects:
 
@@ -539,7 +539,7 @@ Decision-related country-scoped effects:
 | remove_decision | Allows to remove specified decision without running remove_effect. | `remove_decision = GER_MEPO` | Removes a decision. |  | 1.6 |
 | remove_decision_on_cooldown | `<decision>`<br>The decision that is to be removed. | `remove_decision_on_cooldown = TAG_my_decision` | If the decision is on cooldown, it gets removed, in order to reactivate or remove completely. |  | 1.11 |
 
-#### Missions <a id="Missions"></a>
+### Missions <a id="Missions"></a>
 
 Mission-related country-scoped effects:
 
@@ -550,7 +550,7 @@ Mission-related country-scoped effects:
 | remove_mission | `<mission>`<br>The mission to remove. | `remove_mission = my_mission` | Removes the specified mission for the current scope. | Missions are found in `/Hearts of Iron IV/common/decisions/*.txt` | 1.5 |
 | add_days_mission_timeout | `mission = <mission>` <br>The mission to add days to. `days = <int> / <variable>`<br>The number of days to add to the mission. | `add_days_mission_timeout = {`<br>`    mission = my_mission`<br>`    days = 20`<br>`}` | Adds the number of days to the specified mission. | Missions are found in `/Hearts of Iron IV/common/decisions/*.txt` | 1.9 |
 
-#### Technologies <a id="Technologies"></a>
+### Technologies <a id="Technologies"></a>
 
 Technology-related country-scoped effects:
 
@@ -566,7 +566,7 @@ Technology-related country-scoped effects:
 | inherit_technology | `<tag>` The country to inherit technology from. | `inherit_technology = CAN` | Makes the current country's researched technologies be copied from the specified country. | Useful when making a country independent. | 1.6 |  |
 | mark_technology_tree_layout_dirty | `<bool>`<br>Boolean. | `mark_technology_tree_layout_dirty = yes` | Forces the refresh of the hidden technologies for the scoped country. |  | 1.15 |  |
 
-#### Ideas <a id="Ideas"></a>
+### Ideas <a id="Ideas"></a>
 
 This includes national spirits, laws, designers, and advisors. (using the idea_token)
 
@@ -582,7 +582,7 @@ Idea-related country-scoped effects:
 | remove_ideas_with_trait | `<trait>`<br>The trait to target. | `remove_ideas_with_trait = motorized_equipment_manufacturer` | Removes all ideas for the current scope that use the specified trait. |  | 1.0 |
 | show_ideas_tooltip | `<idea>`<br>The idea to display. | `show_ideas_tooltip = my_idea` | Displays the specified idea in the tooltip for the current effect scope. Does not add the idea. |  | 1.0 |
 
-#### Units <a id="Units"></a>
+### Units <a id="Units"></a>
 
 Unit-related country-scoped effects:
 
@@ -605,7 +605,7 @@ Unit-related country-scoped effects:
 | add_unit_bonus | `<subunit> = { ... }`<br> | `add_unit_bonus = {`<br>`  category_light_infantry = {`<br>`    soft_attack = 0.05`<br>`  }`<br><br>`  cavalry = {`<br>`    soft_attack = 0.05`<br>`    hard_attack = 0.05`<br>`  }`<br>`}` | Adds permanent subunit and subunit category bonuses for country. |  | ??? |
 | unlock_subunit | unlock_subunit = sub_unit | GER = { unlock_subunit = rangers_support  } | Unlocks sub-units | List of all sub-units can be found in `/Hearts of Iron IV/common/units/*.txt` | 1.19 |
 
-#### Equipment <a id="Equipment"></a>
+### Equipment <a id="Equipment"></a>
 
 Equipment-related country-scoped effects:
 
@@ -624,7 +624,7 @@ Equipment-related country-scoped effects:
 | add_equipment_bonus | `project = <>`<br>Optional, special project scope for using special project name. If not set, the name will be used. `name = <loc_key>`<br>Name.<br> `bonus = { ... }`<br>Bonus. | `add_equipment_bonus = {`<br>`  project = FROM`<br>`  bonus = {`<br>`    armor = { # Type of equipment`<br>`      armor_value = 3`<br>`      soft_attack = 3`<br>`      instant = yes`<br>`    }`<br>`    small_plane_naval_bomber_airframe = {`<br>`      air_range = 0.1`<br>`      naval_strike_attack = 0.1`<br>`    }`<br>`  }`<br>`}` | Adds the specified equipment bonuses to the country. As description the given loc key or the name of given special project will be used. Same usage as in Ideas/National spirits. |  | 1.15 |
 | set_equipment_version_number | `type = <equipment>`<br>Equipment type. `version = <int>`<br>Version to set. | `set_equipment_version_number = {`<br>`  type = small_plane_airframe_1`<br>`  version = 4`<br>`}` | Changes current version number for a given equipment type to N. The next equipment variant created from that type will have version number N+1. | Set "Variant max version" to specified version. Provides no tooltip. | 1.16 |
 
-#### Military <a id="Military"></a>
+### Military <a id="Military"></a>
 
 Military-related country-scoped effects:
 
@@ -638,7 +638,7 @@ Military-related country-scoped effects:
 | add_ace | `name = <string>`<br>The name of the ace.<br> `surname = <string>`<br>The surname of the ace.<br> `callsign = <string>`<br>The callsign of the ace.<br> `type = <type>`<br>The ace type.<br> `is_female = <bool>`<br>The gender of the ace. | `add_ace = {`<br>`    name = "Amelia"`<br>`    surname = "Earhart"`<br>`    callsign = "Revenant"`<br>`    type = fighter_genius`<br>`    is_female = yes`<br>`}` | Adds an ace for the current scope. | Ace types found in `/Hearts of Iron IV/common/aces/*.txt`. | 1.0 |
 | unlock_tactic | `<string>`<br>Tactic to unlock.<br> | `unlock_tactic = tactic_masterful_blitz` | Unlocks the specified combat tactic for the country. |  | 1.17 |
 
-#### Doctrine <a id="Doctrine"></a>
+### Doctrine <a id="Doctrine"></a>
 
 Doctrine-related country-scoped effects:
 
@@ -651,7 +651,7 @@ Doctrine-related country-scoped effects:
 | set_grand_doctrine | `<string>`<br>Grand doctrine id. | `set_grand_doctrine = mobile_warfare` | Activate (unlock and assign) the specified grand doctrine. |  | 1.17 |
 | set_sub_doctrine | `<string>`<br>Subdoctrine id. **OR**<br> `sub_doctrine = <string>`<br>Subdoctrine id.<br> `folder = <string>`<br>Optional, in case you need to specify the folder.<br> `track = <int>`<br>Optional, in case you need to specify the track index within the folder. Note that this is the track index (starting with 0) among ALL the tracks in the folder, not just the ones that match the subdoctrine. So in a case where a grand doctrine has the tracks: 'infantry - armor - armor - operations', you would use track = 1 to refer to the first armor track, and track = 2 to refer to the second armor track.<br> | `set_sub_doctrine = mobile_infantry``set_sub_doctrine = {`<br>`    sub_doctrine = mobile_infantry`<br>`    folder = land`<br>`    track = 1`<br>`}` | Activate (unlock and assign) the specified subdoctrine. | By default, the subdoctrine is assigned to the first matching track that the system can find. However, you can also specify a specific folder and track index to assign the subdoctrine to, in case the same track appears in multiple folders, or multiple times in the same folder. | 1.17 |
 
-#### Intelligence <a id="Intelligence"></a>
+### Intelligence <a id="Intelligence"></a>
 
 Intelligence-related country-scoped effects:
 
@@ -671,7 +671,7 @@ Intelligence-related country-scoped effects:
 | turn_operative | `operative = <tag>`<br>The operative that is turned. | `turn_operative = {`<br>`    operative = PREV`<br>`}``turn_operative = PREV` | Turns the targeted operative against their own country, transferring them to the current country. | Operatives can be referred to by using [tags that refer to scopes](<Scopes - Hearts of Iron 4 Wiki.md>). This counts as the operative dying and will trigger the corresponding [On action](<On actions - Hearts of Iron 4 Wiki.md>). Logs an error if used against your own operative. | 1.9 |  |
 | steal_random_tech_bonus | `category = <category name>`<br>The category to steal from. See `/Hearts of Iron IV/common/technology_tags/*` for list. `folder = naval_folder`<br>The folder to steal from. See `/Hearts of Iron IV/common/technology_tags/*` for list. `ahead_reduction = <float>`<br>The reduction to the ahead of time penalty. `bonus = <float>`<br>The bonus to research speed. `base_bonus = <float>`<br>The backup bonus if no tech is available. `instant = <bool>`<br>Whether to instantly give a tech instead of a bonus or not. No by default. `dynamic = <bool>`<br>Changes between instant and non-instant based on type. No by default. `name = <localisation key>`<br>The name of the bonus. `target = <tag>`<br>The country to steal from. `uses = <int>`<br>How many times the bonus can be used. | `steal_random_tech_bonus = {`<br>`    category = air_equipment`<br>`    folder = naval_folder`<br>`    ahead_reduction = 0.8`<br>`    bonus = 1.2`<br>`    base_bonus = 1.1`<br>`    dynamic = yes`<br>`    name = LOC_KEY`<br>`    target = POL`<br>`    uses = 2`<br>`}` | Steals a random tech bonus from the specified country. | If a country does not have a tech to be stolen, a random bonus will be applied by using base_bonus as a base. | 1.9 |  |
 
-#### Characters <a id="Characters"></a>
+### Characters <a id="Characters"></a>
 
 These are the character-related effects in the country scope. For effects in character scope, see [§ Character scope](#Character_scope).
 
@@ -686,7 +686,7 @@ Character-related country-scoped effects:
 | add_trait | `character = <character>`<br>The character to modify.<br> `slot = <slot>` Slot of the character. Necessary for advisors.<br> `ideology = <sub-ideology>` Ideology type of the character. Necessary for country leaders.<br> `trait = <trait>`<br>The trait to add. | `add_trait = {`<br>`     character = TAG_jane_smith`<br>`     slot = political_advisor`<br>`     trait = really_good_boss`<br>`}``add_trait = {`<br>`     character = TAG_my_leader`<br>`     ideology = liberalism`<br>`     trait = field_of_gar`<br>`}` | Adds the specified country leader trait to the character. | Can also be used in character scope. Ideology type refers to a sub-type of an ideology group assigned to characters, commonly referred to as sub-ideologies in community jargon. The character slot can be the character's name or id. Using name is recommended because 1.11 made id obsolete. | 1.11 |
 | remove_trait | `character = <character>`<br>The character to modify.<br> `slot = <slot>` Slot of the character. Necessary for advisors.<br> `ideology = <sub-ideology>` Ideology type of the character. Necessary for country leaders.<br> `trait = <trait>`<br>The trait to remove. | `remove_trait = {`<br>`    character = TAG_jane_smith`<br>`    slot = political_advisor`<br>`    trait = really_good_boss`<br>`}``remove_trait = {`<br>`     character = TAG_my_leader`<br>`     ideology = liberalism`<br>`     trait = field_of_gar`<br>`}` | Removes the specified trait from the character. | Can also be used in character scope. Ideology type refers to a sub-type of an ideology group assigned to characters, commonly referred to as sub-ideologies in community jargon. The character slot can be the character's name or id. Using name is recommended because 1.11 made id obsolete. | 1.11 |
 
-##### Unit leaders <a id="Unit_leaders"></a>
+#### Unit leaders <a id="Unit_leaders"></a>
 
 Unit leader-related country-scoped effects:
 
@@ -701,7 +701,7 @@ Unit leader-related country-scoped effects:
 | add_naval_commander_role | `character = <character>`<br>The character to modify.<br> `<...>`<br>[Navy leader role definition](<Character modding - Hearts of Iron 4 Wiki.md#Unit_leaders>)<br> | `add_naval_commander_role = {`<br>`  Character = GER_Character_token`<br>`  skill = 4`<br>`  attack_skill = 2`<br>`  defense_skill = 3`<br>`  planning_skill = 3`<br>`  logistics_skill = 5`<br>`}` | Sets the specified character to also act as an admiral. | Can also be used in character scope. | 1.11 |
 | show_unit_leaders_tooltip | `<character>`<br>The character whose name is to be shown. | `show_unit_leaders_tooltip = TAG_my_leader` | Shows the name of the specified character as a tooltip. |  | 1.11 |
 
-##### Country leaders <a id="Country_leaders"></a>
+#### Country leaders <a id="Country_leaders"></a>
 
 Country leader-related country-scoped effects:
 
@@ -723,7 +723,7 @@ Country leader-related country-scoped effects:
 | remove_country_leader_trait | `<trait>`<br>The trait to remove. | `remove_country_leader_trait = nationalist_symbol` | Removes the specified trait from the current scope's country leader. | Traits are found in `/Hearts of Iron IV/common/country_leader/*.txt` files. | 1.0 |
 | swap_ruler_traits | Similar to swap_ideas. Removes one trait and adds another. | `swap_ruler_traits = { remove = <trait> add = <trait> }` | Swaps traits. | Use swap_country_leader_traits in character scope. | 1.6 |
 
-##### Advisors <a id="Advisors"></a>
+#### Advisors <a id="Advisors"></a>
 
 Advisor-related country-scoped effects:
 
@@ -735,7 +735,7 @@ Advisor-related country-scoped effects:
 | remove_advisor_role | `character = <character>`<br>Specifies the character if the effect is executed in country scope.<br> `slot = <int>`<br>The slot where to remove the advisor slot from. | `remove_advisor_role = {`<br>`  character = "SOV_genrikh_yagoda"`<br>`  slot = political_advisor`<br>`}` | Removes the specified advisor role from the character. | Can also be used in character scope. | 1.11 |
 | set_can_be_fired_in_advisor_role | `character = <character>`<br>The character to modify.<br> `slot = <slot>`<br>The slot of the character to modify.<br> `value = <bool>`<br>The value to set. | `set_can_be_fired_in_advisor_role = {`<br>`    character = BHR_important_advisor`<br>`    value = no`<br>`}` | Changes the `can_be_fired` attribute of the advisor, preventing the player from dismissing the advisor. | Can also be used in character scope. | 1.12.8 |
 
-##### Scientists <a id="Scientists"></a>
+#### Scientists <a id="Scientists"></a>
 
 Scientist-related country-scoped effects:
 
@@ -745,7 +745,7 @@ Scientist-related country-scoped effects:
 | remove_scientist_role | `character = <character> / <variable>`<br> | `remove_scientist_role = {`<br>`  character = my_character / var:my_char_var / PREV`<br>`}` | Remove the scientist role from a character. | Can also be used in character scope. | 1.15 |
 | generate_scientist_character | `portrait = <GFX>`<br>Optional, random portrait by default. `portrait_tag_override = <country> / <variable>`<br>Optional, accepts variable and keyword, only relevant if using random portrait, by default use country in scope.<br> `gender = <gender>`<br>Optional, by default random gender.<br> `skills = { ??? }`<br>Optional array, same format as in scientist role in character DB, by default all skills are at 1.<br> `traits = { <trait> }`<br>Optional array. | `generate_scientist_character = {`<br>`  portrait = GFX_portrait`<br>`  portrait_tag_override = CHI`<br>`  gender = male`<br>`  skills = {`<br>`    specialization_token = 2`<br>`  }`<br>`  traits = { trait_token }`<br>`}` | Generate a new character with a scientist role and recruit it in the country in scope. |  | 1.15 |
 
-#### MIOs <a id="MIOs"></a>
+### MIOs <a id="MIOs"></a>
 
 These are the MIO-related effects in the country scope. For effects in military industrial organisation scope, see [§ MIO scope](#MIO_scope).
 
@@ -761,7 +761,7 @@ MIO-related country-scoped effects:
 | add_mio_policy_cooldown | `policy = <policy>`<br>Policy to modify.<br> `value = <int>`<br>Amount in days to add. | `add_mio_policy_cooldown = {`<br>`    policy = my_policy`<br>`    value = 10`<br>`}` | Modifies the base length of a MIO policy cooldown. | The base amount is capped at 0 from below. | 1.13 |
 | set_mio_policy_cooldown | `policy = <policy>`<br>Policy to modify.<br> `value = <int>`<br>Amount in days to set. | `set_mio_policy_cooldown  = {`<br>`    policy = my_policy`<br>`    value = 100`<br>`}` | Modifies the base length of a MIO policy cooldown. | Cannot be negative. | 1.13 |
 
-#### Special Projects <a id="Special_Projects"></a>
+### Special Projects <a id="Special_Projects"></a>
 
 These are special project related effects in the country scope.
 
@@ -773,7 +773,7 @@ Special project-related country-scoped effects:
 | add_breakthrough_points | `specialization = <dp_specialization_id>`<br>The specialization e.g. specialization_land. `value = <int>`<br>The amount of specialization breakthrough points to add. | `add_breakthrough_points = {`<br>`  specialization = specialization_land`<br>`  value = 3`<br>`}``add_breakthrough_points = {`<br>`  specialization = all`<br>`  value = 1`<br>`}` | Add breakthrough points to one specialization or all for a country scope. |  | 1.15 |
 | add_breakthrough_progress | `specialization = <dp_specialization_id>`<br>The specialization e.g. specialization_land. `value = <int>`<br>The amount of specialization breakthrough progress to be added. | `add_breakthrough_progress = {`<br>`  specialization = specialization_land`<br>`  value = 3`<br>`}``add_breakthrough_progress = {`<br>`  specialization = all`<br>`  value = sp_breakthrough_progress.medium`<br>`}` | Add breakthrough progress to one specialization or all for a country scope. | The value can either be an absolute value or a script constant. | 1.15 |
 
-#### Career profile <a id="Career_profile"></a>
+### Career profile <a id="Career_profile"></a>
 
 These are career profile related effects in the country scope.
 
@@ -783,7 +783,7 @@ Career profile-related country-scoped effects:
 | --- | --- | --- | --- | --- | --- |
 | career_profile_step_missiolini | `<bool>`<br>Boolean. | `career_profile_step_missiolini = yes` | Step completed Mussolini missions by one for the career profile. |  | ??? |
 
-#### History <a id="History"></a>
+### History <a id="History"></a>
 
 These effects can **only be used within history files**, failing when used outside. However, they're considered effects anyway rather than history arguments, as they can be used in if statements.
 
@@ -798,7 +798,7 @@ Effects to be used in country history files:
 | set_air_oob | `<order of battle>`<br>The name of the file used for the order of battle without the `.txt` extension. | `set_air_oob = ITA_1936_air_bba` | Sets the order of battle to be used for the current country's divisions, overriding every other air order of battle. | Orders of battle are defined in `/Hearts of Iron IV/history/units/*.txt` files. | 1.12 |
 | set_keyed_oob | `key = <string>`<br>The key used for the file.<br> `name = <order of battle>`<br>The name of the file used for the order of battle without the `.txt` extension. | `set_keyed_oob = {`<br>`    key = naval`<br>`    name = BHR_1936_mtg`<br>`}` | Sets the order of battle to be used for the current country's divisions, overriding every other keyed order of battle that uses the same key. | Orders of battle are defined in `/Hearts of Iron IV/history/units/*.txt` files. | 1.0 |
 
-#### Variable <a id="Variable"></a>
+### Variable <a id="Variable"></a>
 
 These are variable related effects in the country scope.
 
@@ -811,11 +811,11 @@ Variable-related country-scoped effects:
 | get_supply_vehicles | `var = <string>`<br>Variable name to set. `type = <type>`<br>Can be truck or train.<br> `need = <bool>`<br>Default no. If yes, gets the number of needed vehicles. <br><br> | `get_supply_vehicles = {`<br>`  var = trucks_needed`<br>`  type = truck`<br>`  need = yes`<br>`}` | Sets a variable to the number of supply vehicles in stockpile or that are needed. |  | ??? |
 | get_supply_vehicles_temp | `var = <string>`<br>Variable name to set. `type = <type>`<br>Can be truck or train.<br> `need = <bool>`<br>Default no. If yes, gets the number of needed vehicles. | `get_supply_vehicles_temp = {`<br>`  var = trucks_needed`<br>`  type = truck`<br>`  need = yes`<br>`}` | Sets a temp variable to the number of supply vehicles in stockpile or that are needed. |  | ??? |
 
-### State scope <a id="State_scope"></a>
+## State scope <a id="State_scope"></a>
 
 The effects here must be used within a **state** scope.
 
-#### General <a id="General_3"></a>
+### General <a id="General_3"></a>
 
 General state-scoped effects:
 
@@ -852,7 +852,7 @@ General state-scoped effects:
 | strategic_province_location | `<string> = <int>`<br> | `strategic_province_location = {`<br>`    defensible_coastline = 10124`<br>`}` | Add a strategic location to a province using state scope. The available strategic locations are defined in strategic_locations and are specified with a province id. | Can contain multiple strategic locations. | 1.17 |
 | strategic_state_location | `<string> = <int>`<br> | `strategic_state_location = {`<br>`    favorable_approach = 11932`<br>`}` | Add strategic locations to a state in scope. The available strategic locations are defined in strategic_locations. | Can contain multiple strategic locations. | 1.17 |
 
-#### Buildings <a id="Buildings_2"></a>
+### Buildings <a id="Buildings_2"></a>
 
 Building-related state-scoped effects:
 
@@ -865,7 +865,7 @@ Building-related state-scoped effects:
 | remove_building | `type = <building>`<br>The building to remove. `tag = <building_tag>`<br>The buildings with this tag to remove.<br> `tag = { <building_tag> }`<br>The buildings with these tags to remove.<br> `level = <int> / <variable>`<br>The levels to remove. | `remove_building = {`<br>`    type = arms_factory`<br>`    level = 5`<br>`}``remove_building = {`<br>`    tag = facility`<br>`    level = 1`<br>`}` | Removes the specified building in the current state. For shared buildings level determines the amount, whereas for the others it is the actual level. |  | 1.0 |
 | construct_building_in_random_province | `<building> = <int>`<br>Building to build. | `65 = {`<br>`    construct_building_in_random_province = {`<br>`        land_facility = 1`<br>`    }`<br>`}` | Set building level in a random province of state scope. |  | 1.15 |
 
-#### Resistance and compliance <a id="Resistance_and_compliance"></a>
+### Resistance and compliance <a id="Resistance_and_compliance"></a>
 
 Resistance-related state-scoped effects:
 
@@ -887,7 +887,7 @@ Resistance-related state-scoped effects:
 | set_garrison_strength | `<0-1>`<br>The new garrison strength. | `set_garrison_strength = 0.5` | Sets the strength of the garrison in the specified state. |  | 1.9 |
 | set_occupation_law | `<law ID>`<br>The new occupation law enacted by the previous scope or `default_law`. | `GER = {`<br>`  every_controlled_state = {`<br>`    set_occupation_law = military_governor_occupation`<br>`  }`<br>`}`# Changes GER's occupation law for every controlled state. | Sets the occupation law of the state. | [PREV](<Scopes - Hearts of Iron 4 Wiki.md#PREV_usage>) will be the country for whom the occupation law will be changed. If PREV is not a country, nothing changes. If PREV doesn't occupy the state, nothing happens until it does. If using `default_law`, resets to the law set by the country's occupation. Can also be used in country scope. | 1.12 |
 
-#### Raids <a id="Raids"></a>
+### Raids <a id="Raids"></a>
 
 Raid-releated state-scoped effects:
 
@@ -895,11 +895,11 @@ Raid-releated state-scoped effects:
 | --- | --- | --- | --- | --- | --- |
 | raid_reduce_project_progress_ratio | `<float>`<br>Value to reduce. | `raid_reduce_project_progress_ratio = 0.1` | Reduce progress to the special project in state. Root scope is raid instance scope. The input value is a ratio of the total needed progress to complete the special project, i.e. a decimal number between 0 and 1. |  | 1.15 |
 
-### Character scope <a id="Character_scope"></a>
+## Character scope <a id="Character_scope"></a>
 
 The effects here must be used within a **character** scope.
 
-#### General <a id="General_4"></a>
+### General <a id="General_4"></a>
 
 General character-scoped effects:
 
@@ -930,7 +930,7 @@ General character-scoped effects:
 | add_scientist_xp | `experience = <int> / <variable>`<br>Expierience to add. `specialization = <specialization>`<br>Specialization to add. | `add_scientist_xp = {`<br>`  experience = 2`<br>`  specialization = specialization_nuclear`<br>`}` | Add experience to a special project specialization for a scientist character in scope. |  | 1.15 |
 | set_can_be_fired_in_advisor_role | `slot = <slot>`<br>The slot of the character to modify.<br> `value = <bool>`<br>The value to set. | `set_can_be_fired_in_advisor_role = {`<br>`    slot = political_advisor`<br>`    value = no`<br>`}` | Changes the `can_be_fired` attribute of the advisor, preventing the player from dismissing the advisor. |  | 1.12.8 |
 
-#### Unit leaders <a id="Unit_leaders_2"></a>
+### Unit leaders <a id="Unit_leaders_2"></a>
 
 These can only be used with characters of the unit leader type.
 
@@ -954,7 +954,7 @@ General unit leader-scoped effects:
 | remove_unit_leader | `<bool>` | `remove_unit_leader = yes` | Removes the current unit leader. |  | 1.0 |
 | remove_unit_leader_role | `<bool>`<br>Boolean. | `remove_unit_leader_role = yes` | Removes every unit leader role from the character |  | 1.11 |
 
-#### Country leaders <a id="Country_leaders_2"></a>
+### Country leaders <a id="Country_leaders_2"></a>
 
 These can only be used with characters of the country leader type.
 
@@ -966,7 +966,7 @@ Country leader-scoped effects:
 | remove_country_leader_trait | `<trait>`<br>The trait to remove.<br> **OR**:<br> `ideology = <sub-ideology>`<br>The sub-ideology of the country leader role to which the trait is added.<br> `trait = <trait>`<br>The trait to remove. | `remove_country_leader_trait = nationalist_symbol``remove_country_leader_trait = {`<br>`    ideology = marxism`<br>`    trait = anti_communist`<br>`}` | Removes the specified trait from the current character. | Traits are found in `/Hearts of Iron IV/common/country_leader/*.txt` files. *The former only if the character has one country leader role.* | 1.11 |
 | swap_country_leader_traits | `remove = <trait>`<br>Trait to remove<br> `add = <trait>`<br>Trait to add<br> `ideology = <sub-ideology>`<br>Sub-ideology of the leader where to swap traits.<br> | `swap_country_leader_traits = {`<br>`    remove = nationalist_symbol`<br>`    add = anti_communist`<br>`    ideology = marxism`<br>`}` | Swaps traits of the current character. | Use swap_ruler_traits in country scope. | 1.11 |
 
-#### Combat <a id="Combat"></a>
+### Combat <a id="Combat"></a>
 
 Combat-related unit leader-scoped effects:
 
@@ -983,7 +983,7 @@ Combat-related unit leader-scoped effects:
 | add_maneuver | `<int>`<br>How many skill levels to add. | `add_maneuver = 1` | Adds maneuver skill to the current navy leader. |  | 1.5 |
 | add_temporary_buff_to_units | `combat_offense = <float>`<br>The bonus to grant. Optional. `combat_breakthrough = <float>`<br>The bonus to grant. Optional.<br>`combat_defense = <float>`<br>The bonus to grant. Optional.<br>`combat_entrenchment = <float>`<br>The bonus to grant. Optional.<br>`org_damage_multiplier = <float>`<br>The bonus to grant. Optional.<br>`str_damage_multiplier = <float>`<br>The bonus to grant. Optional.<br>`war_support_reduction_on_damage = <float>`<br>The bonus to grant. Optional.<br>`cannot_retreat_while_attacking = <float>`<br>The bonus to grant. Optional.<br>`cannot_retreat_while_defending = <float>`<br>The bonus to grant. Optional.<br>`days = <int>`<br>The duration of the buff. Optional.<br>`tooltip = <string>`<br>The tooltip to display for the buff. | `add_temporary_buff_to_units = {`<br>`    combat_offense = 0.25`<br>`    combat_breakthrough = 0.25`<br>`    org_damage_multiplier = -1.0`<br>`    str_damage_multiplier = 0.25`<br>`    war_support_reduction_on_damage = 0.2`<br>`    cannot_retreat_while_attacking = 1.0`<br><br>`    days = 7`<br>`    tooltip = ABILITY_FORCE_ATTACK_TOOLTIP`<br>`}` | Adds the specified combat buff to the current unit leader. |  | 1.5 |
 
-#### Operatives <a id="Operatives"></a>
+### Operatives <a id="Operatives"></a>
 
 Operative-scoped effects:
 
@@ -998,7 +998,7 @@ Operative-scoped effects:
 | turn_operative | `turned_by = <tag>`<br>The country to which the operative defects. | `turn_operative = {`<br>`    turned_by = PREV`<br>`}` | Turns the current operative against their own country, transferring them to the specified country. | This counts as the operative dying and will trigger the corresponding [On action](<On actions - Hearts of Iron 4 Wiki.md>). Logs an error if used against your own operative. | 1.9 |
 | operative_leader_event | `id = <event>`<br>The event to fire. `days = <int> / <variable>`<br>Fires the event in the specified number of days. Optional.<br>`hours = <int> / <variable>`<br>Fires the event in the specified number of hours. Optional.<br>`random = <int> / <variable>`<br>Adds a random number (between *0* and *random*, inclusive) of **hours** to the scheduled fire time. Optional.<br>`random_days = <int> / <variable>`<br>Adds a random number (between *0* and *random_days*, inclusive) of days to the scheduled fire time. Optional.<br>`originator = <tag>`<br>The originator of the event. Optional, defaults to owner of operative.<br>`recipient = <tag>`<br>The recipient of the event. Optional, defaults to owner of operative.<br>`set_from = <tag>`<br>Sets the scope of FROM in scripted localization. Optional.<br>`set_from_from = <tag>`<br>Sets the scope of FROM.FROM in scripted localization. Optional.<br>`set_root = <tag>`<br>Sets the scope of ROOT in scripted localization. Optional. | `operative_leader_event = {`<br>`    id = my_event.1`<br>`	originator = POL`<br>`	recipient = GER`<br>`    days = 10`<br>`    random = 50`<br>`    random_days = 10`<br>`	set_from = ENG`<br>`	set_root = SOV`<br>`	set_from_from = FRA`<br>`}` | Fires the specified event for the operative. | Uses a special interface displaying the current operative portrait. Where triggers do not need to be repeatedly checked `random` can be a performance light alternative to `mean_time_to_happen` for scheduling events. | 1.9 |
 
-### Division scope <a id="Division_scope"></a>
+## Division scope <a id="Division_scope"></a>
 
 The effects here must be used within a **division** scope.
 
@@ -1016,7 +1016,7 @@ Division-scoped effects:
 | promote_officer_to_general | `<bool><br>`Boolean. | `promote_officer_to_general = yes` | Promote the officer of the division to a general. |  |  |
 | set_unit_organization | `<decimal>`<br>The level to set to. | `set_unit_organization = 0.3` | Changes the organisation of the unit. | On the scale from 0 to 1. | 1.13 |
 
-### MIO scope <a id="MIO_scope"></a>
+## MIO scope <a id="MIO_scope"></a>
 
 The effects here must be used within a **military industrial organisation** scope.
 
@@ -1049,7 +1049,7 @@ MIO-scoped effects:
 | clr_mio_flag | `<flag>`<br>The unique string of a country flag to clear. | `clr_mio_flag = my_flag` | Clears a defined MIO flag. |  | 1.13 |
 | modify_mio_flag | `flag = <flag>`<br>The flag to modify.<br> `value = <value>`<br>The value to add to the flag. Defaults to 0.<br> `days = <int>`<br>The amount of days that the flag should last for before being cleared. Optional, defaults to permanent.<br> | `modify_mio_flag = {`<br>`    flag = my_flag`<br>`    value = 3`<br>`}` | Adds an integer value to a flag. | The flag must be already set. | 1.13 |
 
-### Contract scope <a id="Contract_scope"></a>
+## Contract scope <a id="Contract_scope"></a>
 
 The effects here must be used within a **contract** scope.
 
@@ -1059,7 +1059,7 @@ Contract-scoped effects:
 | --- | --- | --- | --- | --- | --- |
 | cancel_purchase_contract | `<bool>`<br>Boolean. | `cancel_purchase_contract = yes` | Cancels the current purchase contract. |  | 1.13 |
 
-### Raid scope <a id="Raid_scope"></a>
+## Raid scope <a id="Raid_scope"></a>
 
 The effects here must be used within a **raid** scope.
 
@@ -1071,7 +1071,7 @@ Raid-scoped effects:
 | raid_add_unit_experience | `<float>`<br>Can use either an explicit value or a variable | `raid_add_unit_experience = 0.2` | Will give experience to any type of unit assigned to the raid, e.g. divisions or air wings. | The value defines the progress towards the max level, e.g. 0.2 = gain 20% of the experience needed to reach max level. | 1.15 |
 | raid_damage_units | `<flag>`<br>An unique string to identify the project flag with.<br> **OR**<br> `damage = <float/int>`<br>The amount of strength and organization damage taken.<br> `org_damage = <float/int>`<br>The amount of organization damage taken.<br> `str_damage = <float/int>`<br>The amount of strength damage taken<br> `plane_loss = <float/int>`<br>The amount of planes lost<br> `ratio = <bool>`<br>optional, default no | `# Apply 50% damage to units`<br>`raid_damage_units = {`<br>`	damage = 0.5`<br>`	ratio = yes`<br>`}`<br><br>`# Apply 10 strength loss and 20 organization loss to units`<br>`raid_damage_units = {`<br>`	org_damage = 20`<br>`	str_damage = 10`<br>`}`<br><br>`# Lose 40% of all planes`<br>`raid_damage_units = {`<br>`	plane_loss = 0.4`<br>`	ratio = yes`<br>`}`<br><br>`# Lose 5 planes`<br>`raid_damage_units = {`<br>`	plane_loss = 5`<br>`}` | Damage is applied to ground units while damage to plane is defined as the amount of planes lost. | If 'ratio = yes', then all damage / losses are applied as a fraction of the current amount. For units, damage can be defined through one value 'damage' or separately through 'org_damage' and 'str_damage' | 1.15 |
 
-### Special Project scope <a id="Special_Project_scope"></a>
+## Special Project scope <a id="Special_Project_scope"></a>
 
 The effects here must be used within a **special project** scope. Special projects must always be pre-pended with `sp:<special project>` when used a a scope or value.
 
@@ -1085,7 +1085,7 @@ special_project-scoped effects:
 | clr_project_flag | `<flag>`<br>The unique string of a country flag to clear. | `clr_project_flag = my_flag` | Clears a defined project flag. |  | 1.15 |
 | modify_project_flag | `flag = <flag>`<br>The flag to modify.<br> `value = <value>`<br>The value to add to the flag. Defaults to 0.<br> `days = <int>`<br>The amount of days that the flag should last for before being cleared. Optional, defaults to permanent.<br> | `modify_mproject_flag = {`<br>`    flag = my_flag`<br>`    value = 3`<br>`}` | Adds an integer value to a flag. | The flag must be already set. | 1.15 |
 
-### Other scopes <a id="Other_scopes"></a>
+## Other scopes <a id="Other_scopes"></a>
 
 The effects here must be used within a scope that's specified within the notes.
 
@@ -1095,11 +1095,11 @@ Otherwise-scoped effects:
 | --- | --- | --- | --- | --- | --- |
 | execute_operation_coordinated_strike | `amount = <int>`<br>How many times the operation will get executed within the days set in the operation. | `execute_operation_coordinated_strike = {`<br>`    amount = 12`<br>`}` | All prepared Port Strike and Strategic Bombing in the target region will execute multiple times without air defence being able to intercept them. | Can only be used within operations. | 1.9 |
 
-### Flow control <a id="Flow_control"></a>
+## Flow control <a id="Flow_control"></a>
 
 These scopes are used within effect scopes to control the execution of effects.
 
-#### If statements <a id="If_statements"></a>
+### If statements <a id="If_statements"></a>
 
 An if statement allows an execution of effects to only be done if certain [triggers](<Triggers - Hearts of Iron 4 Wiki.md>) are met. Conditional statements are represented with the `if = { ... }` effect. `limit = { ... }` inside of the if statement serves as a [trigger block](<Triggers - Hearts of Iron 4 Wiki.md>) that defines the conditions when it should be executed, and everything else directly inside of `if = { ... }` is interpreted as the effects that should be executed if the condition is true.
 
@@ -1149,7 +1149,7 @@ else = {
 
 Within the tooltip, only effects that would be executed are shown. The effects within an unfulfilled if statement (or an `else`/`else_if` that's not read due to the if statement being met) will be hidden from the player, and so will the trigger. In order to avoid player confusion, custom effect tooltips can be used to tell the player what this effect block would do, such as being used within an `else`.
 
-#### Random effects <a id="Random_effects"></a>
+### Random effects <a id="Random_effects"></a>
 
 If you want an effect to have a random chance to be done or have nothing happen otherwise, the `random = { ... }` block is the simplest way to accomplish that:
 
@@ -1217,7 +1217,7 @@ fixed_random_seed = no
 
 **This is only for decisions**. Elsewhere, random seed is unfixed by default, making this argument unnecessary to set to "no".
 
-#### Tooltip manipulation <a id="Tooltip_manipulation"></a>
+### Tooltip manipulation <a id="Tooltip_manipulation"></a>
 
 *See also: [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>)*
 
@@ -1253,13 +1253,16 @@ In this case, send_event_to_subjects_tt and reject_war_tt are localisation keys 
 
 In-game, this will appear as such:
 
-|  |
-| --- |
-| Effect: Sends a demand to our every subject.<br> If they agree, we get the following for each subject:<br> Political Power: **+100**<br> If they reject the demand, we gain a wargoal against them. |
+Effect:
+
+Sends a demand to our every subject.
+If they agree, we get the following for each subject:
+Political Power: **+100**
+If they reject the demand, we gain a wargoal against them.
 
 Noticably, the effect that fires the country event gets hidden from the tooltip. After completing the focus, the only thing that happens is that every subject country receives an event with the ID of `my_event.1`, the country does not immediately gain 100 political power.
 
-### Meta effects <a id="Meta_effects"></a>
+## Meta effects <a id="Meta_effects"></a>
 
 Meta effects allow you to use non-dynamic effects (the ones that do not accept modifiers and can only use static tokens or constant values) as if they were accepting variables.
 
@@ -1292,7 +1295,7 @@ meta_effect = { # The actual meta effect. This can go anywhere you need it: in a
 ```
 
 ```text
-## The scripted localization for the "eq_type" variable, which goes in a scripted localisation file
+# The scripted localization for the "eq_type" variable, which goes in a scripted localisation file
 defined_text = { # Since the "eq_type" variable in this example is equal to 1, the equipment given by the effect is "artillery_equipment"
     name = GetEquipmentName
     text = {
@@ -1325,7 +1328,7 @@ which will give you 10 artillery_equipment_2.
 
 debug = yes can be added to meta effects. Which will print the final effect to game.log when the effect is executed and make debugging easier.
 
-### Scripted effects <a id="Scripted_effects"></a>
+## Scripted effects <a id="Scripted_effects"></a>
 
 Scripted effects serve a similar purpose to functions in that they can be defined in `/Hearts of Iron IV/common/scripted_effects/*.txt` and then used elsewhere as a shortened version. **A scripted effect will never run by itself** and requires being used as an effect elsewhere to be executed. Alongside that, the game allows the creation of custom console commands, which are scripted effects.
 
@@ -1357,7 +1360,7 @@ d_transfer_states = {
 
 used like `transfer_states 123 321`
 
-#### Useful scripted effects <a id="Useful_scripted_effects"></a>
+### Useful scripted effects <a id="Useful_scripted_effects"></a>
 
 These scripted effects are defined in base game and might be useful to keep in the mod to cut down on the amount of code. As scripted effects, all of these use a boolean value as argument.
 

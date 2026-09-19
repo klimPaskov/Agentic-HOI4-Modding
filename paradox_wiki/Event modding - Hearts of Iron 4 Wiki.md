@@ -34,11 +34,11 @@ This does not happen if the event gets fired using an on action's random_events 
 
 A country that doesn't exist may still get events [if fired via an effect](#Effect), but any other method doesn't work. However, if there's a time delay set in the effect that fires it, the timers in each delayed_event`[a]` will not decrease. This effectively puts any events with a time delay onto a backlog of the country, put on hold until it gets released. For example, if BHR doesn't exist when `BHR = { country_event = { id = event.0 days = 1 } }` is executed, then the event will only fire a day after BHR starts existing. This also applies to the original recipient of major events.
 
-### Event creation <a id="Event_creation"></a>
+## Event creation <a id="Event_creation"></a>
 
 Each event is contained within a code block corresponding to the event type, such as `country_event` or `news_event`. Within the event, a mandatory line is `id`, corresponding to the event's ID, such as `id = my_event.123`.
 
-#### ID rules <a id="ID_rules"></a>
+### ID rules <a id="ID_rules"></a>
 
 Within an event file, all events have to have an ID in the format of `<namespace>.<integer ID>`. For example, in an event `my_event.123`, the namespace will be "my_event", while the ID is "123".
 
@@ -46,7 +46,7 @@ Within an event file, all events have to have an ID in the format of `<namespace
 
 Internal IDs are defined for events by assigning an ID to each namespace (IDs are assigned in the order in the code, files being loaded by filename in the character order), with the first-defined namespace being assigned an ID of 10, incrementing it by 1 for each next created namespace, multiplying it by 100000, and adding the integer ID. If the ID after the namespace fails conversion to an integer, then it'll default to 0. For this reason, every event with a non-integer ID will be considered the same event, so **the ID of the event after the namespace must be an integer**.
 
-#### Localisation <a id="Localisation"></a>
+### Localisation <a id="Localisation"></a>
 
 The lines `title` and `desc` are used to assign a [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) key to the event, creating its title and description depending on the current language of the game. An example line is `title = my_event.123.t` or `desc = my_event_description`. An event is required to have a title or a description unless it is hidden.
 
@@ -73,7 +73,7 @@ title = {
 
 The game will choose the first localisation key where the conditions are met. In this case, the event title will use the my_event.123.t.a localisation key if the country receiving the event has the tag of ENG, and every other country will have the event title use the my_event.123.t.b localisation key. `trigger` is a [trigger](<Triggers - Hearts of Iron 4 Wiki.md>) block, requiring all of the triggers inside to be true by default. The formatting for event descriptions is the same, with `title` changed for `desc`.
 
-#### Picture <a id="Picture"></a>
+### Picture <a id="Picture"></a>
 
 In order to add a picture to be shown for the event, the `picture` argument is used with the name of the sprite leading to the file of the picture, such as `picture = GFX_my_sprite`.
 
@@ -114,7 +114,7 @@ defined_text = {
 }
 ```
 
-#### Triggering <a id="Triggering"></a>
+### Triggering <a id="Triggering"></a>
 
 The `trigger = { ... }` block of [triggers](<Triggers - Hearts of Iron 4 Wiki.md>) is used to declare conditions that must be met so that the event is possible to appear. If it's false, there's no way to fire the event aside from using [the console command](<Console commands - Hearts of Iron 4 Wiki.md>). This will look like the following:
 
@@ -148,7 +148,7 @@ The automatic firing can be disabled by adding `is_triggered_only = yes` into th
 
 `major = yes` is used to make the event fire for every country once any country receives it. **This is done in every news event**, since news events are purely a graphical reskin of country events. In case of overlap with `fire_only_once = yes`, the latter will take priority and remove any effect of the event being major, making it only appear for the country receiving it for the first time. Countries other than the first country receiving it will ignore `trigger = { ... }`. To make only some countries get the event shown while it's still major, `show_major = { ... }` is used as a [trigger](<Triggers - Hearts of Iron 4 Wiki.md>) block that makes the event show up only if it's true. If `fire_for_sender = no` is also added, the event will fire for every country that meets `show_major` aside from the country that was intended to receive it.
 
-#### Options <a id="Options"></a>
+### Options <a id="Options"></a>
 
 An event option is added with an `option = { ... }` block. An event option is an [effect](<Effects - Hearts of Iron 4 Wiki.md>) block, with a few extra options:
 
@@ -177,7 +177,7 @@ ai_chance = {
 }
 ```
 
-#### Additional arguments <a id="Additional_arguments"></a>
+### Additional arguments <a id="Additional_arguments"></a>
 
 `immediate = { ... }` is an [effect](<Effects - Hearts of Iron 4 Wiki.md>) block, executed as soon as the event is fired, before an option is chosen by the player. This can also be used for AI: AI only picks an option after the event triggers are evaluated for every other country, while immediate is executed immediately, before evaluating other events. This can be used in mean-time-to-happen type major events: by making the immediate set a global flag, which is required to be unset in the event trigger, this will prevent it from being fired more than once for each country, but it is preferable to avoid mean-time-to-happen events in entirety. Note that the effect will appear in the tooltip after the event's description, so the [hidden_effect](<Effects - Hearts of Iron 4 Wiki.md#Tooltip_manipulation>) flow tool can be helpful.
 
@@ -189,7 +189,7 @@ ai_chance = {
 
 `minor_flavor = yes` marks the event as being a minor flavour event. This does not change its appearance or change its effects, but allows turning off the pop-up within the game's decision menu.
 
-### Effect <a id="Effect"></a>
+## Effect <a id="Effect"></a>
 
 Any [effect block](<Effects - Hearts of Iron 4 Wiki.md>) can be used to fire an event, such as focus rewards, [event options](#Options), or decision effects. This is usually paired with `is_triggered_only = yes` within the event as to disable automatic firing.
 
@@ -227,61 +227,272 @@ Additionally, there are these event type-specific arguments:
 - `set_from = TAG` (Unique to operative leader events) — Changes the scope of FROM within the dynamic localisation of the event, without actually changing it in code.
 - `set_from_from = TAG` (Unique to operative leader events) — Changes the scope of FROM.FROM within the dynamic localisation of the event, without actually changing it in code.
 
-### Common mistakes <a id="Common_mistakes"></a>
+## Common mistakes <a id="Common_mistakes"></a>
 
 Some errors are quite common to make when beginning to make events, whether it's poor practice or if it would prevent the event from working in entirely. Some of them may be hard to notice when modding, with the event seemingly working fine, such as the error that prevents news events from being fired for more than one country.
 This covers some of them, as well as the less intuitive errors in the log.
 
-#### Unlogged errors <a id="Unlogged_errors"></a>
+### Unlogged errors <a id="Unlogged_errors"></a>
 
 - **Leaving an event as triggered only when it's to be fired automatically** (*Event never fires*) – `is_triggered_only = yes` disables the automatic firing of the event, instead enforcing [using the effect to do so](<Effects - Hearts of Iron 4 Wiki.md>). Therefore, if it is left in within an event intended to fire automatically, the event will never do so.
 
 :   Note that `trigger = { ... }` can still co-exist with `is_triggered_only = yes`, so an event with both `is_triggered_only = yes` and `trigger = { ... }` may still be correct. Valid usages of them at the same time include the event being triggered via an [on action](<On actions - Hearts of Iron 4 Wiki.md>)'s `random_events` or the effect firing it has a delay (where the trigger would check if when the event is to be received), along others.
 
-| Example event with this issue and a correction to it |
-| --- |
-| **Broken:** `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    trigger = {`<br>`        tag = GHA`<br>`        has_stability > 0.9`<br>`    }`<br>`    fire_only_once = yes`<br>`    is_triggered_only = yes  # Will make the event never automatically trigger.`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`        add_war_support = 0.2`<br>`    }`<br>`}` **Corrected:** `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    trigger = {`<br>`        tag = GHA`<br>`        has_stability > 0.9`<br>`    }`<br>`    fire_only_once = yes`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`        add_war_support = 0.2`<br>`    }`<br>`}` |
+**Example event with this issue and a correction to it**
+
+**Broken:**
+
+```text
+country_event = {
+    id = my_event.1
+    title = my_event.1.t
+    desc = my_event.1.desc
+
+    trigger = {
+        tag = GHA
+        has_stability > 0.9
+    }
+    fire_only_once = yes
+    is_triggered_only = yes  # Will make the event never automatically trigger.
+
+    option = {
+        name = my_event.1.a
+        add_war_support = 0.2
+    }
+}
+```
+
+**Corrected:**
+
+```text
+country_event = {
+    id = my_event.1
+    title = my_event.1.t
+    desc = my_event.1.desc
+
+    trigger = {
+        tag = GHA
+        has_stability > 0.9
+    }
+    fire_only_once = yes
+
+    option = {
+        name = my_event.1.a
+        add_war_support = 0.2
+    }
+}
+```
 
 - **Not checking the country in the trigger for country-specific auto-triggered events** (*Event fires for the wrong country/never fires*) – The events are not assigned to countries in any way (namespaces and filenames serve a purely organisational purpose), and each event trigger is checked for each country in order specified in the tag list.
 
 :   In the provided example, the event requires ITA to have more than 123 political power, upon which the country receiving the event would annex AUS. However, once ITA has that much, this trigger would be true *regardless* of where it's checked. The first country in the taglist by default is GER, and so it'll be the first country where the triggers are checked. In practice, this event will result in GER annexing AUS rather than ITA.
 :   In the correction, a change is made: first it checks that the country that would receive the event is ITA, and only then then it checks that it has more than enough political power. This makes sure that no other countries can receive this event. Specifying the tag is unnecessary if the trigger itself already implies a certain tag (e.g. `has_completed_focus` with a tag-specific focus tree), but is needed otherwise.
 
-| Example event with this issue and a correction to it |
-| --- |
-| `country_event = {`<br>`    id = my_event.1     # Broken event`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    trigger = {`<br>`        ITA = { has_political_power > 123 }  # Either true within every country's scope or for none`<br>`    }                                        # First fires for GER, since it's true in GER's scope and GER is the first country.`<br>`    fire_only_once = yes`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`        annex_country = { target = AUS }     # Results in GER annexing AUS instead of ITA as intended.`<br>`    }`<br>`}`<br>`country_event = {`<br>`    id = my_event.2     # Fixed version`<br>`    title = my_event.2.t`<br>`    desc = my_event.2.desc`<br><br>`    trigger = {`<br>`        tag = ITA                       # Checks that the country is ITA`<br>`        has_political_power > 123       # Checks current political power of ITA (as any other country is disqualified by the previous trigger)`<br>`    }`<br>`    fire_only_once = yes`<br><br>`    option = {`<br>`        name = my_event.2.a`<br>`        annex_country = { target = AUS }`<br>`    }`<br>`}` |
+**Example event with this issue and a correction to it**
+
+```text
+country_event = {
+    id = my_event.1     # Broken event
+    title = my_event.1.t
+    desc = my_event.1.desc
+
+    trigger = {
+        ITA = { has_political_power > 123 }  # Either true within every country's scope or for none
+    }                                        # First fires for GER, since it's true in GER's scope and GER is the first country.
+    fire_only_once = yes
+
+    option = {
+        name = my_event.1.a
+        annex_country = { target = AUS }     # Results in GER annexing AUS instead of ITA as intended.
+    }
+}
+country_event = {
+    id = my_event.2     # Fixed version
+    title = my_event.2.t
+    desc = my_event.2.desc
+
+    trigger = {
+        tag = ITA                       # Checks that the country is ITA
+        has_political_power > 123       # Checks current political power of ITA (as any other country is disqualified by the previous trigger)
+    }
+    fire_only_once = yes
+
+    option = {
+        name = my_event.2.a
+        annex_country = { target = AUS }
+    }
+}
+```
 
 - **Unnecessarily using auto-triggered events instead of ones that are triggered only** (*Poor practice/optimisation*) – This is more of a poor practice than an error. In general, if an event's condition can be triggered with an effect, it should be.
 
 :   The example is the most obvious way of doing this: a [has_completed_focus check](<Triggers - Hearts of Iron 4 Wiki.md>) instead of firing it directly in the focus. However, other such cases can occur, e.g. when a war starts between two countries, when a state gets occupied, or for firing one on a specific date. It's best practice to check [on actions](<On actions - Hearts of Iron 4 Wiki.md>) before creating an automatically-triggered event to see if they can be made to replicate.
 :   Firing it via an effect has a purpose of being instant instead of having to wait up to 20 days. If so desired, a delay of a few hours can be added to make it appear more natural to the player. Additionally, it serves as a way to optimise the modification, as this reduces the amount of trigger checks repeatedly done. Events with a large mean-time-to-happen are particularly awful for performance and can be replaced with an effect block firing one with a large [delay created with random_days within the effect](<Effects - Hearts of Iron 4 Wiki.md>) in some cases.
 
-| Example event with this issue and a correction to it |
-| --- |
-| **Broken event:** `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    trigger = {`<br>`        has_completed_focus = TAG_focus_name`<br>`    }`<br>`    fire_only_once = yes`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`    }`<br>`}` **Corrected event and focus:** `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    is_triggered_only = yes`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`    }`<br>`}``focus = {`<br>`    id = TAG_focus_name`<br>`    x = 5`<br>`    y = 0`<br>`    icon = GFX_focus_icon_name`<br><br>`    cost = 8`<br>`    search_filters = { FOCUS_FILTER_POLITICAL }`<br><br>`    completion_reward = {`<br>`        country_event = { id = my_event.1 hours = 6 random_hours = 3 }  # Fires the event in 6-9 hours.`<br>`    }`<br>`}` |
+**Example event with this issue and a correction to it**
+
+**Broken event:**
+
+```text
+country_event = {
+    id = my_event.1
+    title = my_event.1.t
+    desc = my_event.1.desc
+
+    trigger = {
+        has_completed_focus = TAG_focus_name
+    }
+    fire_only_once = yes
+
+    option = {
+        name = my_event.1.a
+    }
+}
+```
+
+**Corrected event and focus:**
+
+```text
+country_event = {
+    id = my_event.1
+    title = my_event.1.t
+    desc = my_event.1.desc
+
+    is_triggered_only = yes
+
+    option = {
+        name = my_event.1.a
+    }
+}
+```
+
+```text
+focus = {
+    id = TAG_focus_name
+    x = 5
+    y = 0
+    icon = GFX_focus_icon_name
+
+    cost = 8
+    search_filters = { FOCUS_FILTER_POLITICAL }
+
+    completion_reward = {
+        country_event = { id = my_event.1 hours = 6 random_hours = 3 }  # Fires the event in 6-9 hours.
+    }
+}
+```
 
 - **Tight bounds on date triggers** (*Event never fires*)/**Auto-triggered event intended to be fired at a specific date** (*Event fires later than intended*) – The `trigger = { ... }` block is checked every 20 days by default, and this isn't possible to change for just one event in particular. If the date triggers are set with tight upper and lower bounds (e.g. `date > 1936.1.1` and `date < 1936.1.3`), it's very likely that the event will never fire, as this will not force the game to check the trigger at that date, but just prevent it from firing the event if the range is never checked, as the game doesn't see into the future and cannot predict that the trigger will be true or false at some point. Similarly, just placing a `date > 1936.1.1` will not ensure the event will be fired at exactly the second of January, but it may be anywhere between the 2nd and 21st (though it will be the same day on each reset).
 
 :   In order to fire an event at a certain date, it's best to fire it on startup with the needed delay, setting the event to never fire by itself with `is_triggered_only = yes` and optionally adding additional prerequisites for it to appear within `trigger = { ... }`, which would be checked at the moment the event is intended to appear. For the calculation of the amount of days to be correct, leap days must be ignored as the game doesn't contain them.
 :   Any effect block executed before or during startup can be used. An example using the [on_startup on action](<On actions - Hearts of Iron 4 Wiki.md>) exists [further down the article](#Integration_with_on_actions).
 
-| Example event with this issue and a correction to it |
-| --- |
-| **Broken event**: `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    trigger = {`<br>`        tag = POL`<br>`        NOT = { has_completed_focus = POL_my_focus }`<br>`        date > 1936.2.11 # If the event trigger check happens on the 1st of February and the 21st of February,`<br>`        date < 1936.2.13 # at least one of the date checks will always be false and the event will never trigger`<br>`    }`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`    }`<br>`}`**Correction**: Event: `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    is_triggered_only = yes # To prevent the 20-day range from causing a delay`<br>`    trigger = {`<br>`        NOT = { has_completed_focus = POL_my_focus }`<br>`    }`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`    }`<br>`}` In any `/Hearts of Iron IV/common/on_actions/*.txt` file: `on_actions = {`<br>`    on_startup = {`<br>`        effect = {`<br>`            POL = {`<br>`                country_event = { id = my_event.1 days = 42 } # 12th of February 1936, if on the first start date`<br>`            }`<br>`        }`<br>`    }`<br>`}` |
+**Example event with this issue and a correction to it**
+
+**Broken event**:
+
+```text
+country_event = {
+    id = my_event.1
+    title = my_event.1.t
+    desc = my_event.1.desc
+
+    trigger = {
+        tag = POL
+        NOT = { has_completed_focus = POL_my_focus }
+        date > 1936.2.11 # If the event trigger check happens on the 1st of February and the 21st of February,
+        date < 1936.2.13 # at least one of the date checks will always be false and the event will never trigger
+    }
+
+    option = {
+        name = my_event.1.a
+    }
+}
+```
+
+**Correction**:
+
+Event:
+
+```text
+country_event = {
+    id = my_event.1
+    title = my_event.1.t
+    desc = my_event.1.desc
+
+    is_triggered_only = yes # To prevent the 20-day range from causing a delay
+    trigger = {
+        NOT = { has_completed_focus = POL_my_focus }
+    }
+
+    option = {
+        name = my_event.1.a
+    }
+}
+```
+
+In any `/Hearts of Iron IV/common/on_actions/*.txt` file:
+
+```text
+on_actions = {
+    on_startup = {
+        effect = {
+            POL = {
+                country_event = { id = my_event.1 days = 42 } # 12th of February 1936, if on the first start date
+            }
+        }
+    }
+}
+```
 
 - **Setting a news event to fire only once or not setting one as major** (*News event only fires for one country*) – An event requires `major = yes` in order to appear for every country. News events are purely a reskin of country events and are not set to fire for every country by default, so this line is mandatory. Alongside that, events that fire only once don't appear more than once *globally* rather than per country. The event appearing for more than one country counts as it firing once again, so setting an event to fire only once will lead to only one country getting the news event instead of every one as intended.
 
-| Example events with this issue |
-| --- |
-| `news_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    is_triggered_only = yes     # Missing 'major = yes', only will fire for one country.`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`    }`<br>`}`<br>`news_event = {`<br>`    id = my_event.2`<br>`    title = my_event.2.t`<br>`    desc = my_event.2.desc`<br><br>`    is_triggered_only = yes`<br>`    major = yes`<br>`    fire_only_once = yes        # Fires only once, only will file for one country. Remove this line to fix.`<br><br>`    option = {`<br>`        name = my_event.2.a`<br>`    }`<br>`}` |
+**Example events with this issue**
 
-#### Unintuitive logged errors <a id="Unintuitive_logged_errors"></a>
+```text
+news_event = {
+    id = my_event.1
+    title = my_event.1.t
+    desc = my_event.1.desc
+
+    is_triggered_only = yes     # Missing 'major = yes', only will fire for one country.
+
+    option = {
+        name = my_event.1.a
+    }
+}
+news_event = {
+    id = my_event.2
+    title = my_event.2.t
+    desc = my_event.2.desc
+
+    is_triggered_only = yes
+    major = yes
+    fire_only_once = yes        # Fires only once, only will file for one country. Remove this line to fix.
+
+    option = {
+        name = my_event.2.a
+    }
+}
+```
+
+### Unintuitive logged errors <a id="Unintuitive_logged_errors"></a>
 
 - **Event is triggered only, but does not have a 1 base-factor.** – This occurs when there are contradictory arguments within an event about whether it's allowed to be fired automatically or if it can only be fired manually. In particular, `mean_time_to_happen = { ... }` only has an effect when the event can only be fired automatically. However, if the event is triggered only, it cannot be fired automatically, resulting in the error being created.
 
-| Example event with this issue |
-| --- |
-| `country_event = {`<br>`    id = my_event.1`<br>`    hidden = yes`<br><br>`    is_triggered_only = yes`<br>`    mean_time_to_happen = {`<br>`        days = 1`<br>`    }`<br>`}` |
+**Example event with this issue**
+
+```text
+country_event = {
+    id = my_event.1
+    hidden = yes
+
+    is_triggered_only = yes
+    mean_time_to_happen = {
+        days = 1
+    }
+}
+```
 
 - **Event is set to trigger every day.** – This occurs when all of the following is true for the event:
   - The event is possible to be fired automatically. In other words, `is_triggered_only = yes` is **not** present in the event.
@@ -290,15 +501,38 @@ This covers some of them, as well as the less intuitive errors in the log.
 
 :   This error warns the player that the event may fire every day once the `trigger = { ... }` evaluates as true in a check that happens every 20 days. In order to remove the error, either of the three necessary clauses can be made to be not true for the event. For example, in a lot of cases, it is possible to make the event not be fired automatically and use an effect block to fire it instead, [such as by using on actions](<On actions - Hearts of Iron 4 Wiki.md>).
 
-| Example event with this issue |
-| --- |
-| `country_event = {`<br>`    id = my_event.1`<br>`    hidden = yes`<br><br>`    is_triggered_only = no  # Changing to yes will fix the error`<br>`    fire_only_once = no     # Changing to yes will fix the error`<br>`    trigger = {`<br>`        tag = BHR`<br>`        controls_state = 123`<br>`    }`<br>`    mean_time_to_happen = {`<br>`        days = 1            # Changing to 2 or more will fix the error`<br>`    }`<br>`}` |
+**Example event with this issue**
+
+```text
+country_event = {
+    id = my_event.1
+    hidden = yes
+
+    is_triggered_only = no  # Changing to yes will fix the error
+    fire_only_once = no     # Changing to yes will fix the error
+    trigger = {
+        tag = BHR
+        controls_state = 123
+    }
+    mean_time_to_happen = {
+        days = 1            # Changing to 2 or more will fix the error
+    }
+}
+```
 
 - **Malformed token: event_id.123, near line** on a line specifying the event ID – This occurs if [the event namespace was not added as needed](#ID_rules).
 
-| Example event file |
-| --- |
-| `add_namespace = my_event # Not having this line will cause the issue.`<br>`country_event = {`<br>`    id = my_event.1`<br>`    hidden = yes`<br><br>`    is_triggered_only = yes`<br>`}` |
+**Example event file**
+
+```text
+add_namespace = my_event # Not having this line will cause the issue.
+country_event = {
+    id = my_event.1
+    hidden = yes
+
+    is_triggered_only = yes
+}
+```
 
 - **Failed to create id 12300000 50. Already exists in game. This might crash the game. Reverse id lookup: id 12300000 = my_namespace.0** – Note that this is the exact same error split into two instead of being two separate errors as it might seem on the first glance. This means that the internal event ID is used by 2 or more events. There are the following reasons for this error to appear:
   - Putting 2 events with the exact same ID by error – `id = my_namespace.0` is included in two events at once. This is self-explanatory.
@@ -307,11 +541,34 @@ This covers some of them, as well as the less intuitive errors in the log.
 
 :   Since the reverse id lookup is not always provided, the way to tell if this is event-related is the second number: `50` signifies that it's event-related, while a different number means a different database entry, e.g. `54` means country leader IDs and `55` means unit leader IDs, the numeric legacy IDs which are unneeded due to the [1.11-introduced character system](<Character modding - Hearts of Iron 4 Wiki.md>)
 
-| Example event file with this issue |
-| --- |
-| `add_namespace = prev_event`<br>`add_namespace = my_event        # Let this namespace have an ID of 321 in calculations, meaning the previous one has an ID of 320.`<br>`country_event = {`<br>`    id = my_event.1`<br>`    hidden = yes`<br>`}`<br>`country_event = {`<br>`    id = my_event.1             #  Creates "Failed to create id 32100001 50. Reverse id lookup: id 32100001 = my_event.1"`<br>`    hidden = yes`<br>`}`<br>`country_event = {`<br>`    id = my_event.abc`<br>`    hidden = yes`<br>`}`<br>`country_event = {`<br>`    id = my_event.letters       #  Creates "Failed to create id 32100000 50. Reverse id lookup: id 32100000 = my_event.abc"`<br>`    hidden = yes`<br>`}`<br>`country_event = {`<br>`    id = prev_event.100001      #  Creates "Failed to create id 32100001 50. Reverse id lookup: id 32100001 = my_event.1"`<br>`    hidden = yes`<br>`}` |
+**Example event file with this issue**
 
-### Event file example <a id="Event_file_example"></a>
+```text
+add_namespace = prev_event
+add_namespace = my_event        # Let this namespace have an ID of 321 in calculations, meaning the previous one has an ID of 320.
+country_event = {
+    id = my_event.1
+    hidden = yes
+}
+country_event = {
+    id = my_event.1             #  Creates "Failed to create id 32100001 50. Reverse id lookup: id 32100001 = my_event.1"
+    hidden = yes
+}
+country_event = {
+    id = my_event.abc
+    hidden = yes
+}
+country_event = {
+    id = my_event.letters       #  Creates "Failed to create id 32100000 50. Reverse id lookup: id 32100000 = my_event.abc"
+    hidden = yes
+}
+country_event = {
+    id = prev_event.100001      #  Creates "Failed to create id 32100001 50. Reverse id lookup: id 32100001 = my_event.1"
+    hidden = yes
+}
+```
+
+## Event file example <a id="Event_file_example"></a>
 
 ```text
 add_namespace = my_event
@@ -443,7 +700,7 @@ state_event = {
 }
 ```
 
-#### Integration with on actions <a id="Integration_with_on_actions"></a>
+### Integration with on actions <a id="Integration_with_on_actions"></a>
 
 *See also: [On actions](<On actions - Hearts of Iron 4 Wiki.md>)*
 
@@ -593,15 +850,15 @@ on_actions = {
 }
 ```
 
-#### Integration with history <a id="Integration_with_history"></a>
+### Integration with history <a id="Integration_with_history"></a>
 
 *See also: [Country creation#History](<Country creation - Hearts of Iron 4 Wiki.md#History>)*
 
 Alternatively, you can fire the event inside `/Hearts of Iron IV/history/countries/*.txt` file:
 
 ```text
-## history/countries/BHR - Bahrain.txt
-## Other code is omitted
+# history/countries/BHR - Bahrain.txt
+# Other code is omitted
 country_event = {
 	id = on_action_events.2
 	days = 357
@@ -609,7 +866,7 @@ country_event = {
 }
 ```
 
-### Notes and references <a id="Notes_and_references"></a>
+## Notes and references <a id="Notes_and_references"></a>
 
 **^** **a:** `delayed_event` is used for tracking events that are to be fired with a time delay in the save games (as they're formatted with `save_as_binary=no` in `/Hearts of Iron IV/settings.txt`). This is used for every single event type, such as country events or state events.
 

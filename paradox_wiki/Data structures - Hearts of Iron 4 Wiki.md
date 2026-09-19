@@ -857,9 +857,40 @@ Note that, unlike countries and states, unit leaders use leader_modifier@modifie
 
 Example usage of making a modifier token create civilian factories in random core states monthly, in any [on action](<On actions - Hearts of Iron 4 Wiki.md>) file:
 
-| Example |
-| --- |
-| `on_actions = {`<br>`    on_monthly = {`<br>`        effect = {`<br>`            if = {`<br>`                limit = {`<br>`                    check_variable = { modifier@modifier_definition_example > 0 }`<br>`                }`<br>`                for_loop_effect = {`<br>`                    start = 0`<br>`                    end = modifier@modifier_definition_example`<br>`                    random_owned_controlled_state = {`<br>`                        limit = {`<br>`                            is_core_of = ROOT`<br>`                            free_building_slots = {`<br>`                                building = industrial_complex`<br>`                                size > 0`<br>`                                include_locked = no`<br>`                            }`<br>`                        }`<br>`                        add_building_construction = {`<br>`                            type = industrial_complex`<br>`                            level = 1`<br>`                            instant_build = yes`<br>`                        }`<br>`                    }`<br>`                }`<br>`            }`<br>`        }`<br>`    }`<br>`}` |
+**Example**
+
+```text
+on_actions = {
+    on_monthly = {
+        effect = {
+            if = {
+                limit = {
+                    check_variable = { modifier@modifier_definition_example > 0 }
+                }
+                for_loop_effect = {
+                    start = 0
+                    end = modifier@modifier_definition_example
+                    random_owned_controlled_state = {
+                        limit = {
+                            is_core_of = ROOT
+                            free_building_slots = {
+                                building = industrial_complex
+                                size > 0
+                                include_locked = no
+                            }
+                        }
+                        add_building_construction = {
+                            type = industrial_complex
+                            level = 1
+                            instant_build = yes
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+```
 
 ## Arrays <a id="Arrays"></a>
 

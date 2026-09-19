@@ -17,9 +17,9 @@
 
 ---
 
-### Mod File Structure <a id="Mod_File_Structure"></a>
+## Mod File Structure <a id="Mod_File_Structure"></a>
 
-#### Local Mod <a id="Local_Mod"></a>
+### Local Mod <a id="Local_Mod"></a>
 
 Local Mod files must be located in the folder `~/.local/share/Paradox Interactive/Hearts of Iron IV/mod` or `C:\Users\<Username>\Documents\Paradox Interactive\Hearts of Iron IV\mod`, which must contain:
 
@@ -31,7 +31,7 @@ Local Mod files must be located in the folder `~/.local/share/Paradox Interactiv
 The game launcher's mod config tool **can create basic structure automatically**. Just go to *Mods* tab, then click *Mod Tools* and *Create Mod*.
 Note that folder and file names are case sensitive on Mac OS X and Linux.
 
-#### Steam Workshop Mods <a id="Steam_Workshop_Mods"></a>
+### Steam Workshop Mods <a id="Steam_Workshop_Mods"></a>
 
 Subscribed and downloaded mods from the steam workshop are in `.../Paradox Interactive/Hearts of Iron IV/workshop/content/394360` or sometimes `...\SteamLibrary\steamapps\workshop\content\394360`
 
@@ -52,9 +52,9 @@ supported_version="1.11.*"
 
 **Note:** Newer mods, starting with game version 1.9.0 are no longer stored in a .zip archive
 
-### Creating a New Mod <a id="Creating_a_New_Mod"></a>
+## Creating a New Mod <a id="Creating_a_New_Mod"></a>
 
-#### General rules <a id="General_rules"></a>
+### General rules <a id="General_rules"></a>
 
 - Mods modify the game with the same file structure as in the vanilla game.
 - All appropriate files found in the folder are loaded
@@ -63,7 +63,7 @@ supported_version="1.11.*"
 - To add content without changing any vanilla files, use a different file name
 - The Game will not check any further than the file directory for changes. If one is trying to add a line to a text file, one must copy the entire text file and add the line within said text file.
 
-#### Creating a simple local mod <a id="Creating_a_simple_local_mod"></a>
+### Creating a simple local mod <a id="Creating_a_simple_local_mod"></a>
 
 For example, to create a mod called "Test1", create a new text file called *test1.mod* and a folder named 'test1' within `...\Paradox\Hearts of Iron IV\mod`.
 
@@ -82,7 +82,7 @@ version="1.0b"                 # Mod version displayed in the game launcher. Thi
 
 This is done to provide the game launcher with information about the mod. This includes the mod's name, location (from the mod file), tags (extra descriptors), supported game version, and other optional information.
 
-#### Creating a Submod <a id="Creating_a_Submod"></a>
+### Creating a Submod <a id="Creating_a_Submod"></a>
 
 Sometimes you will want your mod to depend on other mods, and also require a certain loading order. Mods will usually load in alphabetical order (so the mod last in the list will overwrite the earlier). But some things may affect this so if you need a certain load order and be clear that you have dependencies this needs to be specified by including its full name in the .mod file under "dependencies".
 
@@ -90,14 +90,14 @@ Sometimes you will want your mod to depend on other mods, and also require a cer
 name="testmodB"
 path="mod/testmodb/"
 
-## this guarantees we load testmodA first before our testmodB is loaded
+# this guarantees we load testmodA first before our testmodB is loaded
 dependencies= {
 	"testmodA"
 }
 supported_version="1.11.*"
 ```
 
-### Adding Mod Content <a id="Adding_Mod_Content"></a>
+## Adding Mod Content <a id="Adding_Mod_Content"></a>
 
 For example, a simple modification could be changing the text that appears in the game.
 
@@ -122,7 +122,7 @@ As "loading_tips_I_english.yml" is unaltered, the game will run the same as usua
 
 When the game is loading with this mod active in the English language, the only quote shown will be "Test1 mod".
 
-### Tips <a id="Tips"></a>
+## Tips <a id="Tips"></a>
 
 - To understand how certain things in the code work, it can be useful to look into game files and search for things similar to what your mod is supposed to change
 - Alternatively, you can search the files of other users' mods in `...\steamapps\workshop\content\394360`
@@ -130,7 +130,7 @@ When the game is loading with this mod active in the English language, the only 
 - When testing the mod, it can be very useful to look into Error log `...\Documents\Paradox Interactive\Hearts of Iron IV\logs\error.log` to gain a clue when something isn't working
 - To keep your mod updated between smaller updates, replace the third number in your version with a \*. For example, replace "1.5.4" with "1.5.\*" to make that mod work with all versions of 1.5
 
-### See also <a id="See_also"></a>
+## See also <a id="See_also"></a>
 
 Depending on what your mod is supposed to do, you may want to visit some of these pages relating to some more basic game content modding:
 

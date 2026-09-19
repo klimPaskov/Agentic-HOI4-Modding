@@ -171,9 +171,46 @@ When unresearched via an effect, this doesn't work entirely properly, rather, th
 
 ### Hidden technology examples <a id="Hidden_technology_examples"></a>
 
-| The text in this section has been collapsed by default. |
-| --- |
-| `technologies = {`<br>`    my_technology_1 = {`<br>`        allow = {`<br>`            always = no`<br>`        }`<br>`        political_power_factor = 0.2`<br>`        enable_building = {`<br>`            building = industrial_complex`<br>`            level = 20`<br>`        }`<br>`    }`<br>`    my_technology_2 = {`<br>`        allow = {`<br>`            always = no`<br>`        }`<br>`        marine = {`<br>`            amphibious = {`<br>`                attack = 0.2`<br>`            }`<br>`        }`<br>`        enable_equipments = { infantry_equipment_0 }`<br>`        enable_equipment_modules = { ship_extra_fuel_tank }`<br>`        enable_subunits = { marine }`<br>`    }`<br>`    my_technology_3 = {`<br>`        allow = {`<br>`            always = no`<br>`        }`<br>`        on_research_complete_limit = {`<br>`            has_political_power < 100`<br>`        }`<br>`        on_research_complete = {`<br>`            add_political_power = 100`<br>`        }`<br>`    }`<br>`}` |
+**The text in this section has been collapsed by default.**
+
+```text
+technologies = {
+    my_technology_1 = {
+        allow = {
+            always = no
+        }
+        political_power_factor = 0.2
+        enable_building = {
+            building = industrial_complex
+            level = 20
+        }
+    }
+    my_technology_2 = {
+        allow = {
+            always = no
+        }
+        marine = {
+            amphibious = {
+                attack = 0.2
+            }
+        }
+        enable_equipments = { infantry_equipment_0 }
+        enable_equipment_modules = { ship_extra_fuel_tank }
+        enable_subunits = { marine }
+    }
+    my_technology_3 = {
+        allow = {
+            always = no
+        }
+        on_research_complete_limit = {
+            has_political_power < 100
+        }
+        on_research_complete = {
+            add_political_power = 100
+        }
+    }
+}
+```
 
 ### Name and icon <a id="Name_and_icon"></a>
 
@@ -331,9 +368,109 @@ In order to mark a technology as a doctrine, it must have `doctrine = yes`. It a
 
 ### Examples <a id="Examples"></a>
 
-| The text in this section has been collapsed by default. |
-| --- |
-| `technologies = {`<br>`    my_technology_1 = {`<br>`        research_cost = 1`<br>`        start_year = 1937`<br>`        folder = {`<br>`            name = my_folder`<br>`            position = { x = 0 y = 0 }  # Same as gridbox`<br>`        }`<br>`        allow_branch = {`<br>`            has_dlc = "Wojtek Expansion Pack"`<br>`        }`<br>`        path = {`<br>`            leads_to_tech = my_technology_3`<br>`            research_cost_coeff = 1`<br>`        }`<br>`        path = {`<br>`            leads_to_tech = my_technology_4`<br>`            research_cost_coeff = 1`<br>`        }`<br>`        xor = { my_technology_2 }`<br>`        categories = { my_category_1 }`<br>`        ai_research_weights = { defensive = 1 }`<br>`        army_attack_factor = 0.1`<br>`    }`<br>`    my_technology_2 = {`<br>`        research_cost = 1.5`<br>`        start_year = 1937`<br>`        folder = {`<br>`            name = my_folder`<br>`            position = { x = 0 y = 0 }  # Same as gridbox`<br>`        }`<br>`        xor = { my_technology_1 }`<br>`        categories = { my_category_2 }`<br>`        ai_research_weights = { offensive = 1 }`<br>`        enable_equipment_modules = { my_module_1 }`<br>`        enable_subunits = { my_subunit_1 }`<br>`    }`<br>`    my_technology_3 = {`<br>`        research_cost = 1`<br>`        start_year = 1938`<br>`        folder = {`<br>`            name = my_folder`<br>`            position = { x = -1 y = 1 }`<br>`        }`<br>`        path = {`<br>`            leads_to_tech = my_technology_5`<br>`            research_cost_coeff = 1`<br>`        }`<br>`        enable_equipments = { my_equipment_1 }`<br>`        force_use_small_tech_layout = yes`<br>`        show_equipment_icon = yes`<br>`        categories = { my_category_1 }`<br>`    }`<br>`    my_technology_4 = {`<br>`        research_cost = 1.5`<br>`        start_year = 1939`<br>`        folder = {`<br>`            name = my_folder`<br>`            position = { x = 1 y = 1 }`<br>`        }`<br>`        path = {`<br>`            leads_to_tech = my_technology_5`<br>`            research_cost_coeff = 0.8           # Make the technology faster to research if this one was researched and not just my_technology_3`<br>`        }`<br>`        enable_equipments = { my_equipment_2 }`<br>`        categories = { my_category_1 }`<br>`    }`<br>`    my_technology_5 = {`<br>`        research_cost = 1.75`<br>`        start_year = 1940`<br>`        folder = {`<br>`            name = my_folder`<br>`            position = { x = 0 y = 2 }`<br>`        }`<br>`        categories = { my_category_1 }`<br>`        enable_building = {`<br>`            building = my_building`<br>`            level = 1`<br>`        }`<br>`        sub_technologies = {`<br>`            my_technology_6`<br>`        }`<br>`    }`<br>`    my_technology_6 = {`<br>`        allow = {`<br>`            has_built = {`<br>`                type = my_building`<br>`                value > 3`<br>`            }`<br>`        }`<br>`        research_cost = 0.8`<br>`        start_year = 1941`<br>`        categories = { my_category_1 }`<br>`        enable_building = {`<br>`            building = my_building`<br>`            level = 3`<br>`        }`<br>`    }`<br>`}` |
+**The text in this section has been collapsed by default.**
+
+```text
+technologies = {
+    my_technology_1 = {
+        research_cost = 1
+        start_year = 1937
+        folder = {
+            name = my_folder
+            position = { x = 0 y = 0 }  # Same as gridbox
+        }
+        allow_branch = {
+            has_dlc = "Wojtek Expansion Pack"
+        }
+        path = {
+            leads_to_tech = my_technology_3
+            research_cost_coeff = 1
+        }
+        path = {
+            leads_to_tech = my_technology_4
+            research_cost_coeff = 1
+        }
+        xor = { my_technology_2 }
+        categories = { my_category_1 }
+        ai_research_weights = { defensive = 1 }
+        army_attack_factor = 0.1
+    }
+    my_technology_2 = {
+        research_cost = 1.5
+        start_year = 1937
+        folder = {
+            name = my_folder
+            position = { x = 0 y = 0 }  # Same as gridbox
+        }
+        xor = { my_technology_1 }
+        categories = { my_category_2 }
+        ai_research_weights = { offensive = 1 }
+        enable_equipment_modules = { my_module_1 }
+        enable_subunits = { my_subunit_1 }
+    }
+    my_technology_3 = {
+        research_cost = 1
+        start_year = 1938
+        folder = {
+            name = my_folder
+            position = { x = -1 y = 1 }
+        }
+        path = {
+            leads_to_tech = my_technology_5
+            research_cost_coeff = 1
+        }
+        enable_equipments = { my_equipment_1 }
+        force_use_small_tech_layout = yes
+        show_equipment_icon = yes
+        categories = { my_category_1 }
+    }
+    my_technology_4 = {
+        research_cost = 1.5
+        start_year = 1939
+        folder = {
+            name = my_folder
+            position = { x = 1 y = 1 }
+        }
+        path = {
+            leads_to_tech = my_technology_5
+            research_cost_coeff = 0.8           # Make the technology faster to research if this one was researched and not just my_technology_3
+        }
+        enable_equipments = { my_equipment_2 }
+        categories = { my_category_1 }
+    }
+    my_technology_5 = {
+        research_cost = 1.75
+        start_year = 1940
+        folder = {
+            name = my_folder
+            position = { x = 0 y = 2 }
+        }
+        categories = { my_category_1 }
+        enable_building = {
+            building = my_building
+            level = 1
+        }
+        sub_technologies = {
+            my_technology_6
+        }
+    }
+    my_technology_6 = {
+        allow = {
+            has_built = {
+                type = my_building
+                value > 3
+            }
+        }
+        research_cost = 0.8
+        start_year = 1941
+        categories = { my_category_1 }
+        enable_building = {
+            building = my_building
+            level = 3
+        }
+    }
+}
+```
 
 ## Folders <a id="Folders"></a>
 
@@ -374,9 +511,43 @@ When a small item is used and when a regular item is is determined by equipment.
 
 In particular, this is an example of a regular small item:
 
-| The text in this section has been collapsed by default. |
-| --- |
-| `containerWindowType = {`<br>`    name = "techtree_my_folder_small_item"`<br>`    position = { x=0 y=5 }`<br>`    size = { width = 204 height = 72 }`<br>`    clipping = no`<br>`    background = {`<br>`        name = "Background"`<br>`        quadTextureSprite ="GFX_technology_unavailable_item_bg"`<br>`    }`<br>`    iconType = {`<br>`        name = "Icon"`<br>`        position = { x=34 y=35 }`<br>`        spriteType = "GFX_technology_medium"`<br>`        centerposition = yes`<br>`        alwaystransparent = yes`<br>`    }`<br>`    iconType = {`<br>`        name = "bonus_icon"`<br>`        position = { x=-1 y=-22 }`<br>`        spriteType = "GFX_tech_bonus"`<br>`    }`<br>`    instantTextBoxType = {`<br>`        name = "bonus"`<br>`        position = { x = -1 y = -22 }`<br>`        textureFile = ""`<br>`        font = "hoi_16mbs"`<br>`        borderSize = {x = 4 y = 4}`<br>`        text = "lol boat"`<br>`        maxWidth = 80`<br>`        maxHeight = 20`<br>`        format = center`<br>`    }`<br>`}` |
+**The text in this section has been collapsed by default.**
+
+```text
+containerWindowType = {
+    name = "techtree_my_folder_small_item"
+    position = { x=0 y=5 }
+    size = { width = 204 height = 72 }
+    clipping = no
+    background = {
+        name = "Background"
+        quadTextureSprite ="GFX_technology_unavailable_item_bg"
+    }
+    iconType = {
+        name = "Icon"
+        position = { x=34 y=35 }
+        spriteType = "GFX_technology_medium"
+        centerposition = yes
+        alwaystransparent = yes
+    }
+    iconType = {
+        name = "bonus_icon"
+        position = { x=-1 y=-22 }
+        spriteType = "GFX_tech_bonus"
+    }
+    instantTextBoxType = {
+        name = "bonus"
+        position = { x = -1 y = -22 }
+        textureFile = ""
+        font = "hoi_16mbs"
+        borderSize = {x = 4 y = 4}
+        text = "lol boat"
+        maxWidth = 80
+        maxHeight = 20
+        format = center
+    }
+}
+```
 
 In here, "Icon" represents the technology-specific icon. "bonus_icon" represents the icon that's used for the [one-time technology research bonus](<Effects - Hearts of Iron 4 Wiki.md>) and "bonus" represents the text for the bonus saying how much it actually boosts the research. These can be edited to change the position or the font.
 
@@ -384,9 +555,73 @@ For large items, usually the name of the technology is also shown on the tree wi
 Additionally, this is also where sub-technologies are assigned. A sub-technology slot is defined with a containerWindowType with the name of "sub_technology_slot_0", with the last number being 0 for the first one, 1 for the second one, and 2 for the third one. By default, there can be no more than 3 sub-technologies defined within an item[4]. The picture defined within is done with the `picture` iconType, and it cannot be changed to be technology-specific, it depends only on the sub-technology index of the technology.
 This is an example of a regular item with a sub-technology slot and the technology's name shown, with positions also adjusted for a regular item slot size:
 
-| The text in this section has been collapsed by default. |
-| --- |
-| `containerWindowType = {`<br>`    name = "techtree_infantry_folder_item"`<br>`    position = { x=-56 y=-7 }`<br>`    size = { width = 183 height = 84 }`<br>`    clipping = no`<br>`    background = {`<br>`        name = "Background"`<br>`        quadTextureSprite ="GFX_technology_unavailable_item_bg"`<br>`    }`<br>`    iconType = {`<br>`        name = "Icon"`<br>`        position = { x=91 y=50 }`<br>`        spriteType = "GFX_technology_medium"`<br>`        centerposition = yes`<br>`        alwaystransparent = yes`<br>`    }`<br>`    instantTextBoxType = {`<br>`        name = "Name"`<br>`        position = { x = 3 y = -3 }`<br>`        textureFile = ""`<br>`        font = "hoi_20bs"`<br>`        borderSize = {x = 4 y = 4}`<br>`        text = "Happy-Go-Lucky-Tank"`<br>`        maxWidth = 160`<br>`        maxHeight = 20`<br>`        fixedsize = yes`<br>`        format = left`<br>`    }`<br>`    iconType = {`<br>`        name = "bonus_icon"`<br>`        position = { x=111 y=-22 }`<br>`        spriteType = "GFX_tech_bonus"`<br>`    }`<br>`    instantTextBoxType = {`<br>`        name = "bonus"`<br>`        position = { x = 111 y = -22 }`<br>`        textureFile = ""`<br>`        font = "hoi_16mbs"`<br>`        borderSize = {x = 4 y = 4}`<br>`        text = "lol boat"`<br>`        maxWidth = 80`<br>`        maxHeight = 20`<br>`        format = center`<br>`    }`<br>`    containerWindowType = {`<br>`        name = "sub_technology_slot_0"`<br>`        position = { x=141 y=1 }`<br>`        size = { width = 35 height = 26 }`<br>`        clipping = no`<br><br>`        background = {`<br>`            name = "Background"`<br>`            spriteType ="GFX_subtechnology_unavailable_item_bg"`<br>`        }`<br><br>`        iconType = {`<br>`            name = "picture"`<br>`            position = { x=2 y=2 }`<br>`            spriteType = "GFX_subtech_rocket"`<br>`            alwaystransparent = yes`<br>`        }`<br>`    }`<br>`}` |
+**The text in this section has been collapsed by default.**
+
+```text
+containerWindowType = {
+    name = "techtree_infantry_folder_item"
+    position = { x=-56 y=-7 }
+    size = { width = 183 height = 84 }
+    clipping = no
+    background = {
+        name = "Background"
+        quadTextureSprite ="GFX_technology_unavailable_item_bg"
+    }
+    iconType = {
+        name = "Icon"
+        position = { x=91 y=50 }
+        spriteType = "GFX_technology_medium"
+        centerposition = yes
+        alwaystransparent = yes
+    }
+    instantTextBoxType = {
+        name = "Name"
+        position = { x = 3 y = -3 }
+        textureFile = ""
+        font = "hoi_20bs"
+        borderSize = {x = 4 y = 4}
+        text = "Happy-Go-Lucky-Tank"
+        maxWidth = 160
+        maxHeight = 20
+        fixedsize = yes
+        format = left
+    }
+    iconType = {
+        name = "bonus_icon"
+        position = { x=111 y=-22 }
+        spriteType = "GFX_tech_bonus"
+    }
+    instantTextBoxType = {
+        name = "bonus"
+        position = { x = 111 y = -22 }
+        textureFile = ""
+        font = "hoi_16mbs"
+        borderSize = {x = 4 y = 4}
+        text = "lol boat"
+        maxWidth = 80
+        maxHeight = 20
+        format = center
+    }
+    containerWindowType = {
+        name = "sub_technology_slot_0"
+        position = { x=141 y=1 }
+        size = { width = 35 height = 26 }
+        clipping = no
+
+        background = {
+            name = "Background"
+            spriteType ="GFX_subtechnology_unavailable_item_bg"
+        }
+
+        iconType = {
+            name = "picture"
+            position = { x=2 y=2 }
+            spriteType = "GFX_subtech_rocket"
+            alwaystransparent = yes
+        }
+    }
+}
+```
 
 #### Item sprites <a id="Item_sprites"></a>
 
@@ -402,9 +637,33 @@ The item slots for sub-technologies are defined similarly, although with `techno
 
 Example sprite definitions to make a folder with the name of `my_folder` have its small items use the same background as the regular small land items use in base game:
 
-| The text in this section has been collapsed by default. |
-| --- |
-| `spriteType = {`<br>`    name = "GFX_technology_my_folder_small_available_item_bg"`<br>`    textureFile = "gfx//interface//techtree//tech_doctrine_available_item_bg.dds"`<br>`}`<br>`spriteType = {`<br>`    name = "GFX_technology_my_folder_small_unavailable_item_bg"`<br>`    textureFile = "gfx//interface//techtree//tech_doctrine_unavailable_item_bg.dds"`<br>`}`<br>`spriteType = {`<br>`    name = "GFX_technology_my_folder_small_researched_item_bg"`<br>`    textureFile = "gfx//interface//techtree//tech_landdoctrine_researched_item_bg.dds"`<br>`}`<br>`frameAnimatedSpriteType = {`<br>`    name = "GFX_technology_my_folder_small_currently_researching_item_bg"`<br>`    texturefile = "gfx//interface//techtree//tech_doctrine_researching_anim_strip.dds"`<br>`    noOfFrames = 9`<br>`    loadType = "INGAME"`<br>`    transparencecheck = yes`<br>`    animation_rate_fps = 15`<br>`    looping = yes`<br>`    play_on_show = yes`<br>`    pause_on_loop = 0.0`<br>`}` |
+**The text in this section has been collapsed by default.**
+
+```text
+spriteType = {
+    name = "GFX_technology_my_folder_small_available_item_bg"
+    textureFile = "gfx//interface//techtree//tech_doctrine_available_item_bg.dds"
+}
+spriteType = {
+    name = "GFX_technology_my_folder_small_unavailable_item_bg"
+    textureFile = "gfx//interface//techtree//tech_doctrine_unavailable_item_bg.dds"
+}
+spriteType = {
+    name = "GFX_technology_my_folder_small_researched_item_bg"
+    textureFile = "gfx//interface//techtree//tech_landdoctrine_researched_item_bg.dds"
+}
+frameAnimatedSpriteType = {
+    name = "GFX_technology_my_folder_small_currently_researching_item_bg"
+    texturefile = "gfx//interface//techtree//tech_doctrine_researching_anim_strip.dds"
+    noOfFrames = 9
+    loadType = "INGAME"
+    transparencecheck = yes
+    animation_rate_fps = 15
+    looping = yes
+    play_on_show = yes
+    pause_on_loop = 0.0
+}
+```
 
 ### Folder <a id="Folder"></a>
 
@@ -413,9 +672,43 @@ This container contains information on what's within the folder itself: the back
 
 A simple technology folder definition looks like the following:
 
-| The text in this section has been collapsed by default. |
-| --- |
-| `containerWindowType = {`<br>`    name = "my_folder"`<br>`    position = { x=0 y=47 }`<br>`    size = { width = 100%% height = 100%% }`<br>`    margin = { top = 13 left = 13 bottom = 24 right = 25}`<br>`    drag_scroll = { left middle }`<br>`    verticalScrollbar = "right_vertical_slider"`<br>`    horizontalScrollbar = "bottom_horizontal_slider"`<br>`    scroll_wheel_factor = 40`<br>`    background = {`<br>`        name = "Background"`<br>`        quadTextureSprite ="GFX_tiled_window_2b_border"`<br>`    }`<br>`    iconType = {`<br>`        name ="my_techtree_bg"`<br>`        spriteType = "GFX_my_techtree_bg"`<br>`        position = { x=0 y=0 }`<br>`    }`<br>`    gridboxtype = {`<br>`        name = "my_technology_1_tree"`<br>`        position = { x = 150 y = 60}`<br>`        size = { width = 100 height = 140 }`<br>`        slotsize = { width = 70 height = 70 }`<br>`        format = "LEFT"`<br>`    }`<br>`    gridboxtype = {`<br>`        name = "my_technology_2_tree"`<br>`        position = { x = 150 y = 360 }`<br>`        size = { width = 100 height = 140 }`<br>`        slotsize = { width = 70 height = 70 }`<br>`        format = "LEFT"`<br>`    }`<br>`}` |
+**The text in this section has been collapsed by default.**
+
+```text
+containerWindowType = {
+    name = "my_folder"
+    position = { x=0 y=47 }
+    size = { width = 100%% height = 100%% }
+    margin = { top = 13 left = 13 bottom = 24 right = 25}
+    drag_scroll = { left middle }
+    verticalScrollbar = "right_vertical_slider"
+    horizontalScrollbar = "bottom_horizontal_slider"
+    scroll_wheel_factor = 40
+    background = {
+        name = "Background"
+        quadTextureSprite ="GFX_tiled_window_2b_border"
+    }
+    iconType = {
+        name ="my_techtree_bg"
+        spriteType = "GFX_my_techtree_bg"
+        position = { x=0 y=0 }
+    }
+    gridboxtype = {
+        name = "my_technology_1_tree"
+        position = { x = 150 y = 60}
+        size = { width = 100 height = 140 }
+        slotsize = { width = 70 height = 70 }
+        format = "LEFT"
+    }
+    gridboxtype = {
+        name = "my_technology_2_tree"
+        position = { x = 150 y = 360 }
+        size = { width = 100 height = 140 }
+        slotsize = { width = 70 height = 70 }
+        format = "LEFT"
+    }
+}
+```
 
 In here, one important thing is the iconType representing the background, in this case called `my_techtree_bg`. The spriteType specified here will get used as the background of the tree, with the static size.
 

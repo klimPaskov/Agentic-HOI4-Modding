@@ -40,7 +40,7 @@ The map of the game is primarily changed within the `/Hearts of Iron IV/map/` fo
 `/Hearts of Iron IV/map/*.bmp` files are referred to as bitmaps. Commonly these are used for the cosmetic appearance of the map, aside from the provinces bitmap.
 `/Hearts of Iron IV/map/*.csv` files are CSV tables. These may be edited within a text editor or a table editor such as Excel or OpenOffice. It can be preferable to open these with text editors for greater performance.
 
-### Quick overview <a id="Quick_overview"></a>
+## Quick overview <a id="Quick_overview"></a>
 
 These files in the map folder are common to edit:
 
@@ -62,7 +62,7 @@ These files in the map folder are common to edit:
 - `/Hearts of Iron IV/map/cities.txt` is used to assign different city models to different parts of the world, by default using `/Hearts of Iron IV/map/cities.bmp` as the map.
 - `/Hearts of Iron IV/map/airports.txt` and `/Hearts of Iron IV/map/rocketsites.txt` were deprecated and removed in the patch 1.15.
 
-### Notes <a id="Notes"></a>
+## Notes <a id="Notes"></a>
 
 - **Due to [how the game reads BMP files](#BMP_format), many image editors such as Paint.net or Microsoft Paint can't be used for most bitmap files**, with only provinces and world_normal working. Photoshop and GIMP are alternatives that will always work, but the mode should never be changed from indexed when using them. If a map was saved incorrectly, the later section on details of the BMP format provides an easy way to correct the map. The method described there can also be used to export a new file.
 - When exporting the map in GIMP, **"do not write color space information" must be checked on**.
@@ -73,7 +73,7 @@ These files in the map folder are common to edit:
 - [replace_path](<Modding - Hearts of Iron 4 Wiki.md>) can be used to fully unload the contents of a single folder (but not subfolders) that get indexed at the main menu loading. This can be used to ensure that none of the base game's strategic regions or states will appear in the loaded files when the mod is enabled.
 - `/Hearts of Iron IV/map/default.map` can be used in order to change the file used for a certain purpose, such as the name of the provinces bitmap. Within this article, it'll be assumed that `/Hearts of Iron IV/map/default.map` is unchanged, with the filenames being the same as in base game.
 
-#### BMP format <a id="BMP_format"></a>
+### BMP format <a id="BMP_format"></a>
 
 *This section is primarily the technical details on why the first two notes are necessary to be followed, as well as explaining some terminology used later in the article such as 'colourmaps' and '8-bit'/'8 bitdepth'/'8 bpp'.*
 
@@ -96,7 +96,7 @@ When using image editors that don't have a complete support of editing the color
 BMP files contain a DIB header at the beginning that assigns image file information. The game is set-up to expect BITMAPINFOHEADER as the format of the header for all BMP files. This depends on the image editor and most should save within this one by default.
 However, other formats for the header exist: the most common one to accidentally save in is BITMAPV5HEADER, written by the GIMP foundation. This is used in order to add the ICC information, characterizing in which colour space the image has to be read in. *Hearts of Iron IV's engine is not set to recognise this header*. For this reason, **when exporting in GIMP, "do not write colour space information" must be checked on** in order to save with BITMAPINFOHEADER rather than BITMAPV5HEADER.
 
-#### Correcting a broken 8-bit map <a id="Correcting_a_broken_8-bit_map"></a>
+### Correcting a broken 8-bit map <a id="Correcting_a_broken_8-bit_map"></a>
 
 As it's possible to edit an 8-bit file without palette restrictions by keeping a separate 24-bit copy of the file, the same can also be used to correct a file which had its colourmap reset or which was erroneously saved in a higher bitdepth. This needs to be done in an editor that does have support for Indexed mode images, except for Paint.net and MS Paint. Photoshop and newer versions of GIMP have better alternatives to fix this. To do this type of fix, this checklist can be followed:
 
@@ -139,7 +139,7 @@ In newer versions of GIMP, this can be done with the "use custom palette" option
 - Click convert.
 - Export the opened file, disabling the option to write color space information.
 
-#### Coordinate system <a id="Coordinate_system"></a>
+### Coordinate system <a id="Coordinate_system"></a>
 
 Since the map is a 3D object, there are X, Y, and Z positions using a typical Cartesian coordinate system, which are commonly referred to in a multitude of map files. For disambiguation, these are the coordinates that the game uses:
 
@@ -147,7 +147,7 @@ Since the map is a 3D object, there are X, Y, and Z positions using a typical Ca
 - A single Y coordinate is equivalent to a value of 10 (in decimal) within the heightmap. A Y position of 0 is equivalent to pure black on the heightmap, while a Y position of 25.5 is equivalent to pure white on the heightmap. The water level, for example, is located at 9.5 by the Y position[3].
 - A single Z coordinate is equivalent to a single pixel within the provinces bitmap vertically. The lower (or southern) edge of the map is at 0, and it goes down-to-up (or south-to-north). **Note that most image editors have it the other way around**: the position at 0 by the axis would be at the top and it going up-to-down. When wanting to know the Z coordinate, it can be useful to change the coordinate system that the editor uses (if possible) or temporarily flip the image upside down.
 
-### State modding <a id="State_modding"></a>
+## State modding <a id="State_modding"></a>
 
 :   *Main article: [State modding](<State modding - Hearts of Iron 4 Wiki.md>)*
 
@@ -159,13 +159,13 @@ The nudger works for editing states, however, there are several issues:
 
 Additionally, note that the nudger dynamically updates strategic regions with states: a newly-created state will not have its provinces assigned to strategic regions and that will have to be done via the nudger. Since strategic regions are assigned for each province individually, deleting the strategic region outputs within the user directory's `/Hearts of Iron IV/map/strategicregions/` folder may work, as long as the strategic region borders don't need to be adjusted, as all provinces of one state must be within the same strategic region.
 
-### Strategic regions <a id="Strategic_regions"></a>
+## Strategic regions <a id="Strategic_regions"></a>
 
 :   *Main article: [Strategic region modding](<Strategic region modding - Hearts of Iron 4 Wiki.md>)*
 
 Strategic regions are defined within `/Hearts of Iron IV/map/strategicregions/*.txt` files, where provinces are added to them individually. A province *must* have a strategic region. Otherwise, many interactions with that province can cause a game crash, sometimes appearing before the game can launch. The strategic regions are used for ships and airforce as regions where they can be assigned, but they also serve for assigning weather. A naval strategic region may also have [naval terrain](#Provincial_terrain) assigned with `naval_terrain = terrain_name`.
 
-#### Weather <a id="Weather"></a>
+### Weather <a id="Weather"></a>
 
 *See also: [Nudger § Weather](<Nudger - Hearts of Iron 4 Wiki.md#Weather>)*
 
@@ -207,7 +207,7 @@ The size only has 2 values: small and large. Multiple definitions or none at all
 
 Weather is best generated with nudger in the strategic region menu.
 
-### Provinces <a id="Provinces"></a>
+## Provinces <a id="Provinces"></a>
 
 *See also: [Nudger § Database](<Nudger - Hearts of Iron 4 Wiki.md#Database>)*
 
@@ -267,7 +267,7 @@ Additionally, these errors are common to encounter:
   - The colour within the province's definition has no pixels in the provinces.bmp. This may be a sign that the wrong colour has been used for the province or that the entry remains while the province has been erased. Ensure that there are no new provinces in the "fixed" definition generated by the game that may be intended to be the pixelless province; otherwise remove the province definition, with one another province definition to fill the gap since there can be no province ID gaps.
   - There are several provinces with the same colour on the bitmap. If this is the case, the game will assign each pixel of the colour to only one of the provinces, leading the other with no pixels. If this is the case, change the colour of the second province if they're intended to be separate, otherwise remove one of the definitions while still making sure to have one another province definition to fill the gap. This may commonly, though not necessary, occur together with a TOO LARGE BOX error for the other province.
 
-#### Continents <a id="Continents"></a>
+### Continents <a id="Continents"></a>
 
 Continents are defined within the `/Hearts of Iron IV/map/continent.txt` file within the `continents = { ... }` table. The continents have several uses in-game:
 
@@ -290,7 +290,7 @@ These continents exist in base game:
 | 6 | asia | Asia | The border with the Middle East runs cutting the states of Herat and Baluchistan in half, while others are almost entirely contained in one or the other. |
 | 7 | middle_east | Middle East | The border with Europe in Caucasus Mountains cuts Abkhazia, Kabardino-Balkaria, North Ossetia, Azerbaijan, and Istanbul in half. The rest are entirely contained within one or the other. |
 
-### Terrain <a id="Terrain"></a>
+## Terrain <a id="Terrain"></a>
 
 There are two primary types of terrain in the game: graphical and provincial. Both terrain types are defined within `/Hearts of Iron IV/common/terrain/*.txt` files.
 Provincial terrain is assigned within `/Hearts of Iron IV/map/definition.csv` to each province for land provinces and within the [strategic regions](#Strategic_regions) for sea provinces. This does not change the graphical appearance in any way (aside from the 'simple terrain' map mode), instead, this assigns modifiers to the province and details about land or naval combat.
@@ -299,56 +299,192 @@ Graphical terrain is assigned within `/Hearts of Iron IV/map/terrain.bmp` to the
 Provided are tables of base game terrain types.
 Since the game decides the terrain based off the [colourmap IDs](#BMP_format), the colours in the graphical terrain can be changed to anything as long as the colourmap ID (specified in the ID column) is the same and the file will be treated no different, so the colours here are merely the ones that the base game uses. 'Terrain type' in the graphical terrain table refers to the nudger-generated provincial terrain type. Appearance in the graphical terrain table is the specified segment of the [atlas file](#Graphical_terrain) set to full opacity: in practice, the atlas file has transparency so that some parts of the terrain are more visible than others.
 
-Graphical terrain:
+**ID**
 
-| ID | Colour | Appearance | Terrain type | Notes |
-| --- | --- | --- | --- | --- |
-| 0 | (86, 124, 27) | ![Atlas terrain 1.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img7.png) | plains |  |
-| 1 | (0, 86, 6) | ![Atlas terrain 4.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img8.png) | forest | Typically used for the dense forests. |
-| 2 | (112, 74, 31) | ![Atlas terrain 3.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img9.png) | hills |  |
-| 3 | (206, 169, 99) | ![Atlas terrain 9.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img10.png) | desert |  |
-| 4 | (6, 200, 11) | ![Atlas terrain 5.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img11.png) | forest | Typically used for the sparse forests. |
-| 5 | (255, 0, 24) | ![Atlas terrain 0.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img12.png) | plains | Typically used for farmland. |
-| 6 | (134, 84, 30) | ![Atlas terrain 11.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img13.png) | mountain |  |
-| 7 | (252, 255, 0) | ![Atlas terrain 12.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img14.png) | desert |  |
-| 8 | (73, 59, 15) | ![Atlas terrain 14.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img15.png) | desert |  |
-| 9 | (75, 147, 174) | ![Atlas terrain 6.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img16.png) | marsh |  |
-| 10 | (174, 0, 255) | ![Atlas terrain 13.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img17.png) | mountain |  |
-| 11 | (92, 83. 76) | ![Atlas terrain 11.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img13.png) | mountain |  |
-| 12 | (255, 0, 240) | ![Atlas terrain 8.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img19.png) | desert |  |
-| 13 | (240, 255, 0) | ![Atlas terrain 10.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img20.png) | urban | Automatically spawns city models. |
-| 14 | (55, 90, 220) |  | lakes | Never used in-game, seems to refer to an invalid texture. Instead, the ocean terrain is used for lakes. |
-| 15 | (8, 31, 130) | ![Atlas terrain 9.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img10.png) | ocean |  |
-| 16 | (255, 255, 255) | ![Atlas terrain 11.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img13.png) | mountain | Is permamently covered in snow, unlike the other graphical terrain using the same appearance |
-| 17 | (132, 255, 0) | ![Atlas terrain 2.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img23.png) | hills |  |
-| 18 | (255, 126, 0) | ![Atlas terrain 7.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img24.png) | mountain | Never used in base game. |
-| 19 | (114, 137, 105) | ![Atlas terrain 0.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img12.png) | plains | Is permamently covered in snow, unlike the other graphical terrain using the same appearance |
-| 20 | (58, 131, 82) | ![Atlas terrain 7.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img24.png) | mountain |  |
-| 21 | (255, 0, 127) | ![Atlas terrain 4.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img8.png) | jungle |  |
-| 22 | (0, 82, 82) | ![Atlas terrain 5.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img11.png) | jungle | Never used in base game. |
-| 27 | (243, 199, 147) | ![Atlas terrain 7.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img24.png) | mountain |  |
-| 31 | (27, 27, 27) | ![Atlas terrain 15.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img30.png) | mountain | Never used in base game. |
+**Colour**
 
-Provincial terrain:
+**Appearance**
 
-| Internal name | Localised name | Terrain type | Notes |
-| --- | --- | --- | --- |
-| unknown | Unknown | land | Default terrain for new provinces. |
-| forest | Forest | land | 84 optimal combat width, -15% division attack. |
-| hills | Hills | land | 80 optimal combat width, -25% division attack. |
-| mountain | Mountain | land | 75 optimal combat width, -50% division attack. |
-| plains | Plains | land | 90 optimal combat width |
-| urban | Urban | land | 96 optimal combat width, -30% division attack. |
-| jungle | Jungle | land | 84 optimal combat width, -30% division attack. |
-| marsh | Marsh | land | 78 optimal combat width, -40% division attack. |
-| desert | Desert | land | 90 optimal combat width |
-| ocean | Ocean | sea | Default terrain for sea provinces. |
-| lakes | Lakes | sea | Default terrain for lake provinces. |
-| water_fjords | Fjords and Archipelagos | naval | Makes battlecruisers, battleships, heavy cruisers, and carriers less viable (-20% attack, defence, and movement), makes the navy harder to detect (-20% visibility), and removes 15% from positioning. |
-| water_shallow_sea | Shallow Sea | naval | Makes submarines easier to detect (+100% visibility) and removes 5% from positioning. |
-| water_deep_ocean | Deep Oceans | naval | Makes destroyers have 20% less of attack, movement, and defence; light cruisers have 10% less of attack, movement, and defence; makes the submarines harder to detect (-15% visibility) but slower by 25%. The chance to hit a naval mine is halved. |
+**Terrain type**
 
-#### Provincial terrain <a id="Provincial_terrain"></a>
+**Notes**
+
+0
+(86, 124, 27)
+![Atlas terrain 1.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img7.png)
+plains
+1
+(0, 86, 6)
+![Atlas terrain 4.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img8.png)
+forest
+Typically used for the dense forests.
+2
+(112, 74, 31)
+![Atlas terrain 3.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img9.png)
+hills
+3
+(206, 169, 99)
+![Atlas terrain 9.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img10.png)
+desert
+4
+(6, 200, 11)
+![Atlas terrain 5.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img11.png)
+forest
+Typically used for the sparse forests.
+5
+(255, 0, 24)
+![Atlas terrain 0.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img12.png)
+plains
+Typically used for farmland.
+6
+(134, 84, 30)
+![Atlas terrain 11.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img13.png)
+mountain
+7
+(252, 255, 0)
+![Atlas terrain 12.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img14.png)
+desert
+8
+(73, 59, 15)
+![Atlas terrain 14.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img15.png)
+desert
+9
+(75, 147, 174)
+![Atlas terrain 6.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img16.png)
+marsh
+10
+(174, 0, 255)
+![Atlas terrain 13.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img17.png)
+mountain
+11
+(92, 83. 76)
+![Atlas terrain 11.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img13.png)
+mountain
+12
+(255, 0, 240)
+![Atlas terrain 8.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img19.png)
+desert
+13
+(240, 255, 0)
+![Atlas terrain 10.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img20.png)
+urban
+Automatically spawns city models.
+14
+(55, 90, 220)
+lakes
+Never used in-game, seems to refer to an invalid texture. Instead, the ocean terrain is used for lakes.
+15
+(8, 31, 130)
+![Atlas terrain 9.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img10.png)
+ocean
+16
+(255, 255, 255)
+![Atlas terrain 11.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img13.png)
+mountain
+Is permamently covered in snow, unlike the other graphical terrain using the same appearance
+17
+(132, 255, 0)
+![Atlas terrain 2.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img23.png)
+hills
+18
+(255, 126, 0)
+![Atlas terrain 7.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img24.png)
+mountain
+Never used in base game.
+19
+(114, 137, 105)
+![Atlas terrain 0.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img12.png)
+plains
+Is permamently covered in snow, unlike the other graphical terrain using the same appearance
+20
+(58, 131, 82)
+![Atlas terrain 7.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img24.png)
+mountain
+21
+(255, 0, 127)
+![Atlas terrain 4.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img8.png)
+jungle
+22
+(0, 82, 82)
+![Atlas terrain 5.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img11.png)
+jungle
+Never used in base game.
+27
+(243, 199, 147)
+![Atlas terrain 7.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img24.png)
+mountain
+31
+(27, 27, 27)
+![Atlas terrain 15.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img30.png)
+mountain
+Never used in base game.
+
+**Internal name**
+
+**Localised name**
+
+**Terrain type**
+
+**Notes**
+
+unknown
+Unknown
+land
+Default terrain for new provinces.
+forest
+Forest
+land
+84 optimal combat width, -15% division attack.
+hills
+Hills
+land
+80 optimal combat width, -25% division attack.
+mountain
+Mountain
+land
+75 optimal combat width, -50% division attack.
+plains
+Plains
+land
+90 optimal combat width
+urban
+Urban
+land
+96 optimal combat width, -30% division attack.
+jungle
+Jungle
+land
+84 optimal combat width, -30% division attack.
+marsh
+Marsh
+land
+78 optimal combat width, -40% division attack.
+desert
+Desert
+land
+90 optimal combat width
+ocean
+Ocean
+sea
+Default terrain for sea provinces.
+lakes
+Lakes
+sea
+Default terrain for lake provinces.
+water_fjords
+Fjords and Archipelagos
+naval
+Makes battlecruisers, battleships, heavy cruisers, and carriers less viable (-20% attack, defence, and movement), makes the navy harder to detect (-20% visibility), and removes 15% from positioning.
+water_shallow_sea
+Shallow Sea
+naval
+Makes submarines easier to detect (+100% visibility) and removes 5% from positioning.
+water_deep_ocean
+Deep Oceans
+naval
+Makes destroyers have 20% less of attack, movement, and defence; light cruisers have 10% less of attack, movement, and defence; makes the submarines harder to detect (-15% visibility) but slower by 25%. The chance to hit a naval mine is halved.
+
+### Provincial terrain <a id="Provincial_terrain"></a>
 
 Provincial terrain types are defined within `/Hearts of Iron IV/common/terrain/*.txt` files in the `categories = { ... }` block. Each terrain is a code block, and the name of the block gets taken as the terrain's name, such as this creating terrains my_terrain_1 and my_terrain_2.
 
@@ -422,11 +558,53 @@ spriteType = {
 
 For naval terrain, there are 10 sprites: regular, rain, storm, snow, and snowstorm for both day and night.
 
-| Examples of sprite definitions for a naval terrain named `my_naval_terrain_1` |
-| --- |
-| `spriteType = {`<br>`    name = GFX_terrain_my_naval_terrain_1_day`<br>`    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day.dds`<br>`}`<br>`spriteType = {`<br>`    name = GFX_terrain_my_naval_terrain_1_day_rain`<br>`    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_rain.dds`<br>`}`<br>`spriteType = {`<br>`    name = GFX_terrain_my_naval_terrain_1_day_storm`<br>`    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_storm.dds`<br>`}`<br>`spriteType = {`<br>`    name = GFX_terrain_my_naval_terrain_1_day_snow`<br>`    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_snow.dds`<br>`}`<br>`spriteType = {`<br>`    name = GFX_terrain_my_naval_terrain_1_day_snow_storm`<br>`    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_snow_storm.dds`<br>`}`<br>`spriteType = {`<br>`    name = GFX_terrain_my_naval_terrain_1_night`<br>`    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night.dds`<br>`}`<br>`spriteType = {`<br>`    name = GFX_terrain_my_naval_terrain_1_night_rain`<br>`    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_rain.dds`<br>`}`<br>`spriteType = {`<br>`    name = GFX_terrain_my_naval_terrain_1_night_storm`<br>`    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_storm.dds`<br>`}`<br>`spriteType = {`<br>`    name = GFX_terrain_my_naval_terrain_1_night_snow`<br>`    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_snow.dds`<br>`}`<br>`spriteType = {`<br>`    name = GFX_terrain_my_naval_terrain_1_night_snow_storm`<br>`    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_snow_storm.dds`<br>`}` |
+**Examples of sprite definitions for a naval terrain named my_naval_terrain_1**
 
-#### Graphical terrain <a id="Graphical_terrain"></a>
+```text
+
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_day
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_day_rain
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_rain.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_day_storm
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_storm.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_day_snow
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_snow.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_day_snow_storm
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_snow_storm.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_night
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_night_rain
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_rain.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_night_storm
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_storm.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_night_snow
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_snow.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_night_snow_storm
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_snow_storm.dds
+}
+```
+
+### Graphical terrain <a id="Graphical_terrain"></a>
 
 Graphical terrain is defined within the `/Hearts of Iron IV/common/terrain/*.txt` files within the `terrain = { ... }` block. Each graphical terrain type is a separate block within that overarching block, with the name of the block being irrelevant, with overlaps possible. Example definitions include:
 
@@ -448,12 +626,22 @@ Optional arguments are `spawn_city = yes`, which automatically spawns city model
 The atlas files are `/Hearts of Iron IV/map/terrain/atlas0.dds` and `/Hearts of Iron IV/map/terrain/atlas_normal0.dds`. These must be squares. By default, each is a map of tiles in a 4x4[5], where each tile is 512x512 pixels large.[6]
 The tiles are arranged in the left-to-right then up-to-down order starting from 0, as in the attached table.
 
-|  |  |  |  |
-| --- | --- | --- | --- |
-| 0 | 1 | 2 | 3 |
-| 4 | 5 | 6 | 7 |
-| 8 | 9 | 10 | 11 |
-| 12 | 13 | 14 | 15 |
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
 
 This order means that, for example, `texture = 11` within a graphical definition will result in the rightmost lower-middle tile being chosed assuming the default 4x4 arrangement.
 atlas0 is the regular texture map, for the textures that will get assigned on the terrain, while atlas_normal0 is a normal map, which gets used to assign vectors perpendicular to each point on the texture which get used when shading the map.
@@ -462,7 +650,7 @@ The files atlas1 and atlas2, as well as atlas_normal1 and atlas_normal2 serve fo
 
 For the game to read the file, mipmaps must be generated and DXT5 must be the compression algorithm used.
 
-### Height map <a id="Height_map"></a>
+## Height map <a id="Height_map"></a>
 
 `/Hearts of Iron IV/map/heightmap.bmp` is used in order to determine the height of a given position on the map. A minimum value (or pure black) translates to a height of 0 by the Y axis, while the maximum value (or pure white) translates to a height of 25.5 by the Y axis.
 The sea level is set at the height of 9.5 by default[3], and so anything below the value of 95 (on the scale from 0 to 255) will be shown as underwater, while everything above 95 will be shown as above water. Water is always at the constant height.
@@ -471,7 +659,7 @@ It should be preferred to create smooth transitions in pixel's values in order t
 
 Heightmap has the same image dimensions as the provinces bitmap and is saved as a [8-bit greyscale/indexed greyscale](#BMP_format) image.
 
-### Normal map <a id="Normal_map"></a>
+## Normal map <a id="Normal_map"></a>
 
 `/Hearts of Iron IV/map/world_normal.bmp` is a a normal map saved in the 24-bit RGB format, deciding on the exact slope of each pixel within the 3D rendering of the map. This is used in the lighting calculations.
 The red channel decides on the X value of the vector from -1 to 1: a value of 0 is pointing to the left (West) as much as possible while a value of 255 is pointing to the right (East) as much as possible.
@@ -489,7 +677,7 @@ There are several tools that can be used in order to generate a normal map from 
 - Within GIMP, using the normal map plugin
   Download the plugin, open the heightmap, change image mode to RGB, Filter -> Map -> Normal, and invert the Y axis.
 
-### Rivers <a id="Rivers"></a>
+## Rivers <a id="Rivers"></a>
 
 ![River Map Colour Scheme.png](media/map-modding-hearts-of-iron-4-wiki_67296116c0__img31.png)
 
@@ -525,7 +713,7 @@ If the path connecting the centres of two provinces overlaps at least one river 
 A possible error to encounter is `MAP_ERROR: Palette in rivers.bmp is probably not correct`. This can *entirely be ignored*: the rivers.bmp file will be loaded regardless and, unlike other map errors, this does not prevent the game from loading without debug mode.
 This error is caused by GIMP: editing in Photoshop does not produce this. By default, [the DIB header](#BMP_format) is set to say that the colourmap has 0 colours despite the fact that the colourmap still contains 256 colours. This is to ensure that the game does not spend time reading colours within the BMP file and instead skips straight to the bitmap itself. GIMP instead sets the DIB header to say that there are 256 colours in the palette, which is unexpected by the game. This cannot be fixed within GIMP itself, however, assuming that the rivers bitmap is otherwise correct (Saved in 8-bit indexed mode with BITMAPINFOHEADER) this can also be fixed by opening the rivers bitmap within a hex editor and changing two values: addresses `00 00 00 2F` and `00 00 00 33` should both be `00` instead of `01` as set by GIMP.
 
-### Trees <a id="Trees"></a>
+## Trees <a id="Trees"></a>
 
 *See also: [Entity modding](<Entity modding - Hearts of Iron 4 Wiki.md>)*
 
@@ -555,15 +743,15 @@ List of trees:
 | 28 | (150, 0, 255) | Sparse Jungle |
 | 29 | (88, 0, 138) | Dense Jungle |
 
-### Colour maps <a id="Colour_maps"></a>
+## Colour maps <a id="Colour_maps"></a>
 
 The colourmap files define the overall colour tint applied to the map. Without a colourmap file, all land will appear the same overall colour, regardless of terrain type. They should be saved in the .DDS format, using the 8.8.8.8 ARGB 32-bit profile with no mipmaps.
 
-#### Water <a id="Water"></a>
+### Water <a id="Water"></a>
 
 `/Hearts of Iron IV/map/terrain/colormap_water_0.dds` is used to give tint to the *water*. Each of its dimensions is halved compared to the provinces bitmap. Similarly applies for the water colourmaps 1 and 2: they are the same but with the dimensions halved compared to the previous level. This is for performance reasons as to make the game use lower-quality textures when zoomed out or with different graphics settings.
 
-#### RGB and city lights <a id="RGB_and_city_lights"></a>
+### RGB and city lights <a id="RGB_and_city_lights"></a>
 
 `/Hearts of Iron IV/map/terrain/colormap_rgb_cityemissivemask_a.dds` serves two purposes. The RGB channels define the default colouring of the map, which gets modified by terrain. When making changes to the terrain or height map, this colour map should be updated too to reflect the changes visually. The alpha channel is used for city lights at night: more opacity means stronger night lights. The file should use half of the vertical and horizontal resolution of the provinces bitmap.
 Editing this colourmap in particular would be much easier if the alpha channel should be separated from the RGB channels, as these serve different purposes. The process to do so depends on the image editor.
@@ -572,7 +760,7 @@ Editing this colourmap in particular would be much easier if the alpha channel s
 - In Photoshop it is done by using the channels tab. The channel being edited is the one that is both selected and set to visible. To visualize the edits on each channel separately, one must be both selected and set to visible, and the other must be set to not visible. When opening the dds file with the NVIDIA plugin, the box "Load Alpha as Channel Instead of Transparency" must be checked.
 - **Paint.net cannot be used to edit this colourmap**, since it does not allow separate usage of the RGB and Alpha channels. The channels can't be visualized separately and the edits are applied to all channels at once, rather than allowing to edit each channel separately.
 
-### Buildings <a id="Buildings"></a>
+## Buildings <a id="Buildings"></a>
 
 *See also: [Nudger § Buildings](<Nudger - Hearts of Iron 4 Wiki.md#Buildings>)*
 
@@ -592,7 +780,7 @@ It is preferable to generate the building models in the building section in the 
 
 **If some naval base or floating harbour is missing a definition within this file, the game will crash** once any province with one would be evaluated by AI or tried to be used as a naval base. This represents as a crash with the [client_ping or hourly_ping last read file](<Troubleshooting - Hearts of Iron 4 Wiki.md#Crash_data_log>) a few hours into the game, fixed by turning off AI. This is because the building definition is used not only for the model of the naval base, but also for assigning the sea province that the port goes out into. If there is no definition, the game fails at evaluating the spot where the navy would be placed, resulting in an infinite loop that eats the RAM and the CPU leading to a crash.
 
-### Unit model and victory point positions <a id="Unit_model_and_victory_point_positions"></a>
+## Unit model and victory point positions <a id="Unit_model_and_victory_point_positions"></a>
 
 *See also: [Nudger § Units](<Nudger - Hearts of Iron 4 Wiki.md#Units>)*
 
@@ -654,7 +842,7 @@ List of unitstacks types:
 | 37 | Disembarck 7 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
 | 38 | Victory point |  |
 
-### Adjacencies <a id="Adjacencies"></a>
+## Adjacencies <a id="Adjacencies"></a>
 
 The adjacencies file is `/Hearts of Iron IV/map/adjacencies.csv`. This decides the relationships between borders of provinces, allowing to create borders between non-directly adjacent provinces (such as strait crossings), block the border between two directly adjacent provinces (making it impassable), or otherwise set up adjacency rules that make crossing the border limited (such as the Gibraltar strait).
 
@@ -669,7 +857,7 @@ For example, these are valid adjacencies:
 ```text
 6891;3838;sea;5579;-1;-1;-1;-1;;Sardinia-Corsica
 10910;12807;impassable;-1;-1;-1;-1;-1;;Himalayas
-## Comment
+# Comment
 3314;6336;sea;2752;2885;1578;2890;1581;;Afsluitdijk
 ```
 
@@ -681,7 +869,7 @@ X and Y positions decide the start and end of the red line created with a strait
 
 The last line of the file must be `-1;-1;-1;-1;-1;-1;-1;-1;-1`. This is used as an indicator that the file should stop being read, and any adjacency entries later in the file would get ignored. Even if the file is otherwise empty, this line should still be present to avoid hangup on loading.
 
-#### Adjacency rules <a id="Adjacency_rules"></a>
+### Adjacency rules <a id="Adjacency_rules"></a>
 
 Adjacency rules, found at `/Hearts of Iron IV/map/adjacency_rules.txt` are ways to establish more complex rules on who can access a specified adjacency, either a strait or a canal. In order to establish an adjacency rule, it must first specify the name in `/Hearts of Iron IV/map/adjacency.csv`. **This file must be encoded in UTF-8** without the byte order mark.
 
@@ -695,11 +883,55 @@ After is the required provinces, these specify what a nation must control in ord
 
 `offset` specifies where the icon should move graphically starting from the middle of the province specified as the icon ( in the order { X value Z value Y value } ).
 
-| Example adjacency rule |
-| --- |
-| `adjacency_rule =`<br>`{`<br>`	name = "BOSPHORUS_STRAIT"`<br><br>`	contested =`<br>`	{`<br>`		army = no`<br>`		navy = no`<br>`		submarine = no`<br>`		trade = no`<br>`	}`<br>`	enemy =`<br>`	{`<br>`		army = no`<br>`		navy = no`<br>`		submarine = no`<br>`		trade = no`<br>`	}`<br>`	friend =`<br>`	{`<br>`		army = yes`<br>`		navy = yes`<br>`		submarine = yes`<br>`		trade = yes`<br>`	}`<br>`	neutral =`<br>`	{`<br>`		army = no`<br>`		navy = no`<br>`		submarine = no`<br>`		trade = yes`<br>`	}`<br><br>`	required_provinces = { 9833 11829 }`<br><br>`	is_disabled = {`<br>`		has_country_flag = BOSPHORUS_STRAIT_BLOCKED_FOR_COUNTRY`<br>`		tooltip = bosporus_strait_blocked_tt`<br>`	}`<br><br>`	icon = 9833`<br>`	offset = { -2 0 -9 }`<br>`}` |
+**Example adjacency rule**
 
-### Supply <a id="Supply"></a>
+```text
+adjacency_rule =
+{
+	name = "BOSPHORUS_STRAIT"
+
+	contested =
+	{
+		army = no
+		navy = no
+		submarine = no
+		trade = no
+	}
+	enemy =
+	{
+		army = no
+		navy = no
+		submarine = no
+		trade = no
+	}
+	friend =
+	{
+		army = yes
+		navy = yes
+		submarine = yes
+		trade = yes
+	}
+	neutral =
+	{
+		army = no
+		navy = no
+		submarine = no
+		trade = yes
+	}
+
+	required_provinces = { 9833 11829 }
+
+	is_disabled = {
+		has_country_flag = BOSPHORUS_STRAIT_BLOCKED_FOR_COUNTRY
+		tooltip = bosporus_strait_blocked_tt
+	}
+
+	icon = 9833
+	offset = { -2 0 -9 }
+}
+```
+
+## Supply <a id="Supply"></a>
 
 *See also: [Nudger § Supply](<Nudger - Hearts of Iron 4 Wiki.md#Supply>)*
 
@@ -727,7 +959,7 @@ The amount of provinces is how many provinces the railway lasts.
 The list of provinces is a whitespace character-separated list of province IDs on which this railway goes.
 A valid railway definition is the following: `4 4 693 1444 12 11`
 
-#### Supply areas (For versions prior to 1.11) <a id="Supply_areas_.28For_versions_prior_to_1.11.29"></a><a id="Supply_areas_(For_versions_prior_to_1.11)"></a>
+### Supply areas (For versions prior to 1.11) <a id="Supply_areas_.28For_versions_prior_to_1.11.29"></a><a id="Supply_areas_(For_versions_prior_to_1.11)"></a>
 
 **Note: With the release of 1.11 and No Step Back, supply areas are deprecated and instead the initial logistics/supply system is defined through supply_nodes.txt and railways.txt; see previous section. For further information on updating your map from 1.10 to 1.11, see this post.**
 
@@ -746,7 +978,7 @@ supply_area={
 }
 ```
 
-### Ambient objects <a id="Ambient_objects"></a>
+## Ambient objects <a id="Ambient_objects"></a>
 
 *See also: [Entity modding](<Entity modding - Hearts of Iron 4 Wiki.md>)*
 
@@ -794,7 +1026,7 @@ type = {
 
 The nudge can edit existing ambient objects, but it is unable to create new ones: they have to be created manually first.
 
-### References <a id="References"></a>
+## References <a id="References"></a>
 
 When editing [Defines](<Defines - Hearts of Iron 4 Wiki.md>), make sure to use an override file rather than copying the entire file, as that can cause game crashes when new defines get added, which can happen even in 'minor' updates.
 

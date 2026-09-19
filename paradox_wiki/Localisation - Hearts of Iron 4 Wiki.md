@@ -15,7 +15,7 @@
   - [Text icons](#Text_icons)
 - [Nesting strings](#Nesting_strings)
 - [Bindable localisation](#Bindable_localisation)
-    - [Usage of Bindable Localization](#Usage_of_Bindable_Localization)
+  - [Usage of Bindable Localization](#Usage_of_Bindable_Localization)
   - [Context-Aware Tooltips](#Context-Aware_Tooltips)
   - [Localization Formatters](#Localization_Formatters)
 - [Localization Formatters](#Localization_Formatters_2)
@@ -273,7 +273,7 @@ Before patch 1.15, `$REASON$` would be internal and unmodifiable. With the intro
 - `custom_trigger_tooltip`,
 - and to GUI files using the `bound_tooltip` construct.
 
-#### Usage of Bindable Localization <a id="Usage_of_Bindable_Localization"></a>
+### Usage of Bindable Localization <a id="Usage_of_Bindable_Localization"></a>
 
 Consider the following localization key:
 

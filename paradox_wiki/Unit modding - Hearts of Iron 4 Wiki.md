@@ -28,7 +28,7 @@
 
 Units are the base object that equipment is applied to. Internally, units are actually sub-units of the hardcoded unit types, such as infantry, cavalry, fighter, etc.
 
-### Unit Categories <a id="Unit_Categories"></a>
+## Unit Categories <a id="Unit_Categories"></a>
 
 Unit categories are found in `/Hearts of Iron IV/common/unit_tags/00_categories.txt`.
 
@@ -43,7 +43,7 @@ category_all_infantry = {
 }
 ```
 
-### Units <a id="Units"></a>
+## Units <a id="Units"></a>
 
 Units are found in `/Hearts of Iron IV/common/units/*.txt`.
 
@@ -107,7 +107,7 @@ sub_units = {
 
 You cannot add new internal or map icon types, but you can add new groups.
 
-#### How to add new Groups <a id="How_to_add_new_Groups"></a>
+### How to add new Groups <a id="How_to_add_new_Groups"></a>
 
 Inside any unit file, type the name of the new group in the "group" argument. The game will internally create the group and asign it to the current unit. For example:
 
@@ -129,7 +129,7 @@ spriteType = { name = "GFX_group_<group name>_icon"	     textureFile = "gfx/inte
 
 Note that the textureFile path doesn't have to be strictly `/Hearts of Iron IV/gfx/interface/counters/divisions_large/`, it can be any path.
 
-#### Models <a id="Models"></a>
+### Models <a id="Models"></a>
 
 *See also: [Entity modding](<Entity modding - Hearts of Iron 4 Wiki.md>)*
 
@@ -170,7 +170,7 @@ entity = {
 }
 ```
 
-#### Internal Types <a id="Internal_Types"></a>
+### Internal Types <a id="Internal_Types"></a>
 
 - infantry
 - support
@@ -196,14 +196,14 @@ entity = {
 - flame
 - amphibious
 
-#### Group Types <a id="Group_Types"></a>
+### Group Types <a id="Group_Types"></a>
 
 - infantry
 - support
 - mobile
 - armor
 
-#### Map Icon Types <a id="Map_Icon_Types"></a>
+### Map Icon Types <a id="Map_Icon_Types"></a>
 
 - infantry
 - armored
@@ -212,7 +212,7 @@ entity = {
 - transport
 - uboat
 
-### Stats <a id="Stats"></a>
+## Stats <a id="Stats"></a>
 
 Units use modifiers to determine which stats they have and what special actions they may take.
 
@@ -246,11 +246,11 @@ For *combat_width*, vanilla uses the following values:
 - armor support: 1
 - armor: 2
 
-### Modifiers <a id="Modifiers"></a>
+## Modifiers <a id="Modifiers"></a>
 
 The following list is all the valid modifiers for use in units (and equipment):
 
-#### Base <a id="Base"></a>
+### Base <a id="Base"></a>
 
 ```text
 max_organisation = 20           # Organisation indicates combat readiness and how organized a unit is.
@@ -272,7 +272,7 @@ default_morale = 0.3            # Default morale determines how much extra organ
 combat_width = 0.5              # Combat width determines how much this unit contributes to overall combat width.
 ```
 
-#### Costs <a id="Costs"></a>
+### Costs <a id="Costs"></a>
 
 ```text
 lend_lease_cost = 1             # Space taken up in convoy
@@ -281,10 +281,10 @@ manpower = 300                  # Manpower - Cost in manpower to produce
 training_time = 120             # Training time - Time in days to train this unit
 ```
 
-#### Offensive <a id="Offensive"></a>
+### Offensive <a id="Offensive"></a>
 
 ```text
-## Offensive
+# Offensive
 attack = 0.1                    # Firepower - Amount of damage done per attack
 soft_attack = -0.1              # Soft Attack - How many attacks the unit can make versus enemies with low hardness. (In this example here, this would mean that the unit would get 10% less Soft Attack than they
 would usually get from its equipment
@@ -294,10 +294,10 @@ ap_attack = 1                   # Piercing - Having equal or greater Piercing to
 breakthrough = 0.5              # Breakthrough - How many enemy attacks a unit can attempt to avoid while on the offensive, effectively allowing it to stay on the offense longer.
 ```
 
-#### Defensive <a id="Defensive"></a>
+### Defensive <a id="Defensive"></a>
 
 ```text
-## Defensive
+# Defensive
 defense = 0.1                   # Defense - How many enemy attacks a unit can avoid whilst on the defensive, effectively allowing it to stay on the defensive longer.
 max_strength = 2                # HP - Strength represents how much damage this unit can suffer before it is destroyed
 armor_value = 0                 # Armor - Armor that is higher than the opponents Piercing value reduces damage taken and allows more attacks to occur
@@ -305,7 +305,7 @@ hardness = 0.5                  # Hardness - Represents how much of your divsion
 entrenchment = 5                # Entrenchment - The ability to make proper defensive entrenchments before a hostile attack
 ```
 
-#### Unique <a id="Unique"></a>
+### Unique <a id="Unique"></a>
 
 ```text
 movement = 0.1                  # Movement - Changes the unit's speed
@@ -317,7 +317,7 @@ recon = 1                       # Reconnaissance - Increases the chance that thi
 initiative = 0.2                # Initiative - The higher the initiative, the quicker it can reinforce into battle, and the quick is completes its planning
 ```
 
-#### Boolean <a id="Boolean"></a>
+### Boolean <a id="Boolean"></a>
 
 ```text
 can_be_parachuted = yes         # May be parachuted into battle
@@ -326,7 +326,7 @@ is_convertable = yes            # Can be converted
 carrier_capable = yes           # Is usable in carriers (air only)
 ```
 
-#### Navy-specific <a id="Navy-specific"></a>
+### Navy-specific <a id="Navy-specific"></a>
 
 ```text
 naval_speed = 28                        # Max Speed - maximum speed in kilometres per hour of the ship, higher means faster in combat too
@@ -345,7 +345,7 @@ search_and_destroy_coordination = 0.1
 convoy_raiding_coordination = 0.1
 ```
 
-#### Air-specific <a id="Air-specific"></a>
+### Air-specific <a id="Air-specific"></a>
 
 ```text
 air_attack = 50                         # Air Attack - amount of damage done against other planes
@@ -360,7 +360,7 @@ carrier_size = 0.05
 default_carrier_composition_weight = 1
 ```
 
-### Localization <a id="Localization"></a>
+## Localization <a id="Localization"></a>
 
 Each unit must be localized in a *.yml* file in the *localisation* folder within your mod.
 
@@ -369,7 +369,7 @@ Each unit must be localized in a *.yml* file in the *localisation* folder within
 <unit>_desc: ""
 ```
 
-### Icons <a id="Icons"></a>
+## Icons <a id="Icons"></a>
 
 When adding a new unit it may appear, that your unit gets random icons in the division designer (like anti air icon, or what ever)
 This is caused, because the actual unit has no icon. You can provide sprites in `/Hearts of Iron IV/gfx/interface/counters`.

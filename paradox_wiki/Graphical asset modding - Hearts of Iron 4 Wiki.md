@@ -5,17 +5,17 @@
 ## Table of contents
 
 - [Sprite Types](#Sprite_Types)
-    - [spriteType](#spriteType)
-  - [frameAnimatedSpriteType](#frameAnimatedSpriteType)
-  - [progressbartype](#progressbartype)
-  - [corneredTileSpriteType](#corneredTileSpriteType)
-  - [maskedShieldType](#maskedShieldType)
+  - [spriteType](#spriteType)
+- [frameAnimatedSpriteType](#frameAnimatedSpriteType)
+- [progressbartype](#progressbartype)
+- [corneredTileSpriteType](#corneredTileSpriteType)
+- [maskedShieldType](#maskedShieldType)
 - [Object Types](#Object_Types)
-  - [animatedmaptext](#animatedmaptext)
+- [animatedmaptext](#animatedmaptext)
 - [Font Types](#Font_Types)
-  - [textcolors](#textcolors)
-  - [bitmapfont](#bitmapfont)
-  - [bitmapfont_override](#bitmapfont_override)
+- [textcolors](#textcolors)
+- [bitmapfont](#bitmapfont)
+- [bitmapfont_override](#bitmapfont_override)
 
 ---
 
@@ -27,7 +27,7 @@ Note that for many assets, such as technology and equipment asset definitions, t
 
 ## Sprite Types <a id="Sprite_Types"></a>
 
-#### spriteType <a id="spriteType"></a>
+### spriteType <a id="spriteType"></a>
 
 A **spriteType** and **textSpriteType** asset entry follows this format:
 
@@ -98,7 +98,7 @@ spriteTypes = {
 
 Be wary that the maximum file size for a sprite .dds files is around 16MB
 
-### frameAnimatedSpriteType <a id="frameAnimatedSpriteType"></a>
+## frameAnimatedSpriteType <a id="frameAnimatedSpriteType"></a>
 
 A **frameAnimatedSpriteType** asset entry follows this format:
 
@@ -138,7 +138,7 @@ spriteTypes = {
 
 **allwaystransparent** defines whether the image is bound by its alpha channel with regards to player clicks. Otherwise the bounding box is the image dimensions.
 
-### progressbartype <a id="progressbartype"></a>
+## progressbartype <a id="progressbartype"></a>
 
 A **progressbartype** asset entry is used for progress bars. It follows this format:
 
@@ -171,7 +171,7 @@ spriteTypes = {
 **horizontal** defines whether the progress bar is horizontal or not. By default a bar is horizontal.
 **steps** defines the precision of the progressbar or into how many frames it's split into. Defaults to 100 if unset.
 
-### corneredTileSpriteType <a id="corneredTileSpriteType"></a>
+## corneredTileSpriteType <a id="corneredTileSpriteType"></a>
 
 A **corneredTileSpriteType** asset entry is used for tiling textures that tile to fill the size of the interface element they are used in. It follows this format:
 
@@ -220,7 +220,7 @@ spriteTypes = {
 
 **animation_rate_spf** defiens the framerate at which the animation plays.
 
-### maskedShieldType <a id="maskedShieldType"></a>
+## maskedShieldType <a id="maskedShieldType"></a>
 
 A **maskedShieldType** asset entry is used for country shields. It follows this format:
 
@@ -245,7 +245,7 @@ spriteTypes = {
 
 ## Object Types <a id="Object_Types"></a>
 
-### animatedmaptext <a id="animatedmaptext"></a>
+## animatedmaptext <a id="animatedmaptext"></a>
 
 A **animatedmaptext** asset entry is used for text that appears from the map. It follows this format:
 
@@ -281,7 +281,7 @@ objectTypes = {
 
 ## Font Types <a id="Font_Types"></a>
 
-### textcolors <a id="textcolors"></a>
+## textcolors <a id="textcolors"></a>
 
 A **textcolors** entry defines the text colors used in localization with the § symbol. It follows this format:
 
@@ -297,7 +297,7 @@ bitmapfonts = {
 
 **RGB** is the color that the symbol applies. It is integer RGB.
 
-### bitmapfont <a id="bitmapfont"></a>
+## bitmapfont <a id="bitmapfont"></a>
 
 A **bitmapfont** entry defines a font used in the game. It follows this format:
 
@@ -337,7 +337,7 @@ bitmapfonts = {
 
 **cursor_offset** offsets the text cursor for the font. Defines the *x* position and then the *y* position.
 
-### bitmapfont_override <a id="bitmapfont_override"></a>
+## bitmapfont_override <a id="bitmapfont_override"></a>
 
 A **bitmapfont_override** entry is used to override a font for a specific locale. It follows this format:
 

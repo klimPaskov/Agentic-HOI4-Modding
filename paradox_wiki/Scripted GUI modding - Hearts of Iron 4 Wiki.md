@@ -74,9 +74,38 @@ There are two ways to do so in particular:
 - `parent_window_token = top_bar` will attach to a particular base game window identified by its token.
 - `parent_window_name = container_name` will attach it to a container which has the specified name.
 
-| List of possible arguments for parent_window_token |
-| --- |
-| - top_bar - decision_tab - technology_tab - trade_tab - construction_tab - production_tab - deployment_tab - logistics_tab - diplomacy_tab (No selected country) - national_focus - politics_tab - selected_country_view - selected_state_view - selected_country_view_info (Info ledger view of another country) - selected_country_view_diplomacy (Diplomacy view of a country) - army_ledger - navy_ledger - civilian_ledger - air_ledger - tech_infantry_folder - tech_support_folder - tech_armor_folder - tech_artillery_folder - tech_land_doctrine_folder - tech_naval_folder - tech_naval_doctrine_folder - tech_air_techs_folder - tech_air_doctrine_folder - tech_electronics_folder - tech_industry_folder |
+**List of possible arguments for parent_window_token**
+
+- top_bar
+- decision_tab
+- technology_tab
+- trade_tab
+- construction_tab
+- production_tab
+- deployment_tab
+- logistics_tab
+- diplomacy_tab (No selected country)
+- national_focus
+- politics_tab
+- selected_country_view
+- selected_state_view
+- selected_country_view_info (Info ledger view of another country)
+- selected_country_view_diplomacy (Diplomacy view of a country)
+- army_ledger
+- navy_ledger
+- civilian_ledger
+- air_ledger
+- tech_infantry_folder
+- tech_support_folder
+- tech_armor_folder
+- tech_artillery_folder
+- tech_land_doctrine_folder
+- tech_naval_folder
+- tech_naval_doctrine_folder
+- tech_air_techs_folder
+- tech_air_doctrine_folder
+- tech_electronics_folder
+- tech_industry_folder
 
 For `parent_window_token`, a notable argument is `top_bar`. The topbar is positioned lower in the drawing order than most pop-up menus in the game. Therefore, assigning a scripted GUI to have a parent of the topbar will make it be hidden by menus such as the national focus selection or the politics tab. As the topbar container actually covers the entire screen, using it as the token will not result in the container being clipped off.
 

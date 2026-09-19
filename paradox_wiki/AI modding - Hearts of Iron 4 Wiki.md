@@ -277,13 +277,154 @@ AI focuses, defined within `/Hearts of Iron IV/common/ai_focuses/*.txt` files, a
 
 ## AI peace <a id="AI_peace"></a>
 
-| AI peace since 1.12 |
-| --- |
-| The peace conference behaviour for AI is defined within `/Hearts of Iron IV/common/peace_conference/ai_peace/*.txt` files.<br> When defining the peace conference AI that would be used by the country, the AI will take into account all blocks for which the enable condition is true.  When evaluating the peace conference, `ROOT` (the default scope) is used to represent the currently-evaluated winner, `FROM` is the country which will undergo the selected peace action, this can be a previously non-existent country that will now be liberated or puppeted, or even a different winner country when liberating, finally `FROM.FROM.FROM` can be used to set conditions on the specific state that the peace action is taken on.  The `enable = { ... }` trigger block is used to determine whether the AI should be enabled, and finally an `ai_desire = ...` block determines the priority of the defined strategy: a value of -1000 would make AI never pursue the selected peace action if the conditions are met, while a value of 1000 would make the action their top priority.  The following peace options are used in the game:   - `liberate` - The country FROM gets liberated by ROOT. - `puppet` - The country FROM gets puppeted by ROOT. - `take_states` - We give state FROM.FROM.FROM, previously owned by FROM.FROM, to FROM. FROM here is either the country itself (ROOT) or an ally with either cores or claims. - `force_government` - The country FROM gets its ideology forcefully changed by ROOT. - `take_navy` - No AI modding supported, cost modifiers can still be applied for players in games with ![By Blood Alone](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img12.png)By Blood Alone enabled.   When evaluating peace conferences, the controller of a given state is the same one that occupied it before the start of the conference while the owner is the original owner. Example:`peace_ai_desires = {`<br>`    dont_puppet_warlord_countries = {`<br>`        peace_action_type = { puppet liberate force_government }    #all but take states`<br>`        enable = {`<br>`            FROM = {`<br>`                OR = {`<br>`                    tag = SIK`<br>`                    tag = PRC`<br>`                    tag = GXC`<br>`                    tag = YUN`<br>`                    tag = SHX`<br>`                    tag = XSM`<br>`                    tag = MAN`<br>`                    tag = MEN`<br>`                }`<br>`            }`<br>`        }`<br>`        ai_desire = -1000`<br>`    }`<br>`}` |
+**AI peace since 1.12**
 
-| Pre-1.12 AI peace |
-| --- |
-| The peace conference behaviour for AI is defined within `/Hearts of Iron IV/common/ai_peace/*.txt` files.<br> When defining the peace conference AI that would be used by the country, the game picks the first-defined one that meets the prerequisites. In this case, files are loaded sorted by their filename using ASCII character IDs.  When evaluating the peace conference, ROOT (the default scope) is used to represent the currently-evaluated winner and FROM is used to represent the currently-evaluated loser. Additionally, the following [temporary variables](<Data structures - Hearts of Iron 4 Wiki.md>) exist within:   - taken_states@TAG is an array of states that are annexed by the country TAG as a part of the peace conference. - taken_by@123 is the country that took the specified state, in this case 123. - current_states@TAG is an array of states that aren't decided upon yet in the peace conference and are under the control of TAG that lost the war. - subject_states@TAG is an array of states that are, within the peace conference, set to be transferred to countries that are subjected by TAG. - subject_countries@TAG is an array of countries that are, within the peace conference, set to be subjected by TAG. - subjected_by@123 is the overlord of the country that is set to have the specified state in the peace conference, in this case 123. - subjected_by@TAG is an array of countries that have TAG as their overlord. - liberate_states@TAG is an array of states that are going to countries that have been liberated by TAG. - liberate_countries@TAG is an array of countries that have been liberated by TAG.   The `enable = { ... }` trigger block is used to determine whether the AI should be enabled. If true and no other previously-loaded peace conference AI is true, this AI will be chosen.  There are the following peace options that are used in the game:   - annex - The country FROM gets entirely annexed by ROOT. This only evaluates the countries. - liberate - The country FROM gets liberated by ROOT. - puppet - The country FROM gets puppeted by ROOT. - puppet_all - The country FROM gets puppeted by ROOT *and* is able to retain all of its states. - puppet_state - The state ROOT gets transferred to FROM.FROM, which became a subject of FROM within the peace conference. - take_states - The state FROM gets annexed by ROOT. - force_government - The country FROM gets its ideology forcefully changed by ROOT.   When evaluating peace conferences, the controller of a given state is the same one that occupied it before the start of the conference while the owner is the original owner.  Each peace conference option is a [MTTH block](#MTTH_blocks) within the file's definition. Example:`my_peace_conference = {`<br>`    enable = {`<br>`        has_government = my_ideology_group`<br>`    }`<br>`    annex = {`<br>`        base = 500`<br>`        modifier = {`<br>`            factor = 0`<br>`            any_allied_country = {`<br>`                any_state = {`<br>`                    is_owned_by = FROM`<br>`                    is_core_of = PREV`<br>`                    NOT = {`<br>`                        is_core_of = ROOT`<br>`                        is_claimed_by = ROOT`<br>`                    }`<br>`                }`<br>`            }`<br>`        }`<br>`    }`<br>`    puppet = {`<br>`        base = 100`<br>`        modifier = {`<br>`            factor = 0`<br>`            FROM = { tag = QAT }`<br>`        }`<br>`    }`<br>`    puppet_all = {`<br>`        base = 0`<br>`    }`<br>`    puppet_state = {`<br>`        base = 100`<br>`        modifier = {`<br>`            factor = 0`<br>`            FROM.FROM = { tag = QAT }`<br>`        }`<br>`        modifier = {`<br>`            factor = 0`<br>`            any_allied_country = {`<br>`                ROOT = {`<br>`                    is_core_of = PREV`<br>`                    NOT = {`<br>`                        is_core_of = FROM.FROM`<br>`                        is_claimed_by = FROM.FROM`<br>`                    }`<br>`                }`<br>`            }`<br>`        }`<br>`    }`<br>`    take_states = {`<br>`        base = 100`<br>`        modifier = {`<br>`            factor = 0`<br>`            any_allied_country = {`<br>`                FROM = {`<br>`                    is_core_of = PREV`<br>`                    NOT = {`<br>`                        is_core_of = ROOT`<br>`                        is_claimed_by = ROOT`<br>`                    }`<br>`                }`<br>`            }`<br>`        }`<br>`    }`<br>`}` |
+The peace conference behaviour for AI is defined within `/Hearts of Iron IV/common/peace_conference/ai_peace/*.txt` files.
+
+When defining the peace conference AI that would be used by the country, the AI will take into account all blocks for which the enable condition is true.
+
+When evaluating the peace conference, `ROOT` (the default scope) is used to represent the currently-evaluated winner, `FROM` is the country which will undergo the selected peace action, this can be a previously non-existent country that will now be liberated or puppeted, or even a different winner country when liberating, finally `FROM.FROM.FROM` can be used to set conditions on the specific state that the peace action is taken on.
+
+The `enable = { ... }` trigger block is used to determine whether the AI should be enabled, and finally an `ai_desire = ...` block determines the priority of the defined strategy: a value of -1000 would make AI never pursue the selected peace action if the conditions are met, while a value of 1000 would make the action their top priority.
+
+The following peace options are used in the game:
+
+- `liberate` - The country FROM gets liberated by ROOT.
+- `puppet` - The country FROM gets puppeted by ROOT.
+- `take_states` - We give state FROM.FROM.FROM, previously owned by FROM.FROM, to FROM. FROM here is either the country itself (ROOT) or an ally with either cores or claims.
+- `force_government` - The country FROM gets its ideology forcefully changed by ROOT.
+- `take_navy` - No AI modding supported, cost modifiers can still be applied for players in games with ![By Blood Alone](media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img12.png)By Blood Alone enabled.
+
+When evaluating peace conferences, the controller of a given state is the same one that occupied it before the start of the conference while the owner is the original owner.
+
+Example:
+
+```text
+peace_ai_desires = {
+    dont_puppet_warlord_countries = {
+        peace_action_type = { puppet liberate force_government }    #all but take states
+        enable = {
+            FROM = {
+                OR = {
+                    tag = SIK
+                    tag = PRC
+                    tag = GXC
+                    tag = YUN
+                    tag = SHX
+                    tag = XSM
+                    tag = MAN
+                    tag = MEN
+                }
+            }
+        }
+        ai_desire = -1000
+    }
+}
+```
+
+**Pre-1.12 AI peace**
+
+The peace conference behaviour for AI is defined within `/Hearts of Iron IV/common/ai_peace/*.txt` files.
+
+When defining the peace conference AI that would be used by the country, the game picks the first-defined one that meets the prerequisites. In this case, files are loaded sorted by their filename using ASCII character IDs.
+
+When evaluating the peace conference, ROOT (the default scope) is used to represent the currently-evaluated winner and FROM is used to represent the currently-evaluated loser. Additionally, the following [temporary variables](<Data structures - Hearts of Iron 4 Wiki.md>) exist within:
+
+- taken_states@TAG is an array of states that are annexed by the country TAG as a part of the peace conference.
+- taken_by@123 is the country that took the specified state, in this case 123.
+- current_states@TAG is an array of states that aren't decided upon yet in the peace conference and are under the control of TAG that lost the war.
+- subject_states@TAG is an array of states that are, within the peace conference, set to be transferred to countries that are subjected by TAG.
+- subject_countries@TAG is an array of countries that are, within the peace conference, set to be subjected by TAG.
+- subjected_by@123 is the overlord of the country that is set to have the specified state in the peace conference, in this case 123.
+- subjected_by@TAG is an array of countries that have TAG as their overlord.
+- liberate_states@TAG is an array of states that are going to countries that have been liberated by TAG.
+- liberate_countries@TAG is an array of countries that have been liberated by TAG.
+
+The `enable = { ... }` trigger block is used to determine whether the AI should be enabled. If true and no other previously-loaded peace conference AI is true, this AI will be chosen.
+
+There are the following peace options that are used in the game:
+
+- annex - The country FROM gets entirely annexed by ROOT. This only evaluates the countries.
+- liberate - The country FROM gets liberated by ROOT.
+- puppet - The country FROM gets puppeted by ROOT.
+- puppet_all - The country FROM gets puppeted by ROOT *and* is able to retain all of its states.
+- puppet_state - The state ROOT gets transferred to FROM.FROM, which became a subject of FROM within the peace conference.
+- take_states - The state FROM gets annexed by ROOT.
+- force_government - The country FROM gets its ideology forcefully changed by ROOT.
+
+When evaluating peace conferences, the controller of a given state is the same one that occupied it before the start of the conference while the owner is the original owner.
+
+Each peace conference option is a [MTTH block](#MTTH_blocks) within the file's definition.
+
+Example:
+
+```text
+my_peace_conference = {
+    enable = {
+        has_government = my_ideology_group
+    }
+    annex = {
+        base = 500
+        modifier = {
+            factor = 0
+            any_allied_country = {
+                any_state = {
+                    is_owned_by = FROM
+                    is_core_of = PREV
+                    NOT = {
+                        is_core_of = ROOT
+                        is_claimed_by = ROOT
+                    }
+                }
+            }
+        }
+    }
+    puppet = {
+        base = 100
+        modifier = {
+            factor = 0
+            FROM = { tag = QAT }
+        }
+    }
+    puppet_all = {
+        base = 0
+    }
+    puppet_state = {
+        base = 100
+        modifier = {
+            factor = 0
+            FROM.FROM = { tag = QAT }
+        }
+        modifier = {
+            factor = 0
+            any_allied_country = {
+                ROOT = {
+                    is_core_of = PREV
+                    NOT = {
+                        is_core_of = FROM.FROM
+                        is_claimed_by = FROM.FROM
+                    }
+                }
+            }
+        }
+    }
+    take_states = {
+        base = 100
+        modifier = {
+            factor = 0
+            any_allied_country = {
+                FROM = {
+                    is_core_of = PREV
+                    NOT = {
+                        is_core_of = ROOT
+                        is_claimed_by = ROOT
+                    }
+                }
+            }
+        }
+    }
+}
+```
 
 ## AI strategy plans <a id="AI_strategy_plans"></a>
 
