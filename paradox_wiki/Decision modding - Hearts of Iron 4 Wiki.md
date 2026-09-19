@@ -356,7 +356,7 @@ Upon the decision being cancelled, `cancel_effect = { ... }` is an effect block 
 
 ### AI <a id="AI"></a>
 
-:   *Main article: [AI modding § AI will do](<AI modding - Hearts of Iron 4 Wiki.md>)*
+*Main article: [AI modding § AI will do](<AI modding - Hearts of Iron 4 Wiki.md>)*
 
 The chance for AI to pick a decision is decided by the `ai_will_do = { ... }` block within a decision, which is a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#MTTH_blocks>). **By default, a decision will never be chosen by AI,** and that block is required to make AI choose it.
 
@@ -471,8 +471,7 @@ Missions are another type of decisions, activated when the triggers are true and
 - `available = { ... }` decides on triggers that make the mission possible to select, executing `complete_effect`. **Defaults to always being true, making it disappear instantly**.
 - `selectable_mission = yes`, if set, turns the mission into one that where the player must select the button. If unset or set to false, then the complete effect will fire as soon as `available` is true.
 - `activation = { ... }` decides on triggers that must be met for the decision to appear, assuming `allowed` was true on the game's start. This is checked daily. **`visible = { ... }` does nothing and shouldn't be used in missions.**
-
-  :   The `activate_mission = mission_name` [effect](<Effects - Hearts of Iron 4 Wiki.md>) can bypass both `allowed` and `activation`, and it's usually better-optimised to use it to make the decision appear instead of relying on it being done automatically.
+  The `activate_mission = mission_name` [effect](<Effects - Hearts of Iron 4 Wiki.md>) can bypass both `allowed` and `activation`, and it's usually better-optimised to use it to make the decision appear instead of relying on it being done automatically.
 - `is_good = yes` changes the tooltips shown to the player on a non-selectable mission. By default or if set to false, the tooltip states that the `available` will complete the mission, calling `timeout_effect` the effects if it's not completed. If set to true, `complete_effect` will instead change to "Effects when failed". This is purely graphical and may be used to better communicate to the player whether they should seek to complete the prerequisites or to avoid them being true.
 - `war_with_on_timeout = TAG` will make the game assume that the mission, within its `timeout_effect = { ... }` will declare war on the specified country. This is used to make the AI prepare for a declaration of war and amass its troops on the border. This will also grant a notification to the target and all of its allies that a wargoal is being justified.
 

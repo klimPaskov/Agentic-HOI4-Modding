@@ -74,7 +74,7 @@ When a civil war starts, the original country will always continue using the foc
 - `focus = TAG_focusname` will make the camera centre on the specified focus in particular. It'll be in the top centre of the screen exactly, taking offsets into consideration.
 - `x = 12 y = 0` decides the exact position of the top-centre of the camera. This uses the same coordinate system as regular focuses do, by default a unit of x being equal to 96 pixels and a unit of y being equal to 130 pixels`[c]`
 
-:   This also accepts `offset = { ... }`, adding the specified values to respective positions if the conditions within the `trigger = { ... }` trigger block are met for the country. For example, this will apply the modifier and result in a position of x = 13, y = 1 if the country is BHR:
+This also accepts `offset = { ... }`, adding the specified values to respective positions if the conditions within the `trigger = { ... }` trigger block are met for the country. For example, this will apply the modifier and result in a position of x = 13, y = 1 if the country is BHR:
 
 ```text
 initial_show_position = {
@@ -1045,7 +1045,7 @@ focus = {
 
 ## AI strategy plans <a id="AI_strategy_plans"></a>
 
-:   *Main article: [AI modding § AI Strategy Plans](<AI modding - Hearts of Iron 4 Wiki.md>)*
+*Main article: [AI modding § AI Strategy Plans](<AI modding - Hearts of Iron 4 Wiki.md>)*
 
 AI strategy plans to tell AI what to prioritise depending on circumstances: which advisors to pick, which technologies to research, which AI strategies to apply, and, most importantly here, which focuses to pick. This is a short overview of AI strategy plans purely for national focus prioritising, full detail being in the [AI modding](<AI modding - Hearts of Iron 4 Wiki.md>) article. Several AI strategy plans can be enabled at the same time.
 

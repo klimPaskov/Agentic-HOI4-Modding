@@ -87,7 +87,7 @@ Triggers won't work in scopes they are not assigned to. Country triggers will no
 
 ## Scopes <a id="Scopes"></a>
 
-:   *Main article: [Scopes](<Scopes - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Scopes](<Scopes - Hearts of Iron 4 Wiki.md>)*
 
 These don't serve as triggers, but rather as scopes that change for whom the triggers are being checked. Each one also serves as an AND statement.
 
@@ -183,7 +183,7 @@ Dual scopes:
 
 ## Flow control tools <a id="Flow_control_tools"></a>
 
-:   *Main article: [Scopes#Flow control tools](<Scopes - Hearts of Iron 4 Wiki.md#Flow_control_tools>)*
+*Main article: [Scopes#Flow control tools](<Scopes - Hearts of Iron 4 Wiki.md#Flow_control_tools>)*
 
 These are triggers that serve as more of a way to establish a connection in how triggers are evaluated. Each one serves as a trigger scope with additional arguments and can be used regardless of scope.
 

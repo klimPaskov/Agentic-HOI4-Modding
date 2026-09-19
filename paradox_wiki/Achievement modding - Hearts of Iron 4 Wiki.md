@@ -38,7 +38,7 @@ custom_achievements/
 - **possible** - This checks at the game's start whether a ribbon or achievement is possible to get in the playthrough. **If false at the game's start, getting the achievement will never be possible.**
   - This is similar to `allowed` in decisions or ideas, though it is evaluated at the game's start rather than before.
   - Some common triggers not used in the code example are tag checks (with either [tag](<Triggers - Hearts of Iron 4 Wiki.md>) or [original_tag](<Triggers - Hearts of Iron 4 Wiki.md>)) or ironman checks (`is_ironman = yes`).
-- **happened** - Once these conditions are met then the achievement is earned. (Usually instant to \~2 in-game hours)
+- **happened** - Once these conditions are met then the achievement is earned. (Usually instant to ~2 in-game hours)
 - **ribbon** - (OPTIONAL) This is only required for ribbons. This allows you to change the colors of the ribbon utilizing RGB color code.
 
 ```text

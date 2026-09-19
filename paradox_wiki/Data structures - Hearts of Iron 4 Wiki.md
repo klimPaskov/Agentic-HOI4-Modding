@@ -81,7 +81,7 @@ TAG_decision_category = {
 
 ### Defines <a id="Defines"></a>
 
-:   *Main article: [Defines](<Defines - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Defines](<Defines - Hearts of Iron 4 Wiki.md>)*
 
 Defines are a particular type of constant that are used within internal calculations only, defined within `/Hearts of Iron IV/common/defines/*.lua` files. These cannot be referenced in any other files and are only used within the internal, unchangeable code.
 
@@ -827,7 +827,7 @@ Each modifier token is defined within `/Hearts of Iron IV/common/modifier_defini
 - `postfix` decides what will be added after the value of the modifier in the tooltip. Allowed values are 'none' (Default), 'days', 'hours', and 'daily'.
 - `category` decides on the category of the modifier. By default, the category is 'all', which makes it be in every single category. Certain tooltips will only show modifiers if they belong to a certain category. It is possible to set multiple categories for the same modifier definition by defining them one after another.
 
-:   The allowed values are 'none', 'all', 'country', 'state', 'unit_leader', 'army', 'naval', 'air', 'peace', 'politics', 'ai', 'defensive', 'aggressive', 'war_production', 'military_advancements', 'military_equipment', 'autonomy', 'government_in_exile', and 'intelligence_agency'.
+The allowed values are 'none', 'all', 'country', 'state', 'unit_leader', 'army', 'naval', 'air', 'peace', 'politics', 'ai', 'defensive', 'aggressive', 'war_production', 'military_advancements', 'military_equipment', 'autonomy', 'government_in_exile', and 'intelligence_agency'.
 
 The modifier definition's ID is also used as the [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) key needed to change the name of the modifier depending on the currently turned on language.
 
@@ -1059,7 +1059,7 @@ Country-scoped general game variables:
 | --- | --- | --- |
 | modifier | Modifier's name, such as `@political_power_gain`. | The total value of the current [modifier](<Modifiers - Hearts of Iron 4 Wiki.md>) as the country has in total. Targeted modifiers have separate definitions. |
 | id | None. | The internal ID of the country. Equivalent to not specifying anything, like `set_temp_variable = { temp = TAG }`. |
-| max_manpower | None. | Total population of the country. Deprecated, recommended to use max_manpower_k instead as to push the necessary number for an overflow to \~2 billion from the very possible \~2 million. |
+| max_manpower | None. | Total population of the country. Deprecated, recommended to use max_manpower_k instead as to push the necessary number for an overflow to ~2 billion from the very possible ~2 million. |
 | max_manpower_k | None. | Total population of the country in thousands. |
 | party_popularity | Ideology group or `ruling_party`, such as `@ruling_party`. | The popularity of the specified political party in the range from 0 to 1. |
 | party_popularity_100 | Ideology group or `ruling_party`, such as `@neutrality`. | The popularity of the specified political party in the range from 0 to 100. |
@@ -1165,12 +1165,12 @@ Country-scoped military-related game variables:
 
 | Variable | Target | Description/Notes |
 | --- | --- | --- |
-| manpower | None. | Manpower that the country has, both in the army and reserved. Deprecated, recommended to use manpower_k instead as to push the necessary number for an overflow to \~2 billion from the very possible \~2 million. `has_manpower` can be used in the same way. |
+| manpower | None. | Manpower that the country has, both in the army and reserved. Deprecated, recommended to use manpower_k instead as to push the necessary number for an overflow to ~2 billion from the very possible ~2 million. `has_manpower` can be used in the same way. |
 | manpower_k | None. | Manpower that the country has, both in the army and reserved, in thousands. |
 | deployed_army_manpower_k | None. | Manpower in the army in the field in thousands. Do not count manpower in training. |
 | deployed_navy_manpower_k | None. | Manpower in the navy in thousands. |
 | deployed_airforce_manpower_k | None. | Manpower in the airforce in thousands. |
-| max_available_manpower | None. | Manpower that the country has, both in the army and reserved, taking into account those that are in the process of being drafted as the result of a recent conscription amount change. Deprecated, recommended to use max_available_manpower_k instead as to push the necessary number for an overflow to \~2 billion from the very possible \~2 million. |
+| max_available_manpower | None. | Manpower that the country has, both in the army and reserved, taking into account those that are in the process of being drafted as the result of a recent conscription amount change. Deprecated, recommended to use max_available_manpower_k instead as to push the necessary number for an overflow to ~2 billion from the very possible ~2 million. |
 | max_available_manpower_k | None. | Manpower that the country has, both in the army and reserved, taking into account those that are in the process of being drafted as the result of a recent conscription amount change, in thousands. |
 | target_conscription_amount | None. | The target conscription amount of the country. |
 | amount_manpower_in_deployment_queue | None. | Amount of manpower currently in the deployment view. |
@@ -1263,7 +1263,7 @@ State-scoped game variables:
 | resistance | None. | Current resistance level of the state. On the scale from 0 to 100. |
 | resistance_speed | None. | Current resistance speed of the state. |
 | resistance_target | None. | Current resistance target of the state. On the scale from 0 to 100. |
-| state_population | None. | Current population of the state. Recommended to use state_population_k when possible to push the necessary number for an overflow to \~2 billion from the very possible \~2 million. |
+| state_population | None. | Current population of the state. Recommended to use state_population_k when possible to push the necessary number for an overflow to ~2 billion from the very possible ~2 million. |
 | state_population_k | None. | Current population of the state in thousands. |
 | state_and_terrain_strategic_value | None. | Current state and terrain strategic value, decided by buildings and terrain of provinces. |
 | state_strategic_value | None. | Current state strategic value, decided by buildings. |

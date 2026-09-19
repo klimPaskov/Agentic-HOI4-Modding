@@ -148,7 +148,7 @@ Note that `else` only works in its nested form in history files.
 
 ### Effects <a id="Effects"></a>
 
-:   *Main article: [Effects](<Effects - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Effects](<Effects - Hearts of Iron 4 Wiki.md>)*
 
 These are [effects](<Effects - Hearts of Iron 4 Wiki.md>) which are traditionally put in history files of the country to be executed on startup, meaning that they can be used elsewhere as well. **Any other [effect within the list](<Effects - Hearts of Iron 4 Wiki.md>) can be used as well.**
 
@@ -479,7 +479,7 @@ Either one is optional, however it's recommended for a country to have some sort
 
 For the purpose of this mode, place them in `<yourmod>/gfx/flags`, each flag size into the corresponding folder.
 
-For medium and small flags to be generated, the game requires there to be a sufficient amount of dynamic country tags, \~10 for medium flags to work and \~20 for small flags to work. If the requirement isn't met, the medium and small flags will appear as transparent for every single country even if they're saved properly, without anything related in `logs/error.log`.
+For medium and small flags to be generated, the game requires there to be a sufficient amount of dynamic country tags, ~10 for medium flags to work and ~20 for small flags to work. If the requirement isn't met, the medium and small flags will appear as transparent for every single country even if they're saved properly, without anything related in `logs/error.log`.
 
 ## Name <a id="Name"></a>
 
@@ -550,7 +550,7 @@ Other than the country name, there are certain other aspects of localisation tha
 
 - Party names. More strictly, parties are country-specific names for ideology group that show up near the pie chart in the politics and diplomacy menus, whose names can also be accessed elsewhere with [localisation namespaces](<Localisation - Hearts of Iron 4 Wiki.md#Namespaces>). A party uses up to 2 localisation keys: the regular name that appears in the piechart and the optional long name, which appears when hovering over the party name. If the long name is undefined, it will re-use the regular name.
 
-:   A localisation key for the regular name follows the `TAG_ideology_party` format, while the long name uses the `TAG_ideology_party_long` format.
+A localisation key for the regular name follows the `TAG_ideology_party` format, while the long name uses the `TAG_ideology_party_long` format.
 
 - Equipment: In order to rename an equipment type for a country, the localisation key used for it needs to be prefixed with the country's tag (separated with an underscore), such as `TAG_infantry_equipment_1`. Equipment may also have an optional short name, by appending `_short` to the key. Equipment is defined in `/Hearts of Iron IV/common/units/equipment/*.txt` files, where the IDs can be obtained. The same also works for equipment modules.
 
@@ -567,7 +567,7 @@ l_english:
 
 ## Starting characters <a id="Starting_characters"></a>
 
-:   *Main article: [Character modding](<Character modding - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Character modding](<Character modding - Hearts of Iron 4 Wiki.md>)*
 
 Characters are defined in any file in the `/Hearts of Iron IV/common/characters/` folder. An example of a file within that folder, with just a country leader, is the following:
 
@@ -647,7 +647,7 @@ division_template = {
 - `regiments = { ... }` and `support = { ... }` decide the sub-units of the template, meaning combat battalions and support companies respectively. In particular:
   - `subunit = { x = 0 y = 0 }` decides the placement of the specified sub-unit. The coordinates represent the Cartesian coordinate system, where (0,0) is the top-left corner, x goes left-to-right, and y goes up-to-down. For a unit to be placed as a support company, it must have `group = support` in its definition, and to be placed in combat battalions, it must have a different group. The group cannot change in a single y column.
 
-:   :   By default, the combat battalions have 5 columns and 5 rows, while the support companies have 1 column and 5 rows.[3] The max index is one less than the total amount.
+By default, the combat battalions have 5 columns and 5 rows, while the support companies have 1 column and 5 rows.[3] The max index is one less than the total amount.
 
 There are other arguments that can be used in a division template, as outlined in [Division modding](<Division modding - Hearts of Iron 4 Wiki.md>). The most common one to include is `division_names_group = USA_INF_01`: this forcefully changes the name group used for new divisions, defined in `/Hearts of Iron IV/common/units/names_divisions/*.txt` files. This is used to automatically generate names and numeration for new divisions, such as a division newly created by the player being named "1st 'Big Red One' Division". If not set, the template automatically picks the name group based on the sub-units.
 
@@ -713,7 +713,7 @@ There are also optional arguments:
 
 ### Equipment production <a id="Equipment_production"></a>
 
-:   *Main article: [Effect § add_equipment_production](<Effects - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Effect § add_equipment_production](<Effects - Hearts of Iron 4 Wiki.md>)*
 
 The equipment production is simulated using the `instant_effect = { ... }` block. This is a regular [effect](<Effects - Hearts of Iron 4 Wiki.md>) block, any effect can be used here. Usually, the production is added in this manner:
 
@@ -779,7 +779,7 @@ This will assign these names to TAG. In particular:
 
 ## Character portraits <a id="Character_portraits"></a>
 
-:   *Main article: [Portrait modding](<Portrait modding - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Portrait modding](<Portrait modding - Hearts of Iron 4 Wiki.md>)*
 
 When the game automatically generates a country or a unit leader, a portrait is randomly chosen from a pool that depends on country or continent, if there's not a country-specific one. This pool is located in any `/Hearts of Iron IV/portraits/*.txt` file. An example entry looks like
 

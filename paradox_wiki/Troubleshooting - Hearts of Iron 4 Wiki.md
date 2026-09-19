@@ -125,7 +125,7 @@ This also includes the loading after a country has been selected, but it's not y
 - `map/supply_nodes.txt` or `map/railways.txt` – This crash is most commonly caused by the specified building types being placed on invalid provinces, such as those that are not located in states. This crash occurs both when trying to open the supply menu in nudge or when trying to start a single player game. This can be corrected by emptying the files in question and [optionally creating a proper definition of the files, either manually or via nudge](<Map modding - Hearts of Iron 4 Wiki.md>).
 - `tutorial/tutorial.txt` – This crash is caused by the tutorial file being erroneous. This can be represented as a link to an invalid state ID within the file (such as if every base game state was erased) or as the file lacking a `tutorial = { ... }` definition of any kind entirely. Replacing the entire file's contents with `tutorial = { }` works to solve the crash.
 
-:   This is also the last file that gets read after the country selection process finishes. If a crash occurs directly afterwards and the game fails to write the file properly, it will land on this one.
+This is also the last file that gets read after the country selection process finishes. If a crash occurs directly afterwards and the game fails to write the file properly, it will land on this one.
 
 ### Middle of the game <a id="Middle_of_the_game"></a>
 

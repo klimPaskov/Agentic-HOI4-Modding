@@ -597,8 +597,22 @@ def clean_soup(title):
     navboxes = extract_navboxes(root)
     unwrap_layout_tables(root, soup)
     flatten_nested_tables(root, soup)
+    unwrap_indentation_lists(root)
     finalise_article(root, soup)
     return soup, root, navboxes
+
+
+def unwrap_indentation_lists(root):
+    """Drop the wiki's ``<dl><dd>`` indentation wrappers.
+
+    MediaWiki uses definition lists purely to indent a note or a sub-list, and
+    never emits a ``<dt>`` term. Markdownify turns a ``<dd>`` into ``:   text``,
+    which is not CommonMark, and into a four-space-indented line that renders as
+    a code block. The content is what matters, so the wrappers go and the note
+    or list keeps its own formatting.
+    """
+    for node in root.find_all(["dl", "dd", "dt"]):
+        node.unwrap()
 
 
 def unwrap_layout_tables(root, soup):
@@ -933,7 +947,9 @@ def render(local_title, source_title, known_pages):
     parts.append("")
     toc = build_toc(anchors)
     if toc:
-        parts += ["## Table of contents", "", toc, ""]
+        # Heading text reaches the table of contents before the body escapes are
+        # reduced, so it needs the same treatment.
+        parts += ["## Table of contents", "", reduce_escapes(toc), ""]
     parts += ["---", "", body.rstrip(), ""]
     if navboxes:
         parts += ["---", "", navbox_footer(navboxes, known_pages)]
@@ -987,6 +1003,14 @@ def reduce_escapes(text):
                 keep = at_line_start
             elif nxt == "|":
                 keep = in_table
+            elif nxt == "&":
+                # A literal ampersand needs no escape outside an entity.
+                keep = False
+            elif nxt == "~":
+                # Only a doubled tilde is strikethrough in GFM.
+                previous = result[-1] if result else ""
+                following = body[i + 2] if i + 2 < len(body) else ""
+                keep = previous == "~" or following == "~"
             elif nxt == "(":
                 keep = bool(result) and result[-1] == "]"
             elif nxt == ")":

@@ -124,10 +124,30 @@ def verify(directory, show_details=True):
                     if columns(lines[j]) != width:
                         report("ragged_table", name,
                                f"line {j + 1}: {columns(lines[j])} cols vs {width}")
+                    longest = max((len(s) for s in lines[j].split("`")[1::2]),
+                                  default=0)
+                    if longest >= 300:
+                        # The signature of a multi-line code sample flattened
+                        # into a single span instead of one span per line.
+                        report("flat_cell_code", name,
+                               f"line {j + 1}: one code span of {longest} chars")
                     j += 1
                 i = j
             else:
                 i += 1
+
+        # --- definition lists ----------------------------------------------
+        # ":" definition list syntax is not CommonMark, and a four-space
+        # indented ":" renders as a code block.
+        inside_fence = False
+        for i, line in enumerate(lines):
+            if line.lstrip().startswith(FENCE):
+                inside_fence = not inside_fence
+                continue
+            if inside_fence or line.lstrip().startswith("|"):
+                continue
+            if re.match(r"^\s*:", line):
+                report("definition_list", name, f"line {i + 1}")
 
         # --- table of contents ---------------------------------------------
         own = anchors_by_file[name]
@@ -165,10 +185,13 @@ def verify(directory, show_details=True):
     # --- media coverage ----------------------------------------------------
     media_dir = os.path.join(directory, "media")
     referenced = set()
+    long_rows = 0
     for name in files:
         text = open(os.path.join(directory, name), encoding="utf-8").read()
         referenced.update(os.path.basename(m)
                           for m in re.findall(r"\]\((media/[^)]+)\)", text))
+        long_rows += sum(1 for line in text.split("\n")
+                         if line.startswith("|") and len(line) > 400)
     on_disk = set(os.listdir(media_dir)) if os.path.isdir(media_dir) else set()
     orphans = sorted(on_disk - referenced)
     missing = sorted(referenced - on_disk)
@@ -181,6 +204,9 @@ def verify(directory, show_details=True):
 
     print(f"pages: {len(files)}   media on disk: {len(on_disk)}   "
           f"referenced: {len(referenced)}")
+    # A markdown table row is one line by definition, so rows carrying a code
+    # example are legitimately long. Reported for visibility, not as a defect.
+    print(f"table rows over 400 characters: {long_rows}")
     print("\nPROBLEM SUMMARY")
     if not problems:
         print("  none")

@@ -69,7 +69,7 @@ division_template = {
 - `regiments = { ... }` and `support = { ... }` decide the sub-units of the template, meaning combat battalions and support companies respectively. In particular:
   - `subunit = { x = 0 y = 0 }` decides the placement of the specified sub-unit. The coordinates represent the Cartesian coordinate system, where (0,0) is the top-left corner, x goes left-to-right, and y goes up-to-down. For a unit to be placed as a support company, it must have `group = support` in its definition, and to be placed in combat battalions, it must have a different group. The group cannot change in a single y column.
 
-:   :   By default, the combat battalions have 5 columns and 5 rows, while the support companies have 1 column and 5 rows.[1] The max index is one less than the total amount.
+By default, the combat battalions have 5 columns and 5 rows, while the support companies have 1 column and 5 rows.[1] The max index is one less than the total amount.
 
 There are also optional arguments:
 
@@ -143,7 +143,7 @@ There are also optional arguments:
 
 ## Equipment production <a id="Equipment_production"></a>
 
-:   *Main article: [Effect § add_equipment_production](<Effects - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Effect § add_equipment_production](<Effects - Hearts of Iron 4 Wiki.md>)*
 
 The equipment production is simulated using the `instant_effect = { ... }` block. This is a regular [effect](<Effects - Hearts of Iron 4 Wiki.md>) block, any effect can be used here. Usually, the production is added in this manner:
 

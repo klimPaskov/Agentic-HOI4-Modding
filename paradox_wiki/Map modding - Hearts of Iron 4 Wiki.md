@@ -149,7 +149,7 @@ Since the map is a 3D object, there are X, Y, and Z positions using a typical Ca
 
 ## State modding <a id="State_modding"></a>
 
-:   *Main article: [State modding](<State modding - Hearts of Iron 4 Wiki.md>)*
+*Main article: [State modding](<State modding - Hearts of Iron 4 Wiki.md>)*
 
 States are defined within `/Hearts of Iron IV/history/states/*.txt` files, with information about the states: provinces containing them, the state category, the starting buildings and owner.
 The nudger works for editing states, however, there are several issues:
@@ -161,7 +161,7 @@ Additionally, note that the nudger dynamically updates strategic regions with st
 
 ## Strategic regions <a id="Strategic_regions"></a>
 
-:   *Main article: [Strategic region modding](<Strategic region modding - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Strategic region modding](<Strategic region modding - Hearts of Iron 4 Wiki.md>)*
 
 Strategic regions are defined within `/Hearts of Iron IV/map/strategicregions/*.txt` files, where provinces are added to them individually. A province *must* have a strategic region. Otherwise, many interactions with that province can cause a game crash, sometimes appearing before the game can launch. The strategic regions are used for ships and airforce as regions where they can be assigned, but they also serve for assigning weather. A naval strategic region may also have [naval terrain](#Provincial_terrain) assigned with `naval_terrain = terrain_name`.
 

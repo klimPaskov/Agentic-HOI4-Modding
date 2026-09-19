@@ -35,7 +35,7 @@ NEP_MTN_01 = { # DIVISIONS_NAME_GROUP, set in your units folder
 }
 ```
 
-Namelist files seem to have a limit of \~1500 lines. Any namelists beyond that limit may not work correctly, or not appear entirely.
+Namelist files seem to have a limit of ~1500 lines. Any namelists beyond that limit may not work correctly, or not appear entirely.
 
 ## Naval Names <a id="Naval_Names"></a>
 

@@ -52,9 +52,11 @@ python -B .tools/wiki/verify_wiki_snapshot.py .tmp/wiki-preview
 python -B .tools/wiki/verify_wiki_snapshot.py --quiet
 ```
 
-It reports unbalanced or table-breaking code fences, outbound hyperlinks, links to missing files, section links whose anchor is absent, images with no file, image files nothing references, table rows whose column count differs from their header, pages without exactly one level-1 heading, and encoding damage such as byte order marks, escaped punctuation, non-breaking or zero-width characters, and mojibake.
+It reports unbalanced or table-breaking code fences, outbound hyperlinks, links to missing files, section links whose anchor is absent, images with no file, image files nothing references, table rows whose column count differs from their header, pages without exactly one level-1 heading, `:` definition-list lines (not CommonMark, and a four-space-indented one renders as a code block), a multi-line code sample flattened into a single code span of 300 characters or more, and encoding damage such as byte order marks, escaped punctuation, non-breaking or zero-width characters, and mojibake.
 
-A single `escape_artifact` line is expected on a healthy snapshot: some backslash escapes (`\*`, `` \` ``, `\|` inside table cells, `\[`) are genuinely required markdown. Treat any other finding as a defect.
+It also prints the number of table rows over 400 characters. That is a report, not a failure: a markdown table row is one line by definition, so rows carrying a code example are legitimately long.
+
+A single `escape_artifact` line is expected on a healthy snapshot: some backslash escapes (`\*`, `` \` ``, `\|` inside table cells, `\[`, a leading `\-`) are genuinely required markdown. Treat any other finding as a defect.
 
 ## Dependencies
 

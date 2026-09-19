@@ -54,8 +54,7 @@ Every character must be assigned to a country in that country's file in the `/He
 - The character is created in any `/Hearts of Iron IV/common/characters/*.txt` file with no regard to the filename:
   - `name = TAG_loc_key` uses a localisation key that's defined for the English language in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file.
   - `portraits = { ... }` use spriteTypes that are defined in any `/Hearts of Iron IV/interface/*.gfx` file.
-
-    :   While it's common practice to store images in subfolders of `/Hearts of Iron IV/gfx/` (usually `/Hearts of Iron IV/gfx/leaders/` for country or unit leaders and `/Hearts of Iron IV/gfx/interface/ideas/` for advisors), a sprite's `texturefile` can theoretically lead to any folder within the mod rather than being limited to `/Hearts of Iron IV/gfx/`.
+    While it's common practice to store images in subfolders of `/Hearts of Iron IV/gfx/` (usually `/Hearts of Iron IV/gfx/leaders/` for country or unit leaders and `/Hearts of Iron IV/gfx/interface/ideas/` for advisors), a sprite's `texturefile` can theoretically lead to any folder within the mod rather than being limited to `/Hearts of Iron IV/gfx/`.
 - The character is assigned to a country using [recruit_character](<Effects - Hearts of Iron 4 Wiki.md>) in any history file, usually done in the country's corresponding `/Hearts of Iron IV/history/countries/` file. This cannot be placed on the last line of the file.
 - If the character isn't intended to have one of their roles at the start, then the character is created without that role, having it added with any [effect](<Effects - Hearts of Iron 4 Wiki.md>) block using [add_country_leader_role](<Effects - Hearts of Iron 4 Wiki.md>), [add_corps_commander_role](<Effects - Hearts of Iron 4 Wiki.md>), [add_field_marshal_role](<Effects - Hearts of Iron 4 Wiki.md>), [add_naval_commander_role](<Effects - Hearts of Iron 4 Wiki.md>), or [add_advisor_role](<Effects - Hearts of Iron 4 Wiki.md>). Since `add_advisor_role` is limited in what is possible to add and what isn't, instead using `visible = { ... }` with a [flag](<Data structures - Hearts of Iron 4 Wiki.md>) is an alternative for creating advisors.
 
@@ -65,7 +64,7 @@ These arguments are within the character itself.
 
 ### Name <a id="Name"></a>
 
-:   *Main article: [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>)*
 
 `name = my_character` defines a localisation key to be used to create the character's name depending on the language that is currently turned on. This will get localised in any working `/Hearts of Iron IV/localisation/english/*_l_english.yml` file, assuming the English language, as  `my_character: "My character's name"`
 
@@ -162,8 +161,8 @@ A character has an advisor role added by defining one within the `advisor = { ..
 
 | Internal name | Localised name | Intelligence ledger | Category | Notes |
 | --- | --- | --- | --- | --- |
-| political_advisor | Political advisor | Civilian | Laws \& Government |  |
-| theorist | Theorist | Invalid | Research \& Production | The ledger must be specified for each theorist individually as, for example, `ledger = navy`. Possible values are `army`, `air`, `navy`, `military` (Appearing on each of the prior ledgers), `civilian`, `all`, and `hidden`. |
+| political_advisor | Political advisor | Civilian | Laws & Government |  |
+| theorist | Theorist | Invalid | Research & Production | The ledger must be specified for each theorist individually as, for example, `ledger = navy`. Possible values are `army`, `air`, `navy`, `military` (Appearing on each of the prior ledgers), `civilian`, `all`, and `hidden`. |
 | army_chief | Chief of Army | Army | Military Staff |  |
 | navy_chief | Chief of Navy | Navy | Military Staff |  |
 | air_chief | Chief of Airforce | Air | Military Staff |  |

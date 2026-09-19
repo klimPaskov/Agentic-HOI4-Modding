@@ -271,7 +271,7 @@ my_ai_area = {
 
 ## AI focuses <a id="AI_focuses"></a>
 
-:   *Main article: [AI focuses](<AI focuses - Hearts of Iron 4 Wiki.md>)*
+*Main article: [AI focuses](<AI focuses - Hearts of Iron 4 Wiki.md>)*
 
 AI focuses, defined within `/Hearts of Iron IV/common/ai_focuses/*.txt` files, are used to tell the game which technology categories and focuses the AI should pick depending on its currently-pursued focuses.
 

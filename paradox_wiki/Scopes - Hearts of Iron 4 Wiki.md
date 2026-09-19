@@ -153,8 +153,7 @@ l_english:
 This will appear in the tooltip as such:
 
 ![Yes](media/data-structures-hearts-of-iron-4-wiki_6e1fd6f20a__img1.png) Any friendly country:
-
-:   Is at war with ![Flag of Italy](media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img8.png) Italy.
+Is at war with ![Flag of Italy](media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img8.png) Italy.
 
 In tooltips of the `every_` type where scope limits are used, by default the tooltip unites it into a single scope, such as `Germany, United Kingdom, Soviet Union:`. By using `display_individual_scopes = yes`, this will make each selected scope appear in the tooltip separately. For example:
 
@@ -177,18 +176,16 @@ every_neighbor_country = {
 Without displaying individual scopes, this will be shown as one effect block, such as the following:
 
 ![Flag of Germany](media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img1.png) Germany, ![Flag of Soviet Union](media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img37.png) Soviet Union:
-
-:   Gain Base War Support: **-10%**.
+Gain Base War Support: **-10%**.
 
 By the nature of tooltips, the if statements for the first country are evaluated and the same tooltip is shown for both countries. This falsely implies that the Soviet Union will have 10% ![War support](media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img11.png)War support removed. However, adding `display_individual_scopes = yes` changes it to the following:
 
 ![Flag of Germany](media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img1.png) Germany:
-
-:   Gain Base War Support: **-10%**.
+Gain Base War Support: **-10%**.
 
 ![Flag of Soviet Union](media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img37.png) Soviet Union:
 
-:   Gain Base Stability: **-10%**.
+Gain Base Stability: **-10%**.
 
 ### Empty Effect Scopes <a id="Empty_Effect_Scopes"></a>
 

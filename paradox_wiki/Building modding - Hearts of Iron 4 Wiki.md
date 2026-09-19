@@ -152,7 +152,7 @@ Within the building construction menu, buildings are divided into 3 zones depend
 
 ### Models <a id="Models"></a>
 
-:   *Main article: [Entity modding](<Entity modding - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Entity modding](<Entity modding - Hearts of Iron 4 Wiki.md>)*
 
 There are several arguments related to models within buildings.
 `show_on_map = 3` decides how many building models should there be per state or per province (depending on the building type) defined for the building. Each building construction will add one more model. If unspecified, will have no map models.

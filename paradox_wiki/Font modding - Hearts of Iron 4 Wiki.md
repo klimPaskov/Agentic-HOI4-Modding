@@ -43,7 +43,7 @@ Having set up your font, it is time to set up how you want to export a font bitm
 - **Padding**: controls the padding between each character in the font image. Only needed if you intend to manually edit the font file and don't want the characters too close together.
 - **Bit depth**: Set this to 32
 - **Spacing**: controls the minimum space between characters in the font image. Set this to 1-1; set it higher if you experience characters bleeding into each other.
-- **Width** \& **Height**: the size of the exported font bitmap. Adjust this so that all the characters fit on one image.
+- **Width** & **Height**: the size of the exported font bitmap. Adjust this so that all the characters fit on one image.
   - Note, increasing WxH drastically increases the file size. The game cannot process a single font graphic above 16 MB, with Paradox using 16,001KB at max for Chinese fonts. This limit is quickly reached without the heavier compression modes; you can work around this by [defining multiple linked font bitmaps to one font](#Defining_bitmaps), as Paradox does with the 11 linked 14-16MB Chinese font bitmaps.
 - **Channels**: controls how the characters are composited. Set them all to **glyph** unless you have specified an outline, in which case set the alpha channel (A) to **outline**, with the rest as **glyph**.
 - **Presets**: Unnecessary if manually choosing channels above. Pick any that fits your text, but only pick ones with alpha.
@@ -157,7 +157,7 @@ bitmapfonts = {
 
 ### Overriding bitmaps <a id="Overriding_bitmaps"></a>
 
-Additionally, it is possible to override a bitmapfont when the game is set to use a specific language. Primarily, fonts are overwritten for languages that don't use the Latin alphabet, and thus can't be small enough to fit into a 16 MB file (i.e. Simplified Chinese). By default, HoI4 has the necessary Cyrillic and Latin map font characters in one file, but the list of (Simplified) Chinese logographs is so enormous **it must encompass 11 \~4096x4000 bitmaps** with an override block in `/Hearts of Iron IV/interface/code_chinese.gfx`.
+Additionally, it is possible to override a bitmapfont when the game is set to use a specific language. Primarily, fonts are overwritten for languages that don't use the Latin alphabet, and thus can't be small enough to fit into a 16 MB file (i.e. Simplified Chinese). By default, HoI4 has the necessary Cyrillic and Latin map font characters in one file, but the list of (Simplified) Chinese logographs is so enormous **it must encompass 11 ~4096x4000 bitmaps** with an override block in `/Hearts of Iron IV/interface/code_chinese.gfx`.
 
 The aforementioned overwrite entries in a `/Hearts of Iron IV/interface/*.gfx` file looks like the following example:
 

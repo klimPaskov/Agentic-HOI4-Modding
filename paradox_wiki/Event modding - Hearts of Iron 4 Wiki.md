@@ -236,7 +236,7 @@ This covers some of them, as well as the less intuitive errors in the log.
 
 - **Leaving an event as triggered only when it's to be fired automatically** (*Event never fires*) – `is_triggered_only = yes` disables the automatic firing of the event, instead enforcing [using the effect to do so](<Effects - Hearts of Iron 4 Wiki.md>). Therefore, if it is left in within an event intended to fire automatically, the event will never do so.
 
-:   Note that `trigger = { ... }` can still co-exist with `is_triggered_only = yes`, so an event with both `is_triggered_only = yes` and `trigger = { ... }` may still be correct. Valid usages of them at the same time include the event being triggered via an [on action](<On actions - Hearts of Iron 4 Wiki.md>)'s `random_events` or the effect firing it has a delay (where the trigger would check if when the event is to be received), along others.
+Note that `trigger = { ... }` can still co-exist with `is_triggered_only = yes`, so an event with both `is_triggered_only = yes` and `trigger = { ... }` may still be correct. Valid usages of them at the same time include the event being triggered via an [on action](<On actions - Hearts of Iron 4 Wiki.md>)'s `random_events` or the effect firing it has a delay (where the trigger would check if when the event is to be received), along others.
 
 **Example event with this issue and a correction to it**
 
@@ -285,8 +285,8 @@ country_event = {
 
 - **Not checking the country in the trigger for country-specific auto-triggered events** (*Event fires for the wrong country/never fires*) – The events are not assigned to countries in any way (namespaces and filenames serve a purely organisational purpose), and each event trigger is checked for each country in order specified in the tag list.
 
-:   In the provided example, the event requires ITA to have more than 123 political power, upon which the country receiving the event would annex AUS. However, once ITA has that much, this trigger would be true *regardless* of where it's checked. The first country in the taglist by default is GER, and so it'll be the first country where the triggers are checked. In practice, this event will result in GER annexing AUS rather than ITA.
-:   In the correction, a change is made: first it checks that the country that would receive the event is ITA, and only then then it checks that it has more than enough political power. This makes sure that no other countries can receive this event. Specifying the tag is unnecessary if the trigger itself already implies a certain tag (e.g. `has_completed_focus` with a tag-specific focus tree), but is needed otherwise.
+In the provided example, the event requires ITA to have more than 123 political power, upon which the country receiving the event would annex AUS. However, once ITA has that much, this trigger would be true *regardless* of where it's checked. The first country in the taglist by default is GER, and so it'll be the first country where the triggers are checked. In practice, this event will result in GER annexing AUS rather than ITA.
+In the correction, a change is made: first it checks that the country that would receive the event is ITA, and only then then it checks that it has more than enough political power. This makes sure that no other countries can receive this event. Specifying the tag is unnecessary if the trigger itself already implies a certain tag (e.g. `has_completed_focus` with a tag-specific focus tree), but is needed otherwise.
 
 **Example event with this issue and a correction to it**
 
@@ -326,8 +326,8 @@ country_event = {
 
 - **Unnecessarily using auto-triggered events instead of ones that are triggered only** (*Poor practice/optimisation*) – This is more of a poor practice than an error. In general, if an event's condition can be triggered with an effect, it should be.
 
-:   The example is the most obvious way of doing this: a [has_completed_focus check](<Triggers - Hearts of Iron 4 Wiki.md>) instead of firing it directly in the focus. However, other such cases can occur, e.g. when a war starts between two countries, when a state gets occupied, or for firing one on a specific date. It's best practice to check [on actions](<On actions - Hearts of Iron 4 Wiki.md>) before creating an automatically-triggered event to see if they can be made to replicate.
-:   Firing it via an effect has a purpose of being instant instead of having to wait up to 20 days. If so desired, a delay of a few hours can be added to make it appear more natural to the player. Additionally, it serves as a way to optimise the modification, as this reduces the amount of trigger checks repeatedly done. Events with a large mean-time-to-happen are particularly awful for performance and can be replaced with an effect block firing one with a large [delay created with random_days within the effect](<Effects - Hearts of Iron 4 Wiki.md>) in some cases.
+The example is the most obvious way of doing this: a [has_completed_focus check](<Triggers - Hearts of Iron 4 Wiki.md>) instead of firing it directly in the focus. However, other such cases can occur, e.g. when a war starts between two countries, when a state gets occupied, or for firing one on a specific date. It's best practice to check [on actions](<On actions - Hearts of Iron 4 Wiki.md>) before creating an automatically-triggered event to see if they can be made to replicate.
+Firing it via an effect has a purpose of being instant instead of having to wait up to 20 days. If so desired, a delay of a few hours can be added to make it appear more natural to the player. Additionally, it serves as a way to optimise the modification, as this reduces the amount of trigger checks repeatedly done. Events with a large mean-time-to-happen are particularly awful for performance and can be replaced with an effect block firing one with a large [delay created with random_days within the effect](<Effects - Hearts of Iron 4 Wiki.md>) in some cases.
 
 **Example event with this issue and a correction to it**
 
@@ -384,8 +384,8 @@ focus = {
 
 - **Tight bounds on date triggers** (*Event never fires*)/**Auto-triggered event intended to be fired at a specific date** (*Event fires later than intended*) – The `trigger = { ... }` block is checked every 20 days by default, and this isn't possible to change for just one event in particular. If the date triggers are set with tight upper and lower bounds (e.g. `date > 1936.1.1` and `date < 1936.1.3`), it's very likely that the event will never fire, as this will not force the game to check the trigger at that date, but just prevent it from firing the event if the range is never checked, as the game doesn't see into the future and cannot predict that the trigger will be true or false at some point. Similarly, just placing a `date > 1936.1.1` will not ensure the event will be fired at exactly the second of January, but it may be anywhere between the 2nd and 21st (though it will be the same day on each reset).
 
-:   In order to fire an event at a certain date, it's best to fire it on startup with the needed delay, setting the event to never fire by itself with `is_triggered_only = yes` and optionally adding additional prerequisites for it to appear within `trigger = { ... }`, which would be checked at the moment the event is intended to appear. For the calculation of the amount of days to be correct, leap days must be ignored as the game doesn't contain them.
-:   Any effect block executed before or during startup can be used. An example using the [on_startup on action](<On actions - Hearts of Iron 4 Wiki.md>) exists [further down the article](#Integration_with_on_actions).
+In order to fire an event at a certain date, it's best to fire it on startup with the needed delay, setting the event to never fire by itself with `is_triggered_only = yes` and optionally adding additional prerequisites for it to appear within `trigger = { ... }`, which would be checked at the moment the event is intended to appear. For the calculation of the amount of days to be correct, leap days must be ignored as the game doesn't contain them.
+Any effect block executed before or during startup can be used. An example using the [on_startup on action](<On actions - Hearts of Iron 4 Wiki.md>) exists [further down the article](#Integration_with_on_actions).
 
 **Example event with this issue and a correction to it**
 
@@ -499,7 +499,7 @@ country_event = {
   - The event has a mean time to happen of 1 or less days. If it is omitted, it counts as 1 day.
   - The event can fire more than once. In other words, `fire_only_once = yes` is **not** present in the event.
 
-:   This error warns the player that the event may fire every day once the `trigger = { ... }` evaluates as true in a check that happens every 20 days. In order to remove the error, either of the three necessary clauses can be made to be not true for the event. For example, in a lot of cases, it is possible to make the event not be fired automatically and use an effect block to fire it instead, [such as by using on actions](<On actions - Hearts of Iron 4 Wiki.md>).
+This error warns the player that the event may fire every day once the `trigger = { ... }` evaluates as true in a check that happens every 20 days. In order to remove the error, either of the three necessary clauses can be made to be not true for the event. For example, in a lot of cases, it is possible to make the event not be fired automatically and use an effect block to fire it instead, [such as by using on actions](<On actions - Hearts of Iron 4 Wiki.md>).
 
 **Example event with this issue**
 
@@ -539,7 +539,7 @@ country_event = {
   - Using non-integers as the numeric ID after the namespace – One event has `id = my_namespace.abc`, the other has `id = my_namespace.cba`. [Due to how the game generates internal IDs](#ID_rules), a non-numeric ID is not supported, always becoming the number 0. As such, these are the exact same ID, even if they appear different.
   - Using a numeric ID not smaller than 100000 – Two events across different namespaces got assigned the same internal IDs. By the virtue of how the game generates internal IDs, each namespace is assigned 100000 numeric IDs, from 0 to 99999. Anything larger than that will start encroaching to other namespaces' IDs. The game fully allows numbers this large as the numeric IDs, so the event might work, but the duplicate internal ID means that there is a pair of events that are treated as the same event, meaning one of them will fire the other one instead.
 
-:   Since the reverse id lookup is not always provided, the way to tell if this is event-related is the second number: `50` signifies that it's event-related, while a different number means a different database entry, e.g. `54` means country leader IDs and `55` means unit leader IDs, the numeric legacy IDs which are unneeded due to the [1.11-introduced character system](<Character modding - Hearts of Iron 4 Wiki.md>)
+Since the reverse id lookup is not always provided, the way to tell if this is event-related is the second number: `50` signifies that it's event-related, while a different number means a different database entry, e.g. `54` means country leader IDs and `55` means unit leader IDs, the numeric legacy IDs which are unneeded due to the [1.11-introduced character system](<Character modding - Hearts of Iron 4 Wiki.md>)
 
 **Example event file with this issue**
 

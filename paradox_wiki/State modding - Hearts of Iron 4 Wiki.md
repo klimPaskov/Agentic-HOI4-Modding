@@ -202,7 +202,7 @@ Among the buttons that can always be selected, there are "Delete all empty" and 
 
 ## Building types <a id="Building_types"></a>
 
-:   *Main article: [Building modding](<Building modding - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Building modding](<Building modding - Hearts of Iron 4 Wiki.md>)*
 
 These are the different types of buildings in the game (Can also be found inside `/Hearts of Iron IV/common/buildings/00_buildings.txt`):
 

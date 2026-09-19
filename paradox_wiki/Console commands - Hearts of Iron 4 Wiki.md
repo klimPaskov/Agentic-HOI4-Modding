@@ -16,13 +16,13 @@
 
 ---
 
-This page lists the codes which may be input into the Console Window, a special debugging window which may be accessed on non-ironman games by hitting `^` , `°` or tilde (\~) (key varies based on keyboard layout). Press the up or down arrow keys to traverse through previously executed commands. Many codes can be turned off by repeating the command, but sometimes reloading the save or exiting the game is necessary. Please note that many of these commands come in and out with each DLC making some of them not work. Mods may introduce commands and more commonly, tags into the game to enhance their gameplay.
+This page lists the codes which may be input into the Console Window, a special debugging window which may be accessed on non-ironman games by hitting `^` , `°` or tilde (~) (key varies based on keyboard layout). Press the up or down arrow keys to traverse through previously executed commands. Many codes can be turned off by repeating the command, but sometimes reloading the save or exiting the game is necessary. Please note that many of these commands come in and out with each DLC making some of them not work. Mods may introduce commands and more commonly, tags into the game to enhance their gameplay.
 
 Also of note, commands may not work in ironman games by design.
 
 ## List of commands <a id="List_of_commands"></a>
 
-Press Shift+2, §, \~, \\, \`, ", º, ^ or ALT+2+1, or Shift+3 to access the console (key varies based on keyboard layout)
+Press Shift+2, §, ~, \\, \`, ", º, ^ or ALT+2+1, or Shift+3 to access the console (key varies based on keyboard layout)
 
 ### Internal IDs <a id="Internal_IDs"></a>
 

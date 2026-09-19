@@ -500,7 +500,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | RESISTANCE_TARGET_MODIFIER_IS_AT_PEACE | -10.0 | resistance target modifier when we are at peace |  |
 | RESISTANCE_TARGET_MODIFIER_STATE_VP | { 0, 0.0, 5, 5.0, 20, 10.0, 50, 20.0 } | resistance target modifier pairs for vp. first entry is total vp in state and second entry is amount of target modifier that applies for that threshold<br>0 - 5<br>5 - 20<br>20 - 50<br>50 - ... |  |
 | RESISTANCE_TARGET_MODIFIER_OCCUPIED_CAPITULATED | 10.0 | resistance target modifier when the enemy is capitulated |  |
-| RESISTANCE_TARGET_MODIFIER_OCCUPIED_IS_EXILE_MIN | 2.0 | min \& max resistance target modifier resistance target modifier for exile countries. interpolated using legitimacy |  |
+| RESISTANCE_TARGET_MODIFIER_OCCUPIED_IS_EXILE_MIN | 2.0 | min & max resistance target modifier resistance target modifier for exile countries. interpolated using legitimacy |  |
 | RESISTANCE_TARGET_MODIFIER_OCCUPIED_IS_EXILE_MAX | 20.0 |  |  |
 | RESISTANCE_TARGET_MODIFIER_POP_LOW | -20.0 | how much we reduce the resistance target |  |
 | RESISTANCE_TARGET_MODIFIER_POP_VERY_LOW | -50.0 | resistance target modifier in % for states we have claim |  |
@@ -715,7 +715,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | CASUALTIES_WS_A_PENALTY_DIVISOR | 600 | Divisor for casualties WS penalty |  |
 | PIERCING_THRESHOLDS | { 1.00, 0.75, 0.50, 0.00 } | Our piercing / their armor must be this value to deal damage fraction equal to the index in the array below `[higher number = higher penetration]`. If armor is 0, 1.00 will be returned.<br>there isn't much point setting this higher than 0 |  |
 | PIERCING_THRESHOLD_DAMAGE_VALUES | { 1.00, 0.80, 0.65, 0.50 } | 0 armor will always receive maximum damage (so add overmatching at your own peril). the system expects at least 2 values, with no upper limit. |  |
-| DIVISIONAL_COMMANDER_TRAIT_XP_REQUIREMENT | 400.0 | Get a trait if any valid options \& xp gained >= this |  |
+| DIVISIONAL_COMMANDER_TRAIT_XP_REQUIREMENT | 400.0 | Get a trait if any valid options & xp gained >= this |  |
 | NUM_DAYS_FOR_OPERATION_ENTRY | 60 | Number of days that a unit must have been on a particular active order instance to receive a history entry. |  |
 | MAX_LEADERS_TO_SHOW | 50 | Max officers to show in field officers list, sorted by field EXP. Divisions with awardable entries will potentially supercede this limit |  |
 | BASE_FEMALE_DIVISIONAL_COMMANDER_CHANCE | 0 | Chance to receive a female divisonal commander. This is set to zero in the base game, as we do not have generic female portraits for many graphical culture groups. This expects a value between 0 and 1 and is added to by female_divisional_commander_chance. If you don't have female generic portraits defined, you -will- get silhouettes. |  |
@@ -968,7 +968,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | STRATEGIC_REDEPLOY_ORG_RATIO | 0.1 | Ratio of max org while strategic redeployment |  |
 | BATALION_NOT_CHANGED_EXPERIENCE_DROP | 0.0 | Division experience drop if unit has same batalion |  |
 | BATALION_CHANGED_EXPERIENCE_DROP | 0.5 | Division experience drop if unit has different batalion |  |
-| ARMOR_VS_AVERAGE | 0.4 | how to weight in highest armor \& pen vs the division average |  |
+| ARMOR_VS_AVERAGE | 0.4 | how to weight in highest armor & pen vs the division average |  |
 | PEN_VS_AVERAGE | 0.4 |  |  |
 | LAND_EQUIPMENT_BASE_COST | 10 | Cost in XP to upgrade a piece of equipment one level is base + ( total levels \* ramp ) |  |
 | LAND_EQUIPMENT_RAMP_COST | 5 |  |  |
@@ -1379,7 +1379,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | NAVAL_MINES_SWEEPERS_REDUCTION_ON_PENALTY_EFFECT | 3.3 | How much is the task force's sweeping attribute reducing the penalty effect. |  |
 | NAVAL_MINES_INTEL_DIFF_FACTOR | 0.5 | Better our decryption over enemy encryption will reduce the penalties from the enemy mines in the region. This value is a factor to be used for balancing. |  |
 | NAVAL_MINES_NAVAL_SUPREMACY_FACTOR | 1.0 | Factor for max amount of mines increasing naval supremacy |  |
-| ATTRITION_WHILE_MOVING_FACTOR | 1.5 | attrition multiplier while moving \& doing missions |  |
+| ATTRITION_WHILE_MOVING_FACTOR | 1.5 | attrition multiplier while moving & doing missions |  |
 | ATTRITION_DAMAGE_ORG | 0.01 | damage from attrition to Organisation (relative to max org) |  |
 | ATTRITION_DAMAGE_STR | 0.03 | damage from attrition to str (relative to max str) |  |
 | ATTRITION_STR_DAMAGE_CHANCE | 0.2 | chance to get damaged at highest attrition |  |
@@ -2207,7 +2207,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | SUB_TASKFORCE_MAX_SHIP_COUNT | 16 | optimum sub count for sub taskforces |  |
 | MIN_CAPITALS_FOR_CARRIER_TASKFORCE | 6 | carrier fleets will at least have this amount of capitals |  |
 | CAPITALS_TO_CARRIER_RATIO | 1.5 | capital to carrier count in carrier taskfoces |  |
-| SCREENS_TO_CAPITAL_RATIO | 4.0 | screens to capital/carrier count in carrier \& capital taskforces |  |
+| SCREENS_TO_CAPITAL_RATIO | 4.0 | screens to capital/carrier count in carrier & capital taskforces |  |
 | MIN_MAIN_SHIP_RATIO | 0.3 | if main ship ratio is below this, steal other ships. |  |
 | MIN_SUPPORT_SHIP_RATIO | 0.7 | if support ship ratio is below this, steal other ships. |  |
 | MIN_MAIN_SHIP_RATIO_TO_REINFORCE | 0.5 | the main ships will be tried to reinforce this level. |  |
@@ -2345,7 +2345,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | OIL_WANT_AT_PEACE_PER_POTENTIAL_MISC_CONSUMPTION_K | 0.1 |  |  |
 | RESOURCE_WANT_PER_MISSING_BALANCE | 0.2 | negative balance increases the desire on a resource |  |
 | RESOURCE_WANT_PER_CONSUMED | 0.05 | if resource is being used in production, increase the desire |  |
-| CRYPTO_ACTIVATION_THRESHOLD | 1.25 | \~end<br>crypto ai calculates a score \& a threshold for each cracked crypto<br>if score > crypto, it activates the crypto<br>will multiply crypto activation threshold. larger |  |
+| CRYPTO_ACTIVATION_THRESHOLD | 1.25 | ~end<br>crypto ai calculates a score & a threshold for each cracked crypto<br>if score > crypto, it activates the crypto<br>will multiply crypto activation threshold. larger |  |
 | CRYPTO_ACTIVATE_NUM_DAYS_DROP_OFF | 0.4 | longer decrypted crypto waits, lower threshold it will have. threshold will be multiplied by this value at most |  |
 | CRYPTO_ACTIVATE_NUM_DAYS_DECAY | 60 | at this number of days, it will decay by %50 of prev define |  |
 | CRYPTO_ACTIVATE_NUM_ACTIVATED_DROP_OFF | 0.6 | having an already activated cryptos will further multiply threshold, down to this value |  |
@@ -2353,7 +2353,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | CRYPTO_ACTIVATION_SCORE_OUR_CAPITAL_BONUS | 0.2 | fronts of our capital get a bonus by this ratio |  |
 | CRYPTO_ACTIVATION_SCORE_ENEMY_CAPITAL_BONUS | 0.2 | fronts of enemy capital get a bonus by this ratio |  |
 | CRYPTO_AFTER_SCORE_INVASION_FRONT_BONUS | 1.0 | a front that is naval invading will increase the score by this ratio |  |
-| MAX_MODULAR_EQUIPMENT_EQUIPMENT_UPGRADE_COUNT_PER_PASS | 4 | \~crypto ai<br>the maximum number of level AI will try to add to an equipment upgrade of an equipment defined in common/ai_equipment in one pass |  |
+| MAX_MODULAR_EQUIPMENT_EQUIPMENT_UPGRADE_COUNT_PER_PASS | 4 | ~crypto ai<br>the maximum number of level AI will try to add to an equipment upgrade of an equipment defined in common/ai_equipment in one pass |  |
 | EQUIPMENT_UPGRADE_VARIANT_MATCH_SCORE_FACTOR | 0.2 | the weight of equipment upgrade level when computing the match score of a variant to an ai equipment design. |  |
 | AI_UPDATE_ROLES_FREQUENCY_HOURS | 48 | Update the roles for a country AI this often (affects performance) |  |
 | UPDATE_SUPPLY_BOTTLENECKS_FREQUENCY_HOURS | 168 | Check for and try to fix supply bottlenecks this often. (168 hours = 1 week) |  |
@@ -2546,7 +2546,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | OPERATION_AI_MINIMUM_SCORE | 10.0 | Once an operation's AI weight falls below the minimum score it will be scrapped if it is being prepared |  |
 | OPERATION_COMPLETION_XP | 18 |  |  |
 | OPERATIVE_CAPTURE_DURATION_IN_DAYS | 9\*30 |  |  |
-| DEFAULT_OPERATION_COST_MULTIPLIER | 0.15 | operation cost \& time are increased by default this ratios for each<br>instance of operation that were already executed against same target.<br>can be overridden using time_multiplier \& cost_multiplier in operation. |  |
+| DEFAULT_OPERATION_COST_MULTIPLIER | 0.15 | operation cost & time are increased by default this ratios for each<br>instance of operation that were already executed against same target.<br>can be overridden using time_multiplier & cost_multiplier in operation. |  |
 | DEFAULT_OPERATION_TIME_MULTIPLIER | 0.0 |  |  |
 | BUILD_INTEL_NETWORK_MISSION_ACTIVITY_INDICATOR_FACTOR | 10 | The following defines are multiplied to the number of operatives operating in the target country the activity level is computed for |  |
 | BOOST_IDEOLOGY_NETWORK_MISSION_ACTIVITY_INDICATOR_FACTOR | 10 |  |  |
@@ -2781,7 +2781,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | ARMY_MAX_PIERCING_INTEL_MIN | 0.0 |  |  |
 | ARMY_MAX_PIERCING_INTEL_MAX | 0.5 |  |  |
 | ARMY_MAX_PIERCING_RANGE_AT_LOWEST_INTEL | 1.0 |  |  |
-| NAVY_MAPICON_MISSION_COUNT_INTEL_MIN | 0.5 | \~<br>min intel to show assigned naval missions |  |
+| NAVY_MAPICON_MISSION_COUNT_INTEL_MIN | 0.5 | ~<br>min intel to show assigned naval missions |  |
 | NAVY_MAPICON_MISSION_COUNT_INTEL_MAX | 0.8 | min intel to show assigned naval missions with perfect accuracy, and taskforces count |  |
 | NAVY_MAPICON_SHOW_ALL_NAVAL_PORTS | 0.3 | min intel to show all naval ports (otherwise you will only see nearby ones) |  |
 | NAVY_MAPICON_NAVAL_PORT_VISIBILITY_DETAIL_THRESHOLDS | { 0.0, 0.1, 0.3, 0.7, 0.8 } | how detailed the post tooltips will be<br>for no intel<br>show port level<br>show fuzzy taskforce count<br>show full taskforce count<br>show taskforce details |  |
@@ -2792,7 +2792,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | AIR_MAPICON_SHOW_ALL_AIR_PORTS | 0.3 | min intel to show all air ports (otherwise you will only see nearby ones) |  |
 | AIR_MAPICON_AIR_PORT_VISIBILITY_DETAIL_THRESHOLDS | { 0.0, 0.3, 0.7, 0.8 } | how detailed the post tooltips will be<br>for no intel<br>show fuzzy air plane count<br>show full air count<br>show air plane details |  |
 | AIR_MAPICON_AIR_PORT_PLANE_FUZZY_THRESHOLD | 0.5 |  |  |
-| AIR_MIN_INTEL_TO_SHOW_EQUIPMENT_DESIGN_DETAILS | 0.8 | \~intel ledger defines |  |
+| AIR_MIN_INTEL_TO_SHOW_EQUIPMENT_DESIGN_DETAILS | 0.8 | ~intel ledger defines |  |
 
 ## NCharacter <a id="NCharacter"></a>
 
@@ -2888,14 +2888,14 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | MIN_TRAIN_SUPPLY_FACTOR | 0.5 | Having 0 trains in stockpile only applies this penalty factor, scaling up to 1.0 when need is met |  |
 | MIN_TRAIN_REQUIREMENT | 2 | If total train need <= this, then don't apply any supply penalty, even if stockpile is insufficient |  |
 | SUPPLY_FLOW_REDUCTION_THRESHOLD | 0.1 | if supply flow is lower than this, it is not applied |  |
-| BASE_AIR_SUPPLY_MULT_FOR_TRUCK_BUFFER | 1.0 | following values are used for calculating potential truck usage<br>generally potential is \~= current usage but as units moves along the map<br>they are assigned to different nodes which adds slightly higher usage due to minimum truck needed being 1 |  |
+| BASE_AIR_SUPPLY_MULT_FOR_TRUCK_BUFFER | 1.0 | following values are used for calculating potential truck usage<br>generally potential is ~= current usage but as units moves along the map<br>they are assigned to different nodes which adds slightly higher usage due to minimum truck needed being 1 |  |
 | BASE_ARMY_SUPPLY_MULT_FOR_TRUCK_BUFFER | 1.0 |  |  |
 | BASE_NAVY_SUPPLY_MULT_FOR_TRUCK_BUFFER | 1.0 |  |  |
 | CAPITAL_NODE_BASE_SUPPLY_ADD | 0 |  |  |
 | BUILT_NODE_BASE_SUPPLY_ADD | 0.6 |  |  |
 | LOCAL_NODE_BASE_SUPPLY_ADD | 0.5 |  |  |
 | NAVAL_NODE_BASE_SUPPLY_ADD | 0.3 |  |  |
-| ARMY_SUPPLY_RATIO_STARTING_GAIN | 0.0 | \~end<br>armies slowly gains and buffers supply above >100% up to their supply grace if they have efficent supply flow<br>otherwuse they will lose up to 100% supply every day depending on how bad supply flow is |  |
+| ARMY_SUPPLY_RATIO_STARTING_GAIN | 0.0 | ~end<br>armies slowly gains and buffers supply above >100% up to their supply grace if they have efficent supply flow<br>otherwuse they will lose up to 100% supply every day depending on how bad supply flow is |  |
 | ARMY_SUPPLY_RATIO_SPEED_GAIN_PER_HOUR | 0.01 |  |  |
 | ARMY_MAX_SUPPLY_RATIO_GAIN_PER_HOUR | 0.15 |  |  |
 | MIN_SURRENDER_LIMIT_TO_MOVE_SUPPLY_CAPITAL | 0.15 | country needs to be above thos surrender ratio to be able to move its capital |  |

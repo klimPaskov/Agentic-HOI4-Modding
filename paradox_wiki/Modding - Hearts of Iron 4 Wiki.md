@@ -22,7 +22,7 @@
   - [Descriptor contents](#Descriptor_contents)
     - [replace_path](#replace_path)
 - [Game data](#Game_data)
-- [Tools \& utilities](#Tools_.26_utilities)
+- [Tools & utilities](#Tools_.26_utilities)
 - [Common mistakes](#Common_mistakes)
 - [Useful knowledge](#Useful_knowledge)
 - [See also](#See_also)
@@ -66,12 +66,12 @@ These are the most common text editors to use for modding the game:
 
 - Visual Studio Code.
 
-:   :   Has a fan-made CWTools extension with Paradox syntax highlighting, validation and tooltips for triggers and effects. To install it, go to Extensions on the left panel of VS and search for CWTools. (Note: validation rules are incomplete and will show many false errors in gui and localization files).
-    :   Recent versions with automatic highlighting of {} pairs in different colours and flagging opened/closing ones that are missing a partner red is worth it's weight in gold.
+Has a fan-made CWTools extension with Paradox syntax highlighting, validation and tooltips for triggers and effects. To install it, go to Extensions on the left panel of VS and search for CWTools. (Note: validation rules are incomplete and will show many false errors in gui and localization files).
+Recent versions with automatic highlighting of {} pairs in different colours and flagging opened/closing ones that are missing a partner red is worth it's weight in gold.
 
 - Notepad++. Choose Perl as your language, as it will provide good highlighting and allow to fold blocks of code and comments. To set it as default, go to Settings, Style Configurator, find Perl in the list on the left and add "gui txt" (without quotes) to the "User ext." field at the bottom.
 
-:   :   Some options that are commonly turned on by default in other text editors are turned off in Notepad++, but can be changed in the topbar. This includes Word wrap, Document map, Indent guide, and Folder as workspace.
+Some options that are commonly turned on by default in other text editors are turned off in Notepad++, but can be changed in the topbar. This includes Word wrap, Document map, Indent guide, and Folder as workspace.
 
 - Sublime Text. There is an extension for it released by the developers of Imperator which could be used with HOI4 but use at your own risk: Sublime Tools. It adds colored highlighting for effects and triggers. If you want to toggle comments in Sublime, you also need to add this file to the same "User" folder.
 
@@ -86,7 +86,7 @@ Reasons to use a non-default text editor include the following:
 ### Searching multiple files <a id="Searching_multiple_files"></a>
 
 One feature of non-default text editors is a highly-customisable search of all files within the same folder. This is highly useful for dealing with errors and finding locations of certain elements.
-**Windows File Explorer is a poor choice for doing this**, as it only searches inside of .txt files while it may be desirable to search files of other extensions, e.g. .yml, .gfx, .gui, or .asset, and it is very noticeably slower than either text editor: a search taking \~10 seconds on a text editor may take up to 15 minutes to conclude in the Windows File Explorer.
+**Windows File Explorer is a poor choice for doing this**, as it only searches inside of .txt files while it may be desirable to search files of other extensions, e.g. .yml, .gfx, .gui, or .asset, and it is very noticeably slower than either text editor: a search taking ~10 seconds on a text editor may take up to 15 minutes to conclude in the Windows File Explorer.
 
 This is how exactly the feature is enabled in the common text editors:
 
@@ -105,7 +105,7 @@ There are the following uses for this:
 - Finding out an internal ID by searching the localisation folder for the localised name. For example, searching for an event's title can be used to determine the ID.
 - Finding out where the database entry of a certain type is defined where it is not immediately intuitive. For example, by searching for an equipment ID within the folder that stores equipment (or even `/Hearts of Iron IV/common/` in general) can be used to find the exact file, which isn't immediately obvious for some equipment types.
 
-:   :   A subset of this includes finding sprites' or interface elements' locations: The `gui` console command (or its main menu equivalent in debug mode) can be used in order to find the name of a certain SpriteType (prefixed with GFX_) or interface element. A search query with the given name within the `/Hearts of Iron IV/interface/` folder will provide the file where the sprite is defined (as such, also giving the `texturefile` that says the path of the image in gfx) or the interface folder (which allows copying it to the mod and editing it).
+A subset of this includes finding sprites' or interface elements' locations: The `gui` console command (or its main menu equivalent in debug mode) can be used in order to find the name of a certain SpriteType (prefixed with GFX_) or interface element. A search query with the given name within the `/Hearts of Iron IV/interface/` folder will provide the file where the sprite is defined (as such, also giving the `texturefile` that says the path of the image in gfx) or the interface folder (which allows copying it to the mod and editing it).
 
 - Dealing with unintuitive errors where the location is not specified, such as `Invalid Decision Category`, where this can be used to locate *which* file is throwing the error.
 - Finding out what can cause a certain occurance to happen, such what fires a certain event or what sets a certain cosmetic tag.
@@ -273,7 +273,7 @@ The load order in the game is as such:
 - [User directory](<Modding - Hearts of Iron 4 Wiki.md>). While it's usually limited to the [nudger](<Nudger - Hearts of Iron 4 Wiki.md>)'s outputs, any other folder also works here.
 - Mods, ordered by using [filenames of user-specific descriptors](#Mod_structure). For example, if mods with descriptors of `mod/abc_mod.mod` and `mod/xyz_mod.mod` both overwrite `../events/my_events.txt`, only the version in the mod with the descriptor of `mod/xyz_mod.mod` will be read.
 
-:   This can be overwritten using `dependencies = { ... }` in the [descriptor contents](#Descriptor_contents). **[replace_path](<Modding - Hearts of Iron 4 Wiki.md>) does not change the order**, but it is used to completely unload everything previously-loaded from a certain folder.
+This can be overwritten using `dependencies = { ... }` in the [descriptor contents](#Descriptor_contents). **[replace_path](<Modding - Hearts of Iron 4 Wiki.md>) does not change the order**, but it is used to completely unload everything previously-loaded from a certain folder.
 
 Due to DLCs being their own source of loaded files, the `modname/dlc/` folder and its subfolders will have no effect. Instead, the file has to follow the actual load location: e.g. to edit `../dlc/dlc023_man_the_guns/music/mtg_music.txt`, the mod will have to contain `modname/music/mtg_music.txt`.
 
@@ -315,7 +315,7 @@ The script language in which the code is built always has a common structure: `<
 
 - Strings are marked with quotation marks (only `"`) on both sides. A space will not interrupt the string, but a direct newline will. If there aren't any whitespace characters inside, omitting the quotation marks will not change the result (such as `date > "1936.1.1"` and `date > 1936.1.1`). There are two special characters allowed to use in strings: `\"` is used to write a quotation mark and `\\` is used to write a backslash, a backslash may not be used in any other way. It's impossible to include a newline directly inside of a string. Occassionally the attribute itself may be enclosed in quotation marks, such as `"TAG" = { has_political_power > 100 }`. A string can include at most 255 characters, not including the null terminator.
 
-:   Where text is intended to be displayed to the player, such as tooltips, attributes generally accept a [localisation key](#Localisation) as the argument. This allows the shown text to change depending on the enabled language and contains more capabilities, such as not being bound to 255 characters or capabilities for text customisation (e.g. coloured text, newlines, or dynamic changes). If the game detects no defined localisation key in the enabled language's database, it will default to directly displaying the argument.
+Where text is intended to be displayed to the player, such as tooltips, attributes generally accept a [localisation key](#Localisation) as the argument. This allows the shown text to change depending on the enabled language and contains more capabilities, such as not being bound to 255 characters or capabilities for text customisation (e.g. coloured text, newlines, or dynamic changes). If the game detects no defined localisation key in the enabled language's database, it will default to directly displaying the argument.
 
 - In certain types of attributes, figure brackets are used to attach an entire block of code as the argument, which usually consists of other code in the same `<attribute> = <argument>` format. As an example, `random_country = { add_stability = 0.1 }` (as an [effect](<Effects - Hearts of Iron 4 Wiki.md>)) is an attribute of `random_country` with the argument of `{ add_stability = 0.1 }`; that argument itself consists of an attribute of `add_stability` with an argument of `0.1`. In particular, this will [scope](<Scopes - Hearts of Iron 4 Wiki.md>) into a random existing country and add 10% ![Stability](media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img10.png)Stability.
 
@@ -399,7 +399,7 @@ The logs are located in the [user directory](#User_directory)'s `/Hearts of Iron
 
 ### Localisation <a id="Localisation"></a>
 
-:   *Main article: [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>)*
 
 Names depending on language are defined within [localisation](<Localisation - Hearts of Iron 4 Wiki.md>). Taking only the English language into consideration, the `/Hearts of Iron IV/localisation/english` folder is used. A file within must end with `_l_english.yml` in the filename to work properly, including the extension that is hidden by default within the Windows File Explorer. The file must be encoded in the UTF-8 encoding with the byte-order mark included, usually called UTF-8-BOM. The exact details on conversion depend on the text editor. The first line in the file is `l_english:` to assign it to that database.
 
@@ -413,7 +413,7 @@ While it is theoretically possible to avoid using localisation in many cases, lo
 
 ### GFX <a id="GFX"></a>
 
-:   *Main article: [Graphical asset modding](<Graphical asset modding - Hearts of Iron 4 Wiki.md>)*
+*Main article: [Graphical asset modding](<Graphical asset modding - Hearts of Iron 4 Wiki.md>)*
 
 Most of the time, images are stored in the DDS format, typically ARGB8 (or A8R8G8B8. depending on the image editor) without mipmaps. The exact format doesn't strictly matter, however: most image files can be saved in either DDS, TGA, PNG, or BMP; as long as information in the sprite is correct. Main exceptions to this include the [flags representing countries](<Country creation - Hearts of Iron 4 Wiki.md>) that must be 32-bit TGA files without RLE encoding and bottom-left origin point, and files in the map folder.
 
@@ -531,7 +531,7 @@ This is particularly obvious with the loading screens: `replace_path = "gfx/load
 - [Defines](<Defines - Hearts of Iron 4 Wiki.md>), which allow to change constants used in some of the hard-coded calculations, such as the starting date or the necessary amount of victory points to show a specific icon over the province.
   - [Static modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) also include modifiers applied in hard-coded cases, such as non-core state malus or the political power cost when a national focus is selected.
 
-## Tools \& utilities <a id="Tools_.26_utilities"></a><a id="Tools_&_utilities"></a>
+## Tools & utilities <a id="Tools_.26_utilities"></a><a id="Tools_&_utilities"></a>
 
 - Official Paradox Forum for mods
 - Maya exporter - Clausewitz Maya Exporter to create your own 3D models.
@@ -541,19 +541,18 @@ This is particularly obvious with the loading screens: `replace_path = "gfx/load
 
 - **Multiple mods with the same name in the launcher** (*Mod fails to load*) – This commonly happens when subscribing to one's own mod on Steam Workshop. If there are two mods with the same name that may be selected from the launcher, only the one that is loaded earlier will have its files detected; the other mod will appear as changing nothing in-game. This is corrected by changing the `name` attribute in the descriptors of either one of the mods.
 
-:   Generally, there is no reason to subscribe to your own mod in the Steam Workshop: it will almost never function any differently from the local mod and this may also occassionally break updating the mod due to duplicate `remote_file_id` attributes in different mods.
+Generally, there is no reason to subscribe to your own mod in the Steam Workshop: it will almost never function any differently from the local mod and this may also occassionally break updating the mod due to duplicate `remote_file_id` attributes in different mods.
 
 - **Wrong path** (*replace_paths apply, yet the mod doesn't get loaded*) – In this case, the needed file to adjust is [user directory](<Modding - Hearts of Iron 4 Wiki.md>)'s `/Hearts of Iron IV/mod/modname.mod`, opened directly within a text editor. There are two primary variations on this issue:
 
-:   - **Incorrect path** – This is commonly the cause if the game displays the filesize of the mod, but doesn't load it. The mod doesn't route to the file directly. This can sometimes be a cause of further subfoldering, such as if the mod is located in `mod/my_mod/cool_mod`, yet the user-specific .mod file contains `path = "mod/my_mod"`. In this case, the files still exist and get loaded. However, the game, for example, expects focus trees in the `/Hearts of Iron IV/common/national_focus/` folder. `mod/my_mod/cool_mod/common/national_focus/` gets taken to be `/Hearts of Iron IV/cool_mod/common/national_focus/` instead, as `path = "mod/my_mod"` doesn't knock off the `/cool_mod/` folder. This is corrected simply by adjusting the path to be to the correct folder.
-    - **Invalid path** – The *intended* folder is correct, yet it's stated in a way that the game can't recognise.
+- **Incorrect path** – This is commonly the cause if the game displays the filesize of the mod, but doesn't load it. The mod doesn't route to the file directly. This can sometimes be a cause of further subfoldering, such as if the mod is located in `mod/my_mod/cool_mod`, yet the user-specific .mod file contains `path = "mod/my_mod"`. In this case, the files still exist and get loaded. However, the game, for example, expects focus trees in the `/Hearts of Iron IV/common/national_focus/` folder. `mod/my_mod/cool_mod/common/national_focus/` gets taken to be `/Hearts of Iron IV/cool_mod/common/national_focus/` instead, as `path = "mod/my_mod"` doesn't knock off the `/cool_mod/` folder. This is corrected simply by adjusting the path to be to the correct folder.
+- **Invalid path** – The *intended* folder is correct, yet it's stated in a way that the game can't recognise.
 
-    :   One of the ways of doing so is using backslashes for folder separations, such as `path = "mod\my_mod"`. **This is incorrect**, as a single backlash gets taken to be an escape character instead. Using forward slashes as in `path = "mod/my_mod"` is correct.
-    :   Another way of doing so is using special characters in the name, such as `path = "C:/Users/Пример кириллицы/Documents/Paradox Interactive/Hearts of Iron IV/mod/my_mod"`. In this case, a special character is defined as one that takes more than 1 byte to write with UTF-8, not being present in ASCII's printable characters. This is commonly non-English language folder names, such as diacritics or non-Latin alphabets. In this case, it can be rerouted to a folder that does not contain special characters in the name, such as `path = "D:/Hearts of Iron IV modding/my_mod"`.
-    :   If the path to the [user directory](#User_directory) itself contains special characters, it's better to re-route the entire directory to another folder. To do so, edit the base game's `/Hearts of Iron IV/launcher-settings.json` file and change the folder specified under `gameDataPath`. After doing so, move the user directory's contents to that folder as to not lose save games and other information. The mod's path also needs to be adjusted properly.
-
-        :   **If the user directory has non-ASCII characters in the path to it, then all local mods stored there (as the default place to store them) will fail to be loaded and the in-game means will fail to open the error log**, with a pop-up saying that the system cannot get access to the file. The default Steam installation folder has a path that will only have ASCII characters in it, making the Steam mods work as intended even if the user directory has non-ASCII characters in it.
-:   In case the launcher shows that the mod has an invalid path even after correcting the issue, make sure that the user-specific mod descriptor file directly within the user directory's `/Hearts of Iron IV/mod/` exists and try forcing an update of mod information by deleting the [SQLite database that stores mod information](#Mod_structure), located at either `/Hearts of Iron IV/launcher-v2.sqlite` or `/Hearts of Iron IV/launcher-v2_openbeta.sqlite`.
+One of the ways of doing so is using backslashes for folder separations, such as `path = "mod\my_mod"`. **This is incorrect**, as a single backlash gets taken to be an escape character instead. Using forward slashes as in `path = "mod/my_mod"` is correct.
+Another way of doing so is using special characters in the name, such as `path = "C:/Users/Пример кириллицы/Documents/Paradox Interactive/Hearts of Iron IV/mod/my_mod"`. In this case, a special character is defined as one that takes more than 1 byte to write with UTF-8, not being present in ASCII's printable characters. This is commonly non-English language folder names, such as diacritics or non-Latin alphabets. In this case, it can be rerouted to a folder that does not contain special characters in the name, such as `path = "D:/Hearts of Iron IV modding/my_mod"`.
+If the path to the [user directory](#User_directory) itself contains special characters, it's better to re-route the entire directory to another folder. To do so, edit the base game's `/Hearts of Iron IV/launcher-settings.json` file and change the folder specified under `gameDataPath`. After doing so, move the user directory's contents to that folder as to not lose save games and other information. The mod's path also needs to be adjusted properly.
+**If the user directory has non-ASCII characters in the path to it, then all local mods stored there (as the default place to store them) will fail to be loaded and the in-game means will fail to open the error log**, with a pop-up saying that the system cannot get access to the file. The default Steam installation folder has a path that will only have ASCII characters in it, making the Steam mods work as intended even if the user directory has non-ASCII characters in it.
+In case the launcher shows that the mod has an invalid path even after correcting the issue, make sure that the user-specific mod descriptor file directly within the user directory's `/Hearts of Iron IV/mod/` exists and try forcing an update of mod information by deleting the [SQLite database that stores mod information](#Mod_structure), located at either `/Hearts of Iron IV/launcher-v2.sqlite` or `/Hearts of Iron IV/launcher-v2_openbeta.sqlite`.
 
 - **Incorrect dependency name** (*Mod fails to loaded when enabled with the main mod*) – If a mod is intended to be a sub-mod to a larger mod or several, it is, in most cases, mandatory to include `dependencies = { "Main mod 1" "Main mod 2" }`, which will place it higher in the load order. In this case, the name of the mod must be the exact same as in the .mod file of the mod, also showing up in the launcher. This can include special characters (e.g. `name = "Main mod – Subtitle"` in the main mod will require `dependencies = { "Main mod — Subtitle" }` in the sub-mod with an en dash rather than a hyphen). For this reason, it's preferable to copy over the name from the .mod file of the main mod rather than manually retyping it from the launcher: some special charactes may be difficult to notice or to distinguish from other characters.
 - **Not copying over mod information entries** (*Entries such as replace_path fail to apply*) – The game keeps the mod's `modname/descriptor.mod` file as the information for the mod in general and `/Hearts of Iron IV/mod/modname.mod` as the information for the mod that gets read for the machine. While the launcher typically attempts to keep the machine-specific file up to date with the general mod information file, it sometimes fails to do so, such as for replace_paths where it succeeds at deleting unneeded entries but not at copying needed ones. In this case, both files must be edited manually for a replace_path to apply. This also may be needed for other entries in the file.
