@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "92e7590f1d1d44404712feaf5bd8db51992e21f8",
+  "generated_for_revision": "c3ce22591e0d3ecddb348ae7dc5ef0e94323991f",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -5012,268 +5012,273 @@
       "expected_files": [
         {
           "path": "paradox_wiki/AI focuses - Hearts of Iron 4 Wiki.md",
-          "sha256": "5b9784d6776982a38d9b35caaabc790bc9c03c5566be3e9f3834b1550e2c6dd2",
-          "size": 5149
+          "sha256": "84fdf975cd49148ca23cc231efd689502dac4e5387253d729607cec63dfccd7e",
+          "size": 9145
         },
         {
           "path": "paradox_wiki/AI modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "f1fdb9fdad274546fb129fcb87745f5fcb6e710d0e46653eb31b07ae4d20a14f",
-          "size": 73238
+          "sha256": "9fdf41cbd3abc8a68dfdd030328375437af3feff08dc252598dbd0e96d8f8d56",
+          "size": 74468
         },
         {
           "path": "paradox_wiki/Achievement modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "e80b8db8a9a14964edd0c447669de2e59a7296db53da799f574aee4102dd7dc6",
-          "size": 5157
+          "sha256": "a53e10652cb677faa43dd93c97fc9a39db1098248bcb92cebbb6d632fd80ee0e",
+          "size": 8812
         },
         {
           "path": "paradox_wiki/Autonomy state modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "4016e392c8211769e68d3d462376233cb8141c08fd78e2b3c8cdf7a129463a8e",
-          "size": 18494
+          "sha256": "7b54bac232706a9bed50f8b7f5ae4277da113bf7d49ba5dc127e34c516a230fe",
+          "size": 21747
         },
         {
           "path": "paradox_wiki/Balance of power modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "1ba12e672e528e71e30b931cb0bbcfa6597cec5b406433036252b8fb2f2734ee",
-          "size": 21675
+          "sha256": "e49f44170af3c284b7579cd8244a4efcd0b5240b598a7d3aea8e670acf53f5e3",
+          "size": 24373
         },
         {
           "path": "paradox_wiki/Bookmark modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "f815925fa2a7e20db81bcde9e0aab5d746f7f3bed4c9693766939a70cef43149",
-          "size": 29139
+          "sha256": "815148a063c5940e9a3f087e63a584d3de0e90317339b1c549a63733b092366f",
+          "size": 28305
         },
         {
           "path": "paradox_wiki/Building modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "25c020bb4a2a950275fa7c095eac38f8c29ae099b2591ae030574d2d6574c2d5",
-          "size": 26958
+          "sha256": "d2ae997a0aec44674772cb1fb072902bdcce4e8783cd2cb9bdbdedaded7e336e",
+          "size": 29219
         },
         {
           "path": "paradox_wiki/Character modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "827f261977dbf1ccfc74a80d8ef331056bbd49a58a60254fb53275c214f4edc4",
-          "size": 62716
+          "sha256": "cbec3c1a7f164793b1c9a0e535ad4b91c91616207c8ce728317b3e7bfaf2fc2b",
+          "size": 61213
         },
         {
           "path": "paradox_wiki/Console commands - Hearts of Iron 4 Wiki.md",
-          "sha256": "36a61f2d2821e2e364333f7676003371cea0929c62b755d8d095e1049950a482",
-          "size": 37553
+          "sha256": "a7645002ba4b4fe4b0cb8b56e9bcbdf13bcfbebc178fe356de10eb7c1d7993fb",
+          "size": 36007
         },
         {
           "path": "paradox_wiki/Cosmetic tag modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "aa46c7136636c3589eb7a976cd2aebd2ddd8445e4eba185167ea48347e14ebe2",
-          "size": 9688
+          "sha256": "0d7561b7de5d6a33f4c697b8ffc9c8a6be61d3d4c420d23b3355e92869d55542",
+          "size": 13296
         },
         {
           "path": "paradox_wiki/Country creation - Hearts of Iron 4 Wiki.md",
-          "sha256": "9e12adfeab7ce8439190cd1427264766e1c0bdfc77c8739c1e309d859fcaeaf0",
-          "size": 60059
+          "sha256": "38e0ded28bbaffbe7b3bb33fcd317c595349297b56166827f9e3367d7091d79a",
+          "size": 62845
         },
         {
           "path": "paradox_wiki/Data structures - Hearts of Iron 4 Wiki.md",
-          "sha256": "20a033856bfef59050840d38d9606bc1e43754eedbb8c16e832f864bcd8fbf20",
-          "size": 158841
+          "sha256": "422f44c4ceb048a460037eed7decafeba397bb2d5766a6dd044bcc4723d2b463",
+          "size": 148867
         },
         {
           "path": "paradox_wiki/Decision modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "500e816119c17caf9f2c585c649c5d0e62bda49678ba415aeb668ce3d46a768c",
-          "size": 33502
+          "sha256": "36694f7ae9d5860bd435e95e4c5cd02adc7aaaf7315f1ba3ca7321be5f9a136e",
+          "size": 37253
         },
         {
           "path": "paradox_wiki/Defines - Hearts of Iron 4 Wiki.md",
-          "sha256": "ddc7920caaaf1fb9c7bf5dd976b083909ead64a30b0abe82893ca6e90ababcec",
-          "size": 639902
+          "sha256": "595e4b79366d6366dbdae4760ddb967f91f771b2e9a30fd4b939edefd562a594",
+          "size": 447086
         },
         {
           "path": "paradox_wiki/Division modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "9ddc3e72db09936fefdce02330bec33f10b5e372fcb439df3b72365cf6bf4da4",
-          "size": 20807
+          "sha256": "5495030e7a7fe3bc174bbee5c7eaccf38e37ad34d03130477a3c6fb3663d3171",
+          "size": 24714
         },
         {
           "path": "paradox_wiki/Doctrine modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "5b0bcefe93345a404d733929d2f3af3533f888ac433ed2bba17aca7aea59e730",
-          "size": 6143
+          "sha256": "125456f6380fac4ebe0b04cfa8c9fab9bbd26d8db54ec08fe697e31a9641c3ee",
+          "size": 6200
         },
         {
           "path": "paradox_wiki/Effects - Hearts of Iron 4 Wiki.md",
-          "sha256": "d6e87119701cb736e0712df830cc9297223fa107f13f309eac975c7cca85498b",
-          "size": 287346
+          "sha256": "8ea065bcd63601c4998fb566b89b551483f6c7d54d71e502f92e0779c836720e",
+          "size": 273267
         },
         {
           "path": "paradox_wiki/Entity modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "001e2e19543c0886bf168be8bd4b0eff92849efe7511a4a41f1501ac335a320c",
-          "size": 6147
+          "sha256": "74ff51b8ea0924281eb1c067300b52dc373ea9d112341bbb9c34fcb1a11d2d6a",
+          "size": 9994
         },
         {
           "path": "paradox_wiki/Equipment modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "bdf9fc416708cb63e501c9612b358f9de99fc595031daafb77ee65477c93d4fd",
-          "size": 10462
+          "sha256": "4e404298785aa228e77c9ced2cd8d0d73af671fafa641c9f753f9a06d051ffb1",
+          "size": 20990
         },
         {
           "path": "paradox_wiki/Event modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "b0186d9b15f4e77cca6bb5090cec3e429c475675246b6312979e84dfcc495e00",
-          "size": 44381
+          "sha256": "3580504202c8b298ac38e81289dee1e86139d132a793023c1b7e51a8e0ef6a26",
+          "size": 48019
         },
         {
           "path": "paradox_wiki/Faction modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "b5bbcb963c92998d3b35a2fa34b0aee07cb2a54776e1d3b0d9eac195fa60fa3a",
-          "size": 4309
+          "sha256": "b0e5e093f530d58a4181c5eddbe00875f0868370038d698deec8133882a2e420",
+          "size": 40464
         },
         {
           "path": "paradox_wiki/Font modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "7c44957e273f693d10e9257833a0aed07c6a0bca6cf1b467735e52f2f8cedd36",
-          "size": 16052
+          "sha256": "5d7ba496d1e585f8f0a0a459c2eaf80a1de43b330173a7e3a89effd63125349f",
+          "size": 15938
         },
         {
           "path": "paradox_wiki/Graphical asset modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "8f76ea70f8df9e94f5e67a17bd1bd45480b4068ee14a8298b7ca6566bf297fd5",
-          "size": 13305
+          "sha256": "4fbb189ec14bec5165ffd82b2f709ce45ee36a3884104c27630ce5bc887ee726",
+          "size": 17298
         },
         {
           "path": "paradox_wiki/Idea modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "f7c9eaee11135bf7d2a14b53512b07a6954e49b5189f176388e3998d2372bb92",
-          "size": 33080
+          "sha256": "9421d20c5826dae34c115693fb9247f5d786b73e4171894e756b293db9c7b20a",
+          "size": 40108
         },
         {
           "path": "paradox_wiki/Ideology modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "a3411e28e9a5fd2f3d72b3a0618c35deb936263cbf8cadef2cd4a00632ed332b",
-          "size": 14714
+          "sha256": "4adc31040d9c881c59ef0ba938aee2c479879cc987ecd9b268a7552f68238bd6",
+          "size": 18564
         },
         {
           "path": "paradox_wiki/Intelligence agency modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "cad0c011067723b991b9e7f4065f25e3f5dcd76ee96b5807a9c3641d40388c65",
-          "size": 4418
+          "sha256": "305a29efeedb6d9a1765ed6d58df843c54dac47c7b628d224c786c35e574bf5b",
+          "size": 8468
         },
         {
           "path": "paradox_wiki/Interface modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "e166b2d23e27bbdf95dcc466d8df40cccf3f989f4b45fb496bb128fbb664c029",
-          "size": 25473
+          "sha256": "b74afc86be4e5dbb3b0fc600820d73a8340f7dc1821fc5ef02c9ee1f028c0b1c",
+          "size": 29281
+        },
+        {
+          "path": "paradox_wiki/List of modifiers - Hearts of Iron 4 Wiki.md",
+          "sha256": "5a42955c45305e141cfdc961e92c80006b1087bd16bf36ccce54b81529376565",
+          "size": 58731
         },
         {
           "path": "paradox_wiki/Localisation - Hearts of Iron 4 Wiki.md",
-          "sha256": "eda6af1a6a099bd9dc9a2d13030bb5b02c5a89a946485c892a0c3513f6f40b5b",
-          "size": 67091
+          "sha256": "0c750d19d6719a5cced88c81d243a9cce425d33d25692d756669caa75278ca1f",
+          "size": 68915
         },
         {
           "path": "paradox_wiki/Map modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "fc154b651bf01f6cced4f466f40bc6327d755b0d94b4ae7247afe7b2a99a293a",
-          "size": 82357
+          "sha256": "95715a273491388c1878306d3312842be4b7eff890ee3a03ed0d2b62889fe614",
+          "size": 82440
         },
         {
           "path": "paradox_wiki/Military industrial organization modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "10ed8d9eb2980c48d8df0a2e4d50b12e1734b0a860897fcd2ce5e3d01ac3a0ad",
-          "size": 24919
+          "sha256": "daea66be839a74d21d219e4c0d8ccb0d13c8ce284e0e1aa4d45622fd0226fe26",
+          "size": 28497
+        },
+        {
+          "path": "paradox_wiki/Mod structure - Hearts of Iron 4 Wiki.md",
+          "sha256": "73301476b2520cdbde334ff9debe105de6095c8fa66bbb02a37f9dc6a4276436",
+          "size": 11951
         },
         {
           "path": "paradox_wiki/Modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "7c830c9b8029254278054d60d72cde191981f53905cba82a0f6c8e3e02ac6f84",
-          "size": 84174
+          "sha256": "d4a58c522635a4a890e335077efb90ff82a0b6badf677c61647a8a43fa8bfd2e",
+          "size": 86951
         },
         {
           "path": "paradox_wiki/Modifiers - Hearts of Iron 4 Wiki.md",
-          "sha256": "96fb9fbe1b378872fa515ccc85c2751f4768cd59fab43c7b6a1555bb09ee5f4f",
-          "size": 157947
+          "sha256": "1655c05a2f80a0863ac815d20c9b986869950fd831543e94aa79effb9d36729b",
+          "size": 136797
+        },
+        {
+          "path": "paradox_wiki/Mods - Hearts of Iron 4 Wiki.md",
+          "sha256": "b5d0e9719333b758023d71b38bb2bc573bef183b5070432006f52761d266a430",
+          "size": 1890
         },
         {
           "path": "paradox_wiki/Music modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "084dee24681052a8eef4eaf626be7b82f8151adc47a7c07c6118585a469db22e",
-          "size": 6059
+          "sha256": "c5d16c3d705881a0103a245af2ee548ef0eb22be835a61967eeb98280bfb21d4",
+          "size": 9969
         },
         {
           "path": "paradox_wiki/Namelist modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "7415813d145fe9ff66e2c16eb49e3fc98b3e35e6eadb115873878b7ff36c2974",
-          "size": 4438
+          "sha256": "dd397a979661166514c0c3a066a3804d53dd9ec32fb3f93fc470f3d490455c38",
+          "size": 8369
         },
         {
           "path": "paradox_wiki/National focus modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "b1c7f624d4faf90d9be545afbde9490ad897d271c3ddb55cb7f45e5d8e1f6faf",
-          "size": 84390
+          "sha256": "79480fe2250c69d9962a04ec1784dd6e4b3c5a40ee61cb00cc02a5717f2055e5",
+          "size": 84653
+        },
+        {
+          "path": "paradox_wiki/Nudger - Hearts of Iron 4 Wiki.md",
+          "sha256": "452accd18c2599f021a97b7f80b0fd0038a29420ba5edb8648022216ab3adfa5",
+          "size": 27556
         },
         {
           "path": "paradox_wiki/On actions - Hearts of Iron 4 Wiki.md",
-          "sha256": "53635b65d19bf6e95bcaa29cdd775256174d75b5b7c5a6a2e08ad5ef6629a84a",
-          "size": 35301
+          "sha256": "7aaf4f851ccd3754351a2ceb0dbe137a6185cda9a6cc586ba6730432eb743098",
+          "size": 35316
         },
         {
           "path": "paradox_wiki/Particle modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "999a7f9805b2a981bc5f46718a80d09129e81d739a694e9f929cbe365a5bc825",
-          "size": 3539
+          "sha256": "98e6aab71d38d9bb613bd02c7f66e82014e30c047f0d46b0b58b3ab4660bb23c",
+          "size": 7455
         },
         {
           "path": "paradox_wiki/Portrait modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "be53bcaa7c23a9eb7f7253603f3a3b382f285d27d2c1dec72bffa4e4cc41976a",
-          "size": 1892
+          "sha256": "a2022b7bec3f0899460555f9a3f9e2e263653a27403886e5bb80e981b6177ece",
+          "size": 5844
         },
         {
           "path": "paradox_wiki/Posteffect modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "c50f6ad86e5ad919f7393633d5ab07690cf9ab1c8e96b5a89e77eb1b4ec43ece",
-          "size": 7733
+          "sha256": "58bfe0741e11d929abc9b3abd5b424fb6748481abed8a6270c5a3a176dc31226",
+          "size": 7717
         },
         {
           "path": "paradox_wiki/Resources modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "14e9d279840355b0c3c5e81e95e3baa1f40da321aaf7f20877b684eee6cd9ddd",
-          "size": 3440
+          "sha256": "67365ca7e40884c7b24c78555a4ad2f04f7f92bdf5ac1d190c09571a0cb3f982",
+          "size": 7363
         },
         {
           "path": "paradox_wiki/Scopes - Hearts of Iron 4 Wiki.md",
-          "sha256": "048668153b01ac9350770f61f98d298e98d34af6ba6dfdcf6e89f43256486325",
-          "size": 72288
+          "sha256": "d79714bd4caf44eb92eaaf4d84bed3b3ae5317909c9d8630380f4f6bea27ccb6",
+          "size": 71447
         },
         {
           "path": "paradox_wiki/Scripted GUI modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "e29e605d7210dd281f04485967b42c0db18f611b3808b11e2f72802d08bf0eb4",
-          "size": 25492
+          "sha256": "25eeb46a44e5eeed6bd68c17b736af53fab873ecb60a14aa0f6277d2bc3205bf",
+          "size": 28951
         },
         {
           "path": "paradox_wiki/Sound modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "8f2ecb3b44336668ba7d4e0de4c3759d2c78cdf9d5b924d26e3d3318063f7838",
-          "size": 4867
+          "sha256": "904c1909fcb8a6ac3d3f6bb5286eca216bb996513a3bc0788f12f96ab7cc6e4f",
+          "size": 8737
         },
         {
           "path": "paradox_wiki/State modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "cfb84311a5761348c596731f3987b34b58058c66db859bc15211fb46012064b7",
-          "size": 25421
+          "sha256": "081307f30c2fdb965329c13a260f030306abd23756da794674a4ef50e16d3203",
+          "size": 28191
         },
         {
           "path": "paradox_wiki/Strategic region modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "2f39dbcc1e08e86f69a8a3885380127eb6ea00663305714475aa5f708cb56357",
-          "size": 6807
+          "sha256": "c68473dc3538cd5559b8a16d59c12cac412217cc6683f5207eca96b0e6c9145e",
+          "size": 6829
         },
         {
           "path": "paradox_wiki/Supply areas modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "36a1f02b9c7537943b77e891f2ea64b41dda92fd8a9b085d0f3f8fdc1592f754",
-          "size": 5346
+          "sha256": "4faf5369cca1123038d796d39938b5e522d7798e11c36c15d55d86791c0d4abd",
+          "size": 5396
         },
         {
           "path": "paradox_wiki/Technology modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "48050261832de01287cdd6a6e4d599caee11ee10a5b49fdf5b2cc2c9e9c72fdc",
-          "size": 53267
+          "sha256": "dfccc4c03ca742ac30dddadc2aa97d37fe5e78b5abbda5f20962e63ffa025ddc",
+          "size": 56142
         },
         {
           "path": "paradox_wiki/Triggers - Hearts of Iron 4 Wiki.md",
-          "sha256": "2f8b31cbc8a82a33c75cdec653b9da7b9b939f4670804cdb04b604011b055230",
-          "size": 193747
+          "sha256": "b08d95b9f972056c1c1f9efb5fe69ecc22c1b90b1bd3837b704b3357d2064f1e",
+          "size": 176869
         },
         {
           "path": "paradox_wiki/Troubleshooting - Hearts of Iron 4 Wiki.md",
-          "sha256": "abdec06107a267131cfcea59afe60f7b0ab05339fcc771d3a06896178e7f10a4",
-          "size": 17098
+          "sha256": "efc0e73ad3e74f602efbc7d047e2bfb8dd3d6617b74803fdf0dc4f6d8606d8ba",
+          "size": 21173
         },
         {
           "path": "paradox_wiki/Unit modding - Hearts of Iron 4 Wiki.md",
-          "sha256": "d1ec745164aebf5bd93fecb990c9dc48a7e03f2b34e8accb7cd2d0822546a4b4",
-          "size": 16349
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img1.svg",
-          "sha256": "73f10719270392812057b459f33c98165ab7ee6345d584fe5d12f6ab7ab1d1a0",
-          "size": 2645
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img10.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img11.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
+          "sha256": "4ee33c92f98b31a85ebacd77217be183494f9239b6238f1e70c7fd2e5b90af5a",
+          "size": 20522
         },
         {
           "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img12.png",
@@ -5281,94 +5286,14 @@
           "size": 1767
         },
         {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img13.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img14.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img15.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img16.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img2.svg",
-          "sha256": "feecffa7af54a72a2a5337075b1022402b89f1592929e34c1bfcb7b453f13558",
-          "size": 6209
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img3.svg",
-          "sha256": "85622197dba8d726d5af6ab3961f9e34fc8e7eb834b2cf5fa0358e8b82231225",
-          "size": 5015
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img4.svg",
-          "sha256": "7f390ac6b27c648be64e5cd3565dd76d7c15d24730a7730e4f8d9890b6705081",
-          "size": 3234
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img5.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
           "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img6.png",
           "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
           "size": 1784
         },
         {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img7.png",
+          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_25696e0a81__img2.png",
           "sha256": "d207012fa230682c9d779c72fce329a917f257fae8a4b5ec0fc94baaf122664c",
           "size": 1849
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img8.png",
-          "sha256": "d207012fa230682c9d779c72fce329a917f257fae8a4b5ec0fc94baaf122664c",
-          "size": 1849
-        },
-        {
-          "path": "paradox_wiki/media/ai-modding-hearts-of-iron-4-wiki_04cfcba22e__img9.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/balance-of-power-modding-hearts-of-iron-4-wiki_2c86d53bfd__img1.svg",
-          "sha256": "c014494c42ce19f07eeea3bb84c93655f3c9f162943dfff10ef11d516928eb5c",
-          "size": 2361
-        },
-        {
-          "path": "paradox_wiki/media/balance-of-power-modding-hearts-of-iron-4-wiki_2c86d53bfd__img2.svg",
-          "sha256": "a4a4153d0f476c56a18f39d0cea630ce87932bc4c76086030af3e85695ba430a",
-          "size": 1971
-        },
-        {
-          "path": "paradox_wiki/media/balance-of-power-modding-hearts-of-iron-4-wiki_2c86d53bfd__img3.svg",
-          "sha256": "f95c736cb41e073d51301a9f61d38eb232950cbde7b6f16acdba426a39a1aa23",
-          "size": 3206
-        },
-        {
-          "path": "paradox_wiki/media/balance-of-power-modding-hearts-of-iron-4-wiki_2c86d53bfd__img4.svg",
-          "sha256": "393095f2261ec434f4a14e5a1b1682dbc4e4527356d38cc6337876159efd4077",
-          "size": 3446
-        },
-        {
-          "path": "paradox_wiki/media/balance-of-power-modding-hearts-of-iron-4-wiki_2c86d53bfd__img5.svg",
-          "sha256": "f95c736cb41e073d51301a9f61d38eb232950cbde7b6f16acdba426a39a1aa23",
-          "size": 3206
-        },
-        {
-          "path": "paradox_wiki/media/balance-of-power-modding-hearts-of-iron-4-wiki_2c86d53bfd__img6.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
         },
         {
           "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img1.png",
@@ -5426,11 +5351,6 @@
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img2.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
           "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img20.png",
           "sha256": "e43c95761467097b6876d0fa9fed07433827ec330c9baf22b8e82a35d035c456",
           "size": 8627
@@ -5461,11 +5381,6 @@
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img26.png",
-          "sha256": "1299cf08f826705292a0217e1d057fba2928f3dbfe7bddce35fa9d01ee499fc8",
-          "size": 8627
-        },
-        {
           "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img27.png",
           "sha256": "02f50bd1937d58dbd0d1f3031e670fdfcd5b685c665b7340447fd1d719f0002f",
           "size": 2512
@@ -5481,11 +5396,6 @@
           "size": 2697
         },
         {
-          "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img3.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
           "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img30.png",
           "sha256": "03facbe7e207c7bff8ce27eec3126ae0845d9afeb6f172759d84240346d17120",
           "size": 2339
@@ -5496,17 +5406,7 @@
           "size": 2979
         },
         {
-          "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img32.png",
-          "sha256": "afbda2b41402ff07b3dbf12e77d5d93a4233c4a52d3e00d655b73475d7db8d82",
-          "size": 2979
-        },
-        {
           "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img33.png",
-          "sha256": "3b831c17be8fd99c32d7ababedf9ff76deeb55ee12c14f63dc46d6b160ba4f72",
-          "size": 2763
-        },
-        {
-          "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img34.png",
           "sha256": "3b831c17be8fd99c32d7ababedf9ff76deeb55ee12c14f63dc46d6b160ba4f72",
           "size": 2763
         },
@@ -5519,11 +5419,6 @@
           "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img36.png",
           "sha256": "476e13f1e3b22529ea672683b1c2258e06240d8ece6cf2bb5c7a2250a8d1c5d5",
           "size": 4393
-        },
-        {
-          "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img4.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
         },
         {
           "path": "paradox_wiki/media/building-modding-hearts-of-iron-4-wiki_811161eae8__img5.png",
@@ -5551,24 +5446,34 @@
           "size": 3042
         },
         {
-          "path": "paradox_wiki/media/cosmetic-tag-modding-hearts-of-iron-4-wiki_8daa0f4184__img1.png",
-          "sha256": "4afd7dcedb0c036cbe4653aac9e2aac5ff91cb7e1aa8e39c573204811262ffd9",
-          "size": 641
+          "path": "paradox_wiki/media/character-modding-hearts-of-iron-4-wiki_04e3359449__img22.png",
+          "sha256": "7bb221936b4982c202dd75a9467b15c0abf557484c239d3360e9ba4833060702",
+          "size": 1752
         },
         {
-          "path": "paradox_wiki/media/cosmetic-tag-modding-hearts-of-iron-4-wiki_8daa0f4184__img2.png",
-          "sha256": "d207012fa230682c9d779c72fce329a917f257fae8a4b5ec0fc94baaf122664c",
-          "size": 1849
+          "path": "paradox_wiki/media/character-modding-hearts-of-iron-4-wiki_41494a4f46__img8.png",
+          "sha256": "ae9b8880598131a97ba9afb7e200f5cad7c73489fe8262e793db03740371e696",
+          "size": 2019
+        },
+        {
+          "path": "paradox_wiki/media/character-modding-hearts-of-iron-4-wiki_58ea48332f__img14.png",
+          "sha256": "f2193e347f5a61f7860959d52376e940a463d5a2dcd8324c7c5ea0b0d3d957ea",
+          "size": 1903
+        },
+        {
+          "path": "paradox_wiki/media/character-modding-hearts-of-iron-4-wiki_8d43751dba__img2.png",
+          "sha256": "cde24b1ba0c3f363918175909448ef46c1bdc192ac73f35af1ac7830ab7e2fd8",
+          "size": 1500
+        },
+        {
+          "path": "paradox_wiki/media/character-modding-hearts-of-iron-4-wiki_cee5ae9645__img1.png",
+          "sha256": "1124f74a85b0c728d79b542326509730d55a2a07cc6ef9b7cef7f17bf4efa1a9",
+          "size": 4520
         },
         {
           "path": "paradox_wiki/media/cosmetic-tag-modding-hearts-of-iron-4-wiki_8daa0f4184__img3.png",
           "sha256": "0d5dd564da78e610a9f11afb28136b55c8a243501ad6dff33bc3693825747d63",
           "size": 641
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img1.svg",
-          "sha256": "dad383d059f50a6e285eebe79bf929555a00ab16947dcc2b962405396640e685",
-          "size": 2229
         },
         {
           "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img10.png",
@@ -5596,11 +5501,6 @@
           "size": 1812
         },
         {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img15.png",
-          "sha256": "cda8f159793fb087f5abe0d2f4fffcb6f5434d4a1be124bc127d23bae4b55715",
-          "size": 1847
-        },
-        {
           "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img16.png",
           "sha256": "41fee98f10905facf3f81c5b9701019481da41234100d1a53da5ca19d3c996dd",
           "size": 1770
@@ -5611,94 +5511,14 @@
           "size": 2018
         },
         {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img18.png",
-          "sha256": "d2dbe63c23e894db83a6c778890468712ab3c1359da57e036e1579b952135934",
-          "size": 2018
-        },
-        {
           "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img19.png",
           "sha256": "e25b724469422d7ab30b95af371985462c041a3b9d242bb73ae5863d56fe492c",
           "size": 480
         },
         {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img2.svg",
-          "sha256": "d63848591de3892e9c59c2409d7ef31d26699fc8337e78fa557481b380787899",
-          "size": 1150
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img20.png",
-          "sha256": "1124f74a85b0c728d79b542326509730d55a2a07cc6ef9b7cef7f17bf4efa1a9",
-          "size": 4520
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img21.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img22.png",
-          "sha256": "cda8f159793fb087f5abe0d2f4fffcb6f5434d4a1be124bc127d23bae4b55715",
-          "size": 1847
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img23.png",
-          "sha256": "6abe5367ee3dddcb3b6f45641234ab3267015f59753b588f89b66f2ff8675136",
-          "size": 1767
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img24.png",
-          "sha256": "41fee98f10905facf3f81c5b9701019481da41234100d1a53da5ca19d3c996dd",
-          "size": 1770
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img25.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img26.png",
-          "sha256": "cda8f159793fb087f5abe0d2f4fffcb6f5434d4a1be124bc127d23bae4b55715",
-          "size": 1847
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img27.png",
-          "sha256": "6abe5367ee3dddcb3b6f45641234ab3267015f59753b588f89b66f2ff8675136",
-          "size": 1767
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img3.svg",
-          "sha256": "aeb4a9600565fb53b5357f2a4bc52c958ddd9a193b7809843ff0d73171f2f9a7",
-          "size": 5093
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img4.svg",
-          "sha256": "a973041cb39b5fee0ba48d2818b2f5b5362a36a03e6cfdf9d74c8859b0f499e2",
-          "size": 2231
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img5.svg",
-          "sha256": "8d55bd76f48e29ce22fdd98063c56c38f6db40fad947f229bea208cd95ca1fb1",
-          "size": 2364
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img6.svg",
-          "sha256": "949847e753068c429195767c5013e65e6d0e9f278eaac65df23fa71e5d2eec91",
-          "size": 7364
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img7.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
           "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img8.png",
           "sha256": "cda8f159793fb087f5abe0d2f4fffcb6f5434d4a1be124bc127d23bae4b55715",
           "size": 1847
-        },
-        {
-          "path": "paradox_wiki/media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img9.png",
-          "sha256": "6abe5367ee3dddcb3b6f45641234ab3267015f59753b588f89b66f2ff8675136",
-          "size": 1767
         },
         {
           "path": "paradox_wiki/media/data-structures-hearts-of-iron-4-wiki_6e1fd6f20a__img1.png",
@@ -5711,469 +5531,9 @@
           "size": 1815
         },
         {
-          "path": "paradox_wiki/media/data-structures-hearts-of-iron-4-wiki_6e1fd6f20a__img3.svg",
-          "sha256": "571edc052114af824be3f3ed8ee738c0e2c90262ea16a617d5a8a3cbed2b969b",
-          "size": 1578
-        },
-        {
-          "path": "paradox_wiki/media/data-structures-hearts-of-iron-4-wiki_6e1fd6f20a__img4.png",
-          "sha256": "920e6c1f74f82c4cabb62d216c89b192a05e1454e4b9680f79e92f1af8245eed",
-          "size": 4285
-        },
-        {
-          "path": "paradox_wiki/media/data-structures-hearts-of-iron-4-wiki_6e1fd6f20a__img5.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/data-structures-hearts-of-iron-4-wiki_6e1fd6f20a__img6.png",
-          "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
-          "size": 1784
-        },
-        {
-          "path": "paradox_wiki/media/data-structures-hearts-of-iron-4-wiki_6e1fd6f20a__img7.png",
-          "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
-          "size": 1784
-        },
-        {
-          "path": "paradox_wiki/media/decision-modding-hearts-of-iron-4-wiki_da50c74b55__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/decision-modding-hearts-of-iron-4-wiki_da50c74b55__img2.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img10.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img11.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img12.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img13.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img14.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img15.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img16.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img17.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img18.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img19.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img2.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img20.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img21.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img22.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img23.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img24.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img25.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img26.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img27.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img28.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img29.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img3.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img30.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img31.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img32.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img33.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img34.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img35.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img36.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img37.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img38.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img39.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img4.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img5.svg",
-          "sha256": "231c85ee929fae8ece388423c734475ff0b77c0ec381e4ef7bace78634e3205d",
-          "size": 14665
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img6.svg",
-          "sha256": "66e158bd16c650d61f5f7122ce8df4757647bd634916da8c9e41febc491606e9",
-          "size": 14623
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img7.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img8.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/defines-hearts-of-iron-4-wiki_c619af7930__img9.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img2.png",
-          "sha256": "41fee98f10905facf3f81c5b9701019481da41234100d1a53da5ca19d3c996dd",
-          "size": 1770
-        },
-        {
-          "path": "paradox_wiki/media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img3.png",
-          "sha256": "41fee98f10905facf3f81c5b9701019481da41234100d1a53da5ca19d3c996dd",
-          "size": 1770
-        },
-        {
-          "path": "paradox_wiki/media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img4.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img5.png",
-          "sha256": "cda8f159793fb087f5abe0d2f4fffcb6f5434d4a1be124bc127d23bae4b55715",
-          "size": 1847
-        },
-        {
-          "path": "paradox_wiki/media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img6.png",
-          "sha256": "6abe5367ee3dddcb3b6f45641234ab3267015f59753b588f89b66f2ff8675136",
-          "size": 1767
-        },
-        {
-          "path": "paradox_wiki/media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img7.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img8.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/division-modding-hearts-of-iron-4-wiki_030fc4180e__img9.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
           "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img1.png",
           "sha256": "e9c49791ba6ec63df37091d040744ba46ae97083a05902f1e7af7d50a1003bbd",
           "size": 1161
-        },
-        {
-          "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img10.svg",
-          "sha256": "ccb8da167f27eeb1314471353f9a540a424e016466a1fa19814b42ed09969f1f",
-          "size": 1061
-        },
-        {
-          "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img11.svg",
-          "sha256": "2e954dc81ed55cf5103817b3f31174e715f5d205371927e99f6629dfe72750b8",
-          "size": 1225
-        },
-        {
-          "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img12.svg",
-          "sha256": "2e954dc81ed55cf5103817b3f31174e715f5d205371927e99f6629dfe72750b8",
-          "size": 1225
-        },
-        {
-          "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img2.png",
-          "sha256": "b4dcd508c1718e7943b741d4637c064efa5626686c7f61412dbcb128611ef73a",
-          "size": 1738
-        },
-        {
-          "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img3.png",
-          "sha256": "920e6c1f74f82c4cabb62d216c89b192a05e1454e4b9680f79e92f1af8245eed",
-          "size": 4285
-        },
-        {
-          "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img4.png",
-          "sha256": "920e6c1f74f82c4cabb62d216c89b192a05e1454e4b9680f79e92f1af8245eed",
-          "size": 4285
-        },
-        {
-          "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img5.png",
-          "sha256": "920e6c1f74f82c4cabb62d216c89b192a05e1454e4b9680f79e92f1af8245eed",
-          "size": 4285
-        },
-        {
-          "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img6.png",
-          "sha256": "920e6c1f74f82c4cabb62d216c89b192a05e1454e4b9680f79e92f1af8245eed",
-          "size": 4285
-        },
-        {
-          "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img7.png",
-          "sha256": "1124f74a85b0c728d79b542326509730d55a2a07cc6ef9b7cef7f17bf4efa1a9",
-          "size": 4520
-        },
-        {
-          "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img8.svg",
-          "sha256": "45ce4324dabb3592c749d6fcefca458879d6229c4b9db9da3ccc53b6d4732d48",
-          "size": 8068
-        },
-        {
-          "path": "paradox_wiki/media/effect-hearts-of-iron-4-wiki_ec2e2a02fa__img9.svg",
-          "sha256": "664f6ba81d83e1f0e923001c268d3799307e87e96b31a993c449f44cab76cff1",
-          "size": 1110
-        },
-        {
-          "path": "paradox_wiki/media/entity-modding-hearts-of-iron-4-wiki_b02aa4489b__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/entity-modding-hearts-of-iron-4-wiki_b02aa4489b__img2.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/entity-modding-hearts-of-iron-4-wiki_b02aa4489b__img3.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/entity-modding-hearts-of-iron-4-wiki_b02aa4489b__img4.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/entity-modding-hearts-of-iron-4-wiki_b02aa4489b__img5.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/entity-modding-hearts-of-iron-4-wiki_b02aa4489b__img6.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/entity-modding-hearts-of-iron-4-wiki_b02aa4489b__img7.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/entity-modding-hearts-of-iron-4-wiki_b02aa4489b__img8.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/entity-modding-hearts-of-iron-4-wiki_b02aa4489b__img9.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/equipment-modding-hearts-of-iron-4-wiki_2ca71c258f__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/event-modding-hearts-of-iron-4-wiki_0d41ad8840__img1.svg",
-          "sha256": "d82d63e1242a194b3471e40c5d1c09565789578fd2f94393b44d1ca229c5abaa",
-          "size": 1513
-        },
-        {
-          "path": "paradox_wiki/media/event-modding-hearts-of-iron-4-wiki_0d41ad8840__img2.svg",
-          "sha256": "42ece8a63e31e5acf638709fbd805884344685937fd865e8318de6edc201fda3",
-          "size": 3043
-        },
-        {
-          "path": "paradox_wiki/media/event-modding-hearts-of-iron-4-wiki_0d41ad8840__img3.svg",
-          "sha256": "ca7c6e804272ab9c10115cba7298e4365bfb19f922206de4a7b52e7b5d406542",
-          "size": 2985
-        },
-        {
-          "path": "paradox_wiki/media/faction-modding-hearts-of-iron-4-wiki_56295bec67__img1.png",
-          "sha256": "b1a5cbc3540e0eb259e26d7e62b9b40527cc7bc38aa28d06e60ac9f133ff5cc8",
-          "size": 2549
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img10.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img11.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img12.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img2.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img3.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img4.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img5.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img6.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img7.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img8.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/graphical-asset-modding-hearts-of-iron-4-wiki_d7a810d377__img9.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
         },
         {
           "path": "paradox_wiki/media/idea-modding-hearts-of-iron-4-wiki_e610dc0262__img1.png",
@@ -6186,79 +5546,14 @@
           "size": 1409
         },
         {
-          "path": "paradox_wiki/media/idea-modding-hearts-of-iron-4-wiki_e610dc0262__img3.png",
-          "sha256": "1124f74a85b0c728d79b542326509730d55a2a07cc6ef9b7cef7f17bf4efa1a9",
-          "size": 4520
-        },
-        {
-          "path": "paradox_wiki/media/intelligence-agency-modding-hearts-of-iron-4-wiki_3c7581f1e7__img1.png",
-          "sha256": "c6f42317a9aff65047cb0f05b7b035984a9a7ec5409a3873f2e6daac7007aaec",
-          "size": 3989
-        },
-        {
-          "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img10.png",
-          "sha256": "d207012fa230682c9d779c72fce329a917f257fae8a4b5ec0fc94baaf122664c",
-          "size": 1849
-        },
-        {
-          "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img11.png",
-          "sha256": "1124f74a85b0c728d79b542326509730d55a2a07cc6ef9b7cef7f17bf4efa1a9",
-          "size": 4520
-        },
-        {
-          "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img12.png",
-          "sha256": "d207012fa230682c9d779c72fce329a917f257fae8a4b5ec0fc94baaf122664c",
-          "size": 1849
-        },
-        {
           "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img2.png",
           "sha256": "c8ddea4643c205c6e53213af4fb845f2c948339105224275448ef736437d8618",
           "size": 803
         },
         {
-          "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img3.png",
-          "sha256": "ae9b8880598131a97ba9afb7e200f5cad7c73489fe8262e793db03740371e696",
-          "size": 2019
-        },
-        {
-          "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img4.png",
-          "sha256": "1124f74a85b0c728d79b542326509730d55a2a07cc6ef9b7cef7f17bf4efa1a9",
-          "size": 4520
-        },
-        {
-          "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img5.png",
-          "sha256": "f2193e347f5a61f7860959d52376e940a463d5a2dcd8324c7c5ea0b0d3d957ea",
-          "size": 1903
-        },
-        {
-          "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img6.png",
-          "sha256": "d207012fa230682c9d779c72fce329a917f257fae8a4b5ec0fc94baaf122664c",
-          "size": 1849
-        },
-        {
-          "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img7.png",
-          "sha256": "ae9b8880598131a97ba9afb7e200f5cad7c73489fe8262e793db03740371e696",
-          "size": 2019
-        },
-        {
-          "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img8.png",
-          "sha256": "1124f74a85b0c728d79b542326509730d55a2a07cc6ef9b7cef7f17bf4efa1a9",
-          "size": 4520
-        },
-        {
-          "path": "paradox_wiki/media/localisation-hearts-of-iron-4-wiki_0824ba8845__img9.png",
-          "sha256": "f2193e347f5a61f7860959d52376e940a463d5a2dcd8324c7c5ea0b0d3d957ea",
-          "size": 1903
-        },
-        {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img1.svg",
-          "sha256": "d68f07a0d69ee999505cd5863faf07da78dad91d164fa271eb63928835115041",
-          "size": 3384
+          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_52a03661c6__img1.png",
+          "sha256": "79c40d49ba6735d1ca13eaff1bc36331e876ceb47c0a59cb10fe8c6b44822b88",
+          "size": 24882
         },
         {
           "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img10.png",
@@ -6301,34 +5596,14 @@
           "size": 43594
         },
         {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img18.png",
-          "sha256": "1711a84efaf541b52bff738501c4e228748b98b159c1b8ea26919999e23ea28b",
-          "size": 40348
-        },
-        {
           "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img19.png",
           "sha256": "44915fb4cbb9da0e351fae0333084bb217182102553390ee90cfeaf8e9284cd4",
           "size": 32337
         },
         {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img2.svg",
-          "sha256": "1a39c491e6d5d04b32ea85a7f7d7e3c9898c35234edc8d9980c0179081125e02",
-          "size": 3548
-        },
-        {
           "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img20.png",
           "sha256": "85e08ce861f98eb68deab25fbc4fe78c041df750efc810a60e050360995692e3",
           "size": 23955
-        },
-        {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img21.png",
-          "sha256": "e635b3b177f8af52b853d15b1ed08edb1af6de61de84fd8fa707293fc9e6640b",
-          "size": 39430
-        },
-        {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img22.png",
-          "sha256": "1711a84efaf541b52bff738501c4e228748b98b159c1b8ea26919999e23ea28b",
-          "size": 40348
         },
         {
           "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img23.png",
@@ -6341,36 +5616,6 @@
           "size": 37672
         },
         {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img25.png",
-          "sha256": "2cc7f5ae00bcd5b4c331fb57fd03ce520f96984ebb00a1e7a0e7837f2c50bd4f",
-          "size": 37224
-        },
-        {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img26.png",
-          "sha256": "83659f18e9e596c6695a58e128557a39cbb7dba7f7f8b471b21bd2e3ba6ceaf4",
-          "size": 37672
-        },
-        {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img27.png",
-          "sha256": "b6e20292d289504bdc0c901d566c9b6fd556b3f2b53bb5228a7b45d5aaef0f06",
-          "size": 44698
-        },
-        {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img28.png",
-          "sha256": "abf895deddded67ad7de99a07ee85721ee81d7c30bb7cea5fd8ed51dcb93162a",
-          "size": 41247
-        },
-        {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img29.png",
-          "sha256": "83659f18e9e596c6695a58e128557a39cbb7dba7f7f8b471b21bd2e3ba6ceaf4",
-          "size": 37672
-        },
-        {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img3.svg",
-          "sha256": "7e61b2e76571e3e44889cc30b2256e48aacd73d7055e404b844afff9e5545b70",
-          "size": 3889
-        },
-        {
           "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img30.png",
           "sha256": "d0901c874e230cc6781992329ed6a4cc68b0fac353518a67997da3500c886add",
           "size": 41491
@@ -6381,29 +5626,9 @@
           "size": 3401
         },
         {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img32.png",
-          "sha256": "c4d6fdb91bbb465663bfa1b2e52f9e97a775ac5f827b106d0e95c9afc33abddd",
-          "size": 4657
-        },
-        {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img33.svg",
-          "sha256": "6856fc27acd37c26b961b234368f1d8d61f3cdacbe971b669cc512827fc07fa6",
-          "size": 2953
-        },
-        {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img4.svg",
-          "sha256": "447c6f0b132fd91ff51d2f70dd4e0a4b15e9c32a2bfe2a88c047d25feee6f3a2",
-          "size": 3889
-        },
-        {
-          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img5.svg",
-          "sha256": "61af19336a7c405c3733d99086e122c357a198d68454efae70a1d9ca040e21fb",
-          "size": 1804
-        },
-        {
           "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img6.jpg",
-          "sha256": "0c87ae522997ef55ebb907eee55a25391e8e5dcdc52a75dec09ad52e73abbe66",
-          "size": 11604
+          "sha256": "23d384dcb402da4b4d030b3b34612c4cba31df549dc0ea523480cf9c923516eb",
+          "size": 130
         },
         {
           "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img7.png",
@@ -6421,224 +5646,19 @@
           "size": 36005
         },
         {
-          "path": "paradox_wiki/media/modding-hearts-of-iron-4-wiki_fed88b6e60__img1.jpg",
-          "sha256": "ed6ed13af5850c081c6dbf7cadcf7bc713e4f2c3c82dae05673635308c4d980f",
-          "size": 12449
+          "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_7c98f708b3__img28.png",
+          "sha256": "c4d6fdb91bbb465663bfa1b2e52f9e97a775ac5f827b106d0e95c9afc33abddd",
+          "size": 4657
         },
         {
-          "path": "paradox_wiki/media/modding-hearts-of-iron-4-wiki_fed88b6e60__img2.png",
-          "sha256": "b4dcd508c1718e7943b741d4637c064efa5626686c7f61412dbcb128611ef73a",
-          "size": 1738
-        },
-        {
-          "path": "paradox_wiki/media/modding-hearts-of-iron-4-wiki_fed88b6e60__img3.png",
+          "path": "paradox_wiki/media/modding-hearts-of-iron-4-wiki_8bf815c264__img3.png",
           "sha256": "42b0d6f0267238da3db4cadf06a92db01a49a3b824ab5b7869ec382776c45830",
           "size": 18973
         },
         {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img10.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img11.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img12.png",
-          "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
-          "size": 1784
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img13.png",
-          "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
-          "size": 1784
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img14.png",
-          "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
-          "size": 1784
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img15.png",
-          "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
-          "size": 1784
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img16.png",
-          "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
-          "size": 1784
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img17.png",
-          "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
-          "size": 1784
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img18.png",
-          "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
-          "size": 1784
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img19.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img2.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img20.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img21.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img22.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img23.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img24.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img25.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img26.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img27.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img28.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img29.svg",
-          "sha256": "e27bf46fdda21164ea5d8f960eb618282754aa295aa6b84317c605dcee966def",
-          "size": 5314
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img3.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img4.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img5.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img6.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img7.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img8.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/modifiers-hearts-of-iron-4-wiki_5dfb90c7fa__img9.svg",
-          "sha256": "f8c2cb67442a0f24daa11f612e69dfacb1868c1202177c85ea0ad22da0898a8f",
-          "size": 5198
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img10.png",
-          "sha256": "b4dcd508c1718e7943b741d4637c064efa5626686c7f61412dbcb128611ef73a",
-          "size": 1738
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img100.svg",
-          "sha256": "ccb8da167f27eeb1314471353f9a540a424e016466a1fa19814b42ed09969f1f",
-          "size": 1061
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img101.svg",
-          "sha256": "251aaf376e34897ddbfb7d8fb5c67b071964c82e52d6cc952a8cfcdcac0ce0dd",
-          "size": 4664
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img102.svg",
-          "sha256": "310612b422006d83c1e11be3902cd9fdfde5325a847dba9d5aef18aee751c30e",
-          "size": 1354
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img103.svg",
-          "sha256": "895a989fc4085f5c6388df38b5e320aa71eeb5a93693e007f8bad0842d4bd803",
-          "size": 825
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img104.svg",
-          "sha256": "4a12f9b283363460e3c2668d5ef6f96384057a6dabdf3294867b3fdabbae08cb",
-          "size": 1129
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img105.svg",
-          "sha256": "ccb8da167f27eeb1314471353f9a540a424e016466a1fa19814b42ed09969f1f",
-          "size": 1061
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img106.svg",
-          "sha256": "97739a5bebef1758d8d65af75f19802676976efd987e28e47232b81c006afd10",
-          "size": 1614
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img107.svg",
-          "sha256": "47d65975c8bc5a28ab9e52d00d0cd65853ac9b2b6a80bd4f0c00df917e28f2a0",
-          "size": 3253
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img108.svg",
-          "sha256": "d3d465efd234bd072e25a647815032a410ff376b3ba336fa78372cc12f4646c6",
-          "size": 3203
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img109.svg",
-          "sha256": "07bdffe0e68cc176940bcaedbed984c4cdb374b88b9cfc62209f493f00a3d1f2",
-          "size": 3478
+          "path": "paradox_wiki/media/modding-hearts-of-iron-4-wiki_e0cb4ef0a6__img1.jpg",
+          "sha256": "ed6ed13af5850c081c6dbf7cadcf7bc713e4f2c3c82dae05673635308c4d980f",
+          "size": 12449
         },
         {
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img11.png",
@@ -6646,189 +5666,9 @@
           "size": 842
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img110.svg",
-          "sha256": "4a12f9b283363460e3c2668d5ef6f96384057a6dabdf3294867b3fdabbae08cb",
-          "size": 1129
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img111.svg",
-          "sha256": "cd5ed8479fe91ea0e55ee3d2df7d29041de53ad317fc1b7c454ff17284c75a15",
-          "size": 3412
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img112.svg",
-          "sha256": "f18c5f94098702403f2c527ad6fbda627f6a007d186a84f93be8434022fb4cde",
-          "size": 4234
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img113.svg",
-          "sha256": "6461265512ad0a13540d52723ae8d367c9c7fe76e3618a268ef9f14c824e4047",
-          "size": 10954
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img114.svg",
-          "sha256": "4a05aa1c49e5e7a3a95fe601ea8d5a46483d9e667986d4765d34af90f4c4fcbb",
-          "size": 4055
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img115.svg",
-          "sha256": "f2035f3fb20e985948616d18c4d94d0975e623e0be6fb01c70558013cdc24d67",
-          "size": 1095
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img116.svg",
-          "sha256": "4b640ff34f1b401ef505cf6fc9b4193b7b628d9c250244644981ce46ea9a094f",
-          "size": 1773
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img117.svg",
-          "sha256": "f2035f3fb20e985948616d18c4d94d0975e623e0be6fb01c70558013cdc24d67",
-          "size": 1095
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img118.svg",
-          "sha256": "b6715e96e0a4d3b4e34724175ea3826954d572b082d59c2385c3c872a4b7367d",
-          "size": 11872
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img119.svg",
-          "sha256": "e8bbb82a566d7b93ffc79d28e0a68bd7257e6be86eb7c8283dfcc266399414ec",
-          "size": 12239
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img12.png",
-          "sha256": "920e6c1f74f82c4cabb62d216c89b192a05e1454e4b9680f79e92f1af8245eed",
-          "size": 4285
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img120.svg",
-          "sha256": "7089a04a5c8c23292fc22f31c2ebe57444dc3fd2f1689d60f304b40a5d17055f",
-          "size": 20272
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img121.svg",
-          "sha256": "63ece9e0616730f754ca6c1271709973e75d9d1d7b3498bc9fb6e671066d5a6c",
-          "size": 21306
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img122.svg",
-          "sha256": "4b640ff34f1b401ef505cf6fc9b4193b7b628d9c250244644981ce46ea9a094f",
-          "size": 1773
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img123.svg",
-          "sha256": "2e954dc81ed55cf5103817b3f31174e715f5d205371927e99f6629dfe72750b8",
-          "size": 1225
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img124.svg",
-          "sha256": "afa23732b73fc7380aa8508641460ae88eeb3af4ad2a1b115a5e7a550f2cf1aa",
-          "size": 1735
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img125.svg",
-          "sha256": "5b75116ecb6269a54ef1d8f46f44f72957a38995bce4f6ef60ac5c6c1d682f1a",
-          "size": 2659
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img126.svg",
-          "sha256": "895a989fc4085f5c6388df38b5e320aa71eeb5a93693e007f8bad0842d4bd803",
-          "size": 825
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img127.svg",
-          "sha256": "f592598745e98bd1b9f69bdb91cfacc61f782ecd8717f5d4dc90049831748cc8",
-          "size": 6340
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img128.svg",
-          "sha256": "4a12f9b283363460e3c2668d5ef6f96384057a6dabdf3294867b3fdabbae08cb",
-          "size": 1129
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img129.svg",
-          "sha256": "2e954dc81ed55cf5103817b3f31174e715f5d205371927e99f6629dfe72750b8",
-          "size": 1225
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img13.png",
-          "sha256": "920e6c1f74f82c4cabb62d216c89b192a05e1454e4b9680f79e92f1af8245eed",
-          "size": 4285
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img130.svg",
-          "sha256": "f2035f3fb20e985948616d18c4d94d0975e623e0be6fb01c70558013cdc24d67",
-          "size": 1095
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img131.svg",
-          "sha256": "6246f9f00b7e8b11b05f1af390c227899a46d988c5ce4fc5d23ef8c8078ca7bd",
-          "size": 7351
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img132.svg",
-          "sha256": "a825c6cb698e4b4a2c1173d8a573408b983757f7c0dd4280f0845d0367925efe",
-          "size": 2696
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img133.svg",
-          "sha256": "3f36ef4cb4a8e96494a4b221169cd2b913c8e2b402e3cc30add3e3890f63da06",
-          "size": 2696
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img134.svg",
-          "sha256": "5592937dee3bd36cb32a6fb839cfec27e14e0e277efcad802a4253192e750bf2",
-          "size": 7745
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img135.svg",
-          "sha256": "2e954dc81ed55cf5103817b3f31174e715f5d205371927e99f6629dfe72750b8",
-          "size": 1225
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img136.svg",
-          "sha256": "2e954dc81ed55cf5103817b3f31174e715f5d205371927e99f6629dfe72750b8",
-          "size": 1225
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img137.svg",
-          "sha256": "b316f743e2d11ffb2c7865dcd863fe14d47e08c2b1b97c955e61006729574ff3",
-          "size": 902
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img138.svg",
-          "sha256": "4b640ff34f1b401ef505cf6fc9b4193b7b628d9c250244644981ce46ea9a094f",
-          "size": 1773
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img139.svg",
-          "sha256": "b094c3d5fcf7687529786da19ab82b2b26e846c928c306d1686b7d82dd8c54ff",
-          "size": 11477
-        },
-        {
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img14.png",
           "sha256": "4004f486ef0693f539fe66efa3304a4d28658302c0fbfd884d1927a59719dbaa",
           "size": 564
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img140.svg",
-          "sha256": "895a989fc4085f5c6388df38b5e320aa71eeb5a93693e007f8bad0842d4bd803",
-          "size": 825
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img141.svg",
-          "sha256": "5444b67ba3f37d461fada833730b95be1b77a60d223f23754c0037e251db57ee",
-          "size": 5298
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img142.svg",
-          "sha256": "b6715e96e0a4d3b4e34724175ea3826954d572b082d59c2385c3c872a4b7367d",
-          "size": 11872
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img143.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
         },
         {
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img144.png",
@@ -6862,21 +5702,6 @@
         },
         {
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img15.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img150.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img151.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img152.png",
           "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
           "size": 1411
         },
@@ -6961,19 +5786,9 @@
           "size": 1386
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img3.png",
-          "sha256": "22dfeb5c5387e3d2e2f5af74656966a0d201a95627276201f209872be6aba34f",
-          "size": 675
-        },
-        {
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img30.png",
           "sha256": "6b083884e7d769ae5c38c03e6be1a5f6022a0068b9b8a3fe8dbeaa8db938f4b3",
           "size": 1281
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img31.png",
-          "sha256": "16362af8ba678b26c84d512112cca2b97f10f931c6eaf7e5148f99b7db8c1b99",
-          "size": 2242
         },
         {
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img32.png",
@@ -6989,11 +5804,6 @@
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img34.png",
           "sha256": "f2c9132ed7b70442dce00a57e00ff7b0b3e556c97dc8d2f7f78c6564c7ba69ac",
           "size": 1971
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img35.png",
-          "sha256": "4afd7dcedb0c036cbe4653aac9e2aac5ff91cb7e1aa8e39c573204811262ffd9",
-          "size": 641
         },
         {
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img36.png",
@@ -7014,16 +5824,6 @@
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img39.png",
           "sha256": "33b49d14b44dcfd3386b445c42757cf57934e82780d7ed8aecbfeee08583a91c",
           "size": 969
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img4.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img40.png",
-          "sha256": "e9c49791ba6ec63df37091d040744ba46ae97083a05902f1e7af7d50a1003bbd",
-          "size": 1161
         },
         {
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img41.png",
@@ -7071,19 +5871,9 @@
           "size": 1606
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img5.svg",
-          "sha256": "0cda2d30c36f6d64f208ed19a746759c77fbb7683339ebd8b634acee4382c742",
-          "size": 3843
-        },
-        {
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img50.png",
           "sha256": "c8abddc1fc0aea7364bf22eee1f4fb4f31dd7f4d7f0479283bcfe8362820ff67",
           "size": 2052
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img51.png",
-          "sha256": "e25b724469422d7ab30b95af371985462c041a3b9d242bb73ae5863d56fe492c",
-          "size": 480
         },
         {
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img52.png",
@@ -7116,334 +5906,14 @@
           "size": 1563
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img58.svg",
-          "sha256": "4a12f9b283363460e3c2668d5ef6f96384057a6dabdf3294867b3fdabbae08cb",
-          "size": 1129
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img59.svg",
-          "sha256": "664f6ba81d83e1f0e923001c268d3799307e87e96b31a993c449f44cab76cff1",
-          "size": 1110
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img6.svg",
-          "sha256": "d7542ea5ef9936b7c54cfec5d7de4e665588430543b29cec681a78bebeea67af",
-          "size": 1087
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img60.svg",
-          "sha256": "9d3be3f791e130854e4f29e169df9c8fa6f516ecc5598d658bb4fb3d28568db6",
-          "size": 1673
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img61.svg",
-          "sha256": "ccb8da167f27eeb1314471353f9a540a424e016466a1fa19814b42ed09969f1f",
-          "size": 1061
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img62.svg",
-          "sha256": "5a511bc97178aed83ff9f7b68ab238937764c5905e1e7150f51c0a03c1ef0c16",
-          "size": 2145
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img63.svg",
-          "sha256": "664f6ba81d83e1f0e923001c268d3799307e87e96b31a993c449f44cab76cff1",
-          "size": 1110
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img64.svg",
-          "sha256": "962e5fb10c9abcaafecd1a29a262e91d5e66cdc13106788a0225ed3d1c646c60",
-          "size": 4059
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img65.svg",
-          "sha256": "ccb8da167f27eeb1314471353f9a540a424e016466a1fa19814b42ed09969f1f",
-          "size": 1061
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img66.svg",
-          "sha256": "a5f2820dfe8833d956a6328b090323117646d8a52044bc5735277cb717d1c3fb",
-          "size": 3234
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img67.svg",
-          "sha256": "aeb805067cf4c91b0f810e4462ebfe44813395b7d0fc8dc258a200d1887fe06e",
-          "size": 1027
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img68.svg",
-          "sha256": "895a989fc4085f5c6388df38b5e320aa71eeb5a93693e007f8bad0842d4bd803",
-          "size": 825
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img69.svg",
-          "sha256": "895a989fc4085f5c6388df38b5e320aa71eeb5a93693e007f8bad0842d4bd803",
-          "size": 825
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img7.svg",
-          "sha256": "fd7323fae2608abd90d841c4a536f73bb3a37c0daea5ba8ff056e4b7f6ae2a08",
-          "size": 1226
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img70.svg",
-          "sha256": "914ffdafc536c63b8de001375a8aed6fef9317bae713a90fdb1103e1c68c45e7",
-          "size": 4360
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img71.svg",
-          "sha256": "c5b69f3d759b42efa47b2ee045d230cbab52d6f43c9b8a781ce4d9b8cf912bfe",
-          "size": 1571
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img72.svg",
-          "sha256": "b316f743e2d11ffb2c7865dcd863fe14d47e08c2b1b97c955e61006729574ff3",
-          "size": 902
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img73.svg",
-          "sha256": "664f6ba81d83e1f0e923001c268d3799307e87e96b31a993c449f44cab76cff1",
-          "size": 1110
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img74.svg",
-          "sha256": "ccb8da167f27eeb1314471353f9a540a424e016466a1fa19814b42ed09969f1f",
-          "size": 1061
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img75.svg",
-          "sha256": "aa7d85bf0f781d3314a1e3f53650f3d14b2db3d3000aa0c517c2937d2001aab9",
-          "size": 3102
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img76.svg",
-          "sha256": "664f6ba81d83e1f0e923001c268d3799307e87e96b31a993c449f44cab76cff1",
-          "size": 1110
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img77.svg",
-          "sha256": "e64389c3ee3fd5d3e53ca84cde4ddea23848e579a91b55f26d0055fb5aa35d4f",
-          "size": 1832
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img78.svg",
-          "sha256": "4a12f9b283363460e3c2668d5ef6f96384057a6dabdf3294867b3fdabbae08cb",
-          "size": 1129
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img79.svg",
-          "sha256": "4a05aa1c49e5e7a3a95fe601ea8d5a46483d9e667986d4765d34af90f4c4fcbb",
-          "size": 4055
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img8.svg",
-          "sha256": "d1af6694077a37b667829519462e6c21578423de45e9436167a753dd3995500e",
-          "size": 1086
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img80.svg",
-          "sha256": "0d5d291fcf0aaf5e98a3d3dfdc68b36ed0a54ebe689fb9cb12ad9ff13ec37fef",
-          "size": 4230
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img81.svg",
-          "sha256": "664f6ba81d83e1f0e923001c268d3799307e87e96b31a993c449f44cab76cff1",
-          "size": 1110
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img82.svg",
-          "sha256": "ccb8da167f27eeb1314471353f9a540a424e016466a1fa19814b42ed09969f1f",
-          "size": 1061
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img83.svg",
-          "sha256": "5a511bc97178aed83ff9f7b68ab238937764c5905e1e7150f51c0a03c1ef0c16",
-          "size": 2145
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img84.svg",
-          "sha256": "4a12f9b283363460e3c2668d5ef6f96384057a6dabdf3294867b3fdabbae08cb",
-          "size": 1129
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img85.svg",
-          "sha256": "310612b422006d83c1e11be3902cd9fdfde5325a847dba9d5aef18aee751c30e",
-          "size": 1354
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img86.svg",
-          "sha256": "664f6ba81d83e1f0e923001c268d3799307e87e96b31a993c449f44cab76cff1",
-          "size": 1110
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img87.svg",
-          "sha256": "80264b4be251aff2e75e38aa770bd8e7d538c48212520dd77c428ebb6240cfff",
-          "size": 5568
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img88.svg",
-          "sha256": "ccb8da167f27eeb1314471353f9a540a424e016466a1fa19814b42ed09969f1f",
-          "size": 1061
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img89.svg",
-          "sha256": "251aaf376e34897ddbfb7d8fb5c67b071964c82e52d6cc952a8cfcdcac0ce0dd",
-          "size": 4664
-        },
-        {
           "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img9.png",
           "sha256": "5d6d81ee6bde0668f6fed01b6c43da820c841700f96d9f310acf83e82d29af2a",
           "size": 2510
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img90.svg",
-          "sha256": "0da70a1f7663b924bb2fe7735b1fa5ebf27650d3173d07851e99ba4962b805a3",
-          "size": 12252
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img91.svg",
-          "sha256": "50717106ae6bad308f63473da36c70cd1188ebbd9a1e608707e519fea2908bf7",
-          "size": 7946
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img92.svg",
-          "sha256": "664f6ba81d83e1f0e923001c268d3799307e87e96b31a993c449f44cab76cff1",
-          "size": 1110
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img93.svg",
-          "sha256": "b316f743e2d11ffb2c7865dcd863fe14d47e08c2b1b97c955e61006729574ff3",
-          "size": 902
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img94.svg",
-          "sha256": "ccb8da167f27eeb1314471353f9a540a424e016466a1fa19814b42ed09969f1f",
-          "size": 1061
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img95.svg",
-          "sha256": "ccb8da167f27eeb1314471353f9a540a424e016466a1fa19814b42ed09969f1f",
-          "size": 1061
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img96.svg",
-          "sha256": "123fcca821bf6d1f9c392720612806e405cf8d1e5173c9e6b8c02647fb9c9640",
-          "size": 4849
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img97.svg",
-          "sha256": "4a12f9b283363460e3c2668d5ef6f96384057a6dabdf3294867b3fdabbae08cb",
-          "size": 1129
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img98.svg",
-          "sha256": "e64389c3ee3fd5d3e53ca84cde4ddea23848e579a91b55f26d0055fb5aa35d4f",
-          "size": 1832
-        },
-        {
-          "path": "paradox_wiki/media/national-focus-modding-hearts-of-iron-4-wiki_b6347a9782__img99.svg",
-          "sha256": "5838fb030d357230228b5abb30858447914a503ab1653e418edf4c4f94b2c732",
-          "size": 2821
-        },
-        {
-          "path": "paradox_wiki/media/on-actions-hearts-of-iron-4-wiki_f9b1ef17b8__img1.png",
-          "sha256": "e9c49791ba6ec63df37091d040744ba46ae97083a05902f1e7af7d50a1003bbd",
-          "size": 1161
-        },
-        {
-          "path": "paradox_wiki/media/on-actions-hearts-of-iron-4-wiki_f9b1ef17b8__img2.png",
-          "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
-          "size": 1784
-        },
-        {
-          "path": "paradox_wiki/media/on-actions-hearts-of-iron-4-wiki_f9b1ef17b8__img3.png",
-          "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
-          "size": 1784
-        },
-        {
-          "path": "paradox_wiki/media/particle-modding-hearts-of-iron-4-wiki_a24c49b8ce__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/particle-modding-hearts-of-iron-4-wiki_a24c49b8ce__img2.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/particle-modding-hearts-of-iron-4-wiki_a24c49b8ce__img3.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/particle-modding-hearts-of-iron-4-wiki_a24c49b8ce__img4.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/portrait-modding-hearts-of-iron-4-wiki_a013d03db4__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/resources-modding-hearts-of-iron-4-wiki_0b0230c5c1__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/resources-modding-hearts-of-iron-4-wiki_0b0230c5c1__img2.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/resources-modding-hearts-of-iron-4-wiki_0b0230c5c1__img3.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/resources-modding-hearts-of-iron-4-wiki_0b0230c5c1__img4.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/resources-modding-hearts-of-iron-4-wiki_0b0230c5c1__img5.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/resources-modding-hearts-of-iron-4-wiki_0b0230c5c1__img6.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img1.png",
-          "sha256": "b4dcd508c1718e7943b741d4637c064efa5626686c7f61412dbcb128611ef73a",
-          "size": 1738
-        },
-        {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img10.png",
-          "sha256": "a92d9f589578dcd4b397c755cd267970f704e4936e401756cadc91f4ffa8764e",
-          "size": 854
-        },
-        {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img11.png",
-          "sha256": "db0aece24b5728311c411368d75892639e30dce574a5c732b15d2005b97bf8c2",
-          "size": 1804
-        },
-        {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img12.png",
-          "sha256": "e9c49791ba6ec63df37091d040744ba46ae97083a05902f1e7af7d50a1003bbd",
-          "size": 1161
-        },
-        {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img13.png",
-          "sha256": "a92d9f589578dcd4b397c755cd267970f704e4936e401756cadc91f4ffa8764e",
-          "size": 854
-        },
-        {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img14.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
+          "path": "paradox_wiki/media/nudger-hearts-of-iron-4-wiki_14dc29a6a3__img2.png",
+          "sha256": "6a876535041b99d5014425dab0b77555788c685144cf4790c068ddd4ad7f0813",
+          "size": 57758
         },
         {
           "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img15.png",
@@ -7456,254 +5926,14 @@
           "size": 668
         },
         {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img2.png",
-          "sha256": "db0aece24b5728311c411368d75892639e30dce574a5c732b15d2005b97bf8c2",
-          "size": 1804
-        },
-        {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img3.png",
-          "sha256": "a92d9f589578dcd4b397c755cd267970f704e4936e401756cadc91f4ffa8764e",
-          "size": 854
-        },
-        {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img4.png",
-          "sha256": "c8ddea4643c205c6e53213af4fb845f2c948339105224275448ef736437d8618",
-          "size": 803
-        },
-        {
           "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img5.png",
           "sha256": "53722f5dd5bf2c5290da14e3aafacc0681d88168ec566d572d8c18671d31ee03",
           "size": 124
         },
         {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img6.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img7.png",
-          "sha256": "f535c9d8eef5d7724446d1083711b95142bda81547434b36076ad1e2fa196765",
-          "size": 1759
-        },
-        {
           "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img8.png",
           "sha256": "2e383385102047a48a5c6450cfb63bad781d7b1872ffcc56d63aa142920c27f7",
           "size": 1152
-        },
-        {
-          "path": "paradox_wiki/media/scopes-hearts-of-iron-4-wiki_eff9c6f993__img9.png",
-          "sha256": "e9c49791ba6ec63df37091d040744ba46ae97083a05902f1e7af7d50a1003bbd",
-          "size": 1161
-        },
-        {
-          "path": "paradox_wiki/media/scripted-gui-modding-hearts-of-iron-4-wiki_ad4f25b985__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/scripted-gui-modding-hearts-of-iron-4-wiki_ad4f25b985__img2.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/sound-modding-hearts-of-iron-4-wiki_0ff718b650__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/sound-modding-hearts-of-iron-4-wiki_0ff718b650__img2.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/sound-modding-hearts-of-iron-4-wiki_0ff718b650__img3.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/sound-modding-hearts-of-iron-4-wiki_0ff718b650__img4.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/sound-modding-hearts-of-iron-4-wiki_0ff718b650__img5.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img1.png",
-          "sha256": "7983def8308cb32a96f74857d5d69962179f23cc8fdf899723d839aa067563db",
-          "size": 2852
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img10.png",
-          "sha256": "7e78f137eae3cdb2f9fa189d62e90959965a0958b4a89dfb92fd8ea3841baf01",
-          "size": 3274
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img11.png",
-          "sha256": "79384e71807ec6688ef83e6f9f8d8333fc032ff2244b55eafc587b83c8c9f49b",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img12.png",
-          "sha256": "355c8985a5f283f46a73bc4977253b95800efaf16f190e0e3167fdbb59c5977e",
-          "size": 2789
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img13.png",
-          "sha256": "536cb522d128474913ebccd717051873be85612d3166e491d03c370d13db9201",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img14.png",
-          "sha256": "74d5b4d4be6c8706760abf63a4120356c6e71f6fa98f95c91eeadef24829cc10",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img15.png",
-          "sha256": "15e5383f3151a38504a63784ef589833c6b59888c544abeecbe26f48fccd2be4",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img16.png",
-          "sha256": "dc5b10db07deaacbd56f8dc688f309f0842e63772d5670e1b01181a9f6ac7763",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img17.png",
-          "sha256": "e43c95761467097b6876d0fa9fed07433827ec330c9baf22b8e82a35d035c456",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img18.png",
-          "sha256": "d112927d1ce438028900937b87f39b9373d79b3548d56242e42d1a29e9b18d3c",
-          "size": 2565
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img19.png",
-          "sha256": "79818b98857febcc58cb535a6680e0b8253b995ac40f6117ec362974c2a47229",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img2.png",
-          "sha256": "74afa6f3754025b65e9d7ebcf51183c02330a15a9dd3bd821d96182b89f6ee3a",
-          "size": 2774
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img20.png",
-          "sha256": "8ce5746f4c478fd4a5b038ed1f1b753ebae2ad72722364b6e6bd174a18f1b51c",
-          "size": 3731
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img21.png",
-          "sha256": "413a76f2099c7e3ac5b331685ea6cdc2aa0c511aab9cf3244f447bdbc53e8e96",
-          "size": 3319
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img22.png",
-          "sha256": "1299cf08f826705292a0217e1d057fba2928f3dbfe7bddce35fa9d01ee499fc8",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img23.png",
-          "sha256": "1299cf08f826705292a0217e1d057fba2928f3dbfe7bddce35fa9d01ee499fc8",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img24.png",
-          "sha256": "02f50bd1937d58dbd0d1f3031e670fdfcd5b685c665b7340447fd1d719f0002f",
-          "size": 2512
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img25.png",
-          "sha256": "cedf3270123ad309d5c3ff823a4d70d45cbf75ce4239a19a61344c2bcf185b7b",
-          "size": 2957
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img26.png",
-          "sha256": "c9a2341759546889a03e76a1ffd4bc54b0d5e271950865ae88c038f7bd1b5311",
-          "size": 2697
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img27.png",
-          "sha256": "03facbe7e207c7bff8ce27eec3126ae0845d9afeb6f172759d84240346d17120",
-          "size": 2339
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img28.png",
-          "sha256": "afbda2b41402ff07b3dbf12e77d5d93a4233c4a52d3e00d655b73475d7db8d82",
-          "size": 2979
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img29.png",
-          "sha256": "afbda2b41402ff07b3dbf12e77d5d93a4233c4a52d3e00d655b73475d7db8d82",
-          "size": 2979
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img3.png",
-          "sha256": "3cef6edc0789ccb5e76b4088174c0be9eecfcc370dbd6e7f26600f1e67d94ba2",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img30.png",
-          "sha256": "3b831c17be8fd99c32d7ababedf9ff76deeb55ee12c14f63dc46d6b160ba4f72",
-          "size": 2763
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img31.png",
-          "sha256": "3b831c17be8fd99c32d7ababedf9ff76deeb55ee12c14f63dc46d6b160ba4f72",
-          "size": 2763
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img32.png",
-          "sha256": "50fe469ec0f4dd031435a350af080582b159daf9282516a0883bc0a9db569ebb",
-          "size": 4665
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img33.png",
-          "sha256": "476e13f1e3b22529ea672683b1c2258e06240d8ece6cf2bb5c7a2250a8d1c5d5",
-          "size": 4393
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img4.png",
-          "sha256": "a231e8b78cf5de6e69139a3623dc413ff9683d21dc07c6c9df8f0d80537e7c06",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img5.png",
-          "sha256": "0069c38314143f35b5164166272568741b0c0e969afc9c9d0bf2d30149d230f6",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img6.png",
-          "sha256": "f1ea9c883a1b2c3a04e00044589411b3c34d2b79f2682266c0fc351fc3615f80",
-          "size": 3042
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img7.png",
-          "sha256": "a14bb2380e5772ae83214d09fff0fdf0d2359857d8a3fd5a80acac8e8d45155c",
-          "size": 3703
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img8.png",
-          "sha256": "a68d6e472fb5dbc77c4aa7bea907cec1d8a4fc74b9caa8bf782ffa327314053f",
-          "size": 2650
-        },
-        {
-          "path": "paradox_wiki/media/state-modding-hearts-of-iron-4-wiki_7a78ea76fe__img9.png",
-          "sha256": "bd4d26ade78573975cbf09cba0e00289490c9e1241b834ec4c7df0f70a12e986",
-          "size": 8627
-        },
-        {
-          "path": "paradox_wiki/media/technology-modding-hearts-of-iron-4-wiki_21e8ff155d__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/technology-modding-hearts-of-iron-4-wiki_21e8ff155d__img2.png",
-          "sha256": "920e6c1f74f82c4cabb62d216c89b192a05e1454e4b9680f79e92f1af8245eed",
-          "size": 4285
         },
         {
           "path": "paradox_wiki/media/technology-modding-hearts-of-iron-4-wiki_21e8ff155d__img3.png",
@@ -7719,226 +5949,6 @@
           "path": "paradox_wiki/media/technology-modding-hearts-of-iron-4-wiki_21e8ff155d__img5.png",
           "sha256": "a8f0e6a33af0ae86f6443d3ac641e02b61794a9e79dac112c4cd62fe5975d572",
           "size": 756
-        },
-        {
-          "path": "paradox_wiki/media/technology-modding-hearts-of-iron-4-wiki_21e8ff155d__img6.png",
-          "sha256": "cda8f159793fb087f5abe0d2f4fffcb6f5434d4a1be124bc127d23bae4b55715",
-          "size": 1847
-        },
-        {
-          "path": "paradox_wiki/media/technology-modding-hearts-of-iron-4-wiki_21e8ff155d__img7.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/technology-modding-hearts-of-iron-4-wiki_21e8ff155d__img8.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/technology-modding-hearts-of-iron-4-wiki_21e8ff155d__img9.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img10.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img11.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img12.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img13.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img14.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img15.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img16.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img17.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img18.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img19.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img2.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img20.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img21.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img22.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img23.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img24.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img25.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img26.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img27.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img28.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img29.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img3.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img30.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img31.png",
-          "sha256": "cda8f159793fb087f5abe0d2f4fffcb6f5434d4a1be124bc127d23bae4b55715",
-          "size": 1847
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img32.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img33.png",
-          "sha256": "c8ddea4643c205c6e53213af4fb845f2c948339105224275448ef736437d8618",
-          "size": 803
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img34.png",
-          "sha256": "cda8f159793fb087f5abe0d2f4fffcb6f5434d4a1be124bc127d23bae4b55715",
-          "size": 1847
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img35.png",
-          "sha256": "c8ddea4643c205c6e53213af4fb845f2c948339105224275448ef736437d8618",
-          "size": 803
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img36.png",
-          "sha256": "4afd7dcedb0c036cbe4653aac9e2aac5ff91cb7e1aa8e39c573204811262ffd9",
-          "size": 641
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img37.png",
-          "sha256": "ae9b8880598131a97ba9afb7e200f5cad7c73489fe8262e793db03740371e696",
-          "size": 2019
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img38.png",
-          "sha256": "1124f74a85b0c728d79b542326509730d55a2a07cc6ef9b7cef7f17bf4efa1a9",
-          "size": 4520
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img39.png",
-          "sha256": "f2193e347f5a61f7860959d52376e940a463d5a2dcd8324c7c5ea0b0d3d957ea",
-          "size": 1903
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img4.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img5.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img6.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img7.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img8.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/triggers-hearts-of-iron-4-wiki_58368ba2e5__img9.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
-        },
-        {
-          "path": "paradox_wiki/media/unit-modding-hearts-of-iron-4-wiki_2559a5eea4__img1.png",
-          "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
-          "size": 1411
         }
       ]
     },
