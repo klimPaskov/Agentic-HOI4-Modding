@@ -240,7 +240,7 @@ This covers some of them, as well as the less intuitive errors in the log.
 
 | Example event with this issue and a correction to it |
 | --- |
-| **Broken:**  `country_event = { id = my_event.1 title = my_event.1.t desc = my_event.1.desc trigger = { tag = GHA has_stability > 0.9 } fire_only_once = yes is_triggered_only = yes # Will make the event never automatically trigger. option = { name = my_event.1.a add_war_support = 0.2 } }`  **Corrected:**  `country_event = { id = my_event.1 title = my_event.1.t desc = my_event.1.desc trigger = { tag = GHA has_stability > 0.9 } fire_only_once = yes option = { name = my_event.1.a add_war_support = 0.2 } }` |
+| **Broken:** `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    trigger = {`<br>`        tag = GHA`<br>`        has_stability > 0.9`<br>`    }`<br>`    fire_only_once = yes`<br>`    is_triggered_only = yes  # Will make the event never automatically trigger.`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`        add_war_support = 0.2`<br>`    }`<br>`}` **Corrected:** `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    trigger = {`<br>`        tag = GHA`<br>`        has_stability > 0.9`<br>`    }`<br>`    fire_only_once = yes`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`        add_war_support = 0.2`<br>`    }`<br>`}` |
 
 - **Not checking the country in the trigger for country-specific auto-triggered events** (*Event fires for the wrong country/never fires*) – The events are not assigned to countries in any way (namespaces and filenames serve a purely organisational purpose), and each event trigger is checked for each country in order specified in the tag list.
 
@@ -249,7 +249,7 @@ This covers some of them, as well as the less intuitive errors in the log.
 
 | Example event with this issue and a correction to it |
 | --- |
-| `country_event = { id = my_event.1 # Broken event title = my_event.1.t desc = my_event.1.desc trigger = { ITA = { has_political_power > 123 } # Either true within every country's scope or for none } # First fires for GER, since it's true in GER's scope and GER is the first country. fire_only_once = yes option = { name = my_event.1.a annex_country = { target = AUS } # Results in GER annexing AUS instead of ITA as intended. } } country_event = { id = my_event.2 # Fixed version title = my_event.2.t desc = my_event.2.desc trigger = { tag = ITA # Checks that the country is ITA has_political_power > 123 # Checks current political power of ITA (as any other country is disqualified by the previous trigger) } fire_only_once = yes option = { name = my_event.2.a annex_country = { target = AUS } } }` |
+| `country_event = {`<br>`    id = my_event.1     # Broken event`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    trigger = {`<br>`        ITA = { has_political_power > 123 }  # Either true within every country's scope or for none`<br>`    }                                        # First fires for GER, since it's true in GER's scope and GER is the first country.`<br>`    fire_only_once = yes`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`        annex_country = { target = AUS }     # Results in GER annexing AUS instead of ITA as intended.`<br>`    }`<br>`}`<br>`country_event = {`<br>`    id = my_event.2     # Fixed version`<br>`    title = my_event.2.t`<br>`    desc = my_event.2.desc`<br><br>`    trigger = {`<br>`        tag = ITA                       # Checks that the country is ITA`<br>`        has_political_power > 123       # Checks current political power of ITA (as any other country is disqualified by the previous trigger)`<br>`    }`<br>`    fire_only_once = yes`<br><br>`    option = {`<br>`        name = my_event.2.a`<br>`        annex_country = { target = AUS }`<br>`    }`<br>`}` |
 
 - **Unnecessarily using auto-triggered events instead of ones that are triggered only** (*Poor practice/optimisation*) – This is more of a poor practice than an error. In general, if an event's condition can be triggered with an effect, it should be.
 
@@ -258,7 +258,7 @@ This covers some of them, as well as the less intuitive errors in the log.
 
 | Example event with this issue and a correction to it |
 | --- |
-| **Broken event:**  `country_event = { id = my_event.1 title = my_event.1.t desc = my_event.1.desc trigger = { has_completed_focus = TAG_focus_name } fire_only_once = yes option = { name = my_event.1.a } }`  **Corrected event and focus:**  `country_event = { id = my_event.1 title = my_event.1.t desc = my_event.1.desc is_triggered_only = yes option = { name = my_event.1.a } }`  `focus = { id = TAG_focus_name x = 5 y = 0 icon = GFX_focus_icon_name cost = 8 search_filters = { FOCUS_FILTER_POLITICAL } completion_reward = { country_event = { id = my_event.1 hours = 6 random_hours = 3 } # Fires the event in 6-9 hours. } }` |
+| **Broken event:** `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    trigger = {`<br>`        has_completed_focus = TAG_focus_name`<br>`    }`<br>`    fire_only_once = yes`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`    }`<br>`}` **Corrected event and focus:** `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    is_triggered_only = yes`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`    }`<br>`}``focus = {`<br>`    id = TAG_focus_name`<br>`    x = 5`<br>`    y = 0`<br>`    icon = GFX_focus_icon_name`<br><br>`    cost = 8`<br>`    search_filters = { FOCUS_FILTER_POLITICAL }`<br><br>`    completion_reward = {`<br>`        country_event = { id = my_event.1 hours = 6 random_hours = 3 }  # Fires the event in 6-9 hours.`<br>`    }`<br>`}` |
 
 - **Tight bounds on date triggers** (*Event never fires*)/**Auto-triggered event intended to be fired at a specific date** (*Event fires later than intended*) – The `trigger = { ... }` block is checked every 20 days by default, and this isn't possible to change for just one event in particular. If the date triggers are set with tight upper and lower bounds (e.g. `date > 1936.1.1` and `date < 1936.1.3`), it's very likely that the event will never fire, as this will not force the game to check the trigger at that date, but just prevent it from firing the event if the range is never checked, as the game doesn't see into the future and cannot predict that the trigger will be true or false at some point. Similarly, just placing a `date > 1936.1.1` will not ensure the event will be fired at exactly the second of January, but it may be anywhere between the 2nd and 21st (though it will be the same day on each reset).
 
@@ -267,13 +267,13 @@ This covers some of them, as well as the less intuitive errors in the log.
 
 | Example event with this issue and a correction to it |
 | --- |
-| **Broken event**:  `country_event = { id = my_event.1 title = my_event.1.t desc = my_event.1.desc trigger = { tag = POL NOT = { has_completed_focus = POL_my_focus } date > 1936.2.11 # If the event trigger check happens on the 1st of February and the 21st of February, date < 1936.2.13 # at least one of the date checks will always be false and the event will never trigger } option = { name = my_event.1.a } }` **Correction**: Event:  `country_event = { id = my_event.1 title = my_event.1.t desc = my_event.1.desc is_triggered_only = yes # To prevent the 20-day range from causing a delay trigger = { NOT = { has_completed_focus = POL_my_focus } } option = { name = my_event.1.a } }`  In any `/Hearts of Iron IV/common/on_actions/*.txt` file:  `on_actions = { on_startup = { effect = { POL = { country_event = { id = my_event.1 days = 42 } # 12th of February 1936, if on the first start date } } } }` |
+| **Broken event**: `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    trigger = {`<br>`        tag = POL`<br>`        NOT = { has_completed_focus = POL_my_focus }`<br>`        date > 1936.2.11 # If the event trigger check happens on the 1st of February and the 21st of February,`<br>`        date < 1936.2.13 # at least one of the date checks will always be false and the event will never trigger`<br>`    }`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`    }`<br>`}`**Correction**: Event: `country_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    is_triggered_only = yes # To prevent the 20-day range from causing a delay`<br>`    trigger = {`<br>`        NOT = { has_completed_focus = POL_my_focus }`<br>`    }`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`    }`<br>`}` In any `/Hearts of Iron IV/common/on_actions/*.txt` file: `on_actions = {`<br>`    on_startup = {`<br>`        effect = {`<br>`            POL = {`<br>`                country_event = { id = my_event.1 days = 42 } # 12th of February 1936, if on the first start date`<br>`            }`<br>`        }`<br>`    }`<br>`}` |
 
 - **Setting a news event to fire only once or not setting one as major** (*News event only fires for one country*) – An event requires `major = yes` in order to appear for every country. News events are purely a reskin of country events and are not set to fire for every country by default, so this line is mandatory. Alongside that, events that fire only once don't appear more than once *globally* rather than per country. The event appearing for more than one country counts as it firing once again, so setting an event to fire only once will lead to only one country getting the news event instead of every one as intended.
 
 | Example events with this issue |
 | --- |
-| `news_event = { id = my_event.1 title = my_event.1.t desc = my_event.1.desc is_triggered_only = yes # Missing 'major = yes', only will fire for one country. option = { name = my_event.1.a } } news_event = { id = my_event.2 title = my_event.2.t desc = my_event.2.desc is_triggered_only = yes major = yes fire_only_once = yes # Fires only once, only will file for one country. Remove this line to fix. option = { name = my_event.2.a } }` |
+| `news_event = {`<br>`    id = my_event.1`<br>`    title = my_event.1.t`<br>`    desc = my_event.1.desc`<br><br>`    is_triggered_only = yes     # Missing 'major = yes', only will fire for one country.`<br><br>`    option = {`<br>`        name = my_event.1.a`<br>`    }`<br>`}`<br>`news_event = {`<br>`    id = my_event.2`<br>`    title = my_event.2.t`<br>`    desc = my_event.2.desc`<br><br>`    is_triggered_only = yes`<br>`    major = yes`<br>`    fire_only_once = yes        # Fires only once, only will file for one country. Remove this line to fix.`<br><br>`    option = {`<br>`        name = my_event.2.a`<br>`    }`<br>`}` |
 
 #### Unintuitive logged errors <a id="Unintuitive_logged_errors"></a>
 
@@ -281,7 +281,7 @@ This covers some of them, as well as the less intuitive errors in the log.
 
 | Example event with this issue |
 | --- |
-| `country_event = { id = my_event.1 hidden = yes is_triggered_only = yes mean_time_to_happen = { days = 1 } }` |
+| `country_event = {`<br>`    id = my_event.1`<br>`    hidden = yes`<br><br>`    is_triggered_only = yes`<br>`    mean_time_to_happen = {`<br>`        days = 1`<br>`    }`<br>`}` |
 
 - **Event is set to trigger every day.** – This occurs when all of the following is true for the event:
   - The event is possible to be fired automatically. In other words, `is_triggered_only = yes` is **not** present in the event.
@@ -292,13 +292,13 @@ This covers some of them, as well as the less intuitive errors in the log.
 
 | Example event with this issue |
 | --- |
-| `country_event = { id = my_event.1 hidden = yes is_triggered_only = no # Changing to yes will fix the error fire_only_once = no # Changing to yes will fix the error trigger = { tag = BHR controls_state = 123 } mean_time_to_happen = { days = 1 # Changing to 2 or more will fix the error } }` |
+| `country_event = {`<br>`    id = my_event.1`<br>`    hidden = yes`<br><br>`    is_triggered_only = no  # Changing to yes will fix the error`<br>`    fire_only_once = no     # Changing to yes will fix the error`<br>`    trigger = {`<br>`        tag = BHR`<br>`        controls_state = 123`<br>`    }`<br>`    mean_time_to_happen = {`<br>`        days = 1            # Changing to 2 or more will fix the error`<br>`    }`<br>`}` |
 
 - **Malformed token: event_id.123, near line** on a line specifying the event ID – This occurs if [the event namespace was not added as needed](#ID_rules).
 
 | Example event file |
 | --- |
-| `add_namespace = my_event # Not having this line will cause the issue. country_event = { id = my_event.1 hidden = yes is_triggered_only = yes }` |
+| `add_namespace = my_event # Not having this line will cause the issue.`<br>`country_event = {`<br>`    id = my_event.1`<br>`    hidden = yes`<br><br>`    is_triggered_only = yes`<br>`}` |
 
 - **Failed to create id 12300000 50. Already exists in game. This might crash the game. Reverse id lookup: id 12300000 = my_namespace.0** – Note that this is the exact same error split into two instead of being two separate errors as it might seem on the first glance. This means that the internal event ID is used by 2 or more events. There are the following reasons for this error to appear:
   - Putting 2 events with the exact same ID by error – `id = my_namespace.0` is included in two events at once. This is self-explanatory.
@@ -309,7 +309,7 @@ This covers some of them, as well as the less intuitive errors in the log.
 
 | Example event file with this issue |
 | --- |
-| `add_namespace = prev_event add_namespace = my_event # Let this namespace have an ID of 321 in calculations, meaning the previous one has an ID of 320. country_event = { id = my_event.1 hidden = yes } country_event = { id = my_event.1 # Creates "Failed to create id 32100001 50. Reverse id lookup: id 32100001 = my_event.1" hidden = yes } country_event = { id = my_event.abc hidden = yes } country_event = { id = my_event.letters # Creates "Failed to create id 32100000 50. Reverse id lookup: id 32100000 = my_event.abc" hidden = yes } country_event = { id = prev_event.100001 # Creates "Failed to create id 32100001 50. Reverse id lookup: id 32100001 = my_event.1" hidden = yes }` |
+| `add_namespace = prev_event`<br>`add_namespace = my_event        # Let this namespace have an ID of 321 in calculations, meaning the previous one has an ID of 320.`<br>`country_event = {`<br>`    id = my_event.1`<br>`    hidden = yes`<br>`}`<br>`country_event = {`<br>`    id = my_event.1             #  Creates "Failed to create id 32100001 50. Reverse id lookup: id 32100001 = my_event.1"`<br>`    hidden = yes`<br>`}`<br>`country_event = {`<br>`    id = my_event.abc`<br>`    hidden = yes`<br>`}`<br>`country_event = {`<br>`    id = my_event.letters       #  Creates "Failed to create id 32100000 50. Reverse id lookup: id 32100000 = my_event.abc"`<br>`    hidden = yes`<br>`}`<br>`country_event = {`<br>`    id = prev_event.100001      #  Creates "Failed to create id 32100001 50. Reverse id lookup: id 32100001 = my_event.1"`<br>`    hidden = yes`<br>`}` |
 
 ### Event file example <a id="Event_file_example"></a>
 

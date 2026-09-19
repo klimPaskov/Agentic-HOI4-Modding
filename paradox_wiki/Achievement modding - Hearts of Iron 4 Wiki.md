@@ -111,7 +111,7 @@ General any-scoped triggers:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| has_completed_custom_achievement | `mod = <mod ID>` The mod where the achievement is from.  `achievement = <achievement ID>` The name of the achievement. | `has_completed_custom_achievement = { mod = my_mod_unique_id achievement = my_achievement_token }` | Checks if the player controlling the current scope has completed the specified custom achievement. | The achievement (including the ID of the mod it's from) is defined within `/Hearts of Iron IV/common/achievements/*.txt` files. The achievement could be completed during a previous session, not necessarily the current one. If the mod defining the achievement is not loaded, the trigger evaluates as false. | 1.12.5 |
+| has_completed_custom_achievement | `mod = <mod ID>`<br>The mod where the achievement is from.<br> `achievement = <achievement ID>`<br>The name of the achievement. | `has_completed_custom_achievement = {`<br>`    mod = my_mod_unique_id`<br>`    achievement = my_achievement_token`<br>`}` | Checks if the player controlling the current scope has completed the specified custom achievement. | The achievement (including the ID of the mod it's from) is defined within `/Hearts of Iron IV/common/achievements/*.txt` files. The achievement could be completed during a previous session, not necessarily the current one. If the mod defining the achievement is not loaded, the trigger evaluates as false. | 1.12.5 |
 
 ## References <a id="References"></a>
 

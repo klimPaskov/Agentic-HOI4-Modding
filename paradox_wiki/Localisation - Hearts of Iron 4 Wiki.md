@@ -617,7 +617,7 @@ Date variable in this case refers to a variable set to a date value. Using it wi
 
 | Name | Scope | Example | Description |
 | --- | --- | --- | --- |
-| GetName | State, character, operative, ace | `[123.GetName]`  `[POL.POL_character.GetName]` | Gets the name of the state or the name of the character. For aces, only gets the first name: see GetFullName. |
+| GetName | State, character, operative, ace | `[123.GetName]`<br> `[POL.POL_character.GetName]` | Gets the name of the state or the name of the character. For aces, only gets the first name: see GetFullName. |
 | GetName | MIO | `[?ID.GetName]``[?BEL_cockerill_organization.GetName]` | Gets the name of the MIO. |
 | GetDateText | Any | `[GetDateText]` | Gets the date in the format of "HH:00, DD Month, YYYY", such as "12:00, 1 January, 1936". |
 | GetDate | Any | `[GetDate]` | Gets the date in the format of YYYY.MM.DD.HH, such as 1936.1.1.12. |

@@ -118,7 +118,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | BASE_PEACE_TAKE_UNCONTROLLED_STATE_FACTOR | 10.0 | Base factor for taking state you do not control |  |
 | BASE_PEACE_TAKE_FACTION_CONTROLLED_STATE_FACTOR | 0.5 | Base factor for taking state you do not control, but someone in faction does |  |
 | BASE_PEACE_FORCE_GOVERNMENT_COST | 100 | Base cost for forcing a country to change government. |  |
-| PEACE_COST_FACTOR_CONTESTED_MAX | 15 | In peace conference, cost is factored based on how many times the state has been contested and for how long it has been uncontested (for everyone else) To prevent overflows due to the exponential increase, cap the contested factor to this |  |
+| PEACE_COST_FACTOR_CONTESTED_MAX | 15 | In peace conference, cost is factored based on how many times the state has been contested and for how long it has been uncontested (for everyone else)<br>To prevent overflows due to the exponential increase, cap the contested factor to this |  |
 | PEACE_COST_FACTOR_UNCONTESTED_MAX | 15 | To prevent overflows due to the exponential increase, cap the uncontested factor to this |  |
 | PEACE_COST_FACTOR_CONTESTED_BID | 1.20 | Cost factor for each contested bid on the state. |  |
 | PEACE_COST_FACTOR_UNCONTESTED_BID_MIN | 1.15 | Minimum cost factor for each turn a bid has been uncontested on the state. |  |
@@ -127,16 +127,16 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | PEACE_COST_FACTOR_CAPITAL_SHIP_IC | 0.005 | In peace conference, cost for taking one capital ship per IC |  |
 | PEACE_COST_FACTOR_SCREENING_SHIP_IC | 0.005 | In peace conference, cost for taking a part of the screening ships per IC |  |
 | PEACE_INCREASE_COST_FACTOR_PER_MISSING_PERCENT_FOR_CAPITULATION | 0.0012 | increase factor if loser has not capitulated, for every percent between surrender level and BASE_SURRENDER_LEVEL |  |
-| PEACE_COST_FACTOR_COMPLIANCE_STEPS | { 0, 1.0, 30, 0.9, 70, 0.8 } | peace action taker has a discount if they occupy the state depending on compliance it's a table where first value is the compliance level, and the second the factor between 0% and 30% compliance, factor is 1.0 between 30% and 70% above 70% |  |
+| PEACE_COST_FACTOR_COMPLIANCE_STEPS | { 0, 1.0,<br>30, 0.9,<br>70, 0.8 } | peace action taker has a discount if they occupy the state depending on compliance<br>it's a table where first value is the compliance level, and the second the factor<br>between 0% and 30% compliance, factor is 1.0<br>between 30% and 70%<br>above 70% |  |
 | PEACE_COST_FACTOR_STACK_DEMILITARIZED_ZONE | 0.25 | In peace conference, adding a stackable to a peace action, increment the cost by a percentage |  |
 | PEACE_COST_FACTOR_STACK_WAR_REPARATION | 0.25 |  |  |
 | PEACE_COST_FACTOR_STACK_RESOURCE_RIGHTS | 0.25 |  |  |
 | PEACE_COST_FACTOR_STACK_DISMANTLE_INDUSTRY | 0.25 |  |  |
-| PEACE_TIMED_EFFECT_LENGTH_DEMILITARIZED_ZONE | 1825 | peace conference can set timed effect, set length in days 5 years |  |
+| PEACE_TIMED_EFFECT_LENGTH_DEMILITARIZED_ZONE | 1825 | peace conference can set timed effect, set length in days<br>5 years |  |
 | PEACE_TIMED_EFFECT_LENGTH_WAR_REPARATION | 1825 |  |  |
 | PEACE_TIMED_EFFECT_LENGTH_RESOURCE_RIGHTS | 1825 |  |  |
 | PEACE_TIMED_EFFECT_RATIO_CIVILIAN_FACTORY_WAR_REPARATION | 0.5 | ratio of civilian factories taken via stackable war reparation |  |
-| INFLUENCE_NEUTRAL_DIST_CAPITAL | 30.0 | The Influence cost modifier is basically the inverse of distance. Nearby states are cheaper, and far-away states are more expensive. We basically do a two-segment lerp: if distance is between `[0, NEUTRAL_DIST]`, we lerp the cost modifier between `[MIN_DIST_COST_MODIFIER, 1.0]` if distance is between `[NEUTRAL_DIST, MAX_DIST]`, we lerp the cost modifier between `[1.0, MAX_DIST_COST_MODIFIER]` The below values represent (pixel distance / INFLUENCE_DISTANCE_DIVISOR) distance to capital that results in a cost modifier of 1.0 |  |
+| INFLUENCE_NEUTRAL_DIST_CAPITAL | 30.0 | The Influence cost modifier is basically the inverse of distance. Nearby states are cheaper, and far-away states are more expensive.<br>We basically do a two-segment lerp:<br>if distance is between `[0, NEUTRAL_DIST]`, we lerp the cost modifier between `[MIN_DIST_COST_MODIFIER, 1.0]`<br>if distance is between `[NEUTRAL_DIST, MAX_DIST]`, we lerp the cost modifier between `[1.0, MAX_DIST_COST_MODIFIER]`<br>The below values represent (pixel distance / INFLUENCE_DISTANCE_DIVISOR)<br>distance to capital that results in a cost modifier of 1.0 |  |
 | INFLUENCE_MAX_DIST_CAPITAL | 45.0 | distance to capital that results in a cost modifier of INFLUENCE_MAX_DIST_COST_MODIFIER |  |
 | INFLUENCE_NEUTRAL_DIST_CORE | 6.0 | distance to nearest core state that results in a cost modifier of 1.0 |  |
 | INFLUENCE_MAX_DIST_CORE | 13.0 | distance to nearest core state that results in a cost modifier of INFLUENCE_MAX_DIST_COST_MODIFIER |  |
@@ -217,13 +217,13 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | BASE_CONDITIONAL_PEACE_MONTHS | 3 | War length must be before a surrender is possible. |  |
 | JOINING_NAP_WAR_PENALTY | 0.2 | War support penalty for breaking non-breakable NAP |  |
 | BREAKING_GUARANTEE_PENALTY | 0.2 | War support penalty for breaking guarantee |  |
-| PEACE_SCORE_TRANSFERRED_TO_FACTION_LEADER | 0.1 | WARNING ! if you modify the following values, you should update corresponding loc keys in games_rules_l_english.yml Part of the peace score transferred from the faction members to the faction leader (if game rule enabled) |  |
+| PEACE_SCORE_TRANSFERRED_TO_FACTION_LEADER | 0.1 | WARNING ! if you modify the following values, you should update corresponding loc keys in games_rules_l_english.yml<br>Part of the peace score transferred from the faction members to the faction leader (if game rule enabled) |  |
 | PEACE_SCORE_RESET_LOW_SCORE_THRESHOLD | 0.05 | Winners with less than this ratio of war participation will give all their score to other players |  |
 | PEACE_SCORE_RESET_LOW_SCORE_MINIMUM_FOR_RECEIVER | 0.1 | Disable the previous, if no winner has at least this ratio of war participation |  |
 | PEACE_SCORE_SCALE_FACTOR | 1.35 | Losers' total value times this factor becomes the default total peace conference score that is distributed to the winners. |  |
 | PEACE_SCORE_MINOR_BOOST_FRACTION | 0.05 | Low-scoring winners are boosted by receiving more of their score earlier. This value, multiplied by the total score distributed this turn, is the minimum score they will receive (up until their total allocated score). |  |
-| PEACE_SCORE_DISTRIBUTION | { 0.2, 0.2, 0.2, 0.2, 0.2 } | Example: If 2000 score is distributed to winners this turn and this value is set to 0.05, each winner will receive a minimum of 100 score (clamped by the max score they will receive over the cource of the conference). How much of the total peace conference score you get during the first n turns. |  |
-| PEACE_CONTEST_REFUND_FACTOR | { 1.0, 0.92, 0.84, 0.76 } | More explanation of the peace score distribution above: {1.0} would give you all the score on the first turn. {0.5, 0.5, 0.5} would give you 50 % of the total score on each of the first three turns (in this case resulting in receiving 150 % of the total score). How much of the spent peace conference score that gets refunded in a contest. First element applies for the first round of conflicts, second element for the second round of conflicts, etc. The final element is used for each consecutive turn, so setting that to e.g. 0.7 means you get 70 % of the spent score back for every turn thereafter. |  |
+| PEACE_SCORE_DISTRIBUTION | { 0.2, 0.2, 0.2, 0.2, 0.2 } | Example: If 2000 score is distributed to winners this turn and this value is set to 0.05, each winner will receive a minimum of 100 score (clamped by the max score they will receive over the cource of the conference).<br>How much of the total peace conference score you get during the first n turns. |  |
+| PEACE_CONTEST_REFUND_FACTOR | { 1.0, 0.92, 0.84, 0.76 } | More explanation of the peace score distribution above:<br>{1.0} would give you all the score on the first turn.<br>{0.5, 0.5, 0.5} would give you 50 % of the total score on each of the first three turns (in this case resulting in receiving 150 % of the total score).<br>How much of the spent peace conference score that gets refunded in a contest. First element applies for the first round of conflicts, second element for the second round of conflicts, etc. The final element is used for each consecutive turn, so setting that to e.g. 0.7 means you get 70 % of the spent score back for every turn thereafter. |  |
 | PEACE_PLAY_SOUND_ON_NEW_TURN | true | Whether the 'peace_conference_new_turn' audio hook is called or not |  |
 | PEACE_PLAY_NEW_TURN_SOUND_ONLY_IF_NOT_ALREADY_PLAYING | true | Whether the 'peace_conference_new_turn' audio hook should play only if not already playing (relevant if players spam-click the pass/submit button) |  |
 | MAX_REMEMBERED_LEASED_IC | 1000 | Maximum of leased equipment value that is remembered for opinion bonus |  |
@@ -416,7 +416,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | MAX_CONVOYS_BEING_RAIDED_WEEKLY_WAR_SUPPORT_PENALTY | -0.006 | Max penalty that will gained per week from trade convoy raided |  |  |  |
 | CONVOYS_BEING_RAIDED_WEEKLY_WAR_SUPPORT_PENALTY_DECAY | 0.001 | Weekly decay of trade convoy raided war support penalty |  |  |  |
 | MAX_CONVOYS_BEING_RAIDED_WAR_SUPPORT_IMPACT | -0.5 | Max total penalty from trade convoy raided |  |  |  |
-| FEMALE_UNIT_LEADER_BASE_CHANCE | { 0.5, 0.5, 0.5, 0.5, 0.5 } | applies as a factor to female unit leader randomization the values needs to be zero if you don't actually have random portraits country leaders army leaders navy leaders air leaders operatives |  |  |  |
+| FEMALE_UNIT_LEADER_BASE_CHANCE | { 0.5, 0.5, 0.5, 0.5, 0.5 } | applies as a factor to female unit leader randomization<br>the values needs to be zero if you don't actually have random portraits<br>country leaders<br>army leaders<br>navy leaders<br>air leaders<br>operatives |  |  |  |
 | CONVOYS_SUNK_MULTIPLIER_FOR_WAR_SUPPORT | 0.2 | once a trade convoy ship sunk, you will get a larger negative impact on your war support |  |  |  |
 | CONVOYS_BEING_RAIDED_DAILY_WAR_SUPPORT_IMPACT_FROM_OVERSEA_STATES | 0.2 | resource transfer convoys convoys from our states being raided will give a daily war support penalty depending on how important that resource is and how inefficent convoys are |  |  |  |
 | CONVOYS_SUNK_MULTIPLIER_FOR_WAR_SUPPORT_FROM_OVERSEA_STATES | 0.2 | once a resource transfer convoys from our states ship sunk, you will get a larger negative impact on your war support |  |  |  |
@@ -498,7 +498,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | RESISTANCE_TARGET_MODIFIER_PER_STABILITY_LOSS | 0.2 | resistance target modifier per stability below 100% |  |
 | RESISTANCE_TARGET_MODIFIER_PER_COMPLIANCE | -0.5 | resistance target modifier per compliance % |  |
 | RESISTANCE_TARGET_MODIFIER_IS_AT_PEACE | -10.0 | resistance target modifier when we are at peace |  |
-| RESISTANCE_TARGET_MODIFIER_STATE_VP | { 0, 0.0, 5, 5.0, 20, 10.0, 50, 20.0 } | resistance target modifier pairs for vp. first entry is total vp in state and second entry is amount of target modifier that applies for that threshold 0 - 5 5 - 20 20 - 50 50 - ... |  |
+| RESISTANCE_TARGET_MODIFIER_STATE_VP | { 0, 0.0, 5, 5.0, 20, 10.0, 50, 20.0 } | resistance target modifier pairs for vp. first entry is total vp in state and second entry is amount of target modifier that applies for that threshold<br>0 - 5<br>5 - 20<br>20 - 50<br>50 - ... |  |
 | RESISTANCE_TARGET_MODIFIER_OCCUPIED_CAPITULATED | 10.0 | resistance target modifier when the enemy is capitulated |  |
 | RESISTANCE_TARGET_MODIFIER_OCCUPIED_IS_EXILE_MIN | 2.0 | min \& max resistance target modifier resistance target modifier for exile countries. interpolated using legitimacy |  |
 | RESISTANCE_TARGET_MODIFIER_OCCUPIED_IS_EXILE_MAX | 20.0 |  |  |
@@ -511,7 +511,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | RESISTANCE_DECAY_MIN | 0.01 | min resistance decay |  |
 | RESISTANCE_DECAY_MAX | 100.0 | nax resistance decay |  |
 | RESISTANCE_DECAY_MODIFIER_HAS_CLAIM | 25.0 | resistance decay modifier for our claims |  |
-| RESISTANCE_DECAY_MODIFIER_FACTORS | { 10, -50, 20, -25 } | resistance decay modifier when resistance hits a certain percentage below 10% it has a -50% modifier on decay below 20% it has a -25% modifier on decay |  |
+| RESISTANCE_DECAY_MODIFIER_FACTORS | { 10, -50, 20, -25 } | resistance decay modifier when resistance hits a certain percentage<br>below 10% it has a -50% modifier on decay<br>below 20% it has a -25% modifier on decay |  |
 | MIN_DAMAGE_TO_GARRISONS_MODIFIER | 0.1 | modifier that applies to losses from resistance attack to garrisons at most can be reduced to this amount |  |
 | RESISTANCE_GROWTH_BASE | 0.2 | base resistance grow |  |
 | RESISTANCE_GROWTH_MIN | 0.01 | min resistance grow |  |
@@ -713,7 +713,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | HARD_ATTACK_TARGETING_FACTOR | 1.2 | How much we care about potential hard attacks when evaluating priority combat target |  |
 | CASUALTIES_WS_P_PENALTY_DIVISOR | 200 | Divisor for casualties WS penalty |  |
 | CASUALTIES_WS_A_PENALTY_DIVISOR | 600 | Divisor for casualties WS penalty |  |
-| PIERCING_THRESHOLDS | { 1.00, 0.75, 0.50, 0.00 } | Our piercing / their armor must be this value to deal damage fraction equal to the index in the array below `[higher number = higher penetration]`. If armor is 0, 1.00 will be returned. there isn't much point setting this higher than 0 |  |
+| PIERCING_THRESHOLDS | { 1.00, 0.75, 0.50, 0.00 } | Our piercing / their armor must be this value to deal damage fraction equal to the index in the array below `[higher number = higher penetration]`. If armor is 0, 1.00 will be returned.<br>there isn't much point setting this higher than 0 |  |
 | PIERCING_THRESHOLD_DAMAGE_VALUES | { 1.00, 0.80, 0.65, 0.50 } | 0 armor will always receive maximum damage (so add overmatching at your own peril). the system expects at least 2 values, with no upper limit. |  |
 | DIVISIONAL_COMMANDER_TRAIT_XP_REQUIREMENT | 400.0 | Get a trait if any valid options \& xp gained >= this |  |
 | NUM_DAYS_FOR_OPERATION_ENTRY | 60 | Number of days that a unit must have been on a particular active order instance to receive a history entry. |  |
@@ -920,7 +920,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | PLAN_PORVINCE_AIRFIELD_LEVEL_FACTOR | 0.25 | Bonus factor for airfield level |  |
 | PLAN_PORVINCE_RESISTANCE_BASE_IMPORTANCE | 10.0 | Used when calculating the calue of defense area provinces for the battle plan system (factored by resistance level) |  |
 | PLAN_PROVINCE_VP_PORT_FACTOR | 0.25 |  |  |
-| PLAN_AREA_DEFENSE_ENEMY_CONTROLLER_SCORE | 25.0 | These need to result in province value > 1.0 for it to matter. Score applied to provinces in the defense area order controlled by enemies |  |
+| PLAN_AREA_DEFENSE_ENEMY_CONTROLLER_SCORE | 25.0 | These need to result in province value > 1.0 for it to matter.<br>Score applied to provinces in the defense area order controlled by enemies |  |
 | PLAN_AREA_DEFENSE_ENEMY_UNIT_FACTOR | -2.0 | Factor applied to province score in area defense order per enemy unit in that province |  |
 | PLAN_AREA_DEFENSE_FORT_IMPORTANCE | 0.25 | Used when calculating the value of defense area provinces for the battle plan system, works as multipliers on the rest |  |
 | PLAN_AREA_DEFENSE_COASTAL_FORT_IMPORTANCE | 3.0 | Used when calculating the value of defense area provinces for the battle plan system |  |
@@ -936,7 +936,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | PLAN_EXECUTE_BALANCED_LIMIT | 0 | When looking for an attach target, this score limit is required in the battle plan to consider province for attack |  |
 | PLAN_EXECUTE_RUSH | -200 | When looking for an attach target, this score limit is required in the battle plan to consider province for attack |  |
 | PLAN_EXECUTE_CAREFUL_MAX_FORT | 5 | If execution mode is set to careful, units will not attack provinces with fort levels greater than or equal to this |  |
-| PLAN_EXECUTE_SUPPLY_CHECK | { 1.0, 0.0, 0.0, 1.0, 0.0 } | order by EExecutionType: careful, balanced, rush, <skip>, rush_weak for each execution mode how careful should we be with supply (1.0 means full required supply available, zero is no limit). |  |
+| PLAN_EXECUTE_SUPPLY_CHECK | { 1.0, 0.0, 0.0, 1.0, 0.0 } | order by EExecutionType: careful, balanced, rush, <skip>, rush_weak<br>for each execution mode how careful should we be with supply (1.0 means full required supply available, zero is no limit). |  |
 | PLAN_MAX_PROGRESS_TO_JOIN | 0.50 | If Lower progress than this, probably needs support |  |
 | PLAN_COHESION_WEIGHTS | { 1.0, 40.0, 80.0 } | for each cohesion setting, how keen on relocating from distance should we be? (default 1.0), higher weight = shorter max distance |  |
 | PLAN_COHESION_DISTANCE_MAX_WHEN_LEFT_BEHIND | 38 | Unused and deprecated - will be removed in next major version. |  |
@@ -996,15 +996,15 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | COMMANDER_LEVEL_UP_STAT_COUNT | 3 | num stats gained on level up |  |
 | COMMANDER_LEVEL_UP_STAT_WEIGHTS | { 5, 5, 5, 5 } | level up stat random base weights attack, defense, planning, logistics |  |
 | NAVY_LEADER_LEVEL_UP_STAT_WEIGHTS | { 5, 5, 5, 5 } | level up stat random base weights attack, defense, maneuvering, coordination |  |
-| UNIT_LEADER_INITIAL_TRAIT_SLOT | { 1.0, 0.0, 1.0, 0.0 } | trait slot for 0 level leader field marshal corps commander navy general operative |  |
-| UNIT_LEADER_TRAIT_SLOT_PER_LEVEL | { 0.5, 0.5, 0.5, 0.0 } | num extra traits on each level field marshal corps commander navy general operative |  |
+| UNIT_LEADER_INITIAL_TRAIT_SLOT | { 1.0, 0.0, 1.0, 0.0 } | trait slot for 0 level leader<br>field marshal<br>corps commander<br>navy general<br>operative |  |
+| UNIT_LEADER_TRAIT_SLOT_PER_LEVEL | { 0.5, 0.5, 0.5, 0.0 } | num extra traits on each level<br>field marshal<br>corps commander<br>navy general<br>operative |  |
 | UNIT_LEADER_USE_NONLINEAR_XP_GAIN | true | Whether unit leader XP gain is scaled by 1/<nr_of_traits> |  |
 | HOURS_REQ_REJOIN_BORDER_WAR_FOR_INJURED_UNITS | 1 | minimum hours required for units to rejoin border wars, values below zero will make units never return |  |
-| NEW_COMMANDER_RANDOM_PERSONALITY_TRAIT_CHANCES | { 0.5, 0.15 } | chances to gain a personality trait for new generals 50% for first trait 15% for second trait after that |  |
+| NEW_COMMANDER_RANDOM_PERSONALITY_TRAIT_CHANCES | { 0.5, 0.15 } | chances to gain a personality trait for new generals<br>50% for first trait<br>15% for second trait after that |  |
 | NEW_COMMANDER_RANDOM_BASIC_TRAIT_CHANCES | { } | chances to gain a basic trait for new generals |  |
 | NEW_COMMANDER_RANDOM_STATUS_TRAIT_CHANCES | { } | chances to gain a status trait for new generals |  |
-| NEW_OPERATIVE_RANDOM_PERSONALITY_TRAIT_CHANCES | { 0.5, 0.1 } | chances to gain a personality trait for new operatives 50% for first trait 10% for second trait after that |  |
-| NEW_OPERATIVE_RANDOM_BASIC_TRAIT_CHANCES | { 0.25, 0.05 } | chances to gain a basic trait for new operatives 25% for first trait 5% for second trait after that |  |
+| NEW_OPERATIVE_RANDOM_PERSONALITY_TRAIT_CHANCES | { 0.5, 0.1 } | chances to gain a personality trait for new operatives<br>50% for first trait<br>10% for second trait after that |  |
+| NEW_OPERATIVE_RANDOM_BASIC_TRAIT_CHANCES | { 0.25, 0.05 } | chances to gain a basic trait for new operatives<br>25% for first trait<br>5% for second trait after that |  |
 | NEW_OPERATIVE_RANDOM_STATUS_TRAIT_CHANCES | { } | chances to gain a status trait for new operatives |  |
 | NEW_COMMANDER_RANDOM_SKILL_CHANCES | { } | chances to give a random stat skill for new operatives? |  |
 | NEW_NAVY_LEADER_RANDOM_SKILL_CHANCES | { } | chances to give a random stat skill point for a new admiral |  |
@@ -1037,7 +1037,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | FUEL_CAPACITY_DEFAULT_HOURS | 96 | default capacity if not specified |  |
 | MAX_ESTIMATED_PLAN_UNITS_NOT_IN_PLACE_FACTOR | -0.6 | Scaled by % of units not in place. Used to be a flat -50% |  |
 | DAMAGE_SPLIT_ON_FIRST_TARGET | 0.35 | % of damage dealt to the first target in a combat. The rest will be split amongst subsequent targets. Modifiers can affect this up to a maximum of 0.9. That value must not be exposed as a define. |  |
-| NEW_ARMY_LEADER_LEVEL_CHANCES | { 0.95, 0.05 } | chances for new army leaders to start at a given level 95% for level one 5% for level two 0% for level three to ten |  |
+| NEW_ARMY_LEADER_LEVEL_CHANCES | { 0.95, 0.05 } | chances for new army leaders to start at a given level<br>95% for level one<br>5% for level two<br>0% for level three to ten |  |
 
 ## NAir <a id="NAir"></a>
 
@@ -1057,7 +1057,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | TOP_SPEED_DAMAGE_BONUS_FACTOR | 0.025 | A factor for scaling the top speed of a plane into damage buff. If an attacking wing has a speed advantage of any form their speed value will be converted into a percentage bonus with this modifier |  |
 | COMBAT_DAMAGE_STATS_MULTILPIER | 0.2 |  |  |
 | COMBAT_BETTER_AGILITY_DAMAGE_REDUCTION | 0.45 | How much the better agility (than opponent's) can reduce their damage to us. |  |
-| COMBAT_BETTER_SPEED_DAMAGE_INCREASE | 0.65 | How much the better Speed (than opponent's) can reduce increase our damage to them. Both of these defines are combined with their sister FACTOR_DIFF defines to create defense or offensive buffs In both cases the maximum bonus or reduction is (BIGGEST_X_FACTOR_DIFF - 1) \* COMBAT_BETTER_X_DAMAGE_Y \* Damage |  |
+| COMBAT_BETTER_SPEED_DAMAGE_INCREASE | 0.65 | How much the better Speed (than opponent's) can reduce increase our damage to them.<br>Both of these defines are combined with their sister FACTOR_DIFF defines to create defense or offensive buffs<br>In both cases the maximum bonus or reduction is (BIGGEST_X_FACTOR_DIFF - 1) \* COMBAT_BETTER_X_DAMAGE_Y \* Damage |  |
 | COMBAT_MAX_WINGS_AT_ONCE | 10000 | Max amount of air wings in one combat simulation. The higher value, the quicker countries may loose their wings. It's a gameplay balance value. | Deprecated/Unused |
 | COMBAT_MAX_WINGS_AT_GROUND_ATTACK | 10000 | we can really pounce a land strike and escalate | Deprecated/Unused |
 | COMBAT_MAX_WINGS_AT_ONCE_PORT_STRIKE | 10000 | we can really pounce a naval strike and escalate | Deprecated/Unused |
@@ -1139,7 +1139,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | AIR_MORE_GROUND_CREWS_COST | 20.0 | CP cost to maintain more ground crews |  |
 | AIR_MORE_GROUND_CREWS_BOOST | 0.1 | Efficienct boost for more ground crews |  |
 | EFFICIENCY_REGION_CHANGE_PENALTY_FACTOR | 0.9 | Penalty applied for changing region |  |
-| EFFICIENCY_REGION_CHANGE_DAILY_GAIN_DEFAULT | 1 | Gain should be changed in increments of 0.024 due to precision. Default how much efficiency to regain per day. Gain applied hourly. |  |
+| EFFICIENCY_REGION_CHANGE_DAILY_GAIN_DEFAULT | 1 | Gain should be changed in increments of 0.024 due to precision.<br>Default how much efficiency to regain per day. Gain applied hourly. |  |
 | EFFICIENCY_REGION_CHANGE_DAILY_GAIN_CAS | 0.888 | How much efficiency to regain per day. Gain applied hourly. |  |
 | EFFICIENCY_REGION_CHANGE_DAILY_GAIN_NAVAL_BOMBER | 0.192 | How much efficiency to regain per day. Gain applied hourly. |  |
 | EFFICIENCY_REGION_CHANGE_DAILY_GAIN_TACTICAL_BOMBER | 0.192 | How much efficiency to regain per day. Gain applied hourly. |  |
@@ -1191,8 +1191,8 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | MIN_PLANE_COUNT_AIR_SUPPLY | 1 |  |  |
 | BASE_UNIT_WEIGHT_IN_TRANSPORT_PLANES | 45.0 |  |  |
 | MANPOWER_LOSS_RATIO_PLANE_SHOT | 0.10 | The loss ratio of manpower for a shot plane. |  |
-| MISSION_COMMAND_POWER_COSTS | { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0 } | command power cost per plane to create a mission AIR_SUPERIORITY CAS INTERCEPTION STRATEGIC_BOMBER NAVAL_BOMBER DROP_NUKE PARADROP NAVAL_KAMIKAZE PORT_STRIKE ATTACK_LOGISTICS AIR_SUPPLY TRAINING NAVAL_MINES_PLANTING NAVAL_MINES_SWEEPING RECON NAVAL_PATROL |  |
-| MISSION_FUEL_COSTS | { 1.0, 1.0, 0.2, 1.0, 1.0, 1.0, 1.0, 0.75, 1.2, 1.2, 1.0, 0.6, 1.0, 1.0, 1.0, 1.0 } | fuel cost per plane for each mission AIR_SUPERIORITY CAS INTERCEPTION STRATEGIC_BOMBER NAVAL_BOMBER DROP_NUKE PARADROP NAVAL_KAMIKAZE PORT_STRIKE ATTACK_LOGISTICS AIR_SUPPLY TRAINING NAVAL_MINES_PLANTING NAVAL_MINES_SWEEPING RECON NAVAL_PATROL |  |
+| MISSION_COMMAND_POWER_COSTS | { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0 } | command power cost per plane to create a mission<br>AIR_SUPERIORITY<br>CAS<br>INTERCEPTION<br>STRATEGIC_BOMBER<br>NAVAL_BOMBER<br>DROP_NUKE<br>PARADROP<br>NAVAL_KAMIKAZE<br>PORT_STRIKE<br>ATTACK_LOGISTICS<br>AIR_SUPPLY<br>TRAINING<br>NAVAL_MINES_PLANTING<br>NAVAL_MINES_SWEEPING<br>RECON<br>NAVAL_PATROL |  |
+| MISSION_FUEL_COSTS | { 1.0, 1.0, 0.2, 1.0, 1.0, 1.0, 1.0, 0.75, 1.2, 1.2, 1.0, 0.6, 1.0, 1.0, 1.0, 1.0 } | fuel cost per plane for each mission<br>AIR_SUPERIORITY<br>CAS<br>INTERCEPTION<br>STRATEGIC_BOMBER<br>NAVAL_BOMBER<br>DROP_NUKE<br>PARADROP<br>NAVAL_KAMIKAZE<br>PORT_STRIKE<br>ATTACK_LOGISTICS<br>AIR_SUPPLY<br>TRAINING<br>NAVAL_MINES_PLANTING<br>NAVAL_MINES_SWEEPING<br>RECON<br>NAVAL_PATROL |  |
 | MAX_FUEL_FLOW_MULT | 1.0 | max fuel flow ratio for planes, which will be multiplied by supply |  |
 | FUEL_COST_MULT | 0.35 | fuel multiplier for all air missions |  |
 | MISSION_EFFICIENCY_MULT_AT_LACK_OF_FUEL | 0.25 | multiplier for mission efficiency when a base lacks fuel |  |
@@ -1214,19 +1214,19 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
-| WAR_SCORE_GAIN_FOR_SUNK_SHIP_MANPOWER_FACTOR | 0.004 | Peace Conference war score gained for every manpower killed when sinking a ship |  |
+| WAR_SCORE_GAIN_FOR_SUNK_SHIP_MANPOWER_FACTOR | 0.004 | Peace Conference<br>war score gained for every manpower killed when sinking a ship |  |
 | WAR_SCORE_GAIN_FOR_SUNK_SHIP_PRODUCTION_COST_FACTOR | 0.020 | war score gained for every IC of the sunk ship |  |
 | WAR_SCORE_GAIN_FOR_SUNK_CONVOY | 0.08 | war score gained for every sunk convoy |  |
 | WAR_SCORE_DECAY_FOR_BUILT_CONVOY | 0.01 | war score deducted when convoy-raided enemy produces one new convoy |  |
 | PEACE_ACTION_TRANSFER_NAVY_EXPERIENCE_RETAINED | 0.25 | % of experience to retain after being transferred in a peace conference |  |
-| NAVAL_INVASION_PRIORITY | 1 | Convoy Priorities START Default convoy priority for naval invasions |  |
+| NAVAL_INVASION_PRIORITY | 1 | Convoy Priorities START<br>Default convoy priority for naval invasions |  |
 | NAVAL_TRANSFER_PRIORITY | 1 | Default convoy priority for naval transports |  |
 | SUPPLY_PRIORITY | 2 | Default convoy priority for supplying units via sea |  |
 | RESOURCE_LENDLEASE_PRIORITY | 3 | Default convoy priority for export lend lease |  |
 | RESOURCE_EXPORT_PRIORITY | 4 | Default convoy priority for export trade |  |
 | RESOURCE_ORIGIN_PRIORITY | 5 | Default convoy priority for resources shipped internally |  |
 | RESOURCE_PURCHASE_PRIORITY | 6 | Default convoy priority for export equipment purchase |  |
-| ADMIRAL_TASKFORCE_CAP | 10 | Convoy Priorities END admirals will start getting penalties after this amount of taskforces |  |
+| ADMIRAL_TASKFORCE_CAP | 10 | Convoy Priorities END<br>admirals will start getting penalties after this amount of taskforces |  |
 | DETECTION_CHANCE_MULT_BASE | 0.1 | base multiplier value for detection chance. Later the chance is an average between our detection and enemy visibility, mult by surface/sub detection chance in the following defines. |  |
 | DETECTION_CHANCE_MULT_RADAR_BONUS | 0.1 | detection chance bonus from radars. |  |
 | DETECTION_CHANCE_MULT_AIR_SUPERIORITY_BONUS | 0.25 | bonus from air superiority. |  |
@@ -1336,7 +1336,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | CONVOY_SPOTTING_COOLDOWN_MIN | 36 | minimum cooldown time |  |
 | CONVOY_SPOTTING_COOLDOWN_MAX | 168 | maximum cooldown time |  |
 | CONVOY_SPOTTING_COOLDOWN_MIN_FROM_EFFICIENCY | 15 | clamped min value after screening efficiency has been applied |  |
-| MISSION_FUEL_COSTS | { 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.6, 0.0, 1.0 } | fuel cost for each mission HOLD (consumes fuel HOLD_MISSION_MOVEMENT_COST fuel while moving) PATROL STRIKE FORCE (does not cost fuel at base, and uses IN_COMBAT_FUEL_COST in combat. this is just for the movement in between) CONVOY RAIDING CONVOY ESCORT MINES PLANTING MINES SWEEPING TRAIN RESERVE_FLEET (consumes fuel HOLD_MISSION_MOVEMENT_COST fuel while moving) NAVAL_INVASION_SUPPORT (does not cost fuel at base, only costs while doing bombardment and escorting units) |  |
+| MISSION_FUEL_COSTS | { 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.6, 0.0, 1.0 } | fuel cost for each mission<br>HOLD (consumes fuel HOLD_MISSION_MOVEMENT_COST fuel while moving)<br>PATROL<br>STRIKE FORCE (does not cost fuel at base, and uses IN_COMBAT_FUEL_COST in combat. this is just for the movement in between)<br>CONVOY RAIDING<br>CONVOY ESCORT<br>MINES PLANTING<br>MINES SWEEPING<br>TRAIN<br>RESERVE_FLEET (consumes fuel HOLD_MISSION_MOVEMENT_COST fuel while moving)<br>NAVAL_INVASION_SUPPORT (does not cost fuel at base, only costs while doing bombardment and escorting units) |  |
 | HOLD_MISSION_MOVEMENT_COST | 1.0 | ships on hold cost this much fuel while moving |  |
 | ON_BASE_FUEL_COST | 0.0 | ships that waits at naval bases cost this ratio |  |
 | IN_COMBAT_FUEL_COST | 2.0 | ships in combat will get this ratio for fuel cost |  |
@@ -1347,9 +1347,9 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | OUT_OF_FUEL_RANGE_FACTOR | -0.75 |  |  |
 | OUT_OF_FUEL_ATTACK_FACTOR | -0.5 |  |  |
 | OUT_OF_FUEL_TORPEDO_FACTOR | -0.8 |  |  |
-| MISSION_SPREADS | { 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.5, 0.0, 0.0 } | mission spreads in the case a ship join combat, which is calculated for number of ships that will be in combat. 1 means no ship will be at start HOLD PATROL STRIKE FORCE CONVOY RAIDING CONVOY ESCORT MINES PLANTING MINES SWEEPING TRAIN RESERVE_FLEET NAVAL_INVASION_SUPPORT |  |
+| MISSION_SPREADS | { 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.7, 0.5, 0.0, 0.0 } | mission spreads in the case a ship join combat, which is calculated for number of ships that will be in combat. 1 means no ship will be at start<br>HOLD<br>PATROL<br>STRIKE FORCE<br>CONVOY RAIDING<br>CONVOY ESCORT<br>MINES PLANTING<br>MINES SWEEPING<br>TRAIN<br>RESERVE_FLEET<br>NAVAL_INVASION_SUPPORT |  |
 | MISSION_DEFAULT_SPREAD_BASE | 1.0 | multiplier for mission spreads. higher = less ships on start |  |
-| AGGRESSION_SETTINGS_VALUES | { 0, 0.5, 0.9, 2.0, 10000 } | ships will use this values while deciding to attack enemies do not engage low medium high I am death incarnate! |  |
+| AGGRESSION_SETTINGS_VALUES | { 0, 0.5, 0.9, 2.0, 10000 } | ships will use this values while deciding to attack enemies<br>do not engage<br>low<br>medium<br>high<br>I am death incarnate! |  |
 | AGGRESION_MULTIPLIER_FOR_COMBAT | 1.2 | ships are more aggresive in combat |  |
 | AGGRESSION_ARMOR_EFFICIENCY_MULTIPLIER | 1.0 | armor to enemy piercing ratio is multiplied by this value, which will increase the strength of ships while considering them for aggression |  |
 | AGGRESSION_MIN_ARMOR_EFFICIENCY | 0.5 | armor multiplier has a min and max caps while being factored in aggression |  |
@@ -1361,14 +1361,14 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | AGGRESSION_HEAVY_GUN_EFFICIENCY_ON_HEAVY_SHIPS | 1.0 | ratio for scoring for different gun types against heavy ships |  |
 | AGGRESSION_TORPEDO_EFFICIENCY_ON_HEAVY_SHIPS | 1.1 | ratio for scoring for different gun types against heavy ships |  |
 | AGGRESSION_CONVOY_STRENGTH_FACTOR | 0.3 | convoys in combat gets a penalty to their strength in aggression calculations |  |
-| SUBMARINE_ESCAPE_RATIOS | { 1000, 15, 3.0, 1.0, 0.1 } | subs will escape battle in convoy raid if there are enemies that can attack do not engage low medium high I am death incarnate! |  |
-| MIN_REPAIR_FOR_JOINING_COMBATS | { 0.0, 0.5, 0.7, 0.9 } | strikeforces/patrol forces will not join combats if they are not repaired enough do not repair low medium high |  |
-| ORG_COST_WHILE_MOVING | { 0.3, 0.2, 0.25, 0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.2 } | org cost while the ships are moving HOLD PATROL STRIKE FORCE CONVOY RAIDING CONVOY ESCORT MINES PLANTING MINES SWEEPING TRAIN RESERVE_FLEET NAVAL_INVASION_SUPPORT |  |
-| ORG_COST_WHILE_MOVING_IN_MISSION_ZONE | { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } | org cost while moving in mission zone HOLD PATROL STRIKE FORCE CONVOY RAIDING CONVOY ESCORT MINES PLANTING MINES SWEEPING TRAIN RESERVE_FLEET NAVAL_INVASION_SUPPORT |  |
+| SUBMARINE_ESCAPE_RATIOS | { 1000, 15, 3.0, 1.0, 0.1 } | subs will escape battle in convoy raid if there are enemies that can attack<br>do not engage<br>low<br>medium<br>high<br>I am death incarnate! |  |
+| MIN_REPAIR_FOR_JOINING_COMBATS | { 0.0, 0.5, 0.7, 0.9 } | strikeforces/patrol forces will not join combats if they are not repaired enough<br>do not repair<br>low<br>medium<br>high |  |
+| ORG_COST_WHILE_MOVING | { 0.3, 0.2, 0.25, 0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.2 } | org cost while the ships are moving<br>HOLD<br>PATROL<br>STRIKE FORCE<br>CONVOY RAIDING<br>CONVOY ESCORT<br>MINES PLANTING<br>MINES SWEEPING<br>TRAIN<br>RESERVE_FLEET<br>NAVAL_INVASION_SUPPORT |  |
+| ORG_COST_WHILE_MOVING_IN_MISSION_ZONE | { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } | org cost while moving in mission zone<br>HOLD<br>PATROL<br>STRIKE FORCE<br>CONVOY RAIDING<br>CONVOY ESCORT<br>MINES PLANTING<br>MINES SWEEPING<br>TRAIN<br>RESERVE_FLEET<br>NAVAL_INVASION_SUPPORT |  |
 | MAX_ORG_ON_MANUAL_MOVE | 0.66 | org will clamped to this ratio on manual move |  |
 | MIN_ORG_ON_MANUAL_MOVE | 0.1 | org will clamped to this ratio on manual move |  |
 | INITIAL_ALLOWED_DOCKYARD_RATIO_FOR_REPAIRS | 0.25 | initially countries will allocate this ratio of dockyards for repairs |  |
-| MISSION_SUPREMACY_RATIOS | { 0.0, 1.0, 1.0, 0.5, 0.5, 0.3, 0.3, 0.0, 0.0, 1.0 } | supremacy multipliers for different mission types HOLD PATROL STRIKE FORCE CONVOY RAIDING CONVOY ESCORT MINES PLANTING MINES SWEEPING TRAIN RESERVE_FLEET NAVAL_INVASION_SUPPORT |  |
+| MISSION_SUPREMACY_RATIOS | { 0.0, 1.0, 1.0, 0.5, 0.5, 0.3, 0.3, 0.0, 0.0, 1.0 } | supremacy multipliers for different mission types<br>HOLD<br>PATROL<br>STRIKE FORCE<br>CONVOY RAIDING<br>CONVOY ESCORT<br>MINES PLANTING<br>MINES SWEEPING<br>TRAIN<br>RESERVE_FLEET<br>NAVAL_INVASION_SUPPORT |  |
 | SUPREMACY_PER_SHIP_PER_MANPOWER | 0.05 | supremacy of a ship is calculated using its IC, manpower and a base define |  |
 | SUPREMACY_PER_SHIP_PER_IC | 0.005 |  |  |
 | SUPREMACY_PER_SHIP_BASE | 0 |  |  |
@@ -1396,7 +1396,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | TRAINING_ACCIDENT_STRENGTH_LOSS_FACTOR | 0.05 | Amount of strength loss in a training accident, propotional to the maximum strength of the ship |  |
 | TRAINING_ACCIDENT_ORG_LOSS_FACTOR | 0.3 | Amount of current organization the ship lose |  |
 | ACCIDENTS_CHANCE_BALANCE_FACTOR | 0.04 | General chance for naval accidents for balancing the gameplay. |  |
-| TRAINING_EXPERIENCE_FACTOR | 0.3 | The Formula: Min( TRAINING_MAX_DAILY_COUNTRY_EXP \* Ratio, TRAINING_DAILY_COUNTRY_EXP_FACTOR \* ( TRAINING_DAILY_COUNTRY_EXP_SHIP_RATIO_FACTOR \* TrainingShipCount / CountryShipCount + TRAINING_DAILY_COUNTRY_EXP_MANPOWER_FACTOR \* Manpower + TRAINING_DAILY_COUNTRY_EXP_MANPOWER_RATIO_FACTOR \* Manpower / CountryShipCount ) ) Amount of exp each ship gain every 24h while training (before modifiers) |  |
+| TRAINING_EXPERIENCE_FACTOR | 0.3 | The Formula: Min( TRAINING_MAX_DAILY_COUNTRY_EXP \* Ratio, TRAINING_DAILY_COUNTRY_EXP_FACTOR \* ( TRAINING_DAILY_COUNTRY_EXP_SHIP_RATIO_FACTOR \* TrainingShipCount / CountryShipCount<br>+ TRAINING_DAILY_COUNTRY_EXP_MANPOWER_FACTOR \* Manpower + TRAINING_DAILY_COUNTRY_EXP_MANPOWER_RATIO_FACTOR \* Manpower / CountryShipCount ) )<br>Amount of exp each ship gain every 24h while training (before modifiers) |  |
 | TRAINING_DAILY_COUNTRY_EXP_FACTOR | 0.001 | Factor used to scale the Daily Country Navy XP gain |  |
 | TRAINING_DAILY_COUNTRY_EXP_MANPOWER_FACTOR | 0.006 | Factor used to scale the sum of the training manpower for the Daily Country Navy XP gain |  |
 | TRAINING_DAILY_COUNTRY_EXP_MANPOWER_RATIO_FACTOR | 0.01 | Factor used to scale the sum of the manpower divided by the country's number of ship for the Daily Country Navy XP gain |  |
@@ -1413,7 +1413,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | BASE_SPOTTING_FROM_AIR | 20 | base spotting percentage that comes from air-wings in area |  |
 | BASE_SPOTTING_FROM_DECRYPTION | 10 | base spotting percentage that comes from decryption, can go negative (enemy decryption is subtracted) |  |
 | MIN_SPOTTING_PROGRESS | 0.01 | Minimum spotting progress (in percent) per hourly tick |  |
-| AIR_MISSION_SPOTTING_FACTORS | { 0.50, 0, 0.25, 0, 0.50, 0, 0, 0.25, 0, 0, 0, 0, 0.25, 0.50, 1.00, 1.50 } | Multiplier for air-wings' spotting contribution per mission type AIR_SUPERIORITY CAS INTERCEPTION STRATEGIC_BOMBER NAVAL_BOMBER DROP_NUKE PARADROP NAVAL_KAMIKAZE PORT_STRIKE ATTACK_LOGISTICS AIR_SUPPLY TRAINING NAVAL_MINES_PLANTING NAVAL_MINES_SWEEPING RECON NAVAL_PATROL |  |
+| AIR_MISSION_SPOTTING_FACTORS | { 0.50, 0, 0.25, 0, 0.50, 0, 0, 0.25, 0, 0, 0, 0, 0.25, 0.50, 1.00, 1.50 } | Multiplier for air-wings' spotting contribution per mission type<br>AIR_SUPERIORITY<br>CAS<br>INTERCEPTION<br>STRATEGIC_BOMBER<br>NAVAL_BOMBER<br>DROP_NUKE<br>PARADROP<br>NAVAL_KAMIKAZE<br>PORT_STRIKE<br>ATTACK_LOGISTICS<br>AIR_SUPPLY<br>TRAINING<br>NAVAL_MINES_PLANTING<br>NAVAL_MINES_SWEEPING<br>RECON<br>NAVAL_PATROL |  |
 | MIN_HOURS_TO_SHUFFLE_NEWLY_ASSIGNED_PATROLS | 7\*24 | if a fleet has less patrol than it needs to cover all of it areas, it will shuffle the patrols around. it will wait this much hour before shuffling a task force to new area |  |
 | SPOTTING_ENEMY_SPOTTING_MULTIPLIER_FOR_RUNNING_AWAY | 0.80 | enemy spotting is multiplied by this value to simulate running away |  |
 | SPOTTING_MULTIPLIER_FOR_SURFACE | 1.0 | task force surface spotting value is multiplied by this and added to spotting percentage every hour |  |
@@ -1459,7 +1459,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | BASE_SPOTTING_EFFECT_FOR_INITIAL_NAVAL_INVASION_SPOTTING | 2.4 | same as BASE_SPOTTING_EFFECT_FOR_INITIAL_CONVOY_SPOTTING, but for naval invasion convoys |  |
 | SPOTTING_SPEED_EFFECT_FOR_INITIAL_NAVAL_INVASION_SPOTTING | 0.12 | same as SPOTTING_SPEED_EFFECT_FOR_INITIAL_CONVOY_SPOTTING, but for naval invasion convoys |  |
 | MIN_GUN_COOLDOWN | 0.1 | minimum cooldown for a gun |  |
-| BASE_GUN_COOLDOWNS | { 1.0, 4.0, 1.0 } | number of hours for a gun to be ready after shooting big guns torpedoes small guns |  |
+| BASE_GUN_COOLDOWNS | { 1.0, 4.0, 1.0 } | number of hours for a gun to be ready after shooting<br>big guns<br>torpedoes<br>small guns |  |
 | BASE_JOIN_COMBAT_HOURS | 2 | the taskforces that wants to join existing combats will wait for at least this amount |  |
 | LOW_ORG_FACTOR_ON_JOIN_COMBAT_DURATION | 4.0 | low org of the ships will be factored in when a taskforce wants to join combat |  |
 | BASE_POSITIONING | 1.0 | base value for positioning |  |
@@ -1486,14 +1486,14 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | SCREEN_RATIO_FOR_FULL_SCREENING_FOR_CONVOYS | 0.5 | this screen ratio to num convoys is needed for full screening beyond screen line |  |
 | CAPITAL_RATIO_FOR_FULL_SCREENING_FOR_CARRIERS | 1.0 | this capital ratio to num carriers is needed for full screening beyond screen line |  |
 | CAPITAL_RATIO_FOR_FULL_SCREENING_FOR_CONVOYS | 0.25 | this capital ratio to num convoys is needed for full screening beyond screen line |  |
-| TASK_FORCE_ROLE_TO_INSIGNIA | { 6, 15, 22, 26, 16, 17, 29, 1 } | define the index of the insignia to use for a task force designed for a specific role Role undefined Wolfpack Carrier task force Surface action group Mine layers Mine sweepers Patrol task force Convoy escort |  |
-| MIN_SHIP_COUNT_FOR_TASK_FORCE_ROLE_ASSIGNMENT | 4 | NOTE: you can see the effect of changing the values down below by running the command tfria with a task force selected define the minimum number of ship that should be in a task force for it to be considered a patrol or an escort task force (used to the insignia assignment, see TASK_FORCE_ROLE_TO_INSIGNIA) |  |
+| TASK_FORCE_ROLE_TO_INSIGNIA | { 6, 15, 22, 26, 16, 17, 29, 1 } | define the index of the insignia to use for a task force designed for a specific role<br>Role undefined<br>Wolfpack<br>Carrier task force<br>Surface action group<br>Mine layers<br>Mine sweepers<br>Patrol task force<br>Convoy escort |  |
+| MIN_SHIP_COUNT_FOR_TASK_FORCE_ROLE_ASSIGNMENT | 4 | NOTE: you can see the effect of changing the values down below by running the command tfria with a task force selected<br>define the minimum number of ship that should be in a task force for it to be considered a patrol or an escort task force (used to the insignia assignment, see TASK_FORCE_ROLE_TO_INSIGNIA) |  |
 | SURFACE_DETECTION_STAT_FOR_SHIP_TO_BE_PATROL | 16 | amount of surface detection required for a ship to be considered as part of a patrol task force |  |
 | DEPTH_CHARGE_STAT_FOR_SHIP_TO_BE_SUB_HUNTER | 15 | amount of depth charge required for a ship to be considred a sub hunter and so good for convoy escort |  |
 | SUB_DETECTION_STAT_FOR_SHIP_TO_BE_SUB_HUNTER | 2 | amount of sub detection required for a ship to be considered a sub hunter |  |
 | HEAVY_GUN_ATTACK_TO_SHORE_BOMBARDMENT | 0.05 | heavy gun attack value is divided by this value \* 100 and added to shore bombardment modifier |  |
 | LIGHT_GUN_ATTACK_TO_SHORE_BOMBARDMENT | 0.025 | light gun attack value is divided by this value \* 100 and added to shore bombardment modifier |  |
-| GUN_HIT_PROFILES | { 80.0, 100.0, 45.0 } | hit profiles for guns, if target ih profile is lower the gun will have lower accuracy big guns torpedoes small guns |  |
+| GUN_HIT_PROFILES | { 80.0, 100.0, 45.0 } | hit profiles for guns, if target ih profile is lower the gun will have lower accuracy<br>big guns<br>torpedoes<br>small guns |  |
 | DEPTH_CHARGES_HIT_CHANCE_MULT | 1.1 | multiplies hit chance of small guns |  |
 | DEPTH_CHARGES_DAMAGE_MULT | 0.7 | multiplies damage of depth charges |  |
 | DEPTH_CHARGES_HIT_PROFILE | 100.0 | hit profile for depth charges |  |
@@ -1524,13 +1524,13 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | SUBMARINE_REVEAL_POW | 3.0 | A scaling factor that is applied to the reveal chance in order to make large differences in detection vs visibility more pronounced |  |
 | SUBMARINE_BASE_TORPEDO_REVEAL_CHANCE | 0.035 | Chance of a submarine being revealed when it fires. 1.0 is 100%. this chance is then multiplied with modifier created by comparing firer's visibiility and target's detection |  |
 | MAX_NUM_HOURS_TO_WAIT_AT_ALLY_DOCKYARDS_FOR_REPAIRS | 48 | taskforces will wait at most this amount of hours in ally bases for repairs before switching to another base for repairs |  |
-| COMBAT_RESULT_PRIORITY_THRESHOLDS | { 0, 4000, 20000 } | the game will use this thresholds to define importance of a naval combat result. it will use the highest level that has higher threshold than the amount of production lost in combat low (keep at zero) medium high |  |
+| COMBAT_RESULT_PRIORITY_THRESHOLDS | { 0, 4000, 20000 } | the game will use this thresholds to define importance of a naval combat result. it will use the highest level that has higher threshold than the amount of production lost in combat<br>low (keep at zero)<br>medium<br>high |  |
 | COMBAT_RESULT_PRIORITY_DAY_TO_LIVE | { 7, 30, 120 } | the game will delete the combat results after some duration depending on its importance |  |
 | NAVAL_ACCIDENTS_DAYS_TO_LIVE | 120 |  |  |
-| NAVAL_MINE_DANGER_RATIOS | { 0.1, 0.5, 1.0, 1.0, 3.0 } | not owned near controlled near owned controlled owned |  |
+| NAVAL_MINE_DANGER_RATIOS | { 0.1, 0.5, 1.0, 1.0, 3.0 } | not owned<br>near controlled<br>near owned<br>controlled<br>owned |  |
 | NAVAL_MINE_DANGER_TRIGGER_MIN | 0.0 |  |  |
 | NAVAL_MINE_DANGER_TRIGGER_MAX | 2.0 |  |  |
-| NAVAL_CONVOY_DANGER_RATIOS | { 0.10, 0.10, 0.10, 0.15, 0.15 } | not owned near controlled near owned controlled owned |  |
+| NAVAL_CONVOY_DANGER_RATIOS | { 0.10, 0.10, 0.10, 0.15, 0.15 } | not owned<br>near controlled<br>near owned<br>controlled<br>owned |  |
 | NAVAL_CONVOY_DANGER_TRIGGER_MIN | 0.0 |  |  |
 | NAVAL_CONVOY_DANGER_TRIGGER_MAX | 100.0 |  |  |
 | NAVAL_COMBAT_AIR_SUB_DETECTION_MAX | 10.0 | those two work together in the formula f(x) = Y(x/(x+X)) where Y is MAX and X is SLOPE |  |
@@ -1550,9 +1550,9 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | NAVAL_COMBAT_AIR_CONVOY_TARGET_SCORE | 1.0 |  |  |
 | NAVAL_COMBAT_AIR_STRENGTH_TARGET_SCORE | 5 | how much score factor from low health (scales between 0->this number) |  |
 | NAVAL_COMBAT_AIR_LOW_AA_TARGET_SCORE | 5 | how much score factor from low AA guns (scales between 0->this number) |  |
-| NEW_NAVY_LEADER_LEVEL_CHANCES | { 0.95, 0.05 } | chances for new navy leaders to start at a given level 95% for level one 5% for level two 0% for level three to ten |  |
-| NAVY_PIERCING_THRESHOLDS | { 2.00, 1.00, 0.75, 0.50, 0.10, 0.00 } | Our piercing / their armor must be this value to deal damage fraction equal to the index in the array below `[higher number = higher penetration]`. If armor is 0, 1.00 will be returned. there isn't much point setting this higher than 0 |  |
-| NAVY_PIERCING_THRESHOLD_CRITICAL_VALUES | { 2.00, 1.00, 0.75, 0.50, 0.10, 0.00 } | 0 armor will always receive maximum damage (so add overmatching at your own peril). the system expects at least 2 values, with no upper limit. For criticals, you could reduce crit chance unlike damage in army combat, but we do not for now. |  |
+| NEW_NAVY_LEADER_LEVEL_CHANCES | { 0.95, 0.05 } | chances for new navy leaders to start at a given level<br>95% for level one<br>5% for level two<br>0% for level three to ten |  |
+| NAVY_PIERCING_THRESHOLDS | { 2.00, 1.00, 0.75, 0.50, 0.10, 0.00 } | Our piercing / their armor must be this value to deal damage fraction equal to the index in the array below `[higher number = higher penetration]`. If armor is 0, 1.00 will be returned.<br>there isn't much point setting this higher than 0 |  |
+| NAVY_PIERCING_THRESHOLD_CRITICAL_VALUES | { 2.00, 1.00, 0.75, 0.50, 0.10, 0.00 } | 0 armor will always receive maximum damage (so add overmatching at your own peril). the system expects at least 2 values, with no upper limit.<br>For criticals, you could reduce crit chance unlike damage in army combat, but we do not for now. |  |
 | NAVY_PIERCING_THRESHOLD_DAMAGE_VALUES | { 1.00, 1.00, 0.70, 0.40, 0.30, 0.10 } | all of these NEED to be the same size!!!!0 armor will always receive maximum damage (so add overmatching at your own peril). the system expects at least 2 values, with no upper limit. |  |
 
 ## NRailwayGun <a id="NRailwayGun"></a>
@@ -1720,25 +1720,25 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | VARIANT_CREATION_XP_RESERVE_LAND | 50 | If the AI lacks army XP to create a variant it will reserve this much XP for variant creation so that it will eventually be able to create a variant. |  |
 | VARIANT_CREATION_XP_RESERVE_NAVY | 50 | Same as above but for navy XP. |  |
 | VARIANT_CREATION_XP_RESERVE_AIR | 50 | Same as above but for air XP. |  |
-| LAND_DESIGN_ALTERNATIVE_ABSENT | 1000000 | The AI uses the below values when selecting which design to make among the types that use the tank designer (the tank designer DLC feature must be active). For each role, the highest priority AI design that can be created, if any, is assigned a weight. Any design with a weight of zero or a weight that falls below the cutoff is dropped. A random design is then picked from the remaining. Weight is calculated as AlternativeFactor \* DemandFactor. An "alternative" is a producible design of the same archetype (each specialized type is its own archetype). |  |
+| LAND_DESIGN_ALTERNATIVE_ABSENT | 1000000 | The AI uses the below values when selecting which design to make among the types that use the tank designer<br>(the tank designer DLC feature must be active). For each role, the highest priority AI design that can be<br>created, if any, is assigned a weight. Any design with a weight of zero or a weight that falls below the<br>cutoff is dropped. A random design is then picked from the remaining.<br>Weight is calculated as AlternativeFactor \* DemandFactor.<br>An "alternative" is a producible design of the same archetype (each specialized type is its own archetype). |  |
 | LAND_DESIGN_ALTERNATIVE_OF_LESSER_TECH | 10000 |  |  |
 | LAND_DESIGN_ALTERNATIVE_OF_EQUAL_TECH | 100 |  |  |
 | LAND_DESIGN_ALTERNATIVE_OF_GREATER_TECH | 1 |  |  |
-| LAND_DESIGN_DEMAND_FIELD_DIVISION | 20 | If a template may be reinforced with the archetype it's considered to be "demanded". If multiple conditions are met, e.g. it's both in the field and in training, the largest value is used. |  |
+| LAND_DESIGN_DEMAND_FIELD_DIVISION | 20 | If a template may be reinforced with the archetype it's considered to be "demanded". If multiple conditions<br>are met, e.g. it's both in the field and in training, the largest value is used. |  |
 | LAND_DESIGN_DEMAND_TRAINING_DIVISION | 15 |  |  |
 | LAND_DESIGN_DEMAND_GARRISON_DIVISION | 10 |  |  |
 | LAND_DESIGN_DEMAND_UNUSED_TEMPLATE | 1 |  |  |
 | LAND_DESIGN_DEMAND_ABSENT | 0 |  |  |
-| LAND_DESIGN_CUTOFF_AS_PERCENTAGE_OF_MAX | 0.25 | If a design with a weight when divided by the largest weight falls below this value it's excluded from the selection. Valid values are in the range `[0, 1]` inclusive. |  |
+| LAND_DESIGN_CUTOFF_AS_PERCENTAGE_OF_MAX | 0.25 | If a design with a weight when divided by the largest weight falls below this value it's excluded from the<br>selection. Valid values are in the range `[0, 1]` inclusive. |  |
 | AIR_DESIGN_ALTERNATIVE_ABSENT | 1000000 | See above documentation. |  |
 | AIR_DESIGN_ALTERNATIVE_OF_LESSER_TECH | 10000 |  |  |
 | AIR_DESIGN_ALTERNATIVE_OF_EQUAL_TECH | 100 |  |  |
 | AIR_DESIGN_ALTERNATIVE_OF_GREATER_TECH | 1 |  |  |
-| AIR_DESIGN_DEMAND_MAX | 33 | The AI desires to produce equipment at a certain rate per archetype, and demand is determined per archetype relative to the least and most desired counts. |  |
+| AIR_DESIGN_DEMAND_MAX | 33 | The AI desires to produce equipment at a certain rate per archetype, and demand is determined per archetype<br>relative to the least and most desired counts. |  |
 | AIR_DESIGN_DEMAND_MIN | 1 |  |  |
 | AIR_DESIGN_DEMAND_ABSENT | 0 |  |  |
 | AIR_DESIGN_CUTOFF_AS_PERCENTAGE_OF_MAX | 0.34 |  |  |
-| DESIRE_USE_XP_TO_UNLOCK_LAND_DOCTRINE | 0.5 | The AI "desires" to spend XP on doctrines, templates, and equipment. The desire is built up over time and when XP is available it spends it on the action that has the highest accumulated desire. After spending XP the desire is reset, in effect balancing the desires. Below is the daily desire gain for each action. How quickly is desire to unlock land doctrines accumulated? |  |
+| DESIRE_USE_XP_TO_UNLOCK_LAND_DOCTRINE | 0.5 | The AI "desires" to spend XP on doctrines, templates, and equipment.<br>The desire is built up over time and when XP is available it spends it on the action that has the highest accumulated desire. After spending XP the desire is reset, in effect balancing the desires.<br>Below is the daily desire gain for each action.<br>How quickly is desire to unlock land doctrines accumulated? |  |
 | DESIRE_USE_XP_TO_UNLOCK_NAVAL_DOCTRINE | 0.5 | How quickly is desire to unlock naval doctrines accumulated? |  |
 | DESIRE_USE_XP_TO_UNLOCK_AIR_DOCTRINE | 0.5 | How quickly is desire to unlock air doctrines accumulated? |  |
 | DESIRE_USE_XP_TO_UPDATE_LAND_TEMPLATE | 2.0 | How quickly is desire to update/create templates accumulated? |  |
@@ -1798,7 +1798,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | ADVISOR_SCORE_TRAIT_MODIFIER_FACTOR | 0.2 | When scoring advisors, factor the score contribution from the advisor's trait modifiers by this value |  |
 | ADVISOR_SCORE_CHEAPER_IS_BETTER_FACTOR | 0.1 | When scoring advisors, this define scales how much the AI prefers cheaper advisors over more expensive ones. 0.0 means no effect, 0.15 means a cost difference of 100 PP modifies the score by 15 %. |  |
 | ADVISOR_SCORE_CHEAPER_IS_BETTER_MIN | 0.5 | Clamps the above scoring factor to at minimum this value |  |
-| EVAL_MODIFIER_NON_PERCENT_FACTOR | 0.1 | stuff related to how the AI evaluates/scores how useful modifiers are Multiply non-percent-based modifiers with this to put the values in the approximately same range so they can be compared. (Why we are using 0.1 and not 0.01? No idea...) |  |
+| EVAL_MODIFIER_NON_PERCENT_FACTOR | 0.1 | stuff related to how the AI evaluates/scores how useful modifiers are<br>Multiply non-percent-based modifiers with this to put the values in the approximately same range so they can be compared. (Why we are using 0.1 and not 0.01? No idea...) |  |
 | EVAL_MODIFIER_UNSPECIFIED_CATEGORY_FACTOR | 0.75 | Arbitrary scoring factor for modifiers the AI doesn't know how to categorize |  |
 | EVAL_MODIFIER_MAX_COMMAND_POWER_FACTOR | 0.01 | Increasing CP cap with x is maybe 100 times less useful than e.g. gaining x more XP per day |  |
 | MIN_AI_SCORE_TO_MOBILIZATION_LAW_OVERRIDE_HARD_CODED_SCORE | 0.0 | for positive values of following defines, ai weights will take over of hardcoded ai scoring system |  |
@@ -1840,7 +1840,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | GIVE_STATE_CONTROL_MAX_SCORE_DIST | 600 | A State that is closer to the recipient capital than this gets a score bonus based on the below value |  |
 | GIVE_STATE_CONTROL_DIST_SCORE_MULT | 0.2 | Multiplier for the score gained from distance ( GIVE_STATE_CONTROL_MAX_SCORE_DIST - distance ) \* this |  |
 | IRRATIONALITY_LAMBDA | 200 | Lambda given to Poisson Random function determining if a leader should act a bit irrational |  |
-| GENERATE_WARGOAL_THREAT_BASELINE | 1.0 | Value of 200 should give 0.3% chance of Stalin going for instance crazy and conquering all of America The baseline for what the AI considers the world is getting dangerous and we want to generate wargoals with no antagonize value |  |
+| GENERATE_WARGOAL_THREAT_BASELINE | 1.0 | Value of 200 should give 0.3% chance of Stalin going for instance crazy and conquering all of America<br>The baseline for what the AI considers the world is getting dangerous and we want to generate wargoals with no antagonize value |  |
 | GENERATE_WARGOAL_ANTAGONIZE_SCALE | 0.35 | works to scale the AIs antagonize value vs the threat baseline for when it should act on existing claims: threat used for baseline is min_threat - antagonize \* scale |  |
 | RESERVE_TO_COMMITTED_BALANCE | 0.3 | How many reserves compared to number of committed divisions in a combat (1.0 = as many as reserves as committed) |  |
 | DIPLOMACY_COMMUNIST_NOT_NEIGHBOUR | -10 | Communists want to stay consolidated with their influence |  |
@@ -1951,7 +1951,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | NAVAL_SUPREMACY_WEIGHT_PER_DIVISION_ON_INVASION_ORDER | 6 | adds to supremacy requests for regions with active or pending naval invasions |  |
 | TOO_INSIGNIFICANT_ARMY_RATIO_BEGIN | 0.75 | if army ratio is of a country is larger than this threshold, it will be less reluctant to accept certain diplo actions |  |
 | TOO_INSIGNIFICANT_MAX_PENALTY | 350 | max penalty that will be applied for thinking a country is too insignificant |  |
-| WANTED_UNITS_INDUSTRY_FACTOR | 1.60 | Calculating wanted nr of divisions How many units a country wants is partially based on how much military industry that is available |  |
+| WANTED_UNITS_INDUSTRY_FACTOR | 1.60 | Calculating wanted nr of divisions<br>How many units a country wants is partially based on how much military industry that is available |  |
 | WANTED_UNITS_THREAT_BASE | 0.7 | If no threat, multiply min wanted units by this |  |
 | WANTED_UNITS_THREAT_MAX | 6.0 | Normalized threat is clamped to this |  |
 | WANTED_UNITS_WAR_THREAT_FACTOR | 1.15 | Factor threat with this if country is at war. this value is overriden by the value in ideology database if that value exceedes this. |  |
@@ -1961,7 +1961,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | WANTED_UNITS_WEIGHT_FACTORIES | 0.45 | Weight of military factories when computing final nr wanted units |  |
 | WANTED_UNITS_WEIGHT_MANPOWER | 0.3 | Weight of manpower availability when computing final nr wanted units |  |
 | WANTED_UNITS_MIN_DEFENCE_FACTOR | 0.4 | Factor on units required for min defence |  |
-| WANTED_UNITS_MAX_WANTED_CAP | 500 | End of calculating wanted nr of divisions Maximum wanted divisions for a country. This can be exceeded by certain hardcoded multipliers, but not by base calculation logic. |  |
+| WANTED_UNITS_MAX_WANTED_CAP | 500 | End of calculating wanted nr of divisions<br>Maximum wanted divisions for a country. This can be exceeded by certain hardcoded multipliers, but not by base calculation logic. |  |
 | WANTED_LAND_PLANES_PER_BASE_CAPACITY_FACTOR | 1 | Scales how many land-based planes the AI want per air base space (excluding carriers). |  |
 | WANTED_LAND_PLANES_PER_DIVISION | 20 | How many land-based planes the AI want for each division it wants. |  |
 | WANTED_LAND_PLANES_TOTAL_MAX_PER_DIVISION | 100 | The max total number of land-based planes the AI want. |  |
@@ -1971,7 +1971,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | START_TRAINING_EQUIPMENT_LEVEL | 0.95 | ai will not start to train if equipment drops below this level |  |
 | STOP_TRAINING_EQUIPMENT_LEVEL | 0.90 | ai will not train if equipment drops below this level |  |
 | BUILD_REFINERY_LACK_OF_RESOURCE_MODIFIER | 0.003 | How much lack of resources are worth when evaluating what to build. |  |
-| DIVISION_DESIGN_WEIGHTS | { 0.5, 1.0, 1.0, 1.0, 1.2, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.0, 0.0, -0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5 } | Base values used by AI to evaluate value of a stat Army Values default_morale defense breakthrough hardness soft_attack hard_attack recon entrenchment initiative casualty_trickleback supply_consumption_factor supply_consumption suppression suppression_factor experience_loss_factor equipment_capture_factor fuel_capacity Navy Values surface_detection sub_detection surface_visibility sub_visibility lg attack lg piercing hg attack hg piercing torpedo sub attack anti air attack amphibious_defense naval_speed range mine plant mine sweep navy light gun hit chance navy heavy gun hit chance navy torpedo hit chance navy incoming torpedo damage reduction navy incoming torpedo crit chance weather penalty raiding coordination patrol coordination search and destroy coordination Air Values air_range air_defence air_attack air_agility air_bombing air_superiority naval_strike_attack naval_strike_targetting air_ground_attack air_visibility_factor Railway gun Values railway_gun_attack railway_gun_attack_range Common Values max_organisation max_strength maximum_speed armor_value ap_attack reliability reliability_factor weight thrust fuel_consumption fuel_consumption_factor Special Values strategic_attack carrier_size acclimatization hot gain acclimatization cold gain night_penalty build_cost_ic |  |
+| DIVISION_DESIGN_WEIGHTS | { 0.5, 1.0, 1.0, 1.0, 1.2, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.0, 0.0, -0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5 } | Base values used by AI to evaluate value of a stat<br>Army Values<br>default_morale<br>defense<br>breakthrough<br>hardness<br>soft_attack<br>hard_attack<br>recon<br>entrenchment<br>initiative<br>casualty_trickleback<br>supply_consumption_factor<br>supply_consumption<br>suppression<br>suppression_factor<br>experience_loss_factor<br>equipment_capture_factor<br>fuel_capacity<br>Navy Values<br>surface_detection<br>sub_detection<br>surface_visibility<br>sub_visibility<br>lg attack<br>lg piercing<br>hg attack<br>hg piercing<br>torpedo<br>sub attack<br>anti air attack<br>amphibious_defense<br>naval_speed<br>range<br>mine plant<br>mine sweep<br>navy light gun hit chance<br>navy heavy gun hit chance<br>navy torpedo hit chance<br>navy incoming torpedo damage reduction<br>navy incoming torpedo crit chance<br>weather penalty<br>raiding coordination<br>patrol coordination<br>search and destroy coordination<br>Air Values<br>air_range<br>air_defence<br>air_attack<br>air_agility<br>air_bombing<br>air_superiority<br>naval_strike_attack<br>naval_strike_targetting<br>air_ground_attack<br>air_visibility_factor<br>Railway gun Values<br>railway_gun_attack<br>railway_gun_attack_range<br>Common Values<br>max_organisation<br>max_strength<br>maximum_speed<br>armor_value<br>ap_attack<br>reliability<br>reliability_factor<br>weight<br>thrust<br>fuel_consumption<br>fuel_consumption_factor<br>Special Values<br>strategic_attack<br>carrier_size<br>acclimatization hot gain<br>acclimatization cold gain<br>night_penalty<br>build_cost_ic |  |
 | DIVISION_DESIGN_MANPOWER_WEIGHT | 0.005 |  |  |
 | DIVISION_DESIGN_STOCKPILE_WEIGHT | 0.01 |  |  |
 | DIVISION_DESIGN_COMBAT_WIDTH_WEIGHT | -1.0 | This score is reduced the higher width is when comparing pure changes with no target |  |
@@ -2217,11 +2217,11 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | MIN_MAIN_SHIP_RATIO_TO_MERGE | 0.7 | try merge task force if main ship ratio is lower than this. |  |
 | MAX_MAIN_SHIP_RATIO_TO_MERGE | 1.001 | if resulting main ship ratio would be at most this, allow merging into this task force. |  |
 | MAIN_SHIP_RATIO_TO_SPLIT | 1.8 | if main ship ratio in a task force is larger than this, split it. (If a carrier TF wants 4 carriers (see defines above), but it has more than `[this \* 4]` carriers, then we try to split the TF.) |  |
-| MISSION_FLEET_ICONS | { 4, 29, 21, 15, 23, 24, 5, 4, 4, 9 } | HOLD PATROL STRIKE FORCE CONVOY RAIDING CONVOY ESCORT MINES PLANTING MINES SWEEPING TRAIN RESERVE_FLEET NAVAL INVASION SUPPORT |  |
-| MIN_NAVAL_MISSION_PRIO_TO_ASSIGN | { 0, 200, 200, 200, 100, 200, 100, 0, 0, 100 } | priorities for regions to get assigned to a mission HOLD (consumes fuel HOLD_MISSION_MOVEMENT_COST fuel while moving) PATROL STRIKE FORCE CONVOY RAIDING CONVOY ESCORT MINES PLANTING MINES SWEEPING TRAIN RESERVE_FLEET NAVAL INVASION SUPPORT |  |
-| HIGH_PRIO_NAVAL_MISSION_SCORES | { 0, 100000, 1000, 1500, 1000, -1, 300, 0, 0, 1000 } | priorities for regions to get assigned to a mission HOLD (consumes fuel HOLD_MISSION_MOVEMENT_COST fuel while moving) PATROL STRIKE FORCE CONVOY RAIDING CONVOY ESCORT MINES PLANTING MINES SWEEPING TRAIN RESERVE_FLEET NAVAL INVASION SUPPORT |  |
-| MAX_MISSION_PER_TASKFORCE | { 0, 1.5, 6, 1.5, 4, 2, 2, 0, 0, 10 } | max mission region/taskforce ratio HOLD (consumes fuel HOLD_MISSION_MOVEMENT_COST fuel while moving) PATROL STRIKE FORCE CONVOY RAIDING CONVOY ESCORT MINES PLANTING MINES SWEEPING TRAIN RESERVE_FLEET NAVAL INVASION SUPPORT |  |
-| MAX_SCREEN_TASKFORCES_FOR_CONVOY_DEFENSE_MIN | 0.20 | all-screen taskforces will be shared between convoy defense, mine missions and patrols (in this prio) and these ratios limits the maximum ratio of these taskforces to allocate on type maximum ratio of all screen-ships forces to be used in convoy defense (increases up to max as AI loses convoys). |  |
+| MISSION_FLEET_ICONS | { 4, 29, 21, 15, 23, 24, 5, 4, 4, 9 } | HOLD<br>PATROL<br>STRIKE FORCE<br>CONVOY RAIDING<br>CONVOY ESCORT<br>MINES PLANTING<br>MINES SWEEPING<br>TRAIN<br>RESERVE_FLEET<br>NAVAL INVASION SUPPORT |  |
+| MIN_NAVAL_MISSION_PRIO_TO_ASSIGN | { 0, 200, 200, 200, 100, 200, 100, 0, 0, 100 } | priorities for regions to get assigned to a mission<br>HOLD (consumes fuel HOLD_MISSION_MOVEMENT_COST fuel while moving)<br>PATROL<br>STRIKE FORCE<br>CONVOY RAIDING<br>CONVOY ESCORT<br>MINES PLANTING<br>MINES SWEEPING<br>TRAIN<br>RESERVE_FLEET<br>NAVAL INVASION SUPPORT |  |
+| HIGH_PRIO_NAVAL_MISSION_SCORES | { 0, 100000, 1000, 1500, 1000, -1, 300, 0, 0, 1000 } | priorities for regions to get assigned to a mission<br>HOLD (consumes fuel HOLD_MISSION_MOVEMENT_COST fuel while moving)<br>PATROL<br>STRIKE FORCE<br>CONVOY RAIDING<br>CONVOY ESCORT<br>MINES PLANTING<br>MINES SWEEPING<br>TRAIN<br>RESERVE_FLEET<br>NAVAL INVASION SUPPORT |  |
+| MAX_MISSION_PER_TASKFORCE | { 0, 1.5, 6, 1.5, 4, 2, 2, 0, 0, 10 } | max mission region/taskforce ratio<br>HOLD (consumes fuel HOLD_MISSION_MOVEMENT_COST fuel while moving)<br>PATROL<br>STRIKE FORCE<br>CONVOY RAIDING<br>CONVOY ESCORT<br>MINES PLANTING<br>MINES SWEEPING<br>TRAIN<br>RESERVE_FLEET<br>NAVAL INVASION SUPPORT |  |
+| MAX_SCREEN_TASKFORCES_FOR_CONVOY_DEFENSE_MIN | 0.20 | all-screen taskforces will be shared between convoy defense, mine missions and patrols (in this prio)<br>and these ratios limits the maximum ratio of these taskforces to allocate on type<br>maximum ratio of all screen-ships forces to be used in convoy defense (increases up to max as AI loses convoys). |  |
 | MAX_SCREEN_TASKFORCES_FOR_CONVOY_DEFENSE_MAX | 0.70 | maximum ratio of all screen-ships forces to be used in convoy defense (increases up to max as AI loses convoys). |  |
 | MAX_SCREEN_TASKFORCES_FOR_CONVOY_DEFENSE_MIN_CONVOY_THREAT | 100 | AI will increase screen assignment for escort missions as threate increases |  |
 | MAX_SCREEN_TASKFORCES_FOR_CONVOY_DEFENSE_MAX_CONVOY_THREAT | 1500 | AI will increase screen assignment for escort missions as threate increases |  |
@@ -2233,7 +2233,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | MAX_SCREEN_FORCES_FOR_INVASION_SUPPORT | 0.25 | max ratio of screens forces to be used in naval invasion missions |  |
 | MAX_CAPITAL_FORCES_FOR_INVASION_SUPPORT | 0.25 | max ratio of capital forces to be used in naval invasion missions |  |
 | MAX_PATROL_TO_STRIKE_FORCE_RATIO | 3.0 | maximum patrol/strike force ratio |  |
-| CONSTRUCTION_PRIO_INFRASTRUCTURE | 0.20 | <start> construction prioritization base prio for infrastructure in the construction queue |  |
+| CONSTRUCTION_PRIO_INFRASTRUCTURE | 0.20 | <start> construction prioritization<br>base prio for infrastructure in the construction queue |  |
 | CONSTRUCTION_PRIO_CIV_FACTORY | 0.80 | base prio for civilian factories in the construction queue |  |
 | CONSTRUCTION_PRIO_MIL_FACTORY | 0.70 | base prio for military factories in the construction queue |  |
 | CONSTRUCTION_PRIO_RAILWAY | 4.00 | base prio for railways in the construction queue |  |
@@ -2243,7 +2243,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | CONSTRUCTION_PRIO_FACTOR_OWNED_NONCORE | 1.50 | factor prio with this if owned non-core territory |  |
 | CONSTRUCTION_PRIO_FACTOR_OWNED_CORE | 2.00 | factor prio with this if owned core territory |  |
 | CONSTRUCTION_PRIO_FACTOR_REPAIRING | 0.30 | factor prio with this if building is being repaired |  |
-| MAX_FACTORY_TO_SPARE_FOR_MISSION_FUEL_TRADE | 0.12 | <end> construction prioritization amount of factories to spend on oil trade in case of fuel need for missions |  |
+| MAX_FACTORY_TO_SPARE_FOR_MISSION_FUEL_TRADE | 0.12 | <end> construction prioritization<br>amount of factories to spend on oil trade in case of fuel need for missions |  |
 | MAX_FACTORY_TO_SPARE_FOR_CRITICAL_MISSION_FUEL_TRADE | 0.3 | amount of factories to spend on oil trade in case of fuel need for prio missions |  |
 | MAX_FACTORY_TO_TRADE_FOR_FUEL | 0.5 |  |  |
 | FUEL_TRADE_PRIO_FOR_CONVOY_DEFENSE | 0.3 | AI will be less reluctant to cancel convoy missions if it is trading for oil |  |
@@ -2335,7 +2335,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | PORT_STRIKE_HISTORY_VALUE_TO_DISABLE_REPAIRS | 200 | cut off for disabling ports above this threshold |  |
 | PORT_STRIKE_HISTORY_VALUE_TO_REENABLE_REPAIRS | 10 | cut off for reenabling ports bloew this threshold |  |
 | CURRENT_LAW_SCORE_BONUS | 50.0 | current score will get an additional bonus to its ai weight |  |
-| OIL_WANT_PER_POTENTIAL_LAND_CONSUMPTION_K | 0.05 | these values are used for ai_desire_ variables that are used occupation law selection how much extra oil requested on top of balance for country's potential oil consumptions |  |
+| OIL_WANT_PER_POTENTIAL_LAND_CONSUMPTION_K | 0.05 | these values are used for ai_desire_ variables that are used occupation law selection<br>how much extra oil requested on top of balance for country's potential oil consumptions |  |
 | OIL_WANT_PER_POTENTIAL_NAVY_CONSUMPTION_K | 0.03 |  |  |
 | OIL_WANT_PER_POTENTIAL_AIR_CONSUMPTION_K | 0.03 |  |  |
 | OIL_WANT_PER_POTENTIAL_MISC_CONSUMPTION_K | 0.1 |  |  |
@@ -2345,7 +2345,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | OIL_WANT_AT_PEACE_PER_POTENTIAL_MISC_CONSUMPTION_K | 0.1 |  |  |
 | RESOURCE_WANT_PER_MISSING_BALANCE | 0.2 | negative balance increases the desire on a resource |  |
 | RESOURCE_WANT_PER_CONSUMED | 0.05 | if resource is being used in production, increase the desire |  |
-| CRYPTO_ACTIVATION_THRESHOLD | 1.25 | \~end crypto ai calculates a score \& a threshold for each cracked crypto if score > crypto, it activates the crypto will multiply crypto activation threshold. larger |  |
+| CRYPTO_ACTIVATION_THRESHOLD | 1.25 | \~end<br>crypto ai calculates a score \& a threshold for each cracked crypto<br>if score > crypto, it activates the crypto<br>will multiply crypto activation threshold. larger |  |
 | CRYPTO_ACTIVATE_NUM_DAYS_DROP_OFF | 0.4 | longer decrypted crypto waits, lower threshold it will have. threshold will be multiplied by this value at most |  |
 | CRYPTO_ACTIVATE_NUM_DAYS_DECAY | 60 | at this number of days, it will decay by %50 of prev define |  |
 | CRYPTO_ACTIVATE_NUM_ACTIVATED_DROP_OFF | 0.6 | having an already activated cryptos will further multiply threshold, down to this value |  |
@@ -2353,14 +2353,14 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | CRYPTO_ACTIVATION_SCORE_OUR_CAPITAL_BONUS | 0.2 | fronts of our capital get a bonus by this ratio |  |
 | CRYPTO_ACTIVATION_SCORE_ENEMY_CAPITAL_BONUS | 0.2 | fronts of enemy capital get a bonus by this ratio |  |
 | CRYPTO_AFTER_SCORE_INVASION_FRONT_BONUS | 1.0 | a front that is naval invading will increase the score by this ratio |  |
-| MAX_MODULAR_EQUIPMENT_EQUIPMENT_UPGRADE_COUNT_PER_PASS | 4 | \~crypto ai the maximum number of level AI will try to add to an equipment upgrade of an equipment defined in common/ai_equipment in one pass |  |
+| MAX_MODULAR_EQUIPMENT_EQUIPMENT_UPGRADE_COUNT_PER_PASS | 4 | \~crypto ai<br>the maximum number of level AI will try to add to an equipment upgrade of an equipment defined in common/ai_equipment in one pass |  |
 | EQUIPMENT_UPGRADE_VARIANT_MATCH_SCORE_FACTOR | 0.2 | the weight of equipment upgrade level when computing the match score of a variant to an ai equipment design. |  |
 | AI_UPDATE_ROLES_FREQUENCY_HOURS | 48 | Update the roles for a country AI this often (affects performance) |  |
 | UPDATE_SUPPLY_BOTTLENECKS_FREQUENCY_HOURS | 168 | Check for and try to fix supply bottlenecks this often. (168 hours = 1 week) |  |
 | FIX_SUPPLY_BOTTLENECK_SATURATION_THRESHOLD | 0.85 | Try to fix supply bottlenecks if supply node saturation exceeds this value. |  |
 | UPDATE_SUPPLY_MOTORIZATION_FREQUENCY_HOURS | 52 | Check if activating motorization would improve supply situation this often. |  |
 | AI_PREFERRED_TACTIC_WEEKLY_CHANGE_CHANCE | 0.05 | Chance for AI to select a new preferred tactic if they don't have one selected |  |
-| ARMY_LEADER_ASSIGN_FIELD_MARSHAL_TO_ARMY | -500 | <start> assigning leaders to armies Score for assigning a field marshal to a normal army (want to use them for army groups) |  |
+| ARMY_LEADER_ASSIGN_FIELD_MARSHAL_TO_ARMY | -500 | <start> assigning leaders to armies<br>Score for assigning a field marshal to a normal army (want to use them for army groups) |  |
 | ARMY_LEADER_ASSIGN_KEEP_LEADER | 500 | Score for keeping the leader if already assigned |  |
 | ARMY_LEADER_ASSIGN_EMPTYNESS_MALUS | 0.2 | Factor for avoiding assigning leaders that can lead large armies to small armies (a value of 0.2 reduces the score by max 20 %) |  |
 | ARMY_LEADER_ASSIGN_OVERCAPACITY | -200 | Score for assigning leader to a too large army |  |
@@ -2381,7 +2381,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | ARMY_LEADER_ASSIGN_NR_TRAITS | 5 | This times general's nr of active traits is added to score |  |
 | ARMY_LEADER_ASSIGN_EXILED_LEADS_EXILED_TROOPS | 10 | If exiled leader, increase chance of leading army with exiled troops |  |
 | ARMY_LEADER_ASSIGN_EXILED_LEADS_OWN_EXILED_TROOPS | 100 | If exiled leader, increase chance of leading army with exiled troops from same country as the leader |  |
-| ARMY_LEADER_ASSIGN_DEFENSE_MAX_DIG_IN_FACTOR | 1.0 | the following defines concern the general's modifiers If defensive army, importance of general's MAX_DIG_IN_FACTOR modifier |  |
+| ARMY_LEADER_ASSIGN_DEFENSE_MAX_DIG_IN_FACTOR | 1.0 | the following defines concern the general's modifiers<br>If defensive army, importance of general's MAX_DIG_IN_FACTOR modifier |  |
 | ARMY_LEADER_ASSIGN_DEFENSE_ARMY_ARMOR_DEFENCE_FACTOR | 1.0 | If defensive army, importance of general's ARMY_ARMOR_DEFENCE_FACTOR modifier (proportional to armor ratio in the army) |  |
 | ARMY_LEADER_ASSIGN_PLANNING_SPEED | 0.1 | Importance of general's PLANNING_SPEED modifier |  |
 | ARMY_LEADER_ASSIGN_MAX_PLANNING | 0.1 | Importance of general's MAX_PLANNING modifier |  |
@@ -2399,7 +2399,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | ARMY_LEADER_ASSIGN_LAND_REINFORCE_RATE | 1.0 | Importance of general's LAND_REINFORCE_RATE modifier |  |
 | ARMY_LEADER_ASSIGN_ARMY_MORALE_FACTOR | 1.0 | Importance of general's ARMY_MORALE_FACTOR modifier |  |
 | ARMY_LEADER_ASSIGN_TERRAIN_FACTOR | 0.2 | Importance of general's terrain skills |  |
-| AREA_DEFENSE_SETTING_VP | false | <end> assigning leaders to armies Which settings will AI use for area defense by default |  |
+| AREA_DEFENSE_SETTING_VP | false | <end> assigning leaders to armies<br>Which settings will AI use for area defense by default |  |
 | AREA_DEFENSE_SETTING_PORTS | true |  |  |
 | AREA_DEFENSE_SETTING_AIRBASES | false |  |  |
 | AREA_DEFENSE_SETTING_FORTS | false |  |  |
@@ -2490,8 +2490,8 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | INTEL_NETWORK_DETECTION_GLOBAL_FACTOR | 0.01 | global factor multiplied to the detection chance before it is multiplied a dice roll in the range \[0,1000) |  |
 | BUILD_INTEL_NETWORK_DAILY_XP_GAIN | 1 |  |  |
 | QUIET_INTEL_NETWORK_DAILY_XP_GAIN | 0 |  |  |
-| OPERATIVE_MISSION_DETECTION_CHANCE_FACTOR | { 0.0, 1.0, 1.0, 1.0, 0.0, 3.0, 0.1, 0.1, 3.0 } | Factor multiplied to the detection chance of an agent on mission before the offsets NoMission BuildIntelNetwork QuietIntelNetwork CounterIntelligence RootOutResistance BoostIdeology ControlTrade DiplomaticPressure Propaganda |  |
-| OPERATIVE_SLOTS_FROM_FACTION_MEMBERS_FOR_SPY_MASTER | { 0.0, 0.0, 0.25, 10.0, 0.5, 50.0 } | used for calculating how many operatives will a spy master gain from its faction members first number in every now is number of operatives gained second number is total factory needed (mil and civ) for giving previous ratio 0 operative for \[0, 10) 0.25 operative for \[10, 50) 0.5 operative for >= 50 |  |
+| OPERATIVE_MISSION_DETECTION_CHANCE_FACTOR | { 0.0, 1.0, 1.0, 1.0, 0.0, 3.0, 0.1, 0.1, 3.0 } | Factor multiplied to the detection chance of an agent on mission before the offsets<br>NoMission<br>BuildIntelNetwork<br>QuietIntelNetwork<br>CounterIntelligence<br>RootOutResistance<br>BoostIdeology<br>ControlTrade<br>DiplomaticPressure<br>Propaganda |  |
+| OPERATIVE_SLOTS_FROM_FACTION_MEMBERS_FOR_SPY_MASTER | { 0.0, 0.0, 0.25, 10.0, 0.5, 50.0 } | used for calculating how many operatives will a spy master gain from its faction members<br>first number in every now is number of operatives gained<br>second number is total factory needed (mil and civ) for giving previous ratio<br>0 operative for \[0, 10)<br>0.25 operative for \[10, 50)<br>0.5 operative for >= 50 |  |
 | INTEL_NETWORK_STATE_MODIFIER_STRENGTH_THRESHOLD | 10 | Minimum amount of strength required in a state for the intel network related modifiers to start being applied |  |
 | INTEL_NETWORK_MIN_DEFAULT_FOR_SHOWING | 25 | default min level for networks used to filter operation requirements if not overriden |  |
 | OPERATIVE_BASE_INTEL_NETWORK_GAIN | 0.4 | Base amount of network strength gain per day provided by an operative |  |
@@ -2546,7 +2546,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | OPERATION_AI_MINIMUM_SCORE | 10.0 | Once an operation's AI weight falls below the minimum score it will be scrapped if it is being prepared |  |
 | OPERATION_COMPLETION_XP | 18 |  |  |
 | OPERATIVE_CAPTURE_DURATION_IN_DAYS | 9\*30 |  |  |
-| DEFAULT_OPERATION_COST_MULTIPLIER | 0.15 | operation cost \& time are increased by default this ratios for each instance of operation that were already executed against same target. can be overridden using time_multiplier \& cost_multiplier in operation. |  |
+| DEFAULT_OPERATION_COST_MULTIPLIER | 0.15 | operation cost \& time are increased by default this ratios for each<br>instance of operation that were already executed against same target.<br>can be overridden using time_multiplier \& cost_multiplier in operation. |  |
 | DEFAULT_OPERATION_TIME_MULTIPLIER | 0.0 |  |  |
 | BUILD_INTEL_NETWORK_MISSION_ACTIVITY_INDICATOR_FACTOR | 10 | The following defines are multiplied to the number of operatives operating in the target country the activity level is computed for |  |
 | BOOST_IDEOLOGY_NETWORK_MISSION_ACTIVITY_INDICATOR_FACTOR | 10 |  |  |
@@ -2565,7 +2565,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | ON_CAPTURE_COUNTERINTELLIGENCE_OPERATIVE_XP_GAIN | 100 | Xp gain when an enemy operative is captured in the country the operative is assigned to counter intelligence to. Apply to a single randomly selected operative |  |
 | ON_CAPTURE_COUNTERINTELLIGENCE_OPERATIVE_WEIGHT_OWN_COUNTRY_FOR_XP | 2 | An integer on how likely an operative operating in his own country is to get selected for the xp reward on enemy operative capture |  |
 | ON_CAPTURE_COUNTERINTELLIGENCE_OPERATIVE_WEIGHT_DIFFERENT_COUNTRY_FOR_XP | 1 | same for an operative assigned to counter intelligence in a different country than his own |  |
-| RISK_LEVELS | { 0.1, 0.2, 0.3 } | risk and outcome texts. each number array should match its labels in size, but its ok to have different amount of risk levels than outcomes each risk level comes with a label to display for operations if it goes abve that number. If below the first it will isntead show the good outcomes |  |
+| RISK_LEVELS | { 0.1, 0.2, 0.3 } | risk and outcome texts. each number array should match its labels in size, but its ok to have different amount of risk levels than outcomes<br>each risk level comes with a label to display for operations if it goes abve that number. If below the first it will isntead show the good outcomes |  |
 | RISK_LEVELS_LABELS | { "RISK_LOW", "RISK_MID", "RISK_HIGH" } |  |  |
 | OUTCOME_LEVELS | { 0.0, 0.2, 0.3 } | outcome levels are shown if risk is below its first entry instead |  |
 | OUTCOME_LEVELS_LABELS | { "OUTCOME_BASE", "OUTCOME_GOOD", "OUTCOME_VGOOD" } |  |  |
@@ -2576,12 +2576,12 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
-| COUNTRY_LEVEL_INTEL_MAXIMUMS | { 100.0, 100.0, 100.0, 100.0 } | The maximum intel a country can have over another Civilian Army Navy Airforce |  |
-| STATIC_INTEL_SOURCE_OPERATION_TOKENS_MAXIMUMS | { } | Static sources: A static source is a source that will fully decay once its origin disappear. (e.g. radar destroyed) MAXIMUMS: if set to an non-empty arrays, overrides COUNTRY_LEVEL_INTEL_MAXIMUMS for this specific source (note that COUNTRY_LEVEL_INTEL_MAXIMUMS is applied after INTEL_SOURCE_XXX_MAXIMUMS) |  |
+| COUNTRY_LEVEL_INTEL_MAXIMUMS | { 100.0, 100.0, 100.0, 100.0 } | The maximum intel a country can have over another<br>Civilian<br>Army<br>Navy<br>Airforce |  |
+| STATIC_INTEL_SOURCE_OPERATION_TOKENS_MAXIMUMS | { } | Static sources:<br>A static source is a source that will fully decay once its origin disappear.<br>(e.g. radar destroyed)<br>MAXIMUMS:<br>if set to an non-empty arrays, overrides COUNTRY_LEVEL_INTEL_MAXIMUMS<br>for this specific source (note that COUNTRY_LEVEL_INTEL_MAXIMUMS is<br>applied after INTEL_SOURCE_XXX_MAXIMUMS) |  |
 | STATIC_INTEL_SOURCE_BROKEN_CYPHER_MAXIMUMS | { 60.0, 60.0, 60.0, 60.0 } |  |  |
 | STATIC_INTEL_SOURCE_RADAR_MAXIMUMS | { 10.0, 10.0, 20.0, 20.0 } |  |  |
 | STATIC_INTEL_SOURCE_INTEL_NETWORK_MAXIMUMS | { 30.0, 30.0, 40.0, 30.0 } |  |  |
-| DYNAMIC_INTEL_SOURCE_EVENT_FLAT_DECAY | 0.0 | Dynamic intel pool can be manipulated through the following defines: FLAT_DECAY and MULT_DECAY control the rate at which the intel decays The formula is applied as follow (runs daily): NextIntel = ( Intel - FLAT_DECAY ) \* MULT_DECAY AGGREGAT_LOG_FACTOR and AGGREGAT_DIVISOR control the rate at which intel accumulates. It is applied to the sum of the intel generated throughout the day as follow: Aggregat = LOG_FACTOR \* log( 1 + IntelOfTheDay ) + IntelOfTheDay / DIVISOR The Aggregat is then added to the pool of intel. If DIVISOR is zero then the division is evaluated to zero. MAXIMUMS controls the maximum value that the pool can contribute to the final intel values. ABSOLUTE_MAXIMUMS defines a ceiling for the intel in the pool that will never be exceeded. They are meant to be greater or equal to MAXIMUMS. If the array is empty, no absolute maximum is defined. Dynamic pool EVENT |  |
+| DYNAMIC_INTEL_SOURCE_EVENT_FLAT_DECAY | 0.0 | Dynamic intel pool can be manipulated through the following defines:<br>FLAT_DECAY and MULT_DECAY control the rate at which the intel decays<br>The formula is applied as follow (runs daily):<br>NextIntel = ( Intel - FLAT_DECAY ) \* MULT_DECAY<br>AGGREGAT_LOG_FACTOR and AGGREGAT_DIVISOR control the rate at which<br>intel accumulates. It is applied to the sum of the intel generated<br>throughout the day as follow:<br>Aggregat = LOG_FACTOR \* log( 1 + IntelOfTheDay ) + IntelOfTheDay / DIVISOR<br>The Aggregat is then added to the pool of intel.<br>If DIVISOR is zero then the division is evaluated to zero.<br>MAXIMUMS controls the maximum value that the pool can contribute to<br>the final intel values.<br>ABSOLUTE_MAXIMUMS defines a ceiling for the intel in the pool that<br>will never be exceeded. They are meant to be greater or equal to<br>MAXIMUMS. If the array is empty, no absolute maximum is defined.<br>Dynamic pool EVENT |  |
 | DYNAMIC_INTEL_SOURCE_EVENT_MULT_DECAY | 0.985 |  |  |
 | DYNAMIC_INTEL_SOURCE_EVENT_AGGREGAT_LOG_FACTOR | 0 |  |  |
 | DYNAMIC_INTEL_SOURCE_EVENT_AGGREGAT_DIVISOR | 1 |  |  |
@@ -2657,20 +2657,20 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | INTEL_NETWORK_MAX_AIRFORCE_INTEL | 15.0 |  |  |
 | RADAR_LEVEL_INTEL_FACTOR | 1.25 | Multiplied to the radar level to tell the fraction of intel per covered province we get. The radar level is computed as BuildingLevel / MaxBuildingLevel. |  |
 | RADAR_INTEL_STACKING_FACTOR | 0.5 | Used when multiple radars cover the same province |  |
-| RADAR_BASE_INTEL_VALUES_FOR_COUNTRY_COVERAGE_PERCENTAGE | { 9.0, 9.0, 0.0, 18.0 } | Values are the same order as in COUNTRY_LEVEL_INTEL_MAXIMUMS Multiplied by the total radar efficiency over the provinces of a specific country divided by the number of provinces controlled by that same country. |  |
-| RADAR_BASE_INTEL_VALUES_FOR_COVERED_LAND_PROVINCES | { 5.0, 5.0, 0.0, 12.0 } | Values are the same order as in COUNTRY_LEVEL_INTEL_MAXIMUMS Multiplied by the total radar efficiency of the provinces of a specific country divided by the individual radar's percentage of covered provinces. |  |
-| RADAR_BASE_INTEL_VALUES_FOR_COVERED_SEA_PROVINCES | { 0.0, 0.0, 280.0, 0.0 } | Values are the same order as in COUNTRY_LEVEL_INTEL_MAXIMUMS Multiplied by the total radar efficiency of the provinces covered by the radar for each strategic region that has convoy routes and multiplied by the fraction of convoy that country has going through the region (excluding the convoys of the radar's owner) |  |
-| RADAR_NAVY_INTEL_FACTOR_PER_SHIP_TYPE | { 5.0, 10.0, 20.0, 30.0 } | Navy intel value factored to the fraction of the country's ships in the sea zone covered by the radar, by ship type Submarine Screen ship Capital ship Carrier ship |  |
+| RADAR_BASE_INTEL_VALUES_FOR_COUNTRY_COVERAGE_PERCENTAGE | { 9.0, 9.0, 0.0, 18.0 } | Values are the same order as in COUNTRY_LEVEL_INTEL_MAXIMUMS<br>Multiplied by the total radar efficiency over the provinces of<br>a specific country divided by the number of provinces controlled<br>by that same country. |  |
+| RADAR_BASE_INTEL_VALUES_FOR_COVERED_LAND_PROVINCES | { 5.0, 5.0, 0.0, 12.0 } | Values are the same order as in COUNTRY_LEVEL_INTEL_MAXIMUMS<br>Multiplied by the total radar efficiency of the provinces of<br>a specific country divided by the individual radar's<br>percentage of covered provinces. |  |
+| RADAR_BASE_INTEL_VALUES_FOR_COVERED_SEA_PROVINCES | { 0.0, 0.0, 280.0, 0.0 } | Values are the same order as in COUNTRY_LEVEL_INTEL_MAXIMUMS<br>Multiplied by the total radar efficiency of the provinces<br>covered by the radar for each strategic region that has<br>convoy routes and multiplied by the fraction of convoy<br>that country has going through the region (excluding the<br>convoys of the radar's owner) |  |
+| RADAR_NAVY_INTEL_FACTOR_PER_SHIP_TYPE | { 5.0, 10.0, 20.0, 30.0 } | Navy intel value factored to the fraction of the country's<br>ships in the sea zone covered by the radar, by ship type<br>Submarine<br>Screen ship<br>Capital ship<br>Carrier ship |  |
 | CAPTURED_OPERATIVE_MAX_FACTOR | 35.0 | Define the maximum of the randomized factor, before the factor from operative is applied |  |
 | CAPTURED_OPERATIVE_MIN_FACTOR | 10.0 | Define the minimum of the randomized factor, before the factor from operative is applied |  |
-| CAPTURED_OPERATIVE_INTEL_YIELD | { 0.3, 0.3, 0.3, 0.3 } | Values are the same order as in COUNTRY_LEVEL_INTEL_MAXIMUMS Daily base intel yield from an operative, before the factors defined above are applied |  |
+| CAPTURED_OPERATIVE_INTEL_YIELD | { 0.3, 0.3, 0.3, 0.3 } | Values are the same order as in COUNTRY_LEVEL_INTEL_MAXIMUMS<br>Daily base intel yield from an operative, before the<br>factors defined above are applied |  |
 | RECON_PLANE_INTEL_BASE | 0.02 | intel base amount for a strategic area per plane |  |
 | RECON_PLANE_LAND_DISTRIBUTION | { 10.0, 6.0, 0.0, 3.0 } | controls for land and sea zones how much of each intel typee is given (civ, army, navy, air) |  |
 | RECON_PLANE_SEA_DISTRIBUTION | { 0.0, 0.0, 10.0, 0.0 } |  |  |
 | LAND_SPOT_DECAY | 0.05 |  |  |
 | NAVAL_SPOT_DECAY | 1 |  |  |
-| ENCRYPTION_DECRYPTION_INTEL_FACTORS | { 15.0, 15.0, 15.0, 15.0 } | Factored to ( 1 + A.decryption ) / ( 1 + B.encryption ) to determine the intel A has over B when legacy encryption and decryption modifier are used. Note that if A.decryption is zero, the result is forced to zero In the ame order as COUNTRY_LEVEL_INTEL_MAXIMUMS |  |
-| CIVILIAN_PRODUCTION_RANGE_INTEL_MIN | 0.1 | intel ledger defines minimum value to show fuzzy factory counts below this you will get ??? |  |
+| ENCRYPTION_DECRYPTION_INTEL_FACTORS | { 15.0, 15.0, 15.0, 15.0 } | Factored to ( 1 + A.decryption ) / ( 1 + B.encryption ) to determine the intel<br>A has over B when legacy encryption and decryption modifier are used.<br>Note that if A.decryption is zero, the result is forced to zero<br>In the ame order as COUNTRY_LEVEL_INTEL_MAXIMUMS |  |
+| CIVILIAN_PRODUCTION_RANGE_INTEL_MIN | 0.1 | intel ledger defines<br>minimum value to show fuzzy factory counts below this you will get ??? |  |
 | CIVILIAN_PRODUCTION_RANGE_INTEL_MAX | 0.5 | maximum value to show fuzzy factory counts. above this you will get full count |  |
 | CIVILIAN_PRODUCTION_INTEL_RANGE_AT_LOWEST_INTEL | 0.5 | range of intel values at lowest intel |  |
 | CIVILIAN_FUEL_RANGE_INTEL_MIN | 0.3 | minimum value to show fuzzy factory counts below this you will get ??? |  |
@@ -2781,16 +2781,16 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | ARMY_MAX_PIERCING_INTEL_MIN | 0.0 |  |  |
 | ARMY_MAX_PIERCING_INTEL_MAX | 0.5 |  |  |
 | ARMY_MAX_PIERCING_RANGE_AT_LOWEST_INTEL | 1.0 |  |  |
-| NAVY_MAPICON_MISSION_COUNT_INTEL_MIN | 0.5 | \~ min intel to show assigned naval missions |  |
+| NAVY_MAPICON_MISSION_COUNT_INTEL_MIN | 0.5 | \~<br>min intel to show assigned naval missions |  |
 | NAVY_MAPICON_MISSION_COUNT_INTEL_MAX | 0.8 | min intel to show assigned naval missions with perfect accuracy, and taskforces count |  |
 | NAVY_MAPICON_SHOW_ALL_NAVAL_PORTS | 0.3 | min intel to show all naval ports (otherwise you will only see nearby ones) |  |
-| NAVY_MAPICON_NAVAL_PORT_VISIBILITY_DETAIL_THRESHOLDS | { 0.0, 0.1, 0.3, 0.7, 0.8 } | how detailed the post tooltips will be for no intel show port level show fuzzy taskforce count show full taskforce count show taskforce details |  |
+| NAVY_MAPICON_NAVAL_PORT_VISIBILITY_DETAIL_THRESHOLDS | { 0.0, 0.1, 0.3, 0.7, 0.8 } | how detailed the post tooltips will be<br>for no intel<br>show port level<br>show fuzzy taskforce count<br>show full taskforce count<br>show taskforce details |  |
 | NAVY_MAPICON_NAVAL_PORT_TASKFORCE_FUZZY_THRESHOLD | 0.5 |  |  |
-| AIR_MAPICON_MISSION_COUNT_INTEL_MIN | { 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 } | AIR_SUPERIORITY CAS INTERCEPTION STRATEGIC_BOMBER NAVAL_BOMBER DROP_NUKE PARADROP NAVAL_KAMIKAZE PORT_STRIKE ATTACK_LOGISTICS AIR_SUPPLY TRAINING NAVAL_MINES_PLANTING NAVAL_MINES_SWEEPING RECON NAVAL_PATROL |  |
-| AIR_MAPICON_MISSION_COUNT_INTEL_MAX | { 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6 } | AIR_SUPERIORITY CAS INTERCEPTION STRATEGIC_BOMBER NAVAL_BOMBER DROP_NUKE PARADROP NAVAL_KAMIKAZE PORT_STRIKE ATTACK_LOGISTICS AIR_SUPPLY TRAINING NAVAL_MINES_PLANTING NAVAL_MINES_SWEEPING RECON NAVAL_PATROL |  |
-| AIR_MAPICON_MISSION_COUNT_INTEL_RANGE_AT_LOWEST_INTEL | { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 } | AIR_SUPERIORITY CAS INTERCEPTION STRATEGIC_BOMBER NAVAL_BOMBER DROP_NUKE PARADROP NAVAL_KAMIKAZE PORT_STRIKE ATTACK_LOGISTICS AIR_SUPPLY TRAINING NAVAL_MINES_PLANTING NAVAL_MINES_SWEEPING RECON NAVAL_PATROL |  |
+| AIR_MAPICON_MISSION_COUNT_INTEL_MIN | { 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 } | AIR_SUPERIORITY<br>CAS<br>INTERCEPTION<br>STRATEGIC_BOMBER<br>NAVAL_BOMBER<br>DROP_NUKE<br>PARADROP<br>NAVAL_KAMIKAZE<br>PORT_STRIKE<br>ATTACK_LOGISTICS<br>AIR_SUPPLY<br>TRAINING<br>NAVAL_MINES_PLANTING<br>NAVAL_MINES_SWEEPING<br>RECON<br>NAVAL_PATROL |  |
+| AIR_MAPICON_MISSION_COUNT_INTEL_MAX | { 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6 } | AIR_SUPERIORITY<br>CAS<br>INTERCEPTION<br>STRATEGIC_BOMBER<br>NAVAL_BOMBER<br>DROP_NUKE<br>PARADROP<br>NAVAL_KAMIKAZE<br>PORT_STRIKE<br>ATTACK_LOGISTICS<br>AIR_SUPPLY<br>TRAINING<br>NAVAL_MINES_PLANTING<br>NAVAL_MINES_SWEEPING<br>RECON<br>NAVAL_PATROL |  |
+| AIR_MAPICON_MISSION_COUNT_INTEL_RANGE_AT_LOWEST_INTEL | { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 } | AIR_SUPERIORITY<br>CAS<br>INTERCEPTION<br>STRATEGIC_BOMBER<br>NAVAL_BOMBER<br>DROP_NUKE<br>PARADROP<br>NAVAL_KAMIKAZE<br>PORT_STRIKE<br>ATTACK_LOGISTICS<br>AIR_SUPPLY<br>TRAINING<br>NAVAL_MINES_PLANTING<br>NAVAL_MINES_SWEEPING<br>RECON<br>NAVAL_PATROL |  |
 | AIR_MAPICON_SHOW_ALL_AIR_PORTS | 0.3 | min intel to show all air ports (otherwise you will only see nearby ones) |  |
-| AIR_MAPICON_AIR_PORT_VISIBILITY_DETAIL_THRESHOLDS | { 0.0, 0.3, 0.7, 0.8 } | how detailed the post tooltips will be for no intel show fuzzy air plane count show full air count show air plane details |  |
+| AIR_MAPICON_AIR_PORT_VISIBILITY_DETAIL_THRESHOLDS | { 0.0, 0.3, 0.7, 0.8 } | how detailed the post tooltips will be<br>for no intel<br>show fuzzy air plane count<br>show full air count<br>show air plane details |  |
 | AIR_MAPICON_AIR_PORT_PLANE_FUZZY_THRESHOLD | 0.5 |  |  |
 | AIR_MIN_INTEL_TO_SHOW_EQUIPMENT_DESIGN_DETAILS | 0.8 | \~intel ledger defines |  |
 
@@ -2817,11 +2817,11 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
 | MAX_RAILWAY_LEVEL | 5 | update railway texture as well, each frame corresponds to a level |  |
-| CAPITAL_SUPPLY_BASE | 5.0 | defines to calculate the capitals supply. This will be also used for max supply of other nodes depending on how well they are connected to capital. Using the formula: CapitalSupply = CAPITAL_SUPPLY_BASE + (NumberOfCivilianFactories \* CAPITAL_SUPPLY_CIVILIAN_FACTORIES) + (NumberOfMilitaryFactories \* CAPITAL_SUPPLY_MILITARY_FACTORIES) + (NumberOfDockyards \* CAPITAL_SUPPLY_DOCKYARDS) base supply for capital |  |
+| CAPITAL_SUPPLY_BASE | 5.0 | defines to calculate the capitals supply. This will be also used for max supply of other nodes depending on how well they are connected to capital. Using the formula:<br>CapitalSupply = CAPITAL_SUPPLY_BASE + (NumberOfCivilianFactories \* CAPITAL_SUPPLY_CIVILIAN_FACTORIES) + (NumberOfMilitaryFactories \* CAPITAL_SUPPLY_MILITARY_FACTORIES) + (NumberOfDockyards \* CAPITAL_SUPPLY_DOCKYARDS)<br>base supply for capital |  |
 | CAPITAL_SUPPLY_CIVILIAN_FACTORIES | 0.3 | supply from one civilian factory |  |
 | CAPITAL_SUPPLY_MILITARY_FACTORIES | 0.6 | supply from one military factory |  |
 | CAPITAL_SUPPLY_DOCKYARDS | 0.4 | supply from one naval factory |  |
-| CAPITAL_INITIAL_SUPPLY_FLOW | 5.0 | defines that are used for supply reach for capital supply flow will start from INITIAL_SUPPLY_FLOW and will be reduced by a penalty on each province it travels (which depends on how far we are from our origin, terrain etc) a supply reach >= 1.0 considered "perfect" and will be able to fully support units on that particular province (assuming you are not over capacity) starting supply from |  |
+| CAPITAL_INITIAL_SUPPLY_FLOW | 5.0 | defines that are used for supply reach for capital<br>supply flow will start from INITIAL_SUPPLY_FLOW and will be reduced by a penalty on each province it travels (which depends on how far we are from our origin, terrain etc)<br>a supply reach >= 1.0 considered "perfect" and will be able to fully support units on that particular province (assuming you are not over capacity)<br>starting supply from |  |
 | CAPITAL_STARTING_PENALTY_PER_PROVINCE | 0.5 | starting penalty that will be added as supply moves away from its origin (modified by stuff like terrain) |  |
 | CAPITAL_ADDED_PENALTY_PER_PROVINCE | 1.2 | added penalty as we move away from origin |  |
 | NODE_INITIAL_SUPPLY_FLOW | 2.8 | defines that are used for supply reach for built nodes |  |
@@ -2846,18 +2846,18 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | FLOATING_HARBOR_DECAY_NO_CONTROL_PENALTY | 1.0 | If adjacent land province is not held, change decay rate by this many "hours" per hour |  |
 | SUPPLY_FLOW_DROP_REDUCTION_AT_MAX_INFRA | 0.30 | max infrastructure level will reduce the supply flow drop off by this ratio |  |
 | SUPPLY_FLOW_PENALTY_CROSSING_RIVERS | 0.20 | crossing rivers introduces additional penalty |  |
-| SUPPLY_FLOW_DIST_LOGISTICS_FALLOFF_K | 1.3 | node flow terrain falloff is scaled by logistics curve based on distance(d) (scalar / (1+e^(-k(d-midpoint)))) How steep the curve is |  |
+| SUPPLY_FLOW_DIST_LOGISTICS_FALLOFF_K | 1.3 | node flow terrain falloff is scaled by logistics curve based on distance(d) (scalar / (1+e^(-k(d-midpoint))))<br>How steep the curve is |  |
 | SUPPLY_FLOW_DIST_LOGISTICS_FALLOFF_MIDPOINT | 2.3 | sigmoid inflection point |  |
 | SUPPLY_FLOW_DIST_LOGISTICS_FALLOFF_SCALAR | 0.9 | Max Penalty adjustment due to distance |  |
 | SUPPLY_FLOW_DIST_LOGISTICS_FALLOFF_MIN_PENALTY_SCALE | 0.25 | Logistics curve never reduces penalty facor below this limit |  |
 | SUPPLY_HUB_FULL_MOTORIZATION_BONUS | 2.2 | The range bonus added to a fully motorized hub. This supply is added on top of the XXX_INITIAL_SUPPLY_FLOW defined above. |  |
 | SUPPLY_HUB_FULL_MOTORIZATION_TRUCK_COST | 60.0 | How many trucks does it cost to fully motorize a hub |  |
 | SUPPLY_HUB_MOTORIZATION_MARGINAL_EFFECT_DECAY | 1.6 | For each additional level of motorization on a hub (i.e. contry with set motoriazation) reduce max bonus for next level by this amount |  |
-| RAILWAY_BASE_FLOW | 10.0 | used for calculating "flow" for railways. how much base flow railway gives when a node connected to its capital/a naval node by a railway |  |
+| RAILWAY_BASE_FLOW | 10.0 | used for calculating "flow" for railways.<br>how much base flow railway gives when a node connected to its capital/a naval node by a railway |  |
 | RAILWAY_FLOW_PER_LEVEL | 5.0 | how much additional flow a railway level gives |  |
 | RAILWAY_FLOW_PENALTY_PER_DAMAGED | 5.0 | penalty to flow per damaged railway |  |
 | RAILWAY_MIN_FLOW | 5.0 | minimum railway flow can be reduced to |  |
-| NAVAL_BASE_FLOW | 5.0 | used for calculating "flow" from a naval node to another naval node when it is connected via a convoy route NAVAL_BASE_MAX_SUPPLY_FLOW_FACTOR = 0.9, -- flow of the parent node is factored to this ratio (so at most it can transfer parent naval node flow \* this define) max output/input of a naval node is limited by this base value + additional ratio for each level |  |
+| NAVAL_BASE_FLOW | 5.0 | used for calculating "flow" from a naval node to another naval node when it is connected via a convoy route<br>NAVAL_BASE_MAX_SUPPLY_FLOW_FACTOR = 0.9, -- flow of the parent node is factored to this ratio (so at most it can transfer parent naval node flow \* this define)<br>max output/input of a naval node is limited by this base value + additional ratio for each level |  |
 | NAVAL_FLOW_PER_LEVEL | 3.0 | max output/input of a naval node is limited by previous base value + this define per its level |  |
 | SUPPLY_NODE_MIN_SUPPLY_THRESHOLD | 1.0 | if supply of a node is below this value it will be set to 0 -- Currently unused? This should happen when enough damage occurs |  |
 | INFRA_TO_SUPPLY | 0.3 | each level of infra gives this many supply |  |
@@ -2888,14 +2888,14 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | MIN_TRAIN_SUPPLY_FACTOR | 0.5 | Having 0 trains in stockpile only applies this penalty factor, scaling up to 1.0 when need is met |  |
 | MIN_TRAIN_REQUIREMENT | 2 | If total train need <= this, then don't apply any supply penalty, even if stockpile is insufficient |  |
 | SUPPLY_FLOW_REDUCTION_THRESHOLD | 0.1 | if supply flow is lower than this, it is not applied |  |
-| BASE_AIR_SUPPLY_MULT_FOR_TRUCK_BUFFER | 1.0 | following values are used for calculating potential truck usage generally potential is \~= current usage but as units moves along the map they are assigned to different nodes which adds slightly higher usage due to minimum truck needed being 1 |  |
+| BASE_AIR_SUPPLY_MULT_FOR_TRUCK_BUFFER | 1.0 | following values are used for calculating potential truck usage<br>generally potential is \~= current usage but as units moves along the map<br>they are assigned to different nodes which adds slightly higher usage due to minimum truck needed being 1 |  |
 | BASE_ARMY_SUPPLY_MULT_FOR_TRUCK_BUFFER | 1.0 |  |  |
 | BASE_NAVY_SUPPLY_MULT_FOR_TRUCK_BUFFER | 1.0 |  |  |
 | CAPITAL_NODE_BASE_SUPPLY_ADD | 0 |  |  |
 | BUILT_NODE_BASE_SUPPLY_ADD | 0.6 |  |  |
 | LOCAL_NODE_BASE_SUPPLY_ADD | 0.5 |  |  |
 | NAVAL_NODE_BASE_SUPPLY_ADD | 0.3 |  |  |
-| ARMY_SUPPLY_RATIO_STARTING_GAIN | 0.0 | \~end armies slowly gains and buffers supply above >100% up to their supply grace if they have efficent supply flow otherwuse they will lose up to 100% supply every day depending on how bad supply flow is |  |
+| ARMY_SUPPLY_RATIO_STARTING_GAIN | 0.0 | \~end<br>armies slowly gains and buffers supply above >100% up to their supply grace if they have efficent supply flow<br>otherwuse they will lose up to 100% supply every day depending on how bad supply flow is |  |
 | ARMY_SUPPLY_RATIO_SPEED_GAIN_PER_HOUR | 0.01 |  |  |
 | ARMY_MAX_SUPPLY_RATIO_GAIN_PER_HOUR | 0.15 |  |  |
 | MIN_SURRENDER_LIMIT_TO_MOVE_SUPPLY_CAPITAL | 0.15 | country needs to be above thos surrender ratio to be able to move its capital |  |
@@ -2903,7 +2903,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | DAYS_TO_START_GIVING_SUPPLY_AFTER_MOVING_SUPPLY_CAPITAL | 7 | the country will start gaining supply after this many days moving its capital |  |
 | DAYS_TO_START_GIVING_FULL_SUPPLY_AFTER_MOVING_SUPPLY_CAPITAL | 21 | the country will reach max supply after this many days moving its capital |  |
 | MIN_DIFF_FOR_AUTO_UPDATING_EXISTING_RAILWAYS | 5 | while building railways, the system will prefer updating existing railway if new railway is close enough to existing one |  |
-| SUPPLY_PATH_MAX_DISTANCE | 15 | reinforcements depends on distance to capital and following defines are used for calculating reinforcement time max time it can take |  |
+| SUPPLY_PATH_MAX_DISTANCE | 15 | reinforcements depends on distance to capital and following defines are used for calculating reinforcement time<br>max time it can take |  |
 | RAILWAY_DISTANCE_FACTOR_FOR_REINFORCEMENT_SPEED | 0.3 | time factor for total railway distance |  |
 | TRUCK_DISTANCE_FACTOR_FOR_REINFORCEMENT_SPEED | 0.01 | time factor for total truck distance |  |
 | NAVAL_DISTANCE_FACTOR_FOR_REINFORCEMENT_SPEED | 0.08 | time factor for total naval distance |  |
@@ -3119,9 +3119,9 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | SUPPLY_COUNTRY_BORDER_PLAYER_COLOR | { 0.1, 0.66, 0.1, 1.0 } |  |  |
 | SUPPLY_COUNTRY_BORDER_FRIEND_COLOR | { 0.035, 0.426, 0.91, 1.0 } |  |  |
 | SUPPLY_COUNTRY_BORDER_ACCESS_COLOR | { 0.1, 0.66, 0.1, 1.0 } |  |  |
-| SUPPLY_MAP_MODE_REACH_COLOR | { 0.0, 0.6, 0.0, 0.4, 1.0, 0.02, 0.2, 0.17, 0.52, 1.0, 0.12, 0.04, 0.17, 0.6, 1.0, 0.2, 0.13, 0.36, 0.65, 1.0, 0.4, 0.11, 0.56, 0.75, 1.0, 0.6, 0.25, 0.71, 0.76, 1.0, 0.8, 0.47, 0.8, 0.73, 1.0, 1.0, 0.6, 0.82, 0.6, 1.0 } | (last shown when supply flow is >= SUPPLY_MAP_MODE_BEST_FLOW_DISPLAY) #990066 dark purple #332B85 dark purple blue #0A2B99 dark blue #215CA6 blue #1C8FBF light blue #40B5C2 teal #78CCBA light teal #99D199 light green |  |
+| SUPPLY_MAP_MODE_REACH_COLOR | { 0.0, 0.6, 0.0, 0.4, 1.0, 0.02, 0.2, 0.17, 0.52, 1.0, 0.12, 0.04, 0.17, 0.6, 1.0, 0.2, 0.13, 0.36, 0.65, 1.0, 0.4, 0.11, 0.56, 0.75, 1.0, 0.6, 0.25, 0.71, 0.76, 1.0, 0.8, 0.47, 0.8, 0.73, 1.0, 1.0, 0.6, 0.82, 0.6, 1.0 } | (last shown when supply flow is >= SUPPLY_MAP_MODE_BEST_FLOW_DISPLAY)<br>#990066 dark purple<br>#332B85 dark purple blue<br>#0A2B99 dark blue<br>#215CA6 blue<br>#1C8FBF light blue<br>#40B5C2 teal<br>#78CCBA light teal<br>#99D199 light green |  |
 | SUPPLY_MAP_MODE_BEST_FLOW_DISPLAY | 12 | Which supply cap availibility corresponds to best heatmap color |  |
-| SUPPLY_MAP_MODE_STATUS_COLOR | { 0.0, 0.9, 0.0, 0.0, 1.0, 0.7, 0.98, 0.4, 0.1, 1.0, 1.0, 0.8, 0.64, 0.2, 1.0 } | #E60000 red #FA661A orange #CCA333 mustard |  |
+| SUPPLY_MAP_MODE_STATUS_COLOR | { 0.0, 0.9, 0.0, 0.0, 1.0, 0.7, 0.98, 0.4, 0.1, 1.0, 1.0, 0.8, 0.64, 0.2, 1.0 } | #E60000 red<br>#FA661A orange<br>#CCA333 mustard |  |
 | SUPPLY_STATUS_DISPLAY_THRESHOLD | 0.9 | at what average supply status we move to show status colors instead of flow |  |
 | SUPPLY_HOVERED_STATE_COLOR_INDEX | 0 | Border color of hovered state. Refers to the colors in BORDER_COLOR_CUSTOM_HIGHLIGHTS. |  |
 | SUPPLY_HOVERED_PROVINCE_COLOR_INDEX | 4 | Border color of hovered province. Refers to the colors in BORDER_COLOR_CUSTOM_HIGHLIGHTS. |  |
@@ -3679,7 +3679,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | BORDER_COLOR_SELECTION_PROVINCE_G | 0.8 |  |  |
 | BORDER_COLOR_SELECTION_PROVINCE_B | 0.0 |  |  |
 | BORDER_COLOR_SELECTION_PROVINCE_A | 1.0 |  |  |
-| BORDER_COLOR_CUSTOM_HIGHLIGHTS | { 0.0, 0.61, 0.75, 1.0, 1.0, 0.06, 0.0, 1.0, 0.1, 0.6, 0.2, 1.0, 0.8, 0.3, 0.0, 1.0, 0.0, 0.4, 0.8, 1.0, 0.3, 0.9, 0.3, 0.8, 0.7, 0.7, 0.0, 1.0 } | \[\[ Groups of 4 numbers are RGBA.  If two colors are both active on a border, (because one province is  part of a group using one color, and the other province is part  of another group), then the color that comes first in this list  is the color that will be used. \]\] 0: mouse hover 1: bad, while active 2: good, while active 3: bad, while passive 4: good, while passive 5: controlled, neutral positive 6: not ours, neutral negative |  |
+| BORDER_COLOR_CUSTOM_HIGHLIGHTS | { 0.0, 0.61, 0.75, 1.0, 1.0, 0.06, 0.0, 1.0, 0.1, 0.6, 0.2, 1.0, 0.8, 0.3, 0.0, 1.0, 0.0, 0.4, 0.8, 1.0, 0.3, 0.9, 0.3, 0.8, 0.7, 0.7, 0.0, 1.0 } | \[\[ Groups of 4 numbers are RGBA.<br> If two colors are both active on a border, (because one province is<br> part of a group using one color, and the other province is part<br> of another group), then the color that comes first in this list<br> is the color that will be used. \]\]<br>0: mouse hover<br>1: bad, while active<br>2: good, while active<br>3: bad, while passive<br>4: good, while passive<br>5: controlled, neutral positive<br>6: not ours, neutral negative |  |
 | BORDER_COLOR_TUTORIAL_HIGHLIGHT_R | 0.0 |  |  |
 | BORDER_COLOR_TUTORIAL_HIGHLIGHT_G | 0.61 |  |  |
 | BORDER_COLOR_TUTORIAL_HIGHLIGHT_B | 0.75 |  |  |
@@ -3874,7 +3874,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | SUN_LATITUDE | 848 |  |  |
 | SECOND_MOON_LATITUDE | 100 | Used to put a "fake" sun/moon on the other side of the globe to hide the seem that would otherwise appear there |  |
 | SECOND_SUN_LATITUDE | 100 |  |  |
-| AMBIENT_LIGHT_POS_X | { 0.2, 0.2, 0.2 } | hsv color ambient light right |  |
+| AMBIENT_LIGHT_POS_X | { 0.2, 0.2, 0.2 } | hsv color ambient light<br>right |  |
 | AMBIENT_LIGHT_NEG_X | { 0.4, 0.1, 0.6 } | left |  |
 | AMBIENT_LIGHT_POS_Y | { 0.0, 0.0, 0.0 } | kills everything |  |
 | AMBIENT_LIGHT_NEG_Y | { 0.35, 0.2, 0.0 } | from under |  |
@@ -3913,7 +3913,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | TRAIT_GRID_COLUMN_OFFSET | 3 |  |  |
 | TRAIT_GRID_COLUMN_WIDTH | 208 |  |  |
 | TRAIT_GRID_ROW_SHIFT | 48 |  |  |
-| TRAIT_LINE_ASSIGNED_COLOR | { 0.47, 0.93, 0.65 } | - Colors used for the trait trees (MIO and character trait trees) Color for parent dependency lines when the parent is assigned. |  |
+| TRAIT_LINE_ASSIGNED_COLOR | { 0.47, 0.93, 0.65 } | - Colors used for the trait trees (MIO and character trait trees)<br>Color for parent dependency lines when the parent is assigned. |  |
 | TRAIT_LINE_NON_ASSIGNED_COLOR | { 0.67, 0.75, 0.93 } | Color for parent dependency lines when the parent is not assigned assigned. |  |
 | TRAIT_LINE_HIGHLIGHT_COLOR | { 1.0, 1.0, 0.0 } | Color for parent dependency lines to the parents when hovering over a trait. |  |
 | TRAIT_INVALID_FOR_ASSIGNMENT_COLOR | { 0.8, 0.3, 0.3 } |  |  |
@@ -3937,7 +3937,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | FLOWING_RIVER_SUPPLY_MAP_ARROW_COLOR | { 0.8, 0.8, 1.0, 0.8 } |  |  |
 | SUPPLY_TO_CONSUMERS_MAP_ARROW_COLOR | { 1.0, 1.0, 1.0, 1.0 } | Currently overwritte in code... |  |
 | SUPPLY_TO_CONSUMERS_MAP_ARROW_TRANSPARENCY | 0.8 |  |  |
-| NODE_FLOW_IN_CURRENT_RANGE_COLOR | { 0.68235, 0.0039, 0.4941, 0.55 } | When holding shift in supply map mode with a node selected, color provinces which are in range of the node At current motorization level |  |
+| NODE_FLOW_IN_CURRENT_RANGE_COLOR | { 0.68235, 0.0039, 0.4941, 0.55 } | When holding shift in supply map mode with a node selected, color provinces which are in range of the node<br>At current motorization level |  |
 | NODE_FLOW_IN_HALF_RANGE_COLOR | { 0.9686, 0.4078, 0.6314, 0.6 } | At Half Motorization, if currently set to less than that |  |
 | NODE_FLOW_IN_FULL_RANGE_COLOR | { 0.9843, 0.7059, 0.7255, 0.4 } | At Full Motorization, if currently set to less than that |  |
 | RAILWAY_ICON_SHIFT | { 0.0, 0.0, 0.0 } |  |  |
@@ -4003,7 +4003,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | INTEL_NETWORK_VALID_TARGET_STRIPE_COLOR | { 0.1, 0.5, 0.8, 1.0 } | Color of the stripes of painted over a valid state to start building an intel network |  |
 | INTEL_NETWORK_VALID_COUNTRY_TARGET_STRIPE_COLOR | { 0.1, 0.8, 0.5, 0.5 } | Color of the stripes painted over valid countries |  |
 | OCCUPATION_RESISTANCE_NON_INITIALIZED_COLOR | { 1.0, 1.0, 1.0, 0.05 } | player owned state color with no resistance |  |
-| OCCUPATION_RESISTANCE_MAP_MODE_COLORS | { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.1, 30.0, 1.0, 1.0, 0.0, 0.3, 100.0, 1.0, 0.0, 0.0, 0.3 } | color that will be used in resistance/compliance map mode first value is resistance/compliance level, next 4 values are color rgba the color will be lerped in between two closest colors |  |
+| OCCUPATION_RESISTANCE_MAP_MODE_COLORS | { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.1, 30.0, 1.0, 1.0, 0.0, 0.3, 100.0, 1.0, 0.0, 0.0, 0.3 } | color that will be used in resistance/compliance map mode<br>first value is resistance/compliance level, next 4 values are color rgba<br>the color will be lerped in between two closest colors |  |
 | OCCUPATION_COMPLIANCE_MAP_MODE_COLORS | { 0.0, 0.3, 0.6, 0.6, 0.05, 0.0, 0.3, 0.7, 1.0, 0.05, 10.0, 0.3, 0.7, 1.0, 0.2, 50.0, 0.3, 0.7, 1.0, 0.3, 100.0, 0.3, 0.9, 1.0, 0.5 } |  |  |
 | INTEL_LEDGER_ARMY_FORT_LEVEL_COLORS | { 0.0, 0.3, 0.3, 0.3, 0.2, 0.0, 0.7, 0.7, 0.2, 0.3, 1.0, 0.7, 0.2, 0.2, 0.5 } |  |  |
 | INTEL_LEDGER_NAVAL_FORT_LEVEL_COLORS | { 0.0, 0.3, 0.3, 0.3, 0.2, 0.0, 0.7, 0.7, 0.2, 0.3, 1.0, 0.7, 0.2, 0.2, 0.5 } |  |  |
@@ -4066,7 +4066,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | DEFAULT_TASKFORCE_ICON | 6 | newly created taskforces will use this icon |  |
 | DEFAULT_FLEET_ICON | 4 | newly created fleets will use this icon |  |
 | DEFAULT_NAVAL_EQUIPMENT_ROLE_ICON | 1 | newly created naval equipment variants will use this icon, if the AI equipment designs do not propose a better one. |  |
-| FUEL_GRAPH_COLOR | { 0.8, 0.8, 0.8, 0.8, 0.0, 0.0, 0.0, 0.8, 0.0, 0.0, 0.0, 0.8, 0.0, 0.8, 0.8, 0.8, 0.8, 0.0, 0.8, 0.8, 0.8 } | stockpile total consumption army consumption navy consumption air consumption other consumption produced |  |
+| FUEL_GRAPH_COLOR | { 0.8, 0.8, 0.8, 0.8, 0.0, 0.0, 0.0, 0.8, 0.0, 0.0, 0.0, 0.8, 0.0, 0.8, 0.8, 0.8, 0.8, 0.0, 0.8, 0.8, 0.8 } | stockpile<br>total consumption<br>army consumption<br>navy consumption<br>air consumption<br>other consumption<br>produced |  |
 | PRODUCTION_SHIP_FILTERS_ROLE_SELECTION_WINDOW_OFFSET_X | 4 | offset of the role icon selection window shown in the filters of ship design in the production tab |  |
 | PRODUCTION_SHIP_FILTERS_ROLE_SELECTION_WINDOW_OFFSET_Y | -8 |  |  |
 | SHIP_FUEL_EFFICIENCY_WARNING_THRESHOLD | 60.0 | Fuel usage threshold above which a ship is considered fuel inefficient for always on missions |  |
@@ -4091,7 +4091,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | OPERATIVE_TRADE_INFLUENCE_DRIFT_TO_EFFICIENCY_FACTOR | 135 | Factor multiplied to the operative's trade influence drift to determine the animation speed |  |
 | OPERATIVE_OPINION_DRIFT_TO_EFFICIENCY_FACTOR | 400 | Factor multiplied to the operative's trade influence drift to determine the animation speed |  |
 | OPERATIVE_TENSION_DRIFT_TO_EFFICIENCY_FACTOR | 400 | Factor multiplied to the operative's trade influence drift to determine the animation speed |  |
-| COUNTERINTELLIGENCE_ACTIVITY_LEVEL_THRESHOLD_VALUES | { 10, 20, 50, 100 } | Used to convert the activity level to a color: ACTIVITY_LEVEL_THRESHOLD_COLOR`[ i ]` will be used if CurrentActivityLevel < ACTIVITY_LEVEL_THRESHOLD_VALUES`[ i ]` There can be one more color than threshold define which will be used when the CurrentActivityLevel is greater or equal to the last threshold. |  |
+| COUNTERINTELLIGENCE_ACTIVITY_LEVEL_THRESHOLD_VALUES | { 10, 20, 50, 100 } | Used to convert the activity level to a color:<br>ACTIVITY_LEVEL_THRESHOLD_COLOR`[ i ]` will be used if<br>CurrentActivityLevel < ACTIVITY_LEVEL_THRESHOLD_VALUES`[ i ]`<br>There can be one more color than threshold define which will<br>be used when the CurrentActivityLevel is greater or equal to the<br>last threshold. |  |
 | COUNTERINTELLIGENCE_ACTIVITY_LEVEL_THRESHOLD_COLORS | { { 0.1, 0.9, 0.2, 1.0 }, { 0.6, 0.9, 0.2, 1.0 }, { 0.9, 0.7, 0.2, 1.0 }, { 1.0, 0.5, 0.0, 1.0 }, { 0.9, 0.1, 0.2, 1.0 } } |  |  |
 | GARRISON_STRENGTH_TO_SHOW_RED | 0.25 | If the garrison strength is lower than that, we color the number of divisions in red. |  |
 | MAX_DECISIONS_IN_DECISION_ALERT_TOOLTIP | 5 | Max number of available decisions we show in the alert tooltip |  |
@@ -4099,7 +4099,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | ARMY_UNIT_LEADER_ICON_SPRITE_ID | 5 |  |  |
 | NAVY_UNIT_LEADER_ICON_SPRITE_ID | 3 |  |  |
 | POLITICAL_LEADER_ICON_SPRITE_ID | 13 |  |  |
-| EQUIPMENT_DESIGNER_SHOW_MODULE_FORBIDS_BASE_ROLE_ICON | 0 | When selecting a module in the tank designer, for each role the module forbids a role icon may be displayed. If this is set to 0 no icon will be displayed if the main tank role is forbidden. If set to 1 the icon will be displayed as normal. |  |
+| EQUIPMENT_DESIGNER_SHOW_MODULE_FORBIDS_BASE_ROLE_ICON | 0 | When selecting a module in the tank designer, for each role the module forbids a role icon may be displayed.<br>If this is set to 0 no icon will be displayed if the main tank role is forbidden. If set to 1 the icon will be displayed as normal. |  |
 | EQUIPMENT_DESIGNER_SHOW_MODULE_FORBIDS_SPECIALIZED_ROLE_ICON | 0 | If this is set to 0 no icons will be displayed for any forbidden specialized roles. If set to 1 the icons will be displayed as normal. |  |
 | MIO_CENTRAL_TREE_HORIZONTAL_POSITION | 1 | Horizontal position for auto-generated MIO traits |  |
 | SLOW_INTERFACE_THRESHOLD | 5000 | Show warning "SLOW INTERFACE" in debug when interface refresh takes more that this (in microseconds) |  |
@@ -4141,7 +4141,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
-| HEIGHT_SOUND_CATEGORY | "Atmosphere" | The volume of sounds in this category vary with camera altitude. Name of the sound category |  |
+| HEIGHT_SOUND_CATEGORY | "Atmosphere" | The volume of sounds in this category vary with camera altitude.<br>Name of the sound category |  |
 | HEIGHT_SOUND_MIN_ALTITUDE | 100.0 | Below this altitude the minimum volume will be used |  |
 | HEIGHT_SOUND_MAX_ALTITUDE | 2000.0 | Above this altitude the maximum volume will be used |  |
 | HEIGHT_SOUND_MIN_VOLUME | 0.2 |  |  |
@@ -4164,9 +4164,9 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
-| MOD_STATISTICS_GROUP | "" | Mod defines Can be set by mods to collect statistics in a separate data set for the mod. Will also be used as the display name if MOD_STATISTICS_GROUP_NAME is not set. |  |
+| MOD_STATISTICS_GROUP | "" | Mod defines<br>Can be set by mods to collect statistics in a separate data set for the mod. Will also be used as the display name if MOD_STATISTICS_GROUP_NAME is not set. |  |
 | MOD_STATISTICS_GROUP_NAME | "" | Can be set by mods as a display name for the mod's statistics data set. It can be a localized. |  |
-| NAVAL_INVASION_MEDAL_MAX_DURATION | 96 | Statistics parameters Maximum duration in hours to finish naval invasion and get a Naval Invasion Medal |  |
+| NAVAL_INVASION_MEDAL_MAX_DURATION | 96 | Statistics parameters<br>Maximum duration in hours to finish naval invasion and get a Naval Invasion Medal |  |
 | PARADROP_AWARD_DIVISION_MIN_BATTALION_COUNT | 5 | Minimum count of battalions in the division required to count that division for paradrop awards ("Paradrop Medal" and "They came from Above") |  |
 | NAVAL_INVASION_MEDAL_DIVISION_MIN_BATTALION_COUNT | 5 | Minimum count of battalions in the division required to count that division for Naval Invasion Medal |  |
 | TURNING_TIDE_MEDAL_DIVISION_MIN_BATTALION_COUNT | 5 | Minimum count of battalions in the division required to count that division for Turning the Tide Medal |  |

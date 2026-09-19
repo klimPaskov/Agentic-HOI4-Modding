@@ -258,12 +258,12 @@ Unit leaders include corps commanders, field marshals, and admirals. Respectivel
 
 | Internal name | Localised name | Unit leader type | Effect per level |
 | --- | --- | --- | --- |
-| skill | Skill | Any unit leader | Army leaders: Nothing  Navy leaders: +5% hit chance, +2% fleet coordination. |
-| attack_skill | Attack | Any unit leader | Army leaders: +2.5% offense  Navy leaders: +5% damage |
-| defense_skill | Defense | Any unit leader | Army leaders: +2.5% defense  Navy leaders: +5% defense |
-| planning_skill | Planning | Army leaders only | +5% planning speed  +2% max bonus from planning |
+| skill | Skill | Any unit leader | Army leaders: Nothing<br> Navy leaders: +5% hit chance, +2% fleet coordination. |
+| attack_skill | Attack | Any unit leader | Army leaders: +2.5% offense<br> Navy leaders: +5% damage |
+| defense_skill | Defense | Any unit leader | Army leaders: +2.5% defense<br> Navy leaders: +5% defense |
+| planning_skill | Planning | Army leaders only | +5% planning speed<br> +2% max bonus from planning |
 | logistics_skill | Logistics | Army leaders only | -2.5% supply consumption |
-| maneuvering_skill | Maneuvering | Navy leaders only | +2.5% positioning  +1% naval retreat speed |
+| maneuvering_skill | Maneuvering | Navy leaders only | +2.5% positioning<br> +1% naval retreat speed |
 | coordination_skill | Coordination | Navy leaders only | +2% fleet coordination |
 
 `legacy_id = 100` is a leftover from the pre-NSB country leader system, making the leader have the specified ID for the [has_id trigger](<Triggers - Hearts of Iron 4 Wiki.md>), the [has_unit_leader trigger](<Triggers - Hearts of Iron 4 Wiki.md>), and elsewhere. Unnecessary and should be omitted, use character specific triggers instead.
@@ -678,18 +678,18 @@ spriteTypes = {
 
 | Argument | Value type | Example | Effects | Notes |
 | --- | --- | --- | --- | --- |
-| type | Type(s) | `type = corps_commander`  `type = { land navy }` | Assigns a type to the trait, which gets used to assign which characters are able to receive it. | The types include `all`, `land`, `navy`, `operative`, `corps_commander`, and `field_marshal` |
+| type | Type(s) | `type = corps_commander``type = { land navy }` | Assigns a type to the trait, which gets used to assign which characters are able to receive it. | The types include `all`, `land`, `navy`, `operative`, `corps_commander`, and `field_marshal` |
 | trait_type | Trait type | `trait_type = assignable_trait` | Assigns a type to the trait, which gets used to assign where it's positioned on the user interface, as well as deciding if and when it's possible to assign. | The types include `basic_trait` (for operatives), `personality_trait`, `assignable_trait`, `basic_terrain_trait`, `assignable_terrain_trait`, `status_trait`, and `exile` |
 | show_in_combat | Boolean | `show_in_combat = yes` | Makes this specified trait show up in the combat menu among other bonuses. |  |
-| allowed | Triggers | `allowed = { FROM = { tag = POL } }` | Triggers that are checked when trying to assign the trait to a unit leader, making it fail to assign if false. Checked in the scope of the unit leader. | FROM is the country that recruited the character. |
-| ai_will_do | [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md>) | `ai_will_do = { base = 3 modifier = { FROM = { tag = POL } } }` | Decides the weight that AI has for picking this trait. | A weight of 0 will result in AI never picking it. |
-| new_commander_weight | [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md>) | `new_commander_weight = { base = 0 }` | Decides the weight that the trait has for new randomly-generated unit leaders. | A weight of 0 will result in it never appearing for randomly-generated unit leaders. Only can be defined for traits with the personality_trait type. |
+| allowed | Triggers | `allowed = {`<br>`    FROM = { tag = POL }`<br>`}` | Triggers that are checked when trying to assign the trait to a unit leader, making it fail to assign if false. Checked in the scope of the unit leader. | FROM is the country that recruited the character. |
+| ai_will_do | [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md>) | `ai_will_do = {`<br>`    base = 3`<br>`    modifier = {`<br>`        FROM = { tag = POL }`<br>`    }`<br>`}` | Decides the weight that AI has for picking this trait. | A weight of 0 will result in AI never picking it. |
+| new_commander_weight | [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md>) | `new_commander_weight = {`<br>`    base = 0`<br>`}` | Decides the weight that the trait has for new randomly-generated unit leaders. | A weight of 0 will result in it never appearing for randomly-generated unit leaders. Only can be defined for traits with the personality_trait type. |
 | slot | Character slot | `slot = army_chief` | Decides which advisor slot gets used by the officer corps role that can be assigned to this unit leader. |  |
 | specialist_advisor_trait | [Country leader trait](#Country_leader_traits) | `specialist_advisor_trait = my_trait` | Creates a specialist officer corps role that can be assigned to this unit leader using the specified advisor trait as the base. |  |
 | expert_advisor_trait | [Country leader trait](#Country_leader_traits) | `expert_advisor_trait = my_trait` | Creates a expert officer corps role that can be assigned to this unit leader using the specified advisor trait as the base. |  |
 | genius_advisor_trait | [Country leader trait](#Country_leader_traits) | `genius_advisor_trait = my_trait` | Creates a genius officer corps role that can be assigned to this unit leader using the specified advisor trait as the base. |  |
-| unit_type | `type = <sub-unit type>` | `unit_type = { type = infantry type = militia }` | Limits the selection of units on which the modifiers can apply on to those that have the sub-unit in a composition. | Sub-units are defined within `/Hearts of Iron IV/common/units/*.txt` files. In order for it to apply those that are majority-made out of a sub-unit, [division_has_majority_template](<Triggers - Hearts of Iron 4 Wiki.md>) can be used in unit_trigger. |
-| unit_trigger | Triggers | `unit_trigger = { division_has_majority_template = camelry owner = { neutrality > 0.5 } }` | Applies a division-scoped trigger block that must be met for the unit to be modified. |  |
+| unit_type | `type = <sub-unit type>` | `unit_type = {`<br>`    type = infantry`<br>`    type = militia`<br>`}` | Limits the selection of units on which the modifiers can apply on to those that have the sub-unit in a composition. | Sub-units are defined within `/Hearts of Iron IV/common/units/*.txt` files. In order for it to apply those that are majority-made out of a sub-unit, [division_has_majority_template](<Triggers - Hearts of Iron 4 Wiki.md>) can be used in unit_trigger. |
+| unit_trigger | Triggers | `unit_trigger = {`<br>`    division_has_majority_template = camelry`<br>`    owner = { neutrality > 0.5 }`<br>`}` | Applies a division-scoped trigger block that must be met for the unit to be modified. |  |
 
 ### Modifiers and effects <a id="Modifiers_and_effects"></a>
 
@@ -697,19 +697,19 @@ These arguments are for the modifiers that the trait gives to the unit leader, w
 
 | Argument | Value type | Example | Effects | Notes |
 | --- | --- | --- | --- | --- |
-| modifier | Modifiers | `modifier = { planning_speed = 0.2 urban = { movement = 0.1 } }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the divisions that the unit leader leads. | Possible to specify the terrain by scoping into it. Terrain types are defined in `/Hearts of Iron IV/common/terrain/*.txt`. |
-| non_shared_modifier | Modifiers | `non_shared_modifier = { experience_gain_factor = 0.3 }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the unit leader themselves. | While in theory identical to the prior modifier, this has a different tooltip, so it shows up differently in-game. |
-| corps_commander_modifier | Modifiers | `corps_commander_modifier = { max_commander_army_size = 3 }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the army leader when in the role of a corps commander, i.e. leading units directly rather than leading other generals. | If a field marshal is assigned to lead divisions directly rather than other generals, this will apply on them. |
-| field_marshal_modifier | Modifiers | `field_marshal_modifier = { supply_consumption_factor = 0.5 }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the army leader when in the role of a field marshal, i.e. leading other generals that lead divisions. | If a field marshal is assigned to lead divisions directly rather than other generals, this will *not* apply on them. |
-| sub_unit_modifiers | Modifiers | `sub_unit_modifiers = { artillery_brigade = { max_strength = 0.1 } }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the division brigades that make up the divisions that the army leader leads or, similarly, ships that make up the fleet that the navy leader leads. | Brigades are defined in `/Hearts of Iron IV/common/units/*.txt`. What's used in the definition as arguments is possible to apply as a multiplicatory sub-unit modifier. |
+| modifier | Modifiers | `modifier = {`<br>`    planning_speed = 0.2`<br>`    urban = {`<br>`        movement = 0.1`<br>`    }`<br>`}` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the divisions that the unit leader leads. | Possible to specify the terrain by scoping into it. Terrain types are defined in `/Hearts of Iron IV/common/terrain/*.txt`. |
+| non_shared_modifier | Modifiers | `non_shared_modifier = {`<br>`    experience_gain_factor = 0.3`<br>`}` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the unit leader themselves. | While in theory identical to the prior modifier, this has a different tooltip, so it shows up differently in-game. |
+| corps_commander_modifier | Modifiers | `corps_commander_modifier = {`<br>`    max_commander_army_size = 3`<br>`}` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the army leader when in the role of a corps commander, i.e. leading units directly rather than leading other generals. | If a field marshal is assigned to lead divisions directly rather than other generals, this will apply on them. |
+| field_marshal_modifier | Modifiers | `field_marshal_modifier = {`<br>`    supply_consumption_factor = 0.5`<br>`}` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the army leader when in the role of a field marshal, i.e. leading other generals that lead divisions. | If a field marshal is assigned to lead divisions directly rather than other generals, this will *not* apply on them. |
+| sub_unit_modifiers | Modifiers | `sub_unit_modifiers = {`<br>`    artillery_brigade = {`<br>`        max_strength = 0.1`<br>`    }`<br>`}` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the division brigades that make up the divisions that the army leader leads or, similarly, ships that make up the fleet that the navy leader leads. | Brigades are defined in `/Hearts of Iron IV/common/units/*.txt`. What's used in the definition as arguments is possible to apply as a multiplicatory sub-unit modifier. |
 | <skill type> | Integer | `attack_skill = 2` | Adds a flat bonus to the specified skill. | The list of skills defined for unit leaders earlier in the page |
 | <skill type>_factor | Percentual | `defense_skill_factor = 1` | Adds a multiplicatory bonus to the specified skill. `1` would add 100%, doubling it, for example. | The list of skills defined for unit leaders earlier in the page |
 | override_effect_tooltip | Localisation key | `override_effect_tooltip = my_effect_tt` | Hides the effects of the trait, replacing the tooltip with the value of this localisation key. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
 | custom_effect_tooltip | Localisation key | `custom_effect_tooltip = my_effect_tt` | Appends the value of this localisation key to the tooltip showing the effects of the trait. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
 | enable_ability | Ability | `enable_ability = my_ability` | Enables an ability that can be used by the unit leader in combat. | Abilities are defined in `/Hearts of Iron IV/common/abilities/*.txt` |
-| on_add | Effects | `on_add = { promote_leader = yes }` | Defines the effects that would be executed on the unit leader when the trait is added. |  |
-| on_remove | Effects | `on_remove = { remove_unit_leader = yes }` | Defines the effects that would be executed on the unit leader when the trait is removed. |  |
-| daily_effect | Effects | `daily_effect = { gain_xp = 1 }` | Defines the effects that would be executed on the unit leader every day if they have the trait. |  |
+| on_add | Effects | `on_add = {`<br>`    promote_leader = yes`<br>`}` | Defines the effects that would be executed on the unit leader when the trait is added. |  |
+| on_remove | Effects | `on_remove = {`<br>`    remove_unit_leader = yes`<br>`}` | Defines the effects that would be executed on the unit leader when the trait is removed. |  |
+| daily_effect | Effects | `daily_effect = {`<br>`    gain_xp = 1`<br>`}` | Defines the effects that would be executed on the unit leader every day if they have the trait. |  |
 
 ### Selection <a id="Selection"></a>
 
@@ -722,14 +722,14 @@ These arguments are related to the menu for selecting traits. This includes expe
 | num_parents_needed | Integer | `num_parents_needed = 3` | Sets the required amount of parents needed to select the trait. | If omitted or set to `-1`, then assumes that all parents are necessary. |
 | gui_row | Integer | `gui_row = 3` | Sets the row on which the trait is located. | If omitted or set to `-1`, then the trait does not appear in the unlockable trait tree. Starts at 0. |
 | gui_column | Integer | `gui_column = 3` | Sets the column on which the trait is located. | If omitted or set to `-1`, then one is automatically picked depending on the trait_type. |
-| prerequisites | Triggers | `prerequisites = { defense_skill_level > 3 }` | Triggers that must be met in order for assigning the trait to be possible. | Checked in the unit leader scope. |
+| prerequisites | Triggers | `prerequisites = {`<br>`    defense_skill_level > 3`<br>`}` | Triggers that must be met in order for assigning the trait to be possible. | Checked in the unit leader scope. |
 | custom_prerequisite_tooltip | Localisation key | `custom_prerequisite_tooltip = my_prerequisite_tt` | Changes the tooltip of the conditions required for picking the trait to the following localisation key. Useful if a trigger within has no tooltip. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
 | cost | Decimal | `cost = 1500` | The experience required in order to assign this trait to a unit leader. |  |
-| gain_xp | Triggers | `gain_xp = { is_amphibious_invasion = yes }` | Triggers that must be met in order to gain experience that'd make assigning this trait possible. | Checked in the [combatant](<Triggers - Hearts of Iron 4 Wiki.md#Combat>) scope. |
-| gain_xp_leader | Triggers | `gain_xp_leader = { num_units > 10 }` | Triggers that must be met in order to gain experience that'd make assigning this trait possible. | Checked in the unit leader scope. |
+| gain_xp | Triggers | `gain_xp = {`<br>`    is_amphibious_invasion = yes`<br>`}` | Triggers that must be met in order to gain experience that'd make assigning this trait possible. | Checked in the [combatant](<Triggers - Hearts of Iron 4 Wiki.md#Combat>) scope. |
+| gain_xp_leader | Triggers | `gain_xp_leader = {`<br>`    num_units > 10`<br>`}` | Triggers that must be met in order to gain experience that'd make assigning this trait possible. | Checked in the unit leader scope. |
 | gain_xp_on_spotting | Decimal | `gain_xp_on_spotting = 7` | The amount of experience gained when the admiral spots an enemy fleet. |  |
 | custom_gain_xp_trigger_tooltip | Localisation key | `custom_gain_xp_trigger_tooltip = my_prerequisite_tt` | Changes the tooltip of the conditions required for gaining experience for the trait to the following localisation key. Useful if a trigger within has no tooltip. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
-| trait_xp_factor | Triggers | `trait_xp_factor = { my_trait = 0.1 }` | Modifies the amount of experience gained towards other traits if the unit leader has this trait. | 0.1 would mean that the unit leader gains 10% more experience, not that it gains 10% as much. |
+| trait_xp_factor | Triggers | `trait_xp_factor = {`<br>`    my_trait = 0.1`<br>`}` | Modifies the amount of experience gained towards other traits if the unit leader has this trait. | 0.1 would mean that the unit leader gains 10% more experience, not that it gains 10% as much. |
 
 ### Example <a id="Example"></a>
 

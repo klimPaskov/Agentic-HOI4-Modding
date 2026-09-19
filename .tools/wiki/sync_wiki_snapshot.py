@@ -468,19 +468,46 @@ class WikiConverter(MarkdownConverter):
         code = code.replace("\u00a0", " ").replace("\u200b", "")
         code = code.replace("\r\n", "\n").strip("\n")
         if el.find_parent("table") is not None:
-            # A fenced block would end the table row, so multi-line examples in
-            # table cells collapse into one inline code span.
-            flat = re.sub(r"\s*\n\s*", " ", code).strip()
-            flat = re.sub(r" {2,}", " ", flat).replace("|", "\\|")
-            ticks = "`"
-            while ticks in flat:
-                ticks += "`"
-            pad = " " if flat.startswith("`") or flat.endswith("`") else ""
-            return f" {ticks}{pad}{flat}{pad}{ticks} "
+            return self.inline_code_block(code)
         fence = "```"
         while fence in code:
             fence += "`"
         return f"\n\n{fence}{self.code_language(el)}\n{code}\n{fence}\n\n"
+
+    @staticmethod
+    def inline_code_block(code):
+        """Render a multi-line code sample so it survives inside a table cell.
+
+        A fenced block would end the table row, so each line becomes its own
+        code span and the lines are joined with ``<br>``. Line structure and
+        indentation are preserved, and the cell still renders as a block of
+        code rather than one long run of text.
+        """
+        lines = code.split("\n")
+        while lines and not lines[0].strip():
+            lines.pop(0)
+        while lines and not lines[-1].strip():
+            lines.pop()
+        rendered = []
+        for line in lines:
+            line = line.rstrip().replace("|", "\\|")
+            if not line:
+                # An empty cell line: the surrounding joins produce <br><br>.
+                rendered.append("")
+                continue
+            ticks = "`"
+            while ticks in line:
+                ticks += "`"
+            pad = " " if line.startswith("`") or line.endswith("`") else ""
+            rendered.append(f"{ticks}{pad}{line}{pad}{ticks}")
+        return "<br>".join(rendered)
+
+    def convert_br(self, el, text, parent_tags):
+        # A literal newline would split the markdown table row, so line breaks
+        # inside a cell stay as inline HTML.
+        if el.find_parent(["td", "th"]) is not None:
+            return "<br>"
+        return super().convert_br(el, text, parent_tags)
 
     def convert_div(self, el, text, parent_tags):
         classes = set(el.get("class") or [])
