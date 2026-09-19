@@ -155,10 +155,13 @@ Codex is the canonical authoring runtime. Maintain each custom subagent only in 
 - Run `python .tools/sync/sync_qoder_agents.py`, `python .tools/sync/sync_cursor_agents.py`, `python .tools/sync/sync_opencode_agents.py`, and `python .tools/sync/sync_claude_agents.py` after every canonical agent change. Run the same commands with `--check` during validation.
 - Qoder uses generated `.qoder/agents/*.md`, Cursor uses generated `.cursor/agents/*.md`, OpenCode uses generated `.opencode/agent/*.md`, and Claude Code uses generated `.claude/agents/*.md`. Canonical snake-case names become hyphen-case runtime names.
 - Qoder, Cursor, OpenCode, and Claude Code project agent projections are generated but tracked so a checkout works immediately. Never hand-edit or treat any projection as authority; edit the TOML source and regenerate. Keep personal overrides and machine-local caches out of Git.
-- Claude Code loads `CLAUDE.md`, `.claude/settings.json`, and root `.mcp.json`. Install `CLAUDE_template.md` as `CLAUDE.md` alongside the adapted `AGENTS.md`; keep the `@AGENTS.md` import so project rules stay single-sourced.
+- Claude Code loads `CLAUDE.md`, `.claude/settings.json`, and root `.mcp.json`. Install `CLAUDE_template.md` as `CLAUDE.md`; it is a complete standalone instruction file and does not require this `AGENTS.md` to exist.
+- DSH loads `AGENTS.md` and `CLAUDE.md` from the project root, interprets no `@path` imports, and collapses the two only when their content is identical. It reads no `.codex/agents/*.toml` and has no project-scoped MCP file, so its subagents are composed from the delegated prompt and its MCP servers are profile configuration under `$DSH_HOME`.
+- Keep exactly one instruction authority per project. Install this file as `AGENTS.md`, install `CLAUDE_template.md` as `CLAUDE.md`, or keep both in perfect sync; never maintain two drifted copies of these rules, and never leave an `@AGENTS.md` import in a project that has no `AGENTS.md`.
 - Each runtime owns its own MCP registration. Do not copy Codex-only approval, sandbox, absolute path, environment, or tool-allowlist settings into another runtime unless that runtime has a verified equivalent.
 - During a non-Codex session, treat `.codex/**` as read-only canonical input. During a Codex session, leave generated alternate-runtime definitions untouched except through the synchronizers.
 - Every runtime must give a custom subagent a fully explicit, self-contained prompt with no inherited conversation context. Runtime isolation does not remove the parent's responsibility to pass paths, accepted decisions, constraints, handoffs, and scope boundaries.
+- Per-runtime instruction discovery, skill roots, subagent registries, and MCP registration shapes are documented in `docs/runtimes.md`.
 
 ### Subagents
 
@@ -168,7 +171,7 @@ Use project custom subagents when a task needs bounded research, asset productio
 
 The main agent remains responsible for final implementation, final wiring, final review, validation, and completion claims. Subagents return evidence, files, manifests, spec addenda, patches, or handoff notes depending on the parent-granted mode. The main agent must review their outputs and carry blockers or uncertainty into the final report.
 
-All project custom subagents must receive a fully explicit, self-contained prompt and no inherited conversation context. In Codex this means `fork_turns="none"`; alternate runtimes use their isolated generated-agent route. If a subagent needs a user correction, task constraint, current implementation status, or prior handoff detail, the parent must pass it explicitly in the prompt or write it into the relevant spec, plan, handoff, or repo file before spawning.
+All project custom subagents must receive a fully explicit, self-contained prompt and no inherited conversation context. In Codex this means `fork_turns="none"`; Claude Code, Cursor, Qoder, and OpenCode use their isolated generated-agent route; DSH composes the subagent from the delegated prompt alone and reads no agent definition files. If a subagent needs a user correction, task constraint, current implementation status, or prior handoff detail, the parent must pass it explicitly in the prompt or write it into the relevant spec, plan, handoff, or repo file before spawning. In DSH, treat the canonical snake_case identifiers as routing and ownership contracts and write the role boundary, allowed and forbidden files, ownership limits, evidence format, and handoff path into the prompt, because no named definition supplies them.
 
 Use these high-level routing rules:
 

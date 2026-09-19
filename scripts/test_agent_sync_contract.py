@@ -19,6 +19,35 @@ def load_module():
     return module
 
 
+def hard_wraps(text):
+    """Report markdown lines that continue one prose sentence on the next line."""
+    in_fence = False
+    previous = ""
+    previous_hard_break = False
+    findings = []
+    for number, line in enumerate(text.splitlines(), start=1):
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            previous = ""
+            previous_hard_break = False
+            continue
+        if in_fence:
+            previous = ""
+            previous_hard_break = False
+            continue
+        # A trailing double space in the source line is a deliberate markdown
+        # line break, so this line is an intended continuation, not a hard wrap.
+        if previous and stripped and not previous_hard_break:
+            ends_sentence = previous.endswith((".", ":", ";", "!", "?", "|"))
+            starts_new_block = stripped[0] in "#-*+>0123456789|"
+            if not ends_sentence and not starts_new_block:
+                findings.append(f"line {number}: {stripped[:70]}")
+        previous = stripped
+        previous_hard_break = line.endswith("  ") and not line.endswith("   ")
+    return findings
+
+
 def main():
     module = load_module()
     agents = module.load_agents()
@@ -32,7 +61,26 @@ def main():
     claude_template = (ROOT / "CLAUDE_template.md").read_text(encoding="utf-8")
     assert settings["$schema"] == "https://json.schemastore.org/claude-code-settings.json"
     assert mcp["mcpServers"]["hoi4_agent_tools"]["command"] == "hoi4-agent-tools.cmd"
+
+    # The Claude template is a complete standalone instruction file. It must
+    # carry the whole workflow, may not depend on an AGENTS.md import, and must
+    # document that the import form is opt-in for projects that really keep both.
     assert "@AGENTS.md" in claude_template
+    import_lines = [line for line in claude_template.splitlines() if line.strip() == "@AGENTS.md"]
+    assert len(import_lines) == 1, "the template must show the import exactly once, as an opt-in example"
+    for section in ("## 0. Required Reading", "## 1. Coding Style", "## 5. Completion Proof", "## 10. Git"):
+        assert section in claude_template, f"standalone template is missing {section}"
+    assert "### Agent runtimes" in claude_template
+    assert "#### Claude Code runtime" in claude_template
+    assert "#### DeepSeek Harness (DSH) runtime" in claude_template
+    assert "docs/runtimes.md" in claude_template
+
+    runtimes_doc = (ROOT / "docs" / "runtimes.md").read_text(encoding="utf-8")
+    assert "@path" in runtimes_doc and "mcp__" in runtimes_doc
+
+    for path in ("AGENTS_template.md", "CLAUDE_template.md", "docs/runtimes.md"):
+        wraps = hard_wraps((ROOT / path).read_text(encoding="utf-8"))
+        assert not wraps, f"{path} has mid-sentence hard wraps: {wraps[:3]}"
 
     for runtime_key, runtime in module.RUNTIMES.items():
         outputs = module.expected_outputs(runtime, agents)

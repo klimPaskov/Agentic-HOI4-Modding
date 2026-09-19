@@ -56,7 +56,9 @@ The agent should consult the offline wiki before editing systems that depend on 
 ### 4. Copy the project instructions
 
 Copy `AGENTS_template.md` into the root of your mod repo as `AGENTS.md`.
-For Claude Code, also copy `CLAUDE_template.md` as `CLAUDE.md`, retain the imported `@AGENTS.md` line, install `.claude/`, and install the root `.mcp.json` project MCP configuration.
+For Claude Code, copy `CLAUDE_template.md` as `CLAUDE.md`, install `.claude/`, and install the root `.mcp.json` project MCP configuration.
+
+Both templates are complete, standalone instruction files. Install the one your runtime loads, and keep a single instruction authority per project: Codex, Cursor, Qoder, and OpenCode read `AGENTS.md`, Claude Code reads `CLAUDE.md`, and DSH reads either. See `docs/runtimes.md` for the full per-runtime discovery, skill-root, subagent, and MCP registration reference.
 
 Then adapt it to your real project. Replace project-specific names, paths, skills, subagents, docs policy, asset folders, validation rules, and any workflow rules that only apply to the example project. Codex can do the first adaptation pass by inspecting the repo and local setup.
 
@@ -134,6 +136,8 @@ All four runtime projections are checked in so a fresh checkout works immediatel
 MCP registration remains runtime- and project-specific; the generators synchronize subagent names, descriptions, prompt bodies, and authority classes without copying Codex-only settings or Chaos Redux paths. `.codex/agents/*.toml` is the one canonical source for every projection, and `--check` fails on drift.
 
 Claude Code additionally loads shared project settings from `.claude/settings.json`, project MCP servers from `.mcp.json`, and root instructions from `CLAUDE.md`. Cursor uses `.cursor/settings.json` and `.cursor/mcp.json`; Qoder uses `.qoder/settings.json` and `.qoder/mcp.json`; OpenCode uses `.opencode/settings.json`, `.opencode/mcp.json`, and the root `opencode.json`. On Windows, the MCP files all point at the same provider-neutral HOI4 Agent Tools command. The manifest does not install those `.cmd` registrations on macOS.
+
+DeepSeek Harness (DSH) reads no project configuration file other than the instruction files. It loads `AGENTS.md` and `CLAUDE.md` from the project root down to the working directory, discovers skills from `.dsh/skills` and `.agents/skills`, and has no project-scoped subagent registry or MCP file: its subagents are composed from the delegated prompt, and its MCP servers are profile rows under `$DSH_HOME`. See `docs/runtimes.md`.
 
 The main agent should still own final implementation, final wiring, final review, final validation, and the completion report. Spawn every project custom subagent without inherited conversation context and pass every required path, constraint, correction, accepted decision, ownership boundary, and handoff destination explicitly in its prompt.
 

@@ -56,15 +56,15 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "c991804e8612e65bf34cb87417267517dcc7a944dffaaf9f1a67023369e04558",
-          "size": 53459
+          "sha256": "e81ad2008724ac5ec89a1d2fc4f92dd1e62c691c0e9bf97eb1965192ffdca2a8",
+          "size": 55085
         }
       ]
     },
     {
       "id": "core.claude.instructions",
-      "display_name": "Claude Code project instructions",
-      "description": "Install the Claude Code entry instructions that import the adapted AGENTS workflow authority.",
+      "display_name": "Project instructions for Claude Code and DSH",
+      "description": "Adapt the standalone project-instruction template into CLAUDE.md for Claude Code and DeepSeek Harness.",
       "category": "environment",
       "coding_environment": "claude_code",
       "optional": true,
@@ -73,7 +73,8 @@
       ],
       "source": {
         "kind": "file",
-        "path": "CLAUDE_template.md"
+        "path": "CLAUDE_template.md",
+        "template_engine": "agents_adaptation_v1"
       },
       "destination": {
         "path": "CLAUDE.md",
@@ -102,13 +103,15 @@
       },
       "capabilities": [
         "Claude Code project instructions",
-        "shared AGENTS import"
+        "DSH project instructions",
+        "standalone instruction authority",
+        "opt-in AGENTS import"
       ],
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "a21e7c913c59872ea7cf909f7ce36d0c8c1c0bff787afd8d40bbb932212b440b",
-          "size": 1256
+          "sha256": "84d298876f1406827fafd647b0bfabd0a3c9ad21422263b43fe09f20f4741040",
+          "size": 60616
         }
       ]
     },
@@ -4914,6 +4917,57 @@
       ]
     },
     {
+      "id": "docs.runtimes",
+      "display_name": "Agent runtime reference",
+      "description": "Install the per-runtime reference for instruction files, skill roots, subagent registries, and MCP registration.",
+      "category": "documentation",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": "docs/runtimes.md"
+      },
+      "destination": {
+        "path": "docs/runtimes.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.agents"
+      ],
+      "conflicts": [
+        "existing docs/runtimes.md"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "docs.runtimes.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": "docs/runtimes.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "runtime reference",
+        "instruction file discovery",
+        "MCP registration shapes"
+      ],
+      "expected_files": [
+        {
+          "path": "docs/runtimes.md",
+          "sha256": "d406f821340bc80e0e540f5443128b33732af86774d3231d3624808311b5cb70",
+          "size": 8948
+        }
+      ]
+    },
+    {
       "id": "template.chaos_redux_agents",
       "display_name": "Optional AGENTS project template",
       "description": "Make the alternate source template available behind review.",
@@ -7298,6 +7352,7 @@
         "core.subagents",
         "runtime.agent_sync",
         "docs.mcp_integration",
+        "docs.runtimes",
         "wiki.snapshot"
       ],
       "default": true
@@ -7311,6 +7366,7 @@
         "core.subagents",
         "runtime.agent_sync",
         "docs.mcp_integration",
+        "docs.runtimes",
         "wiki.snapshot",
         "workflow.3d"
       ],

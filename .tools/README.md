@@ -35,6 +35,11 @@ python -B .tools/sync/sync_claude_agents.py --check
 Qoder, Cursor, OpenCode, and Claude Code project agent projections are generated but tracked for immediate project discovery. Personal overrides and machine-local caches remain untracked.
 Never hand-edit generated agent files or copy project-specific MCP paths between runtimes.
 
+### Agent runtimes
+
+DeepSeek Harness (DSH) is supported as an additional runtime, but it has no project agent registry to synchronize: it reads no `.codex/agents/*.toml`, so each subagent is composed from the delegated prompt and there is deliberately no DSH synchronizer or generated DSH agent folder.
+`docs/runtimes.md` is the reference for per-runtime instruction-file discovery, skill roots, subagent registries, and MCP registration shapes.
+
 ### 3D model pipeline
 
 `3d_pipeline/` contains the reusable Meshy, Blender, `io_pdx_mesh`, material, verification, and adapter infrastructure.

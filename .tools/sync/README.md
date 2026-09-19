@@ -16,3 +16,7 @@ All four runtime projections are checked in so a fresh checkout works immediatel
 
 The generators translate only runtime mechanics.
 The prompt body remains the scope and authority contract. Native project settings and MCP registration are distributed with the selected runtime package and remain provider-neutral.
+
+DeepSeek Harness is intentionally not a generated runtime here.
+It has no project-local named-agent registry and reads no `.codex/agents/*.toml`, so a DSH subagent is composed from the delegated prompt alone and carries no generated definition to drift.
+`docs/runtimes.md` documents every supported runtime, including the DSH instruction-file, skill-root, and MCP-registration differences.
