@@ -1,19 +1,23 @@
-# Table of contents
+# Namelist modding
 
-- [Divisions Names](#divisions-names)
-- [Naval Names](#naval-names)
-- [Generic Names](#generic-names)
-- [Operative codenames](#operative-codenames)
+*Offline snapshot of the Hearts of Iron IV Wiki page "Namelist modding", captured 2026-09-19.*
+
+## Table of contents
+
+- [Divisions Names](#Divisions_Names)
+- [Naval Names](#Naval_Names)
+- [Generic Names](#Generic_Names)
+- [Operative codenames](#Operative_codenames)
 
 ---
 
 Units, both land and naval, obtain their names from either a set list of names.
 
-## <a id="divisions-names"></a>Divisions Names
+## Divisions Names <a id="Divisions_Names"></a>
 
-Division names are defined in /Hearts of Iron IV/common/units/names\_divisions in country specific text files. The name of the file does not matter, though generally follow the following format *TAG\_names\_divisions.txt*.
+Division names are defined in `/Hearts of Iron IV/common/units/names_divisions` in country specific text files. The name of the file does not matter, though generally follow the following format *TAG_names_divisions.txt*.
 
-Once in the file, you want to start off with the name list set in your OOB found in /Hearts of Iron IV/history/units, for example NEP\_MTN\_01. You will want to follow the following formatting:
+Once in the file, you want to start off with the name list set in your OOB found in `/Hearts of Iron IV/history/units`, for example NEP_MTN_01. You will want to follow the following formatting:
 
 ```text
 NEP_MTN_01 = { # DIVISIONS_NAME_GROUP, set in your units folder
@@ -31,11 +35,11 @@ NEP_MTN_01 = { # DIVISIONS_NAME_GROUP, set in your units folder
 }
 ```
 
-Namelist files seem to have a limit of ~1500 lines. Any namelists beyond that limit may not work correctly, or not appear entirely.
+Namelist files seem to have a limit of \~1500 lines. Any namelists beyond that limit may not work correctly, or not appear entirely.
 
-## <a id="naval-names"></a>Naval Names
+## Naval Names <a id="Naval_Names"></a>
 
-Naval names are defined in /Hearts of Iron IV/common/units/names\_ships in country specific text files. The name of the file does not matter, though generally follow the following format *TAG\_ship\_names.txt*.
+Naval names are defined in `/Hearts of Iron IV/common/units/names_ships` in country specific text files. The name of the file does not matter, though generally follow the following format *TAG_ship_names.txt*.
 
 In this file, it does not rely upon a set name within your OOB file like in division names, instead it is any ship. You will want to follow the following formatting:
 
@@ -53,9 +57,9 @@ PAK_DD_HISTORICAL = { # Any name you want
 }
 ```
 
-## <a id="generic-names"></a>Generic Names
+## Generic Names <a id="Generic_Names"></a>
 
-Defined in /Hearts of Iron IV/common/units/names/\*.txt, for countries that lack specific names for types of equipment, especially for custom equipment that not every nation will use.
+Defined in `/Hearts of Iron IV/common/units/names/*.txt`, for countries that lack specific names for types of equipment, especially for custom equipment that not every nation will use.
 
 ```text
 generic = { # Makes it apply to all countries
@@ -67,9 +71,9 @@ generic = { # Makes it apply to all countries
 }
 ```
 
-## <a id="operative-codenames"></a>Operative codenames
+## Operative codenames <a id="Operative_codenames"></a>
 
-Stored in /Hearts of Iron IV/common/units/codenames\_operatives, these codenames will be randomly assigned to operatives of the specified countries. An example definition looks like:
+Stored in `/Hearts of Iron IV/common/units/codenames_operatives`, these codenames will be randomly assigned to operatives of the specified countries. An example definition looks like:
 
 ```text
 codename_list_id = {				# ID of the namelist
@@ -88,4 +92,15 @@ codename_list_id = {				# ID of the namelist
 }
 ```
 
+---
+
+## Navigation
+
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**
+
+- **Documentation**: [Effects](<Effects - Hearts of Iron 4 Wiki.md>) • [Triggers](<Triggers - Hearts of Iron 4 Wiki.md>) • [Defines](<Defines - Hearts of Iron 4 Wiki.md>) • [Modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) • [List of modifiers](<List of modifiers - Hearts of Iron 4 Wiki.md>) • [Scopes](<Scopes - Hearts of Iron 4 Wiki.md>) • [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>) • [On actions](<On actions - Hearts of Iron 4 Wiki.md>) • [Data structures](<Data structures - Hearts of Iron 4 Wiki.md>) • [Flags](<Data structures - Hearts of Iron 4 Wiki.md#Flags>) • [Event targets](<Data structures - Hearts of Iron 4 Wiki.md#Event_targets>) • [Country tag aliases](<Data structures - Hearts of Iron 4 Wiki.md#Country_tag_aliases>) • [Variables](<Data structures - Hearts of Iron 4 Wiki.md#Variables>) • [Arrays](<Data structures - Hearts of Iron 4 Wiki.md#Arrays>)
+- **Scripting**: [Achievements](<Achievement modding - Hearts of Iron 4 Wiki.md>) • [AI](<AI modding - Hearts of Iron 4 Wiki.md>) • [AI focuses](<AI focuses - Hearts of Iron 4 Wiki.md>) • [Autonomous states](<Autonomy state modding - Hearts of Iron 4 Wiki.md>) • [Balances of power](<Balance of power modding - Hearts of Iron 4 Wiki.md>) • [Bookmarks/Scenarios](<Bookmark modding - Hearts of Iron 4 Wiki.md>) • [Game rules](<Bookmark modding - Hearts of Iron 4 Wiki.md#Game_rules>) • [Buildings](<Building modding - Hearts of Iron 4 Wiki.md>) • [Characters and traits](<Character modding - Hearts of Iron 4 Wiki.md>) • [Cosmetic tags](<Cosmetic tag modding - Hearts of Iron 4 Wiki.md>) • [Countries](<Country creation - Hearts of Iron 4 Wiki.md>) • [Divisions](<Division modding - Hearts of Iron 4 Wiki.md>) • [Decisions](<Decision modding - Hearts of Iron 4 Wiki.md>) • [Doctrines](<Doctrine modding - Hearts of Iron 4 Wiki.md>) • [Equipment](<Equipment modding - Hearts of Iron 4 Wiki.md>) • [Events](<Event modding - Hearts of Iron 4 Wiki.md>) • [Factions](<Faction modding - Hearts of Iron 4 Wiki.md>) • [Ideas](<Idea modding - Hearts of Iron 4 Wiki.md>) • [Ideologies](<Ideology modding - Hearts of Iron 4 Wiki.md>) • [Military industrial organizations](<Military industrial organization modding - Hearts of Iron 4 Wiki.md>) • [National focuses](<National focus modding - Hearts of Iron 4 Wiki.md>) • [Resources](<Resources modding - Hearts of Iron 4 Wiki.md>) • [Scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) • [Technologies and doctrines](<Technology modding - Hearts of Iron 4 Wiki.md>) • [Units](<Unit modding - Hearts of Iron 4 Wiki.md>)
+- **Map**: [Map](<Map modding - Hearts of Iron 4 Wiki.md>) • [States](<State modding - Hearts of Iron 4 Wiki.md>) • [Supply areas](<Supply areas modding - Hearts of Iron 4 Wiki.md>) • [Strategic regions](<Strategic region modding - Hearts of Iron 4 Wiki.md>)
+- **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
+- **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
+- **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)

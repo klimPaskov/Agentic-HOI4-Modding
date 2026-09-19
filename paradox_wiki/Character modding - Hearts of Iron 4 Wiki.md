@@ -1,38 +1,42 @@
-# Table of contents
+# Character modding
 
-- [Quick checklist](#quick-checklist)
-- [Arguments](#arguments)
-  - [Name](#name)
-  - [Portraits](#portraits)
-  - [Gender](#gender)
-  - [Advisors](#advisors)
-  - [Country leaders](#country-leaders)
-  - [Unit leaders](#unit-leaders)
-  - [Scientists](#scientists)
-- [Full example](#full-example)
-- [Instances](#instances)
-- [Using in-game](#using-in-game)
-  - [The special case of generate_character](#the-special-case-of-generate-character)
-- [Country leader traits](#country-leader-traits)
-  - [Sprite](#sprite)
-- [Unit leader traits](#unit-leader-traits)
-  - [Localisation](#localisation)
-  - [GFX](#gfx)
-  - [General arguments](#general-arguments)
-  - [Modifiers and effects](#modifiers-and-effects)
-  - [Selection](#selection)
-  - [Example](#example)
-- [References](#references)
+*Offline snapshot of the Hearts of Iron IV Wiki page "Character modding", captured 2026-09-19.*
+
+## Table of contents
+
+- [Quick checklist](#Quick_checklist)
+- [Arguments](#Arguments)
+  - [Name](#Name)
+  - [Portraits](#Portraits)
+  - [Gender](#Gender)
+  - [Advisors](#Advisors)
+  - [Country leaders](#Country_leaders)
+  - [Unit leaders](#Unit_leaders)
+  - [Scientists](#Scientists)
+- [Full example](#Full_example)
+- [Instances](#Instances)
+- [Using in-game](#Using_in-game)
+  - [The special case of generate_character](#The_special_case_of_generate_character)
+- [Country leader traits](#Country_leader_traits)
+  - [Sprite](#Sprite)
+- [Unit leader traits](#Unit_leader_traits)
+  - [Localisation](#Localisation)
+  - [GFX](#GFX)
+  - [General arguments](#General_arguments)
+  - [Modifiers and effects](#Modifiers_and_effects)
+  - [Selection](#Selection)
+  - [Example](#Example)
+- [References](#References)
 
 ---
 
-*For adding operatives, see [create\_operative\_leader](<Effects - Hearts of Iron 4 Wiki.md#create-operative-leader>), as they are not characters.*
+*For adding operatives, see [create_operative_leader](<Effects - Hearts of Iron 4 Wiki.md>), as they are not characters.*
 
-Characters are a system added in [patch 1.11](https://hoi4.paradoxwikis.com/Patch_1.11), allowing to use the same character for multiple roles, including different advisor types, country leaders and unit leaders. However, operatives are not considered characters and are still created with the [create\_operative\_leader](<Effects - Hearts of Iron 4 Wiki.md#create-operative-leader>) effect.
+Characters are a system added in patch 1.11, allowing to use the same character for multiple roles, including different advisor types, country leaders and unit leaders. However, operatives are not considered characters and are still created with the [create_operative_leader](<Effects - Hearts of Iron 4 Wiki.md>) effect.
 
-Characters are defined within `/Hearts of Iron IV/common/characters/*.txt` files **and need to be recruited in `/Hearts of Iron IV/history/countries/TAG*.txt` files.**. Note that while it's common to put the characters in a file with the name the same as the tag of the country, the filename does not actually matter aside from organisation and for overwriting previously-loaded files with the same name. Generic characters are typically created within `/Hearts of Iron IV/history/general/*.txt` files by using the [generate\_character](<Effects - Hearts of Iron 4 Wiki.md#generate-character>) effect, although it is to be noted that that folder is merely an effect block executed before startup, so other effects can be used there too.
+Characters are defined within `/Hearts of Iron IV/common/characters/*.txt` files **and need to be recruited in `/Hearts of Iron IV/history/countries/TAG*.txt` files.**. Note that while it's common to put the characters in a file with the name the same as the tag of the country, the filename does not actually matter aside from organisation and for overwriting previously-loaded files with the same name. Generic characters are typically created within `/Hearts of Iron IV/history/general/*.txt` files by using the [generate_character](<Effects - Hearts of Iron 4 Wiki.md>) effect, although it is to be noted that that folder is merely an effect block executed before startup, so other effects can be used there too.
 
-Each character definition is contained within the `characters = { ... }` block, which encompasses the entirety of the file to mark them as characters. Each character is defined with a code block with the name of the character ID. For example, if the following is put within a file within the `/Hearts of Iron IV/common/characters/` folder, the blank characters my\_character\_1 and my\_character\_2 will be created:
+Each character definition is contained within the `characters = { ... }` block, which encompasses the entirety of the file to mark them as characters. Each character is defined with a code block with the name of the character ID. For example, if the following is put within a file within the `/Hearts of Iron IV/common/characters/` folder, the blank characters my_character_1 and my_character_2 will be created:
 
 ```text
 characters = {
@@ -45,29 +49,27 @@ characters = {
 
 Every character must be assigned to a country in that country's file in the `/Hearts of Iron IV/history/countries/` folder by using the `recruit_character = my_character` effect. Recruitment cannot take place outside of country history. **If the character is not recruited, they will never appear.** Similarly to most other folders, the game does not care about neither the filename nor the name of the characters, which is why recruitment is mandatory.
 
-## <a id="quick-checklist"></a>Quick checklist
-
-<a id="in-a-nutshell"></a>
+## Quick checklist <a id="Quick_checklist"></a>
 
 - The character is created in any `/Hearts of Iron IV/common/characters/*.txt` file with no regard to the filename:
   - `name = TAG_loc_key` uses a localisation key that's defined for the English language in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file.
   - `portraits = { ... }` use spriteTypes that are defined in any `/Hearts of Iron IV/interface/*.gfx` file.
 
     :   While it's common practice to store images in subfolders of `/Hearts of Iron IV/gfx/` (usually `/Hearts of Iron IV/gfx/leaders/` for country or unit leaders and `/Hearts of Iron IV/gfx/interface/ideas/` for advisors), a sprite's `texturefile` can theoretically lead to any folder within the mod rather than being limited to `/Hearts of Iron IV/gfx/`.
-- The character is assigned to a country using [recruit\_character](<Effects - Hearts of Iron 4 Wiki.md#recruit-character>) in any history file, usually done in the country's corresponding `/Hearts of Iron IV/history/countries/` file. This cannot be placed on the last line of the file.
-- If the character isn't intended to have one of their roles at the start, then the character is created without that role, having it added with any [effect](<Effects - Hearts of Iron 4 Wiki.md>) block using [add\_country\_leader\_role](<Effects - Hearts of Iron 4 Wiki.md#add-country-leader-role>), [add\_corps\_commander\_role](<Effects - Hearts of Iron 4 Wiki.md#add-corps-commander-role>), [add\_field\_marshal\_role](<Effects - Hearts of Iron 4 Wiki.md#add-field-marshal-role>), [add\_naval\_commander\_role](<Effects - Hearts of Iron 4 Wiki.md#add-naval-commander-role>), or [add\_advisor\_role](<Effects - Hearts of Iron 4 Wiki.md#add-advisor-role>). Since `add_advisor_role` is limited in what is possible to add and what isn't, instead using `visible = { ... }` with a [flag](https://hoi4.paradoxwikis.com/Flag) is an alternative for creating advisors.
+- The character is assigned to a country using [recruit_character](<Effects - Hearts of Iron 4 Wiki.md>) in any history file, usually done in the country's corresponding `/Hearts of Iron IV/history/countries/` file. This cannot be placed on the last line of the file.
+- If the character isn't intended to have one of their roles at the start, then the character is created without that role, having it added with any [effect](<Effects - Hearts of Iron 4 Wiki.md>) block using [add_country_leader_role](<Effects - Hearts of Iron 4 Wiki.md>), [add_corps_commander_role](<Effects - Hearts of Iron 4 Wiki.md>), [add_field_marshal_role](<Effects - Hearts of Iron 4 Wiki.md>), [add_naval_commander_role](<Effects - Hearts of Iron 4 Wiki.md>), or [add_advisor_role](<Effects - Hearts of Iron 4 Wiki.md>). Since `add_advisor_role` is limited in what is possible to add and what isn't, instead using `visible = { ... }` with a [flag](<Data structures - Hearts of Iron 4 Wiki.md>) is an alternative for creating advisors.
 
-## <a id="arguments"></a>Arguments
+## Arguments <a id="Arguments"></a>
 
 These arguments are within the character itself.
 
-### <a id="name"></a>Name
+### Name <a id="Name"></a>
 
 :   *Main article: [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>)*
 
 `name = my_character` defines a localisation key to be used to create the character's name depending on the language that is currently turned on. This will get localised in any working `/Hearts of Iron IV/localisation/english/*_l_english.yml` file, assuming the English language, as  `my_character: "My character's name"`
 
-### <a id="portraits"></a>Portraits
+### Portraits <a id="Portraits"></a>
 
 Portraits fall into 3 categories: `civilian`, `army`, and `navy`. Within these categories, the `small` and `large` decide whether it gets used as an advisor portrait or as a large portrait, used for country and unit leaders. Advisor portraits can be defined in any of the 3 categories, as long as it is a small portrait, while large portraits are specific to the category.
 If there is no valid portrait definition for a role, a random pair of small-large portraits will be created for the role from the possible selection for the country/cosmetic tag in the `/Hearts of Iron IV/portraits/*.txt` files; if either category has a valid sprite definition for one size but not the other, the random generation will not happen for the size where a portrait has no sprite.
@@ -85,7 +87,7 @@ portraits = {
 }
 ```
 
-The portraits themselves are defined in any `/Hearts of Iron IV/interface/*.gfx` file. By default, the game uses a wide variety of files, including `/Hearts of Iron IV/dlc/dlc001_german_historical_portraits/interface/ghp_ideas_characters.gfx` (loaded in-game as `interface/ghp_ideas_characters.gfx`) or `/Hearts of Iron IV/interface/ideas.gfx`, however, editing a base game file is never necessary: a file with a higher evaluation order decided by filename (Using [ASCII character IDs](http://en.wikipedia.org/wiki/Ascii#Printable_characters) to order) will overwrite any spriteType defined in an earlier file, which the game uses for replacing DLC portraits.
+The portraits themselves are defined in any `/Hearts of Iron IV/interface/*.gfx` file. By default, the game uses a wide variety of files, including `/Hearts of Iron IV/dlc/dlc001_german_historical_portraits/interface/ghp_ideas_characters.gfx` (loaded in-game as `interface/ghp_ideas_characters.gfx`) or `/Hearts of Iron IV/interface/ideas.gfx`, however, editing a base game file is never necessary: a file with a higher evaluation order decided by filename (Using ASCII character IDs to order) will overwrite any spriteType defined in an earlier file, which the game uses for replacing DLC portraits.
 **It is preferable to create a new file rather than overwriting base game files.** This is done by creating a new file and renaming it, changing the extension to .gfx from .txt. **Unhiding the file extension from the filename within the Windows file explorer is mandatory to do this** if doing it on Windows.
 Simplest possible definitions of portraits are defined using `spriteType` definitions within a larger `spriteTypes = { ... }` block as such:
 
@@ -106,7 +108,7 @@ spriteTypes = {
 }
 ```
 
-The name of the spriteType has limitations: **it must begin with `GFX_`** and be made up of one word total with no whitespaces or non-[ASCII](http://en.wikipedia.org/wiki/ASCII) characters. The image file must match up with the folder and name specified in the sprite's `texturefile` with no other limits on the filename and folder location. If both restrictions are met, the sprite will work. **The file extension, hidden by default on Windows, is a part of the filename.** By default, the game stores advisor portraits in `/Hearts of Iron IV/gfx/interface/ideas/`, while country/unit leader portraits are stored in `/Hearts of Iron IV/gfx/leaders/<TAG>/`. The background used for country/unit leader portraits is found in `/Hearts of Iron IV/tools/art/portrait_leader_background.png`.
+The name of the spriteType has limitations: **it must begin with `GFX_`** and be made up of one word total with no whitespaces or non-ASCII characters. The image file must match up with the folder and name specified in the sprite's `texturefile` with no other limits on the filename and folder location. If both restrictions are met, the sprite will work. **The file extension, hidden by default on Windows, is a part of the filename.** By default, the game stores advisor portraits in `/Hearts of Iron IV/gfx/interface/ideas/`, while country/unit leader portraits are stored in `/Hearts of Iron IV/gfx/leaders/<TAG>/`. The background used for country/unit leader portraits is found in `/Hearts of Iron IV/tools/art/portrait_leader_background.png`.
 
 **If a portrait doesn't work and is replaced with a randomly-selected one**, there are two possible causes for this:
 
@@ -129,9 +131,9 @@ spriteTypes = {
 }
 ```
 
-Similarly to all other sprites, animated portraits can be done by creating a [frameAnimatedSpriteType instead of a regular spriteType](<Graphical asset modding - Hearts of Iron 4 Wiki.md#frameanimatedspritetype>).
+Similarly to all other sprites, animated portraits can be done by creating a [frameAnimatedSpriteType instead of a regular spriteType](<Graphical asset modding - Hearts of Iron 4 Wiki.md#frameAnimatedSpriteType>).
 
-For changing portraits by effect in game, [set\_portraits](<Effects - Hearts of Iron 4 Wiki.md#set-portraits>) is used. See [Using in-game](<Character modding - Hearts of Iron 4 Wiki.md#using-in-game>) for more.
+For changing portraits by effect in game, [set_portraits](<Effects - Hearts of Iron 4 Wiki.md>) is used. See [Using in-game](#Using_in-game) for more.
 
 Although using sprites for the portraits is the standard and recommended way, it is possible to define the portraits using the path directly. This is done in the same way as the texturefile of a spritetype, such as:
 
@@ -148,32 +150,32 @@ portraits = {
 }
 ```
 
-### <a id="gender"></a>Gender
+### Gender <a id="Gender"></a>
 
-This is primarily used in some localisation namespaces to select the pronouns for the character. Possible values are `undefined`, `male`, and `female`. The default is `gender = undefined`. If the name or the portrait are not defined, gender is used to automatically generate them. In almost all respects, `gender = undefined` behaves like `gender = male`. If a character created dynamically with `generate_character` has `undefined` gender, it will be randomly assigned using FEMALE\_UNIT\_LEADER\_BASE\_CHANCE[[1]](#cite-note-1) or, if the character can exclusively be a unit leader, based on the `female` attribute of the unit leader definition.
+This is primarily used in some localisation namespaces to select the pronouns for the character. Possible values are `undefined`, `male`, and `female`. The default is `gender = undefined`. If the name or the portrait are not defined, gender is used to automatically generate them. In almost all respects, `gender = undefined` behaves like `gender = male`. If a character created dynamically with `generate_character` has `undefined` gender, it will be randomly assigned using FEMALE_UNIT_LEADER_BASE_CHANCE[1] or, if the character can exclusively be a unit leader, based on the `female` attribute of the unit leader definition.
 
-### <a id="advisors"></a>Advisors
+### Advisors <a id="Advisors"></a>
 
 A character has an advisor role added by defining one within the `advisor = { ... }` block. This definition is [similar to ideas in many ways](<Idea modding - Hearts of Iron 4 Wiki.md>), but there are a few extra arguments:
 
-`slot = political_advisor` is used to determine the [character slot](<Idea modding - Hearts of Iron 4 Wiki.md#categories>) on the country politics view that the character occupies. By default, these character slots exist in the base game:
+`slot = political_advisor` is used to determine the [character slot](<Idea modding - Hearts of Iron 4 Wiki.md#Categories>) on the country politics view that the character occupies. By default, these character slots exist in the base game:
 
 | Internal name | Localised name | Intelligence ledger | Category | Notes |
 | --- | --- | --- | --- | --- |
-| <a id="political-advisor"></a>political\_advisor | Political advisor | Civilian | Laws & Government |  |
-| <a id="theorist"></a>theorist | Theorist | Invalid | Research & Production | The ledger must be specified for each theorist individually as, for example, `ledger = navy`. Possible values are `army`, `air`, `navy`, `military` (Appearing on each of the prior ledgers), `civilian`, `all`, and `hidden`. |
-| <a id="army-chief"></a>army\_chief | Chief of Army | Army | Military Staff |  |
-| <a id="navy-chief"></a>navy\_chief | Chief of Navy | Navy | Military Staff |  |
-| <a id="air-chief"></a>air\_chief | Chief of Airforce | Air | Military Staff |  |
-| <a id="high-command"></a>high\_command | Military High Command | Invalid | Military Staff | The ledger must be specified for each theorist individually as, for example, `ledger = navy`. Possible values are `army`, `air`, `navy`, `military` (Appearing on each of the prior ledgers), `civilian`, `all`, and `hidden`. |
+| political_advisor | Political advisor | Civilian | Laws \& Government |  |
+| theorist | Theorist | Invalid | Research \& Production | The ledger must be specified for each theorist individually as, for example, `ledger = navy`. Possible values are `army`, `air`, `navy`, `military` (Appearing on each of the prior ledgers), `civilian`, `all`, and `hidden`. |
+| army_chief | Chief of Army | Army | Military Staff |  |
+| navy_chief | Chief of Navy | Navy | Military Staff |  |
+| air_chief | Chief of Airforce | Air | Military Staff |  |
+| high_command | Military High Command | Invalid | Military Staff | The ledger must be specified for each theorist individually as, for example, `ledger = navy`. Possible values are `army`, `air`, `navy`, `military` (Appearing on each of the prior ledgers), `civilian`, `all`, and `hidden`. |
 
-`idea_token = my_character` is the ID used for the character when treated as an idea within this particular slot. For example, [the has\_idea trigger](<Triggers - Hearts of Iron 4 Wiki.md#has-idea>) or [the show\_ideas\_tooltip effect](<Effects - Hearts of Iron 4 Wiki.md#show-ideas-tooltip>) do not expect the character ID, but the idea token of the character instead. Since it is impossible to have two of the same idea, any other character with the same idea token will be impossible to take. As not having an idea token is treated as having a null one, **this is mandatory**. Otherwise, recruiting this character will make every other advisor without an idea token specified disappear from the selection.
+`idea_token = my_character` is the ID used for the character when treated as an idea within this particular slot. For example, [the has_idea trigger](<Triggers - Hearts of Iron 4 Wiki.md>) or [the show_ideas_tooltip effect](<Effects - Hearts of Iron 4 Wiki.md>) do not expect the character ID, but the idea token of the character instead. Since it is impossible to have two of the same idea, any other character with the same idea token will be impossible to take. As not having an idea token is treated as having a null one, **this is mandatory**. Otherwise, recruiting this character will make every other advisor without an idea token specified disappear from the selection.
 
 `can_be_fired = no` assigns the advisor as impossible to fire manually. *Note:* Prior to 1.12.8, `removal_cost = -1` could've been used for this purpose, but this does not work after the patch.
 
-Everything else regarding advisors is identical to ideas. Commonly, the `traits = { ... }` block is used, where [each country leader trait](#country-leader-traits) that the character has is listed, separated with a whitespace, as `traits = { my_trait_1 my_trait_2 }`. These would apply modifiers on the country if the advisor is recruited, as well as adding a subtext and an icon in the bottom right of the advisor's picture.
-[available, cost, and visible](<Idea modding - Hearts of Iron 4 Wiki.md#additional-arguments_2>) arguments are also common.
-`on_add = { ... }` and `on_remove = { ... }` attributes use the character scope instead of the country scope as they do in ideas. In order to scope into the country that the advisor is assigned to, use [the owner scope](<Scopes - Hearts of Iron 4 Wiki.md#owner>).
+Everything else regarding advisors is identical to ideas. Commonly, the `traits = { ... }` block is used, where [each country leader trait](#Country_leader_traits) that the character has is listed, separated with a whitespace, as `traits = { my_trait_1 my_trait_2 }`. These would apply modifiers on the country if the advisor is recruited, as well as adding a subtext and an icon in the bottom right of the advisor's picture.
+[available, cost, and visible](<Idea modding - Hearts of Iron 4 Wiki.md#Additional_arguments_2>) arguments are also common.
+`on_add = { ... }` and `on_remove = { ... }` attributes use the character scope instead of the country scope as they do in ideas. In order to scope into the country that the advisor is assigned to, use [the owner scope](<Scopes - Hearts of Iron 4 Wiki.md>).
 
 Adding the same character to multiple different character slots is done by defining `advisor = { ... }` multiple times.
 
@@ -188,46 +190,46 @@ advisor = {
 }
 ```
 
-### <a id="country-leaders"></a>Country leaders
+### Country leaders <a id="Country_leaders"></a>
 
 *See also: [Ideology modding](<Ideology modding - Hearts of Iron 4 Wiki.md>)*
 
 Country leaders are defined with the `country_leader = { ... }` block. The following arguments can be used within:
 
-`ideology = socialist` is the ideology **type** that the leader is assigned. An ideology group (such as [democratic](https://hoi4.paradoxwikis.com/Ideology#Democracy)) cannot be assigned here directly, rather ideology types are defined for each leader to decide the ideology group the party of which the character leads.
-The difference between ideology types is mostly cosmetic, changing the description shown when hovering over the ideology icon and, [if defined so](<Ideology modding - Hearts of Iron 4 Wiki.md#gfx>), the icon itself. Additionally, countries with the same ruling ideology group but a different leader ideology type will have the *Same Ideology* ( **+10** Opinion) modifier towards each other, while countries with the same leader ideology type will have the *Same Ruling Party* ( **+20** Opinion) modifier towards each other.
+`ideology = socialist` is the ideology **type** that the leader is assigned. An ideology group (such as ![Democracy](media/character-modding-hearts-of-iron-4-wiki_cee5ae9645__img1.png)democratic) cannot be assigned here directly, rather ideology types are defined for each leader to decide the ideology group the party of which the character leads.
+The difference between ideology types is mostly cosmetic, changing the description shown when hovering over the ideology icon and, [if defined so](<Ideology modding - Hearts of Iron 4 Wiki.md#GFX>), the icon itself. Additionally, countries with the same ruling ideology group but a different leader ideology type will have the *“Same Ideology”* (![Opinion](media/character-modding-hearts-of-iron-4-wiki_8d43751dba__img2.png) **+10** opinion) modifier towards each other, while countries with the same leader ideology type will have the *“Same Ruling Party”* (![Opinion](media/character-modding-hearts-of-iron-4-wiki_8d43751dba__img2.png) **+20** opinion) modifier towards each other.
 These are the ideology types in base game across groups, defined in `/Hearts of Iron IV/common/ideologies/*.txt`:
 
 | Internal name | Localised name | Ideology group | Notes |
 | --- | --- | --- | --- |
-| <a id="conservatism"></a>conservatism | Conservatism | democratic |  |
-| <a id="liberalism"></a>liberalism | Liberalism | democratic |  |
-| <a id="socialism"></a>socialism | Socialism | democratic |  |
-| <a id="populism"></a>populism | Populism | democratic |  |
-| <a id="marxism"></a>marxism | Marxism | communism |  |
-| <a id="leninism"></a>leninism | Leninism | communism |  |
-| <a id="stalinism"></a>stalinism | Stalinism | communism |  |
-| <a id="anti-revisionism"></a>anti\_revisionism | Anti-Revisionism | communism |  |
-| <a id="anarchist-communism"></a>anarchist\_communism | Anarchist Communism | communism |  |
-| <a id="buddhist-socialism"></a>buddhist\_socialism | Buddhist Socialism | communism | Cannot be randomly selected. |
-| <a id="nazism"></a>nazism | Nazism | fascism |  |
-| <a id="gen-nazism"></a>gen\_nazism | Nazism | fascism | Generic in the sense that the description is changed to not reference Germany. |
-| <a id="fascism-ideology"></a>fascism\_ideology | Fascism | fascism |  |
-| <a id="falangism"></a>falangism | Falangism | fascism |  |
-| <a id="rexism"></a>rexism | Rexism | fascism |  |
-| <a id="emperor-fascism"></a>emperor\_fascism | Emperor Fascism | fascism | Cannot be randomly selected. |
-| <a id="despotism"></a>despotism | Despotic | neutrality |  |
-| <a id="oligarchism"></a>oligarchism | Oligarchic | neutrality |  |
-| <a id="anarchism"></a>anarchism | Anarchism | neutrality | Cannot be randomly selected. Has a unique ideology icon. |
-| <a id="moderatism"></a>moderatism | Moderatism | neutrality |  |
-| <a id="centrism"></a>centrism | Centrism | neutrality |  |
-| <a id="japan-militarism-ideology"></a>japan\_militarism\_ideology | Militarism | neutrality | Cannot be randomly selected. |
+| conservatism | Conservatism | ![Democracy](media/character-modding-hearts-of-iron-4-wiki_cee5ae9645__img1.png)democratic |  |
+| liberalism | Liberalism | ![Democracy](media/character-modding-hearts-of-iron-4-wiki_cee5ae9645__img1.png)democratic |  |
+| socialism | Socialism | ![Democracy](media/character-modding-hearts-of-iron-4-wiki_cee5ae9645__img1.png)democratic |  |
+| populism | Populism | ![Democracy](media/character-modding-hearts-of-iron-4-wiki_cee5ae9645__img1.png)democratic |  |
+| marxism | Marxism | ![Communism](media/character-modding-hearts-of-iron-4-wiki_41494a4f46__img8.png)communism |  |
+| leninism | Leninism | ![Communism](media/character-modding-hearts-of-iron-4-wiki_41494a4f46__img8.png)communism |  |
+| stalinism | Stalinism | ![Communism](media/character-modding-hearts-of-iron-4-wiki_41494a4f46__img8.png)communism |  |
+| anti_revisionism | Anti-Revisionism | ![Communism](media/character-modding-hearts-of-iron-4-wiki_41494a4f46__img8.png)communism |  |
+| anarchist_communism | Anarchist Communism | ![Communism](media/character-modding-hearts-of-iron-4-wiki_41494a4f46__img8.png)communism |  |
+| buddhist_socialism | Buddhist Socialism | ![Communism](media/character-modding-hearts-of-iron-4-wiki_41494a4f46__img8.png)communism | Cannot be randomly selected. |
+| nazism | Nazism | ![Fascism](media/character-modding-hearts-of-iron-4-wiki_58ea48332f__img14.png)fascism |  |
+| gen_nazism | Nazism | ![Fascism](media/character-modding-hearts-of-iron-4-wiki_58ea48332f__img14.png)fascism | Generic in the sense that the description is changed to not reference Germany. |
+| fascism_ideology | Fascism | ![Fascism](media/character-modding-hearts-of-iron-4-wiki_58ea48332f__img14.png)fascism |  |
+| falangism | Falangism | ![Fascism](media/character-modding-hearts-of-iron-4-wiki_58ea48332f__img14.png)fascism |  |
+| rexism | Rexism | ![Fascism](media/character-modding-hearts-of-iron-4-wiki_58ea48332f__img14.png)fascism |  |
+| emperor_fascism | Emperor Fascism | ![Fascism](media/character-modding-hearts-of-iron-4-wiki_58ea48332f__img14.png)fascism | Cannot be randomly selected. |
+| despotism | Despotic | ![Neutrality](media/ai-modding-hearts-of-iron-4-wiki_25696e0a81__img2.png)neutrality |  |
+| oligarchism | Oligarchic | ![Neutrality](media/ai-modding-hearts-of-iron-4-wiki_25696e0a81__img2.png)neutrality |  |
+| anarchism | Anarchism | ![Anarchism](media/character-modding-hearts-of-iron-4-wiki_04e3359449__img22.png)neutrality | Cannot be randomly selected. Has a unique ideology icon. |
+| moderatism | Moderatism | ![Neutrality](media/ai-modding-hearts-of-iron-4-wiki_25696e0a81__img2.png)neutrality |  |
+| centrism | Centrism | ![Neutrality](media/ai-modding-hearts-of-iron-4-wiki_25696e0a81__img2.png)neutrality |  |
+| japan_militarism_ideology | Militarism | ![Neutrality](media/ai-modding-hearts-of-iron-4-wiki_25696e0a81__img2.png)neutrality | Cannot be randomly selected. |
 
-`traits = { my_trait_1 my_trait_2 }` is, similarly to advisors, a list of [country leader traits](#country-leader-traits) that the country leader has, which would apply modifiers on the country if the character is leading the country.
+`traits = { my_trait_1 my_trait_2 }` is, similarly to advisors, a list of [country leader traits](#Country_leader_traits) that the country leader has, which would apply modifiers on the country if the character is leading the country.
 
 `expire = 1949.1.1` marks the date at which the leader expires. If the **start** date is after this amount, they cannot be used, even if recruited. Optional.
 
-`id = 100` is a leftover from the pre-NSB country leader system, making the leader have the specified ID for the [has\_country\_leader trigger](https://hoi4.paradoxwikis.com/Conditions#has_country_leader). Unnecessary and should be omitted, use character specific triggers instead.
+`id = 100` is a leftover from the pre-NSB country leader system, making the leader have the specified ID for the [has_country_leader trigger](<Triggers - Hearts of Iron 4 Wiki.md>). Unnecessary and should be omitted, use character specific triggers instead.
 
 `desc = MY_LEADER_DESCRIPTION` is the localisation key that gets used for the leader's description depending on the currently turned on language. This **must** be a localisation key, a directly-defined description will not appear in-game.
 
@@ -244,29 +246,29 @@ If a country leader is recruited in the country history file, then they will be 
 
 - A different character is already recruited as the party leader. In other words, in case of overlap between political parties in different characters, the game will place the first-recruited one as the party leader.
 - A randomly-generated character is forced to be created prior to recruitment. This can be caused by a different character being fired from their slot as the political party leader (such as if the leader needs to change between start dates) or, in some cases, by `set_politics = { ... }`. It's best to recruit characters before setting the political information for the country.
-- In case of differences between startdates, use the [promote\_character](<Effects - Hearts of Iron 4 Wiki.md#promote-character>) effect to ensure the new character becomes leader.
+- In case of differences between startdates, use the [promote_character](<Effects - Hearts of Iron 4 Wiki.md>) effect to ensure the new character becomes leader.
 
-### <a id="unit-leaders"></a>Unit leaders
+### Unit leaders <a id="Unit_leaders"></a>
 
 Unit leaders include corps commanders, field marshals, and admirals. Respectively, these use `corps_commander = { ... }`, `field_marshal = { ... }`, and `navy_leader = { ... }` blocks for definition, which are similar in structure.
 
-`traits = { my_trait_1 my_trait_2 }` is the list of [unit leader traits](#unit-leader-traits) assigned to the unit leader, defined in `/Hearts of Iron IV/common/unit_leader/*.txt`.
+`traits = { my_trait_1 my_trait_2 }` is the list of [unit leader traits](#Unit_leader_traits) assigned to the unit leader, defined in `/Hearts of Iron IV/common/unit_leader/*.txt`.
 
 `skill = 4` is the overall skill level of the unit leader. In addition, specific skills also can be set, with `attack_skill = 3` and `defense_skill = 2` being shared across all unit leaders, `planning_skill = 5` and `logistics_skill = 6` being only for army leaders, and `coordination_skill = 3` and `maneuvering_skill = 5` being only for navy leaders. To put what each skill level grants to the leader in more detail:
 
 | Internal name | Localised name | Unit leader type | Effect per level |
 | --- | --- | --- | --- |
-| <a id="skill"></a>skill | Skill | Any unit leader | Army leaders: Nothing  Navy leaders: +5% hit chance, +2% fleet coordination. |
-| <a id="attack-skill"></a>attack\_skill | Attack | Any unit leader | Army leaders: +2.5% offense  Navy leaders: +5% damage |
-| <a id="defense-skill"></a>defense\_skill | Defense | Any unit leader | Army leaders: +2.5% defense  Navy leaders: +5% defense |
-| <a id="planning-skill"></a>planning\_skill | Planning | Army leaders only | +5% planning speed  +2% max bonus from planning |
-| <a id="logistics-skill"></a>logistics\_skill | Logistics | Army leaders only | -2.5% supply consumption |
-| <a id="maneuvering-skill"></a>maneuvering\_skill | Maneuvering | Navy leaders only | +2.5% positioning  +1% naval retreat speed |
-| <a id="coordination-skill"></a>coordination\_skill | Coordination | Navy leaders only | +2% fleet coordination |
+| skill | Skill | Any unit leader | Army leaders: Nothing  Navy leaders: +5% hit chance, +2% fleet coordination. |
+| attack_skill | Attack | Any unit leader | Army leaders: +2.5% offense  Navy leaders: +5% damage |
+| defense_skill | Defense | Any unit leader | Army leaders: +2.5% defense  Navy leaders: +5% defense |
+| planning_skill | Planning | Army leaders only | +5% planning speed  +2% max bonus from planning |
+| logistics_skill | Logistics | Army leaders only | -2.5% supply consumption |
+| maneuvering_skill | Maneuvering | Navy leaders only | +2.5% positioning  +1% naval retreat speed |
+| coordination_skill | Coordination | Navy leaders only | +2% fleet coordination |
 
-`legacy_id = 100` is a leftover from the pre-NSB country leader system, making the leader have the specified ID for the [has\_id trigger](https://hoi4.paradoxwikis.com/Conditions#has_id), the [has\_unit\_leader trigger](https://hoi4.paradoxwikis.com/Conditions#has_unit_leader), and elsewhere. Unnecessary and should be omitted, use character specific triggers instead.
+`legacy_id = 100` is a leftover from the pre-NSB country leader system, making the leader have the specified ID for the [has_id trigger](<Triggers - Hearts of Iron 4 Wiki.md>), the [has_unit_leader trigger](<Triggers - Hearts of Iron 4 Wiki.md>), and elsewhere. Unnecessary and should be omitted, use character specific triggers instead.
 
-`visible = { ... }` is a trigger block that the character must fulfill in order for the unit leader to be visible and possible to pick. Additionally, country-scoped triggers are also supported, which'll assume the country that recruited the character. Unnecessary in most cases, as it's possible to [create the unit leader role](<Effects - Hearts of Iron 4 Wiki.md#add-corps-commander-role>) within an effect block mid-game.
+`visible = { ... }` is a trigger block that the character must fulfill in order for the unit leader to be visible and possible to pick. Additionally, country-scoped triggers are also supported, which'll assume the country that recruited the character. Unnecessary in most cases, as it's possible to [create the unit leader role](<Effects - Hearts of Iron 4 Wiki.md>) within an effect block mid-game.
 
 Examples:
 
@@ -297,7 +299,7 @@ navy_leader = {
 }
 ```
 
-### <a id="scientists"></a>Scientists
+### Scientists <a id="Scientists"></a>
 
 To give the character the role of a scientist, the `scientist` block can be added. It's structure is in principle the same as for `corps_commander` etc. They use scientist traits instead of commander traits (as expected), and instead of merely having a skill level they assign a skill level to one of the specializations (four types in the basegame, but there might be more types added by some mods). While adding more than one specialization doesn't produce an error, any specializations beyond the first one are ignored by the game.
 
@@ -319,7 +321,7 @@ scientist = {
 }
 ```
 
-## <a id="full-example"></a>Full example
+## Full example <a id="Full_example"></a>
 
 Within any `/Hearts of Iron IV/common/characters/*.txt` file
 
@@ -377,7 +379,7 @@ recruit_character = UKR_nestor_makhno
 recruit_character = SOV_georgy_zhukov
 ```
 
-## <a id="instances"></a>Instances
+## Instances <a id="Instances"></a>
 
 It is also possible for a character to have a different definition depending on set preconditions checked at the game's start. This is done with `instance = { ... }`. The character will take on every instance where `allowed = { ... }` is true **at the game's start**. For example, this can be used to make the character to have a different role depending on which DLCs the player has enabled:
 
@@ -406,11 +408,9 @@ my_character = {
 
 Due to its purpose, each instance must have an `allowed` block and the character must have multiple instances to work properly. If the character only has a single pre-determined state, then the instance should be omitted.
 
-## <a id="using-in-game"></a>Using in-game
+## Using in-game <a id="Using_in-game"></a>
 
-*See also: [Effect § Character scope](<Effects - Hearts of Iron 4 Wiki.md#character-scope>)*
-
-*See also: [Effect § Characters](<Effects - Hearts of Iron 4 Wiki.md#characters>)*
+*See also: [Effect § Character scope](<Effects - Hearts of Iron 4 Wiki.md#Character_scope>)**See also: [Effect § Characters](<Effects - Hearts of Iron 4 Wiki.md#Characters>)*
 
 After being created, a character is mandatory to be assigned to a country. Since the filenames are only used for organisation purposes, this is done within the country's history file (in `/Hearts of Iron IV/history/countries/`) as such:
 
@@ -437,11 +437,11 @@ set_politics = {                            # Since set_politics forces a leader
 }
 ```
 
-In this case, TAG\_liberal\_leader will be the leader of the democratic ideology/party and thus the starting country leader. TAG\_marxist\_leader will be the leader of the communist party, TAG\_centrist\_leader will be the leader of the non-aligned party and TAG\_falangist\_leader will be the leader of the fascist party.
+In this case, TAG_liberal_leader will be the leader of the democratic ideology/party and thus the starting country leader. TAG_marxist_leader will be the leader of the communist party, TAG_centrist_leader will be the leader of the non-aligned party and TAG_falangist_leader will be the leader of the fascist party.
 
-The characters TAG\_stalinist\_leader, TAG\_conservative\_leader, TAG\_despotic\_leader and TAG\_rexist\_leader do not start as leaders in this case and will remain only as possible leaders to be used later on. For this reason, it is not necessary for country leader characters to be defined without the role, as long as their ideology group has another character as leader.
+The characters TAG_stalinist_leader, TAG_conservative_leader, TAG_despotic_leader and TAG_rexist_leader do not start as leaders in this case and will remain only as possible leaders to be used later on. For this reason, it is not necessary for country leader characters to be defined without the role, as long as their ideology group has another character as leader.
 
-Characters that are recruited but not currently the leader of their party, such as the TAG\_conservative\_leader above can later be promoted to leader using the [promote\_character](<Effects - Hearts of Iron 4 Wiki.md#promote-character>) effect. Retiring the previous leader or removing their role is not necessary. Example:
+Characters that are recruited but not currently the leader of their party, such as the TAG_conservative_leader above can later be promoted to leader using the [promote_character](<Effects - Hearts of Iron 4 Wiki.md>) effect. Retiring the previous leader or removing their role is not necessary. Example:
 
 ```text
 #Used in character scope
@@ -479,7 +479,7 @@ characters = {
 ```
 
 **This character should still be recruited with `recruit_character = TAG_new_leader`**
-After doing so, this character can be *given* a role within an effect block using the effect [add\_country\_leader\_role](<Effects - Hearts of Iron 4 Wiki.md#add-country-leader-role>). For example, this completion reward for a focus makes a character lead the democratic party:
+After doing so, this character can be *given* a role within an effect block using the effect [add_country_leader_role](<Effects - Hearts of Iron 4 Wiki.md>). For example, this completion reward for a focus makes a character lead the democratic party:
 
 ```text
 completion_reward = {
@@ -494,20 +494,20 @@ completion_reward = {
 }
 ```
 
-If a character is intended to be removed from the game "permanently", as in death or retirement, [retire\_character](<Effects - Hearts of Iron 4 Wiki.md#retire-character>) (country scope) and [retire](<Effects - Hearts of Iron 4 Wiki.md#retire>) (character scope) can be used. This is basically a reverse effect of `recruit_character`, the character will be dismissed from the country completely. However, this effect is not actually permanent, the character can be re-added to the game using the effect [set\_nationality](<Effects - Hearts of Iron 4 Wiki.md#set-nationality>) and all their roles will be retained. For scoping purposes, the character is located in the same country as before.
+If a character is intended to be removed from the game "permanently", as in death or retirement, [retire_character](<Effects - Hearts of Iron 4 Wiki.md>) (country scope) and [retire](<Effects - Hearts of Iron 4 Wiki.md>) (character scope) can be used. This is basically a reverse effect of `recruit_character`, the character will be dismissed from the country completely. However, this effect is not actually permanent, the character can be re-added to the game using the effect [set_nationality](<Effects - Hearts of Iron 4 Wiki.md>) and all their roles will be retained. For scoping purposes, the character is located in the same country as before.
 
-- Removing a character is not always needed. For example when another character is set to become country leader, using the effect `promote_character` is enough already as the old leader will not affect it in any way. The effect [remove\_country\_leader\_role](<Effects - Hearts of Iron 4 Wiki.md#remove-country-leader-role>) can also be used the remove the leader role from a character, and other roles will also have effects that can be used.
+- Removing a character is not always needed. For example when another character is set to become country leader, using the effect `promote_character` is enough already as the old leader will not affect it in any way. The effect [remove_country_leader_role](<Effects - Hearts of Iron 4 Wiki.md>) can also be used the remove the leader role from a character, and other roles will also have effects that can be used.
 
 It is not recommended to use effects such as `kill_country_leader`, `retire_country_leader`, `kill_ideology_leader` and `retire_ideology_leader`, as these effects will affect *any character* that is currently the leader without further confirmation, instead of being able to specify who should be removed.
 
 - When dealing with characters, `kill_country_leader` and `kill_ideology_leader` will behave exactly the same way as `retire_character`, meaning the character is dismissed and can be re-added with `set_nationality`.
 - As for `retire_country_leader` and `retire_ideology_leader`, these effects will only remove the leader from the "line of succession" of their political party, meaning the next character recruited will be promoted to leader of the party. The old leader will not be removed and will retain all their roles, being able to come back using `promote_character`.
 
-Other effects on this topic include [add\_corps\_commander\_role](<Effects - Hearts of Iron 4 Wiki.md#add-corps-commander-role>), [add\_field\_marshal\_role](<Effects - Hearts of Iron 4 Wiki.md#add-field-marshal-role>), [add\_naval\_commander\_role](<Effects - Hearts of Iron 4 Wiki.md#add-naval-commander-role>), [add\_advisor\_role](<Effects - Hearts of Iron 4 Wiki.md#add-advisor-role>), and others.
+Other effects on this topic include [add_corps_commander_role](<Effects - Hearts of Iron 4 Wiki.md>), [add_field_marshal_role](<Effects - Hearts of Iron 4 Wiki.md>), [add_naval_commander_role](<Effects - Hearts of Iron 4 Wiki.md>), [add_advisor_role](<Effects - Hearts of Iron 4 Wiki.md>), and others.
 
 Advisor roles created with `add_advisor_role` cannot contain script, such as `visible = { ... }`, `available = { ... }`, `on_add = { ... }`. It is recommended instead to use `visible = { ... }` with an appropriate [trigger](<Triggers - Hearts of Iron 4 Wiki.md>) for creating advisors that should not be visible at game start. For the same reason, it is not recommended to use `remove_advisor_role` on advisors that contain script, as all the triggers and effects will be lost and cannot be added back if needed later on. Usage of these effects should be reserved for characters with more static roles, as in have no conditions or other script.
 
-In order to hire an advisor to be within their proper slot, [activate\_advisor](<Effects - Hearts of Iron 4 Wiki.md#activate-advisor>) is used as such:
+In order to hire an advisor to be within their proper slot, [activate_advisor](<Effects - Hearts of Iron 4 Wiki.md>) is used as such:
 
 ```text
 activate_advisor = TAG_character_name_token
@@ -515,7 +515,7 @@ activate_advisor = TAG_character_name_token
 
 Where `TAG_character_name_token` is the `idea_token` defined in the character's advisor role. As an effect, this works within country history files as well.
 
-Portraits of characters, both small and large, can be changed later in game using the effect [set\_portraits](<Effects - Hearts of Iron 4 Wiki.md#set-portraits>), which works both in character scope and country scope. The same rules as on [Portraits](<Character modding - Hearts of Iron 4 Wiki.md#portraits>) apply. For example:
+Portraits of characters, both small and large, can be changed later in game using the effect [set_portraits](<Effects - Hearts of Iron 4 Wiki.md>), which works both in character scope and country scope. The same rules as on [Portraits](#Portraits) apply. For example:
 
 ```text
 TAG_New_Leader = {
@@ -535,9 +535,9 @@ set_portraits = {
 }
 ```
 
-### <a id="the-special-case-of-generate-character"></a>The special case of generate\_character
+### The special case of generate_character <a id="The_special_case_of_generate_character"></a>
 
-The effect [generate\_character](<Effects - Hearts of Iron 4 Wiki.md#generate-character>) is used to create generic characters, such as the generic advisors present in the base game. **These have limitations and should not be used as a replacement for regular characters.** Example:
+The effect [generate_character](<Effects - Hearts of Iron 4 Wiki.md>) is used to create generic characters, such as the generic advisors present in the base game. **These have limitations and should not be used as a replacement for regular characters.** Example:
 
 ```text
 every_country = {
@@ -587,9 +587,9 @@ generate_character = { token_base = generic_guy }
 
 **The effect will fail if the "template" does not exist in the history files.** Using the full effect directly mid-game will not work.
 
-## <a id="country-leader-traits"></a>Country leader traits
+## Country leader traits <a id="Country_leader_traits"></a>
 
-*"Trait modding" redirects here. For unit leader traits, see [§ Unit leader traits](#unit-leader-traits)*
+*"Trait modding" redirects here. For unit leader traits, see [§ Unit leader traits](#Unit_leader_traits)*
 
 Despite their name, country leader traits can be applied to either advisors, ideas, or country leaders. Country leader traits are defined in any `/Hearts of Iron IV/common/country_leader/*.txt` file.
  The traits' modifiers will apply to the country that has the character or idea on which the trait is applied.
@@ -621,20 +621,20 @@ Within country leader traits, these are the arguments that are used:
 
 - `random = no` decides whether there's a possibility that a randomly-created country leader can appear with this trait.
 - `sprite = 1` decides the sprite that appears in the bottom left of an advisor that has this trait. This must be a number, which corresponds with the frame of the `GFX_idea_traits_strip` spriteType, defined within `/Hearts of Iron IV/interface/ideas.gfx` by default. Optional.
-- `ai_will_do` is a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#ai-will-do>) that modifies the chance for AI to pick an advisor or idea that has this trait assigned. 1 by default.
+- `ai_will_do` is a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md>) that modifies the chance for AI to pick an advisor or idea that has this trait assigned. 1 by default.
 
-- `command_cap` determines the price of the political advisor to which this trait is assigned in [Command power](https://hoi4.paradoxwikis.com/Command_power). Mainly applied to military advisors.
+- `command_cap` determines the price of the political advisor to which this trait is assigned in Command power. Mainly applied to military advisors.
 
-Additionally, [special modifier types that can be used in ideas](<Idea modding - Hearts of Iron 4 Wiki.md#modifiers>): `targeted_modifier = { ... }` and `equipment_bonus = { ... }` - can be used within traits alongside regular modifiers, in the exact same manner as within ideas. The same does not apply to `research_bonus = { ... }` and `rule = { ... }`, however.
+Additionally, [special modifier types that can be used in ideas](<Idea modding - Hearts of Iron 4 Wiki.md#Modifiers>): `targeted_modifier = { ... }` and `equipment_bonus = { ... }` - can be used within traits alongside regular modifiers, in the exact same manner as within ideas. The same does not apply to `research_bonus = { ... }` and `rule = { ... }`, however.
 
 Localisation is defined by using the trait's name as a localisation key within any localisation file, with an entry as  `my_trait: "My trait"`.
 
-### <a id="sprite"></a>Sprite
+### Sprite <a id="Sprite"></a>
 
-*See also: [Sprite overview](https://hoi4.paradoxwikis.com/Template:Sprite_overview)*
+*See also: Sprite overview*
 
-The `sprite = 1` argument decides shown on the paper for the advisor when an advisor has this. This uses the `GFX_idea_traits_strip` [spriteType](https://hoi4.paradoxwikis.com/SpriteType), which can be defined in any `/Hearts of Iron IV/interface/*.gfx` file, by default `ideas.gfx`. However, it's generally better to avoid overlap in files from the base game to decrease the needed amount of work to make the mod be up to date. Instead, it's possible to overwrite the sprite in a new file.
-In particular, in case of there being defined several spriteTypes with the same name, the game picks the one that was evaluated later. The filename is used to order the files for the evaluation, using [ASCII order](http://en.wikipedia.org/wiki/ASCII#Printable_characters), so a file later in that order may contain an overriding sprite. For example, it may be `interface/xyz_override.gfx`, since "x" is later than "i" in the ASCII alphabet. This may be its contents:
+The `sprite = 1` argument decides shown on the paper for the advisor when an advisor has this. This uses the `GFX_idea_traits_strip` [spriteType](<Graphical asset modding - Hearts of Iron 4 Wiki.md>), which can be defined in any `/Hearts of Iron IV/interface/*.gfx` file, by default `ideas.gfx`. However, it's generally better to avoid overlap in files from the base game to decrease the needed amount of work to make the mod be up to date. Instead, it's possible to overwrite the sprite in a new file.
+In particular, in case of there being defined several spriteTypes with the same name, the game picks the one that was evaluated later. The filename is used to order the files for the evaluation, using ASCII order, so a file later in that order may contain an overriding sprite. For example, it may be `interface/xyz_override.gfx`, since "x" is later than "i" in the ASCII alphabet. This may be its contents:
 
 ```text
 spriteTypes = {
@@ -653,15 +653,15 @@ In particular, these are the important notes:
 - **It is mandatory to change the noOfFrames** if the image is changed from the base game's default
 - **Base game's `ideas.gfx` should not exist within the mod** in most cases. If the image for the trait strip is edited, it will not break the mod as much upon game updates to keep it copied, however any newly-added sprites will become unusable unless manually ported over, which can be avoided by just using a different file for new sprites.
 
-## <a id="unit-leader-traits"></a>Unit leader traits
+## Unit leader traits <a id="Unit_leader_traits"></a>
 
 Units leader traits are defined in any `/Hearts of Iron IV/common/unit_leader/*.txt` file, possible to assign to unit leader characters of any type as well as operatives. Each one is defined within the `leader_traits = { ... }` block as a separate entry with the name of the trait's ID.
 
-### <a id="localisation"></a>Localisation
+### Localisation <a id="Localisation"></a>
 
 Localisation is defined by using the trait's name as a localisation key within any localisation file, with an entry as  `my_trait: "My trait"`. A description can be added by appending `_desc` to the end as `my_trait_desc: "My description"`.
 
-### <a id="gfx"></a>GFX
+### GFX <a id="GFX"></a>
 
 The picture is defined in any `/Hearts of Iron IV/interface/*.gfx` file as a spriteType with the name of `GFX_trait_<trait's name>`. As an example with a trait of the name `not_polish_person`, a sprite definition with the name of `GFX_trait_not_polish_person` will be used. The `/Hearts of Iron IV/interface/*.gfx` file containing the sprite will have these contents:
 
@@ -674,64 +674,64 @@ spriteTypes = {
 }
 ```
 
-### <a id="general-arguments"></a>General arguments
+### General arguments <a id="General_arguments"></a>
 
 | Argument | Value type | Example | Effects | Notes |
 | --- | --- | --- | --- | --- |
-| <a id="type"></a>type | Type(s) | `type = corps_commander``type = { land navy }` | Assigns a type to the trait, which gets used to assign which characters are able to receive it. | The types include `all`, `land`, `navy`, `operative`, `corps_commander`, and `field_marshal` |
-| <a id="trait-type"></a>trait\_type | Trait type | `trait_type = assignable_trait` | Assigns a type to the trait, which gets used to assign where it's positioned on the user interface, as well as deciding if and when it's possible to assign. | The types include `basic_trait` (for operatives), `personality_trait`, `assignable_trait`, `basic_terrain_trait`, `assignable_terrain_trait`, `status_trait`, and `exile` |
-| <a id="show-in-combat"></a>show\_in\_combat | Boolean | `show_in_combat = yes` | Makes this specified trait show up in the combat menu among other bonuses. |  |
-| <a id="allowed"></a>allowed | Triggers | `allowed = { FROM = { tag = POL } }` | Triggers that are checked when trying to assign the trait to a unit leader, making it fail to assign if false. Checked in the scope of the unit leader. | FROM is the country that recruited the character. |
-| <a id="ai-will-do"></a>ai\_will\_do | [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#ai-will-do>) | `ai_will_do = { base = 3 modifier = { FROM = { tag = POL } } }` | Decides the weight that AI has for picking this trait. | A weight of 0 will result in AI never picking it. |
-| <a id="new-commander-weight"></a>new\_commander\_weight | [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#ai-will-do>) | `new_commander_weight = { base = 0 }` | Decides the weight that the trait has for new randomly-generated unit leaders. | A weight of 0 will result in it never appearing for randomly-generated unit leaders. Only can be defined for traits with the personality\_trait type. |
-| <a id="slot"></a>slot | [Character slot](#political-advisor) | `slot = army_chief` | Decides which advisor slot gets used by the [officer corps](https://hoi4.paradoxwikis.com/Officer_corps) role that can be assigned to this unit leader. |  |
-| <a id="specialist-advisor-trait"></a>specialist\_advisor\_trait | [Country leader trait](#country-leader-traits) | `specialist_advisor_trait = my_trait` | Creates a specialist [officer corps](https://hoi4.paradoxwikis.com/Officer_corps) role that can be assigned to this unit leader using the specified advisor trait as the base. |  |
-| <a id="expert-advisor-trait"></a>expert\_advisor\_trait | [Country leader trait](#country-leader-traits) | `expert_advisor_trait = my_trait` | Creates a expert [officer corps](https://hoi4.paradoxwikis.com/Officer_corps) role that can be assigned to this unit leader using the specified advisor trait as the base. |  |
-| <a id="genius-advisor-trait"></a>genius\_advisor\_trait | [Country leader trait](#country-leader-traits) | `genius_advisor_trait = my_trait` | Creates a genius [officer corps](https://hoi4.paradoxwikis.com/Officer_corps) role that can be assigned to this unit leader using the specified advisor trait as the base. |  |
-| <a id="unit-type"></a>unit\_type | `type = <sub-unit type>` | `unit_type = { type = infantry type = militia }` | Limits the selection of units on which the modifiers can apply on to those that have the sub-unit in a composition. | Sub-units are defined within `/Hearts of Iron IV/common/units/*.txt` files. In order for it to apply those that are majority-made out of a sub-unit, [division\_has\_majority\_template](<Triggers - Hearts of Iron 4 Wiki.md#division-has-majority-template>) can be used in [unit\_trigger](#unit-trigger). |
-| <a id="unit-trigger"></a>unit\_trigger | Triggers | `unit_trigger = { division_has_majority_template = camelry owner = { neutrality > 0.5 } }` | Applies a division-scoped trigger block that must be met for the unit to be modified. |  |
+| type | Type(s) | `type = corps_commander`  `type = { land navy }` | Assigns a type to the trait, which gets used to assign which characters are able to receive it. | The types include `all`, `land`, `navy`, `operative`, `corps_commander`, and `field_marshal` |
+| trait_type | Trait type | `trait_type = assignable_trait` | Assigns a type to the trait, which gets used to assign where it's positioned on the user interface, as well as deciding if and when it's possible to assign. | The types include `basic_trait` (for operatives), `personality_trait`, `assignable_trait`, `basic_terrain_trait`, `assignable_terrain_trait`, `status_trait`, and `exile` |
+| show_in_combat | Boolean | `show_in_combat = yes` | Makes this specified trait show up in the combat menu among other bonuses. |  |
+| allowed | Triggers | `allowed = { FROM = { tag = POL } }` | Triggers that are checked when trying to assign the trait to a unit leader, making it fail to assign if false. Checked in the scope of the unit leader. | FROM is the country that recruited the character. |
+| ai_will_do | [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md>) | `ai_will_do = { base = 3 modifier = { FROM = { tag = POL } } }` | Decides the weight that AI has for picking this trait. | A weight of 0 will result in AI never picking it. |
+| new_commander_weight | [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md>) | `new_commander_weight = { base = 0 }` | Decides the weight that the trait has for new randomly-generated unit leaders. | A weight of 0 will result in it never appearing for randomly-generated unit leaders. Only can be defined for traits with the personality_trait type. |
+| slot | Character slot | `slot = army_chief` | Decides which advisor slot gets used by the officer corps role that can be assigned to this unit leader. |  |
+| specialist_advisor_trait | [Country leader trait](#Country_leader_traits) | `specialist_advisor_trait = my_trait` | Creates a specialist officer corps role that can be assigned to this unit leader using the specified advisor trait as the base. |  |
+| expert_advisor_trait | [Country leader trait](#Country_leader_traits) | `expert_advisor_trait = my_trait` | Creates a expert officer corps role that can be assigned to this unit leader using the specified advisor trait as the base. |  |
+| genius_advisor_trait | [Country leader trait](#Country_leader_traits) | `genius_advisor_trait = my_trait` | Creates a genius officer corps role that can be assigned to this unit leader using the specified advisor trait as the base. |  |
+| unit_type | `type = <sub-unit type>` | `unit_type = { type = infantry type = militia }` | Limits the selection of units on which the modifiers can apply on to those that have the sub-unit in a composition. | Sub-units are defined within `/Hearts of Iron IV/common/units/*.txt` files. In order for it to apply those that are majority-made out of a sub-unit, [division_has_majority_template](<Triggers - Hearts of Iron 4 Wiki.md>) can be used in unit_trigger. |
+| unit_trigger | Triggers | `unit_trigger = { division_has_majority_template = camelry owner = { neutrality > 0.5 } }` | Applies a division-scoped trigger block that must be met for the unit to be modified. |  |
 
-### <a id="modifiers-and-effects"></a>Modifiers and effects
+### Modifiers and effects <a id="Modifiers_and_effects"></a>
 
 These arguments are for the modifiers that the trait gives to the unit leader, whether it's the modifiers themselves or something related to them, as well as effects executed related to the trait.
 
 | Argument | Value type | Example | Effects | Notes |
 | --- | --- | --- | --- | --- |
-| <a id="modifier"></a>modifier | Modifiers | `modifier = { planning_speed = 0.2 urban = { movement = 0.1 } }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the divisions that the unit leader leads. | Possible to specify the terrain by scoping into it. Terrain types are defined in `/Hearts of Iron IV/common/terrain/*.txt`. |
-| <a id="non-shared-modifier"></a>non\_shared\_modifier | Modifiers | `non_shared_modifier = { experience_gain_factor = 0.3 }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the unit leader themselves. | While in theory identical to [the prior modifier](#modifier), this has a different tooltip, so it shows up differently in-game. |
-| <a id="corps-commander-modifier"></a>corps\_commander\_modifier | Modifiers | `corps_commander_modifier = { max_commander_army_size = 3 }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the army leader when in the role of a corps commander, i.e. leading units directly rather than leading other generals. | If a field marshal is assigned to lead divisions directly rather than other generals, this will apply on them. |
-| <a id="field-marshal-modifier"></a>field\_marshal\_modifier | Modifiers | `field_marshal_modifier = { supply_consumption_factor = 0.5 }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the army leader when in the role of a field marshal, i.e. leading other generals that lead divisions. | If a field marshal is assigned to lead divisions directly rather than other generals, this will *not* apply on them. |
-| <a id="sub-unit-modifiers"></a>sub\_unit\_modifiers | Modifiers | `sub_unit_modifiers = { artillery_brigade = { max_strength = 0.1 } }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the division brigades that make up the divisions that the army leader leads or, similarly, ships that make up the fleet that the navy leader leads. | Brigades are defined in `/Hearts of Iron IV/common/units/*.txt`. What's used in the definition as arguments is possible to apply as a multiplicatory sub-unit modifier. |
-| <a id="unit-leader-skill"></a><skill type> | Integer | `attack_skill = 2` | Adds a flat bonus to the specified skill. | [The list of skills defined for unit leaders earlier in the page](#skill) |
-| <a id="unit-leader-skill-factor"></a><skill type>\_factor | Percentual | `defense_skill_factor = 1` | Adds a multiplicatory bonus to the specified skill. `1` would add 100%, doubling it, for example. | [The list of skills defined for unit leaders earlier in the page](#skill) |
-| <a id="override-effect-tooltip"></a>override\_effect\_tooltip | Localisation key | `override_effect_tooltip = my_effect_tt` | Hides the effects of the trait, replacing the tooltip with the value of this localisation key. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
-| <a id="custom-effect-tooltip"></a>custom\_effect\_tooltip | Localisation key | `custom_effect_tooltip = my_effect_tt` | Appends the value of this localisation key to the tooltip showing the effects of the trait. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
-| <a id="enable-ability"></a>enable\_ability | Ability | `enable_ability = my_ability` | Enables an ability that can be used by the unit leader in combat. | Abilities are defined in `/Hearts of Iron IV/common/abilities/*.txt` |
-| <a id="on-add"></a>on\_add | Effects | `on_add = { promote_leader = yes }` | Defines the effects that would be executed on the unit leader when the trait is added. |  |
-| <a id="on-remove"></a>on\_remove | Effects | `on_remove = { remove_unit_leader = yes }` | Defines the effects that would be executed on the unit leader when the trait is removed. |  |
-| <a id="daily-effect"></a>daily\_effect | Effects | `daily_effect = { gain_xp = 1 }` | Defines the effects that would be executed on the unit leader every day if they have the trait. |  |
+| modifier | Modifiers | `modifier = { planning_speed = 0.2 urban = { movement = 0.1 } }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the divisions that the unit leader leads. | Possible to specify the terrain by scoping into it. Terrain types are defined in `/Hearts of Iron IV/common/terrain/*.txt`. |
+| non_shared_modifier | Modifiers | `non_shared_modifier = { experience_gain_factor = 0.3 }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the unit leader themselves. | While in theory identical to the prior modifier, this has a different tooltip, so it shows up differently in-game. |
+| corps_commander_modifier | Modifiers | `corps_commander_modifier = { max_commander_army_size = 3 }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the army leader when in the role of a corps commander, i.e. leading units directly rather than leading other generals. | If a field marshal is assigned to lead divisions directly rather than other generals, this will apply on them. |
+| field_marshal_modifier | Modifiers | `field_marshal_modifier = { supply_consumption_factor = 0.5 }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the army leader when in the role of a field marshal, i.e. leading other generals that lead divisions. | If a field marshal is assigned to lead divisions directly rather than other generals, this will *not* apply on them. |
+| sub_unit_modifiers | Modifiers | `sub_unit_modifiers = { artillery_brigade = { max_strength = 0.1 } }` | Assigns the [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) that the trait grants to the division brigades that make up the divisions that the army leader leads or, similarly, ships that make up the fleet that the navy leader leads. | Brigades are defined in `/Hearts of Iron IV/common/units/*.txt`. What's used in the definition as arguments is possible to apply as a multiplicatory sub-unit modifier. |
+| <skill type> | Integer | `attack_skill = 2` | Adds a flat bonus to the specified skill. | The list of skills defined for unit leaders earlier in the page |
+| <skill type>_factor | Percentual | `defense_skill_factor = 1` | Adds a multiplicatory bonus to the specified skill. `1` would add 100%, doubling it, for example. | The list of skills defined for unit leaders earlier in the page |
+| override_effect_tooltip | Localisation key | `override_effect_tooltip = my_effect_tt` | Hides the effects of the trait, replacing the tooltip with the value of this localisation key. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
+| custom_effect_tooltip | Localisation key | `custom_effect_tooltip = my_effect_tt` | Appends the value of this localisation key to the tooltip showing the effects of the trait. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
+| enable_ability | Ability | `enable_ability = my_ability` | Enables an ability that can be used by the unit leader in combat. | Abilities are defined in `/Hearts of Iron IV/common/abilities/*.txt` |
+| on_add | Effects | `on_add = { promote_leader = yes }` | Defines the effects that would be executed on the unit leader when the trait is added. |  |
+| on_remove | Effects | `on_remove = { remove_unit_leader = yes }` | Defines the effects that would be executed on the unit leader when the trait is removed. |  |
+| daily_effect | Effects | `daily_effect = { gain_xp = 1 }` | Defines the effects that would be executed on the unit leader every day if they have the trait. |  |
 
-### <a id="selection"></a>Selection
+### Selection <a id="Selection"></a>
 
 These arguments are related to the menu for selecting traits. This includes experience. If the trait is manually assigned only, these can be omitted.
 
 | Argument | Value type | Example | Effects | Notes |
 | --- | --- | --- | --- | --- |
-| <a id="mutually-exclusive"></a>mutually\_exclusive | Trait | `mutually_exclusive = my_trait` | Makes the specified trait mutually exclusive with the other trait, making it impossible to pick if that one was selected and drawing the arrows in the menu. | Both traits require defining this to work properly. |
-| <a id="parent"></a>parent | Trait | `parent = my_trait` | Makes the specified trait be marked as a parent, making it be required to pick the current trait and drawing the line in the menu. | Multiple parents can be specified by defining `parent = my_trait_2` several times. |
-| <a id="num-parents-needed"></a>num\_parents\_needed | Integer | `num_parents_needed = 3` | Sets the required amount of parents needed to select the trait. | If omitted or set to `-1`, then assumes that all parents are necessary. |
-| <a id="gui-row"></a>gui\_row | Integer | `gui_row = 3` | Sets the row on which the trait is located. | If omitted or set to `-1`, then the trait does not appear in the unlockable trait tree. Starts at 0. |
-| <a id="gui-column"></a>gui\_column | Integer | `gui_column = 3` | Sets the column on which the trait is located. | If omitted or set to `-1`, then one is automatically picked [depending on the trait\_type](#trait-type). |
-| <a id="prerequisites"></a>prerequisites | Triggers | `prerequisites = { defense_skill_level > 3 }` | Triggers that must be met in order for assigning the trait to be possible. | Checked in the unit leader scope. |
-| <a id="custom-prerequisite-tooltip"></a>custom\_prerequisite\_tooltip | Localisation key | `custom_prerequisite_tooltip = my_prerequisite_tt` | Changes the tooltip of the conditions required for picking the trait to the following localisation key. Useful if a trigger within has no tooltip. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
-| <a id="cost"></a>cost | Decimal | `cost = 1500` | The experience required in order to assign this trait to a unit leader. |  |
-| <a id="gain-xp"></a>gain\_xp | Triggers | `gain_xp = { is_amphibious_invasion = yes }` | Triggers that must be met in order to gain experience that'd make assigning this trait possible. | Checked in the [combatant](https://hoi4.paradoxwikis.com/Conditions#Combat) scope. |
-| <a id="gain-xp-leader"></a>gain\_xp\_leader | Triggers | `gain_xp_leader = { num_units > 10 }` | Triggers that must be met in order to gain experience that'd make assigning this trait possible. | Checked in the unit leader scope. |
-| <a id="gain-xp-on-spotting"></a>gain\_xp\_on\_spotting | Decimal | `gain_xp_on_spotting = 7` | The amount of experience gained when the admiral spots an enemy fleet. |  |
-| <a id="custom-gain-xp-trigger-tooltip"></a>custom\_gain\_xp\_trigger\_tooltip | Localisation key | `custom_gain_xp_trigger_tooltip = my_prerequisite_tt` | Changes the tooltip of the conditions required for gaining experience for the trait to the following localisation key. Useful if a trigger within has no tooltip. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
-| <a id="trait-xp-factor"></a>trait\_xp\_factor | Triggers | `trait_xp_factor = { my_trait = 0.1 }` | Modifies the amount of experience gained towards other traits if the unit leader has this trait. | 0.1 would mean that the unit leader gains 10% more experience, not that it gains 10% as much. |
+| mutually_exclusive | Trait | `mutually_exclusive = my_trait` | Makes the specified trait mutually exclusive with the other trait, making it impossible to pick if that one was selected and drawing the arrows in the menu. | Both traits require defining this to work properly. |
+| parent | Trait | `parent = my_trait` | Makes the specified trait be marked as a parent, making it be required to pick the current trait and drawing the line in the menu. | Multiple parents can be specified by defining `parent = my_trait_2` several times. |
+| num_parents_needed | Integer | `num_parents_needed = 3` | Sets the required amount of parents needed to select the trait. | If omitted or set to `-1`, then assumes that all parents are necessary. |
+| gui_row | Integer | `gui_row = 3` | Sets the row on which the trait is located. | If omitted or set to `-1`, then the trait does not appear in the unlockable trait tree. Starts at 0. |
+| gui_column | Integer | `gui_column = 3` | Sets the column on which the trait is located. | If omitted or set to `-1`, then one is automatically picked depending on the trait_type. |
+| prerequisites | Triggers | `prerequisites = { defense_skill_level > 3 }` | Triggers that must be met in order for assigning the trait to be possible. | Checked in the unit leader scope. |
+| custom_prerequisite_tooltip | Localisation key | `custom_prerequisite_tooltip = my_prerequisite_tt` | Changes the tooltip of the conditions required for picking the trait to the following localisation key. Useful if a trigger within has no tooltip. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
+| cost | Decimal | `cost = 1500` | The experience required in order to assign this trait to a unit leader. |  |
+| gain_xp | Triggers | `gain_xp = { is_amphibious_invasion = yes }` | Triggers that must be met in order to gain experience that'd make assigning this trait possible. | Checked in the [combatant](<Triggers - Hearts of Iron 4 Wiki.md#Combat>) scope. |
+| gain_xp_leader | Triggers | `gain_xp_leader = { num_units > 10 }` | Triggers that must be met in order to gain experience that'd make assigning this trait possible. | Checked in the unit leader scope. |
+| gain_xp_on_spotting | Decimal | `gain_xp_on_spotting = 7` | The amount of experience gained when the admiral spots an enemy fleet. |  |
+| custom_gain_xp_trigger_tooltip | Localisation key | `custom_gain_xp_trigger_tooltip = my_prerequisite_tt` | Changes the tooltip of the conditions required for gaining experience for the trait to the following localisation key. Useful if a trigger within has no tooltip. | English localisation is defined in any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file. Similarly for other languages. |
+| trait_xp_factor | Triggers | `trait_xp_factor = { my_trait = 0.1 }` | Modifies the amount of experience gained towards other traits if the unit leader has this trait. | 0.1 would mean that the unit leader gains 10% more experience, not that it gains 10% as much. |
 
-### <a id="example"></a>Example
+### Example <a id="Example"></a>
 
 ```text
 leader_traits = {
@@ -769,32 +769,19 @@ leader_traits = {
 }
 ```
 
-## <a id="references"></a>References
+## References <a id="References"></a>
 
-1. [↑](#cite-ref-1) `NDefines.NCountry.FEMALE_UNIT_LEADER_BASE_CHANCE = { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 }`
+1. ↑ `NDefines.NCountry.FEMALE_UNIT_LEADER_BASE_CHANCE = { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 }`
+
+---
+
+## Navigation
 
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**
 
-|  |  |
-| --- | --- |
-| Documentation | [Effects](<Effects - Hearts of Iron 4 Wiki.md>) • [Triggers](https://hoi4.paradoxwikis.com/Conditions) • [Defines](<Defines - Hearts of Iron 4 Wiki.md>) • [Modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) • [List of modifiers](https://hoi4.paradoxwikis.com/List_of_modifiers) • [Scopes](<Scopes - Hearts of Iron 4 Wiki.md>) • [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>) • [On actions](<On actions - Hearts of Iron 4 Wiki.md>) • [Data structures](<Data structures - Hearts of Iron 4 Wiki.md>) ([Flags](<Data structures - Hearts of Iron 4 Wiki.md#flags>), [Event targets](<Data structures - Hearts of Iron 4 Wiki.md#event-targets>), [Country tag aliases](<Data structures - Hearts of Iron 4 Wiki.md#country-tag-aliases>), [Variables](<Data structures - Hearts of Iron 4 Wiki.md#variables>), [Arrays](<Data structures - Hearts of Iron 4 Wiki.md#arrays>)) |
-
-|  |  |
-| --- | --- |
-| Scripting | [Achievements](<Achievement modding - Hearts of Iron 4 Wiki.md>) • [AI](<AI modding - Hearts of Iron 4 Wiki.md>) • [AI focuses](<AI focuses - Hearts of Iron 4 Wiki.md>) • [Autonomous states](<Autonomy state modding - Hearts of Iron 4 Wiki.md>) • [Balances of power](<Balance of power modding - Hearts of Iron 4 Wiki.md>) • [Bookmarks/Scenarios](<Bookmark modding - Hearts of Iron 4 Wiki.md>) ([Game rules](<Bookmark modding - Hearts of Iron 4 Wiki.md#game-rules>)) • [Buildings](<Building modding - Hearts of Iron 4 Wiki.md>) • Characters and traits • [Cosmetic tags](<Cosmetic tag modding - Hearts of Iron 4 Wiki.md>) • [Countries](<Country creation - Hearts of Iron 4 Wiki.md>) • [Divisions](<Division modding - Hearts of Iron 4 Wiki.md>) • [Decisions](<Decision modding - Hearts of Iron 4 Wiki.md>) • [Doctrines](<Doctrine modding - Hearts of Iron 4 Wiki.md>) • [Equipment](<Equipment modding - Hearts of Iron 4 Wiki.md>) • [Events](<Event modding - Hearts of Iron 4 Wiki.md>) • [Factions](<Faction modding - Hearts of Iron 4 Wiki.md>) • [Ideas](<Idea modding - Hearts of Iron 4 Wiki.md>) • [Ideologies](<Ideology modding - Hearts of Iron 4 Wiki.md>) • [Military industrial organizations](<Military industrial organization modding - Hearts of Iron 4 Wiki.md>) • [National focuses](<National focus modding - Hearts of Iron 4 Wiki.md>) • [Resources](<Resources modding - Hearts of Iron 4 Wiki.md>) • [Scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) • [Technologies and doctrines](<Technology modding - Hearts of Iron 4 Wiki.md>) • [Units](<Unit modding - Hearts of Iron 4 Wiki.md>) |
-
-|  |  |
-| --- | --- |
-| Map | [Map](<Map modding - Hearts of Iron 4 Wiki.md>) • [States](<State modding - Hearts of Iron 4 Wiki.md>) • [Supply areas](<Supply areas modding - Hearts of Iron 4 Wiki.md>) • [Strategic regions](<Strategic region modding - Hearts of Iron 4 Wiki.md>) |
-
-|  |  |
-| --- | --- |
-| Graphical | [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>) |
-
-|  |  |
-| --- | --- |
-| Cosmetic | [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>) |
-
-|  |  |
-| --- | --- |
-| Other | [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](https://hoi4.paradoxwikis.com/Mod_structure) • [Mods](https://hoi4.paradoxwikis.com/Mods) • [Nudger](https://hoi4.paradoxwikis.com/Nudger) |
+- **Documentation**: [Effects](<Effects - Hearts of Iron 4 Wiki.md>) • [Triggers](<Triggers - Hearts of Iron 4 Wiki.md>) • [Defines](<Defines - Hearts of Iron 4 Wiki.md>) • [Modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) • [List of modifiers](<List of modifiers - Hearts of Iron 4 Wiki.md>) • [Scopes](<Scopes - Hearts of Iron 4 Wiki.md>) • [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>) • [On actions](<On actions - Hearts of Iron 4 Wiki.md>) • [Data structures](<Data structures - Hearts of Iron 4 Wiki.md>) • [Flags](<Data structures - Hearts of Iron 4 Wiki.md#Flags>) • [Event targets](<Data structures - Hearts of Iron 4 Wiki.md#Event_targets>) • [Country tag aliases](<Data structures - Hearts of Iron 4 Wiki.md#Country_tag_aliases>) • [Variables](<Data structures - Hearts of Iron 4 Wiki.md#Variables>) • [Arrays](<Data structures - Hearts of Iron 4 Wiki.md#Arrays>)
+- **Scripting**: [Achievements](<Achievement modding - Hearts of Iron 4 Wiki.md>) • [AI](<AI modding - Hearts of Iron 4 Wiki.md>) • [AI focuses](<AI focuses - Hearts of Iron 4 Wiki.md>) • [Autonomous states](<Autonomy state modding - Hearts of Iron 4 Wiki.md>) • [Balances of power](<Balance of power modding - Hearts of Iron 4 Wiki.md>) • [Bookmarks/Scenarios](<Bookmark modding - Hearts of Iron 4 Wiki.md>) • [Game rules](<Bookmark modding - Hearts of Iron 4 Wiki.md#Game_rules>) • [Buildings](<Building modding - Hearts of Iron 4 Wiki.md>) • [Cosmetic tags](<Cosmetic tag modding - Hearts of Iron 4 Wiki.md>) • [Countries](<Country creation - Hearts of Iron 4 Wiki.md>) • [Divisions](<Division modding - Hearts of Iron 4 Wiki.md>) • [Decisions](<Decision modding - Hearts of Iron 4 Wiki.md>) • [Doctrines](<Doctrine modding - Hearts of Iron 4 Wiki.md>) • [Equipment](<Equipment modding - Hearts of Iron 4 Wiki.md>) • [Events](<Event modding - Hearts of Iron 4 Wiki.md>) • [Factions](<Faction modding - Hearts of Iron 4 Wiki.md>) • [Ideas](<Idea modding - Hearts of Iron 4 Wiki.md>) • [Ideologies](<Ideology modding - Hearts of Iron 4 Wiki.md>) • [Military industrial organizations](<Military industrial organization modding - Hearts of Iron 4 Wiki.md>) • [National focuses](<National focus modding - Hearts of Iron 4 Wiki.md>) • [Resources](<Resources modding - Hearts of Iron 4 Wiki.md>) • [Scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) • [Technologies and doctrines](<Technology modding - Hearts of Iron 4 Wiki.md>) • [Units](<Unit modding - Hearts of Iron 4 Wiki.md>)
+- **Map**: [Map](<Map modding - Hearts of Iron 4 Wiki.md>) • [States](<State modding - Hearts of Iron 4 Wiki.md>) • [Supply areas](<Supply areas modding - Hearts of Iron 4 Wiki.md>) • [Strategic regions](<Strategic region modding - Hearts of Iron 4 Wiki.md>)
+- **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
+- **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
+- **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)

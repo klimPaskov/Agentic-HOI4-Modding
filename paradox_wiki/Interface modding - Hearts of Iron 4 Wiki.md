@@ -1,36 +1,40 @@
-# Table of contents
+# Interface modding
 
-- [Overview](#overview)
-- [Constants](#constants)
-- [Containers](#containers)
-  - [Arguments](#arguments)
-  - [Scrolling](#scrolling)
-- [scrollbarType](#scrollbartype)
-- [Elements](#elements)
-- [iconType](#icontype)
-- [instantTextBoxType](#instanttextboxtype)
-- [buttonType](#buttontype)
-- [smoothListboxType](#smoothlistboxtype)
-- [listboxType](#listboxtype)
-- [checkboxType](#checkboxtype)
-- [editBoxType](#editboxtype)
-- [OverlappingElementsBoxType](#overlappingelementsboxtype)
-- [Position and orientation](#position-and-orientation)
-- [Fonts](#fonts)
+*Offline snapshot of the Hearts of Iron IV Wiki page "Interface modding", captured 2026-09-19.*
+
+## Table of contents
+
+- [Overview](#Overview)
+- [Constants](#Constants)
+- [Containers](#Containers)
+  - [Arguments](#Arguments)
+  - [Scrolling](#Scrolling)
+- [scrollbarType](#scrollbarType)
+- [Elements](#Elements)
+- [iconType](#iconType)
+- [instantTextBoxType](#instantTextBoxType)
+- [buttonType](#buttonType)
+- [smoothListboxType](#smoothListboxType)
+- [listboxType](#listboxType)
+- [checkboxType](#checkboxType)
+- [editBoxType](#editBoxType)
+- [OverlappingElementsBoxType](#OverlappingElementsBoxType)
+- [Position and orientation](#Position_and_orientation)
+- [Fonts](#Fonts)
 
 ---
 
-The graphical user interface elements are defined within /Hearts of Iron IV/interface/\*.gui files, as typical code formatting. The files only decide on the positions of how elements are arranged, [scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) is used to assign effects to newly-created interface elements.
+The graphical user interface elements are defined within `/Hearts of Iron IV/interface/*.gui` files, as typical code formatting. The files only decide on the positions of how elements are arranged, [scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) is used to assign effects to newly-created interface elements.
 
-## <a id="overview"></a>Overview
+## Overview <a id="Overview"></a>
 
-The interface consists of [container windows (or containers)](#containers) and elements within them. Each element, other than containers, must reside in a container. Containers can be nested in other elements to organise their positions. Gridboxes are used to clone the same container several times, with different details specified for each one. Newly-added elements can have their effects defined in [scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>), while the effects of base game's GUI are hard-coded, that is, it's impossible to modify what it does directly.
+The interface consists of [container windows (or containers)](#Containers) and elements within them. Each element, other than containers, must reside in a container. Containers can be nested in other elements to organise their positions. Gridboxes are used to clone the same container several times, with different details specified for each one. Newly-added elements can have their effects defined in [scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>), while the effects of base game's GUI are hard-coded, that is, it's impossible to modify what it does directly.
 
 The elements are shown in the order that they are defined in the file: what's placed later will be shown on top of what's placed earlier. The files are contained within a `guiTypes = { ... }` block overarching the entire file.
 
-## <a id="constants"></a>Constants
+## Constants <a id="Constants"></a>
 
-*This section is transcluded from [Data structures § Constants](<Data structures - Hearts of Iron 4 Wiki.md#constants>)*
+*This section is transcluded from [Data structures § Constants](<Data structures - Hearts of Iron 4 Wiki.md#Constants>)*
 
 Constants serve as a way to use the same value with a reference. The constants are marked with the `@` symbol when defining or using them. An example definition is the following:
 
@@ -41,8 +45,8 @@ Constants serve as a way to use the same value with a reference. The constants a
 
 This can later be used in the file as, for example, `cost = @CONSTANT_1`. These definitions can be in any point of the file.
 
-Constants are available in the vast majority of game files, including most, if not all, \*.txt and \*.gui files. Constants can be used as a way to link several values to be the same if they can easily be changed at any point in the development. However, constants that store a string for its value can only be used in triggers and the attributes of elements and windows, trying to use them in an effect will result in an "invalid database object for effect/trigger" error.  
-For example, if there is a large decision system where every decision is intended to have the same cost, then these constants may be used if the political power cost gets changed mid-development for better balance.  
+Constants are available in the vast majority of game files, including most, if not all, \*.txt and \*.gui files. Constants can be used as a way to link several values to be the same if they can easily be changed at any point in the development. However, constants that store a string for its value can only be used in triggers and the attributes of elements and windows, trying to use them in an effect will result in an "invalid database object for effect/trigger" error.
+For example, if there is a large decision system where every decision is intended to have the same cost, then these constants may be used if the political power cost gets changed mid-development for better balance.
 Another example would be a scripted GUI container: if a large multitude of elements are to be at the same X or Y position, it might be worth it to link them to be a constant in case their position could be changed for better appearance or to fit in another GUI element.
 
 Example [decision file](<Decision modding - Hearts of Iron 4 Wiki.md>) that utilises constants:
@@ -66,16 +70,15 @@ TAG_decision_category = {
 }
 ```
 
-## <a id="containers"></a>Containers
+## Containers <a id="Containers"></a>
 
-<a id="containerwindowtype"></a>
 Containers are used to group together elements and associate them with an internal function, written as a `containerWindowType = { ... }` block.
 
-New containers that are independent (not inside of any other container) will not show up in-game by default. For one to show up, it is required for it to be tied to a function, such as [scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>), which decides where it should show and when. In some cases, new containers can be created for the internally-defined functions, such as [new technology folders](<Technology modding - Hearts of Iron 4 Wiki.md#graphical-user-interface>) or [getting a music station to show up](<Music modding - Hearts of Iron 4 Wiki.md#radio-stations>). In most cases, however, a scripted GUI would be required to make a new container show up.
+New containers that are independent (not inside of any other container) will not show up in-game by default. For one to show up, it is required for it to be tied to a function, such as [scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>), which decides where it should show and when. In some cases, new containers can be created for the internally-defined functions, such as [new technology folders](<Technology modding - Hearts of Iron 4 Wiki.md#Graphical_user_interface>) or [getting a music station to show up](<Music modding - Hearts of Iron 4 Wiki.md#Radio_stations>). In most cases, however, a scripted GUI would be required to make a new container show up.
 
-If a container is defined within another container, it will appear at the same time as the window containing it unless more information is defined within the function. A scripted GUI cannot be assigned to such a container, however. In some cases, it's not necessary for a container to be visible to be useful, for example, an empty container can be used as an anchor, that is, used as the [parent window name](<Scripted GUI modding - Hearts of Iron 4 Wiki.md#parent-window-token>) for Scripted GUI to place another container on the same place as the anchor is defined. This can allow placing containers with higher precision than normally possible with `parent_window_name`, allowing the parent window to have elements drawn on top of the scripted GUI.
+If a container is defined within another container, it will appear at the same time as the window containing it unless more information is defined within the function. A scripted GUI cannot be assigned to such a container, however. In some cases, it's not necessary for a container to be visible to be useful, for example, an empty container can be used as an anchor, that is, used as the [parent window name](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) for Scripted GUI to place another container on the same place as the anchor is defined. This can allow placing containers with higher precision than normally possible with `parent_window_name`, allowing the parent window to have elements drawn on top of the scripted GUI.
 
-### <a id="arguments"></a>Arguments
+### Arguments <a id="Arguments"></a>
 
 The following attributes are commonly used:
 
@@ -83,7 +86,7 @@ The following attributes are commonly used:
 - `size = { height = 300 width = 100%% }` – The bounding box for the container. If this container is placed inside of another one, either directly or through a gridbox, then only this size is used to create the scrollbar, without taking into account elements inside. This boundary also sets the size that the scrollbar must use. Either in pixels or in percentages relative to the size of the parent container (the entire screen if independent).
 - `background = { ... }` – The background of the container. This is required for a scrollbar to work, as otherwise the boundaries will get ignored. There are the following arguments inside:
   - `name = "Background"` – The name for handling the background in other functions. Commonly just set to "Background".
-  - `spriteType = "GFX_tiled_window"` or `quadTextureSprite = "GFX_tiled_window_transparent"` – Refers to a [corneredTileSpriteType](<Graphical asset modding - Hearts of Iron 4 Wiki.md#corneredtilespritetype>) definition that would automatically get resized to fit the container's set size.
+  - `spriteType = "GFX_tiled_window"` or `quadTextureSprite = "GFX_tiled_window_transparent"` – Refers to a [corneredTileSpriteType](<Graphical asset modding - Hearts of Iron 4 Wiki.md#corneredTileSpriteType>) definition that would automatically get resized to fit the container's set size.
 - `clipping = yes` – If true (and if a background exists), the elements inside of the container will not be able to go outside of the boundary box, and what doesn't fit will get cropped. Defaults to true. This being true is mandatory for a scrollbar to work.
 - `position = { x = 100 y = 100 }` – The position of the container in pixels relative to the set orientation and set origo.
 - `orientation = center` – Sets the origin that the position is measured relative to, such as `upper_left`, `center_down`, or `lower_right` for the screen.
@@ -104,11 +107,11 @@ Animation can be assigned to containers with these attributes:
 - `fade_time = 300` – The time it takes for the container to fade in, in milliseconds.
 - `fade_type = linear` – The type of fade in: either `accelerated` or `linear`.
 
-### <a id="scrolling"></a>Scrolling
+### Scrolling <a id="Scrolling"></a>
 
 Scrolling can be done via scrollbars. If scrollbars are enabled, it's also possible to enabled it with dragging the screen. Since the game has to know what should be inside of the container, there are some attributes which must be used in the container. `size = { ... }` has to be defined using pixels instead of percentage values (for directions where scrolling is enabled) to ensure that it doesn't stretch to fit all elements. `clipping = yes` should be true (or unset, making it default to true). A `background = { ... }` also has to be defined for the container, since it establishes the boundaries.
 
-Scrollbars use [extendedScrollbarType](#extendedscrollbartype) definitions. If this definition is inside of a container, in which case it will be automatically assigned to the container without needing to assign it manually, however it can't be used for any other container. If the definition is entirely independent, it will not be assigned to any by default, but can be re-used in multiple containers.
+Scrollbars use extendedScrollbarType definitions. If this definition is inside of a container, in which case it will be automatically assigned to the container without needing to assign it manually, however it can't be used for any other container. If the definition is entirely independent, it will not be assigned to any by default, but can be re-used in multiple containers.
 
 In particular, these arguments enable scrolling, assuming the conditions are fulfilled:
 
@@ -123,7 +126,7 @@ In addition, there are optional attributes that can be used to refine the scroll
 - `scroll_wheel_factor = 40` determines how much a single mouse scroll will affect the scrollbar.
 - `smooth_scrolling = yes` enables a smoother scrolling animation.
 
-## <a id="extendedscrollbartype"></a><a id="scrollbartype"></a>scrollbarType
+## scrollbarType <a id="scrollbarType"></a>
 
 The **scrollbarType** is used to define which elements a scrollbar is composed of.
 
@@ -144,7 +147,7 @@ The following attributes are used:
 - **startValue** - The initial size the slider for the scrollbar starts at.
 - **horizontal** - Sets whether the scrollbar is horizontal (1) or vertical (0).
 
-## <a id="elements"></a>Elements
+## Elements <a id="Elements"></a>
 
 There are multiple element types used within containers. All elements must be used within containers, they will not work outside of one.
 
@@ -172,7 +175,7 @@ The following elements are legacy:
 - **eu3dialogtype** - Same as *windowType*.
 - **shieldtype** - Only used within *eu3dialogtype*. Different elements are used for flags in more recent files.
 
-## <a id="icontype"></a>iconType
+## iconType <a id="iconType"></a>
 
 The *iconType* element is used to add images to the interface. It's usage overlaps with *buttonType*, which is similar but operates as a button.
 
@@ -185,14 +188,14 @@ The following attributes are used:
 - **quadTextureSprite** - The image to use for the icon. Refers to a dynamic *spriteType* definitions (i.e. flags) or multi-frame *spriteType* definitions.
 - **frame** - Which frame to use for the icon when using a multi-frame image.
 - **alwaystransparent** - Forces the icon to allow click through, i.e. clicking on an element behind another element.
-- **hint\_tag** - Set the hint key the icon uses to display a hint tooltip with when hovered over.
-- **pdx\_tooltip** - The tooltip that is shown when hovering over the button.
-- **pdx\_tooltip\_delayed** - Sets the delayed tooltip to display to the player. Takes a localization key.
+- **hint_tag** - Set the hint key the icon uses to display a hint tooltip with when hovered over.
+- **pdx_tooltip** - The tooltip that is shown when hovering over the button.
+- **pdx_tooltip_delayed** - Sets the delayed tooltip to display to the player. Takes a localization key.
 - **centerposition** - Sets whether the position is from the center of the icon.
 
-## <a id="instanttextboxtype"></a>instantTextBoxType
+## instantTextBoxType <a id="instantTextBoxType"></a>
 
-The *instantTextBoxType* element is used to add text to the interface. In some instances, the text for the element is generated internally (i.e. *regiment\_count*). In these instances you cannot edit the text unless it is exposed in an localized string.
+The *instantTextBoxType* element is used to add text to the interface. In some instances, the text for the element is generated internally (i.e. *regiment_count*). In these instances you cannot edit the text unless it is exposed in an localized string.
 
 The following attributes are used:
 
@@ -207,9 +210,9 @@ The following attributes are used:
 - **fixedsize** - Whether the textbox should truncate text that exceeds its limits.
 - **borderSize** - The bounding box for the border of the textbox.
 - **alwaystransparent** - Forces the text to allow click through, i.e. clicking on an element behind another element.
-- **scrollbarType** - which kind of scrollbar to use (for example standardtext\_slider)
-- **pdx\_tooltip** - Sets the tooltip to display to the player. Takes a localization key.
-- **pdx\_tooltip\_delayed** - Sets the delayed tooltip to display to the player. Takes a localization key.
+- **scrollbarType** - which kind of scrollbar to use (for example standardtext_slider)
+- **pdx_tooltip** - Sets the tooltip to display to the player. Takes a localization key.
+- **pdx_tooltip_delayed** - Sets the delayed tooltip to display to the player. Takes a localization key.
 
 The following attributes are rarely or never used:
 
@@ -221,7 +224,7 @@ Valid *format* values:
 - center
 - right
 
-## <a id="buttontype"></a>buttonType
+## buttonType <a id="buttonType"></a>
 
 The *guiButtonType'* element is used to add buttons to the interface. Buttons are composed of an image and text, so they operate in a similar manner to *iconType* and *instantTextBoxType*.
 
@@ -239,11 +242,11 @@ The following attributes are used:
 - **shortcut** - The shortcut to add for this button.
 - **clicksound** - The sound to use when clicked.
 - **oversound** - The sound to play when hovered over.
-- **hint\_tag** - Set the hint key the icon uses to display a hint tooltip with when hovered over.
-- **pdx\_tooltip** - The tooltip that is shown when hovering over the button.
-- **pdx\_tooltip\_delayed** - Sets the delayed tooltip to display to the player. Takes a localization key.
+- **hint_tag** - Set the hint key the icon uses to display a hint tooltip with when hovered over.
+- **pdx_tooltip** - The tooltip that is shown when hovering over the button.
+- **pdx_tooltip_delayed** - Sets the delayed tooltip to display to the player. Takes a localization key.
 - **scale** - Scales the button size.
-- **web\_link** - URL to open in browser
+- **web_link** - URL to open in browser
 
 The following attributes are rarely or never used:
 
@@ -251,7 +254,7 @@ The following attributes are rarely or never used:
 - **tooltipText** - Never used.
 - **delayedTooltipText** - Never used.
 
-## <a id="smoothlistboxtype"></a>smoothListboxType
+## smoothListboxType <a id="smoothListboxType"></a>
 
 The *smoothListboxType* element is used to define a listbox, which is a scrollable list that is populated with entries. Typically these elements are internally linked with another container, which composes the actual entry used in the list box.
 
@@ -271,7 +274,7 @@ The following attributes are rarely or never used:
 
 - **background** - Never used.
 
-## <a id="listboxtype"></a>listboxType
+## listboxType <a id="listboxType"></a>
 
 The *listboxType*  element is used to define a listbox, which is a scrollable list that is populated with entries. Typically these elements are internally linked with another container, which composes the actual entry used in the list box.
 
@@ -291,7 +294,7 @@ The following attributes are rarely or never used:
 
 - **background** - Never used.
 
-## <a id="checkboxtype"></a>checkboxType
+## checkboxType <a id="checkboxType"></a>
 
 The *checkboxType*  element is used to add checkboxes to the interface. The actual effect of the checkbox is defined internally.
 
@@ -308,9 +311,9 @@ The following attributes are used:
 - **buttonFont** - The font to display the checkbox text in.
 - **shortcut** - The shortcut to add for this checkbox.
 - **clicksound** - The sound to use when clicked.
-- **hint\_tag** - Set the hint key the checkbox uses to display a hint tooltip with when hovered over.
-- **pdx\_tooltip** - Set the short tooltip this checkbox uses.
-- **pdx\_tooltip\_delayed** - Set the full tooltip this checkbox uses.
+- **hint_tag** - Set the hint key the checkbox uses to display a hint tooltip with when hovered over.
+- **pdx_tooltip** - Set the short tooltip this checkbox uses.
+- **pdx_tooltip_delayed** - Set the full tooltip this checkbox uses.
 - **scale** - Scales the checkbox size.
 
 The following attributes are rarely or never used:
@@ -319,7 +322,7 @@ The following attributes are rarely or never used:
 - **tooltipText** - Never used.
 - **delayedTooltipText** - Never used.
 
-## <a id="editboxtype"></a>editBoxType
+## editBoxType <a id="editBoxType"></a>
 
 The *editBoxType* element is used to add editable textboxes to the interface.
 
@@ -336,9 +339,9 @@ The following attributes are used:
 - **fixedsize** - Whether the textbox should truncate text that exceeds its limits.
 - **borderSize** - The bounding box for the border of the textbox.
 - **alwaystransparent** - Forces the text to allow click through, i.e. clicking on an element behind another element.
-- **ignore\_tab\_navigation** - Makes the element ignore tab navigation.
+- **ignore_tab_navigation** - Makes the element ignore tab navigation.
 
-## <a id="overlappingelementsboxtype"></a>OverlappingElementsBoxType
+## OverlappingElementsBoxType <a id="OverlappingElementsBoxType"></a>
 
 The *OverlappingElementsBoxType* element is used to define a special kind of listbox that dynamically overlaps sub-elements within itself.
 
@@ -363,7 +366,7 @@ Valid *format* values:
 - center
 - right
 
-## <a id="position-and-orientation"></a>Position and orientation
+## Position and orientation <a id="Position_and_orientation"></a>
 
 The `orientation` attribute sets the anchor point of an element. As example, `orientation = UPPER_LEFT` sets `position = { x = 0 y = 0 }` to be in the top left corner of the screen or container, and `orientation = LOWER_RIGHT` sets it to be the bottom right instead.
 
@@ -381,52 +384,63 @@ Valid `orientation` values (case-insensitive):
 - `UPPER_RIGHT`
 - `LOWER_RIGHT`
 
-## <a id="fonts"></a>Fonts
+## Fonts <a id="Fonts"></a>
 
-*See also: Font modding*
+*See also: [Font modding](<Font modding - Hearts of Iron 4 Wiki.md>)*
 
 The following fonts are usable in Hearts of Iron IV (note that some do not support every language the game includes translations for):
 
 - Arial12
-- Arial12\_bold
-- cg\_16b
-- cg\_18b
-- garamond\_12
-- garamond\_14
-- garamond\_14\_bold
-- garamond\_16
-- garamond\_16\_bold
-- garamond\_24
-- hoi\_16mbs
-- hoi\_16tooltip3
-- hoi\_18
-- hoi\_18b
-- hoi\_18mbs
-- hoi\_20b
-- hoi\_20bs
-- hoi\_22tech
-- hoi\_24header
-- hoi\_26mbs
-- hoi\_30header
-- hoi\_33
-- hoi\_36header
-- hoi4\_typewriter16
-- hoi4\_typewriter22
-- hoi\_mapfont4
-- hoi\_arrow\_font
-- newsfeed\_body
-- newsfeed\_title
+- Arial12_bold
+- cg_16b
+- cg_18b
+- garamond_12
+- garamond_14
+- garamond_14_bold
+- garamond_16
+- garamond_16_bold
+- garamond_24
+- hoi_16mbs
+- hoi_16tooltip3
+- hoi_18
+- hoi_18b
+- hoi_18mbs
+- hoi_20b
+- hoi_20bs
+- hoi_22tech
+- hoi_24header
+- hoi_26mbs
+- hoi_30header
+- hoi_33
+- hoi_36header
+- hoi4_typewriter16
+- hoi4_typewriter22
+- hoi_mapfont4
+- hoi_arrow_font
+- newsfeed_body
+- newsfeed_title
 - standard
-- standard\_18
-- standard\_22
-- tahoma\_20\_bold
-- vic\_18
-- vic\_18\_grey
-- vic\_18s
-- vic\_22
-- vic\_22\_bl
-- vic\_22s
-- vic\_36
-- vic\_36s
+- standard_18
+- standard_22
+- tahoma_20_bold
+- vic_18
+- vic_18_grey
+- vic_18s
+- vic_22
+- vic_22_bl
+- vic_22s
+- vic_36
+- vic_36s
+
+---
+
+## Navigation
 
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**
+
+- **Documentation**: [Effects](<Effects - Hearts of Iron 4 Wiki.md>) • [Triggers](<Triggers - Hearts of Iron 4 Wiki.md>) • [Defines](<Defines - Hearts of Iron 4 Wiki.md>) • [Modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) • [List of modifiers](<List of modifiers - Hearts of Iron 4 Wiki.md>) • [Scopes](<Scopes - Hearts of Iron 4 Wiki.md>) • [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>) • [On actions](<On actions - Hearts of Iron 4 Wiki.md>) • [Data structures](<Data structures - Hearts of Iron 4 Wiki.md>) • [Flags](<Data structures - Hearts of Iron 4 Wiki.md#Flags>) • [Event targets](<Data structures - Hearts of Iron 4 Wiki.md#Event_targets>) • [Country tag aliases](<Data structures - Hearts of Iron 4 Wiki.md#Country_tag_aliases>) • [Variables](<Data structures - Hearts of Iron 4 Wiki.md#Variables>) • [Arrays](<Data structures - Hearts of Iron 4 Wiki.md#Arrays>)
+- **Scripting**: [Achievements](<Achievement modding - Hearts of Iron 4 Wiki.md>) • [AI](<AI modding - Hearts of Iron 4 Wiki.md>) • [AI focuses](<AI focuses - Hearts of Iron 4 Wiki.md>) • [Autonomous states](<Autonomy state modding - Hearts of Iron 4 Wiki.md>) • [Balances of power](<Balance of power modding - Hearts of Iron 4 Wiki.md>) • [Bookmarks/Scenarios](<Bookmark modding - Hearts of Iron 4 Wiki.md>) • [Game rules](<Bookmark modding - Hearts of Iron 4 Wiki.md#Game_rules>) • [Buildings](<Building modding - Hearts of Iron 4 Wiki.md>) • [Characters and traits](<Character modding - Hearts of Iron 4 Wiki.md>) • [Cosmetic tags](<Cosmetic tag modding - Hearts of Iron 4 Wiki.md>) • [Countries](<Country creation - Hearts of Iron 4 Wiki.md>) • [Divisions](<Division modding - Hearts of Iron 4 Wiki.md>) • [Decisions](<Decision modding - Hearts of Iron 4 Wiki.md>) • [Doctrines](<Doctrine modding - Hearts of Iron 4 Wiki.md>) • [Equipment](<Equipment modding - Hearts of Iron 4 Wiki.md>) • [Events](<Event modding - Hearts of Iron 4 Wiki.md>) • [Factions](<Faction modding - Hearts of Iron 4 Wiki.md>) • [Ideas](<Idea modding - Hearts of Iron 4 Wiki.md>) • [Ideologies](<Ideology modding - Hearts of Iron 4 Wiki.md>) • [Military industrial organizations](<Military industrial organization modding - Hearts of Iron 4 Wiki.md>) • [National focuses](<National focus modding - Hearts of Iron 4 Wiki.md>) • [Resources](<Resources modding - Hearts of Iron 4 Wiki.md>) • [Scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) • [Technologies and doctrines](<Technology modding - Hearts of Iron 4 Wiki.md>) • [Units](<Unit modding - Hearts of Iron 4 Wiki.md>)
+- **Map**: [Map](<Map modding - Hearts of Iron 4 Wiki.md>) • [States](<State modding - Hearts of Iron 4 Wiki.md>) • [Supply areas](<Supply areas modding - Hearts of Iron 4 Wiki.md>) • [Strategic regions](<Strategic region modding - Hearts of Iron 4 Wiki.md>)
+- **Graphical**: [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
+- **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
+- **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)

@@ -1,41 +1,45 @@
-# Table of contents
+# Ideology modding
 
-- [Ideologies](#ideologies)
-- [Ai peace](#ai-peace)
-- [Getting the ideology in your game](#getting-the-ideology-in-your-game)
-  - [Localisation](#localisation)
-  - [GFX](#gfx)
-  - [Country history](#country-history)
-  - [Political advisor](#political-advisor)
+*Offline snapshot of the Hearts of Iron IV Wiki page "Ideology modding", captured 2026-09-19.*
+
+## Table of contents
+
+- [Ideologies](#Ideologies)
+- [Ai peace](#Ai_peace)
+- [Getting the ideology in your game](#Getting_the_ideology_in_your_game)
+  - [Localisation](#Localisation)
+  - [GFX](#GFX)
+  - [Country history](#Country_history)
+  - [Political advisor](#Political_advisor)
 
 ---
 
 Ideologies represent all of the different political beliefs or alignments in the selected nation. An ideology will help to determine the choices and paths that the nation will take.
 
-Ideologies are found in /Hearts of Iron IV/common/ideologies/\*.txt.
+Ideologies are found in `/Hearts of Iron IV/common/ideologies/*.txt`.
 
-## <a id="ideologies"></a>Ideologies
+## Ideologies <a id="Ideologies"></a>
 
 An ideology definition follows this format:
 
 ```text
 ideologies = {
-	
+
 	anarchist = {
-	
+
 		types = {
 			anarcho_syndicalism = { # Used when assigning ideologies to leaders. Eg. democratic has conservatism, liberalism, and socialism. One value can be defined (yes/no).
 				can_be_randomly_selected = no # If no, the subideology will not be randomly selected when creating a new random leader.
 				color = { 169 42 42 } # Optional - if not specified, the subideology has the color of its ideology.
 			}
 		}
-		
+
 		dynamic_faction_names = {
 			"FACTION_NAME_ANARCHIST_1" # Faction names used by the ai when an ai with this ideology creates a faction. Can be defined in any localisation file.
 		}
-		
+
 		color = { 169 42 42 } # RGB ideology colour, used in the political pie chart or next to the chart. Can be overwritten in a subideology.
-		
+
 		rules = { # Rules for the ideology.  (yes/no)
                         can_create_collaboration_government = # Can create a collaboration government
 			can_declare_war_on_same_ideology = # Declare war on same ideology. Not required
@@ -48,10 +52,10 @@ ideologies = {
 		}
 
                 can_host_government_in_exile = no #Can host a government in exile
-		
+
 		war_impact_on_world_tension = 0.2 # Goes from -1 to 1. Increases or decreases the world tension created by this nation
 		faction_impact_on_world_tension = 0.3 # Goes from -1 to 1. Increases or decreases a faction of this ideologies impact on tension
-		
+
 		modifiers = { # More rules for the ideology. Every country [[Modifiers|modifier]] can apply.
 			generate_wargoal_tension = # Required world tension to start justifying a war (0 to 1)
 			join_faction_tension = # Required world tension to join a faction (0 to 1)
@@ -67,7 +71,7 @@ ideologies = {
 
 		can_be_boosted = no # Can you boost this ideologies popularity in another country (yes/no)
 		can_collaborate = yes # Can create collaboration governments
-		
+
 		faction_modifiers = {    # Applies to the entire faction if the faction leader has this ideology. Every country [[Modifiers|modifier]] can apply.
 			faction_trade_opinion_factor = 0.50 #plus 50% trade opinion
 		}
@@ -76,24 +80,28 @@ ideologies = {
 }
 ```
 
-## <a id="ai-peace"></a>Ai peace
+## Ai peace <a id="Ai_peace"></a>
 
 AI peace determines the AI's behaviour in a peace deal. The triggers can be seen inside of enable = {} in the files, and they are generally reliant on ideologies.
 
-The files are located in /Hearts of Iron IV/common/ai\_peace/\*.txt and every ideology has its own file. Unless the triggers are adjusted, AI will be likely to use /Hearts of Iron IV/common/ai\_peace/1\_fascist.txt. It is recommended to change the triggers in these files to assign a proper peace AI to the ideology or to create a new file.
+The files are located in `/Hearts of Iron IV/common/ai_peace/*.txt` and every ideology has its own file. Unless the triggers are adjusted, AI will be likely to use `/Hearts of Iron IV/common/ai_peace/1_fascist.txt`. It is recommended to change the triggers in these files to assign a proper peace AI to the ideology or to create a new file.
 
-## <a id="getting-the-ideology-in-your-game"></a>Getting the ideology in your game
+## Getting the ideology in your game <a id="Getting_the_ideology_in_your_game"></a>
 
-### <a id="localisation"></a>Localisation
+### Localisation <a id="Localisation"></a>
 
-The names, descriptions and nouns for ideologies are defined in any /Hearts of Iron IV/localisation/english/\*.yml file, assuming the English language. By default, the base game uses `parties_l_english.yml`  
-An ideology has 3 localisation keys: for its name as an adjective matching the ideology's name, for its name as a noun where \_noun is appended, and for its description, used primarily in the country selection menu, where \_desc is appended. Taking an ideology with the name of `my_ideology` as an example, these will look like the following:
+The names, descriptions and nouns for ideologies are defined in any `/Hearts of Iron IV/localisation/english/*.yml` file, assuming the English language. By default, the base game uses `parties_l_english.yml`
+An ideology has 3 localisation keys: for its name as an adjective matching the ideology's name, for its name as a noun where _noun is appended, and for its description, used primarily in the country selection menu, where _desc is appended. Taking an ideology with the name of `my_ideology` as an example, these will look like the following:
 
 ```text
 my_ideology:0 "My ideologic"
 my_ideology_noun:0 "My ideology"
 my_ideology_desc:0 "Ideological regime" # Must be short: only shows up in the scenario/bookmark selection screen where it should take up one line.
-`Ideology types are localised similarly, but with just the noun and description:`
+```
+
+Ideology types are localised similarly, but with just the noun and description:
+
+```text
 my_subideology:0 "My ideology type" # Noun
 my_subideology_desc:0 "My ideology type's description" # Shows up when hovering over an ideology icon in-game
 ```
@@ -111,18 +119,21 @@ TAG_my_subideology:0 "Sub-ideological Country" #Shows up if the country has the 
 
 If you do not define the ideology and just leave it as `TAG:0 "Test"`, it will apply to the country regardless of the ideology unless an ideology-specific name takes priority. This name is also used for the collaboration governments, referenced in localisation as `[GetNonIdeologyName]` or, specifically for cosmetic tags, as `$NONIDEOLOGY$`.
 
-Note that you will also have to add localisation for your ideology's drift. The base game uses /Hearts of Iron IV/localisation/english/modifiers\_l\_english.yml for this.
+Note that you will also have to add localisation for your ideology's drift. The base game uses `/Hearts of Iron IV/localisation/english/modifiers_l_english.yml` for this.
 
-`my_ideology_drift:0 "Daily Ideology Support"`
+```text
+my_ideology_drift:0 "Daily Ideology Support"
+```
 
-### <a id="gfx"></a>GFX
+### GFX <a id="GFX"></a>
 
-*See also: [Country creation § Flag](<Country creation - Hearts of Iron 4 Wiki.md#flag>)*
+*See also: [Country creation § Flag](<Country creation - Hearts of Iron 4 Wiki.md#Flag>)*
+
 | General sprite overview |
 | --- |
-| For loading GFX, the game uses the sprite system. Sprites are code definitions that attach a name to an image file, as well as optionally adding additional information, such as animation, the amount of frames, the way that the image will be loaded, and so on. This means **placing an image into the gfx folder isn't enough for it to work**, a sprite has to use that image file as well. Sprites are defined in any /Hearts of Iron IV/interface/\*.gfx file (this is separate from gfx/interface/), opened with a text editor. To create a new .gfx file, a text file can be created and renamed to change the extension (on Windows, the [Windows Explorer needs to show the extensions, which it doesn't by default](https://support.microsoft.com/en-gb/windows/common-file-name-extensions-in-windows-da4a4430-8e76-89c5-59f7-1cdbbc75cb01)). In particular, sprites are defined within a `spriteTypes = { ... }` block, as to separate from fonts and map arrows also defined in that folder, while the simplest sprite with the least mandatory properties is a `spriteType = { ... }`. The simplest sprite definition looks like the following:   `spriteTypes = { spriteType = { name = GFX_first_sprite # In some cases, beginning with GFX_ is mandatory for it to work. texturefile = gfx/interface/folder/filename.dds # The folder and filename don't matter, as long as they are correct } # Only the forward slash '/' (can be doubled as '//') can be used to separate folders. spriteType = { # The image doesn't have to be .dds, as .tga and .png are acceptable. name = GFX_second_sprite texturefile = gfx/interface/folder2/filename2.dds noOfFrames = 2 # Splits the image into 2 halves, which may be switched between dynamically in GUI } }`   In this case, this creates a sprite with the name of `GFX_first_sprite` and attaches the /Hearts of Iron IV/gfx/interface/folder/filename.dds image to it, and a second sprite similarly. The second sprite will be split into 2 frames: this is decided by having the left half of the image as the first frame and the right half as the second frame (more frames would further split the image horizontally). This doesn't make the sprite animated, just turns on the option to switch between the two halves as needed. `GFX_second_sprite:1` serves as a reference to the first frame, and GUI can be set up to change the shown frame depending on context, such as with radio stations.  In order to add animation, a [frameAnimatedSpriteType](<Graphical asset modding - Hearts of Iron 4 Wiki.md#frameanimatedspritetype>) is used.  **It's never mandatory to copy a base game file to change a sprite**. If there are duplicate definitions of a sprite with the same name in different files, the game will prioritise the one that would be [evaluated later, based on the filename](<Modding - Hearts of Iron 4 Wiki.md#loading-files>), and the older sprite will be ignored in entirety. This can be ensured by beginning the replacement file's name with a symbol late in the ASCII character table. Typically the lowercase letter 'z' is used for this purpose. For example, to change the amount of frames in `GFX_idea_traits_strip` to 10, it is possible to define a sprite with that name with 10 frames in the mod's modname/interface/zz\_replace.gfx file instead of copying over the base game file.  Since most .gfx files define integral parts of the user interface, copying them over can lead to the mod's loaded files missing sprites upon a major game update, which would appear in-game as the default image, which is the error dog by default. As to ease the burden of needing to check the interface files, it's best to never copy over .gfx files, unless more additions would be actively harmful to the mod, such as with interface/subuniticons.gfx |
+| For loading GFX, the game uses the sprite system. Sprites are code definitions that attach a name to an image file, as well as optionally adding additional information, such as animation, the amount of frames, the way that the image will be loaded, and so on. This means **placing an image into the gfx folder isn't enough for it to work**, a sprite has to use that image file as well. Sprites are defined in any `/Hearts of Iron IV/interface/*.gfx` file (this is separate from `gfx/interface/`), opened with a text editor. To create a new .gfx file, a text file can be created and renamed to change the extension (on Windows, the Windows Explorer needs to show the extensions, which it doesn't by default). In particular, sprites are defined within a `spriteTypes = { ... }` block, as to separate from fonts and map arrows also defined in that folder, while the simplest sprite with the least mandatory properties is a `spriteType = { ... }`. The simplest sprite definition looks like the following:  `spriteTypes = { spriteType = { name = GFX_first_sprite # In some cases, beginning with GFX_ is mandatory for it to work. texturefile = gfx/interface/folder/filename.dds # The folder and filename don't matter, as long as they are correct } # Only the forward slash '/' (can be doubled as '//') can be used to separate folders. spriteType = { # The image doesn't have to be .dds, as .tga and .png are acceptable. name = GFX_second_sprite texturefile = gfx/interface/folder2/filename2.dds noOfFrames = 2 # Splits the image into 2 halves, which may be switched between dynamically in GUI } }`  In this case, this creates a sprite with the name of `GFX_first_sprite` and attaches the `/Hearts of Iron IV/gfx/interface/folder/filename.dds` image to it, and a second sprite similarly. The second sprite will be split into 2 frames: this is decided by having the left half of the image as the first frame and the right half as the second frame (more frames would further split the image horizontally). This doesn't make the sprite animated, just turns on the option to switch between the two halves as needed. `GFX_second_sprite:1` serves as a reference to the first frame, and GUI can be set up to change the shown frame depending on context, such as with radio stations.  In order to add animation, a [frameAnimatedSpriteType](<Graphical asset modding - Hearts of Iron 4 Wiki.md#frameAnimatedSpriteType>) is used.  **It's never mandatory to copy a base game file to change a sprite**. If there are duplicate definitions of a sprite with the same name in different files, the game will prioritise the one that would be [evaluated later, based on the filename](<Modding - Hearts of Iron 4 Wiki.md#Loading_files>), and the older sprite will be ignored in entirety. This can be ensured by beginning the replacement file's name with a symbol late in the ASCII character table. Typically the lowercase letter 'z' is used for this purpose. For example, to change the amount of frames in `GFX_idea_traits_strip` to 10, it is possible to define a sprite with that name with 10 frames in the mod's `modname/interface/zz_replace.gfx` file instead of copying over the base game file.  Since most .gfx files define integral parts of the user interface, copying them over can lead to the mod's loaded files missing sprites upon a major game update, which would appear in-game as the default image, which is the error dog by default. As to ease the burden of needing to check the interface files, it's best to never copy over .gfx files, unless more additions would be actively harmful to the mod, such as with `interface/subuniticons.gfx` |
 
-Ideology icons are defined as sprites in any /Hearts of Iron IV/interface/\*.gfx file, with the name of the sprite determining when it will be used.  
+Ideology icons are defined as sprites in any `/Hearts of Iron IV/interface/*.gfx` file, with the name of the sprite determining when it will be used.
 For entire ideology groups, the sprite naming pattern must be of the sort `name = GFX_ideology_<name>_group`. If some ideology type within `types = { ... }` of the group should have a unique icon, it will be defined as `name = GFX_ideology_<name>`.
 
 It is possible to make a sprite get used only for a certain country by prepending the country tag before the ideology's name (separated with underscores), as `GFX_ideology_<TAG>_<name>_group` for ideology groups and `GFX_ideology_<TAG>_<name>` for ideology types.
@@ -150,10 +161,10 @@ spriteTypes = {
 }
 ```
 
-### <a id="country-history"></a>Country history
+### Country history <a id="Country_history"></a>
 
 If you want the ideology to appear in a country you will have to add it like this to a countries history file like this: In France, for example
-/Hearts of Iron IV/history/countries/FRA - France.txt
+`/Hearts of Iron IV/history/countries/FRA - France.txt`
 
 ```text
 set_politics = {
@@ -167,7 +178,11 @@ set_popularities = { #This MUST add up to 100 otherwise the ideologies break
 	fascism = 1
 	communism = 30
 }
-`France will now need a new leader`
+```
+
+France will now need a new leader
+
+```text
 create_country_leader = {
 	name = "Édouard Daladier"
 	desc = "POLITICS_ÉDOUARD_DALADIER_DESC"
@@ -180,39 +195,47 @@ create_country_leader = {
 }
 ```
 
-### <a id="political-advisor"></a>Political advisor
+### Political advisor <a id="Political_advisor"></a>
 
-In order to add a political advisor increasing the popularity of the ideology, first, a trait that will be added to that advisor must be added in /Hearts of Iron IV/common/country\_leader/\*.txt
+In order to add a political advisor increasing the popularity of the ideology, first, a trait that will be added to that advisor must be added in `/Hearts of Iron IV/common/country_leader/*.txt`
 
 ```text
 <ideology>_booster = {
 	random = no
 	sprite = 13
 	<ideology>_drift = 0.1
-	
+
 	ai_will_do = {
 		factor = 0
 	}
 }
-`Localisation can be added like so:`
+```
+
+Localisation can be added like so:
+
+```text
 <ideology>_booster:0 "Ideology booster" #Whatever you want to call the person that supports the ideology. Eg. Democratic Politician, Communist Politician, Fascist Politician
-`It is recommended to add the generic advisors in /Hearts of Iron IV/common/ideas/zzz\_generic.txt to ensure the file is loaded after the country-specific ones. A generic advisor can be added following this example:`
+```
+
+It is recommended to add the generic advisors in `/Hearts of Iron IV/common/ideas/zzz_generic.txt` to ensure the file is loaded after the country-specific ones. A generic advisor can be added following this example:
+
+```text
  <name> = {
-			
+
 	allowed = {
 		NOT = {
 			has_available_idea_with_traits = { idea = <ideology>_booster limit = 1 }		#In order to prevent it from appearing alongside country-specific ones.
 		}
-	}	
+	}
 	traits = { <ideology>_booster }
-			
+
 	available = {
 		if = {
-			limit = { has_dlc = "Man the Guns" }	
+			limit = { has_dlc = "Man the Guns" }
 			NOT = { has_autonomy_state = autonomy_supervised_state }
 		}
 	}
-	
+
 	do_effect = {
 		NOT = {
 			has_government = <ideology> # You can only select it if your current ideology isn't your new one
@@ -227,4 +250,15 @@ In order to add a political advisor increasing the popularity of the ideology, f
 
 More information about GFX and localisation can be found in the [Idea modding](<Idea modding - Hearts of Iron 4 Wiki.md>) page.
 
+---
+
+## Navigation
+
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**
+
+- **Documentation**: [Effects](<Effects - Hearts of Iron 4 Wiki.md>) • [Triggers](<Triggers - Hearts of Iron 4 Wiki.md>) • [Defines](<Defines - Hearts of Iron 4 Wiki.md>) • [Modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) • [List of modifiers](<List of modifiers - Hearts of Iron 4 Wiki.md>) • [Scopes](<Scopes - Hearts of Iron 4 Wiki.md>) • [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>) • [On actions](<On actions - Hearts of Iron 4 Wiki.md>) • [Data structures](<Data structures - Hearts of Iron 4 Wiki.md>) • [Flags](<Data structures - Hearts of Iron 4 Wiki.md#Flags>) • [Event targets](<Data structures - Hearts of Iron 4 Wiki.md#Event_targets>) • [Country tag aliases](<Data structures - Hearts of Iron 4 Wiki.md#Country_tag_aliases>) • [Variables](<Data structures - Hearts of Iron 4 Wiki.md#Variables>) • [Arrays](<Data structures - Hearts of Iron 4 Wiki.md#Arrays>)
+- **Scripting**: [Achievements](<Achievement modding - Hearts of Iron 4 Wiki.md>) • [AI](<AI modding - Hearts of Iron 4 Wiki.md>) • [AI focuses](<AI focuses - Hearts of Iron 4 Wiki.md>) • [Autonomous states](<Autonomy state modding - Hearts of Iron 4 Wiki.md>) • [Balances of power](<Balance of power modding - Hearts of Iron 4 Wiki.md>) • [Bookmarks/Scenarios](<Bookmark modding - Hearts of Iron 4 Wiki.md>) • [Game rules](<Bookmark modding - Hearts of Iron 4 Wiki.md#Game_rules>) • [Buildings](<Building modding - Hearts of Iron 4 Wiki.md>) • [Characters and traits](<Character modding - Hearts of Iron 4 Wiki.md>) • [Cosmetic tags](<Cosmetic tag modding - Hearts of Iron 4 Wiki.md>) • [Countries](<Country creation - Hearts of Iron 4 Wiki.md>) • [Divisions](<Division modding - Hearts of Iron 4 Wiki.md>) • [Decisions](<Decision modding - Hearts of Iron 4 Wiki.md>) • [Doctrines](<Doctrine modding - Hearts of Iron 4 Wiki.md>) • [Equipment](<Equipment modding - Hearts of Iron 4 Wiki.md>) • [Events](<Event modding - Hearts of Iron 4 Wiki.md>) • [Factions](<Faction modding - Hearts of Iron 4 Wiki.md>) • [Ideas](<Idea modding - Hearts of Iron 4 Wiki.md>) • [Military industrial organizations](<Military industrial organization modding - Hearts of Iron 4 Wiki.md>) • [National focuses](<National focus modding - Hearts of Iron 4 Wiki.md>) • [Resources](<Resources modding - Hearts of Iron 4 Wiki.md>) • [Scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) • [Technologies and doctrines](<Technology modding - Hearts of Iron 4 Wiki.md>) • [Units](<Unit modding - Hearts of Iron 4 Wiki.md>)
+- **Map**: [Map](<Map modding - Hearts of Iron 4 Wiki.md>) • [States](<State modding - Hearts of Iron 4 Wiki.md>) • [Supply areas](<Supply areas modding - Hearts of Iron 4 Wiki.md>) • [Strategic regions](<Strategic region modding - Hearts of Iron 4 Wiki.md>)
+- **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
+- **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
+- **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)

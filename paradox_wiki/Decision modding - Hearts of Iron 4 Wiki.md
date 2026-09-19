@@ -1,45 +1,49 @@
-# Table of contents
+# Decision modding
 
-- [Basic creation](#basic-creation)
-- [Arguments for decisions and categories](#arguments-for-decisions-and-categories)
-  - [Triggers](#triggers)
-  - [Icon](#icon)
-  - [Priority](#priority)
-  - [State highlighting](#state-highlighting)
-  - [Province Highlighting](#province-highlighting)
-- [Arguments for categories](#arguments-for-categories)
-  - [Picture](#picture)
-  - [Visibility when empty](#visibility-when-empty)
-  - [Map area](#map-area)
-  - [Scripted GUI](#scripted-gui)
-- [Category examples](#category-examples)
-- [Arguments for decisions](#arguments-for-decisions)
-  - [Effects on selection](#effects-on-selection)
-  - [Decision reappearing](#decision-reappearing)
-  - [Decision cost](#decision-cost)
-  - [Timer upon selection](#timer-upon-selection)
-  - [AI](#ai)
-  - [Warning for war](#warning-for-war)
-  - [Fixed random seed](#fixed-random-seed)
-- [Decision examples](#decision-examples)
-- [Missions](#missions)
-  - [Mission example](#mission-example)
-- [Targeted decisions](#targeted-decisions)
-  - [Checking for target](#checking-for-target)
-    - [Triggers overview](#triggers-overview)
-  - [Warning for war](#warning-for-war_2)
-  - [Additional note](#additional-note)
-  - [Targeted decision example](#targeted-decision-example)
-- [State targeted decisions](#state-targeted-decisions)
-  - [Example](#example)
+*Offline snapshot of the Hearts of Iron IV Wiki page "Decision modding", captured 2026-09-19.*
+
+## Table of contents
+
+- [Basic creation](#Basic_creation)
+- [Arguments for decisions and categories](#Arguments_for_decisions_and_categories)
+  - [Triggers](#Triggers)
+  - [Icon](#Icon)
+  - [Priority](#Priority)
+  - [State highlighting](#State_highlighting)
+  - [Province Highlighting](#Province_Highlighting)
+- [Arguments for categories](#Arguments_for_categories)
+  - [Picture](#Picture)
+  - [Visibility when empty](#Visibility_when_empty)
+  - [Map area](#Map_area)
+  - [Scripted GUI](#Scripted_GUI)
+- [Category examples](#Category_examples)
+- [Arguments for decisions](#Arguments_for_decisions)
+  - [Effects on selection](#Effects_on_selection)
+  - [Decision reappearing](#Decision_reappearing)
+  - [Decision cost](#Decision_cost)
+  - [Timer upon selection](#Timer_upon_selection)
+  - [AI](#AI)
+  - [Warning for war](#Warning_for_war)
+  - [Fixed random seed](#Fixed_random_seed)
+- [Decision examples](#Decision_examples)
+- [Missions](#Missions)
+  - [Mission example](#Mission_example)
+- [Targeted decisions](#Targeted_decisions)
+  - [Checking for target](#Checking_for_target)
+    - [Triggers overview](#Triggers_overview)
+  - [Warning for war](#Warning_for_war_2)
+  - [Additional note](#Additional_note)
+  - [Targeted decision example](#Targeted_decision_example)
+- [State targeted decisions](#State_targeted_decisions)
+  - [Example](#Example)
 
 ---
 
-Decisions and missions represent actions that the player can or must take, each one stored within a category. Decisions themselves are defined within /Hearts of Iron IV/common/decisions/\*.txt files, while categories are defined within /Hearts of Iron IV/common/decisions/categories/\*.txt. While it's typical to put the country's tag within the filename, it is actually irrelevant: files can take on any filename and there will be no difference in how they will be read.
+Decisions and missions represent actions that the player can or must take, each one stored within a category. Decisions themselves are defined within `/Hearts of Iron IV/common/decisions/*.txt` files, while categories are defined within `/Hearts of Iron IV/common/decisions/categories/*.txt`. While it's typical to put the country's tag within the filename, it is actually irrelevant: files can take on any filename and there will be no difference in how they will be read.
 
-## <a id="basic-creation"></a>Basic creation
+## Basic creation <a id="Basic_creation"></a>
 
-Each decision must be stored within a category. Decision categories are defined within any /Hearts of Iron IV/common/decisions/categories/\*.txt file. An incredibly basic decision category definition looks like the following:
+Each decision must be stored within a category. Decision categories are defined within any `/Hearts of Iron IV/common/decisions/categories/*.txt` file. An incredibly basic decision category definition looks like the following:
 
 ```text
 my_decision_category = {
@@ -48,7 +52,7 @@ my_decision_category = {
 
 This will create the `my_decision_category` category, which can be used within decisions.
 
-Afterwards, decisions can be created for that category in any /Hearts of Iron IV/common/decisions/\*.txt file. Decisions are assigned to a category by putting them within that category's block, encompassed with the curly brackets, as in the following example:
+Afterwards, decisions can be created for that category in any `/Hearts of Iron IV/common/decisions/*.txt` file. Decisions are assigned to a category by putting them within that category's block, encompassed with the curly brackets, as in the following example:
 
 ```text
 my_decision_category = {
@@ -61,9 +65,9 @@ my_decision_category = {
 
 This will create the `my_decision_1` and `my_decision_2` decisions, with the default icon and no effect, and assign them to the `my_decision_category` category.
 
-A decision's name according to the currently-turned on language can be defined in any [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) file, taking the decision's name as key, and the decision's name with \_desc added in the end as the name for the localisation key for the description. As an example, the localisation for these decisions for the English language will look like the following within any /Hearts of Iron IV/localisation/english/\*\_l\_english.yml file:
+A decision's name according to the currently-turned on language can be defined in any [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) file, taking the decision's name as key, and the decision's name with _desc added in the end as the name for the localisation key for the description. As an example, the localisation for these decisions for the English language will look like the following within any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file:
 
-```text
+```yaml
 l_english:
  my_decision_category: "My decision category"
  my_decision_category_desc: "My decision category's description"
@@ -72,13 +76,13 @@ l_english:
  my_decision_2: "My decision without a description"
 ```
 
-## <a id="arguments-for-decisions-and-categories"></a>Arguments for decisions and categories
+## Arguments for decisions and categories <a id="Arguments_for_decisions_and_categories"></a>
 
 The following arguments can be used in either decisions or decision categories, usually with similar effect.
 
-### <a id="triggers"></a>Triggers
+### Triggers <a id="Triggers"></a>
 
-Usually, it is desirable to restrict the decision so that it might not always be possible to take, such as restricting it to a certain country. In order to do that, there are several trigger blocks, serving different purposes. A decision will only be available or visible if the corresponding conditions are met in both the category and the decision.
+Usually, it is desirable to restrict the decision so that it might not always be possible to take, such as restricting it to a certain country. In order to do that, there are several [trigger](<Triggers - Hearts of Iron 4 Wiki.md>) blocks, serving different purposes. A decision will only be available or visible if the corresponding conditions are met in both the category and the decision.
 
 `allowed` is a trigger block that checks only at the game's start or when loading a save, primarily used to restrict a decision to a country (As `tag = BHR` or `original_tag = POL`) and/or a DLC (As `has_dlc = "One Step Back"`). If a decision's or a category's allowed is unfulfilled, it will never appear unless it becomes true on the save being reloaded or decisions themselves being reloaded. If left out, assumes to be always allowed. **This only checks once!**
 
@@ -88,7 +92,7 @@ allowed = {
 }
 ```
 
-`visible` is a trigger block that continuously checks every frame if allowed was met, required to make the decision or the entire category be visible in the decision selection screen. In case for targeted decisions, both FROM and ROOT can be checked here, but using target\_trigger is recommended when possible for optimisation purposes. It is preferable to put country or DLC checks into allowed instead. **Does nothing for missions!**
+`visible` is a trigger block that continuously checks every frame if allowed was met, required to make the decision or the entire category be visible in the decision selection screen. In case for targeted decisions, both FROM and ROOT can be checked here, but using target_trigger is recommended when possible for optimisation purposes. It is preferable to put country or DLC checks into allowed instead. **Does nothing for missions!**
 
 ```text
 visible = {
@@ -104,10 +108,10 @@ available = {
 }
 ```
 
-### <a id="icon"></a>Icon
+### Icon <a id="Icon"></a>
 
-The icon is the small picture displayed to the left of decision's or category's name. Icons use sprites, defined in any /Hearts of Iron IV/interface/\*.gfx file, by default in `decisions.gfx`. Within a decision or a category, it is set with `icon = icon_name`.   
-Note that the game automatically inserts either `GFX_decision_` or a `GFX_decision_category_`, depending on whether it's in a decision or a category. As such, the example with icon\_name will make it use the `GFX_decision_icon_name` sprite for decisions and the `GFX_decision_category_icon_name` for categories, or, other way around, to use `GFX_decision_sprite_name` in a decision, it should have `icon = sprite_name`.  
+The icon is the small picture displayed to the left of decision's or category's name. Icons use sprites, defined in any `/Hearts of Iron IV/interface/*.gfx` file, by default in `decisions.gfx`. Within a decision or a category, it is set with `icon = icon_name`.
+Note that the game automatically inserts either `GFX_decision_` or a `GFX_decision_category_`, depending on whether it's in a decision or a category. As such, the example with icon_name will make it use the `GFX_decision_icon_name` sprite for decisions and the `GFX_decision_category_icon_name` for categories, or, other way around, to use `GFX_decision_sprite_name` in a decision, it should have `icon = sprite_name`.
 However, `icon = GFX_decision_icon_name` will also work, as the game will check the spriteType with the exact same name as well. Overall, it's to the developer's discretion whether to include `GFX_decision_`/`GFX_decision_category_` in the icon or not. Additionally, you can use triggers inside of the icon definition when it is a decision, as follows:
 
 ```text
@@ -121,10 +125,10 @@ icon = {
 icon = GFX_decision_my_icon_two
 ```
 
-### <a id="priority"></a>Priority
+### Priority <a id="Priority"></a>
 
-Priority is used to change the order in which decisions or categories are displayed from top to bottom, with a higher priority being closer to the top. By default, a decision has the priority of 1. Decision priority can be set in a short form for a static value or in a long form, similar to [ai\_will\_do](#ai) formatting.  
-In short form, the following code will set a decision or category to have the priority value of 10: `priority = 10`  
+Priority is used to change the order in which decisions or categories are displayed from top to bottom, with a higher priority being closer to the top. By default, a decision has the priority of 1. Decision priority can be set in a short form for a static value or in a long form, similar to [ai_will_do](#AI) formatting.
+In short form, the following code will set a decision or category to have the priority value of 10: `priority = 10`
 In long form, the following code will have a priority value of 13 for POL and 3 for other countries:
 
 ```text
@@ -137,7 +141,7 @@ priority = {
 }
 ```
 
-### <a id="state-highlighting"></a>State highlighting
+### State highlighting <a id="State_highlighting"></a>
 
 A decision or all decisions within a category can be set to highlight a state or several with an outline when hovering over it in the selection menu. This is the code required to do that:
 
@@ -158,7 +162,7 @@ highlight_states = {
 
 `highlight_color_while_active` is the colour that the state highlighting will have after selecting the decision during the timer before it gets removed, from 0 to 3. If not set, it will default to a white outline.
 
-### <a id="province-highlighting"></a>Province Highlighting
+### Province Highlighting <a id="Province_Highlighting"></a>
 
 In addition to highlighting states, it is also possible to highlight individual provinces since patch 'Stella Pollaris': 1.13.6. This is the code required to do that:
 
@@ -171,25 +175,25 @@ highlight_states = {
 
 With `highlight_provinces = { ... }` being the effect that stores the individual provinces to be highlighted.
 
-## <a id="arguments-for-categories"></a>Arguments for categories
+## Arguments for categories <a id="Arguments_for_categories"></a>
 
 These can only be used within categories and cannot be used in separate decisions.
 
-### <a id="picture"></a>Picture
+### Picture <a id="Picture"></a>
 
-A decision category can have a picture defined in addition to its regular icon. A picture will show up to the left of the category's description, shifting it to the left. Pictures use sprites, defined in any /Hearts of Iron IV/interface/\*.gfx file, by default in `decisions.gfx`. A sprite with the name of `GFX_decision_category_picture` can be set as the category's picture with `picture = GFX_decision_category_picture`. **A category must have a description defined in localisation for the picture to appear.**
+A decision category can have a picture defined in addition to its regular icon. A picture will show up to the left of the category's description, shifting it to the left. Pictures use sprites, defined in any `/Hearts of Iron IV/interface/*.gfx` file, by default in `decisions.gfx`. A sprite with the name of `GFX_decision_category_picture` can be set as the category's picture with `picture = GFX_decision_category_picture`. **A category must have a description defined in localisation for the picture to appear.**
 
-### <a id="visibility-when-empty"></a>Visibility when empty
+### Visibility when empty <a id="Visibility_when_empty"></a>
 
 By default, a decision category is invisible unless there's at least one visible decision within. This isn't always helpful, as the category may display information vital for the player in its description. To override that, you can add a line consisting of `visible_when_empty = yes` within the decision category.
 
-### <a id="map-area"></a>Map area
+### Map area <a id="Map_area"></a>
 
-A decision category can be assigned a map area, which will show up in the top of the decision list similarly to a decision. Clicking on the button will move the camera to the specified state or states, while setting the zoom level to the set amount. This is recommended to do in decision categories containing [decisions targeted towards states](#state-targeted-decisions). A map area definition looks like the following:
+A decision category can be assigned a map area, which will show up in the top of the decision list similarly to a decision. Clicking on the button will move the camera to the specified state or states, while setting the zoom level to the set amount. This is recommended to do in decision categories containing [decisions targeted towards states](#State_targeted_decisions). A map area definition looks like the following:
 
 ```text
 on_map_area = {
-    state = 123 
+    state = 123
     name = my_localisation_key
     zoom = 850
     target_root_trigger = {
@@ -198,12 +202,12 @@ on_map_area = {
 }
 ```
 
-`state` sets a singular state that's used as the centre of the area where the camera will move. If the map area is to be dynamic, then formatting similar to [targeted decisions](#targeted-decisions) can be used, with `targets`, `target_array`, and `target_trigger` being available and mixable.  
-`name` is the [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) key that will be used as the name of the pseudo-decision that moves the camera to the map area.  
-`zoom` is the zoom level for the map area, set in the amount of pixels off the ground, meaning that a lower value results in it being zoomed in more. For comparison, by default, the player can change the camera zoom between 50<a id="cite-ref-1"></a>[[1]](#cite-note-1) and 3000<a id="cite-ref-2"></a>[[2]](#cite-note-2).  
+`state` sets a singular state that's used as the centre of the area where the camera will move. If the map area is to be dynamic, then formatting similar to targeted decisions can be used, with `targets`, `target_array`, and `target_trigger` being available and mixable.
+`name` is the [localisation](<Localisation - Hearts of Iron 4 Wiki.md>) key that will be used as the name of the pseudo-decision that moves the camera to the map area.
+`zoom` is the zoom level for the map area, set in the amount of pixels off the ground, meaning that a lower value results in it being zoomed in more. For comparison, by default, the player can change the camera zoom between 50[1] and 3000[2].
 Additionally, each of the trigger blocks defined for decisions and categories (aside from `available`) can go inside of `on_map_area`, such as `target_root_trigger`.
 
-An example map\_area with a dynamic target trigger:
+An example map_area with a dynamic target trigger:
 
 ```text
 on_map_area = {
@@ -218,11 +222,11 @@ on_map_area = {
 }
 ```
 
-### <a id="scripted-gui"></a>Scripted GUI
+### Scripted GUI <a id="Scripted_GUI"></a>
 
-A decision category can be set to have a scripted graphical user interface container within the category, showing up below the description. The scripted GUI in question must have the decision\_category context type for this to work. This is set with `scripted_gui = my_scripted_gui`. See details on the [dedicated page for scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>).
+A decision category can be set to have a scripted graphical user interface container within the category, showing up below the description. The scripted GUI in question must have the decision_category context type for this to work. This is set with `scripted_gui = my_scripted_gui`. See details on the [dedicated page for scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>).
 
-## <a id="category-examples"></a>Category examples
+## Category examples <a id="Category_examples"></a>
 
 ```text
 POL_my_category = {
@@ -250,18 +254,18 @@ my_map_category = {
         }
     }
     on_map_area = {
-        state = 123 
+        state = 123
         targets = { capital }
         zoom = 350
     }
 }
 ```
 
-## <a id="arguments-for-decisions"></a>Arguments for decisions
+## Arguments for decisions <a id="Arguments_for_decisions"></a>
 
 These can only be used within decisions and cannot be used in categories.
 
-### <a id="effects-on-selection"></a>Effects on selection
+### Effects on selection <a id="Effects_on_selection"></a>
 
 `complete_effect` is the block of [effects](<Effects - Hearts of Iron 4 Wiki.md>) that gets executed immediately when the decision is selected (Starting the timer if it has one).
 
@@ -271,22 +275,22 @@ complete_effect = {
 }
 ```
 
-### <a id="decision-reappearing"></a>Decision reappearing
+### Decision reappearing <a id="Decision_reappearing"></a>
 
 By default, a decision reappears on the very next day after being taken. In order to increase the cooldown in days, `days_re_enable = 123` can be used to put in more days in the cooldown.
 
 In order to make the decision disappear forever upon being completed, the `fire_only_once = yes` line of code will ensure that, making the decision only be possible to fire once per country.
 
-### <a id="decision-cost"></a>Decision cost
+### Decision cost <a id="Decision_cost"></a>
 
-In order to assign a political power cost to a decision, the `cost = <int>` argument is used. The cost can be assigned a variable. As an example of a decision which is assigned a cost of 50 political power:
+In order to assign a political power cost to a decision, the `cost = <int>` argument is used. The cost can be assigned a [variable](<Data structures - Hearts of Iron 4 Wiki.md>). As an example of a decision which is assigned a cost of 50 political power:
 
 ```text
 find_resources = {
     develop_infrastructure = {
         cost = 50
         available = {
-            has_manpower > 500
+            has_manpower > 499
         }
         complete_effect = {
             random_owned_state = {
@@ -296,35 +300,47 @@ find_resources = {
         }
     }
 }
-`Alternatively, a decision can also take a custom localisation string as the cost. This is done with the following:`
+```
+
+Alternatively, a decision can also take a custom localisation string as the cost. This is done with the following:
+
+```text
 custom_cost_trigger = {
     <triggers>
 }
 custom_cost_text = <localisation key>
-`If custom\_cost\_trigger is fulfilled, then <localisation key> will be used for localisation, otherwise, <localisation key>\_blocked will be. <localisation key>\_tooltip will be used when hovering over the cost. Using the example of the following:`
+```
+
+If custom_cost_trigger is fulfilled, then <localisation key> will be used for localisation, otherwise, <localisation key>_blocked will be. <localisation key>_tooltip will be used when hovering over the cost. Using the example of the following:
+
+```text
 custom_cost_trigger = {
     command_power > 14
 }
 custom_cost_text = decision_cost_CP_15
-`The localisation file will have the following:`
+```
+
+The localisation file will have the following:
+
+```yaml
 l_english:
  decision_cost_CP_15: "£command_power  §Y15§!"
  decision_cost_CP_15_blocked: "£command_power  §R15§!"
  decision_cost_CP_15_tooltip: "It costs £command_power  §Y15§! to take the decision"
 ```
 
-In order to show icons, [text icons](<Localisation - Hearts of Iron 4 Wiki.md#text-icons>) are used.  
+In order to show icons, [text icons](<Localisation - Hearts of Iron 4 Wiki.md#Text_icons>) are used.
 **A custom cost will not actually cost anything**, and what you set it to cost will have to be subtracted within the `complete_effect` of the decision, preferably as a hidden effect.
 
 As the custom cost can't be used in conjunction with the regular cost, if it includes political power, the AI will not be aware that it should save up an amount of it before taking the decision. This can be remidified with `ai_hint_pp_cost = 100`: this attribute will make the AI think that the decision will use 100 political power regardless of whether it does or not, making sure it will save up that much before trying to use it. This must be a constant amount rather than being a variable.
 
-### <a id="timer-upon-selection"></a>Timer upon selection
+### Timer upon selection <a id="Timer_upon_selection"></a>
 
 In order to add a timer between the decision being selected and some of its effects applying, `days_remove = 123` is used to define the amount of days. If set to `-1`, the decision will never be removed by the timer running out, although additional trigger blocks can remove it.
 
 As for defining the effects that would be executed when the timer ends, `remove_effect = { ... }` is used as an effect block. Note that `complete_effect = { ... }` is when the decision is selected starting the timer, rather than when the timer ends. In other words, this timer appears after the decision was completed and stays there until the decision is removed. Additionally, `remove_trigger = { ... }` is used to instantly remove the decision once the triggers within are met for the country, also firing the `remove_effect = { ... }` block.
 
-Additionally, it is possible to make the decision apply [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) during the timer's duration, with the `modifier = { ... }` providing a modifier block. [Similarly to ideas](<Idea modding - Hearts of Iron 4 Wiki.md#modifiers>), `targeted_modifier = { ... }` also exists as a way to apply [targeted modifiers](<Modifiers - Hearts of Iron 4 Wiki.md#targeted-modifiers>), in the same formatting with `tag = BHR` setting the target, such as the following example:
+Additionally, it is possible to make the decision apply [modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) during the timer's duration, with the `modifier = { ... }` providing a modifier block. [Similarly to ideas](<Idea modding - Hearts of Iron 4 Wiki.md#Modifiers>), `targeted_modifier = { ... }` also exists as a way to apply [targeted modifiers](<Modifiers - Hearts of Iron 4 Wiki.md#Targeted_modifiers>), in the same formatting with `tag = BHR` setting the target, such as the following example:
 
 ```text
 targeted_modifier = {
@@ -334,17 +350,17 @@ targeted_modifier = {
 }
 ```
 
-In order to make the timer cancel early without providing the effects, `visible = { ... }` does not work by default.  
-Instead, `cancel_trigger = { ... }` is used as a trigger block. Upon it being evaluated as true, the decision timer ends without `remove_effect = { ... }` being executed. `cancel_if_not_visible = yes`, false by default, serves as an easy way to add visible's triggers into the `cancel_trigger = { ... }` block.  
+In order to make the timer cancel early without providing the effects, `visible = { ... }` does not work by default.
+Instead, `cancel_trigger = { ... }` is used as a trigger block. Upon it being evaluated as true, the decision timer ends without `remove_effect = { ... }` being executed. `cancel_if_not_visible = yes`, false by default, serves as an easy way to add visible's triggers into the `cancel_trigger = { ... }` block.
 Upon the decision being cancelled, `cancel_effect = { ... }` is an effect block that gets executed. This can be useful as a way to reverse the effects applied within the complete effect.
 
-### <a id="ai"></a>AI
+### AI <a id="AI"></a>
 
-*Main article: [AI modding § AI will do](<AI modding - Hearts of Iron 4 Wiki.md#ai-will-do>)*
+:   *Main article: [AI modding § AI will do](<AI modding - Hearts of Iron 4 Wiki.md>)*
 
-The chance for AI to pick a decision is decided by the `ai_will_do = { ... }` block within a decision, which is a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#mtth-blocks>). **By default, a decision will never be chosen by AI,** and that block is required to make AI choose it.
+The chance for AI to pick a decision is decided by the `ai_will_do = { ... }` block within a decision, which is a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#MTTH_blocks>). **By default, a decision will never be chosen by AI,** and that block is required to make AI choose it.
 
-As a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#mtth-blocks>), the structure consists of `factor = 10` or `base = 10` to choose the initial value and `modifier = { ... }` as trigger blocks assigning `add`/`factor`/`base` in the order. For example, the following will make the decision be never chosen by AI, unless the country is at war with ITA, in which case it has 10 weight:
+As a [MTTH block](<AI modding - Hearts of Iron 4 Wiki.md#MTTH_blocks>), the structure consists of `factor = 10` or `base = 10` to choose the initial value and `modifier = { ... }` as trigger blocks assigning `add`/`factor`/`base` in the order. For example, the following will make the decision be never chosen by AI, unless the country is at war with ITA, in which case it has 10 weight:
 
 ```text
 ai_will_do = {
@@ -356,21 +372,21 @@ ai_will_do = {
 }
 ```
 
-### <a id="warning-for-war"></a>Warning for war
+### Warning for war <a id="Warning_for_war"></a>
 
-If your decision leads to a nation declaring war on another nation, there are several arguments that can be used to inform the targeted nation that a war is coming, as well as alert the AI to begin moving troops onto the border:  
-`war_with_on_remove = TAG` will make the game assume that the decision, within its `remove_effect` will declare war on the specified country, making it prepare when the timer starts.  
+If your decision leads to a nation declaring war on another nation, there are several arguments that can be used to inform the targeted nation that a war is coming, as well as alert the AI to begin moving troops onto the border:
+`war_with_on_remove = TAG` will make the game assume that the decision, within its `remove_effect` will declare war on the specified country, making it prepare when the timer starts.
 `war_with_on_complete = TAG` will make the game assume that the decision, within its `complete_effect` will declare war on the specified country, making it prepare when the decision becomes available.
 
-These arguments do not work for targeted decisions; see [Targeted Decisions: Warning for War](<Decision modding - Hearts of Iron 4 Wiki.md#warning-for-war_2>).
+These arguments do not work for targeted decisions; see [Targeted Decisions: Warning for War](#Warning_for_war_2).
 
-### <a id="fixed-random-seed"></a>Fixed random seed
+### Fixed random seed <a id="Fixed_random_seed"></a>
 
-Decisions, by default, use a fixed random seed. What this means is that such scopes as [random\_list](<Effects - Hearts of Iron 4 Wiki.md#random-list>) or [random\_owned\_controlled\_state](<Scopes - Hearts of Iron 4 Wiki.md>) will pick the same thing each time that the decision is used, making a choice when the game starts. `fixed_random_seed = no` will make sure that the random seed is dynamic, making it possible for a different outcome to happen.
+Decisions, by default, use a fixed random seed. What this means is that such scopes as [random_list](<Effects - Hearts of Iron 4 Wiki.md>) or [random_owned_controlled_state](<Scopes - Hearts of Iron 4 Wiki.md>) will pick the same thing each time that the decision is used, making a choice when the game starts. `fixed_random_seed = no` will make sure that the random seed is dynamic, making it possible for a different outcome to happen.
 
-## <a id="decision-examples"></a>Decision examples
+## Decision examples <a id="Decision_examples"></a>
 
-QAT\_category and BHR\_category are assumed to already have been created within any /Hearts of Iron IV/common/decisions/categories/\*.txt file.
+QAT_category and BHR_category are assumed to already have been created within any `/Hearts of Iron IV/common/decisions/categories/*.txt` file.
 
 ```text
 QAT_category = {
@@ -446,7 +462,7 @@ BHR_category = {
 }
 ```
 
-## <a id="missions"></a>Missions
+## Missions <a id="Missions"></a>
 
 Missions are another type of decisions, activated when the triggers are true and requiring the player to do an action in order for the mission to have a positive outcome. These mostly use the same attributes as regular decisions, but there are some crucial differences. In particular:
 
@@ -462,7 +478,7 @@ Missions are another type of decisions, activated when the triggers are true and
 
 Other attributes, such as `cancel_trigger` or `cancel_effect` generally may be used inside of missions and should work how they do outside of them.
 
-### <a id="mission-example"></a>Mission example
+### Mission example <a id="Mission_example"></a>
 
 ```text
 my_mission = {
@@ -493,46 +509,46 @@ my_mission = {
 }
 ```
 
-## <a id="targeted-decisions"></a>Targeted decisions
+## Targeted decisions <a id="Targeted_decisions"></a>
 
-In addition to regular decisions that are taken by the country towards that same country, it is possible to make a decision be targeted towards a different country or group of countries. In that case, the decision will clone itself for each country that it gets targeted towards, putting the flag of the country in the bottom right of the decision's icon. The targeted country will be possible to reference in code using [FROM](<Scopes - Hearts of Iron 4 Wiki.md#dual-scopes>), while ROOT is still the country that gets the decision. **Despite what the names imply, FROM is the target of the decision rather than the country doing it.**  
-`fire_only_once`, in this case, will make the decision fire only once per each target country: a decision targeted towards BLR will not disappear if a decision of the same ID targered towards LIT gets completed.  
+In addition to regular decisions that are taken by the country towards that same country, it is possible to make a decision be targeted towards a different country or group of countries. In that case, the decision will clone itself for each country that it gets targeted towards, putting the flag of the country in the bottom right of the decision's icon. The targeted country will be possible to reference in code using [FROM](<Scopes - Hearts of Iron 4 Wiki.md>), while ROOT is still the country that gets the decision. **Despite what the names imply, FROM is the target of the decision rather than the country doing it.**
+`fire_only_once`, in this case, will make the decision fire only once per each target country: a decision targeted towards BLR will not disappear if a decision of the same ID targered towards LIT gets completed.
 Missions, as well as regular decisions, can be made targeted.
 
 A decision becomes targeted if any way to check for a target is added within the decision:
 
-### <a id="checking-for-target"></a>Checking for target
+### Checking for target <a id="Checking_for_target"></a>
 
 There are several ways to limit the selection of targets. If any of these three is present in the decision, it will be marked as targeted.
 
 The primary way to limit the selection to a select few countries is `targets = { TAG TAG }`. In that case, if you want the game to check every country with that original tag (including civil war rebellions and other types of dynamic countries), then `targets_dynamic = yes` line of code will ensure that the game will check more than the country that the country tag truly belongs to. Additionally, by default, it's impossible to target a non-existing country. The `target_non_existing = yes` argument can be used to remove that restriction.
 
-Additionally, it is possible to use arrays to limit a selection with `target_array = array_name`, where the array must be assigned to the country. [You can see a list of arrays automatically generated by the game here.](<Data structures - Hearts of Iron 4 Wiki.md#game-arrays>)
+Additionally, it is possible to use [arrays](<Data structures - Hearts of Iron 4 Wiki.md>) to limit a selection with `target_array = array_name`, where the array must be assigned to the country. [You can see a list of arrays automatically generated by the game here.](<Data structures - Hearts of Iron 4 Wiki.md#Game_arrays>)
 
 Together with any of the previous two ways or without them, `target_trigger = { ... }` is a trigger block evaluated daily for both FROM and ROOT, if `target_root_trigger` is evaluated as true.
 
 For targeted decisions, `target_root_trigger` is also possible to use, as a trigger block that continuously checks every day if allowed was met, required to make the decision or the entire category be visible in the decision selection screen. **This checks only ROOT**, being executed before `target_trigger = { ... }` is. This exists for optimisation purposes, as it takes much less time to check the condition for one country daily than for every combination of countries.
 
-#### <a id="triggers-overview"></a>Triggers overview
+#### Triggers overview <a id="Triggers_overview"></a>
 
 - `allowed = { ... }` checks the country that should get this decision and only checks upon the game's start or when reloading decisions such as by loading a savegame. If false, the decision is permamently disabled.
 - `target_root_trigger = { ... }` checks the country the country that should get this decision, every day. If false, the decision will not appear until the next daily check. **Despite only checking one country, this still makes the decision targeted.**
 - `target_trigger = { ... }` checks any countries (or states) that meet `targets = { ... }` and `target_array = array_name`, if they're present. In here, ROOT (default scope) is the country that gets the decision and FROM is the potential target of the decision. This is checked daily, making the decision not appear until the next day's check if false. Putting this automatically makes the decision targeted.
 - `visible = { ... }` and `available = { ... }` are checked every tick. If the decision is targeted, then FROM is checked alongside ROOT, otherwise only ROOT is checked.
 
-### <a id="warning-for-war_2"></a>Warning for war
+### Warning for war <a id="Warning_for_war_2"></a>
 
 The regular arguments of `war_with_on_` do not work if using FROM as a target. Instead, there are alternatives for targeted decisions specifically:
 
-`war_with_target_on_complete = yes` - Equivalent to `war_with_on_complete = FROM`  
-`war_with_target_on_remove = yes` - Equivalent to `war_with_on_remove = FROM`  
+`war_with_target_on_complete = yes` - Equivalent to `war_with_on_complete = FROM`
+`war_with_target_on_remove = yes` - Equivalent to `war_with_on_remove = FROM`
 `war_with_target_on_timeout = yes` - Equivalent to `war_with_on_timeout = FROM`
 
-### <a id="additional-note"></a>Additional note
+### Additional note <a id="Additional_note"></a>
 
-Similarly to missions, the `activate_targeted_decision = { target = TAG decision = my_decision }` effect exists. If possible, it is recommended to use this effect instead of letting it automatically activate, making it never allowed. For instance, if the targeted decision activates by being at war with a country, [on\_war\_relation\_added in on\_actions](<On actions - Hearts of Iron 4 Wiki.md>) can be used to activate it instead of using `target_array = enemies`.
+Similarly to missions, the `activate_targeted_decision = { target = TAG decision = my_decision }` effect exists. If possible, it is recommended to use this effect instead of letting it automatically activate, making it never allowed. For instance, if the targeted decision activates by being at war with a country, [on_war_relation_added in on_actions](<On actions - Hearts of Iron 4 Wiki.md>) can be used to activate it instead of using `target_array = enemies`.
 
-### <a id="targeted-decision-example"></a>Targeted decision example
+### Targeted decision example <a id="Targeted_decision_example"></a>
 
 ```text
 my_targeted_decision = {
@@ -558,27 +574,27 @@ my_targeted_decision = {
 }
 ```
 
-## <a id="state-targeted-decisions"></a>State targeted decisions
+## State targeted decisions <a id="State_targeted_decisions"></a>
 
-If the decision has `state_target = yes` then, instead, it'll be targeted towards a state. Possible values are: yes, no, any, any\_owned\_state, any\_controlled\_state, continent\_key (europe, africa, north\_america...). This will only have an effect if no 'targets' are specified, else this should be set to 'any' (or 'yes') if targets are used. Unless omitted or set to "no", makes the decision a state targeted decision. Which states will be checked depends on value:  
-- any (or yes): will check every state in the game against the 'target\_trigger'.  
-- any\_owned\_state: will check every state owned by the country. This is equivalent to adding 'is\_owned\_by = ROOT' in the target\_trigger.  
-- any\_controlled\_state: will check every state controlled by the country. This is equivalent to adding 'is\_controlled\_by = ROOT' in the target\_trigger.  
-- continent\_key (europe, africa, north\_america...): will check every state in the continent. This is equivalent to adding 'is\_on\_continent = xxx' in the target\_trigger.
+If the decision has `state_target = yes` then, instead, it'll be targeted towards a state. Possible values are: yes, no, any, any_owned_state, any_controlled_state, continent_key (europe, africa, north_america...). This will only have an effect if no 'targets' are specified, else this should be set to 'any' (or 'yes') if targets are used. Unless omitted or set to "no", makes the decision a state targeted decision. Which states will be checked depends on value:
+\- any (or yes): will check every state in the game against the 'target_trigger'.
+\- any_owned_state: will check every state owned by the country. This is equivalent to adding 'is_owned_by = ROOT' in the target_trigger.
+\- any_controlled_state: will check every state controlled by the country. This is equivalent to adding 'is_controlled_by = ROOT' in the target_trigger.
+\- continent_key (europe, africa, north_america...): will check every state in the continent. This is equivalent to adding 'is_on_continent = xxx' in the target_trigger.
 
 When using explicit targets such as via `targets = {}` or `target_array = yes` only `state_target = yes/any` will work the others will produce an error
 
 Targeting still works the same way, with it having FROM as a state scope instead. `targets` becomes `targets = { 123 321 }` or, in case of one state total, `targets = { state = 123 }` can be used as well.
 
-Decisions targeted towards states will have the icon appear over the states while the decision menu is open. To prevent confusion, a [map area](<Decision modding - Hearts of Iron 4 Wiki.md#map-area>) can be added to the decision category.
+Decisions targeted towards states will have the icon appear over the states while the decision menu is open. To prevent confusion, a [map area](#Map_area) can be added to the decision category.
 
 Additionally, The argument `on_map_mode` will determine where the targeted decisions appear in.
 
-`on_map_mode = map_only` will make the targeted decisions only appear on the map.  
-`on_map_mode = decision_view_only` will make the targeted decisions only appear in the decisions menu.  
+`on_map_mode = map_only` will make the targeted decisions only appear on the map.
+`on_map_mode = decision_view_only` will make the targeted decisions only appear in the decisions menu.
 `on_map_mode = map_and_decisions_view` will make the targeted decisions appear on both the map and the decisions menu.
 
-### <a id="example"></a>Example
+### Example <a id="Example"></a>
 
 ```text
 my_state_targeted_decision = {
@@ -603,7 +619,18 @@ my_state_targeted_decision = {
 }
 ```
 
-<a id="cite-note-1"></a>1. [↑](#cite-ref-1) `CAMERA_MIN_HEIGHT = 50.0` in [Defines](<Defines - Hearts of Iron 4 Wiki.md>)
-<a id="cite-note-2"></a>2. [↑](#cite-ref-2) `CAMERA_MAX_HEIGHT = 3000.0` in [Defines](<Defines - Hearts of Iron 4 Wiki.md>)
+1. ↑ `CAMERA_MIN_HEIGHT = 50.0` in [Defines](<Defines - Hearts of Iron 4 Wiki.md>)
+2. ↑ `CAMERA_MAX_HEIGHT = 3000.0` in [Defines](<Defines - Hearts of Iron 4 Wiki.md>)
+
+---
+
+## Navigation
 
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**
+
+- **Documentation**: [Effects](<Effects - Hearts of Iron 4 Wiki.md>) • [Triggers](<Triggers - Hearts of Iron 4 Wiki.md>) • [Defines](<Defines - Hearts of Iron 4 Wiki.md>) • [Modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) • [List of modifiers](<List of modifiers - Hearts of Iron 4 Wiki.md>) • [Scopes](<Scopes - Hearts of Iron 4 Wiki.md>) • [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>) • [On actions](<On actions - Hearts of Iron 4 Wiki.md>) • [Data structures](<Data structures - Hearts of Iron 4 Wiki.md>) • [Flags](<Data structures - Hearts of Iron 4 Wiki.md#Flags>) • [Event targets](<Data structures - Hearts of Iron 4 Wiki.md#Event_targets>) • [Country tag aliases](<Data structures - Hearts of Iron 4 Wiki.md#Country_tag_aliases>) • [Variables](<Data structures - Hearts of Iron 4 Wiki.md#Variables>) • [Arrays](<Data structures - Hearts of Iron 4 Wiki.md#Arrays>)
+- **Scripting**: [Achievements](<Achievement modding - Hearts of Iron 4 Wiki.md>) • [AI](<AI modding - Hearts of Iron 4 Wiki.md>) • [AI focuses](<AI focuses - Hearts of Iron 4 Wiki.md>) • [Autonomous states](<Autonomy state modding - Hearts of Iron 4 Wiki.md>) • [Balances of power](<Balance of power modding - Hearts of Iron 4 Wiki.md>) • [Bookmarks/Scenarios](<Bookmark modding - Hearts of Iron 4 Wiki.md>) • [Game rules](<Bookmark modding - Hearts of Iron 4 Wiki.md#Game_rules>) • [Buildings](<Building modding - Hearts of Iron 4 Wiki.md>) • [Characters and traits](<Character modding - Hearts of Iron 4 Wiki.md>) • [Cosmetic tags](<Cosmetic tag modding - Hearts of Iron 4 Wiki.md>) • [Countries](<Country creation - Hearts of Iron 4 Wiki.md>) • [Divisions](<Division modding - Hearts of Iron 4 Wiki.md>) • [Doctrines](<Doctrine modding - Hearts of Iron 4 Wiki.md>) • [Equipment](<Equipment modding - Hearts of Iron 4 Wiki.md>) • [Events](<Event modding - Hearts of Iron 4 Wiki.md>) • [Factions](<Faction modding - Hearts of Iron 4 Wiki.md>) • [Ideas](<Idea modding - Hearts of Iron 4 Wiki.md>) • [Ideologies](<Ideology modding - Hearts of Iron 4 Wiki.md>) • [Military industrial organizations](<Military industrial organization modding - Hearts of Iron 4 Wiki.md>) • [National focuses](<National focus modding - Hearts of Iron 4 Wiki.md>) • [Resources](<Resources modding - Hearts of Iron 4 Wiki.md>) • [Scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) • [Technologies and doctrines](<Technology modding - Hearts of Iron 4 Wiki.md>) • [Units](<Unit modding - Hearts of Iron 4 Wiki.md>)
+- **Map**: [Map](<Map modding - Hearts of Iron 4 Wiki.md>) • [States](<State modding - Hearts of Iron 4 Wiki.md>) • [Supply areas](<Supply areas modding - Hearts of Iron 4 Wiki.md>) • [Strategic regions](<Strategic region modding - Hearts of Iron 4 Wiki.md>)
+- **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
+- **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
+- **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)

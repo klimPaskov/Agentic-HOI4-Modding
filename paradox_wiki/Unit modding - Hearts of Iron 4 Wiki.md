@@ -1,29 +1,40 @@
-# Table of contents
+# Unit modding
 
-- [Unit Categories](#unit-categories)
-- [Units](#units)
-  - [How to add new Groups](#how-to-add-new-groups)
-  - [Models](#models)
-  - [Internal Types](#internal-types)
-  - [Group Types](#group-types)
-  - [Map Icon Types](#map-icon-types)
-- [Stats](#stats)
-- [Modifiers](#modifiers)
-  - [Base](#base)
-- [Localization](#localization)
-- [Icons](#icons)
+*Offline snapshot of the Hearts of Iron IV Wiki page "Unit modding", captured 2026-09-19.*
+
+## Table of contents
+
+- [Unit Categories](#Unit_Categories)
+- [Units](#Units)
+  - [How to add new Groups](#How_to_add_new_Groups)
+  - [Models](#Models)
+  - [Internal Types](#Internal_Types)
+  - [Group Types](#Group_Types)
+  - [Map Icon Types](#Map_Icon_Types)
+- [Stats](#Stats)
+- [Modifiers](#Modifiers)
+  - [Base](#Base)
+  - [Costs](#Costs)
+  - [Offensive](#Offensive)
+  - [Defensive](#Defensive)
+  - [Unique](#Unique)
+  - [Boolean](#Boolean)
+  - [Navy-specific](#Navy-specific)
+  - [Air-specific](#Air-specific)
+- [Localization](#Localization)
+- [Icons](#Icons)
 
 ---
 
 Units are the base object that equipment is applied to. Internally, units are actually sub-units of the hardcoded unit types, such as infantry, cavalry, fighter, etc.
 
-## <a id="unit-categories"></a>Unit Categories
+### Unit Categories <a id="Unit_Categories"></a>
 
-Unit categories are found in /Hearts of Iron IV/common/unit\_tags/00\_categories.txt.
+Unit categories are found in `/Hearts of Iron IV/common/unit_tags/00_categories.txt`.
 
 Each unit is assigned a category that is used in technologies to apply effects to groups of units at once.
 
-The following example from a technology grants bonuses to all units with the *category\_all\_infantry* category:
+The following example from a technology grants bonuses to all units with the *category_all_infantry* category:
 
 ```text
 category_all_infantry = {
@@ -32,9 +43,9 @@ category_all_infantry = {
 }
 ```
 
-## <a id="units"></a>Units
+### Units <a id="Units"></a>
 
-Units are found in /Hearts of Iron IV/common/units/\*.txt.
+Units are found in `/Hearts of Iron IV/common/units/*.txt`.
 
 Units follow the following format:
 
@@ -42,7 +53,7 @@ Units follow the following format:
 sub_units = {
     <unit name> = {
         sprite = <entity> # Refers to <name>_entity in a gfx/entities/.*.asset file - Controls the unit used on the map
-        
+
         # Controls the map icon category used for the unit
         map_icon_category = <type>
 
@@ -50,7 +61,7 @@ sub_units = {
         ai_priority = <int>
 
         active = yes / no       # Whether the unit is usable without explicit unlocking in technology
-        cavalry = yes           # Used to define subunit as cavalry 
+        cavalry = yes           # Used to define subunit as cavalry
         special_forces = yes    # Used to define subunit as special forces
         marines = yes           # Used to define subunit as marine
         can_exfiltrate_from_coast = yes # Used to define subunit opportunity of leaving the coast without a naval base
@@ -59,33 +70,33 @@ sub_units = {
         affects_speed = yes     # Used to check if the unit will affect the template's speed, support companies have it set to no.
 
         transport = <equipment> # Sets the speed of subunit via equipment. Used for motorized/mechanized
-        
+
         # How the unit is grouped division-wise, i.e. appearing in the Support tab. Not used for air or naval units
         group = <group>
-        
+
         # Internal types
         type = {
             <type>
         }
-        
+
         # Categories the unit belongs to.
         categories = {
             <categories>
         }
-        
+
         # Equipment that is required for this unit. Used when active = no
         essential = {
             <equipment>
         }
-        
+
         # Equipment needed to produce this unit. Unit won't be available until the nation has this equipment
         need = {
             <equipment>
         }
-        
+
         # Modifiers control the stats of the unit. More detail under the Stats section.
         <modifiers>
-        
+
         # Modifiers that occur only in specific terrain
         <terrain> = {
             <modifiers>
@@ -96,29 +107,35 @@ sub_units = {
 
 You cannot add new internal or map icon types, but you can add new groups.
 
-### <a id="how-to-add-new-groups"></a>How to add new Groups
+#### How to add new Groups <a id="How_to_add_new_Groups"></a>
 
 Inside any unit file, type the name of the new group in the "group" argument. The game will internally create the group and asign it to the current unit. For example:
 
-`group = <group name>`
+```text
+group = <group name>
+```
 
-Then, to add a localisation for our newly created group we must go to any localization file (preferably /Hearts of Iron IV/localisation/unit\_I\_english.yml) and define a new loc key as follows:
+Then, to add a localisation for our newly created group we must go to any localization file (preferably `/Hearts of Iron IV/localisation/unit_I_english.yml`) and define a new loc key as follows:
 
-`group_<group name>_title:0 "Group name here"`
+```text
+group_<group name>_title:0 "Group name here"
+```
 
-To assign an icon to the new group you must go to /Hearts of Iron IV/interface/subuniticons.gfx and define a new spritetype as follows:
+To assign an icon to the new group you must go to `/Hearts of Iron IV/interface/subuniticons.gfx` and define a new spritetype as follows:
 
-`spriteType = { name = "GFX_group_<group name>_icon" textureFile = "gfx/interface/counters/divisions_large/<icon file name>.dds" noOfFrames = 2 }`
+```text
+spriteType = { name = "GFX_group_<group name>_icon"	     textureFile = "gfx/interface/counters/divisions_large/<icon file name>.dds" noOfFrames = 2 }
+```
 
-Note that the textureFile path doesn't have to be strictly /Hearts of Iron IV/gfx/interface/counters/divisions\_large/, it can be any path.
+Note that the textureFile path doesn't have to be strictly `/Hearts of Iron IV/gfx/interface/counters/divisions_large/`, it can be any path.
 
-### <a id="models"></a>Models
+#### Models <a id="Models"></a>
 
 *See also: [Entity modding](<Entity modding - Hearts of Iron 4 Wiki.md>)*
 
-The model is assigned with the `sprite = SPRITE` attribute, which assigns the entity with the base name of `SPRITE_entity` by default to units whose division template has a plurality of this sub-unit. Similar to [country names](<Country creation - Hearts of Iron 4 Wiki.md#name>), it is possible to assign further conditions by changing the name of the model, in this case by prepending a prefix to the base name. The priority starts with the default name as the lowest, then allowing using unique models for [graphical cultures](<Country creation - Hearts of Iron 4 Wiki.md#country-file>), countries, or cosmetic tags.
+The model is assigned with the `sprite = SPRITE` attribute, which assigns the entity with the base name of `SPRITE_entity` by default to units whose division template has a plurality of this sub-unit. Similar to [country names](<Country creation - Hearts of Iron 4 Wiki.md#Name>), it is possible to assign further conditions by changing the name of the model, in this case by prepending a prefix to the base name. The priority starts with the default name as the lowest, then allowing using unique models for [graphical cultures](<Country creation - Hearts of Iron 4 Wiki.md#Country_file>), countries, or cosmetic tags.
 
-An example /Hearts of Iron IV/gfx/entities/\*.asset file is as such:
+An example `/Hearts of Iron IV/gfx/entities/*.asset` file is as such:
 
 ```text
 entity = {
@@ -153,40 +170,40 @@ entity = {
 }
 ```
 
-### <a id="internal-types"></a>Internal Types
+#### Internal Types <a id="Internal_Types"></a>
 
 - infantry
 - support
 - artillery
-- anti\_tank
-- anti\_air
+- anti_tank
+- anti_air
 - armor
 - fighter
 - cas
-- naval\_bomber
+- naval_bomber
 - interceptor
 - suicide
-- tactical\_bomber
-- strategic\_bomber
-- air\_transport
+- tactical_bomber
+- strategic_bomber
+- air_transport
 - missile
 - submarine
-- screen\_ship
-- capital\_ship
+- screen_ship
+- capital_ship
 - carrier
 - motorized
 - mechanized
 - flame
 - amphibious
 
-### <a id="group-types"></a>Group Types
+#### Group Types <a id="Group_Types"></a>
 
 - infantry
 - support
 - mobile
 - armor
 
-### <a id="map-icon-types"></a>Map Icon Types
+#### Map Icon Types <a id="Map_Icon_Types"></a>
 
 - infantry
 - armored
@@ -195,11 +212,11 @@ entity = {
 - transport
 - uboat
 
-## <a id="stats"></a>Stats
+### Stats <a id="Stats"></a>
 
 Units use modifiers to determine which stats they have and what special actions they may take.
 
-Typically air units will not use any modifiers, whilst naval units use only *supply\_consumption* and *max\_organisation*.
+Typically air units will not use any modifiers, whilst naval units use only *supply_consumption* and *max_organisation*.
 
 Land units almost always use the following:
 
@@ -209,12 +226,12 @@ max_strength = <int>
 training_time = <int>
 weight = <float>
 default_morale = <float>
-max_organisation = <int>    
-combat_width = <int>        
+max_organisation = <int>
+combat_width = <int>
 supply_consumption = <float>
 ```
 
-For *max\_organisation*, vanilla uses the following values:
+For *max_organisation*, vanilla uses the following values:
 
 - infantry support: 20
 - armor: 10
@@ -222,59 +239,75 @@ For *max\_organisation*, vanilla uses the following values:
 - ship: 40
 - cavalry: 70
 
-For *combat\_width*, vanilla uses the following values:
+For *combat_width*, vanilla uses the following values:
 
 - infantry: 0
 - artillery: 0
 - armor support: 1
 - armor: 2
 
-## <a id="modifiers"></a>Modifiers
+### Modifiers <a id="Modifiers"></a>
 
 The following list is all the valid modifiers for use in units (and equipment):
 
-### <a id="base"></a>Base
+#### Base <a id="Base"></a>
 
 ```text
-max_organisation = 20           # Organisation indicates combat readiness and how organized a unit is. 
+max_organisation = 20           # Organisation indicates combat readiness and how organized a unit is.
                                 # Units with no organisation can't fight or move effectively.
 
 reliability = 0.9               # Reliability controls how often equipment will suffer random failures.
 
 weight = 0.1                    # Weight controls how many transports a unit needs to embark.
 
-maximum_speed = 0.5             # Maximum speed acts as a "bonus" mulitipler to the speed determined by the unit equipment in km/h. 
+maximum_speed = 0.5             # Maximum speed acts as a "bonus" mulitipler to the speed determined by the unit equipment in km/h.
                                 # The formula for the calculated speed is <base speed> * (1 + maximum_speed)km/h; thus a maximum_speed
                                 # of 0.5 gives a movement speed 50% faster, a maximum_speed of 2 equals 200% faster, etc.
 
 supply_consumption = 0.02       # Supply consumption determmines how much supply a unit consumes per day
 
-default_morale = 0.3            # Default morale determines how much extra organisation can be regained 
+default_morale = 0.3            # Default morale determines how much extra organisation can be regained
                                 # hourly when not in combat
 
 combat_width = 0.5              # Combat width determines how much this unit contributes to overall combat width.
-`### <a id="costs"></a>Costs`
+```
+
+#### Costs <a id="Costs"></a>
+
+```text
 lend_lease_cost = 1             # Space taken up in convoy
 build_cost_ic = 0.4             # Production Cost - How much factory output this piece of equipment needs
 manpower = 300                  # Manpower - Cost in manpower to produce
 training_time = 120             # Training time - Time in days to train this unit
-`### <a id="offensive"></a>Offensive`
-# Offensive
+```
+
+#### Offensive <a id="Offensive"></a>
+
+```text
+## Offensive
 attack = 0.1                    # Firepower - Amount of damage done per attack
-soft_attack = -0.1              # Soft Attack - How many attacks the unit can make versus enemies with low hardness. (In this example here, this would mean that the unit would get 10% less Soft Attack than they 
+soft_attack = -0.1              # Soft Attack - How many attacks the unit can make versus enemies with low hardness. (In this example here, this would mean that the unit would get 10% less Soft Attack than they
 would usually get from its equipment
 hard_attack = -0.5              # Hard Attack - How many attacks the unit can make versus enemies with high hardness
 air_attack = 1                  # Air Attack - How much damage we can do against airplanes. High Air Attack also helps to counter enemy Air Superiority effects
 ap_attack = 1                   # Piercing - Having equal or greater Piercing to the targets Armor value allows you to do more damage.
 breakthrough = 0.5              # Breakthrough - How many enemy attacks a unit can attempt to avoid while on the offensive, effectively allowing it to stay on the offense longer.
-`### <a id="defensive"></a>Defensive`
-# Defensive
+```
+
+#### Defensive <a id="Defensive"></a>
+
+```text
+## Defensive
 defense = 0.1                   # Defense - How many enemy attacks a unit can avoid whilst on the defensive, effectively allowing it to stay on the defensive longer.
 max_strength = 2                # HP - Strength represents how much damage this unit can suffer before it is destroyed
 armor_value = 0                 # Armor - Armor that is higher than the opponents Piercing value reduces damage taken and allows more attacks to occur
 hardness = 0.5                  # Hardness - Represents how much of your divsion is made up of armoured vehicles. High Hardness = High Hard Attacks, Low Soft Attack
 entrenchment = 5                # Entrenchment - The ability to make proper defensive entrenchments before a hostile attack
-`### <a id="unique"></a>Unique`
+```
+
+#### Unique <a id="Unique"></a>
+
+```text
 movement = 0.1                  # Movement - Changes the unit's speed
 experience_loss_factor = 0.1    # Exp. Loss - How much experience is lost in a division when they take casualities and have to replace them
 casualty_trickleback = 0.2      # Trickleback - The proportion of losses in combat that can be saved and returned to the manpower pool
@@ -282,12 +315,20 @@ suppression_factor = 0.1        # Suppression bonus - Ability to supress local r
 reliability_factor = 0.05       # Reliability - Applies to an equipment type's reliability and reduces the chance of breakdowns and accidents
 recon = 1                       # Reconnaissance - Increases the chance that this unit can pick better tactics in battle
 initiative = 0.2                # Initiative - The higher the initiative, the quicker it can reinforce into battle, and the quick is completes its planning
-`### <a id="boolean"></a>Boolean`
+```
+
+#### Boolean <a id="Boolean"></a>
+
+```text
 can_be_parachuted = yes         # May be parachuted into battle
 can_license = yes                # Can be licesed
 is_convertable = yes            # Can be converted
 carrier_capable = yes           # Is usable in carriers (air only)
-`### <a id="navy-specific"></a>Navy-specific`
+```
+
+#### Navy-specific <a id="Navy-specific"></a>
+
+```text
 naval_speed = 28                        # Max Speed - maximum speed in kilometres per hour of the ship, higher means faster in combat too
 fire_range = 32                         # Fire Range - The range of the ship's main guns
 torpedo_attack = 1                      # Torpedo attack - How much damage we can do when using the ship's torpedos
@@ -302,7 +343,11 @@ naval_range = 3000                      # Naval Range - max distance in kilometr
 port_capacity_usage = 1                 # Port capacity usage - How much room the ship requires in port
 search_and_destroy_coordination = 0.1
 convoy_raiding_coordination = 0.1
-`### <a id="air-specific"></a>Air-specific`
+```
+
+#### Air-specific <a id="Air-specific"></a>
+
+```text
 air_attack = 50                         # Air Attack - amount of damage done against other planes
 air_defence = 50                        # Air Defence - how many hits a plane takes before being shot down
 air_range = 500                         # Range - How far away missions the plane can perform
@@ -315,7 +360,7 @@ carrier_size = 0.05
 default_carrier_composition_weight = 1
 ```
 
-## <a id="localization"></a>Localization
+### Localization <a id="Localization"></a>
 
 Each unit must be localized in a *.yml* file in the *localisation* folder within your mod.
 
@@ -324,24 +369,24 @@ Each unit must be localized in a *.yml* file in the *localisation* folder within
 <unit>_desc: ""
 ```
 
-## <a id="icons"></a>Icons
+### Icons <a id="Icons"></a>
 
 When adding a new unit it may appear, that your unit gets random icons in the division designer (like anti air icon, or what ever)
-This is caused, because the actual unit has no icon. You can provide sprites in /Hearts of Iron IV/gfx/interface/counters.
-Create a new gfx file for your new unit. Add the following content for each unit in /Hearts of Iron IV/interface/subuniticons.gfx
+This is caused, because the actual unit has no icon. You can provide sprites in `/Hearts of Iron IV/gfx/interface/counters`.
+Create a new gfx file for your new unit. Add the following content for each unit in `/Hearts of Iron IV/interface/subuniticons.gfx`
 
 ```text
-spriteTypes = {	
+spriteTypes = {
 
-   spriteType = { 
-     name = "GFX_unit_<your unit name>_icon_medium"				
+   spriteType = {
+     name = "GFX_unit_<your unit name>_icon_medium"
      textureFile = "gfx/interface/counters/divisions_large/<your unit name>_icon.dds"  ## Thats the paradox shepe, but you can use any path and file naming you want
      noOfFrames = 2
    }
 
-   spriteType = { 
-     name = "GFX_unit_<your unit name>_icon_medium_white" # Do not omit "medium"						
-     textureFile = "gfx/interface/counters/divisions_small/onmap_unit_<your unit name>_icon.dds" 
+   spriteType = {
+     name = "GFX_unit_<your unit name>_icon_medium_white" # Do not omit "medium"
+     textureFile = "gfx/interface/counters/divisions_small/onmap_unit_<your unit name>_icon.dds"
      noOfFrames = 2
    }
 
@@ -349,10 +394,21 @@ spriteTypes = {
      name = "GFX_unit_<your unit name>_icon_small"
      texturefile = "gfx/texticons/unit_<your unit name>_icon_small.dds"
      legacy_lazy_load = no
-     noOfFrames = 2		
-   }		
+     noOfFrames = 2
+   }
 
 }
 ```
 
+---
+
+## Navigation
+
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**
+
+- **Documentation**: [Effects](<Effects - Hearts of Iron 4 Wiki.md>) • [Triggers](<Triggers - Hearts of Iron 4 Wiki.md>) • [Defines](<Defines - Hearts of Iron 4 Wiki.md>) • [Modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) • [List of modifiers](<List of modifiers - Hearts of Iron 4 Wiki.md>) • [Scopes](<Scopes - Hearts of Iron 4 Wiki.md>) • [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>) • [On actions](<On actions - Hearts of Iron 4 Wiki.md>) • [Data structures](<Data structures - Hearts of Iron 4 Wiki.md>) • [Flags](<Data structures - Hearts of Iron 4 Wiki.md#Flags>) • [Event targets](<Data structures - Hearts of Iron 4 Wiki.md#Event_targets>) • [Country tag aliases](<Data structures - Hearts of Iron 4 Wiki.md#Country_tag_aliases>) • [Variables](<Data structures - Hearts of Iron 4 Wiki.md#Variables>) • [Arrays](<Data structures - Hearts of Iron 4 Wiki.md#Arrays>)
+- **Scripting**: [Achievements](<Achievement modding - Hearts of Iron 4 Wiki.md>) • [AI](<AI modding - Hearts of Iron 4 Wiki.md>) • [AI focuses](<AI focuses - Hearts of Iron 4 Wiki.md>) • [Autonomous states](<Autonomy state modding - Hearts of Iron 4 Wiki.md>) • [Balances of power](<Balance of power modding - Hearts of Iron 4 Wiki.md>) • [Bookmarks/Scenarios](<Bookmark modding - Hearts of Iron 4 Wiki.md>) • [Game rules](<Bookmark modding - Hearts of Iron 4 Wiki.md#Game_rules>) • [Buildings](<Building modding - Hearts of Iron 4 Wiki.md>) • [Characters and traits](<Character modding - Hearts of Iron 4 Wiki.md>) • [Cosmetic tags](<Cosmetic tag modding - Hearts of Iron 4 Wiki.md>) • [Countries](<Country creation - Hearts of Iron 4 Wiki.md>) • [Divisions](<Division modding - Hearts of Iron 4 Wiki.md>) • [Decisions](<Decision modding - Hearts of Iron 4 Wiki.md>) • [Doctrines](<Doctrine modding - Hearts of Iron 4 Wiki.md>) • [Equipment](<Equipment modding - Hearts of Iron 4 Wiki.md>) • [Events](<Event modding - Hearts of Iron 4 Wiki.md>) • [Factions](<Faction modding - Hearts of Iron 4 Wiki.md>) • [Ideas](<Idea modding - Hearts of Iron 4 Wiki.md>) • [Ideologies](<Ideology modding - Hearts of Iron 4 Wiki.md>) • [Military industrial organizations](<Military industrial organization modding - Hearts of Iron 4 Wiki.md>) • [National focuses](<National focus modding - Hearts of Iron 4 Wiki.md>) • [Resources](<Resources modding - Hearts of Iron 4 Wiki.md>) • [Scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) • [Technologies and doctrines](<Technology modding - Hearts of Iron 4 Wiki.md>)
+- **Map**: [Map](<Map modding - Hearts of Iron 4 Wiki.md>) • [States](<State modding - Hearts of Iron 4 Wiki.md>) • [Supply areas](<Supply areas modding - Hearts of Iron 4 Wiki.md>) • [Strategic regions](<Strategic region modding - Hearts of Iron 4 Wiki.md>)
+- **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
+- **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
+- **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)

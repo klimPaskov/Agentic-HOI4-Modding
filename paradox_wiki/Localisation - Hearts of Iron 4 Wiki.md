@@ -1,58 +1,62 @@
-# Table of contents
+# Localisation
 
-- [Quick checklist](#quick-checklist)
-- [Basics](#basics)
-- [Replacing](#replacing)
-- [Special characters](#special-characters)
-  - [Colouring characters](#colouring-characters)
-    - [Errors](#errors)
-  - [Formatting variables](#formatting-variables)
-  - [Country's flags](#country-s-flags)
-  - [Text icons](#text-icons)
-- [Nesting strings](#nesting-strings)
-- [Bindable localisation](#bindable-localisation)
-    - [Usage of Bindable Localization](#usage-of-bindable-localization)
-  - [Context-Aware Tooltips](#context-aware-tooltips)
-  - [Localization Formatters](#localization-formatters)
-- [Localization Formatters](#localization-formatters_2)
-- [Contextual Localization](#contextual-localization)
-  - [Using a localization object](#using-a-localization-object)
-  - [Condition in contextual localization](#condition-in-contextual-localization)
-  - [Relation to Event Scopes](#relation-to-event-scopes)
-  - [Documentation of localized objects](#documentation-of-localized-objects)
-- [Namespaces](#namespaces)
-  - [Functions](#functions)
-    - [Country scope](#country-scope)
-    - [Other scopes](#other-scopes)
-- [Scripted localisation](#scripted-localisation)
-  - [Dynamic scripted localisation](#dynamic-scripted-localisation)
-  - [Temporary variable display](#temporary-variable-display)
-- [Hard-to-find Localisation Info](#hard-to-find-localisation-info)
-  - [War Naming](#war-naming)
-  - [Division Commander Ranks](#division-commander-ranks)
-- [References](#references)
+*Offline snapshot of the Hearts of Iron IV Wiki page "Localisation", captured 2026-09-19.*
+
+## Table of contents
+
+- [Quick checklist](#Quick_checklist)
+- [Basics](#Basics)
+- [Replacing](#Replacing)
+- [Special characters](#Special_characters)
+  - [Colouring characters](#Colouring_characters)
+    - [Errors](#Errors)
+  - [Formatting variables](#Formatting_variables)
+  - [Country's flags](#Country.27s_flags)
+  - [Text icons](#Text_icons)
+- [Nesting strings](#Nesting_strings)
+- [Bindable localisation](#Bindable_localisation)
+    - [Usage of Bindable Localization](#Usage_of_Bindable_Localization)
+  - [Context-Aware Tooltips](#Context-Aware_Tooltips)
+  - [Localization Formatters](#Localization_Formatters)
+- [Localization Formatters](#Localization_Formatters_2)
+- [Contextual Localization](#Contextual_Localization)
+  - [Using a localization object](#Using_a_localization_object)
+  - [Condition in contextual localization](#Condition_in_contextual_localization)
+  - [Relation to Event Scopes](#Relation_to_Event_Scopes)
+  - [Documentation of localized objects](#Documentation_of_localized_objects)
+- [Namespaces](#Namespaces)
+  - [Functions](#Functions)
+    - [Country scope](#Country_scope)
+    - [Other scopes](#Other_scopes)
+- [Scripted localisation](#Scripted_localisation)
+  - [Dynamic scripted localisation](#Dynamic_scripted_localisation)
+  - [Temporary variable display](#Temporary_variable_display)
+- [Hard-to-find Localisation Info](#Hard-to-find_Localisation_Info)
+  - [War Naming](#War_Naming)
+  - [Division Commander Ranks](#Division_Commander_Ranks)
+- [References](#References)
 
 ---
 
 HOI4 uses the modified YAML **localisation** system used by modern Paradox games.
 
-The localisation is stored within the /Hearts of Iron IV/localisation/ folder, in which any sub-folder can be used. Each file is assigned a language with its filename by adding it in the end, with the following languages existing:
+The localisation is stored within the `/Hearts of Iron IV/localisation/` folder, in which any sub-folder can be used. Each file is assigned a language with its filename by adding it in the end, with the following languages existing:
 
-- `l_english`: English, as in /Hearts of Iron IV/localisation/english/filename\_l\_english.yml
-- `l_french`: French, as in /Hearts of Iron IV/localisation/french/mod\_file\_l\_french.yml
-- `l_german`: German, as in /Hearts of Iron IV/localisation/german/state\_names\_l\_german.yml
-- `l_spanish`: Spanish, as in /Hearts of Iron IV/localisation/spanish/mod\_germany\_l\_spanish.yml
-- `l_braz_por`: Brazilian Portuguese, as in /Hearts of Iron IV/localisation/braz\_por/bahrain\_l\_braz\_por.yml
-- `l_polish`: Polish, as in /Hearts of Iron IV/localisation/polish/myfile\_l\_polish.yml
-- `l_russian`: Russian, as in /Hearts of Iron IV/localisation/russian/siberia\_l\_russian.yml
-- `l_japanese`: Japanese, as in /Hearts of Iron IV/localisation/japanese/kuril\_l\_japanese.yml
-- `l_simp_chinese`: Simplified Chinese, as in /Hearts of Iron IV/localisation/simp\_chinese/khalkha\_l\_simp\_chinese.yml
-- `l_korean`: Korean, as in /Hearts of Iron IV/localisation/korean/victory\_points\_l\_korean.yml
+- `l_english`: English, as in `/Hearts of Iron IV/localisation/english/filename_l_english.yml`
+- `l_french`: French, as in `/Hearts of Iron IV/localisation/french/mod_file_l_french.yml`
+- `l_german`: German, as in `/Hearts of Iron IV/localisation/german/state_names_l_german.yml`
+- `l_spanish`: Spanish, as in `/Hearts of Iron IV/localisation/spanish/mod_germany_l_spanish.yml`
+- `l_braz_por`: Brazilian Portuguese, as in `/Hearts of Iron IV/localisation/braz_por/bahrain_l_braz_por.yml`
+- `l_polish`: Polish, as in `/Hearts of Iron IV/localisation/polish/myfile_l_polish.yml`
+- `l_russian`: Russian, as in `/Hearts of Iron IV/localisation/russian/siberia_l_russian.yml`
+- `l_japanese`: Japanese, as in `/Hearts of Iron IV/localisation/japanese/kuril_l_japanese.yml`
+- `l_simp_chinese`: Simplified Chinese, as in `/Hearts of Iron IV/localisation/simp_chinese/khalkha_l_simp_chinese.yml`
+- `l_korean`: Korean, as in `/Hearts of Iron IV/localisation/korean/victory_points_l_korean.yml`
 
-The filename **has to contain the language's internal name** as the file will not be loaded otherwise.  
-The currently-enabled language is chosen within the user directory's /Hearts of Iron IV/pdx\_settings.txt file, however, more languages cannot be added directly other than these listed languages.
+The filename **has to contain the language's internal name** as the file will not be loaded otherwise.
+The currently-enabled language is chosen within the user directory's `/Hearts of Iron IV/pdx_settings.txt` file, however, more languages cannot be added directly other than these listed languages.
 
-## <a id="quick-checklist"></a>Quick checklist
+## Quick checklist <a id="Quick_checklist"></a>
 
 In order for a file to work, it must have the following:
 
@@ -66,9 +70,9 @@ In order for a file to work, it must have the following:
   - The optional version number, 0 in this case, may only consist of numeric digits. Anything else such as hyphens or letters will break the rest of the file.
   - The localisation value must be surrounded by a U+022 quotation mark on both sides and must lie strictly on one line. Failing to meet this will break the rest of the file.
 
-## <a id="basics"></a>Basics
+## Basics <a id="Basics"></a>
 
-Localisation is created within any file in the localisation folder: the filename aside from the file extension is irrelevant aside from deciding which language is chosen.  
+Localisation is created within any file in the localisation folder: the filename aside from the file extension is irrelevant aside from deciding which language is chosen.
 **Every localisation file must use the UTF-8-BOM encoding**, i.e. the UTF-8 encoding with the byte order mark in the beginning of the file. Exact details depend on the text editor:
 
 - Notepad++: Top bar's "Encoding" menu provides a selection of encodings. UTF-8-BOM is used in this case.
@@ -79,50 +83,50 @@ Each localisation key must be assigned to a language database, marked with a lin
 
 Next lines are structured in the format of `localisation_key:0 "Localisation value"`. In here:
 
-- localisation\_key is the localisation key that is being localised. This is usually the same as the name of the database entry (e.g. a focus with the name of TAG\_focusname will have TAG\_focusname as the needed localisation key). Other times, it's possible or required to set in the database entry itself (e.g. `title = my_event.1.t` within an event). Commonly, appending \_desc as TAG\_focusname\_desc provides the localisation key for the description, such as with characters, focuses, ideas, traits, and so on.
+- localisation_key is the localisation key that is being localised. This is usually the same as the name of the database entry (e.g. a focus with the name of TAG_focusname will have TAG_focusname as the needed localisation key). Other times, it's possible or required to set in the database entry itself (e.g. `title = my_event.1.t` within an event). Commonly, appending _desc as TAG_focusname_desc provides the localisation key for the description, such as with characters, focuses, ideas, traits, and so on.
 
-**The localisation key cannot have special characters in it**, where a special character is defined as taking up more than 1 byte using the UTF-8 encoding. This includes every character other than those in [the ASCII character system](http://en.wikipedia.org/wiki/ASCII#Printable_character), so in essence localisation keys shouldn't have anything other than English letters, underscores, dots, and numbers. Localisation keys additionally cannot include spaces in them. Either one will show up within the error log as an error of the sort of `Expected colon(:) at line <...>`.
+:   **The localisation key cannot have special characters in it**, where a special character is defined as taking up more than 1 byte using the UTF-8 encoding. This includes every character other than those in the ASCII character system, so in essence localisation keys shouldn't have anything other than English letters, underscores, dots, and numbers. Localisation keys additionally cannot include spaces in them. Either one will show up within the error log as an error of the sort of `Expected colon(:) at line <...>`.
 
-- 0 is the version number, used for Paradox's internal translation tracking.<a id="cite-ref-1"></a>[[1]](#cite-note-1) This is never read in-game, and it can be omitted entirely with no difference in interpretation. Since this is introduced by Paradox and is invalid in standard YAML formatting, this may break the default syntax highlighting used for YAML in text editors. The version number can only contain numeric characters, anything else such as a hyphen is unexpected.
+- 0 is the version number, used for Paradox's internal translation tracking.[1] This is never read in-game, and it can be omitted entirely with no difference in interpretation. Since this is introduced by Paradox and is invalid in standard YAML formatting, this may break the default syntax highlighting used for YAML in text editors. The version number can only contain numeric characters, anything else such as a hyphen is unexpected.
 - Localisation value refers to the text that will show up in-game. **This must be on one line total**, multiple lines will break the file. Instead, newlines are marked using `\n` (Note that this is a backslash rather than a regular slash), such as `localisation_key: "First line.\nSecond line."` A space after the \n should be avoided, as it will appear in-game as offsetting the next lines. If you want to include quotation marks in text then `localisation_key: "Quote: \"This is a quote\""` should be used to avoid errors.
 
 Any issue with localisation, such as special characters or spaces in localisation keys or a missing quote, will break the localisation file starting with the point where the syntax first stopped being followed correctly.
 
 An example of a localisation file's contents is the following:
 
-```text
+```yaml
 l_english:
  infantry_equipment: "Infantry Equipment"
  infantry_equipment_short: "Inf. Eq."
  infantry_equipment_desc: "This is infantry equipment"
 ```
 
-Nearly any printable character is allowed to use within the localisation value, other than certain special characters with special meaning, such as square brackets, or newlines. However, only some select characters are present in the fonts that are used in the game, and the selection of characters differs depending on the font. If the used font doesn't include a representation of a character, the game will replace it with a question mark (?). This affects only the font representation: this may be remedied by switching the used font within the [interface](<Interface modding - Hearts of Iron 4 Wiki.md>) or by changing the font to include the letter.
+Nearly any printable character is allowed to use within the localisation value, other than certain special characters with special meaning, such as square brackets, or newlines. However, only some select characters are present in the fonts that are used in the game, and the selection of characters differs depending on the font. If the used font doesn't include a representation of a character, the game will replace it with a question mark (?). This affects only the font representation: this may be remedied by switching the used font within the [interface](<Interface modding - Hearts of Iron 4 Wiki.md>) or by [changing the font](<Font modding - Hearts of Iron 4 Wiki.md>) to include the letter.
 
-## <a id="replacing"></a>Replacing
+## Replacing <a id="Replacing"></a>
 
-Typically, localisation key overlap must be avoided, overlap being the same localisation key being defined several times in the same language's files. This is tracked within [user directory](<Modding - Hearts of Iron 4 Wiki.md>)'s /Hearts of Iron IV/logs/text.log file, which contains a list of overlapping localisation keys if any. The value that'll get chosen does not seem to have a consistent pattern, but seems to prioritise base game files.
+Typically, localisation key overlap must be avoided, overlap being the same localisation key being defined several times in the same language's files. This is tracked within [user directory](<Modding - Hearts of Iron 4 Wiki.md>)'s `/Hearts of Iron IV/logs/text.log` file, which contains a list of overlapping localisation keys if any. The value that'll get chosen does not seem to have a consistent pattern, but seems to prioritise base game files.
 
-However, if the localisation file is contained within a folder with the name of "replace" (such as /Hearts of Iron IV/localisation/english/replace, still must be inside of localisation), it will get priority over the entries that are not. This can be helpful to overwrite only specific localisation keys without porting over the entire file, such as if the file gets frequently updated in base game.
+However, if the localisation file is contained within a folder with the name of "replace" (such as `/Hearts of Iron IV/localisation/english/replace`, still must be inside of localisation), it will get priority over the entries that are not. This can be helpful to overwrite only specific localisation keys without porting over the entire file, such as if the file gets frequently updated in base game.
 
-For example, if desiring to change the name of the effect to add political power from the default  `POLITICS_ADD_POLITICAL_POWER:0 "Political Power: $VAL|=+0$."`, it may be undesirable to port over the entire /Hearts of Iron IV/localisation/english/effects\_l\_english.yml file to the mod, as new effects frequently get added to the game which would mean the file has to be kept in check.  
-However, instead creating a new localisation file within the /Hearts of Iron IV/localisation/english/replace/ folder and defining the POLITICS\_ADD\_POLITICAL\_POWER localisation key there will result in the value of the key getting changed without needing to copy the entire localisation file, meaning that the mod is now easier to port to future updates.
+For example, if desiring to change the name of the effect to add political power from the default  `POLITICS_ADD_POLITICAL_POWER:0 "Political Power: $VAL|=+0$."`, it may be undesirable to port over the entire `/Hearts of Iron IV/localisation/english/effects_l_english.yml` file to the mod, as new effects frequently get added to the game which would mean the file has to be kept in check.
+However, instead creating a new localisation file within the `/Hearts of Iron IV/localisation/english/replace/` folder and defining the POLITICS_ADD_POLITICAL_POWER localisation key there will result in the value of the key getting changed without needing to copy the entire localisation file, meaning that the mod is now easier to port to future updates.
 
-For example, /Hearts of Iron IV/localisation/english/replace/mod\_replace\_l\_english.yml would contain the following content:
+For example, `/Hearts of Iron IV/localisation/english/replace/mod_replace_l_english.yml` would contain the following content:
 
-```text
+```yaml
 l_english:
  POLITICS_ADD_POLITICAL_POWER: "New mana: $VAL|=+0$."
 ```
 
-## <a id="special-characters"></a>Special characters
+## Special characters <a id="Special_characters"></a>
 
-### <a id="colouring-characters"></a>Colouring characters
+### Colouring characters <a id="Colouring_characters"></a>
 
-<a id="coloring-characters"></a>
-Various characters can be added to a string to alter its colour in-game. A colouring character formatting begins with a section sign (§) and includes a single letter (byte) afterwards used to identify the colour. The exclamation point is used to mark the end of a colouring rule. The end of a string doesn't necessarily mean that the colouring rule will end, meaning its use is mandatory with every colouring rule to avoid spillover into the next text, even if it should last until the end of the string. On Windows, the `Alt`+`21` [alt code](http://en.wikipedia.org/wiki/Alt_code) can be used to input a section sign.
+Various characters can be added to a string to alter its colour in-game. A colouring character formatting begins with a section sign (§) and includes a single letter (byte) afterwards used to identify the colour. The exclamation point is used to mark the end of a colouring rule. The end of a string doesn't necessarily mean that the colouring rule will end, meaning its use is mandatory with every colouring rule to avoid spillover into the next text, even if it should last until the end of the string. On Windows, the `Alt`+`21` alt code can be used to input a section sign.
 
 The following formatting characters are implemented in the base game (The colour provided is the default generic colour and may be different depending on the font):
+
 | Code | Effect | Exact colour |
 | --- | --- | --- |
 | §! | Ends the current formatting rule. | None. |
@@ -152,22 +156,22 @@ The following formatting characters are implemented in the base game (The colour
 
 Here is an example of the colour formatting:
 
-```text
+```yaml
 l_english:
  example_key: "This is my text, §Bthis text is blue§!, and §Rthis text is red§!"
 ```
 
-New text colours can be added by expanding the `textcolors = { ... }` array in /Hearts of Iron IV/interface/core.gfx. Colour keys *cannot* have more than one letter (i.e. "BU = {0 255 0}"), and will attempt to overwrite another colour key with the same first letter. It is also possible to make a colouring character represent a different colour from default when a certain font is used within the bitmapfont definition of that font.
+New text colours can be added by expanding the `textcolors = { ... }` array in `/Hearts of Iron IV/interface/core.gfx`. Colour keys *cannot* have more than one letter (i.e. "BU = {0 255 0}"), and will attempt to overwrite another colour key with the same first letter. It is also possible to make a colouring character represent a different colour from default when a certain font is used within the [bitmapfont definition](<Font modding - Hearts of Iron 4 Wiki.md#Defining_bitmaps>) of that font.
 
-#### <a id="errors"></a>Errors
+#### Errors <a id="Errors"></a>
 
-The errors related to the colouring characters can be fairly unintuitive to find, considering that they do not provide the location of the file.  
+The errors related to the colouring characters can be fairly unintuitive to find, considering that they do not provide the location of the file.
 There are three types of the error:
 
 - `Could not find coloring for character 'M'` – This exact example means that, somewhere, the game found `§M` within localisation; however, since "M" isn't a valid colour, this is an unexpected result. The exact character is provided, so finding the cause should be elementary. A space is also considered a character, so `Could not find coloring for character ' '` means that somewhere in localisation `§`  is present, with a symbol specifying the beginning or end of a colouring rule omitted.
-- `Could not find coloring for character id '17'` – Note that it specifies the character ID. In this case, the [printable Unicode character ID is provided](http://en.wikipedia.org/wiki/List_of_Unicode_characters#Latin_script). This is typically done where providing the actual character would be confusing (e.g. for the number "1", the game would specify the character id "17" if such a colour doesn't exist. Since "1" is the 18th printed character, it has the id of 17, as the numeration typically starts from 0.)
+- `Could not find coloring for character id '17'` – Note that it specifies the character ID. In this case, the printable Unicode character ID is provided. This is typically done where providing the actual character would be confusing (e.g. for the number "1", the game would specify the character id "17" if such a colour doesn't exist. Since "1" is the 18th printed character, it has the id of 17, as the numeration typically starts from 0.)
 
-This has a notable exception: the character id '0' may refer to the NULL character rather than a space. In other words, the character id '0' means there is *absolutely nothing* after the § symbol, i.e. the string ends with §. As such, locating this error would be done by searching for `§"` This is usually caused by omitting the exclamation mark from the character to end the colour formatting, which would properly be `§!`.
+:   This has a notable exception: the character id '0' may refer to the NULL character rather than a space. In other words, the character id '0' means there is *absolutely nothing* after the § symbol, i.e. the string ends with §. As such, locating this error would be done by searching for `§"` This is usually caused by omitting the exclamation mark from the character to end the colour formatting, which would properly be `§!`.
 
 - If trying to use a character that takes several bytes to write in the UTF-8 encoding, the game will only try to read the last byte of the character rather than the entirety of it. This may result in either of the previous errors, but it makes finding the cause much harder. For example, trying to use `§Ā Some text §!`, where Ā has the code of U+0100, will result in the game throwing an error of `Could not find coloring for character id '0'`, and trying to use `§ō Some text §!`, where ō has the code of U+014D, will result in the game throwing an error of `Could not find coloring for character 'M'` (as the character 'M' has the code of U+004D).
 
@@ -175,18 +179,19 @@ Searching can be done using a text editor with the "Find in Files" functionality
 
 - **Notepad++** – This is located in the "Search" topbar menu as "Find in Files...". By default, no folder is provided. "Follow current doc." allows the text editor to automatically input the currently-opened document's folder as the place for the search, or it can be entered manually. Alternatively, this menu can be opened from the right-click menu of a folder within the "Folder as Workspace" menu – accessed by a button in the topbar – which'll automatically set the folder location to be that folder.
 - **Sublime Text** – This is located in the "Find" topbar menu as "Find in Files...". In order to add a folder to search, the menu to the right of the "Where:" line can be opened, with either "Add Folder" (to select an individual folder) or "Add Open Folders" (To automatically select all folders opened via Sublime Text) buttons serving to do so.
-- **Visual Studio Code** – Visual Studio Code by default searches only the currently opened folder. A folder is opened either through the "Open Folder..." button in the "File" topbar menu or the "Explorer" menu, accessed through the bar on the left. After this, the functionality can be accessed in the "Edit" menu as "Find in Files". To search in other folders, open the 'search details' menu, represented with an ellipsis, and enter the full path to the folder in the 'Files to include' area. In order to speed up the search, filename filters can be used. For example, `localisation/english/*.yml` within "files to include" will only search every \*.yml file within the <currently opened folder>/localisation/english/ folder, where `*` stands for any amount (including 0) of any characters within the filename. Similar filters can be used in the previous two text editors, however without allowing folders to be filtered — only the filenames.
+- **Visual Studio Code** – Visual Studio Code by default searches only the currently opened folder. A folder is opened either through the "Open Folder..." button in the "File" topbar menu or the "Explorer" menu, accessed through the bar on the left. After this, the functionality can be accessed in the "Edit" menu as "Find in Files". To search in other folders, open the 'search details' menu, represented with an ellipsis, and enter the full path to the folder in the 'Files to include' area. In order to speed up the search, filename filters can be used. For example, `localisation/english/*.yml` within "files to include" will only search every \*.yml file within the `<currently opened folder>/localisation/english/` folder, where `*` stands for any amount (including 0) of any characters within the filename. Similar filters can be used in the previous two text editors, however without allowing folders to be filtered — only the filenames.
 
-### <a id="formatting-variables"></a>Formatting variables
+### Formatting variables <a id="Formatting_variables"></a>
 
-*See also: Variables*
+*See also: [Variables](<Data structures - Hearts of Iron 4 Wiki.md>)*
 
 Variables have a unique way for applying colouring, also allowing extra formatting characters. These are applied after a pipe placed at the end of the variable's name, such as `[?my_variable|R]` that will turn the colour of the variable `my_variable` red. If no colouring is applied, it will use the same colour as regular text: the §-colour block, textbox's `text_color_mode`, or the font's default colour in that order.
 
 The list of formatting characters that are restricted to variables only are the following:
+
 | Code | Effect |
 | --- | --- |
-| \* | Converts the variable to SI units—appends "K" or "M" and divides the variable appropriately, such as 65 536 becoming 65.53K and 1 500 000 becoming 1.50M. Displays 2 decimals after the dot by default. |
+| \* | Converts the variable to SI units—appends "K" or "M" and divides the variable appropriately, such as 65 536 becoming 65.53K and 1 500 000 becoming 1.50M. Displays 2 decimals after the dot by default. |
 | ^ | Same as \*. |
 | = | Prefixes the variable with **+** if the value is positive or **-** if it is negative. |
 | 0..9 | Controls the number of decimals to display. Due to the nature of the game's variables, there are no more than 5 decimals that can be shown. Using any digit greater than 5 will instead have the same result as 5. |
@@ -199,30 +204,30 @@ Any unrecognised symbols will neither change how the variable is localised nor g
 
 Some examples of formatting characters in usage:
 
-```text
+```yaml
 l_english:
- loc_key: "Democratic party popularity: [?party_popularity@democracy|%G0]" 
+ loc_key: "Democratic party popularity: [?party_popularity@democracy|%G0]"
  loc_key_2: "Modifier token's value: [?modifier@my_modifier|.1%%+]"
  pol_power_trigger_tt: "Has more than [?var_name|Y] political power"
 ```
 
-Within these examples, the first string depicts the current scope's democratic popularity as a percentage multiplied by 100 (%), in green (G), rounded to a whole number with 0 decimals (0). The second string displays the `my_modifier` [modifier token](<Modifiers - Hearts of Iron 4 Wiki.md#modifier-tokens>)'s value as a 'good' number (+ making it green if positive, red if negative), with a percentage sign appended in the end (%%) and rounded to a number with one decimal (.1). The third string displays the variable in yellow colouring (as is common in the base game's tooltips), leaving it unchanged otherwise.
+Within these examples, the first string depicts the current scope's democratic popularity as a percentage multiplied by 100 (%), in green (G), rounded to a whole number with 0 decimals (0). The second string displays the `my_modifier` [modifier token](<Modifiers - Hearts of Iron 4 Wiki.md>)'s value as a 'good' number (+ making it green if positive, red if negative), with a percentage sign appended in the end (%%) and rounded to a number with one decimal (.1). The third string displays the variable in yellow colouring (as is common in the base game's tooltips), leaving it unchanged otherwise.
 
-### <a id="country-27s-flags"></a><a id="country-s-flags"></a>Country's flags
+### Country's flags <a id="Country.27s_flags"></a><a id="Country's_flags"></a>
 
-The following in localisation will display the default, /Hearts of Iron IV/gfx/flags/TAG.tga, flag of a country: `@TAG`  
+The following in localisation will display the default, `/Hearts of Iron IV/gfx/flags/TAG.tga`, flag of a country: `@TAG`
 It's recommended to use the GetFlag namespace when possible instead, however, this can be used on localisation that doesn't support namespaces, such as custom modifier tooltips or the game rules.
 
-### <a id="text-icons"></a>Text icons
+### Text icons <a id="Text_icons"></a>
 
 Icons can be displayed within strings using the **£** notation.
 
-```text
+```yaml
 l_english:
  example_key: "£GFX_army_experience"
 ```
 
-Text icons are added as `spriteType = { ... }` definitions in /Hearts of Iron IV/interface/\*.gfx files within an overarching `spriteTypes = { ... }`. An example definition of one looks like:
+Text icons are added as `spriteType = { ... }` definitions in `/Hearts of Iron IV/interface/*.gfx` files within an overarching `spriteTypes = { ... }`. An example definition of one looks like:
 
 ```text
 	spriteType = {
@@ -232,34 +237,35 @@ Text icons are added as `spriteType = { ... }` definitions in /Hearts of Iron IV
 	}
 ```
 
-The text icon's name is equal to the text icon with the GFX\_ part in the beginning removed, being `£my_text_icon` in this case.
+The text icon's name is equal to the text icon with the GFX_ part in the beginning removed, being `£my_text_icon` in this case.
 
 If the sprite of the text icon is made out of multiple frames, then the specified frame can be used in localisation as `£icon_name|1`, this example being the first frame. Note that `legacy_lazy_load = no` is necessary for multi-framed text icons to work properly. It is also required to make the icon appear on game start without reloading/modifying interface files, so you should include it.
 
-## <a id="nested-strings"></a><a id="nesting-strings"></a>Nesting strings
+## Nesting strings <a id="Nesting_strings"></a>
 
 The dollar sign special symbol is used for nesting other strings within any given localisation key's value. In particular, there are 4 primary usage cases for it:
 
 - Nesting other localisation keys. For example,  `some_modifier_tooltip:0 "$modifier_production_speed_infrastructure_factor$: §R-10%§!"` will show up in-game as `Infrastructure construction speed: -10%`, assuming that `modifier_production_speed_infrastructure_factor`'s definition is unchanged from the base game.
 
-This is useful with localisation key values that need to be re-used within others, but can be easily changed during the development of the mod, as to not need to adjust every single localisation value that uses it when changing it. This can also be used to expand compatibility with base game updates or other mods that may potentially change the localisation value but should still be compatible with the mod.
-When used within `pdx_tooltip` of an interface element, this does not work properly, instead showing up with the dollar signs visible. This can be bypassed using [scripted localisation](#scripted-localisation), as a scripted localisation entry that points towards a key, the value of which contains nested localisation entry, will work as intended.
+:   This is useful with localisation key values that need to be re-used within others, but can be easily changed during the development of the mod, as to not need to adjust every single localisation value that uses it when changing it. This can also be used to expand compatibility with base game updates or other mods that may potentially change the localisation value but should still be compatible with the mod.
+:   When used within `pdx_tooltip` of an interface element, this does not work properly, instead showing up with the dollar signs visible. This can be bypassed using [scripted localisation](#Scripted_localisation), as a scripted localisation entry that points towards a key, the value of which contains nested localisation entry, will work as intended.
 
 - Inputting a dollar sign itself. This is done by doubling the dollar sign in localisation, such as  `cost_tooltip: "This option costs $$100"`.
-- Nesting a boundable variable. Introduced in patch 1.15, boundable variables allow modders to define custom variables for use in localisation keys, functioning similarly to internal variables. These can be assigned within any effect, trigger block, or on a scripted GUI. For example, by using a loacalisation key like: `my_boundable_tooltip: "My name is $NAME$."`, `$NAME$` in this case would be a custom boundable variable that can be defined elsewhere by the modder. This provides significant flexibility for dynamic localisation that adapts to gameplay conditions. For further details on defining and binding these variables, refer to the [boundable localisation](#boundable-localisation) section.
+- Nesting a boundable variable. Introduced in patch 1.15, boundable variables allow modders to define custom variables for use in localisation keys, functioning similarly to internal variables. These can be assigned within any effect, trigger block, or on a scripted GUI. For example, by using a loacalisation key like: `my_boundable_tooltip: "My name is $NAME$."`, `$NAME$` in this case would be a custom boundable variable that can be defined elsewhere by the modder. This provides significant flexibility for dynamic localisation that adapts to gameplay conditions. For further details on defining and binding these variables, refer to the boundable localisation section.
 
 - Nesting a strictly internal variable. This is particularly common within base game's localisation that corresponds to game mechanics rather than database entries, such as  `confirm_cancel_national_focus_desc:0 "Are you sure you want to cancel the national focus §H$FOCUS_NAME$§!?"`. In these cases, the specified internal variable only exists within the scope of that localisation key and cannot be used anywhere else.
 
-One notable usage of strictly internal variables is in country names, as these offer a variety of internal variables fetching the non-ideology name of the country and the overlord's name in either regular, ADJ, or DEF form, such as `COUNTRY_autonomy_collaboration_government:0 "$OVERLORDADJ$ $NONIDEOLOGY$"`.
+:   One notable usage of strictly internal variables is in country names, as these offer a variety of internal variables fetching the non-ideology name of the country and the overlord's name in either regular, ADJ, or DEF form, such as `COUNTRY_autonomy_collaboration_government:0 "$OVERLORDADJ$ $NONIDEOLOGY$"`.
 
-## <a id="boundable-localisation"></a><a id="bindable-localisation"></a>Bindable localisation
+## Bindable localisation <a id="Bindable_localisation"></a>
 
-<a id="bindable-localisation"></a>
 **Bindable Localization** was introduced in **patch 1.15**, allowing variables to be dynamically bound to localization keys through scripting.
 
 Previously, variables in localization keys (e.g., `$OVERLOADJ$`) were strictly internal and provided directly by the game, limiting modders' flexibility. For example:
 
-`SCIENTIST_ROSTER_SORT_BUTTON_TOOLTIP: "§YClick§! to sort according to $REASON|Y$"`
+```text
+SCIENTIST_ROSTER_SORT_BUTTON_TOOLTIP: "§YClick§! to sort according to $REASON|Y$"
+```
 
 Before patch 1.15, `$REASON$` would be internal and unmodifiable. With the introduction of bindable localization, modders can now define their own bound variables, reducing the need for hundreds of similar localization keys that only differ in minor ways. Bindable localisation can only be used within very specific contexts, most of which are documented. However, there are 3 very useful places they can be used on, namely:
 
@@ -267,11 +273,13 @@ Before patch 1.15, `$REASON$` would be internal and unmodifiable. With the intro
 - `custom_trigger_tooltip`,
 - and to GUI files using the `bound_tooltip` construct.
 
-#### <a id="usage-of-bindable-localization"></a>Usage of Bindable Localization
+#### Usage of Bindable Localization <a id="Usage_of_Bindable_Localization"></a>
 
 Consider the following localization key:
 
-`my_bindable_tooltip: "Hello $NAME|Y$. I am $USRNAME$. Good $TIME$"`
+```text
+my_bindable_tooltip: "Hello $NAME|Y$. I am $USRNAME$. Good $TIME$"
+```
 
 Bindable localization allows you to dynamically define the variables (`$NAME$`, `$USRNAME$`, and `$TIME$`) using script. For example:
 
@@ -319,11 +327,13 @@ custom_effect_tooltip = {
 
 Here, `$TIME$` refers to another localization key, `COLOR_YELLOW`, defined as:
 
-`COLOR_YELLOW: "§Y$DATA$§!"`
+```text
+COLOR_YELLOW: "§Y$DATA$§!"
+```
 
 The resulting tooltip would render `$TIME$` as "§YMorning§!" (with the text in yellow).
 
-Instead of using inline strings, bindable localization can reference other localization keys directly, like [scripted localisation](#scripted-localisation). For example:
+Instead of using inline strings, bindable localization can reference other localization keys directly, like [scripted localisation](#Scripted_localisation). For example:
 
 ```text
 custom_effect_tooltip = {
@@ -334,7 +344,7 @@ custom_effect_tooltip = {
 
 In this case, `GER_mefo_bills` is a predefined localization key, and its value will replace `$IDEA_NAME$`.
 
-### <a id="context-aware-tooltips"></a>Context-Aware Tooltips
+### Context-Aware Tooltips <a id="Context-Aware_Tooltips"></a>
 
 **Context-aware tooltips** extend bound localization by allowing tooltips to be localized based on a context provided by the game. They are used strictly on GUI files, like `bound_tooltip`.
 
@@ -342,11 +352,13 @@ They are used with the `context_aware_tooltip` construct. The context is provide
 
 Additionally, the context is recursive: if a parent object is localized with a context, all child objects will inherit the same context.
 
-### <a id="localization-formatters"></a>Localization Formatters
+### Localization Formatters <a id="Localization_Formatters"></a>
 
 Localization formatters provide a syntax for retrieving localized text properties of static tokens. The general format is:
 
-`<formatter>|<token>`
+```text
+<formatter>|<token>
+```
 
 Localization formatters can also accept parameters that modify their output, as shown with `INDENT` in the example below:
 
@@ -364,87 +376,101 @@ Here:
 - `building_state_modifier|dam` retrieves the localized text property for the token `dam`.
 - `INDENT` adjusts the indentation of the tooltip text.
 
-## <a id="localization-formatters_2"></a>Localization Formatters
+## Localization Formatters <a id="Localization_Formatters_2"></a>
 
-**character\_name**
+**character_name**
 
-The character\_name formatter gets the name of the character.
+The character_name formatter gets the name of the character.
 Example:
 
-`custom_effect_tooltip = character_name|hjalmar_schacht`
+```text
+custom_effect_tooltip = character_name|hjalmar_schacht
+```
 
-**country\_culture**
+**country_culture**
 
-The country\_culture formatter formats the string using the country's cultural override (TAG\_token) if it exists, otherwise the generic version (token).
+The country_culture formatter formats the string using the country's cultural override (TAG_token) if it exists, otherwise the generic version (token).
 Localization Scope Object
 The formatter requires the following Localization Scope Objets to be defined:
 
 Country - The country that the idea is associated with.
 Example
 
-`custom_effect_tooltip = country_culture|generic_tank_organisation`
+```text
+custom_effect_tooltip = country_culture|generic_tank_organisation
+```
 
-**idea\_name**
+**idea_name**
 
-The idea\_name formatter formats gets the name for the idea.
+The idea_name formatter formats gets the name for the idea.
 Localization Scope Object
 The formatter requires the following Localization Scope Objects to be defined:
 
 Country - The country that the idea is associated with.
 Example
 
-`custom_effect_tooltip = idea_name|canadian_pacific_railway`
+```text
+custom_effect_tooltip = idea_name|canadian_pacific_railway
+```
 
-**advisor\_desc**
+**advisor_desc**
 
-The advisor\_desc formatter gets the description for the advisor.
+The advisor_desc formatter gets the description for the advisor.
 Localization Scope Object
 The formatter requires the following Localization Scope Objets to be defined:
 
 Country - The country that the idea is associated with.
 Example
 
-`custom_effect_tooltip = advisor_desc|hjalmar_schacht`
+```text
+custom_effect_tooltip = advisor_desc|hjalmar_schacht
+```
 
-**tech\_effect**
+**tech_effect**
 
-The tech\_effect formatter gets the effect of finishing a technology.
+The tech_effect formatter gets the effect of finishing a technology.
 Localization Scope Object
 The formatter requires the following Localization Scope Objects to be defined:
 
 Country - The country that the tech is associated with.
 Example
 
-`custom_effect_tooltip = tech_effect|early_transport_plane`
+```text
+custom_effect_tooltip = tech_effect|early_transport_plane
+```
 
-**idea\_desc**
+**idea_desc**
 
-The idea\_desc formatter gets the description for the idea.
+The idea_desc formatter gets the description for the idea.
 Localization Scope Object
 The formatter requires the following Localization Scope Objects to be defined:
 
 Country - The country that the idea is associated with.
 Example
 
-`custom_effect_tooltip = idea_desc|canadian_pacific_railway`
+```text
+custom_effect_tooltip = idea_desc|canadian_pacific_railway
+```
 
-**building\_state\_modifier**
+**building_state_modifier**
 
-The building\_state\_modifier gets the state modifiers for the provided building template and the provided scope.
+The building_state_modifier gets the state modifiers for the provided building template and the provided scope.
 
 The formatter takes special care of the following parameters:
 
 INDENT: The indent to be added to all lines of the state modifier description (including header line).
 Example:
 
-`custom_effect_tooltip = building_state_modifier|dam`
+```text
+custom_effect_tooltip = building_state_modifier|dam
+```
 
-## <a id="contextual-localization"></a>Contextual Localization
+## Contextual Localization <a id="Contextual_Localization"></a>
 
 Contextual localization is a way to access data from Localization Objects when localizing a string.
 The concept differs slightly from standard values ($VAL$) that can be injected into the localization string by allowing the localization string
 to select which properties to add to the resulting string and where.
-When a string is contextually localized with a localization object, then there's one root object (either a Scope or Localization Environment).
+When a string is contextually localized with a localization object, then there's one root object (either a `[Scope]`(loc_objects_documentation.md#scope) or \[Localization Environment(loc_objects_documentation.md#localization_environment)\].
 In general this object can only be used for two purposes: Accessing other objects and getting the current date.
 
 Some of the localization objects are :
@@ -462,15 +488,15 @@ Some of the localization objects are :
 - Terrain
 - UnitLeader
 
-### <a id="using-a-localization-object"></a>Using a localization object
+### Using a localization object <a id="Using_a_localization_object"></a>
 
 The localization objects are used with the following syntax: `[(Object.)+Property]`.
 `(Object.)+` refers to a sequence of at least one object accessor and `Property` is the property
-that is accessed by the last object in the sequence. For example, if the localization string is localized with a Character object
+that is accessed by the last object in the sequence. For example, if the localization string is localized with an `[Character]`(loc_objects_documentation.md#character) object
 the following queries would get the character's name and the name of the country that the character belongs to `[Character.GetName]`
 and `[Character.Owner.GetName]`, respectively.
 
-### <a id="condition-in-contextual-localization"></a>Condition in contextual localization
+### Condition in contextual localization <a id="Condition_in_contextual_localization"></a>
 
 Conditions in contextual localization can be used to check if objects are null or not. The basic syntax for the condition is `[(OBJECT ? TRUE_CASE : FALSE_CASE)]`.
 Where:
@@ -489,144 +515,147 @@ As an example loc. If there is character to scope into it gets the character nam
  PROGRAM_NO_SCIENTIST_ASSIGNED: "Assign a Scientist to start a project"
 ```
 
-### <a id="relation-to-event-scopes"></a>Relation to Event Scopes
+### Relation to Event Scopes <a id="Relation_to_Event_Scopes"></a>
 
 When a localization string is localized from a scoped context (for example effects or triggers), then the root [Scope](<Scopes - Hearts of Iron 4 Wiki.md>) is created
 from the event scope of that context. For example, an effect that creates a trade route between two countries `FROM` and `THIS`
 could be localized with: `LOC_KEY: "Creates a trade route between [FROM.GetName] and [THIS.GetName]"`. For more information on
-how the scope accessors `FROM`, `THIS`, `PREV` and `ROOT` works on `Scope` see [Dual Scopes](<Scopes - Hearts of Iron 4 Wiki.md#dual-scopes>)
+how the scope accessors `FROM`, `THIS`, `PREV` and `ROOT` works on `Scope` see [Dual Scopes](<Scopes - Hearts of Iron 4 Wiki.md#Dual_scopes>)
 
-### <a id="documentation-of-localized-objects"></a>Documentation of localized objects
+### Documentation of localized objects <a id="Documentation_of_localized_objects"></a>
 
 In general a scoped context (for example, effects and triggers) are localized using a [Scope](<Scopes - Hearts of Iron 4 Wiki.md>) object based on the scope of that context.
 However, there are legacy systems where this may not hold. For other places where localization keys are provided, please see the documentation
 for which localization objects that are defined for that context.
 
-## <a id="namespaces"></a>Namespaces
+## Namespaces <a id="Namespaces"></a>
 
-Namespaces refer to obtaining certain information from some scope to display in localisation. For example, getting the name of a country, the surname of a character, the ID of a state, and etc.  
-A namespace is marked with the square brackets on either side as in `my_localisation_key: "[GetDateText]"`. By default, **there is no scope assumed**. A [scope](<Scopes - Hearts of Iron 4 Wiki.md>) can be added, separated from the namespace with a dot, in order to let the game know from whom to obtain information, such as `my_localisation_key: "[QAT.GetRulingParty]"`, which'll result in the ruling party of the country QAT appearing in localisation. Any dual scope that can be used as a target may be used in localisation. [THIS](<Scopes - Hearts of Iron 4 Wiki.md#this>) can be used in order to refer to the scope of where it's used, such as  `effect_tooltip: "[ROOT.GetNameDefCap] declares war on [THIS.GetNameDef]"`.
+Namespaces refer to obtaining certain information from some scope to display in localisation. For example, getting the name of a country, the surname of a character, the ID of a state, and etc.
+A namespace is marked with the square brackets on either side as in `my_localisation_key: "[GetDateText]"`. By default, **there is no scope assumed**. A [scope](<Scopes - Hearts of Iron 4 Wiki.md>) can be added, separated from the namespace with a dot, in order to let the game know from whom to obtain information, such as `my_localisation_key: "[QAT.GetRulingParty]"`, which'll result in the ruling party of the country QAT appearing in localisation. Any dual scope that can be used as a target may be used in localisation. [THIS](<Scopes - Hearts of Iron 4 Wiki.md>) can be used in order to refer to the scope of where it's used, such as  `effect_tooltip: "[ROOT.GetNameDefCap] declares war on [THIS.GetNameDef]"`.
 
-Variables and event targets can be used within namespaces as well. For example, this grants the name of the capital state of OMA using the 'capital' variable:  `my_localisation_key: "[OMA.capital.GetName]"`. A list of built-in variables that can be used can be seen in [the respective wiki page](<Data structures - Hearts of Iron 4 Wiki.md#game-variables>). Another common ones to use include 'owner' and 'controller' for states, such as `my_localisation_key: "Owner of South-West England: [123.owner.GetName]"`.
+Variables and event targets can be used within namespaces as well. For example, this grants the name of the capital state of OMA using the 'capital' variable:  `my_localisation_key: "[OMA.capital.GetName]"`. A list of built-in variables that can be used can be seen in [the respective wiki page](<Data structures - Hearts of Iron 4 Wiki.md#Game_variables>). Another common ones to use include 'owner' and 'controller' for states, such as `my_localisation_key: "Owner of South-West England: [123.owner.GetName]"`.
 
 **Characters only exist within the scope of the country where they're recruited**, in versions prior to 1.12.8. What this means is that before scoping into the character, one must first scope into the country that they are assigned to, such as  `current_name_of_fdr:0 "[USA.USA_franklin_delano_roosevelt.GetFullName]"`. If the character is marked with some other token (such as THIS or ROOT), this is unnecessary, but it is necessary for direct character IDs. Characters also support scoping to the `GetLeader` localisation function beforehand, such as `leader_pronoun: "[ROOT.GetLeader.GetHeShe]"` In this case, scoping into the country is still necessary.
 
 Note that namespaces cannot be used everywhere. In the majority of the user interface, such as the names for wars or countries, they will not work properly, instead appearing exactly as in localisation, with the square brackets still visible. A list of locations where namespaces *do* work is:
+
 | Location | Notes |
 | --- | --- |
 | Focuses | Requires `dynamic = yes` within the focus to work correctly for the title, otherwise it generates a value at the game's start and it remains unchanging until the next reload (either of the savefile or the focus tree). Not required for the description, which always dynamically refreshes localisation. |
-| Ideas and dynamic modifiers | Support for dynamic modifiers was added in 1.13. |
+| Ideas and [dynamic modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) | Support for dynamic modifiers was added in 1.13. |
 | Decisions |  |
-| Events | At times it may be better to use [completely different localisation keys within events](<Event modding - Hearts of Iron 4 Wiki.md#localisation>) instead of using scripted localisation. |
+| Events | At times it may be better to use [completely different localisation keys within events](<Event modding - Hearts of Iron 4 Wiki.md#Localisation>) instead of using scripted localisation. |
 | Custom effect/trigger tooltips | Despite the fact that it works for [effects](<Effects - Hearts of Iron 4 Wiki.md>) and [triggers](<Triggers - Hearts of Iron 4 Wiki.md>), custom [modifier](<Modifiers - Hearts of Iron 4 Wiki.md>) tooltips do not support scripted localisation. |
 | Boolean flags | The names of the boolean flags, appearing in the tooltip when checked for them with triggers such as `has_country_flag = flag_name` or `has_character_flag = flag_name` |
 | Operations |  |
 | Adjacency rule tooltips | Referring to the tooltip that appears when hovering over a strait that's disabled for this country. |
-| [Custom interface elements](<Interface modding - Hearts of Iron 4 Wiki.md>) | The container with the UI element must be attached to a scripted GUI that has a valid `context_type` within the corresponding /Hearts of Iron IV/common/scripted\_guis/\*.txt file. May require a game restart for it to apply. |
+| [Custom interface elements](<Interface modding - Hearts of Iron 4 Wiki.md>) | The container with the UI element must be attached to a scripted GUI that has a valid `context_type` within the corresponding `/Hearts of Iron IV/common/scripted_guis/*.txt` file. May require a game restart for it to apply. |
 
 The list may be incomplete, so something not being mentioned does not necessitate that localisation does not work there, but that does make it unlikely. Other localisation functions, not involving square brackets, do still work in this case, however.
 
-### <a id="functions"></a>Functions
+### Functions <a id="Functions"></a>
 
 Sometimes, the result of a function may be interpreted as a localisation key itself, but only if the string consists entirely out of that function. For example, `log = "[THIS.GetTag]"` will result in the non-ideology name being logged instead if one exists, since that localisation key consists only of the country tag. However, `log = "loc_key_[ALB.GetTag]"` will log `loc_key_ALB`, even if a localisation key exists with that name.
 
-#### <a id="country-scope"></a>Country scope
+#### Country scope <a id="Country_scope"></a>
+
 | Name | Example | Description |
 | --- | --- | --- |
-| <a id="getname"></a> GetName | `[GER.GetName]` | Gets the name of the country, the name of the state, or the name of the character. For aces, only gets the first name: see GetFullName. |
-| <a id="gettag"></a> GetTag | `[GER.GetTag]` | Puts the tag of the country into localisation. Particularly useful for [Meta effects](<Effects - Hearts of Iron 4 Wiki.md#meta-effects>). |
-| <a id="getleader"></a> GetLeader | `[POL.GetLeader]` | Gets the name of the leader of the country. Can be further scoped into the pronoun-related namespaces, such as `[THIS.GetLeader.GetSheHe]`. |
-| <a id="getmanpower"></a> GetManpower | `[ENG.GetManpower]` | Gets the total population of the country, including civilians. |
-| <a id="getfactionname"></a> GetFactionName | `[SOV.GetFactionName]` | Gets the name of the faction that the country is located in. |
-| <a id="getagency"></a> GetAgency | `[FRA.GetAgency]` | Gets the name of the country's intelligence agency. |
-| <a id="getflag"></a> GetFlag | `[GER.GetFlag]` | Gets the current flag of the country. |
-| <a id="getnamewithflag"></a> GetNameWithFlag | `[ITA.GetNameWithFlag]` | Gets the current flag of the country and adds the name afterwards. |
-| <a id="getnamedef"></a> GetNameDef | `[SPR.GetNameDef]` | Gets the DEF name of the country, primarily used to tell if "the" is needed to be put in the beginning. |
-| <a id="getnamedefcap"></a> GetNameDefCap | `[POR.GetNameDefCap]` | Gets the DEF name of the country, primarily used to tell if "The" is needed to be put in the beginning, capitalising the first letter as well. |
-| <a id="getadjective"></a> GetAdjective | `[YUG.GetAdjective]` | Gets the adjective for the country, such as ![Flag of United Kingdom](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img2.png) British. |
-| <a id="getadjectivecap"></a> GetAdjectiveCap | `[CAN.GetAdjectiveCap]` | Gets the adjective for the country, capitalising the first letter. |
-| <a id="getoldname"></a> GetOldName | `[RAJ.GetOldName]` | Gets the name of the country without any cosmetic tags applied. |
-| <a id="getoldnamedef"></a> GetOldNameDef | `[MAL.GetOldNameDef]` | Gets the DEF name of the country, primarily used to tell if "the" is needed to be put in the beginning, without any cosmetic tags applied. |
-| <a id="getoldnamedefcap"></a> GetOldNameDefCap | `[AST.GetOldNameDefCap]` | Gets the DEF name of the country, primarily used to tell if "The" is needed to be put in the beginning, without any cosmetic tags applied, capitalising the first letter. |
-| <a id="getoldadjective"></a> GetOldAdjective | `[NZL.GetOldAdjective]` | Gets the adjective for the country without any cosmetic tags applied. |
-| <a id="getoldadjectivecap"></a> GetOldAdjectiveCap | `[HAW.GetOldAdjectiveCap]` | Gets the adjective for the country without any cosmetic tags applied, capitalising the first letter. |
-| <a id="getnonideologyname"></a> GetNonIdeologyName | `[JAP.GetNonIdeologyName]` | Gets the non-ideology name of the country, defined with `TAG:0 "Country name"` |
-| <a id="getnonideologynamedef"></a> GetNonIdeologyNameDef | `[SAU.GetNonIdeologyNameDef]` | Gets the non-ideology DEF name of the country, primarily used to tell if "the" is needed to be put in the beginning. |
-| <a id="getnonideologynamedefcap"></a> GetNonIdeologyNameDefCap | `[SWE.GetNonIdeologyNameDefCap]` | Gets the non-ideology DEF name of the country, primarily used to tell if "The" is needed to be put in the beginning, capitalising the first letter. |
-| <a id="getnonideologyadjective"></a> GetNonIdeologyAdjective | `[DEN.GetNonIdeologyAdjective]` | Gets the non-ideology adjective for the country. |
-| <a id="getnonideologyadjectivecap"></a> GetNonIdeologyAdjectiveCap | `[NOR.GetNonIdeologyAdjectiveCap]` | Gets the non-ideology adjective for the country, capitalising the first letter. |
-| <a id="getpartysupport"></a> GetPartySupport | `[ICE.GetPartySupport]` | Gets the percentage of the ruling party, on the scale from 0 to 100. Does not have the % symbol in the end. |
-| <a id="getlastelection"></a> GetLastElection | `[ROOT.GetLastElection]` | Gets the date when the last country's election occurred in the "HH:00, DD Month, YYYY" format, such as "01:00, 1 January, 1936". |
-| <a id="getrulingparty"></a> GetRulingParty | `[HOL.GetRulingParty]` | Gets the short name of the party ruling over the country. |
-| <a id="getrulingpartylong"></a> GetRulingPartyLong | `[BEL.GetRulingPartyLong]` | Gets the long name of the party ruling over the country. |
-| <a id="getrulingideology"></a> GetRulingIdeology | `[LUX.GetRulingIdeology]` | Gets the name of the country's ideology group, in adjective form. |
-| <a id="getrulingideologynoun"></a> GetRulingIdeologyNoun | `[GER.GetRulingIdeologyNoun]` | Gets the name of the country's ideology group, in noun form. |
-| <a id="getcommunistparty"></a> GetCommunistParty | `[HUN.GetCommunistParty]` | Gets the name of the ![{{{1}}}](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img3.png) Communist party. |
-| <a id="getdemocraticparty"></a> GetDemocraticParty | `[AUS.GetDemocraticParty]` | Gets the name of the ![{{{1}}}](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img4.png) Democratic party. |
-| <a id="getfascistparty"></a> GetFascistParty | `[CZE.GetFascistParty]` | Gets the name of the ![{{{1}}}](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img5.png) Fascist party. |
-| <a id="getneutralparty"></a> GetNeutralParty | `[ROM.GetNeutralParty]` | Gets the name of the ![{{{1}}}](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img6.png) Non-aligned party. |
-| <a id="getcommunistleader"></a> GetCommunistLeader | `[BUL.GetCommunistLeader]` | Gets the name of the leader of the country's ![{{{1}}}](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img3.png) Communist party. |
-| <a id="getdemocraticleader"></a> GetDemocraticLeader | `[GRE.GetDemocraticLeader]` | Gets the name of the leader of the country's ![{{{1}}}](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img4.png) Democratic party. |
-| <a id="getfascistleader"></a> GetFascistLeader | `[ALB.GetFascistLeader]` | Gets the name of the leader of the country's ![{{{1}}}](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img5.png) Fascist party. |
-| <a id="getneutralleader"></a> GetNeutralLeader | `[TUR.GetNeutralLeader]` | Gets the name of the leader of the country's ![{{{1}}}](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img6.png) Non-aligned party. |
-| <a id="getpowerbalancename"></a> GetPowerBalanceName | `[ITA.GetPowerBalanceName]` | Gets the name of the country's currently-active balance of power. |
-| <a id="getpowerbalancemoddesc"></a> GetPowerBalanceModDesc | `[ITA.GetPowerBalanceModDesc]` | Gets the names of the country's currently-active [balance of power modifiers](<Modifiers - Hearts of Iron 4 Wiki.md#balance-of-power-modifiers>) and their effects towards the BoP. For the modifiers applied by the active range, see [GetActiveRangeModDesc](#getactiverangemoddesc). |
-| <a id="getrightsidename"></a> GetRightSideName | `[ITA.GetRightSideName]` | Gets the name of the country's right side in the currently-active balance of power. |
-| <a id="getleftsidename"></a> GetLeftSideName | `[ITA.GetLeftSideName]` | Gets the name of the country's left side in the currently-active balance of power. |
-| <a id="getactivesidename"></a> GetActiveSideName | `[ITA.GetActiveSideName]` | Gets the name of the side in the country's currently-active balance of power that has more power. |
-| <a id="gettrendingsidename"></a> GetTrendingSideName | `[ITA.GetTrendingSideName]` | Gets the name of the side in the country's currently-active balance of power that the balance is changing towards. |
-| <a id="getactiverangename"></a> GetActiveRangeName | `[ITA.GetActiveRangeName]` | Gets the name of the range in the country's currently-active balance of power that is currently active, granting its modifiers. |
-| <a id="getactiverangemoddesc"></a> GetActiveRangeModDesc | `[ITA.GetActiveRangeModDesc]` | Gets the modifiers applied by the active range in the country's currently-active balance of power. Uses the `BOP_RANGE_MODIFIER` localisation key. |
-| <a id="getactiverangeruledesc"></a> GetActiveRangeRuleDesc | `[ITA.GetActiveRangeRuleDesc]` | Gets the game rules modified by the active range in the country's currently-active balance of power. Uses the `BOP_RANGE_RULE` localisation key. |
-| <a id="getactiverangeactivationeffect"></a> GetActiveRangeActivationEffect | `[ITA.GetActiveRangeActivationEffect]` | Gets the tooltip for the effects executed when entering the active range in the country's currently-active balance of power. Uses the `BOP_RANGE_ACTIVATION_EFFECT` localisation key. |
-| <a id="getactiverangedeactivationeffect"></a> GetActiveRangeDeactivationEffect | `[ITA.GetActiveRangeDeactivationEffect]` | Gets the tooltip for the effects executed when exiting the active range in the country's currently-active balance of power. Uses the `BOP_RANGE_DEACTIVATION_EFFECT` localisation key. |
-| <a id="getchangeratedesc"></a> GetChangeRateDesc | `[ITA.GetChangeRateDesc]` | Gets the rate by which the balance of power is changed weekly and/or daily and towards which side. May use `BOP_CHANGE_RATE_DAILY` or `BOP_CHANGE_RATE_WEEKLY` localisation keys depending on the current BoP modifiers, prioritising the former if possible. |
-| <a id="getboptrendtexticon"></a> GetBopTrendTextIcon | `[ITA.GetBopTrendTextIcon]` | Selects the text icon corresponding towards which side is getting power. May select either `GFX_BoP_left_texticon`, `GFX_BoP_right_texticon`, or nothing. |
+| GetName | `[GER.GetName]` | Gets the name of the country, the name of the state, or the name of the character. For aces, only gets the first name: see GetFullName. |
+| GetTag | `[GER.GetTag]` | Puts the tag of the country into localisation. Particularly useful for [Meta effects](<Effects - Hearts of Iron 4 Wiki.md#Meta_effects>). |
+| GetLeader | `[POL.GetLeader]` | Gets the name of the leader of the country. Can be further scoped into the pronoun-related namespaces, such as `[THIS.GetLeader.GetSheHe]`. |
+| GetManpower | `[ENG.GetManpower]` | Gets the total population of the country, including civilians. |
+| GetFactionName | `[SOV.GetFactionName]` | Gets the name of the faction that the country is located in. |
+| GetAgency | `[FRA.GetAgency]` | Gets the name of the country's intelligence agency. |
+| GetFlag | `[GER.GetFlag]` | Gets the current flag of the country. |
+| GetNameWithFlag | `[ITA.GetNameWithFlag]` | Gets the current flag of the country and adds the name afterwards. |
+| GetNameDef | `[SPR.GetNameDef]` | Gets the DEF name of the country, primarily used to tell if "the" is needed to be put in the beginning. |
+| GetNameDefCap | `[POR.GetNameDefCap]` | Gets the DEF name of the country, primarily used to tell if "The" is needed to be put in the beginning, capitalising the first letter as well. |
+| GetAdjective | `[YUG.GetAdjective]` | Gets the adjective for the country, such as ![Flag of United Kingdom](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img2.png) British. |
+| GetAdjectiveCap | `[CAN.GetAdjectiveCap]` | Gets the adjective for the country, capitalising the first letter. |
+| GetOldName | `[RAJ.GetOldName]` | Gets the name of the country without any cosmetic tags applied. |
+| GetOldNameDef | `[MAL.GetOldNameDef]` | Gets the DEF name of the country, primarily used to tell if "the" is needed to be put in the beginning, without any cosmetic tags applied. |
+| GetOldNameDefCap | `[AST.GetOldNameDefCap]` | Gets the DEF name of the country, primarily used to tell if "The" is needed to be put in the beginning, without any cosmetic tags applied, capitalising the first letter. |
+| GetOldAdjective | `[NZL.GetOldAdjective]` | Gets the adjective for the country without any cosmetic tags applied. |
+| GetOldAdjectiveCap | `[HAW.GetOldAdjectiveCap]` | Gets the adjective for the country without any cosmetic tags applied, capitalising the first letter. |
+| GetNonIdeologyName | `[JAP.GetNonIdeologyName]` | Gets the non-ideology name of the country, defined with `TAG:0 "Country name"` |
+| GetNonIdeologyNameDef | `[SAU.GetNonIdeologyNameDef]` | Gets the non-ideology DEF name of the country, primarily used to tell if "the" is needed to be put in the beginning. |
+| GetNonIdeologyNameDefCap | `[SWE.GetNonIdeologyNameDefCap]` | Gets the non-ideology DEF name of the country, primarily used to tell if "The" is needed to be put in the beginning, capitalising the first letter. |
+| GetNonIdeologyAdjective | `[DEN.GetNonIdeologyAdjective]` | Gets the non-ideology adjective for the country. |
+| GetNonIdeologyAdjectiveCap | `[NOR.GetNonIdeologyAdjectiveCap]` | Gets the non-ideology adjective for the country, capitalising the first letter. |
+| GetPartySupport | `[ICE.GetPartySupport]` | Gets the percentage of the ruling party, on the scale from 0 to 100. Does not have the % symbol in the end. |
+| GetLastElection | `[ROOT.GetLastElection]` | Gets the date when the last country's election occurred in the "HH:00, DD Month, YYYY" format, such as "01:00, 1 January, 1936". |
+| GetRulingParty | `[HOL.GetRulingParty]` | Gets the short name of the party ruling over the country. |
+| GetRulingPartyLong | `[BEL.GetRulingPartyLong]` | Gets the long name of the party ruling over the country. |
+| GetRulingIdeology | `[LUX.GetRulingIdeology]` | Gets the name of the country's ideology group, in adjective form. |
+| GetRulingIdeologyNoun | `[GER.GetRulingIdeologyNoun]` | Gets the name of the country's ideology group, in noun form. |
+| GetCommunistParty | `[HUN.GetCommunistParty]` | Gets the name of the ![Communism](media/character-modding-hearts-of-iron-4-wiki_41494a4f46__img8.png)Communist party. |
+| GetDemocraticParty | `[AUS.GetDemocraticParty]` | Gets the name of the ![Democracy](media/character-modding-hearts-of-iron-4-wiki_cee5ae9645__img1.png)Democratic party. |
+| GetFascistParty | `[CZE.GetFascistParty]` | Gets the name of the ![Fascism](media/character-modding-hearts-of-iron-4-wiki_58ea48332f__img14.png)Fascist party. |
+| GetNeutralParty | `[ROM.GetNeutralParty]` | Gets the name of the ![Neutrality](media/ai-modding-hearts-of-iron-4-wiki_25696e0a81__img2.png)Non-aligned party. |
+| GetCommunistLeader | `[BUL.GetCommunistLeader]` | Gets the name of the leader of the country's ![Communism](media/character-modding-hearts-of-iron-4-wiki_41494a4f46__img8.png)Communist party. |
+| GetDemocraticLeader | `[GRE.GetDemocraticLeader]` | Gets the name of the leader of the country's ![Democracy](media/character-modding-hearts-of-iron-4-wiki_cee5ae9645__img1.png)Democratic party. |
+| GetFascistLeader | `[ALB.GetFascistLeader]` | Gets the name of the leader of the country's ![Fascism](media/character-modding-hearts-of-iron-4-wiki_58ea48332f__img14.png)Fascist party. |
+| GetNeutralLeader | `[TUR.GetNeutralLeader]` | Gets the name of the leader of the country's ![Neutrality](media/ai-modding-hearts-of-iron-4-wiki_25696e0a81__img2.png)Non-aligned party. |
+| GetPowerBalanceName | `[ITA.GetPowerBalanceName]` | Gets the name of the country's currently-active balance of power. |
+| GetPowerBalanceModDesc | `[ITA.GetPowerBalanceModDesc]` | Gets the names of the country's currently-active [balance of power modifiers](<Modifiers - Hearts of Iron 4 Wiki.md#Balance_of_power_modifiers>) and their effects towards the BoP. For the modifiers applied by the active range, see GetActiveRangeModDesc. |
+| GetRightSideName | `[ITA.GetRightSideName]` | Gets the name of the country's right side in the currently-active balance of power. |
+| GetLeftSideName | `[ITA.GetLeftSideName]` | Gets the name of the country's left side in the currently-active balance of power. |
+| GetActiveSideName | `[ITA.GetActiveSideName]` | Gets the name of the side in the country's currently-active balance of power that has more power. |
+| GetTrendingSideName | `[ITA.GetTrendingSideName]` | Gets the name of the side in the country's currently-active balance of power that the balance is changing towards. |
+| GetActiveRangeName | `[ITA.GetActiveRangeName]` | Gets the name of the range in the country's currently-active balance of power that is currently active, granting its modifiers. |
+| GetActiveRangeModDesc | `[ITA.GetActiveRangeModDesc]` | Gets the modifiers applied by the active range in the country's currently-active balance of power. Uses the `BOP_RANGE_MODIFIER` localisation key. |
+| GetActiveRangeRuleDesc | `[ITA.GetActiveRangeRuleDesc]` | Gets the game rules modified by the active range in the country's currently-active balance of power. Uses the `BOP_RANGE_RULE` localisation key. |
+| GetActiveRangeActivationEffect | `[ITA.GetActiveRangeActivationEffect]` | Gets the tooltip for the effects executed when entering the active range in the country's currently-active balance of power. Uses the `BOP_RANGE_ACTIVATION_EFFECT` localisation key. |
+| GetActiveRangeDeactivationEffect | `[ITA.GetActiveRangeDeactivationEffect]` | Gets the tooltip for the effects executed when exiting the active range in the country's currently-active balance of power. Uses the `BOP_RANGE_DEACTIVATION_EFFECT` localisation key. |
+| GetChangeRateDesc | `[ITA.GetChangeRateDesc]` | Gets the rate by which the balance of power is changed weekly and/or daily and towards which side. May use `BOP_CHANGE_RATE_DAILY` or `BOP_CHANGE_RATE_WEEKLY` localisation keys depending on the current BoP modifiers, prioritising the former if possible. |
+| GetBopTrendTextIcon | `[ITA.GetBopTrendTextIcon]` | Selects the text icon corresponding towards which side is getting power. May select either `GFX_BoP_left_texticon`, `GFX_BoP_right_texticon`, or nothing. |
 
-#### <a id="other-scopes"></a>Other scopes
+#### Other scopes <a id="Other_scopes"></a>
 
 Date variable in this case refers to a variable set to a date value. Using it with the current date can be done by using the global.date variable as `[?global.date.GetDateString]`.
+
 | Name | Scope | Example | Description |
 | --- | --- | --- | --- |
-| <a id="getname"></a> GetName | State, character, operative, ace | `[123.GetName]`  `[POL.POL_character.GetName]` | Gets the name of the state or the name of the character. For aces, only gets the first name: see [GetFullName](#getfullname). |
+| GetName | State, character, operative, ace | `[123.GetName]`  `[POL.POL_character.GetName]` | Gets the name of the state or the name of the character. For aces, only gets the first name: see GetFullName. |
 | GetName | MIO | `[?ID.GetName]``[?BEL_cockerill_organization.GetName]` | Gets the name of the MIO. |
-| <a id="getdatetext"></a> GetDateText | Any | `[GetDateText]` | Gets the date in the format of "HH:00, DD Month, YYYY", such as "12:00, 1 January, 1936". |
-| <a id="getdate"></a> GetDate | Any | `[GetDate]` | Gets the date in the format of YYYY.MM.DD.HH, such as 1936.1.1.12. |
-| <a id="getmonth"></a> GetMonth | Any | `[GetMonth]` | Gets the current month. |
-| <a id="getyear"></a> GetYear | Any | `[GetYear]` | Gets the current year. |
-| <a id="getid"></a> GetID | State | `[123.GetID]` | Gets the ID of the state. Particularly useful for [Meta effects](<Effects - Hearts of Iron 4 Wiki.md#meta-effects>). |
-| <a id="getcapitalvictorypointname"></a> GetCapitalVictoryPointName | State | `[540.GetCapitalVictoryPointName]` | Gets the name of the capital victory point (i.e. the province with the largest amount of victory points) of the state. |
-| <a id="getshehe"></a> GetSheHe | Character | `[PRU.GetLeader.GetSheHe]` | Results in either "she" or "he" depending on the gender of the character, beginning with lowercase letters. |
-| <a id="getshehecap"></a> GetSheHeCap | Character | `[MEX.MEX_character.GetSheHeCap]` | Results in either "She" or "He" depending on the gender of the character, beginning with uppercase letters. |
-| <a id="getherhim"></a> GetHerHim | Character | `[BRA.BRA_character.GetHerHim]` | Results in either "her" or "him" depending on the gender of the character, beginning with lowercase letters. |
-| <a id="getherhimcap"></a> GetHerHimCap | Character | `[ARG.ARG_character.GetHerHimCap]` | Results in either "Her" or "Him" depending on the gender of the character, beginning with uppercase letters. |
-| <a id="getherhis"></a> GetHerHis | Character | `[CHI.CHI_character.GetHerHis]` | Results in either "her" or "his" depending on the gender of the character, beginning with lowercase letters. |
-| <a id="getherhiscap"></a> GetHerHisCap | Character | `[CHL.CHL_character.GetHerHisCap]` | Results in either "Her" or "His" depending on the gender of the character, beginning with uppercase letters. |
-| <a id="gethershis"></a> GetHersHis | Character | `[PRC.PRC_character.GetHersHis]` | Results in either "hers" or "his" depending on the gender of the character, beginning with lowercase letters. |
-| <a id="gethershiscap"></a> GetHersHisCap | Character | `[YUN.YUN_character.GetHersHisCap]` | Results in either "Hers" or "His" depending on the gender of the character, beginning with uppercase letters. |
-| <a id="getherselfhimself"></a> GetHerselfHimself | Character | `[GXC.GXC_character.GetHerselfHimself]` | Results in either "herself" or "himself" depending on the gender of the character, beginning with lowercase letters. |
-| <a id="getherselfhimselfcap"></a> GetHerselfHimselfCap | Character | `[XSM.XSM_character.GetHerselfHimselfCap]` | Results in either "Herself" or "Himself" depending on the gender of the character, beginning with uppercase letters. |
-| <a id="getideology"></a> GetIdeology | Country leader | `[?country_leader.GetIdeology]` | Gets the ideology *group* assigned to the country leader, such as ![{{{1}}}](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img4.png) Democratic or ![{{{1}}}](media/localisation-hearts-of-iron-4-wiki_0824ba8845__img6.png) Non-aligned. |
-| <a id="getideologygroup"></a> GetIdeologyGroup | Country leader | `[?country_leader.GetIdeologyGroup]` | Gets the ideology *type* assigned to the country leader, such as Liberalism or Centrism. The name is misleading. |
-| <a id="getrank"></a> GetRank | Unit leader | `[MEN.MEN_character.GetRank]` | Gets the rank of the unit leader, such as Corps Commander or Field Marshal. |
-| <a id="getcodename"></a> GetCodeName | Operative | `[THIS.GetCodeName]` | Gets the codename of the operative. |
-| <a id="getcallsign"></a> GetCallsign | Operative | `[THIS.GetCallsign]` | Gets the callsign of the operative. |
-| <a id="getsurname"></a> GetSurname | Ace | `[LIB.GetLeader.GetSurname]` | Gets the last name of the ace. |
-| <a id="getfullname"></a> GetFullName | Ace | `[ECU.ECU_character.GetFullName]` | Gets the full name of the ace, with both first and last names. |
-| <a id="getwing"></a> GetWing | Ace | `[THIS.GetWing]` | Gets the wing that the ace is assigned to. |
-| <a id="getwingshort"></a> GetWingShort | Ace | `[THIS.GetWingShort]` | Gets the shortened name of the wing that the ace is assigned to. |
-| <a id="getacetype"></a> GetAceType | Ace | `[THIS.GetAceType]` | Gets the type of the ace. |
-| <a id="getmissionregion"></a> GetMissionRegion | Ace | `[THIS.GetMissionRegion]` | Gets the region that the ace is assigned to. |
-| <a id="gettokenkey"></a> GetTokenKey | Any token variable | `[?global.variablename.GetTokenKey]` | Gets the token of the variable, such as infantry\_equipment, instead of the internal ID. Particularly useful for [Meta effects](<Effects - Hearts of Iron 4 Wiki.md#meta-effects>). |
-| <a id="gettokenlocalizedkey"></a> GetTokenLocalizedKey | Any token variable | `[?GER.variablename.GetTokenLocalizedKey]` | Returns the *localised* name of the variable, such as "Infantry Equipment", by converting an internal identifier or database object, such as `infantry_equipment` into its localised equivalent, provided a localization key exists for it. This functionality becomes invaluable for advanced abstraction techniques. For instance, it can approximate arbitrary string interpolation (string interpolaration is the ability to embed expressions or variables within a string literal in a programming language) in Meta effects by applying it to token variables that reference dummy objects (e.g., empty ideas) with predefined arbitrary localization strings. By passing token variables that resolve to localized dummy objects, developers can achieve a level of flexibility similar to direct string manipulation.  Additionally, concatenating the localization values of two dummy tokens can produce a new token string. This string can then be inserted into a token variable within a Meta effect, provided the resulting token string corresponds to a valid existing token. If the resulting token is invalid, the function will simply return an integer value of 0.  Effectively, this approach allows for the derivation of previously-unknown token variables from known ones, following a template defined by another known token variable. This is particularly useful when the destination token follows a templated variation (via prefixes or suffixes) of the source token. |
-| <a id="getdatestring"></a> GetDateString | Date variable | `[?global.date.GetDateString]` | Gets the date in the format of "HH:00, DD Month, YYYY", such as "12:00, 1 January, 1936". |
-| <a id="getdatestringshortmonth"></a> GetDateStringShortMonth | Date variable | `[?global.date.GetDateStringShortMonth]` | Gets the date in the format of "HH:00, DD Mon., YYYY", such as "12:00, 1 Jan., 1936". |
-| <a id="getdatestringnohour"></a> GetDateStringNoHour | Date variable | `[?global.date.GetDateStringNoHour]` | Gets the date in the format of YYYY.MM.DD, such as 1936.1.1. |
-| <a id="getdatestringnohourlong"></a> GetDateStringNoHourLong | Date variable | `[?global.date.GetDateStringNoHourLong]` | Gets the date in the format of "DD Month, YYYY", such as "1 January, 1936". |
+| GetDateText | Any | `[GetDateText]` | Gets the date in the format of "HH:00, DD Month, YYYY", such as "12:00, 1 January, 1936". |
+| GetDate | Any | `[GetDate]` | Gets the date in the format of YYYY.MM.DD.HH, such as 1936.1.1.12. |
+| GetMonth | Any | `[GetMonth]` | Gets the current month. |
+| GetYear | Any | `[GetYear]` | Gets the current year. |
+| GetID | State | `[123.GetID]` | Gets the ID of the state. Particularly useful for [Meta effects](<Effects - Hearts of Iron 4 Wiki.md>). |
+| GetCapitalVictoryPointName | State | `[540.GetCapitalVictoryPointName]` | Gets the name of the capital victory point (i.e. the province with the largest amount of victory points) of the state. |
+| GetSheHe | Character | `[PRU.GetLeader.GetSheHe]` | Results in either "she" or "he" depending on the gender of the character, beginning with lowercase letters. |
+| GetSheHeCap | Character | `[MEX.MEX_character.GetSheHeCap]` | Results in either "She" or "He" depending on the gender of the character, beginning with uppercase letters. |
+| GetHerHim | Character | `[BRA.BRA_character.GetHerHim]` | Results in either "her" or "him" depending on the gender of the character, beginning with lowercase letters. |
+| GetHerHimCap | Character | `[ARG.ARG_character.GetHerHimCap]` | Results in either "Her" or "Him" depending on the gender of the character, beginning with uppercase letters. |
+| GetHerHis | Character | `[CHI.CHI_character.GetHerHis]` | Results in either "her" or "his" depending on the gender of the character, beginning with lowercase letters. |
+| GetHerHisCap | Character | `[CHL.CHL_character.GetHerHisCap]` | Results in either "Her" or "His" depending on the gender of the character, beginning with uppercase letters. |
+| GetHersHis | Character | `[PRC.PRC_character.GetHersHis]` | Results in either "hers" or "his" depending on the gender of the character, beginning with lowercase letters. |
+| GetHersHisCap | Character | `[YUN.YUN_character.GetHersHisCap]` | Results in either "Hers" or "His" depending on the gender of the character, beginning with uppercase letters. |
+| GetHerselfHimself | Character | `[GXC.GXC_character.GetHerselfHimself]` | Results in either "herself" or "himself" depending on the gender of the character, beginning with lowercase letters. |
+| GetHerselfHimselfCap | Character | `[XSM.XSM_character.GetHerselfHimselfCap]` | Results in either "Herself" or "Himself" depending on the gender of the character, beginning with uppercase letters. |
+| GetIdeology | Country leader | `[?country_leader.GetIdeology]` | Gets the ideology *group* assigned to the country leader, such as ![Democracy](media/character-modding-hearts-of-iron-4-wiki_cee5ae9645__img1.png)Democratic or ![Neutrality](media/ai-modding-hearts-of-iron-4-wiki_25696e0a81__img2.png)Non-aligned. |
+| GetIdeologyGroup | Country leader | `[?country_leader.GetIdeologyGroup]` | Gets the ideology *type* assigned to the country leader, such as Liberalism or Centrism. The name is misleading. |
+| GetRank | Unit leader | `[MEN.MEN_character.GetRank]` | Gets the rank of the unit leader, such as Corps Commander or Field Marshal. |
+| GetCodeName | Operative | `[THIS.GetCodeName]` | Gets the codename of the operative. |
+| GetCallsign | Operative | `[THIS.GetCallsign]` | Gets the callsign of the operative. |
+| GetSurname | Ace | `[LIB.GetLeader.GetSurname]` | Gets the last name of the ace. |
+| GetFullName | Ace | `[ECU.ECU_character.GetFullName]` | Gets the full name of the ace, with both first and last names. |
+| GetWing | Ace | `[THIS.GetWing]` | Gets the wing that the ace is assigned to. |
+| GetWingShort | Ace | `[THIS.GetWingShort]` | Gets the shortened name of the wing that the ace is assigned to. |
+| GetAceType | Ace | `[THIS.GetAceType]` | Gets the type of the ace. |
+| GetMissionRegion | Ace | `[THIS.GetMissionRegion]` | Gets the region that the ace is assigned to. |
+| GetTokenKey | Any [token variable](<Data structures - Hearts of Iron 4 Wiki.md#Token-valued_variables>) | `[?global.variablename.GetTokenKey]` | Gets the token of the variable, such as infantry_equipment, instead of the internal ID. Particularly useful for [Meta effects](<Effects - Hearts of Iron 4 Wiki.md>). |
+| GetTokenLocalizedKey | Any [token variable](<Data structures - Hearts of Iron 4 Wiki.md#Token-valued_variables>) | `[?GER.variablename.GetTokenLocalizedKey]` | Returns the *localised* name of the variable, such as "Infantry Equipment", by converting an internal identifier or database object, such as `infantry_equipment` into its localised equivalent, provided a localization key exists for it. This functionality becomes invaluable for advanced abstraction techniques. For instance, it can approximate arbitrary string interpolation (string interpolaration is the ability to embed expressions or variables within a string literal in a programming language) in [Meta effects](<Effects - Hearts of Iron 4 Wiki.md>) by applying it to token variables that reference dummy objects (e.g., empty ideas) with predefined arbitrary localization strings. By passing token variables that resolve to localized dummy objects, developers can achieve a level of flexibility similar to direct string manipulation.  Additionally, concatenating the localization values of two dummy tokens can produce a new token string. This string can then be inserted into a token variable within a Meta effect, provided the resulting token string corresponds to a valid existing token. If the resulting token is invalid, the function will simply return an integer value of 0.  Effectively, this approach allows for the derivation of previously-unknown token variables from known ones, following a template defined by another known token variable. This is particularly useful when the destination token follows a templated variation (via prefixes or suffixes) of the source token. |
+| GetDateString | Date variable | `[?global.date.GetDateString]` | Gets the date in the format of "HH:00, DD Month, YYYY", such as "12:00, 1 January, 1936". |
+| GetDateStringShortMonth | Date variable | `[?global.date.GetDateStringShortMonth]` | Gets the date in the format of "HH:00, DD Mon., YYYY", such as "12:00, 1 Jan., 1936". |
+| GetDateStringNoHour | Date variable | `[?global.date.GetDateStringNoHour]` | Gets the date in the format of YYYY.MM.DD, such as 1936.1.1. |
+| GetDateStringNoHourLong | Date variable | `[?global.date.GetDateStringNoHourLong]` | Gets the date in the format of "DD Month, YYYY", such as "1 January, 1936". |
 
-## <a id="scripted-localisation"></a>Scripted localisation
+## Scripted localisation <a id="Scripted_localisation"></a>
 
-Scripted localisation is similar to creating your own namespaces. It is defined in /Hearts of Iron IV/common/scripted\_localisation/\*.txt and used in localisation in a similar manner to namespaces. However, unlike namespaces, by default the current scope is assumed when using scripted localisation, making scoping optional.
+Scripted localisation is similar to creating your own namespaces. It is defined in `/Hearts of Iron IV/common/scripted_localisation/*.txt` and used in localisation in a similar manner to namespaces. However, unlike namespaces, by default the current scope is assumed when using scripted localisation, making scoping optional.
 An example of a scripted localisation definition is:
 
 ```text
@@ -648,17 +677,21 @@ This consists of these entries:
 
 - `name = my_scripted_loc` - The name of the scripted localisation used to refer to it within regular localisation.
 - `text = { ... }` - A possible choice for localisation. The game picks the topmost `text = { ... }` block to serve as the localisation's output. In particular, these are used in the example:
-  - `trigger = { ... }` is the trigger block evaluated for the checked scope, using this scripted localisation if true. Temporary variables set in this trigger block will remain set when displaying the localisation key, allowing math to be done between different variables or using scripted localisation recursively (such as to display every element of an array).
+  - `trigger = { ... }` is the trigger block evaluated for the checked scope, using this scripted localisation if true. [Temporary variables](<Data structures - Hearts of Iron 4 Wiki.md>) set in this trigger block will remain set when displaying the localisation key, allowing math to be done between different variables or using scripted localisation recursively (such as to display every element of an [array](<Data structures - Hearts of Iron 4 Wiki.md>)).
   - `localization_key = my_loc_key` (Note the American spelling with Z rather than the British spelling with S used elsewhere) assigns the localisation key to be used with this scripted localisation option.
 
-The example above will show the FRA\_localization\_key localisation key for France and the mod\_localization\_key one otherwise as a backup. **The first localization key that meets the triggers will be used**, meaning it is often more intuitive to specify localisation entries with more specific requirements first before those with more general triggers. In localisation, that example can be used as
+The example above will show the FRA_localization_key localisation key for France and the mod_localization_key one otherwise as a backup. **The first localization key that meets the triggers will be used**, meaning it is often more intuitive to specify localisation entries with more specific requirements first before those with more general triggers. In localisation, that example can be used as
 
-```text
+```yaml
 l_english:
  some_localisation: "[mod_scripted_loc]"
  FRA_localization_key: "France-exclusive localisation"
  mod_localization_key: "Generic localisation"
-`Scripted localisation also allows randomisation of the localisation key that would be chosen, using [random\_list](<Effects - Hearts of Iron 4 Wiki.md#random-list>). For example, the following code will give a 60% and a 40% chance respectively for mod\_localization\_key\_1 or mod\_localization\_key\_2 to be chosen when this scripted localisation entry is used:`
+```
+
+Scripted localisation also allows randomisation of the localisation key that would be chosen, using [random_list](<Effects - Hearts of Iron 4 Wiki.md>). For example, the following code will give a 60% and a 40% chance respectively for mod_localization_key_1 or mod_localization_key_2 to be chosen when this scripted localisation entry is used:
+
+```text
 defined_text = {
     name = mod_scripted_loc
     text = {
@@ -670,7 +703,7 @@ defined_text = {
 }
 ```
 
-### <a id="dynamic-scripted-localisation"></a>Dynamic scripted localisation
+### Dynamic scripted localisation <a id="Dynamic_scripted_localisation"></a>
 
 The `localization_key` argument now directly supports the use of dynamic localisation. That is, it is possible put a piece of dynamic localisation *as part* of a localisation key call. This allows for a much streamlined system of localisation automation when it is needed. For example:
 
@@ -685,7 +718,7 @@ defined_text = {
 
 When the scripted localisation is called, it will read the value of `my_variable` and place the value into the string of the localisation key as specified and evaluate the entire localisation key as a whole after the variable has been implemented.
 
-```text
+```yaml
 l_english:
  some_localisation: "[mod_scripted_loc]"
  mod_localization_version_1: "This localization will be called when my_variable is equal to 1."
@@ -693,9 +726,9 @@ l_english:
  mod_localization_version_3: "This localization will be called when my_variable is equal to 3."
 ```
 
-### <a id="temporary-variable-display"></a>Temporary variable display
+### Temporary variable display <a id="Temporary_variable_display"></a>
 
-Temporary variables allow for [calculations within triggers](<Data structures - Hearts of Iron 4 Wiki.md#trigger-usage>), and with scripted localisation, the result of such calculations can be directly shown in text without the need to use a separate variable. This is especially useful if a desired value is inherently tied to another variable, saving the necessity of having to constantly update a variable to the new value.
+Temporary variables allow for [calculations within triggers](<Data structures - Hearts of Iron 4 Wiki.md#Trigger_usage>), and with scripted localisation, the result of such calculations can be directly shown in text without the need to use a separate variable. This is especially useful if a desired value is inherently tied to another variable, saving the necessity of having to constantly update a variable to the new value.
 
 An example of this use case is to display money with dynamic units, i.e. millions, billions, trillions, where the basic unit assigned to a variable `gdp_value` is in **billions**, and we wish to change the display units to **millions** when `gdp_value` is under 1 and to **trillions** when `gdp_value` reaches 1,000. Below is an implementation of it using scripted localisation and local temporary variable calculation.
 
@@ -738,7 +771,11 @@ defined_text = {
         localization_key = millions
     }
 }
-`In localisation,`
+```
+
+In localisation,
+
+```yaml
 l_english:
  total_gdp: "Our total GDP is [gdp_display_units]"
  # localisation keys belonging to [gdp_display_units]
@@ -751,21 +788,23 @@ l_english:
 
 In this example, a `gdp_value` of 5000 will display as `$5.00T`, a `gdp_value` of 300 will display as `$300.00B`, and a `gdp_value` of 0.520 will display as `$520.00M`
 
-As can be seen, the temporary variable value that has been calculated within their corresponding `trigger` blocks can be called like any other variable, but is only accessible within the scripted localisation itself and nowhere else. While the temporary variables can be accessed by localisation keys further down from the `trigger` (and subsequently `text`) block that it was calculated in, it is still good practice to organize it this way to not lose track of which temporary variable calculations belong to which localisation key.\
+As can be seen, the temporary variable value that has been calculated within their corresponding `trigger` blocks can be called like any other variable, but is only accessible within the scripted localisation itself and nowhere else. While the temporary variables can be accessed by localisation keys further down from the `trigger` (and subsequently `text`) block that it was calculated in, it is still good practice to organize it this way to not lose track of which temporary variable calculations belong to which localisation key.\\
 
-## <a id="hard-to-find-localisation-info"></a>Hard-to-find Localisation Info
+## Hard-to-find Localisation Info <a id="Hard-to-find_Localisation_Info"></a>
 
 The following localisation entries are undocumented and hard to find within base-game code
 
-### <a id="war-naming"></a>War Naming
+### War Naming <a id="War_Naming"></a>
 
 Custom names for wars can be set through
 
-`WAR_NAME_TAG1_TAG2:""`
+```text
+WAR_NAME_TAG1_TAG2:""
+```
 
-TAG1 is the attacker, TAG2 is the defender. The naming supports using $FIRST$ and $SECOND$ to directly access the adjective forms of the respective tags. $FIRST$ would be the same as [TAG1.GetAdjective]
+TAG1 is the attacker, TAG2 is the defender. The naming supports using $FIRST$ and $SECOND$ to directly access the adjective forms of the respective tags. $FIRST$ would be the same as `[TAG1.GetAdjective]`
 
-### <a id="division-commander-ranks"></a>Division Commander Ranks
+### Division Commander Ranks <a id="Division_Commander_Ranks"></a>
 
 ```text
 DIVISION_EXPERIENCE_TITLE_ARMY_EXPERIENCE_0:""
@@ -777,8 +816,19 @@ DIVISION_EXPERIENCE_TITLE_ARMY_EXPERIENCE_4:""
 
 The base game default goes from Brigadier (0) to Lieutenant-General (4)
 
-## <a id="references"></a>References
+## References <a id="References"></a>
 
-<a id="cite-note-1"></a>1. [↑](#cite-ref-1) <https://twitter.com/Martin_Anward/status/1039175213773144066>
+1. ↑ https://twitter.com/Martin_Anward/status/1039175213773144066
+
+---
+
+## Navigation
 
 **[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**
+
+- **Documentation**: [Effects](<Effects - Hearts of Iron 4 Wiki.md>) • [Triggers](<Triggers - Hearts of Iron 4 Wiki.md>) • [Defines](<Defines - Hearts of Iron 4 Wiki.md>) • [Modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) • [List of modifiers](<List of modifiers - Hearts of Iron 4 Wiki.md>) • [Scopes](<Scopes - Hearts of Iron 4 Wiki.md>) • [On actions](<On actions - Hearts of Iron 4 Wiki.md>) • [Data structures](<Data structures - Hearts of Iron 4 Wiki.md>) • [Flags](<Data structures - Hearts of Iron 4 Wiki.md#Flags>) • [Event targets](<Data structures - Hearts of Iron 4 Wiki.md#Event_targets>) • [Country tag aliases](<Data structures - Hearts of Iron 4 Wiki.md#Country_tag_aliases>) • [Variables](<Data structures - Hearts of Iron 4 Wiki.md#Variables>) • [Arrays](<Data structures - Hearts of Iron 4 Wiki.md#Arrays>)
+- **Scripting**: [Achievements](<Achievement modding - Hearts of Iron 4 Wiki.md>) • [AI](<AI modding - Hearts of Iron 4 Wiki.md>) • [AI focuses](<AI focuses - Hearts of Iron 4 Wiki.md>) • [Autonomous states](<Autonomy state modding - Hearts of Iron 4 Wiki.md>) • [Balances of power](<Balance of power modding - Hearts of Iron 4 Wiki.md>) • [Bookmarks/Scenarios](<Bookmark modding - Hearts of Iron 4 Wiki.md>) • [Game rules](<Bookmark modding - Hearts of Iron 4 Wiki.md#Game_rules>) • [Buildings](<Building modding - Hearts of Iron 4 Wiki.md>) • [Characters and traits](<Character modding - Hearts of Iron 4 Wiki.md>) • [Cosmetic tags](<Cosmetic tag modding - Hearts of Iron 4 Wiki.md>) • [Countries](<Country creation - Hearts of Iron 4 Wiki.md>) • [Divisions](<Division modding - Hearts of Iron 4 Wiki.md>) • [Decisions](<Decision modding - Hearts of Iron 4 Wiki.md>) • [Doctrines](<Doctrine modding - Hearts of Iron 4 Wiki.md>) • [Equipment](<Equipment modding - Hearts of Iron 4 Wiki.md>) • [Events](<Event modding - Hearts of Iron 4 Wiki.md>) • [Factions](<Faction modding - Hearts of Iron 4 Wiki.md>) • [Ideas](<Idea modding - Hearts of Iron 4 Wiki.md>) • [Ideologies](<Ideology modding - Hearts of Iron 4 Wiki.md>) • [Military industrial organizations](<Military industrial organization modding - Hearts of Iron 4 Wiki.md>) • [National focuses](<National focus modding - Hearts of Iron 4 Wiki.md>) • [Resources](<Resources modding - Hearts of Iron 4 Wiki.md>) • [Scripted GUI](<Scripted GUI modding - Hearts of Iron 4 Wiki.md>) • [Technologies and doctrines](<Technology modding - Hearts of Iron 4 Wiki.md>) • [Units](<Unit modding - Hearts of Iron 4 Wiki.md>)
+- **Map**: [Map](<Map modding - Hearts of Iron 4 Wiki.md>) • [States](<State modding - Hearts of Iron 4 Wiki.md>) • [Supply areas](<Supply areas modding - Hearts of Iron 4 Wiki.md>) • [Strategic regions](<Strategic region modding - Hearts of Iron 4 Wiki.md>)
+- **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
+- **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
+- **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)
