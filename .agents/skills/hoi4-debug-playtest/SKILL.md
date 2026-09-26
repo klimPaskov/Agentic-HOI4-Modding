@@ -247,6 +247,8 @@ Use separate saves when testing:
 - decisions that consume unique resources
 - scripted GUI state that cannot be reset safely
 
+Before the run, confirm with the user that the game writes plain-text saves (`save_as_binary=no` in the HOI4 `settings.txt`); do not edit that file yourself. Plain-text checkpoint saves let `hoi4-save-inspection` read the real runtime state. Name them after the test step, such as `qa_<run_id>_020_event_pre` and `..._post`, and record which inspector commands produced each piece of evidence.
+
 ## 11. Generic HOI4 test matrix
 
 Select only the surfaces in scope, but do not ignore an adjacent surface that the feature visibly depends on.
@@ -267,6 +269,7 @@ Select only the surfaces in scope, but do not ignore an adjacent surface that th
 - title, description, options, images, sounds, and tooltips appear
 - no raw localisation keys appear
 - each option produces the visible result it describes
+- a save diff taken immediately before and after each option shows its state changes once and nothing unrelated
 - follow-up events occur once and in the intended order
 - hidden effects do not duplicate visible option effects
 - event targets and actors remain correct across follow-ups
@@ -324,12 +327,14 @@ Select only the surfaces in scope, but do not ignore an adjacent surface that th
 - AI uses actions only when valid
 - cleanup occurs after war, annexation, route change, target death, or feature completion
 - no obvious performance stall, runaway loop, or uncontrolled decision spam appears
+- `footprint` on the start and end saves of a time pass shows no script state growing without cleanup, and AI outcome tallies from the end save match the intended behaviour
 
 ### Save and reload
 
 - the dedicated test save loads
 - important variables, flags, event targets, missions, GUI state, and country identity persist correctly
 - temporary state that should be cleared does not return after reload
+- the console `savecheck` command's `Test_01` and `Test_02` saves show no mod-owned differences in a save diff
 
 ## 12. Visual defect triage
 
@@ -359,7 +364,7 @@ When a live defect is confirmed:
 5. Run targeted static checks.
 6. Relaunch through the same debug target.
 7. Return to the same test setup or a clean equivalent setup.
-8. Reproduce the original sequence.
+8. Reproduce the original sequence, and confirm persistent state with a before-and-after save diff when the fix changed it.
 9. Capture the corrected state.
 10. Check the fresh log delta.
 11. Run one nearby regression test that could have been affected.
