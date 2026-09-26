@@ -323,6 +323,7 @@ Markdown prose must not be hard-wrapped in the middle of a sentence. Keep each s
 11. Do not use unary `-` on variable tokens (e.g. `value = -my_var`), negate via `multiply_*_variable` first.
 12. If an effect or trigger does not accept dynamic values, use `meta_effect` or `meta_trigger` with `text = { ... }` to inject computed variables/localisation into otherwise static fields.
     - meta effects can be used in all sorts of creative ways, for example: `my_scripted_effect_[ID] = yes`, so you can even choose a scripted effect dynamically. Meta effects are very powerful and useful, use them often.
+    - When only one part of a flag or variable name is dynamic, prefer targeting over a meta effect: `set_country_flag = my_flag_@PREV` appends that country's tag (only `@ROOT`, `@PREV`, `@FROM`, and `@THIS`, one per name), and `my_var_@var:id` or `my_var_@PREV` keys a variable by a stored value or scope. The wiki's Data structures page describes targeting as faster and more readable than meta-effect token pasting.
 13. Prefer reusable dynamic scripted effects/triggers for complex/dynamic logic.
     - First check existing dynamic effects (in `common/scripted_effects/[MOD_PREFIX]_dynamic_effects.txt`) and use them instead of duplicating logic.
     - If no existing effect fits, create a new dynamic effect and document it in the matching markdown file `docs/[MOD_PREFIX]_dynamic_effects.md` in the same change.
@@ -332,6 +333,7 @@ Markdown prose must not be hard-wrapped in the middle of a sentence. Keep each s
     - Read manpower through `manpower_k`, `max_manpower_k`, or `max_available_manpower_k` (values in thousands), or through `has_manpower`. The plain `manpower`, `max_manpower`, and `max_available_manpower` dynamic variables are deprecated and overflow at about 2.1 million.
     - `collection_size` comparisons are inclusive, so `value > 3` means at least 3.
     - `scope_exists` is always true on a variable scope. Validate a stored target with an object-specific check such as `exists = yes` or `country_exists` instead.
+    - `while_loop_effect` and `for_loop_effect` stop after 1,000 iterations (`MAX_EFFECT_ITERATION` in vanilla defines), so a loop over a larger set, such as every state, needs a scope iterator or bounded batches.
 
 ### Meta effect example
 
