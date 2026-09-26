@@ -222,6 +222,8 @@ Rules:
 - keep the GIF preview separate from the final sheet
 - convert the sheet PNG to the final sheet DDS
 
+No texture side may exceed 16384 pixels, the DirectX 11 texture limit. When `frame_width * noOfFrames` would exceed it, first reduce the frame count or frame size. If neither is acceptable, split every frame into the same vertical strips of width `S`, where `S` divides the frame width and `S * noOfFrames` is at most 16384. Register one `frameAnimatedSpriteType` per strip with identical `noOfFrames`, `animation_rate_fps`, `looping`, `play_on_show`, and `pause_on_loop`, and show one GUI child per strip at contiguous x positions with no gaps or overlap. When a child uses `Orientation = center` and `Origo = center`, its position is the strip centre, so strip `i` of a frame `W` pixels wide sits at `x = -W/2 + S/2 + i * S`.
+
 A sheet path should describe that it is a sheet:
 
 ```text

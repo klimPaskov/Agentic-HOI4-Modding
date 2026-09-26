@@ -263,6 +263,10 @@ Markdown prose must not be hard-wrapped in the middle of a sentence. Keep each s
     - If no existing effect fits, create a new dynamic effect and document it in the matching markdown file `docs/[MOD_PREFIX]_dynamic_effects.md` in the same change.
     - Keep effect docs explicit: purpose, scope, inputs/outputs, defaults, side effects, and a usage example.
 14. If MTTH (mean time to happen) variables are required to reduce AI/script clutter, use `hoi4-mtth` before implementing and route probability validation through `hoi4_ai_probability_auditor`.
+15. Some engine values and triggers fail silently.
+    - Read manpower through `manpower_k`, `max_manpower_k`, or `max_available_manpower_k` (values in thousands), or through `has_manpower`. The plain `manpower`, `max_manpower`, and `max_available_manpower` dynamic variables are deprecated and overflow at about 2.1 million.
+    - `collection_size` comparisons are inclusive, so `value > 3` means at least 3.
+    - `scope_exists` is always true on a variable scope. Validate a stored target with an object-specific check such as `exists = yes` or `country_exists` instead.
 
 ### Meta effect example
 
@@ -350,6 +354,7 @@ Localisation and UI must always be kept in sync with gameplay changes.
    - Use placeholder sprites only when the user has approved a pending placeholder or an owning skill explicitly requires a sourced placeholder. Keep the final filename stable and report the asset as pending until its approved replacement is installed.
    - Register new UI assets before requesting art so filenames do not need to change later.
    - Static or animated decision-category pictures are eligible only for simple categories containing a description, ordinary decisions, and at most basic formatted value tables. Do not add them alongside complex UI, meters, extra custom controls, rich interactive panels, or other animations. Ordinary decision-list buttons and basic tables remain allowed; an animated picture is a simple-category alternative, needs a static fallback, and must not accompany existing animated GUI. Follow `hoi4-decisions-missions` for the complete eligibility and presentation contract.
+7. A flag trigger such as `has_country_flag` inside a player-visible requirement block (`available`, `allow`, `bypass`, and similar) uses the flag name as its tooltip localisation key, so an unlocalised flag shows its raw identifier to the player. Give a player-meaningful flag a localisation key, or wrap implementation-only checks in `hidden_trigger` and state the real requirement with `custom_trigger_tooltip`.
 
 ## 3. Naming and Prefix Rules
 

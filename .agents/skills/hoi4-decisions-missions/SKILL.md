@@ -252,6 +252,10 @@ If the list is dynamic, scripted localisation must print the current targets or 
 
 Every named region should have a tooltip or documentation entry explaining which states belong to it.
 
+### Trigger evaluation cost
+
+The installed vanilla `common/decisions/_documentation.md` defines how often each block runs. `allowed` runs once at game start or save load, so permanent filters such as `original_tag` belong there. `visible` and `available` run every frame while the decision interface refreshes, so keep them cheap and move expensive or world-scanning checks elsewhere. For targeted decisions, put acting-country prechecks in `target_root_trigger` and per-target selection in `target_trigger`, which run once per day, and narrow the candidates with `targets`, `target_array` (vanilla `AST.txt` uses `target_array = AST.core_states`), or a `state_trigger` value such as `any_owned_state` instead of checking every state or country.
+
 ## 8. Mission quality
 
 Do not create passive checklist missions that the player already satisfies.
