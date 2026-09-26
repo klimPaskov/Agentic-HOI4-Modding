@@ -12,7 +12,7 @@ max_depth = 2
 command = "hoi4-agent-tools.cmd"
 cwd = "."
 startup_timeout_sec = 120
-tool_timeout_sec = 180
+tool_timeout_sec = 600
 default_tools_approval_mode = "auto"
 
 [mcp_servers.comfy_cloud_portraits]

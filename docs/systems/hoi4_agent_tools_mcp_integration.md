@@ -7,6 +7,10 @@ The mod source remains authoritative for implementation, while accepted specific
 MCP output is supporting evidence and never replaces source review, the offline wiki, vanilla documentation, tests, owning skills, specialist audits, or parent review.
 
 This document describes an integration contract rather than a live server run, so every user must confirm the installed package version and advertised routes before relying on a capability.
+
+The supplied Codex registration allows 120 seconds for startup and 600 seconds per tool call.
+Keep source selectors and GUI scenario matrices bounded; complex source renders can take several minutes.
+Use negotiated task support only after confirming it in the connected client and server.
 Tool exposure does not prove service health or the availability of a standalone viewer application. Verify standalone Technology Tree Viewer availability separately when needed, record a missing viewer as a package gap, and do not confuse it with the required read-only technology MCP routes.
 
 ## Evidence contract
@@ -14,6 +18,7 @@ Tool exposure does not prove service health or the availability of a standalone 
 Use the narrowest selector supported by the matching route, such as one focus tree, event chain, technology or doctrine surface, weighted pool, scripted GUI, state, province, or map relation.
 
 Capture a stable `hoi4-agent://` artifact URI for every material inspect, render, comparison, diagnostic, proposal, and recovery result.
+Use the actual MCP registration key when reading a resource, rather than assuming it matches the npm package name. The supplied configuration uses `hoi4_agent_tools`. Follow byte-range continuation metadata until the resource is complete.
 
 Record the MCP revision returned with the artifact or source snapshot, and record it as unavailable when the route does not provide one rather than inventing a revision.
 
@@ -33,6 +38,7 @@ Tool availability is version-dependent, so confirm each name from the installed 
 
 | Surface | Read-only MCP evidence | Write route | Required evidence sequence | Limits |
 | --- | --- | --- | --- | --- |
+| Local references | `hoi4.reference_context`, `hoi4.reference_search`, `hoi4.reference_read`, `hoi4.source_lookup` | None | Select the work surface, search exact rules, read the pertinent cited sections, and inspect exact vanilla/mod definitions. | A citation bundle identifies sources; it does not prove that their detailed rules were read. Missing or skipped sources require a targeted local read or a recorded gap. |
 | National focus trees | `hoi4.focus_inspect`, `hoi4.focus_render` | `hoi4.focus_rewrite` when advertised | Inspect and render the exact tree before editing, review any proposal, then inspect and render again after source changes and retain paired evidence. | Layout and diagnostics are evidence, not a completion claim; complex focus weights also require the probability contract. |
 | Event chains | `hoi4.event_inspect`, `hoi4.event_render`, `hoi4.event_compare` | None in the installed package | Run a narrow inspect and render before editing, then rerun them after editing and compare the same selector or revision when available. | Analysis is bounded and static, so dynamic destinations and runtime behavior can remain unresolved. |
 | Technology and doctrine trees | `hoi4.tech_inspect`, `hoi4.tech_render`, `hoi4.tech_compare` | None; these routes are read-only | Inspect the selected tree, render a reviewable layout, and compare related trees or variants. | Keep source review and MCP evidence together; a missing required route is a blocker rather than permission to invent viewer evidence. |
@@ -48,11 +54,15 @@ If a route is absent, record the exact tool, selector, package version, and erro
 2. Run the matching narrow read-only inspect route and retain diagnostics, linked files, revision, and artifact URI.
 3. Run the matching deterministic render route when the surface has a visual or layout representation, and retain the fidelity or limitation report.
 4. For weighted logic, complete the probability scenario contract before evaluating any ranking, timing, or selection result.
-5. Review source, offline wiki pages, vanilla documentation, tests, and the owning skill in parallel with MCP evidence.
+5. Review source, pertinent cited offline wiki and installed-documentation sections, tests, and the owning skill in parallel with MCP evidence.
 6. Make the source change through the normal authorized workflow or through the bounded rewrite lifecycle below.
 7. Rerun the same inspect and render queries after the change, then use the matching compare route where the package provides one.
 8. Preserve pre-change and post-change URIs, revisions, scenario hashes, diagnostics, and unresolved limitations in the handoff or review record.
 9. Do not claim a surface is complete when the required route was unavailable, the post-change evidence is missing, or a required scenario remains unresolved.
+
+## Local documentation and source discovery
+
+Use `hoi4.reference_context` for the current work surface, `hoi4.reference_search` for a command or behavior, and `hoi4.reference_read` for the exact cited section. Preserve its path, line span, and revision. Follow the returned continuation only when more of that section is needed. `hoi4.source_lookup` provides exact definitions, override status, and indexed usages through the same configured workspace. Installed game documentation is the primary syntax reference, and the offline wiki supplies broader guidance; do not fetch the wiki website. Whole-page reading is unnecessary when the cited sections cover the task. If a route or local source is unavailable, read the pertinent local file directly and record the exact gap. Domain-specific inspect, render, compare, and scenario evidence remains required.
 
 ## Probability scenario contract
 

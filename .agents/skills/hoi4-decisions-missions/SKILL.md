@@ -16,20 +16,14 @@ For large or reworked decision systems, spawn `hoi4_decision_mission_auditor` af
 Before editing decisions or missions, read:
 
 - `AGENTS.md`
-- relevant offline Paradox wiki pages from `paradox_wiki/`
-  - Decision modding
-  - Triggers
-  - Effects
-  - Localisation
-  - Modifiers
-  - Scopes
-  - Data structures
+- relevant cited sections found through the live schemas of `hoi4.reference_context`, `hoi4.reference_search`, and `hoi4.reference_read`: Decision modding and whichever trigger, effect, localisation, modifier, scope, or data-structure rule the task uses. Keep paths, lines, and revisions. Use `hoi4.source_lookup` for exact definitions and usages. If a route is unavailable, read the pertinent local sections directly and record the exact gap.
 - vanilla decision files from `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/`
 - vanilla documentation in `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`
 - existing repository decision categories and scripted effects that do similar work
 - `.agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/README.md` and its category-attachment audit when exact state control is the formation proof
 
 Do not rely on memory when syntax or UI behavior is documented.
+Installed vanilla documentation remains the primary syntax authority; inspect an exact vanilla precedent. Reference retrieval does not replace decision scenarios, weighted-logic comparisons, or required UI evidence.
 
 ## 2. Core design rule
 
