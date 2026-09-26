@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "107fb655e9d1ee7df160b38d39526436c96c3d24",
+  "generated_for_revision": "4d5f48eac13757c52c2ddbf4130557536381544e",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "6eb2443de8d97d0b34371338110700cef9fcb61e36e256851abd8d230aba508e",
-          "size": 57835
+          "sha256": "ef5b5639286d1ccd404bfb428608354d10c6c278bbeac9496fc9ee931b2d1443",
+          "size": 58458
         }
       ]
     },
@@ -110,8 +110,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "d9ea22fe32f2e60fccc3793cb7049cff85b406b9dbe570378ef087a4856265df",
-          "size": 63854
+          "sha256": "32767baa73d34874834c7b2978add302774db5c25188deace575ebb223c3d0cc",
+          "size": 64477
         }
       ]
     },
@@ -1677,8 +1677,8 @@
         },
         {
           "path": ".agents/skills/hoi4-decisions-missions/SKILL.md",
-          "sha256": "516c8cb0a02e24c34a85e1dfebb299b314c5da2186efcbdf176aec33f5b231fd",
-          "size": 65106
+          "sha256": "adfd018a2fc082a3aae934df4da4c6957f58fc94ecbafb57fed3e1a26ef3ffa3",
+          "size": 65599
         },
         {
           "path": ".agents/skills/hoi4-decisions-missions/templates/formable_state_puzzle/README.md",
@@ -4347,8 +4347,8 @@
         },
         {
           "path": ".agents/skills/hoi4-focus-trees/SKILL.md",
-          "sha256": "1b96e1de3d3f57b87ec5ca0993490a8ed6f5157a293c9ca941ccd67711d09716",
-          "size": 81402
+          "sha256": "6c5a073418162946efee6f34f75829d97299fd13b0cb281ef86e3483494e58f0",
+          "size": 81778
         },
         {
           "path": ".agents/skills/hoi4-frame-animation/SKILL.md",
@@ -4382,8 +4382,8 @@
         },
         {
           "path": ".agents/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "db7fff9144e7254e625c92ea1cc94296dd1f6c19ecf3226e75d01ac72f40368e",
-          "size": 14318
+          "sha256": "55705a779da6bab67c3631d56f994e785a0c06e426f2ed896c148a9f1c748e17",
+          "size": 14819
         },
         {
           "path": ".agents/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -4624,7 +4624,7 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "8994b166fc1c25afa8f2ffb2b2a7e9c639a8a6e0ba054557c43133188efd571f",
+          "sha256": "62c463192bbd97db521a5ae4b6dd0f3b1e3106d4befc0a7e2f675f01db4af35b",
           "size": 9170
         }
       ]
@@ -4684,7 +4684,7 @@
             "arguments": [
               "--quiet"
             ],
-            "network_access": "Required to install current-user Node.js LTS when missing and resolve the exact hoi4-agent-tools@3.0.7 package from https://registry.npmjs.org.",
+            "network_access": "Required to install current-user Node.js LTS when missing and resolve the exact hoi4-agent-tools@3.5.0 package from https://registry.npmjs.org.",
             "expected_writes": [
               "the current user's winget-managed Node.js LTS installation when Node is missing",
               "the current user's AppData/Roaming/npm package prefix",
@@ -4708,7 +4708,7 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "b69b06fd523701e8de1d1ffd8442db70d8c56d583c2177b48538ecf446007529",
+          "sha256": "439c59b76b6af2f43a32a4da5fd782587978b3cab53b568b2ea8df4a7164540c",
           "size": 9671
         }
       ]
@@ -4752,7 +4752,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "3.0.7",
+          "version": "3.5.0",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -4771,11 +4771,11 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "3.0.7",
-            "package_integrity": "sha512-xjc7gbo/584YCycx1eSYwIMtJasTgtuE0CskV7FC9iE9LLNmkduQ2JV37DmSILWLYUFUQhfrp5u77cFjAs3Jcg==",
+            "package_version": "3.5.0",
+            "package_integrity": "sha512-D0vulvsTJWFeTkBOLC8Rdk/LORCoMkssqIzuLuEUGbM8Jss1gJmL9CMMqPWmEgIFPlmr0yGn1vIQaikHms8vdw==",
             "runtime_entry": "dist/bin/stdio.js",
-            "runtime_entry_sha256": "7ddc78a8c518957dea6e737663c2be5e8852795d6662fc607166f15f4fb719a8",
-            "runtime_entry_size": 1916,
+            "runtime_entry_sha256": "08c66fbe4c5c41d5a3abee960b300589d545b38a9c4f715ea5fe9b10e9c21515",
+            "runtime_entry_size": 2194,
             "required_tools": [
               "hoi4.focus_inspect",
               "hoi4.focus_render",
@@ -4787,9 +4787,18 @@
               "hoi4.map_inspect",
               "hoi4.map_render",
               "hoi4.map_rewrite",
+              "hoi4.reference_search",
+              "hoi4.reference_read",
+              "hoi4.reference_context",
+              "hoi4.source_lookup",
               "hoi4.event_inspect",
               "hoi4.event_render",
               "hoi4.event_compare",
+              "hoi4.impact_inspect",
+              "hoi4.decision_inspect",
+              "hoi4.mechanic_test",
+              "hoi4.package_check",
+              "hoi4.scenario_test",
               "hoi4.tech_inspect",
               "hoi4.tech_render",
               "hoi4.tech_compare",
@@ -4799,14 +4808,16 @@
               "hoi4.probability_simulate",
               "hoi4.probability_sequence",
               "hoi4.probability_compare",
-              "hoi4.probability_render"
+              "hoi4.probability_render",
+              "hoi4.job_inspect",
+              "hoi4.job_cancel"
             ],
             "network_access": "None. This read-only health action runs the already installed exact package.",
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "91893b13d6650e54704325a8ddf978127015afafd0e495e85d9bbcc585e5ebdf",
-            "package_file_count": 4848
+            "package_tree_sha256": "c504134c86bbc33963760dc9c190c24e0336d723e521a57afa81459546919091",
+            "package_file_count": 5097
           }
         }
       ],
@@ -4823,10 +4834,14 @@
         "technology and doctrine inspection via hoi4.tech_inspect",
         "technology and doctrine rendering via hoi4.tech_render",
         "technology and doctrine comparison via hoi4.tech_compare",
-        "probability analysis"
+        "probability analysis",
+        "bounded local wiki and installed-documentation retrieval",
+        "exact source definitions and indexed usages",
+        "cross-system impact and scenario analysis",
+        "durable background jobs"
       ],
       "notes": [
-        "The exact public package is installed automatically on Windows and all advertised tools, including the Technology Tree Viewer routes, must appear in tools/list.",
+        "The exact public package is installed automatically on Windows and all required tools must appear in tools/list. Technology tool exposure does not establish standalone viewer availability.",
         "The inspected source declares a Windows command and no verified macOS route."
       ],
       "expected_files": []
@@ -4877,8 +4892,8 @@
       "expected_files": [
         {
           "path": "docs/systems/hoi4_agent_tools_mcp_integration.md",
-          "sha256": "0bba3efed49f782bf16466baaf05afda8eea06a64419fb11da7b6d2ae9e818f4",
-          "size": 15859
+          "sha256": "dd7c8f79ba65d7933d426e307156c82302e77a746d2e901df6c3ce117de0a6f3",
+          "size": 17692
         }
       ]
     },
