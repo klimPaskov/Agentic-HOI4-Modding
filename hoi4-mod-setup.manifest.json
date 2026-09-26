@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "2ca14edb4fc79d6b64985b1cf79772f5be5399bc",
+  "generated_for_revision": "107fb655e9d1ee7df160b38d39526436c96c3d24",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -56,8 +56,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "a2c5f31b18760d902422e137424f97c0352888fbc0a354665beb1856f28216ac",
-          "size": 57420
+          "sha256": "6eb2443de8d97d0b34371338110700cef9fcb61e36e256851abd8d230aba508e",
+          "size": 57835
         }
       ]
     },
@@ -110,8 +110,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "a8370d37036f17d4ccba4b4cd9aabcd7a647023a8b7f98df0aa673fd11025c7e",
-          "size": 63439
+          "sha256": "d9ea22fe32f2e60fccc3793cb7049cff85b406b9dbe570378ef087a4856265df",
+          "size": 63854
         }
       ]
     },
@@ -1672,8 +1672,8 @@
         },
         {
           "path": ".agents/skills/hoi4-debug-playtest/SKILL.md",
-          "sha256": "27b3314f5409cdefac6478d2fe38438ae491ce535fc35eb4c6014cfbe833b4d4",
-          "size": 23118
+          "sha256": "6b131f95984d7640c4582cff38a481b8ad201b23da932c5c8258901140745be4",
+          "size": 23997
         },
         {
           "path": ".agents/skills/hoi4-decisions-missions/SKILL.md",
@@ -4371,6 +4371,16 @@
           "size": 3429
         },
         {
+          "path": ".agents/skills/hoi4-save-inspection/SKILL.md",
+          "sha256": "32c92071a389275d3bb56e199186cc98843495d4be40b96cde9aefa80ffc7738",
+          "size": 8162
+        },
+        {
+          "path": ".agents/skills/hoi4-save-inspection/scripts/save_inspect.py",
+          "sha256": "caa4d520cbf1fec0e04ae4f16ed2d83a511589dbe07f37012ffd8730adc60156",
+          "size": 12721
+        },
+        {
           "path": ".agents/skills/hoi4-scripted-gui/SKILL.md",
           "sha256": "db7fff9144e7254e625c92ea1cc94296dd1f6c19ecf3226e75d01ac72f40368e",
           "size": 14318
@@ -4382,8 +4392,8 @@
         },
         {
           "path": ".agents/skills/hoi4-subagents/SKILL.md",
-          "sha256": "68e202266abedb91108fd8c4f85660a549d8262d067b46086374862df340d818",
-          "size": 36771
+          "sha256": "53b07b65d5d555d498a16a4d6826e48c6230d97f32f6e33c1ce23e8c36d70621",
+          "size": 36990
         },
         {
           "path": ".agents/skills/hoi4-text-audio-research/SKILL.md",
