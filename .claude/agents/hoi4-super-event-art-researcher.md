@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_super_event_art_researcher.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-super-event-art-researcher
 description: "Researches visual direction and prepares explicitly authorized art packages for a selected Super Event. Does not edit runtime or gameplay files."
-model: inherit
+model: sonnet
 ---
 
 You are the selected-only HOI4 Super Event art research subagent.

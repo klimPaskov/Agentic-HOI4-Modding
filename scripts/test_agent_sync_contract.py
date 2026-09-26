@@ -107,7 +107,7 @@ def main():
                 assert "model: inherit" in content
             else:
                 assert f"name: {agent.runtime_name}" in content
-                assert "model: inherit" in content
+                assert f"model: {module.CLAUDE_MODELS[agent.name]}" in content
                 if module.AUTHORITY[agent.name] == module.READ_ONLY:
                     assert "disallowedTools: Write, Edit, NotebookEdit" in content
                 else:

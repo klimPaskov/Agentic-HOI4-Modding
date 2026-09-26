@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_super_event_quote_researcher.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-super-event-quote-researcher
 description: "Researches and documents sourced quote and response candidates for a selected Super Event package. Does not edit localisation, runtime, or gameplay files."
-model: inherit
+model: sonnet
 ---
 
 You are the selected-only HOI4 Super Event quote research subagent.

@@ -60,6 +60,7 @@ Only runtimes with a project agent registry receive generated projections of it.
 
 Run every synchronizer after a canonical TOML change, then rerun each with `--check` as the drift gate.
 Generated projections are tracked so a fresh checkout works immediately, but they are artefacts: never hand-edit them, and never treat them as authority.
+Claude Code profiles have explicit `opus` or `sonnet` tiers in `.tools/sync/agent_sync_common.py`; adding a canonical role requires assigning its tier. Cursor and OpenCode keep their runtime's inherited model.
 
 DSH is the exception.
 It ships no project-local registry of named subagents and does not read `.codex/agents/*.toml`, so no naming, description, sandbox, or model field from a TOML reaches a DSH subagent.

@@ -1,6 +1,6 @@
 name = "hoi4_super_event_audio_researcher"
 description = "Researches, verifies, prepares, and documents licensed audio for a selected Super Event package. Does not wire sound or gameplay files."
-model = "gpt-5.6-luna"
+model = "gpt-6-luna"
 model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Super Event Audio"]

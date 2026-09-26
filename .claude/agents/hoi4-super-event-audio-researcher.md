@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_super_event_audio_researcher.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-super-event-audio-researcher
 description: "Researches, verifies, prepares, and documents licensed audio for a selected Super Event package. Does not wire sound or gameplay files."
-model: inherit
+model: sonnet
 ---
 
 You are the selected-only HOI4 Super Event audio research subagent.

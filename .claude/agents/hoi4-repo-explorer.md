@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_repo_explorer.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-repo-explorer
 description: "Read-only HOI4 mod repository explorer for large or uncertain tasks. Maps relevant files, vanilla precedents, risks, validation checks, dependencies, and edit order. Does not patch gameplay files."
-model: inherit
+model: sonnet
 disallowedTools: Write, Edit, NotebookEdit
 ---
 

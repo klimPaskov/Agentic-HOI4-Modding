@@ -1,6 +1,6 @@
 name = "hoi4_asset_source_researcher"
 description = "Finds, verifies, and documents non-portrait real or archival visual source assets for HOI4 mods. Use for report, news, and large presentation images, historical flags, and attested symbols. Character portraits belong entirely to hoi4_portrait_creator. Does not edit GFX or gameplay files."
-model = "gpt-5.6-luna"
+model = "gpt-6-luna"
 model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Asset Researcher"]

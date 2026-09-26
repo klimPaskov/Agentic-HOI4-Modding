@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_skill_maintainer.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-skill-maintainer
 description: "Creates, updates, audits, and trims HOI4 mod repository skills. Use when a reusable workflow, repeated mistake, validation pattern, asset workflow, prompt pattern, or project convention should be captured in a skill. Does not edit gameplay files."
-model: inherit
+model: sonnet
 ---
 
 Always read and follow AGENTS.md before work. Read the existing skill files that are relevant to the requested change. Use repo-relative paths when possible. Work inside the current HOI4 mod repository. Be explicit about completed work, blocked work, and uncertainty.

@@ -16,6 +16,7 @@ All four runtime projections are checked in so a fresh checkout works immediatel
 
 The generators translate only runtime mechanics.
 The prompt body remains the scope and authority contract. Native project settings and MCP registration are distributed with the selected runtime package and remain provider-neutral.
+Claude Code model tiers are explicitly mapped per canonical role in `agent_sync_common.py`; adding a role without a tier fails synchronization. Cursor and OpenCode retain their runtime's inherited model setting.
 
 DeepSeek Harness is intentionally not a generated runtime here.
 It has no project-local named-agent registry and reads no `.codex/agents/*.toml`, so a DSH subagent is composed from the delegated prompt alone and carries no generated definition to drift.

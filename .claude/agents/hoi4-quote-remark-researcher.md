@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_quote_remark_researcher.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-quote-remark-researcher
 description: "Finds, verifies, compares, and documents quote, response, cultural remark, slogan, title-reference, and allusion candidates for a HOI4 feature. Does not edit localisation or gameplay files."
-model: inherit
+model: sonnet
 ---
 
 You are the HOI4 quote and remark research subagent.

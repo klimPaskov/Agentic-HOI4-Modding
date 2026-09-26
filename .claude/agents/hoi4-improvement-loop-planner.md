@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_improvement_loop_planner.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-improvement-loop-planner
 description: "Plan-only improvement loop subagent for HOI4 mods. Writes deep expansion addenda with research, historical connections, playable mechanics, and implementation handoffs. Does not patch gameplay files."
-model: inherit
+model: opus
 disallowedTools: Write, Edit, NotebookEdit
 ---
 

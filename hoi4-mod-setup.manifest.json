@@ -4968,55 +4968,6 @@
       ]
     },
     {
-      "id": "template.chaos_redux_agents",
-      "display_name": "Optional AGENTS project template",
-      "description": "Make the alternate source template available behind review.",
-      "category": "template",
-      "optional": true,
-      "platforms": [
-        "all"
-      ],
-      "source": {
-        "kind": "file",
-        "path": "AGENTS_chaos_redux.md"
-      },
-      "destination": {
-        "path": ".codex/templates/AGENTS_chaos_redux.md",
-        "ownership": "managed",
-        "outside_project": false
-      },
-      "dependencies": [
-        "core.agents"
-      ],
-      "conflicts": [
-        "existing alternate AGENTS template"
-      ],
-      "conflict_policy": "replace_if_unmodified",
-      "validation": [
-        {
-          "id": "template.exists",
-          "severity": "warn",
-          "kind": "exists",
-          "target": ".codex/templates/AGENTS_chaos_redux.md"
-        }
-      ],
-      "update": {
-        "strategy": "replace_if_unmodified",
-        "remove_obsolete": true,
-        "preserve_local_additions": true
-      },
-      "capabilities": [
-        "reviewed project adaptation template"
-      ],
-      "expected_files": [
-        {
-          "path": "AGENTS_chaos_redux.md",
-          "sha256": "e3af9d5db47f53949742eada9d22126bb616a2c9db9515eec95f98255fc35431",
-          "size": 44699
-        }
-      ]
-    },
-    {
       "id": "wiki.snapshot",
       "display_name": "Offline Hearts of Iron IV Paradox wiki",
       "description": "Install the repository snapshot under paradox_wiki/.",

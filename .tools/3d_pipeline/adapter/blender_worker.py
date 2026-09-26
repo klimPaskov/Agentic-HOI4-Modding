@@ -1162,7 +1162,7 @@ def bind_texture_sources(job: Path, payload: Dict[str, Any]) -> List[Dict[str, A
                     node = material.node_tree.nodes.new("ShaderNodeTexImage")
                     node.name = f"HOI4_{role.upper()}_TEXTURE"
                 node.image = image
-                node.label = f"Chaos Redux {role} texture"
+                node.label = f"HOI4 {role} texture"
                 node_count += 1
                 if role == "diffuse":
                     target = shader.inputs.get("Base Color")

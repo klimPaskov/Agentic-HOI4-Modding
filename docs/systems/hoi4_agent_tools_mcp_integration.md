@@ -64,7 +64,7 @@ Use the probability routes only for a declared surface and scenario rather than 
 4. Declare prerequisites, availability and visibility gates, bypasses, target validity, external modifiers, state changes, cadence, cooldowns, removal or reset rules, terminal states, uncertain inputs, and seeds.
 5. Use `hoi4.probability_evaluate` for named scenarios and exact or bounded traces.
 6. Use `hoi4.probability_sweep` for thresholds, sensitivities, timing drift, starvation, dominance, and rank reversals.
-7. Use `hoi4.probability_compare` for baseline versus candidate or before versus after results with the same scenario identifiers and hashes.
+7. Before editing a weighted source, save an immutable pre-edit source copy and the exact scenario fixture; record their paths and SHA-256 hashes. Use `hoi4.probability_compare` with real `before.path` and `after.path` source paths and the identical `scenarioSet`. Keep revision and hash evidence outside those source objects.
 8. Use `hoi4.probability_simulate` only when explicitly declared uncertain inputs require sampling, and label the result sampled rather than exact.
 9. Use `hoi4.probability_sequence` only when a complete custom pool, cadence, state transition, and terminal-state contract is declared.
 10. Use `hoi4.probability_render` when a ranking, matrix, timing, sensitivity, sequence, comparison, or unresolved view improves review.
@@ -72,7 +72,7 @@ Use the probability routes only for a declared surface and scenario rather than 
 
 Never state an exact selection probability when the candidate pool or external factors are incomplete, and never describe a score race as a click probability without normalization evidence.
 
-Any patch to a weighted surface follows an audit-patch-compare cycle: establish the named baseline scenarios, let the owning implementation authority change source, and compare the same scenarios after the patch.
+Any patch to a weighted surface follows an audit-patch-compare cycle: establish named baseline scenarios, preserve the exact pre-edit source and fixture, let the owning implementation authority change source, and compare the same scenarios after the patch. A saved analysis URI cannot replace the pre-edit source. If that source is missing or a deleted candidate prevents a valid comparison, retain before and after inspect evidence and mark the numeric delta unresolved; never compare the current file to itself.
 
 ## Rewrite and recovery lifecycle
 

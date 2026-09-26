@@ -23,7 +23,7 @@ url = "https://cloud.comfy.org/mcp"
 # materializes concrete Meshy and Blender entries without user editing.
 
 [agents.hoi4_3d_model_pipeline]
-description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through Meshy 7 and the verified Blender/io_pdx_mesh stack. Firearm bodies and existing non-firearm repairs use direct bounded Blender modeling, rigging, weights, and substantive skeletal actions; other new animated models get one supported Meshy rig/action attempt before Blender recovery. Includes sourced custom-unit audio research and bespoke vanilla-green counter handoffs, but never final gameplay wiring or an in-game completion claim."
+description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through Meshy 7 and the verified Blender/io_pdx_mesh stack. Eligible biped bodies, including firearm rebuilds, get one supported provider rig/action attempt before Blender fitting or recovery; non-bipedal anatomy and existing non-firearm repairs use Blender directly. Includes sourced custom-unit audio research and bespoke vanilla-green counter handoffs, but never final gameplay wiring or an in-game completion claim."
 config_file = "agents/hoi4_3d_model_pipeline.toml"
 
 [agents.hoi4_ai_probability_auditor]

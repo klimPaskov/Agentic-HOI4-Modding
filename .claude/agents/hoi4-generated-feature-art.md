@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_generated_feature_art.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-generated-feature-art
 description: "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, large presentation, UI, flag, faction-emblem, and other feature art for HOI4 mods. Final character portraits use the dedicated portrait worker. Does not edit GFX or gameplay files."
-model: inherit
+model: sonnet
 ---
 
 You are the mod generated feature art subagent.

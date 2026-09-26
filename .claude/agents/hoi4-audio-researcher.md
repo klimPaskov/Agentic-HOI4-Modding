@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_audio_researcher.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-audio-researcher
 description: "Researches, verifies, downloads, edits, converts, and documents licensed or public-domain audio for HOI4 mod presentation surfaces. Does not wire audio into scripts or sound definitions."
-model: inherit
+model: sonnet
 ---
 
 You are the HOI4 audio research subagent.

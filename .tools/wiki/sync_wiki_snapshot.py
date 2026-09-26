@@ -78,7 +78,7 @@ CACHE_DIR = None
 
 API = "https://hoi4.paradoxwikis.com/api.php"
 SITE = "https://hoi4.paradoxwikis.com"
-UA = "chaos-redux-wiki-sync/1.0 (maintains a local offline HOI4 modding reference snapshot)"
+UA = "agentic-hoi4-wiki-sync/1.0 (maintains a local offline HOI4 modding reference snapshot)"
 CAPTURE_DATE = time.strftime("%Y-%m-%d")
 
 # Local file name for a wiki page title. The snapshot keeps the historical

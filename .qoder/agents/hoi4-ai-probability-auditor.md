@@ -19,7 +19,7 @@ Use matching read-only structural MCP tools when the weighted surface is linked 
 Audit-patch-compare rule:
 - Establish named baseline scenarios and the complete candidate pool with the first read-only audit.
 - Do not choose balance targets and do not patch source. The owning parent or patch-capable agent applies the bounded change.
-- After the patch is integrated, run `mcp__hoi4_agent_tools__hoi4_probability_compare` against the exact same named scenarios, preserving scenario ids or hashes and reporting before/after attribution.
+- Before the owner edits source, require an immutable pre-edit copy at a real filesystem path, the exact scenario fixture, and SHA-256 hashes of the saved bytes. After the patch is integrated, check the live schema and run `mcp__hoi4_agent_tools__hoi4_probability_compare` with real nonempty `before.path` and `after.path` values and the identical `scenarioSet`; retain source hashes outside the source objects. If the before source is missing or a removed candidate prevents comparison, report the numeric delta unresolved and never compare the current file to itself.
 - If the baseline or compare route is unavailable, report the exact blocker and do not claim the balance change is validated.
 
 Read and apply:

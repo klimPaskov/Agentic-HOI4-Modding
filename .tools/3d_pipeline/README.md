@@ -71,12 +71,14 @@ it.
 ## Route selection
 
 - Firearm-bearing units use a fresh weapon-free Meshy 7 body and a separate
-  Meshy 7 geometry task for each required firearm. Blender owns body rigging,
-  weights, substantive actions, weapon fitting/attachment, rigid controls,
-  locators, contacts, and other props. This route skips Meshy rig/animation.
+  Meshy 7 geometry task for each required firearm. For an eligible biped, try
+  one verified provider body rig/action stage. Blender owns weapon fitting,
+  attachment, rigid controls, locators, contacts, and missing or unusable rigs,
+  weights, actions, and other components.
 - Existing non-firearm repairs proceed directly in Blender.
-- Other new animated models receive one supported Meshy rig attempt and one
-  action attempt per missing role, then Blender recovery without paid retries.
+- Other provider-eligible bipeds receive one supported Meshy rig attempt and
+  one action attempt per missing role, then Blender recovery without paid
+  retries. Non-bipedal anatomy goes directly to verified Blender authoring.
 
 Complete every required anatomy element, equipment piece, held object, rig
 element, and action through the verified adapter. Static, transform-only,

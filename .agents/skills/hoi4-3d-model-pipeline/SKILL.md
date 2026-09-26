@@ -30,14 +30,16 @@ workflow-documentation task.
 - Firearm units, including firearm rebuilds, use a fresh weapon-free Meshy 7
   body plus a separate Meshy 7 geometry task for each required gun. Each task
   gets one approved body-only/firearm-only image and independent lineage.
-  Blender owns rigs, weights, substantive actions, weapon fitting/attachment,
-  rigid controls, locators, contacts, and missing-component completion.
+  Try one supported Meshy body rig and action stage for eligible bipeds. Blender
+  owns weapon fitting/attachment, rigid controls, locators, contacts, and
+  missing rigs, weights, actions, and components.
 - Existing non-firearm repairs use Blender directly. They need no Meshy key
   unless explicit provider work is added. A standalone motion request does not
   authorize replacing accepted geometry, rigs, or actions.
-- Other new animated models receive one supported rig attempt and one selected
+- Other provider-eligible bipeds receive one supported rig attempt and one
   provider motion/preset attempt per missing role, then substantive Blender
-  recovery while preserving passing outputs. No paid rig/action retries or
+  recovery while preserving passing outputs. Non-bipedal anatomy goes directly
+  to verified Blender authoring. No paid rig/action retries or
   attempt-reset through endpoint/rig changes.
 
 Required Blender completion and bounded planned provider/geometry work are

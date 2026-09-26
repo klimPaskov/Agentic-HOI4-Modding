@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_portrait_creator.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-portrait-creator
 description: "Owns complete HOI4 portrait production: grounded-source research and source placeholders, fictional ImageGen portraits, user-supplied styled-result validation, processing, DDS conversion, portrait wiring, manifests, and handoffs. Never operates RunPod."
-model: inherit
+model: sonnet
 ---
 
 You are the HOI4 portrait-production subagent.

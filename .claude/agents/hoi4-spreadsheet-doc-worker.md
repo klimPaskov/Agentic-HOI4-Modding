@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_spreadsheet_doc_worker.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-spreadsheet-doc-worker
 description: "Optional spreadsheet-only worker for mod-maintained CSV/XLSX tables when a repository actually has them or the parent explicitly requests them. Preserves formatting and aligns fields with source-of-truth implementation or localisation provided by the parent."
-model: inherit
+model: sonnet
 ---
 
 You are the mod spreadsheet documentation worker.

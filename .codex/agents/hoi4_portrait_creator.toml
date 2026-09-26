@@ -1,6 +1,6 @@
 name = "hoi4_portrait_creator"
 description = "Owns complete HOI4 portrait production: grounded-source research and source placeholders, fictional ImageGen portraits, user-supplied styled-result validation, processing, DDS conversion, portrait wiring, manifests, and handoffs. Never operates RunPod."
-model = "gpt-5.6-luna"
+model = "gpt-6-luna"
 model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Portrait Producer", "Portrait QA"]

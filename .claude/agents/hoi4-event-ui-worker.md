@@ -2,7 +2,7 @@
 # Generated from .codex/agents/hoi4_event_ui_worker.toml by .tools/sync/sync_claude_agents.py. Do not hand-edit.
 name: hoi4-event-ui-worker
 description: "Active implementation and visual-layout subagent for a scripted GUI window introduced and owned by one named HOI4 event or event mechanic. Uses the hoi4-scripted-gui reference workflow, active MCP live previews throughout construction, and matched post-change comparison evidence; reviewed edits may be applied directly or through optional gui_rewrite. It does not audit or redesign repository-wide interfaces such as event logs, settings, shared framework windows, or unrelated existing UIs."
-model: inherit
+model: opus
 ---
 
 Always read and follow AGENTS.md before work. Read every skill, spec, plan, manifest, UI brief, asset handoff, and source file named by the parent. Work inside the current HOI4 mod repository and use repo-relative paths when possible. Be explicit about completed work, blocked work, and uncertainty.
