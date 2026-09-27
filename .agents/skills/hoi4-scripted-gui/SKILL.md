@@ -43,6 +43,12 @@ A file's existence, placement in specs, date, or old status label does not estab
 
 Use the installed `hoi4_agent_tools` service and discover the live schema before use. Tool exposure alone does not establish service health. The portable GUI routes are `hoi4.gui_inspect`, `hoi4.gui_render`, and `hoi4.gui_rewrite`; runtime adapters may expose provider-specific callable names. Inspection and rendering are read-only source operations. Rewrite is an optional applying and validation route.
 
+Read `visibilityStatus` and `enablement` with their unresolved reasons; dashed amber regions are potential controls, not confirmed branch coverage.
+Explicit scenario overrides are declared assumptions, not observed campaign facts.
+Where the verified live schema supports `scenario.tooltip`, supply `{ target, x, y, width, padding }` for a unique visible control with a `pdx_tooltip` key, then inspect the source font/background, text fit and diagnostics.
+Supply engine-generated `[!...]` expansions only as exact known text keyed by the bracketed token in `scenario.values`; keep missing expansions unresolved.
+Native automatic positioning, frame composition, delayed timing and `click_to_front` need separate evidence.
+
 Use `gui_render` as the live preview of current source after each meaningful layout, asset, text, or state-wiring change, including intermediate construction stages. Inspect the returned full-window image and affected detail or state views before proceeding to the next layout tranche; a tool success message or artifact path is not an image review. Fix visible defects in the current tranche and rerender the affected scenarios before building further on that layout. For a new window with no renderable baseline, record that absence and render as soon as the first native container is renderable, then continue the same preview loop. Keep intermediate source and scenario identities and findings in the owning task's evidence so the final handoff demonstrates iterative review as well as the final comparison.
 
 1. Inspect the exact linked window before editing. Supply the window name with a valid explicit scenario for narrow inspection, and record source identity, hierarchy, parent or context, GFX, fonts, localisation, state logic, and click regions.
