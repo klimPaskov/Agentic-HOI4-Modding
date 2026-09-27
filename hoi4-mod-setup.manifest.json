@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "d0915d79434e3c884cf1c9fed2910688a3d61ac6",
+  "generated_for_revision": "82cdec4aa8aac2c04150ef957b833d1ec20d5805",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -4382,8 +4382,8 @@
         },
         {
           "path": ".agents/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "a911876a3eea1d6564e4a373d4d49f8f43ad7df4a4c291916f2c372e56e8605b",
-          "size": 14971
+          "sha256": "0c91362438dadd2302175d903bd7c0008d019b0ce9c57506977e2272dbbc5a94",
+          "size": 15692
         },
         {
           "path": ".agents/skills/hoi4-scripted-gui/references/visual-review.md",
