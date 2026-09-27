@@ -213,6 +213,8 @@ Then put the full requirement list in a tooltip. Missing requirements should be 
 
 Custom-cost display is not sufficient evidence that a decision is selectable. Define one shared, inclusive affordability predicate and invoke it from both `available` and `custom_cost_trigger`; manually debit the custom payment once in `complete_effect`, and set the fixed `ai_hint_pp_cost` amount when political power is included. If the cost row already fully explains payment, the duplicate `available` check may use `hidden_trigger` to keep raw requirements out of the visible block. Keep display, affordability gate, and debit aligned, and document engine uncertainty instead of inferring behavior.
 
+For fractional dynamic costs, show enough decimal places in every cost row and tooltip to communicate the actual debit. Keep display caches separate from fresh affordability and payment calculations so a rounded or stale quote cannot govern selection or payment.
+
 ## 7. Trigger and requirement clarity
 
 Long triggers should not be exposed raw to the player.

@@ -36,6 +36,13 @@ and verifies io_pdx_mesh 0.91, enables the matching Blender MCP add-on, probes
 the loopback bridge, materializes the bounded Blender adapter config, and
 writes observed evidence to `config/dependencies.lock.json`.
 
+For Blender 5.2, the bootstrap derives a deterministic io_pdx_mesh compatibility
+archive from the checksum-locked upstream 0.91 bytes. The derived archive fixes
+the removed Python `imp` imports, guards the removed `Material.shadow_method`,
+and uses `bpy.context.temp_override` for object joining. The bootstrap verifies
+the derived archive digest and each installed patched file; it preserves the
+upstream archive unchanged. Meshy remains on the verified app-owned 0.4.0 route.
+
 Meshy credentials may flow only through the external app-owned launcher with
 the single argument `--run-verified-meshy-mcp`. Project Python, project
 wrappers, PATH Python, direct REST calls, and mutable `npx` routes are not

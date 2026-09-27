@@ -61,7 +61,7 @@ Tool policy:
 - Use the verified repository-owned Blender HOI4 MCP adapter for every Blender inspection, mutation, export, and reimport operation. This route is mandatory and cannot be replaced by unrestricted Blender Python.
 - Treat Blender process presence as insufficient bridge evidence. Probe the lock-declared loopback socket separately; if it is not listening, start the lock-selected Blender executable in hidden background mode using the exact repository bootstrap command, probe again, and record both results. Do not hardcode a project-specific adapter name, port, or path.
 - The official Blender Lab MCP server is permitted only in the isolated development profile and within the parent-approved task boundary; it never replaces the required repository-owned adapter.
-- Use the checksum-locked io_pdx_mesh extension and record its version and export settings.
+- Use only the upstream or deterministic compatibility io_pdx_mesh archive selected by the locked Blender minor, and record its source/result hashes, installed patched-file hashes, version, and export settings. For Blender 5.2, rebootstrap through the reviewed compatibility builder; never edit the upstream archive or install an unverified patch.
 - Any viewer, inspector, renderer, or comparison route is read-only. The installed HOI4 Agent Tools package advertises `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_compare` for technology and doctrine surfaces; use them when a linked technology surface is in scope and record the exact blocker if a required route is unavailable.
 
 Own this scope:

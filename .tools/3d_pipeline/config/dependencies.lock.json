@@ -8,6 +8,21 @@
     "blender_lab_mcp": "https://projects.blender.org/lab/blender_mcp.git",
     "io_pdx_mesh": "https://github.com/ross-g/io_pdx_mesh/releases/download/0.91/blender-io_pdx_mesh.zip"
   },
+  "compatibility": {
+    "io_pdx_mesh": {
+      "source_sha256": "A683DF08318CB700014C7FE9A3D15139E5FB2313C7E98715204263E48931F7C2",
+      "source_size": 235195,
+      "builder": ".tools/3d_pipeline/build_io_pdx_py313_compat.py",
+      "blender_minors": ["5.2"],
+      "archive_sha256": "A0ED30187494889B5415D579C823D888CFEAF197A3D4FC6A2D024E6BB0E10697",
+      "archive_size": 244643,
+      "installed_patch_files_sha256": {
+        "__init__.py": "F2C70DB6465AEB2E0E32EB8096255ADF78A7A12B09E1724BB3D4AAC09784F8F4",
+        "pdx_maya/maya_ui.py": "3ADE7A263A0475B4270254DB2323B0E0958A34648F9632024FD304B49B8E2ED7",
+        "pdx_blender/blender_import_export.py": "CA396896F1B963C86C33F75ADC9B27E10C2C35200D0C691FAE265B4DE22DFF57"
+      }
+    }
+  },
   "policy": {
     "provider_input_image_count": 1,
     "allow_meshy_multiview_thumbnails": false,

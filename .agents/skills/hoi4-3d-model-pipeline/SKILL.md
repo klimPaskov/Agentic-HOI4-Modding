@@ -57,6 +57,11 @@ io_pdx_mesh export support. Meshy credentials flow only through the external
 app-owned launcher with `--run-verified-meshy-mcp`; never through project
 wrappers, mutable runtime patches, direct REST, or PATH Python.
 
+Use only the upstream or deterministic compatibility archive selected by the
+locked Blender minor. For Blender 5.2, verify the derived archive digest and
+installed patched-file hashes before export; do not patch or replace the
+upstream archive outside the reviewed builder.
+
 Use only actual live-listed capabilities. Optional Text-to-Motion client and
 contract support do not prove launcher exposure. Missing capability is an exact
 blocker; use authorized Blender recovery where applicable. Rebootstrap stale

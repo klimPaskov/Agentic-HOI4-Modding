@@ -33,6 +33,7 @@ Read and apply:
 Audit for:
 - passive decision stores and flat political power exchanges
 - costs that should use equipment, trains, convoys, manpower, XP, factories, local support, legitimacy, supply, or map objectives
+- fractional dynamic cost rows or tooltips rounded below the actual debit, or display caches reused for fresh affordability or payment calculations
 - identical timers, identical costs, or static magic numbers that should become constants or dynamic scripted values
 - missing success, failure, partial success, cooldown, and cleanup behavior
 - invalid AI targets, dead country targets, disabled escalation variants, closed routes, impossible borders, or unsafe formables

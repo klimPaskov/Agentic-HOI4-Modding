@@ -247,6 +247,8 @@ When the parent supplies observer-run tallies from `hoi4-save-inspection`, the a
 
 For probability inspect and evaluate calls, use the installed schema's mod-relative source object, such as `source: { path: "common/decisions/example.txt" }`. Before compare, inspect the live schema and supply real, nonempty `before.path` and `after.path` source paths with the identical saved `scenarioSet`. Keep source hashes and revisions in the handoff, not inside the source objects. Do not substitute an analysis URI or compare the current file to itself when the pre-edit source is unavailable. Record the adapter's actual fixture validation errors and mark unsupported numeric variables, incomplete pools, or partial score-only output unresolved.
 
+Probability scenario schemas vary by installed server version and route. Inspect the live schema for each route and pass only accepted fields; use scenario-level dates, controller maps, or typed scope bindings only when supported. Treat `candidateOverrides` as declared eligibility assumptions rather than live campaign proof, and inspect any returned pool-completeness or unresolved indicators before interpreting normalized shares.
+
 If a patch touches localisation, list the keys changed. If it touches decisions or focuses, list affected ids. If it touches scripted helpers, list helper names and call sites. If it touches country setup, list tags and state ids or state groups.
 
 ## Plan and spec paths

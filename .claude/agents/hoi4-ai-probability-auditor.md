@@ -48,9 +48,11 @@ Audit for:
 - mismatches between the spec, implementation, localisation, AI strategy, and expected campaign behavior
 
 Scenario discipline:
+- Inspect the live schema for each probability route before constructing scenarios. Scenario fields vary by installed server version and route; pass only accepted fields, and use top-level dates, controller maps, or typed scope bindings only when supported.
 - Name every analyzed surface and scenario id in the handoff.
 - Supply the complete candidate pool whenever the adapter requires normalization or a selection race.
 - Declare external factors, scheduled state changes, uncertain inputs, seeds, cadence, and terminal states explicitly.
+- Treat `candidateOverrides` as declared eligibility assumptions, not proof of live campaign state. Inspect returned pool-completeness and unresolved fields before interpreting a normalized option share.
 - Classify each conclusion as exact, bounded, sampled, score-only, or unresolved.
 - Never state an exact selection probability when the candidate pool or external factors are incomplete.
 - Preserve MCP artifact URIs, revisions, scenario hashes, comparison ids, and rendered evidence needed by the parent.

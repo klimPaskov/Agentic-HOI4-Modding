@@ -6,6 +6,7 @@ import argparse
 import ast
 import datetime as dt
 import hashlib
+import io
 import json
 import os
 import re
@@ -22,6 +23,7 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 
+PIPELINE_ROOT = Path(__file__).resolve().parent
 MESHY_PACKAGE = "@meshy-ai/meshy-mcp-server"
 MESHY_VERSION = "0.4.0"
 MESHY_INTEGRITY = "sha512-py2xFIrrBcU4SW7ked90/qjRqa6bheVn0fNLEW8Lnki3BCJTFaVvWN0W6a9mJYr26+M9y0WezGsTCKalzWrGtg=="
@@ -1035,13 +1037,85 @@ def materialize_hoi4_adapter(
 
 def resolve_io_pdx_mesh() -> dict:
     _validate_https_url(IO_PDX_DOWNLOAD_URL, GITHUB_DOWNLOAD_HOSTS)
+    lock = json.loads((PIPELINE_ROOT / "config" / "dependencies.lock.json").read_text(encoding="utf-8"))
+    compatibility = lock.get("compatibility", {}).get("io_pdx_mesh")
+    if not isinstance(compatibility, dict):
+        raise SetupError("The io_pdx_mesh compatibility evidence is missing from the dependency lock.")
+    if compatibility.get("source_sha256", "").lower() != IO_PDX_SHA256:
+        raise SetupError("The io_pdx_mesh source hash disagrees with its compatibility lock.")
+    blender_minors = compatibility.get("blender_minors")
+    if not isinstance(blender_minors, list) or not blender_minors or not all(
+        isinstance(value, str) and re.fullmatch(r"\d+\.\d+", value) for value in blender_minors
+    ):
+        raise SetupError("The io_pdx_mesh compatibility lock has invalid Blender version selectors.")
     return {
         "release": IO_PDX_RELEASE,
         "download_url": IO_PDX_DOWNLOAD_URL,
         "asset_name": IO_PDX_ASSET_NAME,
         "sha256": IO_PDX_SHA256,
         "size": IO_PDX_SIZE,
+        "compatibility": compatibility,
         "resolution": "pinned GitHub release asset with SHA-256",
+    }
+
+
+def resolve_io_pdx_archive(source_archive: bytes, blender_minor: str, resolution: dict) -> dict:
+    """Select the upstream or locked derived archive for the detected Blender minor."""
+    if len(source_archive) != resolution["size"]:
+        raise SetupError("The pinned io_pdx_mesh archive failed size verification.")
+    source_hash = hashlib.sha256(source_archive).hexdigest().upper()
+    if source_hash != resolution["sha256"].upper():
+        raise SetupError("The pinned io_pdx_mesh archive failed SHA-256 verification.")
+
+    compatibility = resolution.get("compatibility", {})
+    compatibility_applied = blender_minor in compatibility.get("blender_minors", [])
+    install_archive = source_archive
+    expected_patch_hashes = {}
+    if compatibility_applied:
+        if compatibility.get("source_size") != resolution["size"]:
+            raise SetupError("The io_pdx_mesh source size disagrees with its compatibility lock.")
+        if compatibility.get("source_sha256", "").upper() != source_hash:
+            raise SetupError("The io_pdx_mesh source hash disagrees with its compatibility lock.")
+        try:
+            from build_io_pdx_py313_compat import compatibility_archive_bytes
+
+            install_archive = compatibility_archive_bytes(source_archive)
+        except (ImportError, OSError, ValueError, zipfile.BadZipFile) as exc:
+            raise SetupError("The locked io_pdx_mesh compatibility archive could not be built safely.") from exc
+        install_hash = hashlib.sha256(install_archive).hexdigest().upper()
+        if (
+            len(install_archive) != compatibility.get("archive_size")
+            or install_hash != compatibility.get("archive_sha256", "").upper()
+        ):
+            raise SetupError("The derived io_pdx_mesh archive failed its compatibility lock.")
+        expected_patch_hashes = compatibility.get("installed_patch_files_sha256", {})
+        if not isinstance(expected_patch_hashes, dict) or not expected_patch_hashes:
+            raise SetupError("The io_pdx_mesh installed patch-file evidence is missing.")
+        required_patch_files = {
+            "__init__.py",
+            "pdx_maya/maya_ui.py",
+            "pdx_blender/blender_import_export.py",
+        }
+        if set(expected_patch_hashes) != required_patch_files:
+            raise SetupError("The io_pdx_mesh compatibility lock has an unexpected installed-file set.")
+        for relative, digest in expected_patch_hashes.items():
+            if (
+                not isinstance(relative, str)
+                or relative.startswith("/")
+                or "\\" in relative
+                or ":" in relative
+                or any(part in {"", ".", ".."} for part in relative.split("/"))
+                or not isinstance(digest, str)
+                or re.fullmatch(r"[0-9A-Fa-f]{64}", digest) is None
+            ):
+                raise SetupError("The io_pdx_mesh compatibility lock contains an unsafe path or file hash.")
+
+    return {
+        "source_sha256": source_hash,
+        "install_archive": install_archive,
+        "install_archive_sha256": hashlib.sha256(install_archive).hexdigest().upper(),
+        "compatibility_applied": compatibility_applied,
+        "expected_patch_hashes": expected_patch_hashes,
     }
 
 
@@ -1060,20 +1134,35 @@ def ensure_io_pdx_mesh(pipeline_root: Path, blender_executable: Path, resolution
     cache.parent.mkdir(parents=True, exist_ok=True)
     if not cache.exists():
         download(resolution["download_url"], cache)
-    if cache.stat().st_size != resolution["size"]:
-        cache.unlink(missing_ok=True)
-        raise SetupError("The pinned io_pdx_mesh archive failed size verification.")
     archive_bytes = cache.read_bytes()
-    archive_hash = hashlib.sha256(archive_bytes).hexdigest()
-    if archive_hash != resolution["sha256"]:
+    try:
+        selected_archive = resolve_io_pdx_archive(archive_bytes, minor, resolution)
+    except SetupError:
         cache.unlink(missing_ok=True)
-        raise SetupError("The pinned io_pdx_mesh archive failed size or SHA-256 verification.")
+        raise
+    archive_hash = selected_archive["source_sha256"]
+    install_archive = selected_archive["install_archive"]
+    install_archive_hash = selected_archive["install_archive_sha256"]
+    compatibility_applied = selected_archive["compatibility_applied"]
+    expected_patch_hashes = selected_archive["expected_patch_hashes"]
     desired_version = version_tuple(resolution["release"])
     installed_version = manifest_version(install_root)
+    installed_patches_match = True
+    if compatibility_applied:
+        for relative, expected_hash in expected_patch_hashes.items():
+            installed_file = install_root / Path(*PurePosixPath(relative).parts)
+            if not installed_file.is_file():
+                installed_patches_match = False
+                break
+            actual_hash = hashlib.sha256(installed_file.read_bytes()).hexdigest().upper()
+            if actual_hash != expected_hash.upper():
+                installed_patches_match = False
+                break
     installed_matches = (
         installed_version is not None
         and desired_version is not None
         and version_tuple(installed_version) == desired_version
+        and installed_patches_match
     )
 
     if not installed_matches:
@@ -1082,7 +1171,7 @@ def ensure_io_pdx_mesh(pipeline_root: Path, blender_executable: Path, resolution
         if staging.exists():
             shutil.rmtree(staging)
         staging.mkdir(parents=True, exist_ok=True)
-        with zipfile.ZipFile(cache) as archive:
+        with zipfile.ZipFile(io.BytesIO(install_archive)) as archive:
             safe_extract(archive, staging)
         manifests = list(staging.rglob("blender_manifest.toml"))
         if len(manifests) != 1:
@@ -1102,12 +1191,23 @@ def ensure_io_pdx_mesh(pipeline_root: Path, blender_executable: Path, resolution
 
     if not (install_root / "blender_manifest.toml").exists():
         raise SetupError(f"io_pdx_mesh installation is incomplete: {install_root}")
+    installed_patch_hashes = {}
+    if compatibility_applied:
+        for relative in expected_patch_hashes:
+            installed_file = install_root / Path(*PurePosixPath(relative).parts)
+            actual_hash = hashlib.sha256(installed_file.read_bytes()).hexdigest().upper()
+            if actual_hash != expected_patch_hashes[relative].upper():
+                raise SetupError(f"The installed io_pdx_mesh compatibility file failed hash verification: {relative}")
+            installed_patch_hashes[relative] = actual_hash
     return {
         "release": resolution["release"],
         "version": installed_version,
         "download_url": resolution["download_url"],
         "archive": cache.as_posix(),
         "sha256": archive_hash,
+        "installed_archive_sha256": install_archive_hash,
+        "compatibility_applied": compatibility_applied,
+        "installed_patch_files_sha256": installed_patch_hashes,
         "installed_extension_id": "io_pdx_mesh",
         "blender_minor": minor,
         "install_root": install_root.resolve().as_posix(),

@@ -45,7 +45,7 @@ Use the installed `hoi4_agent_tools` service and discover the live schema before
 
 Read `visibilityStatus` and `enablement` with their unresolved reasons; dashed amber regions are potential controls, not confirmed branch coverage.
 Explicit scenario overrides are declared assumptions, not observed campaign facts.
-Where the verified live schema supports `scenario.tooltip`, supply `{ target, x, y, width, padding }` for a unique visible control with a `pdx_tooltip` key, then inspect the source font/background, text fit and diagnostics.
+Where the verified live schema supports `scenario.tooltip`, supply `{ target, x, y, width, padding }` for a unique visible element with a `pdx_tooltip` key. Inspect the vanilla `ToolTip` sprite, `cg_16b` font, measured text height plus caller padding, and diagnostics for unresolved, missing, hidden, ambiguous, or out-of-bounds requests.
 Supply engine-generated `[!...]` expansions only as exact known text keyed by the bracketed token in `scenario.values`; keep missing expansions unresolved.
 Native automatic positioning, frame composition, delayed timing and `click_to_front` need separate evidence.
 
@@ -61,11 +61,13 @@ The optional rewrite transaction's automatic post-write or index validation and 
 
 `gui_render` may expose a comparison scenario. Use it for supported scenario comparisons, not as an assumed snapshot of older source. There is no separately exposed GUI comparison tool: preserve pre-change artifacts and source identity, and compare them with matching post-change artifacts. Preserve exact manifest, source revision, and scenario identities. Never substitute whichever concurrent output has the latest filename.
 
+When a render returns a linked artifact URI but the inline response is truncated, retrieve the complete artifact through the server's supported MCP resource route. Use bounded byte-range reads when available, preserve each range's metadata, assemble bytes in order, and verify the complete resource against its declared length and SHA-256 before displaying or converting it. A truncated excerpt is not a production image.
+
 For tabbed windows, prefer explicit per-control states. A global selected-state render can activate mutually exclusive tabs and create an impossible fixture. Keep fixture choices and provenance in the evidence manifest, not invented scenario fields. For exact regression fixtures, use `generatedScenarios: { enabled: false }` in the tool request alongside `scenario` when the live schema exposes that field; do not put it inside the scenario. Generated exploratory scenarios require a stable seed and do not replace explicit boundary cases. At 1920x1080 use UI scale 1; UI scale represents the game setting, not image enlargement.
 
 Where supported, add visible, hidden, containment, and centering expectations against actual element selectors. Centering checks should use rendered glyph bounds when supported so they can catch a visually off-center label inside an apparently centered text box. A successful tool call or passing validation flag does not prove visual acceptance. Warnings and rendered defects still require review and correction.
 
-Treat the production MCP render as the one-to-one in-game visual-review surface required by the repository instructions. Every visible defect in the in-scope GUI blocks completion, including warnings the tool does not classify as fatal. Never dismiss bad alignment, spacing, clipping, backgrounds, states, assets, or click regions as a renderer discrepancy or defer correction for lack of a separate game screenshot. The render does not execute the game: preserve fidelity limits and unverified behavior without using them to waive visible defects.
+Treat the production MCP render as the required visual-review surface. It does not execute Hearts of Iron IV, so preserve the renderer's fidelity limits and leave runtime behavior unverified when the route cannot establish it. Every visible defect in the in-scope GUI blocks completion, including warnings the tool does not classify as fatal. An offscreen or blank window, generated reference, timeout, or truncated response does not establish a successful production render. Match the exact fixture and source revision for every comparison. If a current-source final render times out, retain earlier images only as prior-source evidence and leave the final visual gate open. Never dismiss bad alignment, spacing, clipping, backgrounds, states, assets, or click regions as a renderer discrepancy.
 
 If required inspection or render evidence, artifacts, scenarios, or dependencies are unavailable, record the exact call, selector, error, and affected evidence as blocked. Source-only review is not equivalent. An incidental defect outside authorized scope becomes a parent-owned finding, not permission to edit another interface.
 
@@ -78,6 +80,10 @@ Normally expose one primary mechanic value and at most two supporting values. Fo
 Normally show three to five primary actions per visible phase, with six as the hard maximum. Active missions or target controls should normally number one to three when sharing that surface. Phase, replace, or prioritize actions. Do not warehouse weak or duplicate controls in extra tabs. These budgets govern mechanic values and gameplay actions, not records in an authorized browser or list or ordinary navigation.
 
 Main explanations normally fit in one to three short lines. A tooltip for one value or action normally fits in two to four. Explain meaning, causes, relevant thresholds, consequences, and the player's response close to the affected element. Avoid vague text, duplicated instructions, raw triggers, and long mixed cost strings. Use the decision skill's cost and action-integrity rules for gameplay-changing controls, including correct texticons, at most four spendable cost types, shared validation, payment and effects, AI equivalence, and cleanup. Every button-like element must be interactive, visibly disabled with a reason, or unmistakably decorative.
+
+Render and inspect the actual disabled state of each unavailable action. `_click_enabled = no` may leave an active-looking face or tooltip; when that happens, use mutually exclusive native active and locked elements at the same verified bounds, with a neutral locked sprite, reason-specific localisation/tooltips, the click effect only on the active element, and explicit visibility and disabled-click predicates. Compare matched images and click regions across UI scales.
+
+Trace each action's source availability trigger, effect-time rechecks, and side effects before declaring a reference or fixture route-valid or impossible. A locked fixture must satisfy the actual predicate for its displayed reason.
 
 ## Handoff and completion
 
