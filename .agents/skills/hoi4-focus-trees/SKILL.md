@@ -61,7 +61,7 @@ The duration and reward rules need context. A 35-day focus works when the click 
 
 Before editing focus files:
 
-- Verify live schemas for `hoi4.reference_context`, `hoi4.reference_search`, `hoi4.reference_read`, and `hoi4.source_lookup`. Request focus context, locate exact rules, and read pertinent cited sections of National focus modding and installed game documentation. Retain source paths, lines, and revisions. If a route is unavailable, use targeted local reads and record the exact gap; do not claim the MCP retrieval ran.
+- Verify live schemas for `hoi4.reference_context`, `hoi4.reference_search`, `hoi4.reference_read`, and `hoi4.source_lookup`. Request focus context, locate exact rules, and read pertinent cited sections of National focus modding and installed game documentation. Retain source paths, lines, and revisions. Resolve any live `omittedSources` by raising the context limit or targeted search/read before claiming source coverage; `missing` denotes absent files. If a route is unavailable, use targeted local reads and record the exact gap; do not claim the MCP retrieval ran.
 - Treat installed vanilla documentation as primary for syntax and inspect an exact vanilla focus precedent. Reference retrieval does not replace focus inspect/render evidence or the weighted-logic audit.
 - Inspect existing repository focus trees and feature-created focus-tree loading patterns.
 - Read `AGENTS.md`.

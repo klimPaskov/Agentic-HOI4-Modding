@@ -16,7 +16,7 @@ For large or reworked decision systems, spawn `hoi4_decision_mission_auditor` af
 Before editing decisions or missions, read:
 
 - `AGENTS.md`
-- relevant cited sections found through the live schemas of `hoi4.reference_context`, `hoi4.reference_search`, and `hoi4.reference_read`: Decision modding and whichever trigger, effect, localisation, modifier, scope, or data-structure rule the task uses. Keep paths, lines, and revisions. Use `hoi4.source_lookup` for exact definitions and usages. If a route is unavailable, read the pertinent local sections directly and record the exact gap.
+- relevant cited sections found through the live schemas of `hoi4.reference_context`, `hoi4.reference_search`, and `hoi4.reference_read`: Decision modding and whichever trigger, effect, localisation, modifier, scope, or data-structure rule the task uses. Keep paths, lines, and revisions. Resolve any live `omittedSources` by raising the context limit or targeted search/read before claiming source coverage; `missing` denotes absent files. Use `hoi4.source_lookup` for exact definitions and usages. If a route is unavailable, read the pertinent local sections directly and record the exact gap.
 - vanilla decision files from `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/`
 - vanilla documentation in `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`
 - existing repository decision categories and scripted effects that do similar work

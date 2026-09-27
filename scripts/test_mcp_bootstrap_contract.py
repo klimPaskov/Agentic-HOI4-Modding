@@ -18,7 +18,7 @@ SPEC.loader.exec_module(bootstrap)
 
 class McpBootstrapContractTests(unittest.TestCase):
     def test_public_release_identity_is_exact(self) -> None:
-        self.assertEqual(bootstrap.PACKAGE_SPEC, "hoi4-agent-tools@3.5.0")
+        self.assertEqual(bootstrap.PACKAGE_SPEC, "hoi4-agent-tools@3.5.1")
         self.assertTrue(bootstrap.PACKAGE_INTEGRITY.startswith("sha512-"))
         self.assertEqual(len(bootstrap.PACKAGE_TREE_SHA256), 64)
         self.assertEqual(bootstrap.PACKAGE_FILE_COUNT, 5097)
@@ -35,12 +35,22 @@ class McpBootstrapContractTests(unittest.TestCase):
         self.assertIn("--ignore-scripts", arguments)
         self.assertIn("--prefix", arguments)
         self.assertIn("--registry=https://registry.npmjs.org", arguments)
-        self.assertEqual(arguments[-1], "hoi4-agent-tools@3.5.0")
+        self.assertEqual(arguments[-1], "hoi4-agent-tools@3.5.1")
 
     def test_registry_integrity_mismatch_fails_closed(self) -> None:
         with mock.patch.object(bootstrap, "npm", return_value='"sha512-wrong"'):
             with self.assertRaisesRegex(bootstrap.BootstrapError, "integrity"):
                 bootstrap.verify_registry_integrity(Path("node.exe"), Path("npm.cmd"))
+
+    def test_locked_native_library_reports_reconnect_without_echoing_output(self) -> None:
+        result = mock.Mock(
+            returncode=4294963214,
+            stdout=b"npm error code EBUSY\nnpm error dest retired/libvips-42.dll\nprivate-output-sentinel\n",
+        )
+        with mock.patch.object(bootstrap.subprocess, "run", return_value=result):
+            with self.assertRaisesRegex(bootstrap.BootstrapError, "reconnect existing HOI4 MCP clients") as caught:
+                bootstrap.run(["node.exe", "npm-cli.js", "install"])
+        self.assertNotIn("private-output-sentinel", str(caught.exception))
 
     def test_installed_package_requires_exact_lock_and_entry(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

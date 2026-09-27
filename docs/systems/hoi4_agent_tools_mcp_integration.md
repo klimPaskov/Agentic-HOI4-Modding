@@ -38,7 +38,7 @@ Tool availability is version-dependent, so confirm each name from the installed 
 
 | Surface | Read-only MCP evidence | Write route | Required evidence sequence | Limits |
 | --- | --- | --- | --- | --- |
-| Local references | `hoi4.reference_context`, `hoi4.reference_search`, `hoi4.reference_read`, `hoi4.source_lookup` | None | Select the work surface, search exact rules, read the pertinent cited sections, and inspect exact vanilla/mod definitions. | A citation bundle identifies sources; it does not prove that their detailed rules were read. Missing or skipped sources require a targeted local read or a recorded gap. |
+| Local references | `hoi4.reference_context`, `hoi4.reference_search`, `hoi4.reference_read`, `hoi4.source_lookup` | None | Select the work surface, search exact rules, read the pertinent cited sections, and inspect exact vanilla/mod definitions. | A citation bundle identifies sources; it does not prove that their detailed rules were read. Missing or skipped sources require a targeted local read or a recorded gap; resolve live `omittedSources` by increasing the result limit or targeted search/read. |
 | National focus trees | `hoi4.focus_inspect`, `hoi4.focus_render` | `hoi4.focus_rewrite` when advertised | Inspect and render the exact tree before editing, review any proposal, then inspect and render again after source changes and retain paired evidence. | Layout and diagnostics are evidence, not a completion claim; complex focus weights also require the probability contract. |
 | Event chains | `hoi4.event_inspect`, `hoi4.event_render`, `hoi4.event_compare` | None in the installed package | Run a narrow inspect and render before editing, then rerun them after editing and compare the same selector or revision when available. | Analysis is bounded and static, so dynamic destinations and runtime behavior can remain unresolved. |
 | Technology and doctrine trees | `hoi4.tech_inspect`, `hoi4.tech_render`, `hoi4.tech_compare` | None; these routes are read-only | Inspect the selected tree, render a reviewable layout, and compare related trees or variants. | Keep source review and MCP evidence together; a missing required route is a blocker rather than permission to invent viewer evidence. |
@@ -62,7 +62,7 @@ If a route is absent, record the exact tool, selector, package version, and erro
 
 ## Local documentation and source discovery
 
-Use `hoi4.reference_context` for the current work surface, `hoi4.reference_search` for a command or behavior, and `hoi4.reference_read` for the exact cited section. Preserve its path, line span, and revision. Follow the returned continuation only when more of that section is needed. `hoi4.source_lookup` provides exact definitions, override status, and indexed usages through the same configured workspace. Installed game documentation is the primary syntax reference, and the offline wiki supplies broader guidance; do not fetch the wiki website. Whole-page reading is unnecessary when the cited sections cover the task. If a route or local source is unavailable, read the pertinent local file directly and record the exact gap. Domain-specific inspect, render, compare, and scenario evidence remains required.
+Use `hoi4.reference_context` for the current work surface, `hoi4.reference_search` for a command or behavior, and `hoi4.reference_read` for the exact cited section. Preserve its path, line span, and revision. Follow the returned continuation only when more of that section is needed. `hoi4.source_lookup` provides exact definitions, override status, and indexed usages through the same configured workspace. Installed game documentation is the primary syntax reference, and the offline wiki supplies broader guidance; do not fetch the wiki website. Whole-page reading is unnecessary when the cited sections cover the task. If a route or local source is unavailable, read the pertinent local file directly and record the exact gap. When a live context result includes `omittedSources`, raise the result limit or use targeted search/read to cover those required sources; `missing` identifies absent files instead. At a limit of 1, installed documentation can occupy the only result; a limit of 2 or more can retain both available required source kinds. Context excerpts select question-matching sections within required files, but still require reading the cited rules. Domain-specific inspect, render, compare, and scenario evidence remains required.
 
 ## Probability scenario contract
 
@@ -120,7 +120,7 @@ Technology and doctrine work uses the advertised `hoi4.tech_inspect`, `hoi4.tech
 Install the exact published package version declared by the current setup manifest and repository bootstrap, keeping version, registry integrity, runtime-entry evidence, and documentation aligned. The current starter revision uses:
 
 ```powershell
-npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.5.0
+npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.5.1
 ```
 
 If that exact package version is unavailable or fails verification, record the package/version blocker instead of silently substituting an unpinned clone or another release.
@@ -136,6 +136,9 @@ For a separate HTTP process, run `hoi4-agent-tools-http --config PATH` with loop
 Non-loopback deployment requires HTTPS, an authenticated identity layer such as OAuth or OIDC, isolation, and the restrictions documented by the package for that deployment mode.
 
 When tools are missing, check `npm list --global hoi4-agent-tools --depth=0`, confirm the target project is trusted, verify the server command resolves, and restart the MCP client after installation or registration changes.
+
+If npm reports `EBUSY` for a loaded native DLL, close or reconnect existing HOI4 MCP clients and rerun the exact-package bootstrap.
+Keep the archive, runtime-entry, and full package-tree checks intact; a busy file does not justify weakening them.
 
 After an upgrade, rerun the package's documented inspector or integration checks and establish a fresh baseline before relying on old revisions or artifacts.
 

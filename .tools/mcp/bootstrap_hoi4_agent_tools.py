@@ -14,10 +14,10 @@ import sys
 
 
 PACKAGE_NAME = "hoi4-agent-tools"
-PACKAGE_VERSION = "3.5.0"
+PACKAGE_VERSION = "3.5.1"
 PACKAGE_SPEC = f"{PACKAGE_NAME}@{PACKAGE_VERSION}"
-PACKAGE_INTEGRITY = "sha512-D0vulvsTJWFeTkBOLC8Rdk/LORCoMkssqIzuLuEUGbM8Jss1gJmL9CMMqPWmEgIFPlmr0yGn1vIQaikHms8vdw=="
-PACKAGE_TREE_SHA256 = "c504134c86bbc33963760dc9c190c24e0336d723e521a57afa81459546919091"
+PACKAGE_INTEGRITY = "sha512-hpBd/TqbD3hebI2M04JFllQt1xon+eYkYmV39f8FXD9/gsa60i3CkZMKKKLSNVxvpRzB6TaY3zjg/bvOGI1jnQ=="
+PACKAGE_TREE_SHA256 = "9819e63a423549e9bc8654d0971cd751071846e51683a0f436d3a9d911cb029d"
 PACKAGE_FILE_COUNT = 5097
 RUNTIME_ENTRY = "dist/bin/stdio.js"
 RUNTIME_ENTRY_SHA256 = "08c66fbe4c5c41d5a3abee960b300589d545b38a9c4f715ea5fe9b10e9c21515"
@@ -53,6 +53,11 @@ def run(arguments: list[str], timeout: int = 900) -> str:
         raise BootstrapError("A reviewed MCP setup command exceeded its output limit.")
     text = output.decode("utf-8", errors="replace")
     if result.returncode != 0:
+        if "EBUSY" in text and ".dll" in text.lower():
+            raise BootstrapError(
+                "npm could not replace loaded MCP native libraries. "
+                "Close or reconnect existing HOI4 MCP clients, then rerun the exact-package installer."
+            )
         raise BootstrapError(f"A reviewed MCP setup command failed with exit code {result.returncode}.")
     return text
 

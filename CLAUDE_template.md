@@ -72,6 +72,8 @@ Use the relevant sections of these core topics from `paradox_wiki/`:
 - AI modding
 
 For GUI work, consult pertinent Interface modding and Scripted GUI modding sections. For country creation, national focuses, equipment, divisions, or technology, consult the corresponding local sections. Search exact commands when syntax matters. A context bundle identifies sources; read the cited sections that support the implementation. Locate missing or skipped sources directly or report the coverage gap.
+When a live result includes `omittedSources`, those required sources were excluded by the result limit; increase the limit or use targeted `hoi4.reference_search` and `hoi4.reference_read` before claiming coverage.
+Unlike `omittedSources`, `missing` identifies absent files; a limit of 1 can retain only installed documentation, while a limit of 2 or more can retain both available required source kinds.
 
 Maintenance:
 
