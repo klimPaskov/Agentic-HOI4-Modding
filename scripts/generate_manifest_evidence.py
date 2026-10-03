@@ -11,6 +11,9 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
 
 
+LFS_POINTER_PREFIX = b"version https://git-lfs.github.com/spec/v1"
+
+
 def glob_matches(pattern: str, value: str) -> bool:
     expression = "^"
     index = 0
@@ -105,6 +108,13 @@ def git_evidence_for(component: dict, snapshot: dict[str, bytes]) -> list[dict]:
     if not names:
         raise SystemExit(
             f"declared {source['kind']} source has no files at the selected revision: {prefix}"
+        )
+    # Consumers download committed Git blobs, so an unresolved Git LFS pointer
+    # would be installed instead of the file it stands for.
+    pointers = [name for name in names if snapshot[name].startswith(LFS_POINTER_PREFIX)]
+    if pointers:
+        raise SystemExit(
+            f"declared source file is an unresolved Git LFS pointer; commit the real file: {pointers[0]}"
         )
     return [
         {

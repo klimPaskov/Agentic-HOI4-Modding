@@ -51,6 +51,17 @@ class ManifestGeneratorTests(unittest.TestCase):
                 {"present.txt": b"present"},
             )
 
+    def test_unresolved_git_lfs_pointer_fails_closed(self) -> None:
+        pointer = (
+            b"version https://git-lfs.github.com/spec/v1\n"
+            + b"oid sha256:" + b"0" * 64 + b"\nsize 11604\n"
+        )
+        with self.assertRaisesRegex(SystemExit, "unresolved Git LFS pointer"):
+            GENERATOR.git_evidence_for(
+                {"source": {"kind": "tree", "path": "paradox_wiki", "include": ["**"]}},
+                {"paradox_wiki/media/image.jpg": pointer, "paradox_wiki/page.md": b"page"},
+            )
+
     def test_empty_declared_tree_fails_closed(self) -> None:
         with self.assertRaisesRegex(SystemExit, "tree source has no files"):
             GENERATOR.git_evidence_for(
