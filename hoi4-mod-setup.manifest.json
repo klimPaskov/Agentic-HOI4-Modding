@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "ed02af9a00bf02f8314e092e0934a8471423b1f3",
+  "generated_for_revision": "7b7d2a49db60887dce69ad5ddd4b45d788d14a85",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -6492,8 +6492,8 @@
         },
         {
           "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img6.jpg",
-          "sha256": "23d384dcb402da4b4d030b3b34612c4cba31df549dc0ea523480cf9c923516eb",
-          "size": 130
+          "sha256": "0c87ae522997ef55ebb907eee55a25391e8e5dcdc52a75dec09ad52e73abbe66",
+          "size": 11604
         },
         {
           "path": "paradox_wiki/media/map-modding-hearts-of-iron-4-wiki_67296116c0__img7.png",
