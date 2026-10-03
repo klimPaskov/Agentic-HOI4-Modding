@@ -69,6 +69,8 @@ Use HOI4 vanilla as the main example set.
   - Treat vanilla documentation as more authoritative, more complete, and more up to date than the Paradox wiki.
   - The Paradox wiki must still be consulted in parallel. Both sources are required.
   - Read the cited sections instead of relying on memory. Use `hoi4.source_lookup` for exact vanilla and mod definitions, override status, and indexed usages; inspect the underlying source when more context is needed.
+  - When the live schema supports `view` and `keyPath`, use bounded child structure and select repeated keys with their zero-based `occurrence`. Follow `nextChildOffset` as `childOffset` with the same query settings and `expectedRevision`. Disable references for a focused event or scripted-helper definition read; enable them when investigating consumers.
+  - When `hoi4.script_validate` is exposed, check relevant effect or trigger bodies under their explicit scopes against installed documentation. A true result covers only `checksPerformed`; `valid = null`, unresolved commands, unchecked argument blocks, and omitted findings require further inspection. Parameter semantics and engine behavior remain separate evidence.
 
 - When implementing a mechanic, event, decision or UI, find at least one vanilla precedent (if possible) and mirror its structure.
 

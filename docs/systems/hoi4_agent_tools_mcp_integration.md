@@ -64,6 +64,15 @@ If a route is absent, record the exact tool, selector, package version, and erro
 
 Use `hoi4.reference_context` for the current work surface, `hoi4.reference_search` for a command or behavior, and `hoi4.reference_read` for the exact cited section. Preserve its path, line span, and revision. Follow the returned continuation only when more of that section is needed. `hoi4.source_lookup` provides exact definitions, override status, and indexed usages through the same configured workspace. Installed game documentation is the primary syntax reference, and the offline wiki supplies broader guidance; do not fetch the wiki website. Whole-page reading is unnecessary when the cited sections cover the task. If a route or local source is unavailable, read the pertinent local file directly and record the exact gap. When a live context result includes `omittedSources`, raise the result limit or use targeted search/read to cover those required sources; `missing` identifies absent files instead. At a limit of 1, installed documentation can occupy the only result; a limit of 2 or more can retain both available required source kinds. Context excerpts select question-matching sections within required files, but still require reading the cited rules. Domain-specific inspect, render, compare, and scenario evidence remains required.
 
+When supported by the live schema, use `source_lookup` with `view = structure` and a bounded `keyPath` to inspect one nested source block.
+Repeated keys require their zero-based `occurrence`; structural continuation uses `nextChildOffset` as `childOffset` with the same query settings and `expectedRevision`.
+Use definition-only event and scripted-helper reads when consumers are not needed.
+
+When exposed, `hoi4.script_validate` checks an effect or trigger body under a declared scope using installed native-command documentation.
+Supply external scope bindings only when their types are known.
+A true result covers only `checksPerformed`; `valid = null`, unresolved helpers, unchecked argument blocks, and omitted findings require further source inspection.
+These checks do not establish parameter semantics or game execution.
+
 ## Probability scenario contract
 
 Use the probability routes only for a declared surface and scenario rather than treating a single weight dump as balance evidence.
