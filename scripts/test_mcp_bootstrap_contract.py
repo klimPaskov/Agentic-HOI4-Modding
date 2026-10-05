@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import importlib.util
 import json
 from pathlib import Path
@@ -51,6 +52,56 @@ class McpBootstrapContractTests(unittest.TestCase):
             with self.assertRaisesRegex(bootstrap.BootstrapError, "reconnect existing HOI4 MCP clients") as caught:
                 bootstrap.run(["node.exe", "npm-cli.js", "install"])
         self.assertNotIn("private-output-sentinel", str(caught.exception))
+
+    def test_matching_installation_is_kept_without_npm(self) -> None:
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(mock.patch.object(bootstrap, "installed_package_matches", return_value=True))
+            stack.enter_context(
+                mock.patch.object(bootstrap, "resolve_node_and_npm", return_value=(Path("node.exe"), Path("npm.cmd")))
+            )
+            stack.enter_context(mock.patch.object(bootstrap, "user_prefix", return_value=Path("prefix")))
+            stack.enter_context(mock.patch.object(bootstrap, "verify_registry_integrity"))
+            stack.enter_context(
+                mock.patch.object(bootstrap, "verify_installation", return_value=Path("prefix/hoi4-agent-tools.cmd"))
+            )
+            stack.enter_context(mock.patch.object(bootstrap.os, "name", "nt"))
+            stack.enter_context(mock.patch.object(bootstrap.sys, "argv", ["bootstrap", "--quiet"]))
+            npm = stack.enter_context(mock.patch.object(bootstrap, "npm"))
+            self.assertEqual(bootstrap.main(), 0)
+        npm.assert_not_called()
+
+    def test_mismatched_installation_is_removed_before_a_clean_install(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            prefix = Path(temporary)
+            package = prefix / "node_modules" / bootstrap.PACKAGE_NAME
+            (package / "node_modules" / "is-glob").mkdir(parents=True)
+
+            def uninstall(_node, _npm, arguments, timeout=900):
+                self.assertEqual(arguments[0], "uninstall")
+                self.assertIn("--global", arguments)
+                self.assertIn("--ignore-scripts", arguments)
+                self.assertEqual(arguments[-1], bootstrap.PACKAGE_NAME)
+                __import__("shutil").rmtree(package)
+                return ""
+
+            with mock.patch.object(bootstrap, "npm", side_effect=uninstall) as npm:
+                bootstrap.remove_mismatched_package(Path("node.exe"), Path("npm.cmd"), prefix)
+            npm.assert_called_once()
+            self.assertFalse(package.exists())
+
+    def test_a_package_that_cannot_be_removed_asks_to_close_mcp_clients(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            prefix = Path(temporary)
+            (prefix / "node_modules" / bootstrap.PACKAGE_NAME).mkdir(parents=True)
+            with mock.patch.object(bootstrap, "npm", return_value=""):
+                with self.assertRaisesRegex(bootstrap.BootstrapError, "reconnect existing HOI4 MCP clients"):
+                    bootstrap.remove_mismatched_package(Path("node.exe"), Path("npm.cmd"), prefix)
+
+    def test_an_absent_installation_needs_no_removal(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            with mock.patch.object(bootstrap, "npm") as npm:
+                bootstrap.remove_mismatched_package(Path("node.exe"), Path("npm.cmd"), Path(temporary))
+            npm.assert_not_called()
 
     def test_installed_package_requires_exact_lock_and_entry(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

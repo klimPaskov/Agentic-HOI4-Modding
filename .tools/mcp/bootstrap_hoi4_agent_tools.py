@@ -234,6 +234,45 @@ def verify_installation(prefix: Path) -> Path:
     return wrapper
 
 
+def installed_package_matches(prefix: Path) -> bool:
+    try:
+        verify_installation(prefix)
+    except (BootstrapError, OSError, ValueError):
+        return False
+    return True
+
+
+def remove_mismatched_package(node: Path, npm_cmd: Path, prefix: Path) -> None:
+    """Remove an installed package that is not the reviewed release.
+
+    npm upgrades a package that ships a shrinkwrap in place without pruning
+    modules the previous release needed, so the upgraded tree keeps stale files
+    and never matches the reviewed tree identity. A clean reinstall does.
+    """
+    package_root = prefix / "node_modules" / PACKAGE_NAME
+    if not package_root.exists():
+        return
+    npm(
+        node,
+        npm_cmd,
+        [
+            "uninstall",
+            "--global",
+            "--prefix",
+            str(prefix),
+            "--ignore-scripts",
+            "--no-audit",
+            "--no-fund",
+            PACKAGE_NAME,
+        ],
+    )
+    if package_root.exists():
+        raise BootstrapError(
+            "The previous HOI4 Agent Tools installation could not be removed. "
+            "Close or reconnect existing HOI4 MCP clients, then rerun the exact-package installer."
+        )
+
+
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--quiet", action="store_true")
@@ -247,7 +286,9 @@ def main() -> int:
     node, npm_cmd = ensure_node()
     prefix = user_prefix()
     verify_registry_integrity(node, npm_cmd)
-    install_package(node, npm_cmd, prefix)
+    if not installed_package_matches(prefix):
+        remove_mismatched_package(node, npm_cmd, prefix)
+        install_package(node, npm_cmd, prefix)
     wrapper = verify_installation(prefix)
     if not arguments.quiet:
         print(f"Installed {PACKAGE_SPEC} at {wrapper.parent}")

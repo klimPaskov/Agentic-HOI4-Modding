@@ -138,6 +138,8 @@ npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=htt
 
 If that exact package version is unavailable or fails verification, record the package/version blocker instead of silently substituting an unpinned clone or another release.
 
+The repository bootstrap (`.tools/mcp/bootstrap_hoi4_agent_tools.py`) keeps an installation whose complete tree already matches the reviewed release and runs no npm command for it. It uninstalls any other installed copy before the exact install, because npm upgrades a shrinkwrapped package in place without pruning modules the previous release needed, so an in-place upgrade never matches the reviewed tree. Replacing the package requires every HOI4 MCP client to be closed or disconnected first: a running server keeps Sharp's native libraries loaded, and npm cannot replace them.
+
 For a local mod, register `hoi4-agent-tools.cmd` with the mod directory as its working directory; a mod-local working directory normally lets the server detect the source without a separate selection call.
 
 Use `hoi4-agent-tools-setup --init` only when persistent multi-mod or remote configuration is required.
