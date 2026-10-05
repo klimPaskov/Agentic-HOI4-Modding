@@ -67,6 +67,10 @@ Use `hoi4.reference_context` for the current work surface, `hoi4.reference_searc
 When supported by the live schema, use `source_lookup` with `view = structure` and a bounded `keyPath` to inspect one nested source block.
 Repeated keys require their zero-based `occurrence`; structural continuation uses `nextChildOffset` as `childOffset` with the same query settings and `expectedRevision`.
 Use definition-only event and scripted-helper reads when consumers are not needed.
+When the live schema accepts `path` and `line` instead of `symbol`, `source_lookup` returns the indexed definitions containing that line, innermost first, and a `keyPath` from the innermost definition; use it to cite or navigate from a diagnostic, diff, or editor position.
+A lookup that finds no definition may return `suggestions`, which are near-miss identifiers to verify rather than matches.
+Search results carry `matchLine`; pass it as `startLine` to `reference_read` to land on the answering line inside a long section, including a single wiki table entry.
+Installed `dlc/` and `integrated_dlc/` folders are read-only source layers between the base game and the mod, ordered by DLC ID, and a mod's `descriptor.mod` `replace_path` entries apply to analysis as the game applies them. An installed DLC folder does not show that a playset enables that DLC.
 
 When exposed, `hoi4.script_validate` checks an effect or trigger body under a declared scope using installed native-command documentation.
 Supply external scope bindings only when their types are known.
@@ -129,7 +133,7 @@ Technology and doctrine work uses the advertised `hoi4.tech_inspect`, `hoi4.tech
 Install the exact published package version declared by the current setup manifest and repository bootstrap, keeping version, registry integrity, runtime-entry evidence, and documentation aligned. The current starter revision uses:
 
 ```powershell
-npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.6.0
+npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.8.1
 ```
 
 If that exact package version is unavailable or fails verification, record the package/version blocker instead of silently substituting an unpinned clone or another release.
