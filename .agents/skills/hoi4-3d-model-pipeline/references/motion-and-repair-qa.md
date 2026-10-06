@@ -19,7 +19,7 @@ and `meshy_tool_contract.json` capability intent are not live-schema evidence.
 The pinned launcher/runtime may not expose this capability: carry the exact
 missing tool/schema and use authorized Blender recovery where applicable.
 Never patch that runtime, create a project credential wrapper, or call REST
-to bypass the launcher. Do not fabricate or copy a Chaos live-schema lock.
+to bypass the launcher. Do not fabricate a live-schema lock or copy one from another project.
 
 The [official motion contract](https://docs.meshy.ai/en/api/text-to-motion)
 checked on 2026-09-13 permits nonblank prompts up to 400 characters, duration
