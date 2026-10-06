@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "bea20cfb6ddde6679abe7e7f0a31b7534c3b1725",
+  "generated_for_revision": "08db5a77ff9ae0a5ceab197dd00b77400b2ccd8d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1657,8 +1657,8 @@
         },
         {
           "path": ".agents/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
-          "sha256": "34acce3fa8732e0cb8ea8a67eedf98a4658e93c7573300be4c3843e091c71efb",
-          "size": 8138
+          "sha256": "1d5a3a9690447225eb12a3cff67d3142538708fcf6cbde79dd1dde0b4c430372",
+          "size": 8157
         },
         {
           "path": ".agents/skills/hoi4-3d-model-pipeline/references/production-guide.md",
