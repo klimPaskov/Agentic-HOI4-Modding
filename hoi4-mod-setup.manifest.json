@@ -4694,7 +4694,7 @@
             "arguments": [
               "--quiet"
             ],
-            "network_access": "Required to install current-user Node.js LTS when missing and resolve the exact hoi4-agent-tools@3.8.1 package from https://registry.npmjs.org.",
+            "network_access": "Required to install current-user Node.js LTS when missing and resolve the exact hoi4-agent-tools@3.9.0 package from https://registry.npmjs.org.",
             "expected_writes": [
               "the current user's winget-managed Node.js LTS installation when Node is missing",
               "the current user's AppData/Roaming/npm package prefix",
@@ -4762,7 +4762,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "3.8.1",
+          "version": "3.9.0",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -4781,11 +4781,11 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "3.8.1",
-            "package_integrity": "sha512-ZwALO4VX6IbFSQNG+CW7VPgpcKiFzdY1R3zje+TQPs7/LcDQLyW8aDOS1NHqw6vpbYkpWStliv+sVjMbu4lfgQ==",
+            "package_version": "3.9.0",
+            "package_integrity": "sha512-p/+BfPt/B8kihN1M2JF4xesDD9eOgEf7sisfhZTCHmuaiJbg2ss+tnr9uMWzbGvlPAqnlQZaA7UanCv7HfkS1w==",
             "runtime_entry": "dist/bin/stdio.js",
-            "runtime_entry_sha256": "08c66fbe4c5c41d5a3abee960b300589d545b38a9c4f715ea5fe9b10e9c21515",
-            "runtime_entry_size": 2194,
+            "runtime_entry_sha256": "8454294ee591a91c0e098f9a7f3f9bbd83c7c4f65f76182b69f8b732a12dc2a9",
+            "runtime_entry_size": 3484,
             "required_tools": [
               "hoi4.focus_inspect",
               "hoi4.focus_render",
@@ -4827,8 +4827,8 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "25702844e7f83ea54d82e0adef054b1b618c4fa0e93ea7980cd7dfce0a0d7497",
-            "package_file_count": 5353
+            "package_tree_sha256": "16782ad28fffabf0e11ed7799afe06a7a262f64f02ae2f4d0090dd41d932a7fe",
+            "package_file_count": 5356
           }
         }
       ],

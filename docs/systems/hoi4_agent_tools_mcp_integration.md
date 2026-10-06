@@ -76,6 +76,9 @@ When exposed, `hoi4.script_validate` checks an effect or trigger body under a de
 Supply external scope bindings only when their types are known.
 A true result covers only `checksPerformed`; `valid = null`, unresolved helpers, unchecked argument blocks, and omitted findings require further source inspection.
 These checks do not establish parameter semantics or game execution.
+With a mod-relative `path` instead of a body, `hoi4.script_validate` checks every effect and trigger body of an event, decision, national focus, scripted helper, or on-action file under the scope its structure fixes, and treats the mod's own scripted effects and triggers as known commands.
+Run it on each changed script file before handing work to live testing: its errors predict load errors the game reports, such as a dynamic variable compared as a trigger or a scope link outside its scopes.
+Its warnings cover player-facing text (colour codes in news and report events, development wording, unlocalised flags in requirement tooltips) and visible events that would reach one player once per loop iteration; treat each as a defect to fix or a recorded decision.
 
 ## Probability scenario contract
 
@@ -110,6 +113,8 @@ The lifecycle applies to focus, GUI, and map rewrites, including Agent Nudger or
 7. Rollback or recovery: if the write or post-validation fails, retain the exact-byte recovery data and transaction or recovery reference, roll back to the prior source automatically when the engine supports it, and report the failure.
 
 A blocked proposal must not mutate source.
+GUI preview scenarios accept `flags`, `variables`, and `closedFlags: true`, which treats undeclared flags as unset; set them so tabbed windows and flag-driven panels render one page at a time, and treat `GUI_UNRESOLVED_VISIBILITY_OVERLAP` as missing scenario facts rather than a layout defect.
+
 For scripted GUI work, the optional rewrite's automatic transaction success or post-write/index validation is not itself a completion gate. An authorized reviewed GUI edit may be applied directly without another fallback approval solely because that optional rewrite blocks or rolls back; required inspect/render evidence, matched comparisons, and correction of visible in-scope defects remain mandatory. This rule does not disable the server's internal validation.
 
 The public MCP surface does not provide caller-managed transaction, apply, or rollback commands in the installed package, so intentional reversal of a successful edit is a new authorized source change, normally through version control.
@@ -133,7 +138,7 @@ Technology and doctrine work uses the advertised `hoi4.tech_inspect`, `hoi4.tech
 Install the exact published package version declared by the current setup manifest and repository bootstrap, keeping version, registry integrity, runtime-entry evidence, and documentation aligned. The current starter revision uses:
 
 ```powershell
-npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.8.1
+npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.9.0
 ```
 
 If that exact package version is unavailable or fails verification, record the package/version blocker instead of silently substituting an unpinned clone or another release.
@@ -145,6 +150,7 @@ For a local mod, register `hoi4-agent-tools.cmd` with the mod directory as its w
 Use `hoi4-agent-tools-setup --init` only when persistent multi-mod or remote configuration is required.
 
 Use stdio for a local agent process.
+A stdio server exits when its launching process exits. Codex keeps one server per subagent connected after the subagent finishes, so the Codex registration sets `HOI4_AGENT_STDIO_IDLE_EXIT_MINUTES = "30"`; leave that variable out of registrations for long interactive sessions.
 
 For a separate HTTP process, run `hoi4-agent-tools-http --config PATH` with loopback binding, a long bearer token supplied through an environment variable, an exact origin allowlist, and explicit workspace grants.
 
