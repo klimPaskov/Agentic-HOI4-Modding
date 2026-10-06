@@ -211,9 +211,36 @@ Then put the full requirement list in a tooltip. Missing requirements should be 
 
 ### Custom-cost affordability and payment
 
+Every native `custom_cost_text = <base>` needs localisation for `<base>`, `<base>_blocked`, and `<base>_tooltip`; the engine selects the row key through `custom_cost_trigger` and shows the tooltip key on hover (offline Decision modding, custom cost section).
+Per-resource scripted colour selectors do not replace these parent native keys.
+When the base already renders each resource's ready or blocked colour independently, exact `$base$` aliases for the suffixed keys can reuse that quote without duplicating amounts or adding fees.
+Trace actual decision consumers, scripted getters, and texticon definitions; missing source-key coverage establishes a contract gap, not proof that a native row displayed a raw key.
+
 Custom-cost display is not sufficient evidence that a decision is selectable. Define one shared, inclusive affordability predicate and invoke it from both `available` and `custom_cost_trigger`; manually debit the custom payment once in `complete_effect`, and set the fixed `ai_hint_pp_cost` amount when political power is included. If the cost row already fully explains payment, the duplicate `available` check may use `hidden_trigger` to keep raw requirements out of the visible block. Keep display, affordability gate, and debit aligned, and document engine uncertainty instead of inferring behavior.
+Each resource's cost colour or display selector must call the same authoritative inclusive affordability component used by that shared gate, with the same payer, quote, units, and equipment token.
+Do not copy strict, deprecated, or inexact reserve or equipment predicates into display logic.
+Check agreement just below, exactly at, and just above the quoted cost.
 
 For fractional dynamic costs, show enough decimal places in every cost row and tooltip to communicate the actual debit. Keep display caches separate from fresh affordability and payment calculations so a rounded or stale quote cannot govern selection or payment.
+
+When accepted design requires an emergency resolution to remain available while every other recovery is unaffordable, do not gate it on full nominal reserves. Bound each actual fee by its nominal fee and the nonnegative current reserve, show the actual quote with matching texticons, recompute all fees together before any debit, then charge that coherent quote once. Avoid hidden partial payments and threshold fee-waiver cliffs.
+For variable-fee emergency actions, use an `ai_hint_pp_cost` matching the actual quote only if that input form is verified as supported; otherwise omit the fixed nominal hint so a zero quote remains available to AI at zero political power. Never assume `ai_hint_pp_cost` accepts dynamic values.
+Verify exact numeric reader tokens in the installed dynamic-variable documentation rather than assuming a display or stat name: `has_political_power`, `has_stability`, and `has_war_support` are documented readers, while raw `war_support` is not a documented built-in reader. This does not forbid a custom normal variable with that name.
+Make final resolution and cleanup idempotent with a closed-state guard, and require queued work and late timed callbacks to match the active context before invoking cleanup. Preserve earned finite aftermath until its intended expiry and retain achievement receipts when removing active-crisis state.
+
+### Refundable purchases and separate credit receipts
+
+When a refundable decision both charges a currency and grants separate credit, such as progress toward an achievement or a sale-period counter, keep the two receipts apart.
+Store the exact paid quote in an owner normal variable for the currency refund; never infer credit from the price, an active sale, or another display value.
+
+- Clear the previous owner receipt before crediting, preinitialize every helper output temp in the caller chain, and invoke the shared credit helper exactly once after payment.
+- Persist a positive credited result as an owner country flag and its credit sequence or period identifier as an owner normal variable. Use separate pairs for decisions whose timers can overlap.
+- On cancellation, load the saved flag and sequence into the helper inputs and withdraw credit only when the receipt sequence matches both the current credit period and the payer's retained credit record.
+- Refund the recorded paid quote once and clear the persistent receipt pair and paid marker, so repeated cancellation cannot refund currency twice or withdraw another purchase's credit.
+- Successful completion clears the receipt and paid marker without withdrawing earned credit.
+- Do not invent a historical credit ledger, reverse an older purchase through a newer index, or revoke an awarded achievement.
+
+Verify same-period refunds, purchases made outside a credit period, older-period refunds after a newer purchase, excluded credit eligibility, repeated cancellation, and successful completion through the actual helper chain.
 
 ## 7. Trigger and requirement clarity
 
@@ -299,6 +326,19 @@ Recommended bands:
 Emergency missions can be shorter only when the event story clearly justifies immediate danger.
 
 Do not give every mission the same timer.
+
+For every decision-level `modifier = { ... }`, define `days_remove` even when `days_mission_timeout` is present; the modifier applies during the active post-selection removal timer, not the mission timeout.
+A `modifier` nested inside `ai_will_do` adjusts AI weight and is not a decision effect.
+Audit the entire owned decision and mission family by block scope, preserving completion, removal, timeout, cancellation, and cleanup behavior.
+Derive `days_remove` from the intended active duration and existing tuning; do not invent deadlines or change mission deadlines only to satisfy this requirement.
+
+### Synchronizing native mission timers
+
+`activate_mission` initializes the native `days_mission_timeout` from the static mission definition; changing a separately stored deadline does not update it.
+Immediately after activation and after every accepted deadline extension, synchronize in the mission owner's country scope, guarded by the active contract, an existing deadline, and `has_active_mission`.
+Compute remaining days as `deadline - global.num_days`, then pass the signed difference `remaining_days - days_mission_timeout@mission_id` to `add_days_mission_timeout = { mission = mission_id days = var:timeout_delta }`; this can shorten or extend the native timer and is idempotent.
+Partial payments must leave the running mission and deadline intact rather than removing and reactivating the mission.
+If the deadline has already expired, use the guarded timeout resolver; the native timeout callback and any owner recovery pass must share an active-contract guard and clear it on resolution so failure cannot resolve twice.
 
 ## 10. Success, failure, and partial success
 
@@ -590,6 +630,10 @@ A faction should not form just because one country exists. Use minimum membershi
 Special mechanic values must be visible somewhere the player can understand them. A decision category can show values in its header, a custom scripted GUI, a progress meter, a scripted localisation tooltip, or national spirit tooltips.
 
 Apply the [content and interaction budget](../hoi4-scripted-gui/SKILL.md#content-and-interaction-budget) to every decision mechanic surface, including ordinary categories, attached displays, and full windows. Keep internal calculations hidden or summarized unless they change an immediate player decision or explain an important consequence. Merge or remove weak values and duplicate actions; moving clutter into another category, tab, tooltip, or popup does not resolve it.
+
+The three-to-six primary-action budget guides usable action presentation; it is a design and readability limit, not a hard HOI4 engine row limit.
+Counts alone establish neither engine capacity nor clipping; engine or visual claims require relevant documentation or actual consumer and render evidence, and source or scenario decision inspection is not visual proof.
+Preserve accepted gameplay and navigation scope; do not require deletions or extra categories solely from a count.
 
 Special mechanics may hide future surprises, but public cause and effect must remain clear: what changed a visible value, its consequence, and the broad response available.
 
@@ -1000,6 +1044,14 @@ Review:
 - cleanup behavior
 
 Document test scenarios or observations. Do not only say `balanced`.
+
+### Production action contract tests
+
+When source contract tests cover a paid action, execute the real selector, action mapper, debit, refund, receipt, and cooldown helpers that belong to the tested path.
+Restrict mocks to native primitives or explicitly out-of-scope consumers, and record those boundaries in the evidence.
+Assert the actual native flag identifier, requested cooldown duration, and write count on success, rejection, refund, and repeated invocation where applicable; a mocked success counter does not prove that the production mapper has the required branch.
+Do not replace a required production helper with a no-op solely to pass a loader error; fix the test loader or report the uncovered path.
+These source tests do not establish native engine execution or timed expiry.
 
 ## Improvement addenda for decisions and mechanic windows
 

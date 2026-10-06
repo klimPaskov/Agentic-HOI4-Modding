@@ -1,6 +1,6 @@
 name = "hoi4_skill_maintainer"
 description = "Creates, updates, audits, and trims HOI4 mod repository skills. Use when a reusable workflow, repeated mistake, validation pattern, asset workflow, prompt pattern, or project convention should be captured in a skill. Does not edit gameplay files."
-model = "gpt-6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Skill Maintainer"]

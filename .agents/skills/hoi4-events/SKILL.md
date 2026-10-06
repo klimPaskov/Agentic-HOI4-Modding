@@ -63,6 +63,7 @@ Use this skill with:
 - `hoi4-focus-trees` when the event creates, unlocks, modifies, or depends on focus trees
 - `hoi4-decisions-missions` when the event creates or depends on decisions, missions, timed objectives, formables, or decision-driven mechanics
 - `hoi4-scripted-gui` when the event owns or opens a scripted GUI; that skill owns reference-image mapping, layout, iterative MCP previews, and visual acceptance while this event skill retains gameplay and lifecycle ownership
+- `hoi4-state-ledgers` when the event moves civilian population between states, keeps cohort registries or reception ledgers, or projects those flows onto a state mapmode
 - `hoi4-subagents` when bounded research, asset production, event-owned UI layout work, small patches, or completion audits should be delegated
 - `hoi4_3d_model_pipeline` for bounded model geometry, textures, rigs, skeletal actions, sourced custom-unit audio research and synchronization design, `.mesh`/`.anim` exports, reimport proof, and runtime handoff when the event owns a 3D unit or building surface
 - `hoi4-improvement-loop` when an implemented event works but is still shallow, generic, disconnected, or underdeveloped
@@ -208,6 +209,16 @@ Do not add a treaty/new world order after every contained or short-lived disaste
 
 Use `script_constants` for shared tuning, but remember that some duration fields reject both `constant:` and variable tokens.
 
+Before adding or extending `script_constants`, read the installed `common/script_constants/documentation.md` and `documentation/script_concept_documentation.md` (Script Constants), then inspect the existing group.
+Every new group must begin with `schema` matching its key and data kinds (`int`, `fixed_point`, or a documented complex schema); new keys in an existing group inherit and must satisfy that schema.
+A basic brace parse does not validate schema correctness.
+Keep script constant category IDs unique across files so helpers with different schemas cannot redeclare the same category.
+
+**Variable arithmetic evidence:** distinguish getter, modifier, normal variable, and script constant representations. Read the installed `documentation/script_concept_documentation.md` (Math Expressions) and the offline `paradox_wiki/Data structures - Hearts of Iron 4 Wiki.md` (Variables), and record precision conflicts rather than inferring a universal normal-variable maximum from math-expression fixed point, modifier-only three-decimal precision, or the deprecated raw-manpower getter overflow near 2.1 million.
+Audit actual source operations with a conservative bounded fixed-point model, explicit rounding or truncation assumptions, and independent integer-floor boundary and count-type cases; a later division or clamp does not prove intermediate safety, and passing unbounded Python arithmetic does not prove engine behavior.
+Never turn an unsupported numeric maximum into an eligibility gate or no-payment policy, or silently cap actual history.
+For integer receipt validation, prefer modulo by one on scratch storage using the documented `modulo_temp_variable` effect and trigger forms without rounding the receipt or adding maximum or count caps; use ratio quotient and remainder or rational scaled coefficients only when proven equivalent under the stated arithmetic assumptions.
+
 Known sensitive fields:
 
 - `set_country_flag = { days = ... }`
@@ -256,6 +267,13 @@ Do not leave the doc describing:
 - removed branches
 - removed assets
 - outdated external record or deck expectations
+
+### Retiring unused helpers
+
+- Before deleting a scripted effect, trigger, or `defined_text`, search every placeholder constructor (`[ID]`-style `meta_effect` or `meta_trigger` text, `@` token pasting, and dynamically suffixed effect names) and the GUI, `.gfx`, localisation, and docs for the name; a zero literal token count alone does not prove the code is dead.
+- Delete the comment header attached directly above the removed block, or it will describe the next definition.
+- After each removal pass, rescan for helpers, localisation keys, and script-constant keys whose only consumer was the removed code, and repeat until nothing new appears.
+- Repository files can mix CRLF and LF line endings; edit them line by line with their own endings instead of splitting on one newline style.
 
 
 ## Formable nations as event surfaces
@@ -353,6 +371,8 @@ Do not leave generated assets only in a temporary folder. If the event uses them
 
 
 ## Final event checklist
+
+After editing report or news text, audit every colour-bearing key drawn on a light parchment consumer, including scripted localisation output, and resolve each hit; use the repository's report-colour audit tool when one exists.
 
 Before closing an event task, verify the surfaces that actually exist for the feature:
 
@@ -476,6 +496,29 @@ Touch the relevant systems in the same implementation pass:
 
 If new reusable dynamic scripted effects or triggers are added, document them in the matching markdown file or repository helper documentation in the same change.
 
+#### Native special-project output overrides
+
+Do not assume duplicate native project IDs safely replace or partially merge definitions across filenames.
+For approved vanilla project output changes, use a complete replacement at the same relative vanilla file path unless the relevant engine merge behavior is proven.
+Repeating full definitions in a distinct mod filename can duplicate enable-equipment or module list entries.
+
+- Check installed native documentation, current vanilla source, and every existing mod owner of the file and project IDs before editing.
+- Retain original tuning, availability, rewards, and file-scoped constants, including other projects in the replaced file, while adding only approved owned output hooks.
+- Record vanilla source paths and SHA-256 hashes, then remove only the owned hooks from a comparison copy and verify exact remaining content against those sources.
+- Check effective source-ID uniqueness after same-path masking, including other mod files that still declare the IDs.
+
+Source equality establishes preservation only and must not be described as engine validation.
+
+#### Event-created country packages
+
+When auditing event-created country packages, verify the whole playable-country surface, not only the release effect: country files, custom-tag history, additive startup grants for existing countries, tag registration, base and ideology-specific cosmetic localisation with `_DEF` and `_ADJ` variants, flags, decision, focus, and idea icons, focus loading, AI strategy, docs, and manifests. For existing-country variants, set the event-created flag only on the release path and gate every `load_focus_tree` path by that flag. Do not copy vanilla country, state, or unit history only to add the mod's technologies, equipment, facilities, traits, or other additive setup; put that setup in a startup helper called from `on_startup`.
+
+Static named characters that need persistent script tokens must be recruited in history. Do not use runtime `recruit_character` or attempt a character-scope transfer of an unrecruited identity. For dated identities, a bounded `history/general` recruitment pool on a dedicated dormant holder is valid; the holder must have no owned states or gameplay route and must not reuse an event-owned playable holder or a test harness. Check date eligibility and original ownership before transferring from the original owner's country scope with `set_nationality = { target_country = <destination> character = <static_token> }`, and preserve availability dates, roles, identity flags, and retirement gates. Use `generate_scientist_character` only when a generated unnamed identity without a persistent character token is intended; never silently replace approved static identities with generated substitutes. Validate native execution separately from source proof.
+
+Every registered country tag, including stateless dormant or internal history holders, needs valid default and ideology flag lookup coverage in `gfx/flags/` (`82x52`), `gfx/flags/medium/` (`41x26`), and `gfx/flags/small/` (`10x7`), because native flag consumers remain active without territory or a playable route.
+Use the `hoi4-feature-assets` flag workflow for this minimum native consumer package, limit asset authorization to that package, and document intentionally shared institutional designs across aliases in the manifest.
+Validate actual 32-bit uncompressed bottom-left TGA headers and decoded orientation against installed and repository examples, correcting flag files directly without UI or dynamic-routing workarounds.
+
 ### 5. Use scopes deliberately
 
 Event bugs often come from scope drift.
@@ -495,6 +538,27 @@ If an effect chain needs a scope later, save it as an event target. Use regular 
 For country activation, deferred setup, player transfer, or coalesced refreshes, read [country-activation.md](references/country-activation.md) before implementing the receiver chain.
 
 When inlining a multi-condition scripted trigger inside `NOT`, retain an explicit `AND` around its conditions because sibling conditions in `NOT` use NOR semantics. Preserve rejection when either a shared precondition or native legality check fails. State-scoped diagnostics must check country flags through the intended country scope.
+
+Stored state pointers refer to persistent map objects, so do not use COUNTRY-only `exists = yes` inside a STATE scope.
+Validate the intended state with an appropriate documented native STATE predicate or a registered state marker such as `has_state_flag`, together with its expected state ID using the documented identity semantics.
+`scope_exists` is always true for variable scopes and does not validate the stored pointer.
+Retain `exists = yes` checks in actual COUNTRY scopes, including a state's owner, controller, or stored country pointer.
+
+Native callbacks keep their own ROOT and FROM contracts, and participant iterators, targeted decisions, and nested transactions do not rebind ROOT. The callback scope table, participant capture pattern, frozen transaction inputs, receipt nonces, and state-owned cadence rules live in [country-activation.md](references/country-activation.md); read them before changing a callback-to-helper scope chain or a receipt read.
+
+### Helper output lifetime
+
+Temporary variables first created inside a scripted effect or trigger may disappear after return, while caller-preinitialized storage retains the helper's modifications (offline `paradox_wiki/Data structures - Hearts of Iron 4 Wiki.md`, Variable types section).
+
+- Before each helper call, ensure every temporary scalar and temporary-array output consumed afterwards has caller-owned storage, including calls inside `if.limit` and scripted-localisation `text.trigger`. Initialize new output storage to zero or its documented invalid sentinel without resetting existing input or cursor values.
+- Apply this at every nested call boundary: each caller initializes the outputs it consumes, and outer callers also initialize forwarded outputs needed after return.
+- Helpers reset public outputs at entry and clear one-shot input envelopes separately on success and rejection, without erasing published results before the caller consumes them.
+- Public helper API docs must list caller-owned output storage and its required initial values.
+- Actual-source tests must model conservative call-frame cleanup by discarding temporary scalars and arrays first created in the returning helper, retaining modifications to caller-preinitialized storage, and keeping scoped regular saved state separate from temporary storage instead of using one flat global temporary dictionary.
+
+When a source audit or fixture cannot model this call-frame lifetime, report it as unmodelled and separately check caller preinitialization before consuming helper outputs.
+For shared dispatchers, locate the matching authorization gate and recursively inspect its body and invoked helpers for actual dispatch and accounting, including package-specific nested branches.
+A flat block-shape assertion or literal marker match does not establish that execution coverage.
 
 ### 6. Put real effects in the right place
 
@@ -543,6 +607,10 @@ AI chance should consider:
 - player-adjacent risk
 
 When AI behavior is complex, centralize it in scripted triggers, scripted values, or helper effects rather than scattering repeated conditions across many options.
+
+For deterministic max-score selectors, track explicit first-valid-candidate presence and accept that first candidate regardless of its score.
+A numeric best-score sentinel must not reject an otherwise valid negative score.
+After the first candidate, retain the exact score comparison and existing ID tie-break without changing weights or eligibility.
 
 ### 9. News and report events
 
@@ -623,6 +691,20 @@ Every player-facing event needs complete localisation:
 Localisation must describe the in-world situation and visible consequences. It must not expose implementation history, prompt fragments, hidden variables, secret route names, future surprises, or achievement spoilers.
 
 Dynamic values often display decimal places unless formatted. If a value is conceptually an integer, use an integer formatter such as `|0` or an equivalent scripted-localisation helper. Use fractional precision only when the fraction changes player decisions.
+
+For numeric `defined_text` output, put the formatted variable in a real `.yml` localisation value, such as `numeric_value_display: "[?temp_value|0]"`, and use the key's literal name in the corresponding `text` block: `localization_key = numeric_value_display`.
+An inline formatted variable string such as `localization_key = "[?temp_value|0]"` is tokenized as a dynamic key and may fail with dynamic-token errors.
+Temporary variables assigned in the same `text.trigger` remain visible to the selected localisation key, so calculate the display value there.
+Retain constant-backed temporary getters where the installed documentation supports the assignment, and do not introduce persistent globals solely for formatting.
+
+Report and event descriptions drawn on a light parchment or paper background must use plain text for names and values, without `§` colour formatting, including strings returned by scripted localisation.
+Keep colours only in consumers with a supported dark background, such as options, tooltips, decisions, or GUI text; use separate plain and coloured localisation variants when a shared helper feeds both.
+Audit the whole owned description family and its dynamic substitutions for contrast in the actual consumer, including at 1080p.
+
+Native PowerShell stdin can replace non-ASCII program text before Python receives it, even when Python writes a UTF-8 BOM correctly.
+For localisation writes through that route, use ASCII program text with Unicode escapes or `chr()` for the `U+00A3` texticon and `U+00A7` formatting glyphs, or read the intended text from an explicitly UTF-8 file.
+Re-read the affected values as UTF-8 and verify their actual glyphs after writing.
+When normalizing physical line endings, preserve authored `\n` escapes inside localisation values rather than rewriting them as literal `\r\n` escapes.
 
 When text mirrors a docs field or a parent-provided external record, the in-game localisation is the source of truth. Do not paraphrase mirror fields unless the field is explicitly a summary field.
 

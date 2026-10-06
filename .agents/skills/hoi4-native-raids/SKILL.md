@@ -14,6 +14,10 @@ Inspect the installed vanilla `common/raids/_documentation.md`, relevant vanilla
 ## Scope and dispatch
 
 - In raid preflight (`allowed`, `visible`, `show_target`, `available`, `launchable`, and AI selection), the evaluated scope is the actor country; `FROM` refers to the target country when applicable.
+- Keep physical `target_type` state and province filters actor-neutral unless an explicit actor binding is documented.
+  A native `target_type = { state = { ... } }` filter can evaluate with the state as `ROOT` (observed engine behavior); do not assume `ROOT` is the actor there, and do not infer the province filter's root from this state result.
+  Put actor and victim diplomacy and policy checks in known country preflight (`show_target`, `available`, `launchable`, and `ai_will_do`), using the documented `FROM` target-country binding and explicitly scoped country helpers.
+  Keep AI authorization gates before target desirability boosts.
 - In `success_levels`, both `actor_effects` and `victim_effects` begin in `RAID_INSTANCE` scope. Their names organize outcome UI, not effect scope. Enter `var:actor_country`, `var:victim_country`, or `var:target_state` explicitly before country or state effects. `ROOT` remains the raid instance inside nested blocks.
 - If a country helper requires the actor country as `ROOT`, fire an immediate hidden actor `country_event` from `var:actor_country`. Save needed actor, victim, and target scopes as regular event targets in the originating chain before firing it. Regular event targets carry into events fired by that chain; temporary variables do not. Recheck pointers in the receiving event.
 - For outcome dispatch across several raid types, use disjoint marker families with an exact-one selection check, or separate fixed hidden event IDs. One country or global pending scalar is unsafe because concurrent raids can overwrite it.

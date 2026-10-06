@@ -130,6 +130,8 @@ These agents do not patch gameplay files:
 
 They may write reports only when a report path is provided or obvious from the task.
 
+Some runtimes refuse report-file writes from subagents. Ask every read-only or audit subagent to return its complete findings inline as well, and allow scratch helper files only for intermediate data such as scan outputs or range lists that the parent can read afterwards.
+
 ### Plan-only agents
 
 `hoi4_improvement_loop_planner` writes feature expansion specs, improvement addenda, deep research notes, historical connection notes, and implementation handoffs. It does not edit gameplay, localisation, GUI, scripted effects, focus trees, decisions, assets, external tabular data files, workbooks, or country files.
@@ -198,6 +200,11 @@ Active small patches include:
 
 Any patch to an AI weight, probability-bearing modifier, MTTH-backed score, random-selection weight, strategy factor, or weighted target check requires an audit-patch-compare cycle. Run `hoi4_ai_probability_auditor` first to establish named baseline scenarios. Before editing, the owner preserves an immutable pre-edit source copy at a real filesystem path, the exact scenario fixture, and SHA-256 hashes of the copied bytes. The owner applies the bounded change, then the auditor runs `hoi4.probability_compare` against the same scenarios using actual before and after paths. The probability auditor remains read-only, does not choose the intended balance target, and does not patch source.
 
+If immutable probability snapshots are committed as durable before-source evidence, preserve the copied bytes through narrowly scoped Git attributes and any clean filters.
+When attributes change after staging, plain `git add` may reuse cached normalization; force a path-specific `git add --renormalize` under byte-preserving attributes and filters, or explicitly promote a blob with `git hash-object -w --no-filters` and a path-specific index update.
+Verify that the raw committed blob's SHA-256 matches the recorded copied-byte hash, reading it without text decoding, newline conversion, or checkout filters.
+Preserve the physical original and keep any mismatch and dependent comparison proof unresolved until repaired and reverified.
+
 Active small patches do not include:
 
 - creating or expanding a whole mechanic
@@ -238,6 +245,13 @@ Do not fill handoffs with passing boilerplate checks that only restate AGENTS.md
 ## MCP evidence in handoffs
 
 When a routed task touches focus trees, event chains, technology or doctrine trees, weighted logic, scripted GUI, or maps, MCP use is mandatory as the shared evidence surface whenever the installed package supports the matching route. Pass only the diagnostics, revision, scenario hash, comparison, transaction or recovery reference, or linked artifact URI the parent needs instead of copying a complete graph or matrix into the prompt. For an authorized Agent Nudger or equivalent write, retain the dry-run, review, apply, post-validation, transaction, and rollback or recovery evidence. If the required MCP route is unavailable, mark the affected work blocked or unresolved and carry the exact limitation to the parent; source-only review is not equivalent.
+
+Before using helper-expansion modes, persistent job inspection or cancellation, or native MCP tasks, resolve each client's actual configured transport and server process before attributing capabilities to a local checkout, global binary, or exposed tool list; their versions and supported routes can differ.
+Keep configuration identity, server version, live schemas, and task negotiation in task evidence.
+A failure to observe a native task result does not establish that the server task failed.
+Preserve configuration, task IDs, and source and scenario hashes, then query existing handles through confirmed routes before retrying; if observation remains unavailable, report the task outcome unresolved.
+Do not change external tool source or dependencies to mask startup or domain failures.
+Keep package paths, concrete versions, and current errors in task evidence rather than reusable skill rules.
 
 For large binary resources returned through an MCP resource reader, treat the result as an untrusted transport envelope. Inspect whether it is stringified JSON and record declared encoding and type before using the payload. Do not trust compacted previews, literal truncation markers, or metadata claiming completion, and never print base64 data.
 

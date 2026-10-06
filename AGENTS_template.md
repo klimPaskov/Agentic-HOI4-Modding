@@ -18,7 +18,7 @@ These values are already filled in this template and should normally be left as-
 - Offline Paradox wiki snapshot: `paradox_wiki/`
 - Local vanilla Hearts of Iron IV install: `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`
 - Default documentation folder: `docs/`
-- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-scripted-gui`, `hoi4-mtth`, `hoi4-super-events`, `hoi4-3d-model-pipeline`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-portrait-production`, `hoi4-comfyui`, `hoi4-comfyui-cloud`, `hoi4-comfyui-local`, `hoi4-comfyui-runpod`, `hoi4-subagents`, `hoi4-improvement-loop`, `xlsx`, and the explicit-invocation-only `hoi4-debug-playtest`
+- Generic HOI4 skills from `.agents/skills/`: `hoi4-events`, `hoi4-feature-planning`, `hoi4-feature-assets`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-scripted-gui`, `hoi4-mtth`, `hoi4-super-events`, `hoi4-3d-model-pipeline`, `hoi4-frame-animation`, `hoi4-text-audio-research`, `hoi4-portrait-production`, `hoi4-comfyui`, `hoi4-comfyui-cloud`, `hoi4-comfyui-local`, `hoi4-comfyui-runpod`, `hoi4-subagents`, `hoi4-improvement-loop`, `hoi4-native-raids`, `hoi4-save-inspection`, `hoi4-state-ledgers`, `hoi4-shared-git-commit`, `xlsx`, and the explicit-invocation-only `hoi4-debug-playtest`
 - Generic HOI4 subagents from `.codex/agents/`: `hoi4_repo_explorer`, `hoi4_feature_completion_auditor`, `hoi4_ai_probability_auditor`, `hoi4_scripted_system_architect`, `hoi4_localisation_auditor`, `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_event_ui_worker`, `hoi4_country_package_auditor`, `hoi4_improvement_loop_planner`, `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_3d_model_pipeline`, `hoi4_portrait_creator`, `hoi4_quote_remark_researcher`, `hoi4_audio_researcher`, `hoi4_super_event_art_researcher`, `hoi4_super_event_audio_researcher`, `hoi4_super_event_quote_researcher`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, and `hoi4_skill_maintainer`
 
 ---
@@ -70,6 +70,7 @@ Use HOI4 vanilla as the main example set.
   - The Paradox wiki must still be consulted in parallel. Both sources are required.
   - Read the cited sections instead of relying on memory. Use `hoi4.source_lookup` for exact vanilla and mod definitions, override status, and indexed usages; inspect the underlying source when more context is needed.
   - When the live schema supports `view` and `keyPath`, use bounded child structure and select repeated keys with their zero-based `occurrence`. Follow `nextChildOffset` as `childOffset` with the same query settings and `expectedRevision`. Disable references for a focused event or scripted-helper definition read; enable them when investigating consumers.
+  - When the live schema accepts `path` and `line`, use that locate mode to find the definitions and `keyPath` containing a diagnostic, diff, or editor line, then navigate that block. Returned `suggestions` are near-miss names to verify, not matches. Pass a search result's `matchLine` as `startLine` to `hoi4.reference_read` to land on the answering line.
   - When `hoi4.script_validate` is exposed, check relevant effect or trigger bodies under their explicit scopes against installed documentation. A true result covers only `checksPerformed`; `valid = null`, unresolved commands, unchecked argument blocks, and omitted findings require further inspection. Parameter semantics and engine behavior remain separate evidence.
 
 - When implementing a mechanic, event, decision or UI, find at least one vanilla precedent (if possible) and mirror its structure.
@@ -99,6 +100,7 @@ Use repo skills as required implementation guidance, not as optional notes.
 - Use `hoi4-decisions-missions` before editing decisions/missions.
 - Use `hoi4-scripted-gui` for scripted GUI composition, reference-image mapping, content and interaction budgets, layout, iterative MCP live previews, click-region review, state and resolution coverage, and visual acceptance. `hoi4-decisions-missions` retains gameplay-changing control integrity, costs, effects, AI, cleanup, and balance.
 - Use `hoi4-native-raids` for native raid scopes, outcome dispatch, native costs, and final target validation when editing `common/raids/`.
+- Use `hoi4-state-ledgers` when implementing or auditing exact state-to-state population transfers, sparse aligned cohort registries, state-and-country reception ledgers, or transaction-time state mapmode projections.
 - Use `hoi4_event_ui_worker` through `hoi4-subagents` when a named event specifically introduces a dedicated scripted GUI or mechanic window. It follows `hoi4-scripted-gui`, renders and inspects every meaningful layout tranche, corrects visible defects before continuing, and returns matched final comparison evidence. Never route event logs, event-detail frameworks, settings, shared framework windows, or unrelated existing UIs to this worker.
 - Use `hoi4-mtth` when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer.
 - Use `hoi4-subagents` when coordinating custom Codex subagents, routing bounded work, or defining parent/subagent ownership boundaries.
@@ -500,3 +502,5 @@ The commit must only include changes related to that plan. Before committing, re
 Use a clear commit message that describes what was implemented.
 
 Do not commit broken, unrelated, or half-finished work. If the goal cannot be completed cleanly, report the blocker instead of creating a misleading commit.
+
+When the working tree or index also contains other agents' staged or unstaged work, commit only the owned paths and hunks through `hoi4-shared-git-commit`. Never use `git add -A`, a broad pathspec, a normal commit against the shared index, or `git reset --hard` in a shared checkout.

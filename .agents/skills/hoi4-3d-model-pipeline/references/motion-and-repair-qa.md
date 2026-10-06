@@ -64,6 +64,11 @@ task is continuation. Other providers/sources remain separately approval-gated.
   grip/stock/muzzle/support contact groups. Loops require first/quarter/middle/
   three-quarter/last proof and endpoint return. Sampling bounds is not visual
   proof of role completeness.
+- Key every animated bone in every action, including bones that stay at rest values; an unkeyed bone keeps the last evaluated pose from another action, so a tilted or foreign pose leaks into the next clip.
+- Continuous rotations such as wheels cannot use shortest-path direction keys past 180 degrees without tearing or snapping backwards. Key spin about the measured axle in steps of at most 60 degrees, and weight each wheel rigidly inside a measured cylinder so fenders and chassis stay on the body bone.
+- Set the scene and every exported action to the pipeline frame rate before timing entity sounds or events, and confirm the frame rate in the exported action dump; an imported blend can silently carry a different rate and drift sound timing.
+- Provider motions authored for an empty-handed body often hold a later-attached weapon raised or across the chest. Correct only the carrying bone toward the intended level, forward aim, review the result, and time shot events only on frames whose measured muzzle axis is level and forward.
+- Keep review and render output paths short; long job tags plus action names can exceed the Windows path limit and silently drop renders.
 
 ## Geometry, normals, materials, and publication
 
