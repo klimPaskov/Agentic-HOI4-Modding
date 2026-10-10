@@ -109,7 +109,7 @@ Use repo skills as required implementation guidance, not as optional notes.
 `hoi4-debug-playtest` is never part of normal coding, validation, audit, or completion routing. Use it only when the user explicitly names the skill or explicitly authorizes autonomous desktop playtesting for the current task; otherwise live game and launcher testing remain user-owned.
 
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:START -->
-- Use `hoi4-live-testing` when a task needs live-game evidence through the optional HOI4 Live Tools MCP server (`hoi4-live`): loading a save, firing an event or effect in test mode, running time with popup handling, reading popups, the error-log delta, and the plain-text save. Use it only when the user asked for live testing or the task explicitly includes it; otherwise live validation stays with the user. When HOI4 Live Tools is installed, `hoi4-debug-playtest` drives the game through it instead of ad-hoc desktop scripts.
+- Use `hoi4-live-playtest` when a task needs live-game evidence through the optional HOI4 Live Tools MCP server (`hoi4-live`): launching or reusing the game, loading a save, firing an event or effect, running time with popup handling, reading popups and the screen, saving and diffing saves, and the error-log delta. Use it only when the user asked for live testing or the task explicitly includes it; otherwise live validation stays with the user. When HOI4 Live Tools is installed, `hoi4-debug-playtest` plays through it instead of controlling the desktop itself.
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:END -->
 
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.portraits.core:START -->
@@ -143,10 +143,9 @@ The detailed capability, artifact, probability-scenario, rewrite-recovery, and t
 
 HOI4 Live Tools is an optional MCP server (`hoi4-live`) that drives a running Hearts of Iron IV on Windows: launching and loading, reading the screen, input inside the game window only, the console in test mode, time and popups, saves and plain-text save queries, the error log, and a briefing of the player's country.
 
-- It is registered per user, not per project, because its install folder differs on every machine. Claude Code: `claude mcp add --scope user hoi4-live -- "<install folder>\hoi4-live-tools.cmd"`. Codex: `[mcp_servers.hoi4-live]` in the user `~/.codex/config.toml` with `tool_timeout_sec = 1800`.
-- Loading a save or running weeks of game time takes minutes; give the client a long tool timeout, for example `MCP_TOOL_TIMEOUT=1800000` for Claude Code.
+- HOI4 Mod Setup installs it for the current user and registers it in the user's client configuration, not in the project, because the install folder is per machine. By hand: `python install.py` from the release archive (`.claude/skills/hoi4-live-playtest/references/setup.md`).
 - Every acting tool takes the shared desktop lock; hold it with `hoi4_lock` across a multi-step run and always release it. Never type outside the game window. The server never edits `settings.txt`.
-- Follow `hoi4-live-testing` for the test workflow and `.claude/skills/hoi4-live-testing/references/setup.md` for setup and troubleshooting.
+- Follow `hoi4-live-playtest` for the test workflow, its efficiency rules, and setup and troubleshooting.
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:END -->
 
 ### Agent runtimes
@@ -352,7 +351,7 @@ When implementing any new mechanic, follow this checklist:
 12. Confirm that all decisions and event options or other effects have proper trigger tooltips and effect descriptions.
 13. Respect the repository style and naming rules so new content blends with existing `[MOD_NAME]` code.
 14. For systems that touch or are related to an existing project-wide mechanic, review related docs and verify integration across events, on_actions, decisions, scripted logic, UI, logs, and localisation.
-15. Never launch Hearts of Iron IV during normal implementation, audit, or completion work. Live game and launcher testing is owned by the user unless they explicitly invoke `hoi4-debug-playtest`, ask for live testing through `hoi4-live-testing`, or explicitly authorize that bounded workflow for the current task.
+15. Never launch Hearts of Iron IV during normal implementation, audit, or completion work. Live game and launcher testing is owned by the user unless they explicitly invoke `hoi4-debug-playtest`, ask for live testing through `hoi4-live-playtest`, or explicitly authorize that bounded workflow for the current task.
 16. When the user reports an issue after new changes were made, assume the game has already been reloaded. Do not default to restart/reload advice. Do not ask for, request, or search for logs. If the user did not paste any error lines, treat it as having no error lines to use. Do not tell the user to run in-game validation. Assume they will always verify changes in a live session and in a new save. Do not mention old saves. When the user supplies a save, read it with `hoi4-save-inspection` before forming a hypothesis.
 17. Design fallbacks and reductions of requested functionality require user approval unless already authorized. Direct source and reference review and local checks are preauthorized verification alternatives and do not require another permission question. A wired sourced portrait remains an explicitly pending source placeholder until the user supplies its HOI4-style replacement.
 18. When the user reports that something is wrong and you can't figure out what exactly, then add temporary debug code (for example: `log = "my debug log"`) that exposes the relevant runtime values needed to understand the issue, and remove every debug line you added once the issue is resolved.

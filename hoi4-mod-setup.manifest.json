@@ -1410,7 +1410,7 @@
           "**/.DS_Store",
           "**/__pycache__/**",
           "hoi4-comfyui*/**",
-          "hoi4-live-testing/**",
+          "hoi4-live-playtest/**",
           "hoi4-portrait-production*/**",
           "hoi4-super-events*/**"
         ]
@@ -4816,7 +4816,7 @@
           "**/.DS_Store",
           "**/__pycache__/**",
           "hoi4-comfyui*/**",
-          "hoi4-live-testing/**",
+          "hoi4-live-playtest/**",
           "hoi4-portrait-production*/**",
           "hoi4-super-events*/**"
         ]
@@ -8224,7 +8224,7 @@
     },
     {
       "id": "runtime.codex.live_tools_skill",
-      "display_name": "Codex copy of the live-testing skill",
+      "display_name": "Codex copy of the live-playtest skill",
       "description": "Install the Codex copy only when the matching optional workflow is selected.",
       "category": "environment",
       "coding_environment": "codex",
@@ -8236,7 +8236,7 @@
         "kind": "tree",
         "path": ".claude/skills",
         "include": [
-          "hoi4-live-testing/**"
+          "hoi4-live-playtest/**"
         ],
         "exclude": [
           "**/.DS_Store"
@@ -8252,7 +8252,7 @@
         "workflow.live_tools"
       ],
       "conflicts": [
-        "existing codex copy of the live-testing skill"
+        "existing codex copy of the live-playtest skill"
       ],
       "conflict_policy": "replace_if_unmodified",
       "validation": [],
@@ -8489,6 +8489,81 @@
       "notes": [
         "The exact public package is installed automatically on Windows and all required tools must appear in tools/list. Technology tool exposure does not establish standalone viewer availability.",
         "The inspected source declares a Windows command and no verified macOS route."
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "mcp.hoi4_live.bootstrap",
+      "display_name": "HOI4 Live Tools installer",
+      "description": "Install the pinned HOI4 Live Tools release for the current user and register it for the coding clients found on the machine, through a bounded Windows bootstrap.",
+      "category": "script",
+      "optional": true,
+      "platforms": [
+        "windows"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".tools/mcp/bootstrap_hoi4_live_tools.py"
+      },
+      "destination": {
+        "path": ".tools/mcp/bootstrap_hoi4_live_tools.py",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "required_tools": [
+        {
+          "id": "python",
+          "required": true,
+          "version_policy": "user_managed",
+          "health_checks": [
+            "python --version"
+          ]
+        }
+      ],
+      "conflicts": [
+        "existing HOI4 Live Tools bootstrap"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "mcp.live_bootstrap",
+          "severity": "warn",
+          "kind": "command",
+          "target": ".tools/mcp/bootstrap_hoi4_live_tools.py",
+          "parameters": {
+            "arguments": [
+              "--quiet"
+            ],
+            "release_version": "1.0.0",
+            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.0.0/hoi4-live-tools-1.0.0.zip",
+            "release_sha256": "e80c011d0858c3bb1f6e1c8333ed4f441b44e912758b8e2c9c35b730105d5ba2",
+            "release_size": 1023867,
+            "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless) from https://pypi.org.",
+            "expected_writes": [
+              "%LOCALAPPDATA%/hoi4-live-tools/**",
+              "the current user's Claude Code configuration file (.claude.json), only the hoi4-live entry",
+              "the current user's Codex configuration file (.codex/config.toml), only a marked hoi4-live block",
+              "the current user's Cursor MCP file (.cursor/mcp.json), only the hoi4-live entry",
+              "the current user's OpenCode configuration file (.config/opencode/opencode.json), only the hoi4-live entry"
+            ],
+            "privilege": "current_user",
+            "rollback_boundary": "Managed project files roll back transactionally. The program under %LOCALAPPDATA%/hoi4-live-tools, its Python environment and the per-user client entries are external tool state, reported but not removed automatically; python install.py uninstall removes them."
+          }
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": false
+      },
+      "capabilities": [
+        "pinned release download with SHA-256 verification",
+        "private Python environment",
+        "per-user MCP client registration"
+      ],
+      "notes": [
+        "Windows only. A client entry named hoi4-live that belongs to another program is left unchanged and reported."
       ],
       "expected_files": []
     },
@@ -12532,7 +12607,7 @@
     {
       "id": "workflow.live_tools",
       "display_name": "HOI4 Live Tools",
-      "description": "Add the live-testing skill and setup guide for the optional HOI4 Live Tools MCP server, which drives a running game on Windows. The server itself is installed and registered per user.",
+      "description": "Install the HOI4 Live Tools server for the current user (pinned release, private Python environment, registered for the coding clients found) and add the hoi4-live-playtest skill with its setup guide, so agents test mods in the running game instead of scripting the desktop.",
       "category": "workflow",
       "optional": true,
       "platforms": [
@@ -12542,7 +12617,7 @@
         "kind": "tree",
         "path": ".claude/skills",
         "include": [
-          "hoi4-live-testing/**"
+          "hoi4-live-playtest/**"
         ],
         "exclude": [
           "**/.DS_Store"
@@ -12554,10 +12629,11 @@
         "outside_project": false
       },
       "dependencies": [
-        "core.skills"
+        "core.skills",
+        "mcp.hoi4_live.bootstrap"
       ],
       "conflicts": [
-        "existing live-testing skill with the same path"
+        "existing live-playtest skill with the same path"
       ],
       "conflict_policy": "replace_if_unmodified",
       "validation": [],
@@ -12569,10 +12645,12 @@
       "capabilities": [
         "live feature tests in test mode",
         "popup, log, and save evidence",
-        "campaign actions through the game interface"
+        "save diffing",
+        "campaign actions through the game interface",
+        "game launch, load, and time control"
       ],
       "notes": [
-        "HOI4 Live Tools is a separate program. Register it per user with the command in the setup guide."
+        "HOI4 Live Tools drives a running Hearts of Iron IV on Windows. The server is installed per user by the bootstrap component; the skill routes agents to it."
       ],
       "expected_files": [
         {
@@ -12584,6 +12662,16 @@
           "path": ".claude/skills/hoi4-live-testing/references/setup.md",
           "sha256": "c57c8dd22bde384046774e8a9233053236a2273ae28592e14762d939eff3a31b",
           "size": 4397
+        }
+      ],
+      "required_tools": [
+        {
+          "id": "python",
+          "required": true,
+          "version_policy": "user_managed",
+          "health_checks": [
+            "python --version"
+          ]
         }
       ]
     },

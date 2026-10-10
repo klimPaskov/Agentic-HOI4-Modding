@@ -31,7 +31,7 @@ Generated files are tracked so a checkout works immediately. Never hand-edit the
 
 ### HOI4 Live Tools
 
-HOI4 Live Tools is a separate, optional MCP server that drives a running game. It is not part of `.tools/`; `.claude/skills/hoi4-live-testing/references/setup.md` explains how to install and register it per user, and the optional `hoi4-live-testing` skill explains how agents use it.
+HOI4 Live Tools is a separate, optional MCP server that drives a running game. `mcp/bootstrap_hoi4_live_tools.py` installs the release pinned in it (version, URL, SHA-256, size) for the current user and registers it in the user-level configuration of the coding clients found; it is the `mcp.hoi4_live.bootstrap` manifest component and `scripts/test_live_bootstrap_contract.py` keeps it equal to the manifest. `.claude/skills/hoi4-live-playtest/references/setup.md` documents setup and troubleshooting, and the optional `hoi4-live-playtest` skill explains how agents use it.
 
 ### 3D model pipeline
 

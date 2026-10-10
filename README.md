@@ -57,7 +57,7 @@ Every skill, agent prompt, and instruction file must be readable in one pass. [`
 ## MCP servers
 
 - **HOI4 Agent Tools** (`hoi4_agent_tools`): source-level tools for focus trees, events, technology trees, weighted logic, scripted GUIs, maps, documentation, and source lookup. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` and registers it for the coding environments you choose. Agents use whatever routes the connected server advertises.
-- **HOI4 Live Tools** (`hoi4-live`, optional, Windows): drives a running game for live feature tests. It is a separate program registered per user; the `hoi4-live-testing` skill and its [setup guide](.claude/skills/hoi4-live-testing/references/setup.md) explain how.
+- **HOI4 Live Tools** (`hoi4-live`, optional, Windows): drives a running game for live feature tests and campaign play. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` for your user and registers it for the coding clients it finds (`python .tools/mcp/bootstrap_hoi4_live_tools.py` does the same by hand). The `hoi4-live-playtest` skill and its [setup guide](.claude/skills/hoi4-live-playtest/references/setup.md) explain how agents use it; `hoi4-debug-playtest` plays through it.
 - **Meshy and Blender** (optional 3D workflow): registered by `.tools/3d_pipeline/bootstrap_3d_workflow.py` when a feature needs a model.
 
 ## What's inside

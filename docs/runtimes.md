@@ -136,14 +136,15 @@ A `serverName` may only contain letters, digits, underscore, and hyphen.
 
 ### HOI4 Live Tools (optional)
 
-The optional `hoi4-live` server drives a running game, and its install folder differs on every machine, so it is registered in the user's own client configuration rather than in a project file:
+The optional `hoi4-live` server drives a running game. HOI4 Mod Setup (or `.tools/mcp/bootstrap_hoi4_live_tools.py`) installs the release recorded in the manifest under `%LOCALAPPDATA%\hoi4-live-tools` and registers it in the user's own client configuration rather than in a project file, because the install folder is per machine and a project entry would fail for everyone who has not installed it:
 
 | Runtime | User-scoped registration |
 | --- | --- |
-| Claude Code | `claude mcp add --scope user hoi4-live -- "<install folder>\hoi4-live-tools.cmd"`, and a long tool timeout such as `MCP_TOOL_TIMEOUT=1800000`. |
-| Codex | `[mcp_servers.hoi4-live]` in `~/.codex/config.toml` with `command`, `startup_timeout_sec = 30`, and `tool_timeout_sec = 1800`. |
-| Cursor, Qoder, OpenCode | The runtime's user-level MCP settings with the same command. |
+| Claude Code | `mcpServers.hoi4-live` in `~/.claude.json`; by hand, `claude mcp add --scope user hoi4-live -- "<install folder>pp\hoi4-live-tools.cmd"`. |
+| Codex | `[mcp_servers.hoi4-live]` in `~/.codex/config.toml` with `command`, `startup_timeout_sec = 30`, and `tool_timeout_sec = 1800` (written as a marked block). |
+| Cursor, OpenCode | `~/.cursor/mcp.json` and `~/.config/opencode/opencode.json`. |
+| Qoder | Register the same command in Qoder's user-level MCP settings by hand. |
 
-See `.claude/skills/hoi4-live-testing/references/setup.md` for setup and troubleshooting.
+See `.claude/skills/hoi4-live-playtest/references/setup.md` for setup and troubleshooting.
 
 The MCP evidence rules in the project instructions do not change per runtime: use the routes the connected server advertises, apply the bounded retry policy, and record an unavailable route once before continuing with local references.

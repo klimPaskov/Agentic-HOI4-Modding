@@ -1,6 +1,6 @@
 ---
 name: hoi4-debug-playtest
-description: Explicit-invocation-only workflow for controlling a Windows desktop to launch Hearts of Iron IV in debug mode, inspect fresh logs, repair one selected mod, relaunch until attributable errors are gone, run bounded gameplay and UI tests, capture screenshots, fix confirmed defects, and verify the fixes in game. Never use unless the user names this skill or explicitly asks for autonomous desktop playtesting.
+description: Explicit-invocation-only workflow for playing Hearts of Iron IV through the HOI4 Live Tools MCP server (or, without it, by controlling a Windows desktop) to launch the game in debug mode, inspect fresh logs, repair one selected mod, relaunch until attributable errors are gone, run bounded gameplay and UI tests, capture screenshots, fix confirmed defects, and verify the fixes in game. Never use unless the user names this skill or explicitly asks for autonomous desktop playtesting.
 ---
 
 # HOI4 Autonomous Debug Playtest
@@ -21,7 +21,20 @@ Before starting, confirm that the current agent environment exposes all of the f
 - process inspection and bounded process termination
 - an editing environment for the selected mod
 
-When the optional HOI4 Live Tools MCP server (`hoi4-live`) is connected, use its tools for launching, loading, screen reading, input inside the game window, the console, time, popups, saves, save queries, and logs; they satisfy the desktop-control requirement above, and the safety rules in `hoi4-live-testing` (the shared desktop lock, input only inside the game window, `hoi4live_*` saves only) apply to the whole run.
+When the HOI4 Live Tools MCP server (`hoi4-live`) is connected, it is the route for the whole run and replaces ad-hoc desktop control. It satisfies the desktop-control requirement above, and the safety and efficiency rules of `hoi4-live-playtest` (the shared desktop lock, input only inside the game window, `hoi4live_*` saves only, reuse of the running game and loaded save) apply to every step. Follow that skill for the mechanics of each tool; this skill defines what to test and how to repair.
+
+| Workflow step | HOI4 Live Tools |
+| --- | --- |
+| Launch with the playset, wait for the main menu | `hoi4_launch` (`debug=true` for `-debug`), then `hoi4_status` |
+| Close, relaunch after a content edit | `hoi4_shutdown confirm=true`, `hoi4_launch restart=true` |
+| Fresh-log delta, repeated lines folded, regex filter | `hoi4_logs` with `set_mark` before and `since=<mark>` after |
+| Start or load the dedicated test game | `hoi4_new_game`, `hoi4_load` |
+| Setup, trigger, answer | `hoi4_eval_effect`, `hoi4_console`, `hoi4_fire_event`, `hoi4_popups`, the campaign tools |
+| Advance bounded time | `hoi4_time action=step` with `popups=stop`, or `hoi4_advance` in campaign mode |
+| Read the screen, tooltips, evidence images | `hoi4_screen`, `hoi4_ocr`, `hoi4_hover`, `hoi4_screenshot` (full image kept under the server's `artifacts` folder) |
+| Checkpoints, persistence, before and after | `hoi4_save`, `hoi4_save_query` (`diff`, `variables`, `flags`, `find`), `hoi4-save-inspection` |
+
+If the server is not connected, the user installs it (HOI4 Mod Setup, or `references/setup.md` of `hoi4-live-playtest`). Fall back to direct desktop control only when the user wants that or the server cannot run on this machine, and record the fallback.
 
 If desktop control is unavailable, stop and report that the skill cannot operate the computer in the current environment. Do not pretend that shell access alone is equivalent to playing the game.
 
@@ -168,6 +181,8 @@ Do not dismiss a new error introduced after the agent's own patch as pre-existin
 
 ## 8. Startup repair loop
 
+With HOI4 Live Tools, "close" is `hoi4_shutdown confirm=true` and "relaunch" is `hoi4_launch restart=true`. Restart only when the edit changed content the game reads at launch (script, localisation, ideas, focus trees); interface and texture edits reload in place with `reloadinterface` and `reload_textures` through `hoi4_console`.
+
 Before gameplay testing, reach a stable clean startup checkpoint.
 
 For each repair cycle:
@@ -249,7 +264,15 @@ Use separate saves when testing:
 - decisions that consume unique resources
 - scripted GUI state that cannot be reset safely
 
-Before the run, confirm with the user that the game writes plain-text saves (`save_as_binary=no` in the HOI4 `settings.txt`); do not edit that file yourself. Plain-text checkpoint saves let `hoi4-save-inspection` read the real runtime state. Name them after the test step, such as `qa_<run_id>_020_event_pre` and `..._post`, and record which inspector commands produced each piece of evidence.
+Before the run, confirm with the user that the game writes plain-text saves (`save_as_binary=no` in the HOI4 `settings.txt`); do not edit that file yourself. Plain-text checkpoint saves let `hoi4-save-inspection` and `hoi4_save_query` read the real runtime state. Name them after the test step, such as `qa_<run_id>_020_event_pre` and `..._post` (the server prefixes `hoi4live_`), and record which query or inspector command produced each piece of evidence.
+
+### 10.5 Efficiency
+
+- Keep one running game and one loaded dedicated save for the whole scope. Independent test cases run in sequence on the same loaded position; go back to a checkpoint only when a case contaminated the state.
+- After a fix, retest the failed case on the running game (restart only for content the game reads at launch), plus the one nearby regression check. Do not rerun passed cases or restart the coverage ledger.
+- Save only when a file answers the question: a diff around an option, a persistence check, a briefing's deep sections. Read everything else from the screen and tool output.
+- Repeat only the step that failed; repeat the whole sequence only when the step concerns persistence.
+- Delete your own `hoi4live_` saves when the run is done.
 
 ## 11. Generic HOI4 test matrix
 
@@ -360,12 +383,12 @@ When the intended design is unclear, mark `needs_user_review` instead of redesig
 When a live defect is confirmed:
 
 1. Save the dedicated test state and evidence.
-2. Close HOI4 safely.
+2. Keep the game running unless the fix needs a restart (content read at launch).
 3. Read the repository instructions and the skill or documentation for the affected system.
 4. Patch the smallest complete surface, including directly dependent localisation, GUI, GFX, or cleanup when required.
 5. Run targeted static checks.
-6. Relaunch through the same debug target.
-7. Return to the same test setup or a clean equivalent setup.
+6. Restart through the same debug target when the fix requires it.
+7. Return to the same test setup or a clean equivalent setup (on a running game, the loaded checkpoint).
 8. Reproduce the original sequence, and confirm persistent state with a before-and-after save diff when the fix changed it.
 9. Capture the corrected state.
 10. Check the fresh log delta.
