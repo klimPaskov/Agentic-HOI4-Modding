@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "f798c630a934ad40163dfc64535289691a12f860",
+  "generated_for_revision": "2192a8db38f29fcce6b5691606dfdabc1d93e550",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1618,8 +1618,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "71cdaecf64b7df67c7b2cd2467dfa7fab345e868aa108b12e2f6734de531b575",
-          "size": 55316
+          "sha256": "192479581b8ac88efdbb765405897a6ffea2983c8a596ce779fea2a3ef869b7b",
+          "size": 55145
         },
         {
           "path": ".claude/skills/hoi4-events/references/country-activation.md",
@@ -4338,8 +4338,8 @@
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
-          "sha256": "332b98f2faf226c812dca561a9860b7f4ea941e134651cf5fed20ab428be5224",
-          "size": 36679
+          "sha256": "dc9be6ec5ff06ffa0107418d16061594cf765e433d9994b57fff372a3c2e501d",
+          "size": 36577
         },
         {
           "path": ".claude/skills/hoi4-map-states/references/map-geometry.md",
@@ -4380,11 +4380,6 @@
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
           "sha256": "15ff85566fac01bae2bd126ff79e43ea92813eef057491bd5a9e039e4cef4c67",
           "size": 5579
-        },
-        {
-          "path": ".claude/skills/hoi4-state-ledgers/SKILL.md",
-          "sha256": "232fe722f1308aa7df28f18222d1b6bb6c42286cce62254d46c1e98aa6525205",
-          "size": 13450
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
@@ -5012,8 +5007,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "71cdaecf64b7df67c7b2cd2467dfa7fab345e868aa108b12e2f6734de531b575",
-          "size": 55316
+          "sha256": "192479581b8ac88efdbb765405897a6ffea2983c8a596ce779fea2a3ef869b7b",
+          "size": 55145
         },
         {
           "path": ".claude/skills/hoi4-events/references/country-activation.md",
@@ -7732,8 +7727,8 @@
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
-          "sha256": "332b98f2faf226c812dca561a9860b7f4ea941e134651cf5fed20ab428be5224",
-          "size": 36679
+          "sha256": "dc9be6ec5ff06ffa0107418d16061594cf765e433d9994b57fff372a3c2e501d",
+          "size": 36577
         },
         {
           "path": ".claude/skills/hoi4-map-states/references/map-geometry.md",
@@ -7774,11 +7769,6 @@
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
           "sha256": "15ff85566fac01bae2bd126ff79e43ea92813eef057491bd5a9e039e4cef4c67",
           "size": 5579
-        },
-        {
-          "path": ".claude/skills/hoi4-state-ledgers/SKILL.md",
-          "sha256": "232fe722f1308aa7df28f18222d1b6bb6c42286cce62254d46c1e98aa6525205",
-          "size": 13450
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
@@ -8363,8 +8353,8 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "5e7b3c0dbb950e28948bc5533dee56bb0b2c684ef293d918dd13f08b6aa6c11f",
-          "size": 11572
+          "sha256": "45274baeac1dbf937cfec6789a2efee8a43cd6934489dd1314ba5a474aa3b8cb",
+          "size": 11573
         }
       ]
     },
