@@ -40,7 +40,7 @@ def run(arguments: list[str], timeout: int = 900) -> str:
             arguments,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
             timeout=timeout,
             check=False,
             shell=False,
@@ -49,10 +49,14 @@ def run(arguments: list[str], timeout: int = 900) -> str:
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise BootstrapError("A reviewed MCP setup command could not complete.") from exc
     output = result.stdout[: MAX_OUTPUT_BYTES + 1]
-    if len(output) > MAX_OUTPUT_BYTES:
+    diagnostics = result.stderr[: MAX_OUTPUT_BYTES + 1]
+    if len(output) > MAX_OUTPUT_BYTES or len(diagnostics) > MAX_OUTPUT_BYTES:
         raise BootstrapError("A reviewed MCP setup command exceeded its output limit.")
+    # npm writes warnings and notices to stderr; keep them out of the JSON
+    # results read from stdout, but use them to explain failures.
     text = output.decode("utf-8", errors="replace")
     if result.returncode != 0:
+        text = text + "\n" + diagnostics.decode("utf-8", errors="replace")
         if "EBUSY" in text and ".dll" in text.lower():
             raise BootstrapError(
                 "npm could not replace loaded MCP native libraries. "

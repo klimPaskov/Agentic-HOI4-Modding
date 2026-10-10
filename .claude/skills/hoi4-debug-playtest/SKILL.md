@@ -21,6 +21,8 @@ Before starting, confirm that the current agent environment exposes all of the f
 - process inspection and bounded process termination
 - an editing environment for the selected mod
 
+When the optional HOI4 Live Tools MCP server (`hoi4-live`) is connected, use its tools for launching, loading, screen reading, input inside the game window, the console, time, popups, saves, save queries, and logs; they satisfy the desktop-control requirement above, and the safety rules in `hoi4-live-testing` (the shared desktop lock, input only inside the game window, `hoi4live_*` saves only) apply to the whole run.
+
 If desktop control is unavailable, stop and report that the skill cannot operate the computer in the current environment. Do not pretend that shell access alone is equivalent to playing the game.
 
 If screenshots cannot be captured or retained, stop before visual testing. Log-only validation is not a substitute for the requested live test.

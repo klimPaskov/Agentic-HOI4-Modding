@@ -46,12 +46,18 @@ class McpBootstrapContractTests(unittest.TestCase):
     def test_locked_native_library_reports_reconnect_without_echoing_output(self) -> None:
         result = mock.Mock(
             returncode=4294963214,
-            stdout=b"npm error code EBUSY\nnpm error dest retired/libvips-42.dll\nprivate-output-sentinel\n",
+            stdout=b"",
+            stderr=b"npm error code EBUSY\nnpm error dest retired/libvips-42.dll\nprivate-output-sentinel\n",
         )
         with mock.patch.object(bootstrap.subprocess, "run", return_value=result):
             with self.assertRaisesRegex(bootstrap.BootstrapError, "reconnect existing HOI4 MCP clients") as caught:
                 bootstrap.run(["node.exe", "npm-cli.js", "install"])
         self.assertNotIn("private-output-sentinel", str(caught.exception))
+
+    def test_npm_warnings_on_stderr_do_not_break_json_results(self) -> None:
+        result = mock.Mock(returncode=0, stdout=b'"sha512-abc"\n', stderr=b"npm warn config something\n")
+        with mock.patch.object(bootstrap.subprocess, "run", return_value=result):
+            self.assertEqual(bootstrap.run(["node.exe", "npm-cli.js", "view"]).strip(), '"sha512-abc"')
 
     def test_matching_installation_is_kept_without_npm(self) -> None:
         with contextlib.ExitStack() as stack:
