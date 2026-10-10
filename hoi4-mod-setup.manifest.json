@@ -8525,33 +8525,7 @@
         "existing HOI4 Live Tools bootstrap"
       ],
       "conflict_policy": "replace_if_unmodified",
-      "validation": [
-        {
-          "id": "mcp.live_bootstrap",
-          "severity": "warn",
-          "kind": "command",
-          "target": ".tools/mcp/bootstrap_hoi4_live_tools.py",
-          "parameters": {
-            "arguments": [
-              "--quiet"
-            ],
-            "release_version": "1.0.0",
-            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.0.0/hoi4-live-tools-1.0.0.zip",
-            "release_sha256": "e80c011d0858c3bb1f6e1c8333ed4f441b44e912758b8e2c9c35b730105d5ba2",
-            "release_size": 1023867,
-            "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless) from https://pypi.org.",
-            "expected_writes": [
-              "%LOCALAPPDATA%/hoi4-live-tools/**",
-              "the current user's Claude Code configuration file (.claude.json), only the hoi4-live entry",
-              "the current user's Codex configuration file (.codex/config.toml), only a marked hoi4-live block",
-              "the current user's Cursor MCP file (.cursor/mcp.json), only the hoi4-live entry",
-              "the current user's OpenCode configuration file (.config/opencode/opencode.json), only the hoi4-live entry"
-            ],
-            "privilege": "current_user",
-            "rollback_boundary": "Managed project files roll back transactionally. The program under %LOCALAPPDATA%/hoi4-live-tools, its Python environment and the per-user client entries are external tool state, reported but not removed automatically; python install.py uninstall removes them."
-          }
-        }
-      ],
+      "validation": [],
       "update": {
         "strategy": "replace_if_unmodified",
         "remove_obsolete": true,
@@ -8563,7 +8537,7 @@
         "per-user MCP client registration"
       ],
       "notes": [
-        "Windows only. A client entry named hoi4-live that belongs to another program is left unchanged and reported."
+        "Windows only. The reviewed action that runs this script is declared on workflow.live_tools. A client entry named hoi4-live that belongs to another program is left unchanged and reported."
       ],
       "expected_files": [
         {
@@ -12639,10 +12613,37 @@
         "mcp.hoi4_live.bootstrap"
       ],
       "conflicts": [
-        "existing live-playtest skill with the same path"
+        "existing live-playtest skill with the same path",
+        "existing HOI4 Live Tools bootstrap"
       ],
       "conflict_policy": "replace_if_unmodified",
-      "validation": [],
+      "validation": [
+        {
+          "id": "live.bootstrap",
+          "severity": "warn",
+          "kind": "command",
+          "target": ".tools/mcp/bootstrap_hoi4_live_tools.py",
+          "parameters": {
+            "arguments": [
+              "--quiet"
+            ],
+            "release_version": "1.0.0",
+            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.0.0/hoi4-live-tools-1.0.0.zip",
+            "release_sha256": "e80c011d0858c3bb1f6e1c8333ed4f441b44e912758b8e2c9c35b730105d5ba2",
+            "release_size": 1023867,
+            "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless) from https://pypi.org.",
+            "expected_writes": [
+              "%LOCALAPPDATA%/hoi4-live-tools/**",
+              "the current user's Claude Code configuration file (.claude.json), only the hoi4-live entry",
+              "the current user's Codex configuration file (.codex/config.toml), only a marked hoi4-live block",
+              "the current user's Cursor MCP file (.cursor/mcp.json), only the hoi4-live entry",
+              "the current user's OpenCode configuration file (.config/opencode/opencode.json), only the hoi4-live entry"
+            ],
+            "privilege": "current_user",
+            "rollback_boundary": "Managed project files roll back transactionally. The program under %LOCALAPPDATA%/hoi4-live-tools, its Python environment and the per-user client entries are external tool state, reported but not removed automatically; python install.py uninstall removes them."
+          }
+        }
+      ],
       "update": {
         "strategy": "replace_if_unmodified",
         "remove_obsolete": true,

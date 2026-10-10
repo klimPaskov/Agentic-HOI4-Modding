@@ -36,7 +36,7 @@ def write_archive(path: Path, members: dict[str, bytes]) -> None:
 class LiveBootstrapContractTests(unittest.TestCase):
     def test_manifest_pins_the_same_release(self) -> None:
         action = next(
-            rule for rule in component(manifest(), "mcp.hoi4_live.bootstrap")["validation"] if rule["id"] == "mcp.live_bootstrap"
+            rule for rule in component(manifest(), "workflow.live_tools")["validation"] if rule["id"] == "live.bootstrap"
         )
         parameters = action["parameters"]
         self.assertEqual(parameters["release_version"], bootstrap.RELEASE_VERSION)
