@@ -19,10 +19,20 @@ SPEC.loader.exec_module(bootstrap)
 
 class McpBootstrapContractTests(unittest.TestCase):
     def test_public_release_identity_is_exact(self) -> None:
-        self.assertEqual(bootstrap.PACKAGE_SPEC, "hoi4-agent-tools@3.9.0")
-        self.assertTrue(bootstrap.PACKAGE_INTEGRITY.startswith("sha512-"))
-        self.assertEqual(len(bootstrap.PACKAGE_TREE_SHA256), 64)
-        self.assertEqual(bootstrap.PACKAGE_FILE_COUNT, 5356)
+        # The bootstrap and the setup manifest must pin the same measured release.
+        manifest = json.loads((Path(__file__).resolve().parents[1] / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
+        health = next(
+            rule["parameters"]
+            for component in manifest["components"]
+            for rule in component.get("validation", [])
+            if rule.get("parameters", {}).get("package_name") == "hoi4-agent-tools"
+        )
+        self.assertEqual(bootstrap.PACKAGE_SPEC, f"hoi4-agent-tools@{health['package_version']}")
+        self.assertEqual(bootstrap.PACKAGE_INTEGRITY, health["package_integrity"])
+        self.assertEqual(bootstrap.PACKAGE_TREE_SHA256, health["package_tree_sha256"])
+        self.assertEqual(bootstrap.PACKAGE_FILE_COUNT, health["package_file_count"])
+        self.assertEqual(bootstrap.RUNTIME_ENTRY_SHA256, health["runtime_entry_sha256"])
+        self.assertEqual(bootstrap.RUNTIME_ENTRY_SIZE, health["runtime_entry_size"])
         self.assertGreaterEqual(bootstrap.MAX_PACKAGE_FILE_BYTES, 18_406_400)
         self.assertEqual(bootstrap.RUNTIME_ENTRY, "dist/bin/stdio.js")
         self.assertEqual(len(bootstrap.RUNTIME_ENTRY_SHA256), 64)
@@ -36,7 +46,7 @@ class McpBootstrapContractTests(unittest.TestCase):
         self.assertIn("--ignore-scripts", arguments)
         self.assertIn("--prefix", arguments)
         self.assertIn("--registry=https://registry.npmjs.org", arguments)
-        self.assertEqual(arguments[-1], "hoi4-agent-tools@3.9.0")
+        self.assertEqual(arguments[-1], "hoi4-agent-tools@3.10.0")
 
     def test_registry_integrity_mismatch_fails_closed(self) -> None:
         with mock.patch.object(bootstrap, "npm", return_value='"sha512-wrong"'):
