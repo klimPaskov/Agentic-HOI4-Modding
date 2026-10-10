@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "080f9f69f3f6e3fb15199a6e52c1d3a8818b372d",
+  "generated_for_revision": "bf84c65db83b7335ef74e6d505a26feeb44ac5d6",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "9e24a9d2cb33d3971b57a9d12c545991394892bf45785a43a3b0dfe274a079d2",
-          "size": 72074
+          "sha256": "c67fb95e02b67e55824f9bdf90aa158552150baf2f20dd8501546384ed47280a",
+          "size": 59788
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "fa2c90d38a666c34a98313fc285b956cd9b989d6e9ade400f6934f586a8667d9",
-          "size": 72164
+          "sha256": "727935e0411add9f75802544ca3c9a8d4123552c219cf241f0d909468ec6f052",
+          "size": 59842
         }
       ]
     },
@@ -172,18 +172,23 @@
       "expected_files": [
         {
           "path": ".tools/sync/README.md",
-          "sha256": "08196bfadbe0b22e8432605cbd095dfd0494fcb6664b94577cf0c45c49445f40",
-          "size": 3302
+          "sha256": "d198381f881d37a174233b483bc67ffb66b3fffc33eaffa51950ccb7681fe953",
+          "size": 3399
+        },
+        {
+          "path": ".tools/sync/agent_profiles.json",
+          "sha256": "711cdd54af6098697e138ea1e4ad8a905b7e6e229f7d03df72d992ac2eb7076a",
+          "size": 551
         },
         {
           "path": ".tools/sync/agent_sync_common.py",
-          "sha256": "ee90ecb9ef77b41229fd68fce0ce0ed671d75abb698e0e470686ccc65f1d23cb",
-          "size": 15831
+          "sha256": "323f448109f92367c3649d37dc9c134c272f9178521c6a9f783bed7e0530a4bb",
+          "size": 15827
         },
         {
           "path": ".tools/sync/check_guidance_size.py",
-          "sha256": "510c1e7c768259fa8fd850da324592a1a3cf71fecc2af06c1f858402822bc33a",
-          "size": 1622
+          "sha256": "9f56e7802f9eb8f588fe1c936861617a9a9d599fa0f1798e8a22d9276ff15553",
+          "size": 1793
         },
         {
           "path": ".tools/sync/instruction_projection.json",
@@ -192,13 +197,8 @@
         },
         {
           "path": ".tools/sync/read_limits.json",
-          "sha256": "f29061c4898e9fa1fd5e7ca167c8acebaca502f3cd661ee8965175706735af6b",
-          "size": 266
-        },
-        {
-          "path": ".tools/sync/agent_profiles.json",
-          "sha256": "711cdd54af6098697e138ea1e4ad8a905b7e6e229f7d03df72d992ac2eb7076a",
-          "size": 551
+          "sha256": "7264c70011db4efd8010fa1b47170c7d59096b876d1f1f751271bc0929a24fbb",
+          "size": 514
         },
         {
           "path": ".tools/sync/sync_agents.py",
@@ -1472,14 +1472,54 @@
           "size": 3853
         },
         {
+          "path": ".claude/skills/hoi4-ai-strategies/SKILL.md",
+          "sha256": "612a1fb83a02ca048ed41435f9321c3bfc0290b58d7ba0c8c3fbc4a138d59c9e",
+          "size": 32956
+        },
+        {
+          "path": ".claude/skills/hoi4-ai-strategies/references/other-ai-systems.md",
+          "sha256": "4721298bae04fe9a6c97c7246b8f1fa16491411d380257bfe7362a8ae886e94c",
+          "size": 12121
+        },
+        {
+          "path": ".claude/skills/hoi4-ai-strategies/references/strategy-token-catalog.md",
+          "sha256": "fb30fdf8db5dab60b7c0c0c848fcea6286a507727564d25196ec405c0c9561a4",
+          "size": 17296
+        },
+        {
+          "path": ".claude/skills/hoi4-characters-leaders/SKILL.md",
+          "sha256": "fd6df2721a1ba3ce14e4020191afe4a1d9f9b91fb6bc83efdbe739d6f37539d8",
+          "size": 35098
+        },
+        {
+          "path": ".claude/skills/hoi4-characters-leaders/references/effects-triggers.md",
+          "sha256": "868406c71a946c0b95f45d4f9a3a6b5d9c8eae9a142037c53cabd589920aba12",
+          "size": 9706
+        },
+        {
+          "path": ".claude/skills/hoi4-characters-leaders/references/unit-leader-traits.md",
+          "sha256": "79ad89192d6d670eb6a9e203dbcf2812dcf19d55161e24994569d20c2085e916",
+          "size": 9747
+        },
+        {
           "path": ".claude/skills/hoi4-debug-playtest/SKILL.md",
           "sha256": "69f681c051aa60ea8352a9aceccfc144839563585f646bd4147d0d9c609be8a0",
           "size": 23997
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
-          "sha256": "96a43320a3c4f57863905c19959b51fca625b583885ccaba0327eceb3eaa6732",
-          "size": 72982
+          "sha256": "8c7a3dcfde356a193e78dd13df1cebf820d42702863f0774bfd1165f939a20ce",
+          "size": 54946
+        },
+        {
+          "path": ".claude/skills/hoi4-decisions-missions/references/formable-nation-decisions.md",
+          "sha256": "af20b8cef86c8e70f28fde2ff65b237956e6f50b3b0f9954eac7a5f371895019",
+          "size": 5340
+        },
+        {
+          "path": ".claude/skills/hoi4-decisions-missions/references/scripted-gui-decision-surfaces.md",
+          "sha256": "b1a4743d66626e8415e35a1a46908129af0234cc09914b0e122c4b8eabbd8139",
+          "size": 14144
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/templates/formable_state_puzzle/README.md",
@@ -1552,9 +1592,34 @@
           "size": 4820
         },
         {
+          "path": ".claude/skills/hoi4-diplomacy-war/SKILL.md",
+          "sha256": "0919bfc7f9fce73a5a205be14a97ac5d869ed81d23dcc3ffe17d6be17c63141b",
+          "size": 36886
+        },
+        {
+          "path": ".claude/skills/hoi4-diplomacy-war/references/syntax-reference.md",
+          "sha256": "17aecfd369339034d38dabcb3fb91c2db7e400fd36e6b210c7f564b69be50c4a",
+          "size": 12301
+        },
+        {
+          "path": ".claude/skills/hoi4-equipment/SKILL.md",
+          "sha256": "aadb93035adb9fe41c96a431489a90383ebff4368ea973ecde3bcd2cc0fa473d",
+          "size": 22319
+        },
+        {
+          "path": ".claude/skills/hoi4-equipment/references/modular-equipment-and-designer.md",
+          "sha256": "17f75f207b06324fa19a53e8e7ebbdcc328b92a2acebb95a61b9bbdfcf2807c5",
+          "size": 10965
+        },
+        {
+          "path": ".claude/skills/hoi4-equipment/references/production-and-stockpile.md",
+          "sha256": "1d3e9160162531a57ae90babd75cda69e3a958623ba7e492d0ca450f28662f35",
+          "size": 11266
+        },
+        {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "421d9e7d210fbad790482e73519755d2fe8a5177c4a24e4d649e22e1c74b98a2",
-          "size": 60966
+          "sha256": "71cdaecf64b7df67c7b2cd2467dfa7fab345e868aa108b12e2f6734de531b575",
+          "size": 55316
         },
         {
           "path": ".claude/skills/hoi4-events/references/country-activation.md",
@@ -1562,9 +1627,24 @@
           "size": 6667
         },
         {
+          "path": ".claude/skills/hoi4-events/references/event-presentation.md",
+          "sha256": "d521cd59605497f86f9653512dcc6939517fa88f71b664959a25f8620be9f946",
+          "size": 2850
+        },
+        {
+          "path": ".claude/skills/hoi4-events/references/major-event-aftermath.md",
+          "sha256": "ddae4a85aa655f4e50b4763440bd3353d0770b4c6be8a4472a02abfdf1482cc9",
+          "size": 3837
+        },
+        {
+          "path": ".claude/skills/hoi4-events/references/meta-effects.md",
+          "sha256": "fe3ebcff05af0e17444aa43ff8c947a7390f8a98e080b4035d45afabb2ecd3ea",
+          "size": 2083
+        },
+        {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "83161abdfe8159216a627e34ab4549dba83d9be68dce3f4fd6d7cc5941188fd2",
-          "size": 74570
+          "sha256": "cfa347e2aab65ee13a1f6172097e7ff678b9553ab3bfe5244e91dbc4ec38b11b",
+          "size": 55527
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -4092,9 +4172,24 @@
           "size": 4845
         },
         {
+          "path": ".claude/skills/hoi4-feature-assets/references/asset-source-rules.md",
+          "sha256": "6bb868d6dafc642a997858dfb6370e02f80047b07aa8b575352cd8001ba5ca83",
+          "size": 9146
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
+          "sha256": "091eca7e4d13eb0e163fdd72876ee328c27c765e39d686e561c7d614f47f2a8b",
+          "size": 6334
+        },
+        {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
           "sha256": "22b6e95f6f5dce4163467f960c098d53c51db78aceb889526308616287b7c94f",
           "size": 4067
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
+          "sha256": "5cabfe0c0fe142f3676136273b676d77f87c782caacaa58ba2711adc5e018ed3",
+          "size": 5613
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/reference-asset-examples.md",
@@ -4158,8 +4253,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "119fddb5d4bb96d9d2c70648455de88033f0a1f536a05c77029d84260bd00285",
-          "size": 75372
+          "sha256": "6a18a7140ba5de2d2eb8c437c818bb2917ddc5f20c7e1ff1d67ca0962beba9af",
+          "size": 54936
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/asset-and-research-handoffs.md",
@@ -4168,8 +4263,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/country-packages-and-formables.md",
-          "sha256": "debfac9dff9ad6ee39f7dea9db6f97c3e2702b585b11aa7da625acf8ccd3f15d",
-          "size": 9691
+          "sha256": "25e7badd9d2db28989357f17a512e1e83531adeffc898a6363dc35edf8727469",
+          "size": 10067
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/final-handoff-and-quality-gate.md",
@@ -4187,9 +4282,29 @@
           "size": 15132
         },
         {
+          "path": ".claude/skills/hoi4-feature-planning/references/presentation-and-research-planning.md",
+          "sha256": "9ec8a95ebd847b9f51c02148caacc591eab02558d7f09246ac8f1ae4a845fe34",
+          "size": 8758
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-planning/references/specification-delivery.md",
+          "sha256": "03792ea4ddb696a669b84db3771bd5137325e36a41619574f275f30509a89687",
+          "size": 8310
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-planning/references/writing-style.md",
+          "sha256": "d3bad4d6bbd3f80fa7908952ec7242d91518044bd5d602fc871f4d2cb6aaaa0d",
+          "size": 5790
+        },
+        {
           "path": ".claude/skills/hoi4-focus-trees/SKILL.md",
-          "sha256": "5ddb0c25048afab17d7223f9f19294907514fb4c3d79fe7338824ba642790f35",
-          "size": 76478
+          "sha256": "dd5e1d976ee886e8e7bb723869e681b05dc9e9a9c2ddc8111e720c790716019e",
+          "size": 54425
+        },
+        {
+          "path": ".claude/skills/hoi4-focus-trees/references/completion-rules.md",
+          "sha256": "476d09fc4a92a1d560d545aac065bcc26cfa07982c2ab06b35c2afab358e72d5",
+          "size": 6842
         },
         {
           "path": ".claude/skills/hoi4-focus-trees/references/layout-rules.md",
@@ -4197,14 +4312,39 @@
           "size": 5928
         },
         {
+          "path": ".claude/skills/hoi4-focus-trees/references/rewards-and-ideas.md",
+          "sha256": "b3bb958632af99a6310943a4dfa24648962f9c4f6020b219189d4cfa5ebd41b3",
+          "size": 9282
+        },
+        {
+          "path": ".claude/skills/hoi4-focus-trees/references/route-design.md",
+          "sha256": "75b372b0f19ef1f975e8678afe9e9b03be1ceaaf86213aa7e71f2f35cc72e44c",
+          "size": 7634
+        },
+        {
           "path": ".claude/skills/hoi4-frame-animation/SKILL.md",
           "sha256": "eda196518e57eedd634b5a05d4ef733b53b69c85ba9729eeebe228f5bec66540",
           "size": 28481
         },
         {
+          "path": ".claude/skills/hoi4-ideas-modifiers/SKILL.md",
+          "sha256": "e4cc9d7803eb98067d3c5a14720b068fec8b2c455bcb4bdf90f5cdca0f22b92c",
+          "size": 32423
+        },
+        {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
           "sha256": "b63f3d569cf27477ff570cbaf930f0d36a24ae1ac862b9d0da20239f4ddddb3c",
           "size": 30371
+        },
+        {
+          "path": ".claude/skills/hoi4-map-states/SKILL.md",
+          "sha256": "332b98f2faf226c812dca561a9860b7f4ea941e134651cf5fed20ab428be5224",
+          "size": 36679
+        },
+        {
+          "path": ".claude/skills/hoi4-map-states/references/map-geometry.md",
+          "sha256": "939198b4e077a2581826362038c536a42be7c1f949c3710889800d4a094e6e17",
+          "size": 8673
         },
         {
           "path": ".claude/skills/hoi4-mtth/SKILL.md",
@@ -4252,9 +4392,44 @@
           "size": 39748
         },
         {
+          "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
+          "sha256": "5c7dcaec81fd058db73e358ee19450a865ea9aa21a6eeb0a27a6feffe47d6e49",
+          "size": 25423
+        },
+        {
+          "path": ".claude/skills/hoi4-technology-doctrines/references/doctrine-authoring.md",
+          "sha256": "0407daffa1f0c1d7f8c8f4d7bf5b04fe0bf54a993df729c25784571bbc88e482",
+          "size": 10086
+        },
+        {
+          "path": ".claude/skills/hoi4-technology-doctrines/references/technology-tree-gui.md",
+          "sha256": "707cb7ea2889104369df7896d826763ceb69ad33bc97566c357297aef9ee2d9a",
+          "size": 8626
+        },
+        {
           "path": ".claude/skills/hoi4-text-audio-research/SKILL.md",
           "sha256": "34ee6e42d76373a42da95612dd0400b17ff5e92c9c12ab7cc15b7aa9e0c5dde2",
           "size": 17943
+        },
+        {
+          "path": ".claude/skills/hoi4-units-divisions/SKILL.md",
+          "sha256": "5b66c9e027e2d17aadde57c5e0bdd8b84192476785994c3427362d7c4091b95a",
+          "size": 36133
+        },
+        {
+          "path": ".claude/skills/hoi4-units-divisions/references/names-stats-visuals.md",
+          "sha256": "852a51738352150c25246760ee36c46d4e42c815762480ea123f60d21302a15f",
+          "size": 4540
+        },
+        {
+          "path": ".claude/skills/hoi4-units-divisions/references/naval-air-oob.md",
+          "sha256": "a5a9039d5b287df8c09a67d54e3d87595e3c3346b0530165f1ab445ebd65cd7d",
+          "size": 8783
+        },
+        {
+          "path": ".claude/skills/hoi4-units-divisions/references/runtime-effects-triggers.md",
+          "sha256": "947047f159783f17066d38f1f4f17255fa50c9e4d57af4f0c4656e6856123d66",
+          "size": 7420
         },
         {
           "path": ".claude/skills/xlsx/SKILL.md",
@@ -4691,14 +4866,54 @@
           "size": 3853
         },
         {
+          "path": ".claude/skills/hoi4-ai-strategies/SKILL.md",
+          "sha256": "612a1fb83a02ca048ed41435f9321c3bfc0290b58d7ba0c8c3fbc4a138d59c9e",
+          "size": 32956
+        },
+        {
+          "path": ".claude/skills/hoi4-ai-strategies/references/other-ai-systems.md",
+          "sha256": "4721298bae04fe9a6c97c7246b8f1fa16491411d380257bfe7362a8ae886e94c",
+          "size": 12121
+        },
+        {
+          "path": ".claude/skills/hoi4-ai-strategies/references/strategy-token-catalog.md",
+          "sha256": "fb30fdf8db5dab60b7c0c0c848fcea6286a507727564d25196ec405c0c9561a4",
+          "size": 17296
+        },
+        {
+          "path": ".claude/skills/hoi4-characters-leaders/SKILL.md",
+          "sha256": "fd6df2721a1ba3ce14e4020191afe4a1d9f9b91fb6bc83efdbe739d6f37539d8",
+          "size": 35098
+        },
+        {
+          "path": ".claude/skills/hoi4-characters-leaders/references/effects-triggers.md",
+          "sha256": "868406c71a946c0b95f45d4f9a3a6b5d9c8eae9a142037c53cabd589920aba12",
+          "size": 9706
+        },
+        {
+          "path": ".claude/skills/hoi4-characters-leaders/references/unit-leader-traits.md",
+          "sha256": "79ad89192d6d670eb6a9e203dbcf2812dcf19d55161e24994569d20c2085e916",
+          "size": 9747
+        },
+        {
           "path": ".claude/skills/hoi4-debug-playtest/SKILL.md",
           "sha256": "69f681c051aa60ea8352a9aceccfc144839563585f646bd4147d0d9c609be8a0",
           "size": 23997
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
-          "sha256": "96a43320a3c4f57863905c19959b51fca625b583885ccaba0327eceb3eaa6732",
-          "size": 72982
+          "sha256": "8c7a3dcfde356a193e78dd13df1cebf820d42702863f0774bfd1165f939a20ce",
+          "size": 54946
+        },
+        {
+          "path": ".claude/skills/hoi4-decisions-missions/references/formable-nation-decisions.md",
+          "sha256": "af20b8cef86c8e70f28fde2ff65b237956e6f50b3b0f9954eac7a5f371895019",
+          "size": 5340
+        },
+        {
+          "path": ".claude/skills/hoi4-decisions-missions/references/scripted-gui-decision-surfaces.md",
+          "sha256": "b1a4743d66626e8415e35a1a46908129af0234cc09914b0e122c4b8eabbd8139",
+          "size": 14144
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/templates/formable_state_puzzle/README.md",
@@ -4771,9 +4986,34 @@
           "size": 4820
         },
         {
+          "path": ".claude/skills/hoi4-diplomacy-war/SKILL.md",
+          "sha256": "0919bfc7f9fce73a5a205be14a97ac5d869ed81d23dcc3ffe17d6be17c63141b",
+          "size": 36886
+        },
+        {
+          "path": ".claude/skills/hoi4-diplomacy-war/references/syntax-reference.md",
+          "sha256": "17aecfd369339034d38dabcb3fb91c2db7e400fd36e6b210c7f564b69be50c4a",
+          "size": 12301
+        },
+        {
+          "path": ".claude/skills/hoi4-equipment/SKILL.md",
+          "sha256": "aadb93035adb9fe41c96a431489a90383ebff4368ea973ecde3bcd2cc0fa473d",
+          "size": 22319
+        },
+        {
+          "path": ".claude/skills/hoi4-equipment/references/modular-equipment-and-designer.md",
+          "sha256": "17f75f207b06324fa19a53e8e7ebbdcc328b92a2acebb95a61b9bbdfcf2807c5",
+          "size": 10965
+        },
+        {
+          "path": ".claude/skills/hoi4-equipment/references/production-and-stockpile.md",
+          "sha256": "1d3e9160162531a57ae90babd75cda69e3a958623ba7e492d0ca450f28662f35",
+          "size": 11266
+        },
+        {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "421d9e7d210fbad790482e73519755d2fe8a5177c4a24e4d649e22e1c74b98a2",
-          "size": 60966
+          "sha256": "71cdaecf64b7df67c7b2cd2467dfa7fab345e868aa108b12e2f6734de531b575",
+          "size": 55316
         },
         {
           "path": ".claude/skills/hoi4-events/references/country-activation.md",
@@ -4781,9 +5021,24 @@
           "size": 6667
         },
         {
+          "path": ".claude/skills/hoi4-events/references/event-presentation.md",
+          "sha256": "d521cd59605497f86f9653512dcc6939517fa88f71b664959a25f8620be9f946",
+          "size": 2850
+        },
+        {
+          "path": ".claude/skills/hoi4-events/references/major-event-aftermath.md",
+          "sha256": "ddae4a85aa655f4e50b4763440bd3353d0770b4c6be8a4472a02abfdf1482cc9",
+          "size": 3837
+        },
+        {
+          "path": ".claude/skills/hoi4-events/references/meta-effects.md",
+          "sha256": "fe3ebcff05af0e17444aa43ff8c947a7390f8a98e080b4035d45afabb2ecd3ea",
+          "size": 2083
+        },
+        {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "83161abdfe8159216a627e34ab4549dba83d9be68dce3f4fd6d7cc5941188fd2",
-          "size": 74570
+          "sha256": "cfa347e2aab65ee13a1f6172097e7ff678b9553ab3bfe5244e91dbc4ec38b11b",
+          "size": 55527
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -7311,9 +7566,24 @@
           "size": 4845
         },
         {
+          "path": ".claude/skills/hoi4-feature-assets/references/asset-source-rules.md",
+          "sha256": "6bb868d6dafc642a997858dfb6370e02f80047b07aa8b575352cd8001ba5ca83",
+          "size": 9146
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
+          "sha256": "091eca7e4d13eb0e163fdd72876ee328c27c765e39d686e561c7d614f47f2a8b",
+          "size": 6334
+        },
+        {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
           "sha256": "22b6e95f6f5dce4163467f960c098d53c51db78aceb889526308616287b7c94f",
           "size": 4067
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
+          "sha256": "5cabfe0c0fe142f3676136273b676d77f87c782caacaa58ba2711adc5e018ed3",
+          "size": 5613
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/reference-asset-examples.md",
@@ -7377,8 +7647,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/SKILL.md",
-          "sha256": "119fddb5d4bb96d9d2c70648455de88033f0a1f536a05c77029d84260bd00285",
-          "size": 75372
+          "sha256": "6a18a7140ba5de2d2eb8c437c818bb2917ddc5f20c7e1ff1d67ca0962beba9af",
+          "size": 54936
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/asset-and-research-handoffs.md",
@@ -7387,8 +7657,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/country-packages-and-formables.md",
-          "sha256": "debfac9dff9ad6ee39f7dea9db6f97c3e2702b585b11aa7da625acf8ccd3f15d",
-          "size": 9691
+          "sha256": "25e7badd9d2db28989357f17a512e1e83531adeffc898a6363dc35edf8727469",
+          "size": 10067
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/final-handoff-and-quality-gate.md",
@@ -7406,9 +7676,29 @@
           "size": 15132
         },
         {
+          "path": ".claude/skills/hoi4-feature-planning/references/presentation-and-research-planning.md",
+          "sha256": "9ec8a95ebd847b9f51c02148caacc591eab02558d7f09246ac8f1ae4a845fe34",
+          "size": 8758
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-planning/references/specification-delivery.md",
+          "sha256": "03792ea4ddb696a669b84db3771bd5137325e36a41619574f275f30509a89687",
+          "size": 8310
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-planning/references/writing-style.md",
+          "sha256": "d3bad4d6bbd3f80fa7908952ec7242d91518044bd5d602fc871f4d2cb6aaaa0d",
+          "size": 5790
+        },
+        {
           "path": ".claude/skills/hoi4-focus-trees/SKILL.md",
-          "sha256": "5ddb0c25048afab17d7223f9f19294907514fb4c3d79fe7338824ba642790f35",
-          "size": 76478
+          "sha256": "dd5e1d976ee886e8e7bb723869e681b05dc9e9a9c2ddc8111e720c790716019e",
+          "size": 54425
+        },
+        {
+          "path": ".claude/skills/hoi4-focus-trees/references/completion-rules.md",
+          "sha256": "476d09fc4a92a1d560d545aac065bcc26cfa07982c2ab06b35c2afab358e72d5",
+          "size": 6842
         },
         {
           "path": ".claude/skills/hoi4-focus-trees/references/layout-rules.md",
@@ -7416,14 +7706,39 @@
           "size": 5928
         },
         {
+          "path": ".claude/skills/hoi4-focus-trees/references/rewards-and-ideas.md",
+          "sha256": "b3bb958632af99a6310943a4dfa24648962f9c4f6020b219189d4cfa5ebd41b3",
+          "size": 9282
+        },
+        {
+          "path": ".claude/skills/hoi4-focus-trees/references/route-design.md",
+          "sha256": "75b372b0f19ef1f975e8678afe9e9b03be1ceaaf86213aa7e71f2f35cc72e44c",
+          "size": 7634
+        },
+        {
           "path": ".claude/skills/hoi4-frame-animation/SKILL.md",
           "sha256": "eda196518e57eedd634b5a05d4ef733b53b69c85ba9729eeebe228f5bec66540",
           "size": 28481
         },
         {
+          "path": ".claude/skills/hoi4-ideas-modifiers/SKILL.md",
+          "sha256": "e4cc9d7803eb98067d3c5a14720b068fec8b2c455bcb4bdf90f5cdca0f22b92c",
+          "size": 32423
+        },
+        {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
           "sha256": "b63f3d569cf27477ff570cbaf930f0d36a24ae1ac862b9d0da20239f4ddddb3c",
           "size": 30371
+        },
+        {
+          "path": ".claude/skills/hoi4-map-states/SKILL.md",
+          "sha256": "332b98f2faf226c812dca561a9860b7f4ea941e134651cf5fed20ab428be5224",
+          "size": 36679
+        },
+        {
+          "path": ".claude/skills/hoi4-map-states/references/map-geometry.md",
+          "sha256": "939198b4e077a2581826362038c536a42be7c1f949c3710889800d4a094e6e17",
+          "size": 8673
         },
         {
           "path": ".claude/skills/hoi4-mtth/SKILL.md",
@@ -7471,9 +7786,44 @@
           "size": 39748
         },
         {
+          "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
+          "sha256": "5c7dcaec81fd058db73e358ee19450a865ea9aa21a6eeb0a27a6feffe47d6e49",
+          "size": 25423
+        },
+        {
+          "path": ".claude/skills/hoi4-technology-doctrines/references/doctrine-authoring.md",
+          "sha256": "0407daffa1f0c1d7f8c8f4d7bf5b04fe0bf54a993df729c25784571bbc88e482",
+          "size": 10086
+        },
+        {
+          "path": ".claude/skills/hoi4-technology-doctrines/references/technology-tree-gui.md",
+          "sha256": "707cb7ea2889104369df7896d826763ceb69ad33bc97566c357297aef9ee2d9a",
+          "size": 8626
+        },
+        {
           "path": ".claude/skills/hoi4-text-audio-research/SKILL.md",
           "sha256": "34ee6e42d76373a42da95612dd0400b17ff5e92c9c12ab7cc15b7aa9e0c5dde2",
           "size": 17943
+        },
+        {
+          "path": ".claude/skills/hoi4-units-divisions/SKILL.md",
+          "sha256": "5b66c9e027e2d17aadde57c5e0bdd8b84192476785994c3427362d7c4091b95a",
+          "size": 36133
+        },
+        {
+          "path": ".claude/skills/hoi4-units-divisions/references/names-stats-visuals.md",
+          "sha256": "852a51738352150c25246760ee36c46d4e42c815762480ea123f60d21302a15f",
+          "size": 4540
+        },
+        {
+          "path": ".claude/skills/hoi4-units-divisions/references/naval-air-oob.md",
+          "sha256": "a5a9039d5b287df8c09a67d54e3d87595e3c3346b0530165f1ab445ebd65cd7d",
+          "size": 8783
+        },
+        {
+          "path": ".claude/skills/hoi4-units-divisions/references/runtime-effects-triggers.md",
+          "sha256": "947047f159783f17066d38f1f4f17255fa50c9e4d57af4f0c4656e6856123d66",
+          "size": 7420
         },
         {
           "path": ".claude/skills/xlsx/SKILL.md",
@@ -8247,8 +8597,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "50b62a7cbede46bf02bf71f6a7332942963ade04c5f093a64b97710c716c3024",
-          "size": 6068
+          "sha256": "3ca62fb4fefca8ac0ef7ade28d3f8d2e367fad2a6d7628b666124c9402e56ceb",
+          "size": 6064
         }
       ]
     },
@@ -8298,8 +8648,8 @@
       "expected_files": [
         {
           "path": "docs/runtimes.md",
-          "sha256": "683409d785219a984f3ad957a712d293ac0d6ac989ddb885397238e5b889f7e7",
-          "size": 11068
+          "sha256": "218523136c3f87e395816ffcb4bd06ae008f3998cd0469386d5d477d093dd137",
+          "size": 11064
         }
       ]
     },
