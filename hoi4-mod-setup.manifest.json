@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "87bd5e767f2fd0078b4d15bfcdb269114ca74b6a",
+  "generated_for_revision": "f798c630a934ad40163dfc64535289691a12f860",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1503,8 +1503,8 @@
         },
         {
           "path": ".claude/skills/hoi4-debug-playtest/SKILL.md",
-          "sha256": "69f681c051aa60ea8352a9aceccfc144839563585f646bd4147d0d9c609be8a0",
-          "size": 23997
+          "sha256": "d2f8c4bd57040973559477c6ea2c43edd37da030832039b863aa340b488437b4",
+          "size": 24419
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
@@ -4897,8 +4897,8 @@
         },
         {
           "path": ".claude/skills/hoi4-debug-playtest/SKILL.md",
-          "sha256": "69f681c051aa60ea8352a9aceccfc144839563585f646bd4147d0d9c609be8a0",
-          "size": 23997
+          "sha256": "d2f8c4bd57040973559477c6ea2c43edd37da030832039b863aa340b488437b4",
+          "size": 24419
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
@@ -8363,8 +8363,8 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "1840a5bbbd24536973669ce9f40d65d29b34afb472cc9644a12ba04edbe0fee1",
-          "size": 11263
+          "sha256": "5e7b3c0dbb950e28948bc5533dee56bb0b2c684ef293d918dd13f08b6aa6c11f",
+          "size": 11572
         }
       ]
     },
