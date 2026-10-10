@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "17167eb676b0e7176956d9abe3287a713cf55b5f",
+  "generated_for_revision": "ad5bfb4b161a36493ebb56fc6f84acfe6829b2de",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "4c9ed96a354134532bd7b33c956c9daf50e83df890539a90060a802597cab570",
-          "size": 59570
+          "sha256": "cfe926a0eb9c54e31d6dbd9fb940d67359cd200e3d4e1d6767c732eb86331b7d",
+          "size": 59402
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "18ea42c025e92ded43166e090ba0d1340e1ed888d6a9ed3a9322c9fd6b5603fe",
-          "size": 59624
+          "sha256": "2a175cc376a00178bde4b68008bf28b79fc4206ec6ad98ed853295d84c2bce21",
+          "size": 59456
         }
       ]
     },
@@ -1503,8 +1503,8 @@
         },
         {
           "path": ".claude/skills/hoi4-debug-playtest/SKILL.md",
-          "sha256": "d2f8c4bd57040973559477c6ea2c43edd37da030832039b863aa340b488437b4",
-          "size": 24419
+          "sha256": "d8cdbf6579946d9a008a37a67a6e6c7bd428a152e5a692efc0483f392dd95cb2",
+          "size": 27115
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
@@ -4892,8 +4892,8 @@
         },
         {
           "path": ".claude/skills/hoi4-debug-playtest/SKILL.md",
-          "sha256": "d2f8c4bd57040973559477c6ea2c43edd37da030832039b863aa340b488437b4",
-          "size": 24419
+          "sha256": "d8cdbf6579946d9a008a37a67a6e6c7bd428a152e5a692efc0483f392dd95cb2",
+          "size": 27115
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
@@ -8263,14 +8263,14 @@
       },
       "expected_files": [
         {
-          "path": ".claude/skills/hoi4-live-testing/SKILL.md",
-          "sha256": "2aa3a38fa2c378032db0a3f88feb25948a8468ee34a86dbc6bf7c32ebbef752a",
-          "size": 6128
+          "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
+          "sha256": "0891d8c51b4ada0c01f2465c4d0413082bc8ee66fafa32e1e24eeb347de4e550",
+          "size": 9639
         },
         {
-          "path": ".claude/skills/hoi4-live-testing/references/setup.md",
-          "sha256": "c57c8dd22bde384046774e8a9233053236a2273ae28592e14762d939eff3a31b",
-          "size": 4397
+          "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
+          "sha256": "7c1bfe1f7dfb3c63fb5b09e7b333427dcf37848fa2633e0c0ad4d3205ecb2d72",
+          "size": 6261
         }
       ]
     },
@@ -8565,7 +8565,13 @@
       "notes": [
         "Windows only. A client entry named hoi4-live that belongs to another program is left unchanged and reported."
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": ".tools/mcp/bootstrap_hoi4_live_tools.py",
+          "sha256": "647698d628d366c299a7c570ba8f4612dbcab73006c570d68661872b10bd6c33",
+          "size": 9782
+        }
+      ]
     },
     {
       "id": "docs.mcp_integration",
@@ -8662,8 +8668,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "3ca62fb4fefca8ac0ef7ade28d3f8d2e367fad2a6d7628b666124c9402e56ceb",
-          "size": 6064
+          "sha256": "ccad349dba9999ba0aff4738709124d2570a3924cafb15bb26e0c2a7610bc6c6",
+          "size": 6308
         }
       ]
     },
@@ -8713,8 +8719,8 @@
       "expected_files": [
         {
           "path": "docs/runtimes.md",
-          "sha256": "218523136c3f87e395816ffcb4bd06ae008f3998cd0469386d5d477d093dd137",
-          "size": 11064
+          "sha256": "40d412886ad69aaf3b3632a6e9ae6ffed29c2760170ad22377a910a16235aab8",
+          "size": 11371
         }
       ]
     },
@@ -12654,14 +12660,14 @@
       ],
       "expected_files": [
         {
-          "path": ".claude/skills/hoi4-live-testing/SKILL.md",
-          "sha256": "2aa3a38fa2c378032db0a3f88feb25948a8468ee34a86dbc6bf7c32ebbef752a",
-          "size": 6128
+          "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
+          "sha256": "0891d8c51b4ada0c01f2465c4d0413082bc8ee66fafa32e1e24eeb347de4e550",
+          "size": 9639
         },
         {
-          "path": ".claude/skills/hoi4-live-testing/references/setup.md",
-          "sha256": "c57c8dd22bde384046774e8a9233053236a2273ae28592e14762d939eff3a31b",
-          "size": 4397
+          "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
+          "sha256": "7c1bfe1f7dfb3c63fb5b09e7b333427dcf37848fa2633e0c0ad4d3205ecb2d72",
+          "size": 6261
         }
       ],
       "required_tools": [
