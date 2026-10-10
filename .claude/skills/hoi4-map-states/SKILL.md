@@ -6,7 +6,7 @@ description: Use when creating, editing, auditing, or scripting Hearts of Iron I
 # HOI4 Map and States
 
 Generic guidance for the Hearts of Iron IV map and state system: what each map file does, how a state is defined, how script changes states at runtime, and which engine mistakes fail silently.
-Use `hoi4-state-ledgers` for exact state-to-state civilian transfers and transaction-time state mapmodes, `hoi4-decisions-missions` for decisions that target states, and `hoi4-events` for event chains that mutate states.
+Use `hoi4-decisions-missions` for decisions that target states, and `hoi4-events` for event chains that mutate states.
 Dynamic modifiers on states are covered in `hoi4-ideas-modifiers`, state transfers as diplomacy (peace deals, release, annexation) in `hoi4-diplomacy-war`, and `load_oob`, `create_unit`, and division spawning in `hoi4-units-divisions`.
 
 ## Contents
