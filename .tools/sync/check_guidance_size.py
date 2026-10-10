@@ -26,16 +26,18 @@ def main() -> int:
     limits = json.loads((TOOLS_DIR / "read_limits.json").read_text(encoding="utf-8"))
     ceiling = limits["guidance_file_tokens"]
     ratio = limits["estimated_bytes_per_token"]
+    skill_limit = limits.get("root_skill_max_bytes", ceiling * ratio)
     over = []
     checked = 0
     for pattern in limits["checked"]:
         for path in sorted(MOD_ROOT.glob(pattern)):
             checked += 1
-            tokens = path.stat().st_size // ratio
-            if tokens > ceiling:
-                over.append((path.relative_to(MOD_ROOT).as_posix(), tokens))
-    for name, tokens in over:
-        print(f"OVER: {name} is about {tokens:,} tokens; the ceiling is {ceiling:,}. Move a complete topic into a linked reference file.")
+            size = path.stat().st_size
+            limit = skill_limit if path.name == "SKILL.md" else ceiling * ratio
+            if size > limit:
+                over.append((path.relative_to(MOD_ROOT).as_posix(), size, limit))
+    for name, size, limit in over:
+        print(f"OVER: {name} is {size:,} bytes (about {size // ratio:,} tokens); the limit is {limit:,} bytes. Move a complete topic into a linked reference file.")
     if not over:
         print(f"{checked} guidance files are within the {ceiling:,}-token single-read ceiling.")
     return 1 if over else 0

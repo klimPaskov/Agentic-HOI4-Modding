@@ -602,165 +602,15 @@ Map the UI states if the UI represents pressure, route choice, threat, stage, fa
 
 ## Interactive mechanic UI and animated presentation in feature specs
 
-When a feature has an important mechanic, decide whether the decision category needs a richer scripted GUI or a separate mechanic window. The spec should define the player-facing interface when the system is important enough to manage visually.
-
-Use [hoi4-scripted-gui](../hoi4-scripted-gui/SKILL.md) as the source of truth for reference images before implementation, native element and background mapping, content and interaction budgets, iterative MCP live previews, scenario and resolution coverage, and visual acceptance. The plan must give any event-owned UI worker enough exact scope and acceptance context to follow that workflow without guessing.
-
-For major features, important decision categories, custom mechanic windows, formable routes, route reveals, crisis meters, leader transformations, and faction boards, run a presentation-choice pass. Choose ordinary category presentation, an eligible static or animated picture, a compact attached display, or a full GUI. Plan animation only when it clarifies a changing state or materially supports the accepted presentation. Static presentation needs no defensive justification when it is clearer.
-
-A mechanic UI spec should include:
-
-- where the UI appears, such as decision category header, attached scripted GUI, custom window, feature-details panel, or country mechanic panel
-- what button opens or closes the window
-- what values, targets, meters, cards, lists, tabs, or map states the player sees
-- what buttons the player can click and what each costs
-- how unavailable buttons explain missing requirements
-- what scripted effects and scripted triggers own the button logic
-- how AI performs equivalent actions without relying on human-only clicks
-- how the UI cleans itself up after route change, tag change, annexation, civil war, peace, or feature completion
-- what localisation and scripted localisation the UI needs
-- what static assets, animated sprites, hover states, selected states, locked states, warning states, and progress variants it needs
-- what animated state communicates, such as available action, rising pressure, critical danger, selected target, active ritual, foreign influence spread, reform momentum, hidden route reveal, route corruption, or completion
-- which animation surfaces are state-driven and which are decorative
-- which static fallback appears when animation is disabled, unsupported, not yet produced, or hidden by route state
-- whether the UI is introduced and owned by one named event; when it is, the exact `hoi4_event_ui_worker` scope, allowed files, MCP evidence set, and handoff path
-- explicit exclusion of any shared interface the event merely opens or references, including event logs, event-detail frameworks, settings, and shared framework windows
-
-The spec should not make an interactive window for every small modifier. Use custom UI when it improves readability, choice, atmosphere, or management of a living system.
-
-Animation can make pressure changes, council activation, available actions, crisis states, route changes, or failure thresholds easier to notice. Choose it for that useful feedback, preserve static fallbacks, and avoid noise. These GUI animation examples do not authorize adding category pictures alongside complex or already animated GUI.
-
-Animation is especially useful when the player needs to notice a changed state without reading a long tooltip. Good default candidates include decision category seals, category headers, scripted GUI buttons, meter frames, status cards, selected target cards, warning borders, hidden route seals, formable progress emblems, faction cohesion panels, patron influence nodes, and extreme-route route emblems.
-
-For each planned animated asset, the spec should define the in-game use, target surface, state logic, frame count expectation, loop behavior, static fallback, source mode, asset handoff owner, and proposed sprite names when they are known. The final animation must follow `hoi4-frame-animation`, meaning real source frames, a frame sheet, a static fallback, a preview GIF for review only, and a `.gfx` handoff. Do not describe a GIF, filter pulse, recolour loop, shifted still image, or transform-only mockup as the final game animation.
-
-Leader portraits can have animated variants for major route reveals, extreme-route leaders, supernatural leaders, symbolic councils, final formables, or dramatic country transformations. The spec should say when the animated portrait appears, what static fallback exists, whether the portrait is sourced or generated, what state or route controls it, what removes or replaces it, and how the animation remains period-appropriate and readable at leader-portrait size.
+Read [`references/presentation-and-research-planning.md`](references/presentation-and-research-planning.md) whenever the specification plans an interactive mechanic UI, animated presentation, or quote, remark, and audio research. It contains the complete standard for this section and its subsections.
 
 ## 9. Quote, remark, and audio research planning
 
-If the feature needs sourced wording or audio, design the research need as part of the feature's emotional and gameplay pacing.
-
-Do not assume every feature needs researched quotes, cultural remarks, or music. Use researched text or audio only when it improves a reveal, route payoff, achievement theme, custom UI surface, event chain, focus route, decision package, menu cue, or feature announcement.
-
-When planning a researched text or audio package, define:
-
-- why this feature needs researched material
-- what exact feature state uses it
-- whether it supports a reveal, escalation, transformation, defeat, aftermath, campaign-ending moment, route payoff, achievement theme, custom UI cue, or other feature role
-- what the player should understand when it appears
-- what information remains uncertain
-- what quote direction would fit
-- what cultural remark, slogan, or allusion direction would fit
-- what audio mood would fit, if audio is needed
-- whether follow-up events, decisions, focuses, UI, docs, or assets must stay aligned with it
-
-Do not fully research quotes, cultural remarks, slogans, allusions, or music inside this planning skill. Use `hoi4-text-audio-research` for that work.
-
-The feature spec should provide enough direction for `hoi4-text-audio-research` to find real quotes, meaningful cultural remarks, and suitable audio without guessing the feature role.
-
-### Text boundary and research gate
-
-This planning skill is direction-only for sourced quotes, cultural remarks, slogans, lyric fragments, scripture excerpts, literary allusions, film lines, song references, book references, game references, and audio choices. Do not write final source-dependent text inside the feature spec unless the exact wording has already been researched, sourced, and documented through `hoi4-text-audio-research` or a provided source file.
-
-If research has not been done, use neutral research gates instead of lines that could be pasted into localisation:
-
-- `Main quote: research required`
-- `Cultural remark: research required`
-- `Slogan or allusion: research required`
-- `Audio candidate: research required`
-
-Do not include unresearched `possible line`, `sample title`, `placeholder quote`, or `temporary button text`. Implementation agents may treat those as final localisation.
-
-Describe the desired shape instead. For example, write `short public reaction direction about fear spreading through port cities, avoiding generic apocalypse wording`, not a finished line.
-
-Functional labels are allowed for spec structure, asset filenames, prompt routing, branch labels, and internal handoffs, but they must be neutral and explicitly non-final. Do not name assets, localisation keys, or prompt files after unresearched title concepts.
-
-### Major-feature defeat aftermath
-
-Some major features should also have a structured aftermath when the threat is beaten.
-
-Use a defeat aftermath package when all of these are true:
-
-- the defeated threat was global or near-global in reach
-- the campaign lasted long enough to feel like a world crisis
-- the cost in casualties, destruction, or political disruption was high enough that the world should not simply snap back to normal
-
-Typical aftermath content:
-
-- a sourced quote, cultural remark, or audio cue when the aftermath needs researched material
-- postwar treaties, compacts, or new world orders
-- recurring remembrance, reconstruction, or vigilance features
-- lasting ideas, tech-sharing groups, or diplomatic rules that exist because the world learned from the crisis
-
-Do not add a treaty/new world order after every contained or short-lived disaster. Those only make sense when the feature genuinely reshaped the campaign.
+Read [`references/presentation-and-research-planning.md`](references/presentation-and-research-planning.md) whenever the specification plans an interactive mechanic UI, animated presentation, or quote, remark, and audio research. It contains the complete standard for this section and its subsections.
 
 ## 10. Writing style
 
-For player-facing text, define the same style as direction only. Feature description direction can stay grounded while option direction can use irony, sarcasm, cultural remarks, and humour that fit the actor and stakes.
-
-Avoid:
-
-- generic disaster wording
-- empty dramatic language
-- making every feature apocalyptic
-- random escalation without purpose
-- implementation code
-- excessive technical detail
-- filler text that repeats obvious system behavior
-- displaying feature effects in feature-details
-- long sentences without actually saying anything
-- short staccato sentences that are dramatic and just make comprehension more confusing
-- option direction that would lead to bland placeholder buttons
-- absence notes for systems that are not present, such as saying that a feature lacks a surface that was never in scope
-
-Mention implementation only where it matters for the design, such as custom presentation treatment, custom UI, AI behavior, documentation, assets, dynamic factors, focus tree structure, custom tags, or important system connections.
-
-This planning skill defines direction for player-facing text. It must not write final player-facing localisation. This includes feature titles, feature option text, feature descriptions, news and report prose, decision names, decision descriptions, focus names, focus descriptions, achievement titles, achievement descriptions, GUI labels, feature-detail text, external record wording, presentation titles, presentation button text, main quotes, cultural remarks, source-like allusions, and final audio selections.
-
-The planning spec may define tone, actor viewpoint, structure, visible information, route variation, dynamic placeholders that final text should use, and research needs. If a working label is needed for a row, filename, prompt, branch, route, asset, diagram, or internal handoff, mark it clearly as `working label, not final localisation`.
-
-Important text and audio research boundary: this planning skill may define feature role, trigger, tone, image direction, quote direction, cultural-remark direction, and audio mood. Any source-dependent wording belongs to `hoi4-text-audio-research` and must stay blocked until researched and documented.
-
-### General text writing style
-
-1. Never use the em dash or semicolons in sentences.
-2. Absolutely avoid dialectical hedging. Do not frame sentences as thesis, antithesis, synthesis.
- - Dialectical hedging examples:
-  - `The invasion is not merely a border crisis, but a crisis of identity.`
-  - `The regime is not only losing the war, it is losing itself.`
-  - `This is not just a strike. This is a warning.`
-  - `The cult is not fighting for land, but for meaning.`
-  - `The disaster is both a local tragedy and a global sign.`
-  - `The government is neither dead nor alive, but something worse.`
-  - `The army did not collapse. It transformed.`
-  - `This is less a rebellion than a confession.`
-  - `The question is not whether order can return, but what kind of order will survive.`
-  - `What looks like defeat is actually a new form of power.`
- - Thesis, antithesis, synthesis examples:
-  - `The army claims the province is secure. Refugees say it is already lost. The truth lies between them.`
-  - `Some call the new state liberation. Others call it occupation. In reality, it is both.`
-  - `The priests call it a miracle. The generals call it a weapon. History will call it both.`
-  - `The committee promises order. The opposition sees tyranny. The new system contains both impulses.`
-  - `The papers call it a victory. The hospitals call it a defeat. The country has become both at once.`
-  - `The rebels ask for justice. The regime asks for peace. The settlement gives neither and both.`
-3. Avoid AI-style explanatory templates. Do not write lines that sound prebuilt or reusable across any feature.
-4. Absolutely avoid staccato sentences. Do not split one simple thought into a chain of tiny lines for artificial weight or dramatic effect. Use complete, readable sentences with enough context to be clear.
- - Staccato examples:
-  - `The radios died. The roads emptied. The city listened.`
-  - `No orders. No mercy. No dawn.`
-  - `The border fell. Then the capital. Then the government.`
-  - `They marched. They burned. They vanished.`
-  - `A knock at the door. A list on the table. A train in the dark.`
-  - `The guns stopped. The screaming did not.`
-  - `First hunger. Then anger. Then flags.`
-  - `No king. No cabinet. No law.`
-  - `Ash in the streets. Smoke over the port. Silence at noon.`
-  - `One order. One shot. One missing officer.`
-  - `The gate opened. The crowd moved. The guards ran.`
-5. Avoid staged contrast formulas. Do not write sentences or paired clauses built as `claim X while officials Y`, `reports say X while authorities Y`, `people do X before governments Y`, `X happens before Y admits it`, or similar. Do not manufacture tension by contrasting unofficial fear with official denial, silence, delay, admission, or reaction. Write the observed fear, behaviour, rumours, anomalies, and consequences directly.
-6. Absolutely avoid empty dramatic filler. Do not lean on vague intensity words when concrete detail would do the work.
-7. Do not paste instruction text, task labels, prompt fragments, or process notes into in-game text, specs, docs, localisation, external documentation fields, or reports.
- - For example, when I say: `Do not reveal the hidden mechanics here.`, don't write `This path purposely doesn't reveal the hidden mechanics`
+Read [`references/writing-style.md`](references/writing-style.md) before writing tone, options, localisation handoffs, or any player-facing text in a specification. It contains the complete standard for this section and its subsections.
 
 ## 11. Specification shape
 
@@ -776,54 +626,7 @@ Only include sections for surfaces that exist or that need design. If a research
 
 ## 12. Depth, file splitting, and internal resume notes
 
-Do not compress the spec so much that important ideas become shallow.
-
-The goal is depth, not speed.
-
-Think through the feature as far as the idea can reasonably go. If the feature has multiple branches, escalation variants, rare variants, custom countries, focus trees, UI elements, text and audio packages, or major system connections, treat each of those as deserving real design space.
-
-Large feature specifications should be written across multiple repo files instead of being rushed into one oversized file. Split at clean design boundaries, such as the core loop, variants, focus trees, decisions, country packages, assets, AI, or acceptance criteria.
-
-Each file should be complete enough to be useful on its own. Stop at a clean section boundary or a clean subsection boundary when possible. If a design surface is too large for one file, stop after a complete paragraph, table, route, country package, or list item instead of cutting a thought in half.
-
-Do not summarize later sections just because the current working context is getting large. Continue in another repo file under the same spec folder. Use the available context for real specification content and do not hold back important design material for a shorter handoff.
-
-When a large feature specification cannot fit in the current response, end the response with a temporary continuation prompt for the next iteration. This prompt is a working handoff, not part of the saved specification, final package, or feature documentation. When the agent can continue by writing the next repo file without yielding, prefer that; use the prompt when response boundaries or a handoff make it necessary.
-
-The continuation prompt should include:
-
-- the feature slug, feature name, and current part number when known
-- the exact section and subsection where work stopped
-- the last completed heading, table, route, country package, or design surface
-- the next heading, table, route, country package, decision family, asset group, or research brief to write
-- constraints that must continue to apply, including localisation direction, country naming rules, asset source rules, and the user's core feature idea
-- a reminder to continue with full-depth design and not summarize missing sections
-- a reminder to avoid repeating completed sections except for short context needed to continue cleanly
-
-Use a clear temporary heading such as `Temporary continuation prompt, not part of the spec`. Keep it outside the saved spec content. In the final compiled package, remove all temporary continuation prompts and retain only the complete specification and requested final handoff files.
-
-If several iterations are needed, each response should write a new continuation prompt that reflects the current stopping point. Do not reuse an older prompt after the design has moved forward. When the final part is complete, omit the continuation prompt and provide the finished package or completion summary.
-
-Internal continuation notes are allowed only when the agent is about to hit context limits, output a very large amount of design material, hand off to another agent, or prepare for auto compaction. Put those notes outside the source spec, preferably in `docs/plans/<feature_slug>/resume_packet.md` or another clearly marked plan handoff. Internal notes should not be part of feature docs, localisation, spreadsheets, or asset manifests.
-
-An internal resume note should include:
-
-- feature slug, feature name, and current source spec folder
-- files already written or updated
-- the exact section, subsection, route, table, country package, or design surface where work stopped
-- the next file, heading, route, decision family, country package, asset group, or research brief to write
-- constraints that must continue to apply, including localisation direction, country naming rules, asset source rules, and the user's core feature idea
-- unresolved research needs, blockers, and accepted assumptions
-- a reminder to continue with full-depth design and not summarize missing sections
-- a reminder to avoid repeating completed sections except for short context needed to continue cleanly
-
-When the source spec is complete, remove temporary resume wording from source spec files. If a resume packet remains useful for implementation, keep it as a working handoff under `docs/plans/` rather than source design.
-
-For major features, the final combined specification may be extremely long. That is acceptable. A 10,000 line, 50,000 line, or 100,000+ line specification is valid if the feature truly needs that much design detail. Do not compress focus trees, rare variants, or decision webs into summaries just to keep the file short.
-
-Avoid filler. Every section should add useful design, player-facing detail, implementation clarity, asset direction, or system connection.
-
-Before saving the final spec, run a cleanup pass. Remove generic safeguards, obvious implementation boilerplate, empty labels, repeated wording, and admin audit sections.
+Read [`references/specification-delivery.md`](references/specification-delivery.md) when shaping, splitting, or resuming a long specification, or writing an improvement-loop expansion spec. It contains the complete standard for this section and its subsections.
 
 ## 13. Asset planning
 
@@ -831,23 +634,7 @@ Read [`references/asset-and-research-handoffs.md`](references/asset-and-research
 
 ## Improvement-loop expansion specs
 
-When `hoi4-improvement-loop` produces an expansion addendum, treat it as feature-planning input. The addendum should be folded into the main spec pack with the same seriousness as the original user idea. Do not treat it as a loose suggestion if the parent accepted it.
-
-An improvement-derived spec can be shaped freely. It does not need to copy the section order of this skill. It should still make the design concrete. A useful addendum explains the playable promise, the route or mechanic that feels shallow, the deeper player loop, the choices that change outcomes, the AI behavior, the visual and localisation needs, and the surfaces that must align.
-
-### Mandatory near-completion improvement loop pass
-
-Before any feature-planning goal is treated as near complete, the coding agent must spawn `hoi4_improvement_loop_planner` for a final depth and anti-bloat pass when the repository has that subagent. This is mandatory for feature specs, large addenda, country packages, focus-tree plans, decision systems, quote, remark, and audio research planning, asset-heavy plans, formable plans, custom UI plans, and any goal that creates or changes meaningful mod design.
-
-Run this pass after the main design is mostly assembled and before the final completion report. The loop planner should inspect the current spec, accepted plans, unresolved handoffs, asset needs, AI plans, mechanic surfaces, and implementation handoff needs. Its job is to find remaining shallow systems, disconnected mechanics, missing route depth, missing AI behavior, missing asset states, missing aftermath, or scope bloat.
-
-Spawn the loop planner without inherited conversation context. The parent prompt must explicitly pass the feature slug, current goal, user constraints, current spec paths, relevant plan paths, known unresolved decisions, and the exact question to answer. Do not rely on inherited conversation context.
-
-The loop planner may return either an expansion addendum or a closure handoff. If it returns an expansion addendum, the parent must resolve it before completion by folding accepted content into `docs/specs/<feature_slug>/`, implementing or queuing it with a clear reason, or rejecting it with a clear reason. If it returns a closure handoff, record that closure and proceed with final checks.
-
-A goal is not complete while an accepted loop addendum is unresolved, while a loop-recommended closure handoff has not been recorded, or while the mandatory loop pass was skipped without a tooling blocker. If the loop agent cannot be spawned because the tool is unavailable, the completion report must state that as a blocker and must not hide it as finished work.
-
-Tiny known-file text edits, narrow typo fixes, and direct one-line skill updates can skip the loop pass only when they do not create or change feature design, mechanics, focus trees, decisions, country packages, assets, sourced text or audio packages, or implementation handoff rules.
+Read [`references/specification-delivery.md`](references/specification-delivery.md) when shaping, splitting, or resuming a long specification, or writing an improvement-loop expansion spec. It contains the complete standard for this section and its subsections.
 
 ## General localisation handoff
 

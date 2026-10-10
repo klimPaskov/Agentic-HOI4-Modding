@@ -179,112 +179,7 @@ The durable archive is not runtime storage. No `.gfx`, character, GUI, event, fo
 
 ## 3. Asset source rules
 
-Choose the source mode based on asset type.
-
-### Scene-first and mood-first selection rule
-
-Do not default feature art to maps, cartographic overlays, arrows, staff tables, conference rooms, or generic war-room compositions unless that is the strongest visual for the specific asset.
-
-For a feature, many visuals should focus on the actor, force, symbol, ritual, creature, crowd, machine, government, army, leader, or strange condition behind the event. The image should usually make the event feel active and dangerous, not merely show that territory changed.
-
-Prefer visuals that show:
-
-- a country, movement, army, cult, council, machine, plague, or supernatural force as the subject
-- people, banners, ruins, storms, fires, shadows, masks, relics, halls, crowds, weapons, monuments, or rituals
-- obsession, wrath, zeal, panic, corruption, transformation, prophecy, dread, awe, or other feature-specific mood
-- fantasy, surreal, mythic, occult, symbolic, or unexplained elements when the event concept supports them
-- a clear subject and strong atmosphere over neutral geography
-
-Avoid making the main visual read like:
-
-- a map has changed
-- borders have shifted
-- officers are discussing an expansion route
-- the art is mainly a strategic diagram with decoration
-- the scene is a generic command table without a strong feature identity
-
-Maps may still appear as secondary props when useful, but they should rarely be the main visual idea for fictional, alternate-history, extreme-route, supernatural, symbolic, or strange event assets.
-
-### Use the image generator for generated symbolic or fictional assets
-
-The image generator is the runtime's configured image-generation route: the image-generation MCP server in Claude Code, and native ImageGen (`$imagegen`) in Codex. If it is unavailable, stop and report the blocker instead of building a substitute pipeline.
-
-Use the image generator by default for:
-
-- idea icons
-- focus icons
-- decision icons
-- decision category icons
-- achievement icons
-- fictional flags
-- faction emblems
-- fictional feature illustrations (final character portraits use `hoi4_portrait_creator`)
-- UI panels
-- progression-state base art
-- other symbolic or fictional static assets
-
-When creating generated assets, follow the image generator's workflow. Do not define a separate image generation route in this skill.
-
-Read [generation-and-review.md](references/generation-and-review.md) before generated source production or editing. It defines reference roles, focused revision, native transparency, truthful model-selection evidence, and acceptance checks.
-
-For transparent icons, ask the image generator for the required transparent output and follow the image generator's transparent-image route. The final PNG must have real transparency, no fake checkerboard, no white halo, no white outline, and no opaque square background unless the asset type explicitly uses a painted backdrop.
-
-If the image generator is unavailable, report that clearly and stop before using an alternate route.
-
-For generated animated assets, use the image generator through `hoi4-frame-animation`. Each animation frame must be generated or edited as its own source frame according to a frame plan. Do not use local filters, transforms, glow pulses, or offsets as the source of final motion.
-
-### Choose source mode for event photo assets
-
-Report images, news images, and custom feature images may be either internet-sourced or generated.
-
-Use internet-sourced imagery when the asset must show a real photographed person, specific real battle, real place, real object, real newspaper, real poster, real map, real archive item, or other verifiable historical material.
-
-Use the image generator when the event is fictional, alternate-history, symbolic, supernatural, extreme-route, or when a unique scene is more important than matching an existing archive image. Generated event-photo assets should be prompted as period-authentic documentary material, not modern cinematic concept art.
-
-For generated Second World War-era report, news, or custom feature images:
-
-- prompt for 1936-1945 photographic technology, period composition, period clothing, period vehicles, period architecture, and documentary realism
-- avoid modern streets, uniforms, props, weapons, vehicles, signage, UI overlays, cinematic color grading, and readable generated text
-- keep the source PNG, processed preview, final DDS, prompt, and manifest entry
-- record the source mode as generated and explain why generation fit better than sourcing
-- never use generated images for real leader portraits or to fabricate a real person's likeness
-
-Follow the repository web research rules from `AGENTS.md` when searching for source images.
-
-For internet-sourced event photo assets that are meant to represent the Second World War era, search for period-matching source imagery from roughly 1936 to 1945 unless the feature spec gives a narrower date range. Prefer contemporary photographs, war correspondents' photographs, press agency images, propaganda posters, maps, newspapers, official records, government or military archive images, museum scans, library scans, and period illustrations. Do not use modern photographs, reenactment images, film stills, AI-looking reconstructions, postwar uniforms, streets, weapons, vehicles, buildings, colorized tourist photos, reenactments, or modern props when they do not fit the era. If no suitable period source can be found, either generate a period-authentic fictional/documentary image when the asset does not require a real source, or mark the asset as blocked or `needs_user_review`.
-
-Record the image source, source link, author or archive if available, license or public domain status if available, estimated date or date range, why the image fits the Second World War era, and any uncertainty in the manifest.
-
-### Real leader portraits
-
-Do not generate a leader portrait for a real person.
-
-For real people, use an attributed internet or user-provided source, create the exact crop, archive it under `docs/assets/portraits/`, and wire the source placeholder. Prefer public-domain, archival, official, or clearly licensed images that fit the period.
-
-Real leader portraits preserve the immutable source and exact crop researched by `hoi4_portrait_creator`. The user creates the HOI4-style final through the configured provider route; the portrait worker validates and installs it.
-
-Record the source link, author or archive if available, license or public domain status if available, source image path, processed PNG path, final DDS path when applicable, and sprite name.
-
-For generated or sourced one-person leader portraits, the asset handoff must identify the portrait's gender presentation and any matching leader-name pool requirement. Female-presenting portraits must not be paired with male names and should require `female = yes` where a country leader is created directly. Male-presenting portraits must not be paired with female names or `female = yes`. Council, board, office, crowd, and symbolic-institution portraits should keep institutional leader names instead of personal random-name pools.
-
-
-### Fictional leader portraits
-
-Fictional or impossible portraits use the image generator through `hoi4_portrait_creator`, which owns generation, review, processing, DDS conversion, wiring, and handoff.
-
-Portrait-worker output should follow HOI4 leader portrait conventions: 156x210 final DDS unless an existing sprite uses another size, bust or upper-torso framing, strong face or governing-body focal point, subdued painterly finish, period-appropriate uniform or civilian clothing, transparent or HOI4-compatible portrait background as required by the existing asset pattern, and no text, labels, watermarks, modern UI, or meme-like exaggeration.
-
-For generated one-person leader portraits, record the portrait's apparent gender presentation in the manifest and handoff. Female-presenting portraits require female leader-name pools and female leader metadata where the implementation surface supports it. Male-presenting portraits require male leader-name pools and must not be paired with female metadata. Never hand off a portrait in a way that lets implementation randomly assign names from the opposite gender pool. Council, committee, junta, crowd, office, or symbolic-body portraits should be marked as institutional leaders and use institutional names instead of personal random-name pools.
-
-For council or collective leaders, use one clear symbolic council portrait rather than a cluttered crowd. Keep the subject readable at leader portrait size and document that the leader is fictional or collective.
-
-### User-provided assets
-
-If the user provides an image, treat it as a source asset.
-
-Record that the image was user-provided in the manifest.
-
-Still crop, resize, convert, place, wire, and document it like any other source asset.
+Read [`references/asset-source-rules.md`](references/asset-source-rules.md) before choosing whether an asset is sourced, generated, or user-provided. It contains the complete standard for this section and its subsections.
 
 ## 4. Reference asset examples
 
@@ -552,57 +447,7 @@ For public-facing or uncertain assets, keep the manifest honest about the source
 
 ## 13. Report event images
 
-Report event images may use internet-sourced imagery or generated period-documentary imagery. Prefer generated report images when the event needs a unique fictional or alternate-history scene, staged document, invented location, or more specific visual than archive search can reliably provide. Use real sources when the image must depict a real person, real historical scene, or real archival document.
-
-Report event images should look like documentary-style photographs, field documentation, or period documentary material.
-
-For Second World War-era subjects, prefer contemporary photographs, war correspondents' photographs, press agency images, propaganda posters, newspapers, maps, official records, military archive images, museum or library scans, or period illustrations. Do not use modern reenactment photos or modern documentary photos that visually belong to a later era.
-
-Use:
-
-- realistic or period-authentic source imagery
-- black-and-white treatment with sepia applied
-- Second World War-era visual fit when the feature belongs to that era
-- period-appropriate framing where possible
-- strong subject clarity
-- natural composition
-- no modern UI overlays
-- no modern clothing, streets, weapons, vehicles, buildings, or props unless they are intentionally part of the event
-- no generated text
-
-Target size:
-
-```text
-210x176
-```
-
-Report event images must be black and white with sepia applied. Do not leave report event images in full colour unless the user explicitly requests a colour exception, and record that exception in the manifest.
-
-### Report-event card treatment
-
-Report-event images use a finished `210x176` RGBA canvas. The source photograph is processed as a slightly tilted documentary card with transparent edge space and a soft drop shadow. The transparent corners are part of the style.
-
-Do not ask the image generator to create the tilted card. Generate or source the documentary photograph first, then apply the card treatment locally. This keeps the tilt, shadow, and margins consistent.
-
-```bash
-python -B .claude/skills/hoi4-feature-assets/tools/process_report_event_image.py source.png processed_report_event.png
-python -B .claude/skills/hoi4-feature-assets/tools/process_report_event_image.py source_folder processed_folder
-```
-
-The script performs cover crop, black-and-white conversion, sepia application, grain, paper border, deterministic tilt, transparent canvas margin, and soft shadow. It writes RGBA PNG output. Convert the processed PNG to DDS through the normal repo workflow.
-
-Validation:
-
-- processed PNG is exactly `210x176`
-- final DDS is exactly `210x176`
-- corner pixels are transparent
-- no hard photo pixels are clipped
-- tilt is visible but subtle
-- shadow is soft and not a thick border
-- edge space is transparent, not black padding
-- source remains readable after crop, tilt, shadow, and DDS conversion
-
-Generated report images must still receive this local report-card treatment.
+Read [`references/event-images-and-flags.md`](references/event-images-and-flags.md) whenever a task creates report or news event images or flags. It contains the complete standard for this section and its subsections.
 
 ## 14. News event images
 
@@ -770,21 +615,7 @@ Inspect `icons/decisions/`, `icons/missions/`, or `icons/decision_categories/` a
 
 ## 18.1 Decision category pictures
 
-A decision category picture is a larger visual surface used inside or beside a decision category. It is not a `32x32` decision icon, a small category icon, a custom-window background, or a substitute for an interactive scripted GUI.
-
-Use a category picture when the normal decision list already carries the actions but the category benefits from identity, historical context, propaganda, territorial orientation, or a readable theme. Suitable subjects include propaganda and public campaigns; civil-war mobilization, insurgency, and preparedness; elections, ideology, monarchy, party control, and trade-union politics; faction management, treaties, naval agreements, and intervention; formable territory maps; and documentary or symbolic scenes.
-
-Apply the [category-picture eligibility gate](../hoi4-decisions-missions/SKILL.md#decision-category-presentation-hierarchy) before requesting static or animated art. Only simple categories with a description, ordinary decision list, and at most basic formatted value tables qualify. Existing complex UI, meters, extra custom controls, rich interactive panels, or other animations exclude an additional category picture. Ordinary decision buttons are allowed, and the picture itself may be animated. An interactive state puzzle cannot also receive a category picture.
-
-Choose the source route by content:
-
-- use `hoi4_asset_source_researcher` for real propaganda posters, photographs, archival maps, documents, and other verifiable historical material
-- use `hoi4_generated_feature_art` for fictional or alternate-history posters, symbolic category pictures, generated documentary scenes, and non-icon illustrated panels
-- use deterministic installed-map data and exact state geometry for formable territory pictures and state-puzzle pieces; never ask the image generator to invent state borders
-
-Generated category pictures must not contain fake controls, meters, buttons, unreadable generated text, modern UI, or decoration that implies a click action. A static picture is the normal choice. Use an animated picture only when motion communicates a changing state or supports an active propaganda, mobilization, crisis, or transformation theme. Animated pictures follow `hoi4-frame-animation` and require real source frames, a static fallback, a sheet, preview, manifest, and sprite handoff.
-
-Before production, inspect `assets/vanilla_reference/icons/decision_categories/pictures/contact_sheet.png` and the exact active consumer. The manifest and handoff must classify the output as a small category icon, static category picture, animated category picture, compact scripted GUI display, or full mechanic-window asset.
+Read [`references/icon-and-ui-families.md`](references/icon-and-ui-families.md) whenever a task creates decision category pictures or advisor and high-command portrait icons. It contains the complete standard for this section and its subsections.
 
 ## Additional gameplay icon families
 
@@ -804,42 +635,7 @@ Read [`references/achievement-icons.md`](references/achievement-icons.md) whenev
 
 ## 20. Flags
 
-Flags should use clean symbolic designs that look like intentional flag art, not simple-shape placeholders, palette swaps, ugly filters, or flipped/recolored variants.
-
-They must remain readable at HOI4 sizes.
-
-Required flag sizes:
-
-- small: 10x7
-- medium: 41x26
-- normal: 82x52
-
-HOI4 flag TGAs must use the same origin/header convention as vanilla flags. Validate with `file`; completed flag TGAs should read as Targa image data at the correct size and must not end with `- top`. If a flag displays upside down in-game while the artwork looks correct in an image viewer, fix the TGA encoding/origin on the flag files themselves. Do not add custom UI sprites, scripted-localisation routing, DDS display copies, or other workarounds for flag orientation.
-
-Avoid overly detailed symbols.
-
-Avoid generated text unless the design absolutely requires it and the final output is manually checked.
-
-Always use the image generator for fictional flags and user-provided or internet source images for historical or real-world flags.
-
-For existing countries that already have game-provided or repository-approved base flags, do not replace the no-suffix base flag as part of an ideology pass. Keep the base flag unchanged, or restore it from the approved prior asset if an asset pass damaged it, unless the user explicitly asks for that base flag to be redone or the country receives a deliberate focus/event/cosmetic-tag transformation. Ideology variants should be separate assets for `_communism`, `_democratic`, `_fascism`, and `_neutrality`, not mutations of the base flag with one small shape, a palette swap, a color filter, a vertical flip, or a copied emblem.
-
-For focus-tree or event route flag changes, use explicit cosmetic tags or route-specific flag files and document the trigger/focus that changes the flag. Do not create default flag overrides or new base flags for vanilla-supported or already-existing countries just because they participate in an event.
-
-Historical or historically grounded flags must use sourced motifs, documented heraldry, period symbols, or clearly explained alternate-history synthesis. If no directly attested flag exists, state that in the manifest and produce a historically grounded design from relevant motifs instead of inventing unrelated symbols.
-
-Generated fictional or alternate-history flag variants must come from generated/source artwork and then be processed into final flag sizes. Do not hand-draw final flags from basic rectangles, circles, stars, arrows, or random emblems unless those shapes are part of a researched or generated source design.
-
-Before marking any flag complete, verify normal, medium, and small TGA files:
-
-- normal: 82x52
-- medium: 41x26
-- small: 10x7
-- correct visual orientation in a contact sheet
-- TGA origin/header convention consistent with vanilla HOI4 flags; `file` output must not show `- top`
-- no byte-identical ideology variants unless the design is intentionally shared and documented
-- no upside-down copies
-- no accidental no-suffix base-flag replacement for countries that were only meant to receive ideology variants
+Read [`references/event-images-and-flags.md`](references/event-images-and-flags.md) whenever a task creates report or news event images or flags. It contains the complete standard for this section and its subsections.
 
 ## 21. Country-leader, commander, operative, and officeholder portraits
 
@@ -874,37 +670,7 @@ at a smaller apparent size.
 
 ## 21.1 Advisor and high-command portrait icons
 
-Advisor, theorist, military-high-command, officer-corps, and army-small dossier
-portraits are a distinct native `65x67` asset family. Inspect
-`assets/vanilla_reference/portraits/advisors/` and its contact sheet before
-production. Do not satisfy an advisor requirement by shrinking a `156x210`
-leader texture or by reusing an unrelated icon.
-
-Apply the same identity gate. A grounded real subject first needs an
-independently approved full portrait candidate and retained attribution. An
-allowed fictional subject needs its own full-resolution generated master; do
-not reuse a leader crop. Institutional or collective briefs must state whether
-the card is people-free or depicts a governing group.
-
-Use the bundled compositor:
-
-```powershell
-python -B .claude/skills/hoi4-feature-assets/tools/create_advisor_icon.py `
-  --source <approved_portrait> `
-  --portrait-size <width> <height> `
-  --rotation <degrees> `
-  --portrait-offset <right> <down> `
-  --preview <review.png> `
-  --output <runtime.dds>
-```
-
-The tool loads the complete approved source without a pre-crop or warp, measures the template opening, and uses one uniform aspect-preserving cover scale. It expands the opening with the centralized under-frame bleed and portrait-edge guard, masks the covering portrait to that safe region, and composites the exact `advisor_template.png` once as the untouched top layer. Never clip to the exact visible opening: translucent antialiased inner-edge pixels need portrait coverage beneath the frame. Do not anisotropically stretch, redraw, recolour, or replace the frame, paper, seal, bevel, patina, or shadows.
-
-Require a per-person placement study, native preview, nearest-neighbour `4x` review preview, alignment overlay, metadata, and staged DDS. Record source/template hashes, measured opening center/size/angle, uniform cover geometry, bleed/guard constants, transformed dimensions, center, offset, rotation, alpha coverage (`opening_alpha_gap_pixels`, `inner_edge_alpha_gap_pixels`, `exterior_alpha_leak_pixels`), preview and DDS hashes, runtime path, and independent reviewer. Review against solid and checker backgrounds at native and `4x` size. Automated dimension and alpha checks are evidence, not visual approval. Reject gaps, matte pixels, exterior leakage, padded strips, visible stretching, or a neutral transform that recreates a frame-only card.
-
-When a character defines `army.large` and `army.small`, keep the approved
-`156x210` commander texture for `large` and create a separate native `65x67`
-dossier portrait for `small`. Validate and document both sprites independently.
+Read [`references/icon-and-ui-families.md`](references/icon-and-ui-families.md) whenever a task creates decision category pictures or advisor and high-command portrait icons. It contains the complete standard for this section and its subsections.
 
 ## Animated leader portraits
 

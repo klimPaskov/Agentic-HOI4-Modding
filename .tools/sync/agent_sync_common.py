@@ -12,7 +12,7 @@ Generated outputs, all one-way and overwritten on every run:
 - Claude Code: `.claude/agent-map.md` (the agent files themselves are the source)
 
 Runtime tuning that is not part of a prompt, such as the Codex reasoning effort
-for each Claude model tier, lives in `runtime_profiles.json` next to this file.
+for each Claude model tier, lives in `agent_profiles.json` next to this file.
 The synchronizer discovers agents from the canonical folder, so adding or
 removing an agent never requires editing this script.
 
@@ -33,7 +33,7 @@ from typing import Dict, List, Optional, Tuple
 TOOLS_DIR = Path(__file__).resolve().parent
 MOD_ROOT = TOOLS_DIR.parents[1]
 CANONICAL_DIR = MOD_ROOT / ".claude" / "agents"
-PROFILES_PATH = TOOLS_DIR / "runtime_profiles.json"
+PROFILES_PATH = TOOLS_DIR / "agent_profiles.json"
 CODEX_CONFIG = MOD_ROOT / ".codex" / "config.toml"
 
 READ_ONLY = "read-only"

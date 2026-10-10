@@ -4,6 +4,8 @@ This reference belongs to the `hoi4-feature-planning` skill and holds complete s
 
 ## 3.12 Country package and dynamic identity standard
 
+Before accepting a new country tag, cosmetic identity, or country-identity asset package, audit the candidate against vanilla, the current mod, sibling local mods, and every installed Workshop mod. Reuse a vanilla tag and preserve its meaningful content when the national identity already exists; remap a conflicting new tag before asset production or runtime wiring begins.
+
 When a feature creates, releases, transforms, or significantly modifies a country, the spec must define that country as a full package. This applies to new custom tags and to existing countries that gain feature-specific political identities, focus trees, flags, leaders, cosmetic names, ideology names, starting forces, or mechanics.
 
 For every new country, and every existing country that is meaningfully changed, the spec should provide a country package matrix or equivalent structured section. It must cover:

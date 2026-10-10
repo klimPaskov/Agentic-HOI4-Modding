@@ -48,7 +48,7 @@ Each subagent declares its Claude tier in its `model` field so cost and capabili
 - **Sonnet**: 3D model pipeline, feature completion auditor, localisation auditor, scripted system architect, skill maintainer.
 - **Haiku**: every other specialist (repo explorer, focus tree, decision, country package, and AI probability auditors, event UI worker, documentation curator, asset, icon, portrait, quote, and audio workers, spreadsheet worker, Super Events researchers).
 
-Other runtimes translate the tier through [`.tools/sync/runtime_profiles.json`](.tools/sync/runtime_profiles.json), for example into a Codex reasoning effort.
+Other runtimes translate the tier through [`.tools/sync/agent_profiles.json`](.tools/sync/agent_profiles.json), for example into a Codex reasoning effort.
 
 ## Skill size
 

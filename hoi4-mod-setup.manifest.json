@@ -196,7 +196,7 @@
           "size": 266
         },
         {
-          "path": ".tools/sync/runtime_profiles.json",
+          "path": ".tools/sync/agent_profiles.json",
           "sha256": "711cdd54af6098697e138ea1e4ad8a905b7e6e229f7d03df72d992ac2eb7076a",
           "size": 551
         },

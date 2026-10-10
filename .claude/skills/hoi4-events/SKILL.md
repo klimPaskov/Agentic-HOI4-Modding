@@ -187,48 +187,7 @@ Every subagent edit must produce a handoff under `docs/plans/<feature_slug>/suba
 
 ## Major-event defeat aftermath
 
-Some major events should also have a structured aftermath when the threat is beaten.
-
-Use a defeat aftermath package when all of these are true:
-
-- the defeated threat was global or near-global in reach
-- the campaign lasted long enough to feel like a world crisis
-- the cost in casualties, destruction, or political disruption was high enough that the world should not simply snap back to normal
-
-Typical aftermath content:
-
-- a sourced defeat quote, cultural remark, or audio cue when the feature needs one
-- postwar treaties, compacts, or new world orders
-- recurring remembrance, reconstruction, or vigilance events
-- lasting ideas, tech-sharing groups, or diplomatic rules that exist because the world learned from the crisis
-
-Do not add a treaty/new world order after every contained or short-lived disaster. Those only make sense when the event genuinely reshaped the campaign.
-
-
-### 7. Duration fields and constants
-
-Use `script_constants` for shared tuning, but remember that some duration fields reject both `constant:` and variable tokens.
-
-Before adding or extending `script_constants`, read the installed `common/script_constants/documentation.md` and `documentation/script_concept_documentation.md` (Script Constants), then inspect the existing group.
-Every new group must begin with `schema` matching its key and data kinds (`int`, `fixed_point`, or a documented complex schema); new keys in an existing group inherit and must satisfy that schema.
-A basic brace parse does not validate schema correctness.
-Keep script constant category IDs unique across files so helpers with different schemas cannot redeclare the same category.
-
-**Variable arithmetic evidence:** distinguish getter, modifier, normal variable, and script constant representations. Read the installed `documentation/script_concept_documentation.md` (Math Expressions) and the offline `paradox_wiki/Data structures - Hearts of Iron 4 Wiki.md` (Variables), and record precision conflicts rather than inferring a universal normal-variable maximum from math-expression fixed point, modifier-only three-decimal precision, or the deprecated raw-manpower getter overflow near 2.1 million.
-Audit actual source operations with a conservative bounded fixed-point model, explicit rounding or truncation assumptions, and independent integer-floor boundary and count-type cases; a later division or clamp does not prove intermediate safety, and passing unbounded Python arithmetic does not prove engine behavior.
-Never turn an unsupported numeric maximum into an eligibility gate or no-payment policy, or silently cap actual history.
-For integer receipt validation, prefer modulo by one on scratch storage using the documented `modulo_temp_variable` effect and trigger forms without rounding the receipt or adding maximum or count caps; use ratio quotient and remainder or rational scaled coefficients only when proven equivalent under the stated arithmetic assumptions.
-
-Known sensitive fields:
-
-- `set_country_flag = { days = ... }`
-- `set_global_flag = { days = ... }`
-- any other timed field that throws `Malformed token` for either `constant:category.key` or a variable token
-
-For those fields, use a file-scoped `@NAME = literal` constant in the same script file and pass `days = @NAME`. Keep the value mirrored with the matching `common/script_constants/` tuning entry, and update both in the same change.
-
-Do not work around this by setting a temp variable and passing `days = temp_name`. those fields can reject variable tokens too. In which case, a `meta_effect` must be used if possible.
-
+Read [`references/major-event-aftermath.md`](references/major-event-aftermath.md) whenever a major event can be defeated, contained, or end with an aftermath state. It contains the complete standard for this section and its subsections.
 
 ## Documentation rules
 
@@ -303,28 +262,7 @@ When exact state control is the formation proof, use the manifest-driven state-p
 
 ## Scripted GUI and animated event presentation
 
-Major event mechanics can use scripted GUI windows, decision-category interfaces, animated leader portraits, or custom buttons when they make the system easier to play. Treat that UI as part of the event contract, not as decoration added later. Static and animated category pictures must pass the simple-category eligibility gate in `hoi4-decisions-missions`: description, ordinary decision list, and at most basic formatted value tables, with no complex GUI, meters, extra custom controls, rich panels, or other animations alongside the picture.
-
-When the event specifically adds a dedicated scripted GUI or mechanic window, route its bounded layout implementation and visual-quality pass to `hoi4_event_ui_worker`. The worker must follow `hoi4-scripted-gui` for the accepted reference, native-element mapping, mandatory `hoi4.gui_inspect`, iterative `hoi4.gui_render` state/resolution/hierarchy/click-region views, corrections, and matched post-change comparison evidence. Reviewed source edits may be applied directly or through optional `hoi4.gui_rewrite`. Do not send shared event logs, event-detail frameworks, settings, super-event frameworks, shared registries, or unrelated existing UIs to this worker. A UI is eligible only when the accepted event spec or source proves that the event introduces and owns it.
-
-When an event uses a custom interface, align these surfaces:
-
-- decision category or entry button
-- scripted GUI definition
-- scripted triggers and effects
-- costs and tooltips
-- animated and static sprites
-- localisation and scripted localisation
-- AI fallback behavior
-- cleanup and invalidation rules
-- documentation and asset manifest
-
-For a formable state puzzle, add the manifest-to-category attachment crosswalk to the event handoff and verify every in-scope category against the generated scripted-GUI identifier and window. Use the actual read-only map and GUI inspect/render routes for the linked category; a state-piece render alone never proves category coverage.
-
-Every player-clickable GUI button that changes gameplay must validate the same requirements as a normal decision. It must show costs and missing requirements clearly. It must call scripted effects that can also be used by AI, decisions, focuses, and cleanup systems.
-
-Animated leader portraits, animated route emblems, glow effects, particles, and float effects should be used for major reveals, extreme-route escalation, hidden formables, supernatural leaders, or final transformations. Each animated asset needs a static fallback and manifest entry.
-
+Read [`references/event-presentation.md`](references/event-presentation.md) whenever an event adds a scripted GUI, an animated presentation, or a custom popup. It contains the complete standard for this section and its subsections.
 
 ## 3D model and entity integration
 

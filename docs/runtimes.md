@@ -91,13 +91,13 @@ Because no definition supplies the model, confirm the child route explicitly whe
 Each canonical agent declares its Claude tier in the `model` field, which keeps cost and capability fixed per role instead of following the parent session.
 The project instructions list the tier of every role.
 
-Other runtimes translate the tier through `.tools/sync/runtime_profiles.json`:
+Other runtimes translate the tier through `.tools/sync/agent_profiles.json`:
 
 - Codex: the tier sets `model_reasoning_effort` (and, when configured, `model`); the read-only or editing authority sets `sandbox_mode`. Without a `model` entry the agent uses the session's model.
 - Cursor and OpenCode: `model: inherit`.
 - Qoder: the authority sets the tool list.
 
-Change a role's tier in its canonical file and rerun `sync_agents.py`; change a runtime's translation in `runtime_profiles.json`.
+Change a role's tier in its canonical file and rerun `sync_agents.py`; change a runtime's translation in `agent_profiles.json`.
 Keep provider credentials out of shared files.
 
 ## MCP registration
