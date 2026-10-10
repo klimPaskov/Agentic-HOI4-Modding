@@ -1,0 +1,11 @@
+{
+  "pairs": [
+    { "source": "CLAUDE.md", "target": "AGENTS.md" },
+    { "source": "CLAUDE_template.md", "target": "AGENTS_template.md" }
+  ],
+  "replacements": [
+    ["the image-generation MCP workflow", "native ImageGen"],
+    ["The image-generation MCP workflow", "Native ImageGen"],
+    ["Install this template as `CLAUDE.md`", "Install this template as `AGENTS.md`"]
+  ]
+}

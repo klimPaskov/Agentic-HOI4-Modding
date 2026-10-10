@@ -16,29 +16,22 @@ Before retiring a tool, search its filename, module name, generated headers, and
 `mcp/bootstrap_hoi4_agent_tools.py` installs and verifies the manifest-pinned HOI4 Agent Tools package and advertised MCP routes.
 Its package version, integrity, runtime-entry evidence, manifest declaration, and documentation must move together.
 
-### Agent synchronization
+### Runtime synchronization
 
-The scripts under `sync/` generate Qoder, Cursor, OpenCode, and Claude Code subagents from canonical `.codex/agents/*.toml` definitions.
-Run all four after a canonical definition changes, then rerun them with `--check`:
+Claude Code files are canonical. The tools under `sync/` regenerate `AGENTS.md` from `CLAUDE.md`, the Codex, Cursor, Qoder, and OpenCode agents from `.claude/agents/`, and the `.agents/skills/` and `.qoder/skills/` copies from `.claude/skills/`. `check_guidance_size.py` keeps instruction files, skills, and agent prompts within the single-read ceiling. Run them after a canonical change and again with `--check`:
 
 ```powershell
-python -B .tools/sync/sync_qoder_agents.py
-python -B .tools/sync/sync_cursor_agents.py
-python -B .tools/sync/sync_opencode_agents.py
-python -B .tools/sync/sync_claude_agents.py
-python -B .tools/sync/sync_qoder_agents.py --check
-python -B .tools/sync/sync_cursor_agents.py --check
-python -B .tools/sync/sync_opencode_agents.py --check
-python -B .tools/sync/sync_claude_agents.py --check
+python -B .tools/sync/sync_instructions.py
+python -B .tools/sync/sync_agents.py
+python -B .tools/sync/sync_skills.py
+python -B .tools/sync/check_guidance_size.py
 ```
 
-Qoder, Cursor, OpenCode, and Claude Code project agent projections are generated but tracked for immediate project discovery. Personal overrides and machine-local caches remain untracked.
-Never hand-edit generated agent files or copy project-specific MCP paths between runtimes.
+Generated files are tracked so a checkout works immediately. Never hand-edit them or copy project-specific MCP paths between runtimes. `sync/README.md` documents each tool and its configuration file, and `docs/runtimes.md` documents what every runtime reads, including DeepSeek Harness, which has no agent registry.
 
-### Agent runtimes
+### HOI4 Live Tools
 
-DeepSeek Harness (DSH) is supported as an additional runtime, but it has no project agent registry to synchronize: it reads no `.codex/agents/*.toml`, so each subagent is composed from the delegated prompt and there is deliberately no DSH synchronizer or generated DSH agent folder.
-`docs/runtimes.md` is the reference for per-runtime instruction-file discovery, skill roots, subagent registries, and MCP registration shapes.
+HOI4 Live Tools is a separate, optional MCP server that drives a running game. It is not part of `.tools/`; `.claude/skills/hoi4-live-testing/references/setup.md` explains how to install and register it per user, and the optional `hoi4-live-testing` skill explains how agents use it.
 
 ### 3D model pipeline
 

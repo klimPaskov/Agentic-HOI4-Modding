@@ -8,10 +8,10 @@ MCP output is supporting evidence and never replaces source review, the offline 
 
 This document describes an integration contract rather than a live server run, so every user must confirm the installed package version and advertised routes before relying on a capability.
 
-The supplied Codex registration allows 120 seconds for startup and 600 seconds per tool call.
+The supplied Codex registration allows 120 seconds for startup and 600 seconds per tool call; Claude Code uses its own MCP timeouts, which the `MCP_TIMEOUT` and `MCP_TOOL_TIMEOUT` environment variables can raise.
 Keep source selectors and GUI scenario matrices bounded; complex source renders can take several minutes.
 Use negotiated task support only after confirming it in the connected client and server.
-Tool exposure does not prove service health or the availability of a standalone viewer application. Verify standalone Technology Tree Viewer availability separately when needed, record a missing viewer as a package gap, and do not confuse it with the required read-only technology MCP routes.
+Tool exposure does not prove service health or the availability of a standalone viewer application. Verify standalone Technology Tree Viewer availability separately when needed and record a missing viewer as a package gap.
 
 ## Evidence contract
 
@@ -34,21 +34,23 @@ Renders are deterministic offline previews, not game screenshots, and they do no
 
 ## Capability matrix
 
-Tool availability is version-dependent, so confirm each name from the installed server before invoking it.
+Route names change between releases. The table lists the routes of current releases as examples; use the names the connected server advertises in its live tool list, and read each live schema before relying on optional parameters.
 
 | Surface | Read-only MCP evidence | Write route | Required evidence sequence | Limits |
 | --- | --- | --- | --- | --- |
 | Local references | `hoi4.reference_context`, `hoi4.reference_search`, `hoi4.reference_read`, `hoi4.source_lookup` | None | Select the work surface, search exact rules, read the pertinent cited sections, and inspect exact vanilla/mod definitions. | A citation bundle identifies sources; it does not prove that their detailed rules were read. Missing or skipped sources require a targeted local read or a recorded gap; resolve live `omittedSources` by increasing the result limit or targeted search/read. |
 | National focus trees | `hoi4.focus_inspect`, `hoi4.focus_render` | `hoi4.focus_rewrite` when advertised | Inspect and render the exact tree before editing, review any proposal, then inspect and render again after source changes and retain paired evidence. | Layout and diagnostics are evidence, not a completion claim; complex focus weights also require the probability contract. |
 | Event chains | `hoi4.event_inspect`, `hoi4.event_render`, `hoi4.event_compare` | None in the installed package | Run a narrow inspect and render before editing, then rerun them after editing and compare the same selector or revision when available. | Analysis is bounded and static, so dynamic destinations and runtime behavior can remain unresolved. |
-| Technology and doctrine trees | `hoi4.tech_inspect`, `hoi4.tech_render`, `hoi4.tech_compare` | None; these routes are read-only | Inspect the selected tree, render a reviewable layout, and compare related trees or variants. | Keep source review and MCP evidence together; a missing required route is a blocker rather than permission to invent viewer evidence. |
+| Technology and doctrine trees | `hoi4.tech_inspect`, `hoi4.tech_render`, `hoi4.tech_compare` | None; these routes are read-only | Inspect the selected tree, render a reviewable layout, and compare related trees or variants. | Keep source review and MCP evidence together; never invent viewer evidence for a route that is not advertised. |
 | Weighted logic | `hoi4.probability_inspect`, `hoi4.probability_evaluate`, `hoi4.probability_sweep`, `hoi4.probability_compare`, `hoi4.probability_simulate`, `hoi4.probability_sequence`, `hoi4.probability_render` | None; the probability auditor remains read-only | Start with inspect, evaluate named scenarios, sweep sensitivities, compare the same scenarios before and after a source patch, and add simulation, sequence, or rendering only under the scenario contract. | A score is not a probability; incomplete pools or external factors make exact conclusions invalid. |
 | Scripted GUI | `hoi4.gui_inspect`, `hoi4.gui_render` | Optional `hoi4.gui_rewrite` when the GUI is explicitly in scope | Inspect the exact GUI before editing, render relevant states and resolutions, apply the reviewed edit directly or through the optional rewrite, then inspect, render, and compare the same states and resolutions after editing. | Do not use a GUI route to redesign shared framework surfaces without an owning scope and parent approval. Rewrite success is not visual acceptance. |
-| Map and connected map data | `hoi4.map_inspect`, `hoi4.map_render` | `hoi4.map_rewrite` through Agent Nudger or an equivalent declarative writer | Inspect connected provinces, states, regions, adjacency, supply, and rail data before a proposal, complete dry-run and review before apply, then post-validate and retain recovery evidence. | A map render is offline evidence and does not prove in-game pathing, supply, or consumer behavior. |
+| Map and connected map data | `hoi4.map_inspect`, `hoi4.map_render` | `hoi4.map_rewrite` or an equivalent declarative writer | Inspect connected provinces, states, regions, adjacency, supply, and rail data before a proposal, complete dry-run and review before apply, then post-validate and retain recovery evidence. | A map render is offline evidence and does not prove in-game pathing, supply, or consumer behavior. |
 
-If a route is absent, record the exact tool, selector, package version, and error, and mark the affected conclusion blocked or unresolved.
+If a route is absent, record the exact tool, selector, package version, and error once, then continue with local references and source review as described under Route-unavailable behavior.
 
-## Mandatory before-and-after workflow
+## Before-and-after workflow
+
+Use the steps that answer a concrete question about the change, and reuse results until their inputs change.
 
 1. Identify the surface owner, source files, accepted design authority, exact selector, and intended validation scenarios before calling MCP.
 2. Run the matching narrow read-only inspect route and retain diagnostics, linked files, revision, and artifact URI.
@@ -58,7 +60,7 @@ If a route is absent, record the exact tool, selector, package version, and erro
 6. Make the source change through the normal authorized workflow or through the bounded rewrite lifecycle below.
 7. Rerun the same inspect and render queries after the change, then use the matching compare route where the package provides one.
 8. Preserve pre-change and post-change URIs, revisions, scenario hashes, diagnostics, and unresolved limitations in the handoff or review record.
-9. Do not claim a surface is complete when the required route was unavailable, the post-change evidence is missing, or a required scenario remains unresolved.
+9. Report which conclusions rest on MCP evidence and which on source review or calculation; never describe source review as MCP proof or live engine validation.
 
 ## Local documentation and source discovery
 
@@ -123,29 +125,26 @@ Do not call a successful source reversal an MCP rollback unless the installed ro
 
 ## Route-unavailable behavior
 
-Treat a missing adapter, tool, selector, comparison route, or package capability as a reproducible blocker rather than silently downgrading the evidence standard.
+For a tool failure or an unsupported or inconclusive analysis, allow the initial read-only request and at most one retry with corrected or narrower inputs; skip the retry when the route is known to be unavailable or there is no useful correction.
+The limit follows the underlying failure across files, scenarios, routes that need the same capability, agents, and resumed turns; a new request name, an unrelated source edit, or a successful status poll does not reset it.
 
-Record the exact route requested, selector, package version, command or transport, error text, and the source-only checks that remain possible.
+Record the exact route requested, selector, package version, command or transport, error text, the attempts already used, and what would justify one more attempt, in the existing handoff or work note.
 
-Mark the affected surface blocked or unresolved, and carry the limitation into the parent review or handoff.
+Then continue with the useful local checks: the pertinent wiki and installed-documentation sections, the source, tests, and calculations from the actual script for weighted logic.
+Those checks can support completion, but they are source review, not MCP evidence or observed game behavior, and the report must say so.
 
-Source review, manual arithmetic, a screenshot, or a guessed wrapper does not substitute for a required MCP route.
-
-Technology and doctrine work uses the advertised `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_compare` routes. If the installed server does not advertise them, record the exact package/version blocker instead of silently substituting source-only review.
+An unavailable route does not excuse a confirmed defect: fix it and recheck the affected behavior.
+Inspect current source or transaction state before retrying an uncertain mutation.
 
 ## Registration and troubleshooting
 
-Install the exact published package version declared by the current setup manifest and repository bootstrap, keeping version, registry integrity, runtime-entry evidence, and documentation aligned. The current starter revision uses:
+HOI4 Mod Setup installs and verifies the exact package version recorded in `hoi4-mod-setup.manifest.json`. For a manual setup, run `python .tools/mcp/bootstrap_hoi4_agent_tools.py`, which installs the same recorded version with its registry-integrity and runtime-entry checks; `npm install --global hoi4-agent-tools` installs the newest release instead.
 
-```powershell
-npm install --global --prefix "$env:APPDATA\npm" --ignore-scripts --registry=https://registry.npmjs.org hoi4-agent-tools@3.9.0
-```
-
-If that exact package version is unavailable or fails verification, record the package/version blocker instead of silently substituting an unpinned clone or another release.
+If the recorded version is unavailable or fails verification, record the package/version blocker instead of silently substituting an unpinned clone.
 
 The repository bootstrap (`.tools/mcp/bootstrap_hoi4_agent_tools.py`) keeps an installation whose complete tree already matches the reviewed release and runs no npm command for it. It uninstalls any other installed copy before the exact install, because npm upgrades a shrinkwrapped package in place without pruning modules the previous release needed, so an in-place upgrade never matches the reviewed tree. Replacing the package requires every HOI4 MCP client to be closed or disconnected first: a running server keeps Sharp's native libraries loaded, and npm cannot replace them.
 
-For a local mod, register `hoi4-agent-tools.cmd` with the mod directory as its working directory; a mod-local working directory normally lets the server detect the source without a separate selection call.
+For a local mod, register `hoi4-agent-tools.cmd` (Windows) or `hoi4-agent-tools` with the mod directory as its working directory: the project `.mcp.json` entry `hoi4_agent_tools` for Claude Code, and `[mcp_servers.hoi4_agent_tools]` in `.codex/config.toml` for Codex; a mod-local working directory normally lets the server detect the source without a separate selection call.
 
 Use `hoi4-agent-tools-setup --init` only when persistent multi-mod or remote configuration is required.
 

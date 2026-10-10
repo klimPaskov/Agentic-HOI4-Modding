@@ -1,0 +1,13 @@
+{
+  "guidance_file_tokens": 20000,
+  "estimated_bytes_per_token": 4,
+  "read_output_tokens": 30000,
+  "checked": [
+    "CLAUDE.md",
+    "AGENTS.md",
+    "CLAUDE_template.md",
+    "AGENTS_template.md",
+    ".claude/skills/*/SKILL.md",
+    ".claude/agents/*.md"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "codex": {
+    "tiers": {
+      "opus": { "model_reasoning_effort": "xhigh" },
+      "sonnet": { "model_reasoning_effort": "high" },
+      "haiku": { "model_reasoning_effort": "medium" }
+    },
+    "sandbox": {
+      "read-only": "read-only",
+      "can edit": "workspace-write"
+    }
+  },
+  "cursor": { "model": "inherit" },
+  "opencode": { "model": "inherit" },
+  "qoder": {
+    "tools": {
+      "read-only": "Read, Grep, Glob, Bash, WebFetch, WebSearch",
+      "can edit": "Read, Grep, Glob, Bash, Edit, Write, WebFetch, WebSearch"
+    }
+  }
+}

@@ -25,15 +25,15 @@ url = "https://cloud.comfy.org/mcp"
 # materializes concrete Meshy and Blender entries without user editing.
 
 [agents.hoi4_3d_model_pipeline]
-description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages through Meshy 7 and the verified Blender/io_pdx_mesh stack. Eligible biped bodies, including firearm rebuilds, get one supported provider rig/action attempt before Blender fitting or recovery; non-bipedal anatomy and existing non-firearm repairs use Blender directly. Includes sourced custom-unit audio research and bespoke vanilla-green counter handoffs, but never final gameplay wiring or an in-game completion claim."
+description = "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages from one approved source-informed input per geometry task using Meshy 7, Meshy MCP, the Blender HOI4 adapter, and io_pdx_mesh. Provider-eligible bipeds, including firearm-body rebuilds, get one supported Meshy rig/action attempt before Blender recovery; firearm units use separate Meshy body and firearm geometry tasks, then Blender fitting, attachment, and contact correction. Non-bipedal anatomy and existing non-firearm repairs use Blender directly. For custom units, it researches legally usable Internet-sourced sound files and prepares bespoke vanilla-green counter handoffs. Does not perform final gameplay, GFX, or sound-definition wiring or claim in-game completion."
 config_file = "agents/hoi4_3d_model_pipeline.toml"
 
 [agents.hoi4_ai_probability_auditor]
-description = "Read-only scenario auditor for HOI4 AI weights, MTTH, event option chances, random lists, focus and research selection, decision and mission scores, AI strategy factors, and declared weighted pools. Uses the mandatory HOI4 MCP probability workflow and does not patch source or choose balance targets."
+description = "Read-only weighted-logic auditor for HOI4 AI weights, probabilities, MTTH, random selection, focus and research selection, decision and mission scores, strategy factors, and declared weighted pools. Uses the installed HOI4 MCP probability workflow for every in-scope weighted surface and reports evidence without patching gameplay."
 config_file = "agents/hoi4_ai_probability_auditor.toml"
 
 [agents.hoi4_asset_source_researcher]
-description = "Finds, verifies, processes, and documents non-portrait real or archival visual source assets for HOI4 mods, including report, news, presentation, historical-flag, and attested-symbol assets. Character portraits belong entirely to hoi4_portrait_creator."
+description = "Finds, verifies, and documents non-portrait real or archival visual source assets for HOI4 mods. Use for report, news, and large presentation images, historical flags, and attested symbols. Character portraits belong entirely to hoi4_portrait_creator. Does not edit GFX or gameplay files."
 config_file = "agents/hoi4_asset_source_researcher.toml"
 
 [agents.hoi4_audio_researcher]
@@ -49,11 +49,11 @@ description = "Active auditor and small-patch subagent for HOI4 decisions, missi
 config_file = "agents/hoi4_decision_mission_auditor.toml"
 
 [agents.hoi4_documentation_curator]
-description = "Documentation cleanup and consistency subagent for HOI4 mods. Reconciles specs, plans, docs, handoffs, manifests, prompts, reports, README files, and accidental Markdown hard wraps with accepted decisions and current implementation evidence. Does not edit gameplay files or external tabular data files."
+description = "Documentation cleanup and consistency subagent for HOI4 mods. Reconciles specs, plans, docs, handoffs, manifests, prompts, reports, and README files with accepted decisions and current implementation evidence. Does not edit gameplay files or external tabular data files."
 config_file = "agents/hoi4_documentation_curator.toml"
 
 [agents.hoi4_event_ui_worker]
-description = "Implementation and visual-layout worker for a scripted GUI introduced by one named event or event-owned mechanic. It uses reference mapping, active intermediate HOI4 MCP previews, direct edits or optional GUI rewrite, correction rerenders, and matched post-change comparisons. It never audits shared interfaces such as event logs, event-detail frameworks, settings, or unrelated existing UIs."
+description = "Active implementation and visual-layout subagent for a scripted GUI window introduced and owned by one named HOI4 event or event mechanic. Uses the hoi4-scripted-gui reference workflow, active MCP live previews throughout construction, and matched post-change comparison evidence; reviewed edits may be applied directly or through optional gui_rewrite. It does not audit or redesign repository-wide interfaces such as event logs, settings, shared framework windows, or unrelated existing UIs."
 config_file = "agents/hoi4_event_ui_worker.toml"
 
 [agents.hoi4_feature_completion_auditor]
@@ -65,11 +65,11 @@ description = "Active auditor and small-patch subagent for HOI4 focus trees. Che
 config_file = "agents/hoi4_focus_tree_auditor.toml"
 
 [agents.hoi4_generated_feature_art]
-description = "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, large feature presentation, UI, flag, and faction-emblem art for HOI4 mods. Final character portraits use the dedicated portrait worker. Does not edit GFX or gameplay files."
+description = "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, large presentation, UI, flag, faction-emblem, and other feature art for HOI4 mods. Final character portraits use the dedicated portrait worker. Does not edit GFX or gameplay files."
 config_file = "agents/hoi4_generated_feature_art.toml"
 
 [agents.hoi4_icon_artist]
-description = "Creates generated icon asset packages, bespoke vanilla-green custom-unit counter packages, and frame-by-frame small animated sprite packages for HOI4 mods. Unit counters require exact installed-vanilla definition/DDS inspection and matching reference-family evidence before production. Use for focus, idea, decision, achievement, technology, special-project, scripted GUI, formable seal, route-state, and other gameplay icon surfaces. Does not edit GFX or gameplay files unless parent scope explicitly changes it."
+description = "Creates generated icon and vanilla-green unit-counter packages plus frame-by-frame small animated sprite packages for HOI4 mods. Use for custom-unit counters, focus, idea, national spirit, officer corps spirit, decision, mission, decision category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, modifier, scripted GUI, formable seal, warning, glow, and route-state icons. Does not edit GFX or gameplay files unless parent scope explicitly changes it."
 config_file = "agents/hoi4_icon_artist.toml"
 
 [agents.hoi4_improvement_loop_planner]
@@ -77,11 +77,11 @@ description = "Plan-only improvement loop subagent for HOI4 mods. Writes deep ex
 config_file = "agents/hoi4_improvement_loop_planner.toml"
 
 [agents.hoi4_localisation_auditor]
-description = "Active auditor and patch subagent for HOI4 localisation, scripted localisation, dynamic text, tooltip quality, key coverage, encoding, cross-surface consistency, and direct, concise, readable player-facing prose."
+description = "Active auditor and patch subagent for the current HOI4 mod localisation, scripted localisation, dynamic text, tooltip quality, key coverage, encoding, cross-surface consistency, and direct, concise, readable player-facing prose."
 config_file = "agents/hoi4_localisation_auditor.toml"
 
 [agents.hoi4_quote_remark_researcher]
-description = "Finds, verifies, compares, and documents quote, cultural remark, slogan, title-reference, and allusion candidates for a HOI4 feature. Does not edit localisation or gameplay files."
+description = "Finds, verifies, compares, and documents quote, response, cultural remark, slogan, title-reference, and allusion candidates for a HOI4 feature. Does not edit localisation or gameplay files."
 config_file = "agents/hoi4_quote_remark_researcher.toml"
 
 [agents.hoi4_repo_explorer]
@@ -101,19 +101,19 @@ description = "Optional spreadsheet-only worker for mod-maintained CSV/XLSX tabl
 config_file = "agents/hoi4_spreadsheet_doc_worker.toml"
 
 [agents.hoi4_super_event_art_researcher]
-description = "Finds, verifies, and documents archival or real-world image candidates for registered HOI4 super-events without editing runtime wiring."
+description = "Researches visual direction and prepares explicitly authorized art packages for a selected Super Event. Does not edit runtime or gameplay files."
 config_file = "agents/hoi4_super_event_art_researcher.toml"
 
 [agents.hoi4_super_event_audio_researcher]
-description = "Researches, verifies, downloads, converts, and documents unique rights-checked Internet-sourced audio for registered HOI4 super-events. Never generates or manually authors the sound and does not edit runtime wiring."
+description = "Researches, verifies, prepares, and documents licensed audio for a selected Super Event package. Does not wire sound or gameplay files."
 config_file = "agents/hoi4_super_event_audio_researcher.toml"
 
 [agents.hoi4_super_event_quote_researcher]
-description = "Finds, verifies, compares, and documents quote and cultural-remark candidates for registered HOI4 super-events without editing localisation or runtime wiring."
+description = "Researches and documents sourced quote and response candidates for a selected Super Event package. Does not edit localisation, runtime, or gameplay files."
 config_file = "agents/hoi4_super_event_quote_researcher.toml"
 
 # HOI4_MOD_SETUP_PORTRAITS_START
 [agents.hoi4_portrait_creator]
-description = "Owns complete HOI4 portrait production: grounded-source research and source placeholders, fictional ImageGen portraits, user-supplied styled-result validation, processing, DDS conversion, portrait wiring, manifests, and handoffs. Never operates RunPod."
+description = "Owns complete HOI4 portrait production: grounded-source research and source placeholders, fictional generated portraits, user-supplied styled-result validation, processing, DDS conversion, portrait wiring, manifests, and handoffs. Never operates RunPod."
 config_file = "agents/hoi4_portrait_creator.toml"
 # HOI4_MOD_SETUP_PORTRAITS_END

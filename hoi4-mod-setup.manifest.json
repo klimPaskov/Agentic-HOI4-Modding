@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.0.0",
+  "schema_version": "3.0.0",
   "manifest_id": "agentic-hoi4-modding",
   "generated_for_revision": "08db5a77ff9ae0a5ceab197dd00b77400b2ccd8d",
   "repository": {
@@ -14,8 +14,8 @@
   "components": [
     {
       "id": "core.agents",
-      "display_name": "Project instructions",
-      "description": "Adapt the repository AGENTS template into project-specific instructions.",
+      "display_name": "Project instructions (AGENTS.md)",
+      "description": "Adapt the AGENTS.md projection of the canonical instructions for Codex, Cursor, Qoder, OpenCode, and DeepSeek Harness.",
       "category": "core",
       "optional": false,
       "platforms": [
@@ -31,7 +31,9 @@
         "ownership": "merged",
         "outside_project": false
       },
-      "dependencies": [],
+      "dependencies": [
+        "core.claude.instructions"
+      ],
       "conflicts": [
         "existing AGENTS.md"
       ],
@@ -63,11 +65,10 @@
     },
     {
       "id": "core.claude.instructions",
-      "display_name": "Project instructions for Claude Code and DSH",
-      "description": "Adapt the standalone project-instruction template into CLAUDE.md for Claude Code and DeepSeek Harness.",
-      "category": "environment",
-      "coding_environment": "claude_code",
-      "optional": true,
+      "display_name": "Project instructions (canonical CLAUDE.md)",
+      "description": "Adapt the canonical instruction template into CLAUDE.md. AGENTS.md is its projection for the other runtimes.",
+      "category": "core",
+      "optional": false,
       "platforms": [
         "all"
       ],
@@ -81,9 +82,7 @@
         "ownership": "merged",
         "outside_project": false
       },
-      "dependencies": [
-        "core.agents"
-      ],
+      "dependencies": [],
       "conflicts": [
         "existing CLAUDE.md"
       ],
@@ -102,10 +101,9 @@
         "preserve_local_additions": true
       },
       "capabilities": [
+        "canonical project instructions",
         "Claude Code project instructions",
-        "DSH project instructions",
-        "standalone instruction authority",
-        "opt-in AGENTS import"
+        "DSH project instructions"
       ],
       "expected_files": [
         {
@@ -117,8 +115,8 @@
     },
     {
       "id": "runtime.agent_sync",
-      "display_name": "Multi-runtime agent synchronizers",
-      "description": "Install the one-way generators for Qoder, Cursor, OpenCode, and Claude Code subagents.",
+      "display_name": "Runtime synchronizers",
+      "description": "Install the tools that regenerate AGENTS.md, the other runtimes' agents, and the skill copies from the canonical Claude files.",
       "category": "script",
       "optional": false,
       "platforms": [
@@ -129,7 +127,8 @@
         "path": ".tools/sync",
         "include": [
           "README.md",
-          "*.py"
+          "*.py",
+          "*.json"
         ],
         "exclude": [
           "**/__pycache__/**",
@@ -142,7 +141,9 @@
         "outside_project": false
       },
       "dependencies": [
-        "core.subagents"
+        "core.subagents",
+        "core.skills",
+        "core.claude.instructions"
       ],
       "conflicts": [
         "existing runtime synchronizer with the same path"
@@ -162,8 +163,11 @@
         "preserve_local_additions": true
       },
       "capabilities": [
+        "instruction projection",
         "subagent generation",
-        "runtime drift checking"
+        "skill copies",
+        "drift checking",
+        "guidance size ceiling"
       ],
       "expected_files": [
         {
@@ -201,7 +205,7 @@
     {
       "id": "runtime.claude",
       "display_name": "Claude Code runtime",
-      "description": "Install tracked Claude Code subagents and shared project settings generated from canonical Codex definitions.",
+      "description": "Install shared Claude Code project settings and the subagent map.",
       "category": "environment",
       "coding_environment": "claude_code",
       "optional": false,
@@ -213,13 +217,10 @@
         "path": ".claude",
         "include": [
           "settings.json",
-          "agent-map.md",
-          "agents/*.md"
+          "agent-map.md"
         ],
         "exclude": [
-          "settings.local.json",
-          "agents/hoi4-portrait-creator.md",
-          "agents/hoi4-super-event-*.md"
+          "settings.local.json"
         ]
       },
       "destination": {
@@ -229,7 +230,8 @@
       },
       "dependencies": [
         "core.claude.instructions",
-        "runtime.agent_sync"
+        "core.subagents",
+        "core.skills"
       ],
       "conflicts": [
         "existing Claude Code agent or shared setting with the same path"
@@ -241,12 +243,6 @@
           "severity": "block",
           "kind": "exists",
           "target": ".claude/settings.json"
-        },
-        {
-          "id": "claude.agents.exists",
-          "severity": "block",
-          "kind": "exists",
-          "target": ".claude/agents"
         }
       ],
       "update": {
@@ -255,9 +251,8 @@
         "preserve_local_additions": true
       },
       "capabilities": [
-        "Claude Code subagents",
         "Claude Code project settings",
-        "read-only agent tool restrictions"
+        "subagent map"
       ],
       "expected_files": [
         {
@@ -425,7 +420,7 @@
     {
       "id": "runtime.cursor",
       "display_name": "Cursor coding environment",
-      "description": "Install the complete Cursor project package projected from canonical Codex agents.",
+      "description": "Install the complete Cursor project package generated from the canonical Claude Code agents.",
       "category": "environment",
       "coding_environment": "cursor",
       "optional": false,
@@ -592,7 +587,7 @@
     {
       "id": "runtime.qoder",
       "display_name": "Qoder coding environment",
-      "description": "Install the complete Qoder project package projected from canonical Codex agents.",
+      "description": "Install the complete Qoder project package generated from the canonical Claude Code agents.",
       "category": "environment",
       "coding_environment": "qoder",
       "optional": false,
@@ -759,7 +754,7 @@
     {
       "id": "runtime.opencode",
       "display_name": "OpenCode coding environment",
-      "description": "Install the complete OpenCode project package projected from canonical Codex agents.",
+      "description": "Install the complete OpenCode project package generated from the canonical Claude Code agents.",
       "category": "environment",
       "coding_environment": "opencode",
       "optional": false,
@@ -1130,121 +1125,6 @@
       ]
     },
     {
-      "id": "runtime.claude.portrait_agent",
-      "display_name": "Claude Code portrait subagent",
-      "description": "Install the Claude Code projection only when Portrait Production is selected.",
-      "category": "environment",
-      "coding_environment": "claude_code",
-      "optional": true,
-      "platforms": [
-        "all"
-      ],
-      "source": {
-        "kind": "file",
-        "path": ".claude/agents/hoi4-portrait-creator.md"
-      },
-      "destination": {
-        "path": ".claude/agents/hoi4-portrait-creator.md",
-        "ownership": "managed",
-        "outside_project": false
-      },
-      "dependencies": [
-        "runtime.claude",
-        "workflow.portraits.subagent"
-      ],
-      "conflicts": [
-        "existing Claude Code portrait subagent"
-      ],
-      "conflict_policy": "replace_if_unmodified",
-      "validation": [
-        {
-          "id": "claude.portrait_agent.exists",
-          "severity": "block",
-          "kind": "exists",
-          "target": ".claude/agents/hoi4-portrait-creator.md"
-        }
-      ],
-      "update": {
-        "strategy": "replace_if_unmodified",
-        "remove_obsolete": true,
-        "preserve_local_additions": true
-      },
-      "capabilities": [
-        "Claude Code portrait subagent"
-      ],
-      "expected_files": [
-        {
-          "path": ".claude/agents/hoi4-portrait-creator.md",
-          "sha256": "74f7ca24cd744b45bd4a550a58d71cc563e8d24d9faa21427985322f4e749920",
-          "size": 2754
-        }
-      ]
-    },
-    {
-      "id": "runtime.claude.super_event_agents",
-      "display_name": "Claude Code Super Events subagents",
-      "description": "Install the Claude Code projections only when Super Events is selected.",
-      "category": "environment",
-      "coding_environment": "claude_code",
-      "optional": true,
-      "platforms": [
-        "all"
-      ],
-      "source": {
-        "kind": "tree",
-        "path": ".claude/agents",
-        "include": [
-          "hoi4-super-event-*.md"
-        ]
-      },
-      "destination": {
-        "path": ".claude/agents/",
-        "ownership": "managed",
-        "outside_project": false
-      },
-      "dependencies": [
-        "runtime.claude",
-        "workflow.super_events.subagents"
-      ],
-      "conflicts": [
-        "existing Claude Code Super Events subagent"
-      ],
-      "conflict_policy": "replace_if_unmodified",
-      "validation": [
-        {
-          "id": "claude.super_event_agents.exists",
-          "severity": "block",
-          "kind": "exists",
-          "target": ".claude/agents"
-        }
-      ],
-      "update": {
-        "strategy": "replace_if_unmodified",
-        "remove_obsolete": true,
-        "preserve_local_additions": true
-      },
-      "capabilities": [
-        "Claude Code Super Events subagents"
-      ],
-      "expected_files": [
-        {
-          "path": ".claude/agents/hoi4-super-event-art-researcher.md",
-          "sha256": "9c159d7698e627967a1f35f4392679cb25b6083d1f14e7efa3e7acaf5610f80e",
-          "size": 2909
-        },
-        {
-          "path": ".claude/agents/hoi4-super-event-audio-researcher.md",
-          "sha256": "81cd295100a87fb0574c5a2918bfc752ec04d4eadb9540b9b0b93b1631e4b3a6",
-          "size": 2677
-        },
-        {
-          "path": ".claude/agents/hoi4-super-event-quote-researcher.md",
-          "sha256": "14eb4edf42d75630c3167d2e057701a2df42528e65514aada63d12b299b0ea60",
-          "size": 2211
-        }
-      ]
-    },
-    {
       "id": "runtime.cursor.portrait_agent",
       "display_name": "Cursor portrait subagent",
       "description": "Install the Cursor projection only when Portrait Production is selected.",
@@ -1592,7 +1472,7 @@
     {
       "id": "core.skills",
       "display_name": "HOI4 workflow skills",
-      "description": "Install the repository-declared generic skill trees and helper files.",
+      "description": "Install the canonical skill library in .claude/skills, read directly by Claude Code, Cursor, and OpenCode.",
       "category": "skill",
       "optional": false,
       "platforms": [
@@ -1600,22 +1480,23 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".agents/skills",
+        "path": ".claude/skills",
         "include": [
           "hoi4-*/**",
           "xlsx/**"
         ],
         "exclude": [
-          "hoi4-super-events*/**",
-          "hoi4-comfyui*/**",
-          "hoi4-portrait-production*/**",
+          "**/*.pyc",
           "**/.DS_Store",
           "**/__pycache__/**",
-          "**/*.pyc"
+          "hoi4-comfyui*/**",
+          "hoi4-live-testing/**",
+          "hoi4-portrait-production*/**",
+          "hoi4-super-events*/**"
         ]
       },
       "destination": {
-        "path": ".agents/skills/",
+        "path": ".claude/skills/",
         "ownership": "managed",
         "outside_project": false
       },
@@ -4429,8 +4310,8 @@
     },
     {
       "id": "core.subagents",
-      "display_name": "Codex subagents",
-      "description": "Install generic bounded Codex agent profiles from the source repository.",
+      "display_name": "Subagents",
+      "description": "Install the canonical Claude Code subagent definitions; the other runtimes receive generated projections.",
       "category": "subagent",
       "optional": false,
       "platforms": [
@@ -4438,17 +4319,17 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".codex/agents",
+        "path": ".claude/agents",
         "include": [
-          "hoi4_*.toml"
+          "hoi4-*.md"
         ],
         "exclude": [
-          "hoi4_super_event_*.toml",
-          "hoi4_portrait_creator.toml"
+          "hoi4-super-event-*.md",
+          "hoi4-portrait-creator.md"
         ]
       },
       "destination": {
-        "path": ".codex/agents/",
+        "path": ".claude/agents/",
         "ownership": "managed",
         "outside_project": false
       },
@@ -4461,10 +4342,10 @@
       "conflict_policy": "replace_if_unmodified",
       "validation": [
         {
-          "id": "subagents.fork_context",
+          "id": "subagents.frontmatter",
           "severity": "block",
           "kind": "custom",
-          "target": ".codex/agents"
+          "target": ".claude/agents"
         }
       ],
       "update": {
@@ -4477,7 +4358,8 @@
         "audits",
         "AI probability analysis",
         "planning",
-        "event-owned scripted GUI implementation"
+        "event-owned scripted GUI implementation",
+        "per-role model tiers"
       ],
       "expected_files": [
         {
@@ -4638,6 +4520,428 @@
           "size": 9319
         }
       ]
+    },
+    {
+      "id": "runtime.codex.agents",
+      "display_name": "Codex subagents",
+      "description": "Install the Codex agent files generated from the canonical Claude Code agents.",
+      "category": "environment",
+      "coding_environment": "codex",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".codex/agents",
+        "include": [
+          "hoi4_*.toml"
+        ],
+        "exclude": [
+          "hoi4_super_event_*.toml",
+          "hoi4_portrait_creator.toml"
+        ]
+      },
+      "destination": {
+        "path": ".codex/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "codex.config"
+      ],
+      "conflicts": [
+        "existing Codex subagent with the same name"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.codex.skills",
+      "display_name": "Codex skill copy",
+      "description": "Install the .agents/skills copy of the canonical skill library for Codex and DeepSeek Harness.",
+      "category": "environment",
+      "coding_environment": "codex",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-*/**",
+          "xlsx/**"
+        ],
+        "exclude": [
+          "**/*.pyc",
+          "**/.DS_Store",
+          "**/__pycache__/**",
+          "hoi4-comfyui*/**",
+          "hoi4-live-testing/**",
+          "hoi4-portrait-production*/**",
+          "hoi4-super-events*/**"
+        ]
+      },
+      "destination": {
+        "path": ".agents/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.skills"
+      ],
+      "conflicts": [
+        "existing skill with the same name in .agents/skills"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.codex.portrait_agent",
+      "display_name": "Codex portrait subagent",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "codex",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".codex/agents/hoi4_portrait_creator.toml"
+      },
+      "destination": {
+        "path": ".codex/agents/hoi4_portrait_creator.toml",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.codex.agents",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing codex portrait subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.codex.super_event_agents",
+      "display_name": "Codex Super Events subagents",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "codex",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".codex/agents",
+        "include": [
+          "hoi4_super_event_*.toml"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".codex/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.codex.agents",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing codex super events subagents"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.codex.portrait_skill",
+      "display_name": "Codex copy of the portrait production skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "codex",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-portrait-production/SKILL.md"
+      },
+      "destination": {
+        "path": ".agents/skills/hoi4-portrait-production/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.codex.skills",
+        "workflow.portraits.core"
+      ],
+      "conflicts": [
+        "existing codex copy of the portrait production skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.codex.portrait_router_skill",
+      "display_name": "Codex copy of the portrait provider router",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "codex",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui/SKILL.md"
+      },
+      "destination": {
+        "path": ".agents/skills/hoi4-comfyui/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.codex.skills",
+        "workflow.portraits.router"
+      ],
+      "conflicts": [
+        "existing codex copy of the portrait provider router"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.codex.portrait_cloud_skill",
+      "display_name": "Codex copy of the Comfy Cloud portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "codex",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-cloud/SKILL.md"
+      },
+      "destination": {
+        "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.codex.skills",
+        "workflow.portraits.cloud"
+      ],
+      "conflicts": [
+        "existing codex copy of the comfy cloud portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.codex.portrait_local_skill",
+      "display_name": "Codex copy of the local ComfyUI portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "codex",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-local/SKILL.md"
+      },
+      "destination": {
+        "path": ".agents/skills/hoi4-comfyui-local/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.codex.skills",
+        "workflow.portraits.local"
+      ],
+      "conflicts": [
+        "existing codex copy of the local comfyui portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.codex.portrait_runpod_skill",
+      "display_name": "Codex copy of the RunPod portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "codex",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-runpod/SKILL.md"
+      },
+      "destination": {
+        "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.codex.skills",
+        "workflow.portraits.runpod"
+      ],
+      "conflicts": [
+        "existing codex copy of the runpod portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.codex.super_events_skill",
+      "display_name": "Codex copy of the Super Events skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "codex",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-super-events/**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".agents/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.codex.skills",
+        "workflow.super_events"
+      ],
+      "conflicts": [
+        "existing codex copy of the super events skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.codex.live_tools_skill",
+      "display_name": "Codex copy of the live-testing skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "codex",
+      "optional": true,
+      "platforms": [
+        "windows"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-live-testing/**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".agents/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.codex.skills",
+        "workflow.live_tools"
+      ],
+      "conflicts": [
+        "existing codex copy of the live-testing skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
     },
     {
       "id": "mcp.hoi4_agent_tools.bootstrap",
@@ -8074,10 +8378,10 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".agents/skills/hoi4-portrait-production/SKILL.md"
+        "path": ".claude/skills/hoi4-portrait-production/SKILL.md"
       },
       "destination": {
-        "path": ".agents/skills/hoi4-portrait-production/SKILL.md",
+        "path": ".claude/skills/hoi4-portrait-production/SKILL.md",
         "ownership": "managed",
         "outside_project": false
       },
@@ -8132,10 +8436,10 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".agents/skills/hoi4-comfyui/SKILL.md"
+        "path": ".claude/skills/hoi4-comfyui/SKILL.md"
       },
       "destination": {
-        "path": ".agents/skills/hoi4-comfyui/SKILL.md",
+        "path": ".claude/skills/hoi4-comfyui/SKILL.md",
         "ownership": "managed",
         "outside_project": false
       },
@@ -8178,10 +8482,10 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md"
+        "path": ".claude/skills/hoi4-comfyui-cloud/SKILL.md"
       },
       "destination": {
-        "path": ".agents/skills/hoi4-comfyui-cloud/SKILL.md",
+        "path": ".claude/skills/hoi4-comfyui-cloud/SKILL.md",
         "ownership": "managed",
         "outside_project": false
       },
@@ -8226,10 +8530,10 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".agents/skills/hoi4-comfyui-local/SKILL.md"
+        "path": ".claude/skills/hoi4-comfyui-local/SKILL.md"
       },
       "destination": {
-        "path": ".agents/skills/hoi4-comfyui-local/SKILL.md",
+        "path": ".claude/skills/hoi4-comfyui-local/SKILL.md",
         "ownership": "managed",
         "outside_project": false
       },
@@ -8274,10 +8578,10 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md"
+        "path": ".claude/skills/hoi4-comfyui-runpod/SKILL.md"
       },
       "destination": {
-        "path": ".agents/skills/hoi4-comfyui-runpod/SKILL.md",
+        "path": ".claude/skills/hoi4-comfyui-runpod/SKILL.md",
         "ownership": "managed",
         "outside_project": false
       },
@@ -8322,10 +8626,10 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".codex/agents/hoi4_portrait_creator.toml"
+        "path": ".claude/agents/hoi4-portrait-creator.md"
       },
       "destination": {
-        "path": ".codex/agents/hoi4_portrait_creator.toml",
+        "path": ".claude/agents/hoi4-portrait-creator.md",
         "ownership": "managed",
         "outside_project": false
       },
@@ -8895,6 +9199,53 @@
       ]
     },
     {
+      "id": "workflow.live_tools",
+      "display_name": "HOI4 Live Tools",
+      "description": "Add the live-testing skill and setup guide for the optional HOI4 Live Tools MCP server, which drives a running game on Windows. The server itself is installed and registered per user.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "windows"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-live-testing/**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".claude/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.skills"
+      ],
+      "conflicts": [
+        "existing live-testing skill with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "live feature tests in test mode",
+        "popup, log, and save evidence",
+        "campaign actions through the game interface"
+      ],
+      "notes": [
+        "HOI4 Live Tools is a separate program. Register it per user with the command in the setup guide."
+      ],
+      "expected_files": []
+    },
+    {
       "id": "workflow.super_events",
       "display_name": "Super Events workflow",
       "description": "Install a reusable HOI4 Super Events runtime, editable templates, example registration, and implementation guidance.",
@@ -8905,7 +9256,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".agents/skills",
+        "path": ".claude/skills",
         "include": [
           "hoi4-super-events/**"
         ],
@@ -8914,7 +9265,7 @@
         ]
       },
       "destination": {
-        "path": ".agents/skills/",
+        "path": ".claude/skills/",
         "ownership": "managed",
         "outside_project": false
       },
@@ -9009,16 +9360,14 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".codex/agents",
+        "path": ".claude/agents",
         "include": [
-          "hoi4_super_event_art_researcher.toml",
-          "hoi4_super_event_audio_researcher.toml",
-          "hoi4_super_event_quote_researcher.toml"
+          "hoi4-super-event-*.md"
         ],
         "exclude": []
       },
       "destination": {
-        "path": ".codex/agents/",
+        "path": ".claude/agents/",
         "ownership": "managed",
         "outside_project": false
       },
@@ -9415,6 +9764,7 @@
       "display_name": "Core agentic setup",
       "components": [
         "core.agents",
+        "core.claude.instructions",
         "core.skills",
         "core.subagents",
         "runtime.agent_sync",
@@ -9429,6 +9779,7 @@
       "display_name": "Core agentic setup plus 3D workflow",
       "components": [
         "core.agents",
+        "core.claude.instructions",
         "core.skills",
         "core.subagents",
         "runtime.agent_sync",
@@ -9482,5 +9833,35 @@
     "required": false,
     "algorithm": null,
     "public_key_id": null
-  }
+  },
+  "coding_environments": [
+    {
+      "id": "claude_code",
+      "display_name": "Claude Code",
+      "description": "Canonical CLAUDE.md, skills, and agents in .claude, shared settings, and project MCP registration",
+      "default_primary": true,
+      "open_command": "claude"
+    },
+    {
+      "id": "codex",
+      "display_name": "Codex",
+      "description": "AGENTS.md, the .agents/skills copy, generated .codex agents, and Codex MCP configuration",
+      "open_command": "codex"
+    },
+    {
+      "id": "cursor",
+      "display_name": "Cursor",
+      "description": "Generated .cursor agents, project settings, map, and MCP"
+    },
+    {
+      "id": "qoder",
+      "display_name": "Qoder",
+      "description": "Generated .qoder agents, project settings, map, and MCP"
+    },
+    {
+      "id": "opencode",
+      "display_name": "OpenCode",
+      "description": "Generated .opencode agents, opencode.json, map, and MCP"
+    }
+  ]
 }
