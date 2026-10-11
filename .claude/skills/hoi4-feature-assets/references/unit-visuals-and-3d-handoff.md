@@ -1,0 +1,38 @@
+# Unit visual references and 3D model package handoff
+
+This reference belongs to the `hoi4-feature-assets` skill and holds complete sections moved out of `SKILL.md` to keep it within the single-read ceiling. Every rule here is as binding as the rules in `SKILL.md`.
+
+## 9.1 Unit visual references
+
+Treat every unit visual as a domain-and-surface-specific pipeline. Inspect the matching catalog entry, contact sheet, and owning vanilla definition before deciding what the task needs.
+
+- `units/equipment/technology_art/` contains flat 2D equipment illustrations used by equipment and technology sprites. Native canvases vary; follow the owning `interface/*.gfx` sprite.
+- `units/land/counters_large/` contains large frame-aware land-unit strips. Preserve the cataloged `noOfFrames`, frame order, per-frame footprint, and transparent bounds.
+- `units/land/map_counters/` contains land map-counter art. It is not a large division-designer strip.
+- `units/land/division_template_emblems/` contains division-template identity emblems. It is not equipment art or map-counter art.
+- `units/air/map_counters/` and `units/naval/map_counters/` contain domain-specific map-counter art. Do not substitute land counters or resized equipment art.
+- `units/models_3d/land_materials/`, `units/models_3d/air_materials/`, and `units/models_3d/naval_materials/` contain UV model materials paired with cataloged `.mesh`, `.asset`, and entity definitions. They are not 2D icons, finished renders, or concept sheets.
+
+Every new custom unit must receive bespoke counter art for every large or map-counter surface it uses. Before production, inspect the exact closest installed-vanilla counter definition and DDS plus the matching skill-local counter family and contact sheet. Match the sampled exact vanilla green palette, canvas, frame order, alpha, border treatment, silhouette scale, shading, contrast, and state/inverted behavior while creating original unit-specific art. Require the icon worker's original source PNG, saved prompt, processed alpha PNG, final DDS, native-size contact sheet, decoded DDS round-trip evidence, hashes and lineage, manifest entry, and `gfx_handoff.md`. A copied vanilla counter, renamed existing counter, generic placeholder, arbitrary green, or counter produced without recorded vanilla inspection is forbidden even as a temporary runtime fallback. If the reference cannot be inspected or the bespoke package is missing, mark the counter `needs_user_review` or `blocked`; do not promote the unit package as complete before parent visual review.
+
+Classify the requested deliverable before creating art: equipment/technology illustration, large land counter, land/air/naval map counter, division-template emblem, or land/air/naval 3D model package. Give each class its own brief, source art, native canvas or UV layout, frame metadata, final path, and handoff. A 3D task must keep model geometry, materials, entity wiring, and any separately produced concept reference distinct. Do not derive one unit pipeline by resizing, relabeling, or recoloring another.
+
+### 3D model package handoff
+
+Route 3D model production to `hoi4-3d-model-pipeline` and `hoi4_3d_model_pipeline`. This is a separate pipeline from 2D equipment art, map counters, division emblems, and frame-sheet animation.
+
+Before any provider or paid work, and only when the feature actually needs 3D output, the 3D route must pass the `MESHY_API_KEY` gate, run the autonomous bootstrap, and verify the lock-resolved Meshy MCP route, generated Blender MCP route or verified narrow adapter, installed Blender version, and checksum-locked `io_pdx_mesh` setup. Read the authoritative adapter version from the generated dependency lock. Probe the configured loopback bridge socket separately from the Blender process, start the lock-selected Blender build in hidden background mode when the socket is absent, re-probe, and record both results; a running Blender process alone is not bridge evidence.
+
+When a ready reference is absent, the route creates exactly one clean `meshy_input.png` for the asset. Never create or send side-profile sheets, turnaround boards, collages, or multi-view boards to Meshy. Contact sheets and Blender renders are QA evidence only.
+
+Every 3D asset brief must identify the asset profile, deterministic job root, provider task lineage, reference checksum, named vanilla mesh and entity precedent, source geometry height, entity scale, effective runtime height, axes, origin, contact plane, required actions, root-motion policy, PDX material channels, texture dimensions, `.mesh` and `.anim` outputs, byte-level reimport or parser proof through the locked stack, runtime hashes, and live consumer. A custom-unit brief must also identify applicable sound roles, the closest vanilla sound consumers, Internet source and licensing requirements, immutable original and derived checksums, and action/frame or lifecycle synchronization points.
+
+For humanoid units, calibrate against the installed vanilla infantry source mesh and entity rather than an assumed real-world height or arbitrary entity scale. Apply the entity scale exactly once and record the source-height-to-runtime-height crosswalk.
+
+Provider source files are immutable evidence. Working geometry must be repaired so it has no holes, loose or non-manifold geometry, degenerate triangles, missing components, or zero-weight deforming vertices. Use the verified PDX shader and packed specular map convention; never route raw grayscale roughness into the PDX specular channel because that creates chrome-black surfaces.
+
+For animated units, choose the route before provider calls. Firearm-bearing units use a fresh weapon-free Meshy 7 body plus a separate Meshy 7 geometry task/input for each firearm, then one supported Meshy body rig/action attempt for eligible bipeds and Blender fitting, attachment, rigid controls, locators, contacts, and missing rig, weight, action, or component work. Existing non-firearm repairs proceed directly in Blender. Other provider-eligible bipeds get one supported Meshy rig attempt and one action attempt per missing role; non-bipedal anatomy goes directly to Blender. Failed, unusable, or unsupported provider stages switch to Blender while preserving passing outputs. The Blender adapter may author or repair anatomy-appropriate rigs, weights, components, and substantive articulated actions; simple transform-only motion, static poses, semantic aliases, and whole-rig-only clips cannot pass. Every required action still needs deformation, contact, phase, FPS, loop/root policy, export, and byte-level reimport evidence.
+
+The 3D worker owns source files, checkpoints, processed textures, previews, exports, manifests, reports, reimport evidence, and a runtime handoff. For custom units, it also owns Internet research for legally usable sound files, immutable original downloads, source URLs, licensing and usage evidence, access dates, checksums, license-permitted mechanical derivatives, and animation synchronization design. It must never generate, synthesize, record, manually author, fabricate placeholder or test-tone audio, or use unlicensed audio; a missing defensible source is a blocker. The handoff must distinguish selected source exports, staged runtime copies, and active consumer files and record source/destination paths and hashes after synchronization. The main implementation agent owns `.asset`, entity, `.gfx`, sound definitions, unit/building/gameplay wiring, final runtime synchronization, and in-game screenshots.
+
+When unsure, inspect the existing repository pattern and vanilla HOI4 assets before choosing.

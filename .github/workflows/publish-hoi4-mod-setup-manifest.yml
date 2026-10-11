@@ -29,10 +29,12 @@ jobs:
         run: |
           python -m unittest discover -s scripts -p "test_*.py"
           python scripts/test_agent_sync_contract.py
-          python .tools/sync/sync_claude_agents.py --check
-          python .tools/sync/sync_cursor_agents.py --check
-          python .tools/sync/sync_qoder_agents.py --check
-          python .tools/sync/sync_opencode_agents.py --check
+          python .tools/sync/sync_agents.py --check
+          python .tools/sync/sync_instructions.py --check
+          python .tools/sync/check_guidance_size.py
+          python .tools/sync/sync_skills.py --check
+          python .tools/wiki/verify_wiki_snapshot.py --quiet
+          python scripts/check_release_package.py
       - name: Regenerate exact-revision evidence
         run: >-
           python scripts/generate_manifest_evidence.py

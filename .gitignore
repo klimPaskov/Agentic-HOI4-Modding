@@ -15,7 +15,12 @@
 /.tools/3d_pipeline/config/blender_mcp_port.txt
 
 # Generated Python bytecode from reusable skill tools.
-/.agents/skills/**/__pycache__/
+/.claude/skills/**/__pycache__/
+
+# Skill copies for Codex, DSH, and Qoder are generated from .claude/skills by
+# .tools/sync/sync_skills.py; the source package tracks only the canonical library.
+/.agents/skills/
+/.qoder/skills/
 *.pyc
 
 # Claude Code project definitions are tracked; personal overrides are not.

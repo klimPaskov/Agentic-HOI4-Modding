@@ -9,6 +9,7 @@ import hashlib
 import io
 import json
 import os
+import pkgutil
 import re
 import shutil
 import site
@@ -16,6 +17,7 @@ import socket
 import stat
 import subprocess
 import sys
+import sysconfig
 import time
 import urllib.parse
 import urllib.request
@@ -906,7 +908,22 @@ def adapter_source_hashes(adapter_root: Path) -> dict[str, str]:
     sources = sorted(adapter_root.glob("*.py"), key=lambda path: path.name)
     local_modules = {path.stem for path in sources}
     external_modules = {"bpy", "bmesh", "mathutils", "mcp", "io_pdx_mesh", "io_anim_bvh"}
-    allowed_modules = set(sys.stdlib_module_names) | external_modules | local_modules
+    stdlib_modules = getattr(sys, "stdlib_module_names", None)
+    if stdlib_modules is None:  # Python 3.9 has no stdlib_module_names.
+        stdlib_root = sysconfig.get_path("stdlib")
+        stdlib_roots = {
+            stdlib_root,
+            str(Path(stdlib_root) / "lib-dynload"),
+            str(Path(sys.base_prefix) / "DLLs"),
+        }
+        dynamic_root = sysconfig.get_config_var("DESTSHARED")
+        if dynamic_root:
+            stdlib_roots.add(str(dynamic_root))
+        stdlib_modules = set(sys.builtin_module_names) | {
+            module.name for module in pkgutil.iter_modules(sorted(stdlib_roots))
+            if module.name not in {"site-packages", "dist-packages"}
+        }
+    allowed_modules = set(stdlib_modules) | external_modules | local_modules
     for source in sources:
         if source.is_symlink():
             raise SetupError(f"Blender adapter source must not be a symlink: {source.name}")
@@ -1358,6 +1375,48 @@ default_tools_approval_mode = "prompt"
     return config_path.resolve()
 
 
+def register_claude_routes(root: Path, config_path: Path) -> str:
+    """Mirror the verified Meshy and Blender routes into Claude Code's local scope.
+
+    Claude Code is the primary runtime, but these routes name machine-local
+    executables, so they are registered with `claude mcp add-json --scope local`
+    (stored in the user's Claude Code settings for this project) instead of the
+    shared `.mcp.json`. The step is best effort: without the Claude Code CLI the
+    Codex routes still work and the result says what to run later.
+    """
+    claude = shutil.which("claude")
+    if claude is None:
+        return "claude_cli_not_found"
+    routes = parse_reviewed_mcp_routes(config_path.read_text(encoding="utf-8"))
+    registered = []
+    for route_id in ("meshy", "blender_hoi4"):
+        route = routes.get(route_id)
+        if not route:
+            continue
+        args = [
+            (root / arg).as_posix() if isinstance(arg, str) and arg.startswith(".tools/") else arg
+            for arg in route.get("args", [])
+        ]
+        definition = {
+            "type": "stdio",
+            "command": route["command"],
+            "args": args,
+            "env": {name: "${" + name + "}" for name in route.get("env_vars", [])},
+        }
+        subprocess.run([claude, "mcp", "remove", "--scope", "local", route_id], cwd=root, capture_output=True, text=True, timeout=60)
+        result = subprocess.run(
+            [claude, "mcp", "add-json", "--scope", "local", route_id, json.dumps(definition)],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        if result.returncode != 0:
+            return f"claude_registration_failed:{route_id}"
+        registered.append(route_id)
+    return "registered:" + ",".join(registered) if registered else "no_routes"
+
+
 def write_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -1492,6 +1551,7 @@ def main() -> int:
                 ),
             )
         )
+        claude_registration = register_claude_routes(root, config_path)
         resolved_at = utc_now()
 
         payload = {
@@ -1511,6 +1571,7 @@ def main() -> int:
             "io_pdx_mesh": io_pdx_mesh,
             "blender_hoi4_adapter": blender_hoi4_adapter,
             "config_path": config_path.as_posix(),
+            "claude_registration": claude_registration,
             "template_removed": True,
         }
         lock_path = write_dependency_record(root, payload)

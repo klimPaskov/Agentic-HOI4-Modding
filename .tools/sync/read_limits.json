@@ -1,0 +1,15 @@
+{
+  "guidance_file_tokens": 20000,
+  "estimated_bytes_per_token": 3,
+  "read_output_tokens": 30000,
+  "checked": [
+    "CLAUDE.md",
+    "AGENTS.md",
+    "CLAUDE_template.md",
+    "AGENTS_template.md",
+    ".claude/skills/*/SKILL.md",
+    ".claude/agents/*.md"
+  ],
+  "root_skill_max_bytes": 58000,
+  "_comment": "Measured: about 3 bytes per token for this guidance. guidance_file_tokens is the single-read ceiling for instruction files and agent prompts; root_skill_max_bytes keeps each SKILL.md just below it."
+}

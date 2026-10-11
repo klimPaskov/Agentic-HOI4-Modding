@@ -24,7 +24,7 @@ if str(ADAPTER_ROOT) not in sys.path:
 
 import bpy
 import bmesh
-from mathutils import Matrix, Quaternion, Vector
+from mathutils import Euler, Matrix, Quaternion, Vector
 from mathutils.bvhtree import BVHTree
 from mathutils.kdtree import KDTree
 from normalization_convergence import evaluate_convergence_step

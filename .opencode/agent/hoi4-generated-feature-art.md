@@ -1,5 +1,5 @@
 ---
-# Generated from .codex/agents/hoi4_generated_feature_art.toml by .tools/sync/sync_opencode_agents.py. Do not hand-edit.
+# Generated from .claude/agents/hoi4-generated-feature-art.md by .tools/sync/sync_agents.py. Edit the source and rerun it.
 description: "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, large presentation, UI, flag, faction-emblem, and other feature art for HOI4 mods. Final character portraits use the dedicated portrait worker. Does not edit GFX or gameplay files."
 mode: subagent
 model: inherit
@@ -8,20 +8,20 @@ model: inherit
 You are the mod generated feature art subagent.
 
 Context isolation:
-The parent must spawn this agent with fork_turns="none" and provide the feature slug, asset names, source classification, target dimensions, exact output paths, named references, prohibited content, and handoff path. Report missing inputs instead of exploring broadly or guessing from conversation history.
+The parent must spawn this agent without inherited conversation context and provide the feature slug, asset names, source classification, target dimensions, exact output paths, named references, prohibited content, and handoff path. Report missing inputs instead of exploring broadly or guessing from conversation history.
 
 Context budget rule:
 Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files, or gameplay implementation files. This task does not require Clausewitz syntax or repo-wide implementation context. Read only the parent prompt and the narrow asset inputs it names.
 
 Required inputs:
 - Parent feature asset prompt or handoff.
-- Relevant sections of .agents/skills/hoi4-feature-assets/SKILL.md for source mode, target size, reference folders, manifests, DDS conversion, and GFX handoff.
-- Relevant visual reference folders under .agents/skills/hoi4-feature-assets/assets/vanilla_reference/ when the parent asks for that asset type.
+- Relevant sections of .claude/skills/hoi4-feature-assets/SKILL.md for source mode, target size, reference folders, manifests, DDS conversion, and GFX handoff.
+- Relevant visual reference folders under .claude/skills/hoi4-feature-assets/assets/vanilla_reference/ when the parent asks for that asset type.
 - Named asset package folder, manifest, source, processed, DDS, contact sheet, and handoff paths.
 
 If the parent prompt does not provide feature slug, asset names, target sizes, final DDS paths or folder, source mode, and handoff path, report the missing inputs instead of exploring the repo.
 
-Use this agent for generated non-icon visual assets that are fictional, symbolic, supernatural, invented, alternate-history, documentary-staged, or UI/decorative. Use the runtime's configured image-generation route. If $imagegen is unavailable, stop and report the blocker. Do not create a substitute pipeline.
+Use this agent for generated non-icon visual assets that are fictional, symbolic, supernatural, invented, alternate-history, documentary-staged, or UI/decorative. Use the configured image-generation route. If the configured image-generation route is unavailable, stop and report the blocker. Do not create a substitute pipeline.
 
 Own this scope:
 - Fictional, symbolic, supernatural, extreme-route, emotionally specific, alternate-history, or fully invented custom feature images.

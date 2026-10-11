@@ -11,34 +11,68 @@ Before retiring a tool, search its filename, module name, generated headers, and
 
 ## Supported tools
 
+### ChatGPT source packaging
+
+`package_chatgpt_project_sources.py` builds a curated flat source folder with
+`all-project-sources.zip` and, when agents exist, `subagents.zip`. The installed
+project root is discovered from the script location, independently of the
+working directory. Python 3.10 or newer is required; no extra packages or
+credentials are used. Windows users can double-click
+`package_chatgpt_project_sources.bat`, which opens the completed folder.
+
+```sh
+python .tools/package_chatgpt_project_sources.py --dry-run
+python .tools/package_chatgpt_project_sources.py
+python .tools/package_chatgpt_project_sources.py --output /path/outside/mod/new-bundle
+python .tools/package_chatgpt_project_sources.py --include 'AGENTS.md' --include 'events/**/*.txt' --exclude 'events/private/**'
+```
+
+Defaults include instructions, README, descriptors, canonical skills/subagents,
+Markdown/CSV documentation, and HOI4 common, events, history, localisation,
+interface, and map text. Missing optional directories are allowed. Nested paths
+are encoded into flat filenames (`/` becomes `%2F`, `%` becomes `%25`), avoiding
+ambiguous basename collisions. `--include` replaces the include defaults;
+`--exclude` adds exclusions. `--config` accepts a JSON object with `include` and
+`exclude` arrays of project-relative slash-separated globs. `*` matches one
+path segment; `**` matches zero or more. Matching is case-insensitive.
+
+Default exclusions always apply to secret-shaped filenames, .env files, Git,
+virtual environments, dependency folders, logs, backups, and old flattened
+exports. Links and junction directories are not followed; selected linked
+files, binary/non-UTF-8 sources, files over 8 MiB, bundles over 128 MiB or
+10,000 files, and destination collisions are rejected. Review the dry run and
+file contents before sharing: filename filtering cannot identify every secret.
+
+Output defaults to Downloads/<project-folder>-chatgpt-project-sources, must be
+outside the project, and must not exist. Choose a new `--output` for another
+export. The verified archives and loose files are staged together before the
+folder is published; failure removes staging and leaves project files intact.
+The tool performs no upload and does not launch a conversation. It is installed
+by the all-platform `runtime.agent_sync` shared-tools manifest component,
+included by both core profiles and every coding-environment dependency closure. Modified installed
+tools retain normal manifest conflict review.
+
 ### HOI4 Agent Tools bootstrap
 
 `mcp/bootstrap_hoi4_agent_tools.py` installs and verifies the manifest-pinned HOI4 Agent Tools package and advertised MCP routes.
 Its package version, integrity, runtime-entry evidence, manifest declaration, and documentation must move together.
 
-### Agent synchronization
+### Runtime synchronization
 
-The scripts under `sync/` generate Qoder, Cursor, OpenCode, and Claude Code subagents from canonical `.codex/agents/*.toml` definitions.
-Run all four after a canonical definition changes, then rerun them with `--check`:
+Claude Code files are canonical. The tools under `sync/` regenerate `AGENTS.md` from `CLAUDE.md`, the Codex, Cursor, Qoder, and OpenCode agents from `.claude/agents/`, and the `.agents/skills/` and `.qoder/skills/` copies from `.claude/skills/`. `check_guidance_size.py` keeps instruction files, skills, and agent prompts within the single-read ceiling. Run them after a canonical change and again with `--check`:
 
 ```powershell
-python -B .tools/sync/sync_qoder_agents.py
-python -B .tools/sync/sync_cursor_agents.py
-python -B .tools/sync/sync_opencode_agents.py
-python -B .tools/sync/sync_claude_agents.py
-python -B .tools/sync/sync_qoder_agents.py --check
-python -B .tools/sync/sync_cursor_agents.py --check
-python -B .tools/sync/sync_opencode_agents.py --check
-python -B .tools/sync/sync_claude_agents.py --check
+python -B .tools/sync/sync_instructions.py
+python -B .tools/sync/sync_agents.py
+python -B .tools/sync/sync_skills.py
+python -B .tools/sync/check_guidance_size.py
 ```
 
-Qoder, Cursor, OpenCode, and Claude Code project agent projections are generated but tracked for immediate project discovery. Personal overrides and machine-local caches remain untracked.
-Never hand-edit generated agent files or copy project-specific MCP paths between runtimes.
+Generated files are tracked so a checkout works immediately. Never hand-edit them or copy project-specific MCP paths between runtimes. `sync/README.md` documents each tool and its configuration file, and `docs/runtimes.md` documents what every runtime reads, including DeepSeek Harness, which has no agent registry.
 
-### Agent runtimes
+### HOI4 Live Tools
 
-DeepSeek Harness (DSH) is supported as an additional runtime, but it has no project agent registry to synchronize: it reads no `.codex/agents/*.toml`, so each subagent is composed from the delegated prompt and there is deliberately no DSH synchronizer or generated DSH agent folder.
-`docs/runtimes.md` is the reference for per-runtime instruction-file discovery, skill roots, subagent registries, and MCP registration shapes.
+HOI4 Live Tools is a separate, optional MCP server that drives a running game. `mcp/bootstrap_hoi4_live_tools.py` installs the release pinned in it (version, URL, SHA-256, size) for the current user and registers it in the user-level configuration of the coding clients found; it is the `mcp.hoi4_live.bootstrap` manifest component and `scripts/test_live_bootstrap_contract.py` keeps it equal to the manifest. `.claude/skills/hoi4-live-playtest/references/setup.md` documents setup and troubleshooting, and the optional `hoi4-live-playtest` skill explains how agents use it.
 
 ### 3D model pipeline
 

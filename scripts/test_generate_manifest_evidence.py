@@ -69,10 +69,14 @@ class ManifestGeneratorTests(unittest.TestCase):
                 {"present.txt": b"present"},
             )
 
-    def test_canonical_manifest_uses_schema_two(self) -> None:
+    def test_canonical_manifest_uses_schema_three(self) -> None:
         manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
-        self.assertEqual(manifest["schema_version"], "2.0.0")
+        self.assertEqual(manifest["schema_version"].split(".")[0], "3")
+        declared = [environment["id"] for environment in manifest["coding_environments"]]
+        self.assertEqual(declared[0], "claude_code")
+        self.assertTrue(manifest["coding_environments"][0]["default_primary"])
+        self.assertEqual(sum(1 for environment in manifest["coding_environments"] if environment.get("default_primary")), 1)
 
     def test_windows_mcp_bootstrap_is_optional_for_cross_platform_profiles(self) -> None:
         manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
@@ -90,7 +94,7 @@ class ManifestGeneratorTests(unittest.TestCase):
             for component in manifest["components"]
             if "coding_environment" in component
         }
-        self.assertEqual(environments, {"codex", "claude_code", "cursor", "qoder", "opencode"})
+        self.assertEqual(environments, {environment["id"] for environment in manifest["coding_environments"]})
         for environment, component_id in {
             "codex": "codex.config",
             "claude_code": "runtime.claude",
@@ -106,7 +110,7 @@ class ManifestGeneratorTests(unittest.TestCase):
         manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
         components = {component["id"]: component for component in manifest["components"]}
-        required = {"core.agents", "core.skills", "core.subagents", "runtime.agent_sync"}
+        required = {"core.agents", "core.claude.instructions", "core.skills", "core.subagents", "runtime.agent_sync"}
         for profile in manifest["profiles"]:
             self.assertTrue(required.issubset(profile["components"]))
             environment_components = [
@@ -116,22 +120,34 @@ class ManifestGeneratorTests(unittest.TestCase):
             ]
             self.assertEqual(environment_components, [])
 
-    def test_runtime_packages_keep_optional_agents_composable(self) -> None:
+    def test_claude_files_are_canonical_and_other_runtimes_are_projections(self) -> None:
         manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
         components = {component["id"]: component for component in manifest["components"]}
-        for runtime in ("claude", "cursor", "qoder", "opencode"):
+        self.assertEqual(components["core.skills"]["destination"]["path"], ".claude/skills/")
+        self.assertEqual(components["core.subagents"]["destination"]["path"], ".claude/agents/")
+        self.assertFalse(components["core.claude.instructions"]["optional"])
+        self.assertNotIn("coding_environment", components["core.claude.instructions"])
+        self.assertEqual(components["runtime.codex.skills"]["destination"]["path"], ".agents/skills/")
+        self.assertEqual(components["runtime.codex.skills"]["source"], components["core.skills"]["source"])
+        for runtime in ("cursor", "qoder", "opencode"):
             base = components[f"runtime.{runtime}"]
             excluded = set(base["source"].get("exclude", []))
             agent_prefix = "agent" if runtime == "opencode" else "agents"
             self.assertIn(f"{agent_prefix}/hoi4-portrait-creator.md", excluded)
             self.assertIn(f"{agent_prefix}/hoi4-super-event-*.md", excluded)
+        for runtime in ("cursor", "qoder", "opencode", "codex"):
             portrait = components[f"runtime.{runtime}.portrait_agent"]
             super_events = components[f"runtime.{runtime}.super_event_agents"]
             self.assertTrue(portrait["optional"])
             self.assertTrue(super_events["optional"])
             self.assertIn("workflow.portraits.subagent", portrait["dependencies"])
             self.assertIn("workflow.super_events.subagents", super_events["dependencies"])
+        for component in manifest["components"]:
+            source = component["source"].get("path", "")
+            self.assertFalse(source.startswith(".agents/"), component["id"])
+            if component["destination"]["path"].startswith(".agents/skills"):
+                self.assertEqual(component.get("coding_environment"), "codex", component["id"])
 
     def test_windows_mcp_registration_is_not_claimed_cross_platform(self) -> None:
         root = SCRIPT.parents[1]

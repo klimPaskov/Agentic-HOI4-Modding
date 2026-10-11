@@ -1,0 +1,17 @@
+Agentic HOI4 Modding
+Copyright 2026 Agentic HOI4 Modding contributors
+
+Original package code and guidance are licensed under the Apache License 2.0.
+Third-party material is excluded from that grant and retains its own terms.
+
+Hearts of Iron IV, game artwork, and Paradox wiki material belong to their
+respective owners. This project is not affiliated with Paradox Interactive.
+The offline wiki's separate license and provenance evidence is recorded in
+hoi4-mod-setup.manifest.json; the package license does not change that evidence.
+
+Super Events visual asset lineage is recorded in docs/super_events/README.md.
+No separate license was verified for those inherited assets. This notice does
+not assign them new licensing terms or claim third-party permission.
+
+The feature-assets model tools retain the license included at
+.claude/skills/hoi4-feature-assets/tools/models/LICENSE.

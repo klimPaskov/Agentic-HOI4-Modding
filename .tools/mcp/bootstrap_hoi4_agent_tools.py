@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -14,18 +15,20 @@ import sys
 
 
 PACKAGE_NAME = "hoi4-agent-tools"
-PACKAGE_VERSION = "3.9.0"
+PACKAGE_VERSION = "4.0.0"
 PACKAGE_SPEC = f"{PACKAGE_NAME}@{PACKAGE_VERSION}"
-PACKAGE_INTEGRITY = "sha512-p/+BfPt/B8kihN1M2JF4xesDD9eOgEf7sisfhZTCHmuaiJbg2ss+tnr9uMWzbGvlPAqnlQZaA7UanCv7HfkS1w=="
-PACKAGE_TREE_SHA256 = "16782ad28fffabf0e11ed7799afe06a7a262f64f02ae2f4d0090dd41d932a7fe"
-PACKAGE_FILE_COUNT = 5356
+# Reviewed npm registry integrity and clean published installation evidence.
+PACKAGE_INTEGRITY = "sha512-69+kEVewzGqs9cH/ATvy7siIRgsanmydIijUsMYGdiS4SPZoPvlKPLXJJQ8dAg/vwvbogphDMC95IRsW3Ptn0A=="
+PACKAGE_TREE_SHA256 = "a848930a71432670993f3f214aa9005c02b1ef6e5ae12b41714932a6e942ff14"
+PACKAGE_FILE_COUNT = 5384
 RUNTIME_ENTRY = "dist/bin/stdio.js"
-RUNTIME_ENTRY_SHA256 = "8454294ee591a91c0e098f9a7f3f9bbd83c7c4f65f76182b69f8b732a12dc2a9"
-RUNTIME_ENTRY_SIZE = 3484
+RUNTIME_ENTRY_SHA256 = "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e"
+RUNTIME_ENTRY_SIZE = 4205
 REGISTRY = "https://registry.npmjs.org"
 MAX_OUTPUT_BYTES = 2 * 1024 * 1024
 MAX_PACKAGE_FILE_BYTES = 32 * 1024 * 1024
 MAX_PACKAGE_TREE_BYTES = 512 * 1024 * 1024
+MAX_PACKAGE_ARCHIVE_BYTES = 512 * 1024 * 1024
 
 
 class BootstrapError(RuntimeError):
@@ -40,7 +43,7 @@ def run(arguments: list[str], timeout: int = 900) -> str:
             arguments,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
             timeout=timeout,
             check=False,
             shell=False,
@@ -49,10 +52,14 @@ def run(arguments: list[str], timeout: int = 900) -> str:
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise BootstrapError("A reviewed MCP setup command could not complete.") from exc
     output = result.stdout[: MAX_OUTPUT_BYTES + 1]
-    if len(output) > MAX_OUTPUT_BYTES:
+    diagnostics = result.stderr[: MAX_OUTPUT_BYTES + 1]
+    if len(output) > MAX_OUTPUT_BYTES or len(diagnostics) > MAX_OUTPUT_BYTES:
         raise BootstrapError("A reviewed MCP setup command exceeded its output limit.")
+    # npm writes warnings and notices to stderr; keep them out of the JSON
+    # results read from stdout, but use them to explain failures.
     text = output.decode("utf-8", errors="replace")
     if result.returncode != 0:
+        text = text + "\n" + diagnostics.decode("utf-8", errors="replace")
         if "EBUSY" in text and ".dll" in text.lower():
             raise BootstrapError(
                 "npm could not replace loaded MCP native libraries. "
@@ -151,7 +158,30 @@ def verify_registry_integrity(node: Path, npm_cmd: Path) -> None:
         raise BootstrapError("The npm registry package integrity does not match the reviewed release.")
 
 
-def install_package(node: Path, npm_cmd: Path, prefix: Path) -> None:
+def verify_local_tarball(path: Path) -> Path:
+    """Verify an explicitly selected local archive; never discover a fallback."""
+    try:
+        archive = path.resolve(strict=True)
+        if not archive.is_file() or archive.stat().st_size > MAX_PACKAGE_ARCHIVE_BYTES:
+            raise BootstrapError("The selected local MCP archive is missing or oversized.")
+        digest = hashlib.sha512()
+        total_bytes = 0
+        with archive.open("rb") as stream:
+            while chunk := stream.read(1024 * 1024):
+                total_bytes += len(chunk)
+                if total_bytes > MAX_PACKAGE_ARCHIVE_BYTES:
+                    raise BootstrapError("The selected local MCP archive is oversized.")
+                digest.update(chunk)
+    except OSError as exc:
+        raise BootstrapError("The selected local MCP archive could not be read.") from exc
+    integrity = "sha512-" + base64.b64encode(digest.digest()).decode("ascii")
+    if integrity != PACKAGE_INTEGRITY:
+        raise BootstrapError("The selected local MCP archive integrity does not match the reviewed release.")
+    return archive
+
+
+def install_package(node: Path, npm_cmd: Path, prefix: Path, local_tarball: Path | None = None) -> None:
+    package_source = PACKAGE_SPEC if local_tarball is None else str(verify_local_tarball(local_tarball))
     npm(
         node,
         npm_cmd,
@@ -164,7 +194,7 @@ def install_package(node: Path, npm_cmd: Path, prefix: Path) -> None:
             "--no-audit",
             "--no-fund",
             f"--registry={REGISTRY}",
-            PACKAGE_SPEC,
+            package_source,
         ],
         timeout=1800,
     )
@@ -276,6 +306,7 @@ def remove_mismatched_package(node: Path, npm_cmd: Path, prefix: Path) -> None:
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--local-tarball", type=Path, help="Explicitly install the exact reviewed local archive without a registry integrity query.")
     return parser.parse_args()
 
 
@@ -285,10 +316,13 @@ def main() -> int:
         raise BootstrapError("The published HOI4 Agent Tools bootstrap route is Windows-only.")
     node, npm_cmd = ensure_node()
     prefix = user_prefix()
-    verify_registry_integrity(node, npm_cmd)
+    if arguments.local_tarball is None:
+        verify_registry_integrity(node, npm_cmd)
+    else:
+        verify_local_tarball(arguments.local_tarball)
     if not installed_package_matches(prefix):
         remove_mismatched_package(node, npm_cmd, prefix)
-        install_package(node, npm_cmd, prefix)
+        install_package(node, npm_cmd, prefix, arguments.local_tarball)
     wrapper = verify_installation(prefix)
     if not arguments.quiet:
         print(f"Installed {PACKAGE_SPEC} at {wrapper.parent}")
