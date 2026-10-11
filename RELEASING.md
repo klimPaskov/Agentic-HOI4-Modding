@@ -4,8 +4,8 @@ Release from the Claude-first source repository. Keep package code, generated ru
 
 ## Prepare and validate
 
-1. Finalize the HOI4 Agent Tools 4.0.0 public package pin before choosing the release revision. The current bootstrap carries temporary local cutover evidence, so public installation must wait for npm publication and a clean published-package integrity/tree refresh using `scripts/refresh_mcp_package_pin.py`. Re-read the bootstrap, manifest, and integration guide; the bootstrap contract tests must agree on the exact version, integrity, entry hash, and package-tree evidence. Do not reuse the local archive integrity as published npm evidence.
-2. Resolve the missing package license and verify redistribution permissions for the offline wiki and inherited visual assets, including the Super Events lineage. Update manifest license/provenance evidence only when supported by actual declarations. Do not infer permission from a public download.
+1. Verify the HOI4 Agent Tools public package pin before choosing the release revision. Read npm's exact `dist.integrity` and refresh a clean published-package tree with `scripts/refresh_mcp_package_pin.py`. Re-read the bootstrap, manifest, and integration guide; the bootstrap contract tests must agree on the exact version, integrity, entry hash, and package-tree evidence. Do not reuse a local archive's integrity as published npm evidence.
+2. Include the Apache-2.0 `LICENSE` and `NOTICE`. The maintainer selected the same package license as HOI4 Mod Setup on 2026-10-11. Third-party wiki and visual material retains separate terms and provenance; the root license does not establish missing third-party permission. Update manifest license/provenance evidence only when supported by actual declarations. Do not infer permission from a public download.
 3. Generate runtime projections and run all source checks with Python 3.13:
 
    ```powershell
@@ -41,7 +41,7 @@ Release from the Claude-first source repository. Keep package code, generated ru
    git commit -m "Refresh release manifest evidence"
    ```
 
-   Every maintainer commit for this preparation must end with a blank line and `Co-Authored-By: Codex (gpt-6.1-sol) <noreply@openai.com>`. Add that trailer to the commit command above. The manifest commit points to its preceding source commit; it cannot hash itself.
+   The manifest commit points to its preceding source commit; it cannot hash itself. Preserve existing commit messages and do not add attribution trailers to release commits, tags, pull requests, or release notes.
 
 ## Push and merge
 
@@ -67,7 +67,7 @@ Upload the existing videos as GitHub release assets with these exact names:
 | `setup_app_tutorial.mp4` | Existing rendered setup-app tutorial in the maintainer's video output folder |
 | `hoi4_agent_tools_promo.mp4` | Existing rendered Agent Tools promo in the maintainer's promo folder |
 
-README and Pages use `releases/latest/download/<asset>` links. Upload both files to the same current release, verify playback/downloads, and remove the queued-upload wording after they are available. Keep MP4s outside Git. Screenshot links point to the setup app's tracked `docs/screenshots/` collection; verify that collection is present on its public `main` branch.
+README and Pages use `releases/latest/download/<asset>` links. Upload both files to the same current release and verify playback/downloads. Keep MP4s outside Git. Screenshot links point to the setup app's tracked `docs/screenshots/` collection; verify that collection is present on its public `main` branch.
 
 ## Existing mod checkouts
 

@@ -65,8 +65,10 @@ The [complete catalog](docs/catalog.md) describes all 32 skills and 23 agents, w
 
 ## Screenshots and videos
 
+![Choose coding environments in HOI4 Mod Setup](https://raw.githubusercontent.com/klimPaskov/HOI4-Mod-Setup/main/docs/screenshots/15-coding-environments.png)
+
 - [Setup app screenshots](https://github.com/klimPaskov/HOI4-Mod-Setup/tree/main/docs/screenshots): project creation, component selection, MCP configuration, review, and maintenance.
-- [Setup tutorial MP4](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/setup_app_tutorial.mp4) and [Agent Tools promo MP4](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/hoi4_agent_tools_promo.mp4): release assets to upload with this release; these links become available after upload.
+- [Setup tutorial MP4](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/setup_app_tutorial.mp4) and [Agent Tools promo MP4](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/hoi4_agent_tools_promo.mp4).
 - [Video tutorial playlist](https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3).
 - [GitHub Pages guide](https://klimpaskov.github.io/Agentic-HOI4-Modding/).
 
@@ -100,4 +102,4 @@ The project instructions and each selected skill define the work and evidence re
 
 ## License
 
-This repository has no declared package license. Resolve the package license and third-party redistribution permissions before public release; the manifest records unverified license evidence. The [Super Events asset lineage](docs/super_events/README.md) and offline wiki require separate review. See [RELEASING.md](RELEASING.md) for release checks and publication steps.
+Original package code and guidance are licensed under the [Apache License 2.0](LICENSE), the same license as HOI4 Mod Setup. Third-party material retains its own terms; see [NOTICE](NOTICE), the [Super Events asset lineage](docs/super_events/README.md), and the manifest's separate wiki license and provenance evidence.
