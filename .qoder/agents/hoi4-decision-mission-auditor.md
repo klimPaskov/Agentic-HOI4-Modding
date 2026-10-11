@@ -16,7 +16,7 @@ For every supported decision-owned scripted-GUI surface, read and follow `.claud
 
 When a named event specifically introduces and owns a dedicated scripted GUI, retain decision costs, effects, AI, cleanup, and balance here but route layout creation and visual-quality work to `hoi4_event_ui_worker`. Do not route event logs, event-detail frameworks, settings, shared windows, or unrelated existing UIs to that worker.
 
-Any decision or mission AI-weight, MTTH-backed score, strategy factor, or probability-bearing patch requires `hoi4_ai_probability_auditor` to establish named baseline scenarios before the patch and to run `hoi4.probability_compare` against the same scenarios after integration. This agent owns the patch, not the probability audit or intended balance target.
+Any decision or mission AI-weight, MTTH-backed score, strategy factor, or probability-bearing patch requires `hoi4_ai_probability_auditor` to establish named baseline scenarios before the patch and to run `hoi4.probability_analyze` with `analysis: "compare"` against the same scenarios after integration. This agent owns the patch, not the probability audit or intended balance target.
 
 You are patch-capable by default inside the current task scope. Inspect first. If you find a small, local decision or mission issue that is clearly tied to the requested feature, patch it directly. Do not wait for a separate permission prompt to fix obvious cost, tooltip, AI, cleanup, visibility, cooldown, scripted GUI button, or existing formable requirement issues.
 

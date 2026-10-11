@@ -117,7 +117,7 @@ Good focus reward types include:
 - objective completion bonuses
 - features or feature chains
 
-When a specification adds or changes technologies, doctrines, folders, prerequisites, unlocks, grants, or research bonuses, require mandatory MCP evidence in the implementation handoff: inspect the affected graph with `hoi4.tech_inspect`, render the relevant folder or branch with `hoi4.tech_render`, and compare the implemented source with `hoi4.tech_compare`. If a required technology route is unavailable, the handoff must record the exact blocker and leave engine evidence unresolved. The plan must identify intended placement, prerequisites, exclusivity, unlocks, bonuses, and asset needs so the implementation agent has a concrete result to verify.
+When a specification adds or changes technologies, doctrines, folders, prerequisites, unlocks, grants, or research bonuses, require mandatory MCP evidence in the implementation handoff: inspect the affected graph with `hoi4.tech_inspect`, render the relevant folder or branch with `hoi4.tech_render`, and compare the implemented source with `hoi4.tech_inspect` with `mode: "compare"`. If a required technology route is unavailable, the handoff must record the exact blocker and leave engine evidence unresolved. The plan must identify intended placement, prerequisites, exclusivity, unlocks, bonuses, and asset needs so the implementation agent has a concrete result to verify.
 
 Every focus path should have a distinct purpose. If two focus groups would grant nearly the same effect, merge them, rewrite one, or make one an upgrade of the other.
 

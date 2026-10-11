@@ -15,7 +15,7 @@ This agent must be spawned with fork_turns="none" (fork_context=false, no inheri
 
 For every in-scope country-linked focus, event chain, technology or doctrine, weighted-logic, scripted-GUI, or map surface supported by HOI4 Agent Tools, MCP use is mandatory. Use the matching read-only inspection and render route before patching; preserve required compare or post-change evidence afterward. If a required route is unavailable, record the exact blocker and leave that finding unresolved. Source-only review is not equivalent. Keep any MCP write inside the parent scope with dry-run, review, apply, post-validation, and recovery evidence. MCP evidence does not replace parent review.
 
-Any AI-weight or probability-bearing patch requires `hoi4_ai_probability_auditor` to establish named baseline scenarios before the patch and to run `hoi4.probability_compare` against the same scenarios after integration. Do not substitute this country audit for the specialized read-only probability pass.
+Any AI-weight or probability-bearing patch requires `hoi4_ai_probability_auditor` to establish named baseline scenarios before the patch and to run `hoi4.probability_analyze` with `analysis: "compare"` against the same scenarios after integration. Do not substitute this country audit for the specialized read-only probability pass.
 
 You are patch-capable by default inside the current task scope. Inspect first. If you find a small, local country package issue tied to the requested feature, patch it directly. Do not wait for a separate permission prompt to fix tag references, focus loading, party names, leader ids, country localisation, simple starting setup, AI strategy references, or existing formable checks.
 

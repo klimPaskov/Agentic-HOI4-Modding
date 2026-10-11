@@ -47,7 +47,7 @@ Doctrine authoring skeletons, loc keys, and GUI notes are in `references/doctrin
 | Share research between countries | A `technology_sharing_group` plus `add_to_tech_sharing_group` |
 | Give or replace doctrines | `set_grand_doctrine` and `set_sub_doctrine`; mastery through `add_mastery`, `add_daily_mastery`, `add_mastery_bonus` |
 | A new doctrine system | Folder, grand doctrines, tracks, sub-doctrines in `common/doctrines/` |
-| Understand or verify an existing tree | The `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_compare` tools |
+| Understand or verify an existing tree | The `hoi4.tech_inspect`, `hoi4.tech_render`, and `hoi4.tech_inspect` with `mode: "compare"` tools |
 
 ## Repository conventions that apply
 
@@ -304,7 +304,7 @@ Verify with the connected tool list before relying on them; first call returns a
 - `hoi4.tech_inspect` `mode`: `scan`, `folders`, `trace` (with `direction`, `maxDepth`), `explain`, `unlocks` (with `technologyId` or a `targetId` and `targetKind`), `bonus_coverage`, `lint`, `impact` (rename or removal), `helper_expansion`.
   Narrow with `technologyId`, `folderId`, or `categoryId`.
 - `hoi4.tech_render` `view`: `summary`, `folder`, `dependencies`, `technology`, `doctrine`, `exclusive`, `memberships`, `bonuses`, `grants`, `unlocks`, `metadata`, `assets`, `unresolved`; an optional `scenario` takes a year and researched ids.
-- `hoi4.tech_compare` compares revisions or proposed sources; it never writes.
+- `hoi4.tech_inspect` with `mode: "compare"` compares revisions or proposed sources; it never writes.
 - On a large workspace the first call reports `validation.passed = false` with the check "Helper projections were deferred"; the counts, folder list, and linked artifact are still usable evidence, and the deferral is not a defect.
 - Follow the repository retry rule: one read-only request plus at most one corrected retry per failure, then read source directly and say the check was not run.
 - Use `helper_expansion` only after confirming the server version and task negotiation as required by `CLAUDE.md`.

@@ -336,7 +336,7 @@ Console commands (GAME/documentation/console_commands_documentation.md; the play
 
 Repository verification without launching the game:
 
-1. Read the actual block and compute representative cases by hand. For `ai_will_do`, `ai_chance`, strategy plans and MTTH-backed weights prefer `hoi4_probability_inspect` (adapters: `event_option_ai_chance`, `decision_ai_will_do`, `mission_ai_will_do`, `national_focus_ai_will_do`, `technology_ai_will_do`, `doctrine_ai_will_do`, `ai_strategy_factor`, `random_list`, `direct_random`, `custom_weighted_pool`, `event_mean_time_to_happen`), then `hoi4_probability_evaluate` or `hoi4_probability_compare` with explicit named scenarios (country, date, flags, government, factory counts).
+1. Read the actual block and compute representative cases by hand. For `ai_will_do`, `ai_chance`, strategy plans and MTTH-backed weights prefer `hoi4_probability_inspect` (adapters: `event_option_ai_chance`, `decision_ai_will_do`, `mission_ai_will_do`, `national_focus_ai_will_do`, `technology_ai_will_do`, `doctrine_ai_will_do`, `ai_strategy_factor`, `random_list`, `direct_random`, `custom_weighted_pool`, `event_mean_time_to_happen`), then `hoi4_probability_inspect` or `hoi4_probability_analyze` with `analysis: "compare"` with explicit named scenarios (country, date, flags, government, factory counts).
 2. Report assumptions, and state whether a number is a score, a share of a proportional pool, or a random-draw win chance.
 3. Use `hoi4_script_validate` for trigger and effect bodies in the right scope.
 4. Use `hoi4_source_lookup` for every other active definition of the same strategy type and target, so stacking is visible.

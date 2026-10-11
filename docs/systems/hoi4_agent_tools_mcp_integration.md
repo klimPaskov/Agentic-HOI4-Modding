@@ -34,17 +34,17 @@ Renders are deterministic offline previews, not game screenshots, and they do no
 
 ## Capability matrix
 
-Route names change between releases. The table lists the routes of current releases as examples; use the names the connected server advertises in its live tool list, and read each live schema before relying on optional parameters.
+This package pins HOI4 Agent Tools 4.0.0 and its 28-tool contract. The table lists those routes; use the names the connected server advertises in its live tool list, and read each live schema before relying on optional parameters.
 
 | Surface | Read-only MCP evidence | Write route | Required evidence sequence | Limits |
 | --- | --- | --- | --- | --- |
 | Local references | `hoi4.reference_context`, `hoi4.reference_search`, `hoi4.reference_read`, `hoi4.source_lookup` | None | Select the work surface, search exact rules, read the pertinent cited sections, and inspect exact vanilla/mod definitions. | A citation bundle identifies sources; it does not prove that their detailed rules were read. Missing or skipped sources require a targeted local read or a recorded gap; resolve live `omittedSources` by increasing the result limit or targeted search/read. |
-| National focus trees | `hoi4.focus_inspect`, `hoi4.focus_render` | `hoi4.focus_rewrite` when advertised | Inspect and render the exact tree before editing, review any proposal, then inspect and render again after source changes and retain paired evidence. | Layout and diagnostics are evidence, not a completion claim; complex focus weights also require the probability contract. |
-| Event chains | `hoi4.event_inspect`, `hoi4.event_render`, `hoi4.event_compare` | None in the installed package | Run a narrow inspect and render before editing, then rerun them after editing and compare the same selector or revision when available. | Analysis is bounded and static, so dynamic destinations and runtime behavior can remain unresolved. |
-| Technology and doctrine trees | `hoi4.tech_inspect`, `hoi4.tech_render`, `hoi4.tech_compare` | None; these routes are read-only | Inspect the selected tree, render a reviewable layout, and compare related trees or variants. | Keep source review and MCP evidence together; never invent viewer evidence for a route that is not advertised. |
-| Weighted logic | `hoi4.probability_inspect`, `hoi4.probability_evaluate`, `hoi4.probability_sweep`, `hoi4.probability_compare`, `hoi4.probability_simulate`, `hoi4.probability_sequence`, `hoi4.probability_render` | None; the probability auditor remains read-only | Start with inspect, evaluate named scenarios, sweep sensitivities, compare the same scenarios before and after a source patch, and add simulation, sequence, or rendering only under the scenario contract. | A score is not a probability; incomplete pools or external factors make exact conclusions invalid. |
+| National focus trees | `hoi4.focus_inspect`, `hoi4.focus_render` (PNG by default; `png: false` for vector only) | `hoi4.focus_rewrite` when advertised | Inspect and render the exact tree before editing, review any proposal, then inspect and render again after source changes and retain paired evidence. | Layout and diagnostics are evidence, not a completion claim; complex focus weights also require the probability contract. |
+| Event chains | `hoi4.event_inspect`, `hoi4.event_render`, `hoi4.event_inspect` with `mode: "compare"` | None in the installed package | Run a narrow inspect and render before editing, then rerun them after editing and compare the same selector or revision when available. | Analysis is bounded and static, so dynamic destinations and runtime behavior can remain unresolved. |
+| Technology and doctrine trees | `hoi4.tech_inspect`, `hoi4.tech_render`, `hoi4.tech_inspect` with `mode: "compare"` | None; these routes are read-only | Inspect the selected tree, render a reviewable layout, and compare related trees or variants. | Keep source review and MCP evidence together; never invent viewer evidence for a route that is not advertised. |
+| Weighted logic | `hoi4.probability_inspect` (inventory and evaluation), `hoi4.probability_analyze` (`analysis`: `sweep`, `compare`, `simulate`, `sequence`, or `render`) | None; the probability auditor remains read-only | Start with inspect, evaluate named scenarios, sweep sensitivities, compare the same scenarios before and after a source patch, and add simulation, sequence, or rendering only under the scenario contract. | A score is not a probability; incomplete pools or external factors make exact conclusions invalid. |
 | Scripted GUI | `hoi4.gui_inspect`, `hoi4.gui_render` | Optional `hoi4.gui_rewrite` when the GUI is explicitly in scope | Inspect the exact GUI before editing, render relevant states and resolutions, apply the reviewed edit directly or through the optional rewrite, then inspect, render, and compare the same states and resolutions after editing. | Do not use a GUI route to redesign shared framework surfaces without an owning scope and parent approval. Rewrite success is not visual acceptance. |
-| Map and connected map data | `hoi4.map_inspect`, `hoi4.map_render` | `hoi4.map_rewrite` or an equivalent declarative writer | Inspect connected provinces, states, regions, adjacency, supply, and rail data before a proposal, complete dry-run and review before apply, then post-validate and retain recovery evidence. | A map render is offline evidence and does not prove in-game pathing, supply, or consumer behavior. |
+| Map and connected map data | `hoi4.map_inspect`, `hoi4.map_inspect` with render arguments (`layer`, `overlays`, `scale`, `tile`, or `area`) | `hoi4.map_rewrite` or an equivalent declarative writer | Inspect connected provinces, states, regions, adjacency, supply, and rail data before a proposal, review the edit, submit one rewrite call, then retain post-validation and recovery evidence. | A map render is offline evidence and does not prove in-game pathing, supply, or consumer behavior. |
 
 If a route is absent, record the exact tool, selector, package version, and error once, then continue with local references and source review as described under Route-unavailable behavior.
 
@@ -82,6 +82,12 @@ With a mod-relative `path` instead of a body, `hoi4.script_validate` checks ever
 Run it on each changed script file before handing work to live testing: its errors predict load errors the game reports, such as a dynamic variable compared as a trigger or a scope link outside its scopes.
 Its warnings cover player-facing text (colour codes in news and report events, development wording, unlocalised flags in requirement tooltips) and visible events that would reach one player once per loop iteration; treat each as a defect to fix or a recorded decision.
 
+For launch diagnostics, `hoi4.error_log` reads the last existing `logs/error.log`, groups patterns, reports source freshness and new/persisting/fixed entries, and attaches a matching `knownMistake` rule and fix. It never launches the game. Use `scope: "mod"` and category/text filters; stale logs are historical evidence.
+
+Use `hoi4.mod_index` with `mode: "overview"` for descriptor, counts and namespaces, or `mode: "next_id"` with a `kind` and namespace/prefix before allocating an ID across source layers.
+
+`hoi4.reference_context` exposes the surface's reviewed `knownMistakes`. File-mode `hoi4.script_validate` reports applicable rules as `KNOWN_MISTAKE_<RULE>` and `known_mistakes` in `checksPerformed`; retain the rule ID, symptom and fix. Coverage is limited to reported checks; resolved rules do not run.
+
 ## Probability scenario contract
 
 Use the probability routes only for a declared surface and scenario rather than treating a single weight dump as balance evidence.
@@ -90,12 +96,12 @@ Use the probability routes only for a declared surface and scenario rather than 
 2. Name every analyzed surface and scenario identifier, and preserve the resulting scenario hash.
 3. Supply the complete candidate pool whenever the adapter normalizes weights or runs a selection race.
 4. Declare prerequisites, availability and visibility gates, bypasses, target validity, external modifiers, state changes, cadence, cooldowns, removal or reset rules, terminal states, uncertain inputs, and seeds.
-5. Use `hoi4.probability_evaluate` for named scenarios and exact or bounded traces.
-6. Use `hoi4.probability_sweep` for thresholds, sensitivities, timing drift, starvation, dominance, and rank reversals.
-7. Before editing a weighted source, save an immutable pre-edit source copy and the exact scenario fixture; record their paths and SHA-256 hashes. Use `hoi4.probability_compare` with real `before.path` and `after.path` source paths and the identical `scenarioSet`. Keep revision and hash evidence outside those source objects.
-8. Use `hoi4.probability_simulate` only when explicitly declared uncertain inputs require sampling, and label the result sampled rather than exact.
-9. Use `hoi4.probability_sequence` only when a complete custom pool, cadence, state transition, and terminal-state contract is declared.
-10. Use `hoi4.probability_render` when a ranking, matrix, timing, sensitivity, sequence, comparison, or unresolved view improves review.
+5. Pass named `scenarioSet` values to `hoi4.probability_inspect` for exact or bounded traces. Inspection evaluates by default; `evaluate: false` returns only inventory. Omitted scenarios use a fact-free state and leave missing facts unresolved.
+6. Use `hoi4.probability_analyze` with `analysis: "sweep"` for thresholds, sensitivities, timing drift, starvation, dominance, and rank reversals.
+7. Before editing a weighted source, save an immutable pre-edit source copy and the exact scenario fixture; record their paths and SHA-256 hashes. Use `hoi4.probability_analyze` with `analysis: "compare"` with real `before.path` and `after.path` source paths and the identical `scenarioSet`. Keep revision and hash evidence outside those source objects.
+8. Use `hoi4.probability_analyze` with `analysis: "simulate"` only when explicitly declared uncertain inputs require sampling, and label the result sampled rather than exact.
+9. Use `hoi4.probability_analyze` with `analysis: "sequence"` only when a complete custom pool, cadence, state transition, and terminal-state contract is declared.
+10. Use `hoi4.probability_analyze` with `analysis: "render"` when a ranking, matrix, timing, sensitivity, sequence, comparison, or unresolved view improves review.
 11. Classify every conclusion as exact, bounded, sampled, score-only, or unresolved.
 
 Never state an exact selection probability when the candidate pool or external factors are incomplete, and never describe a score race as a click probability without normalization evidence.
@@ -108,11 +114,10 @@ The lifecycle applies to focus, GUI, and map rewrites, including Agent Nudger or
 
 1. Scope and authority: confirm the exact files, identifiers, accepted design authority, and allowed write surface before proposing changes.
 2. Inspect: obtain the narrow pre-change diagnostics, linked artifacts, source revision, and any required render or probability baseline.
-3. Dry-run: validate the complete proposal without mutating source and retain the proposed diff or plan artifact.
-4. Review: inspect diagnostics, changed identifiers, linked artifacts, source-of-truth authority, and expected post-validation before authorizing apply.
-5. Apply: perform the authorized write through the configured transaction engine, never by bypassing the route with an untracked script or wrapper.
-6. Post-validation: re-index or reload the affected surface, rerun inspect and render, compare against the baseline where supported, and record the resulting revision and artifacts.
-7. Rollback or recovery: if the write or post-validation fails, retain the exact-byte recovery data and transaction or recovery reference, roll back to the prior source automatically when the engine supports it, and report the failure.
+3. Review the bounded source proposal and its intended validation before calling the rewrite.
+4. Rewrite: submit one authorized domain rewrite through the shared engine. Validation, stale-source checks, atomic replacement, post-validation, and failure recovery remain internal to that call.
+5. Post-validation: review returned diagnostics and artifacts, rerun required inspect/render comparisons, and record the resulting revision.
+6. Recovery: retain any failure and restoration evidence. Never request a transaction ID, plan hash, separate apply call, or rollback command; intentional reversal after success is a new authorized source change.
 
 A blocked proposal must not mutate source.
 GUI preview scenarios accept `flags`, `variables`, and `closedFlags: true`, which treats undeclared flags as unset; set them so tabbed windows and flag-driven panels render one page at a time, and treat `GUI_UNRESOLVED_VISIBILITY_OVERLAP` as missing scenario facts rather than a layout defect.
@@ -140,9 +145,15 @@ Inspect current source or transaction state before retrying an uncertain mutatio
 
 HOI4 Mod Setup installs and verifies the exact package version recorded in `hoi4-mod-setup.manifest.json`. For a manual setup, run `python .tools/mcp/bootstrap_hoi4_agent_tools.py`, which installs the same recorded version with its registry-integrity and runtime-entry checks; `npm install --global hoi4-agent-tools` installs the newest release instead.
 
+Temporary local cutover: run `python .tools/mcp/bootstrap_hoi4_agent_tools.py --local-tarball C:/path/to/hoi4-agent-tools-4.0.0.tgz` only with the explicitly selected reviewed archive. This opt-in verifies exact SHA-512, skips the registry integrity query, and retains full installed-tree, count, runtime-entry and wrapper checks. Dependencies can still use npm's registry; this is not offline. There is no automatic fallback or downgrade. The default route fails closed while 4.0.0 is unpublished or differs from the pin.
+
+TODO after publication: replace temporary local integrity with npm `dist.integrity` and recapture a clean published installation tree, count and runtime identity using `scripts/refresh_mcp_package_pin.py` (procedure below). Keep bootstrap, manifest, tests and documentation synchronized.
+
+To refresh after npm publication, obtain `npm view hoi4-agent-tools@4.0.0 dist.integrity --json --registry=https://registry.npmjs.org`, install that exact version into a new empty prefix with `npm install --global --prefix C:/path/to/new-clean-prefix --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org hoi4-agent-tools@4.0.0`, then run `python scripts/refresh_mcp_package_pin.py --prefix C:/path/to/new-clean-prefix --integrity <reviewed-sha512-value>`. The helper measures the bounded full tree and runtime entry, verifies version and npm lock integrity, and synchronizes the bootstrap and manifest's exact 28-tool contract. Review the measured values and replace the temporary cutover TODO only after verified publication. Run the contract tests and projection checks, commit source changes, then run `python scripts/generate_manifest_evidence.py --manifest hoi4-mod-setup.manifest.json --source-root . --revision <exact-source-commit>` and commit that evidence separately. The generator reads immutable Git blobs, never working-tree bytes.
+
 If the recorded version is unavailable or fails verification, record the package/version blocker instead of silently substituting an unpinned clone.
 
-The repository bootstrap (`.tools/mcp/bootstrap_hoi4_agent_tools.py`) keeps an installation whose complete tree already matches the reviewed release and runs no npm command for it. It uninstalls any other installed copy before the exact install, because npm upgrades a shrinkwrapped package in place without pruning modules the previous release needed, so an in-place upgrade never matches the reviewed tree. Replacing the package requires every HOI4 MCP client to be closed or disconnected first: a running server keeps Sharp's native libraries loaded, and npm cannot replace them.
+The repository bootstrap (`.tools/mcp/bootstrap_hoi4_agent_tools.py`) verifies registry integrity first, then keeps a matching complete installed tree without reinstalling it. It uninstalls any other installed copy before the exact install, because npm upgrades a shrinkwrapped package in place without pruning modules the previous release needed, so an in-place upgrade never matches the reviewed tree. Replacing the package requires every HOI4 MCP client to be closed or disconnected first: a running server keeps Sharp's native libraries loaded, and npm cannot replace them.
 
 For a local mod, register `hoi4-agent-tools.cmd` (Windows) or `hoi4-agent-tools` with the mod directory as its working directory: the project `.mcp.json` entry `hoi4_agent_tools` for Claude Code, and `[mcp_servers.hoi4_agent_tools]` in `.codex/config.toml` for Codex; a mod-local working directory normally lets the server detect the source without a separate selection call.
 
@@ -186,7 +197,7 @@ Use a compact record like the following for each reviewable surface:
 | Artifact URI | Stable `hoi4-agent://` URI for inspect, render, compare, proposal, or recovery evidence. |
 | Revision | MCP source or artifact revision, or an explicit unavailable marker. |
 | Scenario identifier and hash | Required for weighted logic; include declared seed and external-state inputs. |
-| Transaction and recovery | Dry-run, review, apply, post-validation, transaction, and recovery references for rewrites. |
+| Rewrite and recovery | Single rewrite call, returned diff/artifacts, post-validation and failure/restoration evidence. |
 | Result classification | Exact, bounded, sampled, score-only, or unresolved. |
 | Limitations and blocker | Missing route, dynamic behavior, incomplete pool, fidelity warning, or other unresolved issue. |
 

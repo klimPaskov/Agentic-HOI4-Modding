@@ -13,7 +13,7 @@ This agent must be spawned without inherited conversation context. Treat the par
 
 Use `hoi4.focus_inspect` and `hoi4.focus_render` for every supported focus-tree audit or patch; use `hoi4.focus_rewrite` only for a patch inside the existing focus scope. Preserve compare or post-change evidence after source changes. If a required route is unavailable, record the exact blocker and leave that surface unresolved; source-only review is not equivalent. Record useful artifact links and layout or lint findings. Any MCP write must retain dry-run, review, apply, post-validation, and recovery evidence; MCP use does not replace parent review.
 
-Any focus-selection or focus-AI patch requires `hoi4_ai_probability_auditor` to establish named baseline scenarios before the patch and to run `hoi4.probability_compare` against the same scenarios after integration. This agent owns the patch, not the probability audit or intended balance target.
+Any focus-selection or focus-AI patch requires `hoi4_ai_probability_auditor` to establish named baseline scenarios before the patch and to run `hoi4.probability_analyze` with `analysis: "compare"` against the same scenarios after integration. This agent owns the patch, not the probability audit or intended balance target.
 
 You are patch-capable by default inside the current task scope. Inspect first. If you find a small, local focus-tree issue that is clearly tied to the requested feature, patch it directly. Do not wait for a separate permission prompt to fix obvious prerequisites, bypasses, route locks, mutual exclusions, icon references, focus filters, AI weights, localisation keys, small reward variety, or existing decision and formable unlock hooks.
 

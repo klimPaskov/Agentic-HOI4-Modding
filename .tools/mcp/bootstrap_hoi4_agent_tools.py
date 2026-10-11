@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -14,18 +15,21 @@ import sys
 
 
 PACKAGE_NAME = "hoi4-agent-tools"
-PACKAGE_VERSION = "3.10.0"
+PACKAGE_VERSION = "4.0.0"
 PACKAGE_SPEC = f"{PACKAGE_NAME}@{PACKAGE_VERSION}"
-PACKAGE_INTEGRITY = "sha512-hkQ249UZZJ9JpoTsp/j8G5x7OJf9Pew/xtdjjPQsugFynn7zhituPTA0YrM3kvyvGZhTMYH5fM2ajruI+4Hzzw=="
-PACKAGE_TREE_SHA256 = "98f03c3d9867de5aef09bdaf52fdec36b9ca9ccd2f1bec4386cf331ba67af352"
-PACKAGE_FILE_COUNT = 5358
+# Temporary local cutover evidence. TODO after npm publication: replace integrity
+# and recapture a clean published full tree with scripts/refresh_mcp_package_pin.py.
+PACKAGE_INTEGRITY = "sha512-tKXBgbv/VTKU4HZg9Cuh3TUKclfN+53+RePmXY9HpLQoLpShlp7V5Bu/kToFoa+swGceD5yHbbSWFBq3qDx6aA=="
+PACKAGE_TREE_SHA256 = "ef022750c45777dfc6f474af9d1db98396991ab99bb21c8b172b301cf2a87d73"
+PACKAGE_FILE_COUNT = 5223
 RUNTIME_ENTRY = "dist/bin/stdio.js"
-RUNTIME_ENTRY_SHA256 = "7840749a48d9392c068926ff680f4977a6957379e5dfeda15f45b90848b849ee"
-RUNTIME_ENTRY_SIZE = 3651
+RUNTIME_ENTRY_SHA256 = "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e"
+RUNTIME_ENTRY_SIZE = 4205
 REGISTRY = "https://registry.npmjs.org"
 MAX_OUTPUT_BYTES = 2 * 1024 * 1024
 MAX_PACKAGE_FILE_BYTES = 32 * 1024 * 1024
 MAX_PACKAGE_TREE_BYTES = 512 * 1024 * 1024
+MAX_PACKAGE_ARCHIVE_BYTES = 512 * 1024 * 1024
 
 
 class BootstrapError(RuntimeError):
@@ -155,7 +159,30 @@ def verify_registry_integrity(node: Path, npm_cmd: Path) -> None:
         raise BootstrapError("The npm registry package integrity does not match the reviewed release.")
 
 
-def install_package(node: Path, npm_cmd: Path, prefix: Path) -> None:
+def verify_local_tarball(path: Path) -> Path:
+    """Verify an explicitly selected local archive; never discover a fallback."""
+    try:
+        archive = path.resolve(strict=True)
+        if not archive.is_file() or archive.stat().st_size > MAX_PACKAGE_ARCHIVE_BYTES:
+            raise BootstrapError("The selected local MCP archive is missing or oversized.")
+        digest = hashlib.sha512()
+        total_bytes = 0
+        with archive.open("rb") as stream:
+            while chunk := stream.read(1024 * 1024):
+                total_bytes += len(chunk)
+                if total_bytes > MAX_PACKAGE_ARCHIVE_BYTES:
+                    raise BootstrapError("The selected local MCP archive is oversized.")
+                digest.update(chunk)
+    except OSError as exc:
+        raise BootstrapError("The selected local MCP archive could not be read.") from exc
+    integrity = "sha512-" + base64.b64encode(digest.digest()).decode("ascii")
+    if integrity != PACKAGE_INTEGRITY:
+        raise BootstrapError("The selected local MCP archive integrity does not match the reviewed release.")
+    return archive
+
+
+def install_package(node: Path, npm_cmd: Path, prefix: Path, local_tarball: Path | None = None) -> None:
+    package_source = PACKAGE_SPEC if local_tarball is None else str(verify_local_tarball(local_tarball))
     npm(
         node,
         npm_cmd,
@@ -168,7 +195,7 @@ def install_package(node: Path, npm_cmd: Path, prefix: Path) -> None:
             "--no-audit",
             "--no-fund",
             f"--registry={REGISTRY}",
-            PACKAGE_SPEC,
+            package_source,
         ],
         timeout=1800,
     )
@@ -280,6 +307,7 @@ def remove_mismatched_package(node: Path, npm_cmd: Path, prefix: Path) -> None:
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--local-tarball", type=Path, help="Explicitly install the exact reviewed local archive without a registry integrity query.")
     return parser.parse_args()
 
 
@@ -289,10 +317,13 @@ def main() -> int:
         raise BootstrapError("The published HOI4 Agent Tools bootstrap route is Windows-only.")
     node, npm_cmd = ensure_node()
     prefix = user_prefix()
-    verify_registry_integrity(node, npm_cmd)
+    if arguments.local_tarball is None:
+        verify_registry_integrity(node, npm_cmd)
+    else:
+        verify_local_tarball(arguments.local_tarball)
     if not installed_package_matches(prefix):
         remove_mismatched_package(node, npm_cmd, prefix)
-        install_package(node, npm_cmd, prefix)
+        install_package(node, npm_cmd, prefix, arguments.local_tarball)
     wrapper = verify_installation(prefix)
     if not arguments.quiet:
         print(f"Installed {PACKAGE_SPEC} at {wrapper.parent}")
