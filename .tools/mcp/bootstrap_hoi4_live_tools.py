@@ -36,8 +36,8 @@ import zipfile
 
 RELEASE_VERSION = "1.1.0"
 RELEASE_URL = "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.1.0/hoi4-live-tools-1.1.0.zip"
-RELEASE_SHA256 = "f87e75e237bd794fb46156ed562bfc3691f6a65f03d089e104bddad4ab08a327"
-RELEASE_SIZE = 1143979
+RELEASE_SHA256 = "15d6d86b3d7d6d6795bd2a9598d56d312831ff8b4f9c518a38eec522c8c623e4"
+RELEASE_SIZE = 1155994
 ARCHIVE_TOP = f"hoi4-live-tools-{RELEASE_VERSION}"
 ALLOWED_HOSTS = ("github.com",)
 ALLOWED_HOST_SUFFIXES = (".githubusercontent.com",)

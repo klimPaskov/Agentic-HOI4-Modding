@@ -10575,8 +10575,8 @@
             ],
             "release_version": "1.1.0",
             "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.1.0/hoi4-live-tools-1.1.0.zip",
-            "release_sha256": "f87e75e237bd794fb46156ed562bfc3691f6a65f03d089e104bddad4ab08a327",
-            "release_size": 1143979,
+            "release_sha256": "15d6d86b3d7d6d6795bd2a9598d56d312831ff8b4f9c518a38eec522c8c623e4",
+            "release_size": 1155994,
             "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless) from https://pypi.org.",
             "expected_writes": [
               "%LOCALAPPDATA%/hoi4-live-tools/**",
