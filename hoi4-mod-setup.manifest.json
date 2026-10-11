@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "4ebf7415ab3aac0b4a43f5648606e54d54adbfab",
+  "generated_for_revision": "375a867bb0689a372d4821e08f8da9f85c746bdf",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1471,8 +1471,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "3606b6a4e26a8f0d9fac512f4a1584bd8135b302f55434e9d18f3744d9936b79",
-          "size": 4744
+          "sha256": "c4ff12f39d26feb917a81220805b909ed98c706f6b2b5e0ace2586072f8bcc0a",
+          "size": 4979
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -4860,8 +4860,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "3606b6a4e26a8f0d9fac512f4a1584bd8135b302f55434e9d18f3744d9936b79",
-          "size": 4744
+          "sha256": "c4ff12f39d26feb917a81220805b909ed98c706f6b2b5e0ace2586072f8bcc0a",
+          "size": 4979
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -10310,8 +10310,8 @@
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "4562895503ae23f52fa6bfcff96d62454b12605a7ba3b8864cf9820eced6d0a4",
-          "size": 67701
+          "sha256": "dc11f5792c79fa3cc23eeda15a79ee3581858bee16834afd38d89620530490c8",
+          "size": 67957
         },
         {
           "path": ".tools/3d_pipeline/build_io_pdx_py313_compat.py",
