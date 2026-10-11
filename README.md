@@ -25,7 +25,10 @@ For a manual setup:
    python .tools/sync/sync_skills.py --target agents   # .agents/skills for Codex and DSH
    ```
 
-5. Install HOI4 Agent Tools with `python .tools/mcp/bootstrap_hoi4_agent_tools.py`, then approve the `hoi4_agent_tools` server when Claude Code asks and check it with `/mcp`.
+5. Copy `.tools/mcp/` and `docs/runtimes.md` plus `docs/systems/hoi4_agent_tools_mcp_integration.md` into the mod. Install Python 3.13 and a supported Node.js LTS release with npm available on PATH. On Windows, `py -3.13` can replace `python` in these commands.
+6. Install HOI4 Agent Tools with `python .tools/mcp/bootstrap_hoi4_agent_tools.py`, then approve the `hoi4_agent_tools` server when Claude Code asks and check it with `/mcp`.
+
+7. For live game testing on Windows, run `python .tools/mcp/bootstrap_hoi4_live_tools.py`, reconnect your coding client, and follow the [Live Tools setup guide](.claude/skills/hoi4-live-playtest/references/setup.md). For portraits, 3D, or Super Events, copy the selected workflow's references, tools, and runtime assets together; use the [manifest](hoi4-mod-setup.manifest.json) as the file inventory. The setup app handles this selection automatically.
 
 The templates are starting points. Keep only the workflows your mod uses and add project rules as the mod develops.
 
@@ -49,6 +52,21 @@ Each subagent declares its Claude tier in its `model` field so cost and capabili
 - **Haiku**: every other specialist (repo explorer, focus tree, decision, country package, and AI probability auditors, event UI worker, documentation curator, asset, icon, portrait, quote, and audio workers, spreadsheet worker, Super Events researchers).
 
 Other runtimes translate the tier through [`.tools/sync/agent_profiles.json`](.tools/sync/agent_profiles.json), for example into a Codex reasoning effort.
+
+## Skills and agents
+
+The [complete catalog](docs/catalog.md) describes all 32 skills and 23 agents, with links to their definitions and each agent's model tier and Codex reasoning effort. Skills guide the workflow; agents take bounded tasks with explicit file ownership and evidence requirements.
+
+## Screenshots and videos
+
+- [Setup app screenshots](https://github.com/klimPaskov/HOI4-Mod-Setup/tree/main/docs/screenshots): project creation, component selection, MCP configuration, review, and maintenance.
+- [Setup tutorial MP4](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/setup_app_tutorial.mp4) and [Agent Tools promo MP4](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/hoi4_agent_tools_promo.mp4): release assets to upload with this release; these links become available after upload.
+- [Video tutorial playlist](https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3).
+- [GitHub Pages guide](https://klimpaskov.github.io/Agentic-HOI4-Modding/).
+
+## Updating an older installation
+
+Back up and commit local mod work first. Use HOI4 Mod Setup's update or repair flow to review changes to managed files and keep local additions. An older Codex-first checkout with HOI4 Agent Tools 3.9.0 needs an update to this Claude-first package and the manifest-pinned MCP release. Keep custom instructions when resolving conflicts, regenerate runtime projections, and reconnect MCP clients after installation.
 
 ## Skill size
 
@@ -76,4 +94,4 @@ The project instructions and each selected skill define the work and evidence re
 
 ## License
 
-You may adapt this package for your own HOI4 modding workflow.
+This repository has no declared package license. Resolve the package license and third-party redistribution permissions before public release; the manifest records unverified license evidence. The [Super Events asset lineage](docs/super_events/README.md) and offline wiki require separate review. See [RELEASING.md](RELEASING.md) for release checks and publication steps.
