@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "3c29a9f560764ec77c96c5f7d2ca71d59f5870ec",
+  "generated_for_revision": "2d556750517d83f7c0f3b3c1b7f4d0e0e7bfaff8",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -174,6 +174,21 @@
       ],
       "expected_files": [
         {
+          "path": ".tools/README.md",
+          "sha256": "5004ab33392473c14b154c4297afa591af6f1cb84299fd7fe79bd853a7430531",
+          "size": 7430
+        },
+        {
+          "path": ".tools/package_chatgpt_project_sources.bat",
+          "sha256": "0deba9b49324ae69e6d433e676fe00c2745bcd4a25ca7f7276f815dd31d60ce0",
+          "size": 288
+        },
+        {
+          "path": ".tools/package_chatgpt_project_sources.py",
+          "sha256": "2e8c5ea5cd0dc049da950210b4447719faedbeba1e412c1c77f44929d9116e21",
+          "size": 7467
+        },
+        {
           "path": ".tools/sync/README.md",
           "sha256": "70c8b17152cb8752992ffc805f54ca61465dc27972059405cc32ec644e31d0f6",
           "size": 3423
@@ -217,21 +232,6 @@
           "path": ".tools/sync/sync_skills.py",
           "sha256": "d5270c31826e5e9b622a2d40c9e9734d0ef1076c7e0542c614f358a7a73468ec",
           "size": 6275
-        },
-        {
-          "path": ".tools/README.md",
-          "sha256": "b04394a8bb50cc96ac3d063bc07cfd859cfb0294338c4f6ea3ee92d86d4a8ba9",
-          "size": 7419
-        },
-        {
-          "path": ".tools/package_chatgpt_project_sources.bat",
-          "sha256": "0deba9b49324ae69e6d433e676fe00c2745bcd4a25ca7f7276f815dd31d60ce0",
-          "size": 288
-        },
-        {
-          "path": ".tools/package_chatgpt_project_sources.py",
-          "sha256": "2e8c5ea5cd0dc049da950210b4447719faedbeba1e412c1c77f44929d9116e21",
-          "size": 7467
         }
       ]
     },
