@@ -8435,7 +8435,7 @@
           "parameters": {
             "package_name": "hoi4-agent-tools",
             "package_version": "4.0.0",
-            "package_integrity": "sha512-tKXBgbv/VTKU4HZg9Cuh3TUKclfN+53+RePmXY9HpLQoLpShlp7V5Bu/kToFoa+swGceD5yHbbSWFBq3qDx6aA==",
+            "package_integrity": "sha512-69+kEVewzGqs9cH/ATvy7siIRgsanmydIijUsMYGdiS4SPZoPvlKPLXJJQ8dAg/vwvbogphDMC95IRsW3Ptn0A==",
             "runtime_entry": "dist/bin/stdio.js",
             "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
             "runtime_entry_size": 4205,
@@ -8473,8 +8473,8 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "ef022750c45777dfc6f474af9d1db98396991ab99bb21c8b172b301cf2a87d73",
-            "package_file_count": 5223
+            "package_tree_sha256": "a848930a71432670993f3f214aa9005c02b1ef6e5ae12b41714932a6e942ff14",
+            "package_file_count": 5384
           }
         }
       ],

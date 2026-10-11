@@ -17,11 +17,10 @@ import sys
 PACKAGE_NAME = "hoi4-agent-tools"
 PACKAGE_VERSION = "4.0.0"
 PACKAGE_SPEC = f"{PACKAGE_NAME}@{PACKAGE_VERSION}"
-# Temporary local cutover evidence. TODO after npm publication: replace integrity
-# and recapture a clean published full tree with scripts/refresh_mcp_package_pin.py.
-PACKAGE_INTEGRITY = "sha512-tKXBgbv/VTKU4HZg9Cuh3TUKclfN+53+RePmXY9HpLQoLpShlp7V5Bu/kToFoa+swGceD5yHbbSWFBq3qDx6aA=="
-PACKAGE_TREE_SHA256 = "ef022750c45777dfc6f474af9d1db98396991ab99bb21c8b172b301cf2a87d73"
-PACKAGE_FILE_COUNT = 5223
+# Reviewed npm registry integrity and clean published installation evidence.
+PACKAGE_INTEGRITY = "sha512-69+kEVewzGqs9cH/ATvy7siIRgsanmydIijUsMYGdiS4SPZoPvlKPLXJJQ8dAg/vwvbogphDMC95IRsW3Ptn0A=="
+PACKAGE_TREE_SHA256 = "a848930a71432670993f3f214aa9005c02b1ef6e5ae12b41714932a6e942ff14"
+PACKAGE_FILE_COUNT = 5384
 RUNTIME_ENTRY = "dist/bin/stdio.js"
 RUNTIME_ENTRY_SHA256 = "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e"
 RUNTIME_ENTRY_SIZE = 4205
