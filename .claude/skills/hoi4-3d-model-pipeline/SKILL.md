@@ -66,6 +66,9 @@ Use only actual live-listed capabilities. Optional Text-to-Motion client and
 contract support do not prove launcher exposure. Missing capability is an exact
 blocker; use authorized Blender recovery where applicable. Rebootstrap stale
 adapter deployments and verify the complete local source closure.
+Python 3.9 closure checks include the interpreter's standard-library extension
+directories (`lib-dynload`, `DESTSHARED`, and Windows `DLLs`); they never trust
+`site-packages` as standard library or execute modules to classify imports.
 
 Every role needs anatomical multi-phase motion, contact/deformation proof,
 correct units/root basis, interpolation review, and actual exported-byte

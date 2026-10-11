@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import importlib.machinery
 import io
 import os
 import tempfile
@@ -35,6 +36,28 @@ class AdapterSourceClosureTests(unittest.TestCase):
             (adapter / "worker.py").write_text("from missing_repair import repair\n", encoding="utf-8")
             with self.assertRaisesRegex(BOOTSTRAP.SetupError, "missing_repair"):
                 BOOTSTRAP.adapter_source_hashes(adapter)
+
+    def test_python39_fallback_finds_stdlib_extensions_without_site_packages(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            stdlib = root / "stdlib"
+            dynamic = root / "extensions"
+            adapter = root / "adapter"
+            for directory in (stdlib, dynamic, adapter):
+                directory.mkdir()
+            (dynamic / ("_reviewed_extension" + importlib.machinery.EXTENSION_SUFFIXES[0])).write_bytes(b"")
+            third_party = stdlib / "site-packages"
+            third_party.mkdir()
+            (third_party / "unreviewed_dependency.py").write_text("", encoding="utf-8")
+            worker = adapter / "worker.py"
+            with mock.patch.object(BOOTSTRAP.sys, "stdlib_module_names", None, create=True), \
+                mock.patch.object(BOOTSTRAP.sysconfig, "get_path", return_value=str(stdlib)), \
+                mock.patch.object(BOOTSTRAP.sysconfig, "get_config_var", return_value=str(dynamic)):
+                worker.write_text("import _reviewed_extension\n", encoding="utf-8")
+                self.assertEqual(set(BOOTSTRAP.adapter_source_hashes(adapter)), {"worker.py"})
+                worker.write_text("import unreviewed_dependency\n", encoding="utf-8")
+                with self.assertRaisesRegex(BOOTSTRAP.SetupError, "unreviewed_dependency"):
+                    BOOTSTRAP.adapter_source_hashes(adapter)
 
     def test_source_changes_are_bound_by_hash(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -96,9 +96,10 @@ class McpBootstrapContractTests(unittest.TestCase):
             remove.assert_not_called()
 
     def test_explicit_local_route_skips_registry_but_checks_tree(self) -> None:
+        prefix = Path("prefix")
         with contextlib.ExitStack() as stack:
             stack.enter_context(mock.patch.object(bootstrap, "ensure_node", return_value=(Path("node.exe"), Path("npm.cmd"))))
-            stack.enter_context(mock.patch.object(bootstrap, "user_prefix", return_value=Path("prefix")))
+            stack.enter_context(mock.patch.object(bootstrap, "user_prefix", return_value=prefix))
             stack.enter_context(mock.patch.object(bootstrap.os, "name", "nt"))
             stack.enter_context(mock.patch.object(bootstrap.sys, "argv", ["bootstrap", "--quiet", "--local-tarball", "reviewed.tgz"]))
             local = stack.enter_context(mock.patch.object(bootstrap, "verify_local_tarball"))
@@ -111,7 +112,7 @@ class McpBootstrapContractTests(unittest.TestCase):
             local.assert_called_once_with(Path("reviewed.tgz"))
             registry.assert_not_called()
             self.assertEqual(install.call_args.args[-1], Path("reviewed.tgz"))
-            verify.assert_called_once_with(Path("prefix"))
+            verify.assert_called_once_with(prefix)
 
     def test_registry_integrity_mismatch_fails_closed(self) -> None:
         with mock.patch.object(bootstrap, "npm", return_value='"sha512-wrong"'):

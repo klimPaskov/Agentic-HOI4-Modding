@@ -910,7 +910,15 @@ def adapter_source_hashes(adapter_root: Path) -> dict[str, str]:
     external_modules = {"bpy", "bmesh", "mathutils", "mcp", "io_pdx_mesh", "io_anim_bvh"}
     stdlib_modules = getattr(sys, "stdlib_module_names", None)
     if stdlib_modules is None:  # Python 3.9 has no stdlib_module_names.
-        stdlib_roots = {sysconfig.get_path("stdlib"), str(Path(sys.base_prefix) / "DLLs")}
+        stdlib_root = sysconfig.get_path("stdlib")
+        stdlib_roots = {
+            stdlib_root,
+            str(Path(stdlib_root) / "lib-dynload"),
+            str(Path(sys.base_prefix) / "DLLs"),
+        }
+        dynamic_root = sysconfig.get_config_var("DESTSHARED")
+        if dynamic_root:
+            stdlib_roots.add(str(dynamic_root))
         stdlib_modules = set(sys.builtin_module_names) | {
             module.name for module in pkgutil.iter_modules(sorted(stdlib_roots))
             if module.name not in {"site-packages", "dist-packages"}
