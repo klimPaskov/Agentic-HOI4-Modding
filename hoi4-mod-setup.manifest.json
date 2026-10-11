@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "5b41e2c535108305f2eace5fe508066e30c6e2aa",
+  "generated_for_revision": "3c29a9f560764ec77c96c5f7d2ca71d59f5870ec",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -143,7 +143,8 @@
       "dependencies": [
         "core.subagents",
         "core.skills",
-        "core.claude.instructions"
+        "core.claude.instructions",
+        "tools.chatgpt_sources"
       ],
       "conflicts": [
         "existing runtime synchronizer with the same path"
@@ -214,6 +215,69 @@
           "path": ".tools/sync/sync_skills.py",
           "sha256": "d5270c31826e5e9b622a2d40c9e9734d0ef1076c7e0542c614f358a7a73468ec",
           "size": 6275
+        }
+      ]
+    },
+    {
+      "id": "tools.chatgpt_sources",
+      "display_name": "ChatGPT source packaging tool",
+      "description": "Install a reusable local source-bundle packager. Packaging is optional and never uploads project files.",
+      "category": "script",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".tools",
+        "include": [
+          "README.md",
+          "package_chatgpt_project_sources.py",
+          "package_chatgpt_project_sources.bat"
+        ],
+        "exclude": []
+      },
+      "destination": {
+        "path": ".tools/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing source packaging tool with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "tools.chatgpt_sources.exists",
+          "severity": "warn",
+          "kind": "exists",
+          "target": ".tools/package_chatgpt_project_sources.py"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "curated project source export"
+      ],
+      "expected_files": [
+        {
+          "path": ".tools/README.md",
+          "sha256": "b04394a8bb50cc96ac3d063bc07cfd859cfb0294338c4f6ea3ee92d86d4a8ba9",
+          "size": 7419
+        },
+        {
+          "path": ".tools/package_chatgpt_project_sources.bat",
+          "sha256": "0deba9b49324ae69e6d433e676fe00c2745bcd4a25ca7f7276f815dd31d60ce0",
+          "size": 288
+        },
+        {
+          "path": ".tools/package_chatgpt_project_sources.py",
+          "sha256": "2e8c5ea5cd0dc049da950210b4447719faedbeba1e412c1c77f44929d9116e21",
+          "size": 7467
         }
       ]
     },
@@ -8635,8 +8699,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "b7cb7569376f7290e93e9dd6ad8689cb9700a7fe6bcb903d0a380e2f4d3a8d24",
-          "size": 9130
+          "sha256": "208a495b9192c03ad161da60179b3f5e2762826a5029dbc77194f6690ec6f8d0",
+          "size": 9477
         }
       ]
     },
@@ -11135,7 +11199,8 @@
         "runtime.agent_sync",
         "docs.mcp_integration",
         "docs.runtimes",
-        "wiki.snapshot"
+        "wiki.snapshot",
+        "tools.chatgpt_sources"
       ],
       "default": true
     },
@@ -11151,7 +11216,8 @@
         "docs.mcp_integration",
         "docs.runtimes",
         "wiki.snapshot",
-        "workflow.3d"
+        "workflow.3d",
+        "tools.chatgpt_sources"
       ],
       "default": false
     }
