@@ -48,8 +48,8 @@ outside the project, and must not exist. Choose a new `--output` for another
 export. The verified archives and loose files are staged together before the
 folder is published; failure removes staging and leaves project files intact.
 The tool performs no upload and does not launch a conversation. It is installed
-by the all-platform `tools.chatgpt_sources` manifest component, included by both
-core profiles and the shared synchronizer dependency closure. Modified installed
+by the all-platform `runtime.agent_sync` shared-tools manifest component,
+included by both core profiles and every coding-environment dependency closure. Modified installed
 tools retain normal manifest conflict review.
 
 ### HOI4 Agent Tools bootstrap

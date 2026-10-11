@@ -20,11 +20,9 @@ class PackagingTests(unittest.TestCase):
         self.mod = self.base / "tiny-mod"
         self.mod.mkdir()
         manifest = json.loads((ROOT / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
-        component = next(item for item in manifest["components"] if item["id"] == "tools.chatgpt_sources")
+        component = next(item for item in manifest["components"] if item["id"] == "runtime.agent_sync")
         for profile in manifest["profiles"]:
             self.assertIn(component["id"], profile["components"])
-        sync = next(item for item in manifest["components"] if item["id"] == "runtime.agent_sync")
-        self.assertIn(component["id"], sync["dependencies"])
         # Same selected-source rules used to publish the install inventory.
         snapshot = {entry["path"]: (ROOT / entry["path"]).read_bytes() for entry in component["expected_files"]}
         for entry in generator.git_evidence_for(component, snapshot):

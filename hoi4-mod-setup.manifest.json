@@ -115,8 +115,8 @@
     },
     {
       "id": "runtime.agent_sync",
-      "display_name": "Runtime synchronizers",
-      "description": "Install the tools that regenerate AGENTS.md, the other runtimes' agents, and the skill copies from the canonical Claude files.",
+      "display_name": "Runtime synchronizers and project tools",
+      "description": "Install shared runtime synchronizers and the optional, user-invoked ChatGPT source packaging tool.",
       "category": "script",
       "optional": false,
       "platforms": [
@@ -124,11 +124,14 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".tools/sync",
+        "path": ".tools",
         "include": [
+          "sync/README.md",
+          "sync/*.py",
+          "sync/*.json",
           "README.md",
-          "*.py",
-          "*.json"
+          "package_chatgpt_project_sources.py",
+          "package_chatgpt_project_sources.bat"
         ],
         "exclude": [
           "**/__pycache__/**",
@@ -136,15 +139,14 @@
         ]
       },
       "destination": {
-        "path": ".tools/sync/",
+        "path": ".tools/",
         "ownership": "managed",
         "outside_project": false
       },
       "dependencies": [
         "core.subagents",
         "core.skills",
-        "core.claude.instructions",
-        "tools.chatgpt_sources"
+        "core.claude.instructions"
       ],
       "conflicts": [
         "existing runtime synchronizer with the same path"
@@ -215,55 +217,7 @@
           "path": ".tools/sync/sync_skills.py",
           "sha256": "d5270c31826e5e9b622a2d40c9e9734d0ef1076c7e0542c614f358a7a73468ec",
           "size": 6275
-        }
-      ]
-    },
-    {
-      "id": "tools.chatgpt_sources",
-      "display_name": "ChatGPT source packaging tool",
-      "description": "Install a reusable local source-bundle packager. Packaging is optional and never uploads project files.",
-      "category": "script",
-      "optional": false,
-      "platforms": [
-        "all"
-      ],
-      "source": {
-        "kind": "tree",
-        "path": ".tools",
-        "include": [
-          "README.md",
-          "package_chatgpt_project_sources.py",
-          "package_chatgpt_project_sources.bat"
-        ],
-        "exclude": []
-      },
-      "destination": {
-        "path": ".tools/",
-        "ownership": "managed",
-        "outside_project": false
-      },
-      "dependencies": [],
-      "conflicts": [
-        "existing source packaging tool with the same path"
-      ],
-      "conflict_policy": "replace_if_unmodified",
-      "validation": [
-        {
-          "id": "tools.chatgpt_sources.exists",
-          "severity": "warn",
-          "kind": "exists",
-          "target": ".tools/package_chatgpt_project_sources.py"
-        }
-      ],
-      "update": {
-        "strategy": "replace_if_unmodified",
-        "remove_obsolete": false,
-        "preserve_local_additions": true
-      },
-      "capabilities": [
-        "curated project source export"
-      ],
-      "expected_files": [
+        },
         {
           "path": ".tools/README.md",
           "sha256": "b04394a8bb50cc96ac3d063bc07cfd859cfb0294338c4f6ea3ee92d86d4a8ba9",
@@ -11199,8 +11153,7 @@
         "runtime.agent_sync",
         "docs.mcp_integration",
         "docs.runtimes",
-        "wiki.snapshot",
-        "tools.chatgpt_sources"
+        "wiki.snapshot"
       ],
       "default": true
     },
@@ -11216,8 +11169,7 @@
         "docs.mcp_integration",
         "docs.runtimes",
         "wiki.snapshot",
-        "workflow.3d",
-        "tools.chatgpt_sources"
+        "workflow.3d"
       ],
       "default": false
     }
