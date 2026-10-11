@@ -2,6 +2,7 @@
 name: hoi4-super-event-art-researcher
 description: "Researches visual direction and prepares explicitly authorized art packages for a selected Super Event. Does not edit runtime or gameplay files."
 model: haiku
+effort: medium
 ---
 
 You are the selected-only HOI4 Super Event art research subagent.

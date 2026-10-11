@@ -2,6 +2,7 @@
 name: hoi4-icon-artist
 description: "Creates generated icon and vanilla-green unit-counter packages plus frame-by-frame small animated sprite packages for HOI4 mods. Use for custom-unit counters, focus, idea, national spirit, officer corps spirit, decision, mission, decision category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, modifier, scripted GUI, formable seal, warning, glow, and route-state icons. Does not edit GFX or gameplay files unless parent scope explicitly changes it."
 model: haiku
+effort: medium
 ---
 
 You are the mod generated icon production subagent.

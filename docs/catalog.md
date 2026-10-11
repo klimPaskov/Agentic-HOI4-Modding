@@ -41,7 +41,7 @@ Claude Code owns the canonical definitions. Other runtimes use the generated pro
 
 ## Agents
 
-Opus maps to `xhigh`, Sonnet to `high`, and Haiku to `medium` reasoning effort in Codex. Claude uses the declared model tier. Cursor and OpenCode inherit the model; Qoder uses its runtime tool policy.
+Opus maps to `xhigh`, Sonnet to `high`, and Haiku to `medium` reasoning effort in Codex. Claude uses the declared model tier and the same explicit per-agent effort value where the model supports effort controls. Cursor and OpenCode inherit the model; Qoder uses its runtime tool policy.
 
 | Agent | Purpose | Claude tier | Codex effort |
 | --- | --- | --- | --- |

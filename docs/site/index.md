@@ -27,7 +27,7 @@ Copy `CLAUDE_template.md` as `CLAUDE.md`, replace all mod and game-path placehol
 python .tools/mcp/bootstrap_hoi4_agent_tools.py
 ```
 
-For another runtime, generate its project files:
+For another runtime, copy its `.codex/`, `.cursor/`, `.qoder/`, or `.opencode/` folder (plus root `opencode.json` for OpenCode), then generate its project files:
 
 ```powershell
 python .tools/sync/sync_instructions.py
@@ -43,7 +43,7 @@ For optional workflows, copy the complete tools, references, and runtime assets 
 
 The [catalog](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/catalog.md) explains all 32 skills and 23 agents. Skills cover focus trees, decisions, events, engine systems, planning, assets, portraits, 3D, scripted GUI, saves, live testing, and Super Events. Specialist agents research, implement bounded systems, produce assets, or audit completion with explicit ownership and evidence.
 
-Claude routing uses **Opus** for the improvement planner; **Sonnet** for 3D, completion, localisation, architecture, and skill maintenance; and **Haiku** for the other agents. Codex translates those tiers to per-agent `xhigh`, `high`, and `medium` reasoning effort.
+Claude routing uses **Opus** for the improvement planner; **Sonnet** for 3D, completion, localisation, architecture, and skill maintenance; and **Haiku** for the other agents. Claude agents explicitly set effort to `xhigh`, `high`, or `medium` where supported. Codex translates those tiers to per-agent `xhigh`, `high`, and `medium` reasoning effort.
 
 ## Two MCP servers
 

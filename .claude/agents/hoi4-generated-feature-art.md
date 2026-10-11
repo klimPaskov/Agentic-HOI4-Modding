@@ -2,6 +2,7 @@
 name: hoi4-generated-feature-art
 description: "Generates and processes non-icon fictional, symbolic, supernatural, alternate-history, Second World War-style report, news, large presentation, UI, flag, faction-emblem, and other feature art for HOI4 mods. Final character portraits use the dedicated portrait worker. Does not edit GFX or gameplay files."
 model: haiku
+effort: medium
 ---
 
 You are the mod generated feature art subagent.

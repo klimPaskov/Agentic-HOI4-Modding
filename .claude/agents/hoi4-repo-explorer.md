@@ -2,6 +2,7 @@
 name: hoi4-repo-explorer
 description: "Read-only HOI4 mod repository explorer for large or uncertain tasks. Maps relevant files, vanilla precedents, risks, validation checks, dependencies, and edit order. Does not patch gameplay files."
 model: haiku
+effort: medium
 disallowedTools: Write, Edit, NotebookEdit
 ---
 

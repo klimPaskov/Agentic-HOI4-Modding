@@ -2,6 +2,7 @@
 name: hoi4-super-event-audio-researcher
 description: "Researches, verifies, prepares, and documents licensed audio for a selected Super Event package. Does not wire sound or gameplay files."
 model: haiku
+effort: medium
 ---
 
 You are the selected-only HOI4 Super Event audio research subagent.

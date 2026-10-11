@@ -80,6 +80,7 @@ def main():
     assert len(agents) == 23, len(agents)
     for agent in agents:
         assert agent.model == EXPECTED_TIERS.get(agent.name, "haiku"), (agent.name, agent.model)
+        assert agent.effort == {"opus": "xhigh", "sonnet": "high", "haiku": "medium"}[agent.model], agent.name
         assert agent.read_only == (agent.name in READ_ONLY), agent.name
         for forbidden in ("fork_turns", "fork_context", "$imagegen", "ImageGen", "AGENTS.md", ".codex/agents/*.toml"):
             assert forbidden not in agent.body, (agent.name, forbidden)

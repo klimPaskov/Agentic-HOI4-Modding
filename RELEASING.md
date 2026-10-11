@@ -4,7 +4,7 @@ Release from the Claude-first source repository. Keep package code, generated ru
 
 ## Prepare and validate
 
-1. Finish the concurrent HOI4 Agent Tools 4.0.0 pin update before choosing the release revision. Re-read the bootstrap, manifest, and integration guide; the bootstrap contract tests must agree on the exact version, integrity, entry hash, and package-tree evidence. Do not overwrite another job's edits or cherry-pick stale manifest evidence.
+1. Finalize the HOI4 Agent Tools 4.0.0 public package pin before choosing the release revision. The current bootstrap carries temporary local cutover evidence, so public installation must wait for npm publication and a clean published-package integrity/tree refresh using `scripts/refresh_mcp_package_pin.py`. Re-read the bootstrap, manifest, and integration guide; the bootstrap contract tests must agree on the exact version, integrity, entry hash, and package-tree evidence. Do not reuse the local archive integrity as published npm evidence.
 2. Resolve the missing package license and verify redistribution permissions for the offline wiki and inherited visual assets, including the Super Events lineage. Update manifest license/provenance evidence only when supported by actual declarations. Do not infer permission from a public download.
 3. Generate runtime projections and run all source checks with Python 3.13:
 

@@ -3,30 +3,30 @@
 
 These are the canonical subagent definitions in `.claude/agents/`. Edit them directly, then run `python .tools/sync/sync_agents.py` to regenerate the Codex, Cursor, Qoder, and OpenCode projections.
 
-| Agent | Model | Authority |
-| --- | --- | --- |
-| `hoi4-3d-model-pipeline` | `sonnet` | can edit |
-| `hoi4-ai-probability-auditor` | `haiku` | read-only |
-| `hoi4-asset-source-researcher` | `haiku` | can edit |
-| `hoi4-audio-researcher` | `haiku` | can edit |
-| `hoi4-country-package-auditor` | `haiku` | can edit |
-| `hoi4-decision-mission-auditor` | `haiku` | can edit |
-| `hoi4-documentation-curator` | `haiku` | can edit |
-| `hoi4-event-ui-worker` | `haiku` | can edit |
-| `hoi4-feature-completion-auditor` | `sonnet` | read-only |
-| `hoi4-focus-tree-auditor` | `haiku` | can edit |
-| `hoi4-generated-feature-art` | `haiku` | can edit |
-| `hoi4-icon-artist` | `haiku` | can edit |
-| `hoi4-improvement-loop-planner` | `opus` | read-only |
-| `hoi4-localisation-auditor` | `sonnet` | can edit |
-| `hoi4-portrait-creator` | `haiku` | can edit |
-| `hoi4-quote-remark-researcher` | `haiku` | can edit |
-| `hoi4-repo-explorer` | `haiku` | read-only |
-| `hoi4-scripted-system-architect` | `sonnet` | can edit |
-| `hoi4-skill-maintainer` | `sonnet` | can edit |
-| `hoi4-spreadsheet-doc-worker` | `haiku` | can edit |
-| `hoi4-super-event-art-researcher` | `haiku` | can edit |
-| `hoi4-super-event-audio-researcher` | `haiku` | can edit |
-| `hoi4-super-event-quote-researcher` | `haiku` | can edit |
+| Agent | Model | Effort | Authority |
+| --- | --- | --- | --- |
+| `hoi4-3d-model-pipeline` | `sonnet` | `high` | can edit |
+| `hoi4-ai-probability-auditor` | `haiku` | `medium` | read-only |
+| `hoi4-asset-source-researcher` | `haiku` | `medium` | can edit |
+| `hoi4-audio-researcher` | `haiku` | `medium` | can edit |
+| `hoi4-country-package-auditor` | `haiku` | `medium` | can edit |
+| `hoi4-decision-mission-auditor` | `haiku` | `medium` | can edit |
+| `hoi4-documentation-curator` | `haiku` | `medium` | can edit |
+| `hoi4-event-ui-worker` | `haiku` | `medium` | can edit |
+| `hoi4-feature-completion-auditor` | `sonnet` | `high` | read-only |
+| `hoi4-focus-tree-auditor` | `haiku` | `medium` | can edit |
+| `hoi4-generated-feature-art` | `haiku` | `medium` | can edit |
+| `hoi4-icon-artist` | `haiku` | `medium` | can edit |
+| `hoi4-improvement-loop-planner` | `opus` | `xhigh` | read-only |
+| `hoi4-localisation-auditor` | `sonnet` | `high` | can edit |
+| `hoi4-portrait-creator` | `haiku` | `medium` | can edit |
+| `hoi4-quote-remark-researcher` | `haiku` | `medium` | can edit |
+| `hoi4-repo-explorer` | `haiku` | `medium` | read-only |
+| `hoi4-scripted-system-architect` | `sonnet` | `high` | can edit |
+| `hoi4-skill-maintainer` | `sonnet` | `high` | can edit |
+| `hoi4-spreadsheet-doc-worker` | `haiku` | `medium` | can edit |
+| `hoi4-super-event-art-researcher` | `haiku` | `medium` | can edit |
+| `hoi4-super-event-audio-researcher` | `haiku` | `medium` | can edit |
+| `hoi4-super-event-quote-researcher` | `haiku` | `medium` | can edit |
 
 Read-only agents may not edit project files. The prompt body is the final scope contract when a runtime cannot express an equivalent tool allowlist.

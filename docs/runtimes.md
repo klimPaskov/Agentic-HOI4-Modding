@@ -66,7 +66,7 @@ Every skill, agent prompt, and instruction file must stay within the single-read
 
 ## Subagents
 
-The canonical definitions are Claude Code subagent files: `.claude/agents/<hyphen-name>.md` with `name`, `description`, `model` (`opus`, `sonnet`, or `haiku`), and `disallowedTools: Write, Edit, NotebookEdit` for read-only roles.
+The canonical definitions are Claude Code subagent files: `.claude/agents/<hyphen-name>.md` with `name`, `description`, `model` (`opus`, `sonnet`, or `haiku`), `effort`, and `disallowedTools: Write, Edit, NotebookEdit` for read-only roles.
 Prose uses the snake_case routing name (`hoi4_repo_explorer`); the Claude, Cursor, Qoder, and OpenCode files use the hyphen form and the Codex file uses the snake form.
 
 | Runtime | Registry | Source |
@@ -90,6 +90,8 @@ Because no definition supplies the model, confirm the child route explicitly whe
 
 Each canonical agent declares its Claude tier in the `model` field, which keeps cost and capability fixed per role instead of following the parent session.
 The project instructions list the tier of every role.
+
+Claude definitions set `effort` per agent: Opus `xhigh`, Sonnet `high`, and Haiku `medium`. Models use the field where they support effort controls; the `CLAUDE_CODE_EFFORT_LEVEL` environment variable overrides it. See the [official Claude subagent effort reference](https://code.claude.com/docs/en/sub-agents#choose-an-effort-level).
 
 Other runtimes translate the tier through `.tools/sync/agent_profiles.json`:
 

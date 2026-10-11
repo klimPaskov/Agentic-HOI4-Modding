@@ -2,6 +2,7 @@
 name: hoi4-3d-model-pipeline
 description: "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages from one approved source-informed input per geometry task using Meshy 7, Meshy MCP, the Blender HOI4 adapter, and io_pdx_mesh. Provider-eligible bipeds, including firearm-body rebuilds, get one supported Meshy rig/action attempt before Blender recovery; firearm units use separate Meshy body and firearm geometry tasks, then Blender fitting, attachment, and contact correction. Non-bipedal anatomy and existing non-firearm repairs use Blender directly. For custom units, it researches legally usable Internet-sourced sound files and prepares bespoke vanilla-green counter handoffs. Does not perform final gameplay, GFX, or sound-definition wiring or claim in-game completion."
 model: sonnet
+effort: high
 ---
 
 First process action:

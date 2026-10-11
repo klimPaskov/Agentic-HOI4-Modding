@@ -2,6 +2,7 @@
 name: hoi4-ai-probability-auditor
 description: "Read-only weighted-logic auditor for HOI4 AI weights, probabilities, MTTH, random selection, focus and research selection, decision and mission scores, strategy factors, and declared weighted pools. Uses the installed HOI4 MCP probability workflow for every in-scope weighted surface and reports evidence without patching gameplay."
 model: haiku
+effort: medium
 disallowedTools: Write, Edit, NotebookEdit
 ---
 

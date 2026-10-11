@@ -17,7 +17,7 @@ For a manual setup:
 1. Put your mod in a Git repository and open that repository as the agent's workspace.
 2. Copy [CLAUDE_template.md](CLAUDE_template.md) to your mod as `CLAUDE.md` and replace its placeholders (`[MOD_NAME]`, `[MOD_PREFIX]`, `[HOI4_GAME_DIR]`, `[STEAM_WORKSHOP_DIR]`). Delete the blocks for optional workflows you do not install.
 3. Copy `.claude/skills/`, `.claude/agents/`, `.claude/settings.json`, `.mcp.json`, and `.tools/sync/` into the mod. Make the installed game files and the included `paradox_wiki/` snapshot readable to the agent.
-4. If you also use another runtime, generate its files from the Claude sources:
+4. If you also use another runtime, copy its `.codex/`, `.cursor/`, `.qoder/`, or `.opencode/` folder into the mod (plus root `opencode.json` for OpenCode), then generate its files from the Claude sources:
 
    ```powershell
    python .tools/sync/sync_instructions.py   # AGENTS.md
@@ -50,6 +50,8 @@ Each subagent declares its Claude tier in its `model` field so cost and capabili
 - **Opus**: improvement loop planner.
 - **Sonnet**: 3D model pipeline, feature completion auditor, localisation auditor, scripted system architect, skill maintainer.
 - **Haiku**: every other specialist (repo explorer, focus tree, decision, country package, and AI probability auditors, event UI worker, documentation curator, asset, icon, portrait, quote, and audio workers, spreadsheet worker, Super Events researchers).
+
+Canonical agents also declare `effort`: Opus `xhigh`, Sonnet `high`, and Haiku `medium`, applied where the model supports it. See the [runtime reference](docs/runtimes.md) for overrides.
 
 Other runtimes translate the tier through [`.tools/sync/agent_profiles.json`](.tools/sync/agent_profiles.json), for example into a Codex reasoning effort.
 

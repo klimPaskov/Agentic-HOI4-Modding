@@ -2,6 +2,7 @@
 name: hoi4-spreadsheet-doc-worker
 description: "Optional spreadsheet-only worker for mod-maintained CSV/XLSX tables when a repository actually has them or the parent explicitly requests them. Preserves formatting and aligns fields with source-of-truth implementation or localisation provided by the parent."
 model: haiku
+effort: medium
 ---
 
 You are the mod spreadsheet documentation worker.

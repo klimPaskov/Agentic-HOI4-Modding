@@ -62,6 +62,7 @@ class Agent:
     name: str
     description: str
     model: str
+    effort: str
     read_only: bool
     body: str
     source_name: str
@@ -149,6 +150,9 @@ def load_agents() -> List[Agent]:
         name = fields.get("name", "")
         description = fields.get("description", "")
         model = fields.get("model", "")
+        effort = fields.get("effort", "")
+        if effort not in {"low", "medium", "high", "xhigh", "max"}:
+            problems.append(f"{path.name}: valid per-agent effort is required")
         if name != path.stem or not NAME_PATTERN.match(name):
             problems.append(f"{path.name}: 'name' must be the lowercase hyphen-case file name ({path.stem})")
         if not description:
@@ -159,7 +163,7 @@ def load_agents() -> List[Agent]:
             problems.append(f"{path.name}: the agent prompt body is empty")
         disallowed = {item.strip() for item in fields.get("disallowedTools", "").split(",") if item.strip()}
         read_only = {"Write", "Edit"}.issubset(disallowed)
-        agents.append(Agent(name, description, model, read_only, body, path.name))
+        agents.append(Agent(name, description, model, effort, read_only, body, path.name))
     if problems:
         raise SyncError("canonical agent definitions need fixing:\n  " + "\n  ".join(problems))
     if not agents:
@@ -227,8 +231,8 @@ def render_map(runtime: Runtime, agents: List[Agent]) -> str:
     folder = runtime.agent_dir.relative_to(MOD_ROOT).as_posix()
     if runtime.key == "claude":
         intro = f"These are the canonical subagent definitions in `{folder}/`. Edit them directly, then run `python .tools/sync/sync_agents.py` to regenerate the Codex, Cursor, Qoder, and OpenCode projections."
-        rows = [f"| `{a.name}` | `{a.model}` | {a.authority} |" for a in agents]
-        table = "| Agent | Model | Authority |\n| --- | --- | --- |"
+        rows = [f"| `{a.name}` | `{a.model}` | `{a.effort}` | {a.authority} |" for a in agents]
+        table = "| Agent | Model | Effort | Authority |\n| --- | --- | --- | --- |"
     else:
         intro = f"Generated from the canonical Claude Code agents in `.claude/agents/`. Edit the canonical file and run `python .tools/sync/sync_agents.py`; never edit `{folder}/` by hand."
         rows = [f"| `{a.name}` | `{a.name}` | `{a.model}` | {a.authority} |" for a in agents]
