@@ -30,7 +30,7 @@ Canonical flag and event-art paths:
 - news-event art: `event_art/news/`
 - large presentation art: use the closest report, news, or custom feature reference set for the owning UI surface
 
-For interface composition, use the [vanilla interface review shelf](assets/vanilla_reference/interface/README.md) and its actual `interface/vanilla/` families, then inspect paired installed-vanilla `.gui` and `common/scripted_guis` sources under `hoi4-scripted-gui`. Structural precedents and inherited reference renders do not replace the new window's accepted compositional reference or current MCP evidence. Do not redirect callers to missing migration folders.
+For interface composition, use the [vanilla interface review shelf](../assets/vanilla_reference/interface/README.md) and its actual `interface/vanilla/` families, then inspect paired installed-vanilla `.gui` and `common/scripted_guis` sources under `hoi4-scripted-gui`. Structural precedents and inherited reference renders do not replace the new window's accepted compositional reference or current MCP evidence. Do not redirect callers to missing migration folders.
 
 Canonical gameplay-icon paths:
 

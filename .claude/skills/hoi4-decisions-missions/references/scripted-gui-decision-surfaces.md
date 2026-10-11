@@ -14,7 +14,7 @@ Use short natural-language lines, properly wired icons or texticons, real meters
 
 This restriction applies to runtime player-facing text and art; internal Markdown audit tables may still use normal table syntax and must never be copied into localisation.
 
-Use the scripted GUI skill's [reference-image workflow](../hoi4-scripted-gui/SKILL.md#reference-image-before-implementation), [active MCP preview and comparison workflow](../hoi4-scripted-gui/SKILL.md#required-mcp-visual-review-and-optional-rewrite), and [visual and usability review](../hoi4-scripted-gui/references/visual-review.md). These are mandatory for GUI layout, backgrounds, text, content budgets, interaction presentation, and visual evidence. Keep gameplay validation and balance review in this skill.
+Use the scripted GUI skill's [reference-image workflow](../../hoi4-scripted-gui/SKILL.md#reference-image-before-implementation), [active MCP preview and comparison workflow](../../hoi4-scripted-gui/SKILL.md#required-mcp-visual-review-and-optional-rewrite), and [visual and usability review](../../hoi4-scripted-gui/references/visual-review.md). These are mandatory for GUI layout, backgrounds, text, content budgets, interaction presentation, and visual evidence. Keep gameplay validation and balance review in this skill.
 
 When a named event or event-owned mechanic specifically introduces its own scripted GUI, route the bounded layout implementation or visual-quality pass to `hoi4_event_ui_worker`. That worker must apply every rule in this section and return mandatory MCP before-and-after evidence. The decision owner retains costs, effects, availability, AI equivalents, cleanup, and balance. Do not route repository-wide interfaces, event logs, event-detail frameworks, settings, shared windows, or an unrelated existing GUI to the event UI worker merely because an event opens or references it.
 
@@ -41,7 +41,7 @@ Every real button needs:
 - an AI equivalent when AI countries can use the system
 - cleanup when the action, target, route, or mechanic becomes invalid
 
-Do not add buttons to fill empty space or manufacture the appearance of depth. Merge actions that do the same job, and remove controls whose result does not change play. Information and navigation controls follow [click regions and state behavior](../hoi4-scripted-gui/references/visual-review.md#click-regions-overlap-and-state-behavior); they do not require an invented gameplay effect.
+Do not add buttons to fill empty space or manufacture the appearance of depth. Merge actions that do the same job, and remove controls whose result does not change play. Information and navigation controls follow [click regions and state behavior](../../hoi4-scripted-gui/references/visual-review.md#click-regions-overlap-and-state-behavior); they do not require an invented gameplay effect.
 
 ### Text and explanation budget
 

@@ -140,7 +140,7 @@ The optional `hoi4-live` server drives a running game. HOI4 Mod Setup (or `.tool
 
 | Runtime | User-scoped registration |
 | --- | --- |
-| Claude Code | `mcpServers.hoi4-live` in `~/.claude.json`; by hand, `claude mcp add --scope user hoi4-live -- "<install folder>pp\hoi4-live-tools.cmd"`. |
+| Claude Code | `mcpServers.hoi4-live` in `~/.claude.json`; by hand, `claude mcp add --scope user hoi4-live -- "<install folder>\app\hoi4-live-tools.cmd"`. |
 | Codex | `[mcp_servers.hoi4-live]` in `~/.codex/config.toml` with `command`, `startup_timeout_sec = 30`, and `tool_timeout_sec = 1800` (written as a marked block). |
 | Cursor, OpenCode | `~/.cursor/mcp.json` and `~/.config/opencode/opencode.json`. |
 | Qoder | Register the same command in Qoder's user-level MCP settings by hand. |

@@ -47,11 +47,13 @@ Codex (`~/.codex/config.toml`):
 
 ```toml
 [mcp_servers.hoi4-live]
-command = 'C:\Users\<you>\AppData\Local\hoi4-live-tools\app\hoi4-live-tools.cmd'
+command = '<absolute install folder>\app\hoi4-live-tools.cmd'
 args = []
 startup_timeout_sec = 30
 tool_timeout_sec = 1800
 ```
+
+Replace `<absolute install folder>` with the expanded value of `%LOCALAPPDATA%\hoi4-live-tools`; TOML does not expand environment variables.
 
 Codex's default tool timeout (60 seconds) is too short for loading a save or stepping weeks of game time; keep `tool_timeout_sec`. Claude Code's default is long enough.
 

@@ -6,7 +6,7 @@ This reference belongs to the `hoi4-feature-planning` skill and holds complete s
 
 When a feature has an important mechanic, decide whether the decision category needs a richer scripted GUI or a separate mechanic window. The spec should define the player-facing interface when the system is important enough to manage visually.
 
-Use [hoi4-scripted-gui](../hoi4-scripted-gui/SKILL.md) as the source of truth for reference images before implementation, native element and background mapping, content and interaction budgets, iterative MCP live previews, scenario and resolution coverage, and visual acceptance. The plan must give any event-owned UI worker enough exact scope and acceptance context to follow that workflow without guessing.
+Use [hoi4-scripted-gui](../../hoi4-scripted-gui/SKILL.md) as the source of truth for reference images before implementation, native element and background mapping, content and interaction budgets, iterative MCP live previews, scenario and resolution coverage, and visual acceptance. The plan must give any event-owned UI worker enough exact scope and acceptance context to follow that workflow without guessing.
 
 For major features, important decision categories, custom mechanic windows, formable routes, route reveals, crisis meters, leader transformations, and faction boards, run a presentation-choice pass. Choose ordinary category presentation, an eligible static or animated picture, a compact attached display, or a full GUI. Plan animation only when it clarifies a changing state or materially supports the accepted presentation. Static presentation needs no defensive justification when it is clearer.
 

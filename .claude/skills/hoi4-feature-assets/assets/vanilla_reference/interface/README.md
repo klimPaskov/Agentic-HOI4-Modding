@@ -1,8 +1,7 @@
 # Vanilla interface review shelf
 
-The `vanilla/` subtree contains 42 PNG/SVG review artifacts carried from the
-Chaos Redux working-tree reference collection on 2026-09-13. No mod-specific
-interface art is included. The collection contains five actual families:
+The `vanilla/` subtree contains 42 PNG/SVG review artifacts collected for vanilla
+interface review on 2026-09-13. The shelf contains vanilla references only. The collection contains five actual families:
 
 - `design_and_organization/`: organization and design windows.
 - `diplomacy_and_outcomes/`: diplomatic presentation and outcomes.

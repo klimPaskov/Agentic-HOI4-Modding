@@ -8,7 +8,7 @@ A decision category picture is a larger visual surface used inside or beside a d
 
 Use a category picture when the normal decision list already carries the actions but the category benefits from identity, historical context, propaganda, territorial orientation, or a readable theme. Suitable subjects include propaganda and public campaigns; civil-war mobilization, insurgency, and preparedness; elections, ideology, monarchy, party control, and trade-union politics; faction management, treaties, naval agreements, and intervention; formable territory maps; and documentary or symbolic scenes.
 
-Apply the [category-picture eligibility gate](../hoi4-decisions-missions/SKILL.md#decision-category-presentation-hierarchy) before requesting static or animated art. Only simple categories with a description, ordinary decision list, and at most basic formatted value tables qualify. Existing complex UI, meters, extra custom controls, rich interactive panels, or other animations exclude an additional category picture. Ordinary decision buttons are allowed, and the picture itself may be animated. An interactive state puzzle cannot also receive a category picture.
+Apply the [category-picture eligibility gate](../../hoi4-decisions-missions/SKILL.md#decision-category-presentation-hierarchy) before requesting static or animated art. Only simple categories with a description, ordinary decision list, and at most basic formatted value tables qualify. Existing complex UI, meters, extra custom controls, rich interactive panels, or other animations exclude an additional category picture. Ordinary decision buttons are allowed, and the picture itself may be animated. An interactive state puzzle cannot also receive a category picture.
 
 Choose the source route by content:
 

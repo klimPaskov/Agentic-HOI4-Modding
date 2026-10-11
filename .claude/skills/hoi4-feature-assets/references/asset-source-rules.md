@@ -50,7 +50,7 @@ Use the image generator by default for:
 
 When creating generated assets, follow the image generator's workflow. Do not define a separate image generation route in this skill.
 
-Read [generation-and-review.md](references/generation-and-review.md) before generated source production or editing. It defines reference roles, focused revision, native transparency, truthful model-selection evidence, and acceptance checks.
+Read [generation-and-review.md](generation-and-review.md) before generated source production or editing. It defines reference roles, focused revision, native transparency, truthful model-selection evidence, and acceptance checks.
 
 For transparent icons, ask the image generator for the required transparent output and follow the image generator's transparent-image route. The final PNG must have real transparency, no fake checkerboard, no white halo, no white outline, and no opaque square background unless the asset type explicitly uses a painted backdrop.
 
