@@ -4,7 +4,9 @@ title: Agentic HOI4 Modding
 ---
 # Agentic HOI4 Modding
 
-Build Hearts of Iron IV mods with Claude Code, reusable skills, specialist agents, an offline wiki, and two complementary MCP servers. Codex, Cursor, Qoder, and OpenCode use generated runtime files from the same Claude sources.
+Build Hearts of Iron IV mods with your coding agent. Make focus trees, events, decisions and maps, fix broken script and balance the AI. Modding skills, specialist helpers, an offline wiki and HOI4 tools help your agent do the work.
+
+Claude Code is the primary environment. Codex, Cursor, Qoder and OpenCode use files generated from the same sources.
 
 ## Install with HOI4 Mod Setup
 
@@ -41,13 +43,13 @@ For optional workflows, copy the complete tools, references, and runtime assets 
 
 ## Skills and specialist agents
 
-The [catalog](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/catalog.md) explains all 32 skills and 23 agents. Skills cover focus trees, decisions, events, engine systems, planning, assets, portraits, 3D, scripted GUI, saves, live testing, and Super Events. Specialist agents research, implement bounded systems, produce assets, or audit completion with explicit ownership and evidence.
+The [catalog](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/catalog.md) covers focus trees, decisions, events, game systems, interfaces, assets, portraits, 3D models, live testing and Super Events. Describe the task; your agent chooses the skills and specialists it needs.
 
 Claude routing uses **Opus** for the improvement planner; **Sonnet** for 3D, completion, localisation, architecture, and skill maintenance; and **Haiku** for the other agents. Claude agents explicitly set effort to `xhigh`, `high`, or `medium` where supported. Codex translates those tiers to per-agent `xhigh`, `high`, and `medium` reasoning effort.
 
-## Two MCP servers
+## Modding and live testing
 
-**HOI4 Agent Tools** (`hoi4_agent_tools`) works with mod source: focus and technology trees, events, weighted logic, scripted GUIs, maps, documentation, and source lookup. The project bootstrap installs and verifies the manifest-pinned npm package.
+**HOI4 Agent Tools** (`hoi4_agent_tools`) helps your agent build focus trees, events, decisions and maps, preview windows and trees, find modding rules, fix script and balance AI choices. The project bootstrap installs the release selected by the package manifest.
 
 **HOI4 Live Tools** (`hoi4-live`) works with the running game on Windows: launch and load, events and effects, time advancement, popups, screen evidence, saves, and error-log changes. It installs per user and registers with supported clients. For manual installation:
 
@@ -55,7 +57,7 @@ Claude routing uses **Opus** for the improvement planner; **Sonnet** for 3D, com
 python .tools/mcp/bootstrap_hoi4_live_tools.py
 ```
 
-Reconnect the client and follow the [Live Tools setup guide](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/.claude/skills/hoi4-live-playtest/references/setup.md). Use live testing when the task authorizes it. The optional 3D workflow adds Meshy and Blender MCP routes through its own bootstrap.
+Reconnect the client and follow the [Live Tools setup guide](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/.claude/skills/hoi4-live-playtest/references/setup.md). The optional 3D workflow adds Meshy and Blender MCP routes through its own bootstrap.
 
 ## Watch the workflow
 
@@ -71,4 +73,4 @@ Original package code and guidance use the [Apache License 2.0](https://github.c
 
 ## Upgrade an older checkout
 
-Back up and commit your mod work, then use the setup app to update or repair the package and MCP installation. Review custom instruction merges, regenerate runtime files from the Claude sources, and reconnect clients. Older Codex-first packages and Agent Tools 3.9.0 need this migration before using the new workflow.
+Back up and commit your mod work, then use the setup app to update or repair the package and MCP installation. Review custom instruction merges, regenerate runtime files from the Claude sources, and reconnect clients. Older Codex-first packages need this migration before using the package.

@@ -1,8 +1,13 @@
 # Agentic HOI4 Modding
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20Community-7289da?logo=discord&logoColor=white)](https://discord.gg/rAXesGcT2t)
+[![YouTube](https://img.shields.io/badge/YouTube-Chaos%20Redux-ff0000?logo=youtube&logoColor=white)](https://www.youtube.com/@ChaosRedux)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20the%20Project-ff5e5b?logo=kofi&logoColor=white)](https://ko-fi.com/klimpaskov)
+[![Download](https://img.shields.io/github/v/release/klimPaskov/Agentic-HOI4-Modding?label=Download&logo=github&color=2ea44f)](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest)
+[![Guide](https://img.shields.io/badge/Guide-GitHub%20Pages-555555?logo=readthedocs&logoColor=white)](https://klimpaskov.github.io/Agentic-HOI4-Modding/)
+[![Issues](https://img.shields.io/badge/Bugs%20%26%20Ideas-Issues-24292f?logo=github&logoColor=white)](https://github.com/klimPaskov/Agentic-HOI4-Modding/issues)
 
-A reusable starting kit for building Hearts of Iron IV mods with coding agents. It includes project instructions, an offline Paradox wiki snapshot, reusable skills, specialist subagents with per-role model tiers, the HOI4 Agent Tools MCP server setup, and optional workflows for portraits, 3D models, Super Events, and live game testing.
+Build Hearts of Iron IV mods with your coding agent. Make focus trees, events, decisions and maps, fix broken script and balance the AI. The kit gives your agent project instructions, modding skills, specialist helpers, an offline wiki and HOI4 tools. Add portraits, 3D models, Super Events or live game testing when your mod needs them.
 
 Claude Code is the primary environment. Every instruction file, skill, and subagent is authored for Claude Code, and the Codex, Cursor, Qoder, OpenCode, and DeepSeek Harness files are generated from those sources.
 
@@ -10,7 +15,9 @@ Claude Code is the primary environment. Every instruction file, skill, and subag
 
 ## Get started
 
-Use [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest) to create a mod or prepare an existing one. The app selects and adapts the files for your mod, fills in your mod name, prefix, and game folder, installs and registers the HOI4 Agent Tools server, previews every change, and can update, repair, or remove the setup later.
+Use [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest) to create a mod or prepare an existing one. The app selects and adapts the files for your mod, fills in your mod name, prefix, and game folder, connects HOI4 Agent Tools, and can update, repair or remove the setup later.
+
+Open the mod in your coding client and describe what you want to build or fix. The agent picks the tools and skills it needs.
 
 For a manual setup:
 
@@ -34,7 +41,7 @@ The templates are starting points. Keep only the workflows your mod uses and add
 
 Package sources later with `python .tools/package_chatgpt_project_sources.py`
 (or its Windows `.bat` launcher). See the [packaging tool guide](.tools/README.md#chatgpt-source-packaging)
-for curated defaults, selection overrides, and safe output rules.
+for default file selections and output options.
 
 ## How the files fit together
 
@@ -61,7 +68,7 @@ Other runtimes translate the tier through [`.tools/sync/agent_profiles.json`](.t
 
 ## Skills and agents
 
-The [complete catalog](docs/catalog.md) describes all 32 skills and 23 agents, with links to their definitions and each agent's model tier and Codex reasoning effort. Skills guide the workflow; agents take bounded tasks with explicit file ownership and evidence requirements.
+The [catalog](docs/catalog.md) covers building focus trees, events, decisions, country content, interfaces and assets, with links to each skill and specialist agent.
 
 ## Screenshots and videos
 
@@ -74,7 +81,7 @@ The [complete catalog](docs/catalog.md) describes all 32 skills and 23 agents, w
 
 ## Updating an older installation
 
-Back up and commit local mod work first. Use HOI4 Mod Setup's update or repair flow to review changes to managed files and keep local additions. An older Codex-first checkout with HOI4 Agent Tools 3.9.0 needs an update to this Claude-first package and the manifest-pinned MCP release. Keep custom instructions when resolving conflicts, regenerate runtime projections, and reconnect MCP clients after installation.
+Back up and commit local mod work first. Use HOI4 Mod Setup's update or repair flow to review changes to managed files and keep local additions. An older Codex-first checkout needs this update to move to the Claude Code package. Keep custom instructions when resolving conflicts, regenerate runtime projections, and reconnect MCP clients after installation.
 
 ## Skill size
 
@@ -82,8 +89,8 @@ Every skill, agent prompt, and instruction file must be readable in one pass. [`
 
 ## MCP servers
 
-- **HOI4 Agent Tools** (`hoi4_agent_tools`): source-level tools for focus trees, events, technology trees, weighted logic, scripted GUIs, maps, documentation, and source lookup. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` and registers it for the coding environments you choose. Agents use whatever routes the connected server advertises.
-- **HOI4 Live Tools** (`hoi4-live`, optional, Windows): drives a running game for live feature tests and campaign play. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` for your user and registers it for the coding clients it finds (`python .tools/mcp/bootstrap_hoi4_live_tools.py` does the same by hand). The `hoi4-live-playtest` skill and its [setup guide](.claude/skills/hoi4-live-playtest/references/setup.md) explain how agents use it; `hoi4-debug-playtest` plays through it.
+- **[HOI4 Agent Tools](https://github.com/klimPaskov/hoi4-agent-tools)** (`hoi4_agent_tools`): helps your agent build focus trees, events, decisions and maps, preview windows and trees, find modding rules, repair script and balance AI choices. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` and registers it for the coding environments you choose. Agents use whatever routes the connected server advertises.
+- **[HOI4 Live Tools](https://github.com/klimPaskov/HOI4-Live-Tools)** (`hoi4-live`, optional, Windows): drives a running game for live feature tests and campaign play. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` for your user and registers it for the coding clients it finds (`python .tools/mcp/bootstrap_hoi4_live_tools.py` does the same by hand). The `hoi4-live-playtest` skill and its [setup guide](.claude/skills/hoi4-live-playtest/references/setup.md) explain how agents use it; `hoi4-debug-playtest` plays through it.
 - **Meshy and Blender** (optional 3D workflow): registered by `.tools/3d_pipeline/bootstrap_3d_workflow.py` when a feature needs a model.
 
 ## What's inside
@@ -98,7 +105,7 @@ Every skill, agent prompt, and instruction file must be readable in one pass. [`
 | `docs/` | Runtime reference, MCP integration contract, and the Super Events guide |
 | `hoi4-mod-setup.manifest.json` | File selection and verification for HOI4 Mod Setup |
 
-The project instructions and each selected skill define the work and evidence required for a feature. A generated asset or passing tool result still needs the relevant game files wired and reviewed.
+Describe what you want to build. The agent chooses the tools and skills and connects the content to your mod.
 
 ## License
 
