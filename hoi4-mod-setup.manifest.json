@@ -12627,10 +12627,10 @@
             "arguments": [
               "--quiet"
             ],
-            "release_version": "1.0.0",
-            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.0.0/hoi4-live-tools-1.0.0.zip",
-            "release_sha256": "e80c011d0858c3bb1f6e1c8333ed4f441b44e912758b8e2c9c35b730105d5ba2",
-            "release_size": 1023867,
+            "release_version": "1.1.0",
+            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.1.0/hoi4-live-tools-1.1.0.zip",
+            "release_sha256": "f87e75e237bd794fb46156ed562bfc3691f6a65f03d089e104bddad4ab08a327",
+            "release_size": 1143979,
             "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless) from https://pypi.org.",
             "expected_writes": [
               "%LOCALAPPDATA%/hoi4-live-tools/**",
