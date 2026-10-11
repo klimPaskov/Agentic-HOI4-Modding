@@ -53,10 +53,15 @@ def measure(prefix: Path, integrity: str) -> dict:
     package = bootstrap.read_json(package_root / "package.json", 1024 * 1024)
     if package.get("name") != "hoi4-agent-tools" or package.get("version") != "4.0.0":
         raise ValueError("The clean installation must contain hoi4-agent-tools@4.0.0.")
-    lock = bootstrap.read_json(modules / ".package-lock.json", 16 * 1024 * 1024)
-    installed = lock.get("packages", {}).get("node_modules/hoi4-agent-tools", {})
-    if installed.get("integrity") != integrity:
-        raise ValueError("The clean installation lock must retain the selected integrity.")
+    # npm can omit this optional global lock for Windows shrinkwrapped installs.
+    # Its absence never skips the full package-tree and runtime measurements.
+    lock_path = modules / ".package-lock.json"
+    if lock_path.exists():
+        lock = bootstrap.read_json(lock_path, 16 * 1024 * 1024)
+        packages = lock.get("packages")
+        installed = packages.get("node_modules/hoi4-agent-tools") if isinstance(packages, dict) else None
+        if not isinstance(installed, dict) or installed.get("integrity") != integrity:
+            raise ValueError("The clean installation lock must retain the selected integrity.")
     tree_digest, count = bootstrap.package_tree_sha256(package_root)
     entry = package_root / bootstrap.RUNTIME_ENTRY
     if not entry.is_file() or entry.stat().st_size > bootstrap.MAX_PACKAGE_FILE_BYTES:

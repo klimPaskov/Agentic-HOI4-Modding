@@ -277,9 +277,36 @@ class McpBootstrapContractTests(unittest.TestCase):
             lock.write_text(json.dumps({"packages": {}}), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "lock"):
                 pin.measure(prefix, integrity)
+            for packages in ([], "invalid", {"node_modules/hoi4-agent-tools": []}, {"node_modules/hoi4-agent-tools": {"integrity": "sha512-wrong"}}):
+                lock.write_text(json.dumps({"packages": packages}), encoding="utf-8")
+                with self.subTest(packages=packages), self.assertRaisesRegex(ValueError, "lock"):
+                    pin.measure(prefix, integrity)
+            lock.write_text("{malformed JSON", encoding="utf-8")
+            with self.assertRaisesRegex(RuntimeError, "malformed"):
+                pin.measure(prefix, integrity)
             metadata.write_text(json.dumps({"name": "hoi4-agent-tools", "version": "3.10.0"}), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "4.0.0"):
                 pin.measure(prefix, integrity)
+
+    def test_repin_without_optional_lock_still_measures_full_tree_and_runtime(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            prefix = Path(temporary)
+            package = prefix / "node_modules/hoi4-agent-tools"
+            entry = package / "dist/bin/stdio.js"
+            entry.parent.mkdir(parents=True)
+            entry.write_bytes(b"synthetic runtime")
+            (package / "package.json").write_text(json.dumps({"name": "hoi4-agent-tools", "version": "4.0.0"}), encoding="utf-8")
+            integrity = "sha512-" + __import__("base64").b64encode(b"s" * 64).decode("ascii")
+            self.assertFalse((prefix / "node_modules/.package-lock.json").exists())
+            before = pin.measure(prefix, integrity)
+            self.assertEqual(before["package_file_count"], 2)
+            self.assertEqual(before["runtime_entry_size"], len(b"synthetic runtime"))
+            self.assertEqual(before["runtime_entry_sha256"], __import__("hashlib").sha256(entry.read_bytes()).hexdigest())
+            (package / "dist/helper.js").write_bytes(b"synthetic imported module")
+            after = pin.measure(prefix, integrity)
+            self.assertEqual(after["package_file_count"], 3)
+            self.assertNotEqual(before["package_tree_sha256"], after["package_tree_sha256"])
+            self.assertEqual(before["runtime_entry_sha256"], after["runtime_entry_sha256"])
 
     def test_repin_updates_only_reviewed_identity_and_tool_contract(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
