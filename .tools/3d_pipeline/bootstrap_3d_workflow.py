@@ -9,6 +9,7 @@ import hashlib
 import io
 import json
 import os
+import pkgutil
 import re
 import shutil
 import site
@@ -16,6 +17,7 @@ import socket
 import stat
 import subprocess
 import sys
+import sysconfig
 import time
 import urllib.parse
 import urllib.request
@@ -906,7 +908,14 @@ def adapter_source_hashes(adapter_root: Path) -> dict[str, str]:
     sources = sorted(adapter_root.glob("*.py"), key=lambda path: path.name)
     local_modules = {path.stem for path in sources}
     external_modules = {"bpy", "bmesh", "mathutils", "mcp", "io_pdx_mesh", "io_anim_bvh"}
-    allowed_modules = set(sys.stdlib_module_names) | external_modules | local_modules
+    stdlib_modules = getattr(sys, "stdlib_module_names", None)
+    if stdlib_modules is None:  # Python 3.9 has no stdlib_module_names.
+        stdlib_roots = {sysconfig.get_path("stdlib"), str(Path(sys.base_prefix) / "DLLs")}
+        stdlib_modules = set(sys.builtin_module_names) | {
+            module.name for module in pkgutil.iter_modules(sorted(stdlib_roots))
+            if module.name not in {"site-packages", "dist-packages"}
+        }
+    allowed_modules = set(stdlib_modules) | external_modules | local_modules
     for source in sources:
         if source.is_symlink():
             raise SetupError(f"Blender adapter source must not be a symlink: {source.name}")

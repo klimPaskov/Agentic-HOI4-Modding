@@ -24,6 +24,11 @@ class AdapterSourceClosureTests(unittest.TestCase):
         self.assertEqual(set(hashes), {path.name for path in adapter.glob("*.py")})
         self.assertIn("identity_leaf_alias.py", hashes)
 
+    def test_python39_stdlib_fallback_preserves_source_closure(self) -> None:
+        with mock.patch.object(BOOTSTRAP.sys, "stdlib_module_names", None, create=True):
+            self.test_real_adapter_has_complete_source_closure()
+            self.test_missing_local_import_is_rejected()
+
     def test_missing_local_import_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             adapter = Path(temporary)
