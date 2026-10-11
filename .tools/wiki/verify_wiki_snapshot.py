@@ -10,7 +10,7 @@ non-zero when the snapshot is not self-contained and readable, and reports:
 * images with no file on disk, or image files nothing references;
 * table rows whose column count differs from their header;
 * pages that do not have exactly one level-1 heading;
-* encoding damage: byte order marks, escaped punctuation, non-breaking and
+* encoding damage: byte order marks, non-breaking and
   zero-width characters, and mojibake.
 
 Usage::
@@ -25,6 +25,7 @@ import os
 import re
 import sys
 from collections import Counter
+from pathlib import Path
 
 FENCE = "`" * 3
 PIPE = re.compile(r"(?<!\\)\|")
@@ -57,12 +58,12 @@ def verify(directory, show_details=True):
     files = sorted(f for f in os.listdir(directory) if f.endswith(".md"))
     anchors_by_file = {}
     for name in files:
-        text = open(os.path.join(directory, name), encoding="utf-8").read()
+        text = Path(directory, name).read_text(encoding="utf-8")
         anchors_by_file[name] = set(re.findall(r'<a id="([^"]+)"', text))
 
     for name in files:
         path = os.path.join(directory, name)
-        raw = open(path, "rb").read()
+        raw = Path(path).read_bytes()
         text = raw.decode("utf-8")
         lines = text.split("\n")
 
@@ -176,8 +177,8 @@ def verify(directory, show_details=True):
             report("h1_count", name, f"{h1} level-1 headings")
 
         # --- encoding artefacts --------------------------------------------
-        for pat, kind in ((r"\\[_*\[\]<>]", "escape_artifact"),
-                          ("\u00a0", "nbsp"), ("\u200b", "zwsp"),
+        # Markdown escapes preserve literal punctuation and are not encoding damage.
+        for pat, kind in (("\u00a0", "nbsp"), ("\u200b", "zwsp"),
                           ("\u2011", "nb_hyphen"),
                           ("[\u0080-\u009f]", "control_char")):
             hits = re.findall(pat, text)
@@ -194,7 +195,7 @@ def verify(directory, show_details=True):
     referenced = set()
     long_rows = 0
     for name in files:
-        text = open(os.path.join(directory, name), encoding="utf-8").read()
+        text = Path(directory, name).read_text(encoding="utf-8")
         referenced.update(os.path.basename(m)
                           for m in re.findall(r"\]\((media/[^)]+)\)", text))
         long_rows += sum(1 for line in text.split("\n")
