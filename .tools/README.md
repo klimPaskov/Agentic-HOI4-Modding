@@ -11,6 +11,47 @@ Before retiring a tool, search its filename, module name, generated headers, and
 
 ## Supported tools
 
+### ChatGPT source packaging
+
+`package_chatgpt_project_sources.py` builds a curated flat source folder with
+`all-project-sources.zip` and, when agents exist, `subagents.zip`. The installed
+project root is discovered from the script location, independently of the
+working directory. Python 3.10 or newer is required; no extra packages or
+credentials are used. Windows users can double-click
+`package_chatgpt_project_sources.bat`, which opens the completed folder.
+
+```sh
+python .tools/package_chatgpt_project_sources.py --dry-run
+python .tools/package_chatgpt_project_sources.py
+python .tools/package_chatgpt_project_sources.py --output /path/outside/mod/new-bundle
+python .tools/package_chatgpt_project_sources.py --include 'AGENTS.md' --include 'events/**/*.txt' --exclude 'events/private/**'
+```
+
+Defaults include instructions, README, descriptors, canonical skills/subagents,
+Markdown/CSV documentation, and HOI4 common, events, history, localisation,
+interface, and map text. Missing optional directories are allowed. Nested paths
+are encoded into flat filenames (`/` becomes `%2F`, `%` becomes `%25`), avoiding
+ambiguous basename collisions. `--include` replaces the include defaults;
+`--exclude` adds exclusions. `--config` accepts a JSON object with `include` and
+`exclude` arrays of project-relative slash-separated globs. `*` matches one
+path segment; `**` matches zero or more. Matching is case-insensitive.
+
+Default exclusions always apply to secret-shaped filenames, .env files, Git,
+virtual environments, dependency folders, logs, backups, and old flattened
+exports. Links and junction directories are not followed; selected linked
+files, binary/non-UTF-8 sources, files over 8 MiB, bundles over 128 MiB or
+10,000 files, and destination collisions are rejected. Review the dry run and
+file contents before sharing: filename filtering cannot identify every secret.
+
+Output defaults to Downloads/<project-folder>-chatgpt-project-sources, must be
+outside the project, and must not exist. Choose a new `--output` for another
+export. The verified archives and loose files are staged together before the
+folder is published; failure removes staging and leaves project files intact.
+The tool performs no upload and does not launch a conversation. It is installed
+by the all-platform `tools.chatgpt_sources` manifest component, included by both
+core profiles and the shared synchronizer dependency closure. Modified installed
+tools retain normal manifest conflict review.
+
 ### HOI4 Agent Tools bootstrap
 
 `mcp/bootstrap_hoi4_agent_tools.py` installs and verifies the manifest-pinned HOI4 Agent Tools package and advertised MCP routes.

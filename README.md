@@ -16,7 +16,7 @@ For a manual setup:
 
 1. Put your mod in a Git repository and open that repository as the agent's workspace.
 2. Copy [CLAUDE_template.md](CLAUDE_template.md) to your mod as `CLAUDE.md` and replace its placeholders (`[MOD_NAME]`, `[MOD_PREFIX]`, `[HOI4_GAME_DIR]`, `[STEAM_WORKSHOP_DIR]`). Delete the blocks for optional workflows you do not install.
-3. Copy `.claude/skills/`, `.claude/agents/`, `.claude/settings.json`, `.mcp.json`, and `.tools/sync/` into the mod. Make the installed game files and the included `paradox_wiki/` snapshot readable to the agent.
+3. Copy `.claude/skills/`, `.claude/agents/`, `.claude/settings.json`, `.mcp.json`, and `.tools/sync/` into the mod. Copy the source-packaging Python script, Windows launcher, and README from `.tools/` as well. Make the installed game files and the included `paradox_wiki/` snapshot readable to the agent.
 4. If you also use another runtime, copy its `.codex/`, `.cursor/`, `.qoder/`, or `.opencode/` folder into the mod (plus root `opencode.json` for OpenCode), then generate its files from the Claude sources:
 
    ```powershell
@@ -31,6 +31,10 @@ For a manual setup:
 7. For live game testing on Windows, run `python .tools/mcp/bootstrap_hoi4_live_tools.py`, reconnect your coding client, and follow the [Live Tools setup guide](.claude/skills/hoi4-live-playtest/references/setup.md). For portraits, 3D, or Super Events, copy the selected workflow's references, tools, and runtime assets together; use the [manifest](hoi4-mod-setup.manifest.json) as the file inventory. The setup app handles this selection automatically.
 
 The templates are starting points. Keep only the workflows your mod uses and add project rules as the mod develops.
+
+Package sources later with `python .tools/package_chatgpt_project_sources.py`
+(or its Windows `.bat` launcher). See the [packaging tool guide](.tools/README.md#chatgpt-source-packaging)
+for curated defaults, selection overrides, and safe output rules.
 
 ## How the files fit together
 
