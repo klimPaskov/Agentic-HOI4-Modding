@@ -16,7 +16,7 @@
         "package_name": "gptimage",
         "package_version": "0.1.0",
         "package_tree_sha256": null,
-        "source_tree_sha256": "d39d5082fb8fc852abd0f4cdb6852310ab05a875b4471b0ac383df1ad2f5a3b4",
+        "source_tree_sha256": "06f78000782148bc0079b659389fbd52cdc03179e1075b260bf788fb7791f8f4",
         "package_lock_sha256": "bd75719d34e7a161e8b3d712fdb358ba1b89dcc6d6f6cd614ddbc38032a45778",
         "runtime_entry": ".tools/image_generation/providers/gptimage/src/server.js",
         "tool_names": {

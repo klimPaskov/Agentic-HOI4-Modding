@@ -40,6 +40,12 @@ Meshy 0.6.2 still accepts explicit `meshy-7`, although upstream now marks it dep
 
 Blender's installed-addon bridge and native export integration were not exercised. Published source/tool declarations and unit tests do not establish authenticated Meshy production behavior or live game results. The parent release workflow owns the real disposable-mod installer test, remote publication, archive and tag.
 
+## GPTImage real-installer correction
+
+The disposable app installation exposed a source defect that mocked dependency installation did not catch. Exact Git blobs from `d154db7a65c122e5e7015bc3d0a0371d9a9cac6e` matched the published source-tree and dependency-lock hashes, and Node/npm discovery succeeded. The unmodified CLI still exited 1 before dependency downloads: npm reported `double-loading config` because the bootstrap supplied one temporary file to both `--userconfig` and `--globalconfig`.
+
+Branch `fix/gptimage-npm-config` supplies two distinct empty files inside the same private temporary cache. The regression checks both path identities and empty contents during installation, while preserving cache cleanup and direct Node invocation. A disposable real npm run with only those corrected arguments installed 93 locked packages in six seconds, emitted no stderr, returned `ready` and created the SDK package. Source hashes and the runtime catalog are regenerated with the fix. These checks use no credentials, sign-in, image generation or other provider operations.
+
 ## Linux follow-up boundaries
 
 The current Agent Tools bootstrap discovers Windows Node/npm and its `.cmd` launcher; core manifest platform lists and expected executable evidence omit Linux. Image credential guidance and vault implementation describe Windows Credential Manager and macOS Keychain. The 3D trusted launcher, Windows wrapper scripts and dependency paths also require a separately reviewed Linux route. Live Tools remains Windows-only; Clausewitz supports native Linux, but setup currently presents external WSL/SSH paths and provider platform lists omit a direct Linux host route. Address these as the next package/app job after the first release passes its scratch installation. No Linux source implementation is included here.

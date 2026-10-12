@@ -35,6 +35,13 @@ class GptimageBootstrapTests(unittest.TestCase):
             def fake_run(args, **kwargs):
                 calls.append((args, kwargs))
                 cache = Path(args[args.index("--cache") + 1])
+                user_config = Path(args[args.index("--userconfig") + 1])
+                global_config = Path(args[args.index("--globalconfig") + 1])
+                # npm refuses to load one file as both configuration scopes.
+                self.assertNotEqual(user_config.resolve(), global_config.resolve())
+                for config in (user_config, global_config):
+                    self.assertEqual(config.parent, cache)
+                    self.assertEqual(config.read_bytes(), b"")
                 (package / "node_modules" / "@modelcontextprotocol" / "sdk").mkdir(parents=True)
                 (package / "node_modules" / "@modelcontextprotocol" / "sdk" / "package.json").write_text("{}", encoding="utf-8")
                 self.assertTrue(cache.is_dir())

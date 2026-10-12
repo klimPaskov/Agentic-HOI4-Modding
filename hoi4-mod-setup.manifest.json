@@ -1,7 +1,7 @@
 {
   "schema_version": "4.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "b8df7568d83a8538bfad9f560d054e1ca3bb67c1",
+  "generated_for_revision": "fd75d68830fa7e7075fc70cc2c3b0ce476291a88",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -11187,7 +11187,7 @@
       "expected_files": [
         {
           "path": ".tools/image_generation/runtime/provider_catalog.json",
-          "sha256": "a495cfe3ffd0c77c2e8a111fe0442ef25b6a632aecef625342b9438daaec0366",
+          "sha256": "05b90efc7d829c2675a633e10f3f1eb308cd9342cf5fd77dbe049ec8018b8fcb",
           "size": 67637
         },
         {
@@ -11280,8 +11280,8 @@
         },
         {
           "path": ".tools/image_generation/providers/gptimage/bootstrap.py",
-          "sha256": "9949f055692962ebba22ade4bc401e4a5c72ca76a8141b22665c9518f1b49589",
-          "size": 5832
+          "sha256": "c6847415d41efd1683034eab13964f6f0a9fadfdd4bfd47a904dcf233ae4d94e",
+          "size": 5941
         },
         {
           "path": ".tools/image_generation/providers/gptimage/package-lock.json",
@@ -11349,14 +11349,14 @@
               "--package-root",
               "<project_root>/.tools/image_generation/providers/gptimage",
               "--expected-tree-sha256",
-              "d39d5082fb8fc852abd0f4cdb6852310ab05a875b4471b0ac383df1ad2f5a3b4",
+              "06f78000782148bc0079b659389fbd52cdc03179e1075b260bf788fb7791f8f4",
               "--expected-lock-sha256",
               "bd75719d34e7a161e8b3d712fdb358ba1b89dcc6d6f6cd614ddbc38032a45778"
             ],
             "package_name": "gptimage",
             "package_version": "0.1.0",
             "source_revision": "dfb4948b6877b5b7febf73e1342fcfacd862a1ed",
-            "source_tree_sha256": "d39d5082fb8fc852abd0f4cdb6852310ab05a875b4471b0ac383df1ad2f5a3b4",
+            "source_tree_sha256": "06f78000782148bc0079b659389fbd52cdc03179e1075b260bf788fb7791f8f4",
             "package_lock_sha256": "bd75719d34e7a161e8b3d712fdb358ba1b89dcc6d6f6cd614ddbc38032a45778",
             "required_tools": [
               "generate_image",
@@ -11593,7 +11593,7 @@
           "package_name": "gptimage",
           "package_version": "0.1.0",
           "package_tree_sha256": null,
-          "source_tree_sha256": "d39d5082fb8fc852abd0f4cdb6852310ab05a875b4471b0ac383df1ad2f5a3b4",
+          "source_tree_sha256": "06f78000782148bc0079b659389fbd52cdc03179e1075b260bf788fb7791f8f4",
           "package_lock_sha256": "bd75719d34e7a161e8b3d712fdb358ba1b89dcc6d6f6cd614ddbc38032a45778",
           "runtime_entry": ".tools/image_generation/providers/gptimage/src/server.js",
           "tool_names": {
