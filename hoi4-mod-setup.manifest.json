@@ -1,7 +1,7 @@
 {
-  "schema_version": "3.0.0",
+  "schema_version": "4.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "48707149408da09dcc57639564da4c5577faa9a0",
+  "generated_for_revision": "e718ca6cb6f52fb85479b23670a96d75389f2313",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "de4f4c95bf97a93fede3a17ff1c411c607d0d02f7670818aeb40e5c1561a85e6",
-          "size": 59805
+          "sha256": "52fad7f1fc3a5e45089389fb6030e3e7d2c418c70ad1c4428902127324012024",
+          "size": 59952
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "2539e8d77421dc60a29b5327ab5b416c624191c1f4e6c174fe1387d1e641a0fb",
-          "size": 59859
+          "sha256": "53e007c0d2c95b82e00c7e4a13726aa717955bacd82165da1156717eaecb55a8",
+          "size": 59952
         }
       ]
     },
@@ -190,8 +190,8 @@
         },
         {
           "path": ".tools/sync/README.md",
-          "sha256": "70c8b17152cb8752992ffc805f54ca61465dc27972059405cc32ec644e31d0f6",
-          "size": 3423
+          "sha256": "e51bb7362b355b0c3ed859aff82b006961cb137f1a98a4f4dd1206a546994d45",
+          "size": 3642
         },
         {
           "path": ".tools/sync/agent_profiles.json",
@@ -200,8 +200,8 @@
         },
         {
           "path": ".tools/sync/agent_sync_common.py",
-          "sha256": "288a38397b9eed502d5491157010372616319796ed2561ec22e3da2287b9133b",
-          "size": 16071
+          "sha256": "84a1b95493e9292f4a17cdb118b7acf9853fd532449ee7aa239b6b21bd87f98b",
+          "size": 15905
         },
         {
           "path": ".tools/sync/check_guidance_size.py",
@@ -210,8 +210,8 @@
         },
         {
           "path": ".tools/sync/instruction_projection.json",
-          "sha256": "1eb8620dd5b18703839fbce495e0631c3ca361d896db4de0ed4de9e369fff733",
-          "size": 380
+          "sha256": "1765e96763870d29c8951a6e3d2cdf9e9eff8698e704e5cb1cbe1bf5d6240cfe",
+          "size": 256
         },
         {
           "path": ".tools/sync/read_limits.json",
@@ -422,8 +422,8 @@
         },
         {
           "path": ".cursor/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "7a5f3e6b71c4d4200cad43ed76f8cfdbe2ba72324bb76c2978409d43c4071f18",
-          "size": 27285
+          "sha256": "28c1150be9deec051159c902652e637db6b57fc78b04cfcb6929fcc953391e89",
+          "size": 27468
         },
         {
           "path": ".cursor/agents/hoi4-ai-probability-auditor.md",
@@ -472,13 +472,13 @@
         },
         {
           "path": ".cursor/agents/hoi4-generated-feature-art.md",
-          "sha256": "f9dea9cd5d7dbec0cf11af1924aa43348e6f12bb0986d6cea1ff2f4d97fb7bf1",
-          "size": 6233
+          "sha256": "d6f719413a5dfee1ed89fae9eaf5bfadfd210df384b81a8366064aa17ae02cc1",
+          "size": 6390
         },
         {
           "path": ".cursor/agents/hoi4-icon-artist.md",
-          "sha256": "0e0f9c720278b3b2bec7440ee1b07c39015273a74db61626381c137eadcf4191",
-          "size": 11897
+          "sha256": "608186f4a870fefff118e147882ce474c3b238b1425e405de9b679e6dcab8e46",
+          "size": 12033
         },
         {
           "path": ".cursor/agents/hoi4-improvement-loop-planner.md",
@@ -589,8 +589,8 @@
         },
         {
           "path": ".qoder/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "a8a1b22d34877ad47527e217cedcff4328230805b47293d6b813d8af863bb87f",
-          "size": 27341
+          "sha256": "216c56ae5e250cc2fe9ab403b43f68d23248a6ff428dcff0804c9f0aec8d56c4",
+          "size": 27524
         },
         {
           "path": ".qoder/agents/hoi4-ai-probability-auditor.md",
@@ -639,13 +639,13 @@
         },
         {
           "path": ".qoder/agents/hoi4-generated-feature-art.md",
-          "sha256": "34d9912ebfd9767bd5740c455c12aa5f8b5158f437dbd44ff84c0011e06754ac",
-          "size": 6289
+          "sha256": "4c4b967ec8a383e0f933e6de474bd85cc6cbe7479c2022330be7ffd1df2df3d4",
+          "size": 6446
         },
         {
           "path": ".qoder/agents/hoi4-icon-artist.md",
-          "sha256": "0e106b7216fc60b30235001d7156c0f5f8cf49c43ac6c9785eba99530bb28b4c",
-          "size": 11953
+          "sha256": "536e23282135f930f3a6feaaa4826e73e7a79f2a86b4ca6d9db6dae9ae1cdfc5",
+          "size": 12089
         },
         {
           "path": ".qoder/agents/hoi4-improvement-loop-planner.md",
@@ -756,8 +756,8 @@
         },
         {
           "path": ".opencode/agent/hoi4-3d-model-pipeline.md",
-          "sha256": "3671a70a66537de82df6d799be5da664988090193a8a24b9aaad886f2aa3adac",
-          "size": 27271
+          "sha256": "99c71c5b0175a27b314a9de56c67b9e8d7e4cc20b0db951b237fa897b3325f10",
+          "size": 27454
         },
         {
           "path": ".opencode/agent/hoi4-ai-probability-auditor.md",
@@ -806,13 +806,13 @@
         },
         {
           "path": ".opencode/agent/hoi4-generated-feature-art.md",
-          "sha256": "d261391d097c1e5cd72f9826a444ced272c2aa40d5419177685e13362c077370",
-          "size": 6215
+          "sha256": "4435a61fe4ed4f11bcfb354be12845d6190485d775aa6a787a17d071f109f802",
+          "size": 6372
         },
         {
           "path": ".opencode/agent/hoi4-icon-artist.md",
-          "sha256": "c4417879780be0728adc42c24217ed358cb3926c0361bb1ea78c580e5ca16eb4",
-          "size": 11889
+          "sha256": "7926c65cff0b1c3b7e349ad99d137a24e225c5f342cf7ad0398ab481918338d5",
+          "size": 12025
         },
         {
           "path": ".opencode/agent/hoi4-improvement-loop-planner.md",
@@ -1108,8 +1108,8 @@
       "expected_files": [
         {
           "path": ".cursor/agents/hoi4-portrait-creator.md",
-          "sha256": "cb292f99eb2f694d1c70dbcaf05da47f34355bc22822a2eaa715b30633e6e5a6",
-          "size": 2792
+          "sha256": "a53d0ebfb695adf14f69772c62bbb997d7255a021034b5cf2fa058b15b54cd3e",
+          "size": 2967
         }
       ]
     },
@@ -1223,8 +1223,8 @@
       "expected_files": [
         {
           "path": ".qoder/agents/hoi4-portrait-creator.md",
-          "sha256": "2c7f6a9999118d276700bd107ca09ac0b18c5564c40ecf6c06d66dd873eccedf",
-          "size": 2848
+          "sha256": "8a1ab17163b3c62d0b74edca46feff626accd9888bdf9fddcb09f465e5a28153",
+          "size": 3023
         }
       ]
     },
@@ -1338,8 +1338,8 @@
       "expected_files": [
         {
           "path": ".opencode/agent/hoi4-portrait-creator.md",
-          "sha256": "13e2746101345f0d14d882116668c718b3695a21811575e6a1f2693a3a595c4f",
-          "size": 2779
+          "sha256": "1534a346761c11ff44de6d4953dbba8ddaa7b82d64d04c4aa812a8c06287b1db",
+          "size": 2954
         }
       ]
     },
@@ -1661,8 +1661,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "9dc0b7893a3bf2db7e1f1a4dddd12642a9ca9c5aee443c0343573b45b83c4afa",
-          "size": 55550
+          "sha256": "5edf8614f5042d7583f29f5eab8f44431db564e33109af017a1e7929dafea61b",
+          "size": 55925
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -4191,8 +4191,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/asset-source-rules.md",
-          "sha256": "9d3d70f36c76a49a97739db16f40894c79104cca39e2972c7f349ce70e1bc06e",
-          "size": 9135
+          "sha256": "a441c53041cb0c7f30a00ab954e8a71f1e64ff7f68896a23b1a8138c3d019f66",
+          "size": 9391
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
@@ -4201,8 +4201,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "22b6e95f6f5dce4163467f960c098d53c51db78aceb889526308616287b7c94f",
-          "size": 4067
+          "sha256": "c4d434a8868b542b328e074673a1b4129977d950ba7ce912838764a3a1eb566b",
+          "size": 3875
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -4517,8 +4517,8 @@
       "expected_files": [
         {
           "path": ".claude/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "2dd62e0cd66b013325b8539a3adbc4b8fbb7dc433927850933bd6642cc7911c8",
-          "size": 27166
+          "sha256": "7bca5545044105dc520365c813345623014ed24f9ec513a593340d2ef11beb0f",
+          "size": 27361
         },
         {
           "path": ".claude/agents/hoi4-ai-probability-auditor.md",
@@ -4567,13 +4567,13 @@
         },
         {
           "path": ".claude/agents/hoi4-generated-feature-art.md",
-          "sha256": "2deba08df308e124cb1de51ae0d188936b300866904d0364e2db992033c85177",
-          "size": 6115
+          "sha256": "ff292f55b00a71a19c569badd50118233c992ce0b682683b06ced87818533bb3",
+          "size": 6280
         },
         {
           "path": ".claude/agents/hoi4-icon-artist.md",
-          "sha256": "bef152c3d74f0f5db3a9115aff36772462e0e6a698bba2a9be59c385aea549b7",
-          "size": 11781
+          "sha256": "7297be24e9a5780740e796326dd0e0b951e5c9f864384ce8874a494e23b122b0",
+          "size": 11933
         },
         {
           "path": ".claude/agents/hoi4-improvement-loop-planner.md",
@@ -4717,8 +4717,8 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_3d_model_pipeline.toml",
-          "sha256": "e6cbb375db25a365081f340c5461105aca7db7216945d9f20334a1f2b7813f51",
-          "size": 27418
+          "sha256": "a800dfc4e0c2ab5d32c4361a57994e16c6f13f8cd21e49235b858ba976515de5",
+          "size": 27631
         },
         {
           "path": ".codex/agents/hoi4_ai_probability_auditor.toml",
@@ -4767,13 +4767,13 @@
         },
         {
           "path": ".codex/agents/hoi4_generated_feature_art.toml",
-          "sha256": "86dde3cd6c5fe345e27260bd0f510e7237dd7b64084837ff07e1676f67ccfe5d",
-          "size": 6382
+          "sha256": "cd22fa22b3d2e4e9fe6d02a2cc07f324b72df6485e331ed812912cf46126c869",
+          "size": 6559
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
-          "sha256": "031535ddafd7f7a5789955fe2a5e4c1d692b57c16813ce7776e290fa95e9dd59",
-          "size": 12016
+          "sha256": "67e9dcd0b25b180a65d056dacd69c027a2695629b8d4762755e0007613601a79",
+          "size": 12192
         },
         {
           "path": ".codex/agents/hoi4_improvement_loop_planner.toml",
@@ -5050,8 +5050,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "9dc0b7893a3bf2db7e1f1a4dddd12642a9ca9c5aee443c0343573b45b83c4afa",
-          "size": 55550
+          "sha256": "5edf8614f5042d7583f29f5eab8f44431db564e33109af017a1e7929dafea61b",
+          "size": 55925
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -7580,8 +7580,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/asset-source-rules.md",
-          "sha256": "9d3d70f36c76a49a97739db16f40894c79104cca39e2972c7f349ce70e1bc06e",
-          "size": 9135
+          "sha256": "a441c53041cb0c7f30a00ab954e8a71f1e64ff7f68896a23b1a8138c3d019f66",
+          "size": 9391
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
@@ -7590,8 +7590,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "22b6e95f6f5dce4163467f960c098d53c51db78aceb889526308616287b7c94f",
-          "size": 4067
+          "sha256": "c4d434a8868b542b328e074673a1b4129977d950ba7ce912838764a3a1eb566b",
+          "size": 3875
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -7886,8 +7886,8 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_portrait_creator.toml",
-          "sha256": "cbd51db2ee13c232a29661ce2b63a6756156e2e779d82ee713565bbf96e839b6",
-          "size": 2946
+          "sha256": "6b32342afacd2f3d76f1f3517876c616b280a20f1137d6e7013ba53453377b06",
+          "size": 3131
         }
       ]
     },
@@ -8653,8 +8653,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "3e832cc522d0ea94f1ab531870740791e2f8e9a2acd0c9ea9ab61026fdb9f876",
-          "size": 9497
+          "sha256": "f6a908c12e2fac6fc295944e0a77a355a7e998d244f5ce7f3f50c35fcf389dcd",
+          "size": 10841
         }
       ]
     },
@@ -8704,8 +8704,8 @@
       "expected_files": [
         {
           "path": "docs/runtimes.md",
-          "sha256": "eb6fb518fcd69c6de5da467cd99dbca2ab32e28c646f0ba9a885c93c16f8fd86",
-          "size": 11718
+          "sha256": "1c377ef493098fb0d7578cc1dd42872c3727ac90e9ef300c48d288908aab6016",
+          "size": 11803
         }
       ]
     },
@@ -9989,8 +9989,8 @@
       "expected_files": [
         {
           "path": ".claude/agents/hoi4-portrait-creator.md",
-          "sha256": "46ac7570e5214e331c112adb3549f9101800d65b4484467bfb34ffa9220c8a67",
-          "size": 2683
+          "sha256": "35736fea85b78c50da357252a20ec669595b3278ee66debe8e442979b2b51d52",
+          "size": 2862
         }
       ]
     },
@@ -11139,6 +11139,246 @@
           "size": 2567
         }
       ]
+    },
+    {
+      "id": "imagegen.runtime",
+      "display_name": "Image provider MCP adapter",
+      "description": "Project-local, provider-neutral MCP adapter for selected image APIs and local image servers.",
+      "category": "mcp",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".tools/image_generation/runtime",
+        "include": [
+          "**"
+        ]
+      },
+      "destination": {
+        "path": ".tools/image_generation/runtime/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "required_tools": [
+        {
+          "id": "python",
+          "required": true,
+          "version_policy": "any",
+          "version": ">=3.10",
+          "commands": [
+            "python",
+            "python3",
+            "py"
+          ],
+          "health_checks": [
+            "python --version"
+          ]
+        }
+      ],
+      "environment": [],
+      "expected_files": [
+        {
+          "path": ".tools/image_generation/runtime/provider_catalog.json",
+          "sha256": "3088b292c677f3209c00c9eb57af8b92f433dfaa13e5f952d42182c15660494c",
+          "size": 67486
+        },
+        {
+          "path": ".tools/image_generation/runtime/server.py",
+          "sha256": "334d10f11942fb8fad0e90f32f2ad6d24024b44e3b099bb6a12587a60aa1cfd5",
+          "size": 94636
+        }
+      ],
+      "conflicts": [],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "image generation",
+        "image editing",
+        "OS credential access",
+        "local image servers"
+      ],
+      "notes": [
+        "API keys are read from the operating-system credential store at tool-call time and are never written to project files."
+      ]
+    },
+    {
+      "id": "imagegen.gptimage",
+      "display_name": "GPTImage MCP source",
+      "description": "Project-local GPTImage server source for the ChatGPT subscription route.",
+      "category": "mcp",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".tools/image_generation/providers/gptimage",
+        "include": [
+          "**"
+        ],
+        "exclude": [
+          "**/node_modules/**"
+        ]
+      },
+      "destination": {
+        "path": ".tools/image_generation/providers/gptimage/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "required_tools": [
+        {
+          "id": "node",
+          "required": true,
+          "version_policy": "any",
+          "version": ">=20",
+          "commands": [
+            "node"
+          ],
+          "health_checks": [
+            "node --version"
+          ]
+        },
+        {
+          "id": "npm",
+          "required": true,
+          "version_policy": "any",
+          "version": "Node LTS",
+          "commands": [
+            "npm"
+          ],
+          "health_checks": [
+            "npm --version"
+          ]
+        }
+      ],
+      "environment": [],
+      "expected_files": [
+        {
+          "path": ".tools/image_generation/providers/gptimage/LICENSE",
+          "sha256": "61b266ab51f12f1352bc72d2817474832fb8de9313b50b1ba5d7b014570b7bef",
+          "size": 1076
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/UPSTREAM.md",
+          "sha256": "18dccccccdd3d635dcd5ebbcdc2a87db05f34f5409418c4249c0941929e9a3e8",
+          "size": 756
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/bootstrap.py",
+          "sha256": "e511966323a4117521efa300211ece2ba57fafc07ca42782395e3b5cfb43e2fe",
+          "size": 4514
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/package-lock.json",
+          "sha256": "bd75719d34e7a161e8b3d712fdb358ba1b89dcc6d6f6cd614ddbc38032a45778",
+          "size": 41680
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/package.json",
+          "sha256": "06fec29755154c088945fc9525e3dd0b4318e75417eeb605b2b96ffc9651edab",
+          "size": 734
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/auth.js",
+          "sha256": "eb029fa64c8fddebc48bddde4847f8f1236fdcdfb12273e79dccce0276d969c6",
+          "size": 7465
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/banner.js",
+          "sha256": "ccbc76ef6b3cb17e06dd1d2341264d43022d7ff3e5c9ce045e09ccfa6fe7412d",
+          "size": 567
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/banner.txt",
+          "sha256": "0cb7e227d24e3be5abaa15cdc562e1bfc243658d2f09eb3807eaf5b88b287d33",
+          "size": 12503
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/codex.js",
+          "sha256": "5f370bcf2c767cf638f32d1ab87f9d65cb0c769faf8b358337b7e6b35fc6e588",
+          "size": 4418
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/gen.js",
+          "sha256": "c6d0f48d3e039b49192eec03389714e77c511111010f5fe3f7f4b26bed698413",
+          "size": 1860
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/images.js",
+          "sha256": "33e3f5a044fc22e67dd7f520c6283037eb59d6a6c7cecee542f5efd90ea1cd11",
+          "size": 2666
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/login.js",
+          "sha256": "51e9209f166da80dfa6fab43bf5d2ed0993b6303593f04a6f778654566e2b861",
+          "size": 9662
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/server.js",
+          "sha256": "094067bfd1428907b8d0d04569083cb9011283d36ad57c99b9d215e3e495df27",
+          "size": 4025
+        }
+      ],
+      "conflicts": [],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "imagegen.gptimage.bootstrap",
+          "severity": "block",
+          "kind": "command",
+          "target": "python",
+          "parameters": {
+            "script_path": ".tools/image_generation/providers/gptimage/bootstrap.py",
+            "package_root": ".tools/image_generation/providers/gptimage",
+            "arguments": [
+              "--package-root",
+              "<project_root>/.tools/image_generation/providers/gptimage",
+              "--expected-tree-sha256",
+              "8e9580f5ecc56613e4c3988c6ec869b78d7c5c822363d2c3202ff4409e12c5f2",
+              "--expected-lock-sha256",
+              "94c2744790d6b9ca532742c9225da8aee778b63ad2420c0acbf34bf37cd91a36"
+            ],
+            "package_name": "gptimage",
+            "package_version": "0.1.0",
+            "source_revision": "49273481195c9795a4b6dc47b28549139c977025",
+            "source_tree_sha256": "8e9580f5ecc56613e4c3988c6ec869b78d7c5c822363d2c3202ff4409e12c5f2",
+            "package_lock_sha256": "94c2744790d6b9ca532742c9225da8aee778b63ad2420c0acbf34bf37cd91a36",
+            "required_tools": [
+              "generate_image",
+              "image_auth_status"
+            ],
+            "network_access": "Downloads only the exact dependencies in the checked-in npm lockfile from the npm registry during install or repair. The installer disables lifecycle scripts, uses a temporary cache, and removes that cache when complete.",
+            "expected_writes": [
+              ".tools/image_generation/providers/gptimage/node_modules/**",
+              "the current user's temporary npm cache directory (removed when bootstrap finishes)"
+            ],
+            "privilege": "current_user",
+            "rollback_boundary": "Managed project files roll back transactionally. Setup repair removes the managed node_modules tree; the temporary npm cache is removed by bootstrap and other user files are not changed."
+          }
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "image generation",
+        "reference images",
+        "ChatGPT subscription"
+      ],
+      "notes": [
+        "Source revision is pinned to Connected-Mate/gptimage; dependency versions and integrity are in the included npm lockfile."
+      ]
     }
   ],
   "profiles": [
@@ -11246,5 +11486,2453 @@
       "display_name": "OpenCode",
       "description": "Generated .opencode agents, opencode.json, map, and MCP"
     }
-  ]
+  ],
+  "image_generation": {
+    "default_provider": "gptimage",
+    "providers": [
+      {
+        "id": "gptimage",
+        "display_name": "ChatGPT subscription (GPTImage)",
+        "description": "Use the gptimage MCP server with a ChatGPT subscription.",
+        "availability": "supported",
+        "requirements": [
+          "A ChatGPT plan and browser sign-in to gptimage.",
+          "This community server calls an undocumented ChatGPT service, not the public Images API."
+        ],
+        "good_for": [
+          "Concept art",
+          "Images guided by reference files"
+        ],
+        "cost_summary": "No separate image API bill; plan usage limits apply.",
+        "documentation_url": null,
+        "models": [
+          "GPT Image 2 through the server's configured model"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "local_package",
+          "auth_method": "chatgpt_subscription",
+          "server_id": "hoi4_image_gptimage",
+          "url": null,
+          "component_id": "imagegen.gptimage",
+          "source_repository": "https://github.com/Connected-Mate/gptimage",
+          "source_revision": "49273481195c9795a4b6dc47b28549139c977025",
+          "package_name": "gptimage",
+          "package_version": "0.1.0",
+          "package_tree_sha256": null,
+          "source_tree_sha256": "8e9580f5ecc56613e4c3988c6ec869b78d7c5c822363d2c3202ff4409e12c5f2",
+          "package_lock_sha256": "94c2744790d6b9ca532742c9225da8aee778b63ad2420c0acbf34bf37cd91a36",
+          "runtime_entry": ".tools/image_generation/providers/gptimage/src/server.js",
+          "tool_names": {
+            "generate": "generate_image",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "quality": "quality",
+            "size": "size"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": null,
+          "api_base_url": null,
+          "default_model": null,
+          "result_format": "png",
+          "credential_fields": [],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": null,
+            "notes": "Pass project image paths and describe what each reference contributes. The server documents a maximum edge and aspect-ratio rule."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "PNG output does not guarantee a transparent background."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 3840,
+            "maximum_height_px": 3840,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Use reference_images to make a new version; choose another configured provider for precise image edits."
+        },
+        "reference_mcp": {
+          "name": "GPTImage MCP",
+          "url": "https://github.com/Connected-Mate/gptimage",
+          "maintenance": "community",
+          "authentication": "ChatGPT subscription sign-in",
+          "notes": "Pinned source; account data stays in the server's local auth store.",
+          "tool_names": [
+            "generate_image",
+            "image_auth_status"
+          ]
+        }
+      },
+      {
+        "id": "openai_api",
+        "display_name": "OpenAI Images API",
+        "description": "Use OpenAI image models with a key saved on this computer.",
+        "availability": "supported",
+        "requirements": [
+          "An OpenAI API key saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "General image work",
+          "Reference edits",
+          "Transparent PNG output"
+        ],
+        "cost_summary": "Pay per image; price changes with model and quality.",
+        "documentation_url": "https://developers.openai.com/api/docs/guides/image-generation/",
+        "models": [
+          "GPT Image 2.5 Sunburst",
+          "GPT Image 2.5 Flare",
+          "GPT Image 2"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_openai_api",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "gpt-image-2.5-sunburst",
+            "gpt-image-2.5-flare",
+            "gpt-image-2"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "openai_images",
+          "api_base_url": "https://api.openai.com/v1",
+          "default_model": "gpt-image-2.5-sunburst",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "OpenAI API key",
+              "environment_name": "OPENAI_API_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 16,
+            "notes": "Reference count depends on model and endpoint. Use local image paths with the edit tool."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": true,
+            "request_parameter": "transparent_background",
+            "notes": "Supported GPT Image models can request transparent output. Verify the saved alpha."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 3840,
+            "maximum_height_px": 3840,
+            "maximum_pixels": 8294400,
+            "notes": "Use dimensions supported by the selected model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        }
+      },
+      {
+        "id": "gemini_api",
+        "display_name": "Google Gemini images (Nano Banana)",
+        "description": "Use Google image models through the Gemini API.",
+        "availability": "supported",
+        "requirements": [
+          "A Google AI Studio API key saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "Reference-guided generations",
+          "Image edits",
+          "Several visual styles"
+        ],
+        "cost_summary": "Pay per image; cost depends on model and resolution.",
+        "documentation_url": "https://ai.google.dev/gemini-api/docs/image-generation",
+        "models": [
+          "Nano Banana 2.1",
+          "Nano Banana 2 (Gemini 3.1 Flash Image)",
+          "Nano Banana Pro (Gemini 3 Pro Image)"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_gemini_api",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "gemini-nano-banana-2.1",
+            "gemini-3.1-flash-image",
+            "gemini-3-pro-image"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "gemini_generate_content",
+          "api_base_url": "https://generativelanguage.googleapis.com/v1",
+          "default_model": "gemini-nano-banana-2.1",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "Google AI Studio API key",
+              "environment_name": "GEMINI_API_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 14,
+            "notes": "Reference-image limits vary by model."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "The API does not promise native transparent output."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 4096,
+            "maximum_height_px": 4096,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "gemini-mcp",
+          "url": "https://github.com/chrischall/gemini-mcp",
+          "maintenance": "community",
+          "authentication": "Google API key",
+          "notes": "The setup app uses its own pinned adapter for vault-backed keys.",
+          "tool_names": [
+            "generate_image",
+            "edit_image"
+          ]
+        }
+      },
+      {
+        "id": "fal_ai",
+        "display_name": "fal.ai",
+        "description": "Choose image models from fal's hosted catalog.",
+        "availability": "supported",
+        "requirements": [
+          "A fal API key saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "FLUX",
+          "Recraft",
+          "Ideogram",
+          "Seedream",
+          "Nano Banana and more"
+        ],
+        "cost_summary": "Pay per model run; the connected route uses FLUX.2 Pro.",
+        "documentation_url": "https://fal.ai/pricing",
+        "models": [
+          "FLUX.2 Pro"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_fal_ai",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "fal-ai/flux-2-pro"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "fal_queue",
+          "api_base_url": "https://queue.fal.run",
+          "default_model": "fal-ai/flux-2-pro",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "fal API key",
+              "environment_name": "FAL_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "The default FLUX edit route accepts one reference; other fal models vary."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Choose a model with alpha output or use a selected background-removal route."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 2560,
+            "maximum_height_px": 2560,
+            "maximum_pixels": 4194304,
+            "notes": "Use dimensions supported by the selected model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "fal MCP",
+          "url": "https://mcp.fal.ai/mcp",
+          "maintenance": "official",
+          "authentication": "fal API key",
+          "notes": "Hosted MCP sends the key in an authorization header; the app-managed route keeps it in the OS vault.",
+          "tool_names": [
+            "run_model",
+            "get_model_schema",
+            "upload_file"
+          ]
+        }
+      },
+      {
+        "id": "replicate",
+        "display_name": "Replicate",
+        "description": "Use hosted models from many image providers through one account.",
+        "availability": "supported",
+        "requirements": [
+          "A Replicate API token saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "Trying different model families",
+          "Fast drafts",
+          "Model variety"
+        ],
+        "cost_summary": "Pay per model run; the connected route uses FLUX Schnell.",
+        "documentation_url": "https://replicate.com/docs",
+        "models": [
+          "FLUX Schnell"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_replicate",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "black-forest-labs/flux-schnell"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "replicate_predictions",
+          "api_base_url": "https://api.replicate.com/v1",
+          "default_model": "black-forest-labs/flux-schnell",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "Replicate API token",
+              "environment_name": "REPLICATE_API_TOKEN"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": null,
+            "notes": "Reference support depends on the selected Replicate model; the included default route is text-to-image."
+          },
+          "image_edits": false,
+          "background_removal": true,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Use a selected background-removal route when the model does not return alpha."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": null,
+            "maximum_height_px": null,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "Replicate MCP",
+          "url": "https://replicate.com/docs/reference/mcp",
+          "maintenance": "official",
+          "authentication": "Replicate token",
+          "notes": "The server exposes Replicate's model and prediction API.",
+          "tool_names": []
+        }
+      },
+      {
+        "id": "black_forest_labs",
+        "display_name": "Black Forest Labs (FLUX)",
+        "description": "Use FLUX through the Black Forest Labs API.",
+        "availability": "supported",
+        "requirements": [
+          "A BFL API key saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "Detailed scenes",
+          "Reference composition",
+          "Image-to-image edits"
+        ],
+        "cost_summary": "Pay per image; price depends on model and quality.",
+        "documentation_url": "https://bfl.ai/models/flux-3-image",
+        "models": [
+          "FLUX.2 Pro",
+          "FLUX.2 Max",
+          "FLUX.2 Flex"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_black_forest_labs",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "flux-2-pro",
+            "flux-2-max",
+            "flux-2-flex"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "bfl",
+          "api_base_url": "https://api.bfl.ai/v1",
+          "default_model": "flux-2-pro",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "BFL API key",
+              "environment_name": "BFL_API_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "The app adapter sends one reference image to the selected FLUX endpoint."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha output is not documented."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 4096,
+            "maximum_height_px": 4096,
+            "maximum_pixels": 4194304,
+            "notes": "Use dimensions supported by the selected model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "Official FLUX MCP",
+          "url": "https://mcp.bfl.ai",
+          "maintenance": "official",
+          "authentication": "BFL account sign-in",
+          "notes": "The setup app uses the API adapter so the key stays in the OS vault.",
+          "tool_names": [
+            "generate_image",
+            "generate_variations"
+          ],
+          "version": "1.2.0"
+        }
+      },
+      {
+        "id": "stability_ai",
+        "display_name": "Stability AI",
+        "description": "Use Stable Image and Stable Diffusion models through the Stability API.",
+        "availability": "supported",
+        "requirements": [
+          "A Stability API key saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "Image generation",
+          "Image-to-image work",
+          "Background removal"
+        ],
+        "cost_summary": "Pay per image; some image operations cost extra.",
+        "documentation_url": "https://platform.stability.ai/docs/getting-started/stable-image",
+        "models": [
+          "Stable Image Core",
+          "Stable Image Ultra"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_stability_ai",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "stable-image-core",
+            "stable-image-ultra"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "stability",
+          "api_base_url": "https://api.stability.ai/v2beta",
+          "default_model": "stable-image-ultra",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "Stability API key",
+              "environment_name": "STABILITY_API_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "Image-to-image and control features depend on the endpoint."
+          },
+          "image_edits": true,
+          "background_removal": true,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Use the API background-removal operation, then verify alpha."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "Stability image MCP",
+          "url": "https://github.com/alesurli/mcp-stability-ai",
+          "maintenance": "community",
+          "authentication": "Stability API key",
+          "notes": "No first-party image MCP was found; the setup app uses its own reviewed API adapter.",
+          "tool_names": [
+            "generate_image",
+            "edit_image",
+            "remove_background"
+          ]
+        }
+      },
+      {
+        "id": "ideogram",
+        "display_name": "Ideogram",
+        "description": "Use Ideogram's image models through its API.",
+        "availability": "supported",
+        "requirements": [
+          "An Ideogram API key saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "Readable lettering",
+          "Design images",
+          "Reference edits"
+        ],
+        "cost_summary": "API use is billed through Ideogram credits.",
+        "documentation_url": "https://developer.ideogram.ai/",
+        "models": [
+          "Ideogram 4"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_ideogram",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "ideogram-v4"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "ideogram",
+          "api_base_url": "https://api.ideogram.ai/v1",
+          "default_model": "ideogram-v4",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "Ideogram API key",
+              "environment_name": "IDEOGRAM_API_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "The app adapter supports one reference image for edits. The transparent route uses a size tier."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": true,
+            "request_parameter": "transparent_background",
+            "notes": "Request the transparent generation route and verify alpha."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 8192,
+            "maximum_height_px": 8192,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "Ideogram MCP",
+          "url": "https://mcp.ideogram.ai/mcp",
+          "maintenance": "official",
+          "authentication": "Ideogram account sign-in",
+          "notes": "The setup app uses the API route so the key stays in the OS vault.",
+          "tool_names": [
+            "generate_image",
+            "describe_image",
+            "remix_image"
+          ]
+        }
+      },
+      {
+        "id": "recraft",
+        "display_name": "Recraft",
+        "description": "Use Recraft raster models through its API.",
+        "availability": "supported",
+        "requirements": [
+          "A Recraft API key saved in the operating-system credential store, plus API units."
+        ],
+        "good_for": [
+          "Graphic design",
+          "Vector images",
+          "Style-guided edits"
+        ],
+        "cost_summary": "Pay per image or operation; raster generation starts at a few cents.",
+        "documentation_url": "https://www.recraft.ai/docs",
+        "models": [
+          "Recraft V4.1",
+          "Recraft V4"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_recraft",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "recraftv4_1",
+            "recraftv4"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "recraft",
+          "api_base_url": "https://external.api.recraft.ai/v1",
+          "default_model": "recraftv4_1",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "Recraft API key",
+              "environment_name": "RECRAFT_API_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 10,
+            "notes": "Image references and sizes depend on model."
+          },
+          "image_edits": true,
+          "background_removal": true,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Use the background-removal operation for alpha and verify the result."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "Recraft MCP",
+          "url": "https://mcp.recraft.ai/mcp",
+          "maintenance": "official",
+          "authentication": "Recraft API key",
+          "notes": "The setup app uses the API route so keys stay in the OS vault.",
+          "tool_names": []
+        }
+      },
+      {
+        "id": "leonardo",
+        "display_name": "Leonardo.Ai",
+        "description": "Use Leonardo image models through its API.",
+        "availability": "supported",
+        "requirements": [
+          "A Leonardo API key saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "Realistic scenes",
+          "Style references",
+          "Image-to-image editing"
+        ],
+        "cost_summary": "Pay per model use; check the current API estimate.",
+        "documentation_url": "https://docs.leonardo.ai/docs/connect-to-leonardoai-mcp",
+        "models": [
+          "Lucid Origin"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_leonardo",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "7b592283-e8a7-4c5a-9ba6-d18c31f258b9"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "leonardo",
+          "api_base_url": "https://cloud.leonardo.ai/api/rest/v1",
+          "default_model": "7b592283-e8a7-4c5a-9ba6-d18c31f258b9",
+          "result_format": "model_defined",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "Leonardo API key",
+              "environment_name": "LEONARDO_API_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": null,
+            "notes": "This app adapter supports text-to-image only; choose a model-specific client for edits."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha output is not exposed by the default route."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 3840,
+            "maximum_height_px": 3616,
+            "maximum_pixels": null,
+            "notes": "Use dimensions supported by the selected model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "Leonardo MCP",
+          "url": "https://mcp.leonardo.ai/v1/mcp",
+          "maintenance": "official",
+          "authentication": "Leonardo API key",
+          "notes": "The app-managed route keeps the key in the OS vault.",
+          "tool_names": []
+        }
+      },
+      {
+        "id": "adobe_firefly",
+        "display_name": "Adobe Firefly",
+        "description": "Use Adobe Firefly through an organization-provided API.",
+        "availability": "conditional",
+        "requirements": [
+          "An Adobe organization, service API key, and IMS access token stored in the operating-system credential store."
+        ],
+        "good_for": [
+          "Style references",
+          "Structure references",
+          "Creative workflows"
+        ],
+        "cost_summary": "API pricing depends on organization access and credits.",
+        "documentation_url": "https://developer.adobe.com/firefly-services/docs/firefly-api/",
+        "models": [
+          "Firefly Image 5"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "enterprise_credentials",
+          "server_id": "hoi4_image_adobe_firefly",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {},
+          "supported_models": [],
+          "tool_arguments": {},
+          "required_environment_names": [],
+          "auth_headers": [
+            "authorization",
+            "x-api-key"
+          ],
+          "api_protocol": "mcp_proxy",
+          "api_base_url": "https://run-workflow.adobe.io/mcp",
+          "default_model": null,
+          "result_format": "model_defined",
+          "credential_fields": [
+            {
+              "id": "ims_token",
+              "display_name": "Adobe IMS access token",
+              "environment_name": "ADOBE_IMS_TOKEN",
+              "header": "authorization",
+              "prefix": "Bearer "
+            },
+            {
+              "id": "service_key",
+              "display_name": "Adobe service API key",
+              "environment_name": "ADOBE_SERVICE_API_KEY",
+              "header": "x-api-key",
+              "prefix": ""
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": null,
+            "notes": "Reference options depend on the Firefly workflow."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "This connected workflow does not expose background removal; use a selected remover route and verify alpha."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": null,
+            "maximum_height_px": null,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "Adobe Run-Workflow MCP",
+          "url": "https://run-workflow.adobe.io/mcp",
+          "maintenance": "official",
+          "authentication": "Organization IMS token and service API key",
+          "notes": "The organization configures its workflow tools. Ask the MCP for tools/list and use only the exact names it returns.",
+          "tool_names": []
+        }
+      },
+      {
+        "id": "xai_grok",
+        "display_name": "xAI Grok Imagine",
+        "description": "Use Grok Imagine for prompt-based images and reference edits.",
+        "availability": "supported",
+        "requirements": [
+          "An xAI API key saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "Photoreal images",
+          "Reference-guided edits"
+        ],
+        "cost_summary": "Pay per image; resolution and quality change the price.",
+        "documentation_url": "https://docs.x.ai/developers/model-capabilities/imagine",
+        "models": [
+          "grok-imagine-image-2.0"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_xai_grok",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "grok-imagine-image-2.0"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "xai_imagine",
+          "api_base_url": "https://api.x.ai/v1",
+          "default_model": "grok-imagine-image-2.0",
+          "result_format": "jpeg",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "xAI API key",
+              "environment_name": "XAI_API_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 5,
+            "notes": "The API accepts reference images for edits."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native transparent output is not documented."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "grok-mcp",
+          "url": "https://github.com/libraz/grok-mcp",
+          "maintenance": "community",
+          "authentication": "xAI API key",
+          "notes": "No official image-generation MCP was found; the app uses its reviewed API adapter.",
+          "tool_names": [
+            "generate_image",
+            "edit_image"
+          ]
+        }
+      },
+      {
+        "id": "together_ai",
+        "display_name": "Together AI",
+        "description": "Use open image models through Together's hosted API.",
+        "availability": "supported",
+        "requirements": [
+          "A Together API key saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "FLUX models",
+          "Open model families",
+          "Fast hosted generation"
+        ],
+        "cost_summary": "Pay per model; the connected route uses FLUX.2 Pro.",
+        "documentation_url": "https://www.together.ai/models/flux-2-pro",
+        "models": [
+          "FLUX.2 Pro"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_together_ai",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "black-forest-labs/FLUX.2-pro"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "together_images",
+          "api_base_url": "https://api.together.ai/v1",
+          "default_model": "black-forest-labs/FLUX.2-pro",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "Together API key",
+              "environment_name": "TOGETHER_API_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": null,
+            "notes": "FLUX.2 accepts URL references, but the setup route does not publish project files to a public URL."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 1920,
+            "maximum_height_px": 1920,
+            "maximum_pixels": null,
+            "notes": "Use dimensions supported by the selected model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        }
+      },
+      {
+        "id": "openrouter",
+        "display_name": "OpenRouter",
+        "description": "Use one account to try image models from many providers.",
+        "availability": "supported",
+        "requirements": [
+          "An OpenRouter API key saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "Comparing image models",
+          "Choosing among providers",
+          "Reference edits where supported"
+        ],
+        "cost_summary": "Pay per model; the connected route uses GPT Image 2.5 Sunburst.",
+        "documentation_url": "https://openrouter.ai/docs/guides/features/images",
+        "models": [
+          "GPT Image 2.5 Sunburst"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_openrouter",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "openai/gpt-image-2.5-sunburst"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "openrouter_images",
+          "api_base_url": "https://openrouter.ai/api/v1",
+          "default_model": "openai/gpt-image-2.5-sunburst",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "OpenRouter API key",
+              "environment_name": "OPENROUTER_API_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 16,
+            "notes": "The connected model accepts reference images for editing."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": true,
+            "request_parameter": "transparent_background",
+            "notes": "Request a transparent PNG and check that its pixels include transparency."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 3840,
+            "maximum_height_px": 3840,
+            "maximum_pixels": 8294400,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "OpenRouter MCP",
+          "url": "https://mcp.openrouter.ai/mcp",
+          "maintenance": "official",
+          "authentication": "OpenRouter browser authorization",
+          "notes": "The hosted MCP has short-lived authorization and a default spending cap. The setup app uses its Images API adapter for references.",
+          "tool_names": [
+            "generate-image"
+          ]
+        }
+      },
+      {
+        "id": "comfyui_local",
+        "display_name": "Local ComfyUI",
+        "description": "Use a ComfyUI server and checkpoint installed on this computer.",
+        "availability": "conditional",
+        "requirements": [
+          "A local ComfyUI server, a compatible checkpoint, and available GPU memory."
+        ],
+        "good_for": [
+          "Local models",
+          "Prompt-based image creation",
+          "One reference-guided edit"
+        ],
+        "cost_summary": "No per-image service bill; local hardware and model downloads are required.",
+        "documentation_url": "https://docs.comfy.org/",
+        "models": [
+          "Checkpoint selected in local ComfyUI"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "local",
+          "server_id": "hoi4_image_comfyui_local",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "comfyui",
+          "api_base_url": null,
+          "default_model": null,
+          "result_format": "png",
+          "credential_fields": [],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "The included basic workflow supports one reference image; custom workflows can add more."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "The basic local workflow does not make transparent output."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": null,
+            "maximum_height_px": null,
+            "maximum_pixels": null,
+            "notes": "Use dimensions supported by the selected model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "Comfy-Org comfy-mcp",
+          "url": "https://github.com/Comfy-Org/comfy-mcp",
+          "maintenance": "official",
+          "authentication": "Local ComfyUI server",
+          "notes": "The setup app uses a local adapter and does not alter the separate HOI4 portrait workflow.",
+          "tool_names": [],
+          "version": "0.10.0"
+        }
+      },
+      {
+        "id": "automatic1111_local",
+        "display_name": "AUTOMATIC1111",
+        "description": "Use a local AUTOMATIC1111 WebUI API server.",
+        "availability": "conditional",
+        "requirements": [
+          "A local install started with API access enabled and a downloaded model."
+        ],
+        "good_for": [
+          "Local image generation",
+          "Image-to-image",
+          "Inpainting"
+        ],
+        "cost_summary": "No per-image service bill; local hardware and models are required.",
+        "documentation_url": "https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API",
+        "models": [
+          "Models installed in AUTOMATIC1111"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "local",
+          "server_id": "hoi4_image_automatic1111_local",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "automatic1111",
+          "api_base_url": "http://127.0.0.1:7860",
+          "default_model": null,
+          "result_format": "png",
+          "credential_fields": [],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "The local API and model determine accepted image sizes."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Use a selected background-removal route and verify alpha."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": null,
+            "maximum_height_px": null,
+            "maximum_pixels": null,
+            "notes": "Use dimensions supported by the selected model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "image-generation-mcp",
+          "url": "https://github.com/pvliesdonk/image-generation-mcp",
+          "maintenance": "community",
+          "authentication": "Local server URL",
+          "notes": "The setup app uses its own pinned local API adapter.",
+          "tool_names": [
+            "generate_image",
+            "generate_image_from_image"
+          ]
+        }
+      },
+      {
+        "id": "forge_local",
+        "display_name": "Stable Diffusion Forge",
+        "description": "Use a local Forge API server and installed model.",
+        "availability": "conditional",
+        "requirements": [
+          "A local Forge install started with API access enabled and a downloaded model."
+        ],
+        "good_for": [
+          "Local image generation",
+          "Image-to-image",
+          "Inpainting"
+        ],
+        "cost_summary": "No per-image service bill; local hardware and models are required.",
+        "documentation_url": "https://github.com/lllyasviel/stable-diffusion-webui-forge",
+        "models": [
+          "Models installed in Forge"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "local",
+          "server_id": "hoi4_image_forge_local",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "automatic1111",
+          "api_base_url": "http://127.0.0.1:7860",
+          "default_model": null,
+          "result_format": "png",
+          "credential_fields": [],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "The local API and model determine accepted image sizes."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Use a selected background-removal route and verify alpha."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": null,
+            "maximum_height_px": null,
+            "maximum_pixels": null,
+            "notes": "Use dimensions supported by the selected model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "image-generation-mcp",
+          "url": "https://github.com/pvliesdonk/image-generation-mcp",
+          "maintenance": "community",
+          "authentication": "Local server URL",
+          "notes": "The setup app uses its own pinned local API adapter.",
+          "tool_names": [
+            "generate_image",
+            "generate_image_from_image"
+          ]
+        }
+      },
+      {
+        "id": "codex_native",
+        "display_name": "Codex image generation",
+        "description": "Use the image tool built into Codex with a ChatGPT plan.",
+        "availability": "supported",
+        "requirements": [
+          "Codex must be the primary coding client and signed in to a ChatGPT plan."
+        ],
+        "good_for": [
+          "Image generation",
+          "Reference-guided edits",
+          "Transparent output"
+        ],
+        "cost_summary": "Uses the plan's Codex limits; there is no separate image API bill.",
+        "documentation_url": "https://github.com/openai/codex/blob/main/codex-rs/skills/src/assets/samples/imagegen/SKILL.md",
+        "models": [
+          "Codex image_gen"
+        ],
+        "supported_coding_environments": [
+          "codex"
+        ],
+        "route": {
+          "kind": "native",
+          "auth_method": "chatgpt_subscription",
+          "server_id": null,
+          "url": null,
+          "component_id": null,
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": null,
+          "tool_names": {
+            "generate": "image_gen"
+          },
+          "supported_models": [],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": null,
+            "reference_images": "referenced_image_paths",
+            "quality": null,
+            "size": null,
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": null,
+          "api_base_url": null,
+          "default_model": null,
+          "result_format": "png",
+          "credential_fields": [],
+          "requires_primary_coding_environment": "codex"
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": null,
+            "notes": "Pass the reference files to the native Codex image tool."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": true,
+            "request_parameter": "transparent_background",
+            "notes": "Request transparency and verify the saved PNG alpha."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": null,
+            "maximum_height_px": null,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        }
+      },
+      {
+        "id": "vertex_imagen",
+        "display_name": "Google Vertex AI Imagen",
+        "description": "Use Google Cloud Imagen models.",
+        "availability": "conditional",
+        "requirements": [
+          "A Google Cloud project and credentials stored in the operating-system credential store."
+        ],
+        "good_for": [
+          "Fast concept images",
+          "High-quality final images"
+        ],
+        "cost_summary": "Pay per image; price depends on the Imagen tier.",
+        "documentation_url": "https://cloud.google.com/vertex-ai/generative-ai/docs/models/imagen/4-0-generate-001",
+        "models": [
+          "Imagen 4 Fast",
+          "Imagen 4 Standard",
+          "Imagen 4 Ultra"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "cloud_credentials",
+          "server_id": "hoi4_image_vertex_imagen",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "imagen-4.0-fast-generate-001",
+            "imagen-4.0-generate-001",
+            "imagen-4.0-ultra-generate-001"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "vertex_ai",
+          "api_base_url": "https://us-central1-aiplatform.googleapis.com/v1",
+          "default_model": "imagen-4.0-generate-001",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "service_account",
+              "display_name": "Google Cloud service-account key",
+              "environment_name": "GOOGLE_APPLICATION_CREDENTIALS"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": null,
+            "notes": "Imagen 4 generation is text-only; use Gemini for image edits."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native transparent output is not documented."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        }
+      },
+      {
+        "id": "microsoft_foundry",
+        "display_name": "Microsoft Foundry MAI Image",
+        "description": "Use Microsoft Foundry image models in a configured Azure resource.",
+        "availability": "conditional",
+        "requirements": [
+          "A deployed MAI image model, its resource endpoint, deployment name, and API key saved on this computer."
+        ],
+        "good_for": [
+          "Text-to-image",
+          "Reference-guided edits"
+        ],
+        "cost_summary": "Pay per image; preview model prices may change.",
+        "documentation_url": "https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/use-foundry-models-mai-image",
+        "models": [
+          "MAI-Image-2.6",
+          "MAI-Image-2.6-Flash"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "enterprise_credentials",
+          "server_id": "hoi4_image_microsoft_foundry",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "microsoft_foundry",
+          "api_base_url": null,
+          "default_model": null,
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "resource_url",
+              "display_name": "Microsoft Foundry resource endpoint",
+              "environment_name": "AZURE_ENDPOINT"
+            },
+            {
+              "id": "api_key",
+              "display_name": "Microsoft Foundry API key",
+              "environment_name": "AZURE_API_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 5,
+            "notes": "Reference limit and resolution depend on model; the newest models are in preview."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native transparent output is not documented."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 1536,
+            "maximum_height_px": 1536,
+            "maximum_pixels": 2359296,
+            "notes": "Use dimensions supported by the selected model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        }
+      },
+      {
+        "id": "aws_bedrock",
+        "display_name": "AWS Bedrock image models",
+        "description": "Use supported image models and edit tools through AWS Bedrock.",
+        "availability": "conditional",
+        "requirements": [
+          "An AWS account, supported region, model access, and AWS credentials."
+        ],
+        "good_for": [
+          "Image edits",
+          "Background removal",
+          "Hosted model access"
+        ],
+        "cost_summary": "Pay per model or image operation; AWS pricing varies by region.",
+        "documentation_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/stable-image-services.html",
+        "models": [
+          "Stable Image Core",
+          "Stable Image Ultra"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "cloud_credentials",
+          "server_id": "hoi4_image_aws_bedrock",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "stability.stable-image-core-v1:1",
+            "stability.stable-image-ultra-v1:1"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "aws_bedrock",
+          "api_base_url": null,
+          "default_model": "stability.stable-image-ultra-v1:1",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "access_key",
+              "display_name": "AWS access key ID",
+              "environment_name": "AWS_ACCESS_KEY_ID"
+            },
+            {
+              "id": "secret_key",
+              "display_name": "AWS secret access key",
+              "environment_name": "AWS_SECRET_ACCESS_KEY"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "The included Bedrock route passes one reference image; other model inputs vary."
+          },
+          "image_edits": true,
+          "background_removal": true,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Use a Bedrock background-removal operation and verify alpha."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 1536,
+            "maximum_height_px": 1536,
+            "maximum_pixels": 2359296,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "reference_mcp": {
+          "name": "AWS Bedrock image MCP",
+          "url": "https://github.com/awslabs/bedrock-image-mcp-server",
+          "maintenance": "official",
+          "authentication": "AWS credentials and model access",
+          "notes": "Uses the Stability image models; retired Nova Canvas and Titan Image Generator routes are excluded.",
+          "tool_names": []
+        }
+      },
+      {
+        "id": "huggingface_inference",
+        "display_name": "Hugging Face Inference Providers",
+        "description": "Use image models available through Hugging Face providers.",
+        "availability": "supported",
+        "requirements": [
+          "A Hugging Face token saved in the operating-system credential store."
+        ],
+        "good_for": [
+          "Trying different hosted models",
+          "Open model families"
+        ],
+        "cost_summary": "Pay as you go; cost depends on model and provider.",
+        "documentation_url": "https://huggingface.co/docs/inference-providers/index",
+        "models": [
+          "FLUX.1 Krea Dev"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "stdio_adapter",
+          "auth_method": "api_key_vault",
+          "server_id": "hoi4_image_huggingface_inference",
+          "url": null,
+          "component_id": "imagegen.runtime",
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": ".tools/image_generation/runtime/server.py",
+          "tool_names": {
+            "generate": "generate_image",
+            "edit": "edit_image",
+            "background_removal": "remove_background",
+            "auth_status": "image_auth_status"
+          },
+          "supported_models": [
+            "black-forest-labs/FLUX.1-Krea-dev"
+          ],
+          "tool_arguments": {
+            "prompt": "prompt",
+            "output_path": "out",
+            "reference_images": "reference_images",
+            "reference_image": "image",
+            "width": "width",
+            "height": "height",
+            "transparent_background": "transparent_background"
+          },
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": "huggingface_inference",
+          "api_base_url": "https://router.huggingface.co/hf-inference/models",
+          "default_model": "black-forest-labs/FLUX.1-Krea-dev",
+          "result_format": "png",
+          "credential_fields": [
+            {
+              "id": "api_key",
+              "display_name": "Hugging Face token",
+              "environment_name": "HF_TOKEN"
+            }
+          ],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": null,
+            "notes": "The included route covers text-to-image models. Use a model-specific client for image edits."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Use a selected background-removal route and verify alpha."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": null,
+            "maximum_height_px": null,
+            "maximum_pixels": null,
+            "notes": "Use dimensions supported by the selected model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        }
+      },
+      {
+        "id": "midjourney_manual",
+        "display_name": "Midjourney (manual only)",
+        "description": "Use Midjourney manually, then add files to your mod. It has no public API and does not permit automated generation.",
+        "availability": "manual_only",
+        "requirements": [
+          "A Midjourney subscription and manual use of its web or Discord app."
+        ],
+        "good_for": [
+          "Stylized concept art",
+          "Manual image editing"
+        ],
+        "cost_summary": "Subscription plans; no connected API route.",
+        "documentation_url": "https://github.com/midjourney/docs/blob/main/data/faq.txt",
+        "models": [
+          "Midjourney V8.2",
+          "Edit model"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "manual",
+          "auth_method": "manual",
+          "server_id": null,
+          "url": null,
+          "component_id": null,
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": null,
+          "tool_names": {},
+          "supported_models": [],
+          "tool_arguments": {},
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": null,
+          "api_base_url": null,
+          "default_model": null,
+          "result_format": "manual",
+          "credential_fields": [],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 4,
+            "notes": "Use references manually in the web editor."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "The public API does not document alpha output."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": null,
+            "maximum_height_px": null,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        }
+      },
+      {
+        "id": "none",
+        "display_name": "None — I will make art myself",
+        "description": "Do not connect an image-generation provider.",
+        "availability": "supported",
+        "requirements": [
+          "No service account or local install is needed."
+        ],
+        "good_for": [
+          "Using your own art",
+          "Sourced images"
+        ],
+        "cost_summary": "No provider charge.",
+        "documentation_url": null,
+        "models": [],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "route": {
+          "kind": "manual",
+          "auth_method": "none",
+          "server_id": null,
+          "url": null,
+          "component_id": null,
+          "source_repository": null,
+          "source_revision": null,
+          "package_name": null,
+          "package_version": null,
+          "package_tree_sha256": null,
+          "source_tree_sha256": null,
+          "package_lock_sha256": null,
+          "runtime_entry": null,
+          "tool_names": {},
+          "supported_models": [],
+          "tool_arguments": {},
+          "required_environment_names": [],
+          "auth_headers": [],
+          "api_protocol": null,
+          "api_base_url": null,
+          "default_model": null,
+          "result_format": "manual",
+          "credential_fields": [],
+          "requires_primary_coding_environment": null
+        },
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": null,
+            "notes": "Add your own files to the project."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "No image route is selected."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": null,
+            "maximum_height_px": null,
+            "maximum_pixels": null,
+            "notes": "This route uses the model's default image size; limits can vary by model."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Create or edit the image yourself and add it to the project."
+        }
+      }
+    ]
+  }
 }
