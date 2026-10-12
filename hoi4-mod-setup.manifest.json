@@ -1,7 +1,7 @@
 {
   "schema_version": "4.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "0f56375fb88903dd9cdb13818a68c05795b5acf9",
+  "generated_for_revision": "756a15a05739425802bedbf278618e77763bb4ca",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -8653,8 +8653,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "c853c50d3865b6e6501a28b1b159fc36a1ca83a04057f8a3910bf67033997cc7",
-          "size": 11407
+          "sha256": "5d8dc32bb19a3880d90bad57c78e2b1bc377e7fb1c1a9f249bc9397431483098",
+          "size": 11173
         }
       ]
     },
@@ -11182,13 +11182,13 @@
       "expected_files": [
         {
           "path": ".tools/image_generation/runtime/provider_catalog.json",
-          "sha256": "fbba0c7f962594a4ded67c3cfcaa9fdb7ea9a215c61eb64fae3c5ed71f62ff42",
-          "size": 67486
+          "sha256": "0f7181586970c20141ae2b5c555a2da18f4648e310bed6496439316bc39361ea",
+          "size": 67515
         },
         {
           "path": ".tools/image_generation/runtime/server.py",
-          "sha256": "334d10f11942fb8fad0e90f32f2ad6d24024b44e3b099bb6a12587a60aa1cfd5",
-          "size": 94636
+          "sha256": "7e4bd79bc872b412d1d7bd197c95dea44b1e1d043955a25c379a40892254dfba",
+          "size": 96747
         }
       ],
       "conflicts": [],
@@ -12930,10 +12930,9 @@
           "tool_arguments": {
             "prompt": "prompt",
             "output_path": "out",
-            "reference_images": "reference_images",
             "reference_image": "image",
-            "width": "width",
-            "height": "height",
+            "reference_images": "reference_images",
+            "aspect_ratio": "aspect_ratio",
             "transparent_background": "transparent_background"
           },
           "required_environment_names": [],
@@ -12966,10 +12965,10 @@
           },
           "size_limits": {
             "accepts_dimensions": false,
-            "maximum_width_px": 3840,
-            "maximum_height_px": 3840,
-            "maximum_pixels": 8294400,
-            "notes": "This route uses the model's default image size; limits can vary by model."
+            "maximum_width_px": null,
+            "maximum_height_px": null,
+            "maximum_pixels": null,
+            "notes": "Choose one of the selected model's supported aspect ratios; the model chooses output pixel dimensions."
           },
           "one_image_per_call": true,
           "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
@@ -13655,7 +13654,7 @@
           "reference_images": {
             "supported": true,
             "max_count": 1,
-            "notes": "The included Bedrock route passes one reference image; other model inputs vary."
+            "notes": "Stable Image Ultra accepts one reference image for edits. Stable Image Core is text-to-image only."
           },
           "image_edits": true,
           "background_removal": true,
