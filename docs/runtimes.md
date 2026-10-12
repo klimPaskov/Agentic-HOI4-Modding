@@ -3,7 +3,7 @@
 This repository can be opened in more than one coding-agent runtime.
 The HOI4 rules themselves are runtime-neutral; only the discovery paths, the subagent registry, and MCP registration differ per runtime.
 
-Claude Code is the primary environment and the canonical source.
+The package keeps canonical instruction, skill, and subagent sources under `.claude`. Choose any supported coding client; the setup app creates the matching client files.
 Every other runtime reads a generated projection of the same instructions, skills, and subagents.
 Edit the canonical file, then regenerate the projections with the synchronizers in `.tools/sync/`.
 
@@ -29,7 +29,7 @@ Each runtime loads its project instructions from a different file name.
 | Qoder | `AGENTS.md` | Declared in `.qoder/settings.json`. |
 | OpenCode | `AGENTS.md` | Declared in `.opencode/settings.json` and the root `opencode.json`. |
 
-`AGENTS.md` is the projection of `CLAUDE.md` with the phrases listed in `.tools/sync/instruction_projection.json` replaced, for example the Claude image-generation MCP workflow becoming native ImageGen.
+`AGENTS.md` is a projection of `CLAUDE.md`. It keeps provider-neutral image guidance until HOI4 Mod Setup fills the marked section from the selected image-generation provider table.
 The source package ships `CLAUDE_template.md` and its projection `AGENTS_template.md`; HOI4 Mod Setup adapts both for a new mod.
 
 Consequences worth knowing:

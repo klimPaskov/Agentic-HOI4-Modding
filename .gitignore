@@ -16,6 +16,9 @@
 
 # Generated Python bytecode from reusable skill tools.
 /.claude/skills/**/__pycache__/
+/.tools/image_generation/**/__pycache__/
+/.tools/image_generation/**/node_modules/
+/.tools/image_generation/**/.venv/
 
 # Skill copies for Codex, DSH, and Qoder are generated from .claude/skills by
 # .tools/sync/sync_skills.py; the source package tracks only the canonical library.

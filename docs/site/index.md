@@ -6,16 +6,16 @@ title: Agentic HOI4 Modding
 
 Build Hearts of Iron IV mods with your coding agent. Make focus trees, events, decisions and maps, fix broken script and balance the AI. Modding skills, specialist helpers, an offline wiki and HOI4 tools help your agent do the work.
 
-Claude Code is the primary environment. Codex, Cursor, Qoder and OpenCode use files generated from the same sources.
+Choose any supported coding client, including Claude Code, Codex, Cursor, Qoder, or OpenCode. HOI4 Mod Setup creates project files and registers tools for the clients you select.
 
 ## Install with HOI4 Mod Setup
 
 1. Download [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest).
 2. Choose a new mod or an existing Git project, then enter the mod name, prefix, game folder, and Workshop folder.
-3. Select Claude Code or your preferred runtime and the workflows you need: core modding, portraits, 3D, Super Events, or live testing.
+3. Select any supported coding client and the workflows you need: core modding, image generation, portraits, 3D, Super Events, or live testing.
 4. Review the planned changes and install. Open the mod in your coding client, approve the project MCP server, and check the connection.
 
-The app installs the MCP releases pinned in the package manifest. Its update and repair flows preserve local additions and let you review instruction conflicts.
+The app installs the MCP releases pinned in the package manifest. Its update and repair flows preserve local additions and let you review instruction conflicts. You can change the image provider later and have the app update its MCP registrations and guidance.
 
 [Setup app screenshots](https://github.com/klimPaskov/HOI4-Mod-Setup/tree/main/docs/screenshots) show the install and maintenance screens.
 
@@ -45,7 +45,11 @@ For optional workflows, copy the complete tools, references, and runtime assets 
 
 The [catalog](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/catalog.md) covers focus trees, decisions, events, game systems, interfaces, assets, portraits, 3D models, live testing and Super Events. Describe the task; your agent chooses the skills and specialists it needs.
 
-Claude routing uses **Opus** for the improvement planner; **Sonnet** for 3D, completion, localisation, architecture, and skill maintenance; and **Haiku** for the other agents. Claude agents explicitly set effort to `xhigh`, `high`, or `medium` where supported. Codex translates those tiers to per-agent `xhigh`, `high`, and `medium` reasoning effort.
+Specialist roles use model tiers matched to the work. The package maps those tiers to settings supported by each selected coding client.
+
+## Image generation and modding tools
+
+HOI4 Mod Setup selects ChatGPT through the GPTImage MCP by default. You can choose another hosted or local provider, use Codex image generation, or make art yourself. The app keeps API keys in the operating-system credential store and updates the asset guidance for your choice. See the [provider research](https://github.com/klimPaskov/HOI4-Mod-Setup/blob/main/docs/image-generation-providers.md) for models, access needs, costs, and size limits.
 
 ## Modding and live testing
 
@@ -67,10 +71,12 @@ Reconnect the client and follow the [Live Tools setup guide](https://github.com/
 
 ![Choose coding environments in HOI4 Mod Setup](https://raw.githubusercontent.com/klimPaskov/HOI4-Mod-Setup/main/docs/screenshots/15-coding-environments.png)
 
+![Choose an image-generation provider in HOI4 Mod Setup](https://raw.githubusercontent.com/klimPaskov/HOI4-Mod-Setup/main/docs/screenshots/16-image-generation.png)
+
 ## License
 
 Original package code and guidance use the [Apache License 2.0](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/LICENSE). Third-party material retains its own terms; see [NOTICE](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/NOTICE).
 
 ## Upgrade an older checkout
 
-Back up and commit your mod work, then use the setup app to update or repair the package and MCP installation. Review custom instruction merges, regenerate runtime files from the Claude sources, and reconnect clients. Older Codex-first packages need this migration before using the package.
+Back up and commit your mod work, then use the setup app to update or repair the package and MCP installation. Review custom instruction changes, regenerate runtime files for your selected coding clients, and reconnect them.

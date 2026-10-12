@@ -1,0 +1,1779 @@
+{
+  "default_provider": "gptimage",
+  "providers": [
+    {
+      "id": "gptimage",
+      "display_name": "ChatGPT subscription (GPTImage)",
+      "availability": "supported",
+      "route": {
+        "kind": "local_package",
+        "auth_method": "chatgpt_subscription",
+        "server_id": "hoi4_image_gptimage",
+        "url": null,
+        "component_id": "imagegen.gptimage",
+        "source_repository": "https://github.com/Connected-Mate/gptimage",
+        "source_revision": "49273481195c9795a4b6dc47b28549139c977025",
+        "package_name": "gptimage",
+        "package_version": "0.1.0",
+        "package_tree_sha256": null,
+        "source_tree_sha256": "6094097fa8ba353674aef40d665c59b465481a35e2eefad5237cff4039ec0207",
+        "package_lock_sha256": "bd75719d34e7a161e8b3d712fdb358ba1b89dcc6d6f6cd614ddbc38032a45778",
+        "runtime_entry": ".tools/image_generation/providers/gptimage/src/server.js",
+        "tool_names": {
+          "generate": "generate_image",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "quality": "quality",
+          "size": "size"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": null,
+        "api_base_url": null,
+        "default_model": null,
+        "result_format": "png",
+        "credential_fields": [],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": null,
+          "notes": "Pass project image paths and describe what each reference contributes. The server documents a maximum edge and aspect-ratio rule."
+        },
+        "image_edits": false,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "PNG output does not guarantee a transparent background."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": 3840,
+          "maximum_height_px": 3840,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Use reference_images to make a new version; choose another configured provider for precise image edits."
+      }
+    },
+    {
+      "id": "openai_api",
+      "display_name": "OpenAI Images API",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_openai_api",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "gpt-image-2.5-sunburst",
+          "gpt-image-2.5-flare",
+          "gpt-image-2"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "openai_images",
+        "api_base_url": "https://api.openai.com/v1",
+        "default_model": "gpt-image-2.5-sunburst",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "OpenAI API key",
+            "environment_name": "OPENAI_API_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 16,
+          "notes": "Reference count depends on model and endpoint. Use local image paths with the edit tool."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": true,
+          "request_parameter": "transparent_background",
+          "notes": "Supported GPT Image models can request transparent output. Verify the saved alpha."
+        },
+        "size_limits": {
+          "accepts_dimensions": true,
+          "maximum_width_px": 3840,
+          "maximum_height_px": 3840,
+          "maximum_pixels": 8294400,
+          "notes": "Use dimensions supported by the selected model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "gemini_api",
+      "display_name": "Google Gemini images (Nano Banana)",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_gemini_api",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "gemini-nano-banana-2.1",
+          "gemini-3.1-flash-image",
+          "gemini-3-pro-image"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "gemini_generate_content",
+        "api_base_url": "https://generativelanguage.googleapis.com/v1",
+        "default_model": "gemini-nano-banana-2.1",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "Google AI Studio API key",
+            "environment_name": "GEMINI_API_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 14,
+          "notes": "Reference-image limits vary by model."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "The API does not promise native transparent output."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": 4096,
+          "maximum_height_px": 4096,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "fal_ai",
+      "display_name": "fal.ai",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_fal_ai",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "fal-ai/flux-2-pro"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "fal_queue",
+        "api_base_url": "https://queue.fal.run",
+        "default_model": "fal-ai/flux-2-pro",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "fal API key",
+            "environment_name": "FAL_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 1,
+          "notes": "The default FLUX edit route accepts one reference; other fal models vary."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Choose a model with alpha output or use a selected background-removal route."
+        },
+        "size_limits": {
+          "accepts_dimensions": true,
+          "maximum_width_px": 2560,
+          "maximum_height_px": 2560,
+          "maximum_pixels": 4194304,
+          "notes": "Use dimensions supported by the selected model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "replicate",
+      "display_name": "Replicate",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_replicate",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "black-forest-labs/flux-schnell"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "replicate_predictions",
+        "api_base_url": "https://api.replicate.com/v1",
+        "default_model": "black-forest-labs/flux-schnell",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "Replicate API token",
+            "environment_name": "REPLICATE_API_TOKEN"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": false,
+          "max_count": null,
+          "notes": "Reference support depends on the selected Replicate model; the included default route is text-to-image."
+        },
+        "image_edits": false,
+        "background_removal": true,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Use a selected background-removal route when the model does not return alpha."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": null,
+          "maximum_height_px": null,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "black_forest_labs",
+      "display_name": "Black Forest Labs (FLUX)",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_black_forest_labs",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "flux-2-pro",
+          "flux-2-max",
+          "flux-2-flex"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "bfl",
+        "api_base_url": "https://api.bfl.ai/v1",
+        "default_model": "flux-2-pro",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "BFL API key",
+            "environment_name": "BFL_API_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 1,
+          "notes": "The app adapter sends one reference image to the selected FLUX endpoint."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Native alpha output is not documented."
+        },
+        "size_limits": {
+          "accepts_dimensions": true,
+          "maximum_width_px": 4096,
+          "maximum_height_px": 4096,
+          "maximum_pixels": 4194304,
+          "notes": "Use dimensions supported by the selected model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "stability_ai",
+      "display_name": "Stability AI",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_stability_ai",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "stable-image-core",
+          "stable-image-ultra"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "stability",
+        "api_base_url": "https://api.stability.ai/v2beta",
+        "default_model": "stable-image-ultra",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "Stability API key",
+            "environment_name": "STABILITY_API_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 1,
+          "notes": "Image-to-image and control features depend on the endpoint."
+        },
+        "image_edits": true,
+        "background_removal": true,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Use the API background-removal operation, then verify alpha."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": 2048,
+          "maximum_height_px": 2048,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "ideogram",
+      "display_name": "Ideogram",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_ideogram",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "ideogram-v4"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "ideogram",
+        "api_base_url": "https://api.ideogram.ai/v1",
+        "default_model": "ideogram-v4",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "Ideogram API key",
+            "environment_name": "IDEOGRAM_API_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 1,
+          "notes": "The app adapter supports one reference image for edits. The transparent route uses a size tier."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": true,
+          "request_parameter": "transparent_background",
+          "notes": "Request the transparent generation route and verify alpha."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": 8192,
+          "maximum_height_px": 8192,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "recraft",
+      "display_name": "Recraft",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_recraft",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "recraftv4_1",
+          "recraftv4"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "recraft",
+        "api_base_url": "https://external.api.recraft.ai/v1",
+        "default_model": "recraftv4_1",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "Recraft API key",
+            "environment_name": "RECRAFT_API_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 10,
+          "notes": "Image references and sizes depend on model."
+        },
+        "image_edits": true,
+        "background_removal": true,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Use the background-removal operation for alpha and verify the result."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": 2048,
+          "maximum_height_px": 2048,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "leonardo",
+      "display_name": "Leonardo.Ai",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_leonardo",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "7b592283-e8a7-4c5a-9ba6-d18c31f258b9"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "leonardo",
+        "api_base_url": "https://cloud.leonardo.ai/api/rest/v1",
+        "default_model": "7b592283-e8a7-4c5a-9ba6-d18c31f258b9",
+        "result_format": "model_defined",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "Leonardo API key",
+            "environment_name": "LEONARDO_API_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": false,
+          "max_count": null,
+          "notes": "This app adapter supports text-to-image only; choose a model-specific client for edits."
+        },
+        "image_edits": false,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Native alpha output is not exposed by the default route."
+        },
+        "size_limits": {
+          "accepts_dimensions": true,
+          "maximum_width_px": 3840,
+          "maximum_height_px": 3616,
+          "maximum_pixels": null,
+          "notes": "Use dimensions supported by the selected model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "adobe_firefly",
+      "display_name": "Adobe Firefly",
+      "availability": "conditional",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "enterprise_credentials",
+        "server_id": "hoi4_image_adobe_firefly",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {},
+        "supported_models": [],
+        "tool_arguments": {},
+        "required_environment_names": [],
+        "auth_headers": [
+          "authorization",
+          "x-api-key"
+        ],
+        "api_protocol": "mcp_proxy",
+        "api_base_url": "https://run-workflow.adobe.io/mcp",
+        "default_model": null,
+        "result_format": "model_defined",
+        "credential_fields": [
+          {
+            "id": "ims_token",
+            "display_name": "Adobe IMS access token",
+            "environment_name": "ADOBE_IMS_TOKEN",
+            "header": "authorization",
+            "prefix": "Bearer "
+          },
+          {
+            "id": "service_key",
+            "display_name": "Adobe service API key",
+            "environment_name": "ADOBE_SERVICE_API_KEY",
+            "header": "x-api-key",
+            "prefix": ""
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": null,
+          "notes": "Reference options depend on the Firefly workflow."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "This connected workflow does not expose background removal; use a selected remover route and verify alpha."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": null,
+          "maximum_height_px": null,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "xai_grok",
+      "display_name": "xAI Grok Imagine",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_xai_grok",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "grok-imagine-image-2.0"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "xai_imagine",
+        "api_base_url": "https://api.x.ai/v1",
+        "default_model": "grok-imagine-image-2.0",
+        "result_format": "jpeg",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "xAI API key",
+            "environment_name": "XAI_API_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 5,
+          "notes": "The API accepts reference images for edits."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Native transparent output is not documented."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": 2048,
+          "maximum_height_px": 2048,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "together_ai",
+      "display_name": "Together AI",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_together_ai",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "black-forest-labs/FLUX.2-pro"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "together_images",
+        "api_base_url": "https://api.together.ai/v1",
+        "default_model": "black-forest-labs/FLUX.2-pro",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "Together API key",
+            "environment_name": "TOGETHER_API_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": false,
+          "max_count": null,
+          "notes": "FLUX.2 accepts URL references, but the setup route does not publish project files to a public URL."
+        },
+        "image_edits": false,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Native alpha is not documented."
+        },
+        "size_limits": {
+          "accepts_dimensions": true,
+          "maximum_width_px": 1920,
+          "maximum_height_px": 1920,
+          "maximum_pixels": null,
+          "notes": "Use dimensions supported by the selected model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "openrouter",
+      "display_name": "OpenRouter",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_openrouter",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "openai/gpt-image-2.5-sunburst"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "openrouter_images",
+        "api_base_url": "https://openrouter.ai/api/v1",
+        "default_model": "openai/gpt-image-2.5-sunburst",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "OpenRouter API key",
+            "environment_name": "OPENROUTER_API_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 16,
+          "notes": "The connected model accepts reference images for editing."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": true,
+          "request_parameter": "transparent_background",
+          "notes": "Request a transparent PNG and check that its pixels include transparency."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": 3840,
+          "maximum_height_px": 3840,
+          "maximum_pixels": 8294400,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "comfyui_local",
+      "display_name": "Local ComfyUI",
+      "availability": "conditional",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "local",
+        "server_id": "hoi4_image_comfyui_local",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "comfyui",
+        "api_base_url": null,
+        "default_model": null,
+        "result_format": "png",
+        "credential_fields": [],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 1,
+          "notes": "The included basic workflow supports one reference image; custom workflows can add more."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "The basic local workflow does not make transparent output."
+        },
+        "size_limits": {
+          "accepts_dimensions": true,
+          "maximum_width_px": null,
+          "maximum_height_px": null,
+          "maximum_pixels": null,
+          "notes": "Use dimensions supported by the selected model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "automatic1111_local",
+      "display_name": "AUTOMATIC1111",
+      "availability": "conditional",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "local",
+        "server_id": "hoi4_image_automatic1111_local",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "automatic1111",
+        "api_base_url": "http://127.0.0.1:7860",
+        "default_model": null,
+        "result_format": "png",
+        "credential_fields": [],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 1,
+          "notes": "The local API and model determine accepted image sizes."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Use a selected background-removal route and verify alpha."
+        },
+        "size_limits": {
+          "accepts_dimensions": true,
+          "maximum_width_px": null,
+          "maximum_height_px": null,
+          "maximum_pixels": null,
+          "notes": "Use dimensions supported by the selected model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "forge_local",
+      "display_name": "Stable Diffusion Forge",
+      "availability": "conditional",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "local",
+        "server_id": "hoi4_image_forge_local",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "automatic1111",
+        "api_base_url": "http://127.0.0.1:7860",
+        "default_model": null,
+        "result_format": "png",
+        "credential_fields": [],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 1,
+          "notes": "The local API and model determine accepted image sizes."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Use a selected background-removal route and verify alpha."
+        },
+        "size_limits": {
+          "accepts_dimensions": true,
+          "maximum_width_px": null,
+          "maximum_height_px": null,
+          "maximum_pixels": null,
+          "notes": "Use dimensions supported by the selected model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "codex_native",
+      "display_name": "Codex image generation",
+      "availability": "supported",
+      "route": {
+        "kind": "native",
+        "auth_method": "chatgpt_subscription",
+        "server_id": null,
+        "url": null,
+        "component_id": null,
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": null,
+        "tool_names": {
+          "generate": "image_gen"
+        },
+        "supported_models": [],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": null,
+          "reference_images": "referenced_image_paths",
+          "quality": null,
+          "size": null,
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": null,
+        "api_base_url": null,
+        "default_model": null,
+        "result_format": "png",
+        "credential_fields": [],
+        "requires_primary_coding_environment": "codex"
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": null,
+          "notes": "Pass the reference files to the native Codex image tool."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": true,
+          "request_parameter": "transparent_background",
+          "notes": "Request transparency and verify the saved PNG alpha."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": null,
+          "maximum_height_px": null,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "vertex_imagen",
+      "display_name": "Google Vertex AI Imagen",
+      "availability": "conditional",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "cloud_credentials",
+        "server_id": "hoi4_image_vertex_imagen",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "imagen-4.0-fast-generate-001",
+          "imagen-4.0-generate-001",
+          "imagen-4.0-ultra-generate-001"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "vertex_ai",
+        "api_base_url": "https://us-central1-aiplatform.googleapis.com/v1",
+        "default_model": "imagen-4.0-generate-001",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "service_account",
+            "display_name": "Google Cloud service-account key",
+            "environment_name": "GOOGLE_APPLICATION_CREDENTIALS"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": false,
+          "max_count": null,
+          "notes": "Imagen 4 generation is text-only; use Gemini for image edits."
+        },
+        "image_edits": false,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Native transparent output is not documented."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": 2048,
+          "maximum_height_px": 2048,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "microsoft_foundry",
+      "display_name": "Microsoft Foundry MAI Image",
+      "availability": "conditional",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "enterprise_credentials",
+        "server_id": "hoi4_image_microsoft_foundry",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "microsoft_foundry",
+        "api_base_url": null,
+        "default_model": null,
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "resource_url",
+            "display_name": "Microsoft Foundry resource endpoint",
+            "environment_name": "AZURE_ENDPOINT"
+          },
+          {
+            "id": "api_key",
+            "display_name": "Microsoft Foundry API key",
+            "environment_name": "AZURE_API_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 5,
+          "notes": "Reference limit and resolution depend on model; the newest models are in preview."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Native transparent output is not documented."
+        },
+        "size_limits": {
+          "accepts_dimensions": true,
+          "maximum_width_px": 1536,
+          "maximum_height_px": 1536,
+          "maximum_pixels": 2359296,
+          "notes": "Use dimensions supported by the selected model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "aws_bedrock",
+      "display_name": "AWS Bedrock image models",
+      "availability": "conditional",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "cloud_credentials",
+        "server_id": "hoi4_image_aws_bedrock",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "stability.stable-image-core-v1:1",
+          "stability.stable-image-ultra-v1:1"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "aws_bedrock",
+        "api_base_url": null,
+        "default_model": "stability.stable-image-ultra-v1:1",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "access_key",
+            "display_name": "AWS access key ID",
+            "environment_name": "AWS_ACCESS_KEY_ID"
+          },
+          {
+            "id": "secret_key",
+            "display_name": "AWS secret access key",
+            "environment_name": "AWS_SECRET_ACCESS_KEY"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 1,
+          "notes": "The included Bedrock route passes one reference image; other model inputs vary."
+        },
+        "image_edits": true,
+        "background_removal": true,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Use a Bedrock background-removal operation and verify alpha."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": 1536,
+          "maximum_height_px": 1536,
+          "maximum_pixels": 2359296,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "huggingface_inference",
+      "display_name": "Hugging Face Inference Providers",
+      "availability": "supported",
+      "route": {
+        "kind": "stdio_adapter",
+        "auth_method": "api_key_vault",
+        "server_id": "hoi4_image_huggingface_inference",
+        "url": null,
+        "component_id": "imagegen.runtime",
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": ".tools/image_generation/runtime/server.py",
+        "tool_names": {
+          "generate": "generate_image",
+          "edit": "edit_image",
+          "background_removal": "remove_background",
+          "auth_status": "image_auth_status"
+        },
+        "supported_models": [
+          "black-forest-labs/FLUX.1-Krea-dev"
+        ],
+        "tool_arguments": {
+          "prompt": "prompt",
+          "output_path": "out",
+          "reference_images": "reference_images",
+          "reference_image": "image",
+          "width": "width",
+          "height": "height",
+          "transparent_background": "transparent_background"
+        },
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": "huggingface_inference",
+        "api_base_url": "https://router.huggingface.co/hf-inference/models",
+        "default_model": "black-forest-labs/FLUX.1-Krea-dev",
+        "result_format": "png",
+        "credential_fields": [
+          {
+            "id": "api_key",
+            "display_name": "Hugging Face token",
+            "environment_name": "HF_TOKEN"
+          }
+        ],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": false,
+          "max_count": null,
+          "notes": "The included route covers text-to-image models. Use a model-specific client for image edits."
+        },
+        "image_edits": false,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "Use a selected background-removal route and verify alpha."
+        },
+        "size_limits": {
+          "accepts_dimensions": true,
+          "maximum_width_px": null,
+          "maximum_height_px": null,
+          "maximum_pixels": null,
+          "notes": "Use dimensions supported by the selected model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "midjourney_manual",
+      "display_name": "Midjourney (manual only)",
+      "availability": "manual_only",
+      "route": {
+        "kind": "manual",
+        "auth_method": "manual",
+        "server_id": null,
+        "url": null,
+        "component_id": null,
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": null,
+        "tool_names": {},
+        "supported_models": [],
+        "tool_arguments": {},
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": null,
+        "api_base_url": null,
+        "default_model": null,
+        "result_format": "manual",
+        "credential_fields": [],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": true,
+          "max_count": 4,
+          "notes": "Use references manually in the web editor."
+        },
+        "image_edits": true,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "The public API does not document alpha output."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": null,
+          "maximum_height_px": null,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+      }
+    },
+    {
+      "id": "none",
+      "display_name": "None — I will make art myself",
+      "availability": "supported",
+      "route": {
+        "kind": "manual",
+        "auth_method": "none",
+        "server_id": null,
+        "url": null,
+        "component_id": null,
+        "source_repository": null,
+        "source_revision": null,
+        "package_name": null,
+        "package_version": null,
+        "package_tree_sha256": null,
+        "source_tree_sha256": null,
+        "package_lock_sha256": null,
+        "runtime_entry": null,
+        "tool_names": {},
+        "supported_models": [],
+        "tool_arguments": {},
+        "required_environment_names": [],
+        "auth_headers": [],
+        "api_protocol": null,
+        "api_base_url": null,
+        "default_model": null,
+        "result_format": "manual",
+        "credential_fields": [],
+        "requires_primary_coding_environment": null
+      },
+      "capabilities": {
+        "reference_images": {
+          "supported": false,
+          "max_count": null,
+          "notes": "Add your own files to the project."
+        },
+        "image_edits": false,
+        "background_removal": false,
+        "transparent_background": {
+          "native": false,
+          "request_parameter": null,
+          "notes": "No image route is selected."
+        },
+        "size_limits": {
+          "accepts_dimensions": false,
+          "maximum_width_px": null,
+          "maximum_height_px": null,
+          "maximum_pixels": null,
+          "notes": "This route uses the model's default image size; limits can vary by model."
+        },
+        "one_image_per_call": true,
+        "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+        "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+        "fallback_if_no_edits": "Create or edit the image yourself and add it to the project."
+      }
+    }
+  ]
+}

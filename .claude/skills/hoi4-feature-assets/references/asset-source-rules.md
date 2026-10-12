@@ -32,7 +32,11 @@ Maps may still appear as secondary props when useful, but they should rarely be 
 
 ### Use the image generator for generated symbolic or fictional assets
 
-The image generator is the runtime's configured image-generation route: the image-generation MCP server in Claude Code, and native ImageGen (`$imagegen`) in Codex. If it is unavailable, stop and report the blocker instead of building a substitute pipeline.
+The image generator is the image-generation route selected for this project. HOI4 Mod Setup fills in the provider-specific details below from the manifest table. If no route is configured, stop and report the blocker instead of building a substitute pipeline.
+
+<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->
+[The selected image-generation provider details are added by HOI4 Mod Setup.]
+<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->
 
 Use the image generator by default for:
 
@@ -48,13 +52,13 @@ Use the image generator by default for:
 - progression-state base art
 - other symbolic or fictional static assets
 
-When creating generated assets, follow the image generator's workflow. Do not define a separate image generation route in this skill.
+When creating generated assets, follow the selected image-generation route. Do not define a separate image-generation route in this skill.
 
-Read [generation-and-review.md](generation-and-review.md) before generated source production or editing. It defines reference roles, focused revision, native transparency, truthful model-selection evidence, and acceptance checks.
+Read [generation-and-review.md](generation-and-review.md) before generated source production or editing. It defines reference roles, focused revision, provider-supported transparency and editing, and acceptance checks.
 
-For transparent icons, ask the image generator for the required transparent output and follow the image generator's transparent-image route. The final PNG must have real transparency, no fake checkerboard, no white halo, no white outline, and no opaque square background unless the asset type explicitly uses a painted backdrop.
+For transparent icons, follow the selected provider section: ask for native transparent output when it is supported, or use its listed background-removal fallback and check the saved alpha. The final PNG must have real transparency, no fake checkerboard, no white halo, no white outline, and no opaque square background unless the asset type explicitly uses a painted backdrop.
 
-If the image generator is unavailable, report that clearly and stop before using an alternate route.
+If the selected image-generation route is unavailable, report that clearly and stop before using an unconfigured service.
 
 For generated animated assets, use the image generator through `hoi4-frame-animation`. Each animation frame must be generated or edited as its own source frame according to a frame plan. Do not use local filters, transforms, glow pulses, or offsets as the source of final motion.
 

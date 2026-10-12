@@ -115,7 +115,7 @@ Use repo skills as required implementation guidance, not as optional notes.
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.portraits.core:START -->
 ### Character portraits
 
-Use `hoi4-portrait-production` and `hoi4_portrait_creator` for every character portrait. The portrait worker researches and archives grounded sources, creates and wires explicit source placeholders, and validates the user-supplied final from the configured Cloud, Local, or RunPod route. The user runs the selected grounded-subject provider workflow; agents never operate RunPod. For fictional or impossible portraits, the portrait worker invokes the image-generation MCP workflow, processes PNG/DDS variants, installs portrait-specific wiring, and writes manifests and handoffs.
+Use `hoi4-portrait-production` and `hoi4_portrait_creator` for every character portrait. The portrait worker researches and archives grounded sources, creates and wires explicit source placeholders, and validates the user-supplied final from the configured Cloud, Local, or RunPod route. The user runs the selected grounded-subject provider workflow; agents never operate RunPod. For fictional or impossible portraits, the portrait worker uses the selected image-generation route, processes PNG/DDS variants, installs portrait-specific wiring, and writes manifests and handoffs.
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.portraits.core:END -->
 
 ### HOI4 MCP
@@ -151,7 +151,7 @@ HOI4 Live Tools is an optional MCP server (`hoi4-live`) that drives a running He
 
 ### Agent runtimes
 
-Claude Code is the primary development environment and the canonical source for every agent-facing definition:
+HOI4 Mod Setup lets you choose any supported coding client. This package keeps canonical instructions, skills, and agent definitions together under `.claude`, then creates the matching files for the clients you select. Do not assume the selected client is Claude Code.
 
 - `CLAUDE.md`: project instructions. `AGENTS.md` is generated from it.
 - `.claude/skills/<name>/SKILL.md`: the skill library. `.agents/skills/` and `.qoder/skills/` are generated copies.
@@ -215,7 +215,7 @@ Use these high-level routing rules:
 - Use `hoi4_repo_explorer` only when file locations, existing patterns, vanilla references, likely touchpoints, missing-file recovery, or implementation order are unclear. Do not use it for small known-file edits, provided-file edits, direct skill or prompt updates, localisation-only cleanup, asset-only production, or tasks already bounded to exact files. The parent should inspect the known files directly for those cases.
 - Use asset subagents for non-portrait visual production: `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, and `hoi4_icon_artist`. All character portrait work belongs to `hoi4_portrait_creator`.
 - Use `hoi4_event_ui_worker` only for a dedicated scripted GUI introduced and owned by one named event or event-owned mechanic. The parent prompt must prove event ownership and name exact GUI identifiers, files, entry point, states, resolutions, assets, and handoff path. The worker owns bounded layout implementation and the iterative MCP live-preview and comparison evidence required by `hoi4-scripted-gui`, while the parent and decision owner retain gameplay, costs, effects, AI, balance, final integration, and in-game validation. It must not audit event logs, event-detail frameworks, settings, super-event frameworks, shared registries, or unrelated existing UIs.
-- Use `hoi4_portrait_creator` for complete portrait production: grounded source research and wired source placeholders, fictional portraits through the image-generation MCP workflow, user-supplied grounded-final validation, processing, DDS conversion, portrait-specific wiring, manifests, and handoffs. The user owns the configured grounded-subject provider run; the agent never operates RunPod.
+- Use `hoi4_portrait_creator` for complete portrait production: grounded source research and wired source placeholders, fictional portraits through the selected image-generation route, user-supplied grounded-final validation, processing, DDS conversion, portrait-specific wiring, manifests, and handoffs. The user owns the configured grounded-subject provider run; the agent never operates RunPod.
 - When an asset subagent is asked to produce animation or a 3D model, the parent prompt must require `hoi4-frame-animation` for 2D frame sheets and `hoi4-3d-model-pipeline` for skeletal `.anim` actions, and must carry the complete 3D prompt contract in the `3D model-production agents` section of `hoi4-subagents` (source and refinement evidence, Meshy 7 and one image per geometry task, the firearm and biped routes, sourced unit audio with selection audio, bespoke vanilla-green counters, scale crosswalk, and reimport proof). The parent owns `.asset`, entity, counter GFX, sound definitions, runtime wiring, and live proof.
 - Use quote and audio research subagents only for specialised sourced text or audio work: `hoi4_quote_remark_researcher` and `hoi4_audio_researcher`.
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.super_events:START -->
@@ -433,7 +433,11 @@ Before claiming focus-tree completion, use the appropriate audit route from `hoi
 
 For final visual assets, use `hoi4-feature-assets`. That skill is the detailed source of truth for image generation rules, 2D asset classification, and the handoff boundary for 3D model packages.
 
-Generate images with the image-generation MCP workflow. Real transparency is the default for every asset family whose unused canvas is transparent in the inspected HOI4 consumer, including icons, counters, emblems, overlays, decorative UI pieces, and transparent animation frames: request it in the initial call and preserve the alpha channel through processing, frame assembly, resizing, and DDS conversion. Background removal is a fallback only for failed native-alpha output or an inherited, sourced, or user-provided image with an unwanted opaque backdrop; record the fallback and check the repaired edges. Full-canvas scene art, flags, portraits, and painted panels keep the background treatment their actual consumer and reference family require.
+Use the project’s selected image-generation route for generated artwork. HOI4 Mod Setup fills in this section from the selected provider details in the source manifest. Follow its tool names, reference-image rules, supported image sizes, and transparency or edit options. Make one image per call. Check the saved file’s alpha channel before processing it. If the route cannot make transparent images or edit a reference, use only a fallback listed here or ask the maintainer for another route.
+
+<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->
+[The selected image-generation provider details are added by HOI4 Mod Setup.]
+<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->
 
 For animated visual assets, use `hoi4-frame-animation` in addition to `hoi4-feature-assets` for frame-sheet animation. Use `hoi4-3d-model-pipeline` for skeletal unit or entity actions. Final animation assets must be built from real planned frames or real exported skeletal actions and must not be transform-only mockups.
 

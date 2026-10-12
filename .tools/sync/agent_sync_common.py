@@ -47,11 +47,9 @@ RUNTIME_PHRASES = {
     "codex": (
         ("spawned without inherited conversation context", 'spawned with fork_turns="none" (fork_context=false, no inherited conversation context)'),
         ("spawn this agent without inherited conversation context", 'spawn this agent with fork_turns="none" (fork_context=false, no inherited conversation context)'),
-        ("the image-generation MCP workflow", "native ImageGen ($imagegen)"),
         ("CLAUDE.md", "AGENTS.md"),
     ),
     "other": (
-        ("the image-generation MCP workflow", "the configured image-generation route"),
         ("CLAUDE.md", "AGENTS.md"),
     ),
 }

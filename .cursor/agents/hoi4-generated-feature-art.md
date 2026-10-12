@@ -21,7 +21,11 @@ Required inputs:
 
 If the parent prompt does not provide feature slug, asset names, target sizes, final DDS paths or folder, source mode, and handoff path, report the missing inputs instead of exploring the repo.
 
-Use this agent for generated non-icon visual assets that are fictional, symbolic, supernatural, invented, alternate-history, documentary-staged, or UI/decorative. Use the configured image-generation route. If the configured image-generation route is unavailable, stop and report the blocker. Do not create a substitute pipeline.
+Use this agent for generated non-icon visual assets that are fictional, symbolic, supernatural, invented, alternate-history, documentary-staged, or UI/decorative. Use the selected image-generation route. If no route is configured, stop and report the blocker. Do not create a substitute pipeline.
+
+<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->
+[The selected image-generation provider details are added by HOI4 Mod Setup.]
+<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->
 
 Own this scope:
 - Fictional, symbolic, supernatural, extreme-route, emotionally specific, alternate-history, or fully invented custom feature images.

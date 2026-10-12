@@ -21,6 +21,8 @@ The tools use only the Python standard library and run on Python 3.9 or newer.
 
 ## Rules
 
+The image-generation provider markers remain the same in canonical instructions and generated runtime files. HOI4 Mod Setup fills each marker from the provider table in the manifest revision selected for that project.
+
 - Edit only canonical files. A generated file carries a header naming its source; hand edits are overwritten on the next run.
 - `sync_agents.py` maintains a runtime only when its folder exists in the project, so a mod set up for Claude Code and Codex never receives Cursor files. Pass `--runtime <name>` to create one explicitly.
 - It deletes only projection files it generated earlier whose canonical agent is gone, and it rewrites only the `.codex/config.toml` agent rows that point at generated TOML files. Other Codex settings are left untouched.

@@ -1,0 +1,27 @@
+{
+  "name": "gptimage",
+  "version": "0.1.0",
+  "description": "Image generation for Claude Code, powered by GPT Image 2 through your ChatGPT subscription — no API key. MCP server + skill + CLI.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "gptimage-login": "src/login.js",
+    "gptimage-server": "src/server.js",
+    "gptimage-gen": "src/gen.js"
+  },
+  "scripts": {
+    "setup": "bash install.sh",
+    "login": "node src/login.js",
+    "logout": "node src/login.js --logout",
+    "status": "node src/login.js --status",
+    "server": "node src/server.js",
+    "gen": "node src/gen.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.8"
+  }
+}
