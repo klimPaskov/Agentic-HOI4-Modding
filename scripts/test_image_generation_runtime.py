@@ -27,6 +27,29 @@ def png(color_type: int = 6, alpha: int = 0, width: int = 1, height: int = 1) ->
     return signature + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(rows)) + chunk(b"IEND", b"")
 
 
+def grayscale_trns_png(bit_depth: int, pixels: list[int], transparent_sample: int) -> bytes:
+    if bit_depth not in {1, 2, 4} or any(pixel < 0 or pixel >= 1 << bit_depth for pixel in pixels):
+        raise ValueError("invalid packed grayscale fixture")
+    signature = b"\x89PNG\r\n\x1a\n"
+    header = struct.pack(">IIBBBBB", len(pixels), 1, bit_depth, 0, 0, 0, 0)
+
+    def chunk(kind: bytes, payload: bytes) -> bytes:
+        return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", zlib.crc32(kind + payload) & 0xFFFFFFFF)
+
+    packed = bytearray((len(pixels) * bit_depth + 7) // 8)
+    for index, sample in enumerate(pixels):
+        shift = 8 - bit_depth * ((index % (8 // bit_depth)) + 1)
+        packed[index // (8 // bit_depth)] |= sample << shift
+    row = b"\x00" + bytes(packed)
+    return (
+        signature
+        + chunk(b"IHDR", header)
+        + chunk(b"tRNS", transparent_sample.to_bytes(2, "big"))
+        + chunk(b"IDAT", zlib.compress(row))
+        + chunk(b"IEND", b"")
+    )
+
+
 def jpeg() -> bytes:
     return b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xff\xd9"
 
@@ -160,6 +183,16 @@ class ImageGenerationRuntimeTests(unittest.TestCase):
         with self.assertRaisesRegex(server.ImageRouteError, "transparent pixels"):
             self.runtime.save_transparent_output("gfx/generated/opaque.png", png(color_type=6, alpha=255))
 
+    def test_packed_grayscale_trns_verifies_decoded_pixel_values(self) -> None:
+        for bit_depth in (1, 2, 4):
+            with self.subTest(bit_depth=bit_depth):
+                for transparent_value, opaque_value in ((0, 1), ((1 << bit_depth) - 1, 0)):
+                    with self.subTest(transparent_value=transparent_value):
+                        opaque_pixels = [opaque_value] * (8 // bit_depth + 1)
+                        transparent_pixels = [opaque_value, transparent_value, opaque_value]
+                        self.assertFalse(server.png_has_transparent_pixels(grayscale_trns_png(bit_depth, opaque_pixels, transparent_value)))
+                        self.assertTrue(server.png_has_transparent_pixels(grayscale_trns_png(bit_depth, transparent_pixels, transparent_value)))
+
     def test_reference_and_output_paths_stay_inside_the_project(self) -> None:
         reference_image = png(width=64, height=64)
         (self.root / "reference.png").write_bytes(reference_image)
@@ -267,6 +300,23 @@ class ImageGenerationRuntimeTests(unittest.TestCase):
         self.assertEqual(len(captured[0]["payload"]["input_references"]), 1)
         self.assertTrue(captured[0]["payload"]["input_references"][0]["image_url"]["url"].startswith("data:image/png;base64,"))
         self.assertEqual(captured[1]["payload"]["background"], "transparent")
+        ratio_result = runtime.generate_image({
+            "prompt": "a landscape asset", "aspect_ratio": "16:9", "out": "gfx/openrouter-wide.png",
+        })
+        self.assertEqual(ratio_result["path"], "gfx/openrouter-wide.png")
+        self.assertEqual(captured[2]["payload"]["aspect_ratio"], "16:9")
+        with self.assertRaisesRegex(server.ImageRouteError, "aspect ratio"):
+            runtime.generate_image({"prompt": "bad ratio", "aspect_ratio": "5:1", "out": "gfx/openrouter-invalid.png"})
+        generate_tool = next(
+            tool for tool in runtime.handle({"jsonrpc": "2.0", "id": 10, "method": "tools/list", "params": {}})["result"]["tools"]
+            if tool["name"] == "generate_image"
+        )
+        properties = generate_tool["inputSchema"]["properties"]
+        self.assertNotIn("width", properties)
+        self.assertNotIn("height", properties)
+        self.assertEqual(properties["aspect_ratio"]["enum"], list(server.OPENROUTER_ASPECT_RATIOS))
+        with self.assertRaisesRegex(server.ImageRouteError, "chooses its own output dimensions"):
+            runtime.generate_image({"prompt": "unavailable size", "width": 1024, "height": 1024, "out": "gfx/openrouter-size.png"})
 
     def test_together_returns_png_base64_and_declines_undocumented_project_reference_uploads(self) -> None:
         self.write_provider("together_ai", credential_references={"api_key": "credential://image_generation_api_key/together_ai_api_key"})
@@ -407,6 +457,37 @@ class ImageGenerationRuntimeTests(unittest.TestCase):
         (self.root / "too-small.png").write_bytes(png(width=32, height=64))
         with self.assertRaisesRegex(server.ImageRouteError, "at least 64 pixels"):
             runtime.remove_background({"image": "too-small.png", "out": "gfx/aws-small-cutout.png"})
+
+    def test_bedrock_core_hides_and_rejects_reference_edits_but_ultra_exposes_them(self) -> None:
+        credentials = {
+            "access_key": "credential://image_generation_api_key/aws_bedrock_access_key",
+            "secret_key": "credential://image_generation_api_key/aws_bedrock_secret_key",
+        }
+        self.write_provider(
+            "aws_bedrock",
+            credential_references=credentials,
+            settings={"region": "us-west-2", "model": "stability.stable-image-core-v1:1"},
+        )
+        core = server.Server("aws_bedrock", self.root)
+        core_tools = core.handle({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}})["result"]["tools"]
+        self.assertNotIn("edit_image", {tool["name"] for tool in core_tools})
+        core_generate = next(tool for tool in core_tools if tool["name"] == "generate_image")
+        self.assertNotIn("reference_images", core_generate["inputSchema"]["properties"])
+        with self.assertRaisesRegex(server.ImageRouteError, "does not support image edits"):
+            core.call_tool("edit_image", {"prompt": "edit", "image": "reference.png", "out": "gfx/core-edit.png"})
+        with self.assertRaisesRegex(server.ImageRouteError, "does not accept reference images"):
+            core.generate_image({"prompt": "edit", "reference_images": ["reference.png"], "out": "gfx/core-reference.png"})
+
+        self.write_provider(
+            "aws_bedrock",
+            credential_references=credentials,
+            settings={"region": "us-west-2", "model": "stability.stable-image-ultra-v1:1"},
+        )
+        ultra = server.Server("aws_bedrock", self.root)
+        ultra_tools = ultra.handle({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})["result"]["tools"]
+        self.assertIn("edit_image", {tool["name"] for tool in ultra_tools})
+        ultra_generate = next(tool for tool in ultra_tools if tool["name"] == "generate_image")
+        self.assertIn("reference_images", ultra_generate["inputSchema"]["properties"])
 
     def test_leonardo_polls_generation_and_saves_the_result(self) -> None:
         self.write_provider("leonardo", credential_references={"api_key": "credential://image_generation_api_key/leonardo_api_key"})

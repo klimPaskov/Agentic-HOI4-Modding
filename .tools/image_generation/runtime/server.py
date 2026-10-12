@@ -27,6 +27,7 @@ from typing import Any
 MCP_VERSION = "2025-11-25"
 KEYRING_SERVICE = "com.klimpaskov.hoi4-mod-setup"
 CONFIG_PATH = Path(".hoi4-setup") / "image_generation.json"
+OPENROUTER_ASPECT_RATIOS = ("1:1", "3:2", "2:3", "4:3", "3:4", "16:9", "9:16", "21:9", "auto")
 MAX_MESSAGE_BYTES = 8 * 1024 * 1024
 MAX_IMAGE_BYTES = 32 * 1024 * 1024
 MAX_REFERENCE_BYTES = 24 * 1024 * 1024
@@ -492,13 +493,26 @@ def png_has_transparent_pixels(data: bytes) -> bool | None:
                 if palette_index < len(palette_alpha) and palette_alpha[palette_index] < 255:
                     return True
         elif color_type in {0, 2} and transparent_sample:
-            bytes_per_sample = bit_depth // 8
             samples_per_pixel = channels
             values = [int.from_bytes(transparent_sample[i:i + 2], "big") for i in range(0, len(transparent_sample), 2)]
             if len(values) == samples_per_pixel:
                 for pixel in range(width):
-                    start = pixel * samples_per_pixel * bytes_per_sample
-                    samples = [int.from_bytes(current[start + i * bytes_per_sample:start + (i + 1) * bytes_per_sample], "big") for i in range(samples_per_pixel)]
+                    if bit_depth < 8:
+                        if color_type != 0:
+                            return None
+                        pixels_per_byte = 8 // bit_depth
+                        shift = 8 - bit_depth * ((pixel % pixels_per_byte) + 1)
+                        samples = [(current[pixel // pixels_per_byte] >> shift) & max_sample]
+                    else:
+                        bytes_per_sample = bit_depth // 8
+                        start = pixel * samples_per_pixel * bytes_per_sample
+                        samples = [
+                            int.from_bytes(
+                                current[start + i * bytes_per_sample:start + (i + 1) * bytes_per_sample],
+                                "big",
+                            )
+                            for i in range(samples_per_pixel)
+                        ]
                     if samples == values:
                         return True
         previous = current
@@ -647,7 +661,7 @@ def _tool_schema(name: str, provider: dict | None = None) -> dict:
         "transparent_background": {"type": "boolean"},
         "reference_images": {"type": "array", "items": {"type": "string"}},
     }
-    capabilities = provider.get("capabilities", {}) if provider else {}
+    capabilities = _effective_capabilities(provider) if provider else {}
     accepts_dimensions = bool(capabilities.get("size_limits", {}).get("accepts_dimensions"))
     if not accepts_dimensions:
         common.pop("width", None)
@@ -656,6 +670,12 @@ def _tool_schema(name: str, provider: dict | None = None) -> dict:
         common.pop("reference_images", None)
     if not capabilities.get("transparent_background", {}).get("native", False):
         common.pop("transparent_background", None)
+    if provider and provider.get("route", {}).get("api_protocol") == "openrouter_images":
+        common["aspect_ratio"] = {
+            "type": "string",
+            "enum": list(OPENROUTER_ASPECT_RATIOS),
+            "description": "Aspect ratio supported by the selected OpenRouter image model; output pixel dimensions are selected by the model.",
+        }
     if provider:
         result_format = provider.get("route", {}).get("result_format", "png")
         descriptions = {
@@ -676,7 +696,7 @@ def _tool_schema(name: str, provider: dict | None = None) -> dict:
 
 def _local_tools(provider: dict) -> list[dict]:
     route = provider["route"]
-    caps = provider.get("capabilities", {})
+    caps = _effective_capabilities(provider)
     names = route.get("tool_names", {})
     mapping = [("auth_status", "image_auth_status")]
     if names.get("generate"):
@@ -689,6 +709,31 @@ def _local_tools(provider: dict) -> list[dict]:
     for role, name in mapping:
         tools.append({"name": name, "description": f"{provider.get('display_name', 'Selected provider')}: {role.replace('_', ' ')} using the selected image route.", "inputSchema": _tool_schema(name, provider)})
     return tools
+
+
+def _configured_model(provider: dict) -> str | None:
+    route = provider.get("route", {})
+    return provider.get("settings", {}).get("model") or route.get("default_model")
+
+
+def _effective_capabilities(provider: dict | None) -> dict:
+    if not provider:
+        return {}
+    capabilities = provider.get("capabilities", {})
+    route = provider.get("route", {})
+    if (
+        route.get("api_protocol") == "aws_bedrock"
+        and _configured_model(provider) == "stability.stable-image-core-v1:1"
+    ):
+        references = dict(capabilities.get("reference_images", {}))
+        references["supported"] = False
+        references["max_count"] = 0
+        return {
+            **capabilities,
+            "image_edits": False,
+            "reference_images": references,
+        }
+    return capabilities
 
 
 class Server:
@@ -835,7 +880,7 @@ class Server:
                 raise ImageRouteError("This provider does not have a background-removal tool.")
             return self.remove_background(args)
         if name == route.get("tool_names", {}).get("edit"):
-            if not self.provider.get("capabilities", {}).get("image_edits"):
+            if not _effective_capabilities(self.provider).get("image_edits"):
                 raise ImageRouteError("This provider route does not support image edits.")
             args["image"] = args.get("image") or (args.get("reference_images") or [None])[0]
             if not args.get("image"):
@@ -853,7 +898,7 @@ class Server:
         return secret
 
     def selected_model(self, fallback: str | None = None) -> str | None:
-        return self.provider.get("settings", {}).get("model") or self.route.get("default_model") or fallback
+        return _configured_model(self.provider) or fallback
 
     def read_reference(self, relative: str) -> tuple[str, bytes]:
         if not isinstance(relative, str) or not relative or Path(relative).is_absolute() or ".." in Path(relative).parts:
@@ -1019,7 +1064,7 @@ class Server:
         if "model" in args:
             raise ImageRouteError("Choose the image model in HOI4 Mod Setup instead of the image prompt.")
         is_edit = bool(args.pop("_hoi4_edit_request", False))
-        capabilities = self.provider.get("capabilities", {})
+        capabilities = _effective_capabilities(self.provider)
         if is_edit and not capabilities.get("image_edits"):
             raise ImageRouteError("This provider route does not support image edits.")
         if not is_edit and args.get("image"):
@@ -1173,6 +1218,11 @@ class Server:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
         model = self.selected_model()
         payload = {"model": model, "prompt": args["prompt"]}
+        aspect_ratio = args.get("aspect_ratio")
+        if aspect_ratio is not None:
+            if aspect_ratio not in OPENROUTER_ASPECT_RATIOS:
+                raise ImageRouteError("Choose an aspect ratio supported by the selected OpenRouter image model.")
+            payload["aspect_ratio"] = aspect_ratio
         refs = [args["image"]] if args.get("image") else args.get("reference_images", [])
         if refs:
             payload["input_references"] = []

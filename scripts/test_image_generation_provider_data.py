@@ -97,6 +97,12 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
         self.assertIsNone(codex_args["size"])
         self.assertEqual(providers["aws_bedrock"]["route"]["api_protocol"], "aws_bedrock")
         self.assertEqual(providers["aws_bedrock"]["capabilities"]["size_limits"]["maximum_pixels"], 2_359_296)
+        self.assertIn("Stable Image Core is text-to-image only", providers["aws_bedrock"]["capabilities"]["reference_images"]["notes"])
+        openrouter = providers["openrouter"]
+        self.assertFalse(openrouter["capabilities"]["size_limits"]["accepts_dimensions"])
+        self.assertIn("aspect ratios", openrouter["capabilities"]["size_limits"]["notes"])
+        self.assertEqual(openrouter["route"]["tool_arguments"]["aspect_ratio"], "aspect_ratio")
+        self.assertNotIn("width", openrouter["route"]["tool_arguments"])
         self.assertEqual(providers["xai_grok"]["reference_mcp"]["maintenance"], "community")
 
     def test_provider_markers_cover_every_asset_guidance_entrypoint(self) -> None:

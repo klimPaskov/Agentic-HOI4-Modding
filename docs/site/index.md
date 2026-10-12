@@ -49,7 +49,7 @@ Specialist roles use model tiers matched to the work. The package maps those tie
 
 ## Image generation and modding tools
 
-HOI4 Mod Setup selects ChatGPT through the GPTImage MCP by default. You can choose another hosted or local provider, use Codex image generation, or make art yourself. The app keeps API keys in the operating-system credential store and updates the asset guidance for your choice. See the [provider research](https://github.com/klimPaskov/HOI4-Mod-Setup/blob/main/docs/image-generation-providers.md) for models, access needs, costs, and size limits.
+HOI4 Mod Setup selects ChatGPT through the GPTImage MCP by default. You can choose another hosted or local provider, use Codex image generation, or make art yourself. The app keeps API keys in the operating-system credential store and updates the asset guidance for your choice. See the [provider research](../image-generation-providers.md) for models, access needs, costs, and size limits.
 
 ## Modding and live testing
 
@@ -69,9 +69,9 @@ Reconnect the client and follow the [Live Tools setup guide](https://github.com/
 - [HOI4 Agent Tools promo MP4](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/hoi4_agent_tools_promo.mp4).
 - [Video tutorial playlist](https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3).
 
-![Choose coding environments in HOI4 Mod Setup](https://raw.githubusercontent.com/klimPaskov/HOI4-Mod-Setup/main/docs/screenshots/15-coding-environments.png)
+![Choose coding environments in HOI4 Mod Setup](images/setup-coding-environments.png)
 
-![Choose an image-generation provider in HOI4 Mod Setup](https://raw.githubusercontent.com/klimPaskov/HOI4-Mod-Setup/main/docs/screenshots/16-image-generation.png)
+![Choose an image-generation provider in HOI4 Mod Setup](images/setup-image-generation.png)
 
 ## License
 

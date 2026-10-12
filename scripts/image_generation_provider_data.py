@@ -61,7 +61,7 @@ def _route(provider_id: str, auth: str, *, kind: str = "stdio_adapter", componen
 def _capabilities(*, references: bool, edits: bool, alpha: bool,
                   width: int | None = None, height: int | None = None,
                   maximum_pixels: int | None = None, reference_limit: int | None = None,
-                  accepts_dimensions: bool = False, reference_notes: str = "",
+                  accepts_dimensions: bool = False, size_notes: str = "", reference_notes: str = "",
                   alpha_notes: str = "", edit_fallback: str = "",
                   background_removal: bool = False) -> dict:
     return {
@@ -82,7 +82,7 @@ def _capabilities(*, references: bool, edits: bool, alpha: bool,
             "maximum_width_px": width,
             "maximum_height_px": height,
             "maximum_pixels": maximum_pixels,
-            "notes": (
+            "notes": size_notes or (
                 "Use dimensions supported by the selected model."
                 if accepts_dimensions else "This route uses the model's default image size; limits can vary by model."
             ),
@@ -253,8 +253,13 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
         _provider("openrouter", "OpenRouter", "Use one account to try image models from many providers.",
             ["An OpenRouter API key saved in the operating-system credential store."], ["Comparing image models", "Choosing among providers", "Reference edits where supported"],
             "Pay per model; the connected route uses GPT Image 2.5 Sunburst.", ["GPT Image 2.5 Sunburst"], "api_key_vault",
-            _capabilities(references=True, edits=True, alpha=True, width=3840, height=3840, maximum_pixels=8_294_400, reference_limit=16,
+            _capabilities(references=True, edits=True, alpha=True, reference_limit=16,
+                size_notes="Choose one of the selected model's supported aspect ratios; the model chooses output pixel dimensions.",
                 reference_notes="The connected model accepts reference images for editing.", alpha_notes="Request a transparent PNG and check that its pixels include transparency."),
+            route=_route("openrouter", "api_key_vault", tool_arguments={
+                "prompt": "prompt", "output_path": "out", "reference_image": "image", "reference_images": "reference_images",
+                "aspect_ratio": "aspect_ratio", "transparent_background": "transparent_background",
+            }),
             reference_mcp=_reference("OpenRouter MCP", "https://mcp.openrouter.ai/mcp", "official", "OpenRouter browser authorization", ["generate-image"], "The hosted MCP has short-lived authorization and a default spending cap. The setup app uses its Images API adapter for references.")),
         _provider("comfyui_local", "Local ComfyUI", "Use a ComfyUI server and checkpoint installed on this computer.",
             ["A local ComfyUI server, a compatible checkpoint, and available GPU memory."], ["Local models", "Prompt-based image creation", "One reference-guided edit"],
@@ -301,7 +306,7 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
             ["An AWS account, supported region, model access, and AWS credentials."], ["Image edits", "Background removal", "Hosted model access"],
             "Pay per model or image operation; AWS pricing varies by region.", ["Stable Image Core", "Stable Image Ultra"], "cloud_credentials",
             _capabilities(references=True, edits=True, alpha=False, width=1536, height=1536, maximum_pixels=2_359_296, reference_limit=1,
-                reference_notes="The included Bedrock route passes one reference image; other model inputs vary.", alpha_notes="Use a Bedrock background-removal operation and verify alpha.", background_removal=True),
+                reference_notes="Stable Image Ultra accepts one reference image for edits. Stable Image Core is text-to-image only.", alpha_notes="Use a Bedrock background-removal operation and verify alpha.", background_removal=True),
             availability="conditional",
             reference_mcp=_reference("AWS Bedrock image MCP", "https://github.com/awslabs/bedrock-image-mcp-server", "official", "AWS credentials and model access", [], "Uses the Stability image models; retired Nova Canvas and Titan Image Generator routes are excluded.")),
         _provider("huggingface_inference", "Hugging Face Inference Providers", "Use image models available through Hugging Face providers.",
