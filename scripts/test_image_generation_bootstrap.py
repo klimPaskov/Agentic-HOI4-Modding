@@ -38,7 +38,7 @@ class GptimageBootstrapTests(unittest.TestCase):
                 package,
                 fake_run,
                 expected_tree_sha256=bootstrap_gptimage.source_tree_sha256(package),
-                expected_lock_sha256=hashlib.sha256((package / "package-lock.json").read_bytes()).hexdigest(),
+                expected_lock_sha256=hashlib.sha256(bootstrap_gptimage.source_bytes(package / "package-lock.json")).hexdigest(),
             )
             self.assertEqual(result, {"status": "ready", "package": "gptimage", "version": "0.1.0"})
             args, kwargs = calls[0]
@@ -83,7 +83,7 @@ class GptimageBootstrapTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             package = self.make_package(Path(directory))
             expected_tree = bootstrap_gptimage.source_tree_sha256(package)
-            expected_lock = hashlib.sha256((package / "package-lock.json").read_bytes()).hexdigest()
+            expected_lock = hashlib.sha256(bootstrap_gptimage.source_bytes(package / "package-lock.json")).hexdigest()
             (package / "src" / "server.js").write_text("changed\n", encoding="utf-8")
             called = False
 
