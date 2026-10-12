@@ -1,6 +1,6 @@
 ---
 name: hoi4-debug-playtest
-description: Explicit-invocation-only workflow for playing Hearts of Iron IV through the HOI4 Live Tools MCP server (or, without it, by controlling a Windows desktop) to launch the game in debug mode, inspect fresh logs, repair one selected mod, relaunch until attributable errors are gone, run bounded gameplay and UI tests, capture screenshots, fix confirmed defects, and verify the fixes in game. Never use unless the user names this skill or explicitly asks for autonomous desktop playtesting.
+description: Explicit-invocation-only workflow for playing Hearts of Iron IV through the selected live-testing provider to launch the game in debug mode, inspect fresh logs, repair one selected mod, relaunch until attributable errors are gone, run bounded gameplay and UI tests, capture screenshots, fix confirmed defects, and verify the fixes in game. Never use unless the user names this skill or explicitly asks for autonomous desktop playtesting.
 ---
 
 # HOI4 Autonomous Debug Playtest
@@ -13,39 +13,18 @@ Do not trigger this skill as a normal coding, review, validation, audit, or comp
 
 This skill defines a workflow. It does not install or grant computer-control capabilities.
 
-Before starting, confirm that the current agent environment exposes all of the following:
+<!-- HOI4_MOD_SETUP:LIVE_TESTING_PROVIDER:START -->
+Live-testing provider: manual until HOI4 Mod Setup writes the selected route.
+<!-- HOI4_MOD_SETUP:LIVE_TESTING_PROVIDER:END -->
 
-- a desktop-control tool that can identify windows, capture screenshots, click, type, send keys, and inspect the visible result
-- filesystem access to the selected mod repository and the HOI4 log directory
-- process-launch capability for a Windows executable or shortcut
-- process inspection and bounded process termination
-- an editing environment for the selected mod
-
-When the HOI4 Live Tools MCP server (`hoi4-live`) is connected, it is the route for the whole run and replaces ad-hoc desktop control. It satisfies the desktop-control requirement above, and the safety and efficiency rules of `hoi4-live-playtest` (the shared desktop lock, input only inside the game window, `hoi4live_*` saves only, reuse of the running game and loaded save) apply to every step. Follow that skill for the mechanics of each tool; this skill defines what to test and how to repair.
-
-| Workflow step | HOI4 Live Tools |
-| --- | --- |
-| Launch with the playset, wait for the main menu | `hoi4_launch` (`debug=true` for `-debug`), then `hoi4_status` |
-| Close, relaunch after a content edit | `hoi4_shutdown confirm=true`, `hoi4_launch restart=true` |
-| Fresh-log delta, repeated lines folded, regex filter | `hoi4_logs` with `set_mark` before and `since=<mark>` after |
-| Start or load the dedicated test game | `hoi4_new_game`, `hoi4_load` |
-| Setup, trigger, answer | `hoi4_eval_effect`, `hoi4_console`, `hoi4_fire_event`, `hoi4_popups`, the campaign tools |
-| Advance bounded time | `hoi4_time action=step` with `popups=stop`, or `hoi4_advance` in campaign mode |
-| Read the screen, tooltips, evidence images | `hoi4_screen`, `hoi4_ocr`, `hoi4_hover`, `hoi4_screenshot` (full image kept under the server's `artifacts` folder) |
-| Checkpoints, persistence, before and after | `hoi4_save`, `hoi4_save_query` (`diff`, `variables`, `flags`, `find`), `hoi4-save-inspection` |
-
-If the server is not connected, the user installs it (HOI4 Mod Setup, or `references/setup.md` of `hoi4-live-playtest`). Fall back to direct desktop control only when the user wants that or the server cannot run on this machine, and record the fallback.
-
-If desktop control is unavailable, stop and report that the skill cannot operate the computer in the current environment. Do not pretend that shell access alone is equivalent to playing the game.
-
-If screenshots cannot be captured or retained, stop before visual testing. Log-only validation is not a substitute for the requested live test.
+Follow `hoi4-live-playtest` before any operation. Inspect the selected server tool list, use qualified tool names, and map each step below to an advertised capability. These recipes describe test goals; Windows desktop mechanics apply only to a provider that supports them. Clausewitz supports direct native Linux HOI4 1.19.2 state reads without OCR or saves, and does not promise the Live Tools launch, console, UI, or save operations. Report unsupported steps and request manual observations. Do not automatically fall back to desktop control. Manual desktop testing requires explicit user authorization and available controls.
 
 ## 2. Required invocation contract
 
 Resolve these values from the user prompt, a supplied test brief, or the current repository. Do not search unrelated drives or folders.
 
-- `mod_root`: absolute Windows path to the one mod that may be edited
-- `launch_target`: absolute path to a debug-enabled `.lnk` or executable
+- `mod_root`: absolute path to the one mod that may be edited
+- `launch_target`: provider-supported debug launch target, only when launching is supported and requested
 - `launch_arguments`: optional arguments when the target is an executable
 - `log_root`: the active Hearts of Iron IV `logs` directory, or a bounded list of candidates
 - `test_scope`: changed feature, named feature list, event list, issue list, or explicit full-mod pass

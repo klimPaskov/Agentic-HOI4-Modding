@@ -12,6 +12,7 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from live_testing_provider_data import build_live_testing_components, build_live_testing_table
 from image_generation_provider_data import build_image_generation_components, build_image_generation_table
 
 
@@ -178,7 +179,10 @@ def main() -> None:
     manifest["schema_version"] = "4.0.0"
     manifest["generated_for_revision"] = args.revision
     manifest["image_generation"] = build_image_generation_table(args.source_root.resolve())
+    manifest["live_testing"] = build_live_testing_table()
+    live_updates = build_live_testing_components(manifest["components"])
     component_updates = {component["id"]: component for component in build_image_generation_components(args.source_root.resolve())}
+    component_updates.update({component["id"]: component for component in live_updates})
     for index, component in enumerate(manifest["components"]):
         if component["id"] in component_updates:
             manifest["components"][index] = component_updates.pop(component["id"])

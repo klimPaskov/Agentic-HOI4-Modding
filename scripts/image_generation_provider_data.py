@@ -321,7 +321,7 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
             _capabilities(references=True, edits=True, alpha=False, reference_limit=4,
                 reference_notes="Use references manually in the web editor.", alpha_notes="The public API does not document alpha output."),
             route=_route("midjourney_manual", "manual", kind="manual", tools={}, tool_arguments={}), availability="manual_only"),
-        _provider("none", "None — I will make art myself", "Do not connect an image-generation provider.",
+        _provider("none", "None \u2014 I will make art myself", "Do not connect an image-generation provider.",
             ["No service account or local install is needed."], ["Using your own art", "Sourced images"], "No provider charge.", [], "none",
             _capabilities(references=False, edits=False, alpha=False,
                 reference_notes="Add your own files to the project.", alpha_notes="No image route is selected.", edit_fallback="Create or edit the image yourself and add it to the project."),

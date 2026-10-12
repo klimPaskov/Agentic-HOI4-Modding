@@ -11,6 +11,7 @@ from jsonschema import Draft202012Validator
 import generate_manifest_evidence as generator
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from live_testing_provider_data import build_live_testing_components, build_live_testing_table
 from image_generation_provider_data import build_image_generation_components, build_image_generation_table
 
 
@@ -53,6 +54,15 @@ def main() -> None:
         primary = route.get("requires_primary_coding_environment")
         if primary and primary not in environment_ids:
             raise SystemExit(f"unsupported primary coding environment for {provider['id']}: {primary}")
+    if manifest.get("live_testing") != build_live_testing_table():
+        raise SystemExit("published live-testing provider table is stale")
+    for expected in build_live_testing_components(manifest["components"]):
+        actual = next(c for c in manifest["components"] if c["id"] == expected["id"])
+        expected.pop("expected_files", None)
+        actual = dict(actual)
+        actual.pop("expected_files", None)
+        if actual != expected:
+            raise SystemExit("stale live-testing component: " + expected["id"])
     revision = manifest["generated_for_revision"]
     snapshot = generator.git_snapshot(ROOT, revision)
     for component in manifest["components"]:

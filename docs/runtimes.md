@@ -136,17 +136,14 @@ One row per server, and the profile must also depend on the MCP client package:
 DSH namespaces every bridged tool as `mcp__<serverName>__<rawToolName>`, so the HOI4 routes appear in a session as `mcp__hoi4_agent_tools__hoi4_focus_inspect` and similar.
 A `serverName` may only contain letters, digits, underscore, and hyphen.
 
-### HOI4 Live Tools (optional)
+### Live testing (optional)
 
-The optional `hoi4-live` server drives a running game. HOI4 Mod Setup (or `.tools/mcp/bootstrap_hoi4_live_tools.py`) installs the release recorded in the manifest under `%LOCALAPPDATA%\hoi4-live-tools` and registers it in the user's own client configuration rather than in a project file, because the install folder is per machine and a project entry would fail for everyone who has not installed it:
+Choose Clausewitz MCP (default), experimental HOI4 Live Tools, or None for manual testing. Common `workflow.live_testing` guidance works with all supported clients. HOI4 Mod Setup manages project registrations for the selected clients: Claude Code, Codex, Cursor, Qoder and OpenCode, using their project MCP files described above. It updates the selected route and guidance during update or repair.
 
-| Runtime | User-scoped registration |
-| --- | --- |
-| Claude Code | `mcpServers.hoi4-live` in `~/.claude.json`; by hand, `claude mcp add --scope user hoi4-live -- "<install folder>\app\hoi4-live-tools.cmd"`. |
-| Codex | `[mcp_servers.hoi4-live]` in `~/.codex/config.toml` with `command`, `startup_timeout_sec = 30`, and `tool_timeout_sec = 1800` (written as a marked block). |
-| Cursor, OpenCode | `~/.cursor/mcp.json` and `~/.config/opencode/opencode.json`. |
-| Qoder | Register the same command in Qoder's user-level MCP settings by hand. |
+Clausewitz MCP (`clausewitz_linux`) supports native Linux HOI4 1.19.2 only. Windows connects through WSL; macOS connects through SSH to Linux. Complete manual Linux, game and server setup, then confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
 
-See `.claude/skills/hoi4-live-playtest/references/setup.md` for setup and troubleshooting.
+HOI4 Live Tools (`hoi4-live`) is Windows verified only; upstream macOS support is incomplete. It is experimental, slower and not thoroughly tested. The app installs the pinned runtime under `%LOCALAPPDATA%\hoi4-live-tools` with `--quiet --register none`, then writes project registrations for selected clients. The manual bootstrap defaults to detected user-client registration; use `--register none` for runtime installation alone.
+
+None registers no server. Agents provide bounded manual recipes and record user observations. No automatic desktop fallback is allowed. See `.claude/skills/hoi4-live-playtest/references/setup.md` for setup and troubleshooting, and inspect the selected server's advertised tools before each test.
 
 The MCP evidence rules in the project instructions do not change per runtime: use the routes the connected server advertises, apply the bounded retry policy, and record an unavailable route once before continuing with local references.

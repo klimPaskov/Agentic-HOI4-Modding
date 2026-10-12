@@ -44,7 +44,7 @@ class LiveBootstrapContractTests(unittest.TestCase):
         self.assertEqual(parameters["release_sha256"], bootstrap.RELEASE_SHA256)
         self.assertEqual(parameters["release_size"], bootstrap.RELEASE_SIZE)
         self.assertEqual(action["target"], ".tools/mcp/bootstrap_hoi4_live_tools.py")
-        self.assertEqual(parameters["arguments"], ["--quiet"])
+        self.assertEqual(parameters["arguments"], ["--quiet", "--register", "none"])
         self.assertEqual(parameters["privilege"], "current_user")
         self.assertTrue(parameters["network_access"] and parameters["expected_writes"] and parameters["rollback_boundary"])
 
@@ -61,7 +61,7 @@ class LiveBootstrapContractTests(unittest.TestCase):
         data = manifest()
         workflow = component(data, "workflow.live_tools")
         self.assertIn("mcp.hoi4_live.bootstrap", workflow["dependencies"])
-        self.assertEqual(workflow["source"]["include"], ["hoi4-live-playtest/**"])
+        self.assertEqual(workflow["source"]["include"], ["hoi4-live-playtest/references/hoi4-live-tools.md"])
         self.assertTrue((ROOT / ".claude" / "skills" / "hoi4-live-playtest" / "SKILL.md").is_file())
         self.assertFalse((ROOT / ".claude" / "skills" / "hoi4-live-testing").exists())
         bootstrap_component = component(data, "mcp.hoi4_live.bootstrap")

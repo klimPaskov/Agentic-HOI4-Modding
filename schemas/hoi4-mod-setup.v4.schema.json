@@ -64,6 +64,188 @@
     },
     "image_generation": {
       "$ref": "#/$defs/imageGeneration"
+    },
+    "live_testing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default_provider",
+        "providers"
+      ],
+      "properties": {
+        "default_provider": {
+          "enum": [
+            "clausewitz_mcp",
+            "hoi4_live_tools",
+            "none"
+          ]
+        },
+        "providers": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "display_name",
+              "description",
+              "requirements",
+              "documentation_url",
+              "supported_platforms",
+              "supported_coding_environments",
+              "experimental",
+              "route",
+              "guidance",
+              "supported_game_version",
+              "attribution"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "display_name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "documentation_url": {
+                "type": "string",
+                "minLength": 1
+              },
+              "supported_game_version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "requirements": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "guidance": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "supported_platforms": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "windows",
+                    "macos"
+                  ]
+                }
+              },
+              "supported_coding_environments": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "claude_code",
+                    "codex",
+                    "cursor",
+                    "qoder",
+                    "opencode"
+                  ]
+                }
+              },
+              "experimental": {
+                "type": "boolean"
+              },
+              "route": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "server_id",
+                  "component_id",
+                  "source_repository",
+                  "source_revision"
+                ],
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "external_stdio",
+                      "local_install",
+                      "manual"
+                    ]
+                  },
+                  "server_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "component_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "source_repository": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "source_revision": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              "attribution": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "author",
+                  "url",
+                  "license",
+                  "license_url"
+                ],
+                "properties": {
+                  "author": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "url": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "license": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "license_url": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {
@@ -874,10 +1056,13 @@
           "type": "string",
           "minLength": 1
         },
-    "documentation_url": {
-      "type": ["string", "null"],
-      "format": "uri"
-    },
+        "documentation_url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        },
         "models": {
           "type": "array",
           "items": {
@@ -928,8 +1113,8 @@
             "chatgpt_subscription",
             "api_key_vault",
             "oauth",
-          "cloud_credentials",
-          "enterprise_credentials",
+            "cloud_credentials",
+            "enterprise_credentials",
             "local",
             "none",
             "manual"
@@ -990,11 +1175,17 @@
           "pattern": "^[0-9a-f]{64}$"
         },
         "source_tree_sha256": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "pattern": "^[0-9a-f]{64}$"
         },
         "package_lock_sha256": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "pattern": "^[0-9a-f]{64}$"
         },
         "runtime_entry": {
@@ -1020,7 +1211,10 @@
         "tool_arguments": {
           "type": "object",
           "additionalProperties": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required_environment_names": {
@@ -1039,31 +1233,62 @@
           }
         },
         "api_protocol": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "pattern": "^[a-z][a-z0-9_]*$"
         },
         "api_base_url": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "uri"
         },
         "default_model": {
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "result_format": {
-          "enum": ["png", "jpeg", "model_defined", "manual"]
+          "enum": [
+            "png",
+            "jpeg",
+            "model_defined",
+            "manual"
+          ]
         },
         "credential_fields": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "display_name", "environment_name"],
+            "required": [
+              "id",
+              "display_name",
+              "environment_name"
+            ],
             "properties": {
-              "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
-              "display_name": {"type": "string"},
-              "environment_name": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
-              "header": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
-              "prefix": {"type": "string"}
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "display_name": {
+                "type": "string"
+              },
+              "environment_name": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "header": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "prefix": {
+                "type": "string"
+              }
             }
           }
         },
@@ -1118,9 +1343,9 @@
         "image_edits": {
           "type": "boolean"
         },
-    "background_removal": {
-      "type": "boolean"
-    },
+        "background_removal": {
+          "type": "boolean"
+        },
         "transparent_background": {
           "type": "object",
           "additionalProperties": false,
@@ -1230,9 +1455,9 @@
           "type": "string",
           "minLength": 1
         },
-    "version": {
-      "type": "string"
-    },
+        "version": {
+          "type": "string"
+        },
         "notes": {
           "type": "string"
         },
