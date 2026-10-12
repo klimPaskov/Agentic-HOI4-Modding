@@ -79,8 +79,10 @@ def install(package_root: Path, run=subprocess.run, *, expected_tree_sha256: str
         raise RuntimeError("The GPTImage MCP entry point is missing.")
 
     npm_cache = tempfile.mkdtemp(prefix="hoi4-imagegen-npm-")
-    clean_config = Path(npm_cache) / "empty.npmrc"
-    clean_config.write_text("", encoding="utf-8")
+    user_config = Path(npm_cache) / "empty-user.npmrc"
+    global_config = Path(npm_cache) / "empty-global.npmrc"
+    for config in (user_config, global_config):
+        config.write_text("", encoding="utf-8")
     allowed_names = {
         "PATH", "SYSTEMROOT", "WINDIR", "TEMP", "TMP", "TMPDIR", "USERPROFILE",
         "HOME", "APPDATA", "LOCALAPPDATA", "LANG", "LC_ALL",
@@ -90,7 +92,7 @@ def install(package_root: Path, run=subprocess.run, *, expected_tree_sha256: str
     try:
         result = run(
             [*npm_command(), "ci", "--omit=dev", "--ignore-scripts", "--no-bin-links", "--no-audit", "--no-fund", "--cache", npm_cache,
-             "--userconfig", str(clean_config), "--globalconfig", str(clean_config)],
+             "--userconfig", str(user_config), "--globalconfig", str(global_config)],
             cwd=package_root,
             env=environment,
             check=False,
