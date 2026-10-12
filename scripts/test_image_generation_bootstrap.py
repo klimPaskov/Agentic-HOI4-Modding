@@ -44,6 +44,7 @@ class GptimageBootstrapTests(unittest.TestCase):
             args, kwargs = calls[0]
             self.assertEqual(args[:2], ["npm", "ci"])
             self.assertIn("--ignore-scripts", args)
+            self.assertIn("--no-bin-links", args)
             self.assertIn("--no-audit", args)
             self.assertNotIn("shell", kwargs)
             self.assertFalse(Path(args[args.index("--cache") + 1]).exists())

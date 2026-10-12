@@ -56,7 +56,7 @@ def install(package_root: Path, run=subprocess.run, *, expected_tree_sha256: str
     environment["CI"] = "true"
     try:
         result = run(
-            ["npm", "ci", "--omit=dev", "--ignore-scripts", "--no-audit", "--no-fund", "--cache", npm_cache,
+            ["npm", "ci", "--omit=dev", "--ignore-scripts", "--no-bin-links", "--no-audit", "--no-fund", "--cache", npm_cache,
              "--userconfig", str(clean_config), "--globalconfig", str(clean_config)],
             cwd=package_root,
             env=environment,
