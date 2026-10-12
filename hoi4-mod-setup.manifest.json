@@ -1,7 +1,7 @@
 {
   "schema_version": "4.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "c68b978ece5adb2dce4493a11aaad902075a6149",
+  "generated_for_revision": "12c7d66d08162e42cf8aaf060c8d3cd550f2a421",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -11151,7 +11151,8 @@
       "category": "mcp",
       "optional": true,
       "platforms": [
-        "all"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -11220,7 +11221,8 @@
       "category": "mcp",
       "optional": true,
       "platforms": [
-        "all"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
