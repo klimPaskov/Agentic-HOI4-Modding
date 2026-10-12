@@ -1,24 +1,45 @@
 {
   "schema_version": "1.0.0",
   "server_package": "@meshy-ai/meshy-mcp-server",
-  "server_version": "0.4.0",
-  "server_git_head": "d8c77d1cb897e345eb41d38b510b8391b1664346",
+  "server_version": "0.6.2",
+  "server_git_head": "40dad8600850121f889d394f02833f700cb11b79",
   "compatibility_sdk_version": "1.29.0",
-  "verified_at": "2026-08-21T00:00:00Z",
-  "schema_source": "live_mcp_tool_declarations",
-  "schema_revision": "meshy-7-compat-live-declaration-2026-08-21",
+  "verified_at": "2026-10-12T21:47:10Z",
+  "schema_source": "published_runtime_tools_list_without_authenticated_provider_calls",
+  "schema_revision": "meshy-0.6.2-published-tools-list",
   "required_tools": {
     "meshy_check_balance": {
       "required_arguments": [],
       "optional_arguments": [
         "response_format"
       ],
-      "paid": false
+      "paid": false,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "response_format": {
+            "type": "string",
+            "enum": [
+              "markdown",
+              "json"
+            ],
+            "default": "markdown",
+            "description": "Output format: 'markdown' for human-readable or 'json' for machine-readable"
+          }
+        },
+        "additionalProperties": false
+      }
     },
     "meshy_image_to_3d": {
       "required_ai_model": "meshy-7",
       "accepted_ai_models": [
-        "meshy-7"
+        "meshy-6-lite",
+        "meshy-6",
+        "meshy-7",
+        "meshy-7.1",
+        "latest",
+        "meshy-t1",
+        "meshy-t2"
       ],
       "required_arguments": [],
       "required_argument_groups": [
@@ -39,8 +60,12 @@
         "auto_size",
         "decimation_mode",
         "enable_pbr",
+        "file_path",
+        "geometry_resolution",
         "hd_texture",
         "image_enhancement",
+        "image_url",
+        "input_task_id",
         "model_type",
         "multi_view_thumbnails",
         "origin_at",
@@ -55,10 +80,203 @@
         "target_polycount",
         "texture_image_url",
         "texture_prompt",
-        "topology"
+        "texture_resolution",
+        "topology",
+        "ultra_mode"
       ],
       "multi_view_thumbnails": false,
-      "paid": true
+      "paid": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "image_url": {
+            "type": "string",
+            "description": "PUBLIC image URL (https://...). Use ONLY for remote images. For local files use file_path instead. NEVER manually base64-encode."
+          },
+          "file_path": {
+            "type": "string",
+            "description": "ABSOLUTE path to LOCAL image (.jpg/.png). PREFERRED for local files. Server auto-encodes. Example: /Users/me/photo.jpg. NEVER manually base64-encode."
+          },
+          "input_task_id": {
+            "type": "string",
+            "description": "Chain from a SUCCEEDED text-to-image or image-to-image task: use its generated image as the input instead of image_url/file_path. Provide only one image source."
+          },
+          "ai_model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "meshy-6-lite",
+                  "meshy-6",
+                  "meshy-7",
+                  "meshy-7.1",
+                  "latest"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "meshy-t1",
+                  "meshy-t2"
+                ]
+              }
+            ],
+            "description": "Standard (model_type standard): 'latest' (default, = Meshy 7.1) or 'meshy-7.1' = best quality; 'meshy-6'; 'meshy-6-lite' = fast and cheap, 2K textures only. 'meshy-7' is deprecated (use meshy-7.1). Smart Topology (model_type smart-topology): 'meshy-t2' (default) = clean part-separated mesh at a set face count; legacy 'meshy-t1' still accepted. Credits: meshy-7.1/latest/meshy-6 20 mesh-only, 30 textured (35 at 8K); meshy-6-lite 5 / 15; meshy-t2 5 / 15 (20 at 8K). IMPORTANT: ask the user which model to use and confirm the cost first."
+          },
+          "geometry_resolution": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "2k",
+              "4k"
+            ],
+            "description": "Meshy 7.1 geometry pass: standard (default), 2k (Ultra, 2048\u00b3) or 4k (Ultra, 4096\u00b3, finest detail). 2k/4k need meshy-7.1/latest with model_type standard and add 5 credits. Confirm the surcharge with the user first."
+          },
+          "ultra_mode": {
+            "type": "boolean",
+            "description": "DEPRECATED \u2014 prefer geometry_resolution. true is equivalent to the 2k geometry pass; cannot conflict with geometry_resolution or be used with Smart Topology/lowpoly."
+          },
+          "model_type": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "smart-topology",
+              "lowpoly"
+            ],
+            "description": "Model type: 'standard' (default), 'smart-topology' (part-separated geometry via meshy-t1/meshy-t2), or deprecated 'lowpoly'. Prefer Smart Topology for controllable lower-poly generation; confirm current costs."
+          },
+          "pose_mode": {
+            "type": "string",
+            "enum": [
+              "a-pose",
+              "t-pose"
+            ],
+            "description": "Pose mode for character models: 'a-pose' or 't-pose'. IMPORTANT: When the user intends to rig or animate the model, default to 't-pose' for best rigging results"
+          },
+          "enable_pbr": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable physically-based rendering textures. Default false"
+          },
+          "topology": {
+            "type": "string",
+            "enum": [
+              "quad",
+              "triangle"
+            ],
+            "description": "Mesh topology type (quad or triangle)"
+          },
+          "target_polycount": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 300000,
+            "description": "Standard remesh target: 100\u2013300,000 faces. Supported T2 routes generate directly at 100\u201315,000 faces (default 4,000)."
+          },
+          "decimation_mode": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4,
+            "description": "Adaptive decimation polycount level (1=ultra, 2=high, 3=medium, 4=low). When set, target_polycount is ignored."
+          },
+          "should_remesh": {
+            "type": "boolean",
+            "description": "Enable standard remeshing to apply a target count. Defaults false for Meshy 6/7/7.1. Ignored on Smart Topology routes."
+          },
+          "symmetry_mode": {
+            "type": "string",
+            "enum": [
+              "off",
+              "auto",
+              "on"
+            ],
+            "description": "DEPRECATED \u2014 no longer affects output (kept for backward compatibility). Values: 'off', 'auto', 'on'."
+          },
+          "should_texture": {
+            "type": "boolean",
+            "description": "Whether to generate textures. Default true"
+          },
+          "texture_prompt": {
+            "type": "string",
+            "maxLength": 800,
+            "description": "Text to guide texturing. Max 800 characters"
+          },
+          "texture_image_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Image URL to guide texturing"
+          },
+          "texture_resolution": {
+            "type": "string",
+            "enum": [
+              "2k",
+              "4k",
+              "8k"
+            ],
+            "description": "Base color texture resolution: 2k (default), 4k, or 8k. 4k/8k need meshy-6 / meshy-7.1 / latest / meshy-t2 (meshy-6-lite is 2k only). 8k adds 5 credits to the texture stage (15 instead of 10). PBR maps stay at 2K. Replaces hd_texture."
+          },
+          "hd_texture": {
+            "type": "boolean",
+            "description": "DEPRECATED \u2014 use texture_resolution instead (hd_texture: true is exactly texture_resolution: '4k'). Kept for backward compatibility."
+          },
+          "image_enhancement": {
+            "type": "boolean",
+            "description": "Optimize input image. Supported on meshy-6, meshy-7.1, and latest. Set false to preserve deliberate source styling."
+          },
+          "remove_lighting": {
+            "type": "boolean",
+            "description": "Remove highlights/shadows from the base color texture. Only honored on meshy-6 (API default true there); not sent for other models."
+          },
+          "save_pre_remeshed_model": {
+            "type": "boolean",
+            "description": "Store GLB before remeshing. Default false. Only applies when should_remesh is true"
+          },
+          "target_formats": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "glb",
+                "obj",
+                "fbx",
+                "stl",
+                "usdz",
+                "3mf"
+              ]
+            },
+            "description": "Output formats to generate. When omitted, produces glb/obj/fbx/stl/usdz but NOT 3mf. To get 3MF, you MUST include '3mf' explicitly (e.g. [\"glb\", \"3mf\"]). Specifying formats can reduce task completion time."
+          },
+          "alpha_thumbnail": {
+            "type": "boolean",
+            "description": "Also render a transparent-background (RGBA) preview, returned as alpha_thumbnail_url. Default false."
+          },
+          "multi_view_thumbnails": {
+            "type": "boolean",
+            "description": "Also return 4 cardinal-view thumbnails (front/back/left/right). Default false."
+          },
+          "auto_size": {
+            "type": "boolean",
+            "description": "Use AI to auto-estimate real-world height and resize the model. Default false."
+          },
+          "origin_at": {
+            "type": "string",
+            "enum": [
+              "bottom",
+              "center"
+            ],
+            "description": "Origin position: 'bottom' or 'center'. Default 'bottom' when auto_size is true."
+          },
+          "response_format": {
+            "type": "string",
+            "enum": [
+              "markdown",
+              "json"
+            ],
+            "default": "markdown",
+            "description": "Output format: 'markdown' for human-readable or 'json' for machine-readable"
+          }
+        },
+        "additionalProperties": false
+      }
     },
     "meshy_get_task_status": {
       "required_arguments": [
@@ -71,7 +289,78 @@
         "wait"
       ],
       "timeout_argument": "timeout_seconds",
-      "paid": false
+      "paid": false,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique task identifier (UUID)"
+          },
+          "task_type": {
+            "type": "string",
+            "enum": [
+              "text-to-3d",
+              "image-to-3d",
+              "multi-image-to-3d",
+              "remesh",
+              "retexture",
+              "rigging",
+              "animation",
+              "text-to-image",
+              "image-to-image",
+              "convert",
+              "resize",
+              "uv-unwrap",
+              "multi-color-print",
+              "print-analyze",
+              "print-repair",
+              "creative-lab-figure-prototype",
+              "creative-lab-figure-build",
+              "creative-lab-lamp-prototype",
+              "creative-lab-lamp-build",
+              "creative-lab-keychain-prototype",
+              "creative-lab-keychain-build",
+              "creative-lab-fridge-magnet-prototype",
+              "creative-lab-fridge-magnet-build",
+              "creative-lab-vinyl-figure-prototype",
+              "creative-lab-vinyl-figure-build",
+              "creative-lab-brick-figure-prototype",
+              "creative-lab-brick-figure-build",
+              "creative-lab-keycap-prototype",
+              "creative-lab-keycap-build"
+            ],
+            "default": "text-to-3d",
+            "description": "Task type for endpoint routing. Common values: 'text-to-3d', 'image-to-3d', 'multi-image-to-3d', 'remesh', 'retexture', 'rigging', 'animation', 'text-to-image', 'image-to-image', 'convert', 'resize', 'uv-unwrap'. Creative Lab is STAGE-specific: 'creative-lab-{product}-prototype' or 'creative-lab-{product}-build' (product = figure/lamp/keychain/fridge-magnet). If omitted or unrecognized, the server auto-infers the correct endpoint by probing \u2014 so an imperfect value still resolves; never fall back to manual HTTP."
+          },
+          "wait": {
+            "type": "boolean",
+            "default": true,
+            "description": "If true (default), auto-poll until task completes. If false, return current status immediately."
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 300,
+            "default": 300,
+            "description": "Maximum wait time in seconds when wait=true (default: 300, max: 300)"
+          },
+          "response_format": {
+            "type": "string",
+            "enum": [
+              "markdown",
+              "json"
+            ],
+            "default": "markdown",
+            "description": "Output format: 'markdown' for human-readable or 'json' for machine-readable"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false
+      }
     },
     "meshy_download_model": {
       "required_arguments": [
@@ -86,7 +375,92 @@
         "save_to",
         "task_type"
       ],
-      "paid": false
+      "paid": false,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique task identifier (UUID)"
+          },
+          "task_type": {
+            "type": "string",
+            "enum": [
+              "text-to-3d",
+              "image-to-3d",
+              "multi-image-to-3d",
+              "remesh",
+              "retexture",
+              "rigging",
+              "animation",
+              "text-to-image",
+              "image-to-image",
+              "convert",
+              "resize",
+              "uv-unwrap",
+              "multi-color-print",
+              "print-analyze",
+              "print-repair",
+              "creative-lab-figure-prototype",
+              "creative-lab-figure-build",
+              "creative-lab-lamp-prototype",
+              "creative-lab-lamp-build",
+              "creative-lab-keychain-prototype",
+              "creative-lab-keychain-build",
+              "creative-lab-fridge-magnet-prototype",
+              "creative-lab-fridge-magnet-build",
+              "creative-lab-vinyl-figure-prototype",
+              "creative-lab-vinyl-figure-build",
+              "creative-lab-brick-figure-prototype",
+              "creative-lab-brick-figure-build",
+              "creative-lab-keycap-prototype",
+              "creative-lab-keycap-build"
+            ],
+            "default": "text-to-3d",
+            "description": "Task type for endpoint routing. Common values: 'text-to-3d', 'image-to-3d', 'multi-image-to-3d', 'remesh', 'retexture', 'rigging', 'animation', 'text-to-image', 'image-to-image', 'convert', 'resize', 'uv-unwrap'. Creative Lab is STAGE-specific: 'creative-lab-{product}-prototype' or 'creative-lab-{product}-build' (product = figure/lamp/keychain/fridge-magnet). If omitted or unrecognized, the server auto-infers the correct endpoint by probing \u2014 so an imperfect value still resolves; never fall back to manual HTTP."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "glb",
+              "fbx",
+              "usdz",
+              "stl",
+              "obj",
+              "blend",
+              "3mf"
+            ],
+            "default": "glb",
+            "description": "Model format to download. IMPORTANT: Ask the user which format they need before downloading. Recommendations: GLB (general viewing), OBJ (white model printing), 3MF (multicolor printing), FBX (game engines/animation), USDZ (AR/Apple), BLEND (Blender). Do NOT download all formats. NOTE: a format is only downloadable if it was generated \u2014 '3mf' must be requested at creation via target_formats:[\"3mf\"], or produced by the multi-color print / convert tools."
+          },
+          "include_textures": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include texture files in response"
+          },
+          "save_to": {
+            "type": "string",
+            "description": "Override auto-save path with a custom ABSOLUTE path. If omitted, auto-saves to meshy_output/{timestamp}_{prompt}_{id}/. Example: /Users/me/models/chair.glb"
+          },
+          "parent_task_id": {
+            "type": "string",
+            "description": "Parent task ID for chaining (e.g., preview_task_id for refine, input_task_id for rig). Places output in the same project folder as the parent."
+          },
+          "print_ready": {
+            "type": "boolean",
+            "description": "If true and format is OBJ, auto-fix coordinates for 3D printing: rotates Y-up to Z-up, scales to target height, centers on XY, aligns bottom to Z=0. Default false."
+          },
+          "print_height_mm": {
+            "type": "number",
+            "description": "Target height in mm when print_ready is true. Default 75. Adjust per user request (e.g. 'print at 15cm' \u2192 150)."
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false
+      }
     },
     "meshy_remesh": {
       "input_exclusivity": [
@@ -109,7 +483,97 @@
         "topology"
       ],
       "target_polycount_max": 300000,
-      "paid": true
+      "paid": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "input_task_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Task ID of an existing completed task to remesh"
+          },
+          "model_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Direct URL to a model file to remesh"
+          },
+          "target_formats": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "glb",
+                "fbx",
+                "obj",
+                "usdz",
+                "blend",
+                "stl",
+                "3mf"
+              ]
+            },
+            "default": [
+              "glb"
+            ],
+            "description": "Output formats to generate (default: ['glb']). NOTE: 3MF is NOT included by default \u2014 you MUST explicitly include '3mf' to receive it."
+          },
+          "topology": {
+            "type": "string",
+            "enum": [
+              "quad",
+              "triangle"
+            ],
+            "description": "Mesh topology type (quad or triangle)"
+          },
+          "target_polycount": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 300000,
+            "description": "Target polygon count for the remeshed model (100\u2013300,000)"
+          },
+          "decimation_mode": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4,
+            "description": "Adaptive decimation polycount level (1=ultra, 2=high, 3=medium, 4=low). When set, target_polycount is ignored."
+          },
+          "resize_height": {
+            "type": "number",
+            "default": 0,
+            "description": "Resize model to this height in meters (0 = no resize). Mutually exclusive with auto_size."
+          },
+          "resize_longest_side": {
+            "type": "number",
+            "description": "Resize so the model's longest side matches this value in meters (aspect ratio preserved). Alternative to resize_height."
+          },
+          "auto_size": {
+            "type": "boolean",
+            "description": "Use AI to auto-estimate real-world height. Mutually exclusive with resize_height. Default false."
+          },
+          "origin_at": {
+            "type": "string",
+            "enum": [
+              "bottom",
+              "center"
+            ],
+            "description": "Where to place the model origin: 'bottom' or 'center'. Default 'bottom' when auto_size is true."
+          },
+          "convert_format_only": {
+            "type": "boolean",
+            "default": false,
+            "description": "Only convert format without remeshing"
+          },
+          "response_format": {
+            "type": "string",
+            "enum": [
+              "markdown",
+              "json"
+            ],
+            "default": "markdown",
+            "description": "Output format: 'markdown' for human-readable or 'json' for machine-readable"
+          }
+        },
+        "additionalProperties": false
+      }
     },
     "meshy_rig": {
       "input_exclusivity": [
@@ -125,7 +589,41 @@
         "texture_image_url"
       ],
       "paid": true,
-      "estimate_credits": 5
+      "estimate_credits": 5,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "input_task_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Task ID of an existing completed task to rig"
+          },
+          "model_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Direct URL to a model file to rig"
+          },
+          "height_meters": {
+            "type": "number",
+            "default": 1.7,
+            "description": "Height of the character in meters (default: 1.7)"
+          },
+          "texture_image_url": {
+            "$ref": "#/properties/model_url",
+            "description": "URL of a texture image to apply to the model"
+          },
+          "response_format": {
+            "type": "string",
+            "enum": [
+              "markdown",
+              "json"
+            ],
+            "default": "markdown",
+            "description": "Output format: 'markdown' for human-readable or 'json' for machine-readable"
+          }
+        },
+        "additionalProperties": false
+      }
     },
     "meshy_convert": {
       "input_exclusivity": [
@@ -147,7 +645,52 @@
         "response_format"
       ],
       "paid": true,
-      "estimate_credits": 1
+      "estimate_credits": 1,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "input_task_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "ID of a SUCCEEDED Meshy task whose model to convert. Mutually exclusive with model_url."
+          },
+          "model_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Public URL or data URI of a 3D model (.glb / .gltf / .obj / .fbx / .stl). Mutually exclusive with input_task_id."
+          },
+          "target_formats": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "glb",
+                "fbx",
+                "obj",
+                "usdz",
+                "blend",
+                "stl",
+                "3mf"
+              ]
+            },
+            "minItems": 1,
+            "description": "Output formats (required). Options: glb, fbx, obj, usdz, blend, stl, 3mf."
+          },
+          "response_format": {
+            "type": "string",
+            "enum": [
+              "markdown",
+              "json"
+            ],
+            "default": "markdown",
+            "description": "Output format: 'markdown' for human-readable or 'json' for machine-readable"
+          }
+        },
+        "required": [
+          "target_formats"
+        ],
+        "additionalProperties": false
+      }
     },
     "meshy_animate": {
       "required_arguments": [
@@ -159,14 +702,71 @@
         "response_format"
       ],
       "paid": true,
-        "pilot_action_id": 4,
-        "verified_action_ids": {
-          "idle": 0,
-          "attack": 4,
-          "death": 8
+      "pilot_action_id": 4,
+      "verified_action_ids": {
+        "idle": 0,
+        "attack": 4,
+        "death": 8
+      },
+      "verified_action_library": "https://docs.meshy.ai/en/api/animation-library",
+      "estimate_credits": 3,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "rig_task_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Task ID of the completed rigging task to animate"
+          },
+          "action_id": {
+            "type": "integer",
+            "description": "ID of the animation action to apply"
+          },
+          "post_process": {
+            "type": "object",
+            "properties": {
+              "operation_type": {
+                "type": "string",
+                "enum": [
+                  "change_fps",
+                  "fbx2usdz",
+                  "extract_armature"
+                ],
+                "description": "Post-processing operation to apply"
+              },
+              "fps": {
+                "type": "number",
+                "enum": [
+                  24,
+                  25,
+                  30,
+                  60
+                ],
+                "description": "Target FPS for change_fps operation"
+              }
+            },
+            "required": [
+              "operation_type"
+            ],
+            "additionalProperties": false,
+            "description": "Optional post-processing to apply after animation"
+          },
+          "response_format": {
+            "type": "string",
+            "enum": [
+              "markdown",
+              "json"
+            ],
+            "default": "markdown",
+            "description": "Output format: 'markdown' for human-readable or 'json' for machine-readable"
+          }
         },
-        "verified_action_library": "https://docs.meshy.ai/en/api/animation-library",
-        "estimate_credits": 3
+        "required": [
+          "rig_task_id",
+          "action_id"
+        ],
+        "additionalProperties": false
+      }
     }
   },
   "forbidden_provider_inputs": [
@@ -174,5 +774,6 @@
     "side_profile_sheet",
     "turnaround_collage",
     "secret_in_arguments"
-  ]
+  ],
+  "qualification": "tools/list establishes published schema availability only; authenticated balance, paid operations and app-owned launcher behavior remain unprobed."
 }

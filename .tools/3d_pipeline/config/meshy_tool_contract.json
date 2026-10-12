@@ -1,35 +1,105 @@
 {
   "schema_version": "1.0.0",
   "server_package": "@meshy-ai/meshy-mcp-server",
-  "resolution_policy": "latest_at_bootstrap",
+  "resolution_policy": "exact_package_lock_at_bootstrap",
   "required_tools": {
-    "meshy_check_balance": {"paid": false, "required_arguments": []},
+    "meshy_check_balance": {
+      "paid": false,
+      "required_arguments": []
+    },
     "meshy_image_to_3d": {
       "paid": true,
-      "required_arguments": ["ai_model"],
+      "required_arguments": [
+        "ai_model"
+      ],
       "required_ai_model": "meshy-7",
-      "accepted_ai_models": ["meshy-7"],
-      "required_argument_groups": [["file_path", "image_url", "input_task_id"]],
-      "input_exclusivity": ["file_path", "image_url", "input_task_id"],
-      "forbidden_arguments": ["multi_view_thumbnails"]
+      "accepted_ai_models": [
+        "meshy-7"
+      ],
+      "required_argument_groups": [
+        [
+          "file_path",
+          "image_url",
+          "input_task_id"
+        ]
+      ],
+      "input_exclusivity": [
+        "file_path",
+        "image_url",
+        "input_task_id"
+      ],
+      "forbidden_arguments": [
+        "multi_view_thumbnails"
+      ]
     },
-    "meshy_get_task_status": {"paid": false, "required_arguments": ["task_id"]},
-    "meshy_download_model": {"paid": false, "required_arguments": ["task_id"]},
-    "meshy_remesh": {"paid": true, "input_exclusivity": ["input_task_id", "model_url"]},
-    "meshy_rig": {"paid": true, "input_exclusivity": ["input_task_id", "model_url"]},
+    "meshy_get_task_status": {
+      "paid": false,
+      "required_arguments": [
+        "task_id"
+      ]
+    },
+    "meshy_download_model": {
+      "paid": false,
+      "required_arguments": [
+        "task_id"
+      ]
+    },
+    "meshy_remesh": {
+      "paid": true,
+      "input_exclusivity": [
+        "input_task_id",
+        "model_url"
+      ]
+    },
+    "meshy_rig": {
+      "paid": true,
+      "input_exclusivity": [
+        "input_task_id",
+        "model_url"
+      ]
+    },
     "meshy_convert": {
       "paid": true,
-      "required_arguments": ["target_formats"],
-      "required_argument_groups": [["input_task_id", "model_url"]],
-      "input_exclusivity": ["input_task_id", "model_url"]
+      "required_arguments": [
+        "target_formats"
+      ],
+      "required_argument_groups": [
+        [
+          "input_task_id",
+          "model_url"
+        ]
+      ],
+      "input_exclusivity": [
+        "input_task_id",
+        "model_url"
+      ]
     },
-    "meshy_animate": {"paid": true, "required_arguments": ["rig_task_id", "action_id"]}
+    "meshy_animate": {
+      "paid": true,
+      "required_arguments": [
+        "rig_task_id",
+        "action_id"
+      ]
+    }
   },
   "optional_capabilities": {
     "text_to_motion": {
       "requires_live_verified_app_launcher_exposure": true,
-      "tool_names": ["meshy_text_to_motion", "meshy_get_motion_status", "meshy_list_motion_tasks", "meshy_download_motion", "meshy_animation_library"],
-      "generated_retarget_requires": {"tool": "meshy_animate", "arguments": ["rig_task_id", "motion_task_id"], "exclusive_with": "action_id"},
+      "tool_names": [
+        "meshy_text_to_motion",
+        "meshy_get_motion_status",
+        "meshy_list_motion_tasks",
+        "meshy_download_motion",
+        "meshy_animation_library"
+      ],
+      "generated_retarget_requires": {
+        "tool": "meshy_animate",
+        "arguments": [
+          "rig_task_id",
+          "motion_task_id"
+        ],
+        "exclusive_with": "action_id"
+      },
       "missing_capability_policy": "exact blocker; authorized Blender recovery, no project credential wrapper or direct REST"
     }
   },

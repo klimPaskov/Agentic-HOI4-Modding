@@ -16,6 +16,23 @@ from pathlib import Path
 TEXT_SOURCE_SUFFIXES = {".js", ".json", ".md", ".py", ".txt"}
 
 
+def npm_command() -> list[str]:
+    """Invoke npm's JavaScript entry directly without a Windows batch shell."""
+    node_value = shutil.which("node.exe" if os.name == "nt" else "node")
+    npm_value = shutil.which("npm.cmd" if os.name == "nt" else "npm")
+    if not node_value or not npm_value:
+        raise RuntimeError("Node.js LTS and npm are required for GPTImage dependencies.")
+    node = Path(node_value).resolve(strict=True)
+    npm = Path(npm_value).resolve(strict=True)
+    candidates = [node.parent / "node_modules/npm/bin/npm-cli.js", npm.parent / "node_modules/npm/bin/npm-cli.js"]
+    if npm.name == "npm-cli.js":
+        candidates.insert(0, npm)
+    for cli in candidates:
+        if cli.is_file():
+            return [str(node), str(cli.resolve())]
+    raise RuntimeError("Node.js LTS and the npm JavaScript entry could not be discovered.")
+
+
 def source_bytes(path: Path) -> bytes:
     data = path.read_bytes()
     if path.name == "LICENSE" or path.suffix.lower() in TEXT_SOURCE_SUFFIXES:
@@ -72,7 +89,7 @@ def install(package_root: Path, run=subprocess.run, *, expected_tree_sha256: str
     environment["CI"] = "true"
     try:
         result = run(
-            ["npm", "ci", "--omit=dev", "--ignore-scripts", "--no-bin-links", "--no-audit", "--no-fund", "--cache", npm_cache,
+            [*npm_command(), "ci", "--omit=dev", "--ignore-scripts", "--no-bin-links", "--no-audit", "--no-fund", "--cache", npm_cache,
              "--userconfig", str(clean_config), "--globalconfig", str(clean_config)],
             cwd=package_root,
             env=environment,

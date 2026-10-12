@@ -6,6 +6,8 @@ import json
 import re
 import subprocess
 import sys
+from dataclasses import replace
+from unittest.mock import patch
 from pathlib import Path
 
 try:
@@ -106,6 +108,13 @@ def main():
         assert "image-generation MCP workflow" not in body, source
 
     profiles = module.load_profiles()
+    assert module.verify(["codex", "cursor", "qoder", "opencode", "claude"]) == 0
+    altered = [replace(agents[0], model="opus" if agents[0].model != "opus" else "haiku"), *agents[1:]]
+    with patch.object(module, "load_agents", return_value=altered):
+        assert module.verify(["claude"]) == 1, "role tier drift must fail verification"
+    altered = [replace(agents[0], effort="low"), *agents[1:]]
+    with patch.object(module, "load_agents", return_value=altered):
+        assert module.verify(["claude"]) == 1, "role effort drift must fail verification"
     for runtime_key in ("codex", "cursor", "qoder", "opencode", "claude"):
         assert module.synchronize([runtime_key], check=True) == 0, runtime_key
         outputs = module.expected_outputs(runtime_key, agents, profiles)

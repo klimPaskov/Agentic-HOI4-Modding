@@ -18,6 +18,7 @@ Release from the Claude-first source repository. Keep package code, generated ru
    python -m unittest discover -s .claude/skills/hoi4-feature-assets/tools/tests -p "test_*.py"
    python -m unittest discover -s .claude/skills/xlsx/tests -p "test_*.py"
    python .tools/sync/sync_agents.py --check
+   python .tools/sync/sync_agents.py --verify
    python .tools/sync/sync_instructions.py --check
    python .tools/sync/sync_skills.py --check
    python .tools/sync/check_guidance_size.py

@@ -7,12 +7,18 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".tools" / "image_generation" / "providers" / "gptimage"))
 import bootstrap as bootstrap_gptimage
 
 
 class GptimageBootstrapTests(unittest.TestCase):
+    def setUp(self) -> None:
+        resolver = mock.patch.object(bootstrap_gptimage, "npm_command", return_value=["C:/node/node.exe", "C:/node/npm-cli.js"])
+        resolver.start()
+        self.addCleanup(resolver.stop)
+
     def make_package(self, root: Path) -> Path:
         package = root / "gptimage"
         (package / "src").mkdir(parents=True)
@@ -42,7 +48,7 @@ class GptimageBootstrapTests(unittest.TestCase):
             )
             self.assertEqual(result, {"status": "ready", "package": "gptimage", "version": "0.1.0"})
             args, kwargs = calls[0]
-            self.assertEqual(args[:2], ["npm", "ci"])
+            self.assertEqual(args[:3], ["C:/node/node.exe", "C:/node/npm-cli.js", "ci"])
             self.assertIn("--ignore-scripts", args)
             self.assertIn("--no-bin-links", args)
             self.assertIn("--no-audit", args)
@@ -115,6 +121,32 @@ class GptimageBootstrapTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "could not be installed") as error:
                 bootstrap_gptimage.install(package, fake_run)
             self.assertNotIn("private-value", str(error.exception))
+
+    def test_missing_npm_is_reported_before_installation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            package = self.make_package(Path(directory))
+            run = mock.Mock()
+            with mock.patch.object(bootstrap_gptimage, "npm_command", side_effect=RuntimeError("Node.js LTS and npm are required")):
+                with self.assertRaisesRegex(RuntimeError, "Node.js LTS and npm"):
+                    bootstrap_gptimage.install(package, run)
+            run.assert_not_called()
+
+    def test_npm_entry_is_run_directly_from_paths_with_shell_characters(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gptimage & ") as directory:
+            root = Path(directory)
+            node = root / "node.exe"
+            npm = root / "npm.cmd"
+            cli = root / "node_modules/npm/bin/npm-cli.js"
+            cli.parent.mkdir(parents=True)
+            for path in (node, npm, cli):
+                path.write_bytes(b"fixture")
+            # Stop the per-test fixture override for this resolver-only case.
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("gptimage_resolver", Path(bootstrap_gptimage.__file__))
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            with mock.patch.object(module.shutil, "which", side_effect=[str(node), str(npm)]):
+                self.assertEqual(module.npm_command(), [str(node.resolve()), str(cli.resolve())])
 
 
 if __name__ == "__main__":

@@ -17,6 +17,7 @@ python .tools/sync/check_guidance_size.py
 ```
 
 Run the three synchronizers after editing a canonical file, and run them with `--check` during validation; `--check` writes nothing and exits with status 1 when a projection is out of date.
+Run `python .tools/sync/sync_agents.py --verify` to check the role tier and effort policies in `agent_profiles.json` and read back every generated definition without writing. A valid frontmatter tier alone does not establish that it is the intended tier for that role.
 The tools use only the Python standard library and run on Python 3.9 or newer.
 
 ## Rules

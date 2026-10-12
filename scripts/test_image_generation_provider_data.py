@@ -81,7 +81,9 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
         providers = {item["id"]: item for item in build_image_generation_table(ROOT)["providers"]}
         route = providers["gptimage"]["route"]
         self.assertEqual(route["kind"], "local_package")
-        self.assertEqual(route["source_revision"], "49273481195c9795a4b6dc47b28549139c977025")
+        self.assertEqual(route["source_revision"], "dfb4948b6877b5b7febf73e1342fcfacd862a1ed")
+        self.assertEqual(route["tool_names"]["list_references"], "list_references")
+        self.assertNotIn("GPT Image 2", providers["gptimage"]["models"])
         self.assertTrue(route["source_tree_sha256"])
         self.assertTrue(route["package_lock_sha256"])
         self.assertEqual(providers["midjourney_manual"]["availability"], "manual_only")
@@ -133,7 +135,7 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
         self.assertTrue(component["optional"])
         self.assertEqual(component["source"]["path"], ".tools/image_generation/providers/gptimage")
         self.assertEqual(component["destination"]["path"], ".tools/image_generation/providers/gptimage/")
-        self.assertEqual(component["validation"][0]["parameters"]["source_revision"], "49273481195c9795a4b6dc47b28549139c977025")
+        self.assertEqual(component["validation"][0]["parameters"]["source_revision"], "dfb4948b6877b5b7febf73e1342fcfacd862a1ed")
         bootstrap = component["validation"][0]["parameters"]
         self.assertEqual(bootstrap["privilege"], "current_user")
         self.assertTrue(bootstrap["network_access"])

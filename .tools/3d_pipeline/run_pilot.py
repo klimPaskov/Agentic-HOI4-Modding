@@ -182,7 +182,7 @@ def save_task(
         "input_stage": input_stage,
         "provider": {
             "server_package": "@meshy-ai/meshy-mcp-server",
-            "server_version": os.environ.get("MESHY_MCP_VERSION", "0.4.0"),
+            "server_version": os.environ.get("MESHY_MCP_VERSION", "0.6.2"),
         },
         "recorded_at": utc_now(),
     }
@@ -444,7 +444,7 @@ def provider_task(
             "input_stage": input_stage,
             "provider": {
                 "server_package": "@meshy-ai/meshy-mcp-server",
-                "server_version": os.environ.get("MESHY_MCP_VERSION", "0.4.0"),
+                "server_version": os.environ.get("MESHY_MCP_VERSION", "0.6.2"),
             },
             "created_at": utc_now(),
         },

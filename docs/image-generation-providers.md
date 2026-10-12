@@ -22,7 +22,7 @@ Keep API keys in Windows Credential Manager or macOS Keychain. Inject a key into
 
 - **Route and sign-in:** The installed [GPTImage source repository](https://github.com/Connected-Mate/gptimage) is the source for this local MCP and CLI. The user signs in through a browser with their ChatGPT account; no API key is needed. The current source can read GPTImage or Codex local auth state and calls an undocumented ChatGPT/Codex endpoint. This is an independent, unofficial integration; OpenAI does not publish or support this subscription endpoint.
 - **Cost and model:** No separate API image charge. Generation uses the account’s ChatGPT usage limits, which can change or run out. The checked source defaults to a configurable GPT-5.5 route that calls the image-generation tool; do not promise a particular underlying image model.
-- **References, editing, and alpha:** The MCP accepts reference-image paths and saves PNG. It has one generation tool and no separate edit-session tool. Its current tool schema has no transparent-background setting, so treat output as opaque unless the saved pixels prove otherwise.
+- **References, editing, and alpha:** The pinned MCP revision `dfb4948b6877b5b7febf73e1342fcfacd862a1ed` accepts reference-image paths, discovers project images with `list_references`, and saves PNG. It has one generation tool and no separate edit-session tool. Its current tool schema has no transparent-background setting, so treat output as opaque unless the saved pixels prove otherwise.
 - **Limits:** The tool describes requested output sizes with edges up to 3,840 pixels, dimensions divisible by 16, and a ratio no wider than 3:1. The source does not document the maximum reference-image count or input size.
 
 ### Codex native ImageGen

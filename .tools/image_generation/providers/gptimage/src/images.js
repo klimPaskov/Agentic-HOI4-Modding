@@ -34,6 +34,32 @@ export async function readReferenceImages(paths, baseDir) {
   return Promise.all((paths ?? []).map((p) => readImageAsDataUrl(p, baseDir)));
 }
 
+const REFERENCES_DIR = "references";
+const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif"]);
+
+// Ensure references/ exists at the project root. Safe to call every time.
+export async function ensureReferencesDir(baseDir) {
+  const abs = path.resolve(baseDir, REFERENCES_DIR);
+  await fs.mkdir(abs, { recursive: true });
+  return abs;
+}
+
+// List image files in references/ (non-recursive). Returns paths relative to baseDir.
+export async function listReferences(baseDir) {
+  const abs = path.resolve(baseDir, REFERENCES_DIR);
+  let entries;
+  try {
+    entries = await fs.readdir(abs, { withFileTypes: true });
+  } catch (err) {
+    if (err?.code === "ENOENT") return [];
+    throw err;
+  }
+  return entries
+    .filter((e) => e.isFile() && IMAGE_EXTS.has(path.extname(e.name).toLowerCase()))
+    .map((e) => path.join(REFERENCES_DIR, e.name))
+    .sort();
+}
+
 async function pathExists(p) {
   try {
     await fs.access(p);

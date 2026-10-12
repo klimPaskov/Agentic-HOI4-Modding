@@ -19,7 +19,7 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 BOOTSTRAP = ROOT / ".tools/mcp/bootstrap_hoi4_agent_tools.py"
 MANIFEST = ROOT / "hoi4-mod-setup.manifest.json"
-# Reviewed against the 4.0.0 core/domain-tools, reference/operations and job tools.
+# Reviewed 28-route contract retained by the published 4.0.3 release.
 REQUIRED_TOOLS = tuple(sorted((
     "hoi4.reference_context", "hoi4.reference_search", "hoi4.reference_read",
     "hoi4.source_lookup", "hoi4.script_validate", "hoi4.error_log", "hoi4.mod_index",
@@ -33,7 +33,7 @@ REQUIRED_TOOLS = tuple(sorted((
 )))
 
 
-def measure(prefix: Path, integrity: str) -> dict:
+def measure(prefix: Path, integrity: str, version: str | None = None) -> dict:
     if not integrity.startswith("sha512-"):
         raise ValueError("Integrity must be an exact SHA-512 npm SRI value.")
     try:
@@ -46,13 +46,16 @@ def measure(prefix: Path, integrity: str) -> dict:
     assert spec and spec.loader
     bootstrap = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(bootstrap)
+    version = version or bootstrap.PACKAGE_VERSION
+    if re.fullmatch(r"\d+\.\d+\.\d+", version) is None:
+        raise ValueError("Select an exact published package version.")
     modules = prefix.resolve(strict=True) / "node_modules"
     package_root = modules / bootstrap.PACKAGE_NAME
     if modules.is_symlink() or package_root.is_symlink():
         raise ValueError("The clean installation must not use linked package directories.")
     package = bootstrap.read_json(package_root / "package.json", 1024 * 1024)
-    if package.get("name") != "hoi4-agent-tools" or package.get("version") != "4.0.0":
-        raise ValueError("The clean installation must contain hoi4-agent-tools@4.0.0.")
+    if package.get("name") != "hoi4-agent-tools" or package.get("version") != version:
+        raise ValueError(f"The clean installation must contain hoi4-agent-tools@{version}.")
     # npm can omit this optional global lock for Windows shrinkwrapped installs.
     # Its absence never skips the full package-tree and runtime measurements.
     lock_path = modules / ".package-lock.json"
@@ -67,7 +70,7 @@ def measure(prefix: Path, integrity: str) -> dict:
     if not entry.is_file() or entry.stat().st_size > bootstrap.MAX_PACKAGE_FILE_BYTES:
         raise ValueError("The measured runtime entry is missing or oversized.")
     return {
-        "package_name": "hoi4-agent-tools", "package_version": "4.0.0",
+        "package_name": "hoi4-agent-tools", "package_version": version,
         "package_integrity": integrity, "package_tree_sha256": tree_digest,
         "package_file_count": count, "runtime_entry": bootstrap.RUNTIME_ENTRY,
         "runtime_entry_sha256": hashlib.sha256(entry.read_bytes()).hexdigest(),
@@ -102,9 +105,10 @@ def repin(evidence: dict, bootstrap_path: Path = BOOTSTRAP, manifest_path: Path 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--prefix", type=Path, required=True, help="Explicit clean npm global install prefix")
-    parser.add_argument("--integrity", required=True, help="Reviewed npm dist.integrity (or temporary local archive SHA-512)")
+    parser.add_argument("--integrity", required=True, help="Reviewed published npm dist.integrity")
+    parser.add_argument("--version", help="Exact reviewed public version; defaults to the current bootstrap pin")
     args = parser.parse_args()
-    evidence = measure(args.prefix, args.integrity)
+    evidence = measure(args.prefix, args.integrity, args.version)
     repin(evidence)
     print(json.dumps(evidence, sort_keys=True))
 

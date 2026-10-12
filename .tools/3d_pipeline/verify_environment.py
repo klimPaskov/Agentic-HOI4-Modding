@@ -59,8 +59,8 @@ def main() -> int:
         if image_contract.get("required_ai_model") != "meshy-7":
             findings.append("meshy_image_to_3d contract does not require meshy-7")
         image_schema = schema.get("required_tools", {}).get("meshy_image_to_3d", {})
-        if image_schema.get("accepted_ai_models") != ["meshy-7"]:
-            findings.append("locked live schema is not restricted to meshy-7")
+        if "meshy-7" not in image_schema.get("accepted_ai_models", []):
+            findings.append("locked published schema does not accept required meshy-7")
         if not profiles.get("profiles"):
             findings.append("asset profile registry is empty")
         tools = adapter_tools()
