@@ -16,7 +16,10 @@ from pathlib import Path
 
 def source_tree_sha256(package_root: Path) -> str:
     digest = hashlib.sha256()
-    for path in sorted(item for item in package_root.rglob("*") if item.is_file() and "node_modules" not in item.parts):
+    for path in sorted(
+        (item for item in package_root.rglob("*") if item.is_file() and "node_modules" not in item.parts),
+        key=lambda item: item.relative_to(package_root).as_posix(),
+    ):
         relative = path.relative_to(package_root).as_posix()
         data = path.read_bytes()
         digest.update(relative.encode("utf-8"))

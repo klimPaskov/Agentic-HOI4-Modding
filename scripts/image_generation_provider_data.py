@@ -134,7 +134,10 @@ def _provider(provider_id: str, display_name: str, description: str, requirement
 
 def _tree_sha256(root: Path) -> str:
     digest = hashlib.sha256()
-    for path in sorted(item for item in root.rglob("*") if item.is_file() and "node_modules" not in item.parts):
+    for path in sorted(
+        (item for item in root.rglob("*") if item.is_file() and "node_modules" not in item.parts),
+        key=lambda item: item.relative_to(root).as_posix(),
+    ):
         relative = path.relative_to(root).as_posix()
         data = path.read_bytes()
         digest.update(relative.encode("utf-8"))
