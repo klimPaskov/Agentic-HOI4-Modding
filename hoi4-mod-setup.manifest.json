@@ -1,7 +1,7 @@
 {
   "schema_version": "4.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "b8df7568d83a8538bfad9f560d054e1ca3bb67c1",
+  "generated_for_revision": "fd75d68830fa7e7075fc70cc2c3b0ce476291a88",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -11184,7 +11184,18 @@
         }
       ],
       "environment": [],
-      "expected_files": [],
+      "expected_files": [
+        {
+          "path": ".tools/image_generation/runtime/provider_catalog.json",
+          "sha256": "05b90efc7d829c2675a633e10f3f1eb308cd9342cf5fd77dbe049ec8018b8fcb",
+          "size": 67637
+        },
+        {
+          "path": ".tools/image_generation/runtime/server.py",
+          "sha256": "7e4bd79bc872b412d1d7bd197c95dea44b1e1d043955a25c379a40892254dfba",
+          "size": 96747
+        }
+      ],
       "conflicts": [],
       "conflict_policy": "replace_if_unmodified",
       "validation": [],
@@ -11256,7 +11267,73 @@
         }
       ],
       "environment": [],
-      "expected_files": [],
+      "expected_files": [
+        {
+          "path": ".tools/image_generation/providers/gptimage/LICENSE",
+          "sha256": "61b266ab51f12f1352bc72d2817474832fb8de9313b50b1ba5d7b014570b7bef",
+          "size": 1076
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/UPSTREAM.md",
+          "sha256": "b6bd43a96a47c056a4b767062798793d9f986b1af7c8a70ca3392b24cf239482",
+          "size": 895
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/bootstrap.py",
+          "sha256": "c6847415d41efd1683034eab13964f6f0a9fadfdd4bfd47a904dcf233ae4d94e",
+          "size": 5941
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/package-lock.json",
+          "sha256": "bd75719d34e7a161e8b3d712fdb358ba1b89dcc6d6f6cd614ddbc38032a45778",
+          "size": 41680
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/package.json",
+          "sha256": "06fec29755154c088945fc9525e3dd0b4318e75417eeb605b2b96ffc9651edab",
+          "size": 734
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/auth.js",
+          "sha256": "eb029fa64c8fddebc48bddde4847f8f1236fdcdfb12273e79dccce0276d969c6",
+          "size": 7465
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/banner.js",
+          "sha256": "ccbc76ef6b3cb17e06dd1d2341264d43022d7ff3e5c9ce045e09ccfa6fe7412d",
+          "size": 567
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/banner.txt",
+          "sha256": "0cb7e227d24e3be5abaa15cdc562e1bfc243658d2f09eb3807eaf5b88b287d33",
+          "size": 12503
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/codex.js",
+          "sha256": "5f370bcf2c767cf638f32d1ab87f9d65cb0c769faf8b358337b7e6b35fc6e588",
+          "size": 4418
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/gen.js",
+          "sha256": "c6d0f48d3e039b49192eec03389714e77c511111010f5fe3f7f4b26bed698413",
+          "size": 1860
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/images.js",
+          "sha256": "41a8143142d34b5238e0ee0841c0f040f6a62969b02b62ded64bd6bb83cd800a",
+          "size": 3540
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/login.js",
+          "sha256": "51e9209f166da80dfa6fab43bf5d2ed0993b6303593f04a6f778654566e2b861",
+          "size": 9662
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/server.js",
+          "sha256": "c2a537094748f7cbdc9f8c2d758759785a60fe8a487761a582fa5da17a20e55f",
+          "size": 6912
+        }
+      ],
       "conflicts": [],
       "conflict_policy": "replace_if_unmodified",
       "validation": [
