@@ -140,6 +140,8 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
         self.assertIn(".tools/image_generation/providers/gptimage/node_modules/**", bootstrap["expected_writes"])
         self.assertTrue(bootstrap["rollback_boundary"])
         self.assertEqual(components["imagegen.runtime"]["source"]["path"], ".tools/image_generation/runtime")
+        for provider_component in components.values():
+            self.assertEqual(provider_component["platforms"], ["windows", "macos"])
 
     def test_runtime_catalog_is_the_canonical_route_allowlist(self) -> None:
         expected = build_image_generation_table(ROOT)

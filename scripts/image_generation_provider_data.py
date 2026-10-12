@@ -486,7 +486,7 @@ def build_image_generation_components(source_root: Path | None = None) -> list[d
         "description": "Project-local GPTImage server source for the ChatGPT subscription route.",
         "category": "mcp",
         "optional": True,
-        "platforms": ["all"],
+        "platforms": ["windows", "macos"],
         "source": {
             "kind": "tree",
             "path": ".tools/image_generation/providers/gptimage",
@@ -549,7 +549,7 @@ def build_image_generation_components(source_root: Path | None = None) -> list[d
         "description": "Project-local, provider-neutral MCP adapter for selected image APIs and local image servers.",
         "category": "mcp",
         "optional": True,
-        "platforms": ["all"],
+        "platforms": ["windows", "macos"],
         "source": {
             "kind": "tree",
             "path": ".tools/image_generation/runtime",
