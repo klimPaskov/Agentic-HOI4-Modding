@@ -1,7 +1,7 @@
 {
   "schema_version": "4.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "9cdac61917161fae40b68fa9dd8def5d98e13213",
+  "generated_for_revision": "f3a0d6d4a46c11e589e0579ba8d7b944b3cf00c8",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "52fad7f1fc3a5e45089389fb6030e3e7d2c418c70ad1c4428902127324012024",
-          "size": 59952
+          "sha256": "6e708c35b86d2fef9f546784f19805604a92559637a32461fd226ff786bce7b2",
+          "size": 59232
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "53e007c0d2c95b82e00c7e4a13726aa717955bacd82165da1156717eaecb55a8",
-          "size": 59952
+          "sha256": "144e3470bb2dd422689316913adde540a4de4ad67f688b90f57f55ce6afa79f8",
+          "size": 59232
         }
       ]
     },
@@ -1521,8 +1521,8 @@
         },
         {
           "path": ".claude/skills/hoi4-debug-playtest/SKILL.md",
-          "sha256": "d8cdbf6579946d9a008a37a67a6e6c7bd428a152e5a692efc0483f392dd95cb2",
-          "size": 27115
+          "sha256": "1ec977d58bbb192c8ada36717973334006d52b78e456bf54ab30a1174e0804f0",
+          "size": 25357
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
@@ -4910,8 +4910,8 @@
         },
         {
           "path": ".claude/skills/hoi4-debug-playtest/SKILL.md",
-          "sha256": "d8cdbf6579946d9a008a37a67a6e6c7bd428a152e5a692efc0483f392dd95cb2",
-          "size": 27115
+          "sha256": "1ec977d58bbb192c8ada36717973334006d52b78e456bf54ab30a1174e0804f0",
+          "size": 25357
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
@@ -8248,7 +8248,8 @@
       "coding_environment": "codex",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -8267,7 +8268,7 @@
       },
       "dependencies": [
         "runtime.codex.skills",
-        "workflow.live_tools"
+        "workflow.live_testing"
       ],
       "conflicts": [
         "existing codex copy of the live-playtest skill"
@@ -8282,13 +8283,23 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "0891d8c51b4ada0c01f2465c4d0413082bc8ee66fafa32e1e24eeb347de4e550",
-          "size": 9639
+          "sha256": "a5d0ecb1b6ce52cf3f651e0c624c0ed61f1f19dd45917925148d68ddcd4bbcaa",
+          "size": 3349
+        },
+        {
+          "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
+          "sha256": "8725ad1f083a82b02d46caf9be53f5130b042c9edf49a5464742c80a75f0a807",
+          "size": 935
+        },
+        {
+          "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
+          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
+          "size": 15745
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "80350c64ba2eab959df8179633fc271661412cc72f42bc68693f103a06ec1c0d",
-          "size": 6384
+          "sha256": "801391d6812fa14bca7e201ce82c55df24e84ed6c49b988f2de80f02face8fac",
+          "size": 1484
         }
       ]
     },
@@ -8553,8 +8564,8 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_live_tools.py",
-          "sha256": "2e629cd1ad546e2a7e91a7b36b84a306143d125a713f2f192652270db9bb5970",
-          "size": 9782
+          "sha256": "ad3cce56356f5ce081696ede14d67cad47015e88f70f055a62c3d43570e0db0a",
+          "size": 9982
         }
       ]
     },
@@ -8653,8 +8664,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "5d8dc32bb19a3880d90bad57c78e2b1bc377e7fb1c1a9f249bc9397431483098",
-          "size": 11173
+          "sha256": "a8058e879a224cf7c74c906dd7066ee6025c3b9a192912fcd86591c7dbd62328",
+          "size": 12157
         }
       ]
     },
@@ -8704,8 +8715,8 @@
       "expected_files": [
         {
           "path": "docs/runtimes.md",
-          "sha256": "1c377ef493098fb0d7578cc1dd42872c3727ac90e9ef300c48d288908aab6016",
-          "size": 11803
+          "sha256": "2eca144559a6a13e47e7863e19fc159547ede85d34ecb2c6110561614e3a338c",
+          "size": 12170
         }
       ]
     },
@@ -10533,7 +10544,7 @@
     {
       "id": "workflow.live_tools",
       "display_name": "HOI4 Live Tools",
-      "description": "Install the HOI4 Live Tools server for the current user (pinned release, private Python environment, registered for the coding clients found) and add the hoi4-live-playtest skill with its setup guide, so agents test mods in the running game instead of scripting the desktop.",
+      "description": "Install the experimental Windows HOI4 Live Tools runtime; project client registrations are managed by HOI4 Mod Setup.",
       "category": "workflow",
       "optional": true,
       "platforms": [
@@ -10543,7 +10554,7 @@
         "kind": "tree",
         "path": ".claude/skills",
         "include": [
-          "hoi4-live-playtest/**"
+          "hoi4-live-playtest/references/hoi4-live-tools.md"
         ],
         "exclude": [
           "**/.DS_Store"
@@ -10555,7 +10566,7 @@
         "outside_project": false
       },
       "dependencies": [
-        "core.skills",
+        "workflow.live_testing",
         "mcp.hoi4_live.bootstrap"
       ],
       "conflicts": [
@@ -10571,7 +10582,9 @@
           "target": ".tools/mcp/bootstrap_hoi4_live_tools.py",
           "parameters": {
             "arguments": [
-              "--quiet"
+              "--quiet",
+              "--register",
+              "none"
             ],
             "release_version": "1.1.0",
             "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.1.0/hoi4-live-tools-1.1.0.zip",
@@ -10579,14 +10592,10 @@
             "release_size": 1155994,
             "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless) from https://pypi.org.",
             "expected_writes": [
-              "%LOCALAPPDATA%/hoi4-live-tools/**",
-              "the current user's Claude Code configuration file (.claude.json), only the hoi4-live entry",
-              "the current user's Codex configuration file (.codex/config.toml), only a marked hoi4-live block",
-              "the current user's Cursor MCP file (.cursor/mcp.json), only the hoi4-live entry",
-              "the current user's OpenCode configuration file (.config/opencode/opencode.json), only the hoi4-live entry"
+              "%LOCALAPPDATA%/hoi4-live-tools/**"
             ],
             "privilege": "current_user",
-            "rollback_boundary": "Managed project files roll back transactionally. The program under %LOCALAPPDATA%/hoi4-live-tools, its Python environment and the per-user client entries are external tool state, reported but not removed automatically; python install.py uninstall removes them."
+            "rollback_boundary": "Managed project registrations roll back transactionally. The per-user runtime and Python environment are external state; the bootstrap does not register global clients with --register none."
           }
         }
       ],
@@ -10603,18 +10612,13 @@
         "game launch, load, and time control"
       ],
       "notes": [
-        "HOI4 Live Tools drives a running Hearts of Iron IV on Windows. The server is installed per user by the bootstrap component; the skill routes agents to it."
+        "Windows verified only; upstream macOS support is incomplete. Experimental, slower and not thoroughly tested."
       ],
       "expected_files": [
         {
-          "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "0891d8c51b4ada0c01f2465c4d0413082bc8ee66fafa32e1e24eeb347de4e550",
-          "size": 9639
-        },
-        {
-          "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "80350c64ba2eab959df8179633fc271661412cc72f42bc68693f103a06ec1c0d",
-          "size": 6384
+          "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
+          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
+          "size": 15745
         }
       ],
       "required_tools": [
@@ -11378,6 +11382,67 @@
       ],
       "notes": [
         "Source revision is pinned to Connected-Mate/gptimage; dependency versions and integrity are in the included npm lockfile."
+      ]
+    },
+    {
+      "id": "workflow.live_testing",
+      "display_name": "Live testing guidance",
+      "description": "Provider-neutral live playtest workflow and common references.",
+      "category": "workflow",
+      "optional": true,
+      "platforms": [
+        "windows",
+        "macos"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-live-playtest/**"
+        ],
+        "exclude": [
+          "**/.DS_Store",
+          "hoi4-live-playtest/references/hoi4-live-tools.md"
+        ]
+      },
+      "destination": {
+        "path": ".claude/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.skills"
+      ],
+      "conflicts": [
+        "existing live-playtest skill with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "provider-neutral live testing"
+      ],
+      "notes": [],
+      "expected_files": [
+        {
+          "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
+          "sha256": "a5d0ecb1b6ce52cf3f651e0c624c0ed61f1f19dd45917925148d68ddcd4bbcaa",
+          "size": 3349
+        },
+        {
+          "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
+          "sha256": "8725ad1f083a82b02d46caf9be53f5130b042c9edf49a5464742c80a75f0a807",
+          "size": 935
+        },
+        {
+          "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
+          "sha256": "801391d6812fa14bca7e201ce82c55df24e84ed6c49b988f2de80f02face8fac",
+          "size": 1484
+        }
       ]
     }
   ],
@@ -13930,6 +13995,136 @@
           "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
           "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
           "fallback_if_no_edits": "Create or edit the image yourself and add it to the project."
+        }
+      }
+    ]
+  },
+  "live_testing": {
+    "default_provider": "clausewitz_mcp",
+    "providers": [
+      {
+        "id": "clausewitz_mcp",
+        "display_name": "Clausewitz MCP",
+        "description": "Direct state reads from native Linux Hearts of Iron IV 1.19.2.",
+        "requirements": [
+          "Linux native HOI4 1.19.2 only",
+          "Manual Linux, game and Clausewitz server setup",
+          "Windows WSL or macOS SSH to Linux",
+          "Confirm the Linux game and server are ready in HOI4 Mod Setup before registration"
+        ],
+        "documentation_url": "https://github.com/smerss/Clausewitz-MCP",
+        "supported_platforms": [
+          "windows",
+          "macos"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "experimental": false,
+        "route": {
+          "kind": "external_stdio",
+          "server_id": "clausewitz_linux",
+          "component_id": "workflow.live_testing",
+          "source_repository": "smerss/Clausewitz-MCP",
+          "source_revision": "97c85437081904d5ad07bae1623ec58d1c0a5b9e"
+        },
+        "guidance": [
+          "Use the connected clausewitz_linux server and its advertised tool list with qualified tool names.",
+          "Only Linux native HOI4 1.19.2 is supported; Windows uses WSL and macOS uses SSH to Linux.",
+          "Complete manual Linux/game/server setup and confirm the Linux game and server are ready in HOI4 Mod Setup before registration.",
+          "Read state directly from the game process; OCR and saving are not needed for these reads.",
+          "Check advertised capabilities before attempting actions; do not assume HOI4 Live Tools operation parity.",
+          "Clausewitz MCP by smerss is MIT licensed: https://github.com/smerss/Clausewitz-MCP."
+        ],
+        "supported_game_version": "1.19.2",
+        "attribution": {
+          "author": "smerss",
+          "url": "https://github.com/smerss/Clausewitz-MCP",
+          "license": "MIT",
+          "license_url": "https://github.com/smerss/Clausewitz-MCP/blob/97c85437081904d5ad07bae1623ec58d1c0a5b9e/LICENSE"
+        }
+      },
+      {
+        "id": "hoi4_live_tools",
+        "display_name": "HOI4 Live Tools (experimental)",
+        "description": "Windows game interface, console, log and save tools; slower and not thoroughly tested.",
+        "requirements": [
+          "Windows",
+          "Python 3.9 or newer",
+          "Installed Hearts of Iron IV"
+        ],
+        "documentation_url": "https://github.com/klimPaskov/HOI4-Live-Tools",
+        "supported_platforms": [
+          "windows"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "experimental": true,
+        "route": {
+          "kind": "local_install",
+          "server_id": "hoi4-live",
+          "component_id": "workflow.live_tools",
+          "source_repository": "klimPaskov/HOI4-Live-Tools",
+          "source_revision": "v1.1.0"
+        },
+        "guidance": [
+          "Use the connected hoi4-live server and its advertised tools with qualified tool names.",
+          "Windows is the verified platform; upstream macOS support is incomplete.",
+          "This provider is experimental, slower and not thoroughly tested.",
+          "Follow references/hoi4-live-tools.md for provider-specific operations and setup."
+        ],
+        "supported_game_version": "Not pinned; verify against your installed game",
+        "attribution": {
+          "author": "klimPaskov",
+          "url": "https://github.com/klimPaskov/HOI4-Live-Tools",
+          "license": "Apache-2.0",
+          "license_url": "https://github.com/klimPaskov/HOI4-Live-Tools/blob/v1.1.0/LICENSE"
+        }
+      },
+      {
+        "id": "none",
+        "display_name": "None",
+        "description": "Run the requested checks yourself and report observations.",
+        "requirements": [],
+        "documentation_url": "https://klimpaskov.github.io/Agentic-HOI4-Modding/",
+        "supported_platforms": [
+          "windows",
+          "macos"
+        ],
+        "supported_coding_environments": [
+          "claude_code",
+          "codex",
+          "cursor",
+          "qoder",
+          "opencode"
+        ],
+        "experimental": false,
+        "route": {
+          "kind": "manual",
+          "server_id": null,
+          "component_id": null,
+          "source_repository": null,
+          "source_revision": null
+        },
+        "guidance": [
+          "Live testing is manual. Ask the user to run checks and supply observations.",
+          "Do not launch the game or automatically fall back to desktop control."
+        ],
+        "supported_game_version": "User managed",
+        "attribution": {
+          "author": "klimPaskov",
+          "url": "https://klimpaskov.github.io/Agentic-HOI4-Modding/",
+          "license": "Apache-2.0",
+          "license_url": null
         }
       }
     ]

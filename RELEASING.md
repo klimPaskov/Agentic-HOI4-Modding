@@ -60,14 +60,7 @@ In repository Settings ? Pages, choose **GitHub Actions** as the build source. T
 
 Choose a version tag after the generated manifest passes. Create the release from the manifest commit and attach `Agentic-HOI4-Modding.zip`. Build the ZIP from tracked files at that tag (for example `git archive --format=zip --output=Agentic-HOI4-Modding.zip <tag>`), including hidden runtime directories. Do not zip an entire working directory with caches, credentials, or untracked files. Test manual installation from the ZIP.
 
-Upload the existing videos as GitHub release assets with these exact names:
-
-| Asset | Maintainer source |
-| --- | --- |
-| `setup_app_tutorial.mp4` | Existing rendered setup-app tutorial in the maintainer's video output folder |
-| `hoi4_agent_tools_promo.mp4` | Existing rendered Agent Tools promo in the maintainer's promo folder |
-
-README and Pages use `releases/latest/download/<asset>` links. Upload both files to the same current release and verify playback/downloads. Keep MP4s outside Git. Screenshot links point to the setup app's tracked `docs/screenshots/` collection; verify that collection is present on its public `main` branch.
+Keep the README video placeholder until the editors supply an approved video link. Video editing and delivery are separate from this package release; keep media outside Git. Verify the tracked screenshots used by README and Pages.
 
 ## Existing mod checkouts
 

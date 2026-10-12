@@ -171,8 +171,8 @@ def safe_extract(archive: Path, destination: Path) -> Path:
     return installer
 
 
-def run_installer(installer: Path, quiet: bool) -> int:
-    arguments = [sys.executable, "-I", str(installer), "--register", "auto"]
+def run_installer(installer: Path, quiet: bool, register: str = "auto") -> int:
+    arguments = [sys.executable, "-I", str(installer), "--register", register]
     if quiet:
         arguments.append("--quiet")
     try:
@@ -198,6 +198,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--quiet", action="store_true", help="print only problems")
     parser.add_argument("--archive", type=Path, help="use this local copy of the pinned archive instead of downloading")
+    parser.add_argument("--register", choices=("auto", "none"), default="auto", help="register detected user clients, or install runtime only")
     args = parser.parse_args(argv)
     if sys.platform != "win32":
         print("HOI4 Live Tools installs on Windows only.", file=sys.stderr)
@@ -209,7 +210,7 @@ def main(argv: list[str] | None = None) -> int:
     installed_installer = prefix / "app" / "install.py"
     if installed_version(prefix) == RELEASE_VERSION and installed_installer.is_file():
         try:
-            return run_installer(installed_installer, args.quiet)
+            return run_installer(installed_installer, args.quiet, args.register)
         except BootstrapError as exc:
             print(str(exc), file=sys.stderr)
             return exc.code
@@ -220,7 +221,7 @@ def main(argv: list[str] | None = None) -> int:
             download(archive)
         verify_archive(archive)
         installer = safe_extract(archive, workspace / "release")
-        return run_installer(installer, args.quiet)
+        return run_installer(installer, args.quiet, args.register)
     except BootstrapError as exc:
         print(str(exc), file=sys.stderr)
         return exc.code

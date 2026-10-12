@@ -68,3 +68,9 @@ Opus maps to `xhigh`, Sonnet to `high`, and Haiku to `medium` reasoning effort i
 | [hoi4-super-event-art-researcher](../.claude/agents/hoi4-super-event-art-researcher.md) | Researches visual direction and prepares explicitly authorized art packages for a selected Super Event. | Haiku | medium |
 | [hoi4-super-event-audio-researcher](../.claude/agents/hoi4-super-event-audio-researcher.md) | Researches, verifies, prepares, and documents licensed audio for a selected Super Event package. | Haiku | medium |
 | [hoi4-super-event-quote-researcher](../.claude/agents/hoi4-super-event-quote-researcher.md) | Researches and documents sourced quote and response candidates for a selected Super Event package. | Haiku | medium |
+
+## Live-testing provider choice
+
+HOI4 Mod Setup offers Clausewitz MCP (default), experimental HOI4 Live Tools, and manual testing. [Clausewitz MCP](https://github.com/smerss/Clausewitz-MCP) by smerss is MIT licensed and reads state directly from native Linux HOI4 **1.19.2 only**, without OCR or saves for those reads. Windows uses WSL; macOS uses SSH to Linux. Complete manual Linux/game/server setup and confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
+
+HOI4 Live Tools is Windows verified only; upstream macOS support is incomplete. It is experimental, slower and not thoroughly tested. The app installs its pinned runtime without global registration and manages project registrations for selected coding clients. Manual testing registers no server. Use update or repair to reselect the provider and clients, review changed guidance and registrations, and preserve custom instructions. Follow the selected server tool list; providers do not promise identical operations.

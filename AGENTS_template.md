@@ -108,9 +108,15 @@ Use repo skills as required implementation guidance, not as optional notes.
 
 `hoi4-debug-playtest` is never part of normal coding, validation, audit, or completion routing. Use it only when the user explicitly names the skill or explicitly authorizes autonomous desktop playtesting for the current task; otherwise live game and launcher testing remain user-owned.
 
-<!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:START -->
-- Use `hoi4-live-playtest` when a task needs live-game evidence through the optional HOI4 Live Tools MCP server (`hoi4-live`): launching or reusing the game, loading a save, firing an event or effect, running time with popup handling, reading popups and the screen, saving and diffing saves, and the error-log delta. Use it only when the user asked for live testing or the task explicitly includes it; otherwise live validation stays with the user. When HOI4 Live Tools is installed, `hoi4-debug-playtest` plays through it instead of controlling the desktop itself.
-<!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:END -->
+<!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_testing:START -->
+### Live testing (optional)
+
+<!-- HOI4_MOD_SETUP:LIVE_TESTING_PROVIDER:START -->
+Provider: manual until setup selects a route.
+<!-- HOI4_MOD_SETUP:LIVE_TESTING_PROVIDER:END -->
+
+Follow `hoi4-live-playtest`. Use advertised, qualified tool names; report gaps. No automatic desktop fallback.
+<!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_testing:END -->
 
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.portraits.core:START -->
 ### Character portraits
@@ -142,11 +148,9 @@ The detailed capability, artifact, probability-scenario, rewrite-recovery, and t
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:START -->
 ### HOI4 Live Tools (optional)
 
-HOI4 Live Tools is an optional MCP server (`hoi4-live`) that drives a running Hearts of Iron IV on Windows: launching and loading, reading the screen, input inside the game window only, the console in test mode, time and popups, saves and plain-text save queries, the error log, and a briefing of the player's country.
+HOI4 Live Tools (`hoi4-live`) is experimental, slower and not thoroughly tested. Windows is verified; upstream macOS support is incomplete.
 
-- HOI4 Mod Setup installs it for the current user and registers it in the user's client configuration, not in the project, because the install folder is per machine. By hand: `python install.py` from the release archive (`.claude/skills/hoi4-live-playtest/references/setup.md`).
-- Every acting tool takes the shared desktop lock; hold it with `hoi4_lock` across a multi-step run and always release it. Never type outside the game window. The server never edits `settings.txt`.
-- Follow `hoi4-live-playtest` for the test workflow, its efficiency rules, and setup and troubleshooting.
+HOI4 Mod Setup installs the runtime per user with `--register none` and writes project registrations for selected clients. Manual bootstrap defaults to user-client registration. Follow `hoi4-live-playtest` and its provider reference; acquire any advertised lock for multi-step actions and release it when finished.
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:END -->
 
 ### Agent runtimes

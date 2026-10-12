@@ -38,7 +38,7 @@ For a manual setup:
 5. Copy `.tools/mcp/` and `docs/runtimes.md` plus `docs/systems/hoi4_agent_tools_mcp_integration.md` into the mod. Install Python 3.13 and a supported Node.js LTS release with npm available on PATH. On Windows, `py -3.13` can replace `python` in these commands.
 6. Install HOI4 Agent Tools with `python .tools/mcp/bootstrap_hoi4_agent_tools.py`, then approve the project server in your coding client and check that it connects.
 
-7. For live game testing on Windows, run `python .tools/mcp/bootstrap_hoi4_live_tools.py`, reconnect your coding client, and follow the [Live Tools setup guide](.claude/skills/hoi4-live-playtest/references/setup.md). For portraits, 3D, or Super Events, copy the selected workflow's references, tools, and runtime assets together; use the [manifest](hoi4-mod-setup.manifest.json) as the file inventory. The setup app handles this selection automatically.
+7. For live game testing, choose a provider and follow the [live-testing setup guide](.claude/skills/hoi4-live-playtest/references/setup.md). Clausewitz MCP needs manual Linux setup; HOI4 Live Tools uses the Windows bootstrap. For portraits, 3D, or Super Events, copy the selected workflow's references, tools, and runtime assets together; use the [manifest](hoi4-mod-setup.manifest.json) as the file inventory. The setup app handles this selection automatically.
 
 The templates are starting points. Keep only the workflows your mod uses and add project rules as the mod develops.
 
@@ -79,14 +79,16 @@ The [catalog](docs/catalog.md) covers building focus trees, events, decisions, c
 
 ![Choose an image-generation provider in HOI4 Mod Setup](docs/site/images/setup-image-generation.png)
 
+![Choose a live-testing provider in HOI4 Mod Setup](docs/site/images/setup-live-testing.png)
+
 - [Setup app screenshots](https://github.com/klimPaskov/HOI4-Mod-Setup/tree/main/docs/screenshots): project creation, component selection, MCP configuration, review, and maintenance.
-- [Setup tutorial MP4](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/setup_app_tutorial.mp4) and [Agent Tools promo MP4](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/hoi4_agent_tools_promo.mp4).
+- Updated video guides will be shared on [Chaos Redux on YouTube](https://www.youtube.com/@ChaosRedux).
 - [Video tutorial playlist](https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3).
 - [GitHub Pages guide](https://klimpaskov.github.io/Agentic-HOI4-Modding/).
 
 ## Updating an older installation
 
-Back up and commit local mod work first. Use HOI4 Mod Setup's update or repair flow to review changes to managed files and keep local additions. Choose the coding client and image-generation provider you want to use; the app updates their project files and MCP registrations while preserving custom instructions.
+Back up and commit local mod work first. Use HOI4 Mod Setup's update or repair flow to review changes to managed files and keep local additions. Choose the coding client, image-generation provider and live-testing provider you want to use; the app updates their project files and MCP registrations while preserving custom instructions.
 
 ## Skill size
 
@@ -96,7 +98,7 @@ Every skill, agent prompt, and instruction file must be readable in one pass. [`
 
 - **Image generation**: HOI4 Mod Setup defaults to ChatGPT through the GPTImage MCP. You can choose another hosted or local provider, use Codex's native image tool, or make art yourself. The selected route updates asset guidance and client registrations; API keys stay in the operating-system credential store. See the [provider research](docs/image-generation-providers.md) for models, costs, limits, and available MCP routes.
 - **[HOI4 Agent Tools](https://github.com/klimPaskov/hoi4-agent-tools)** (`hoi4_agent_tools`): helps your agent build focus trees, events, decisions and maps, preview windows and trees, find modding rules, repair script and balance AI choices. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` and registers it for the coding environments you choose. Agents use whatever routes the connected server advertises.
-- **[HOI4 Live Tools](https://github.com/klimPaskov/HOI4-Live-Tools)** (`hoi4-live`, optional, Windows): drives a running game for live feature tests and campaign play. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` for your user and registers it for the coding clients it finds (`python .tools/mcp/bootstrap_hoi4_live_tools.py` does the same by hand). The `hoi4-live-playtest` skill and its [setup guide](.claude/skills/hoi4-live-playtest/references/setup.md) explain how agents use it; `hoi4-debug-playtest` plays through it.
+- **[HOI4 Live Tools](https://github.com/klimPaskov/HOI4-Live-Tools)** (`hoi4-live`, optional, Windows): drives a running game for live feature tests and campaign play. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` for your user and manages project registrations for the selected coding clients (manual bootstrap defaults to user-client registration). The `hoi4-live-playtest` skill and its [setup guide](.claude/skills/hoi4-live-playtest/references/setup.md) explain how agents use it; `hoi4-debug-playtest` plays through it.
 - **Meshy and Blender** (optional 3D workflow): registered by `.tools/3d_pipeline/bootstrap_3d_workflow.py` when a feature needs a model.
 
 ## What's inside
@@ -116,3 +118,9 @@ Describe what you want to build. The agent chooses the tools and skills and conn
 ## License
 
 Original package code and guidance are licensed under the [Apache License 2.0](LICENSE), the same license as HOI4 Mod Setup. Third-party material retains its own terms; see [NOTICE](NOTICE), the [Super Events asset lineage](docs/super_events/README.md), and the manifest's separate wiki license and provenance evidence.
+
+## Live-testing provider choice
+
+HOI4 Mod Setup offers Clausewitz MCP (default), experimental HOI4 Live Tools, and manual testing. [Clausewitz MCP](https://github.com/smerss/Clausewitz-MCP) by smerss is MIT licensed and reads state directly from native Linux HOI4 **1.19.2 only**, without OCR or saves for those reads. Windows uses WSL; macOS uses SSH to Linux. Complete manual Linux/game/server setup and confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
+
+HOI4 Live Tools is Windows verified only; upstream macOS support is incomplete. It is experimental, slower and not thoroughly tested. The app installs its pinned runtime without global registration and manages project registrations for selected coding clients. Manual testing registers no server. Use update or repair to reselect the provider and clients, review changed guidance and registrations, and preserve custom instructions. Follow the selected server tool list; providers do not promise identical operations.
