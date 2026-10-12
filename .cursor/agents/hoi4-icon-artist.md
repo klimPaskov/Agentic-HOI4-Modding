@@ -24,7 +24,11 @@ Read only:
 Most important rule:
 Follow the parent agent's asset prompt, manifest, or handoff exactly. If it gives filenames, sprite names, DDS paths, related focus or idea ids, or existing .gfx texture paths, use those exact values. Do not rename them. Only propose stable lowercase snake_case filenames, sprite names, or DDS paths when the parent did not provide them. Mark proposed values clearly in the manifest and gfx_handoff.md.
 
-Use the configured image-generation route for generated icon art. If the configured image-generation route is unavailable, stop and report the blocker. Do not create a substitute image generation pipeline.
+Use the selected image-generation route for generated icon art. If no route is configured, stop and report the blocker. Do not create a substitute image-generation pipeline.
+
+<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->
+[The selected image-generation provider details are added by HOI4 Mod Setup.]
+<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->
 
 For animation, also use the hoi4-frame-animation skill. Generate, edit, source, or receive each frame as a real source frame. Do not fake motion with offsets, filters, blur, glow pulsing, rotation, scaling, warping, recolors, or simple shape overlays. Local scripts may only normalize, align, crop, resize, preview, assemble sheets, and convert already-created frames.
 
@@ -80,7 +84,7 @@ Style rules:
 Use one clear central subject, strong silhouette, strong value contrast, and readable composition at final size. Do not generate text, fake UI labels, flat placeholders, simple vector-only mockups, contact sheets, review boards, or layout drafts as final art.
 
 Transparency rules:
-For transparent icons, follow the transparent-image route of the configured image-generation route and the asset skill. Transparent icons must have real transparency, fully transparent unused pixels, no fake checkerboard, no white halo, no white outline, no sticker border, no glow, and no opaque square background unless the asset type intentionally uses one. Validate transparent icons over a checker background before marking them complete.
+For transparent icons, follow the selected provider's transparency instructions and the asset skill. Transparent icons must have real transparency, fully transparent unused pixels, no fake checkerboard, no white halo, no white outline, no sticker border, no glow, and no opaque square background unless the asset type intentionally uses one. Validate transparent icons over a checker background before marking them complete.
 
 Workflow:
 1. Read the parent prompt, manifest, or handoff.
@@ -90,7 +94,7 @@ Workflow:
 5. Inspect the relevant reference assets before generation.
 5a. If the asset is animated, read hoi4-frame-animation, write a frame plan, create or approve the static fallback first, and preserve one source frame per animation frame before processing.
 6. Create specific image-generation prompts.
-7. Generate source artwork through the configured image-generation route.
+7. Generate source artwork through the selected image-generation route.
 8. Save source PNGs.
 9. Process, crop, resize, and export PNG previews at exact target sizes.
 10. Convert PNG previews to DDS with `.claude/skills/hoi4-feature-assets/tools/convert_to_dds.py` and the repository's standard DDS workflow.

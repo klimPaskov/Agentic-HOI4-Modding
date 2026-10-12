@@ -69,10 +69,17 @@ class ManifestGeneratorTests(unittest.TestCase):
                 {"present.txt": b"present"},
             )
 
-    def test_canonical_manifest_uses_schema_three(self) -> None:
+    def test_canonical_manifest_uses_schema_four_and_declares_image_providers(self) -> None:
         manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
-        self.assertEqual(manifest["schema_version"].split(".")[0], "3")
+        self.assertEqual(manifest["schema_version"].split(".")[0], "4")
+        self.assertEqual(manifest["image_generation"]["default_provider"], "gptimage")
+        self.assertEqual(manifest["image_generation"], GENERATOR.build_image_generation_table(manifest_path.parents[1]))
+        components = {component["id"]: component for component in manifest["components"]}
+        self.assertIn("imagegen.gptimage", components)
+        self.assertTrue(components["imagegen.gptimage"]["optional"])
+        provider_ids = {provider["id"] for provider in manifest["image_generation"]["providers"]}
+        self.assertTrue({"gptimage", "openai_api", "gemini_api", "fal_ai", "replicate", "black_forest_labs", "stability_ai", "ideogram", "recraft", "leonardo", "adobe_firefly", "xai_grok", "together_ai", "openrouter", "comfyui_local", "automatic1111_local", "forge_local", "codex_native", "vertex_imagen", "microsoft_foundry", "aws_bedrock", "huggingface_inference", "midjourney_manual", "none"}.issubset(provider_ids))
         declared = [environment["id"] for environment in manifest["coding_environments"]]
         self.assertEqual(declared[0], "claude_code")
         self.assertTrue(manifest["coding_environments"][0]["default_primary"])

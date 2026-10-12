@@ -4,16 +4,16 @@ title: Agentic HOI4 Modding
 ---
 # Agentic HOI4 Modding
 
-Build Hearts of Iron IV mods with Claude Code, reusable skills, specialist agents, an offline wiki, and two complementary MCP servers. Codex, Cursor, Qoder, and OpenCode use generated runtime files from the same Claude sources.
+Build Hearts of Iron IV mods with the coding client you choose, reusable skills, specialist agents, an offline wiki, and useful MCP servers. HOI4 Mod Setup creates matching project files for Claude Code, Codex, Cursor, Qoder, OpenCode, and other supported clients.
 
 ## Install with HOI4 Mod Setup
 
 1. Download [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest).
 2. Choose a new mod or an existing Git project, then enter the mod name, prefix, game folder, and Workshop folder.
-3. Select Claude Code or your preferred runtime and the workflows you need: core modding, portraits, 3D, Super Events, or live testing.
+3. Select any supported coding client, an image-generation provider, and the workflows you need: core modding, portraits, 3D, Super Events, or live testing.
 4. Review the planned changes and install. Open the mod in your coding client, approve the project MCP server, and check the connection.
 
-The app installs the MCP releases pinned in the package manifest. Its update and repair flows preserve local additions and let you review instruction conflicts.
+The app installs the MCP releases pinned in the package manifest, keeps image-provider API keys in the operating-system credential store, and adapts the asset guidance to your selected route. Its update and repair flows preserve local additions and let you review instruction conflicts or change providers later.
 
 [Setup app screenshots](https://github.com/klimPaskov/HOI4-Mod-Setup/tree/main/docs/screenshots) show the install and maintenance screens.
 
@@ -41,11 +41,13 @@ For optional workflows, copy the complete tools, references, and runtime assets 
 
 ## Skills and specialist agents
 
-The [catalog](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/catalog.md) explains all 32 skills and 23 agents. Skills cover focus trees, decisions, events, engine systems, planning, assets, portraits, 3D, scripted GUI, saves, live testing, and Super Events. Specialist agents research, implement bounded systems, produce assets, or audit completion with explicit ownership and evidence.
+The [catalog](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/catalog.md) explains the reusable skills and specialist agents. They cover focus trees, decisions, events, engine systems, planning, assets, portraits, 3D, scripted GUI, saves, live testing, and Super Events. Specialist agents research, implement bounded systems, produce assets, or audit completion with clear ownership and evidence.
 
-Claude routing uses **Opus** for the improvement planner; **Sonnet** for 3D, completion, localisation, architecture, and skill maintenance; and **Haiku** for the other agents. Claude agents explicitly set effort to `xhigh`, `high`, or `medium` where supported. Codex translates those tiers to per-agent `xhigh`, `high`, and `medium` reasoning effort.
+Specialist roles use model tiers for different kinds of work. The package maps those tiers to settings supported by each selected coding client.
 
-## Two MCP servers
+## Image generation and game tools
+
+The default image route uses ChatGPT through the GPTImage MCP. Choose another hosted or local provider, Codex's native image tool, or no image provider. API keys stay in the operating-system credential store; the app updates the route and its instructions later. Read the [provider research](https://github.com/klimPaskov/HOI4-Mod-Setup/blob/main/docs/image-generation-providers.md) for supported models, access needs, costs, and size limits.
 
 **HOI4 Agent Tools** (`hoi4_agent_tools`) works with mod source: focus and technology trees, events, weighted logic, scripted GUIs, maps, documentation, and source lookup. The project bootstrap installs and verifies the manifest-pinned npm package.
 
@@ -65,10 +67,12 @@ Reconnect the client and follow the [Live Tools setup guide](https://github.com/
 
 ![Choose coding environments in HOI4 Mod Setup](https://raw.githubusercontent.com/klimPaskov/HOI4-Mod-Setup/main/docs/screenshots/15-coding-environments.png)
 
+![Choose an image-generation provider in HOI4 Mod Setup](https://raw.githubusercontent.com/klimPaskov/HOI4-Mod-Setup/main/docs/screenshots/16-image-generation.png)
+
 ## License
 
 Original package code and guidance use the [Apache License 2.0](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/LICENSE). Third-party material retains its own terms; see [NOTICE](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/NOTICE).
 
 ## Upgrade an older checkout
 
-Back up and commit your mod work, then use the setup app to update or repair the package and MCP installation. Review custom instruction merges, regenerate runtime files from the Claude sources, and reconnect clients. Older Codex-first packages and Agent Tools 3.9.0 need this migration before using the new workflow.
+Back up and commit your mod work, then use the setup app to update or repair the package and MCP installation. Review instruction changes, regenerate runtime files for your selected clients, and reconnect them. You can change the image-generation provider in the same update or repair flow.

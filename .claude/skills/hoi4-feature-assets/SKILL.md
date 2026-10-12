@@ -191,7 +191,7 @@ Do not create core artwork from simple shapes, placeholders, contact sheets, lay
 
 For custom feature images, this rule is strict: final art must be a real scene, archival image, painted illustration, or generated documentary-style image. Do not use symbolic diagrams, flat icons, abstract geometry, title cards, or UI-like compositions as the final custom feature image unless the user explicitly requests that exact visual approach and the exception is documented.
 
-Use the image generator for generated artwork and follow the image generator's workflow for the source image.
+Use the selected image-generation route for generated artwork. HOI4 Mod Setup fills in the provider details from the manifest section below.
 
 Generated artwork must be real source art that can be processed into the final game asset. Final assets must be clean: must not have sticking artifacts, an icon is centered in the image, etc. Do not use contact sheets, review boards, or layout drafts as final source art.
 
@@ -205,7 +205,11 @@ Small gameplay icons must be readable at their final in-game size.
 - Avoid tiny interior detail that disappears at 45x45 or 64x64. Favor one clear subject, strong value contrast, and a centered silhouette.
 - Avoid fake checkerboard pixels, white halos, white outlines, oversized medallion fills, and square opaque backdrops.
 
-For every generated icon, follow the image generator's transparent-image route. Preserve the original generated image, create a processed PNG preview, convert to DDS, and validate the final appearance over a checker background before treating the icon as complete.
+For every generated icon, follow the selected route's transparent-background instructions. Preserve the original generated image, create a processed PNG preview, convert to DDS, and validate the final appearance over a checker background before treating the icon as complete.
+
+<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->
+[The selected image-generation provider details are added by HOI4 Mod Setup.]
+<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->
 
 The final icon should have transparent unused canvas, no fake checker or matte pixels, no transparent holes inside the painted subject, a slight black outline, a subtle drop shadow, and a centered subject that remains readable at final size.
 
@@ -541,7 +545,7 @@ Do not derive idea or national spirit icons from focus icons. They must be desig
 
 Use the image generator for the base artwork unless the user provides or requests a specific source image.
 
-Follow the image generator's transparent-image route when the icon should have a transparent background.
+Follow the selected provider section for transparent icons: use native alpha when supported or its listed removal fallback, then verify the saved alpha.
 
 Inspect `icons/ideas/` and the matching row in `CATALOG.md` before generating or processing idea icons.
 
@@ -575,7 +579,7 @@ Every focus icon should support the focus tree's story, ideology, or gameplay pu
 
 Use the image generator for the base artwork unless the user provides or requests a specific source image.
 
-Follow the image generator's transparent-image route when the icon should have a transparent background.
+Follow the selected provider section for transparent icons: use native alpha when supported or its listed removal fallback, then verify the saved alpha.
 
 Inspect `icons/national_focus/` and the matching row in `CATALOG.md` before generating or processing focus icons. Do not force every focus source onto an older nominal canvas when the owning sprite and current vanilla precedent use a different native canvas.
 
@@ -609,7 +613,7 @@ decision_category_
 
 Use the image generator for the base artwork unless the user provides or requests a specific source image.
 
-Follow the image generator's transparent-image route when the icon should have a transparent background.
+Follow the selected provider section for transparent icons: use native alpha when supported or its listed removal fallback, then verify the saved alpha.
 
 Inspect `icons/decisions/`, `icons/missions/`, or `icons/decision_categories/` as appropriate before generating or processing decision-system icons. Missions use the decision icon pipeline but still need mission-specific semantic readability.
 

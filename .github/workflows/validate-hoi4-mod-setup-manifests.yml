@@ -7,9 +7,12 @@ on:
     paths:
       - "hoi4-mod-setup.manifest.json"
       - "schemas/hoi4-mod-setup.v3.schema.json"
+      - "schemas/hoi4-mod-setup.v4.schema.json"
       - "scripts/generate_manifest_evidence.py"
+      - "scripts/image_generation_provider_data.py"
       - "scripts/validate_published_manifests.py"
       - "scripts/test_generate_manifest_evidence.py"
+      - "scripts/test_image_generation_*.py"
       - "scripts/test_agent_sync_contract.py"
       - "scripts/check_release_package.py"
       - "README.md"
@@ -26,6 +29,7 @@ on:
       - ".tools/sync/**"
       - ".tools/mcp/**"
       - ".tools/3d_pipeline/**"
+      - ".tools/image_generation/**"
   pull_request:
 
 permissions:

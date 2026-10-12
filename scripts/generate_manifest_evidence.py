@@ -7,8 +7,12 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from image_generation_provider_data import build_image_generation_components, build_image_generation_table
 
 
 LFS_POINTER_PREFIX = b"version https://git-lfs.github.com/spec/v1"
@@ -171,7 +175,14 @@ def main() -> None:
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     snapshot = git_snapshot(args.source_root.resolve(), args.revision)
     validate_offline_wiki_links(snapshot)
+    manifest["schema_version"] = "4.0.0"
     manifest["generated_for_revision"] = args.revision
+    manifest["image_generation"] = build_image_generation_table(args.source_root.resolve())
+    component_updates = {component["id"]: component for component in build_image_generation_components(args.source_root.resolve())}
+    for index, component in enumerate(manifest["components"]):
+        if component["id"] in component_updates:
+            manifest["components"][index] = component_updates.pop(component["id"])
+    manifest["components"].extend(component_updates.values())
     for component in manifest["components"]:
         component["expected_files"] = git_evidence_for(component, snapshot)
     args.manifest.write_text(

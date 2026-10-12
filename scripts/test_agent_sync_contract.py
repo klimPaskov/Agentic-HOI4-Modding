@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Contract checks for the Claude-first runtime synchronizers and templates."""
+"""Contract checks for provider-neutral runtime projections and templates."""
 
 import importlib.util
 import json
@@ -84,7 +84,26 @@ def main():
         assert agent.read_only == (agent.name in READ_ONLY), agent.name
         for forbidden in ("fork_turns", "fork_context", "$imagegen", "ImageGen", "AGENTS.md", ".codex/agents/*.toml"):
             assert forbidden not in agent.body, (agent.name, forbidden)
+        assert "native ImageGen" not in agent.body, agent.name
     assert not any("state_ledger" in agent.name for agent in agents)
+
+    provider_markers = (
+        "<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->",
+        "<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->",
+    )
+    provider_sources = [
+        ROOT / "CLAUDE_template.md",
+        ROOT / ".claude" / "skills" / "hoi4-feature-assets" / "SKILL.md",
+        ROOT / ".claude" / "skills" / "hoi4-feature-assets" / "references" / "asset-source-rules.md",
+        ROOT / ".claude" / "agents" / "hoi4-generated-feature-art.md",
+        ROOT / ".claude" / "agents" / "hoi4-icon-artist.md",
+        ROOT / ".claude" / "agents" / "hoi4-portrait-creator.md",
+        ROOT / ".claude" / "agents" / "hoi4-3d-model-pipeline.md",
+    ]
+    for source in provider_sources:
+        body = source.read_text(encoding="utf-8")
+        assert all(marker in body for marker in provider_markers), source
+        assert "image-generation MCP workflow" not in body, source
 
     profiles = module.load_profiles()
     for runtime_key in ("codex", "cursor", "qoder", "opencode", "claude"):
@@ -143,7 +162,8 @@ def main():
             assert stack and stack.pop() == component, f"unbalanced component block {component}"
     assert not stack and markers, "component blocks must be balanced"
     agents_template = (ROOT / "AGENTS_template.md").read_text(encoding="utf-8")
-    assert "native ImageGen" in agents_template and "image-generation MCP workflow" not in agents_template
+    assert all(marker in agents_template for marker in provider_markers)
+    assert "native ImageGen" not in agents_template
 
     runtimes_doc = (ROOT / "docs" / "runtimes.md").read_text(encoding="utf-8")
     assert "@path" in runtimes_doc and "mcp__" in runtimes_doc and "sync_skills.py" in runtimes_doc
