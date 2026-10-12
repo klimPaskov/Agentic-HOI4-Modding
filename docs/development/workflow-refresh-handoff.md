@@ -1,6 +1,6 @@
 # Workflow refresh handoff
 
-Prepared on 2026-10-13 on `workflow-refresh-source-audit`. This package work is the first release job; Linux support remains a separate follow-up. The source commit is the parent of the manifest evidence commit, as required by `RELEASING.md`. The final commit identifiers are available through `git log -2` and the manifest's `package.source_revision`.
+Prepared on 2026-10-13 on `workflow-refresh-source-audit`. This package work is the first release job; Linux support remains a separate follow-up. The source commit is the parent of the manifest evidence commit, as required by `RELEASING.md`. The manifest's `generated_for_revision` records the exact source snapshot.
 
 ## Pins and primary evidence
 

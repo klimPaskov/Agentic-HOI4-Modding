@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-13
+
+- Pin HOI4 Agent Tools 4.0.3 and Meshy MCP 0.6.2 with verified public package integrity and complete runtime identities.
+- Refresh GPTImage to the latest reviewed source, add reference-image discovery, and fix direct npm startup on Windows.
+- Freeze Blender MCP to its reviewed source commit; retain the verified Live Tools 1.1.0, Clausewitz native Linux HOI4 1.19.2, and io_pdx_mesh 0.91 pins.
+- Verify specialist model tiers and efforts, and expand the reference-tools workflow for nested definitions, diagnostics and continuation reads.
+- Keep every guidance file below its single-read ceiling and preserve generated client projections.
+
 ## 2026-10-11
 
 - Keep the package's canonical guidance together and create matching files for the coding clients selected in HOI4 Mod Setup.
