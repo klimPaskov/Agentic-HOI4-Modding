@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import image_generation_provider_data as PROVIDERS
 from image_generation_provider_data import build_image_generation_components, build_image_generation_table
 
 
@@ -58,6 +60,18 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
             if supported:
                 with self.subTest(provider=provider["id"]):
                     self.assertEqual(len(provider["models"]), len(supported))
+
+    def test_gptimage_source_pin_is_stable_for_windows_and_unix_line_endings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "package.json").write_text("{\n  \"name\": \"gptimage\"\n}\n", encoding="utf-8")
+            (root / "LICENSE").write_text("license\ntext\n", encoding="utf-8")
+            expected = PROVIDERS._tree_sha256(root)
+            for name in ("package.json", "LICENSE"):
+                path = root / name
+                contents = path.read_bytes().replace(b"\r\n", b"\n")
+                path.write_bytes(contents.replace(b"\n", b"\r\n"))
+            self.assertEqual(PROVIDERS._tree_sha256(root), expected)
 
     def test_gptimage_is_default_pinned_source_and_midjourney_is_manual_only(self) -> None:
         providers = {item["id"]: item for item in build_image_generation_table(ROOT)["providers"]}

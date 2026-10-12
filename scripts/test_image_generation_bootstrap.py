@@ -49,6 +49,21 @@ class GptimageBootstrapTests(unittest.TestCase):
             self.assertNotIn("shell", kwargs)
             self.assertFalse(Path(args[args.index("--cache") + 1]).exists())
 
+    def test_source_pin_is_stable_for_windows_and_unix_text_line_endings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            package = self.make_package(Path(directory))
+            expected_tree = bootstrap_gptimage.source_tree_sha256(package)
+            expected_lock = hashlib.sha256(bootstrap_gptimage.source_bytes(package / "package-lock.json")).hexdigest()
+            for path in package.rglob("*"):
+                if path.is_file() and path.suffix in {".json", ".js"}:
+                    contents = path.read_bytes().replace(b"\r\n", b"\n")
+                    path.write_bytes(contents.replace(b"\n", b"\r\n"))
+            self.assertEqual(bootstrap_gptimage.source_tree_sha256(package), expected_tree)
+            self.assertEqual(
+                hashlib.sha256(bootstrap_gptimage.source_bytes(package / "package-lock.json")).hexdigest(),
+                expected_lock,
+            )
+
     def test_rejects_an_unexpected_package_before_running_npm(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             package = self.make_package(Path(directory))

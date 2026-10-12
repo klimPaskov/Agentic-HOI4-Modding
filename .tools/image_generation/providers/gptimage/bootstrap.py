@@ -13,6 +13,15 @@ import tempfile
 import argparse
 from pathlib import Path
 
+TEXT_SOURCE_SUFFIXES = {".js", ".json", ".md", ".py", ".txt"}
+
+
+def source_bytes(path: Path) -> bytes:
+    data = path.read_bytes()
+    if path.name == "LICENSE" or path.suffix.lower() in TEXT_SOURCE_SUFFIXES:
+        return data.replace(b"\r\n", b"\n")
+    return data
+
 
 def source_tree_sha256(package_root: Path) -> str:
     digest = hashlib.sha256()
@@ -21,7 +30,7 @@ def source_tree_sha256(package_root: Path) -> str:
         key=lambda item: item.relative_to(package_root).as_posix(),
     ):
         relative = path.relative_to(package_root).as_posix()
-        data = path.read_bytes()
+        data = source_bytes(path)
         digest.update(relative.encode("utf-8"))
         digest.update(b"\0")
         digest.update(str(len(data)).encode("ascii"))
@@ -37,7 +46,7 @@ def install(package_root: Path, run=subprocess.run, *, expected_tree_sha256: str
         if not re.fullmatch(r"[0-9a-f]{64}", expected_tree_sha256) or source_tree_sha256(package_root) != expected_tree_sha256:
             raise RuntimeError("The selected GPTImage source tree does not match its reviewed pin.")
     if expected_lock_sha256 is not None:
-        actual_lock_sha256 = hashlib.sha256((package_root / "package-lock.json").read_bytes()).hexdigest()
+        actual_lock_sha256 = hashlib.sha256(source_bytes(package_root / "package-lock.json")).hexdigest()
         if not re.fullmatch(r"[0-9a-f]{64}", expected_lock_sha256) or actual_lock_sha256 != expected_lock_sha256:
             raise RuntimeError("The selected GPTImage lockfile does not match its reviewed integrity pin.")
     package = json.loads((package_root / "package.json").read_text(encoding="utf-8"))

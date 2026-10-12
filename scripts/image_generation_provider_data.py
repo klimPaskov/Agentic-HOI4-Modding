@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 ALL_CLIENTS = ["claude_code", "codex", "cursor", "qoder", "opencode"]
+TEXT_SOURCE_SUFFIXES = {".js", ".json", ".md", ".py", ".txt"}
 
 
 def _route(provider_id: str, auth: str, *, kind: str = "stdio_adapter", component: str | None = None,
@@ -140,6 +141,8 @@ def _tree_sha256(root: Path) -> str:
     ):
         relative = path.relative_to(root).as_posix()
         data = path.read_bytes()
+        if path.name == "LICENSE" or path.suffix.lower() in TEXT_SOURCE_SUFFIXES:
+            data = data.replace(b"\r\n", b"\n")
         digest.update(relative.encode("utf-8"))
         digest.update(b"\0")
         digest.update(str(len(data)).encode("ascii"))
@@ -404,7 +407,8 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
     package = root / ".tools" / "image_generation" / "providers" / "gptimage"
     gptimage = next(item for item in providers if item["id"] == "gptimage")
     gptimage["route"]["source_tree_sha256"] = _tree_sha256(package)
-    gptimage["route"]["package_lock_sha256"] = hashlib.sha256((package / "package-lock.json").read_bytes()).hexdigest()
+    lock_bytes = (package / "package-lock.json").read_bytes().replace(b"\r\n", b"\n")
+    gptimage["route"]["package_lock_sha256"] = hashlib.sha256(lock_bytes).hexdigest()
     documentation = {
         "openai_api": "https://developers.openai.com/api/docs/guides/image-generation/",
         "gemini_api": "https://ai.google.dev/gemini-api/docs/image-generation",
