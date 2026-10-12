@@ -354,10 +354,44 @@ def synchronize(runtime_keys: List[str], check: bool) -> int:
     return 1 if failures else 0
 
 
+def verify(runtime_keys: List[str]) -> int:
+    """Check role policies and read back each generated runtime definition."""
+    try:
+        agents = load_agents()
+        profiles = load_profiles()
+        policy = profiles["tier_policy"]
+        efforts = profiles["effort_policy"]
+        declared = [name for tier in MODEL_TIERS for name in policy.get(tier, [])]
+        names = {agent.name for agent in agents}
+        if len(declared) != len(set(declared)) or set(declared) - names:
+            raise SyncError("tier_policy contains duplicate or absent canonical agents")
+        failures = []
+        for agent in agents:
+            tier = next((tier for tier in MODEL_TIERS if agent.name in policy.get(tier, [])), policy["default"])
+            if agent.model != tier:
+                failures.append(f"{agent.name}: model is {agent.model}; policy requires {tier}")
+            if agent.effort != efforts[tier]:
+                failures.append(f"{agent.name}: effort is {agent.effort}; policy requires {efforts[tier]}")
+            if profiles["codex"]["tiers"][tier]["model_reasoning_effort"] != efforts[tier]:
+                failures.append(f"{tier}: Codex effort does not match the canonical effort policy")
+        if failures:
+            raise SyncError("agent policy verification failed:\n  " + "\n  ".join(failures))
+    except (SyncError, KeyError, TypeError) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+    # Comparing bytes reads the complete installed definition, including its
+    # tier, effort, sandbox, provider markers and runtime-specific wording.
+    result = synchronize(runtime_keys, check=True)
+    if result == 0:
+        print(f"Verified tier, effort and runtime definitions for {len(agents)} canonical agents.")
+    return result
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Project canonical .claude/agents into the other agent runtimes.")
     parser.add_argument("--check", action="store_true", help="report drift without writing; exit 1 when out of sync")
+    parser.add_argument("--verify", action="store_true", help="verify canonical tier/effort policy and generated definitions without writing")
     parser.add_argument("--runtime", action="append", choices=sorted(RUNTIMES), help="limit to one runtime (repeatable); default: every runtime present in this project")
     args = parser.parse_args(argv)
     keys = args.runtime or [key for key in RUNTIMES if runtime_present(key)]
-    return synchronize(keys, args.check)
+    return verify(keys) if args.verify else synchronize(keys, args.check)

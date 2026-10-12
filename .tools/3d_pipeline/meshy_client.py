@@ -173,7 +173,7 @@ class MeshyClient:
             "timestamp": utc_now(),
             "provider": "meshy",
             "server_package": "@meshy-ai/meshy-mcp-server",
-            "server_version": os.environ.get("MESHY_MCP_VERSION", "0.4.0"),
+            "server_version": os.environ.get("MESHY_MCP_VERSION", "0.6.2"),
             "server_compatibility": "meshy-7-live-schema",
             "tool": tool,
             "paid": paid,

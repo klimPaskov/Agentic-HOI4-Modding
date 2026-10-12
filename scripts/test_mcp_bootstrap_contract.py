@@ -50,7 +50,7 @@ class McpBootstrapContractTests(unittest.TestCase):
         self.assertIn("--ignore-scripts", arguments)
         self.assertIn("--prefix", arguments)
         self.assertIn("--registry=https://registry.npmjs.org", arguments)
-        self.assertEqual(arguments[-1], "hoi4-agent-tools@4.0.0")
+        self.assertEqual(arguments[-1], bootstrap.PACKAGE_SPEC)
 
     def test_local_tarball_requires_exact_sha512(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -266,7 +266,7 @@ class McpBootstrapContractTests(unittest.TestCase):
             entry.parent.mkdir(parents=True)
             entry.write_bytes(b"synthetic runtime")
             metadata = package / "package.json"
-            metadata.write_text(json.dumps({"name": "hoi4-agent-tools", "version": "4.0.0"}), encoding="utf-8")
+            metadata.write_text(json.dumps({"name": "hoi4-agent-tools", "version": bootstrap.PACKAGE_VERSION}), encoding="utf-8")
             integrity = "sha512-" + __import__("base64").b64encode(b"s" * 64).decode("ascii")
             lock = prefix / "node_modules/.package-lock.json"
             lock.write_text(json.dumps({"packages": {"node_modules/hoi4-agent-tools": {"integrity": integrity}}}), encoding="utf-8")
@@ -286,7 +286,7 @@ class McpBootstrapContractTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "malformed"):
                 pin.measure(prefix, integrity)
             metadata.write_text(json.dumps({"name": "hoi4-agent-tools", "version": "3.10.0"}), encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "4.0.0"):
+            with self.assertRaisesRegex(ValueError, bootstrap.PACKAGE_VERSION):
                 pin.measure(prefix, integrity)
 
     def test_repin_without_optional_lock_still_measures_full_tree_and_runtime(self) -> None:
@@ -296,7 +296,7 @@ class McpBootstrapContractTests(unittest.TestCase):
             entry = package / "dist/bin/stdio.js"
             entry.parent.mkdir(parents=True)
             entry.write_bytes(b"synthetic runtime")
-            (package / "package.json").write_text(json.dumps({"name": "hoi4-agent-tools", "version": "4.0.0"}), encoding="utf-8")
+            (package / "package.json").write_text(json.dumps({"name": "hoi4-agent-tools", "version": bootstrap.PACKAGE_VERSION}), encoding="utf-8")
             integrity = "sha512-" + __import__("base64").b64encode(b"s" * 64).decode("ascii")
             self.assertFalse((prefix / "node_modules/.package-lock.json").exists())
             before = pin.measure(prefix, integrity)

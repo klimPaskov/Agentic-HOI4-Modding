@@ -30,8 +30,8 @@ python .tools/3d_pipeline/bootstrap_3d_workflow.py `
   --trusted-launcher <installed-hoi4-mod-setup-executable>
 ```
 
-The bootstrap verifies the pinned Meshy MCP 0.4.0 package and complete runtime
-tree, resolves Blender Lab MCP to an exact commit, discovers Blender, installs
+The bootstrap verifies the pinned Meshy MCP 0.6.2 package and complete runtime
+tree, installs Blender Lab MCP at source commit `dbbf836ad4b1025f14a2b3b504c43903f39e0b04`, discovers Blender, installs
 and verifies io_pdx_mesh 0.91, enables the matching Blender MCP add-on, probes
 the loopback bridge, materializes the bounded Blender adapter config, and
 writes observed evidence to `config/dependencies.lock.json`.
@@ -41,7 +41,9 @@ archive from the checksum-locked upstream 0.91 bytes. The derived archive fixes
 the removed Python `imp` imports, guards the removed `Material.shadow_method`,
 and uses `bpy.context.temp_override` for object joining. The bootstrap verifies
 the derived archive digest and each installed patched file; it preserves the
-upstream archive unchanged. Meshy remains on the verified app-owned 0.4.0 route.
+upstream archive unchanged. Meshy remains on the verified app-owned 0.6.2 route.
+
+The 0.6.2 schema was captured from the published runtime's `tools/list` without authenticated provider calls. It still accepts the workflow's explicit `meshy-7`, although upstream now marks that model deprecated in favor of `meshy-7.1`. The server upgrade does not change the approved generation-model policy. The app-owned launcher, live balance and paid stages must pass their existing gates before production; a published schema alone does not establish those results.
 
 Meshy credentials may flow only through the external app-owned launcher with
 the single argument `--run-verified-meshy-mcp`. Project Python, project

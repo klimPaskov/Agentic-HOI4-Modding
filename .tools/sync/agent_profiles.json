@@ -1,4 +1,10 @@
 {
+  "tier_policy": {
+    "opus": ["hoi4-improvement-loop-planner"],
+    "sonnet": ["hoi4-3d-model-pipeline", "hoi4-feature-completion-auditor", "hoi4-localisation-auditor", "hoi4-scripted-system-architect", "hoi4-skill-maintainer"],
+    "default": "haiku"
+  },
+  "effort_policy": {"opus": "xhigh", "sonnet": "high", "haiku": "medium"},
   "codex": {
     "tiers": {
       "opus": { "model_reasoning_effort": "xhigh" },

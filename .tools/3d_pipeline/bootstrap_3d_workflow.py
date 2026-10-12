@@ -27,13 +27,14 @@ from pathlib import Path, PurePosixPath
 
 PIPELINE_ROOT = Path(__file__).resolve().parent
 MESHY_PACKAGE = "@meshy-ai/meshy-mcp-server"
-MESHY_VERSION = "0.4.0"
-MESHY_INTEGRITY = "sha512-py2xFIrrBcU4SW7ked90/qjRqa6bheVn0fNLEW8Lnki3BCJTFaVvWN0W6a9mJYr26+M9y0WezGsTCKalzWrGtg=="
-MESHY_RUNTIME_PACKAGE_SHA256 = "dc41c1df4d4243b435362fd0a4406433e728307e88815acfbf1183ce7c38ef11"
-MESHY_RUNTIME_LOCK_SHA256 = "3f70a2384d25e338c6a03a1547218cca97320c4087cee14a8def4793fd24d3ce"
-MESHY_RUNTIME_TREE_SHA256 = "720075e2b1e266208f435b08d8ab81609f5e5e1a247ca4680c51b5a4f00f2011"
-MESHY_RUNTIME_FILE_COUNT = 3916
+MESHY_VERSION = "0.6.2"
+MESHY_INTEGRITY = "sha512-xEgw7YE5vmK1mT8kBwO6ytmZf+zdaxPd3jdIvO/4o+YFKSSmv9VDnFob3PE2HojC20g57uslQt7m1w4iaWGFZA=="
+MESHY_RUNTIME_PACKAGE_SHA256 = "1741490e35df4fd92eb7ffe6c31aa753f1c85063cd08948543928331752f79c7"
+MESHY_RUNTIME_LOCK_SHA256 = "5b28ae2903d9b67b9324e3799b6fcf776739dcaa2beb375bcf595df10629dd58"
+MESHY_RUNTIME_TREE_SHA256 = "3ad84a9d8f6a1c4ccd97fe8cc15d710d9102911960664ece373d79f0b32430db"
+MESHY_RUNTIME_FILE_COUNT = 3952
 BLENDER_MCP_REPOSITORY = "https://projects.blender.org/lab/blender_mcp.git"
+BLENDER_MCP_REVISION = "dbbf836ad4b1025f14a2b3b504c43903f39e0b04"
 IO_PDX_RELEASE = "0.91"
 IO_PDX_ASSET_NAME = "blender-io_pdx_mesh.zip"
 IO_PDX_DOWNLOAD_URL = "https://github.com/ross-g/io_pdx_mesh/releases/download/0.91/blender-io_pdx_mesh.zip"
@@ -492,52 +493,18 @@ def ensure_meshy_runtime(pipeline_root: Path, npx: Path) -> dict:
 
 
 def resolve_blender_mcp() -> dict:
-    symref_output = run(["git", "ls-remote", "--symref", BLENDER_MCP_REPOSITORY, "HEAD"])
-    default_branch = "main"
-    default_commit = ""
-    for line in symref_output.splitlines():
-        if line.startswith("ref: refs/heads/") and line.endswith("\tHEAD"):
-            default_branch = line.split("refs/heads/", 1)[1].split("\t", 1)[0]
-        parts = line.split()
-        if len(parts) == 2 and parts[1] == "HEAD":
-            default_commit = parts[0]
-    if not default_commit:
-        raise SetupError("The Blender MCP repository did not expose a default-branch head.")
-
-    tag_output = run(["git", "ls-remote", "--tags", "--refs", BLENDER_MCP_REPOSITORY])
-    tags: list[tuple[tuple[int, int, int], str, str]] = []
-    for line in tag_output.splitlines():
-        parts = line.split()
-        if len(parts) != 2 or not parts[1].startswith("refs/tags/"):
-            continue
-        tag = parts[1].split("refs/tags/", 1)[1]
-        parsed = version_tuple(tag)
-        if parsed is not None and re.search(r"\d+\.\d+", tag):
-            tags.append((parsed, tag, parts[0]))
-
-    if tags:
-        _, tag, commit = max(tags, key=lambda item: (item[0], item[1]))
-        return {
-            "repository": BLENDER_MCP_REPOSITORY,
-            "ref_type": "tag",
-            "ref": tag,
-            "commit": commit,
-            "default_branch": default_branch,
-            "default_head": default_commit,
-            "resolution": "latest semantic release tag",
-        }
     return {
         "repository": BLENDER_MCP_REPOSITORY,
-        "ref_type": "branch",
-        "ref": default_branch,
-        "commit": default_commit,
-        "default_branch": default_branch,
-        "default_head": default_commit,
-        "resolution": "latest default-branch head",
+        "ref_type": "commit",
+        "ref": BLENDER_MCP_REVISION,
+        "commit": BLENDER_MCP_REVISION,
+        "resolution": "reviewed newest source commit pinned by the package",
     }
 
 
 def ensure_blender_mcp(pipeline_root: Path, resolution: dict) -> Path:
+    if resolution.get("commit") != BLENDER_MCP_REVISION or resolution.get("repository") != BLENDER_MCP_REPOSITORY:
+        raise SetupError("Blender MCP resolution does not match the reviewed package pin.")
     vendor_root = pipeline_root / "vendor" / "blender_mcp"
     if not (vendor_root / ".git").exists():
         if vendor_root.exists():
@@ -557,7 +524,7 @@ def ensure_blender_mcp(pipeline_root: Path, resolution: dict) -> Path:
         exclude.write_text("\n".join([*excluded_lines, "uv.lock"]).rstrip() + "\n", encoding="utf-8")
     if run(["git", "status", "--porcelain"], cwd=vendor_root).strip():
         raise SetupError(f"Blender MCP checkout has local changes and cannot be updated safely: {vendor_root}")
-    run(["git", "fetch", "--tags", "--prune", "origin"], cwd=vendor_root)
+    run(["git", "fetch", "origin", BLENDER_MCP_REVISION], cwd=vendor_root)
     try:
         run(["git", "cat-file", "-e", f"{resolution['commit']}^{{commit}}"], cwd=vendor_root)
     except SetupError:
@@ -565,7 +532,7 @@ def ensure_blender_mcp(pipeline_root: Path, resolution: dict) -> Path:
     run(["git", "checkout", "--detach", resolution["commit"]], cwd=vendor_root)
     head = run(["git", "rev-parse", "HEAD"], cwd=vendor_root).strip()
     if head.lower() != resolution["commit"].lower():
-        raise SetupError(f"Blender MCP did not resolve to the latest selected ref: {head}")
+        raise SetupError(f"Blender MCP did not resolve to the reviewed source commit: {head}")
     project_candidates = [vendor_root, vendor_root / "mcp"]
     for project_root in project_candidates:
         pyproject = project_root / "pyproject.toml"

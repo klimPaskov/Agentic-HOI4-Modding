@@ -143,6 +143,17 @@ class CredentialBoundaryTests(unittest.TestCase):
 
 
 class DependencyBoundaryTests(unittest.TestCase):
+    def test_blender_resolution_is_immutable_and_does_not_resolve_mutable_refs(self) -> None:
+        with mock.patch.object(BOOTSTRAP, "run") as run:
+            resolution = BOOTSTRAP.resolve_blender_mcp()
+        run.assert_not_called()
+        self.assertEqual(resolution["commit"], "dbbf836ad4b1025f14a2b3b504c43903f39e0b04")
+        self.assertEqual(resolution["repository"], BOOTSTRAP.BLENDER_MCP_REPOSITORY)
+        with mock.patch.object(BOOTSTRAP, "run") as run:
+            with self.assertRaisesRegex(BOOTSTRAP.SetupError, "package pin"):
+                BOOTSTRAP.ensure_blender_mcp(Path("absent"), {**resolution, "commit": "0" * 40})
+        run.assert_not_called()
+
     def test_meshy_package_is_pinned_to_exact_registry_integrity(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             pipeline = Path(temporary) / "pipeline"

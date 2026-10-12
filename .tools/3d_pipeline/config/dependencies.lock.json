@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0.0",
   "lock_name": "hoi4-3d-model-pipeline",
-  "resolution_policy": "mixed_exact_and_commit_locked_at_bootstrap",
+  "resolution_policy": "exact_package_and_source_commit_pins",
   "bootstrap": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
   "sources": {
-    "meshy_mcp": "npm:@meshy-ai/meshy-mcp-server@0.4.0",
-    "blender_lab_mcp": "https://projects.blender.org/lab/blender_mcp.git",
+    "meshy_mcp": "npm:@meshy-ai/meshy-mcp-server@0.6.2",
+    "blender_lab_mcp": "https://projects.blender.org/lab/blender_mcp.git@dbbf836ad4b1025f14a2b3b504c43903f39e0b04",
     "io_pdx_mesh": "https://github.com/ross-g/io_pdx_mesh/releases/download/0.91/blender-io_pdx_mesh.zip"
   },
   "compatibility": {

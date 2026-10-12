@@ -34,7 +34,7 @@ Renders are deterministic offline previews, not game screenshots, and they do no
 
 ## Capability matrix
 
-This package pins HOI4 Agent Tools 4.0.0 and its 28-tool contract. The table lists those routes; use the names the connected server advertises in its live tool list, and read each live schema before relying on optional parameters.
+This package pins HOI4 Agent Tools 4.0.3 and its 28-tool contract. The table lists those routes; use the names the connected server advertises in its live tool list, and read each live schema before relying on optional parameters.
 
 | Surface | Read-only MCP evidence | Write route | Required evidence sequence | Limits |
 | --- | --- | --- | --- | --- |
@@ -47,6 +47,18 @@ This package pins HOI4 Agent Tools 4.0.0 and its 28-tool contract. The table lis
 | Map and connected map data | `hoi4.map_inspect`, `hoi4.map_inspect` with render arguments (`layer`, `overlays`, `scale`, `tile`, or `area`) | `hoi4.map_rewrite` or an equivalent declarative writer | Inspect connected provinces, states, regions, adjacency, supply, and rail data before a proposal, review the edit, submit one rewrite call, then retain post-validation and recovery evidence. | A map render is offline evidence and does not prove in-game pathing, supply, or consumer behavior. |
 
 If a route is absent, record the exact tool, selector, package version, and error once, then continue with local references and source review as described under Route-unavailable behavior.
+
+## Local reference workflow
+
+Confirm the connected reference routes and their live schemas once per unchanged connection. Begin with `hoi4.reference_context` for the relevant surface, then search and read exact rules not already returned. A list of source citations is navigation; read the pertinent excerpts. Reuse those excerpts while their revision and relevance are unchanged instead of opening the same files again. Installed documentation defines current syntax; check a vanilla precedent when available. If retrieval fails, read the relevant local files and record the gap once.
+
+Check `omittedSources` for available sources skipped by a bounded context response and cover required omissions with a larger limit or targeted search/read. `missing` identifies absent files. Read relevant `knownMistakes` with their cited symptoms and fixes; a returned rule does not prove a defect in the mod.
+
+Use `hoi4.source_lookup` for exact definitions, overrides and consumers. Keep `includeReferences: false` for definition-only reads when consumers are irrelevant. For a diagnostic or diff position, pass `path` and `line` instead of `symbol`; the result identifies indexed owners and the innermost `keyPath`. Locate first, then use the returned owner identifier and path for a separate symbol-navigation request; do not mix locate and navigation selectors.
+
+When supported, select a nested block with a bounded `keyPath` and `view: "structure"`. Repeated keys use zero-based `occurrence`; continue children with `nextChildOffset` as `childOffset`, the same selectors and `expectedRevision`. Source-text continuation uses `nextLine` and `nextColumn` as `fromLine` and `fromColumn`; continue only the needed block. Verify near-miss `suggestions` instead of treating them as matches. For a reference-search hit inside a long section, pass `matchLine` as `reference_read.startLine` and preserve its source id and revision.
+
+Prefer `hoi4.script_validate` file mode (`path`) for changed script files. Inspect `checksPerformed` and unresolved commands, and check `KNOWN_MISTAKE_<RULE>` findings when `known_mistakes` ran. Snippet validation does not establish that this file-level pass ran. A true result proves only performed checks; unchecked argument semantics and game execution need other evidence. Fix confirmed source defects and recheck the affected behavior under the route-unavailable limits.
 
 ## Before-and-after workflow
 
@@ -145,9 +157,9 @@ Inspect current source or transaction state before retrying an uncertain mutatio
 
 HOI4 Mod Setup installs and verifies the exact package version recorded in `hoi4-mod-setup.manifest.json`. For a manual setup, run `python .tools/mcp/bootstrap_hoi4_agent_tools.py`, which installs the same recorded version with its registry-integrity and runtime-entry checks; `npm install --global hoi4-agent-tools` installs the newest release instead.
 
-For an explicitly reviewed development archive, use `python .tools/mcp/bootstrap_hoi4_agent_tools.py --local-tarball C:/path/to/hoi4-agent-tools-4.0.0.tgz`. This opt-in verifies exact SHA-512 and retains full installed-tree, count, runtime-entry, and wrapper checks. Dependencies can still use npm's registry. There is no automatic fallback or downgrade; the default route verifies the published registry pin.
+For an explicitly reviewed development archive, use `python .tools/mcp/bootstrap_hoi4_agent_tools.py --local-tarball C:/path/to/hoi4-agent-tools-4.0.3.tgz`. This opt-in verifies exact SHA-512 and retains full installed-tree, count, runtime-entry, and wrapper checks. Dependencies can still use npm's registry. There is no automatic fallback or downgrade; the default route verifies the published registry pin.
 
-To refresh a published pin, obtain `npm view hoi4-agent-tools@4.0.0 dist.integrity --json --registry=https://registry.npmjs.org`, install that exact version into a new empty prefix with `npm install --global --prefix C:/path/to/new-clean-prefix --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org hoi4-agent-tools@4.0.0`, then run `python scripts/refresh_mcp_package_pin.py --prefix C:/path/to/new-clean-prefix --integrity <reviewed-sha512-value>`. The helper measures the bounded full tree and runtime entry, verifies version and any present npm lock integrity, and synchronizes the bootstrap and manifest contract. Run the contract tests and projection checks, commit source changes, then regenerate manifest evidence from that exact source commit. The generator reads immutable Git blobs, never working-tree bytes.
+To refresh a published pin, obtain `npm view hoi4-agent-tools@4.0.3 dist.integrity --json --registry=https://registry.npmjs.org`, install that exact version into a new empty prefix with `npm install --global --prefix C:/path/to/new-clean-prefix --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org hoi4-agent-tools@4.0.3`, then run `python scripts/refresh_mcp_package_pin.py --prefix C:/path/to/new-clean-prefix --integrity <reviewed-sha512-value>`. The helper measures the bounded full tree and runtime entry, verifies version and any present npm lock integrity, and synchronizes the bootstrap and manifest contract. Run the contract tests and projection checks, commit source changes, then regenerate manifest evidence from that exact source commit. The generator reads immutable Git blobs, never working-tree bytes.
 
 If the recorded version is unavailable or fails verification, record the package/version blocker instead of silently substituting an unpinned clone.
 
