@@ -1025,10 +1025,9 @@
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
-          "reference_images": "reference_images",
           "reference_image": "image",
-          "width": "width",
-          "height": "height",
+          "reference_images": "reference_images",
+          "aspect_ratio": "aspect_ratio",
           "transparent_background": "transparent_background"
         },
         "required_environment_names": [],
@@ -1061,10 +1060,10 @@
         },
         "size_limits": {
           "accepts_dimensions": false,
-          "maximum_width_px": 3840,
-          "maximum_height_px": 3840,
-          "maximum_pixels": 8294400,
-          "notes": "This route uses the model's default image size; limits can vary by model."
+          "maximum_width_px": null,
+          "maximum_height_px": null,
+          "maximum_pixels": null,
+          "notes": "Choose one of the selected model's supported aspect ratios; the model chooses output pixel dimensions."
         },
         "one_image_per_call": true,
         "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
@@ -1564,7 +1563,7 @@
         "reference_images": {
           "supported": true,
           "max_count": 1,
-          "notes": "The included Bedrock route passes one reference image; other model inputs vary."
+          "notes": "Stable Image Ultra accepts one reference image for edits. Stable Image Core is text-to-image only."
         },
         "image_edits": true,
         "background_removal": true,
