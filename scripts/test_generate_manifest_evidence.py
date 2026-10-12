@@ -74,7 +74,7 @@ class ManifestGeneratorTests(unittest.TestCase):
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
         self.assertEqual(manifest["schema_version"].split(".")[0], "4")
         self.assertEqual(manifest["image_generation"]["default_provider"], "gptimage")
-        self.assertEqual(manifest["image_generation"], GENERATOR.build_image_generation_table(manifest_path.parents[1]))
+        self.assertEqual(manifest["image_generation"], GENERATOR.build_image_generation_table(manifest_path.parent))
         components = {component["id"]: component for component in manifest["components"]}
         self.assertIn("imagegen.gptimage", components)
         self.assertTrue(components["imagegen.gptimage"]["optional"])

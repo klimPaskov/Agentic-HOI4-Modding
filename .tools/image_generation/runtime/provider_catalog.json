@@ -16,13 +16,14 @@
         "package_name": "gptimage",
         "package_version": "0.1.0",
         "package_tree_sha256": null,
-        "source_tree_sha256": "ee9a3e6f31ac6342f072eb614e5459b53b6918ef34779cfe861df65246e25b4f",
+        "source_tree_sha256": "8e9580f5ecc56613e4c3988c6ec869b78d7c5c822363d2c3202ff4409e12c5f2",
         "package_lock_sha256": "94c2744790d6b9ca532742c9225da8aee778b63ad2420c0acbf34bf37cd91a36",
         "runtime_entry": ".tools/image_generation/providers/gptimage/src/server.js",
         "tool_names": {
           "generate": "generate_image",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -89,6 +90,11 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "gpt-image-2.5-sunburst",
+          "gpt-image-2.5-flare",
+          "gpt-image-2"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -163,6 +169,11 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "gemini-nano-banana-2.1",
+          "gemini-3.1-flash-image",
+          "gemini-3-pro-image"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -237,6 +248,9 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "fal-ai/flux-2-pro"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -311,6 +325,9 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "black-forest-labs/flux-schnell"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -385,6 +402,11 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "flux-2-pro",
+          "flux-2-max",
+          "flux-2-flex"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -459,6 +481,10 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "stable-image-core",
+          "stable-image-ultra"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -533,6 +559,9 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "ideogram-v4"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -607,6 +636,10 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "recraftv4_1",
+          "recraftv4"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -681,6 +714,9 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "7b592283-e8a7-4c5a-9ba6-d18c31f258b9"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -750,6 +786,7 @@
         "package_lock_sha256": null,
         "runtime_entry": ".tools/image_generation/runtime/server.py",
         "tool_names": {},
+        "supported_models": [],
         "tool_arguments": {},
         "required_environment_names": [],
         "auth_headers": [
@@ -828,6 +865,9 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "grok-imagine-image-2.0"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -902,6 +942,9 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "black-forest-labs/FLUX.2-pro"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -976,6 +1019,9 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "openai/gpt-image-2.5-sunburst"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -989,7 +1035,7 @@
         "auth_headers": [],
         "api_protocol": "openrouter_images",
         "api_base_url": "https://openrouter.ai/api/v1",
-        "default_model": "bytedance-seed/seedream-4.5",
+        "default_model": "openai/gpt-image-2.5-sunburst",
         "result_format": "png",
         "credential_fields": [
           {
@@ -1003,22 +1049,22 @@
       "capabilities": {
         "reference_images": {
           "supported": true,
-          "max_count": null,
-          "notes": "Reference support and limits depend on the chosen model."
+          "max_count": 16,
+          "notes": "The connected model accepts reference images for editing."
         },
         "image_edits": true,
         "background_removal": false,
         "transparent_background": {
-          "native": false,
-          "request_parameter": null,
-          "notes": "Choose a model with native alpha or use a selected background-removal route."
+          "native": true,
+          "request_parameter": "transparent_background",
+          "notes": "Request a transparent PNG and check that its pixels include transparency."
         },
         "size_limits": {
-          "accepts_dimensions": true,
-          "maximum_width_px": null,
-          "maximum_height_px": null,
-          "maximum_pixels": null,
-          "notes": "Use dimensions supported by the selected model."
+          "accepts_dimensions": false,
+          "maximum_width_px": 3840,
+          "maximum_height_px": 3840,
+          "maximum_pixels": 8294400,
+          "notes": "This route uses the model's default image size; limits can vary by model."
         },
         "one_image_per_call": true,
         "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
@@ -1050,6 +1096,7 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -1118,6 +1165,7 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -1186,6 +1234,7 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -1251,6 +1300,7 @@
         "tool_names": {
           "generate": "image_gen"
         },
+        "supported_models": [],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": null,
@@ -1318,6 +1368,11 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "imagen-4.0-fast-generate-001",
+          "imagen-4.0-generate-001",
+          "imagen-4.0-ultra-generate-001"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -1392,6 +1447,7 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -1471,6 +1527,10 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "stability.stable-image-core-v1:1",
+          "stability.stable-image-ultra-v1:1"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -1550,6 +1610,9 @@
           "background_removal": "remove_background",
           "auth_status": "image_auth_status"
         },
+        "supported_models": [
+          "black-forest-labs/FLUX.1-Krea-dev"
+        ],
         "tool_arguments": {
           "prompt": "prompt",
           "output_path": "out",
@@ -1619,6 +1682,7 @@
         "package_lock_sha256": null,
         "runtime_entry": null,
         "tool_names": {},
+        "supported_models": [],
         "tool_arguments": {},
         "required_environment_names": [],
         "auth_headers": [],
@@ -1674,6 +1738,7 @@
         "package_lock_sha256": null,
         "runtime_entry": null,
         "tool_names": {},
+        "supported_models": [],
         "tool_arguments": {},
         "required_environment_names": [],
         "auth_headers": [],

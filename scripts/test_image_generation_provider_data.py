@@ -52,6 +52,13 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
                 if item["route"]["kind"] == "stdio_adapter":
                     self.assertIn(item["route"]["api_protocol"], implemented_protocols)
 
+    def test_model_labels_match_the_adapter_allowlist(self) -> None:
+        for provider in build_image_generation_table(ROOT)["providers"]:
+            supported = provider["route"].get("supported_models", [])
+            if supported:
+                with self.subTest(provider=provider["id"]):
+                    self.assertEqual(len(provider["models"]), len(supported))
+
     def test_gptimage_is_default_pinned_source_and_midjourney_is_manual_only(self) -> None:
         providers = {item["id"]: item for item in build_image_generation_table(ROOT)["providers"]}
         route = providers["gptimage"]["route"]

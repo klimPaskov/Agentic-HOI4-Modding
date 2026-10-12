@@ -88,6 +88,19 @@ class ImageGenerationRuntimeTests(unittest.TestCase):
         self.assertNotIn("transparent_background", properties)
         self.assertIn("width", properties)
 
+    def test_model_choice_is_saved_in_setup_settings_and_never_accepted_as_prompt_input(self) -> None:
+        self.write_provider("openai_api", settings={"model": "gpt-image-2.5-flare"})
+        runtime = server.Server("openai_api", self.root)
+        self.assertEqual(runtime.selected_model(), "gpt-image-2.5-flare")
+        tool = next(
+            item for item in runtime.handle({"jsonrpc": "2.0", "id": 4, "method": "tools/list", "params": {}})["result"]["tools"]
+            if item["name"] == "generate_image"
+        )
+        self.assertNotIn("model", tool["inputSchema"]["properties"])
+        with self.assertRaisesRegex(server.ImageRouteError, "listed in the setup provider details"):
+            self.write_provider("openai_api", settings={"model": "unreviewed/model"})
+            server.Server("openai_api", self.root)
+
     def test_reference_count_limit_is_enforced_before_provider_calls(self) -> None:
         self.write_provider("automatic1111_local", settings={"server_url": "http://127.0.0.1:7860"})
         runtime = server.Server("automatic1111_local", self.root)
@@ -186,7 +199,11 @@ class ImageGenerationRuntimeTests(unittest.TestCase):
         self.assertEqual(runtime.remote_session_id, "session-test")
 
     def test_openai_generation_uses_one_image_and_never_puts_the_key_in_the_request_body(self) -> None:
-        provider = self.write_provider("openai_api", credential_references={"api_key": "credential://image_generation_api_key/openai_api_api_key"})
+        provider = self.write_provider(
+            "openai_api",
+            credential_references={"api_key": "credential://image_generation_api_key/openai_api_api_key"},
+            settings={"model": "gpt-image-2.5-flare"},
+        )
         runtime = server.Server("openai_api", self.root)
         runtime.secrets["api_key"] = "openai-test-secret"
         captured = {}
@@ -202,6 +219,7 @@ class ImageGenerationRuntimeTests(unittest.TestCase):
         self.assertEqual(captured["headers"]["Authorization"], "Bearer openai-test-secret")
         self.assertNotIn(b"openai-test-secret", captured["body"])
         body = json.loads(captured["body"])
+        self.assertEqual(body["model"], "gpt-image-2.5-flare")
         self.assertEqual(body["n"], 1)
         self.assertEqual(body["background"], "transparent")
         self.assertEqual(body["output_format"], "png")
@@ -232,20 +250,23 @@ class ImageGenerationRuntimeTests(unittest.TestCase):
         runtime = server.Server("openrouter", self.root)
         runtime.secrets["api_key"] = "openrouter-secret"
         (self.root / "reference.png").write_bytes(png())
-        captured = {}
+        captured = []
 
         def fake_json(url, method, headers, payload=None, **_kwargs):
-            captured.update({"url": url, "method": method, "headers": headers, "payload": payload})
+            captured.append({"url": url, "method": method, "headers": headers, "payload": payload})
             return {"data": [{"b64_json": base64.b64encode(png()).decode("ascii"), "media_type": "image/png"}]}
 
         runtime._request_json = fake_json
         result = runtime.generate_image({"prompt": "a test", "reference_images": ["reference.png"], "out": "gfx/openrouter.png"})
+        transparent = runtime.generate_image({"prompt": "a transparent cutout", "transparent_background": True, "out": "gfx/openrouter-alpha.png"})
         self.assertEqual(result["path"], "gfx/openrouter.png")
-        self.assertTrue(captured["url"].endswith("/api/v1/images"))
-        self.assertEqual(captured["headers"]["Authorization"], "Bearer openrouter-secret")
-        self.assertNotIn("openrouter-secret", json.dumps(captured["payload"]))
-        self.assertEqual(len(captured["payload"]["input_references"]), 1)
-        self.assertTrue(captured["payload"]["input_references"][0]["image_url"]["url"].startswith("data:image/png;base64,"))
+        self.assertTrue(transparent["transparent_pixels"])
+        self.assertTrue(captured[0]["url"].endswith("/api/v1/images"))
+        self.assertEqual(captured[0]["headers"]["Authorization"], "Bearer openrouter-secret")
+        self.assertNotIn("openrouter-secret", json.dumps(captured[0]["payload"]))
+        self.assertEqual(len(captured[0]["payload"]["input_references"]), 1)
+        self.assertTrue(captured[0]["payload"]["input_references"][0]["image_url"]["url"].startswith("data:image/png;base64,"))
+        self.assertEqual(captured[1]["payload"]["background"], "transparent")
 
     def test_together_returns_png_base64_and_declines_undocumented_project_reference_uploads(self) -> None:
         self.write_provider("together_ai", credential_references={"api_key": "credential://image_generation_api_key/together_ai_api_key"})
@@ -405,6 +426,34 @@ class ImageGenerationRuntimeTests(unittest.TestCase):
         self.assertTrue(calls[0]["url"].endswith("/generations"))
         self.assertTrue(calls[1]["url"].endswith("/generations/00000000-0000-4000-8000-000000000000"))
         self.assertEqual(calls[0]["payload"]["modelId"], "7b592283-e8a7-4c5a-9ba6-d18c31f258b9")
+
+    def test_fal_waits_for_queue_result_before_saving_one_image(self) -> None:
+        self.write_provider("fal_ai", credential_references={"api_key": "credential://image_generation_api_key/fal_ai_api_key"})
+        runtime = server.Server("fal_ai", self.root)
+        runtime.secrets["api_key"] = "fal-secret"
+        calls = []
+
+        def fake_json(url, method, headers, payload=None, **_kwargs):
+            calls.append({"url": url, "method": method, "headers": headers, "payload": payload})
+            if method == "POST":
+                return {
+                    "request_id": "request-1",
+                    "status_url": "https://queue.fal.run/fal-ai/flux-2-pro/requests/request-1/status",
+                    "response_url": "https://queue.fal.run/fal-ai/flux-2-pro/requests/request-1",
+                }
+            if url.endswith("/status"):
+                return {"status": "COMPLETED"}
+            return {"images": [{"url": "https://storage.googleapis.com/falserverless/out.png"}]}
+
+        runtime._request_json = fake_json
+        runtime._image_from_response = lambda _response: png()
+        with patch.object(server.time, "sleep", lambda _seconds: None):
+            result = runtime.generate_image({"prompt": "a test", "out": "gfx/fal.png"})
+        self.assertEqual(result["path"], "gfx/fal.png")
+        self.assertEqual([call["method"] for call in calls], ["POST", "GET", "GET"])
+        self.assertTrue(calls[0]["url"].endswith("/fal-ai/flux-2-pro"))
+        self.assertEqual(calls[0]["payload"]["num_images"], 1)
+        self.assertEqual(calls[0]["headers"]["Authorization"], "Key fal-secret")
 
     def test_gemini_key_is_sent_in_header_not_url(self) -> None:
         self.write_provider("gemini_api", credential_references={"api_key": "credential://image_generation_api_key/gemini_api_api_key"})

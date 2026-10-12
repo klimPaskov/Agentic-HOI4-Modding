@@ -323,6 +323,26 @@
               "type": "string",
               "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
             },
+            "package_root": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "script_path": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "source_revision": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "source_tree_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "package_lock_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
             "package_integrity": {
               "type": "string",
               "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$",
@@ -356,7 +376,7 @@
               "uniqueItems": true,
               "items": {
                 "type": "string",
-                "pattern": "^hoi4\\.[a-z0-9_]+$",
+                "pattern": "^(hoi4\\.[a-z0-9_]+|generate_image|image_auth_status)$",
                 "maxLength": 256
               }
             },
@@ -890,7 +910,8 @@
         "kind",
         "auth_method",
         "server_id",
-        "tool_names"
+        "tool_names",
+        "supported_models"
       ],
       "properties": {
         "kind": {
@@ -986,6 +1007,14 @@
           "type": "object",
           "additionalProperties": {
             "type": "string"
+          }
+        },
+        "supported_models": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "tool_arguments": {

@@ -269,11 +269,18 @@ def load_provider_config(project_root: Path, provider_id: str, config_path: Path
         if "deployment_name" in settings and (not isinstance(settings["deployment_name"], str) or len(settings["deployment_name"]) > 128):
             raise ImageRouteError("The Microsoft Foundry deployment name is invalid.")
     elif protocol == "aws_bedrock":
-        if set(settings) - {"region"}:
+        if set(settings) - {"region", "model"}:
             raise ImageRouteError("The AWS settings include an unsupported field.")
         region = settings.get("region", "us-west-2")
         if not isinstance(region, str) or not re.fullmatch(r"[a-z]{2}-[a-z]+-\d", region):
             raise ImageRouteError("Choose a valid AWS region in image provider settings.")
+        if "model" in settings and settings["model"] not in trusted.get("route", {}).get("supported_models", []):
+            raise ImageRouteError("Choose an AWS image model listed in the setup provider details.")
+    elif route.get("supported_models"):
+        if set(settings) - {"model"}:
+            raise ImageRouteError("The image-provider settings include an unsupported field.")
+        if "model" in settings and settings["model"] not in route["supported_models"]:
+            raise ImageRouteError("Choose an image model listed in the setup provider details.")
     elif settings:
         raise ImageRouteError("The selected provider does not accept project-local settings.")
     return document, config
@@ -635,7 +642,6 @@ def _tool_schema(name: str, provider: dict | None = None) -> dict:
     common = {
         "prompt": {"type": "string", "minLength": 1},
         "out": {"type": "string"},
-        "model": {"type": "string"},
         "width": {"type": "integer", "minimum": 64},
         "height": {"type": "integer", "minimum": 64},
         "transparent_background": {"type": "boolean"},
@@ -846,6 +852,9 @@ class Server:
             raise ImageRouteError("Save the provider key in the setup app before using this route.")
         return secret
 
+    def selected_model(self, fallback: str | None = None) -> str | None:
+        return self.provider.get("settings", {}).get("model") or self.route.get("default_model") or fallback
+
     def read_reference(self, relative: str) -> tuple[str, bytes]:
         if not isinstance(relative, str) or not relative or Path(relative).is_absolute() or ".." in Path(relative).parts:
             raise ImageRouteError("Reference images must be inside the current mod project.")
@@ -1007,6 +1016,8 @@ class Server:
         prompt = args.get("prompt")
         if not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 12000:
             raise ImageRouteError("Add a clear prompt before generating an image.")
+        if "model" in args:
+            raise ImageRouteError("Choose the image model in HOI4 Mod Setup instead of the image prompt.")
         is_edit = bool(args.pop("_hoi4_edit_request", False))
         capabilities = self.provider.get("capabilities", {})
         if is_edit and not capabilities.get("image_edits"):
@@ -1090,7 +1101,7 @@ class Server:
         protocol = self.route["api_protocol"]
         if self.provider_id == "microsoft_foundry":
             base = _safe_foundry_base(self.require_secret("resource_url"))
-            model = args.get("model") or self.provider.get("settings", {}).get("deployment_name")
+            model = self.provider.get("settings", {}).get("deployment_name")
             if not isinstance(model, str) or not model.strip():
                 raise ImageRouteError("Choose the deployed Microsoft Foundry model name in image provider settings.")
             headers = {"api-key": self.require_secret("api_key"), "Content-Type": "application/json"}
@@ -1116,7 +1127,7 @@ class Server:
             return self.save_output(args["out"], self._image_from_response(json.loads(response)))
 
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         payload = {"model": model, "prompt": args["prompt"], "n": 1, "output_format": "png"}
         if args.get("width") and args.get("height"):
             width = int(args["width"])
@@ -1153,11 +1164,14 @@ class Server:
         else:
             body = json.dumps(payload).encode("utf-8")
         response = self._request_bytes(endpoint, "POST", headers, body)
-        return self.save_output(args["out"], self._image_from_response(json.loads(response)))
+        image = self._image_from_response(json.loads(response))
+        if args.get("transparent_background"):
+            return self.save_transparent_output(args["out"], image)
+        return self.save_output(args["out"], image)
 
     def _generate_openrouter(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         payload = {"model": model, "prompt": args["prompt"]}
         refs = [args["image"]] if args.get("image") else args.get("reference_images", [])
         if refs:
@@ -1168,8 +1182,6 @@ class Server:
                     "type": "image_url",
                     "image_url": {"url": self._data_url(data, image_mime(name))},
                 })
-        if args.get("width") and args.get("height"):
-            payload["size"] = f"{int(args['width'])}x{int(args['height'])}"
         if args.get("transparent_background") and self.provider["capabilities"]["transparent_background"]["native"]:
             payload["background"] = "transparent"
         payload["output_format"] = "png"
@@ -1179,11 +1191,14 @@ class Server:
             {"Authorization": "Bearer " + self.require_secret(), "Content-Type": "application/json"},
             payload,
         )
-        return self.save_output(args["out"], self._image_from_response(response))
+        image = self._image_from_response(response)
+        if args.get("transparent_background"):
+            return self.save_transparent_output(args["out"], image)
+        return self.save_output(args["out"], image)
 
     def _generate_xai(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         payload = {"model": model, "prompt": args["prompt"], "n": 1, "response_format": "url"}
         refs = [args["image"]] if args.get("image") else args.get("reference_images", [])
         endpoint = base.rstrip("/") + "/images/generations"
@@ -1210,7 +1225,7 @@ class Server:
 
     def _generate_huggingface(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         if not isinstance(model, str) or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", model):
             raise ImageRouteError("Choose a Hugging Face model using owner/model-name format.")
         payload = {"inputs": args["prompt"]}
@@ -1226,7 +1241,7 @@ class Server:
 
     def _generate_together(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         payload = {
             "model": model,
             "prompt": args["prompt"],
@@ -1254,7 +1269,7 @@ class Server:
 
     def _generate_gemini(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         parts = [{"text": args["prompt"]}]
         refs = args.get("reference_images", [])
         if args.get("image"):
@@ -1274,8 +1289,10 @@ class Server:
 
     def _generate_stability(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model") or "stable-image-ultra"
-        tier = "core" if "core" in model.lower() else "ultra"
+        model = self.selected_model("stable-image-ultra")
+        if model not in {"stable-image-core", "stable-image-ultra"}:
+            raise ImageRouteError("The selected Stability route supports Stable Image Core and Ultra only.")
+        tier = "core" if model == "stable-image-core" else "ultra"
         endpoint = base.rstrip("/") + f"/stable-image/generate/{tier}"
         fields = {"prompt": args["prompt"], "output_format": "png"}
         files = []
@@ -1307,7 +1324,7 @@ class Server:
 
     def _generate_fal(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         if not isinstance(model, str) or not re.fullmatch(r"[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)+", model) or ".." in model.split("/"):
             raise ImageRouteError("Choose a valid fal model name from the model catalog.")
         payload = {"prompt": args["prompt"], "image_size": "square_hd", "num_images": 1, "output_format": "png"}
@@ -1324,12 +1341,32 @@ class Server:
             payload["image_urls"] = [self._data_url(first_data, image_mime(first_name))]
             if not model.endswith("/edit"):
                 model = model.rstrip("/") + "/edit"
-        response = self._request_json(base.rstrip("/") + "/" + model, "POST", {"Authorization": "Key " + self.require_secret(), "Content-Type": "application/json"}, payload)
-        return self.save_output(args["out"], self._image_from_response(response))
+        headers = {"Authorization": "Key " + self.require_secret(), "Content-Type": "application/json"}
+        response = self._request_json(base.rstrip("/") + "/" + model, "POST", headers, payload)
+        if isinstance(response.get("images"), list) or response.get("data"):
+            return self.save_output(args["out"], self._image_from_response(response))
+        urls = response.get("urls", {}) if isinstance(response.get("urls"), dict) else {}
+        status_url = response.get("status_url") or urls.get("status")
+        result_url = response.get("response_url") or urls.get("response")
+        request_id = response.get("request_id")
+        if not isinstance(request_id, str) or not isinstance(status_url, str) or not isinstance(result_url, str):
+            raise ImageRouteError("fal did not return a request status and result link.")
+        status_url = _safe_url(self.provider_id, status_url)
+        result_url = _safe_url(self.provider_id, result_url)
+        for _ in range(120):
+            status = self._request_json(status_url, "GET", {"Authorization": headers["Authorization"]})
+            state = status.get("status")
+            if state in {"COMPLETED", "succeeded", "successful"}:
+                result = self._request_json(result_url, "GET", {"Authorization": headers["Authorization"]})
+                return self.save_output(args["out"], self._image_from_response(result))
+            if state in {"FAILED", "Error", "failed", "canceled", "CANCELLED"}:
+                raise ImageRouteError("fal could not complete the image request.")
+            time.sleep(1)
+        raise ImageRouteError("fal is still preparing the image. Check status and retry.")
 
     def _generate_replicate(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         parts = model.split("/")
         if len(parts) != 2 or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", model) or ".." in parts:
             raise ImageRouteError("Choose a Replicate model in owner/name format.")
@@ -1348,7 +1385,7 @@ class Server:
 
     def _generate_bfl(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         payload = {"prompt": args["prompt"], "output_format": "png", "width": int(args.get("width", 1024)), "height": int(args.get("height", 1024))}
         refs = [args["image"]] if args.get("image") else args.get("reference_images", [])
         if refs:
@@ -1360,7 +1397,7 @@ class Server:
 
     def _generate_ideogram(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model") or "ideogram-v4"
+        model = self.selected_model("ideogram-v4")
         reference = args.get("image") or (args.get("reference_images") or [None])[0]
         transparent = bool(args.get("transparent_background"))
         if reference and transparent:
@@ -1384,13 +1421,15 @@ class Server:
             body,
         )
         image = self._image_from_response(response)
-        if transparent and not png_has_alpha(image):
-            raise ImageRouteError("Ideogram did not return an alpha channel for the transparent image.")
+        if transparent and png_has_transparent_pixels(image) is not True:
+            raise ImageRouteError("Ideogram did not return verifiable transparent pixels.")
+        if transparent:
+            return self.save_transparent_output(args["out"], image)
         return self.save_output(args["out"], image)
 
     def _generate_recraft(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
-        model = args.get("model") or self.route.get("default_model") or "recraftv4_1"
+        model = self.selected_model("recraftv4_1")
         payload = {"model": model, "prompt": args["prompt"], "n": 1, "response_format": "b64_json", "image_format": "png"}
         reference = args.get("image")
         refs = args.get("reference_images", [])
@@ -1401,7 +1440,7 @@ class Server:
         elif refs:
             if len(refs) > 10:
                 raise ImageRouteError("Recraft accepts up to ten style-reference images.")
-            payload["model"] = args.get("model") or "recraftv4_styles"
+            payload["model"] = "recraftv4_styles"
             payload["style_reference_urls"] = [
                 self._data_url(data, image_mime(name)) for name, data in (self.read_reference(path) for path in refs)
             ]
@@ -1414,7 +1453,7 @@ class Server:
     def _generate_leonardo(self, args: dict) -> dict:
         base = _safe_url(self.provider_id, self.route["api_base_url"])
         payload = {"prompt": args["prompt"], "num_images": 1, "width": int(args.get("width", 1024)), "height": int(args.get("height", 1024))}
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         if model:
             payload["modelId"] = model
         response = self._request_json(base.rstrip("/") + "/generations", "POST", {"Authorization": "Bearer " + self.require_secret(), "Content-Type": "application/json"}, payload)
@@ -1468,7 +1507,7 @@ class Server:
             raise ImageRouteError("Google Cloud did not return an access token.")
         base = _safe_url(self.provider_id, self.route["api_base_url"])
         region = urllib.parse.urlparse(base).hostname.split("-aiplatform", 1)[0]
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         endpoint = f"{base.rstrip('/')}/projects/{urllib.parse.quote(project, safe='')}/locations/{urllib.parse.quote(region, safe='')}/publishers/google/models/{urllib.parse.quote(model, safe='-._')}:predict"
         payload = {"instances": [{"prompt": args["prompt"]}], "parameters": {"sampleCount": 1, "aspectRatio": "1:1"}}
         response = self._request_json(endpoint, "POST", {"Authorization": "Bearer " + access_token, "Content-Type": "application/json"}, payload)
@@ -1483,7 +1522,7 @@ class Server:
         region = settings.get("region", "us-west-2")
         if not re.fullmatch(r"[a-z]{2}-[a-z]+-\d", region):
             raise ImageRouteError("Choose a valid AWS region in image provider settings.")
-        model = args.get("model") or self.route.get("default_model")
+        model = self.selected_model()
         payload = {"prompt": args["prompt"], "output_format": "png"}
         reference = args.get("image") or (args.get("reference_images") or [None])[0]
         if reference:
@@ -1498,7 +1537,7 @@ class Server:
         settings = self.provider.get("settings", {})
         base = settings.get("server_url", "http://127.0.0.1:8188").rstrip("/")
         _safe_url(self.provider_id, base, allow_loopback=True)
-        checkpoint = args.get("model") or settings.get("checkpoint")
+        checkpoint = settings.get("checkpoint")
         if not isinstance(checkpoint, str) or not checkpoint.strip():
             raise ImageRouteError("Choose a checkpoint installed in ComfyUI in image provider settings.")
         width = _image_dimension(args.get("width", 1024))
