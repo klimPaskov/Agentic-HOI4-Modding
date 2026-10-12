@@ -37,6 +37,7 @@ def main() -> None:
     for component_id, expected in expected_provider_components.items():
         published = dict(published_provider_components[component_id])
         published.pop("expected_files", None)
+        expected.pop("expected_files", None)
         if published != expected:
             raise SystemExit(f"stale image-generation component declaration: {component_id}")
     component_ids = {component["id"] for component in manifest["components"]}
