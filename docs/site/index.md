@@ -4,16 +4,18 @@ title: Agentic HOI4 Modding
 ---
 # Agentic HOI4 Modding
 
-Build Hearts of Iron IV mods with the coding client you choose, reusable skills, specialist agents, an offline wiki, and useful MCP servers. HOI4 Mod Setup creates matching project files for Claude Code, Codex, Cursor, Qoder, OpenCode, and other supported clients.
+Build Hearts of Iron IV mods with your coding agent. Make focus trees, events, decisions and maps, fix broken script and balance the AI. Modding skills, specialist helpers, an offline wiki and HOI4 tools help your agent do the work.
+
+Choose any supported coding client, including Claude Code, Codex, Cursor, Qoder, or OpenCode. HOI4 Mod Setup creates project files and registers tools for the clients you select.
 
 ## Install with HOI4 Mod Setup
 
 1. Download [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest).
 2. Choose a new mod or an existing Git project, then enter the mod name, prefix, game folder, and Workshop folder.
-3. Select any supported coding client, an image-generation provider, and the workflows you need: core modding, portraits, 3D, Super Events, or live testing.
+3. Select any supported coding client and the workflows you need: core modding, image generation, portraits, 3D, Super Events, or live testing.
 4. Review the planned changes and install. Open the mod in your coding client, approve the project MCP server, and check the connection.
 
-The app installs the MCP releases pinned in the package manifest, keeps image-provider API keys in the operating-system credential store, and adapts the asset guidance to your selected route. Its update and repair flows preserve local additions and let you review instruction conflicts or change providers later.
+The app installs the MCP releases pinned in the package manifest. Its update and repair flows preserve local additions and let you review instruction conflicts. You can change the image provider later and have the app update its MCP registrations and guidance.
 
 [Setup app screenshots](https://github.com/klimPaskov/HOI4-Mod-Setup/tree/main/docs/screenshots) show the install and maintenance screens.
 
@@ -41,15 +43,17 @@ For optional workflows, copy the complete tools, references, and runtime assets 
 
 ## Skills and specialist agents
 
-The [catalog](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/catalog.md) explains the reusable skills and specialist agents. They cover focus trees, decisions, events, engine systems, planning, assets, portraits, 3D, scripted GUI, saves, live testing, and Super Events. Specialist agents research, implement bounded systems, produce assets, or audit completion with clear ownership and evidence.
+The [catalog](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/catalog.md) covers focus trees, decisions, events, game systems, interfaces, assets, portraits, 3D models, live testing and Super Events. Describe the task; your agent chooses the skills and specialists it needs.
 
-Specialist roles use model tiers for different kinds of work. The package maps those tiers to settings supported by each selected coding client.
+Specialist roles use model tiers matched to the work. The package maps those tiers to settings supported by each selected coding client.
 
-## Image generation and game tools
+## Image generation and modding tools
 
-The default image route uses ChatGPT through the GPTImage MCP. Choose another hosted or local provider, Codex's native image tool, or no image provider. API keys stay in the operating-system credential store; the app updates the route and its instructions later. Read the [provider research](https://github.com/klimPaskov/HOI4-Mod-Setup/blob/main/docs/image-generation-providers.md) for supported models, access needs, costs, and size limits.
+HOI4 Mod Setup selects ChatGPT through the GPTImage MCP by default. You can choose another hosted or local provider, use Codex image generation, or make art yourself. The app keeps API keys in the operating-system credential store and updates the asset guidance for your choice. See the [provider research](https://github.com/klimPaskov/HOI4-Mod-Setup/blob/main/docs/image-generation-providers.md) for models, access needs, costs, and size limits.
 
-**HOI4 Agent Tools** (`hoi4_agent_tools`) works with mod source: focus and technology trees, events, weighted logic, scripted GUIs, maps, documentation, and source lookup. The project bootstrap installs and verifies the manifest-pinned npm package.
+## Modding and live testing
+
+**HOI4 Agent Tools** (`hoi4_agent_tools`) helps your agent build focus trees, events, decisions and maps, preview windows and trees, find modding rules, fix script and balance AI choices. The project bootstrap installs the release selected by the package manifest.
 
 **HOI4 Live Tools** (`hoi4-live`) works with the running game on Windows: launch and load, events and effects, time advancement, popups, screen evidence, saves, and error-log changes. It installs per user and registers with supported clients. For manual installation:
 
@@ -57,7 +61,7 @@ The default image route uses ChatGPT through the GPTImage MCP. Choose another ho
 python .tools/mcp/bootstrap_hoi4_live_tools.py
 ```
 
-Reconnect the client and follow the [Live Tools setup guide](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/.claude/skills/hoi4-live-playtest/references/setup.md). Use live testing when the task authorizes it. The optional 3D workflow adds Meshy and Blender MCP routes through its own bootstrap.
+Reconnect the client and follow the [Live Tools setup guide](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/.claude/skills/hoi4-live-playtest/references/setup.md). The optional 3D workflow adds Meshy and Blender MCP routes through its own bootstrap.
 
 ## Watch the workflow
 
@@ -75,4 +79,4 @@ Original package code and guidance use the [Apache License 2.0](https://github.c
 
 ## Upgrade an older checkout
 
-Back up and commit your mod work, then use the setup app to update or repair the package and MCP installation. Review instruction changes, regenerate runtime files for your selected clients, and reconnect them. You can change the image-generation provider in the same update or repair flow.
+Back up and commit your mod work, then use the setup app to update or repair the package and MCP installation. Review custom instruction changes, regenerate runtime files for your selected coding clients, and reconnect them.
