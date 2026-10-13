@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "bbd0f6201472ef8449a2667005df9f76aa721571",
+  "generated_for_revision": "e6a2564d681897fb0c7d809ff09dc71ac1f938ab",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "e227c5d1cff32eb0dc729e43cbbfd7f0836d4a962178783efd9b4c97ad3ae4ab",
-          "size": 59240
+          "sha256": "8b03e078970804fd62317c25cfd65b5cde32edeeaea8353a7800440f5d36a1dd",
+          "size": 59323
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "25808d60354a84b63bf004089ce3b46636558755146c303f4ec4e209dbe5d6c7",
-          "size": 59240
+          "sha256": "c2ee6092c62e2eca89381ca48179a77bc7848b50d85b340e4098e78e6fbc608a",
+          "size": 59323
         }
       ]
     },
@@ -8288,13 +8288,13 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "a5d0ecb1b6ce52cf3f651e0c624c0ed61f1f19dd45917925148d68ddcd4bbcaa",
-          "size": 3349
+          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
+          "size": 3379
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
-          "sha256": "8725ad1f083a82b02d46caf9be53f5130b042c9edf49a5464742c80a75f0a807",
-          "size": 935
+          "sha256": "7a44848ea656734af2df232b3cb6b2e136138cba723403e93039948cf322c5fc",
+          "size": 960
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
@@ -8303,8 +8303,8 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "801391d6812fa14bca7e201ce82c55df24e84ed6c49b988f2de80f02face8fac",
-          "size": 1484
+          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
+          "size": 1509
         }
       ]
     },
@@ -8387,8 +8387,8 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "a20a5cd895b3a09d9a2e687efa1ca12db0f7b1f6b7375cce6c2f8aa33bd398a7",
-          "size": 13243
+          "sha256": "1660162bc89ca613d6874b37a641e0a250b2b7fa66e2a404e9984f1673dd037e",
+          "size": 18710
         }
       ]
     },
@@ -8694,8 +8694,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "a8058e879a224cf7c74c906dd7066ee6025c3b9a192912fcd86591c7dbd62328",
-          "size": 12157
+          "sha256": "7a91c96c19bc06408f86bd46b077f24884c8d402fc1c71103ffc3aba972b6c5b",
+          "size": 12485
         }
       ]
     },
@@ -8746,8 +8746,8 @@
       "expected_files": [
         {
           "path": "docs/runtimes.md",
-          "sha256": "2eca144559a6a13e47e7863e19fc159547ede85d34ecb2c6110561614e3a338c",
-          "size": 12170
+          "sha256": "b64b7c104fe8b7a34031ead0f3e9b4ac5dcfe8fabf58711d7cce32f7117f5945",
+          "size": 12818
         }
       ]
     },
@@ -11216,7 +11216,18 @@
         }
       ],
       "environment": [],
-      "expected_files": [],
+      "expected_files": [
+        {
+          "path": ".tools/image_generation/runtime/provider_catalog.json",
+          "sha256": "05b90efc7d829c2675a633e10f3f1eb308cd9342cf5fd77dbe049ec8018b8fcb",
+          "size": 67637
+        },
+        {
+          "path": ".tools/image_generation/runtime/server.py",
+          "sha256": "f2f867f34fa2d01f622505fdc34c0474e69ba8dc9b3e1f5daf0e90e15be22ea2",
+          "size": 97480
+        }
+      ],
       "conflicts": [],
       "conflict_policy": "replace_if_unmodified",
       "validation": [],
@@ -11289,7 +11300,73 @@
         }
       ],
       "environment": [],
-      "expected_files": [],
+      "expected_files": [
+        {
+          "path": ".tools/image_generation/providers/gptimage/LICENSE",
+          "sha256": "61b266ab51f12f1352bc72d2817474832fb8de9313b50b1ba5d7b014570b7bef",
+          "size": 1076
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/UPSTREAM.md",
+          "sha256": "b6bd43a96a47c056a4b767062798793d9f986b1af7c8a70ca3392b24cf239482",
+          "size": 895
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/bootstrap.py",
+          "sha256": "c6847415d41efd1683034eab13964f6f0a9fadfdd4bfd47a904dcf233ae4d94e",
+          "size": 5941
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/package-lock.json",
+          "sha256": "bd75719d34e7a161e8b3d712fdb358ba1b89dcc6d6f6cd614ddbc38032a45778",
+          "size": 41680
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/package.json",
+          "sha256": "06fec29755154c088945fc9525e3dd0b4318e75417eeb605b2b96ffc9651edab",
+          "size": 734
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/auth.js",
+          "sha256": "eb029fa64c8fddebc48bddde4847f8f1236fdcdfb12273e79dccce0276d969c6",
+          "size": 7465
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/banner.js",
+          "sha256": "ccbc76ef6b3cb17e06dd1d2341264d43022d7ff3e5c9ce045e09ccfa6fe7412d",
+          "size": 567
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/banner.txt",
+          "sha256": "0cb7e227d24e3be5abaa15cdc562e1bfc243658d2f09eb3807eaf5b88b287d33",
+          "size": 12503
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/codex.js",
+          "sha256": "5f370bcf2c767cf638f32d1ab87f9d65cb0c769faf8b358337b7e6b35fc6e588",
+          "size": 4418
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/gen.js",
+          "sha256": "c6d0f48d3e039b49192eec03389714e77c511111010f5fe3f7f4b26bed698413",
+          "size": 1860
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/images.js",
+          "sha256": "41a8143142d34b5238e0ee0841c0f040f6a62969b02b62ded64bd6bb83cd800a",
+          "size": 3540
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/login.js",
+          "sha256": "51e9209f166da80dfa6fab43bf5d2ed0993b6303593f04a6f778654566e2b861",
+          "size": 9662
+        },
+        {
+          "path": ".tools/image_generation/providers/gptimage/src/server.js",
+          "sha256": "c2a537094748f7cbdc9f8c2d758759785a60fe8a487761a582fa5da17a20e55f",
+          "size": 6912
+        }
+      ],
       "conflicts": [],
       "conflict_policy": "replace_if_unmodified",
       "validation": [
@@ -11388,9 +11465,19 @@
       "notes": [],
       "expected_files": [
         {
-          "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
-          "size": 15745
+          "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
+          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
+          "size": 3379
+        },
+        {
+          "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
+          "sha256": "7a44848ea656734af2df232b3cb6b2e136138cba723403e93039948cf322c5fc",
+          "size": 960
+        },
+        {
+          "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
+          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
+          "size": 1509
         }
       ]
     },
@@ -11437,7 +11524,13 @@
         "instruction file discovery",
         "MCP registration shapes"
       ],
-      "expected_files": []
+      "expected_files": [
+        {
+          "path": "docs/linux.md",
+          "sha256": "91c2a851d6563039d9fd219e90773cd90c48489ec6a55fafc165cd77d1407893",
+          "size": 6777
+        }
+      ]
     }
   ],
   "profiles": [
