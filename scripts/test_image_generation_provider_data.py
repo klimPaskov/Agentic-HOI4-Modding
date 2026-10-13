@@ -149,6 +149,7 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
         expected = build_image_generation_table(ROOT)
         runtime = json.loads((ROOT / ".tools/image_generation/runtime/provider_catalog.json").read_text(encoding="utf-8"))
         self.assertEqual(runtime["default_provider"], expected["default_provider"])
+        self.assertEqual(runtime["model_profiles"], PROVIDERS.build_image_model_profiles())
         self.assertEqual(
             runtime["providers"],
             [
@@ -156,6 +157,25 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
                 for provider in expected["providers"]
             ],
         )
+
+    def test_expanded_catalog_profiles_cover_each_selectable_model(self) -> None:
+        providers = {item["id"]: item for item in build_image_generation_table(ROOT)["providers"]}
+        profiles = PROVIDERS.build_image_model_profiles()
+        self.assertEqual(len(profiles["fal_ai"]), 10)
+        self.assertEqual(len(profiles["replicate"]), 3)
+        self.assertEqual(len(profiles["together_ai"]), 4)
+        for provider_id, models in profiles.items():
+            self.assertEqual(list(models), providers[provider_id]["route"]["supported_models"])
+            self.assertEqual([entry["display_name"] for entry in models.values()], providers[provider_id]["models"])
+            self.assertIn(providers[provider_id]["route"]["default_model"], models)
+            for model, entry in models.items():
+                with self.subTest(provider=provider_id, model=model):
+                    self.assertTrue(entry["documentation_urls"])
+                    self.assertTrue(all(url.startswith("https://") for url in entry["documentation_urls"]))
+                    self.assertTrue(entry["capabilities"]["one_image_per_call"])
+        self.assertEqual(profiles["fal_ai"]["fal-ai/bytedance/seedream/v4.5/text-to-image"]["edit_endpoint"], "fal-ai/bytedance/seedream/v4.5/edit")
+        self.assertIsNone(profiles["fal_ai"]["fal-ai/recraft/v4/text-to-image"]["edit_endpoint"])
+        self.assertEqual(providers["fal_ai"]["route"]["result_format"], "model_defined")
 
 
 if __name__ == "__main__":

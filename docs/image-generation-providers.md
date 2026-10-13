@@ -63,6 +63,27 @@ Sources: [image generation and model guide](https://ai.google.dev/gemini-api/doc
 
 Sources: [fal MCP announcement](https://blog.fal.ai/connect-your-ai-to-1-000-models-with-the-fal-mcp-server/) · [current pricing](https://fal.ai/pricing) · [image-model catalog](https://fal.ai/explore/best-ai-image-generators) · [Ideogram transparent endpoint example](https://fal.ai/models/fal-ai/ideogram/v3/generate-transparent/api)
 
+#### Selectable fal adapter models
+
+Checked 2026-10-13 against the linked endpoint schemas. The installed adapter exposes these bounded routes; the broader fal catalog is not an arbitrary endpoint input. FLUX.2 Pro remains the default.
+
+| Selection | Generation endpoint | Local reference edit | Output and size controls |
+| --- | --- | --- | --- |
+| FLUX.2 Pro | [fal-ai/flux-2-pro](https://fal.ai/models/fal-ai/flux-2-pro/api) | One reference through [flux-2-pro/edit](https://fal.ai/models/fal-ai/flux-2-pro/edit/api) | PNG; custom dimensions, at most 4,194,304 pixels |
+| FLUX.2 Flex | [fal-ai/flux-2-flex](https://fal.ai/models/fal-ai/flux-2-flex/api) | One reference through [flux-2-flex/edit](https://fal.ai/models/fal-ai/flux-2-flex/edit/api) | PNG; same adapter size bounds as Pro |
+| FLUX.1 Dev | [fal-ai/flux/dev](https://fal.ai/models/fal-ai/flux/dev/api) | Not exposed | PNG; custom dimensions up to 2,048 per edge |
+| FLUX.1 Schnell | [fal-ai/flux/schnell](https://fal.ai/models/fal-ai/flux/schnell/api) | Not exposed | PNG; same adapter size bounds as Dev |
+| Seedream 4.5 | [fal-ai/bytedance/seedream/v4.5/text-to-image](https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/text-to-image/api) | One reference through [v4.5/edit](https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/edit/api) | PNG; auto_2K by default, or 1,920-4,096 per edge |
+| Nano Banana 2 | [fal-ai/nano-banana-2](https://fal.ai/models/fal-ai/nano-banana-2/api) | One reference through [nano-banana-2/edit](https://fal.ai/models/fal-ai/nano-banana-2/edit/api) | PNG; listed aspect ratios and 0.5K, 1K, 2K, 4K tiers |
+| Nano Banana Pro | [fal-ai/nano-banana-pro](https://fal.ai/models/fal-ai/nano-banana-pro/api) | One reference through [nano-banana-pro/edit](https://fal.ai/models/fal-ai/nano-banana-pro/edit/api) | PNG; listed aspect ratios and 1K, 2K, 4K tiers |
+| Recraft V4 | [fal-ai/recraft/v4/text-to-image](https://fal.ai/models/fal-ai/recraft/v4/text-to-image/api) | Not exposed | WebP; default square size |
+| Ideogram V3 | [fal-ai/ideogram/v3](https://fal.ai/models/fal-ai/ideogram/v3/api) | Not exposed | PNG; default square size |
+| Ideogram V3 Transparent | [fal-ai/ideogram/v3/generate-transparent](https://fal.ai/models/fal-ai/ideogram/v3/generate-transparent/api) | Not exposed | Transparent PNG; listed aspect ratios |
+
+The adapter's custom FLUX dimensions use 256-pixel minimum edges and multiples of 32. Pro and Flex cap each edge at 2,560 pixels. These conservative adapter bounds are narrower than some vendor features. Nano Banana, Recraft and Ideogram reject width/height requests; only Nano Banana exposes a resolution tier. Native transparency is exposed only for the dedicated Ideogram Transparent selection, whose result must contain verifiable transparent pixels even when the caller omits the transparency flag. Recraft requires a `.webp` output path. All other listed fal models require `.png`.
+
+Edit endpoints are explicit entries, including Seedream's sibling `edit` path; the adapter never invents a suffix. Unsupported edits, multiple references, dimensions, aspect ratios, resolution tiers, transparency and mismatched output extensions fail before submission. Seedream fixes both `num_images` and `max_images` to one; Nano Banana also enables `limit_generations`. FLUX.2 and Recraft have single-result contracts without an image-count input. Queue results must contain exactly one image. Local references remain project-contained data URIs, and result downloads retain the existing host allowlist and do not carry the API key.
+
 ### Replicate
 
 - **Route and sign-in:** Replicate provides an official hosted MCP at https://mcp.replicate.com/sse and the official local package replicate-mcp. The hosted route authorizes with a Replicate API token; the local server uses a token in its process environment.
@@ -71,6 +92,8 @@ Sources: [fal MCP announcement](https://blog.fal.ai/connect-your-ai-to-1-000-mod
 - **Limits:** The model’s schema sets image size, reference count, and output count. Replicate’s client can upload local input files up to 100 MB, but an individual model may have a lower limit.
 
 Sources: [official MCP guide](https://replicate.com/docs/reference/mcp) · [official pricing](https://replicate.com/pricing) · [GPT Image 1.5 model page](https://replicate.com/openai/gpt-image-1.5) · [input files](https://replicate.com/docs/topics/predictions/input-files) · [Bria background remover](https://replicate.com/bria/remove-background)
+
+**Selectable Setup models, checked 2026-10-13:** [FLUX Schnell](https://replicate.com/black-forest-labs/flux-schnell/api/schema), [FLUX Dev](https://replicate.com/black-forest-labs/flux-dev/api/schema), and [FLUX 1.1 Pro](https://replicate.com/black-forest-labs/flux-1.1-pro/api/schema). These adapter selections expose text-to-image at the model's default size and request PNG. Schnell and Dev send `num_outputs: 1`; 1.1 Pro is a single-output route without that parameter. The separate existing background-removal operation remains available. References, explicit dimensions and native transparency are rejected for generation.
 
 ### Black Forest Labs FLUX
 
@@ -143,6 +166,8 @@ Sources: [Imagine API overview](https://docs.x.ai/developers/model-capabilities/
 - **Limits:** Size and reference limits are model-specific. FLUX.2 supports up to 4 MP. One API key can access models with different prices, inputs, and terms.
 
 Sources: [FLUX.2 Pro model page](https://www.together.ai/models/flux-2-pro) · [FLUX.2 Flex model page](https://www.together.ai/models/flux-2-flex) · [official Together client](https://github.com/togethercomputer/together-python)
+
+**Selectable Setup models, checked 2026-10-13:** FLUX.2 Pro, Dev and Flex, plus FLUX 1.1 Pro, using the exact IDs in Together's [image model list](https://docs.together.ai/docs/inference/images/overview) and [parameter reference](https://docs.together.ai/docs/inference/images/parameters). All request one PNG as base64. Dev supplies 20 steps. The adapter supports text-to-image only, with paired dimensions in multiples of 32, at least 256 pixels per edge. FLUX.2 is bounded to 2,048 per edge and 1.1 Pro to 1,440. Local-reference uploads and native transparency remain unavailable.
 
 ### OpenRouter
 
@@ -235,3 +260,11 @@ Sources: [Nova Canvas model card and lifecycle](https://docs.aws.amazon.com/bedr
 - Request a transparent background only when the selected route supports it. Save PNG or WebP as required by that provider.
 - A prompt that says “transparent” or a checkerboard-looking image is not proof of transparency. Inspect the saved file’s alpha channel. If it is opaque or the model does not support alpha, use the selected provider’s background-removal tool or a local matte, then inspect alpha again.
 - Keep an exact model/endpoint identifier with cost and limit notes in the app’s provider table. Refresh those notes when updating a pinned MCP or API adapter.
+
+## Maintaining the selectable catalog
+
+`scripts/image_generation_provider_data.py` owns display labels, exact selectable IDs and reviewed per-model request profiles. Run `python scripts/generate_image_generation_catalog.py` after editing it. The generated `.tools/image_generation/runtime/provider_catalog.json` carries both the provider allowlist and the model profiles; project-local settings can select a listed ID but cannot replace its profile. The MCP tool list derives supported edits, references, dimensions, tiers and transparency from that selection.
+
+Verify changes with `python -m unittest discover -s scripts -p "test_image_generation_*.py"`. Transport and credential reads are mocked; these tests do not establish live account access, availability or billing. Add official endpoint documentation and payload/failure coverage for every new request family. Keep the one-image contract explicit rather than sending a generic batch field to every endpoint.
+
+Commit the source and generated runtime catalog together. The publication workflow then runs `scripts/generate_manifest_evidence.py` with that exact source commit, builds the provider table, and hashes the committed runtime files into the canonical `hoi4-mod-setup.manifest.json`. Never hand-edit file evidence. HOI4 Mod Setup must consume that newly published manifest and its exact revision together; changing only the app's local provider labels cannot install the expanded runtime.

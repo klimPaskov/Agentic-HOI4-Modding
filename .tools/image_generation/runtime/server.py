@@ -209,8 +209,13 @@ def canonical_provider(provider_id: str) -> dict:
             raise OSError("catalog too large")
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         provider = next(item for item in catalog["providers"] if item["id"] == provider_id)
+        if provider_id in {"fal_ai", "replicate", "together_ai"}:
+            profiles = catalog["model_profiles"][provider_id]
+            if set(profiles) != set(provider["route"]["supported_models"]):
+                raise ValueError("model profiles differ from allowlist")
+            provider["_model_profiles"] = profiles
         return provider
-    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, StopIteration, TypeError):
+    except (OSError, UnicodeError, ValueError, KeyError, StopIteration, TypeError):
         raise ImageRouteError("The trusted image-provider catalog is missing or invalid. Repair the setup installation.") from None
 
 
@@ -284,7 +289,7 @@ def load_provider_config(project_root: Path, provider_id: str, config_path: Path
             raise ImageRouteError("Choose an image model listed in the setup provider details.")
     elif settings:
         raise ImageRouteError("The selected provider does not accept project-local settings.")
-    return document, config
+    return document, {**config, "_model_profiles": trusted.get("_model_profiles", {})}
 
 
 def _windows_credential(reference: str) -> str | None:
@@ -693,11 +698,22 @@ def _tool_schema(name: str, provider: dict | None = None) -> dict:
             "enum": list(OPENROUTER_ASPECT_RATIOS),
             "description": "Aspect ratio supported by the selected OpenRouter image model; output pixel dimensions are selected by the model.",
         }
+    profile = _model_profile(provider)
+    for field, choices in (("aspect_ratio", profile.get("aspect_ratios")), ("resolution", profile.get("resolutions"))):
+        if choices:
+            common[field] = {"type": "string", "enum": choices}
+    if profile and accepts_dimensions:
+        for field, maximum in (("width", "maximum_width_px"), ("height", "maximum_height_px")):
+            common[field].update({"minimum": profile["minimum_dimension"], "multipleOf": profile["dimension_multiple"],
+                                  "maximum": capabilities["size_limits"][maximum]})
+    if "reference_images" in common and capabilities.get("reference_images", {}).get("max_count"):
+        common["reference_images"]["maxItems"] = capabilities["reference_images"]["max_count"]
     if provider:
-        result_format = provider.get("route", {}).get("result_format", "png")
+        result_format = profile.get("result_format") or provider.get("route", {}).get("result_format", "png")
         descriptions = {
             "png": "A project-relative path ending in .png. The server keeps existing images and reports whether this PNG has alpha.",
             "jpeg": "A project-relative path ending in .jpg or .jpeg. This route returns JPEG and cannot include an alpha channel.",
+            "webp": "A project-relative path ending in .webp. This model returns WebP; native transparency is not offered by this route.",
             "model_defined": "A project-relative path whose extension matches the selected model's image format.",
             "manual": "A project-relative output path.",
         }
@@ -733,10 +749,25 @@ def _configured_model(provider: dict) -> str | None:
     return provider.get("settings", {}).get("model") or route.get("default_model")
 
 
+def _model_profile(provider: dict | None) -> dict:
+    if not provider:
+        return {}
+    profiles = provider.get("_model_profiles", {})
+    if not profiles:
+        return {}
+    profile = profiles.get(_configured_model(provider))
+    if not isinstance(profile, dict):
+        raise ImageRouteError("The selected model has no reviewed request contract. Repair the image-provider installation.")
+    return profile
+
+
 def _effective_capabilities(provider: dict | None) -> dict:
     if not provider:
         return {}
     capabilities = provider.get("capabilities", {})
+    profile = _model_profile(provider)
+    if profile:
+        return profile["capabilities"]
     route = provider.get("route", {})
     if (
         route.get("api_protocol") == "aws_bedrock"
@@ -899,6 +930,10 @@ class Server:
         if name == route.get("tool_names", {}).get("edit"):
             if not _effective_capabilities(self.provider).get("image_edits"):
                 raise ImageRouteError("This provider route does not support image edits.")
+            references = args.get("reference_images", [])
+            if _model_profile(self.provider) and references:
+                if not isinstance(references, list) or len(references) != 1 or (args.get("image") and references != [args["image"]]):
+                    raise ImageRouteError("This adapter accepts one source image per edit.")
             args["image"] = args.get("image") or (args.get("reference_images") or [None])[0]
             if not args.get("image"):
                 raise ImageRouteError("Choose a reference image path for the image edit.")
@@ -1105,6 +1140,7 @@ class Server:
             if total_reference_bytes > 64 * 1024 * 1024:
                 raise ImageRouteError("The combined reference images exceed the provider adapter limit.")
         self._validate_size(args)
+        self._validate_model_options(args)
         if protocol in {"openai_images", "openai_compatible", "microsoft_foundry", "huggingface_router"}:
             return self._generate_openai_compatible(args)
         if protocol == "huggingface_inference":
@@ -1144,13 +1180,23 @@ class Server:
         raise ImageRouteError("The selected provider route is not supported by this MCP server.")
 
     def _validate_size(self, args: dict) -> None:
-        caps = self.provider.get("capabilities", {}).get("size_limits", {})
+        caps = _effective_capabilities(self.provider).get("size_limits", {})
         if not caps.get("accepts_dimensions") and ("width" in args or "height" in args):
             raise ImageRouteError("The selected image route chooses its own output dimensions; remove width and height.")
         if not caps.get("accepts_dimensions"):
             return
+        profile = _model_profile(self.provider)
+        if profile:
+            if "width" not in args and "height" not in args:
+                return
+            if "width" not in args or "height" not in args:
+                raise ImageRouteError("Provide both width and height for the selected image model.")
         width = _image_dimension(args.get("width", 1024))
         height = _image_dimension(args.get("height", 1024))
+        if profile:
+            minimum, multiple = profile["minimum_dimension"], profile["dimension_multiple"]
+            if min(width, height) < minimum or width % multiple or height % multiple:
+                raise ImageRouteError(f"This adapter requires dimensions of at least {minimum} pixels, in multiples of {multiple}.")
         max_width = caps.get("maximum_width_px")
         max_height = caps.get("maximum_height_px")
         max_pixels = caps.get("maximum_pixels")
@@ -1158,6 +1204,18 @@ class Server:
             raise ImageRouteError("The requested image size exceeds the selected model's documented limit.")
         if max_pixels and width * height > max_pixels:
             raise ImageRouteError("The requested image size exceeds the selected model's total pixel limit.")
+
+    def _validate_model_options(self, args: dict) -> None:
+        profile = _model_profile(self.provider)
+        if not profile:
+            return
+        for field, allowed in (("aspect_ratio", profile["aspect_ratios"]), ("resolution", profile["resolutions"])):
+            if field in args and args[field] not in allowed:
+                raise ImageRouteError(f"The selected image model does not support this {field.replace('_', ' ')}. Use a value listed by its tool.")
+        suffixes = {"png": {".png"}, "webp": {".webp"}, "jpeg": {".jpg", ".jpeg"}}
+        result_format = profile["result_format"]
+        if result_format in suffixes and (not isinstance(args.get("out"), str) or Path(args["out"]).suffix.lower() not in suffixes[result_format]):
+            raise ImageRouteError(f"The selected image model requires a {result_format.upper()} output path.")
 
     def _generate_openai_compatible(self, args: dict) -> dict:
         protocol = self.route["api_protocol"]
@@ -1318,6 +1376,7 @@ class Server:
             "width": int(args.get("width", 1024)),
             "height": int(args.get("height", 1024)),
         }
+        payload.update(_model_profile(self.provider).get("payload", {}))
         refs = [args["image"]] if args.get("image") else args.get("reference_images", [])
         if refs:
             if len(refs) > 8:
@@ -1394,24 +1453,36 @@ class Server:
         model = self.selected_model()
         if not isinstance(model, str) or not re.fullmatch(r"[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)+", model) or ".." in model.split("/"):
             raise ImageRouteError("Choose a valid fal model name from the model catalog.")
-        payload = {"prompt": args["prompt"], "image_size": "square_hd", "num_images": 1, "output_format": "png"}
-        if args.get("width") and args.get("height"):
-            width, height = int(args["width"]), int(args["height"])
-            if width * height > 4_194_304:
-                raise ImageRouteError("The selected fal FLUX image route is limited to roughly four megapixels.")
-            payload["image_size"] = {"width": width, "height": height}
+        profile = _model_profile(self.provider)
+        if not profile:
+            raise ImageRouteError("The selected fal model has no reviewed request contract. Repair setup.")
+        payload = {"prompt": args["prompt"], **profile["payload"]}
+        if "width" in args and "height" in args:
+            payload["image_size"] = {"width": args["width"], "height": args["height"]}
+        for field in ("aspect_ratio", "resolution"):
+            if field in args:
+                payload[field] = args[field]
         refs = [args["image"]] if args.get("image") else args.get("reference_images", [])
         if refs:
-            if len(refs) > 1:
+            if not profile["edit_endpoint"] or len(refs) > 1:
                 raise ImageRouteError("The selected fal model route accepts one reference image.")
             first_name, first_data = self.read_reference(refs[0])
             payload["image_urls"] = [self._data_url(first_data, image_mime(first_name))]
-            if not model.endswith("/edit"):
-                model = model.rstrip("/") + "/edit"
+            model = profile["edit_endpoint"]
+
+        def save_result(result: dict) -> dict:
+            images = result.get("images")
+            if not isinstance(images, list) or len(images) != 1:
+                raise ImageRouteError("fal did not return exactly one image for this request.")
+            image = self._image_from_response(result)
+            if profile["capabilities"]["transparent_background"]["native"]:
+                return self.save_transparent_output(args["out"], image)
+            return self.save_output(args["out"], image)
+
         headers = {"Authorization": "Key " + self.require_secret(), "Content-Type": "application/json"}
         response = self._request_json(base.rstrip("/") + "/" + model, "POST", headers, payload)
         if isinstance(response.get("images"), list) or response.get("data"):
-            return self.save_output(args["out"], self._image_from_response(response))
+            return save_result(response)
         urls = response.get("urls", {}) if isinstance(response.get("urls"), dict) else {}
         status_url = response.get("status_url") or urls.get("status")
         result_url = response.get("response_url") or urls.get("response")
@@ -1425,7 +1496,7 @@ class Server:
             state = status.get("status")
             if state in {"COMPLETED", "succeeded", "successful"}:
                 result = self._request_json(result_url, "GET", {"Authorization": headers["Authorization"]})
-                return self.save_output(args["out"], self._image_from_response(result))
+                return save_result(result)
             if state in {"FAILED", "Error", "failed", "canceled", "CANCELLED"}:
                 raise ImageRouteError("fal could not complete the image request.")
             time.sleep(1)
@@ -1437,13 +1508,7 @@ class Server:
         parts = model.split("/")
         if len(parts) != 2 or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", model) or ".." in parts:
             raise ImageRouteError("Choose a Replicate model in owner/name format.")
-        image_input = {"prompt": args["prompt"], "num_outputs": 1, "output_format": "png"}
-        refs = [args["image"]] if args.get("image") else args.get("reference_images", [])
-        if refs:
-            if len(refs) > 1:
-                raise ImageRouteError("This Replicate adapter passes one reference image per request.")
-            name, data = self.read_reference(refs[0])
-            image_input["image"] = self._data_url(data, image_mime(name))
+        image_input = {"prompt": args["prompt"], **_model_profile(self.provider)["payload"]}
         endpoint_model = "/".join(urllib.parse.quote(part, safe="-._") for part in parts)
         response = self._request_json(f"{base.rstrip('/')}/models/{endpoint_model}/predictions", "POST", {"Authorization": "Bearer " + self.require_secret(), "Content-Type": "application/json", "Prefer": "wait=60"}, {"input": image_input})
         if response.get("status") not in {None, "succeeded", "successful"}:
