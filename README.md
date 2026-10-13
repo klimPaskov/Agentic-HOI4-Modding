@@ -38,7 +38,9 @@ For a manual setup:
 5. Copy `.tools/mcp/` and `docs/runtimes.md` plus `docs/systems/hoi4_agent_tools_mcp_integration.md` into the mod. Install Python 3.13 and a supported Node.js LTS release with npm available on PATH. On Windows, `py -3.13` can replace `python` in these commands.
 6. Install HOI4 Agent Tools with `python .tools/mcp/bootstrap_hoi4_agent_tools.py`, then approve the project server in your coding client and check that it connects.
 
-7. For live game testing, choose a provider and follow the [live-testing setup guide](.claude/skills/hoi4-live-playtest/references/setup.md). Clausewitz MCP needs manual Linux setup; HOI4 Live Tools uses the Windows bootstrap. For portraits, 3D, or Super Events, copy the selected workflow's references, tools, and runtime assets together; use the [manifest](hoi4-mod-setup.manifest.json) as the file inventory. The setup app handles this selection automatically.
+   Native Linux users can follow the [Linux setup guide](docs/linux.md) for supported Node.js/Python prerequisites, the current-user install prefix and all client registration shapes. The package records separate Windows and Linux installed-tree evidence.
+
+7. For live game testing, choose a provider and follow the [live-testing setup guide](.claude/skills/hoi4-live-playtest/references/setup.md). Clausewitz MCP needs manual Linux game/server setup and can connect directly on Linux; HOI4 Live Tools uses the Windows bootstrap. For portraits, 3D, or Super Events, copy the selected workflow's references, tools, and runtime assets together; use the [manifest](hoi4-mod-setup.manifest.json) as the file inventory. The setup app handles this selection automatically.
 
 The templates are starting points. Keep only the workflows your mod uses and add project rules as the mod develops.
 
@@ -121,6 +123,6 @@ Original package code and guidance are licensed under the [Apache License 2.0](L
 
 ## Live-testing provider choice
 
-HOI4 Mod Setup offers Clausewitz MCP (default), experimental HOI4 Live Tools, and manual testing. [Clausewitz MCP](https://github.com/smerss/Clausewitz-MCP) by smerss is MIT licensed and reads state directly from native Linux HOI4 **1.19.2 only**, without OCR or saves for those reads. Windows uses WSL; macOS uses SSH to Linux. Complete manual Linux/game/server setup and confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
+HOI4 Mod Setup offers Clausewitz MCP (default), experimental HOI4 Live Tools, and manual testing. [Clausewitz MCP](https://github.com/smerss/Clausewitz-MCP) by smerss is MIT licensed and reads state directly from native Linux HOI4 **1.19.2 only**, without OCR or saves for those reads. Linux connects directly; Windows uses WSL; macOS uses SSH to Linux. Complete manual Linux/game/server setup and confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
 
 HOI4 Live Tools is Windows verified only; upstream macOS support is incomplete. It is experimental, slower and not thoroughly tested. The app installs its pinned runtime without global registration and manages project registrations for selected coding clients. Manual testing registers no server. Use update or repair to reselect the provider and clients, review changed guidance and registrations, and preserve custom instructions. Follow the selected server tool list; providers do not promise identical operations.

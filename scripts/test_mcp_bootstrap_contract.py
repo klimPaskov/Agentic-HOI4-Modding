@@ -22,6 +22,12 @@ PIN_SPEC.loader.exec_module(pin)
 
 
 class McpBootstrapContractTests(unittest.TestCase):
+    def setUp(self) -> None:
+        # Existing fixtures deliberately describe the Windows installation.
+        patch = mock.patch.object(bootstrap, "platform_name", return_value="windows")
+        patch.start()
+        self.addCleanup(patch.stop)
+
     def test_public_release_identity_is_exact(self) -> None:
         # The bootstrap and the setup manifest must pin the same measured release.
         manifest = json.loads((Path(__file__).resolve().parents[1] / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
@@ -82,7 +88,7 @@ class McpBootstrapContractTests(unittest.TestCase):
         with contextlib.ExitStack() as stack:
             stack.enter_context(mock.patch.object(bootstrap, "ensure_node", return_value=(Path("node.exe"), Path("npm.cmd"))))
             stack.enter_context(mock.patch.object(bootstrap, "user_prefix", return_value=Path("prefix")))
-            stack.enter_context(mock.patch.object(bootstrap.os, "name", "nt"))
+            stack.enter_context(mock.patch.object(bootstrap, "platform_name", return_value="windows"))
             stack.enter_context(mock.patch.object(bootstrap.sys, "argv", ["bootstrap", "--quiet"]))
             registry = stack.enter_context(mock.patch.object(bootstrap, "verify_registry_integrity", side_effect=bootstrap.BootstrapError("unpublished release")))
             local = stack.enter_context(mock.patch.object(bootstrap, "verify_local_tarball"))
@@ -100,7 +106,7 @@ class McpBootstrapContractTests(unittest.TestCase):
         with contextlib.ExitStack() as stack:
             stack.enter_context(mock.patch.object(bootstrap, "ensure_node", return_value=(Path("node.exe"), Path("npm.cmd"))))
             stack.enter_context(mock.patch.object(bootstrap, "user_prefix", return_value=prefix))
-            stack.enter_context(mock.patch.object(bootstrap.os, "name", "nt"))
+            stack.enter_context(mock.patch.object(bootstrap, "platform_name", return_value="windows"))
             stack.enter_context(mock.patch.object(bootstrap.sys, "argv", ["bootstrap", "--quiet", "--local-tarball", "reviewed.tgz"]))
             local = stack.enter_context(mock.patch.object(bootstrap, "verify_local_tarball"))
             registry = stack.enter_context(mock.patch.object(bootstrap, "verify_registry_integrity"))
@@ -146,7 +152,7 @@ class McpBootstrapContractTests(unittest.TestCase):
             stack.enter_context(
                 mock.patch.object(bootstrap, "verify_installation", return_value=Path("prefix/hoi4-agent-tools.cmd"))
             )
-            stack.enter_context(mock.patch.object(bootstrap.os, "name", "nt"))
+            stack.enter_context(mock.patch.object(bootstrap, "platform_name", return_value="windows"))
             stack.enter_context(mock.patch.object(bootstrap.sys, "argv", ["bootstrap", "--quiet"]))
             npm = stack.enter_context(mock.patch.object(bootstrap, "npm"))
             self.assertEqual(bootstrap.main(), 0)
@@ -270,24 +276,24 @@ class McpBootstrapContractTests(unittest.TestCase):
             integrity = "sha512-" + __import__("base64").b64encode(b"s" * 64).decode("ascii")
             lock = prefix / "node_modules/.package-lock.json"
             lock.write_text(json.dumps({"packages": {"node_modules/hoi4-agent-tools": {"integrity": integrity}}}), encoding="utf-8")
-            evidence = pin.measure(prefix, integrity)
+            evidence = pin.measure(prefix, integrity, platform="windows")
             self.assertEqual(evidence["package_file_count"], 2)
             self.assertEqual(evidence["runtime_entry_size"], len(b"synthetic runtime"))
             self.assertEqual(evidence["runtime_entry_sha256"], __import__("hashlib").sha256(b"synthetic runtime").hexdigest())
             self.assertEqual(len(evidence["required_tools"]), 28)
             lock.write_text(json.dumps({"packages": {}}), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "lock"):
-                pin.measure(prefix, integrity)
+                pin.measure(prefix, integrity, platform="windows")
             for packages in ([], "invalid", {"node_modules/hoi4-agent-tools": []}, {"node_modules/hoi4-agent-tools": {"integrity": "sha512-wrong"}}):
                 lock.write_text(json.dumps({"packages": packages}), encoding="utf-8")
                 with self.subTest(packages=packages), self.assertRaisesRegex(ValueError, "lock"):
-                    pin.measure(prefix, integrity)
+                    pin.measure(prefix, integrity, platform="windows")
             lock.write_text("{malformed JSON", encoding="utf-8")
             with self.assertRaisesRegex(RuntimeError, "malformed"):
-                pin.measure(prefix, integrity)
+                pin.measure(prefix, integrity, platform="windows")
             metadata.write_text(json.dumps({"name": "hoi4-agent-tools", "version": "3.10.0"}), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, bootstrap.PACKAGE_VERSION):
-                pin.measure(prefix, integrity)
+                pin.measure(prefix, integrity, platform="windows")
 
     def test_repin_without_optional_lock_still_measures_full_tree_and_runtime(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -299,12 +305,12 @@ class McpBootstrapContractTests(unittest.TestCase):
             (package / "package.json").write_text(json.dumps({"name": "hoi4-agent-tools", "version": bootstrap.PACKAGE_VERSION}), encoding="utf-8")
             integrity = "sha512-" + __import__("base64").b64encode(b"s" * 64).decode("ascii")
             self.assertFalse((prefix / "node_modules/.package-lock.json").exists())
-            before = pin.measure(prefix, integrity)
+            before = pin.measure(prefix, integrity, platform="windows")
             self.assertEqual(before["package_file_count"], 2)
             self.assertEqual(before["runtime_entry_size"], len(b"synthetic runtime"))
             self.assertEqual(before["runtime_entry_sha256"], __import__("hashlib").sha256(entry.read_bytes()).hexdigest())
             (package / "dist/helper.js").write_bytes(b"synthetic imported module")
-            after = pin.measure(prefix, integrity)
+            after = pin.measure(prefix, integrity, platform="windows")
             self.assertEqual(after["package_file_count"], 3)
             self.assertNotEqual(before["package_tree_sha256"], after["package_tree_sha256"])
             self.assertEqual(before["runtime_entry_sha256"], after["runtime_entry_sha256"])

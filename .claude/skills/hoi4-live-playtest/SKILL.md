@@ -15,7 +15,7 @@ Live-testing provider: manual until HOI4 Mod Setup writes the selected route.
 
 Read the selected provider guidance above and inspect that server's advertised tool list. Use qualified tool names belonging to that server. Do not infer tool names from another provider or assume identical capabilities. If the selected server is unavailable, stop the live portion and report its setup requirement. Do not automatically fall back to desktop control or another provider.
 
-Clausewitz MCP reads state directly from the native Linux HOI4 1.19.2 process. These reads need neither OCR nor a save. Windows hosts use WSL; macOS hosts use SSH to Linux. Complete manual Linux/game/server setup and confirm the Linux game and server are ready in HOI4 Mod Setup before registration. See references/clausewitz-mcp.md.
+Clausewitz MCP reads state directly from the native Linux HOI4 1.19.2 process. These reads need neither OCR nor a save. Linux hosts connect directly; Windows hosts use WSL; macOS hosts use SSH to Linux. Complete manual Linux/game/server setup and confirm the Linux game and server are ready in HOI4 Mod Setup before registration. See references/clausewitz-mcp.md.
 
 HOI4 Live Tools is experimental, slower and not thoroughly tested. Windows is verified; upstream macOS support is incomplete. See references/hoi4-live-tools.md only for this provider's interface, console, save, log and campaign operations.
 

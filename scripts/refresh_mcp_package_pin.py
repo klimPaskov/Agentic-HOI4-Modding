@@ -33,7 +33,7 @@ REQUIRED_TOOLS = tuple(sorted((
 )))
 
 
-def measure(prefix: Path, integrity: str, version: str | None = None) -> dict:
+def measure(prefix: Path, integrity: str, version: str | None = None, platform: str | None = None) -> dict:
     if not integrity.startswith("sha512-"):
         raise ValueError("Integrity must be an exact SHA-512 npm SRI value.")
     try:
@@ -49,7 +49,9 @@ def measure(prefix: Path, integrity: str, version: str | None = None) -> dict:
     version = version or bootstrap.PACKAGE_VERSION
     if re.fullmatch(r"\d+\.\d+\.\d+", version) is None:
         raise ValueError("Select an exact published package version.")
-    modules = prefix.resolve(strict=True) / "node_modules"
+    platform = platform or bootstrap.platform_name()
+    platform_pin = bootstrap.platform_evidence(platform)
+    modules = prefix.resolve(strict=True) / ("lib/node_modules" if platform == "linux" else "node_modules")
     package_root = modules / bootstrap.PACKAGE_NAME
     if modules.is_symlink() or package_root.is_symlink():
         raise ValueError("The clean installation must not use linked package directories.")
@@ -65,7 +67,7 @@ def measure(prefix: Path, integrity: str, version: str | None = None) -> dict:
         installed = packages.get("node_modules/hoi4-agent-tools") if isinstance(packages, dict) else None
         if not isinstance(installed, dict) or installed.get("integrity") != integrity:
             raise ValueError("The clean installation lock must retain the selected integrity.")
-    tree_digest, count = bootstrap.package_tree_sha256(package_root)
+    tree_digest, count = bootstrap.package_tree_sha256(package_root, platform_pin["package_symlinks"])
     entry = package_root / bootstrap.RUNTIME_ENTRY
     if not entry.is_file() or entry.stat().st_size > bootstrap.MAX_PACKAGE_FILE_BYTES:
         raise ValueError("The measured runtime entry is missing or oversized.")
@@ -75,6 +77,7 @@ def measure(prefix: Path, integrity: str, version: str | None = None) -> dict:
         "package_file_count": count, "runtime_entry": bootstrap.RUNTIME_ENTRY,
         "runtime_entry_sha256": hashlib.sha256(entry.read_bytes()).hexdigest(),
         "runtime_entry_size": entry.stat().st_size, "required_tools": list(REQUIRED_TOOLS),
+        "platform": platform, "package_symlinks": platform_pin["package_symlinks"],
     }
 
 
@@ -87,13 +90,24 @@ def repin(evidence: dict, bootstrap_path: Path = BOOTSTRAP, manifest_path: Path 
         "RUNTIME_ENTRY": "runtime_entry", "RUNTIME_ENTRY_SHA256": "runtime_entry_sha256",
         "RUNTIME_ENTRY_SIZE": "runtime_entry_size",
     }
+    platform = evidence.get("platform", "windows")
+    if platform == "linux":
+        constants["LINUX_PACKAGE_TREE_SHA256"] = constants.pop("PACKAGE_TREE_SHA256")
+        constants["LINUX_PACKAGE_FILE_COUNT"] = constants.pop("PACKAGE_FILE_COUNT")
+    elif platform != "windows":
+        raise ValueError("The MCP platform has no reviewed package evidence.")
     for constant, key in constants.items():
         source, count = re.subn(rf"^{constant} = .+$", f"{constant} = {json.dumps(evidence[key])}", source, flags=re.MULTILINE)
         if count != 1:
             raise ValueError(f"Expected exactly one bootstrap constant: {constant}")
     component = next(item for item in manifest["components"] if item["id"] == "mcp.hoi4_agent_tools")
     health = next(rule for rule in component["validation"] if rule["id"] == "mcp.hoi4.health")
-    health["parameters"].update(evidence)
+    health["parameters"].update({key: value for key, value in evidence.items() if key not in {"platform", "package_symlinks", "package_tree_sha256", "package_file_count"}})
+    platform_pin = {key: evidence[key] for key in ("package_tree_sha256", "package_file_count", "runtime_entry_sha256", "runtime_entry_size")}
+    platform_pin["package_symlinks"] = evidence.get("package_symlinks", {})
+    health["parameters"].setdefault("platform_pins", {})[platform] = platform_pin
+    if platform == "windows":
+        health["parameters"].update({key: evidence[key] for key in ("package_tree_sha256", "package_file_count")})
     for tool in component.get("required_tools", []):
         if isinstance(tool, dict) and tool.get("id") == "hoi4-agent-tools.cmd":
             tool["version"] = evidence["package_version"]
@@ -107,8 +121,9 @@ def main() -> None:
     parser.add_argument("--prefix", type=Path, required=True, help="Explicit clean npm global install prefix")
     parser.add_argument("--integrity", required=True, help="Reviewed published npm dist.integrity")
     parser.add_argument("--version", help="Exact reviewed public version; defaults to the current bootstrap pin")
+    parser.add_argument("--platform", choices=("windows", "linux"), help="Measured native installation platform; defaults to the current host")
     args = parser.parse_args()
-    evidence = measure(args.prefix, args.integrity, args.version)
+    evidence = measure(args.prefix, args.integrity, args.version, args.platform)
     repin(evidence)
     print(json.dumps(evidence, sort_keys=True))
 

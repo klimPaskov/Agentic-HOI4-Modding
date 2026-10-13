@@ -9,6 +9,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 import generate_manifest_evidence as generator
+from manifest_schema import load_manifest_schema
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from live_testing_provider_data import build_live_testing_components, build_live_testing_table
@@ -20,12 +21,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main() -> None:
     manifest = json.loads((ROOT / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8-sig"))
-    schema = json.loads(
-        (ROOT / "schemas/hoi4-mod-setup.v4.schema.json").read_text(encoding="utf-8")
-    )
+    schema = load_manifest_schema(manifest.get("schema_version"), ROOT)
     Draft202012Validator.check_schema(schema)
     Draft202012Validator(schema).validate(manifest)
-    if not str(manifest.get("schema_version", "")).startswith("4."):
+    if not str(manifest.get("schema_version", "")).startswith("5."):
         raise SystemExit("published manifest has the wrong schema major")
     if manifest.get("image_generation") != build_image_generation_table(ROOT):
         raise SystemExit("published image-generation provider table is stale")

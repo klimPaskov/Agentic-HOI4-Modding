@@ -333,6 +333,21 @@ def _macos_credential(reference: str) -> str | None:
     return result.stdout.decode("utf-8", "replace").rstrip("\r\n")
 
 
+def _linux_credential(reference: str) -> str | None:
+    """Read the app's exact Secret Service entry through the system helper."""
+    try:
+        result = subprocess.run(
+            ["/usr/bin/secret-tool", "lookup", "target", "default", "service", KEYRING_SERVICE, "username", reference],
+            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            check=False, timeout=8,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0 or len(result.stdout) > 65536:
+        return None
+    return result.stdout.decode("utf-8", "replace").rstrip("\r\n")
+
+
 def keyring_target_name(reference: str) -> str:
     """Match the Windows Generic Credential target used by the Rust keyring adapter."""
     return f"{reference}.{KEYRING_SERVICE}"
@@ -345,6 +360,8 @@ def read_credential(reference: str) -> str | None:
         return _windows_credential(reference)
     if sys.platform == "darwin":
         return _macos_credential(reference)
+    if sys.platform.startswith("linux"):
+        return _linux_credential(reference)
     return None
 
 
