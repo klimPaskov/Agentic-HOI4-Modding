@@ -69,10 +69,10 @@ class ManifestGeneratorTests(unittest.TestCase):
                 {"present.txt": b"present"},
             )
 
-    def test_canonical_manifest_uses_schema_four_and_declares_image_providers(self) -> None:
+    def test_canonical_manifest_uses_schema_five_and_declares_image_providers(self) -> None:
         manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
-        self.assertEqual(manifest["schema_version"].split(".")[0], "4")
+        self.assertEqual(manifest["schema_version"].split(".")[0], "5")
         self.assertEqual(manifest["image_generation"]["default_provider"], "gptimage")
         self.assertEqual(manifest["image_generation"], GENERATOR.build_image_generation_table(manifest_path.parent))
         components = {component["id"]: component for component in manifest["components"]}
@@ -156,7 +156,7 @@ class ManifestGeneratorTests(unittest.TestCase):
             if component["destination"]["path"].startswith(".agents/skills"):
                 self.assertEqual(component.get("coding_environment"), "codex", component["id"])
 
-    def test_windows_mcp_registration_is_not_claimed_cross_platform(self) -> None:
+    def test_native_mcp_registration_declares_verified_windows_and_linux(self) -> None:
         root = SCRIPT.parents[1]
         manifest = json.loads(
             (root / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8-sig")
@@ -164,7 +164,7 @@ class ManifestGeneratorTests(unittest.TestCase):
         components = {component["id"]: component for component in manifest["components"]}
         for runtime in ("claude", "cursor", "qoder", "opencode"):
             component = components[f"runtime.{runtime}.mcp"]
-            self.assertEqual(component["platforms"], ["windows"])
+            self.assertEqual(component["platforms"], ["windows", "linux"])
             self.assertTrue(component["optional"])
             self.assertIn("mcp.hoi4_agent_tools", component["dependencies"])
         opencode = json.loads((root / "opencode.json").read_text(encoding="utf-8"))

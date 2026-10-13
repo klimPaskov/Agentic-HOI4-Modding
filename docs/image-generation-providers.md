@@ -14,7 +14,7 @@ Some services allow several images in one request. The HOI4 asset workflow shoul
 
 Provider sections describe the service. A note marked **Setup route** describes what the current HOI4 Mod Setup adapter actually passes through; it may support fewer models or inputs than the whole service.
 
-Keep API keys in Windows Credential Manager or macOS Keychain. Inject a key into a local server only when it starts. Use the vendor sign-in flow for hosted MCP services. Never write keys or access tokens into project files, generated instructions, or install locks.
+Keep API keys in Windows Credential Manager, macOS Keychain or the Linux desktop Secret Service. Linux API routes require a running session bus, an unlocked Secret Service and `libsecret-tools`; headless sessions without a vault cannot use saved-key routes. Inject a key into a local server only when it starts. Use the vendor sign-in flow for hosted MCP services. Never write keys or access tokens into project files, generated instructions, or install locks.
 
 ## Subscription and account routes
 

@@ -176,7 +176,7 @@ def main() -> None:
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     snapshot = git_snapshot(args.source_root.resolve(), args.revision)
     validate_offline_wiki_links(snapshot)
-    manifest["schema_version"] = "4.0.0"
+    manifest["schema_version"] = "5.0.0"
     manifest["generated_for_revision"] = args.revision
     manifest["image_generation"] = build_image_generation_table(args.source_root.resolve())
     manifest["live_testing"] = build_live_testing_table()

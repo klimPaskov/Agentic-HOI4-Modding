@@ -17,13 +17,13 @@ from image_generation_provider_data import build_image_generation_components, bu
 class ImageGenerationProviderDataTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.schema = json.loads((ROOT / "schemas/hoi4-mod-setup.v4.schema.json").read_text(encoding="utf-8"))
+        cls.schema = json.loads((ROOT / "schemas/remote-manifest.v5.schema.json").read_text(encoding="utf-8"))
         Draft202012Validator.check_schema(cls.schema)
 
     def test_catalog_matches_manifest_schema_and_has_the_requested_routes(self) -> None:
         table = build_image_generation_table(ROOT)
         instance = json.loads((ROOT / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
-        instance["schema_version"] = "4.0.0"
+        instance["schema_version"] = "5.0.0"
         instance["image_generation"] = table
         errors = list(Draft202012Validator(self.schema).iter_errors(instance))
         self.assertEqual(errors, [])
@@ -143,7 +143,7 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
         self.assertTrue(bootstrap["rollback_boundary"])
         self.assertEqual(components["imagegen.runtime"]["source"]["path"], ".tools/image_generation/runtime")
         for provider_component in components.values():
-            self.assertEqual(provider_component["platforms"], ["windows", "macos"])
+            self.assertEqual(provider_component["platforms"], ["windows", "macos", "linux"])
 
     def test_runtime_catalog_is_the_canonical_route_allowlist(self) -> None:
         expected = build_image_generation_table(ROOT)

@@ -33,7 +33,7 @@ class LiveTestingContractTests(unittest.TestCase):
         self.assertEqual(components, build_live_testing_components(manifest["components"]))
         common=by_id["workflow.live_testing"]
         specific=by_id["workflow.live_tools"]
-        self.assertEqual(common["platforms"], ["windows", "macos"])
+        self.assertEqual(common["platforms"], ["windows", "macos", "linux"])
         provider_file="hoi4-live-playtest/references/hoi4-live-tools.md"
         self.assertIn(provider_file,common["source"]["exclude"])
         self.assertEqual(specific["source"]["include"],[provider_file])
@@ -48,7 +48,7 @@ class LiveTestingContractTests(unittest.TestCase):
             self.assertIn("qualified tool",text,name)
 
     def test_schema_optional_catalog_and_rejects_unknown_route(self):
-        schema=json.loads((ROOT/"schemas/hoi4-mod-setup.v4.schema.json").read_text())
+        schema=json.loads((ROOT/"schemas/remote-manifest.v5.schema.json").read_text())
         validator=Draft202012Validator(schema)
         manifest=contract.manifest()
         validator.validate(manifest)

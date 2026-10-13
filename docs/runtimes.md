@@ -118,6 +118,8 @@ Do not copy one runtime's approval, sandbox, absolute-path, environment, or tool
 
 On Windows every project-scoped file above points at the `hoi4-agent-tools.cmd` wrapper that npm installs globally; HOI4 Mod Setup and `.tools/mcp/bootstrap_hoi4_agent_tools.py` install the release recorded in `hoi4-mod-setup.manifest.json`.
 
+On native Linux, HOI4 Mod Setup adapts the registrations for every selected coding client to the verified absolute Node executable and package entry. The current-user npm prefix is `$XDG_DATA_HOME/hoi4-mod-setup/npm`, or `~/.local/share/hoi4-mod-setup/npm` when XDG_DATA_HOME is unset. The native `bin/hoi4-agent-tools` locator points to the reviewed entry; setup verifies it and launches the entry directly. Shared skill and agent projections remain identical across platforms. The source package's raw MCP examples use Windows commands, so manual Linux setup must adapt them as described in [the Linux guide](linux.md).
+
 DSH has no project-scoped MCP file.
 Its servers are deployment configuration, not repository content, so the registration lives in the active profile and stays out of Git.
 One row per server, and the profile must also depend on the MCP client package:
@@ -140,7 +142,7 @@ A `serverName` may only contain letters, digits, underscore, and hyphen.
 
 Choose Clausewitz MCP (default), experimental HOI4 Live Tools, or None for manual testing. Common `workflow.live_testing` guidance works with all supported clients. HOI4 Mod Setup manages project registrations for the selected clients: Claude Code, Codex, Cursor, Qoder and OpenCode, using their project MCP files described above. It updates the selected route and guidance during update or repair.
 
-Clausewitz MCP (`clausewitz_linux`) supports native Linux HOI4 1.19.2 only. Windows connects through WSL; macOS connects through SSH to Linux. Complete manual Linux, game and server setup, then confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
+Clausewitz MCP (`clausewitz_linux`) supports native Linux HOI4 1.19.2 only. Linux connects directly; Windows connects through WSL; macOS connects through SSH to Linux. Complete manual Linux, game and server setup, then confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
 
 HOI4 Live Tools (`hoi4-live`) is Windows verified only; upstream macOS support is incomplete. It is experimental, slower and not thoroughly tested. The app installs the pinned runtime under `%LOCALAPPDATA%\hoi4-live-tools` with `--quiet --register none`, then writes project registrations for selected clients. The manual bootstrap defaults to detected user-client registration; use `--register none` for runtime installation alone.
 

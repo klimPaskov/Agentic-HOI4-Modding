@@ -2,6 +2,8 @@
 
 This file describes how you should read, edit and extend the `[MOD_NAME]` codebase.
 
+Native Linux prerequisites, paths and client registration are in `docs/linux.md`.
+
 ## Placeholder Guide
 
 Use this guide once before turning the template into a real instruction file. HOI4 Mod Setup fills these values and removes this section automatically.

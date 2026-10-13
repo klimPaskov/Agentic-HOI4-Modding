@@ -1,5 +1,5 @@
 {
-  "schema_version": "4.0.0",
+  "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
   "generated_for_revision": "bbd0f6201472ef8449a2667005df9f76aa721571",
   "repository": {
@@ -308,7 +308,8 @@
       "coding_environment": "claude_code",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "linux"
       ],
       "source": {
         "kind": "file",
@@ -914,7 +915,8 @@
       "coding_environment": "cursor",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "linux"
       ],
       "source": {
         "kind": "file",
@@ -966,7 +968,8 @@
       "coding_environment": "qoder",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "linux"
       ],
       "source": {
         "kind": "file",
@@ -1018,7 +1021,8 @@
       "coding_environment": "opencode",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "linux"
       ],
       "source": {
         "kind": "file",
@@ -8249,7 +8253,8 @@
       "optional": true,
       "platforms": [
         "windows",
-        "macos"
+        "macos",
+        "linux"
       ],
       "source": {
         "kind": "tree",
@@ -8306,11 +8311,12 @@
     {
       "id": "mcp.hoi4_agent_tools.bootstrap",
       "display_name": "HOI4 Agent Tools automatic bootstrap",
-      "description": "Install and verify the exact public HOI4 Agent Tools package through a bounded Windows bootstrap.",
+      "description": "Install and verify pinned HOI4 Agent Tools in current-user storage on Windows or native Linux.",
       "category": "script",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "linux"
       ],
       "source": {
         "kind": "file",
@@ -8358,11 +8364,10 @@
             "arguments": [
               "--quiet"
             ],
-            "network_access": "Required to install current-user Node.js LTS when missing and resolve the exact hoi4-agent-tools@4.0.0 package from https://registry.npmjs.org.",
+            "network_access": "Required to install the exact hoi4-agent-tools@4.0.3 package from https://registry.npmjs.org. Windows can install current-user Node.js LTS when missing; Linux requires native Node.js LTS and npm beforehand.",
             "expected_writes": [
-              "the current user's winget-managed Node.js LTS installation when Node is missing",
-              "the current user's AppData/Roaming/npm package prefix",
-              "the current user's npm cache"
+              "%APPDATA%/npm/** on Windows",
+              "$XDG_DATA_HOME/hoi4-mod-setup/npm/** on Linux (fallback ~/.local/share/hoi4-mod-setup/npm)"
             ],
             "privilege": "current_user",
             "rollback_boundary": "Managed project files roll back transactionally. The user-scoped Node.js LTS package, npm cache, and exact global hoi4-agent-tools package are external tool state and are reported but not removed automatically."
@@ -8390,11 +8395,12 @@
     {
       "id": "mcp.hoi4_agent_tools",
       "display_name": "HOI4 Agent Tools MCP",
-      "description": "Install and verify the HOI4 Agent Tools server at the version this package records, and register it for each selected coding client.",
+      "description": "Install and verify the HOI4 Agent Tools server at the recorded version, native platform tree and entry, then register selected coding clients.",
       "category": "mcp",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "linux"
       ],
       "source": {
         "kind": "generated",
@@ -8420,7 +8426,8 @@
           "health_checks": [
             "node --version",
             "npm --version"
-          ]
+          ],
+          "version": "Native supported LTS (22 or newer on Linux)"
         },
         {
           "id": "hoi4-agent-tools.cmd",
@@ -8485,7 +8492,30 @@
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
             "package_tree_sha256": "b93b47b341e6bc33a0822d631e187af7e3c29eec48196ccd10c89f957729dc35",
-            "package_file_count": 5387
+            "package_file_count": 5387,
+            "platform_targets": {
+              "windows": "hoi4-agent-tools.cmd",
+              "linux": "hoi4-agent-tools"
+            },
+            "platform_pins": {
+              "windows": {
+                "package_tree_sha256": "b93b47b341e6bc33a0822d631e187af7e3c29eec48196ccd10c89f957729dc35",
+                "package_file_count": 5387,
+                "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
+                "runtime_entry_size": 4205,
+                "package_symlinks": {}
+              },
+              "linux": {
+                "package_tree_sha256": "c2f7344ff1ee5ab4ba1c99299cdab2fbf01c1b56bf87d866810dfdafc9d30d41",
+                "package_file_count": 5253,
+                "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
+                "runtime_entry_size": 4205,
+                "package_symlinks": {
+                  "node_modules/.bin/node-which": "../which/bin/node-which",
+                  "node_modules/.bin/semver": "../semver/bin/semver.js"
+                }
+              }
+            }
           }
         }
       ],
@@ -8688,7 +8718,8 @@
         "outside_project": false
       },
       "dependencies": [
-        "core.agents"
+        "core.agents",
+        "docs.linux"
       ],
       "conflicts": [
         "existing docs/runtimes.md"
@@ -11152,7 +11183,8 @@
       "optional": true,
       "platforms": [
         "windows",
-        "macos"
+        "macos",
+        "linux"
       ],
       "source": {
         "kind": "tree",
@@ -11184,18 +11216,7 @@
         }
       ],
       "environment": [],
-      "expected_files": [
-        {
-          "path": ".tools/image_generation/runtime/provider_catalog.json",
-          "sha256": "05b90efc7d829c2675a633e10f3f1eb308cd9342cf5fd77dbe049ec8018b8fcb",
-          "size": 67637
-        },
-        {
-          "path": ".tools/image_generation/runtime/server.py",
-          "sha256": "7e4bd79bc872b412d1d7bd197c95dea44b1e1d043955a25c379a40892254dfba",
-          "size": 96747
-        }
-      ],
+      "expected_files": [],
       "conflicts": [],
       "conflict_policy": "replace_if_unmodified",
       "validation": [],
@@ -11222,7 +11243,8 @@
       "optional": true,
       "platforms": [
         "windows",
-        "macos"
+        "macos",
+        "linux"
       ],
       "source": {
         "kind": "tree",
@@ -11267,73 +11289,7 @@
         }
       ],
       "environment": [],
-      "expected_files": [
-        {
-          "path": ".tools/image_generation/providers/gptimage/LICENSE",
-          "sha256": "61b266ab51f12f1352bc72d2817474832fb8de9313b50b1ba5d7b014570b7bef",
-          "size": 1076
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/UPSTREAM.md",
-          "sha256": "b6bd43a96a47c056a4b767062798793d9f986b1af7c8a70ca3392b24cf239482",
-          "size": 895
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/bootstrap.py",
-          "sha256": "c6847415d41efd1683034eab13964f6f0a9fadfdd4bfd47a904dcf233ae4d94e",
-          "size": 5941
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/package-lock.json",
-          "sha256": "bd75719d34e7a161e8b3d712fdb358ba1b89dcc6d6f6cd614ddbc38032a45778",
-          "size": 41680
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/package.json",
-          "sha256": "06fec29755154c088945fc9525e3dd0b4318e75417eeb605b2b96ffc9651edab",
-          "size": 734
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/src/auth.js",
-          "sha256": "eb029fa64c8fddebc48bddde4847f8f1236fdcdfb12273e79dccce0276d969c6",
-          "size": 7465
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/src/banner.js",
-          "sha256": "ccbc76ef6b3cb17e06dd1d2341264d43022d7ff3e5c9ce045e09ccfa6fe7412d",
-          "size": 567
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/src/banner.txt",
-          "sha256": "0cb7e227d24e3be5abaa15cdc562e1bfc243658d2f09eb3807eaf5b88b287d33",
-          "size": 12503
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/src/codex.js",
-          "sha256": "5f370bcf2c767cf638f32d1ab87f9d65cb0c769faf8b358337b7e6b35fc6e588",
-          "size": 4418
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/src/gen.js",
-          "sha256": "c6d0f48d3e039b49192eec03389714e77c511111010f5fe3f7f4b26bed698413",
-          "size": 1860
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/src/images.js",
-          "sha256": "41a8143142d34b5238e0ee0841c0f040f6a62969b02b62ded64bd6bb83cd800a",
-          "size": 3540
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/src/login.js",
-          "sha256": "51e9209f166da80dfa6fab43bf5d2ed0993b6303593f04a6f778654566e2b861",
-          "size": 9662
-        },
-        {
-          "path": ".tools/image_generation/providers/gptimage/src/server.js",
-          "sha256": "c2a537094748f7cbdc9f8c2d758759785a60fe8a487761a582fa5da17a20e55f",
-          "size": 6912
-        }
-      ],
+      "expected_files": [],
       "conflicts": [],
       "conflict_policy": "replace_if_unmodified",
       "validation": [
@@ -11394,7 +11350,8 @@
       "optional": true,
       "platforms": [
         "windows",
-        "macos"
+        "macos",
+        "linux"
       ],
       "source": {
         "kind": "tree",
@@ -11431,21 +11388,56 @@
       "notes": [],
       "expected_files": [
         {
-          "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "a5d0ecb1b6ce52cf3f651e0c624c0ed61f1f19dd45917925148d68ddcd4bbcaa",
-          "size": 3349
-        },
-        {
-          "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
-          "sha256": "8725ad1f083a82b02d46caf9be53f5130b042c9edf49a5464742c80a75f0a807",
-          "size": 935
-        },
-        {
-          "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "801391d6812fa14bca7e201ce82c55df24e84ed6c49b988f2de80f02face8fac",
-          "size": 1484
+          "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
+          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
+          "size": 15745
         }
       ]
+    },
+    {
+      "id": "docs.linux",
+      "display_name": "Native Linux setup guide",
+      "description": "Native Linux prerequisites, current-user paths, client registration and workflow support boundaries.",
+      "category": "documentation",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": "docs/linux.md"
+      },
+      "destination": {
+        "path": "docs/linux.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.agents"
+      ],
+      "conflicts": [
+        "existing docs/runtimes.md"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "docs.runtimes.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": "docs/runtimes.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "runtime reference",
+        "instruction file discovery",
+        "MCP registration shapes"
+      ],
+      "expected_files": []
     }
   ],
   "profiles": [
@@ -14013,13 +14005,14 @@
         "requirements": [
           "Linux native HOI4 1.19.2 only",
           "Manual Linux, game and Clausewitz server setup",
-          "Windows WSL or macOS SSH to Linux",
+          "Native Linux host, Windows WSL or macOS SSH to Linux",
           "Confirm the Linux game and server are ready in HOI4 Mod Setup before registration"
         ],
         "documentation_url": "https://github.com/smerss/Clausewitz-MCP",
         "supported_platforms": [
           "windows",
-          "macos"
+          "macos",
+          "linux"
         ],
         "supported_coding_environments": [
           "claude_code",
@@ -14038,7 +14031,7 @@
         },
         "guidance": [
           "Use the connected clausewitz_linux server and its advertised tool list with qualified tool names.",
-          "Only Linux native HOI4 1.19.2 is supported; Windows uses WSL and macOS uses SSH to Linux.",
+          "Only Linux native HOI4 1.19.2 is supported; Linux connects directly, Windows uses WSL and macOS uses SSH to Linux.",
           "Complete manual Linux/game/server setup and confirm the Linux game and server are ready in HOI4 Mod Setup before registration.",
           "Read state directly from the game process; OCR and saving are not needed for these reads.",
           "Check advertised capabilities before attempting actions; do not assume HOI4 Live Tools operation parity.",
@@ -14102,7 +14095,8 @@
         "documentation_url": "https://klimpaskov.github.io/Agentic-HOI4-Modding/",
         "supported_platforms": [
           "windows",
-          "macos"
+          "macos",
+          "linux"
         ],
         "supported_coding_environments": [
           "claude_code",
