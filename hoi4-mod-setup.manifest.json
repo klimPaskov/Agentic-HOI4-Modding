@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "7c3667037abd32422e5b9073add36098f208be17",
+  "generated_for_revision": "eb685dd9650b12db30a2b71c750a3eaa5c52c650",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -11219,13 +11219,13 @@
       "expected_files": [
         {
           "path": ".tools/image_generation/runtime/provider_catalog.json",
-          "sha256": "05b90efc7d829c2675a633e10f3f1eb308cd9342cf5fd77dbe049ec8018b8fcb",
-          "size": 67637
+          "sha256": "8a9aa7acb9cdf79688169d0a4c8813d4dd5519a544685dbcab1635a1e2b1f65d",
+          "size": 99012
         },
         {
           "path": ".tools/image_generation/runtime/server.py",
-          "sha256": "f2f867f34fa2d01f622505fdc34c0474e69ba8dc9b3e1f5daf0e90e15be22ea2",
-          "size": 97480
+          "sha256": "0d04d8c77c068cf123fca2ac8b56503f8231812c113a2efdac8a8f9ff8f34c62",
+          "size": 101376
         }
       ],
       "conflicts": [],
@@ -11971,10 +11971,19 @@
           "Seedream",
           "Nano Banana and more"
         ],
-        "cost_summary": "Pay per model run; the connected route uses FLUX.2 Pro.",
+        "cost_summary": "Pay per selected model run; price and limits vary by endpoint.",
         "documentation_url": "https://fal.ai/pricing",
         "models": [
-          "FLUX.2 Pro"
+          "FLUX.2 Pro",
+          "FLUX.2 Flex",
+          "FLUX.1 Dev",
+          "FLUX.1 Schnell",
+          "Seedream 4.5",
+          "Nano Banana 2",
+          "Nano Banana Pro",
+          "Recraft V4",
+          "Ideogram V3",
+          "Ideogram V3 Transparent"
         ],
         "supported_coding_environments": [
           "claude_code",
@@ -12004,7 +12013,16 @@
             "auth_status": "image_auth_status"
           },
           "supported_models": [
-            "fal-ai/flux-2-pro"
+            "fal-ai/flux-2-pro",
+            "fal-ai/flux-2-flex",
+            "fal-ai/flux/dev",
+            "fal-ai/flux/schnell",
+            "fal-ai/bytedance/seedream/v4.5/text-to-image",
+            "fal-ai/nano-banana-2",
+            "fal-ai/nano-banana-pro",
+            "fal-ai/recraft/v4/text-to-image",
+            "fal-ai/ideogram/v3",
+            "fal-ai/ideogram/v3/generate-transparent"
           ],
           "tool_arguments": {
             "prompt": "prompt",
@@ -12020,7 +12038,7 @@
           "api_protocol": "fal_queue",
           "api_base_url": "https://queue.fal.run",
           "default_model": "fal-ai/flux-2-pro",
-          "result_format": "png",
+          "result_format": "model_defined",
           "credential_fields": [
             {
               "id": "api_key",
@@ -12034,21 +12052,21 @@
           "reference_images": {
             "supported": true,
             "max_count": 1,
-            "notes": "The default FLUX edit route accepts one reference; other fal models vary."
+            "notes": "One local reference is supported by FLUX.2, Seedream, and Nano Banana. Other included models are text-to-image only."
           },
           "image_edits": true,
           "background_removal": false,
           "transparent_background": {
-            "native": false,
-            "request_parameter": null,
-            "notes": "Choose a model with alpha output or use a selected background-removal route."
+            "native": true,
+            "request_parameter": "transparent_background",
+            "notes": "Only the Ideogram V3 Transparent selection offers native alpha; every saved result is verified."
           },
           "size_limits": {
             "accepts_dimensions": true,
-            "maximum_width_px": 2560,
-            "maximum_height_px": 2560,
-            "maximum_pixels": 4194304,
-            "notes": "Use dimensions supported by the selected model."
+            "maximum_width_px": 4096,
+            "maximum_height_px": 4096,
+            "maximum_pixels": 16777216,
+            "notes": "Dimensions depend on model. Nano Banana uses resolution tiers; Recraft and Ideogram use default sizes. Inspect the selected tool's schema."
           },
           "one_image_per_call": true,
           "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
@@ -12081,10 +12099,12 @@
           "Fast drafts",
           "Model variety"
         ],
-        "cost_summary": "Pay per model run; the connected route uses FLUX Schnell.",
+        "cost_summary": "Pay per selected model run; FLUX Schnell is the default.",
         "documentation_url": "https://replicate.com/docs",
         "models": [
-          "FLUX Schnell"
+          "FLUX Schnell",
+          "FLUX Dev",
+          "FLUX 1.1 Pro"
         ],
         "supported_coding_environments": [
           "claude_code",
@@ -12114,7 +12134,9 @@
             "auth_status": "image_auth_status"
           },
           "supported_models": [
-            "black-forest-labs/flux-schnell"
+            "black-forest-labs/flux-schnell",
+            "black-forest-labs/flux-dev",
+            "black-forest-labs/flux-1.1-pro"
           ],
           "tool_arguments": {
             "prompt": "prompt",
@@ -12144,7 +12166,7 @@
           "reference_images": {
             "supported": false,
             "max_count": null,
-            "notes": "Reference support depends on the selected Replicate model; the included default route is text-to-image."
+            "notes": "The included FLUX Schnell, Dev, and 1.1 Pro routes expose text-to-image only."
           },
           "image_edits": false,
           "background_removal": true,
@@ -12951,7 +12973,10 @@
         "cost_summary": "Pay per model; the connected route uses FLUX.2 Pro.",
         "documentation_url": "https://www.together.ai/models/flux-2-pro",
         "models": [
-          "FLUX.2 Pro"
+          "FLUX.2 Pro",
+          "FLUX.2 Dev",
+          "FLUX.2 Flex",
+          "FLUX 1.1 Pro"
         ],
         "supported_coding_environments": [
           "claude_code",
@@ -12981,7 +13006,10 @@
             "auth_status": "image_auth_status"
           },
           "supported_models": [
-            "black-forest-labs/FLUX.2-pro"
+            "black-forest-labs/FLUX.2-pro",
+            "black-forest-labs/FLUX.2-dev",
+            "black-forest-labs/FLUX.2-flex",
+            "black-forest-labs/FLUX.1.1-pro"
           ],
           "tool_arguments": {
             "prompt": "prompt",
