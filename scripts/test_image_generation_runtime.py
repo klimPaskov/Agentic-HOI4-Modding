@@ -85,6 +85,9 @@ class ImageGenerationRuntimeTests(unittest.TestCase):
         return provider
 
     def setUp(self) -> None:
+        credential_reader = patch.object(server, "read_credential", return_value=None)
+        credential_reader.start()
+        self.addCleanup(credential_reader.stop)
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
         (self.root / ".hoi4-setup").mkdir()
@@ -533,8 +536,193 @@ class ImageGenerationRuntimeTests(unittest.TestCase):
         self.assertEqual(result["path"], "gfx/fal.png")
         self.assertEqual([call["method"] for call in calls], ["POST", "GET", "GET"])
         self.assertTrue(calls[0]["url"].endswith("/fal-ai/flux-2-pro"))
-        self.assertEqual(calls[0]["payload"]["num_images"], 1)
+        self.assertNotIn("num_images", calls[0]["payload"])
         self.assertEqual(calls[0]["headers"]["Authorization"], "Key fal-secret")
+
+    def test_every_fal_model_uses_its_documented_generation_payload(self) -> None:
+        cases = {
+            "fal-ai/flux-2-pro": {"image_size": "square_hd", "output_format": "png"},
+            "fal-ai/flux-2-flex": {"image_size": "square_hd", "output_format": "png"},
+            "fal-ai/flux/dev": {"image_size": "square_hd", "num_images": 1, "output_format": "png"},
+            "fal-ai/flux/schnell": {"image_size": "square_hd", "num_images": 1, "output_format": "png"},
+            "fal-ai/bytedance/seedream/v4.5/text-to-image": {"image_size": "auto_2K", "num_images": 1, "max_images": 1},
+            "fal-ai/nano-banana-2": {"num_images": 1, "output_format": "png", "limit_generations": True, "resolution": "1K"},
+            "fal-ai/nano-banana-pro": {"num_images": 1, "output_format": "png", "limit_generations": True, "resolution": "1K"},
+            "fal-ai/recraft/v4/text-to-image": {"image_size": "square_hd"},
+            "fal-ai/ideogram/v3": {"image_size": "square_hd", "num_images": 1},
+            "fal-ai/ideogram/v3/generate-transparent": {"num_images": 1},
+        }
+        self.assertEqual(set(cases), set(server.canonical_provider("fal_ai")["route"]["supported_models"]))
+        for index, (model, expected) in enumerate(cases.items()):
+            with self.subTest(model=model):
+                self.write_provider("fal_ai", settings={"model": model})
+                runtime = server.Server("fal_ai", self.root)
+                runtime.secrets["api_key"] = "test-only-key"
+                webp = b"RIFF" + (8).to_bytes(4, "little") + b"WEBPVP8 "
+                output = webp if "recraft" in model else png()
+                suffix = "webp" if "recraft" in model else "png"
+                with patch.object(runtime, "_request_json", return_value={"images": [{"b64_json": base64.b64encode(output).decode("ascii")}]}) as request:
+                    result = runtime.generate_image({"prompt": "one asset", "out": f"gfx/fal-{index}.{suffix}"})
+                self.assertEqual(request.call_args.args[0], "https://queue.fal.run/" + model)
+                self.assertEqual(request.call_args.args[3], {"prompt": "one asset", **expected})
+                self.assertEqual(result["format"], suffix)
+                self.assertNotIn("test-only-key", json.dumps(result))
+
+    def test_fal_edit_routes_are_explicit_and_send_a_contained_data_uri(self) -> None:
+        (self.root / "source.png").write_bytes(png())
+        cases = {
+            "fal-ai/flux-2-pro": "fal-ai/flux-2-pro/edit",
+            "fal-ai/flux-2-flex": "fal-ai/flux-2-flex/edit",
+            "fal-ai/bytedance/seedream/v4.5/text-to-image": "fal-ai/bytedance/seedream/v4.5/edit",
+            "fal-ai/nano-banana-2": "fal-ai/nano-banana-2/edit",
+            "fal-ai/nano-banana-pro": "fal-ai/nano-banana-pro/edit",
+        }
+        for index, (model, endpoint) in enumerate(cases.items()):
+            with self.subTest(model=model):
+                self.write_provider("fal_ai", settings={"model": model})
+                runtime = server.Server("fal_ai", self.root)
+                runtime.secrets["api_key"] = "test-only-key"
+                with patch.object(runtime, "_request_json", return_value={"images": [{"b64_json": base64.b64encode(png()).decode("ascii")}]}) as request:
+                    runtime.call_tool("edit_image", {"prompt": "new style", "image": "source.png", "out": f"gfx/edit-{index}.png"})
+                self.assertEqual(request.call_args.args[0], "https://queue.fal.run/" + endpoint)
+                self.assertEqual(request.call_args.args[3]["image_urls"], [runtime._data_url(png(), "image/png")])
+                with patch.object(runtime, "_request_json") as request:
+                    with self.assertRaisesRegex(server.ImageRouteError, "one source image"):
+                        runtime.call_tool("edit_image", {"prompt": "new style", "image": "source.png", "reference_images": ["source.png", "extra.png"], "out": "gfx/extra.png"})
+                request.assert_not_called()
+
+    def test_fal_model_schema_and_invalid_combinations_fail_before_network(self) -> None:
+        cases = [
+            ("fal-ai/flux/dev", {"reference_images": ["source.png"]}),
+            ("fal-ai/flux/schnell", {"_hoi4_edit_request": True, "image": "source.png"}),
+            ("fal-ai/recraft/v4/text-to-image", {"_hoi4_edit_request": True, "image": "source.png", "out": "out.webp"}),
+            ("fal-ai/recraft/v4/text-to-image", {"out": "out.png"}),
+            ("fal-ai/ideogram/v3", {"reference_images": ["source.png"]}),
+            ("fal-ai/ideogram/v3/generate-transparent", {"reference_images": ["source.png"]}),
+            ("fal-ai/flux-2-flex", {"transparent_background": True}),
+            ("fal-ai/flux-2-pro", {"width": 2560, "height": 2560}),
+            ("fal-ai/flux-2-pro", {"width": 1025, "height": 1024}),
+            ("fal-ai/flux-2-pro", {"width": 1024}),
+            ("fal-ai/bytedance/seedream/v4.5/text-to-image", {"width": 1024, "height": 1024}),
+            ("fal-ai/bytedance/seedream/v4.5/text-to-image", {"width": 4097, "height": 2048}),
+            ("fal-ai/nano-banana-2", {"width": 1024, "height": 1024}),
+            ("fal-ai/nano-banana-2", {"resolution": "8K"}),
+            ("fal-ai/nano-banana-pro", {"resolution": "0.5K"}),
+            ("fal-ai/nano-banana-pro", {"aspect_ratio": "8:1"}),
+            ("fal-ai/flux-2-pro", {"aspect_ratio": "1:1"}),
+            ("fal-ai/nano-banana-2", {"reference_images": ["../outside.png"]}),
+            ("fal-ai/nano-banana-2", {"reference_images": ["source.png", "source.png"]}),
+        ]
+        for model, options in cases:
+            with self.subTest(model=model, options=options):
+                self.write_provider("fal_ai", settings={"model": model})
+                runtime = server.Server("fal_ai", self.root)
+                with patch.object(runtime, "_request_json") as request:
+                    with self.assertRaises(server.ImageRouteError):
+                        runtime.generate_image({"prompt": "one asset", "out": "out.png", **options})
+                request.assert_not_called()
+        for model in server.canonical_provider("fal_ai")["route"]["supported_models"]:
+            self.write_provider("fal_ai", settings={"model": model})
+            runtime = server.Server("fal_ai", self.root)
+            tools = server._local_tools(runtime.provider)
+            props = next(tool["inputSchema"]["properties"] for tool in tools if tool["name"] == "generate_image")
+            supports_edit = model in {"fal-ai/flux-2-pro", "fal-ai/flux-2-flex", "fal-ai/bytedance/seedream/v4.5/text-to-image", "fal-ai/nano-banana-2", "fal-ai/nano-banana-pro"}
+            self.assertEqual("reference_images" in props, supports_edit)
+            self.assertEqual(any(tool["name"] == "edit_image" for tool in tools), supports_edit)
+            self.assertEqual("transparent_background" in props, model.endswith("generate-transparent"))
+            self.assertEqual("resolution" in props, "nano-banana" in model)
+            self.assertEqual("width" in props, "/flux" in model or "seedream" in model)
+
+    def test_fal_tiers_dimensions_and_transparency_are_model_bound(self) -> None:
+        cases = [
+            ("fal-ai/nano-banana-2", {"resolution": "0.5K", "aspect_ratio": "8:1"}, {"resolution": "0.5K", "aspect_ratio": "8:1"}),
+            ("fal-ai/nano-banana-pro", {"resolution": "4K", "aspect_ratio": "3:2"}, {"resolution": "4K", "aspect_ratio": "3:2"}),
+            ("fal-ai/bytedance/seedream/v4.5/text-to-image", {"width": 2048, "height": 2048}, {"image_size": {"width": 2048, "height": 2048}}),
+        ]
+        for index, (model, options, expected) in enumerate(cases):
+            self.write_provider("fal_ai", settings={"model": model})
+            runtime = server.Server("fal_ai", self.root)
+            runtime.secrets["api_key"] = "test-only-key"
+            with patch.object(runtime, "_request_json", return_value={"images": [{"b64_json": base64.b64encode(png()).decode("ascii")}]}) as request:
+                runtime.generate_image({"prompt": "one asset", "out": f"gfx/tier-{index}.png", **options})
+            for key, value in expected.items():
+                self.assertEqual(request.call_args.args[3][key], value)
+        self.write_provider("fal_ai", settings={"model": "fal-ai/ideogram/v3/generate-transparent"})
+        runtime = server.Server("fal_ai", self.root)
+        runtime.secrets["api_key"] = "test-only-key"
+        with patch.object(runtime, "_request_json", return_value={"images": [{"b64_json": base64.b64encode(png(alpha=255)).decode("ascii")}]}):
+            with self.assertRaisesRegex(server.ImageRouteError, "transparent pixels"):
+                runtime.generate_image({"prompt": "one asset", "out": "gfx/opaque.png"})
+        self.assertFalse((self.root / "gfx/opaque.png").exists())
+
+    def test_fal_queue_rejects_untrusted_urls_failed_jobs_and_multiple_outputs(self) -> None:
+        self.write_provider("fal_ai", settings={"model": "fal-ai/nano-banana-2"})
+        runtime = server.Server("fal_ai", self.root)
+        runtime.secrets["api_key"] = "test-only-key"
+        responses = [
+            {"request_id": "id", "status_url": "https://untrusted.example/status", "response_url": "https://queue.fal.run/result"},
+            {"images": [{"url": "https://untrusted.example/image.png"}]},
+            {"images": [{"url": runtime._data_url(png())}, {"url": runtime._data_url(png())}]},
+            {"images": []},
+        ]
+        for response in responses:
+            with self.subTest(response=response), patch.object(runtime, "_request_json", return_value=response):
+                with self.assertRaises(server.ImageRouteError):
+                    runtime.generate_image({"prompt": "one asset", "out": "gfx/rejected.png"})
+        queued = {"request_id": "id", "status_url": "https://queue.fal.run/status", "response_url": "https://queue.fal.run/result"}
+        with patch.object(runtime, "_request_json", side_effect=[queued, {"status": "FAILED"}]) as request:
+            with self.assertRaisesRegex(server.ImageRouteError, "could not complete"):
+                runtime.generate_image({"prompt": "one asset", "out": "gfx/rejected.png"})
+        self.assertEqual(request.call_count, 2)
+        with patch.object(runtime, "_request_json", side_effect=[queued] + [{"status": "IN_QUEUE"}] * 120) as request, patch.object(server.time, "sleep"):
+            with self.assertRaisesRegex(server.ImageRouteError, "still preparing"):
+                runtime.generate_image({"prompt": "one asset", "out": "gfx/rejected.png"})
+        self.assertEqual(request.call_count, 121)
+        self.assertFalse((self.root / "gfx/rejected.png").exists())
+
+    def test_model_profiles_cannot_be_overridden_by_project_settings(self) -> None:
+        self.write_provider("fal_ai", settings={"model": "fal-ai/flux/schnell"})
+        path = self.root / server.CONFIG_PATH
+        document = json.loads(path.read_text(encoding="utf-8"))
+        document["providers"]["fal_ai"]["_model_profiles"] = {"fal-ai/flux/schnell": {"edit_endpoint": "untrusted/edit"}}
+        path.write_text(json.dumps(document), encoding="utf-8")
+        runtime = server.Server("fal_ai", self.root)
+        self.assertIsNone(server._model_profile(runtime.provider)["edit_endpoint"])
+        with patch.object(runtime, "_request_json") as request:
+            with self.assertRaisesRegex(server.ImageRouteError, "does not support image edits"):
+                runtime.call_tool("edit_image", {"prompt": "one asset", "image": "source.png", "out": "gfx/rejected.png"})
+        request.assert_not_called()
+
+    def test_replicate_and_together_models_use_reviewed_count_and_model_fields(self) -> None:
+        for provider_id in ("replicate", "together_ai"):
+            models = server.canonical_provider(provider_id)["route"]["supported_models"]
+            for index, model in enumerate(models):
+                with self.subTest(provider=provider_id, model=model):
+                    self.write_provider(provider_id, settings={"model": model})
+                    runtime = server.Server(provider_id, self.root)
+                    runtime.secrets["api_key"] = "test-only-key"
+                    image = base64.b64encode(png()).decode("ascii")
+                    response = {"status": "succeeded", "output": [image]} if provider_id == "replicate" else {"data": [{"b64_json": image}]}
+                    with patch.object(runtime, "_request_json", return_value=response) as request:
+                        runtime.generate_image({"prompt": "one asset", "out": f"gfx/{provider_id}-{index}.png"})
+                    payload = request.call_args.args[3]
+                    if provider_id == "replicate":
+                        self.assertEqual(request.call_args.args[0], f"https://api.replicate.com/v1/models/{model}/predictions")
+                        expected = {"prompt": "one asset", "output_format": "png"}
+                        if model != "black-forest-labs/flux-1.1-pro":
+                            expected["num_outputs"] = 1
+                        self.assertEqual(payload["input"], expected)
+                    else:
+                        self.assertEqual(payload["model"], model)
+                        self.assertEqual(payload["n"], 1)
+                        self.assertEqual(payload["response_format"], "base64")
+                        self.assertEqual(payload["output_format"], "png")
+                        self.assertEqual("steps" in payload, model.endswith("FLUX.2-dev"))
+                    with patch.object(runtime, "_request_json") as request:
+                        for invalid in ({"reference_images": ["source.png"]}, {"transparent_background": True}):
+                            with self.assertRaises(server.ImageRouteError):
+                                runtime.generate_image({"prompt": "one asset", "out": "out.png", **invalid})
+                    request.assert_not_called()
 
     def test_gemini_key_is_sent_in_header_not_url(self) -> None:
         self.write_provider("gemini_api", credential_references={"api_key": "credential://image_generation_api_key/gemini_api_api_key"})
