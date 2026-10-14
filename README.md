@@ -35,8 +35,8 @@ For a manual setup:
    python .tools/sync/sync_skills.py --target agents   # .agents/skills for Codex and DSH
    ```
 
-5. Copy `.tools/mcp/` and `docs/runtimes.md` plus `docs/systems/hoi4_agent_tools_mcp_integration.md` into the mod. Install Python 3.13 and a supported Node.js LTS release with npm available on PATH. On Windows, `py -3.13` can replace `python` in these commands.
-6. Install HOI4 Agent Tools with `python .tools/mcp/bootstrap_hoi4_agent_tools.py`, then approve the project server in your coding client and check that it connects.
+5. Copy `.tools/mcp/` and `docs/runtimes.md` plus `docs/systems/hoi4_agent_tools_mcp_integration.md` into the mod. Install Python 3.13 and native x64 Node.js 22.19+ within major 22, or Node.js 24 LTS, with npm available on PATH. On Windows, `py -3.13` can replace `python` in these commands.
+6. Install HOI4 Agent Tools with `python -I .tools/mcp/bootstrap_hoi4_agent_tools.py`, then approve the project server in your coding client and check that it connects. The bootstrap uses its own verified npm toolchain without replacing your existing npm executable or configuration.
 
    Native Linux users can follow the [Linux setup guide](docs/linux.md) for supported Node.js/Python prerequisites, the current-user install prefix and all client registration shapes. The package records separate Windows and Linux installed-tree evidence.
 

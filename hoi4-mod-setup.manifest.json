@@ -8341,6 +8341,7 @@
           "id": "node-npm",
           "required": true,
           "version_policy": "repository_script",
+          "version": "Native x64 Node.js 22.19+ in major 22 or major 24; private npm 11.19.0 on Windows and npm 10.9.9 on Linux",
           "commands": [
             "winget install OpenJS.NodeJS.LTS --scope user --silent --disable-interactivity --accept-source-agreements --accept-package-agreements"
           ],
@@ -8364,13 +8365,15 @@
             "arguments": [
               "--quiet"
             ],
-            "network_access": "Required to install the exact hoi4-agent-tools@4.0.3 package from https://registry.npmjs.org. Windows can install current-user Node.js LTS when missing; Linux requires native Node.js LTS and npm beforehand.",
+            "network_access": "Downloads the SHA-512-pinned private npm 11.19.0 (Windows) or npm 10.9.9 (Linux) archive, then the exact hoi4-agent-tools@4.0.3 package from https://registry.npmjs.org. Requires native x64 Node.js 22.19+ in major 22 or major 24; Windows may install current-user Node.js LTS when missing.",
             "expected_writes": [
               "%APPDATA%/npm/** on Windows",
-              "$XDG_DATA_HOME/hoi4-mod-setup/npm/** on Linux (fallback ~/.local/share/hoi4-mod-setup/npm)"
+              "Current-user winget-managed Node.js LTS distribution, including bundled npm, when a compatible runtime is missing on Windows",
+              "$XDG_DATA_HOME/hoi4-mod-setup/npm/** on Linux (fallback ~/.local/share/hoi4-mod-setup/npm)",
+              "Fresh system-temporary hoi4-setup-npm-* directory for verified npm files, isolated config and cache; removed on ordinary completion"
             ],
             "privilege": "current_user",
-            "rollback_boundary": "Managed project files roll back transactionally. The user-scoped Node.js LTS package, npm cache, and exact global hoi4-agent-tools package are external tool state and are reported but not removed automatically."
+            "rollback_boundary": "Managed project files roll back transactionally. Node.js and the user-scoped hoi4-agent-tools package are external tool state; replaced package versions are not restored automatically. Private npm never replaces the ambient npm executable or config. Installing a missing compatible Node.js distribution also installs its bundled npm. Temporary private npm files are cleaned on ordinary completion and never reused after interruption."
           }
         }
       ],
@@ -8427,7 +8430,7 @@
             "node --version",
             "npm --version"
           ],
-          "version": "Native supported LTS (22 or newer on Linux)"
+          "version": "Native x64 Node.js 22.19+ in major 22 or Node.js 24 LTS"
         },
         {
           "id": "hoi4-agent-tools.cmd",

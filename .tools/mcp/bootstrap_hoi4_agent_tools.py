@@ -5,13 +5,22 @@ from __future__ import annotations
 
 import argparse
 import base64
+from contextlib import contextmanager
+import gzip
 import hashlib
+import io
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+import re
 import shutil
 import subprocess
 import sys
+import tarfile
+import tempfile
+import unicodedata
+import urllib.error
+import urllib.request
 
 
 PACKAGE_NAME = "hoi4-agent-tools"
@@ -35,7 +44,17 @@ MAX_OUTPUT_BYTES = 2 * 1024 * 1024
 MAX_PACKAGE_FILE_BYTES = 32 * 1024 * 1024
 MAX_PACKAGE_TREE_BYTES = 512 * 1024 * 1024
 MAX_PACKAGE_FILES = 10000
+MAX_PACKAGE_ENTRIES = 20000
+MAX_PACKAGE_DEPTH = 64
 MAX_PACKAGE_ARCHIVE_BYTES = 512 * 1024 * 1024
+NPM_TOOLCHAINS = {
+    "windows": ("11.19.0", "sha512-SDd/hHg3KqHE5Ht2NHWxNYNtqCQ2pXAPLl6OtQhPyED5PHsRfrOtO199MZTIG2cQoQ1ZRI9t28shrD+2cr3AAw=="),
+    "linux": ("10.9.9", "sha512-1g+6jLQvaIuB4zwvHL7yrXuXcWZwDsCtBX8bbWDqbvJSSr9nPiDDWTHNgwXR27iIcTTW7v3A57hDW9RYv2W4Yg=="),
+}
+MAX_NPM_ARCHIVE_BYTES = 8 * 1024 * 1024
+MAX_NPM_TAR_BYTES = 32 * 1024 * 1024
+MAX_NPM_FILES = 4096
+MAX_NPM_FILE_BYTES = 1024 * 1024
 
 
 class BootstrapError(RuntimeError):
@@ -73,7 +92,12 @@ def modules_directory(prefix: Path) -> Path:
     return modules
 
 
-def run(arguments: list[str], timeout: int = 900) -> str:
+def minimal_environment() -> dict:
+    keep = {"PATH", "PATHEXT", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "COMSPEC", "PROGRAMFILES", "PROGRAMFILES(X86)", "PROGRAMDATA", "ALLUSERSPROFILE", "HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "TEMP", "TMP"}
+    return {key: value for key, value in os.environ.items() if key.upper() in keep}
+
+
+def run(arguments: list[str], timeout: int = 900, *, environment: dict | None = None, cwd: Path | None = None) -> str:
     if not arguments or any("\x00" in argument for argument in arguments):
         raise BootstrapError("The reviewed MCP command arguments are invalid.")
     try:
@@ -85,7 +109,8 @@ def run(arguments: list[str], timeout: int = 900) -> str:
             timeout=timeout,
             check=False,
             shell=False,
-            env=os.environ.copy(),
+            env=minimal_environment() if environment is None else environment,
+            cwd=cwd,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise BootstrapError("A reviewed MCP setup command could not complete.") from exc
@@ -126,6 +151,18 @@ def candidate_node_roots() -> list[Path]:
     return unique
 
 
+def supported_node_version(version: str) -> bool:
+    match = re.fullmatch(r"v(22|24)\.(\d+)\.(\d+)", version.strip())
+    return bool(match and (match[1] == "24" or int(match[2]) >= 19))
+
+
+def verify_node_runtime(node: Path) -> None:
+    if not supported_node_version(run([str(node), "--version"]).strip()):
+        raise BootstrapError("HOI4 Agent Tools requires Node.js 22.19+ in major 22, or Node.js 24 LTS.")
+    if run([str(node), "-p", "process.arch"]).strip() != "x64":
+        raise BootstrapError("The reviewed HOI4 Agent Tools runtime requires native x64 Node.js.")
+
+
 def resolve_node_and_npm() -> tuple[Path, Path]:
     if platform_name() == "linux":
         node_value = shutil.which("node")
@@ -134,21 +171,19 @@ def resolve_node_and_npm() -> tuple[Path, Path]:
             node = Path(node_value).resolve(strict=True)
             npm_path = Path(npm_value).resolve(strict=True)
             if node.is_file() and npm_path.is_file() and node.suffix != ".exe" and npm_path.suffix != ".cmd":
-                version = run([str(node), "--version"]).strip()
-                try:
-                    major = int(version.removeprefix("v").split(".")[0])
-                except ValueError as exc:
-                    raise BootstrapError("Node.js returned invalid version evidence.") from exc
-                if major < 22:
-                    raise BootstrapError("Install a native supported Node.js LTS release (22 or newer) and npm before continuing.")
+                verify_node_runtime(node)
                 return node, npm_path
         raise BootstrapError("Install native Node.js LTS and npm; imported Windows executables are not Linux dependencies.")
     for root in candidate_node_roots():
         node = root / "node.exe"
         npm = root / "npm.cmd"
         if node.is_file() and npm.is_file():
+            try:
+                verify_node_runtime(node)
+            except BootstrapError:
+                continue
             return node, npm
-    raise BootstrapError("Node.js LTS and npm could not be discovered after installation.")
+    raise BootstrapError("Install native x64 Node.js 22.19+ in major 22, or Node.js 24 LTS, then retry.")
 
 
 def ensure_node() -> tuple[Path, Path]:
@@ -177,18 +212,124 @@ def ensure_node() -> tuple[Path, Path]:
         return resolve_node_and_npm()
 
 
-def npm(node: Path, npm_cmd: Path, arguments: list[str], timeout: int = 900) -> str:
-    npm_cli = node.parent / "node_modules" / "npm" / "bin" / "npm-cli.js"
-    if platform_name() == "linux" and npm_cmd.name == "npm-cli.js":
-        npm_cli = npm_cmd
-    if not npm_cli.is_file():
-        if platform_name() == "linux":
-            raise BootstrapError("The native npm JavaScript entry could not be discovered.")
-        # npm.cmd is a fixed wrapper installed beside the authenticated Node
-        # distribution. It is used only when that distribution does not expose
-        # npm-cli.js at its standard location.
-        return run([str(npm_cmd), *arguments], timeout=timeout)
-    return run([str(node), str(npm_cli), *arguments], timeout=timeout)
+class PinnedNpm:
+    def __init__(self, root: Path, entry: Path, environment: dict) -> None:
+        self.root = root
+        self.entry = entry
+        self.environment = environment
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, message, headers, new_url):
+        raise BootstrapError("The pinned npm archive must not redirect.")
+
+
+def download_npm_archive(version: str, integrity: str) -> bytes:
+    url = f"{REGISTRY}/npm/-/npm-{version}.tgz"
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+    try:
+        with opener.open(url, timeout=60) as response:
+            if response.status != 200 or response.url != url:
+                raise BootstrapError("The pinned npm archive response is invalid.")
+            data = response.read(MAX_NPM_ARCHIVE_BYTES + 1)
+    except (OSError, urllib.error.URLError) as exc:
+        raise BootstrapError("The verified npm toolchain could not be downloaded. Retry the setup.") from exc
+    if len(data) > MAX_NPM_ARCHIVE_BYTES:
+        raise BootstrapError("The pinned npm archive exceeds its size bound.")
+    actual = "sha512-" + base64.b64encode(hashlib.sha512(data).digest()).decode("ascii")
+    if actual != integrity:
+        raise BootstrapError("The pinned npm archive integrity does not match.")
+    return data
+
+
+def extract_npm_archive(data: bytes, destination: Path, version: str) -> Path:
+    if destination.exists() or len(data) > MAX_NPM_ARCHIVE_BYTES:
+        raise BootstrapError("The npm extraction destination or archive is invalid.")
+    try:
+        with gzip.GzipFile(fileobj=io.BytesIO(data)) as compressed:
+            expanded = compressed.read(MAX_NPM_TAR_BYTES + 1)
+        if len(expanded) > MAX_NPM_TAR_BYTES or len(expanded) > max(1, len(data)) * 200:
+            raise BootstrapError("The npm archive expansion exceeds its bound.")
+        with tarfile.open(fileobj=io.BytesIO(expanded), mode="r:") as archive:
+            members = archive.getmembers()
+            if len(members) > MAX_NPM_FILES:
+                raise BootstrapError("The npm archive has too many entries.")
+            seen = set()
+            total = 0
+            for member in members:
+                path = PurePosixPath(member.name)
+                parts = member.name.split("/")
+                if not member.isfile() or member.linkname or path.is_absolute() or parts[0] != "package" or len(parts) < 2 or len(parts) > 32:
+                    raise BootstrapError("The npm archive contains an unreviewed entry.")
+                if len(member.name.encode("utf-8")) > 1024 or any(
+                    part in {"", ".", ".."} or part.casefold() == ".git" or ":" in part or "\\" in part
+                    or any(ord(char) < 32 for char in part) or len(part.encode("utf-8")) > 255
+                    or part.rstrip(" .") != part or re.match(r"^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)", part, re.I)
+                    for part in parts
+                ):
+                    raise BootstrapError("The npm archive contains an unsafe path.")
+                key = unicodedata.normalize("NFC", member.name).casefold()
+                if key in seen:
+                    raise BootstrapError("The npm archive contains duplicate paths.")
+                seen.add(key)
+                total += member.size
+                if not 0 <= member.size <= MAX_NPM_FILE_BYTES or total > MAX_NPM_TAR_BYTES:
+                    raise BootstrapError("The npm archive file sizes exceed their bounds.")
+            destination.mkdir(mode=0o700)
+            for member in members:
+                target = destination.joinpath(*PurePosixPath(member.name).parts)
+                target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                source = archive.extractfile(member)
+                if source is None:
+                    raise BootstrapError("The npm archive member is unreadable.")
+                with source, target.open("xb") as output:
+                    content = source.read(member.size + 1)
+                    if len(content) != member.size:
+                        raise BootstrapError("The npm archive member is truncated.")
+                    output.write(content)
+                target.chmod(0o600)
+        metadata = read_json(destination / "package/package.json", MAX_NPM_FILE_BYTES)
+        if metadata.get("name") != "npm" or metadata.get("version") != version:
+            raise BootstrapError("The private npm package identity is incorrect.")
+        entry = destination / "package/bin/npm-cli.js"
+        if not entry.is_file() or entry.is_symlink():
+            raise BootstrapError("The private npm entry is missing.")
+        return entry
+    except (OSError, EOFError, tarfile.TarError, ValueError) as exc:
+        raise BootstrapError("The private npm archive could not be safely extracted.") from exc
+
+
+@contextmanager
+def pinned_npm_runtime():
+    version, integrity = NPM_TOOLCHAINS[platform_name()]
+    with tempfile.TemporaryDirectory(prefix="hoi4-setup-npm-") as temporary:
+        root = Path(temporary).resolve(strict=True)
+        entry = extract_npm_archive(download_npm_archive(version, integrity), root / "runtime", version)
+        environment = minimal_environment()
+        for name in ("home", "config", "data", "cache", "tmp"):
+            (root / name).mkdir(mode=0o700)
+        for name in ("user.npmrc", "global.npmrc"):
+            (root / name).write_bytes(b"")
+        environment.update({
+            "HOME": str(root / "home"), "USERPROFILE": str(root / "home"),
+            "APPDATA": str(root / "config"), "LOCALAPPDATA": str(root / "data"),
+            "TEMP": str(root / "tmp"), "TMP": str(root / "tmp"),
+            "NPM_CONFIG_USERCONFIG": str(root / "user.npmrc"),
+            "NPM_CONFIG_GLOBALCONFIG": str(root / "global.npmrc"),
+            "NPM_CONFIG_CACHE": str(root / "cache"), "CI": "true",
+        })
+        yield PinnedNpm(root, entry, environment)
+
+
+def npm(node: Path, runtime: PinnedNpm, arguments: list[str], timeout: int = 900) -> str:
+    if not isinstance(runtime, PinnedNpm):
+        raise BootstrapError("Only the verified private npm toolchain may run.")
+    return run([
+        str(node), str(runtime.entry),
+        f"--userconfig={runtime.root / 'user.npmrc'}",
+        f"--globalconfig={runtime.root / 'global.npmrc'}",
+        f"--cache={runtime.root / 'cache'}", f"--registry={REGISTRY}", *arguments,
+    ], timeout=timeout, environment=runtime.environment, cwd=runtime.root)
 
 
 def user_prefix() -> Path:
@@ -293,7 +434,14 @@ def package_tree_sha256(package_root: Path, allowed_symlinks: dict[str, str] | N
     files: list[tuple[str, bytes]] = []
     seen_symlinks = set()
     total_bytes = 0
+    entries = 0
     for path in package_root.rglob("*"):
+        entries += 1
+        metadata = path.lstat()
+        if entries > MAX_PACKAGE_ENTRIES or len(path.relative_to(package_root).parts) > MAX_PACKAGE_DEPTH:
+            raise BootstrapError("The installed MCP package exceeds its directory bounds.")
+        if getattr(metadata, "st_file_attributes", 0) & 0x400:
+            raise BootstrapError("The installed MCP package contains a Windows reparse point.")
         if len(files) >= MAX_PACKAGE_FILES:
             raise BootstrapError("The installed MCP package exceeds its file-count bound.")
         if path.is_symlink():
@@ -319,7 +467,10 @@ def package_tree_sha256(package_root: Path, allowed_symlinks: dict[str, str] | N
         if not path.is_file():
             continue
         relative = path.relative_to(package_root).as_posix()
-        data = path.read_bytes()
+        if metadata.st_size > MAX_PACKAGE_FILE_BYTES or total_bytes + metadata.st_size > MAX_PACKAGE_TREE_BYTES:
+            raise BootstrapError("The installed MCP package contains an oversized file.")
+        with path.open("rb") as source:
+            data = source.read(min(MAX_PACKAGE_FILE_BYTES, MAX_PACKAGE_TREE_BYTES - total_bytes) + 1)
         total_bytes += len(data)
         if len(data) > MAX_PACKAGE_FILE_BYTES or total_bytes > MAX_PACKAGE_TREE_BYTES:
             raise BootstrapError("The installed MCP package contains an oversized file.")
@@ -417,15 +568,16 @@ def parse_arguments() -> argparse.Namespace:
 def main() -> int:
     arguments = parse_arguments()
     platform_name()
-    node, npm_cmd = ensure_node()
+    node, _ = ensure_node()
     prefix = user_prefix()
-    if arguments.local_tarball is None:
-        verify_registry_integrity(node, npm_cmd)
-    else:
-        verify_local_tarball(arguments.local_tarball)
-    if not installed_package_matches(prefix):
-        remove_mismatched_package(node, npm_cmd, prefix)
-        install_package(node, npm_cmd, prefix, arguments.local_tarball)
+    with pinned_npm_runtime() as npm_cmd:
+        if arguments.local_tarball is None:
+            verify_registry_integrity(node, npm_cmd)
+        else:
+            verify_local_tarball(arguments.local_tarball)
+        if not installed_package_matches(prefix):
+            remove_mismatched_package(node, npm_cmd, prefix)
+            install_package(node, npm_cmd, prefix, arguments.local_tarball)
     wrapper = verify_installation(prefix)
     if not arguments.quiet:
         print(f"Installed {PACKAGE_SPEC} at {wrapper.parent}")

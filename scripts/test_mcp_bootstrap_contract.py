@@ -27,6 +27,9 @@ class McpBootstrapContractTests(unittest.TestCase):
         patch = mock.patch.object(bootstrap, "platform_name", return_value="windows")
         patch.start()
         self.addCleanup(patch.stop)
+        runtime = mock.patch.object(bootstrap, "pinned_npm_runtime", return_value=contextlib.nullcontext(Path("npm.cmd")))
+        runtime.start()
+        self.addCleanup(runtime.stop)
 
     def test_public_release_identity_is_exact(self) -> None:
         # The bootstrap and the setup manifest must pin the same measured release.
