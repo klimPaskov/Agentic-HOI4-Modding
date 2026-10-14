@@ -68,12 +68,15 @@ class LinuxSourceContractTests(unittest.TestCase):
             cli = root / "npm-cli.js"
             node.write_bytes(b"fixture")
             cli.write_bytes(b"fixture")
-            with mock.patch.object(bootstrap, "platform_name", return_value="linux"), mock.patch.object(bootstrap.shutil, "which", side_effect=[str(node), str(cli)]), mock.patch.object(bootstrap, "run", return_value="v22.23.3"):
+            with mock.patch.object(bootstrap, "platform_name", return_value="linux"), mock.patch.object(bootstrap.shutil, "which", side_effect=[str(node), str(cli)]), mock.patch.object(bootstrap, "run", side_effect=["v22.23.3", "x64"]):
                 self.assertEqual(bootstrap.resolve_node_and_npm(), (node.resolve(), cli.resolve()))
             with mock.patch.object(bootstrap, "platform_name", return_value="linux"), mock.patch.object(bootstrap, "run", return_value="{}") as run:
-                bootstrap.npm(node, cli, ["view", bootstrap.PACKAGE_SPEC])
-            self.assertEqual(run.call_args.args[0], [str(node), str(cli), "view", bootstrap.PACKAGE_SPEC])
-            with mock.patch.object(bootstrap, "platform_name", return_value="linux"), mock.patch.object(bootstrap.shutil, "which", side_effect=[str(node), str(cli)]), mock.patch.object(bootstrap, "run", return_value="v18.19.1"), self.assertRaisesRegex(bootstrap.BootstrapError, "22 or newer"):
+                runtime = bootstrap.PinnedNpm(root, cli, {})
+                bootstrap.npm(node, runtime, ["view", bootstrap.PACKAGE_SPEC])
+            self.assertEqual(run.call_args.args[0][:2], [str(node), str(cli)])
+            self.assertEqual(run.call_args.args[0][-2:], ["view", bootstrap.PACKAGE_SPEC])
+            self.assertEqual(run.call_args.kwargs["cwd"], root)
+            with mock.patch.object(bootstrap, "platform_name", return_value="linux"), mock.patch.object(bootstrap.shutil, "which", side_effect=[str(node), str(cli)]), mock.patch.object(bootstrap, "run", return_value="v18.19.1"), self.assertRaisesRegex(bootstrap.BootstrapError, "22.19"):
                 bootstrap.resolve_node_and_npm()
 
     def test_linux_vault_uses_exact_app_secret_service_attributes(self):

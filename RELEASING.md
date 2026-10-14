@@ -4,7 +4,7 @@ Release from the Claude-first source repository. Keep package code, generated ru
 
 ## Prepare and validate
 
-1. Verify the HOI4 Agent Tools public package pin before choosing the release revision. Read npm's exact `dist.integrity` and refresh a clean published-package tree with `scripts/refresh_mcp_package_pin.py`. Re-read the bootstrap, manifest, and integration guide; the bootstrap contract tests must agree on the exact version, integrity, entry hash, and package-tree evidence. Do not reuse a local archive's integrity as published npm evidence.
+1. Verify the HOI4 Agent Tools public package pin before choosing the release revision. Read npm's exact `dist.integrity` and refresh a clean published-package tree with `scripts/refresh_mcp_package_pin.py`, using the bootstrap's exact per-platform private npm version. Re-read the bootstrap, manifest, and integration guide; the bootstrap contract tests must agree on the exact version, integrity, entry hash, and package-tree evidence. Verify clean Windows/Linux x64 installs under both supported Node majors; the host's global npm version must not change the result. Do not reuse a local archive's integrity as published npm evidence or bless a different npm realization by changing a tree hash.
 2. Include the Apache-2.0 `LICENSE` and `NOTICE`. The maintainer selected the same package license as HOI4 Mod Setup on 2026-10-11. Third-party wiki and visual material retains separate terms and provenance; the root license does not establish missing third-party permission. Update manifest license/provenance evidence only when supported by actual declarations. Do not infer permission from a public download.
 3. Generate runtime projections and run all source checks with Python 3.13:
 
