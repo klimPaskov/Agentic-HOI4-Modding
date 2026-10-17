@@ -5,8 +5,8 @@ Claude Code is the canonical runtime. These one-way tools regenerate what the ot
 | Tool | Canonical source | Writes | Configuration |
 | --- | --- | --- | --- |
 | `sync_instructions.py` | `CLAUDE.md` (and `CLAUDE_template.md` in the source package) | `AGENTS.md` (`AGENTS_template.md`) | `instruction_projection.json` |
-| `sync_agents.py` | `.claude/agents/*.md` | `.codex/agents/*.toml` and the `[agents.*]` rows of `.codex/config.toml`, `.cursor/agents/`, `.qoder/agents/`, `.opencode/agent/`, and each runtime's `agent-map.md` | `agent_profiles.json` |
-| `sync_skills.py` | `.claude/skills/` | `.agents/skills/` (Codex, DSH) and `.qoder/skills/` (Qoder) copies | none |
+| `sync_agents.py` | `.claude/agents/*.md` | `.codex/agents/*.toml` and the `[agents.*]` rows of `.codex/config.toml`, `.cursor/agents/`, `.qoder/agents/`, `.opencode/agent/`, `.gemini/agents/`, `.agents/agents/`, `.kilo/agents/`, `.kiro/agents/`, `.qwen/agents/`, `.devin/agents/`, `.augment/agents/`, and each runtime's `agent-map.md` | `agent_profiles.json` |
+| `sync_skills.py` | `.claude/skills/` | `.agents/skills/` (Codex, DSH, Gemini CLI, Antigravity, Kilo Code, Devin), `.qoder/skills/`, `.grok/skills/`, `.kiro/skills/`, and `.qwen/skills/` copies | none |
 | `check_guidance_size.py` | instruction files, skills, and agent prompts | nothing; reports files above the single-read ceiling | `read_limits.json` |
 
 ```powershell

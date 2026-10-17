@@ -1,5 +1,5 @@
 {
-  "schema_version": "5.0.0",
+  "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
   "generated_for_revision": "4ce68a2f090de9fc885b63b1398b9f8999b84fbf",
   "repository": {
@@ -859,8 +859,8 @@
     },
     {
       "id": "runtime.opencode.config",
-      "display_name": "OpenCode project manifest",
-      "description": "Install the cross-platform OpenCode project-level configuration.",
+      "display_name": "OpenCode project configuration and MCP",
+      "description": "Install opencode.json with the project instructions and the HOI4 Agent Tools registration, which HOI4 Mod Setup adapts or removes per platform.",
       "category": "environment",
       "coding_environment": "opencode",
       "optional": false,
@@ -1010,59 +1010,6 @@
           "path": ".qoder/mcp.json",
           "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
           "size": 116
-        }
-      ]
-    },
-    {
-      "id": "runtime.opencode.mcp",
-      "display_name": "OpenCode HOI4 MCP configuration",
-      "description": "Install the Windows project registration for the verified HOI4 Agent Tools server.",
-      "category": "environment",
-      "coding_environment": "opencode",
-      "optional": true,
-      "platforms": [
-        "windows",
-        "linux"
-      ],
-      "source": {
-        "kind": "file",
-        "path": ".opencode/mcp.json"
-      },
-      "destination": {
-        "path": ".opencode/mcp.json",
-        "ownership": "merged",
-        "outside_project": false
-      },
-      "dependencies": [
-        "runtime.opencode",
-        "mcp.hoi4_agent_tools"
-      ],
-      "conflicts": [
-        "existing OpenCode project MCP server id"
-      ],
-      "conflict_policy": "three_way_merge",
-      "validation": [
-        {
-          "id": "opencode.mcp.exists",
-          "severity": "block",
-          "kind": "exists",
-          "target": ".opencode/mcp.json"
-        }
-      ],
-      "update": {
-        "strategy": "three_way_merge",
-        "remove_obsolete": false,
-        "preserve_local_additions": true
-      },
-      "capabilities": [
-        "OpenCode MCP registration",
-        "HOI4 Agent Tools"
-      ],
-      "expected_files": [
-        {
-          "path": ".opencode/mcp.json",
-          "sha256": "dfedf4270213b4d3d1fedf2e1719efe3619c7940132f3a6d48952ea29a6e6506",
-          "size": 100
         }
       ]
     },
@@ -4818,7 +4765,7 @@
     },
     {
       "id": "runtime.codex.skills",
-      "display_name": "Codex skill copy",
+      "display_name": "Shared .agents/skills copy",
       "description": "Install the .agents/skills copy of the canonical skill library for Codex and DeepSeek Harness.",
       "category": "environment",
       "coding_environment": "codex",
@@ -7852,6 +7799,12 @@
           "sha256": "00ed76a28ee207cbf7e9976e3019aa60e2bddef9f716008b2b79916ea3999eb7",
           "size": 2668
         }
+      ],
+      "shared_coding_environments": [
+        "gemini_cli",
+        "antigravity",
+        "kilo_code",
+        "devin_desktop"
       ]
     },
     {
@@ -7954,7 +7907,7 @@
     },
     {
       "id": "runtime.codex.portrait_skill",
-      "display_name": "Codex copy of the portrait production skill",
+      "display_name": "Shared .agents/skills copy of the portrait production skill",
       "description": "Install the Codex copy only when the matching optional workflow is selected.",
       "category": "environment",
       "coding_environment": "codex",
@@ -7991,11 +7944,17 @@
           "sha256": "f9aae168e18f0b1d0e3baa0920b87af17734549b00350ebcc6de39c23f3e0b76",
           "size": 3304
         }
+      ],
+      "shared_coding_environments": [
+        "gemini_cli",
+        "antigravity",
+        "kilo_code",
+        "devin_desktop"
       ]
     },
     {
       "id": "runtime.codex.portrait_router_skill",
-      "display_name": "Codex copy of the portrait provider router",
+      "display_name": "Shared .agents/skills copy of the portrait provider router",
       "description": "Install the Codex copy only when the matching optional workflow is selected.",
       "category": "environment",
       "coding_environment": "codex",
@@ -8032,11 +7991,17 @@
           "sha256": "0a014b359db39c125238383ce552e943db0ca1524f3005f92baef19b9f2df3d7",
           "size": 1542
         }
+      ],
+      "shared_coding_environments": [
+        "gemini_cli",
+        "antigravity",
+        "kilo_code",
+        "devin_desktop"
       ]
     },
     {
       "id": "runtime.codex.portrait_cloud_skill",
-      "display_name": "Codex copy of the Comfy Cloud portrait route",
+      "display_name": "Shared .agents/skills copy of the Comfy Cloud portrait route",
       "description": "Install the Codex copy only when the matching optional workflow is selected.",
       "category": "environment",
       "coding_environment": "codex",
@@ -8073,11 +8038,17 @@
           "sha256": "2313ec38796f8f44af28325aa8584753559ac7e9e66a31a6579f7961a5e61163",
           "size": 877
         }
+      ],
+      "shared_coding_environments": [
+        "gemini_cli",
+        "antigravity",
+        "kilo_code",
+        "devin_desktop"
       ]
     },
     {
       "id": "runtime.codex.portrait_local_skill",
-      "display_name": "Codex copy of the local ComfyUI portrait route",
+      "display_name": "Shared .agents/skills copy of the local ComfyUI portrait route",
       "description": "Install the Codex copy only when the matching optional workflow is selected.",
       "category": "environment",
       "coding_environment": "codex",
@@ -8114,11 +8085,17 @@
           "sha256": "99dc809405ece68cc74d50b49c30e273a92c5f19229e998b3c80984bbb0cb750",
           "size": 912
         }
+      ],
+      "shared_coding_environments": [
+        "gemini_cli",
+        "antigravity",
+        "kilo_code",
+        "devin_desktop"
       ]
     },
     {
       "id": "runtime.codex.portrait_runpod_skill",
-      "display_name": "Codex copy of the RunPod portrait route",
+      "display_name": "Shared .agents/skills copy of the RunPod portrait route",
       "description": "Install the Codex copy only when the matching optional workflow is selected.",
       "category": "environment",
       "coding_environment": "codex",
@@ -8155,11 +8132,17 @@
           "sha256": "91070aef3890812f61a0be076bf8f67daa0db507da615ed4dc24eabe9249c499",
           "size": 939
         }
+      ],
+      "shared_coding_environments": [
+        "gemini_cli",
+        "antigravity",
+        "kilo_code",
+        "devin_desktop"
       ]
     },
     {
       "id": "runtime.codex.super_events_skill",
-      "display_name": "Codex copy of the Super Events skill",
+      "display_name": "Shared .agents/skills copy of the Super Events skill",
       "description": "Install the Codex copy only when the matching optional workflow is selected.",
       "category": "environment",
       "coding_environment": "codex",
@@ -8242,11 +8225,17 @@
           "sha256": "8c287aaf41ca872a5e11695eccd74497e1c41bb3c06729ff8771c33d84be5f7b",
           "size": 366023
         }
+      ],
+      "shared_coding_environments": [
+        "gemini_cli",
+        "antigravity",
+        "kilo_code",
+        "devin_desktop"
       ]
     },
     {
       "id": "runtime.codex.live_tools_skill",
-      "display_name": "Codex copy of the live-playtest skill",
+      "display_name": "Shared .agents/skills copy of the live-playtest skill",
       "description": "Install the Codex copy only when the matching optional workflow is selected.",
       "category": "environment",
       "coding_environment": "codex",
@@ -8306,6 +8295,12 @@
           "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
           "size": 1509
         }
+      ],
+      "shared_coding_environments": [
+        "gemini_cli",
+        "antigravity",
+        "kilo_code",
+        "devin_desktop"
       ]
     },
     {
@@ -11534,6 +11529,2509 @@
           "size": 7126
         }
       ]
+    },
+    {
+      "id": "runtime.gemini",
+      "display_name": "Gemini CLI coding environment",
+      "description": "Install the Gemini CLI subagents and map generated from the canonical Claude Code agents.",
+      "category": "environment",
+      "coding_environment": "gemini_cli",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".gemini",
+        "include": [
+          "agent-map.md",
+          "agents/*.md"
+        ],
+        "exclude": [
+          "agents/hoi4-portrait-creator.md",
+          "agents/hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".gemini/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "runtime.agent_sync",
+        "runtime.codex.skills"
+      ],
+      "conflicts": [
+        "existing Gemini CLI agent or map with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "gemini.agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".gemini/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Gemini CLI subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.gemini.portrait_agent",
+      "display_name": "Gemini CLI portrait subagent",
+      "description": "Install the Gemini CLI projection only when Portrait Production is selected.",
+      "category": "environment",
+      "coding_environment": "gemini_cli",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".gemini/agents/hoi4-portrait-creator.md"
+      },
+      "destination": {
+        "path": ".gemini/agents/hoi4-portrait-creator.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.gemini",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing Gemini CLI portrait subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "gemini.portrait_agent.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".gemini/agents/hoi4-portrait-creator.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Gemini CLI portrait subagent"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.gemini.super_event_agents",
+      "display_name": "Gemini CLI Super Events subagents",
+      "description": "Install the Gemini CLI projections only when Super Events is selected.",
+      "category": "environment",
+      "coding_environment": "gemini_cli",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".gemini/agents",
+        "include": [
+          "hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".gemini/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.gemini",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing Gemini CLI Super Events subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "gemini.super_event_agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".gemini/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Gemini CLI Super Events subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.antigravity",
+      "display_name": "Antigravity coding environment",
+      "description": "Install the Antigravity subagents and map generated from the canonical Claude Code agents.",
+      "category": "environment",
+      "coding_environment": "antigravity",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".agents",
+        "include": [
+          "agent-map.md",
+          "agents/*.md"
+        ],
+        "exclude": [
+          "agents/hoi4-portrait-creator.md",
+          "agents/hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "runtime.agent_sync",
+        "runtime.codex.skills"
+      ],
+      "conflicts": [
+        "existing Antigravity agent or map with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "antigravity.agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".agents/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Antigravity subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.antigravity.portrait_agent",
+      "display_name": "Antigravity portrait subagent",
+      "description": "Install the Antigravity projection only when Portrait Production is selected.",
+      "category": "environment",
+      "coding_environment": "antigravity",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".agents/agents/hoi4-portrait-creator.md"
+      },
+      "destination": {
+        "path": ".agents/agents/hoi4-portrait-creator.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.antigravity",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing Antigravity portrait subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "antigravity.portrait_agent.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".agents/agents/hoi4-portrait-creator.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Antigravity portrait subagent"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.antigravity.super_event_agents",
+      "display_name": "Antigravity Super Events subagents",
+      "description": "Install the Antigravity projections only when Super Events is selected.",
+      "category": "environment",
+      "coding_environment": "antigravity",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".agents/agents",
+        "include": [
+          "hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".agents/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.antigravity",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing Antigravity Super Events subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "antigravity.super_event_agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".agents/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Antigravity Super Events subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kilo",
+      "display_name": "Kilo Code coding environment",
+      "description": "Install the Kilo Code subagents and map generated from the canonical Claude Code agents.",
+      "category": "environment",
+      "coding_environment": "kilo_code",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".kilo",
+        "include": [
+          "agent-map.md",
+          "agents/*.md"
+        ],
+        "exclude": [
+          "agents/hoi4-portrait-creator.md",
+          "agents/hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".kilo/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "runtime.agent_sync",
+        "runtime.codex.skills"
+      ],
+      "conflicts": [
+        "existing Kilo Code agent or map with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "kilo.agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".kilo/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Kilo Code subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kilo.portrait_agent",
+      "display_name": "Kilo Code portrait subagent",
+      "description": "Install the Kilo Code projection only when Portrait Production is selected.",
+      "category": "environment",
+      "coding_environment": "kilo_code",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".kilo/agents/hoi4-portrait-creator.md"
+      },
+      "destination": {
+        "path": ".kilo/agents/hoi4-portrait-creator.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kilo",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing Kilo Code portrait subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "kilo.portrait_agent.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".kilo/agents/hoi4-portrait-creator.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Kilo Code portrait subagent"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kilo.super_event_agents",
+      "display_name": "Kilo Code Super Events subagents",
+      "description": "Install the Kilo Code projections only when Super Events is selected.",
+      "category": "environment",
+      "coding_environment": "kilo_code",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".kilo/agents",
+        "include": [
+          "hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".kilo/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kilo",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing Kilo Code Super Events subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "kilo.super_event_agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".kilo/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Kilo Code Super Events subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro",
+      "display_name": "Kiro coding environment",
+      "description": "Install the Kiro subagents and map generated from the canonical Claude Code agents.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".kiro",
+        "include": [
+          "agent-map.md",
+          "agents/*.md"
+        ],
+        "exclude": [
+          "agents/hoi4-portrait-creator.md",
+          "agents/hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".kiro/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "runtime.agent_sync"
+      ],
+      "conflicts": [
+        "existing Kiro agent or map with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "kiro.agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".kiro/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Kiro subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro.portrait_agent",
+      "display_name": "Kiro portrait subagent",
+      "description": "Install the Kiro projection only when Portrait Production is selected.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".kiro/agents/hoi4-portrait-creator.md"
+      },
+      "destination": {
+        "path": ".kiro/agents/hoi4-portrait-creator.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kiro",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing Kiro portrait subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "kiro.portrait_agent.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".kiro/agents/hoi4-portrait-creator.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Kiro portrait subagent"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro.super_event_agents",
+      "display_name": "Kiro Super Events subagents",
+      "description": "Install the Kiro projections only when Super Events is selected.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".kiro/agents",
+        "include": [
+          "hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".kiro/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kiro",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing Kiro Super Events subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "kiro.super_event_agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".kiro/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Kiro Super Events subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen",
+      "display_name": "Qwen Code coding environment",
+      "description": "Install the Qwen Code subagents and map generated from the canonical Claude Code agents.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".qwen",
+        "include": [
+          "agent-map.md",
+          "agents/*.md"
+        ],
+        "exclude": [
+          "agents/hoi4-portrait-creator.md",
+          "agents/hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".qwen/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "runtime.agent_sync"
+      ],
+      "conflicts": [
+        "existing Qwen Code agent or map with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "qwen.agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".qwen/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Qwen Code subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen.portrait_agent",
+      "display_name": "Qwen Code portrait subagent",
+      "description": "Install the Qwen Code projection only when Portrait Production is selected.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".qwen/agents/hoi4-portrait-creator.md"
+      },
+      "destination": {
+        "path": ".qwen/agents/hoi4-portrait-creator.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qwen",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing Qwen Code portrait subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "qwen.portrait_agent.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".qwen/agents/hoi4-portrait-creator.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Qwen Code portrait subagent"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen.super_event_agents",
+      "display_name": "Qwen Code Super Events subagents",
+      "description": "Install the Qwen Code projections only when Super Events is selected.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".qwen/agents",
+        "include": [
+          "hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".qwen/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qwen",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing Qwen Code Super Events subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "qwen.super_event_agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".qwen/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Qwen Code Super Events subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.devin",
+      "display_name": "Devin Desktop coding environment",
+      "description": "Install the Devin Desktop subagents and map generated from the canonical Claude Code agents.",
+      "category": "environment",
+      "coding_environment": "devin_desktop",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".devin",
+        "include": [
+          "agent-map.md",
+          "agents/*.md"
+        ],
+        "exclude": [
+          "agents/hoi4-portrait-creator.md",
+          "agents/hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".devin/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "runtime.agent_sync",
+        "runtime.codex.skills"
+      ],
+      "conflicts": [
+        "existing Devin Desktop agent or map with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "devin.agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".devin/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Devin Desktop subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.devin.portrait_agent",
+      "display_name": "Devin Desktop portrait subagent",
+      "description": "Install the Devin Desktop projection only when Portrait Production is selected.",
+      "category": "environment",
+      "coding_environment": "devin_desktop",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".devin/agents/hoi4-portrait-creator.md"
+      },
+      "destination": {
+        "path": ".devin/agents/hoi4-portrait-creator.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.devin",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing Devin Desktop portrait subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "devin.portrait_agent.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".devin/agents/hoi4-portrait-creator.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Devin Desktop portrait subagent"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.devin.super_event_agents",
+      "display_name": "Devin Desktop Super Events subagents",
+      "description": "Install the Devin Desktop projections only when Super Events is selected.",
+      "category": "environment",
+      "coding_environment": "devin_desktop",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".devin/agents",
+        "include": [
+          "hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".devin/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.devin",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing Devin Desktop Super Events subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "devin.super_event_agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".devin/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Devin Desktop Super Events subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.augment",
+      "display_name": "Augment coding environment",
+      "description": "Install the Augment subagents and map generated from the canonical Claude Code agents.",
+      "category": "environment",
+      "coding_environment": "augment",
+      "optional": false,
+      "platforms": [
+        "macos",
+        "linux"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".augment",
+        "include": [
+          "agent-map.md",
+          "agents/*.md"
+        ],
+        "exclude": [
+          "agents/hoi4-portrait-creator.md",
+          "agents/hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".augment/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.subagents",
+        "runtime.agent_sync"
+      ],
+      "conflicts": [
+        "existing Augment agent or map with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "augment.agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".augment/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Augment subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.augment.portrait_agent",
+      "display_name": "Augment portrait subagent",
+      "description": "Install the Augment projection only when Portrait Production is selected.",
+      "category": "environment",
+      "coding_environment": "augment",
+      "optional": true,
+      "platforms": [
+        "macos",
+        "linux"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".augment/agents/hoi4-portrait-creator.md"
+      },
+      "destination": {
+        "path": ".augment/agents/hoi4-portrait-creator.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.augment",
+        "workflow.portraits.subagent"
+      ],
+      "conflicts": [
+        "existing Augment portrait subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "augment.portrait_agent.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".augment/agents/hoi4-portrait-creator.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Augment portrait subagent"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.augment.super_event_agents",
+      "display_name": "Augment Super Events subagents",
+      "description": "Install the Augment projections only when Super Events is selected.",
+      "category": "environment",
+      "coding_environment": "augment",
+      "optional": true,
+      "platforms": [
+        "macos",
+        "linux"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".augment/agents",
+        "include": [
+          "hoi4-super-event-*.md"
+        ]
+      },
+      "destination": {
+        "path": ".augment/agents/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.augment",
+        "workflow.super_events.subagents"
+      ],
+      "conflicts": [
+        "existing Augment Super Events subagent"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "augment.super_event_agents.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".augment/agents"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Augment Super Events subagents"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.gemini.context",
+      "display_name": "Gemini CLI project context",
+      "description": "Install the gemini cli project context that points the client at the project instructions.",
+      "category": "environment",
+      "coding_environment": "gemini_cli",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": "GEMINI_template.md"
+      },
+      "destination": {
+        "path": "GEMINI.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.agents",
+        "runtime.gemini"
+      ],
+      "conflicts": [
+        "existing GEMINI.md"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "gemini.context.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": "GEMINI.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Gemini CLI project context"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.copilot",
+      "display_name": "GitHub Copilot instructions",
+      "description": "Install the github copilot instructions that points the client at the project instructions.",
+      "category": "environment",
+      "coding_environment": "github_copilot",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".github/instructions/hoi4-mod-setup.instructions.md"
+      },
+      "destination": {
+        "path": ".github/instructions/hoi4-mod-setup.instructions.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.agents"
+      ],
+      "conflicts": [
+        "existing .github/instructions/hoi4-mod-setup.instructions.md"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "copilot.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".github/instructions/hoi4-mod-setup.instructions.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "GitHub Copilot instructions"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.cline",
+      "display_name": "Cline project rule",
+      "description": "Install the cline project rule that points the client at the project instructions.",
+      "category": "environment",
+      "coding_environment": "cline",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".clinerules/hoi4-mod-setup.md"
+      },
+      "destination": {
+        "path": ".clinerules/hoi4-mod-setup.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.agents"
+      ],
+      "conflicts": [
+        "existing .clinerules/hoi4-mod-setup.md"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "cline.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".clinerules/hoi4-mod-setup.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Cline project rule"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.continue",
+      "display_name": "Continue project rule",
+      "description": "Install the continue project rule that points the client at the project instructions.",
+      "category": "environment",
+      "coding_environment": "continue",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".continue/rules/hoi4-mod-setup.md"
+      },
+      "destination": {
+        "path": ".continue/rules/hoi4-mod-setup.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.agents"
+      ],
+      "conflicts": [
+        "existing .continue/rules/hoi4-mod-setup.md"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "continue.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".continue/rules/hoi4-mod-setup.md"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Continue project rule"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.aider",
+      "display_name": "Aider project configuration",
+      "description": "Install the aider project configuration that points the client at the project instructions.",
+      "category": "environment",
+      "coding_environment": "aider",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".aider.conf.yml"
+      },
+      "destination": {
+        "path": ".aider.conf.yml",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.agents"
+      ],
+      "conflicts": [
+        "existing .aider.conf.yml"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "aider.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".aider.conf.yml"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Aider project configuration"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.grok.skills",
+      "display_name": "Grok Build skill copy",
+      "description": "Install the .grok/skills/ copy of the canonical skill library for Grok Build.",
+      "category": "environment",
+      "coding_environment": "grok_build",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-*/**",
+          "xlsx/**"
+        ],
+        "exclude": [
+          "**/*.pyc",
+          "**/.DS_Store",
+          "**/__pycache__/**",
+          "hoi4-comfyui*/**",
+          "hoi4-live-playtest/**",
+          "hoi4-portrait-production*/**",
+          "hoi4-super-events*/**"
+        ]
+      },
+      "destination": {
+        "path": ".grok/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.skills"
+      ],
+      "conflicts": [
+        "existing skill with the same name in .grok/skills"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.grok.portrait_skill",
+      "display_name": "Grok Build copy of the portrait production skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "grok_build",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-portrait-production/SKILL.md"
+      },
+      "destination": {
+        "path": ".grok/skills/hoi4-portrait-production/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.grok.skills",
+        "workflow.portraits.core"
+      ],
+      "conflicts": [
+        "existing Grok Build copy of the portrait production skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.grok.portrait_router_skill",
+      "display_name": "Grok Build copy of the portrait provider router",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "grok_build",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui/SKILL.md"
+      },
+      "destination": {
+        "path": ".grok/skills/hoi4-comfyui/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.grok.skills",
+        "workflow.portraits.router"
+      ],
+      "conflicts": [
+        "existing Grok Build copy of the portrait provider router"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.grok.portrait_cloud_skill",
+      "display_name": "Grok Build copy of the Comfy Cloud portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "grok_build",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-cloud/SKILL.md"
+      },
+      "destination": {
+        "path": ".grok/skills/hoi4-comfyui-cloud/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.grok.skills",
+        "workflow.portraits.cloud"
+      ],
+      "conflicts": [
+        "existing Grok Build copy of the comfy cloud portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.grok.portrait_local_skill",
+      "display_name": "Grok Build copy of the local ComfyUI portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "grok_build",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-local/SKILL.md"
+      },
+      "destination": {
+        "path": ".grok/skills/hoi4-comfyui-local/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.grok.skills",
+        "workflow.portraits.local"
+      ],
+      "conflicts": [
+        "existing Grok Build copy of the local comfyui portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.grok.portrait_runpod_skill",
+      "display_name": "Grok Build copy of the RunPod portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "grok_build",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-runpod/SKILL.md"
+      },
+      "destination": {
+        "path": ".grok/skills/hoi4-comfyui-runpod/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.grok.skills",
+        "workflow.portraits.runpod"
+      ],
+      "conflicts": [
+        "existing Grok Build copy of the runpod portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.grok.super_events_skill",
+      "display_name": "Grok Build copy of the Super Events skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "grok_build",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-super-events/**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".grok/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.grok.skills",
+        "workflow.super_events"
+      ],
+      "conflicts": [
+        "existing Grok Build copy of the super events skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.grok.live_tools_skill",
+      "display_name": "Grok Build copy of the live-playtest skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "grok_build",
+      "optional": true,
+      "platforms": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-live-playtest/**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".grok/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.grok.skills",
+        "workflow.live_testing"
+      ],
+      "conflicts": [
+        "existing Grok Build copy of the live-playtest skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro.skills",
+      "display_name": "Kiro skill copy",
+      "description": "Install the .kiro/skills/ copy of the canonical skill library for Kiro.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-*/**",
+          "xlsx/**"
+        ],
+        "exclude": [
+          "**/*.pyc",
+          "**/.DS_Store",
+          "**/__pycache__/**",
+          "hoi4-comfyui*/**",
+          "hoi4-live-playtest/**",
+          "hoi4-portrait-production*/**",
+          "hoi4-super-events*/**"
+        ]
+      },
+      "destination": {
+        "path": ".kiro/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.skills"
+      ],
+      "conflicts": [
+        "existing skill with the same name in .kiro/skills"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro.portrait_skill",
+      "display_name": "Kiro copy of the portrait production skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-portrait-production/SKILL.md"
+      },
+      "destination": {
+        "path": ".kiro/skills/hoi4-portrait-production/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kiro.skills",
+        "workflow.portraits.core"
+      ],
+      "conflicts": [
+        "existing Kiro copy of the portrait production skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro.portrait_router_skill",
+      "display_name": "Kiro copy of the portrait provider router",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui/SKILL.md"
+      },
+      "destination": {
+        "path": ".kiro/skills/hoi4-comfyui/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kiro.skills",
+        "workflow.portraits.router"
+      ],
+      "conflicts": [
+        "existing Kiro copy of the portrait provider router"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro.portrait_cloud_skill",
+      "display_name": "Kiro copy of the Comfy Cloud portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-cloud/SKILL.md"
+      },
+      "destination": {
+        "path": ".kiro/skills/hoi4-comfyui-cloud/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kiro.skills",
+        "workflow.portraits.cloud"
+      ],
+      "conflicts": [
+        "existing Kiro copy of the comfy cloud portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro.portrait_local_skill",
+      "display_name": "Kiro copy of the local ComfyUI portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-local/SKILL.md"
+      },
+      "destination": {
+        "path": ".kiro/skills/hoi4-comfyui-local/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kiro.skills",
+        "workflow.portraits.local"
+      ],
+      "conflicts": [
+        "existing Kiro copy of the local comfyui portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro.portrait_runpod_skill",
+      "display_name": "Kiro copy of the RunPod portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-runpod/SKILL.md"
+      },
+      "destination": {
+        "path": ".kiro/skills/hoi4-comfyui-runpod/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kiro.skills",
+        "workflow.portraits.runpod"
+      ],
+      "conflicts": [
+        "existing Kiro copy of the runpod portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro.super_events_skill",
+      "display_name": "Kiro copy of the Super Events skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-super-events/**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".kiro/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kiro.skills",
+        "workflow.super_events"
+      ],
+      "conflicts": [
+        "existing Kiro copy of the super events skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro.live_tools_skill",
+      "display_name": "Kiro copy of the live-playtest skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": true,
+      "platforms": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-live-playtest/**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".kiro/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kiro.skills",
+        "workflow.live_testing"
+      ],
+      "conflicts": [
+        "existing Kiro copy of the live-playtest skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen.skills",
+      "display_name": "Qwen Code skill copy",
+      "description": "Install the .qwen/skills/ copy of the canonical skill library for Qwen Code.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": false,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-*/**",
+          "xlsx/**"
+        ],
+        "exclude": [
+          "**/*.pyc",
+          "**/.DS_Store",
+          "**/__pycache__/**",
+          "hoi4-comfyui*/**",
+          "hoi4-live-playtest/**",
+          "hoi4-portrait-production*/**",
+          "hoi4-super-events*/**"
+        ]
+      },
+      "destination": {
+        "path": ".qwen/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "core.skills"
+      ],
+      "conflicts": [
+        "existing skill with the same name in .qwen/skills"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen.portrait_skill",
+      "display_name": "Qwen Code copy of the portrait production skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-portrait-production/SKILL.md"
+      },
+      "destination": {
+        "path": ".qwen/skills/hoi4-portrait-production/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qwen.skills",
+        "workflow.portraits.core"
+      ],
+      "conflicts": [
+        "existing Qwen Code copy of the portrait production skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen.portrait_router_skill",
+      "display_name": "Qwen Code copy of the portrait provider router",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui/SKILL.md"
+      },
+      "destination": {
+        "path": ".qwen/skills/hoi4-comfyui/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qwen.skills",
+        "workflow.portraits.router"
+      ],
+      "conflicts": [
+        "existing Qwen Code copy of the portrait provider router"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen.portrait_cloud_skill",
+      "display_name": "Qwen Code copy of the Comfy Cloud portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-cloud/SKILL.md"
+      },
+      "destination": {
+        "path": ".qwen/skills/hoi4-comfyui-cloud/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qwen.skills",
+        "workflow.portraits.cloud"
+      ],
+      "conflicts": [
+        "existing Qwen Code copy of the comfy cloud portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen.portrait_local_skill",
+      "display_name": "Qwen Code copy of the local ComfyUI portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-local/SKILL.md"
+      },
+      "destination": {
+        "path": ".qwen/skills/hoi4-comfyui-local/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qwen.skills",
+        "workflow.portraits.local"
+      ],
+      "conflicts": [
+        "existing Qwen Code copy of the local comfyui portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen.portrait_runpod_skill",
+      "display_name": "Qwen Code copy of the RunPod portrait route",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".claude/skills/hoi4-comfyui-runpod/SKILL.md"
+      },
+      "destination": {
+        "path": ".qwen/skills/hoi4-comfyui-runpod/SKILL.md",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qwen.skills",
+        "workflow.portraits.runpod"
+      ],
+      "conflicts": [
+        "existing Qwen Code copy of the runpod portrait route"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen.super_events_skill",
+      "display_name": "Qwen Code copy of the Super Events skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-super-events/**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".qwen/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qwen.skills",
+        "workflow.super_events"
+      ],
+      "conflicts": [
+        "existing Qwen Code copy of the super events skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen.live_tools_skill",
+      "display_name": "Qwen Code copy of the live-playtest skill",
+      "description": "Install the Codex copy only when the matching optional workflow is selected.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": true,
+      "platforms": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".claude/skills",
+        "include": [
+          "hoi4-live-playtest/**"
+        ],
+        "exclude": [
+          "**/.DS_Store"
+        ]
+      },
+      "destination": {
+        "path": ".qwen/skills/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qwen.skills",
+        "workflow.live_testing"
+      ],
+      "conflicts": [
+        "existing Qwen Code copy of the live-playtest skill"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "expected_files": []
+    },
+    {
+      "id": "runtime.copilot.mcp",
+      "display_name": "GitHub Copilot (VS Code) HOI4 MCP configuration",
+      "description": "Install the project registration for the verified HOI4 Agent Tools server.",
+      "category": "environment",
+      "coding_environment": "github_copilot",
+      "optional": true,
+      "platforms": [
+        "windows",
+        "linux"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".vscode/mcp.json"
+      },
+      "destination": {
+        "path": ".vscode/mcp.json",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.copilot",
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing GitHub Copilot (VS Code) project MCP server id"
+      ],
+      "conflict_policy": "three_way_merge",
+      "validation": [
+        {
+          "id": "copilot.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".vscode/mcp.json"
+        }
+      ],
+      "update": {
+        "strategy": "three_way_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "GitHub Copilot (VS Code) MCP registration",
+        "HOI4 Agent Tools"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.gemini.mcp",
+      "display_name": "Gemini CLI HOI4 MCP configuration",
+      "description": "Install the project registration for the verified HOI4 Agent Tools server.",
+      "category": "environment",
+      "coding_environment": "gemini_cli",
+      "optional": true,
+      "platforms": [
+        "windows",
+        "linux"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".gemini/settings.json"
+      },
+      "destination": {
+        "path": ".gemini/settings.json",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.gemini",
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing Gemini CLI project MCP server id"
+      ],
+      "conflict_policy": "three_way_merge",
+      "validation": [
+        {
+          "id": "gemini.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".gemini/settings.json"
+        }
+      ],
+      "update": {
+        "strategy": "three_way_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Gemini CLI MCP registration",
+        "HOI4 Agent Tools"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.antigravity.mcp",
+      "display_name": "Antigravity HOI4 MCP configuration",
+      "description": "Install the project registration for the verified HOI4 Agent Tools server.",
+      "category": "environment",
+      "coding_environment": "antigravity",
+      "optional": true,
+      "platforms": [
+        "windows",
+        "linux"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".agents/mcp_config.json"
+      },
+      "destination": {
+        "path": ".agents/mcp_config.json",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.antigravity",
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing Antigravity project MCP server id"
+      ],
+      "conflict_policy": "three_way_merge",
+      "validation": [
+        {
+          "id": "antigravity.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".agents/mcp_config.json"
+        }
+      ],
+      "update": {
+        "strategy": "three_way_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Antigravity MCP registration",
+        "HOI4 Agent Tools"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.grok.mcp",
+      "display_name": "Grok Build HOI4 MCP configuration",
+      "description": "Install the project registration for the verified HOI4 Agent Tools server.",
+      "category": "environment",
+      "coding_environment": "grok_build",
+      "optional": true,
+      "platforms": [
+        "windows",
+        "linux"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".grok/config.toml"
+      },
+      "destination": {
+        "path": ".grok/config.toml",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.grok.skills",
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing Grok Build project MCP server id"
+      ],
+      "conflict_policy": "toml_merge",
+      "validation": [
+        {
+          "id": "grok.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".grok/config.toml"
+        },
+        {
+          "id": "grok.mcp.toml",
+          "severity": "block",
+          "kind": "toml_parse",
+          "target": ".grok/config.toml"
+        }
+      ],
+      "update": {
+        "strategy": "toml_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Grok Build MCP registration",
+        "HOI4 Agent Tools"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kilo.mcp",
+      "display_name": "Kilo Code HOI4 MCP configuration",
+      "description": "Install the project registration for the verified HOI4 Agent Tools server.",
+      "category": "environment",
+      "coding_environment": "kilo_code",
+      "optional": true,
+      "platforms": [
+        "windows",
+        "linux"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".kilo/kilo.json"
+      },
+      "destination": {
+        "path": ".kilo/kilo.json",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kilo",
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing Kilo Code project MCP server id"
+      ],
+      "conflict_policy": "three_way_merge",
+      "validation": [
+        {
+          "id": "kilo.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".kilo/kilo.json"
+        }
+      ],
+      "update": {
+        "strategy": "three_way_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Kilo Code MCP registration",
+        "HOI4 Agent Tools"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.kiro.mcp",
+      "display_name": "Kiro HOI4 MCP configuration",
+      "description": "Install the project registration for the verified HOI4 Agent Tools server.",
+      "category": "environment",
+      "coding_environment": "kiro",
+      "optional": true,
+      "platforms": [
+        "windows",
+        "linux"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".kiro/settings/mcp.json"
+      },
+      "destination": {
+        "path": ".kiro/settings/mcp.json",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.kiro",
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing Kiro project MCP server id"
+      ],
+      "conflict_policy": "three_way_merge",
+      "validation": [
+        {
+          "id": "kiro.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".kiro/settings/mcp.json"
+        }
+      ],
+      "update": {
+        "strategy": "three_way_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Kiro MCP registration",
+        "HOI4 Agent Tools"
+      ],
+      "expected_files": []
+    },
+    {
+      "id": "runtime.qwen.mcp",
+      "display_name": "Qwen Code HOI4 MCP configuration",
+      "description": "Install the project registration for the verified HOI4 Agent Tools server.",
+      "category": "environment",
+      "coding_environment": "qwen_code",
+      "optional": true,
+      "platforms": [
+        "windows",
+        "linux"
+      ],
+      "source": {
+        "kind": "file",
+        "path": ".qwen/settings.json"
+      },
+      "destination": {
+        "path": ".qwen/settings.json",
+        "ownership": "merged",
+        "outside_project": false
+      },
+      "dependencies": [
+        "runtime.qwen",
+        "mcp.hoi4_agent_tools"
+      ],
+      "conflicts": [
+        "existing Qwen Code project MCP server id"
+      ],
+      "conflict_policy": "three_way_merge",
+      "validation": [
+        {
+          "id": "qwen.mcp.exists",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".qwen/settings.json"
+        }
+      ],
+      "update": {
+        "strategy": "three_way_merge",
+        "remove_obsolete": false,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "Qwen Code MCP registration",
+        "HOI4 Agent Tools"
+      ],
+      "expected_files": []
     }
   ],
   "profiles": [
@@ -11618,28 +14116,185 @@
       "display_name": "Claude Code",
       "description": "Canonical CLAUDE.md, skills, and agents in .claude, shared settings, and project MCP registration",
       "default_primary": true,
-      "open_command": "claude"
+      "open_command": "claude",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "runtime.claude.mcp",
+        "path": ".mcp.json",
+        "format": "json_mcp_servers"
+      }
     },
     {
       "id": "codex",
       "display_name": "Codex",
       "description": "AGENTS.md, the .agents/skills copy, generated .codex agents, and Codex MCP configuration",
-      "open_command": "codex"
+      "open_command": "codex",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "codex.config",
+        "path": ".codex/config.toml",
+        "format": "toml_mcp_servers"
+      }
     },
     {
       "id": "cursor",
       "display_name": "Cursor",
-      "description": "Generated .cursor agents, project settings, map, and MCP"
+      "description": "Generated .cursor agents, project settings, map, and MCP",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "runtime.cursor.mcp",
+        "path": ".cursor/mcp.json",
+        "format": "json_mcp_servers"
+      }
     },
     {
       "id": "qoder",
       "display_name": "Qoder",
-      "description": "Generated .qoder agents, project settings, map, and MCP"
+      "description": "Generated .qoder agents, project settings, map, and MCP",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "runtime.qoder.mcp",
+        "path": ".qoder/mcp.json",
+        "format": "json_mcp_servers"
+      }
     },
     {
       "id": "opencode",
       "display_name": "OpenCode",
-      "description": "Generated .opencode agents, opencode.json, map, and MCP"
+      "description": "Generated .opencode agents, map, and opencode.json with instructions and MCP",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "runtime.opencode.config",
+        "path": "opencode.json",
+        "format": "local_command_array"
+      },
+      "documentation_url": "https://opencode.ai/docs/mcp-servers/"
+    },
+    {
+      "id": "github_copilot",
+      "display_name": "GitHub Copilot (VS Code)",
+      "description": "A Copilot instructions file, the canonical .claude agents and skills, and VS Code project MCP",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "runtime.copilot.mcp",
+        "path": ".vscode/mcp.json",
+        "format": "vscode_servers"
+      },
+      "documentation_url": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers"
+    },
+    {
+      "id": "gemini_cli",
+      "display_name": "Gemini CLI",
+      "description": "GEMINI.md that imports AGENTS.md, generated .gemini agents, the shared .agents skills copy, and project MCP",
+      "open_command": "gemini",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "runtime.gemini.mcp",
+        "path": ".gemini/settings.json",
+        "format": "json_mcp_servers"
+      },
+      "documentation_url": "https://geminicli.com/docs/tools/mcp-server/"
+    },
+    {
+      "id": "antigravity",
+      "display_name": "Antigravity",
+      "description": "AGENTS.md, generated .agents agents, the shared .agents skills copy, and project MCP",
+      "open_command": "agy",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "runtime.antigravity.mcp",
+        "path": ".agents/mcp_config.json",
+        "format": "json_mcp_servers"
+      },
+      "documentation_url": "https://antigravity.google/docs/mcp"
+    },
+    {
+      "id": "grok_build",
+      "display_name": "Grok Build",
+      "description": "AGENTS.md, a .grok skills copy, and project MCP",
+      "open_command": "grok",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "runtime.grok.mcp",
+        "path": ".grok/config.toml",
+        "format": "toml_mcp_servers"
+      },
+      "documentation_url": "https://docs.x.ai/build/features/mcp-servers"
+    },
+    {
+      "id": "kilo_code",
+      "display_name": "Kilo Code",
+      "description": "AGENTS.md, generated .kilo agents, the shared .agents skills copy, and project MCP",
+      "open_command": "kilo",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "runtime.kilo.mcp",
+        "path": ".kilo/kilo.json",
+        "format": "local_command_array"
+      },
+      "documentation_url": "https://kilo.ai/docs/automate/mcp/using-in-kilo-code"
+    },
+    {
+      "id": "kiro",
+      "display_name": "Kiro",
+      "description": "AGENTS.md, generated .kiro agents, a .kiro skills copy, and project MCP",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "runtime.kiro.mcp",
+        "path": ".kiro/settings/mcp.json",
+        "format": "json_mcp_servers"
+      },
+      "documentation_url": "https://kiro.dev/docs/mcp/configuration/"
+    },
+    {
+      "id": "qwen_code",
+      "display_name": "Qwen Code",
+      "description": "AGENTS.md, generated .qwen agents, a .qwen skills copy, and project MCP",
+      "open_command": "qwen",
+      "mcp_support": "project",
+      "mcp_registration": {
+        "component_id": "runtime.qwen.mcp",
+        "path": ".qwen/settings.json",
+        "format": "json_mcp_servers"
+      },
+      "documentation_url": "https://qwenlm.github.io/qwen-code-docs/en/users/features/mcp/"
+    },
+    {
+      "id": "cline",
+      "display_name": "Cline",
+      "description": "AGENTS.md, a Cline rule, and the canonical .claude skills; MCP servers are added in Cline",
+      "mcp_support": "manual",
+      "documentation_url": "https://docs.cline.bot/mcp/configuring-mcp-servers"
+    },
+    {
+      "id": "devin_desktop",
+      "display_name": "Devin Desktop",
+      "description": "AGENTS.md, generated .devin agents, and the shared .agents skills copy; MCP servers are added in Devin",
+      "mcp_support": "manual",
+      "documentation_url": "https://docs.devin.ai/desktop/devin-local"
+    },
+    {
+      "id": "augment",
+      "display_name": "Augment (Auggie CLI)",
+      "description": "AGENTS.md, generated .augment agents, and the canonical .claude skills; MCP servers are added in Auggie",
+      "open_command": "auggie",
+      "mcp_support": "manual",
+      "documentation_url": "https://docs.augmentcode.com/cli/integrations"
+    },
+    {
+      "id": "continue",
+      "display_name": "Continue",
+      "description": "A Continue rule that points to AGENTS.md and the skills; MCP servers are added in Continue",
+      "mcp_support": "manual",
+      "documentation_url": "https://docs.continue.dev/customize/deep-dives/mcp"
+    },
+    {
+      "id": "aider",
+      "display_name": "Aider",
+      "description": "An .aider.conf.yml that reads AGENTS.md; Aider has no MCP support",
+      "open_command": "aider",
+      "mcp_support": "none",
+      "documentation_url": "https://aider.chat/docs/usage/conventions.html"
     }
   ],
   "image_generation": {

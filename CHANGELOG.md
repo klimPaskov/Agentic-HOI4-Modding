@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Publish setup manifest format 6. Each coding client declares whether HOI4 Mod Setup manages a project MCP file, the client keeps MCP servers in its own settings, or it has no MCP support, so an app that cannot register a client never offers it.
+- Add packages for GitHub Copilot (VS Code), Gemini CLI, Antigravity, Grok Build, Kilo Code, Kiro, and Qwen Code with project MCP registration, and for Cline, Devin Desktop, Augment, Continue, and Aider with project guidance only.
+- Share one `.agents/skills/` copy between Codex, Gemini CLI, Antigravity, Kilo Code, and Devin Desktop; generate native subagents for seven more clients from the canonical Claude agents.
+- Move the OpenCode MCP registration into `opencode.json`, the only file OpenCode reads, and retire `.opencode/mcp.json`.
+- Merge this format only together with the HOI4 Mod Setup release that reads it; earlier releases report that the setup package needs a newer app.
+
 ## 2026-10-13
 
 - Add native Linux Agent Tools installation with exact platform trees and reviewed link targets in schema 5, keeping one canonical manifest route.

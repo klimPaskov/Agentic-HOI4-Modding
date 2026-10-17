@@ -26,6 +26,24 @@ on:
       - ".cursor/**"
       - ".qoder/**"
       - ".opencode/**"
+      - "scripts/coding_environment_data.py"
+      - "scripts/test_coding_environment_data.py"
+      - "schemas/remote-manifest.v6.schema.json"
+      - "GEMINI_template.md"
+      - ".gemini/**"
+      - ".agents/**"
+      - ".grok/**"
+      - ".kilo/**"
+      - ".kiro/**"
+      - ".qwen/**"
+      - ".devin/**"
+      - ".augment/**"
+      - ".clinerules/**"
+      - ".continue/**"
+      - ".github/instructions/**"
+      - ".vscode/mcp.json"
+      - ".aider.conf.yml"
+      - "opencode.json"
       - ".tools/sync/**"
       - ".tools/mcp/**"
       - ".tools/3d_pipeline/**"
@@ -46,6 +64,28 @@ jobs:
         with:
           python-version: "3.13"
       - run: python -m pip install --disable-pip-version-check "jsonschema==4.25.1" "Pillow==12.2.0" "openpyxl==3.1.5"
+      # A pull request cannot publish evidence. Regenerate it for the exact
+      # head commit with the owned generator and keep it as a reviewable
+      # artifact before the strict checks below run.
+      - name: Preview exact-revision evidence for the pull request head
+        if: github.event_name == 'pull_request'
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/evidence"
+          cp hoi4-mod-setup.manifest.json "$RUNNER_TEMP/evidence/hoi4-mod-setup.manifest.json"
+          python scripts/generate_manifest_evidence.py --manifest "$RUNNER_TEMP/evidence/hoi4-mod-setup.manifest.json" --source-root . --revision "$HEAD_SHA"
+          echo "$HEAD_SHA" > "$RUNNER_TEMP/evidence/REVISION"
+      - name: Keep the previewed manifest
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: hoi4-mod-setup-manifest-preview
+          path: ${{ runner.temp }}/evidence/
+          if-no-files-found: error
+          retention-days: 14
       - run: python -m unittest discover -s scripts -p "test_*.py"
       - run: python scripts/test_agent_sync_contract.py
       - run: python -m compileall -q .tools/3d_pipeline

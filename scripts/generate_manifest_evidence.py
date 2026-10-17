@@ -14,6 +14,7 @@ from urllib.parse import unquote
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from live_testing_provider_data import build_live_testing_components, build_live_testing_table
 from image_generation_provider_data import build_image_generation_components, build_image_generation_table
+from coding_environment_data import apply_coding_environments
 
 
 LFS_POINTER_PREFIX = b"version https://git-lfs.github.com/spec/v1"
@@ -176,7 +177,7 @@ def main() -> None:
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     snapshot = git_snapshot(args.source_root.resolve(), args.revision)
     validate_offline_wiki_links(snapshot)
-    manifest["schema_version"] = "5.0.0"
+    manifest["schema_version"] = "6.0.0"
     manifest["generated_for_revision"] = args.revision
     manifest["image_generation"] = build_image_generation_table(args.source_root.resolve())
     manifest["live_testing"] = build_live_testing_table()
@@ -187,6 +188,7 @@ def main() -> None:
         if component["id"] in component_updates:
             manifest["components"][index] = component_updates.pop(component["id"])
     manifest["components"].extend(component_updates.values())
+    apply_coding_environments(manifest)
     for component in manifest["components"]:
         component["expected_files"] = git_evidence_for(component, snapshot)
     args.manifest.write_text(
