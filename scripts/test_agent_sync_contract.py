@@ -138,19 +138,12 @@ def main():
                 assert agent.description in content
                 assert "by .tools/sync/sync_agents.py" in content
                 assert "image-generation MCP workflow" not in content
-                frontmatter = content.split("
----
-", 1)[0]
+                frontmatter = content.split("\n---\n", 1)[0].splitlines()
                 if runtime_key in module.NAMED_MARKDOWN_RUNTIMES:
-                    assert f"
-name: {agent.name}
-" in frontmatter, (runtime_key, agent.name)
-                    assert "
-model:" not in frontmatter and "
-tools:" not in frontmatter, runtime_key
+                    assert f"name: {agent.name}" in frontmatter, (runtime_key, agent.name)
+                    assert not any(line.startswith(("model:", "tools:")) for line in frontmatter), runtime_key
                 if runtime_key == "kilo":
-                    assert "
-mode: subagent" in frontmatter, agent.name
+                    assert "mode: subagent" in frontmatter, agent.name
     if tomllib is not None:
         config = tomllib.loads((ROOT / ".codex" / "config.toml").read_text(encoding="utf-8"))
         registered = {name for name in config["agents"] if isinstance(config["agents"][name], dict)}

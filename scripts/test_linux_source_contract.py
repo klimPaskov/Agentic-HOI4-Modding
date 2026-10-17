@@ -28,14 +28,14 @@ images = module("linux_source_images", ".tools/image_generation/runtime/server.p
 
 
 class LinuxSourceContractTests(unittest.TestCase):
-    def test_schema_major_five_is_explicit_and_unknown_majors_fail(self):
-        for version in ("3.0.0", "4.0.0", "5.0.0"):
+    def test_schema_majors_are_explicit_and_unknown_majors_fail(self):
+        for version in ("3.0.0", "4.0.0", "5.0.0", "6.0.0"):
             Draft202012Validator.check_schema(load_manifest_schema(version, ROOT))
-        for version in ("6.0.0", "5", "5.0.0-extra", None):
+        for version in ("7.0.0", "5", "5.0.0-extra", None):
             with self.assertRaises(ValueError):
                 load_manifest_schema(version, ROOT)
         manifest = json.loads((ROOT / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
-        validator = Draft202012Validator(load_manifest_schema("5.0.0", ROOT))
+        validator = Draft202012Validator(load_manifest_schema(manifest["schema_version"], ROOT))
         validator.validate(manifest)
         health = next(v for c in manifest["components"] for v in c.get("validation", []) if v["id"] == "mcp.hoi4.health")
         health["parameters"]["platform_pins"]["linux"].pop("package_symlinks")
