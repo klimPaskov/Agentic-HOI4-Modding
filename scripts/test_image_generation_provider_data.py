@@ -17,13 +17,13 @@ from image_generation_provider_data import build_image_generation_components, bu
 class ImageGenerationProviderDataTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.schema = json.loads((ROOT / "schemas/remote-manifest.v5.schema.json").read_text(encoding="utf-8"))
+        cls.schema = json.loads((ROOT / "schemas/remote-manifest.v6.schema.json").read_text(encoding="utf-8"))
         Draft202012Validator.check_schema(cls.schema)
 
     def test_catalog_matches_manifest_schema_and_has_the_requested_routes(self) -> None:
         table = build_image_generation_table(ROOT)
         instance = json.loads((ROOT / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
-        instance["schema_version"] = "5.0.0"
+        instance["schema_version"] = "6.0.0"
         instance["image_generation"] = table
         errors = list(Draft202012Validator(self.schema).iter_errors(instance))
         self.assertEqual(errors, [])

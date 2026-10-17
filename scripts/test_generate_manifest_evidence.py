@@ -69,10 +69,10 @@ class ManifestGeneratorTests(unittest.TestCase):
                 {"present.txt": b"present"},
             )
 
-    def test_canonical_manifest_uses_schema_five_and_declares_image_providers(self) -> None:
+    def test_canonical_manifest_uses_schema_six_and_declares_image_providers(self) -> None:
         manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
-        self.assertEqual(manifest["schema_version"].split(".")[0], "5")
+        self.assertEqual(manifest["schema_version"].split(".")[0], "6")
         self.assertEqual(manifest["image_generation"]["default_provider"], "gptimage")
         self.assertEqual(manifest["image_generation"], GENERATOR.build_image_generation_table(manifest_path.parent))
         components = {component["id"]: component for component in manifest["components"]}
@@ -152,9 +152,18 @@ class ManifestGeneratorTests(unittest.TestCase):
             self.assertIn("workflow.super_events.subagents", super_events["dependencies"])
         for component in manifest["components"]:
             source = component["source"].get("path", "")
-            self.assertFalse(source.startswith(".agents/"), component["id"])
+            # `.agents/skills` is only ever a copy of the canonical library;
+            # Antigravity's native agents and MCP file are its own projections.
+            self.assertFalse(source.startswith(".agents/skills"), component["id"])
+            if source.startswith(".agents/"):
+                self.assertEqual(component.get("coding_environment"), "antigravity", component["id"])
             if component["destination"]["path"].startswith(".agents/skills"):
                 self.assertEqual(component.get("coding_environment"), "codex", component["id"])
+                self.assertEqual(
+                    component.get("shared_coding_environments"),
+                    ["gemini_cli", "antigravity", "kilo_code", "devin_desktop"],
+                    component["id"],
+                )
 
     def test_native_mcp_registration_declares_verified_windows_and_linux(self) -> None:
         root = SCRIPT.parents[1]
@@ -162,13 +171,20 @@ class ManifestGeneratorTests(unittest.TestCase):
             (root / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8-sig")
         )
         components = {component["id"]: component for component in manifest["components"]}
-        for runtime in ("claude", "cursor", "qoder", "opencode"):
+        for runtime in ("claude", "cursor", "qoder", "copilot", "gemini", "antigravity", "grok", "kilo", "kiro", "qwen"):
             component = components[f"runtime.{runtime}.mcp"]
             self.assertEqual(component["platforms"], ["windows", "linux"])
             self.assertTrue(component["optional"])
             self.assertIn("mcp.hoi4_agent_tools", component["dependencies"])
+        # OpenCode reads MCP servers only from opencode.json(c); the retired
+        # `.opencode/mcp.json` route is no longer published.
+        self.assertNotIn("runtime.opencode.mcp", components)
+        self.assertFalse((root / ".opencode/mcp.json").exists())
         opencode = json.loads((root / "opencode.json").read_text(encoding="utf-8"))
-        self.assertNotIn("mcp", opencode)
+        route = opencode["mcp"]["hoi4_agent_tools"]
+        self.assertEqual(route["type"], "local")
+        self.assertEqual(route["command"], ["hoi4-agent-tools.cmd"])
+        self.assertFalse(components["runtime.opencode.config"]["optional"])
         qoder = json.loads((root / ".qoder/settings.json").read_text(encoding="utf-8"))
         self.assertNotIn("mcpServers", qoder)
 
