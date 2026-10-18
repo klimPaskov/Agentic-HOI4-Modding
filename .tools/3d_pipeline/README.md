@@ -34,7 +34,10 @@ The bootstrap verifies the pinned Meshy MCP 0.6.2 package and complete runtime
 tree, installs Blender Lab MCP at source commit `dbbf836ad4b1025f14a2b3b504c43903f39e0b04`, discovers Blender, installs
 and verifies io_pdx_mesh 0.91, enables the matching Blender MCP add-on, probes
 the loopback bridge, materializes the bounded Blender adapter config, and
-writes observed evidence to `config/dependencies.lock.json`.
+writes observed evidence to `config/dependencies.lock.json`. The rewrite keeps
+the lock's pinned `sources` and `compatibility` evidence, so the bootstrap can
+be rerun on its own output. The adapter requires the `mcp` 1.x SDK; its
+`FastMCP` server API does not exist in `mcp` 2.x.
 
 For Blender 5.2, the bootstrap derives a deterministic io_pdx_mesh compatibility
 archive from the checksum-locked upstream 0.91 bytes. The derived archive fixes
@@ -246,8 +249,13 @@ python -m unittest discover -s .tools/3d_pipeline/tests -p "test_*.py"
 python .tools/3d_pipeline/verify_environment.py
 ```
 
-Add `--probe-meshy` only after bootstrap when a live authenticated schema and
-balance probe is intended. Run the Blender integration script through the
+Once the bootstrap has materialized `config/blender_hoi4_adapter.json`, the
+verifier starts the adapter through `wrappers/run_blender_hoi4_adapter.cmd`,
+completes MCP `initialize` and `tools/list`, and blocks unless the served tools
+match the adapter source. Without that config it reports the adapter as
+`not_materialized`; add `--probe-adapter` to make that a failure. The probe
+makes no provider calls. Add `--probe-meshy` only after bootstrap when a live
+authenticated schema and balance probe is intended. Run the Blender integration script through the
 lock-selected Blender executable; it creates only temporary `.blend` files.
 
 The model worker owns sources, checkpoints, textures, exports, validation,

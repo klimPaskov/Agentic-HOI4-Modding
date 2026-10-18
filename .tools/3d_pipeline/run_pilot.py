@@ -34,6 +34,7 @@ from blender_client import BlenderAdapterClient  # noqa: E402
 from init_pilot_jobs import initialize_one  # noqa: E402
 from lib.paths import (  # noqa: E402
     append_history,
+    dds_converter,
     ensure_job_layout,
     file_record,
     read_job_document,
@@ -726,7 +727,7 @@ def _finalize_pdx_runtime_texture(
             dds.unlink()
         except OSError as exc:
             raise RuntimeError(f"Unable to replace existing DDS output: {dds}") from exc
-    converter = REPO_ROOT / ".agents" / "skills" / "hoi4-event-assets" / "tools" / "convert_to_dds.py"
+    converter = dds_converter()
     converter_args = [
         sys.executable,
         str(converter),
@@ -821,7 +822,7 @@ def _apply_runtime_diffuse_grade(
         if not dds.is_file():
             raise RuntimeError(f"Runtime diffuse DDS target is not a file: {dds}")
         dds.unlink()
-    converter = REPO_ROOT / ".agents" / "skills" / "hoi4-event-assets" / "tools" / "convert_to_dds.py"
+    converter = dds_converter()
     converter_args = [
         sys.executable,
         str(converter),

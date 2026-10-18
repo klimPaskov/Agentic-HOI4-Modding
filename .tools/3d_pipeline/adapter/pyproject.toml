@@ -1,10 +1,10 @@
 [project]
 name = "hoi4-blender-adapter"
-version = "1.6.0"
+version = "1.6.1"
 description = "Allowlisted Blender bridge for the HOI4 3D model pipeline"
 requires-python = ">=3.10"
 dependencies = [
-    "mcp[cli]>=1.2.0",
+    "mcp[cli]>=1.2.0,<2",
 ]
 
 [project.scripts]

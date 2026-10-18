@@ -112,7 +112,7 @@
         "preferred_min": 12000,
         "preferred_max": 50000,
         "hard_max": 90000,
-        "working_triangle_target": 30000
+        "working_triangle_target": 21000
       },
       "controlled_reduction_allowed": true,
       "materials": {
