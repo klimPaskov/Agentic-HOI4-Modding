@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "88b86979ab1188d62ee842551ebd76b7dbc2101a",
+  "generated_for_revision": "c325f53bf8edab3293aa1e992004ed257f8b20ba",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -8744,8 +8744,8 @@
       "expected_files": [
         {
           "path": "docs/runtimes.md",
-          "sha256": "b5a667396c6759668c31f4872d527c9f6729f0316aa04bf0b1bd9be42d7ee5c4",
-          "size": 16997
+          "sha256": "f38f6412bfb2f1268936cdfa3741c82c7b09332a99f9cead33600a0771be2a91",
+          "size": 17153
         }
       ]
     },
@@ -24520,7 +24520,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "local_package",
@@ -24621,7 +24626,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -24723,7 +24733,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -24845,7 +24860,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -24966,7 +24986,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -25076,7 +25101,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -25189,7 +25219,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -25300,7 +25335,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -25411,7 +25451,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -25518,7 +25563,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -25624,7 +25674,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -25726,7 +25781,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -25838,7 +25898,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -25939,7 +26004,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -26046,7 +26116,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -26145,7 +26220,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -26246,7 +26326,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -26430,7 +26515,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -26530,7 +26620,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -26632,7 +26727,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -26743,7 +26843,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "stdio_adapter",
@@ -26841,7 +26946,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "manual",
@@ -26915,7 +27025,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "route": {
           "kind": "manual",
@@ -26995,7 +27110,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "experimental": false,
         "route": {
@@ -27039,7 +27159,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "experimental": true,
         "route": {
@@ -27079,7 +27204,12 @@
           "codex",
           "cursor",
           "qoder",
-          "opencode"
+          "opencode",
+          "gemini_cli",
+          "antigravity",
+          "grok_build",
+          "github_copilot",
+          "qwen_code"
         ],
         "experimental": false,
         "route": {
