@@ -47,10 +47,10 @@ Output defaults to Downloads/<project-folder>-chatgpt-project-sources, must be
 outside the project, and must not exist. Choose a new `--output` for another
 export. The verified archives and loose files are staged together before the
 folder is published; failure removes staging and leaves project files intact.
-The tool performs no upload and does not launch a conversation. It is installed
-by the all-platform `runtime.agent_sync` shared-tools manifest component,
-included by both core profiles and every coding-environment dependency closure. Modified installed
-tools retain normal manifest conflict review.
+The tool performs no upload and does not launch a conversation. It is the
+optional, all-platform `runtime.chatgpt_sources` manifest component: no profile
+selects it, and the setup app installs it only when the user checks it. Setup
+never runs it. Modified installed tools retain normal manifest conflict review.
 
 ### HOI4 Agent Tools bootstrap
 

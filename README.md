@@ -44,8 +44,10 @@ For a manual setup:
 
 The templates are starting points. Keep only the workflows your mod uses and add project rules as the mod develops.
 
-Package sources later with `python .tools/package_chatgpt_project_sources.py`
-(or its Windows `.bat` launcher). See the [packaging tool guide](.tools/README.md#chatgpt-source-packaging)
+To package project files for a ChatGPT project, add the optional
+`runtime.chatgpt_sources` component (the setup app lists it on Components) and run
+`python .tools/package_chatgpt_project_sources.py` yourself, or its Windows `.bat`
+launcher. See the [packaging tool guide](.tools/README.md#chatgpt-source-packaging)
 for default file selections and output options.
 
 ## How the files fit together

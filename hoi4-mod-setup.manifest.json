@@ -116,7 +116,7 @@
     {
       "id": "runtime.agent_sync",
       "display_name": "Runtime synchronizers and project tools",
-      "description": "Install shared runtime synchronizers and the optional, user-invoked ChatGPT source packaging tool.",
+      "description": "Install the shared runtime synchronizers and project tools.",
       "category": "script",
       "optional": false,
       "platforms": [
@@ -129,9 +129,7 @@
           "sync/README.md",
           "sync/*.py",
           "sync/*.json",
-          "README.md",
-          "package_chatgpt_project_sources.py",
-          "package_chatgpt_project_sources.bat"
+          "README.md"
         ],
         "exclude": [
           "**/__pycache__/**",
@@ -179,16 +177,6 @@
           "size": 7430
         },
         {
-          "path": ".tools/package_chatgpt_project_sources.bat",
-          "sha256": "0deba9b49324ae69e6d433e676fe00c2745bcd4a25ca7f7276f815dd31d60ce0",
-          "size": 288
-        },
-        {
-          "path": ".tools/package_chatgpt_project_sources.py",
-          "sha256": "2e8c5ea5cd0dc049da950210b4447719faedbeba1e412c1c77f44929d9116e21",
-          "size": 7467
-        },
-        {
           "path": ".tools/sync/README.md",
           "sha256": "fabd353dd1fabe961df02d07e41b5159ad91cc85ec8c5da86ca1f7b1079a6d5c",
           "size": 4125
@@ -232,6 +220,66 @@
           "path": ".tools/sync/sync_skills.py",
           "sha256": "c8f353766ee94c060918c2f05ffb18aa83ea406c81cff4821e7f4a70745e33ac",
           "size": 6544
+        }
+      ]
+    },
+    {
+      "id": "runtime.chatgpt_sources",
+      "display_name": "ChatGPT project-sources packager",
+      "description": "Add an optional script in .tools that packages selected project files into a folder you can upload to a ChatGPT project. You run it yourself; setup never runs it.",
+      "category": "script",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".tools",
+        "include": [
+          "package_chatgpt_project_sources.py",
+          "package_chatgpt_project_sources.bat"
+        ],
+        "exclude": [
+          "**/__pycache__/**",
+          "**/*.pyc"
+        ]
+      },
+      "destination": {
+        "path": ".tools/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing ChatGPT packaging script with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "runtime.chatgpt_sources.exists",
+          "severity": "warn",
+          "kind": "exists",
+          "target": ".tools/package_chatgpt_project_sources.py"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "ChatGPT project-source packaging"
+      ],
+      "expected_files": [
+        {
+          "path": ".tools/package_chatgpt_project_sources.bat",
+          "sha256": "0deba9b49324ae69e6d433e676fe00c2745bcd4a25ca7f7276f815dd31d60ce0",
+          "size": 288
+        },
+        {
+          "path": ".tools/package_chatgpt_project_sources.py",
+          "sha256": "2e8c5ea5cd0dc049da950210b4447719faedbeba1e412c1c77f44929d9116e21",
+          "size": 7467
         }
       ]
     },
