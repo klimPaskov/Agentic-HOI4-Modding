@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Mirror the canonical `.claude/skills/` library for runtimes that read another folder.
 
-Claude Code, Cursor, and OpenCode read `.claude/skills/` directly. Codex and
-DeepSeek Harness read `.agents/skills/`, and Qoder reads `.qoder/skills/`.
-This tool keeps those folders identical to the canonical library.
+Claude Code, Cursor, OpenCode, GitHub Copilot, Cline, and Augment read
+`.claude/skills/` directly. Codex, DeepSeek Harness, Gemini CLI, Antigravity,
+Kilo Code, and Devin read `.agents/skills/`; Qoder, Grok Build, Kiro, and Qwen
+Code read `.qoder/skills/`, `.grok/skills/`, `.kiro/skills/`, and
+`.qwen/skills/`. This tool keeps those folders identical to the canonical
+library.
 
     python .tools/sync/sync_skills.py                 # refresh every mirror that exists
     python .tools/sync/sync_skills.py --target agents # create or refresh .agents/skills
@@ -33,6 +36,9 @@ CANONICAL = MOD_ROOT / ".claude" / "skills"
 TARGETS: Dict[str, Path] = {
     "agents": MOD_ROOT / ".agents" / "skills",
     "qoder": MOD_ROOT / ".qoder" / "skills",
+    "grok": MOD_ROOT / ".grok" / "skills",
+    "kiro": MOD_ROOT / ".kiro" / "skills",
+    "qwen": MOD_ROOT / ".qwen" / "skills",
 }
 IGNORED = {"__pycache__", ".DS_Store"}
 
@@ -109,7 +115,7 @@ def main() -> int:
 
     targets = args.target or [key for key, path in TARGETS.items() if path.exists()]
     if not targets:
-        print("No skill mirrors exist. Claude Code, Cursor, and OpenCode read .claude/skills directly; pass --target agents for Codex or DSH, or --target qoder for Qoder.")
+        print("No skill mirrors exist. Clients that read .claude/skills need none; pass --target agents, qoder, grok, kiro, or qwen to create a mirror.")
         return 0
     skills = canonical_skills()
     names = {skill.name for skill in skills}

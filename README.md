@@ -12,7 +12,7 @@
 
 Build Hearts of Iron IV mods with your coding agent. Make focus trees, events, decisions and maps, fix broken script and balance the AI. The kit gives your agent project instructions, modding skills, specialist helpers, an offline wiki and HOI4 tools. Add portraits, 3D models, Super Events or live game testing when your mod needs them.
 
-Choose any supported coding client, including Claude Code, Codex, Cursor, Qoder, or OpenCode. HOI4 Mod Setup installs the project files and tools for the clients you select. The package keeps one canonical set of guidance and creates matching files for other clients.
+Choose any supported coding client, including Claude Code, Codex, Cursor, Qoder, OpenCode, GitHub Copilot (VS Code), Gemini CLI, Antigravity, Grok Build, Kilo Code, Kiro, Qwen Code, Cline, Devin Desktop, Augment, Continue, or Aider. HOI4 Mod Setup installs the project files and tools for the clients you select; Cline, Devin Desktop, Augment, and Continue keep MCP servers in their own settings, and Aider has no MCP support. The package keeps one canonical set of guidance and creates matching files for other clients.
 
 [Download the complete package](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/Agentic-HOI4-Modding.zip) | [Video tutorials](https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3)
 
@@ -27,12 +27,12 @@ For a manual setup:
 1. Put your mod in a Git repository and open that repository as the agent's workspace.
 2. Copy [CLAUDE_template.md](CLAUDE_template.md) to your mod as `CLAUDE.md` and replace its placeholders (`[MOD_NAME]`, `[MOD_PREFIX]`, `[HOI4_GAME_DIR]`, `[STEAM_WORKSHOP_DIR]`). Delete the blocks for optional workflows you do not install.
 3. Copy `.claude/skills/`, `.claude/agents/`, `.claude/settings.json`, `.mcp.json`, and `.tools/sync/` into the mod. Copy the source-packaging Python script, Windows launcher, and README from `.tools/` as well. Make the installed game files and the included `paradox_wiki/` snapshot readable to the agent.
-4. If you also use another runtime, copy its `.codex/`, `.cursor/`, `.qoder/`, or `.opencode/` folder into the mod (plus root `opencode.json` for OpenCode), then generate its files from the Claude sources:
+4. If you also use another runtime, copy its generated folder (for example `.codex/`, `.cursor/`, `.qoder/`, `.opencode/`, `.gemini/`, `.kilo/`, `.kiro/`, `.qwen/`, `.devin/`, or `.augment/`) and its MCP file into the mod (plus root `opencode.json` for OpenCode), then generate its files from the Claude sources:
 
    ```powershell
    python .tools/sync/sync_instructions.py   # AGENTS.md
-   python .tools/sync/sync_agents.py --runtime codex   # or cursor, qoder, opencode
-   python .tools/sync/sync_skills.py --target agents   # .agents/skills for Codex and DSH
+   python .tools/sync/sync_agents.py --runtime codex   # or cursor, qoder, opencode, gemini, antigravity, kilo, kiro, qwen, devin, augment
+   python .tools/sync/sync_skills.py --target agents   # .agents/skills; or qoder, grok, kiro, qwen
    ```
 
 5. Copy `.tools/mcp/` and `docs/runtimes.md` plus `docs/systems/hoi4_agent_tools_mcp_integration.md` into the mod. Install Python 3.13 and native x64 Node.js 22.19+ within major 22, or Node.js 24 LTS, with npm available on PATH. On Windows, `py -3.13` can replace `python` in these commands.
@@ -44,8 +44,10 @@ For a manual setup:
 
 The templates are starting points. Keep only the workflows your mod uses and add project rules as the mod develops.
 
-Package sources later with `python .tools/package_chatgpt_project_sources.py`
-(or its Windows `.bat` launcher). See the [packaging tool guide](.tools/README.md#chatgpt-source-packaging)
+To package project files for a ChatGPT project, add the optional
+`runtime.chatgpt_sources` component (the setup app lists it on Components) and run
+`python .tools/package_chatgpt_project_sources.py` yourself, or its Windows `.bat`
+launcher. See the [packaging tool guide](.tools/README.md#chatgpt-source-packaging)
 for default file selections and output options.
 
 ## How the files fit together
@@ -53,8 +55,8 @@ for default file selections and output options.
 | Canonical source | Purpose | Generated for other runtimes |
 | --- | --- | --- |
 | `CLAUDE.md` (`CLAUDE_template.md` here) | Project instructions | `AGENTS.md` |
-| `.claude/skills/<name>/SKILL.md` | Reusable HOI4 workflows and their references | `.agents/skills/` (Codex, DSH), `.qoder/skills/` (Qoder) |
-| `.claude/agents/<name>.md` | Specialist roles and model tiers | `.codex/agents/*.toml`, `.cursor/agents/`, `.qoder/agents/`, `.opencode/agent/` |
+| `.claude/skills/<name>/SKILL.md` | Reusable HOI4 workflows and their references | `.agents/skills/` (Codex, DSH, Gemini CLI, Antigravity, Kilo Code, Devin), `.qoder/skills/`, `.grok/skills/`, `.kiro/skills/`, `.qwen/skills/` |
+| `.claude/agents/<name>.md` | Specialist roles and model tiers | `.codex/agents/*.toml`, `.cursor/agents/`, `.qoder/agents/`, `.opencode/agent/`, `.gemini/agents/`, `.agents/agents/`, `.kilo/agents/`, `.kiro/agents/`, `.qwen/agents/`, `.devin/agents/`, `.augment/agents/` |
 | `.mcp.json`, `.claude/settings.json` | Claude Code MCP registration and settings | Each runtime's own MCP file |
 
 Edit only the canonical files and rerun the synchronizers in [`.tools/sync/`](.tools/sync/README.md); add `--check` to find stale projections. [Runtime details](docs/runtimes.md) cover what each runtime reads.
@@ -109,7 +111,8 @@ Every skill, agent prompt, and instruction file must be readable in one pass. [`
 | --- | --- |
 | `.claude/skills/` | Reusable HOI4 workflows and their references |
 | `.claude/agents/` | Specialist subagent definitions |
-| `.codex/`, `.cursor/`, `.qoder/`, `.opencode/` | Generated runtime packages |
+| `.codex/`, `.cursor/`, `.qoder/`, `.opencode/`, `.gemini/`, `.agents/agents/`, `.kilo/`, `.kiro/`, `.qwen/`, `.devin/`, `.augment/` | Generated runtime packages |
+| `GEMINI_template.md`, `.github/instructions/`, `.clinerules/`, `.continue/rules/`, `.aider.conf.yml`, `.grok/`, `.vscode/mcp.json` | Instruction pointers and MCP registrations for the other clients |
 | `paradox_wiki/` | Offline wiki reference |
 | `.tools/` | Runtime synchronizers, wiki, MCP bootstrap, and optional 3D tooling |
 | `docs/` | Runtime reference, MCP integration contract, and the Super Events guide |

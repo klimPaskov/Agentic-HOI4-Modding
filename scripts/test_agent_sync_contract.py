@@ -108,14 +108,16 @@ def main():
         assert "image-generation MCP workflow" not in body, source
 
     profiles = module.load_profiles()
-    assert module.verify(["codex", "cursor", "qoder", "opencode", "claude"]) == 0
+    projected = ["codex", "cursor", "qoder", "opencode", "gemini", "antigravity", "kilo", "kiro", "qwen", "devin", "augment"]
+    assert sorted(module.RUNTIMES) == sorted(projected + ["claude"])
+    assert module.verify(projected + ["claude"]) == 0
     altered = [replace(agents[0], model="opus" if agents[0].model != "opus" else "haiku"), *agents[1:]]
     with patch.object(module, "load_agents", return_value=altered):
         assert module.verify(["claude"]) == 1, "role tier drift must fail verification"
     altered = [replace(agents[0], effort="low"), *agents[1:]]
     with patch.object(module, "load_agents", return_value=altered):
         assert module.verify(["claude"]) == 1, "role effort drift must fail verification"
-    for runtime_key in ("codex", "cursor", "qoder", "opencode", "claude"):
+    for runtime_key in projected + ["claude"]:
         assert module.synchronize([runtime_key], check=True) == 0, runtime_key
         outputs = module.expected_outputs(runtime_key, agents, profiles)
         for agent in agents:
@@ -132,11 +134,16 @@ def main():
             elif runtime_key == "claude":
                 continue
             else:
-                folder = "agent" if runtime_key == "opencode" else "agents"
-                content = outputs[ROOT / f".{runtime_key}" / folder / f"{agent.name}.md"]
+                content = outputs[module.RUNTIMES[runtime_key].agent_dir / f"{agent.name}.md"]
                 assert agent.description in content
                 assert "by .tools/sync/sync_agents.py" in content
                 assert "image-generation MCP workflow" not in content
+                frontmatter = content.split("\n---\n", 1)[0].splitlines()
+                if runtime_key in module.NAMED_MARKDOWN_RUNTIMES:
+                    assert f"name: {agent.name}" in frontmatter, (runtime_key, agent.name)
+                    assert not any(line.startswith(("model:", "tools:")) for line in frontmatter), runtime_key
+                if runtime_key == "kilo":
+                    assert "mode: subagent" in frontmatter, agent.name
     if tomllib is not None:
         config = tomllib.loads((ROOT / ".codex" / "config.toml").read_text(encoding="utf-8"))
         registered = {name for name in config["agents"] if isinstance(config["agents"][name], dict)}
@@ -181,7 +188,7 @@ def main():
         wraps = hard_wraps((ROOT / path).read_text(encoding="utf-8"))
         assert not wraps, f"{path} has mid-sentence hard wraps: {wraps[:3]}"
 
-    print(f"Runtime synchronization contract passed for {len(agents)} canonical agents and 4 projected runtimes.")
+    print(f"Runtime synchronization contract passed for {len(agents)} canonical agents and {len(projected)} projected runtimes.")
 
 
 if __name__ == "__main__":

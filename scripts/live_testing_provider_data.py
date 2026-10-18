@@ -1,7 +1,13 @@
 """Canonical live-testing providers and shared component declarations."""
 from __future__ import annotations
+import sys
 from copy import deepcopy
-ALL_CLIENTS = ["claude_code", "codex", "cursor", "qoder", "opencode"]
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from coding_environment_data import MCP_ROUTE_CLIENTS  # noqa: E402
+
+ALL_CLIENTS = list(MCP_ROUTE_CLIENTS)
 CLAUSEWITZ_REVISION = "97c85437081904d5ad07bae1623ec58d1c0a5b9e"
 
 def build_live_testing_table(source_root=None):

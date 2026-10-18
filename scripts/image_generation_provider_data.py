@@ -6,7 +6,12 @@ import hashlib
 import json
 from pathlib import Path
 
-ALL_CLIENTS = ["claude_code", "codex", "cursor", "qoder", "opencode"]
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from coding_environment_data import MCP_ROUTE_CLIENTS  # noqa: E402
+
+ALL_CLIENTS = list(MCP_ROUTE_CLIENTS)
 TEXT_SOURCE_SUFFIXES = {".js", ".json", ".md", ".py", ".txt"}
 
 

@@ -10,8 +10,8 @@ Edit the canonical file, then regenerate the projections with the synchronizers 
 | Canonical source | Projection | Synchronizer |
 | --- | --- | --- |
 | `CLAUDE.md` | `AGENTS.md` | `python .tools/sync/sync_instructions.py` |
-| `.claude/skills/<name>/` | `.agents/skills/<name>/` (Codex, DSH), `.qoder/skills/<name>/` (Qoder) | `python .tools/sync/sync_skills.py` |
-| `.claude/agents/<name>.md` | `.codex/agents/<name>.toml` and the `[agents.*]` registry in `.codex/config.toml`, `.cursor/agents/`, `.qoder/agents/`, `.opencode/agent/`, and every `agent-map.md` | `python .tools/sync/sync_agents.py` |
+| `.claude/skills/<name>/` | `.agents/skills/<name>/` (Codex, DSH, Gemini CLI, Antigravity, Kilo Code, Devin), `.qoder/skills/`, `.grok/skills/`, `.kiro/skills/`, and `.qwen/skills/` | `python .tools/sync/sync_skills.py` |
+| `.claude/agents/<name>.md` | `.codex/agents/<name>.toml` and the `[agents.*]` registry in `.codex/config.toml`, `.cursor/agents/`, `.qoder/agents/`, `.opencode/agent/`, `.gemini/agents/`, `.agents/agents/`, `.kilo/agents/`, `.kiro/agents/`, `.qwen/agents/`, `.devin/agents/`, `.augment/agents/`, and every `agent-map.md` | `python .tools/sync/sync_agents.py` |
 
 Run each synchronizer with `--check` during validation; it exits with status 1 when a projection is out of date.
 Never hand-edit a projection.
@@ -28,6 +28,18 @@ Each runtime loads its project instructions from a different file name.
 | Cursor | `AGENTS.md` | Declared in `.cursor/settings.json`. |
 | Qoder | `AGENTS.md` | Declared in `.qoder/settings.json`. |
 | OpenCode | `AGENTS.md` | Declared in `.opencode/settings.json` and the root `opencode.json`. |
+| GitHub Copilot (VS Code) | `AGENTS.md` and `.github/instructions/hoi4-mod-setup.instructions.md` | `AGENTS.md` is read while `chat.useAgentsMdFile` is on (the default); the instructions file applies to every path. |
+| Gemini CLI | `GEMINI.md` | Imports `AGENTS.md` with `@./AGENTS.md`; Gemini CLI does not read `AGENTS.md` by default. |
+| Antigravity | `AGENTS.md` | Project root. |
+| Grok Build | `AGENTS.md` | Project root and nested directories; Grok Build also reads `CLAUDE.md`. |
+| Kilo Code | `AGENTS.md` | Project root. |
+| Kiro | `AGENTS.md` | Project root and subdirectories, next to `.kiro/steering/`. |
+| Qwen Code | `AGENTS.md` | Read next to `QWEN.md`. |
+| Cline | `AGENTS.md` and `.clinerules/hoi4-mod-setup.md` | The rule has no path filter, so it always applies. |
+| Devin Desktop | `AGENTS.md` | Project root; Devin also reads `CLAUDE.md`. |
+| Augment (Auggie CLI) | `AGENTS.md` | Project root; Auggie also reads `CLAUDE.md`. |
+| Continue | `.continue/rules/hoi4-mod-setup.md` | An always-applied rule that points to `AGENTS.md` and the skills; Continue does not read `AGENTS.md` itself. |
+| Aider | `AGENTS.md` | Loaded as read-only context by the `read` entry in `.aider.conf.yml`. |
 
 `AGENTS.md` is a projection of `CLAUDE.md`. It keeps provider-neutral image guidance until HOI4 Mod Setup fills the marked section from the selected image-generation provider table.
 The source package ships `CLAUDE_template.md` and its projection `AGENTS_template.md`; HOI4 Mod Setup adapts both for a new mod.
@@ -51,8 +63,14 @@ Consequences worth knowing:
 | Codex | `.agents/skills/` (copy) |
 | DSH | `<project_root>/.dsh/skills` and `<project_root>/.agents/skills` (copy), then configured, user, and bundled roots |
 | Qoder | `.qoder/skills/` (copy) |
+| GitHub Copilot, Cline, Augment | `.claude/skills/` |
+| Gemini CLI, Antigravity, Kilo Code, Devin Desktop | `.agents/skills/` (the shared copy) |
+| Grok Build | `.grok/skills/` (copy) |
+| Kiro | `.kiro/skills/` (copy) |
+| Qwen Code | `.qwen/skills/` (copy) |
 
-`python .tools/sync/sync_skills.py` refreshes every copy that exists; `--target agents` or `--target qoder` creates one.
+`python .tools/sync/sync_skills.py` refreshes every copy that exists; `--target agents`, `qoder`, `grok`, `kiro`, or `qwen` creates one.
+HOI4 Mod Setup installs one `.agents/skills/` copy for every selected client that reads it, so selecting several of those clients never duplicates the library.
 Copies are the default because HOI4 Mod Setup tracks the files it installs; `--mode link` replaces a copy with a junction or symbolic link in a project that does not use the app.
 A skill folder that exists only in a copy is reported and left alone.
 Cursor and OpenCode would see a skill twice if both `.claude/skills/` and an `.agents/skills/` copy exist; both copies are identical, so the duplicate is harmless.
@@ -76,6 +94,15 @@ Prose uses the snake_case routing name (`hoi4_repo_explorer`); the Claude, Curso
 | Cursor | `.cursor/agents/<hyphen-name>.md` | Generated. |
 | Qoder | `.qoder/agents/<hyphen-name>.md` | Generated. |
 | OpenCode | `.opencode/agent/<hyphen-name>.md` | Generated. |
+| Gemini CLI | `.gemini/agents/<hyphen-name>.md` | Generated with `name` and `description`. |
+| Antigravity | `.agents/agents/<hyphen-name>.md` | Generated with `name` and `description`. |
+| Kilo Code | `.kilo/agents/<hyphen-name>.md` | Generated with `description` and `mode: subagent`. |
+| Kiro | `.kiro/agents/<hyphen-name>.md` | Generated with `name` and `description`. |
+| Qwen Code | `.qwen/agents/<hyphen-name>.md` | Generated with `name` and `description`. |
+| Devin Desktop | `.devin/agents/<hyphen-name>.md` | Generated with `name` and `description`. |
+| Augment (Auggie CLI) | `.augment/agents/<hyphen-name>.md` | Generated with `name` and `description`. |
+| GitHub Copilot (VS Code) | `.claude/agents/<hyphen-name>.md` | Canonical; VS Code reads the Claude agent folder. |
+| Grok Build, Cline, Continue, Aider | None | No project subagent projection is published. |
 | DSH | None | Not applicable. |
 
 `sync_agents.py` maintains a projection only for runtimes whose folder exists in the project, removes projection files it generated earlier when their canonical agent is gone, and rewrites only the `[agents.*]` rows of `.codex/config.toml` that point at generated TOML files.
@@ -97,6 +124,7 @@ Other runtimes translate the tier through `.tools/sync/agent_profiles.json`:
 
 - Codex: the tier sets `model_reasoning_effort` (and, when configured, `model`); the read-only or editing authority sets `sandbox_mode`. Without a `model` entry the agent uses the session's model.
 - Cursor and OpenCode: `model: inherit`.
+- Gemini CLI, Antigravity, Kilo Code, Kiro, Qwen Code, Devin Desktop, and Augment: no model or tool field, so the session model and tools apply and the prompt body states a read-only role.
 - Qoder: the authority sets the tool list.
 
 Change a role's tier in its canonical file and rerun `sync_agents.py`; change a runtime's translation in `agent_profiles.json`.
@@ -113,7 +141,16 @@ Do not copy one runtime's approval, sandbox, absolute-path, environment, or tool
 | Codex | `.codex/config.toml` | `[mcp_servers.<name>]` with `command`, optional `cwd`, timeouts, and approval mode. |
 | Cursor | `.cursor/mcp.json` | `{"mcpServers": {"<name>": {"command": "...", "args": []}}}`. |
 | Qoder | `.qoder/mcp.json` | `{"mcpServers": {"<name>": {"command": "...", "args": []}}}`. |
-| OpenCode | `.opencode/mcp.json` | `{"mcpServers": {"<name>": {"command": ["..."]}}}`. |
+| OpenCode | `opencode.json` | `{"mcp": {"<name>": {"type": "local", "command": ["..."], "enabled": true}}}`. OpenCode reads MCP servers only from `opencode.json(c)`. |
+| GitHub Copilot (VS Code) | `.vscode/mcp.json` | `{"servers": {"<name>": {"type": "stdio", "command": "...", "args": []}}}`. The Copilot CLI reads `.mcp.json` instead. |
+| Gemini CLI | `.gemini/settings.json` | `{"mcpServers": {"<name>": {"command": "...", "args": []}}}`. Project servers start only in a trusted folder. |
+| Antigravity | `.agents/mcp_config.json` | `{"mcpServers": {"<name>": {"command": "...", "args": []}}}`. |
+| Grok Build | `.grok/config.toml` | `[mcp_servers.<name>]` with `command` and `args`; the project file holds only `mcp_servers`, `plugins`, and `permission`. |
+| Kilo Code | `.kilo/kilo.json` | `{"mcp": {"<name>": {"type": "local", "command": ["..."], "enabled": true}}}`. |
+| Kiro | `.kiro/settings/mcp.json` | `{"mcpServers": {"<name>": {"command": "...", "args": []}}}`. |
+| Qwen Code | `.qwen/settings.json` | `{"mcpServers": {"<name>": {"command": "...", "args": []}}}`. |
+| Cline, Devin Desktop, Augment, Continue | Client-owned settings | Add the server in the client's own MCP settings; HOI4 Mod Setup never writes user, IDE, or cloud settings. |
+| Aider | None | Aider has no MCP client. |
 | DSH | `$DSH_HOME/profiles/<profile>/cordis.patch.yml` | A loader patch row inserting `@deepseek-ai/dsh-mcp-client`, one row per server. |
 
 On Windows every project-scoped file above points at the `hoi4-agent-tools.cmd` wrapper that npm installs globally; HOI4 Mod Setup and `.tools/mcp/bootstrap_hoi4_agent_tools.py` install the release recorded in `hoi4-mod-setup.manifest.json`.
@@ -140,7 +177,8 @@ A `serverName` may only contain letters, digits, underscore, and hyphen.
 
 ### Live testing (optional)
 
-Choose Clausewitz MCP (default), experimental HOI4 Live Tools, or None for manual testing. Common `workflow.live_testing` guidance works with all supported clients. HOI4 Mod Setup manages project registrations for the selected clients: Claude Code, Codex, Cursor, Qoder and OpenCode, using their project MCP files described above. It updates the selected route and guidance during update or repair.
+Choose Clausewitz MCP (default), experimental HOI4 Live Tools, or None for manual testing. Common `workflow.live_testing` guidance works with all supported clients. HOI4 Mod Setup manages live-testing and image-generation registrations for Claude Code, Codex, Cursor, Qoder, OpenCode, Gemini CLI, Antigravity, Grok Build, GitHub Copilot (VS Code), and Qwen Code, using their project MCP files described above.
+Kiro and Kilo Code document no working directory for project servers, so they receive only the HOI4 Agent Tools registration. It updates the selected route and guidance during update or repair.
 
 Clausewitz MCP (`clausewitz_linux`) supports native Linux HOI4 1.19.2 only. Linux connects directly; Windows connects through WSL; macOS connects through SSH to Linux. Complete manual Linux, game and server setup, then confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
 
