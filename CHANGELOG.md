@@ -7,6 +7,7 @@
 - Keep the pinned `sources` and io_pdx_mesh `compatibility` evidence when the bootstrap rewrites `dependencies.lock.json`, so a second bootstrap succeeds.
 - Start the materialized Blender adapter in `verify_environment.py` and require its MCP `initialize` and `tools/list` to serve exactly the source's tools.
 - Fix `python -m hoi4_blender_mcp` exiting with `NameError`, register `hoi4_blender_segment_creature_components` once, and keep adapter subprocesses off the MCP stdin pipe.
+- Run every `convert_to_dds.py` child process with an empty stdin and pass `-nostdin` to ffmpeg; under the stdio adapter the ffmpeg fallback waited on the inherited MCP pipe until the 600-second texture timeout.
 
 ## 2026-10-13
 

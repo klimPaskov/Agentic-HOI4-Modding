@@ -52,6 +52,7 @@ def run_command(command: list[str], cwd: Path | None = None) -> subprocess.Compl
     result = subprocess.run(
         command,
         cwd=str(cwd) if cwd else None,
+        stdin=subprocess.DEVNULL,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -74,6 +75,7 @@ def run_binary_command(command: list[str], cwd: Path | None = None) -> subproces
     result = subprocess.run(
         command,
         cwd=str(cwd) if cwd else None,
+        stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
@@ -294,6 +296,7 @@ def run_ffmpeg_bgra_fallback(
     vf = f"scale={target_width}:{target_height}:flags=lanczos,format=bgra"
     command = [
         str(ffmpeg),
+        "-nostdin",
         "-v",
         "error",
         "-i",
