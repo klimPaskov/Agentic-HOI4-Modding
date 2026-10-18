@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "4ce68a2f090de9fc885b63b1398b9f8999b84fbf",
+  "generated_for_revision": "e814a581a121a3006c4a7085a8f3c4ef6e24ed58",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -4230,8 +4230,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/convert_to_dds.py",
-          "sha256": "3e9eb77a750928b70f863c5339c21c8486533b849e3608c850c9fade30180482",
-          "size": 9854
+          "sha256": "9765ddbc068b725f09aa36d1c53460366ec12cc4470ca60ecd7b677ada580f94",
+          "size": 9942
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/create_advisor_icon.py",
@@ -4262,6 +4262,11 @@
           "path": ".claude/skills/hoi4-feature-assets/tools/process_report_event_image.py",
           "sha256": "042d261adb6d17ea986a3244d08cb9c8991bd3003b8fd2dc252be65ef730ae54",
           "size": 9969
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-assets/tools/tests/test_convert_to_dds_stdin.py",
+          "sha256": "338d12ffe0c7ea54a2754fcf8caa942a90b4303ec90b1039f377ba19a0789765",
+          "size": 3129
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/tests/test_create_advisor_icon.py",
@@ -7619,8 +7624,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/convert_to_dds.py",
-          "sha256": "3e9eb77a750928b70f863c5339c21c8486533b849e3608c850c9fade30180482",
-          "size": 9854
+          "sha256": "9765ddbc068b725f09aa36d1c53460366ec12cc4470ca60ecd7b677ada580f94",
+          "size": 9942
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/create_advisor_icon.py",
@@ -7651,6 +7656,11 @@
           "path": ".claude/skills/hoi4-feature-assets/tools/process_report_event_image.py",
           "sha256": "042d261adb6d17ea986a3244d08cb9c8991bd3003b8fd2dc252be65ef730ae54",
           "size": 9969
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-assets/tools/tests/test_convert_to_dds_stdin.py",
+          "sha256": "338d12ffe0c7ea54a2754fcf8caa942a90b4303ec90b1039f377ba19a0789765",
+          "size": 3129
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/tests/test_create_advisor_icon.py",
@@ -10245,8 +10255,8 @@
       "expected_files": [
         {
           "path": ".tools/3d_pipeline/README.md",
-          "sha256": "3d97027b7ea0f4bc92b078cdf759844093b557370769844761fc3d144b369125",
-          "size": 13817
+          "sha256": "ead8697bf11b7f5034942a1f9a6c7072d352f92342e3a25807ff38322a4e2c2d",
+          "size": 14442
         },
         {
           "path": ".tools/3d_pipeline/adapter/animation_root_export.py",
@@ -10260,8 +10270,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/blender_worker.py",
-          "sha256": "ff8924b04204bc7faef798c79a0fa925b6e02cf966d2ac3e8486e1da1fb475c5",
-          "size": 535962
+          "sha256": "71c830d0f6b6bc3ebc011dae1a7cb90fb849633bef60f78ecefbfba828b186f9",
+          "size": 538637
         },
         {
           "path": ".tools/3d_pipeline/adapter/explicit_batch_repair.py",
@@ -10285,8 +10295,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/hoi4_blender_mcp.py",
-          "sha256": "b2cb7798dcb10081dfe46821615b7157ad06d2c66e7845a199cb0c8e6019fc62",
-          "size": 56196
+          "sha256": "489b7dca7b126f5b1cf3e3d90f8ea46785608207e0b79340a23d7d1dbd4316bf",
+          "size": 56666
         },
         {
           "path": ".tools/3d_pipeline/adapter/identity_leaf_alias.py",
@@ -10335,8 +10345,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/pyproject.toml",
-          "sha256": "e717f59735a98dff3c4d38a1d0cf5d0a306e804ca4ed2836ebdd91cf2a9438b8",
-          "size": 267
+          "sha256": "c57f011fc17570362088b1baebf6c3fd4178c39d43132f5cbf50d06d4d9a9953",
+          "size": 270
         },
         {
           "path": ".tools/3d_pipeline/adapter/retarget_root_motion.py",
@@ -10355,8 +10365,8 @@
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "c3e0ab74b05b4acb83b770b25e1a2b069e7df5432604a95ad8aa4d593f463c9a",
-          "size": 66711
+          "sha256": "30d39ba575ddd7fcf2835442a83eecaceb836522337c7dd9c0cba820c43a1276",
+          "size": 66941
         },
         {
           "path": ".tools/3d_pipeline/build_io_pdx_py313_compat.py",
@@ -10365,7 +10375,7 @@
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
-          "sha256": "82482841e5328bd5b06ee33a78689ca4c3ef85983dd910712721e11d3f01ab29",
+          "sha256": "7e6a235692c942f6092ab6fa0aeece359b77ee08b141cb6ed2e5da7ff15da378",
           "size": 10357
         },
         {
@@ -10395,8 +10405,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/paths.py",
-          "sha256": "40e567eedd10e14e52ea0075e5a702f65ce3577805bc8b31f570ebcce6d648a8",
-          "size": 7373
+          "sha256": "416bb45aeabe170002af0098fe2d7df0a922c923b7b6d61ab0f20de0a8ece713",
+          "size": 8173
         },
         {
           "path": ".tools/3d_pipeline/meshy_client.py",
@@ -10420,8 +10430,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "5029d783786c00da0435de7b0c96a6610cf36bd2ed1dd31946848e444978d9f6",
-          "size": 101311
+          "sha256": "72fbb542b95b05a812a6347d48b70bac582252297fb56873695ab9025563ad0c",
+          "size": 101188
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_rigid_weapon_attachment_integration.py",
@@ -10534,6 +10544,11 @@
           "size": 2120
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_pipeline_startup_regressions.py",
+          "sha256": "80a1d06d568576fc09f63a79057af81c7155667c6bee8ba076d07c7360e70669",
+          "size": 17861
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_reimport_promotion_contract.py",
           "sha256": "272194534cf77f86ee053aae6469c2137ae10ae139f1a3f6e49ac4b8b931ae18",
           "size": 31850
@@ -10542,6 +10557,11 @@
           "path": ".tools/3d_pipeline/tests/test_reusable_adapter_advances.py",
           "sha256": "52b9384da794c2d272d0bc8b2e22f6f946b7cae37d1c149fe0028a0ba9286d25",
           "size": 5069
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_rig_animation_regressions.py",
+          "sha256": "a62e091ca8a182a11a086d888c163dd7f65727429e0548bb66c66d8e85386863",
+          "size": 11788
         },
         {
           "path": ".tools/3d_pipeline/tests/test_rigid_weapon_attachment_tool.py",
@@ -10560,8 +10580,8 @@
         },
         {
           "path": ".tools/3d_pipeline/verify_environment.py",
-          "sha256": "d76012f941c10b4fb21342667b235062464a94f46b46ea7cd0b443e43e6d706a",
-          "size": 4198
+          "sha256": "1cff0875eab40925166888f0aae77aa4224efdde520f41add2fa7f248e3fed5a",
+          "size": 6789
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
