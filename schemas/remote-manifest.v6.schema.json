@@ -151,13 +151,8 @@
                 "type": "array",
                 "uniqueItems": true,
                 "items": {
-                  "enum": [
-                    "claude_code",
-                    "codex",
-                    "cursor",
-                    "qoder",
-                    "opencode"
-                  ]
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{0,63}$"
                 }
               },
               "experimental": {
