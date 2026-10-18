@@ -101,6 +101,21 @@ class CodingEnvironmentTableTests(unittest.TestCase):
                 self.assertIn(f"runtime.{prefix}.skills", optional["dependencies"])
 
 
+class RouteClientTests(unittest.TestCase):
+    def test_image_and_live_routes_target_only_project_mcp_clients(self) -> None:
+        table = {entry["id"]: entry for entry in data.build_coding_environment_table()}
+        for client in data.MCP_ROUTE_CLIENTS:
+            self.assertEqual(table[client]["mcp_support"], "project", client)
+        for excluded in ("kiro", "kilo_code", "cline", "aider"):
+            self.assertNotIn(excluded, data.MCP_ROUTE_CLIENTS)
+        manifest = published()
+        for provider in manifest["image_generation"]["providers"]:
+            if provider["route"]["kind"] != "manual":
+                self.assertTrue(set(provider["supported_coding_environments"]) <= set(data.MCP_ROUTE_CLIENTS), provider["id"])
+        for provider in manifest["live_testing"]["providers"]:
+            self.assertEqual(provider["supported_coding_environments"], data.MCP_ROUTE_CLIENTS, provider["id"])
+
+
 class ClientFileTests(unittest.TestCase):
     def test_agent_projections_cover_every_canonical_agent(self) -> None:
         names = sorted(path.name for path in (ROOT / ".claude" / "agents").glob("*.md"))

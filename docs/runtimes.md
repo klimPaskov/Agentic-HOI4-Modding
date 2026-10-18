@@ -177,7 +177,8 @@ A `serverName` may only contain letters, digits, underscore, and hyphen.
 
 ### Live testing (optional)
 
-Choose Clausewitz MCP (default), experimental HOI4 Live Tools, or None for manual testing. Common `workflow.live_testing` guidance works with all supported clients. HOI4 Mod Setup manages live-testing registrations for Claude Code, Codex, Cursor, Qoder and OpenCode, using their project MCP files described above; the other clients receive only the HOI4 Agent Tools registration. It updates the selected route and guidance during update or repair.
+Choose Clausewitz MCP (default), experimental HOI4 Live Tools, or None for manual testing. Common `workflow.live_testing` guidance works with all supported clients. HOI4 Mod Setup manages live-testing and image-generation registrations for Claude Code, Codex, Cursor, Qoder, OpenCode, Gemini CLI, Antigravity, Grok Build, GitHub Copilot (VS Code), and Qwen Code, using their project MCP files described above.
+Kiro and Kilo Code document no working directory for project servers, so they receive only the HOI4 Agent Tools registration. It updates the selected route and guidance during update or repair.
 
 Clausewitz MCP (`clausewitz_linux`) supports native Linux HOI4 1.19.2 only. Linux connects directly; Windows connects through WSL; macOS connects through SSH to Linux. Complete manual Linux, game and server setup, then confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
 

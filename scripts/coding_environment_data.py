@@ -22,6 +22,13 @@ from typing import Dict, List, Optional
 PORTRAIT_AGENT = "hoi4-portrait-creator.md"
 SUPER_EVENT_AGENTS = "hoi4-super-event-*.md"
 SHARED_SKILLS_CLIENTS = ["gemini_cli", "antigravity", "kilo_code", "devin_desktop"]
+# Clients whose project MCP file accepts a working directory, so the relative
+# image-generation and live-testing adapters can run there. Kiro and Kilo Code
+# document no `cwd` for project servers and are excluded.
+MCP_ROUTE_CLIENTS = [
+    "claude_code", "codex", "cursor", "qoder", "opencode",
+    "gemini_cli", "antigravity", "grok_build", "github_copilot", "qwen_code",
+]
 
 # id, display name, description, open command, MCP support, registration
 # (component, path, format), reviewed documentation for the MCP setup.
