@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-18
+
+- Bound the Blender adapter to the `mcp` 1.x SDK; a fresh bootstrap resolved `mcp` 2.3.0, which removed `FastMCP`, and the adapter crashed at startup.
+- Resolve the DDS converter from the `hoi4-feature-assets` skill in whichever skill folder is installed; the 3D pilot and adapter no longer call the removed `hoi4-event-assets` path or require the Codex mirror.
+- Keep the pinned `sources` and io_pdx_mesh `compatibility` evidence when the bootstrap rewrites `dependencies.lock.json`, so a second bootstrap succeeds.
+- Start the materialized Blender adapter in `verify_environment.py` and require its MCP `initialize` and `tools/list` to serve exactly the source's tools.
+- Fix `python -m hoi4_blender_mcp` exiting with `NameError`, register `hoi4_blender_segment_creature_components` once, and keep adapter subprocesses off the MCP stdin pipe.
+
 ## 2026-10-13
 
 - Add native Linux Agent Tools installation with exact platform trees and reviewed link targets in schema 5, keeping one canonical manifest route.
