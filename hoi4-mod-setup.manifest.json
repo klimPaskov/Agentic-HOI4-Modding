@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "da5eae5eef22d230f59a3796b669681671ae97a4",
+  "generated_for_revision": "1bdbf3c63028d1a9dee13662736fcd18bf6a3694",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -273,8 +273,8 @@
         },
         {
           "path": ".tools/lib/game.py",
-          "sha256": "37ed5e10a111827dc114a7c4c69366d8679225096da8ea685b312bb0266b6d9e",
-          "size": 4841
+          "sha256": "7bd0702e29916f211f3aa443c82550aa9310f34333c33586d16a247709dcf8d4",
+          "size": 5210
         },
         {
           "path": ".tools/lib/localisation.py",
@@ -293,8 +293,8 @@
         },
         {
           "path": ".tools/lib/setup.py",
-          "sha256": "c9d3aa0fe1fc171e6dc2533561854679fcb97ec33fab4096d8349f726083418c",
-          "size": 7490
+          "sha256": "6733080bbccfb1378139f5742dd87114b5e4dc6e7c5effbab6a670ad8a1c2383",
+          "size": 7500
         },
         {
           "path": ".tools/package_chatgpt_project_sources.bat",
