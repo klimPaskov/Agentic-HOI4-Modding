@@ -11,7 +11,7 @@ reports a gap. Each step is idempotent and reports what it did:
 4. run the runtime synchronizers present in `.tools/sync/`, so generated projections match the installed
    canonical files;
 5. adopt the quality findings of Python files the baseline has never seen (needs `uvx`; skipped without it);
-6. print the `doctor` report and return its status.
+6. print the `doctor` report from a fresh interpreter and return its status.
 
 Unlike `doctor`, this command writes: the packages, `.tools/local_settings.json`, `.gitignore`, the
 synchronizers' generated files and `.tools/quality_baseline.json`. It never edits a canonical file.
@@ -134,17 +134,17 @@ def adopt_quality(repo_root: Path) -> str:
 	return f"quality: {last_line(completed)}"
 
 
-def run(repo_root: Path, game_dir: Optional[Path], install: bool, extra: List[doctor.Item]) -> int:
-	"""Run every preparation step, then the doctor report; return the doctor status."""
+def run(repo_root: Path, game_dir: Optional[Path], install: bool) -> int:
+	"""Run every preparation step, then the doctor report in a fresh interpreter; return the doctor status."""
 	steps = [install_packages(repo_root, install), record_game_dir(game_dir), ensure_ignores(repo_root),
 		*run_synchronizers(repo_root), adopt_quality(repo_root)]
 	for step in steps:
 		print(f"setup: {step}")
 	print(flush=True)
+	# A fresh interpreter sees what pip installed above, including a user site-packages folder created after this
+	# process started (which this process cannot import), and the project environment when one exists.
 	venv = project_python(repo_root)
-	if venv is not None and os.environ.get("HOI4_CHECKS_IN_VENV") != "1":
-		# The packages live in the project environment, so the report must run there.
-		return subprocess.run([str(venv), "-B", str(repo_root / ".tools" / "check.py"), "doctor"], cwd=repo_root,
-			env={**os.environ, "HOI4_CHECKS_IN_VENV": "1"}).returncode
-	importlib.invalidate_caches()  # packages installed above must be visible to the report
-	return doctor.run(repo_root, extra)
+	python = str(venv) if venv is not None else sys.executable
+	environment = {**os.environ, "HOI4_CHECKS_IN_VENV": "1"} if venv is not None else None
+	return subprocess.run([python, "-B", str(repo_root / ".tools" / "check.py"), "doctor"], cwd=repo_root,
+		env=environment).returncode

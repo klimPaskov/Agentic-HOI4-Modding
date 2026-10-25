@@ -289,7 +289,7 @@ def main() -> int:
 	if arguments.mode == "doctor":
 		return doctor.run(REPO_ROOT, (), arguments.save_game_dir)
 	if arguments.mode == "setup":
-		return setup.run(REPO_ROOT, arguments.save_game_dir, not arguments.no_install, list(()))
+		return setup.run(REPO_ROOT, arguments.save_game_dir, not arguments.no_install)
 
 	if arguments.mode == "full" and arguments.paths:
 		parser.error("--paths applies to quick mode only")
