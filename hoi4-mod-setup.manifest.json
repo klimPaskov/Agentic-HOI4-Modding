@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "31719132cc08557b9bd165dce4e7e730a4b2613e",
+  "generated_for_revision": "2fbebf0ff66efdb9eabfbf2dd8c42874e8e46934",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -223,8 +223,8 @@
         },
         {
           "path": ".tools/check.py",
-          "sha256": "f57776b6aa5adf7733494cd22f732087d0a02d5b7447af0906792e2a0007af5a",
-          "size": 16917
+          "sha256": "684417e439e8d259513e888f5b1ea6d464b787952f4cd6515bd6ee9ef5c5502f",
+          "size": 16907
         },
         {
           "path": ".tools/gfx/README.md",
@@ -293,8 +293,8 @@
         },
         {
           "path": ".tools/lib/setup.py",
-          "sha256": "6733080bbccfb1378139f5742dd87114b5e4dc6e7c5effbab6a670ad8a1c2383",
-          "size": 7500
+          "sha256": "b43919563d9b251063e8b7ab94568edaf958c977e361486a22fae4bbfafcd12c",
+          "size": 7568
         },
         {
           "path": ".tools/package_chatgpt_project_sources.bat",
@@ -483,8 +483,8 @@
         },
         {
           "path": ".tools/tests/test_setup.py",
-          "sha256": "bf1b4a944c53755ea76835c16d2e6cdbd63aef214f685fad7075877bd51a9254",
-          "size": 4137
+          "sha256": "90d67fb5eede4b5e2822d920f96d4cba138bc9825996fa38271a639f7622d6e6",
+          "size": 4932
         },
         {
           "path": ".tools/tests/test_shared_readers.py",

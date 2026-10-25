@@ -74,7 +74,7 @@
    "upstream": ".tools/lib/report.py"
   },
   ".tools/lib/setup.py": {
-   "sha256": "6733080bbccfb1378139f5742dd87114b5e4dc6e7c5effbab6a670ad8a1c2383",
+   "sha256": "b43919563d9b251063e8b7ab94568edaf958c977e361486a22fae4bbfafcd12c",
    "upstream": ".tools/lib/setup.py"
   },
   ".tools/requirements-dev.txt": {
@@ -118,7 +118,7 @@
    "upstream": ".tools/tests/test_script_rules.py"
   },
   ".tools/tests/test_setup.py": {
-   "sha256": "bf1b4a944c53755ea76835c16d2e6cdbd63aef214f685fad7075877bd51a9254",
+   "sha256": "90d67fb5eede4b5e2822d920f96d4cba138bc9825996fa38271a639f7622d6e6",
    "upstream": ".tools/tests/test_setup.py"
   },
   ".tools/tests/test_shared_readers.py": {

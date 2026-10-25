@@ -51,6 +51,18 @@ class Setup(unittest.TestCase):
 		(self.mod / ".tools" / "sync" / "sync_skills.py").write_text("print('skills in sync')\n", encoding="utf-8")
 		self.assertEqual(setup.run_synchronizers(self.mod), ["sync_skills.py: ok: skills in sync"])
 
+	def test_report_runs_in_a_fresh_interpreter(self):
+		# Packages pip installs into a site folder created after this process started are invisible here,
+		# so the closing doctor report must come from a new interpreter.
+		marker = Path(self.temp.name) / "doctor_pid.txt"
+		(self.mod / ".tools" / "check.py").write_text(
+			f"import os, sys\nopen({str(marker)!r}, 'w').write(str(os.getpid()))\n"
+			"raise SystemExit(3 if sys.argv[1:] == ['doctor'] else 9)\n", encoding="utf-8")
+		with patch.object(game, "LOCAL_SETTINGS", Path(self.temp.name) / "local_settings.json"), \
+				patch.object(setup, "adopt_quality", lambda root: "quality: skipped in test"):
+			self.assertEqual(setup.run(self.mod, None, install=False), 3)
+		self.assertNotEqual(marker.read_text(encoding="utf-8"), str(os.getpid()))
+
 	def test_missing_packages_are_reported_without_install(self):
 		with patch.object(doctor, "PYTHON_MODULES", (("no_such_module_for_setup_test", "nosuchpackage", "a test"),)):
 			self.assertIn("missing nosuchpackage", setup.install_packages(self.mod, allowed=False))
