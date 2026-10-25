@@ -30,12 +30,13 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import io
 import re
 import sys
 import zipfile
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple, cast
 
 TEXT_HEADER = b"HOI4txt"
 BINARY_HEADER = b"HOI4bin"
@@ -98,10 +99,10 @@ def walk(text: str, pattern: List[str]) -> Iterator[Tuple[str, Tuple[str, ...], 
 	Only blocks on or inside PATTERN are reported; other blocks are skipped with a
 	brace-matching scan that honours quoted strings and comments.
 	"""
-	state = {"tokens": TOKEN.finditer(text), "end": 0}
-	pending: List[re.Match] = []
+	state: Dict[str, Any] = {"tokens": TOKEN.finditer(text), "end": 0}
+	pending: List[Optional[re.Match[str]]] = []
 
-	def next_token() -> Optional[re.Match]:
+	def next_token() -> Optional[re.Match[str]]:
 		while True:
 			match = pending.pop() if pending else next(state["tokens"], None)
 			if match is None:
@@ -128,7 +129,7 @@ def walk(text: str, pattern: List[str]) -> Iterator[Tuple[str, Tuple[str, ...], 
 		pending.clear()
 		state["tokens"] = TOKEN.finditer(text, position)
 
-	stack: List[Tuple[Tuple[str, ...], Counter, List[str]]] = [((), Counter(), [])]
+	stack: List[Tuple[Tuple[str, ...], Counter[str], List[str]]] = [((), Counter(), [])]
 	while True:
 		match = next_token()
 		if match is None:
@@ -180,7 +181,7 @@ def fmt_path(path: Tuple[str, ...]) -> str:
 	return "/".join(path)
 
 
-def leaves(text: str, pattern: List[str], match: Optional[re.Pattern]) -> Iterator[Tuple[str, str]]:
+def leaves(text: str, pattern: List[str], match: Optional[re.Pattern[str]]) -> Iterator[Tuple[str, str]]:
 	for kind, path, value in walk(text, pattern):
 		if kind == "leaf" or kind == "items":
 			shown = value if kind == "leaf" else "{ " + value + " }"
@@ -189,7 +190,7 @@ def leaves(text: str, pattern: List[str], match: Optional[re.Pattern]) -> Iterat
 				yield line, shown
 
 
-def cmd_info(args) -> None:
+def cmd_info(args: argparse.Namespace) -> None:
 	path = Path(args.save)
 	raw = path.read_bytes()[:16]
 	print(f"file      : {path}")
@@ -205,11 +206,11 @@ def cmd_info(args) -> None:
 				break
 
 
-def cmd_keys(args) -> None:
+def cmd_keys(args: argparse.Namespace) -> None:
 	pattern = split_path(args.path)
 	text = load_text(Path(args.save))
 	depth = len(pattern) + 1
-	counts: Dict[str, Counter] = defaultdict(Counter)
+	counts: Dict[str, Counter[str]] = defaultdict(Counter)
 	for kind, node, _ in walk(text, pattern):
 		if len(node) == depth and kind in ("open", "leaf"):
 			base = re.sub(r"\[\d+\]$", "", node[-1])
@@ -221,7 +222,7 @@ def cmd_keys(args) -> None:
 		print(f"... {len(counts) - args.limit} more keys")
 
 
-def cmd_get(args) -> None:
+def cmd_get(args: argparse.Namespace) -> None:
 	pattern = split_path(args.path)
 	if not pattern:
 		raise SaveError("get needs a PATH")
@@ -248,7 +249,7 @@ def cmd_get(args) -> None:
 			return
 
 
-def cmd_find(args) -> None:
+def cmd_find(args: argparse.Namespace) -> None:
 	regex = re.compile(args.regex)
 	text = load_text(Path(args.save))
 	hits = 0
@@ -263,14 +264,14 @@ def cmd_find(args) -> None:
 		print("no matches")
 
 
-def cmd_flatten(args) -> None:
+def cmd_flatten(args: argparse.Namespace) -> None:
 	match = re.compile(args.match) if args.match else None
 	text = load_text(Path(args.save))
 	for line, value in leaves(text, split_path(args.inside), match):
 		print(f"{line} = {value}")
 
 
-def cmd_diff(args) -> None:
+def cmd_diff(args: argparse.Namespace) -> None:
 	pattern = split_path(args.inside)
 	match = re.compile(args.match) if args.match else None
 	old = dict(leaves(load_text(Path(args.old)), pattern, match))
@@ -289,12 +290,12 @@ def cmd_diff(args) -> None:
 			print(f"  ... {len(rows) - args.limit} more")
 
 
-def cmd_footprint(args) -> None:
+def cmd_footprint(args: argparse.Namespace) -> None:
 	"""Count persistent script state by name prefix to expose leaks and save bloat."""
 	text = load_text(Path(args.save))
 	containers = set(args.containers.split(","))
-	counts: Counter = Counter()
-	sizes: Counter = Counter()
+	counts: Counter[Tuple[str, str]] = Counter()
+	sizes: Counter[Tuple[str, str]] = Counter()
 	for kind, node, value in walk(text, split_path(args.inside)):
 		container = next((part for part in node[:-1] if part in containers), None)
 		if container is None or kind == "close":
@@ -337,7 +338,7 @@ def main() -> int:
 	p.set_defaults(run=cmd_footprint)
 	args = parser.parse_args()
 	try:
-		sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+		cast(io.TextIOWrapper, sys.stdout).reconfigure(encoding="utf-8", errors="replace")
 		args.run(args)
 	except SaveError as error:
 		print(f"error: {error}", file=sys.stderr)

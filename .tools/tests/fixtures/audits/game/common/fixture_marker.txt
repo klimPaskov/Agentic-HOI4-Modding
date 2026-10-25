@@ -1,0 +1,1 @@
+# Marks this folder as a game installation for lib.game.

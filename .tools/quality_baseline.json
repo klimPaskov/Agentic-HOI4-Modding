@@ -1,0 +1,315 @@
+{
+ "entries": {
+  ".claude/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py": {
+   "C901 commit_prepared": 16,
+   "PLR0915 process_portrait_source": 83
+  },
+  ".claude/skills/hoi4-save-inspection/scripts/save_inspect.py": {
+   "C901 walk": 23,
+   "PLR0915 walk": 69
+  },
+  ".tools/3d_pipeline/adapter/assembly_yaw.py": {
+   "C901 rotate_existing_assembly_yaw": 41,
+   "PLR0915 rotate_existing_assembly_yaw": 108
+  },
+  ".tools/3d_pipeline/adapter/blender_worker.py": {
+   "B007 Loop control variable `index` not used within loop body": 1,
+   "B023 Function definition does not bind loop variable `base`": 1,
+   "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 1,
+   "BLE001 Do not catch blind exception: `Exception`": 1,
+   "C901 _action_phase_execute": 46,
+   "C901 _action_phase_inputs": 31,
+   "C901 _component_index_catalog": 16,
+   "C901 _mesh_region_collect": 20,
+   "C901 _mesh_region_inputs": 22,
+   "C901 _promotion_fingerprint": 25,
+   "C901 _promotion_inputs": 29,
+   "C901 _promotion_reopen_comparison": 21,
+   "C901 _render_component_group": 21,
+   "C901 _validate_export_coordinate_drift": 20,
+   "C901 attach_rigid_weapon_from_checkpoint": 50,
+   "C901 author_creature_action": 61,
+   "C901 author_creature_rig": 25,
+   "C901 author_humanoid_actions": 24,
+   "C901 author_humanoid_rig": 16,
+   "C901 author_locomotion_action": 16,
+   "C901 author_winged_biped_action": 30,
+   "C901 bake_static_mesh_transforms": 18,
+   "C901 bind_geometry_to_existing_rig": 50,
+   "C901 bind_texture_sources": 23,
+   "C901 correct_action_grounding": 16,
+   "C901 extract_textures": 17,
+   "C901 import_animation_action": 66,
+   "C901 import_bvh_animation_action": 32,
+   "C901 inspect": 26,
+   "C901 inspect_mesh_region": 16,
+   "C901 isolate_humanoid_weapon": 16,
+   "C901 partition_static_mesh_export_batches": 25,
+   "C901 prepare": 25,
+   "C901 repair_open_surface_boundaries": 26,
+   "C901 run": 44,
+   "C901 sanitize_working_weights": 23,
+   "C901 segment_creature_components": 30,
+   "F841 Local variable `before_objects` is assigned to but never used": 1,
+   "F841 Local variable `target_base_location` is assigned to but never used": 1,
+   "F841 Local variable `y_rear` is assigned to but never used": 1,
+   "PLR0915 _action_phase_execute": 115,
+   "PLR0915 _action_phase_inputs": 76,
+   "PLR0915 _mesh_region_collect": 61,
+   "PLR0915 _mesh_region_inputs": 54,
+   "PLR0915 _promotion_fingerprint": 60,
+   "PLR0915 _promotion_inputs": 68,
+   "PLR0915 _render_component_group": 123,
+   "PLR0915 _validate_export_coordinate_drift": 60,
+   "PLR0915 attach_rigid_weapon_from_checkpoint": 206,
+   "PLR0915 author_creature_action": 159,
+   "PLR0915 author_creature_rig": 116,
+   "PLR0915 author_humanoid_actions": 117,
+   "PLR0915 author_humanoid_rig": 107,
+   "PLR0915 author_locomotion_action": 86,
+   "PLR0915 author_winged_biped_action": 125,
+   "PLR0915 author_winged_biped_rig": 89,
+   "PLR0915 bake_static_mesh_transforms": 74,
+   "PLR0915 bind_geometry_to_existing_rig": 168,
+   "PLR0915 bind_texture_sources": 55,
+   "PLR0915 correct_action_grounding": 90,
+   "PLR0915 export_mesh": 51,
+   "PLR0915 extract_textures": 52,
+   "PLR0915 import_animation_action": 303,
+   "PLR0915 import_bvh_animation_action": 155,
+   "PLR0915 inspect": 78,
+   "PLR0915 inspect_mesh_region": 56,
+   "PLR0915 isolate_humanoid_weapon": 81,
+   "PLR0915 offset_action_root": 57,
+   "PLR0915 partition_static_mesh_export_batches": 84,
+   "PLR0915 prepare": 133,
+   "PLR0915 reimport_export": 60,
+   "PLR0915 render_previews": 75,
+   "PLR0915 repair_open_surface_boundaries": 113,
+   "PLR0915 retime_animation_action": 52,
+   "PLR0915 run": 60,
+   "PLR0915 sanitize_root_translation_channels": 54,
+   "PLR0915 sanitize_working_weights": 71,
+   "PLR0915 segment_creature_components": 120
+  },
+  ".tools/3d_pipeline/adapter/explicit_batch_repair.py": {
+   "C901 _apply": 16,
+   "C901 validate_specs": 21,
+   "C901 verify_mesh": 16
+  },
+  ".tools/3d_pipeline/adapter/explicit_skin_repair.py": {
+   "C901 repair_explicit_skin": 24,
+   "PLR0915 repair_explicit_skin": 63
+  },
+  ".tools/3d_pipeline/adapter/explicit_vertex_remap.py": {
+   "C901 repair_explicit_vertex_remap": 35,
+   "C901 validate_remap": 18,
+   "F401 `collections.Counter` imported but unused": 1,
+   "F841 Local variable `old_vertex` is assigned to but never used": 1,
+   "PLR0915 repair_explicit_vertex_remap": 115,
+   "PLR0915 validate_remap": 54
+  },
+  ".tools/3d_pipeline/adapter/fitted_humanoid_repair.py": {
+   "C901 author_action": 32,
+   "C901 author_rig": 20,
+   "C901 validate_action_spec": 19,
+   "C901 validate_rig_spec": 32,
+   "F401 `mathutils.Vector` imported but unused": 1,
+   "PLR0915 author_action": 118,
+   "PLR0915 author_rig": 92,
+   "PLR0915 validate_rig_spec": 86
+  },
+  ".tools/3d_pipeline/adapter/identity_leaf_alias.py": {
+   "C901 collapse_identity_leaf_joints": 59,
+   "F401 `math` imported but unused": 1,
+   "PLR0915 collapse_identity_leaf_joints": 155
+  },
+  ".tools/3d_pipeline/adapter/manual_creature_rig.py": {
+   "B023 Function definition does not bind loop variable `links`": 2,
+   "C901 author_measured_creature_action": 19,
+   "C901 author_measured_creature_rig": 20,
+   "C901 ground_existing_action": 20,
+   "C901 repair_explicit_mesh_winding": 26,
+   "C901 validate_action": 19,
+   "PLR0915 _component_material": 78,
+   "PLR0915 author_measured_creature_action": 75,
+   "PLR0915 author_measured_creature_rig": 86,
+   "PLR0915 ground_existing_action": 58,
+   "PLR0915 repair_explicit_mesh_winding": 71
+  },
+  ".tools/3d_pipeline/adapter/material_visibility_probe.py": {
+   "C901 run_material_visibility_probe": 19,
+   "C901 validate_visibility_request": 16,
+   "PLR0915 run_material_visibility_probe": 66
+  },
+  ".tools/3d_pipeline/adapter/mesh_patch_repair.py": {
+   "C901 repair_explicit_mesh_patch": 34,
+   "C901 validate_patch": 44,
+   "F401 `collections.Counter` imported but unused": 1,
+   "F401 `pathlib.Path` imported but unused": 1,
+   "PLR0915 repair_explicit_mesh_patch": 96,
+   "PLR0915 validate_patch": 106
+  },
+  ".tools/3d_pipeline/adapter/mesh_vertex_material_repair.py": {
+   "C901 bind_existing_pdx_material": 24,
+   "C901 edit_explicit_mesh_vertices": 20,
+   "F401 `manual_creature_rig._finish` imported but unused": 1
+  },
+  ".tools/3d_pipeline/adapter/mesh_winding_repair.py": {
+   "C901 plan_consistent_outward_winding": 35,
+   "C901 repair_mesh_winding": 27,
+   "PLR0915 plan_consistent_outward_winding": 104,
+   "PLR0915 repair_mesh_winding": 89
+  },
+  ".tools/3d_pipeline/adapter/mesh_winding_seam.py": {
+   "C901 _orient_component": 23,
+   "C901 repair_mesh_winding_seam": 24,
+   "PLR0915 _orient_component": 73,
+   "PLR0915 repair_mesh_winding_seam": 93
+  },
+  ".tools/3d_pipeline/adapter/pdx_skin_membership.py": {
+   "PLR0915 verify_pdx_skin_membership": 60
+  },
+  ".tools/3d_pipeline/adapter/skeletal_export_partition.py": {
+   "B023 Function definition does not bind loop variable `differences`": 2,
+   "C901 exported_mesh_streams": 19,
+   "C901 partition_skeletal_mesh_export_batches": 23,
+   "F401 `hashlib` imported but unused": 1,
+   "PLR0915 exported_mesh_streams": 55,
+   "PLR0915 partition_skeletal_mesh_export_batches": 92
+  },
+  ".tools/3d_pipeline/blender_client.py": {
+   "F401 `os` imported but unused": 1
+  },
+  ".tools/3d_pipeline/bootstrap_3d_workflow.py": {
+   "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 1,
+   "BLE001 Do not catch blind exception: `Exception`": 1,
+   "C901 ensure_io_pdx_mesh": 17,
+   "C901 find_blender": 17,
+   "C901 safe_extract": 19,
+   "PLR0915 ensure_io_pdx_mesh": 69,
+   "PLR0915 main": 51,
+   "PLR0915 safe_extract": 56
+  },
+  ".tools/3d_pipeline/init_pilot_jobs.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 1
+  },
+  ".tools/3d_pipeline/lib/mcp_stdio.py": {
+   "C901 _exchange_blender_response": 20,
+   "C901 call_stdio": 27,
+   "PLR0915 call_stdio": 89
+  },
+  ".tools/3d_pipeline/lib/paths.py": {
+   "F401 `os` imported but unused": 1
+  },
+  ".tools/3d_pipeline/run_pilot.py": {
+   "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 1,
+   "BLE001 Do not catch blind exception: `Exception`": 2,
+   "C901 run_shared_humanoid_batch": 27,
+   "F841 Local variable `remesh_glb` is assigned to but never used": 1,
+   "F841 Local variable `rig_glb` is assigned to but never used": 1,
+   "PLR0915 _shared_humanoid_spec": 54,
+   "PLR0915 continue_humanoid": 98,
+   "PLR0915 continue_humanoid_shared": 55,
+   "PLR0915 run_shared_humanoid_batch": 84,
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 5,
+   "S110 `try`-`except`-`pass` detected, consider logging the exception": 1
+  },
+  ".tools/3d_pipeline/tests/blender_rigid_weapon_attachment_integration.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 1
+  },
+  ".tools/3d_pipeline/tests/test_blender_stdio_response.py": {
+   "F401 `json` imported but unused": 1,
+   "F401 `subprocess` imported but unused": 1,
+   "F401 `tempfile` imported but unused": 1
+  },
+  ".tools/3d_pipeline/tests/test_bounded_recovery_primitives.py": {
+   "F401 `ast` imported but unused": 1,
+   "F401 `hashlib` imported but unused": 1,
+   "F401 `json` imported but unused": 1,
+   "F401 `sysconfig` imported but unused": 1
+  },
+  ".tools/3d_pipeline/tests/test_io_pdx_compat.py": {
+   "F401 `copy.deepcopy` imported but unused": 1,
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 2
+  },
+  ".tools/3d_pipeline/tests/test_mesh_winding_seam.py": {
+   "F401 `json` imported but unused": 1,
+   "F401 `re` imported but unused": 1
+  },
+  ".tools/3d_pipeline/tests/test_partition_image_consumers.py": {
+   "B023 Function definition does not bind loop variable `mapping`": 1
+  },
+  ".tools/3d_pipeline/tests/test_pipeline_startup_regressions.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 4
+  },
+  ".tools/3d_pipeline/tests/test_reusable_adapter_advances.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 1
+  },
+  ".tools/3d_pipeline/tests/test_rig_animation_regressions.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `D401`)": 1
+  },
+  ".tools/3d_pipeline/tests/test_rigid_weapon_attachment_tool.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 1
+  },
+  ".tools/3d_pipeline/tests/test_workflow_sync_contracts.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 4
+  },
+  ".tools/3d_pipeline/verify_environment.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 2
+  },
+  ".tools/audits/audit_asset_wiring_static.py": {
+   "C901 main": 19,
+   "PLR0915 main": 102
+  },
+  ".tools/audits/audit_localisation_static.py": {
+   "C901 audit_requirement_flags": 20,
+   "C901 collect_event_roots": 18,
+   "C901 normalised_findings": 19,
+   "PLR0915 collect_event_roots": 57,
+   "PLR0915 emit_report": 56,
+   "PLR0915 main": 53
+  },
+  ".tools/gfx/gfx.py": {
+   "C901 main": 29,
+   "PLR0915 main": 102
+  },
+  ".tools/image_generation/providers/gptimage/bootstrap.py": {
+   "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 1,
+   "BLE001 Do not catch blind exception: `Exception`": 1
+  },
+  ".tools/image_generation/runtime/server.py": {
+   "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 1,
+   "BLE001 Do not catch blind exception: `Exception`": 4,
+   "C901 _generate_fal": 16,
+   "C901 _generate_openai_compatible": 16,
+   "C901 generate_image": 30,
+   "C901 image_dimensions": 16,
+   "C901 load_provider_config": 27,
+   "C901 png_has_transparent_pixels": 32,
+   "PLR0915 _generate_openai_compatible": 61,
+   "PLR0915 load_provider_config": 61,
+   "PLR0915 png_has_transparent_pixels": 82
+  },
+  ".tools/mcp/bootstrap_hoi4_agent_tools.py": {
+   "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 2,
+   "C901 package_tree_sha256": 18,
+   "PLR0915 package_tree_sha256": 53
+  },
+  ".tools/sync/agent_sync_common.py": {
+   "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 2
+  },
+  ".tools/wiki/sync_wiki_snapshot.py": {
+   "B023 Function definition does not bind loop variable `name`": 1,
+   "C901 finalise_article": 21,
+   "C901 main": 20,
+   "PLR0915 main": 67,
+   "RUF100 Unused `noqa` directive (unused: `BLE001`)": 1
+  },
+  ".tools/wiki/verify_wiki_snapshot.py": {
+   "C901 verify": 50,
+   "PLR0915 verify": 107
+  }
+ },
+ "ruff": "ruff@0.8.4"
+}

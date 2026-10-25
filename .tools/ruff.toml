@@ -1,0 +1,24 @@
+# Ruff for the maintained repository tooling (.tools/ and skill helpers). Run it through
+# `python -B .tools/check.py` or `uvx ruff@0.8.4 check --config .tools/ruff.toml` from the repository root
+# (version pinned in .tools/requirements-dev.txt); paths below are relative to that root.
+# Only defect-finding rules are enabled: no formatting, import order, quotes or line length.
+# Complexity rules feed the ratchet in .tools/quality_baseline.json instead of failing outright.
+target-version = "py39"
+include = [".tools/**/*.py", ".claude/skills/*/tools/*.py", ".claude/skills/*/scripts/*.py"]
+extend-exclude = [".tmp", "docs", "**/.venv", "**/node_modules", ".tools/3d_pipeline/vendor", ".tools/3d_pipeline/staging"]
+
+[lint]
+select = [
+	"F",       # pyflakes: unused imports and variables, undefined names
+	"E9",      # syntax errors
+	"B",       # bugbear: mutable defaults, loop-variable capture, assert False
+	"PLE",     # pylint errors
+	"S110",    # try/except/pass
+	"BLE001",  # blind except Exception
+	"RUF100",  # unused noqa
+	"C901",    # McCabe complexity (ratchet)
+	"PLR0915", # too many statements (ratchet)
+]
+
+[lint.mccabe]
+max-complexity = 15

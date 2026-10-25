@@ -1,0 +1,7 @@
+# Invalid: scripted localisation must not write format characters directly.
+defined_text = {
+	name = GetExampleStatus
+	text = {
+		localization_key = "§Yexample_status§!"
+	}
+}

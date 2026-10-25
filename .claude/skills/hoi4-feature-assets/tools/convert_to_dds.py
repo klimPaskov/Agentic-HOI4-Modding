@@ -21,6 +21,7 @@ Environment variables:
 from __future__ import annotations
 
 import argparse
+import json
 import struct
 import os
 import platform
@@ -287,7 +288,7 @@ def run_ffmpeg_bgra_fallback(
             "Set one of these:\n"
             "- TEXCONV_PATH=/path/to/texconv\n"
             "- TEXCONV_EXE=/path/to/texconv.exe\n"
-            "- TEXCONV_DOCKER_IMAGE=<approved texconv image>"
+            f"- TEXCONV_DOCKER_IMAGE={project_setting('texconv_docker_image')}"
         )
 
     source_width, source_height = probe_image_size(input_file)
@@ -367,6 +368,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--width", type=int, default=None, help="Target width in pixels.")
     parser.add_argument("--height", type=int, default=None, help="Target height in pixels.")
     return parser.parse_args()
+
+
+def project_setting(name: str) -> str:
+    """Return one project value from project_settings.json beside this tool (shared-tool contract)."""
+    settings = json.loads(Path(__file__).with_name("project_settings.json").read_text(encoding="utf-8"))
+    return str(settings[name])
 
 
 def main() -> int:

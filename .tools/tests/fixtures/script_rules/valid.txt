@@ -1,0 +1,14 @@
+# Valid: every construct here is allowed by the CLAUDE.md syntax rules.
+# A comment may mention >= and <= and = -my_var freely.
+example_effect = {
+	if = {
+		limit = {
+			check_variable = { my_var > 3 }
+			check_variable = { var = my_var value = 5 compare = greater_than_or_equals }
+		}
+		set_variable = { my_offset = -5 }
+		set_variable = { my_ratio = -0.25 }
+		multiply_variable = { my_var = -1 }
+		custom_effect_tooltip = "tooltip_with_>=_inside_quotes"
+	}
+}

@@ -1,0 +1,6 @@
+# Pinned lint and type-check tools for .tools/quality.py, run through uvx so nothing is installed globally:
+#   uvx ruff@0.8.4 check
+#   uvx --from mypy==1.14.1 mypy --strict ...
+# Change a version here and in the RUFF and MYPY constants of .tools/quality.py together.
+ruff==0.8.4
+mypy==1.14.1

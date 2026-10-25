@@ -1,0 +1,10 @@
+add_namespace = fixture
+
+country_event = {
+	id = fixture.1
+	is_triggered_only = yes
+
+	option = {
+		name = fixture.1.a
+	}
+}

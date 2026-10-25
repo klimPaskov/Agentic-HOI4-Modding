@@ -12,12 +12,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import importlib.util
+import json
 import os
 import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Any, Iterable, Sequence
 
 from PIL import Image, ImageFile
 
@@ -68,12 +69,18 @@ class StateImages:
     not_eligible: Image.Image
 
 
+def project_setting(name: str) -> str:
+    """Return one project value from project_settings.json beside this tool (shared-tool contract)."""
+    settings = json.loads(Path(__file__).with_name("project_settings.json").read_text(encoding="utf-8"))
+    return str(settings[name])
+
+
 def _skill_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
 def _default_template_paths() -> tuple[Path, Path]:
-    root = _skill_root() / "assets" / "vanilla_reference" / "icons" / "achievements" / "template"
+    root = _skill_root() / "assets" / project_setting("reference_folder") / "icons" / "achievements" / "template"
     return root / "achievement_template.png", root / "achievement_template_grey.png"
 
 
@@ -465,9 +472,9 @@ def _review_paths(output_dir: Path, achievement_id: str) -> tuple[Path, Path, Pa
     )
 
 
-def _load_dds_writer():
+def _load_dds_writer() -> Any:
     converter_path = Path(__file__).with_name("convert_to_dds.py")
-    spec = importlib.util.spec_from_file_location("hoi4_feature_assets_convert_to_dds", converter_path)
+    spec = importlib.util.spec_from_file_location("convert_to_dds", converter_path)
     if spec is None or spec.loader is None:
         raise AchievementProcessingError(f"Cannot import canonical DDS writer: {converter_path}")
     module = importlib.util.module_from_spec(spec)

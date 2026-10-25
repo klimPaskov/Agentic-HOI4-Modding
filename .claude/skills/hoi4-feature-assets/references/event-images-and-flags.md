@@ -37,9 +37,11 @@ Report-event images use a finished `210x176` RGBA canvas. The source photograph 
 Do not ask the image generator to create the tilted card. Generate or source the documentary photograph first, then apply the card treatment locally. This keeps the tilt, shadow, and margins consistent.
 
 ```bash
-python -B .claude/skills/hoi4-feature-assets/tools/process_report_event_image.py source.png processed_report_event.png
+python -B .claude/skills/hoi4-feature-assets/tools/process_report_event_image.py source.png processed_report_event.png --runtime gfx/event_pictures/<feature>/<file>.dds
 python -B .claude/skills/hoi4-feature-assets/tools/process_report_event_image.py source_folder processed_folder
 ```
+
+`--runtime` names the DDS the card becomes and records its source hash, settings and output pixel hash in the provenance registry named by `report_provenance` in `tools/project_settings.json`; commit that record with the DDS. Use it for every final card, one file at a time. `python -B .tools/gfx/gfx.py reports` then confirms the runtime pixels match the record and, while the source still exists, that rerunning the recipe reproduces them; a card without a record only gets the size and corner checks.
 
 The script performs cover crop, black-and-white conversion, sepia application, grain, paper border, deterministic tilt, transparent canvas margin, and soft shadow. It writes RGBA PNG output. Convert the processed PNG to DDS through the normal repo workflow.
 
@@ -47,7 +49,8 @@ Validation:
 
 - processed PNG is exactly `210x176`
 - final DDS is exactly `210x176`
-- corner pixels are transparent
+- corner pixels are transparent (`gfx.py reports` flags opaque corners)
+- `gfx.py reports` reports no provenance or recipe mismatch for the card
 - no hard photo pixels are clipped
 - tilt is visible but subtle
 - shadow is soft and not a thick border
@@ -91,6 +94,7 @@ Before marking any flag complete, verify normal, medium, and small TGA files:
 - small: 10x7
 - correct visual orientation in a contact sheet
 - TGA origin/header convention consistent with vanilla HOI4 flags; `file` output must not show `- top`
+- `python -B .tools/gfx/gfx.py flags --paths gfx/flags` reports wrong sizes as errors and missing ladder sizes and top-origin files as warnings
 - no byte-identical ideology variants unless the design is intentionally shared and documented
 - no upside-down copies
 - no accidental no-suffix base-flag replacement for countries that were only meant to receive ideology variants

@@ -1,1 +1,2 @@
 .tools/image_generation/providers/gptimage/** text eol=lf
+.tools/tests/fixtures/**/*.dds binary

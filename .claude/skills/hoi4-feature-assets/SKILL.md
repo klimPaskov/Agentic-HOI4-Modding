@@ -235,7 +235,7 @@ Shared visual themes are allowed only when every icon is still designed for its 
 - achievement icons should follow achievement presentation rules and variant rules
 - intelligence-agency and intelligence-operation icons must follow their own agency or operation UI precedent rather than a generic decision treatment
 - commander traits, medals, military raids, state modifiers, MIOs, factions, buildings, and modifier icons must follow the matching canonical folder and owning vanilla definition; do not force these families onto a blanket 32x32 or 64x64 canvas
-- frame strips, indexed building sprites, and multi-state modifier art must retain their frame order and frame count rather than being treated as a single standalone icon
+- frame strips, indexed building sprites, and multi-state modifier art must retain their frame order and frame count rather than being treated as a single standalone icon; `python -B .tools/gfx/gfx.py sprites --paths <the .gfx file>` warns when a strip's width does not divide by its `noOfFrames`
 
 If a mechanic needs matching focus, idea, and decision visuals, build them as a coordinated icon family. A coordinated family can share subject matter, symbols, colors, and lore cues, but each member still needs separate source art or a separate generated output designed for its target size and UI role.
 
@@ -368,23 +368,24 @@ After a late user correction or accepted spec, manifest-plan, or animation-plan 
 
 ## 9. Standard HOI4 asset sizes
 
-Use these sizes unless the feature spec or an existing repo pattern gives a better project-specific requirement.
+Use these sizes unless the feature spec or an existing repo pattern gives a better project-specific requirement. The vanilla evidence for the report, news, category-icon and counter canvases is in `.tools/gfx/profiles.json`; `python -B .tools/gfx/gfx.py size --profile <name>` checks a file against it, and `python -B .tools/check.py quick` runs the GFX conformance checks on changed art.
 
-- report event images: 210x176
-- news event images: 397x153, black and white
+- report event images: 210x176 (532 of 884 vanilla event pictures)
+- news event images: 397x153 (233 vanilla event pictures), black and white
 - country-leader portraits: 156x210
 - commander portraits: 156x210 full portrait textures
 - operative portraits: 156x210 full portrait textures
-- flags small: 10x7
-- flags medium: 41x26
-- flags normal: 82x52
+- flags: 82x52 normal, 41x26 medium, 10x7 small (2,202 of 2,203 vanilla files per folder; `gfx.py flags`)
 - tech icons small: 64x64
 - tech icons medium: 132x52
-- achievements: 64x64
+- achievements: 64x64 (882 of 882 vanilla files)
+- decision category icons: 52x40 (94 vanilla files); category pictures: 114x101 (`assets/vanilla_reference/CATALOG.md`)
 - custom feature images: match the target GUI surface or documented repository pattern
 - decision icons: 32x32
 - idea and national spirit icons: 64x64
 - focus icons: 94x86
+
+The decision, idea and focus canvases are package conventions; vanilla mostly uses 33x32 decision icons, 65x67 or 60x68 idea pictures and 100x88 focus icons. Record the canvases the mod settles in a `profiles.json` row with its source so `gfx.py families` checks them.
 
 Use other sizes when the feature UI or asset type requires it.
 

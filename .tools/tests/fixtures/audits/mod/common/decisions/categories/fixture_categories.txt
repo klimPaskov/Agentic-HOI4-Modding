@@ -1,0 +1,5 @@
+fixture_category = {
+	allowed = {
+		always = yes
+	}
+}

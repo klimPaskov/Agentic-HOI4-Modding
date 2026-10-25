@@ -1,0 +1,80 @@
+{
+ "_about": "Per-frame canvas profiles for gfx.py `size --profile`. Every row cites vanilla evidence. `accepted` lists every size treated as valid; `canvas` is the size for new art; `margin` is the minimum transparent margin in pixels for `size`. Focus, decision and idea rows are project decisions: add them here with their source when your mod settles those canvases, and `gfx.py families` starts checking that family.",
+ "profiles": {
+  "category": {
+   "canvas": [
+    52,
+    40
+   ],
+   "accepted": [
+    [
+     52,
+     40
+    ]
+   ],
+   "margin": 3,
+   "frames": 1,
+   "source": "Small decision-category icon: 94 vanilla files in gfx/interface/decisions are 52x40. The margin is a review default, not a vanilla measurement. Not the 114x101 category picture."
+  },
+  "report": {
+   "canvas": [
+    210,
+    176
+   ],
+   "accepted": [
+    [
+     210,
+     176
+    ]
+   ],
+   "margin": 0,
+   "frames": 1,
+   "source": "Report event picture: 532 of 884 vanilla event_pictures are 210x176; `hoi4-feature-assets` skill."
+  },
+  "news": {
+   "canvas": [
+    397,
+    153
+   ],
+   "accepted": [
+    [
+     397,
+     153
+    ]
+   ],
+   "margin": 0,
+   "frames": 1,
+   "source": "News event picture: 233 vanilla event_pictures are 397x153; `hoi4-feature-assets` skill."
+  },
+  "counter-large": {
+   "canvas": [
+    76,
+    42
+   ],
+   "accepted": [
+    [
+     76,
+     42
+    ]
+   ],
+   "margin": 1,
+   "frames": 2,
+   "source": "Division counter, large: 111 of 115 vanilla divisions_large strips are 152x42 (two 76x42 frames). The margin is a review default, not a vanilla measurement."
+  },
+  "counter-small": {
+   "canvas": [
+    30,
+    12
+   ],
+   "accepted": [
+    [
+     30,
+     12
+    ]
+   ],
+   "margin": 0,
+   "frames": 2,
+   "source": "Division counter, small: all 83 vanilla divisions_small strips are 60x12 (two 30x12 frames); vanilla fills the top and bottom rows."
+  }
+ }
+}

@@ -1,0 +1,8 @@
+fixture_category = {
+	fixture_decision = {
+		icon = fixture_icon
+		available = {
+			has_country_flag = fixture_flag
+		}
+	}
+}

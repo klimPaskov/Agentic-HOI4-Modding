@@ -648,6 +648,8 @@ When text mirrors a docs field or a parent-provided external record, the in-game
 
 ## Validation checks
 
+Before review, run `python -B .tools/check.py quick` on the changed files and fix every error it lists; it covers localisation and GFX wiring, the script syntax rules and MCP script validation, and proves only those properties (`AGENTS.md` section 4a).
+
 Use task-specific validation that can realistically catch mistakes.
 
 Common useful checks:
