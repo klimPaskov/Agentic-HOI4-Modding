@@ -58,7 +58,7 @@
    "upstream": ".tools/lib/doctor.py"
   },
   ".tools/lib/game.py": {
-   "sha256": "37ed5e10a111827dc114a7c4c69366d8679225096da8ea685b312bb0266b6d9e",
+   "sha256": "7bd0702e29916f211f3aa443c82550aa9310f34333c33586d16a247709dcf8d4",
    "upstream": ".tools/lib/game.py"
   },
   ".tools/lib/localisation.py": {
@@ -74,7 +74,7 @@
    "upstream": ".tools/lib/report.py"
   },
   ".tools/lib/setup.py": {
-   "sha256": "c9d3aa0fe1fc171e6dc2533561854679fcb97ec33fab4096d8349f726083418c",
+   "sha256": "6733080bbccfb1378139f5742dd87114b5e4dc6e7c5effbab6a670ad8a1c2383",
    "upstream": ".tools/lib/setup.py"
   },
   ".tools/requirements-dev.txt": {

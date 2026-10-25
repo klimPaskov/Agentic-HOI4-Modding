@@ -6,7 +6,7 @@ reports a gap. Each step is idempotent and reports what it did:
 1. install the Python packages in `.tools/requirements.txt` when one is missing (skip with `--no-install`).
    When the system Python refuses packages (PEP 668 "externally managed", as on Debian and Ubuntu), they go
    into a project virtual environment at `.tools/.venv`, and `check.py` relaunches itself inside it;
-2. record the game folder in the machine-local `.tools/local_settings.json` when `--game-dir` is given;
+2. record the game folder in the machine-local `.tools/local_settings.json` when `--save-game-dir` is given;
 3. add the machine-local paths to `.gitignore`;
 4. run the runtime synchronizers present in `.tools/sync/`, so generated projections match the installed
    canonical files;
@@ -100,7 +100,7 @@ def record_game_dir(folder: Optional[Path]) -> str:
 	found = game.game_dir()
 	if game.is_game_dir(found):
 		return f"game folder: found {found.as_posix()}"
-	return "game folder: not found; rerun with --game-dir <folder>"
+	return "game folder: not found; rerun with --save-game-dir <folder>"
 
 
 def ensure_ignores(repo_root: Path) -> str:
