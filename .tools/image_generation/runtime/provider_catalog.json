@@ -1,5 +1,766 @@
 {
   "default_provider": "gptimage",
+  "model_profiles": {
+    "fal_ai": {
+      "fal-ai/flux-2-pro": {
+        "display_name": "FLUX.2 Pro",
+        "payload": {
+          "image_size": "square_hd",
+          "output_format": "png"
+        },
+        "edit_endpoint": "fal-ai/flux-2-pro/edit",
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "This adapter accepts one local reference."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 2560,
+            "maximum_height_px": 2560,
+            "maximum_pixels": 4194304,
+            "notes": "Adapter bounds: 256-2560 pixels per edge in multiples of 32, at most 4194304 total pixels."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://fal.ai/models/fal-ai/flux-2-pro/api",
+          "https://fal.ai/models/fal-ai/flux-2-pro/edit/api"
+        ]
+      },
+      "fal-ai/flux-2-flex": {
+        "display_name": "FLUX.2 Flex",
+        "payload": {
+          "image_size": "square_hd",
+          "output_format": "png"
+        },
+        "edit_endpoint": "fal-ai/flux-2-flex/edit",
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "This adapter accepts one local reference."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 2560,
+            "maximum_height_px": 2560,
+            "maximum_pixels": 4194304,
+            "notes": "Adapter bounds: 256-2560 pixels per edge in multiples of 32, at most 4194304 total pixels."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://fal.ai/models/fal-ai/flux-2-flex/api",
+          "https://fal.ai/models/fal-ai/flux-2-flex/edit/api"
+        ]
+      },
+      "fal-ai/flux/dev": {
+        "display_name": "FLUX.1 Dev",
+        "payload": {
+          "image_size": "square_hd",
+          "num_images": 1,
+          "output_format": "png"
+        },
+        "edit_endpoint": null,
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "This adapter exposes text-to-image only."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": 4194304,
+            "notes": "Adapter bounds: 256-2048 pixels per edge in multiples of 32, at most 4194304 total pixels."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://fal.ai/models/fal-ai/flux/dev/api"
+        ]
+      },
+      "fal-ai/flux/schnell": {
+        "display_name": "FLUX.1 Schnell",
+        "payload": {
+          "image_size": "square_hd",
+          "num_images": 1,
+          "output_format": "png"
+        },
+        "edit_endpoint": null,
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "This adapter exposes text-to-image only."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": 4194304,
+            "notes": "Adapter bounds: 256-2048 pixels per edge in multiples of 32, at most 4194304 total pixels."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://fal.ai/models/fal-ai/flux/schnell/api"
+        ]
+      },
+      "fal-ai/bytedance/seedream/v4.5/text-to-image": {
+        "display_name": "Seedream 4.5",
+        "payload": {
+          "image_size": "auto_2K",
+          "num_images": 1,
+          "max_images": 1
+        },
+        "edit_endpoint": "fal-ai/bytedance/seedream/v4.5/edit",
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 1920,
+        "dimension_multiple": 1,
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "This adapter accepts one local reference."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 4096,
+            "maximum_height_px": 4096,
+            "maximum_pixels": 16777216,
+            "notes": "Adapter bounds: 1920-4096 pixels per edge in multiples of 1, at most 16777216 total pixels."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/text-to-image/api",
+          "https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/edit/api"
+        ]
+      },
+      "fal-ai/nano-banana-2": {
+        "display_name": "Nano Banana 2",
+        "payload": {
+          "num_images": 1,
+          "output_format": "png",
+          "limit_generations": true,
+          "resolution": "1K"
+        },
+        "edit_endpoint": "fal-ai/nano-banana-2/edit",
+        "result_format": "png",
+        "aspect_ratios": [
+          "auto",
+          "21:9",
+          "16:9",
+          "3:2",
+          "4:3",
+          "5:4",
+          "1:1",
+          "4:5",
+          "3:4",
+          "2:3",
+          "9:16",
+          "4:1",
+          "1:4",
+          "8:1",
+          "1:8"
+        ],
+        "resolutions": [
+          "0.5K",
+          "1K",
+          "2K",
+          "4K"
+        ],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "This adapter accepts one local reference."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 4096,
+            "maximum_height_px": 4096,
+            "maximum_pixels": 16777216,
+            "notes": "Use the model's default size or its listed aspect-ratio and resolution controls."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://fal.ai/models/fal-ai/nano-banana-2/api",
+          "https://fal.ai/models/fal-ai/nano-banana-2/edit/api"
+        ]
+      },
+      "fal-ai/nano-banana-pro": {
+        "display_name": "Nano Banana Pro",
+        "payload": {
+          "num_images": 1,
+          "output_format": "png",
+          "limit_generations": true,
+          "resolution": "1K"
+        },
+        "edit_endpoint": "fal-ai/nano-banana-pro/edit",
+        "result_format": "png",
+        "aspect_ratios": [
+          "auto",
+          "21:9",
+          "16:9",
+          "3:2",
+          "4:3",
+          "5:4",
+          "1:1",
+          "4:5",
+          "3:4",
+          "2:3",
+          "9:16"
+        ],
+        "resolutions": [
+          "1K",
+          "2K",
+          "4K"
+        ],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": true,
+            "max_count": 1,
+            "notes": "This adapter accepts one local reference."
+          },
+          "image_edits": true,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 4096,
+            "maximum_height_px": 4096,
+            "maximum_pixels": 16777216,
+            "notes": "Use the model's default size or its listed aspect-ratio and resolution controls."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://fal.ai/models/fal-ai/nano-banana-pro/api",
+          "https://fal.ai/models/fal-ai/nano-banana-pro/edit/api"
+        ]
+      },
+      "fal-ai/recraft/v4/text-to-image": {
+        "display_name": "Recraft V4",
+        "payload": {
+          "image_size": "square_hd"
+        },
+        "edit_endpoint": null,
+        "result_format": "webp",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "This adapter exposes text-to-image only."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": 4194304,
+            "notes": "Use the model's default size or its listed aspect-ratio and resolution controls."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://fal.ai/models/fal-ai/recraft/v4/text-to-image/api"
+        ]
+      },
+      "fal-ai/ideogram/v3": {
+        "display_name": "Ideogram V3",
+        "payload": {
+          "image_size": "square_hd",
+          "num_images": 1
+        },
+        "edit_endpoint": null,
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "This adapter exposes text-to-image only."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": 4194304,
+            "notes": "Use the model's default size or its listed aspect-ratio and resolution controls."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://fal.ai/models/fal-ai/ideogram/v3/api"
+        ]
+      },
+      "fal-ai/ideogram/v3/generate-transparent": {
+        "display_name": "Ideogram V3 Transparent",
+        "payload": {
+          "num_images": 1
+        },
+        "edit_endpoint": null,
+        "result_format": "png",
+        "aspect_ratios": [
+          "1:3",
+          "3:1",
+          "1:2",
+          "2:1",
+          "9:16",
+          "16:9",
+          "10:16",
+          "16:10",
+          "2:3",
+          "3:2",
+          "3:4",
+          "4:3",
+          "4:5",
+          "5:4",
+          "1:1"
+        ],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "This adapter exposes text-to-image only."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": true,
+            "request_parameter": "transparent_background",
+            "notes": "Request a transparent PNG when supported and verify its alpha."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": 4194304,
+            "notes": "Use the model's default size or its listed aspect-ratio and resolution controls."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://fal.ai/models/fal-ai/ideogram/v3/generate-transparent/api"
+        ]
+      }
+    },
+    "replicate": {
+      "black-forest-labs/flux-schnell": {
+        "display_name": "FLUX Schnell",
+        "payload": {
+          "num_outputs": 1,
+          "output_format": "png"
+        },
+        "edit_endpoint": null,
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "This adapter exposes text-to-image only."
+          },
+          "image_edits": false,
+          "background_removal": true,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": 4194304,
+            "notes": "Use the model's default size or its listed aspect-ratio and resolution controls."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://replicate.com/black-forest-labs/flux-schnell/api/schema"
+        ]
+      },
+      "black-forest-labs/flux-dev": {
+        "display_name": "FLUX Dev",
+        "payload": {
+          "num_outputs": 1,
+          "output_format": "png"
+        },
+        "edit_endpoint": null,
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "This adapter exposes text-to-image only."
+          },
+          "image_edits": false,
+          "background_removal": true,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": 4194304,
+            "notes": "Use the model's default size or its listed aspect-ratio and resolution controls."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://replicate.com/black-forest-labs/flux-dev/api/schema"
+        ]
+      },
+      "black-forest-labs/flux-1.1-pro": {
+        "display_name": "FLUX 1.1 Pro",
+        "payload": {
+          "output_format": "png"
+        },
+        "edit_endpoint": null,
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "This adapter exposes text-to-image only."
+          },
+          "image_edits": false,
+          "background_removal": true,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": false,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": 4194304,
+            "notes": "Use the model's default size or its listed aspect-ratio and resolution controls."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://replicate.com/black-forest-labs/flux-1.1-pro/api/schema"
+        ]
+      }
+    },
+    "together_ai": {
+      "black-forest-labs/FLUX.2-pro": {
+        "display_name": "FLUX.2 Pro",
+        "payload": {},
+        "edit_endpoint": null,
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "The adapter does not publish local references to the public URLs required by Together."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": 4194304,
+            "notes": "Adapter bounds: 256-2048 pixels per edge in multiples of 32, at most 4194304 total pixels."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://docs.together.ai/docs/inference/images/overview",
+          "https://docs.together.ai/docs/inference/images/parameters"
+        ]
+      },
+      "black-forest-labs/FLUX.2-dev": {
+        "display_name": "FLUX.2 Dev",
+        "payload": {
+          "steps": 20
+        },
+        "edit_endpoint": null,
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "The adapter does not publish local references to the public URLs required by Together."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": 4194304,
+            "notes": "Adapter bounds: 256-2048 pixels per edge in multiples of 32, at most 4194304 total pixels."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://docs.together.ai/docs/inference/images/overview",
+          "https://docs.together.ai/docs/inference/images/parameters"
+        ]
+      },
+      "black-forest-labs/FLUX.2-flex": {
+        "display_name": "FLUX.2 Flex",
+        "payload": {},
+        "edit_endpoint": null,
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "The adapter does not publish local references to the public URLs required by Together."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 2048,
+            "maximum_height_px": 2048,
+            "maximum_pixels": 4194304,
+            "notes": "Adapter bounds: 256-2048 pixels per edge in multiples of 32, at most 4194304 total pixels."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://docs.together.ai/docs/inference/images/overview",
+          "https://docs.together.ai/docs/inference/images/parameters"
+        ]
+      },
+      "black-forest-labs/FLUX.1.1-pro": {
+        "display_name": "FLUX 1.1 Pro",
+        "payload": {},
+        "edit_endpoint": null,
+        "result_format": "png",
+        "aspect_ratios": [],
+        "resolutions": [],
+        "minimum_dimension": 256,
+        "dimension_multiple": 32,
+        "capabilities": {
+          "reference_images": {
+            "supported": false,
+            "max_count": 0,
+            "notes": "The adapter does not publish local references to the public URLs required by Together."
+          },
+          "image_edits": false,
+          "background_removal": false,
+          "transparent_background": {
+            "native": false,
+            "request_parameter": null,
+            "notes": "Native alpha is not documented for this route."
+          },
+          "size_limits": {
+            "accepts_dimensions": true,
+            "maximum_width_px": 1440,
+            "maximum_height_px": 1440,
+            "maximum_pixels": 2073600,
+            "notes": "Adapter bounds: 256-1440 pixels per edge in multiples of 32, at most 2073600 total pixels."
+          },
+          "one_image_per_call": true,
+          "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
+          "fallback_if_no_alpha": "Use a selected background-removal route and verify alpha; if none is configured, ask the maintainer for another route.",
+          "fallback_if_no_edits": "Make a new image from the reference if that fits, or choose another configured provider for an edit."
+        },
+        "documentation_urls": [
+          "https://docs.together.ai/docs/inference/images/overview",
+          "https://docs.together.ai/docs/inference/images/parameters"
+        ]
+      }
+    }
+  },
   "providers": [
     {
       "id": "gptimage",
@@ -250,7 +1011,16 @@
           "auth_status": "image_auth_status"
         },
         "supported_models": [
-          "fal-ai/flux-2-pro"
+          "fal-ai/flux-2-pro",
+          "fal-ai/flux-2-flex",
+          "fal-ai/flux/dev",
+          "fal-ai/flux/schnell",
+          "fal-ai/bytedance/seedream/v4.5/text-to-image",
+          "fal-ai/nano-banana-2",
+          "fal-ai/nano-banana-pro",
+          "fal-ai/recraft/v4/text-to-image",
+          "fal-ai/ideogram/v3",
+          "fal-ai/ideogram/v3/generate-transparent"
         ],
         "tool_arguments": {
           "prompt": "prompt",
@@ -266,7 +1036,7 @@
         "api_protocol": "fal_queue",
         "api_base_url": "https://queue.fal.run",
         "default_model": "fal-ai/flux-2-pro",
-        "result_format": "png",
+        "result_format": "model_defined",
         "credential_fields": [
           {
             "id": "api_key",
@@ -280,21 +1050,21 @@
         "reference_images": {
           "supported": true,
           "max_count": 1,
-          "notes": "The default FLUX edit route accepts one reference; other fal models vary."
+          "notes": "One local reference is supported by FLUX.2, Seedream, and Nano Banana. Other included models are text-to-image only."
         },
         "image_edits": true,
         "background_removal": false,
         "transparent_background": {
-          "native": false,
-          "request_parameter": null,
-          "notes": "Choose a model with alpha output or use a selected background-removal route."
+          "native": true,
+          "request_parameter": "transparent_background",
+          "notes": "Only the Ideogram V3 Transparent selection offers native alpha; every saved result is verified."
         },
         "size_limits": {
           "accepts_dimensions": true,
-          "maximum_width_px": 2560,
-          "maximum_height_px": 2560,
-          "maximum_pixels": 4194304,
-          "notes": "Use dimensions supported by the selected model."
+          "maximum_width_px": 4096,
+          "maximum_height_px": 4096,
+          "maximum_pixels": 16777216,
+          "notes": "Dimensions depend on model. Nano Banana uses resolution tiers; Recraft and Ideogram use default sizes. Inspect the selected tool's schema."
         },
         "one_image_per_call": true,
         "alpha_verification": "Open the saved PNG and check its alpha channel before treating it as transparent.",
@@ -327,7 +1097,9 @@
           "auth_status": "image_auth_status"
         },
         "supported_models": [
-          "black-forest-labs/flux-schnell"
+          "black-forest-labs/flux-schnell",
+          "black-forest-labs/flux-dev",
+          "black-forest-labs/flux-1.1-pro"
         ],
         "tool_arguments": {
           "prompt": "prompt",
@@ -357,7 +1129,7 @@
         "reference_images": {
           "supported": false,
           "max_count": null,
-          "notes": "Reference support depends on the selected Replicate model; the included default route is text-to-image."
+          "notes": "The included FLUX Schnell, Dev, and 1.1 Pro routes expose text-to-image only."
         },
         "image_edits": false,
         "background_removal": true,
@@ -944,7 +1716,10 @@
           "auth_status": "image_auth_status"
         },
         "supported_models": [
-          "black-forest-labs/FLUX.2-pro"
+          "black-forest-labs/FLUX.2-pro",
+          "black-forest-labs/FLUX.2-dev",
+          "black-forest-labs/FLUX.2-flex",
+          "black-forest-labs/FLUX.1.1-pro"
         ],
         "tool_arguments": {
           "prompt": "prompt",

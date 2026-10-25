@@ -155,9 +155,25 @@ Inspect current source or transaction state before retrying an uncertain mutatio
 
 ## Registration and troubleshooting
 
-HOI4 Mod Setup installs and verifies the exact package version recorded in `hoi4-mod-setup.manifest.json`. For a manual setup, run `python .tools/mcp/bootstrap_hoi4_agent_tools.py`, which installs the same recorded version with its registry-integrity and runtime-entry checks; `npm install --global hoi4-agent-tools` installs the newest release instead.
+HOI4 Mod Setup installs and verifies the exact package version recorded in `hoi4-mod-setup.manifest.json`. For a manual setup, run `python -I .tools/mcp/bootstrap_hoi4_agent_tools.py`, which installs the same recorded version with its registry-integrity and runtime-entry checks; `npm install --global hoi4-agent-tools` installs the newest release instead. Isolated Python mode prevents project-local modules from shadowing standard libraries; the automatic app route remains authoritative for source-script verification.
 
-For an explicitly reviewed development archive, use `python .tools/mcp/bootstrap_hoi4_agent_tools.py --local-tarball C:/path/to/hoi4-agent-tools-4.0.3.tgz`. This opt-in verifies exact SHA-512 and retains full installed-tree, count, runtime-entry, and wrapper checks. Dependencies can still use npm's registry. There is no automatic fallback or downgrade; the default route verifies the published registry pin.
+The bootstrap requires native x64 Node.js 22.19+ within major 22, or Node.js 24
+LTS. It uses a private, SHA-512-pinned npm CLI: 11.19.0 on Windows and 10.9.9 on
+Linux. These versions reproduce the reviewed platform package trees; npm 10
+and 11 handle cross-platform optional dependencies differently. The user's
+ambient npm executable/config is not changed by the private CLI. Installing a
+missing compatible Node.js distribution also installs its bundled npm. The
+private CLI runs from a fresh neutral temporary
+directory with empty user/global configuration, an isolated home/cache and no
+inherited npm or Node overrides. Temporary files are removed on ordinary
+completion and never reused after interruption. All package, entry and tree
+integrity checks remain mandatory; do not replace a reviewed hash to accept a
+different npm realization.
+
+When measuring a new release, use the same pinned npm version for each platform
+and verify both supported Node majors in clean Windows/Linux x64 runners.
+
+For an explicitly reviewed development archive, use `python -I .tools/mcp/bootstrap_hoi4_agent_tools.py --local-tarball C:/path/to/hoi4-agent-tools-4.0.3.tgz`. This opt-in verifies exact SHA-512 and retains full installed-tree, count, runtime-entry, and wrapper checks. Dependencies and the private npm toolchain still use the fixed registry. There is no automatic fallback or downgrade; the default route verifies the published registry pin.
 
 To refresh a published pin, obtain `npm view hoi4-agent-tools@4.0.3 dist.integrity --json --registry=https://registry.npmjs.org`, install that exact version into a new empty prefix with `npm install --global --prefix C:/path/to/new-clean-prefix --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org hoi4-agent-tools@4.0.3`, then run `python scripts/refresh_mcp_package_pin.py --prefix C:/path/to/new-clean-prefix --integrity <reviewed-sha512-value>`. The helper measures the bounded full tree and runtime entry, verifies version and any present npm lock integrity, and synchronizes the bootstrap and manifest contract. Run the contract tests and projection checks, commit source changes, then regenerate manifest evidence from that exact source commit. The generator reads immutable Git blobs, never working-tree bytes.
 

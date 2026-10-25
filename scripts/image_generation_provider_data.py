@@ -109,6 +109,76 @@ def _reference(name: str, url: str, maintenance: str, authentication: str,
     return value
 
 
+def build_image_model_profiles() -> dict:
+    """Reviewed request contracts; published beside the runtime, never accepted from project settings."""
+    def profile(label: str, payload: dict, *, edit_endpoint: str | None = None,
+                dimensions: bool = False, maximum: int = 2048, pixels: int = 4_194_304,
+                minimum: int = 256, multiple: int = 32, alpha: bool = False,
+                result_format: str = "png", aspect_ratios: list[str] | None = None,
+                resolutions: list[str] | None = None) -> dict:
+        return {
+            "display_name": label,
+            "payload": payload,
+            "edit_endpoint": edit_endpoint,
+            "result_format": result_format,
+            "aspect_ratios": aspect_ratios or [],
+            "resolutions": resolutions or [],
+            "minimum_dimension": minimum,
+            "dimension_multiple": multiple,
+            "capabilities": _capabilities(
+                references=bool(edit_endpoint), edits=bool(edit_endpoint), alpha=alpha,
+                accepts_dimensions=dimensions, width=maximum, height=maximum,
+                maximum_pixels=pixels, reference_limit=1 if edit_endpoint else 0,
+                reference_notes="This adapter accepts one local reference." if edit_endpoint else "This adapter exposes text-to-image only.",
+                size_notes=(f"Adapter bounds: {minimum}-{maximum} pixels per edge in multiples of {multiple}, at most {pixels} total pixels."
+                            if dimensions else "Use the model's default size or its listed aspect-ratio and resolution controls.")),
+        }
+
+    nano_ratios = ["auto", "21:9", "16:9", "3:2", "4:3", "5:4", "1:1", "4:5", "3:4", "2:3", "9:16"]
+    fal = {
+        "fal-ai/flux-2-pro": profile("FLUX.2 Pro", {"image_size": "square_hd", "output_format": "png"},
+            edit_endpoint="fal-ai/flux-2-pro/edit", dimensions=True, maximum=2560),
+        "fal-ai/flux-2-flex": profile("FLUX.2 Flex", {"image_size": "square_hd", "output_format": "png"},
+            edit_endpoint="fal-ai/flux-2-flex/edit", dimensions=True, maximum=2560),
+        "fal-ai/flux/dev": profile("FLUX.1 Dev", {"image_size": "square_hd", "num_images": 1, "output_format": "png"}, dimensions=True),
+        "fal-ai/flux/schnell": profile("FLUX.1 Schnell", {"image_size": "square_hd", "num_images": 1, "output_format": "png"}, dimensions=True),
+        "fal-ai/bytedance/seedream/v4.5/text-to-image": profile("Seedream 4.5", {"image_size": "auto_2K", "num_images": 1, "max_images": 1},
+            edit_endpoint="fal-ai/bytedance/seedream/v4.5/edit", dimensions=True, minimum=1920, maximum=4096, pixels=16_777_216, multiple=1),
+        "fal-ai/nano-banana-2": profile("Nano Banana 2", {"num_images": 1, "output_format": "png", "limit_generations": True, "resolution": "1K"},
+            edit_endpoint="fal-ai/nano-banana-2/edit", maximum=4096, pixels=16_777_216,
+            aspect_ratios=nano_ratios + ["4:1", "1:4", "8:1", "1:8"], resolutions=["0.5K", "1K", "2K", "4K"]),
+        "fal-ai/nano-banana-pro": profile("Nano Banana Pro", {"num_images": 1, "output_format": "png", "limit_generations": True, "resolution": "1K"},
+            edit_endpoint="fal-ai/nano-banana-pro/edit", maximum=4096, pixels=16_777_216,
+            aspect_ratios=nano_ratios, resolutions=["1K", "2K", "4K"]),
+        "fal-ai/recraft/v4/text-to-image": profile("Recraft V4", {"image_size": "square_hd"}, result_format="webp"),
+        "fal-ai/ideogram/v3": profile("Ideogram V3", {"image_size": "square_hd", "num_images": 1}),
+        "fal-ai/ideogram/v3/generate-transparent": profile("Ideogram V3 Transparent", {"num_images": 1}, alpha=True,
+            aspect_ratios=["1:3", "3:1", "1:2", "2:1", "9:16", "16:9", "10:16", "16:10", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "1:1"]),
+    }
+    for model, entry in fal.items():
+        entry["documentation_urls"] = [f"https://fal.ai/models/{model}/api"]
+        if entry["edit_endpoint"]:
+            entry["documentation_urls"].append(f"https://fal.ai/models/{entry['edit_endpoint']}/api")
+    replicate = {
+        "black-forest-labs/flux-schnell": profile("FLUX Schnell", {"num_outputs": 1, "output_format": "png"}),
+        "black-forest-labs/flux-dev": profile("FLUX Dev", {"num_outputs": 1, "output_format": "png"}),
+        "black-forest-labs/flux-1.1-pro": profile("FLUX 1.1 Pro", {"output_format": "png"}),
+    }
+    for model, entry in replicate.items():
+        entry["documentation_urls"] = [f"https://replicate.com/{model}/api/schema"]
+        entry["capabilities"]["background_removal"] = True
+    together = {
+        "black-forest-labs/FLUX.2-pro": profile("FLUX.2 Pro", {}, dimensions=True),
+        "black-forest-labs/FLUX.2-dev": profile("FLUX.2 Dev", {"steps": 20}, dimensions=True),
+        "black-forest-labs/FLUX.2-flex": profile("FLUX.2 Flex", {}, dimensions=True),
+        "black-forest-labs/FLUX.1.1-pro": profile("FLUX 1.1 Pro", {}, dimensions=True, maximum=1440, pixels=2_073_600),
+    }
+    for entry in together.values():
+        entry["documentation_urls"] = ["https://docs.together.ai/docs/inference/images/overview", "https://docs.together.ai/docs/inference/images/parameters"]
+        entry["capabilities"]["reference_images"]["notes"] = "The adapter does not publish local references to the public URLs required by Together."
+    return {"fal_ai": fal, "replicate": replicate, "together_ai": together}
+
+
 def _provider(provider_id: str, display_name: str, description: str, requirements: list[str],
               good_for: list[str], cost: str, models: list[str], auth: str,
               capabilities: dict, *, availability: str = "supported",
@@ -191,15 +261,17 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
             reference_mcp=_reference("gemini-mcp", "https://github.com/chrischall/gemini-mcp", "community", "Google API key", ["generate_image", "edit_image"], "The setup app uses its own pinned adapter for vault-backed keys.")),
         _provider("fal_ai", "fal.ai", "Choose image models from fal's hosted catalog.",
             ["A fal API key saved in the operating-system credential store."], ["FLUX", "Recraft", "Ideogram", "Seedream", "Nano Banana and more"],
-            "Pay per model run; the connected route uses FLUX.2 Pro.", ["FLUX.2 Pro"], "api_key_vault",
-            _capabilities(references=True, edits=True, alpha=False, accepts_dimensions=True, width=2560, height=2560, maximum_pixels=4_194_304, reference_limit=1,
-                reference_notes="The default FLUX edit route accepts one reference; other fal models vary.", alpha_notes="Choose a model with alpha output or use a selected background-removal route."),
+            "Pay per selected model run; price and limits vary by endpoint.", [], "api_key_vault",
+            _capabilities(references=True, edits=True, alpha=True, accepts_dimensions=True, width=4096, height=4096, maximum_pixels=16_777_216, reference_limit=1,
+                reference_notes="One local reference is supported by FLUX.2, Seedream, and Nano Banana. Other included models are text-to-image only.",
+                size_notes="Dimensions depend on model. Nano Banana uses resolution tiers; Recraft and Ideogram use default sizes. Inspect the selected tool's schema.",
+                alpha_notes="Only the Ideogram V3 Transparent selection offers native alpha; every saved result is verified."),
             reference_mcp=_reference("fal MCP", "https://mcp.fal.ai/mcp", "official", "fal API key", ["run_model", "get_model_schema", "upload_file"], "Hosted MCP sends the key in an authorization header; the app-managed route keeps it in the OS vault.")),
         _provider("replicate", "Replicate", "Use hosted models from many image providers through one account.",
             ["A Replicate API token saved in the operating-system credential store."], ["Trying different model families", "Fast drafts", "Model variety"],
-            "Pay per model run; the connected route uses FLUX Schnell.", ["FLUX Schnell"], "api_key_vault",
+            "Pay per selected model run; FLUX Schnell is the default.", [], "api_key_vault",
             _capabilities(references=False, edits=False, alpha=False,
-                reference_notes="Reference support depends on the selected Replicate model; the included default route is text-to-image.", alpha_notes="Use a selected background-removal route when the model does not return alpha.", background_removal=True),
+                reference_notes="The included FLUX Schnell, Dev, and 1.1 Pro routes expose text-to-image only.", alpha_notes="Use a selected background-removal route when the model does not return alpha.", background_removal=True),
             reference_mcp=_reference("Replicate MCP", "https://replicate.com/docs/reference/mcp", "official", "Replicate token", [], "The server exposes Replicate's model and prediction API.")),
         _provider("black_forest_labs", "Black Forest Labs (FLUX)", "Use FLUX through the Black Forest Labs API.",
             ["A BFL API key saved in the operating-system credential store."], ["Detailed scenes", "Reference composition", "Image-to-image edits"],
@@ -352,22 +424,25 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
     adapter_models = {
         "openai_api": ["gpt-image-2.5-sunburst", "gpt-image-2.5-flare", "gpt-image-2"],
         "gemini_api": ["gemini-nano-banana-2.1", "gemini-3.1-flash-image", "gemini-3-pro-image"],
-        "fal_ai": ["fal-ai/flux-2-pro"],
-        "replicate": ["black-forest-labs/flux-schnell"],
         "black_forest_labs": ["flux-2-pro", "flux-2-max", "flux-2-flex"],
         "stability_ai": ["stable-image-core", "stable-image-ultra"],
         "ideogram": ["ideogram-v4"],
         "recraft": ["recraftv4_1", "recraftv4"],
         "leonardo": ["7b592283-e8a7-4c5a-9ba6-d18c31f258b9"],
         "xai_grok": ["grok-imagine-image-2.0"],
-        "together_ai": ["black-forest-labs/FLUX.2-pro"],
         "openrouter": ["openai/gpt-image-2.5-sunburst"],
         "vertex_imagen": ["imagen-4.0-fast-generate-001", "imagen-4.0-generate-001", "imagen-4.0-ultra-generate-001"],
         "aws_bedrock": ["stability.stable-image-core-v1:1", "stability.stable-image-ultra-v1:1"],
         "huggingface_inference": ["black-forest-labs/FLUX.1-Krea-dev"],
     }
+    model_profiles = build_image_model_profiles()
     for provider in providers:
         provider["route"]["supported_models"] = adapter_models.get(provider["id"], [])
+        if provider["id"] in model_profiles:
+            profiles = model_profiles[provider["id"]]
+            provider["route"]["supported_models"] = list(profiles)
+            provider["models"] = [profile["display_name"] for profile in profiles.values()]
+    next(item for item in providers if item["id"] == "fal_ai")["route"]["result_format"] = "model_defined"
     proxy_routes = {
         "adobe_firefly": ("https://run-workflow.adobe.io/mcp", [("ims_token", "Adobe IMS access token", "ADOBE_IMS_TOKEN", "authorization", "Bearer "), ("service_key", "Adobe service API key", "ADOBE_SERVICE_API_KEY", "x-api-key", "")], {}),
     }
@@ -458,6 +533,7 @@ def write_runtime_provider_catalog(source_root: Path | None = None) -> Path:
     table = build_image_generation_table(root)
     catalog = {
         "default_provider": table["default_provider"],
+        "model_profiles": build_image_model_profiles(),
         "providers": [
             {
                 "id": provider["id"],

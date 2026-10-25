@@ -1019,9 +1019,9 @@ def materialize_hoi4_adapter(
     }
 
 
-def resolve_io_pdx_mesh() -> dict:
+def resolve_io_pdx_mesh(pipeline_root: Path = PIPELINE_ROOT) -> dict:
     _validate_https_url(IO_PDX_DOWNLOAD_URL, GITHUB_DOWNLOAD_HOSTS)
-    lock = json.loads((PIPELINE_ROOT / "config" / "dependencies.lock.json").read_text(encoding="utf-8"))
+    lock = json.loads((pipeline_root / "config" / "dependencies.lock.json").read_text(encoding="utf-8"))
     compatibility = lock.get("compatibility", {}).get("io_pdx_mesh")
     if not isinstance(compatibility, dict):
         raise SetupError("The io_pdx_mesh compatibility evidence is missing from the dependency lock.")
@@ -1422,6 +1422,8 @@ def write_dependency_record(root: Path, payload: dict) -> Path:
         "resolution_policy": "latest_at_bootstrap",
         "resolved_at_utc": payload["resolved_at_utc"],
         "bootstrap": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
+        # Pinned inputs survive the rewrite so the next bootstrap can verify against them.
+        **{key: previous[key] for key in ("sources", "compatibility") if key in previous},
         "routes": {
             "meshy_mcp": payload["meshy"],
             "meshy_tool_contract": payload["meshy_tool_contract"],
@@ -1487,7 +1489,7 @@ def main() -> int:
             raise SetupError("The checked-in Meshy contract does not require meshy-7.")
         blender_mcp = resolve_blender_mcp()
         blender_mcp_project = ensure_blender_mcp(pipeline_root, blender_mcp)
-        io_resolution = resolve_io_pdx_mesh()
+        io_resolution = resolve_io_pdx_mesh(pipeline_root)
         io_pdx_mesh = ensure_io_pdx_mesh(pipeline_root, blender_executable, io_resolution)
         blender_hoi4_adapter = materialize_hoi4_adapter(
             root,

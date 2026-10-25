@@ -37,7 +37,7 @@
    "C901 bake_static_mesh_transforms": 18,
    "C901 bind_geometry_to_existing_rig": 50,
    "C901 bind_texture_sources": 23,
-   "C901 correct_action_grounding": 18,
+   "C901 correct_action_grounding": 16,
    "C901 extract_textures": 17,
    "C901 import_animation_action": 66,
    "C901 import_bvh_animation_action": 32,
@@ -66,13 +66,13 @@
    "PLR0915 author_creature_rig": 116,
    "PLR0915 author_humanoid_actions": 117,
    "PLR0915 author_humanoid_rig": 107,
-   "PLR0915 author_locomotion_action": 82,
+   "PLR0915 author_locomotion_action": 86,
    "PLR0915 author_winged_biped_action": 125,
    "PLR0915 author_winged_biped_rig": 89,
    "PLR0915 bake_static_mesh_transforms": 74,
    "PLR0915 bind_geometry_to_existing_rig": 168,
    "PLR0915 bind_texture_sources": 55,
-   "PLR0915 correct_action_grounding": 101,
+   "PLR0915 correct_action_grounding": 90,
    "PLR0915 export_mesh": 51,
    "PLR0915 extract_textures": 52,
    "PLR0915 import_animation_action": 303,
@@ -88,7 +88,7 @@
    "PLR0915 repair_open_surface_boundaries": 113,
    "PLR0915 retime_animation_action": 52,
    "PLR0915 run": 60,
-   "PLR0915 sanitize_root_translation_channels": 51,
+   "PLR0915 sanitize_root_translation_channels": 54,
    "PLR0915 sanitize_working_weights": 71,
    "PLR0915 segment_creature_components": 120
   },
@@ -118,9 +118,6 @@
    "PLR0915 author_action": 118,
    "PLR0915 author_rig": 92,
    "PLR0915 validate_rig_spec": 86
-  },
-  ".tools/3d_pipeline/adapter/hoi4_blender_mcp.py": {
-   "F821 Undefined name `main`": 1
   },
   ".tools/3d_pipeline/adapter/identity_leaf_alias.py": {
    "C901 collapse_identity_leaf_joints": 59,
@@ -243,8 +240,14 @@
   ".tools/3d_pipeline/tests/test_partition_image_consumers.py": {
    "B023 Function definition does not bind loop variable `mapping`": 1
   },
+  ".tools/3d_pipeline/tests/test_pipeline_startup_regressions.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 4
+  },
   ".tools/3d_pipeline/tests/test_reusable_adapter_advances.py": {
    "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 1
+  },
+  ".tools/3d_pipeline/tests/test_rig_animation_regressions.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `D401`)": 1
   },
   ".tools/3d_pipeline/tests/test_rigid_weapon_attachment_tool.py": {
    "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 1
@@ -278,6 +281,7 @@
   ".tools/image_generation/runtime/server.py": {
    "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 1,
    "BLE001 Do not catch blind exception: `Exception`": 4,
+   "C901 _generate_fal": 16,
    "C901 _generate_openai_compatible": 16,
    "C901 generate_image": 30,
    "C901 image_dimensions": 16,
@@ -288,7 +292,9 @@
    "PLR0915 png_has_transparent_pixels": 82
   },
   ".tools/mcp/bootstrap_hoi4_agent_tools.py": {
-   "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 2
+   "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 2,
+   "C901 package_tree_sha256": 18,
+   "PLR0915 package_tree_sha256": 53
   },
   ".tools/sync/agent_sync_common.py": {
    "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 2

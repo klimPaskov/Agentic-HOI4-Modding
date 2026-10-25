@@ -309,6 +309,11 @@ def duplicate_hierarchy(
     mapping: Dict[bpy.types.Object, bpy.types.Object] = {}
     for source in source_objects:
         duplicate = source.copy()
+        # Object.copy() also copies imported NLA tracks. The working rig keeps only its
+        # active action; the protected provider source keeps its tracks as evidence.
+        if duplicate.animation_data is not None:
+            for track in list(duplicate.animation_data.nla_tracks):
+                duplicate.animation_data.nla_tracks.remove(track)
         if source.data is not None:
             try:
                 duplicate.data = source.data.copy()
@@ -1273,8 +1278,30 @@ def scale_action_location_channels(rig: bpy.types.Object, factor: float) -> Dict
     }
 
 
+def root_vertical_location_axis(root: Any, measure_minimum_z: Any) -> Tuple[int, List[float]]:
+    """Pick the pose-location axis whose unit step moves the ground contact most along world Z.
+
+    Pose-bone location channels use bone-local axes; on glTF-imported Meshy rigs local
+    index 2 is horizontal, so the vertical channel is measured, never assumed.
+    """
+
+    baseline = float(measure_minimum_z())
+    responses: List[float] = []
+    for axis_index in range(3):
+        original_axis_value = float(root.location[axis_index])
+        root.location[axis_index] = original_axis_value + 1.0
+        bpy.context.view_layer.update()
+        responses.append(float(measure_minimum_z()) - baseline)
+        root.location[axis_index] = original_axis_value
+        bpy.context.view_layer.update()
+    vertical_axis = max(range(3), key=lambda index: abs(responses[index]))
+    if abs(responses[vertical_axis]) <= 1e-8:
+        raise RuntimeError("Root grounding found no usable pose-location response on any local axis.")
+    return vertical_axis, responses
+
+
 def sanitize_root_translation_channels() -> Dict[str, Any]:
-    """Keep the active humanoid action in place by locking Hips location."""
+    """Keep the active humanoid action in place by locking horizontal Hips location."""
 
     records: List[Dict[str, Any]] = []
     for rig in armatures():
@@ -1297,10 +1324,17 @@ def sanitize_root_translation_channels() -> Dict[str, Any]:
                 }
             )
             continue
+        first_frame = int(math.floor(float(action.frame_range[0])))
+        bpy.context.scene.frame_set(first_frame)
+        bpy.context.view_layer.update()
+        vertical_axis, axis_responses = root_vertical_location_axis(
+            rig.pose.bones["Hips"],
+            lambda: evaluated_world_bounds(mesh_objects())[0].z,
+        )
         fixed_values: Dict[int, float] = {}
         changed_keyframes = 0
         for fcurve in root_curves:
-            if not fcurve.keyframe_points:
+            if not fcurve.keyframe_points or fcurve.array_index == vertical_axis:
                 continue
             first = min(fcurve.keyframe_points, key=lambda point: point.co[0])
             fixed_values[fcurve.array_index] = float(first.co[1])
@@ -1311,14 +1345,13 @@ def sanitize_root_translation_channels() -> Dict[str, Any]:
                 keyframe.handle_left[1] = first.co[1]
                 keyframe.handle_right[1] = first.co[1]
             fcurve.update()
-        first_frame = int(math.floor(float(action.frame_range[0])))
         bpy.context.scene.frame_set(first_frame)
         bpy.context.view_layer.update()
         before_minimum, _ = evaluated_world_bounds(mesh_objects())
         ground_correction = 0.0
         armature_scale = float(rig.matrix_world.to_scale().z)
         z_curve = next(
-            (fcurve for fcurve in root_curves if fcurve.array_index == 2),
+            (fcurve for fcurve in root_curves if fcurve.array_index == vertical_axis),
             None,
         )
         if z_curve is not None and armature_scale > 1e-8:
@@ -1353,14 +1386,16 @@ def sanitize_root_translation_channels() -> Dict[str, Any]:
                 "location_fcurves": len(root_curves),
                 "changed_keyframes": changed_keyframes,
                 "fixed_values": fixed_values,
+                "root_location_axis_index": vertical_axis,
+                "root_location_axis_world_z_responses": axis_responses,
                 "ground_correction_source_units": ground_correction,
                 "ground_contact_before": float(before_minimum.z),
                 "ground_contact_after": float(after_minimum.z),
-                "policy": "in_place_root_translation_locked_to_first_keyframe",
+                "policy": "in_place_horizontal_root_translation_locked_vertical_preserved",
             }
         )
     return {
-        "policy": "remove_provider_root_motion_for_in_place_unit_actions",
+        "policy": "remove_provider_horizontal_root_motion_for_in_place_unit_actions",
         "actions": records,
     }
 
@@ -4745,9 +4780,33 @@ def _promotion_animation_state(block: Any) -> Any:
     animation = getattr(block, "animation_data", None)
     if animation is None:
         return None
-    if animation.drivers or animation.nla_tracks:
+    if animation.drivers:
         raise ValueError("Promotion does not support driver/NLA proof scenes.")
-    return _promotion_scalars(animation)
+    if not animation.nla_tracks:
+        return _promotion_scalars(animation)
+    # Protected provider sources keep the importer's NLA track as evidence. Promotion
+    # never edits them, so their tracks are fingerprinted; editable blocks still refuse NLA.
+    if not (block.get("hoi4_source_protected") or block.get("hoi4_reference_read_only")):
+        raise ValueError("Promotion does not support driver/NLA proof scenes.")
+    return {
+        "scalars": _promotion_scalars(animation),
+        "nla_tracks": [
+            {
+                "name": track.name,
+                "mute": bool(track.mute),
+                "strips": [
+                    {
+                        "name": strip.name,
+                        "action": strip.action.name if strip.action else None,
+                        "frame_start": float(strip.frame_start),
+                        "frame_end": float(strip.frame_end),
+                    }
+                    for strip in track.strips
+                ],
+            }
+            for track in animation.nla_tracks
+        ],
+    }
 
 
 def _promotion_attribute_record(attribute: Any) -> Dict[str, Any]:
@@ -7616,6 +7675,13 @@ def author_locomotion_action(req: Dict[str, Any]) -> Dict[str, Any]:
         bone.name: (bone.location.copy(), bone.rotation_quaternion.copy())
         for bone in rig.pose.bones
     }
+    bpy.context.view_layer.update()
+    vertical_axis, axis_responses = root_vertical_location_axis(
+        rig.pose.bones["Hips"],
+        lambda: evaluated_world_bounds(mesh_objects())[0].z,
+    )
+    vertical_bob = Vector((0.0, 0.0, 0.0))
+    vertical_bob[vertical_axis] = 1.0
 
     action_name = str(payload.get("action_name") or "Armature|Move|baselayer_WORKING")
     old_action = bpy.data.actions.get(action_name)
@@ -7652,7 +7718,7 @@ def author_locomotion_action(req: Dict[str, Any]) -> Dict[str, Any]:
             base_location, base_rotation = base_snapshot[bone.name]
             bone.rotation_mode = "QUATERNION"
             if bone.name == "Hips":
-                bone.location = base_location + Vector((0.0, 0.0, root_bob_amplitude * phase))
+                bone.location = base_location + vertical_bob * (root_bob_amplitude * phase)
             else:
                 bone.location = base_location
             angle_degrees = walk_angles.get(bone.name, 0.0) * phase
@@ -7681,7 +7747,7 @@ def author_locomotion_action(req: Dict[str, Any]) -> Dict[str, Any]:
         if fcurve.data_path == 'pose.bones["Hips"].location'
     ]
     move_z_curve = next(
-        (fcurve for fcurve in move_root_curves if fcurve.array_index == 2),
+        (fcurve for fcurve in move_root_curves if fcurve.array_index == vertical_axis),
         None,
     )
     if move_z_curve is not None:
@@ -7723,6 +7789,8 @@ def author_locomotion_action(req: Dict[str, Any]) -> Dict[str, Any]:
         "keyed_channels": keyed_bones * 2,
         "root_translation_channel": "forced_with_submillimeter_in_place_bob",
         "root_bob_amplitude": root_bob_amplitude,
+        "root_location_axis_index": vertical_axis,
+        "root_location_axis_world_z_responses": axis_responses,
         "ground_contact_before": float(move_ground_before.z),
         "ground_contact_after": float(move_ground_after.z),
         "ground_correction_source_units": move_ground_correction,
@@ -9764,19 +9832,10 @@ def correct_action_grounding(req: Dict[str, Any]) -> Dict[str, Any]:
     # channel at every integer frame so no sparse-key overshoot is introduced.
     scene.frame_set(start)
     bpy.context.view_layer.update()
-    baseline_minimum, _ = evaluated_contact_bounds(meshes, excluded_contact_bones)
-    axis_responses = []
-    for axis_index in range(3):
-        original_axis_value = float(root.location[axis_index])
-        root.location[axis_index] = original_axis_value + 1.0
-        bpy.context.view_layer.update()
-        test_minimum, _ = evaluated_contact_bounds(meshes, excluded_contact_bones)
-        root.location[axis_index] = original_axis_value
-        bpy.context.view_layer.update()
-        axis_responses.append(float(test_minimum.z - baseline_minimum.z))
-    correction_axis = max(range(3), key=lambda index: abs(axis_responses[index]))
-    if abs(axis_responses[correction_axis]) <= 1e-8:
-        raise RuntimeError("Grounding correction found no usable pose-location response on any local axis.")
+    correction_axis, axis_responses = root_vertical_location_axis(
+        root,
+        lambda: evaluated_contact_bounds(meshes, excluded_contact_bones)[0].z,
+    )
     for frame in range(start, end + 1):
         scene.frame_set(frame)
         bpy.context.view_layer.update()

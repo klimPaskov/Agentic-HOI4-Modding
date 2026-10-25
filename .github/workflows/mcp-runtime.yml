@@ -1,0 +1,52 @@
+name: Verify private MCP npm toolchain
+
+on:
+  pull_request:
+    paths:
+      - ".tools/mcp/bootstrap_hoi4_agent_tools.py"
+      - "scripts/test_mcp_npm_toolchain.py"
+      - ".github/workflows/mcp-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime:
+    name: MCP (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-22.04]
+        node: ["22", "24"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Unit-test private toolchain boundaries
+        run: python -m unittest scripts/test_mcp_npm_toolchain.py
+      - name: Bootstrap with an isolated user profile
+        shell: pwsh
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP ('hoi4-mcp-runtime-' + [Guid]::NewGuid().ToString())
+          New-Item -ItemType Directory -Path $root | Out-Null
+          foreach ($name in @('HOME', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA', 'XDG_DATA_HOME', 'XDG_CONFIG_HOME', 'XDG_CACHE_HOME', 'TEMP', 'TMP')) {
+            $path = Join-Path $root $name
+            New-Item -ItemType Directory -Path $path | Out-Null
+            [Environment]::SetEnvironmentVariable($name, $path)
+          }
+          $before = npm --version
+          python -I .tools/mcp/bootstrap_hoi4_agent_tools.py --quiet
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $after = npm --version
+          if ($before -cne $after) { throw 'Bootstrap changed global npm' }
+          python -I .tools/mcp/bootstrap_hoi4_agent_tools.py --quiet
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

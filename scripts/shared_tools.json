@@ -2,7 +2,7 @@
  "_about": "Files this package carries as byte-identical copies of upstream tools (upstream: the Chaos Redux mod repository). Hashes are SHA-256 of the LF-normalised content. scripts/check_shared_tools.py checks them; update a copy only from upstream with --upstream <checkout> --write.",
  "files": {
   ".claude/skills/hoi4-feature-assets/tools/convert_to_dds.py": {
-   "sha256": "b98b1d601ea32d56c7ae748f98ebb8e4a9bb054a00ad946dc158a221303da875",
+   "sha256": "55dc4954df50ab7596d66dacb1ffdd352ba9c7efdfbbbe3d6b3a3f560694f093",
    "upstream": ".claude/skills/chaos-redux-event-assets/tools/convert_to_dds.py"
   },
   ".claude/skills/hoi4-feature-assets/tools/create_advisor_icon.py": {

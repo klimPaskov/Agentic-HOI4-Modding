@@ -4,17 +4,23 @@ HOI4 Mod Setup supports native Linux alongside Windows and macOS. This package r
 
 ## Prerequisites and files
 
-Install Git, Python 3.10 or newer, and a supported native [Node.js LTS release](https://nodejs.org/en/download) with npm. The Linux bootstrap requires Node 22 or newer and does not install system dependencies or invoke sudo. Imported Windows Node/npm paths in WSL do not satisfy this prerequisite. `node --version`, `npm --version` and `python3 --version` should resolve native executables. Setup uses trusted system executables; its Linux launch environment uses `/usr/bin:/bin`.
+Install Git, Python 3.10 or newer, and native x64 [Node.js](https://nodejs.org/en/download) 22.19+ within major 22, or Node.js 24 LTS, with npm. The Linux bootstrap does not install system dependencies or invoke sudo. Imported Windows Node/npm paths in WSL do not satisfy this prerequisite. `node --version`, `npm --version` and `python3 --version` should resolve native executables. Setup uses trusted system executables; its Linux launch environment uses `/usr/bin:/bin`.
 
 Use the setup app for a new or existing mod, or copy the canonical files following the README's manual steps. Set the game and Workshop placeholders to the installed native Steam library. Common game locations include `~/.local/share/Steam/steamapps/common/Hearts of Iron IV` and `~/.steam/steam/steamapps/common/Hearts of Iron IV`; select the actual library instead of assuming either path. The usual mod folder is `~/.local/share/Paradox Interactive/Hearts of Iron IV/mod`.
 
 From the mod root, install the recorded public package:
 
 ```bash
-python3 .tools/mcp/bootstrap_hoi4_agent_tools.py
+python3 -I .tools/mcp/bootstrap_hoi4_agent_tools.py
 ```
 
 The bootstrap checks the published npm SHA-512, package name/version, complete native tree and entry bytes. It uses `$XDG_DATA_HOME/hoi4-mod-setup/npm`, or `~/.local/share/hoi4-mod-setup/npm` when unset. A set XDG_DATA_HOME must be an absolute path. Native modules live under `<prefix>/lib/node_modules/hoi4-agent-tools`; the locator is `<prefix>/bin/hoi4-agent-tools`. The two npm-generated internal links and the root locator must have their exact reviewed targets. Missing, substituted or escaping links fail verification.
+
+Package installation uses a private SHA-512-pinned npm 10.9.9 CLI with isolated
+configuration and cache, regardless of the system npm version. npm 11 produces
+a different optional-dependency tree on Linux, so ambient npm is never used to
+realize this reviewed package. The private toolchain does not replace the
+system npm executable or configuration.
 
 ## Manual client registration
 

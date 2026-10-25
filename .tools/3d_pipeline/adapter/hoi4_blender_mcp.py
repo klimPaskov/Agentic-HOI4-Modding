@@ -228,6 +228,7 @@ def _texture_resize_for_job(job: Path, png: Path) -> tuple[int | None, int | Non
             stderr=subprocess.STDOUT,
             timeout=30,
             check=True,
+            stdin=subprocess.DEVNULL,
         )
         width, height = (int(value) for value in probe.stdout.strip().split("x", 1))
         largest = max(width, height)
@@ -239,14 +240,26 @@ def _texture_resize_for_job(job: Path, png: Path) -> tuple[int | None, int | Non
         return None, None
 
 
+def _dds_converter() -> Path:
+    """Resolve the converter from its owning skill in whichever runtime mirror is installed."""
+
+    candidates = [
+        REPO_ROOT / runtime / "skills" / "hoi4-feature-assets" / "tools" / "convert_to_dds.py"
+        for runtime in (".claude", ".agents", ".qoder")
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate.resolve()
+    searched = ", ".join(candidate.as_posix() for candidate in candidates)
+    raise FileNotFoundError(f"The hoi4-feature-assets DDS converter is not installed; searched: {searched}")
+
+
 def _process_textures(job_id: str, blend_rel: str) -> Dict[str, Any]:
     """Extract PNGs in Blender, convert through the repo DDS tool, then relink."""
 
     extracted = _run(job_id, "process_textures", {"blend_rel": blend_rel})
     job = _job(job_id)
-    converter = REPO_ROOT / ".agents" / "skills" / "hoi4-feature-assets" / "tools" / "convert_to_dds.py"
-    if not converter.exists():
-        raise FileNotFoundError(converter)
+    converter = _dds_converter()
     dds_map: Dict[str, str] = {}
     conversions = []
     for item in extracted.get("textures", []):
@@ -274,6 +287,7 @@ def _process_textures(job_id: str, blend_rel: str) -> Dict[str, Any]:
         completed = subprocess.run(
             converter_args,
             cwd=str(REPO_ROOT),
+            stdin=subprocess.DEVNULL,
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -955,8 +969,6 @@ def hoi4_blender_attach_rigid_weapon_from_checkpoint(
 
 
 @mcp.tool()
-
-@mcp.tool()
 def hoi4_blender_segment_creature_components(
     job_id: str,
     blend_rel: str,
@@ -1376,10 +1388,6 @@ def hoi4_blender_collapse_identity_leaf_joints(job_id: str, blend_rel: str, chec
 def hoi4_blender_inspect_animation_source(job_id: str, source_rel: str, source_sha256: str) -> Dict[str, Any]:
     """Read standalone FBX skeleton/action identity in a disposable scene without a target checkpoint."""
     return _run(job_id, "inspect_animation_source", {"source_rel": source_rel, "source_sha256": source_sha256})
-
-
-if __name__ == "__main__":
-    main()
 
 
 def main() -> None:

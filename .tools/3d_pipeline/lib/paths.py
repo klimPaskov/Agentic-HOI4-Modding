@@ -23,6 +23,13 @@ PIPELINE_ROOT = REPO_ROOT / ".tools" / "3d_pipeline"
 CONFIG_ROOT = PIPELINE_ROOT / "config"
 STAGING_ROOT = PIPELINE_ROOT / "staging"
 ADAPTER_CONFIG_PATH = CONFIG_ROOT / "blender_hoi4_adapter.json"
+# Canonical skill library first, then the mirrors that other runtimes read.
+SKILL_ROOTS = (
+    Path(".claude") / "skills",
+    Path(".agents") / "skills",
+    Path(".qoder") / "skills",
+)
+DDS_CONVERTER = Path("hoi4-feature-assets") / "tools" / "convert_to_dds.py"
 
 JOB_DIRS = (
     "refs/original",
@@ -65,6 +72,17 @@ def safe_slug(value: str) -> str:
     if not normalized:
         raise ValueError("A non-empty lowercase slug is required.")
     return normalized
+
+
+def dds_converter(repo_root: Path = REPO_ROOT) -> Path:
+    """Resolve the DDS converter from its owning skill in whichever runtime mirror is installed."""
+
+    candidates = [repo_root / skill_root / DDS_CONVERTER for skill_root in SKILL_ROOTS]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate.resolve()
+    searched = ", ".join(candidate.as_posix() for candidate in candidates)
+    raise FileNotFoundError(f"The hoi4-feature-assets DDS converter is not installed; searched: {searched}")
 
 
 def read_job_document(path: Path) -> Dict[str, Any]:
