@@ -659,13 +659,16 @@ REQUIREMENT_BLOCKS = {"available", "bypass"}
 UNDISPLAYED_BLOCKS = {"hidden_trigger", "custom_trigger_tooltip"}
 # Names followed by `[` are assembled at runtime by meta effects and are skipped.
 FLAG_CHECK = r"has_(?:country|state|global)_flag\s*=\s*(?:\{[^}]*?flag\s*=\s*([A-Za-z0-9_@.]+)(?![A-Za-z0-9_@.\[])[^}]*\}|([A-Za-z0-9_@.]+)(?![A-Za-z0-9_@.\[]))"
+# A single-line `check_variable = { ... }` is consumed through its closing brace; a multi-line one is
+# read as an ordinary block, so its variable is not checked.
 VARIABLE_CHECK = (
-	r"|check_variable\s*=\s*\{\s*(?:var\s*=\s*)?([A-Za-z_][A-Za-z0-9_.@:^\-]*)\s*(?:[<>=]|!=|\n|value\b|compare\b)"
-	r"|has_variable\s*=\s*([A-Za-z_][A-Za-z0-9_.@:^\-]*)"
+	r"check_variable\s*=\s*\{\s*(?:var\s*=\s*)?(?P<checked>[A-Za-z_][A-Za-z0-9_.@:^\-]*)\s*(?:[<>=]|!=|value\b|compare\b)[^{}]*\}"
+	r"|has_variable\s*=\s*(?P<held>[A-Za-z_][A-Za-z0-9_.@:^\-]*)"
 )
 VARIABLE_KEYWORDS = {"var", "value", "compare", "tooltip"}
+# Flag and variable checks come before the generic `name = {` alternative, which would otherwise win.
 REQUIREMENT_TOKEN = re.compile(
-	r"([A-Za-z0-9_@:.^\-]+)\s*=\s*(\{|yes\b)|\}|" + FLAG_CHECK + VARIABLE_CHECK
+	FLAG_CHECK + "|" + VARIABLE_CHECK + r"|(?P<name>[A-Za-z0-9_@:.^\-]+)\s*=\s*(?P<opens>\{|yes\b)|\}"
 )
 
 
@@ -677,17 +680,17 @@ def scan_requirement_file(path: Path, visit) -> None:
 			if match.group(0) == "}":
 				if stack:
 					stack.pop()
-			elif match.group(2) == "{":
-				stack.append(match.group(1))
-				visit("open", match.group(1), stack, number)
-			elif match.group(1):
-				visit("call", match.group(1), stack, number)
-			elif match.group(3) or match.group(4):
-				visit("flag", match.group(3) or match.group(4), stack, number)
-			else:
-				name = match.group(5) or match.group(6)
+			elif match.group(1) or match.group(2):
+				visit("flag", match.group(1) or match.group(2), stack, number)
+			elif match.group("checked") or match.group("held"):
+				name = match.group("checked") or match.group("held")
 				if name not in VARIABLE_KEYWORDS:
 					visit("variable", name, stack, number)
+			elif match.group("opens") == "{":
+				stack.append(match.group("name"))
+				visit("open", match.group("name"), stack, number)
+			else:
+				visit("call", match.group("name"), stack, number)
 
 
 def audit_requirement_flags(known: Set[str], findings: Findings) -> None:

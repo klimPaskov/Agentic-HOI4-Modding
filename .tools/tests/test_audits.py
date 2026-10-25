@@ -116,6 +116,18 @@ class LocalisationAudit(AuditCase):
 			"has_country_flag = fixture_flag", "has_variable = fixture_raw_variable")
 		self.assert_rule("LOC-REQUIREMENT-VARIABLE", {DECISIONS: decisions})
 
+	def test_unlocalised_check_variable_forms(self) -> None:
+		original = (FIXTURES / "mod" / DECISIONS).read_text(encoding="utf-8")
+		for check in ("check_variable = { fixture_raw_variable > 5 }",
+				"check_variable = { var = fixture_raw_variable value = 5 compare = greater_than }"):
+			with self.subTest(check=check):
+				self.assert_rule("LOC-REQUIREMENT-VARIABLE", {DECISIONS: original.replace("has_country_flag = fixture_flag", check)})
+
+	def test_hidden_check_variable_is_not_displayed(self) -> None:
+		decisions = (FIXTURES / "mod" / DECISIONS).read_text(encoding="utf-8").replace(
+			"has_country_flag = fixture_flag", "hidden_trigger = { check_variable = { fixture_raw_variable > 5 } }\n\t\t\thas_country_flag = fixture_flag")
+		self.assertNotIn("LOC-REQUIREMENT-VARIABLE", self.audit({DECISIONS: decisions}))
+
 	def test_missing_implicit_key(self) -> None:
 		decisions = (FIXTURES / "mod" / DECISIONS).read_text(encoding="utf-8").replace(
 			"\tfixture_decision = {", "\tfixture_unnamed_decision = {\n\t}\n\tfixture_decision = {")

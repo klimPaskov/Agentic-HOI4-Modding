@@ -53,8 +53,12 @@
    "sha256": "8acc33ee392e7bcb31f9df0f517aa7b5d9da4b8f16c333a9692b0e67e214b8e1",
    "upstream": ".tools/lib/clausewitz.py"
   },
+  ".tools/lib/doctor.py": {
+   "sha256": "b740ae3abad0d4b9fb6c95a3acbbe9ad62330935a13578ac6b91daecb63f719b",
+   "upstream": ".tools/lib/doctor.py"
+  },
   ".tools/lib/game.py": {
-   "sha256": "1a2e4a0538a84df8fb13c48c0e190d8fd204fb45af58b346135f7d3db00c427a",
+   "sha256": "37ed5e10a111827dc114a7c4c69366d8679225096da8ea685b312bb0266b6d9e",
    "upstream": ".tools/lib/game.py"
   },
   ".tools/lib/localisation.py": {
@@ -73,6 +77,10 @@
    "sha256": "19153feb2e60ca904397df72958a0100713cf5b89c64ff4ecbb59be84f34f24f",
    "upstream": ".tools/requirements-dev.txt"
   },
+  ".tools/requirements.txt": {
+   "sha256": "c6aef37f98c0944ce6e82f5a431611b87b0855489a684a26976a1eaafec4f524",
+   "upstream": ".tools/requirements.txt"
+  },
   ".tools/tests/fixtures/script_rules/invalid.txt": {
    "sha256": "c63b52f720b760fcfdf124059b092ac9073e3b08852b8567ab22239099ed0aad",
    "upstream": ".tools/tests/fixtures/script_rules/invalid.txt"
@@ -88,6 +96,10 @@
   ".tools/tests/fixtures/script_validate/responses.json": {
    "sha256": "51e3d3ebd6a0a99927314398fcf0d277512ba59663d168226e72451cf17e1122",
    "upstream": ".tools/tests/fixtures/script_validate/responses.json"
+  },
+  ".tools/tests/test_game_dir.py": {
+   "sha256": "65fe662f2016260166f2bea3f5ab69f5d1040ac3212fb722565bff1673fa2a2c",
+   "upstream": ".tools/tests/test_game_dir.py"
   },
   ".tools/tests/test_gfx_conformance.py": {
    "sha256": "f9beeaa322bf729c174de6af2bbaaeeb2b2c4a5e781489a3032b6ea5fcd27b5b",
