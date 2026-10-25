@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "7c3667037abd32422e5b9073add36098f208be17",
+  "generated_for_revision": "b4ab8c95568dcc5a0b2796e4ea4836d141cccb47",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "8b03e078970804fd62317c25cfd65b5cde32edeeaea8353a7800440f5d36a1dd",
-          "size": 59323
+          "sha256": "3530c14b73367ab6f82df0fa097d7e47dde37f5b0ee39b754d3fb1d5ad0f526a",
+          "size": 59449
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "c2ee6092c62e2eca89381ca48179a77bc7848b50d85b340e4098e78e6fbc608a",
-          "size": 59323
+          "sha256": "369cdd0a9d9491053a9e854d2d9cc5c5f9782ba86e146aa6dc649aa41c0dbb46",
+          "size": 59449
         }
       ]
     },
@@ -197,8 +197,93 @@
       "expected_files": [
         {
           "path": ".tools/README.md",
-          "sha256": "5004ab33392473c14b154c4297afa591af6f1cb84299fd7fe79bd853a7430531",
-          "size": 7430
+          "sha256": "8f9cc60527ca99b503573aad33a9c3d316f31a2dd5deac24ed1cc4cdddaaa003",
+          "size": 11578
+        },
+        {
+          "path": ".tools/audits/audit_asset_wiring_static.py",
+          "sha256": "c426a4632cfab1c48dfac1f2fd29358cb8466280711c6e8d1b63506a9f1f0623",
+          "size": 36249
+        },
+        {
+          "path": ".tools/audits/audit_localisation_static.py",
+          "sha256": "4a7d0568d484f3998395cc98f61fdec55c0077b7a25ba684e50e487b52d8b9db",
+          "size": 71546
+        },
+        {
+          "path": ".tools/audits/audit_script_rules.py",
+          "sha256": "c58abe2f311565158ac77b1d5266c2c41063236de6cf738c253595502917aa18",
+          "size": 4551
+        },
+        {
+          "path": ".tools/audits/validate_scripts_mcp.py",
+          "sha256": "b676f5b8d8beea455cc8a3131ff4e179c0ee160adb38f0f979acad2370ed63ac",
+          "size": 5140
+        },
+        {
+          "path": ".tools/check.py",
+          "sha256": "a1ae82c41cc62a6fd1df224e70fb2e08fc2936ff8196dfa7734c9dd0913e490c",
+          "size": 15006
+        },
+        {
+          "path": ".tools/gfx/README.md",
+          "sha256": "afeac561756de3715015e2bead048561e7ee53dfd079e5daeacf8c444bba636c",
+          "size": 14966
+        },
+        {
+          "path": ".tools/gfx/gfx.py",
+          "sha256": "ad7cc13ab9af41d3039fef266b5b2c2d56be5a39bead2dcb82658ee81f7bbb76",
+          "size": 51791
+        },
+        {
+          "path": ".tools/gfx/profiles.json",
+          "sha256": "301928293083f9915ef253baaf9bce18e795bf327fbb2829bfc88cf0941f9ec5",
+          "size": 1889
+        },
+        {
+          "path": ".tools/gfx/requirements.txt",
+          "sha256": "31c782cefc54f0868216bd92651358c9b7d0419ff5c2620a57681877177e63b7",
+          "size": 35
+        },
+        {
+          "path": ".tools/gfx/settings.json",
+          "sha256": "2a9c5026afca0c15271aa6fa96dd3feded853dedcdfe05335412c7a594f1c8f4",
+          "size": 476
+        },
+        {
+          "path": ".tools/gfx/test_gfx.py",
+          "sha256": "bd7adc3802668811fb974840aba812e2f99c8309423f985448362b47c7b938a4",
+          "size": 17138
+        },
+        {
+          "path": ".tools/lib/__init__.py",
+          "sha256": "2e9848ce3a565358ac70c71a5c26ba0361fbaa2ab5188e4c9ee3d65a8eaa9d2b",
+          "size": 68
+        },
+        {
+          "path": ".tools/lib/clausewitz.py",
+          "sha256": "8acc33ee392e7bcb31f9df0f517aa7b5d9da4b8f16c333a9692b0e67e214b8e1",
+          "size": 3475
+        },
+        {
+          "path": ".tools/lib/game.py",
+          "sha256": "1a2e4a0538a84df8fb13c48c0e190d8fd204fb45af58b346135f7d3db00c427a",
+          "size": 1693
+        },
+        {
+          "path": ".tools/lib/localisation.py",
+          "sha256": "01d5d72e2fcf08f0ecf3f632d7f2485b1d4aee8d76631f476436f13cb1fbfaca",
+          "size": 1412
+        },
+        {
+          "path": ".tools/lib/mcp_session.py",
+          "sha256": "bd20e9eb2e0024d021fb246eee92e5ce4b2f31e0855965a6ce98151bd0030dff",
+          "size": 5127
+        },
+        {
+          "path": ".tools/lib/report.py",
+          "sha256": "208e3f7bf1ad2d6beea16e8fd1cc11fdd73e738735fdc7bb333e42fd63bc037b",
+          "size": 5475
         },
         {
           "path": ".tools/package_chatgpt_project_sources.bat",
@@ -209,6 +294,26 @@
           "path": ".tools/package_chatgpt_project_sources.py",
           "sha256": "2e8c5ea5cd0dc049da950210b4447719faedbeba1e412c1c77f44929d9116e21",
           "size": 7467
+        },
+        {
+          "path": ".tools/quality.py",
+          "sha256": "f9dc296830c629f7494951060cc580bc08f53ad79e729774866f4a2c5235e042",
+          "size": 9736
+        },
+        {
+          "path": ".tools/quality_baseline.json",
+          "sha256": "6707794a993694ff7e221184eb0d758de162a75596c9d4ec59f1da6e2db2534d",
+          "size": 12647
+        },
+        {
+          "path": ".tools/requirements-dev.txt",
+          "sha256": "19153feb2e60ca904397df72958a0100713cf5b89c64ff4ecbb59be84f34f24f",
+          "size": 294
+        },
+        {
+          "path": ".tools/ruff.toml",
+          "sha256": "5a251090d2567404261b10f411a6250fc48848d732cf53496fbabc4c58a15a9c",
+          "size": 1155
         },
         {
           "path": ".tools/sync/README.md",
@@ -254,6 +359,116 @@
           "path": ".tools/sync/sync_skills.py",
           "sha256": "d5270c31826e5e9b622a2d40c9e9734d0ef1076c7e0542c614f358a7a73468ec",
           "size": 6275
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/README.md",
+          "sha256": "b393cdf12c56eda139da1eb7c7e1b21d8bda8cd8c424e7449a86c4bc31d46f52",
+          "size": 334
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/game/common/fixture_marker.txt",
+          "sha256": "46f5063c8aec0edece55e6b11c69c5b6c4889e04ebb86cb90fd3c655ebca7d17",
+          "size": 57
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/game/gfx/interface/vanilla_ok.dds",
+          "sha256": "bc500e8aa30f317528ea9bb992683d93694fe6ca76ec902e64f56b8c062099ac",
+          "size": 24
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/game/interface/vanilla.gfx",
+          "sha256": "3b4c8e4dd9a38f3ff3ef9beb636a5082dbc5997b96ac07dd524cc9ec28518635",
+          "size": 210
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/game/localisation/english/vanilla_l_english.yml",
+          "sha256": "91e42c6617d9aaaf44b9a9d3203e1c0875faac15de995a3814084a5fe9fa4eb4",
+          "size": 43
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/mod/common/decisions/categories/fixture_categories.txt",
+          "sha256": "d80a4f26ea25900ed2d455ddaf7afaa1ea867b724c1ad12e9e25b9d3dec6ac0f",
+          "size": 54
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/mod/common/decisions/fixture_decisions.txt",
+          "sha256": "46e69406cb7393496a54b1450d7df41b9b02f1e14057fd13da30120440371b74",
+          "size": 125
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/mod/events/fixture_events.txt",
+          "sha256": "95e65f3cb9304e948b0aab7d295755b473d1680adccb67cc192b1cfdf16847d9",
+          "size": 123
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/mod/gfx/interface/decisions/fixture_icon.dds",
+          "sha256": "bc500e8aa30f317528ea9bb992683d93694fe6ca76ec902e64f56b8c062099ac",
+          "size": 24
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/mod/interface/fixture.gfx",
+          "sha256": "749fe2e6613cc195ef7ae349a7c85a8a43f21ed2a86b908e93061345cd655ca4",
+          "size": 133
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/mod/interface/fixture.gui",
+          "sha256": "2afd3f4f2e05fd88d3e59cb5095f59d82aeef466917aa039a8089877f63f6dc9",
+          "size": 146
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/mod/localisation/english/fixture_l_english.yml",
+          "sha256": "589b6428ffe46a3e71dd83a6890c0dfc0c9bef8c7127f97149f4b75c33f37dcf",
+          "size": 334
+        },
+        {
+          "path": ".tools/tests/fixtures/script_rules/invalid.txt",
+          "sha256": "c63b52f720b760fcfdf124059b092ac9073e3b08852b8567ab22239099ed0aad",
+          "size": 223
+        },
+        {
+          "path": ".tools/tests/fixtures/script_rules/invalid_scripted_localisation.txt",
+          "sha256": "09bafd10f292d2434a58bd00b7f687dfca2edb3b96872a181faac174d151da62",
+          "size": 177
+        },
+        {
+          "path": ".tools/tests/fixtures/script_rules/valid.txt",
+          "sha256": "56f418b85116ebc39c0b5c9ef6448af9599baf3774c777d7d8b17e407092da59",
+          "size": 461
+        },
+        {
+          "path": ".tools/tests/fixtures/script_validate/responses.json",
+          "sha256": "51e3d3ebd6a0a99927314398fcf0d277512ba59663d168226e72451cf17e1122",
+          "size": 1715
+        },
+        {
+          "path": ".tools/tests/test_audits.py",
+          "sha256": "c7710a4c0cd06af31be9c2ad63c774cdbb2d5349fefe5c81ad4ea2d95b2f2e4a",
+          "size": 7059
+        },
+        {
+          "path": ".tools/tests/test_gfx_conformance.py",
+          "sha256": "f9beeaa322bf729c174de6af2bbaaeeb2b2c4a5e781489a3032b6ea5fcd27b5b",
+          "size": 7382
+        },
+        {
+          "path": ".tools/tests/test_report_provenance.py",
+          "sha256": "4c6f184ff718afd7ac61827fd43effd80b14b07963e7a08b229a9a8189fbf3f5",
+          "size": 3166
+        },
+        {
+          "path": ".tools/tests/test_script_rules.py",
+          "sha256": "0eb24d568688eb287de1f6e29a2673b0ef3e8d754c5cd8dda9ac4bb571436de9",
+          "size": 1484
+        },
+        {
+          "path": ".tools/tests/test_shared_readers.py",
+          "sha256": "995458fc866c46ad2dec719a74fe4eaf40d820a1f5c097357c205b6372ef7293",
+          "size": 2117
+        },
+        {
+          "path": ".tools/tests/test_validate_scripts_mcp.py",
+          "sha256": "6aab773a5457915b00e54c1a30d9b77501d27134393a4294fbdab02680a32f5f",
+          "size": 1985
         }
       ]
     },
@@ -530,8 +745,8 @@
         },
         {
           "path": ".cursor/agents/hoi4-skill-maintainer.md",
-          "sha256": "49e0615f2214404b42da60b145594dcb68a2abb69c1d0a6aa4294e70bfecbf53",
-          "size": 4285
+          "sha256": "c6425468bfe20f1b14a1e4386af2e7d6969226680a3b0db3226f35c341b5a68d",
+          "size": 4717
         },
         {
           "path": ".cursor/agents/hoi4-spreadsheet-doc-worker.md",
@@ -697,8 +912,8 @@
         },
         {
           "path": ".qoder/agents/hoi4-skill-maintainer.md",
-          "sha256": "34a288e3f585a221d1cb004061465a5e9bd358653daba44b15df813b900af58e",
-          "size": 4341
+          "sha256": "48b33933bf12bcf09eceaee4e41e5ab0d2a9c06fce02cd5dcafacb40ff3d050b",
+          "size": 4773
         },
         {
           "path": ".qoder/agents/hoi4-spreadsheet-doc-worker.md",
@@ -864,8 +1079,8 @@
         },
         {
           "path": ".opencode/agent/hoi4-skill-maintainer.md",
-          "sha256": "2f6ffa3fe4b4ab2a943d501dca55ce01ae563227cc9c8a7993cd6b56cd19d727",
-          "size": 4272
+          "sha256": "acf030faabefd1bf3e57614081ba42877402112727cb9134f61a51125fad9dc5",
+          "size": 4704
         },
         {
           "path": ".opencode/agent/hoi4-spreadsheet-doc-worker.md",
@@ -1552,8 +1767,8 @@
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
-          "sha256": "d4b0b8efb1bfaefe7469b400cce7d457198472b9eab4cbec20c6cf036290cc05",
-          "size": 55025
+          "sha256": "00526a3ef64c4d0eeaaad236427912645f5b23b348d9e8e17defcd5b5756f6bc",
+          "size": 55284
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/references/formable-nation-decisions.md",
@@ -1662,8 +1877,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "602ca3937e0ddb999b22e65ba6c6045fed5231b7993a03bb5e058fae0638875e",
-          "size": 55352
+          "sha256": "5b1361db8533c72a21a96cc927ae4bb3ba2ccb9d9cefa26b6e38bb19226e2cf0",
+          "size": 55606
         },
         {
           "path": ".claude/skills/hoi4-events/references/country-activation.md",
@@ -1687,8 +1902,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "5edf8614f5042d7583f29f5eab8f44431db564e33109af017a1e7929dafea61b",
-          "size": 55925
+          "sha256": "e988687e57fa5eab686b08d59750a9319f27153dd69888b5579a5e7d856c9500",
+          "size": 56851
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -4222,8 +4437,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "091eca7e4d13eb0e163fdd72876ee328c27c765e39d686e561c7d614f47f2a8b",
-          "size": 6334
+          "sha256": "c5334b1aa69bd2a1a49ec3001879b876779679e3cb0cdfbb0bd8f98f0be9d8b5",
+          "size": 7146
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
@@ -4247,23 +4462,23 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/README.md",
-          "sha256": "34945389ce046d16951965dfac7bf80990d8f4216673b43b3b533661cc61c75e",
-          "size": 6527
+          "sha256": "b76d37f3829fcaafd66a62baefcc58de352ca0746514ba7543efeae2e3f49dc0",
+          "size": 6853
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/convert_to_dds.py",
-          "sha256": "3e9eb77a750928b70f863c5339c21c8486533b849e3608c850c9fade30180482",
-          "size": 9854
+          "sha256": "b98b1d601ea32d56c7ae748f98ebb8e4a9bb054a00ad946dc158a221303da875",
+          "size": 10164
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/create_advisor_icon.py",
-          "sha256": "237ad345a051a7ad298a883eb7fd2596aa1ed84dc678943beb12ecb664558a23",
-          "size": 30658
+          "sha256": "096904aae44babca7d4901769635289a657a68bcef49c36ec04b696d23e121f1",
+          "size": 31058
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py",
-          "sha256": "49a0b862f48a40338c6d31996a026324af49e1aeaf4c54dbd04b6b2e5b002a58",
-          "size": 35999
+          "sha256": "af1d699d52ad3d83a1f9edc9e01269b55a3e9e6b600769f6c9a3371eb4670791",
+          "size": 36544
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/models/LICENSE",
@@ -4277,13 +4492,18 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/process_achievement_icons.py",
-          "sha256": "b41e31f1d4cf7495b74e08fc8aa7112d653a07ba22f368200ace4f437d2b199c",
-          "size": 26432
+          "sha256": "9bf2978138e92a7f653b4200cecd82ba2ab5cbd2a4d506591e9da6536575057e",
+          "size": 26732
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/process_report_event_image.py",
-          "sha256": "042d261adb6d17ea986a3244d08cb9c8991bd3003b8fd2dc252be65ef730ae54",
-          "size": 9969
+          "sha256": "d7a8eef5f4ffd2f698af8b84f357942f2e7575942de73760c8e1dfd464886ee6",
+          "size": 13062
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-assets/tools/project_settings.json",
+          "sha256": "afbeb7a9032f0bd4ab15979aeef19eb7a21bf8cfe02cc5348c37469551d09812",
+          "size": 442
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/tests/test_create_advisor_icon.py",
@@ -4342,8 +4562,8 @@
         },
         {
           "path": ".claude/skills/hoi4-focus-trees/SKILL.md",
-          "sha256": "eacd471e92608e642b55cf5a068642f6d469a36623b233ecb2ca20007cfe22fa",
-          "size": 54504
+          "sha256": "45bd991f3f37c3db4a6ee72a91682b234b26e4c4d9bef132fb5e74e5e3feadaa",
+          "size": 54793
         },
         {
           "path": ".claude/skills/hoi4-focus-trees/references/completion-rules.md",
@@ -4407,13 +4627,13 @@
         },
         {
           "path": ".claude/skills/hoi4-save-inspection/scripts/save_inspect.py",
-          "sha256": "caa4d520cbf1fec0e04ae4f16ed2d83a511589dbe07f37012ffd8730adc60156",
-          "size": 12721
+          "sha256": "dbcbc197b7fe0b415201eb1c9319d753882e6d1484bd823bccd509d0cfb05566",
+          "size": 12991
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "66975205a818746e141f80a3fda53f38bf13fc9a3cdef6681168312f2ebfb8ad",
-          "size": 17189
+          "sha256": "4deed77e8acdbb75ad6ac8ddbe59f98424f01496223160bcfa3a8cf1d6d88acd",
+          "size": 17466
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -4427,8 +4647,8 @@
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "9d73d40c6c44dd7bd0372260aa05ab926029feb46a1c6660cd785253cb3d28e9",
-          "size": 39851
+          "sha256": "8b86127cea99f42120ae38b8b66c09361592d66f75c45cd43308582115c65073",
+          "size": 40152
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
@@ -4628,8 +4848,8 @@
         },
         {
           "path": ".claude/agents/hoi4-skill-maintainer.md",
-          "sha256": "57d204d51215b7210f2d57dedd8e28ea6b2ef4a575446f6a26675ef741e0deb5",
-          "size": 4179
+          "sha256": "e09fa37182632691d65a0080cc76acfc9be65f8373fd3ce80d4127e9a73e2b36",
+          "size": 4611
         },
         {
           "path": ".claude/agents/hoi4-spreadsheet-doc-worker.md",
@@ -4828,8 +5048,8 @@
         },
         {
           "path": ".codex/agents/hoi4_skill_maintainer.toml",
-          "sha256": "f58d1d542a693d810cf5f62b211397317cec27c29e600539bae4427f2a74dba2",
-          "size": 4447
+          "sha256": "e724f03f6b386b998c4c7a315752cf0683645021ada979ac24f30efc284b89ec",
+          "size": 4879
         },
         {
           "path": ".codex/agents/hoi4_spreadsheet_doc_worker.toml",
@@ -4941,8 +5161,8 @@
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
-          "sha256": "d4b0b8efb1bfaefe7469b400cce7d457198472b9eab4cbec20c6cf036290cc05",
-          "size": 55025
+          "sha256": "00526a3ef64c4d0eeaaad236427912645f5b23b348d9e8e17defcd5b5756f6bc",
+          "size": 55284
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/references/formable-nation-decisions.md",
@@ -5051,8 +5271,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "602ca3937e0ddb999b22e65ba6c6045fed5231b7993a03bb5e058fae0638875e",
-          "size": 55352
+          "sha256": "5b1361db8533c72a21a96cc927ae4bb3ba2ccb9d9cefa26b6e38bb19226e2cf0",
+          "size": 55606
         },
         {
           "path": ".claude/skills/hoi4-events/references/country-activation.md",
@@ -5076,8 +5296,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "5edf8614f5042d7583f29f5eab8f44431db564e33109af017a1e7929dafea61b",
-          "size": 55925
+          "sha256": "e988687e57fa5eab686b08d59750a9319f27153dd69888b5579a5e7d856c9500",
+          "size": 56851
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -7611,8 +7831,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "091eca7e4d13eb0e163fdd72876ee328c27c765e39d686e561c7d614f47f2a8b",
-          "size": 6334
+          "sha256": "c5334b1aa69bd2a1a49ec3001879b876779679e3cb0cdfbb0bd8f98f0be9d8b5",
+          "size": 7146
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
@@ -7636,23 +7856,23 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/README.md",
-          "sha256": "34945389ce046d16951965dfac7bf80990d8f4216673b43b3b533661cc61c75e",
-          "size": 6527
+          "sha256": "b76d37f3829fcaafd66a62baefcc58de352ca0746514ba7543efeae2e3f49dc0",
+          "size": 6853
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/convert_to_dds.py",
-          "sha256": "3e9eb77a750928b70f863c5339c21c8486533b849e3608c850c9fade30180482",
-          "size": 9854
+          "sha256": "b98b1d601ea32d56c7ae748f98ebb8e4a9bb054a00ad946dc158a221303da875",
+          "size": 10164
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/create_advisor_icon.py",
-          "sha256": "237ad345a051a7ad298a883eb7fd2596aa1ed84dc678943beb12ecb664558a23",
-          "size": 30658
+          "sha256": "096904aae44babca7d4901769635289a657a68bcef49c36ec04b696d23e121f1",
+          "size": 31058
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py",
-          "sha256": "49a0b862f48a40338c6d31996a026324af49e1aeaf4c54dbd04b6b2e5b002a58",
-          "size": 35999
+          "sha256": "af1d699d52ad3d83a1f9edc9e01269b55a3e9e6b600769f6c9a3371eb4670791",
+          "size": 36544
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/models/LICENSE",
@@ -7666,13 +7886,18 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/process_achievement_icons.py",
-          "sha256": "b41e31f1d4cf7495b74e08fc8aa7112d653a07ba22f368200ace4f437d2b199c",
-          "size": 26432
+          "sha256": "9bf2978138e92a7f653b4200cecd82ba2ab5cbd2a4d506591e9da6536575057e",
+          "size": 26732
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/process_report_event_image.py",
-          "sha256": "042d261adb6d17ea986a3244d08cb9c8991bd3003b8fd2dc252be65ef730ae54",
-          "size": 9969
+          "sha256": "d7a8eef5f4ffd2f698af8b84f357942f2e7575942de73760c8e1dfd464886ee6",
+          "size": 13062
+        },
+        {
+          "path": ".claude/skills/hoi4-feature-assets/tools/project_settings.json",
+          "sha256": "afbeb7a9032f0bd4ab15979aeef19eb7a21bf8cfe02cc5348c37469551d09812",
+          "size": 442
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/tests/test_create_advisor_icon.py",
@@ -7731,8 +7956,8 @@
         },
         {
           "path": ".claude/skills/hoi4-focus-trees/SKILL.md",
-          "sha256": "eacd471e92608e642b55cf5a068642f6d469a36623b233ecb2ca20007cfe22fa",
-          "size": 54504
+          "sha256": "45bd991f3f37c3db4a6ee72a91682b234b26e4c4d9bef132fb5e74e5e3feadaa",
+          "size": 54793
         },
         {
           "path": ".claude/skills/hoi4-focus-trees/references/completion-rules.md",
@@ -7796,13 +8021,13 @@
         },
         {
           "path": ".claude/skills/hoi4-save-inspection/scripts/save_inspect.py",
-          "sha256": "caa4d520cbf1fec0e04ae4f16ed2d83a511589dbe07f37012ffd8730adc60156",
-          "size": 12721
+          "sha256": "dbcbc197b7fe0b415201eb1c9319d753882e6d1484bd823bccd509d0cfb05566",
+          "size": 12991
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "66975205a818746e141f80a3fda53f38bf13fc9a3cdef6681168312f2ebfb8ad",
-          "size": 17189
+          "sha256": "4deed77e8acdbb75ad6ac8ddbe59f98424f01496223160bcfa3a8cf1d6d88acd",
+          "size": 17466
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -7816,8 +8041,8 @@
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "9d73d40c6c44dd7bd0372260aa05ab926029feb46a1c6660cd785253cb3d28e9",
-          "size": 39851
+          "sha256": "8b86127cea99f42120ae38b8b66c09361592d66f75c45cd43308582115c65073",
+          "size": 40152
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
