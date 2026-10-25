@@ -18,6 +18,7 @@ import json
 import math
 import struct
 from pathlib import Path
+from typing import Any, cast
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageOps
 
@@ -32,11 +33,17 @@ MAX_OPENING_CENTER_OFFSET = 0.001
 MAX_OPENING_SIZE_ERROR = 0.01
 UNDER_FRAME_BLEED_PIXELS = 2
 PORTRAIT_EDGE_GUARD_PIXELS = 1
+def project_setting(name: str) -> str:
+	"""Return one project value from project_settings.json beside this tool (shared-tool contract)."""
+	settings = json.loads(Path(__file__).with_name("project_settings.json").read_text(encoding="utf-8"))
+	return str(settings[name])
+
+
 SKILL_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TEMPLATE = (
 	SKILL_ROOT
 	/ "assets"
-	/ "vanilla_reference"
+	/ project_setting("reference_folder")
 	/ "portraits"
 	/ "advisors"
 	/ "advisor_template.png"
@@ -164,7 +171,7 @@ def prepare_portrait(
 def calculate_covering_portrait_geometry(
 	source_size: tuple[int, int],
 	opening_size: tuple[float, float],
-) -> dict[str, object]:
+) -> dict[str, Any]:
 	if source_size[0] <= 0 or source_size[1] <= 0:
 		raise ValueError("Advisor source dimensions must be positive")
 	source_aspect = source_size[0] / source_size[1]
@@ -366,7 +373,7 @@ def find_enclosed_opening(
 	return max(enclosed, key=len)
 
 
-def measure_opening_geometry(template: Image.Image) -> dict[str, object]:
+def measure_opening_geometry(template: Image.Image) -> dict[str, Any]:
 	opening = find_enclosed_opening(template, OPENING_GEOMETRY_ALPHA_THRESHOLD)
 
 	def measure_at_angle(angle: float) -> tuple[float, float, float, float, float]:
@@ -451,7 +458,7 @@ def validate_fit_to_opening(
 	portrait_size: tuple[float, float],
 	center: tuple[float, float],
 	rotation: float,
-	opening_geometry: dict[str, object],
+	opening_geometry: dict[str, Any],
 	inset: float = 0.0,
 ) -> tuple[float, float, float, float]:
 	opening_center = opening_geometry["center"]
@@ -496,10 +503,10 @@ def validate_opening_alignment(
 	portrait_size: tuple[float, float],
 	portrait_offset: tuple[float, float],
 	rotation: float,
-	opening_geometry: dict[str, object],
+	opening_geometry: dict[str, Any],
 ) -> float:
 	opening_rotation = opening_geometry["rotation"]
-	rotation_delta = (rotation - opening_rotation + 90.0) % 180.0 - 90.0
+	rotation_delta: float = (rotation - opening_rotation + 90.0) % 180.0 - 90.0
 	if abs(rotation_delta) > MAX_ALIGNMENT_ERROR:
 		raise ValueError(
 			"Advisor portrait rotation must align with the measured dossier opening; "
@@ -509,7 +516,7 @@ def validate_opening_alignment(
 	if any(abs(value) > MAX_OPENING_CENTER_OFFSET for value in portrait_offset):
 		raise ValueError(
 			"Advisor portrait center must remain aligned with the measured dossier "
-			f"opening; canonical cards require a 0 0 offset."
+			"opening; canonical cards require a 0 0 offset."
 		)
 	opening_size = opening_geometry["size"]
 	size_error = (
@@ -564,7 +571,7 @@ def normalise_study_candidates(
 ) -> list[tuple[float, float, float, float, float]]:
 	if not values:
 		return []
-	return [tuple(candidate) for candidate in values]
+	return [cast("tuple[float, float, float, float, float]", tuple(candidate)) for candidate in values]
 
 
 def transform_matches_candidate(
@@ -638,7 +645,7 @@ def write_placement_study(
 
 def write_alignment_preview(
 	card: Image.Image,
-	opening_geometry: dict[str, object],
+	opening_geometry: dict[str, Any],
 	opening_fill_size: tuple[float, float],
 	opening_fill_center: tuple[float, float],
 	rotation: float,
@@ -726,8 +733,8 @@ def write_metadata(
 	source_aspect = source_size[0] / source_size[1]
 	card = Image.open(preview_path).convert("RGBA")
 	alpha_coverage = audit_portrait_alpha_coverage(card, template)
-	payload = {
-		"workflow": "hoi4-advisor-dossier-v4",
+	payload: dict[str, Any] = {
+		"workflow": f"{project_setting('id_prefix')}-advisor-dossier-v4",
 		"source": {
 			"path": str(source_path),
 			"sha256": sha256(source_path),

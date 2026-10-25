@@ -1,0 +1,8 @@
+{
+ "_about": "Project values for the shared asset tools in this folder. The tool files are kept byte-identical with their upstream copies (scripts/shared_tools.json); only this file is project-specific, so set these values for your mod.",
+ "project_label": "HOI4",
+ "id_prefix": "hoi4",
+ "reference_folder": "vanilla_reference",
+ "texconv_docker_image": "<approved texconv image>",
+ "report_provenance": "docs/report_image_provenance.json"
+}

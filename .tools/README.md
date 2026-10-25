@@ -11,6 +11,30 @@ Before retiring a tool, search its filename, module name, generated headers, and
 
 ## Supported tools
 
+### Repository checks
+
+`check.py` is the single read-only entry point for mechanical questions about a mod: run `python -B .tools/check.py quick` on the files you changed before review and `python -B .tools/check.py full` at the end of a large task. `quick` takes the changed paths from Git (or `--paths`), runs only the checks those paths can affect and reports only findings in them; `full` runs every check over the whole repository. Both print errors as `path:line: level RULE message` and one summary line per check, and `--json <file>` writes every finding, including review candidates. Exit status: 0 no errors, 1 errors, 2 a check could not run.
+
+Every check follows `lib/report.py`: an `error` is an exact rule and fails the run, a `warning` is a heuristic that is printed but never fails, and a `review` item is a candidate list for a person. Each tool also runs alone with `--paths`, `--paths-from`, `--fail-on` and `--json`.
+
+| Check | Tool | Question it answers | Needs the game |
+| --- | --- | --- | --- |
+| `localisation` | `audits/audit_localisation_static.py` | Are localisation files encoded, parsed and unique, and does every key the engine or script reads exist here or in vanilla? `--calibrate` measures each implicit-key rule on vanilla. | yes |
+| `asset-wiring` | `audits/audit_asset_wiring_static.py` | Does every `GFX_` name, texture, mesh and implicit engine lookup (idea, decision, focus shine, flag, achievement art) resolve? Unreferenced sprites are review items. | yes |
+| `script-rules` | `audits/audit_script_rules.py` | Does script use `<=` or `>=`, unary minus on a variable token, or `§`/`£` written into scripted localisation? Lexical only; fixtures in `tests/fixtures/script_rules/`. | no |
+| `gfx` | `gfx/gfx.py audit` | Frame-strip widths, the flag size ladder and TGA origin, achievement art size, LFS pointers and truncated runtime binaries, profiled icon families and report-image provenance (`gfx/README.md`). | for vanilla textures |
+| `guidance` | `sync/check_guidance_size.py` | Are instructions, skills and agent prompts within the single-read ceiling? | no |
+| `generators` | `sync/sync_*.py --check` | Do `AGENTS.md`, the generated agents and the skill copies match their canonical sources? | no |
+| `tests` | `unittest` over `tests/`, `gfx/` and skill `tools/tests/` folders | Do the maintained tests pass? | no |
+| `quality` | `quality.py` | Ruff defect rules, the complexity ratchet in `quality_baseline.json` and `mypy --strict` for the strict tooling files; skipped with a notice without `uv`. | no |
+| `script-validate` | `audits/validate_scripts_mcp.py` | Does `hoi4.script_validate` accept each changed script file? Quick only; skipped with a notice when the HOI4 Agent Tools server cannot start. Unresolved commands are warnings and unchecked argument blocks review items, never passes. | no |
+
+Tools that read vanilla files take the game folder from `HOI4_GAME_DIR` and fall back to the default Steam path (`lib/game.py`); without the game they exit 2 and name the variable. `lib/` holds the one shared implementation of the finding contract, the script and localisation readers, the game-folder lookup and the MCP client; tools import it instead of copying it.
+
+A passing check proves only the properties it checks: a size or alpha check does not establish visual quality, and a reference check does not establish gameplay behaviour. Never weaken a check, add a suppression, lower a threshold or edit a baseline to make validation pass. `quality.py --write-baseline` records the first baseline or improvements only and refuses while errors remain.
+
+`lib/`, `audits/audit_script_rules.py`, `audits/validate_scripts_mcp.py`, `gfx/gfx.py` with its tests, the asset tools in `hoi4-feature-assets/tools/` and `save_inspect.py` are byte-identical copies of upstream tools, listed in the source package's `scripts/shared_tools.json`; repository values live in their settings files (`gfx/settings.json`, `gfx/profiles.json`, the asset tools' `project_settings.json`), which are not shared. `check.py`, `quality.py` and the localisation and asset-wiring audits are this package's own editions.
+
 ### ChatGPT source packaging
 
 `package_chatgpt_project_sources.py` builds a curated flat source folder with

@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import random
 from pathlib import Path
-from typing import Iterable, Tuple
+from typing import Any, Dict, Iterable, Tuple
 
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
@@ -15,6 +17,21 @@ except AttributeError:
     RESAMPLE_LANCZOS = Image.LANCZOS
     RESAMPLE_BICUBIC = Image.BICUBIC
 
+
+def project_setting(name: str) -> str:
+    """Return one project value from project_settings.json beside this tool (shared-tool contract)."""
+    settings = json.loads(Path(__file__).with_name("project_settings.json").read_text(encoding="utf-8"))
+    return str(settings[name])
+
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+DEFAULT_PROVENANCE = REPO_ROOT / project_setting("report_provenance")
+PROVENANCE_ABOUT = (
+    "Processing records for report event pictures, written by "
+    f"{Path(__file__).resolve().relative_to(REPO_ROOT).as_posix()} --runtime and checked by "
+    "`python -B .tools/gfx/gfx.py reports`. pixels_sha256 is the SHA-256 of the processed image's RGBA bytes, "
+    "which the uncompressed BGRA DDS conversion preserves."
+)
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff"}
 
 
@@ -196,6 +213,31 @@ def process_report_event_image(
     canvas.save(output_path)
 
 
+def sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def record_provenance(registry: Path, runtime: str, source: Path, output: Path, arguments: Dict[str, Any]) -> None:
+    """Record how `output` was made, keyed by the runtime texture it becomes."""
+    records: Dict[str, Any] = json.loads(registry.read_text(encoding="utf-8"))["records"] if registry.is_file() else {}
+    with Image.open(output) as image:
+        pixels = hashlib.sha256(image.convert("RGBA").tobytes()).hexdigest()
+    source_path = source.resolve()
+    try:
+        source_name = source_path.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        source_name = source_path.as_posix()
+    records[runtime] = {
+        "source": {"path": source_name, "sha256": sha256_file(source)},
+        "processor_sha256": sha256_file(Path(__file__)),
+        "arguments": arguments,
+        "pixels_sha256": pixels,
+    }
+    registry.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"about": PROVENANCE_ABOUT, "records": dict(sorted(records.items()))}
+    registry.write_text(json.dumps(payload, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def iter_images(path: Path) -> Iterable[Path]:
     for child in sorted(path.iterdir()):
         if child.is_file() and child.suffix.lower() in IMAGE_EXTENSIONS:
@@ -222,7 +264,7 @@ def parse_size(value: str) -> Tuple[int, int]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Process HOI4 report event images into black-and-white sepia tilted "
+            f"Process {project_setting('project_label')} report event images into black-and-white sepia tilted "
             "transparent 210x176 cards with a soft drop shadow."
         )
     )
@@ -240,12 +282,19 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", type=int, default=1337)
     parser.add_argument("--rotate-supersample", type=int, default=4)
     parser.add_argument("--edge-soften", type=float, default=0.35)
+    parser.add_argument(
+        "--runtime",
+        help="Runtime texture this card becomes (for example gfx/event_pictures/x.dds); records its provenance",
+    )
+    parser.add_argument("--provenance", type=Path, default=DEFAULT_PROVENANCE, help="Provenance registry to update with --runtime")
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
 
+    if args.input.is_dir() and args.runtime:
+        raise SystemExit("--runtime records one card; process a single input file")
     if args.input.is_dir():
         args.output.mkdir(parents=True, exist_ok=True)
         for index, source_path in enumerate(iter_images(args.input)):
@@ -291,6 +340,15 @@ def main() -> None:
         edge_soften=args.edge_soften,
     )
     print(f"wrote {output_path}")
+    if args.runtime:
+        arguments = {
+            "canvas_size": list(args.canvas_size), "card_size": list(args.card_size), "border": args.border,
+            "angle": args.angle, "shadow_offset": list(args.shadow_offset), "shadow_blur": args.shadow_blur,
+            "shadow_opacity": args.shadow_opacity, "grain": args.grain, "paper_grain": args.paper_grain, "seed": args.seed,
+            "rotate_supersample": args.rotate_supersample, "edge_soften": args.edge_soften,
+        }
+        record_provenance(args.provenance, args.runtime.replace("\\", "/"), args.input, output_path, arguments)
+        print(f"recorded provenance for {args.runtime} in {args.provenance}")
 
 
 if __name__ == "__main__":

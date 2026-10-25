@@ -1,0 +1,113 @@
+{
+ "_about": "Files this package carries as byte-identical copies of upstream tools (upstream: the Chaos Redux mod repository). Hashes are SHA-256 of the LF-normalised content. scripts/check_shared_tools.py checks them; update a copy only from upstream with --upstream <checkout> --write.",
+ "files": {
+  ".claude/skills/hoi4-feature-assets/tools/convert_to_dds.py": {
+   "sha256": "b98b1d601ea32d56c7ae748f98ebb8e4a9bb054a00ad946dc158a221303da875",
+   "upstream": ".claude/skills/chaos-redux-event-assets/tools/convert_to_dds.py"
+  },
+  ".claude/skills/hoi4-feature-assets/tools/create_advisor_icon.py": {
+   "sha256": "096904aae44babca7d4901769635289a657a68bcef49c36ec04b696d23e121f1",
+   "upstream": ".claude/skills/chaos-redux-event-assets/tools/create_advisor_icon.py"
+  },
+  ".claude/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py": {
+   "sha256": "af1d699d52ad3d83a1f9edc9e01269b55a3e9e6b600769f6c9a3371eb4670791",
+   "upstream": ".claude/skills/chaos-redux-event-assets/tools/extract_portrait_source_crop.py"
+  },
+  ".claude/skills/hoi4-feature-assets/tools/process_achievement_icons.py": {
+   "sha256": "9bf2978138e92a7f653b4200cecd82ba2ab5cbd2a4d506591e9da6536575057e",
+   "upstream": ".claude/skills/chaos-redux-event-assets/tools/process_achievement_icons.py"
+  },
+  ".claude/skills/hoi4-feature-assets/tools/process_report_event_image.py": {
+   "sha256": "d7a8eef5f4ffd2f698af8b84f357942f2e7575942de73760c8e1dfd464886ee6",
+   "upstream": ".claude/skills/chaos-redux-event-assets/tools/process_report_event_image.py"
+  },
+  ".claude/skills/hoi4-save-inspection/scripts/save_inspect.py": {
+   "sha256": "dbcbc197b7fe0b415201eb1c9319d753882e6d1484bd823bccd509d0cfb05566",
+   "upstream": ".claude/skills/chaos-redux-save-inspection/scripts/save_inspect.py"
+  },
+  ".tools/audits/audit_script_rules.py": {
+   "sha256": "c58abe2f311565158ac77b1d5266c2c41063236de6cf738c253595502917aa18",
+   "upstream": ".tools/audits/audit_script_rules.py"
+  },
+  ".tools/audits/validate_scripts_mcp.py": {
+   "sha256": "b676f5b8d8beea455cc8a3131ff4e179c0ee160adb38f0f979acad2370ed63ac",
+   "upstream": ".tools/audits/validate_scripts_mcp.py"
+  },
+  ".tools/gfx/gfx.py": {
+   "sha256": "ad7cc13ab9af41d3039fef266b5b2c2d56be5a39bead2dcb82658ee81f7bbb76",
+   "upstream": ".tools/gfx/gfx.py"
+  },
+  ".tools/gfx/requirements.txt": {
+   "sha256": "31c782cefc54f0868216bd92651358c9b7d0419ff5c2620a57681877177e63b7",
+   "upstream": ".tools/gfx/requirements.txt"
+  },
+  ".tools/gfx/test_gfx.py": {
+   "sha256": "bd7adc3802668811fb974840aba812e2f99c8309423f985448362b47c7b938a4",
+   "upstream": ".tools/gfx/test_gfx.py"
+  },
+  ".tools/lib/__init__.py": {
+   "sha256": "2e9848ce3a565358ac70c71a5c26ba0361fbaa2ab5188e4c9ee3d65a8eaa9d2b",
+   "upstream": ".tools/lib/__init__.py"
+  },
+  ".tools/lib/clausewitz.py": {
+   "sha256": "8acc33ee392e7bcb31f9df0f517aa7b5d9da4b8f16c333a9692b0e67e214b8e1",
+   "upstream": ".tools/lib/clausewitz.py"
+  },
+  ".tools/lib/game.py": {
+   "sha256": "1a2e4a0538a84df8fb13c48c0e190d8fd204fb45af58b346135f7d3db00c427a",
+   "upstream": ".tools/lib/game.py"
+  },
+  ".tools/lib/localisation.py": {
+   "sha256": "01d5d72e2fcf08f0ecf3f632d7f2485b1d4aee8d76631f476436f13cb1fbfaca",
+   "upstream": ".tools/lib/localisation.py"
+  },
+  ".tools/lib/mcp_session.py": {
+   "sha256": "bd20e9eb2e0024d021fb246eee92e5ce4b2f31e0855965a6ce98151bd0030dff",
+   "upstream": ".tools/lib/mcp_session.py"
+  },
+  ".tools/lib/report.py": {
+   "sha256": "208e3f7bf1ad2d6beea16e8fd1cc11fdd73e738735fdc7bb333e42fd63bc037b",
+   "upstream": ".tools/lib/report.py"
+  },
+  ".tools/requirements-dev.txt": {
+   "sha256": "19153feb2e60ca904397df72958a0100713cf5b89c64ff4ecbb59be84f34f24f",
+   "upstream": ".tools/requirements-dev.txt"
+  },
+  ".tools/tests/fixtures/script_rules/invalid.txt": {
+   "sha256": "c63b52f720b760fcfdf124059b092ac9073e3b08852b8567ab22239099ed0aad",
+   "upstream": ".tools/tests/fixtures/script_rules/invalid.txt"
+  },
+  ".tools/tests/fixtures/script_rules/invalid_scripted_localisation.txt": {
+   "sha256": "09bafd10f292d2434a58bd00b7f687dfca2edb3b96872a181faac174d151da62",
+   "upstream": ".tools/tests/fixtures/script_rules/invalid_scripted_localisation.txt"
+  },
+  ".tools/tests/fixtures/script_rules/valid.txt": {
+   "sha256": "56f418b85116ebc39c0b5c9ef6448af9599baf3774c777d7d8b17e407092da59",
+   "upstream": ".tools/tests/fixtures/script_rules/valid.txt"
+  },
+  ".tools/tests/fixtures/script_validate/responses.json": {
+   "sha256": "51e3d3ebd6a0a99927314398fcf0d277512ba59663d168226e72451cf17e1122",
+   "upstream": ".tools/tests/fixtures/script_validate/responses.json"
+  },
+  ".tools/tests/test_gfx_conformance.py": {
+   "sha256": "f9beeaa322bf729c174de6af2bbaaeeb2b2c4a5e781489a3032b6ea5fcd27b5b",
+   "upstream": ".tools/tests/test_gfx_conformance.py"
+  },
+  ".tools/tests/test_report_provenance.py": {
+   "sha256": "4c6f184ff718afd7ac61827fd43effd80b14b07963e7a08b229a9a8189fbf3f5",
+   "upstream": ".tools/tests/test_report_provenance.py"
+  },
+  ".tools/tests/test_script_rules.py": {
+   "sha256": "0eb24d568688eb287de1f6e29a2673b0ef3e8d754c5cd8dda9ac4bb571436de9",
+   "upstream": ".tools/tests/test_script_rules.py"
+  },
+  ".tools/tests/test_shared_readers.py": {
+   "sha256": "995458fc866c46ad2dec719a74fe4eaf40d820a1f5c097357c205b6372ef7293",
+   "upstream": ".tools/tests/test_shared_readers.py"
+  },
+  ".tools/tests/test_validate_scripts_mcp.py": {
+   "sha256": "6aab773a5457915b00e54c1a30d9b77501d27134393a4294fbdab02680a32f5f",
+   "upstream": ".tools/tests/test_validate_scripts_mcp.py"
+  }
+ }
+}

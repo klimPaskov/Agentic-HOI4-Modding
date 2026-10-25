@@ -1,0 +1,32 @@
+{
+  "_source": "Responses recorded from hoi4.script_validate (HOI4 Agent Tools 4.1.0) on 25 October 2026, trimmed to the fields the check reads.",
+  "syntax_error": {
+    "data": {
+      "valid": false,
+      "findings": [
+        {"code": "SOURCE_UNEXPECTED_RIGHT_BRACE", "status": "error", "command": "", "line": 3, "column": 21, "message": "Unexpected closing brace", "suggestions": []}
+      ],
+      "omittedFindings": 0
+    }
+  },
+  "unresolved_and_unchecked": {
+    "data": {
+      "valid": null,
+      "findings": [
+        {"code": "SCRIPT_COMMAND_UNRESOLVED", "status": "unresolved", "command": "add_political_powerr", "line": 1, "message": "Not documented as a native command in the selected source; inspect scripted helpers or declare the scope binding", "suggestions": ["add_political_power"]},
+        {"code": "SCRIPT_ARGUMENT_BLOCK_UNCHECKED", "status": "unresolved", "command": "set_variable", "line": 3, "message": "Native argument block is not validated from prose documentation; read the cited syntax before use", "suggestions": []},
+        {"code": "SCRIPT_COMMAND_SUPPORTED", "status": "supported", "command": "add_stability", "line": 2, "message": "Command kind and declared scope match the selected documentation", "suggestions": []}
+      ],
+      "omittedFindings": 0
+    }
+  },
+  "known_mistake_false_positive": {
+    "data": {
+      "valid": false,
+      "findings": [
+        {"code": "KNOWN_MISTAKE_TEMP_VARIABLE_SCOPE_PREFIX", "status": "error", "command": "event_cluster_member_event_id", "line": 1466, "message": "constant:tensions_rising_event_log.event_id reads the temporary variable event_id through a scope", "suggestions": []}
+      ],
+      "omittedFindings": 2
+    }
+  }
+}

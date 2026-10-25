@@ -33,6 +33,8 @@ Skill maintenance rules:
 - Keep each skill focused on one reusable workflow.
 - If a requested skill rule conflicts with CLAUDE.md, report the conflict instead of silently changing the standard.
 - If a skill update affects subagent routing, mention the CLAUDE.md or subagent-skill update that the parent should make.
+- When a skill's workflow gains or changes a tool, update that skill in the same change, document the tool in `.tools/README.md` or its package README, and point the skill at the check and its limits instead of copying the tooling policy in CLAUDE.md section 4a.
+- A helper used by one skill lives in that skill's `tools/` or `scripts/` folder; never copy a tool between `.tools/`, `.claude/`, `.agents/` or another runtime folder.
 
 Skill packaging note:
 - When the parent asks for a skill output package, create both folder `SKILL.md` files and flat skill-name markdown copies in the output package.

@@ -8,7 +8,7 @@ Native Linux prerequisites, paths and client registration are in `docs/linux.md`
 
 Use this guide once before turning the template into a real instruction file. HOI4 Mod Setup fills these values and removes this section automatically.
 
-Install this template as `CLAUDE.md`. `CLAUDE.md` is the canonical instruction file: Claude Code reads it directly, and `python .tools/sync/sync_instructions.py` regenerates `AGENTS.md` from it for Codex, Cursor, Qoder, OpenCode, and DeepSeek Harness. Edit `CLAUDE.md` only, then rerun the synchronizer; never maintain `AGENTS.md` by hand.
+Install this template as `CLAUDE.md`. `CLAUDE.md` is canonical and `AGENTS.md` is generated from it (see Agent runtimes).
 
 Replace these everywhere outside examples:
 
@@ -174,11 +174,7 @@ python .tools/sync/sync_skills.py
 
 Never hand-edit a generated file; edit the canonical file and rerun the synchronizer. Agents working in another runtime edit the same canonical files and run the same synchronizers, or report that they could not. Runtime settings that are not part of a prompt, such as the Codex reasoning effort for each Claude tier, live in `.tools/sync/agent_profiles.json`.
 
-- Codex reads `AGENTS.md`, the `.agents/skills/` copy, and the generated `.codex/agents/*.toml` registered in `.codex/config.toml`. Spawn custom agents with `fork_turns="none"`.
-- Cursor and OpenCode read `AGENTS.md` through their project settings, `.claude/skills/` directly, and their generated agents.
-- Qoder reads `AGENTS.md`, the `.qoder/skills/` copy, and its generated agents.
 - Each runtime owns its MCP registration. Do not copy one runtime's approval, sandbox, absolute-path, environment, or tool-allowlist settings into another without a verified equivalent.
-- Every runtime must give a custom subagent a fully explicit, self-contained prompt with no inherited conversation context. Isolation does not remove the parent's responsibility to pass paths, accepted decisions, constraints, handoffs, and scope boundaries.
 
 The per-runtime layout, discovery rules, instruction-file precedence, and model policy are documented in `docs/runtimes.md`. Read it before adapting a runtime-specific file.
 
@@ -191,10 +187,8 @@ The per-runtime layout, discovery rules, instruction-file precedence, and model 
 
 #### DeepSeek Harness (DSH) runtime
 
-- DSH loads `CLAUDE.md` and `AGENTS.md` from the project root down to the working directory, interprets no `@path` imports, and caps the rendered instruction baseline at 65,536 bytes by default, dropping whole broader files first. Keep rarely needed detail in skills or `docs/` instead of growing this file.
-- DSH reads skills from `.agents/skills/`; create that copy with `python .tools/sync/sync_skills.py --target agents`.
 - DSH has no named-subagent registry, so write the role boundary, allowed and forbidden files, evidence format, handoff path, and any required model route into each delegated prompt, and record the route used in the handoff.
-- DSH registers MCP servers in the active profile under `$DSH_HOME/profiles/<profile>/`, not in the project. `docs/runtimes.md` has the exact row format and every other DSH detail.
+- `docs/runtimes.md` covers the DSH skill copy, `@path` handling, instruction budget and MCP profile registration.
 
 ### Subagents
 
@@ -328,7 +322,7 @@ Localisation and UI must always be kept in sync with gameplay changes.
    - When something needs icons, define them in a correct `.gfx` file. If final sprites are not part of the task, tell the user what folder to put them in and what names to use.
    - Use placeholder sprites only when the user has approved a pending placeholder or an owning skill explicitly requires a sourced placeholder. Keep the final filename stable and report the asset as pending until its approved replacement is installed.
    - Register new UI assets before requesting art so filenames do not need to change later.
-   - Static or animated decision-category pictures are eligible only for simple categories containing a description, ordinary decisions, and at most basic formatted value tables. Do not add them alongside complex UI, meters, extra custom controls, rich interactive panels, or other animations. Ordinary decision-list buttons and basic tables remain allowed; an animated picture is a simple-category alternative, needs a static fallback, and must not accompany existing animated GUI. Follow `hoi4-decisions-missions` for the complete eligibility and presentation contract.
+   - Static or animated decision-category pictures are allowed only for simple categories (a description, ordinary decisions, basic value tables) and an animated one needs a static fallback; follow the complete eligibility contract in `hoi4-decisions-missions`.
 7. A flag trigger such as `has_country_flag` inside a player-visible requirement block (`available`, `allow`, `bypass`, and similar) uses the flag name as its tooltip localisation key, so an unlocalised flag shows its raw identifier to the player. Give a player-meaningful flag a localisation key, or wrap implementation-only checks in `hidden_trigger` and state the real requirement with `custom_trigger_tooltip`.
 
 ## 3. Naming and Prefix Rules
@@ -366,11 +360,24 @@ When implementing any new mechanic, follow this checklist:
 20. When updating content (for example reworking an event), write as if the feature has always existed. Do not use meta wording like “now it is,” “now it has been reworked,” “newly added,” or similar update-history phrasing.
 21. Respect the writing style.
 22. Markdown prose must not be hard-wrapped in the middle of a sentence or clause. Keep each prose sentence on one physical line and preserve deliberate Markdown structure such as paragraphs, lists, tables, block quotes, and code blocks.
-23. Keep maintained, reusable tooling in `.tools/`; put one-off repairs, migrations, job-specific scripts, temporary checks, and their outputs in an ignored `.tmp/` folder, grouped by task. Promote a helper into `.tools/` only for demonstrated recurring use or a required shared entry point, with documented inputs, outputs, callers, and checks; adding command-line arguments alone does not make a one-off tool reusable.
-24. Before adding a skill, document, report, wrapper, or helper, check its existing owner and extend that source where it fits. Keep one current task report, avoid duplicate instruction copies outside the established synchronizers, and review new files for unnecessary scaffolding before completion. Control bloat by removing duplication and keeping temporary work out of maintained paths, not by deleting specific requirements or shortening them into generic advice.
 
 Follow these rules and your changes will be easier to review, safer to merge and more consistent with the rest of the project.
 If an indispensable design choice or input is missing, finish independent work and ask a focused question. An unavailable check alone calls for source review and useful local checks, not another design request.
+
+## 4a. Deterministic Tools and Checks
+
+Mechanical questions get mechanical answers. Before reasoning through a question that a file can answer (does this key, sprite, texture or flag exist, is this size or frame count right, is this output stale), run the existing check.
+
+1. Look first. `.tools/README.md` indexes every maintained tool and the question it answers, and skills name the checks for their workflows. Run `python -B .tools/check.py quick` on the files you changed before review, and `python -B .tools/check.py full` at the end of a large task. Read a check's documented limits before relying on its result.
+2. Add or improve a tool only for a recurring task with an explicit rule, known inputs and an independently checkable result. Extend the owning tool before creating a new one, and give each new rule one valid and one invalid fixture.
+3. Document every maintained tool in `.tools/README.md` or its package README: purpose, command, inputs, outputs, dependencies, callers, the rule or reference it enforces, and its limits. Checks are read-only by default; fixers are separate and explicit.
+4. Place shared tools under `.tools/` with one canonical implementation in `.tools/lib/`, and helpers used by one skill in that skill's `tools/` or `scripts/` folder. Never copy a tool between `.tools/`, `.claude/`, `.agents/` or another runtime folder.
+5. When a reusable workflow gains or changes a tool, update the skill that owns the workflow in the same change.
+6. Keep one-off repairs, migrations, job-specific scripts, temporary checks and their outputs in ignored `.tmp/<task>/`. Retain maintained regression tests that protect a current contract; a filename or date does not make a test disposable. Promote a helper only for demonstrated recurring use or a required shared entry point; command-line arguments alone do not make a one-off tool reusable.
+7. Before adding a skill, document, report, wrapper or helper, check its existing owner and extend that source. Keep one current task report, avoid duplicate instruction copies outside the established synchronizers, review new files for unnecessary scaffolding before completion, and control bloat by removing duplication and keeping temporary work out of maintained paths, not by deleting specific requirements or shortening them into generic advice.
+8. Tools never replace design, gameplay reasoning, writing, art direction or review. Do not generate focus trees, events, decisions, ideas, localisation prose or lore with scripts, do not spend a goal on scripts, report generators or bulk-generation helpers while the content stays shallow or incomplete, and do not count generated volume as progress.
+9. A passing check proves only the properties it checks. A size or alpha check does not establish visual quality, and a reference check does not establish gameplay behaviour; report it that way.
+10. Never weaken a check, add a suppression, lower a threshold, edit a baseline or change a requirement to make validation pass. Fix the finding, or report it with its reason and get the rule owner's decision.
 
 ## 5. Completion Proof and Simplification Reporting
 
@@ -403,8 +410,6 @@ Do not claim completion when:
 
 Balance checks are implementation work, not optional polish. If the spec or user asks for balance validation, the agent must inspect the relevant variables, scripted effects, decisions, mission outcomes, trigger conditions, AI weights, and scenario behavior. A vague statement that balance was adjusted is not enough.
 When a tool cannot analyze the mechanic, calculate representative cases from the actual scripted values and conditions, distinguish AI scores from probabilities, and state important assumptions.
-
-Do not replace real implementation work with tooling work. Do not spend the goal creating Python scripts, report generators, or bulk-generation helpers while leaving the actual content shallow or incomplete. Small scripts may be used for mechanical audits such as checking duplicate ids, or finding missing localisation keys, but they are not a substitute for implementing and validating the content.
 
 Do not bulk-generate large focus trees, country packages, decisions, localisation, or validation reports and call them complete. Generated or scripted drafts are acceptable only when every result is manually reviewed, customized to the country or route, wired into the mod, localized, given AI behavior, documented, and checked against the spec.
 

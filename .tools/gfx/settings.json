@@ -1,0 +1,5 @@
+{
+ "_about": "Repository values for gfx.py, which is kept byte-identical with its upstream copy (scripts/shared_tools.json). asset_tools is the folder holding convert_to_dds.py, process_report_event_image.py and their project_settings.json; shared_registry_prefix groups `.gfx` registries whose file name starts with it under `shared_<name>` on contact sheets (empty: no grouping).",
+ "asset_tools": ".claude/skills/hoi4-feature-assets/tools",
+ "shared_registry_prefix": ""
+}

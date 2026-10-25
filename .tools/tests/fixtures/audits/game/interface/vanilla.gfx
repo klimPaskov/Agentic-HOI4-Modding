@@ -1,0 +1,10 @@
+spriteTypes = {
+	spriteType = {
+		name = "GFX_vanilla_ok"
+		texturefile = "gfx/interface/vanilla_ok.dds"
+	}
+	spriteType = {
+		name = "GFX_vanilla_broken"
+		texturefile = "gfx/interface/vanilla_broken.dds"
+	}
+}

@@ -1,0 +1,9 @@
+guiTypes = {
+	containerWindowType = {
+		name = "fixture_window"
+		iconType = {
+			name = "fixture_icon"
+			spriteType = "GFX_vanilla_ok"
+		}
+	}
+}

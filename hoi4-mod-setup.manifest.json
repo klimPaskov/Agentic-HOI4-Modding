@@ -115,8 +115,8 @@
     },
     {
       "id": "runtime.agent_sync",
-      "display_name": "Runtime synchronizers and project tools",
-      "description": "Install shared runtime synchronizers and the optional, user-invoked ChatGPT source packaging tool.",
+      "display_name": "Runtime synchronizers, repository checks and project tools",
+      "description": "Install shared runtime synchronizers, the read-only repository checks (check.py, its audits, GFX conformance and tooling quality), and the optional, user-invoked ChatGPT source packaging tool.",
       "category": "script",
       "optional": false,
       "platforms": [
@@ -131,7 +131,20 @@
           "sync/*.json",
           "README.md",
           "package_chatgpt_project_sources.py",
-          "package_chatgpt_project_sources.bat"
+          "package_chatgpt_project_sources.bat",
+          "check.py",
+          "quality.py",
+          "quality_baseline.json",
+          "requirements-dev.txt",
+          "ruff.toml",
+          "lib/*.py",
+          "audits/*.py",
+          "gfx/*.py",
+          "gfx/*.json",
+          "gfx/*.md",
+          "gfx/*.txt",
+          "tests/*.py",
+          "tests/fixtures/**"
         ],
         "exclude": [
           "**/__pycache__/**",
@@ -158,6 +171,12 @@
           "severity": "block",
           "kind": "exists",
           "target": ".tools/sync/agent_sync_common.py"
+        },
+        {
+          "id": "runtime.agent_sync.checks_exist",
+          "severity": "block",
+          "kind": "exists",
+          "target": ".tools/check.py"
         }
       ],
       "update": {
@@ -170,7 +189,10 @@
         "subagent generation",
         "skill copies",
         "drift checking",
-        "guidance size ceiling"
+        "guidance size ceiling",
+        "repository checks",
+        "GFX conformance",
+        "tooling quality ratchet"
       ],
       "expected_files": [
         {

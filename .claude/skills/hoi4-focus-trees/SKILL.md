@@ -890,6 +890,8 @@ Every patch must write a handoff with changed files, changed focus ids, route be
 
 ## 16. Documentation and audit
 
+Before the focus audit, run `python -B .tools/check.py quick` on the changed files and fix every error it lists; it checks localisation keys, icon and sprite wiring, script syntax and MCP script validation, not route logic or layout, which stay with `hoi4.focus_inspect` and the auditor.
+
 For large focus-tree work, update documentation.
 
 Include:

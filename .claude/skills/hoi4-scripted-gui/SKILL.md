@@ -87,6 +87,8 @@ Trace each action's source availability trigger, effect-time rechecks, and side 
 
 ## Handoff and completion
 
+Run `python -B .tools/check.py quick` on the changed `.gui`, `.gfx`, scripted-GUI and texture files; it reports missing textures and sprites, uneven frame strips (`gfx.py sprites`) and broken runtime binaries, not layout, which stays with `hoi4.gui_render` and visual review.
+
 Return exact changed files and identifiers, source precedents, reference images and acceptance basis, image-to-element and background mapping, justified native adaptations, asset and state coverage, and matched MCP before and after artifacts with scenario and source identities. Include intermediate MCP preview evidence and corrections, completed visual-review findings, content and action budget assessment, and the decision owner's action-integrity evidence where gameplay controls exist.
 
 List blockers, unresolved diagnostics, missing assets, unavailable states, remaining parent integration, and every simplification explicitly. If none, say so with the evidence. Do not claim a complete GUI from source checks, a successful rewrite, or a single normal-state screenshot. The parent reviews final integration. Live-game validation belongs to the user under `AGENTS.md` and is not replaced by MCP evidence.

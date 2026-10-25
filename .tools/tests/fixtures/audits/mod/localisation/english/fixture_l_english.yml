@@ -1,0 +1,9 @@
+﻿l_english:
+ fixture.1.t: "Fixture title"
+ fixture.1.d: "Fixture description"
+ fixture.1.a: "Fixture option"
+ fixture_category: "Fixture category"
+ fixture_category_desc: "Fixture category description"
+ fixture_decision: "Fixture decision"
+ fixture_decision_desc: "Fixture decision description"
+ fixture_flag: "Fixture flag is set"

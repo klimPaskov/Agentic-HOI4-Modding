@@ -1,0 +1,10 @@
+# Invalid: each marked line breaks one CLAUDE.md syntax rule.
+example_effect = {
+	if = {
+		limit = {
+			check_variable = { my_var >= 3 }
+			check_variable = { my_var <= 9 }
+		}
+		set_variable = { my_offset = -my_var }
+	}
+}

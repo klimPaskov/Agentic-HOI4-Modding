@@ -9,7 +9,7 @@ Release from the Claude-first source repository. Keep package code, generated ru
 3. Generate runtime projections and run all source checks with Python 3.13:
 
    ```powershell
-   python -m pip install "jsonschema==4.25.1" "Pillow==12.2.0" "openpyxl==3.1.5"
+   python -m pip install "jsonschema==4.25.1" "Pillow==12.2.0" "openpyxl==3.1.5" "numpy==2.2.6" "scipy==1.15.3" "uv==0.7.8"
    python .tools/sync/sync_agents.py
    python .tools/sync/sync_instructions.py
    python .tools/sync/sync_skills.py
@@ -17,6 +17,10 @@ Release from the Claude-first source repository. Keep package code, generated ru
    python scripts/test_agent_sync_contract.py
    python -m unittest discover -s .claude/skills/hoi4-feature-assets/tools/tests -p "test_*.py"
    python -m unittest discover -s .claude/skills/xlsx/tests -p "test_*.py"
+   python -m unittest discover -s .tools/tests -p "test_*.py"
+   python -m unittest discover -s .tools/gfx -p "test_*.py"
+   python scripts/check_shared_tools.py
+   python .tools/check.py full --only script-rules gfx guidance generators quality
    python .tools/sync/sync_agents.py --check
    python .tools/sync/sync_agents.py --verify
    python .tools/sync/sync_instructions.py --check
