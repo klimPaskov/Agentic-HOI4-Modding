@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "b9fa6ea4107c7ea59084fccbd132503025d0c838",
+  "generated_for_revision": "8a398f8ad23dae81e9f3cb1310b78386cb5382b2",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -198,8 +198,8 @@
       "expected_files": [
         {
           "path": ".tools/README.md",
-          "sha256": "8f9cc60527ca99b503573aad33a9c3d316f31a2dd5deac24ed1cc4cdddaaa003",
-          "size": 11578
+          "sha256": "70bdea1db38b443f8f23136af2f7c52cbef85a3bfff97cc08f56745c9809fb77",
+          "size": 12779
         },
         {
           "path": ".tools/audits/audit_asset_wiring_static.py",
@@ -208,8 +208,8 @@
         },
         {
           "path": ".tools/audits/audit_localisation_static.py",
-          "sha256": "4a7d0568d484f3998395cc98f61fdec55c0077b7a25ba684e50e487b52d8b9db",
-          "size": 71546
+          "sha256": "37c3683836f468d4c2888fdb57fdf3e3e4de5fe67491c2893d756c1fc986ff5f",
+          "size": 71922
         },
         {
           "path": ".tools/audits/audit_script_rules.py",
@@ -223,8 +223,8 @@
         },
         {
           "path": ".tools/check.py",
-          "sha256": "a1ae82c41cc62a6fd1df224e70fb2e08fc2936ff8196dfa7734c9dd0913e490c",
-          "size": 15006
+          "sha256": "87c6ef53721d303629c8149e32e1cb05181042728efea8abf874fd306d950dc2",
+          "size": 16385
         },
         {
           "path": ".tools/gfx/README.md",
@@ -267,9 +267,14 @@
           "size": 3475
         },
         {
+          "path": ".tools/lib/doctor.py",
+          "sha256": "b740ae3abad0d4b9fb6c95a3acbbe9ad62330935a13578ac6b91daecb63f719b",
+          "size": 4739
+        },
+        {
           "path": ".tools/lib/game.py",
-          "sha256": "1a2e4a0538a84df8fb13c48c0e190d8fd204fb45af58b346135f7d3db00c427a",
-          "size": 1693
+          "sha256": "37ed5e10a111827dc114a7c4c69366d8679225096da8ea685b312bb0266b6d9e",
+          "size": 4841
         },
         {
           "path": ".tools/lib/localisation.py",
@@ -298,8 +303,8 @@
         },
         {
           "path": ".tools/quality.py",
-          "sha256": "f9dc296830c629f7494951060cc580bc08f53ad79e729774866f4a2c5235e042",
-          "size": 9736
+          "sha256": "0d11a5b632ede50cac693709d738e49cb969a662051951aa99a9d0ac3d2b71e8",
+          "size": 11429
         },
         {
           "path": ".tools/quality_baseline.json",
@@ -310,6 +315,11 @@
           "path": ".tools/requirements-dev.txt",
           "sha256": "19153feb2e60ca904397df72958a0100713cf5b89c64ff4ecbb59be84f34f24f",
           "size": 294
+        },
+        {
+          "path": ".tools/requirements.txt",
+          "sha256": "c6aef37f98c0944ce6e82f5a431611b87b0855489a684a26976a1eaafec4f524",
+          "size": 271
         },
         {
           "path": ".tools/ruff.toml",
@@ -443,8 +453,13 @@
         },
         {
           "path": ".tools/tests/test_audits.py",
-          "sha256": "c7710a4c0cd06af31be9c2ad63c774cdbb2d5349fefe5c81ad4ea2d95b2f2e4a",
-          "size": 7059
+          "sha256": "040cc1c7b4d28cfa9e6613b9fbf23c5417074e53b877656520038bc2d18fcb49",
+          "size": 7878
+        },
+        {
+          "path": ".tools/tests/test_game_dir.py",
+          "sha256": "65fe662f2016260166f2bea3f5ab69f5d1040ac3212fb722565bff1673fa2a2c",
+          "size": 2940
         },
         {
           "path": ".tools/tests/test_gfx_conformance.py",
