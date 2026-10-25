@@ -28,3 +28,7 @@
 
 # Claude Code project definitions are tracked; personal overrides are not.
 /.claude/settings.local.json
+
+# Machine-local settings written by HOI4 Mod Setup or `check.py doctor --save-game-dir`, and task scratch space.
+/.tools/local_settings.json
+/.tmp/

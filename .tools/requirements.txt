@@ -1,0 +1,5 @@
+# Python packages the repository checks and asset tools import. Install them once:
+#   python -m pip install -r .tools/requirements.txt
+# Lint and type-check tools for quality.py are separate (requirements-dev.txt, run through uvx).
+-r gfx/requirements.txt
+openpyxl>=3.1

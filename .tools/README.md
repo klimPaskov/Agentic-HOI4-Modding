@@ -15,6 +15,17 @@ Before retiring a tool, search its filename, module name, generated headers, and
 
 `check.py` is the single read-only entry point for mechanical questions about a mod: run `python -B .tools/check.py quick` on the files you changed before review and `python -B .tools/check.py full` at the end of a large task. `quick` takes the changed paths from Git (or `--paths`), runs only the checks those paths can affect and reports only findings in them; `full` runs every check over the whole repository. Both print errors as `path:line: level RULE message` and one summary line per check, and `--json <file>` writes every finding, including review candidates. Exit status: 0 no errors, 1 errors, 2 a check could not run.
 
+First run on a machine:
+
+```powershell
+python -m pip install -r .tools/requirements.txt          # Pillow, numpy, scipy, openpyxl
+python -B .tools/check.py doctor                          # what is still missing, and the fix for each item
+python -B .tools/check.py doctor --save-game-dir "<game folder>"   # only if the game was not found
+python -B .tools/quality.py --adopt                       # once, if the mod already had its own Python tools
+```
+
+HOI4 Mod Setup performs these steps when it installs the package. `doctor` exits 0 when everything a `full` run needs is present. Optional items (`uv` for the `quality` check, the HOI4 Agent Tools server for `script-validate`, the `.gitignore` entries) only cause their own check to be skipped with a notice. The game folder comes from `HOI4_GAME_DIR`, the machine-local `.tools/local_settings.json` (never committed), or the Steam libraries on the machine, in that order. `--adopt` records the findings of Python files that have no quality-baseline entries yet, so a mod's pre-existing tools start from a passing run. Files already in the baseline stay ratcheted, and new code must meet the limits instead of being adopted.
+
 Every check follows `lib/report.py`: an `error` is an exact rule and fails the run, a `warning` is a heuristic that is printed but never fails, and a `review` item is a candidate list for a person. Each tool also runs alone with `--paths`, `--paths-from`, `--fail-on` and `--json`.
 
 | Check | Tool | Question it answers | Needs the game |
@@ -29,7 +40,7 @@ Every check follows `lib/report.py`: an `error` is an exact rule and fails the r
 | `quality` | `quality.py` | Ruff defect rules, the complexity ratchet in `quality_baseline.json` and `mypy --strict` for the strict tooling files; skipped with a notice without `uv`. | no |
 | `script-validate` | `audits/validate_scripts_mcp.py` | Does `hoi4.script_validate` accept each changed script file? Quick only; skipped with a notice when the HOI4 Agent Tools server cannot start. Unresolved commands are warnings and unchecked argument blocks review items, never passes. | no |
 
-Tools that read vanilla files take the game folder from `HOI4_GAME_DIR` and fall back to the default Steam path (`lib/game.py`); without the game they exit 2 and name the variable. `lib/` holds the one shared implementation of the finding contract, the script and localisation readers, the game-folder lookup and the MCP client; tools import it instead of copying it.
+Tools that read vanilla files take the game folder from `HOI4_GAME_DIR` and fall back to the default Steam path (`lib/game.py`); without the game they exit 2 and name the variable. `lib/` holds the one shared implementation of the finding contract, the script and localisation readers, the game-folder lookup, the `doctor` report and the MCP client; tools import it instead of copying it.
 
 A passing check proves only the properties it checks: a size or alpha check does not establish visual quality, and a reference check does not establish gameplay behaviour. Never weaken a check, add a suppression, lower a threshold or edit a baseline to make validation pass. `quality.py --write-baseline` records the first baseline or improvements only and refuses while errors remain.
 

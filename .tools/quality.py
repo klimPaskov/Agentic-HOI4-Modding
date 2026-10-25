@@ -16,11 +16,15 @@ Strict files (`STRICT_FILES`) must stay free of defect and type findings; everyt
 `.tools/` and the skill helpers is held at or below its baseline. `--write-baseline` records
 the current findings, and refuses while any error is reported, so it can only record
 improvements or the first baseline. A suppression needs a `noqa` comment with its reason.
+`--adopt` adds the findings of files that have no baseline entries yet (for example a mod's own
+Python tools when this tooling is first installed) and leaves every recorded file's limits alone;
+strict defects and type errors still block it. New code is not adopted: fix it instead.
 
 Usage:
 	python -B .tools/quality.py                       # whole tooling tree
 	python -B .tools/quality.py --paths .tools/check.py .tools/gfx/gfx.py
 	python -B .tools/quality.py --write-baseline      # after reducing findings
+	python -B .tools/quality.py --adopt               # once, for a mod's pre-existing tool files
 
 Exit status: 0 no errors, 1 errors, 2 when uv, ruff or mypy cannot run.
 """
@@ -151,15 +155,40 @@ def evaluate(rows: List[Dict[str, Any]], baseline: Dict[str, Dict[str, int]]) ->
 	return findings, measured
 
 
+def recordable(measured: Dict[str, Dict[str, int]]) -> Dict[str, Dict[str, int]]:
+	"""Keep the baseline entries a file may carry: everything for ordinary files, ratchet codes for strict files."""
+	return {path: {k: v for k, v in sorted(entries.items()) if not is_strict(path) or k.split(" ", 1)[0] in RATCHET_CODES}
+		for path, entries in sorted(measured.items())
+		if not is_strict(path) or any(key.split(" ", 1)[0] in RATCHET_CODES for key in entries)}
+
+
+def adopt(findings: List[Finding], measured: Dict[str, Dict[str, int]], baseline: Dict[str, Dict[str, int]]) -> int:
+	"""Record the findings of files the baseline has never seen; refuse strict defects and type errors."""
+	new = {path for path in measured if path not in baseline}
+	blocking = [f for f in findings if f.level == "error" and f.path in new
+		and (f.rule == "QUALITY-TYPE" or (is_strict(f.path) and f.rule != "QUALITY-COMPLEXITY"))]
+	if blocking:
+		print_findings(CHECK, blocking)
+		print(f"{CHECK}: nothing adopted; fix the errors above first")
+		return 1
+	added = recordable({path: measured[path] for path in new})
+	merged = {**baseline, **added}
+	BASELINE.write_text(json.dumps({"ruff": RUFF, "entries": dict(sorted(merged.items()))}, indent=1, sort_keys=True) + "\n",
+		encoding="utf-8")
+	print(f"{CHECK}: adopted {sum(len(v) for v in added.values())} entries from {len(added)} file(s) into {relative(BASELINE)}")
+	return 0
+
+
 def main() -> int:
 	parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
 	parser.add_argument("--json", type=Path, help="also write the findings as JSON")
 	parser.add_argument("--write-baseline", action="store_true", help="record the current findings; refused while errors remain")
+	parser.add_argument("--adopt", action="store_true", help="record the findings of files the baseline has never seen")
 	add_arguments(parser)
 	arguments = parser.parse_args()
 	paths = requested_paths(arguments)
-	if arguments.write_baseline and paths:
-		parser.error("--write-baseline needs the whole tree; omit --paths")
+	if (arguments.write_baseline or arguments.adopt) and paths:
+		parser.error("--write-baseline and --adopt need the whole tree; omit --paths")
 	baseline: Dict[str, Dict[str, int]] = json.loads(BASELINE.read_text(encoding="utf-8"))["entries"] if BASELINE.is_file() else {}
 	baseline = {path: {normalise_key(key): value for key, value in entries.items()} for path, entries in baseline.items()}
 	try:
@@ -172,6 +201,8 @@ def main() -> int:
 	if paths:
 		findings = [f for f in findings if PathFilter(paths).matches(f.path)]
 	findings.sort(key=lambda f: (f.path, f.line, f.rule, f.message))
+	if arguments.adopt:
+		return adopt(findings, measured, baseline)
 	if arguments.write_baseline:
 		# The first baseline records every older finding, including strict files' complex functions;
 		# after that, and always for strict defects and type errors, an error blocks the write.
@@ -181,10 +212,7 @@ def main() -> int:
 			print_findings(CHECK, blocking)
 			print(f"{CHECK}: baseline not written; fix the errors above first")
 			return 1
-		recorded = {path: entries for path, entries in sorted(measured.items()) if not is_strict(path) or
-			any(key.split(" ", 1)[0] in RATCHET_CODES for key in entries)}
-		recorded = {path: {k: v for k, v in sorted(entries.items()) if not is_strict(path) or k.split(" ", 1)[0] in RATCHET_CODES}
-			for path, entries in recorded.items()}
+		recorded = recordable(measured)
 		BASELINE.write_text(json.dumps({"ruff": RUFF, "entries": recorded}, indent=1, sort_keys=True) + "\n", encoding="utf-8")
 		print(f"{CHECK}: wrote {relative(BASELINE)} with {sum(len(v) for v in recorded.values())} entries")
 		return 0

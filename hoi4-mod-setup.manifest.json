@@ -135,6 +135,7 @@
           "check.py",
           "quality.py",
           "quality_baseline.json",
+          "requirements.txt",
           "requirements-dev.txt",
           "ruff.toml",
           "lib/*.py",
