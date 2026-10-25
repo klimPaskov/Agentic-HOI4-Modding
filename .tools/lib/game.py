@@ -7,7 +7,7 @@ The game folder is taken from, in order:
    writes it, and `python -B .tools/check.py doctor --save-game-dir <folder>` can write it);
 3. the Steam libraries found on this machine (default Steam folders, the Windows registry and each
    library listed in `steamapps/libraryfolders.vdf`);
-4. the default Windows Steam path.
+4. the default Steam path for this platform.
 
 A tool that cannot work without the game calls `require_game_dir()` in `main()` and returns its
 result, so a missing installation exits 2 with a message that says how to set the folder instead of
@@ -27,7 +27,13 @@ from pathlib import Path
 from typing import Iterator, List, Optional
 
 ENVIRONMENT_VARIABLE = "HOI4_GAME_DIR"
-DEFAULT_GAME_DIR = Path("C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV")
+# The default Steam location on this platform, reported when no other source names a game folder.
+if sys.platform == "win32":
+	DEFAULT_GAME_DIR = Path("C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV")
+elif sys.platform == "darwin":
+	DEFAULT_GAME_DIR = Path.home() / "Library/Application Support/Steam/steamapps/common/Hearts of Iron IV"
+else:
+	DEFAULT_GAME_DIR = Path.home() / ".local/share/Steam/steamapps/common/Hearts of Iron IV"
 LOCAL_SETTINGS = Path(__file__).resolve().parents[1] / "local_settings.json"
 SETTINGS_KEY = "hoi4_game_dir"
 GAME_FOLDER = Path("steamapps") / "common" / "Hearts of Iron IV"

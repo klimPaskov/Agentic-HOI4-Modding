@@ -54,11 +54,11 @@
    "upstream": ".tools/lib/clausewitz.py"
   },
   ".tools/lib/doctor.py": {
-   "sha256": "b740ae3abad0d4b9fb6c95a3acbbe9ad62330935a13578ac6b91daecb63f719b",
+   "sha256": "ebca1a20c9f848df95a7ba147843d25f248a1dfaff9f309246d5eef6af7cb919",
    "upstream": ".tools/lib/doctor.py"
   },
   ".tools/lib/game.py": {
-   "sha256": "37ed5e10a111827dc114a7c4c69366d8679225096da8ea685b312bb0266b6d9e",
+   "sha256": "7bd0702e29916f211f3aa443c82550aa9310f34333c33586d16a247709dcf8d4",
    "upstream": ".tools/lib/game.py"
   },
   ".tools/lib/localisation.py": {
@@ -72,6 +72,10 @@
   ".tools/lib/report.py": {
    "sha256": "208e3f7bf1ad2d6beea16e8fd1cc11fdd73e738735fdc7bb333e42fd63bc037b",
    "upstream": ".tools/lib/report.py"
+  },
+  ".tools/lib/setup.py": {
+   "sha256": "6733080bbccfb1378139f5742dd87114b5e4dc6e7c5effbab6a670ad8a1c2383",
+   "upstream": ".tools/lib/setup.py"
   },
   ".tools/requirements-dev.txt": {
    "sha256": "19153feb2e60ca904397df72958a0100713cf5b89c64ff4ecbb59be84f34f24f",
@@ -112,6 +116,10 @@
   ".tools/tests/test_script_rules.py": {
    "sha256": "0eb24d568688eb287de1f6e29a2673b0ef3e8d754c5cd8dda9ac4bb571436de9",
    "upstream": ".tools/tests/test_script_rules.py"
+  },
+  ".tools/tests/test_setup.py": {
+   "sha256": "bf1b4a944c53755ea76835c16d2e6cdbd63aef214f685fad7075877bd51a9254",
+   "upstream": ".tools/tests/test_setup.py"
   },
   ".tools/tests/test_shared_readers.py": {
    "sha256": "995458fc866c46ad2dec719a74fe4eaf40d820a1f5c097357c205b6372ef7293",

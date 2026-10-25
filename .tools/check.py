@@ -6,6 +6,7 @@
 	python -B .tools/check.py full                       # whole repository
 	python -B .tools/check.py full --json .tmp/checks/full.json
 	python -B .tools/check.py doctor                     # what the checks need on this machine, and how to fix it
+	python -B .tools/check.py setup                      # install what is missing, run the synchronizers, then doctor
 
 `quick` runs only the checks whose inputs the changed paths can affect and reports only
 findings located in those paths. `full` runs every check over the whole repository. Both print
@@ -50,7 +51,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Sequence, Set, Tuple
 
-from lib import doctor
+from lib import doctor, setup
 from lib.report import LEVELS, Finding, format_finding, relative, to_json
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -268,21 +269,27 @@ def print_report(checks: Sequence[Check], outcomes: Sequence[Tuple[List[Finding]
 	for failure in failures:
 		print(failure)
 	if failures:
-		print("Run `python -B .tools/check.py doctor` to see what this machine is missing and how to fix it.")
+		print("Run `python -B .tools/check.py setup` to install and configure what this machine is missing (`doctor` only reports it).")
 
 
 def main() -> int:
+	relaunched = setup.relaunch_in_project_venv(REPO_ROOT, sys.argv)
+	if relaunched is not None:
+		return relaunched
 	parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
-	parser.add_argument("mode", choices=("quick", "full", "doctor"))
+	parser.add_argument("mode", choices=("quick", "full", "doctor", "setup"))
 	parser.add_argument("--paths", nargs="+", metavar="PATH", help="quick: check these paths instead of the git changes")
 	parser.add_argument("--only", nargs="+", choices=[check.name for check in CHECKS], help="run only these checks")
 	parser.add_argument("--json", type=Path, help="write every finding, including review candidates, to this file")
 	parser.add_argument("--verbose", action="store_true", help="also print warnings in full mode")
-	parser.add_argument("--save-game-dir", type=Path, metavar="FOLDER", help="doctor: record this machine's game folder")
+	parser.add_argument("--save-game-dir", type=Path, metavar="FOLDER", help="doctor, setup: record this machine's game folder")
+	parser.add_argument("--no-install", action="store_true", help="setup: report missing Python packages instead of installing them")
 	arguments = parser.parse_args()
 
 	if arguments.mode == "doctor":
 		return doctor.run(REPO_ROOT, (), arguments.save_game_dir)
+	if arguments.mode == "setup":
+		return setup.run(REPO_ROOT, arguments.save_game_dir, not arguments.no_install, list(()))
 
 	if arguments.mode == "full" and arguments.paths:
 		parser.error("--paths applies to quick mode only")

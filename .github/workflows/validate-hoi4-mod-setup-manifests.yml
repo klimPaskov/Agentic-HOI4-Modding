@@ -69,6 +69,10 @@ jobs:
       - run: python scripts/check_shared_tools.py
       # Checks that need no installed game; ruff and mypy run inside `quality`.
       - run: python .tools/check.py full --only script-rules gfx guidance generators quality
+      # The one-command mod preparation must work on a fresh Linux checkout (writes only machine-local files).
+      - run: |
+          mkdir -p "$RUNNER_TEMP/hoi4/common" "$RUNNER_TEMP/hoi4/localisation"
+          python .tools/check.py setup --save-game-dir "$RUNNER_TEMP/hoi4"
       - run: python .tools/sync/sync_agents.py --check
       - run: python .tools/sync/sync_instructions.py --check
       - run: python .tools/sync/check_guidance_size.py

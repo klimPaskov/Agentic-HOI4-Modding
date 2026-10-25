@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "405155a25d851644cfd214596a8fde80a168fae7",
+  "generated_for_revision": "1bdbf3c63028d1a9dee13662736fcd18bf6a3694",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -198,8 +198,8 @@
       "expected_files": [
         {
           "path": ".tools/README.md",
-          "sha256": "70bdea1db38b443f8f23136af2f7c52cbef85a3bfff97cc08f56745c9809fb77",
-          "size": 12779
+          "sha256": "2c4bf8434911a8202f88efe7407b55e92cfce9b8216962e65713448122b511c2",
+          "size": 13563
         },
         {
           "path": ".tools/audits/audit_asset_wiring_static.py",
@@ -208,8 +208,8 @@
         },
         {
           "path": ".tools/audits/audit_localisation_static.py",
-          "sha256": "37c3683836f468d4c2888fdb57fdf3e3e4de5fe67491c2893d756c1fc986ff5f",
-          "size": 71922
+          "sha256": "908d48b460566767d83d776a9393fd7fa7e1b739b7cd7b22fd55dad261bcc650",
+          "size": 72383
         },
         {
           "path": ".tools/audits/audit_script_rules.py",
@@ -223,8 +223,8 @@
         },
         {
           "path": ".tools/check.py",
-          "sha256": "87c6ef53721d303629c8149e32e1cb05181042728efea8abf874fd306d950dc2",
-          "size": 16385
+          "sha256": "f57776b6aa5adf7733494cd22f732087d0a02d5b7447af0906792e2a0007af5a",
+          "size": 16917
         },
         {
           "path": ".tools/gfx/README.md",
@@ -268,13 +268,13 @@
         },
         {
           "path": ".tools/lib/doctor.py",
-          "sha256": "b740ae3abad0d4b9fb6c95a3acbbe9ad62330935a13578ac6b91daecb63f719b",
-          "size": 4739
+          "sha256": "ebca1a20c9f848df95a7ba147843d25f248a1dfaff9f309246d5eef6af7cb919",
+          "size": 6912
         },
         {
           "path": ".tools/lib/game.py",
-          "sha256": "37ed5e10a111827dc114a7c4c69366d8679225096da8ea685b312bb0266b6d9e",
-          "size": 4841
+          "sha256": "7bd0702e29916f211f3aa443c82550aa9310f34333c33586d16a247709dcf8d4",
+          "size": 5210
         },
         {
           "path": ".tools/lib/localisation.py",
@@ -290,6 +290,11 @@
           "path": ".tools/lib/report.py",
           "sha256": "208e3f7bf1ad2d6beea16e8fd1cc11fdd73e738735fdc7bb333e42fd63bc037b",
           "size": 5475
+        },
+        {
+          "path": ".tools/lib/setup.py",
+          "sha256": "6733080bbccfb1378139f5742dd87114b5e4dc6e7c5effbab6a670ad8a1c2383",
+          "size": 7500
         },
         {
           "path": ".tools/package_chatgpt_project_sources.bat",
@@ -453,8 +458,8 @@
         },
         {
           "path": ".tools/tests/test_audits.py",
-          "sha256": "040cc1c7b4d28cfa9e6613b9fbf23c5417074e53b877656520038bc2d18fcb49",
-          "size": 7878
+          "sha256": "88d37957e63bf8279f9906565f7f794cfd1818903ba610d6a69e3612685a4d26",
+          "size": 8380
         },
         {
           "path": ".tools/tests/test_game_dir.py",
@@ -475,6 +480,11 @@
           "path": ".tools/tests/test_script_rules.py",
           "sha256": "0eb24d568688eb287de1f6e29a2673b0ef3e8d754c5cd8dda9ac4bb571436de9",
           "size": 1484
+        },
+        {
+          "path": ".tools/tests/test_setup.py",
+          "sha256": "bf1b4a944c53755ea76835c16d2e6cdbd63aef214f685fad7075877bd51a9254",
+          "size": 4137
         },
         {
           "path": ".tools/tests/test_shared_readers.py",
