@@ -659,8 +659,8 @@ REQUIREMENT_BLOCKS = {"available", "bypass"}
 UNDISPLAYED_BLOCKS = {"hidden_trigger", "custom_trigger_tooltip"}
 # Names followed by `[` are assembled at runtime by meta effects and are skipped.
 FLAG_CHECK = r"has_(?:country|state|global)_flag\s*=\s*(?:\{[^}]*?flag\s*=\s*([A-Za-z0-9_@.]+)(?![A-Za-z0-9_@.\[])[^}]*\}|([A-Za-z0-9_@.]+)(?![A-Za-z0-9_@.\[]))"
-# A single-line `check_variable = { ... }` is consumed through its closing brace; a multi-line one is
-# read as an ordinary block, so its variable is not checked.
+# A single-line `check_variable = { ... }` is consumed through its closing brace. A multi-line one opens
+# a block, and its `var = name` or `name <op> value` line names the variable (MULTILINE_VARIABLE).
 VARIABLE_CHECK = (
 	r"check_variable\s*=\s*\{\s*(?:var\s*=\s*)?(?P<checked>[A-Za-z_][A-Za-z0-9_.@:^\-]*)\s*(?:[<>=]|!=|value\b|compare\b)[^{}]*\}"
 	r"|has_variable\s*=\s*(?P<held>[A-Za-z_][A-Za-z0-9_.@:^\-]*)"
@@ -670,13 +670,22 @@ VARIABLE_KEYWORDS = {"var", "value", "compare", "tooltip"}
 REQUIREMENT_TOKEN = re.compile(
 	FLAG_CHECK + "|" + VARIABLE_CHECK + r"|(?P<name>[A-Za-z0-9_@:.^\-]+)\s*=\s*(?P<opens>\{|yes\b)|\}"
 )
+MULTILINE_VARIABLE = re.compile(
+	r"^\s*(?:var\s*=\s*(?P<named>[A-Za-z_][A-Za-z0-9_.@:^\-]*)|(?P<compared>[A-Za-z_][A-Za-z0-9_.@:^\-]*)\s*(?:<|>|!=|=))"
+)
 
 
 def scan_requirement_file(path: Path, visit) -> None:
 	"""Call visit(kind, value, stack, line) for block opens, `x = yes` calls, flag checks, and variable checks."""
 	stack: List[str] = []
 	for number, raw in enumerate(read_text(path).splitlines(), 1):
-		for match in REQUIREMENT_TOKEN.finditer(raw.split("#", 1)[0]):
+		line = raw.split("#", 1)[0]
+		if stack and stack[-1] == "check_variable":
+			inside = MULTILINE_VARIABLE.match(line)
+			name = inside and (inside.group("named") or inside.group("compared"))
+			if name and name not in VARIABLE_KEYWORDS:
+				visit("variable", name, stack, number)
+		for match in REQUIREMENT_TOKEN.finditer(line):
 			if match.group(0) == "}":
 				if stack:
 					stack.pop()
