@@ -86,6 +86,16 @@ def findings_for(path: str, result: Dict[str, Any]) -> List[Finding]:
 	return rows
 
 
+# What to do when the server cannot validate; matched against the error text, first match wins.
+MCP_HINTS = {
+	"WORKSPACE_CONTEXT_REQUIRED": "the HOI4 Agent Tools server does not know this mod folder as a workspace: add the mod "
+		"(or the folder that holds your mods) to `modRoots` in the server configuration named by HOI4_AGENT_CONFIG, "
+		"as HOI4 Mod Setup does when it registers the server",
+	"TRANSACTION_MANIFEST_INVALID": "the HOI4 Agent Tools command in .mcp.json is an older install that cannot read the "
+		"current server state: point .mcp.json at the pinned runtime (HOI4 Mod Setup, or .tools/mcp/bootstrap_hoi4_agent_tools.py)",
+	"default": "run `python -B .tools/check.py doctor` to check the HOI4 Agent Tools registration in .mcp.json",
+}
+
 def main() -> int:
 	parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
 	parser.add_argument("--json", type=Path, help="also write the findings as JSON")
@@ -104,6 +114,8 @@ def main() -> int:
 					findings += findings_for(path, session.call(TOOL, {"path": path, "limit": FINDING_LIMIT}))
 		except McpError as error:
 			print(f"{CHECK}: could not run: {error}", file=sys.stderr)
+			hint = next((text for code, text in MCP_HINTS.items() if code in str(error)), MCP_HINTS["default"])
+			print(f"{CHECK}: {hint}", file=sys.stderr)
 			return 2
 	findings.sort(key=lambda f: (f.path, f.line, f.rule, f.message))
 	print_findings(CHECK, findings)

@@ -30,7 +30,7 @@
    "upstream": ".tools/audits/audit_script_rules.py"
   },
   ".tools/audits/validate_scripts_mcp.py": {
-   "sha256": "b676f5b8d8beea455cc8a3131ff4e179c0ee160adb38f0f979acad2370ed63ac",
+   "sha256": "0fd50cead931494bc317f9ef1e985c368512adfdf764d669a11cf9a5a63f7806",
    "upstream": ".tools/audits/validate_scripts_mcp.py"
   },
   ".tools/gfx/gfx.py": {
