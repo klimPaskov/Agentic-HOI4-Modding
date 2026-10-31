@@ -40,6 +40,9 @@ from lib.credits import (
     check_attempt_limit,
     check_budget,
     consumption,
+    credits_report,
+    find_job_roots,
+    format_report,
     already_reused,
     ledger_entries,
     open_reservation,
@@ -2986,14 +2989,38 @@ def run_shared_humanoid_batch(
     return results
 
 
+def print_credits_report(location: str) -> int:
+    """Print credits per model and stage, failed and wasted credits, and credits avoided, for one job or a root."""
+
+    path = Path(location) if location else resolve_job_root("report").parent
+    jobs = find_job_roots(path)
+    if not jobs:
+        print(f"No job folders with a provider folder under {path}.")
+        return 1
+    print(format_report(credits_report(jobs)))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--jobs-config", required=True, type=Path)
+    parser.add_argument("--jobs-config", type=Path, help="repository-owned job registry (required for provider work)")
+    parser.add_argument(
+        "--credits-report",
+        nargs="?",
+        const="",
+        metavar="PATH",
+        help="print the credits report for one job folder or every job under a root (default: this repository's "
+        "jobs root); needs no API key and makes no provider call",
+    )
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--phase", choices=("full", "candidate"), default="full")
     parser.add_argument("--shared-humanoid-batch")
     parser.add_argument("assets", nargs="*")
     args = parser.parse_args()
+    if args.credits_report is not None:
+        return print_credits_report(args.credits_report)
+    if args.jobs_config is None:
+        parser.error("--jobs-config is required unless --credits-report is given")
     require_api_key()
     configs = load_job_configs(args.jobs_config)
     if args.shared_humanoid_batch:

@@ -1,0 +1,10 @@
+{
+  "balance_after_task": 166,
+  "balance_before_paid_call": 201,
+  "estimate_credits": 30,
+  "observed_balance_delta": 35,
+  "provider_consumed_credits": 30,
+  "stage": "generation",
+  "status": "balance_delta_mismatch",
+  "timestamp": "2026-10-18T15:18:24Z"
+}

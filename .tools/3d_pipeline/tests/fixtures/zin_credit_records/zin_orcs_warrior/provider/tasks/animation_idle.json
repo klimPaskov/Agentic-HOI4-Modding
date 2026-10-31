@@ -1,0 +1,30 @@
+{
+  "consumed_credits": 3,
+  "estimated_credits": 3,
+  "final_response": {
+    "consumed_credits": 3,
+    "outcome": "SUCCEEDED",
+    "poll_count": 1,
+    "progress": 100,
+    "status": "SUCCEEDED",
+    "task_id": "01a14fd0-7e15-7603-8baf-67a045d0437f",
+    "wait_time_seconds": 1
+  },
+  "initial_response": {
+    "estimated_time": "1-2 minutes",
+    "message": "Animation task created successfully. Task ID: 01a14fd0-7e15-7603-8baf-67a045d0437f",
+    "status": "PENDING",
+    "task_id": "01a14fd0-7e15-7603-8baf-67a045d0437f"
+  },
+  "input_stage": "rig",
+  "provider": {
+    "server_package": "@meshy-ai/meshy-mcp-server",
+    "server_version": "0.6.2"
+  },
+  "recorded_at": "2026-10-18T16:22:25Z",
+  "schema_version": "1.0.0",
+  "stage": "animation_idle",
+  "status": "SUCCEEDED",
+  "task_id": "01a14fd0-7e15-7603-8baf-67a045d0437f",
+  "task_type": "animation"
+}

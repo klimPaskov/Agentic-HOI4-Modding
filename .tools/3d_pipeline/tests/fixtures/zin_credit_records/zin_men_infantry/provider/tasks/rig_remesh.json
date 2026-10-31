@@ -1,0 +1,31 @@
+{
+  "consumed_credits": 5,
+  "estimated_credits": 5,
+  "final_response": {
+    "consumed_credits": 5,
+    "model_urls": "[REDACTED]",
+    "outcome": "SUCCEEDED",
+    "poll_count": 7,
+    "progress": 100,
+    "status": "SUCCEEDED",
+    "task_id": "01a14f50-6190-706f-a028-6145c2c9f1d8",
+    "wait_time_seconds": 99
+  },
+  "initial_response": {
+    "estimated_time": "1-2 minutes",
+    "message": "Remesh task created successfully. Task ID: 01a14f50-6190-706f-a028-6145c2c9f1d8",
+    "status": "PENDING",
+    "task_id": "01a14f50-6190-706f-a028-6145c2c9f1d8"
+  },
+  "input_stage": "generation",
+  "provider": {
+    "server_package": "@meshy-ai/meshy-mcp-server",
+    "server_version": "0.6.2"
+  },
+  "recorded_at": "2026-10-18T14:03:09Z",
+  "schema_version": "1.0.0",
+  "stage": "rig_remesh",
+  "status": "SUCCEEDED",
+  "task_id": "01a14f50-6190-706f-a028-6145c2c9f1d8",
+  "task_type": "remesh"
+}

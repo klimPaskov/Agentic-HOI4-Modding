@@ -1,0 +1,10 @@
+{
+  "balance_after_task": 255,
+  "balance_before_paid_call": 285,
+  "estimate_credits": 30,
+  "observed_balance_delta": 30,
+  "provider_consumed_credits": 30,
+  "stage": "generation",
+  "status": "reconciled",
+  "timestamp": "2026-10-18T13:42:29Z"
+}

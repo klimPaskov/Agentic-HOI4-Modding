@@ -1,0 +1,31 @@
+{
+  "consumed_credits": 30,
+  "estimated_credits": 30,
+  "final_response": {
+    "consumed_credits": 30,
+    "model_urls": "[REDACTED]",
+    "outcome": "SUCCEEDED",
+    "poll_count": 1,
+    "progress": 100,
+    "status": "SUCCEEDED",
+    "task_id": "01a14f90-2f9b-7267-81dc-89ab2e2c4c22",
+    "wait_time_seconds": 1
+  },
+  "initial_response": {
+    "estimated_time": "2-3 minutes",
+    "message": "3D generation task created successfully. Task ID: 01a14f90-2f9b-7267-81dc-89ab2e2c4c22",
+    "status": "PENDING",
+    "task_id": "01a14f90-2f9b-7267-81dc-89ab2e2c4c22"
+  },
+  "input_stage": null,
+  "provider": {
+    "server_package": "@meshy-ai/meshy-mcp-server",
+    "server_version": "0.6.2"
+  },
+  "recorded_at": "2026-10-18T15:17:08Z",
+  "schema_version": "1.0.0",
+  "stage": "generation",
+  "status": "SUCCEEDED",
+  "task_id": "01a14f90-2f9b-7267-81dc-89ab2e2c4c22",
+  "task_type": "image-to-3d"
+}
