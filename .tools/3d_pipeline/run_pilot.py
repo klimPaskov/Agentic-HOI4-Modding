@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from PIL import Image
 
@@ -30,8 +30,29 @@ from lib.paths import (  # noqa: E402
     utc_now,
     write_json,
 )
-from lib.generation import (  # noqa: E402
+from lib.credits import (
+    CreditStop,
+    PaidRequest,
+    attempt_limit,
+    attempt_scope,
+    budget_state,
+    check_attempt_limit,
+    check_budget,
+    consumption,
+    already_reused,
+    ledger_entries,
+    open_reservation,
+    read_ledger,
+    record_local_repair,
+    record_reuse,
+    request_fingerprint,
+    reject,
+    reserve,
+    settle,
+)
+from lib.generation import (
     generation_estimate,
+    load_contract,
     load_pricing,
     operation_credits,
     validate_generation,
@@ -42,6 +63,10 @@ from meshy_client import (  # noqa: E402
     MeshyTaskFailed,
     _first_key,
     _payload,
+    animate_arguments,
+    image_to_3d_arguments,
+    remesh_arguments,
+    rig_arguments,
     server_version,
     status_from,
     task_id_from,
@@ -245,7 +270,13 @@ def balance_value(result: Dict[str, Any]) -> Optional[int]:
         return None
 
 
-def record_balance(job: Path, stage: str, result: Dict[str, Any], estimate: int) -> int:
+def record_balance(
+    job: Path,
+    stage: str,
+    result: Dict[str, Any],
+    estimate: int,
+    budget: Optional[Dict[str, int]] = None,
+) -> int:
     balance = balance_value(result)
     if balance is None:
         raise RuntimeError("Meshy balance response did not contain a numeric balance.")
@@ -257,11 +288,14 @@ def record_balance(job: Path, stage: str, result: Dict[str, Any], estimate: int)
             "balance_before_paid_call": balance,
             "estimated_credits": estimate,
             "hard_limit": estimate,
-            "paid_call_authorized_by": "user_task",
+            "job_budget": budget,
+            "paid_call_authorized_by": "job_credit_budget",
         },
     )
     if balance < estimate:
-        raise RuntimeError(f"Meshy balance {balance} is below the {estimate}-credit gate for {stage}.")
+        raise RuntimeError(
+            f"Meshy balance {balance} is below the {estimate}-credit gate for {stage}; short by {estimate - balance}."
+        )
     return balance
 
 
@@ -275,6 +309,7 @@ def save_task(
     final: Dict[str, Any],
     estimate: int,
     input_stage: Optional[str] = None,
+    request: Optional[PaidRequest] = None,
 ) -> None:
     consumed = _first_key(final, ("consumed_credits", "credits_used", "credit_cost"))
     record = {
@@ -294,6 +329,8 @@ def save_task(
         },
         "recorded_at": utc_now(),
     }
+    if request is not None:
+        record.update(fingerprint=request.fingerprint, operation=request.operation, model=request.model)
     write_json(task_file(job, stage), record)
     append_history(
         job,
@@ -318,7 +355,7 @@ def record_paid_reconciliation(
     balance_after: Optional[int],
     final: Dict[str, Any],
     estimate: int,
-) -> None:
+) -> Dict[str, Any]:
     """Persist provider-reported cost and the observed account balance delta."""
 
     consumed = _first_key(final, ("consumed_credits", "credits_used", "credit_cost"))
@@ -342,19 +379,119 @@ def record_paid_reconciliation(
         status = "balance_delta_mismatch"
     else:
         status = "reconciled"
-    write_json(
-        job / "provider" / "credits" / f"{stage}_reconciliation.json",
-        {
-            "timestamp": utc_now(),
-            "stage": stage,
-            "status": status,
-            "estimate_credits": estimate,
-            "provider_consumed_credits": provider_consumed,
-            "balance_before_paid_call": balance_before,
-            "balance_after_task": balance_after,
-            "observed_balance_delta": observed_delta,
-        },
+    record = {
+        "timestamp": utc_now(),
+        "stage": stage,
+        "status": status,
+        "estimate_credits": estimate,
+        "provider_consumed_credits": provider_consumed,
+        "balance_before_paid_call": balance_before,
+        "balance_after_task": balance_after,
+        "observed_balance_delta": observed_delta,
+    }
+    write_json(job / "provider" / "credits" / f"{stage}_reconciliation.json", record)
+    return record
+
+
+def paid_request(
+    spec: Dict[str, Any],
+    operation: str,
+    tool: str,
+    arguments: Dict[str, Any],
+    *,
+    role: Optional[str] = None,
+) -> PaidRequest:
+    """What the credit gates need to know about one paid create, built from the exact arguments it sends."""
+
+    return PaidRequest(
+        operation=operation,
+        tool=tool,
+        model=spec["generation"]["ai_model"] if operation == "image_to_3d" else None,
+        fingerprint=request_fingerprint(tool, arguments),
+        scope=attempt_scope(operation, generation_stage_for(spec), role),
+        attempt_limit=attempt_limit(operation, load_contract(), spec.get("provider_paid_attempts")),
+        credit_budget=spec["credit_budget"],
     )
+
+
+def stage_succeeded(job: Path, stage: str) -> bool:
+    task = existing_task(job, stage)
+    return bool(task and task.get("status") in SUCCEEDED_STATUSES)
+
+
+def balance_after_task(client: MeshyClient) -> Optional[int]:
+    """The account balance once a task ended; None when it cannot be read (the ledger then says unknown)."""
+
+    try:
+        return balance_value(client.check_balance())
+    except (RuntimeError, ValueError, OSError):
+        return None
+
+
+def settle_attempt(
+    job: Path,
+    stage: str,
+    request: PaidRequest,
+    final: Dict[str, Any],
+    *,
+    outcome: str,
+    estimate: int,
+    task_id: str,
+    balance_before: Optional[int],
+    balance_after: Optional[int],
+) -> None:
+    """Write the reconciliation record and close the stage's ledger reservation with what it cost."""
+
+    record = record_paid_reconciliation(
+        job,
+        stage,
+        balance_before=balance_before,
+        balance_after=balance_after,
+        final=final,
+        estimate=estimate,
+    )
+    reservation = open_reservation(read_ledger(job), stage)
+    attempt_id = (
+        reservation["attempt_id"]
+        if reservation
+        else reserve(job, request, stage=stage, estimate=estimate, reason="task recorded without a reservation")
+    )
+    consumed, source = consumption(record["provider_consumed_credits"], record["observed_balance_delta"])
+    settle(
+        job,
+        attempt_id,
+        outcome=outcome,
+        consumed=consumed,
+        source=source,
+        reason=f"Meshy task {task_id} ended {status_from(final)}",
+        task_id=task_id,
+        reconciliation=record["status"],
+        balance_before=balance_before,
+        balance_after=balance_after,
+    )
+
+
+def gate_paid_call(
+    client: MeshyClient,
+    job: Path,
+    stage: str,
+    request: PaidRequest,
+    estimate: int,
+) -> Tuple[int, str]:
+    """Stop before submission unless attempts, the job budget and the live balance allow this call.
+
+    Returns the balance before the call and the attempt id of the credits reserved for it.
+    """
+
+    entries = ledger_entries(job)
+    try:
+        check_attempt_limit(entries, request, stage)
+        budget = check_budget(entries, request, stage, estimate)
+        balance_before = record_balance(job, stage, client.check_balance(), estimate, budget)
+    except (CreditStop, RuntimeError) as stop:
+        reject(job, request, stage=stage, estimate=estimate, reason=str(stop))
+        raise
+    return balance_before, reserve(job, request, stage=stage, estimate=estimate, reason="paid create about to be submitted")
 
 
 def existing_task(job: Path, stage: str) -> Optional[Dict[str, Any]]:
@@ -488,6 +625,41 @@ def recover_unrecorded_task(
     return recovered
 
 
+def finish_task(
+    client: MeshyClient,
+    job: Path,
+    stage: str,
+    request: PaidRequest,
+    *,
+    task_id: str,
+    task_type: str,
+    initial: Dict[str, Any],
+    estimate: int,
+    input_stage: Optional[str],
+    balance_before: Optional[int],
+) -> str:
+    """Wait for a created task, save its record and settle the ledger reservation."""
+
+    common = {"task_id": task_id, "estimate": estimate, "balance_before": balance_before}
+    try:
+        final = client.wait_for_task(task_id, task_type=task_type)
+    except MeshyTaskFailed as exc:
+        save_task(
+            job, stage, task_id=task_id, task_type=task_type, initial=initial, final=exc.final,
+            estimate=estimate, input_stage=input_stage, request=request,
+        )
+        settle_attempt(
+            job, stage, request, exc.final, outcome="failed", balance_after=balance_after_task(client), **common
+        )
+        raise
+    save_task(
+        job, stage, task_id=task_id, task_type=task_type, initial=initial, final=final,
+        estimate=estimate, input_stage=input_stage, request=request,
+    )
+    settle_attempt(job, stage, request, final, outcome="success", balance_after=balance_after_task(client), **common)
+    return task_id
+
+
 def provider_task(
     client: MeshyClient,
     job: Path,
@@ -496,47 +668,25 @@ def provider_task(
     task_type: str,
     estimate: int,
     create,
+    request: PaidRequest,
     input_stage: Optional[str] = None,
 ) -> str:
     existing = existing_task(job, stage)
     if existing:
-        if existing.get("status") in {"SUCCEEDED", "SUCCESS", "COMPLETED", "DONE"}:
+        if existing.get("status") in SUCCEEDED_STATUSES:
+            note_stage_reuse(job, stage, request, estimate, existing)
             return str(existing["task_id"])
         if existing.get("task_id") and existing.get("status") in {"PENDING", "IN_PROGRESS", "UNKNOWN"}:
-            try:
-                final = client.wait_for_task(
-                    str(existing["task_id"]),
-                    task_type=task_type,
-                )
-            except MeshyTaskFailed as exc:
-                save_task(
-                    job,
-                    stage,
-                    task_id=str(existing["task_id"]),
-                    task_type=task_type,
-                    initial=existing.get("initial_response", {}),
-                    final=exc.final,
-                    estimate=estimate,
-                    input_stage=input_stage,
-                )
-                raise
-            save_task(
-                job,
-                stage,
-                task_id=str(existing["task_id"]),
-                task_type=task_type,
-                initial=existing.get("initial_response", {}),
-                final=final,
-                estimate=estimate,
-                input_stage=input_stage,
+            return finish_task(
+                client, job, stage, request, task_id=str(existing["task_id"]), task_type=task_type,
+                initial=existing.get("initial_response", {}), estimate=estimate,
+                input_stage=input_stage, balance_before=None,
             )
-            return str(existing["task_id"])
         raise RuntimeError(
             f"Paid stage {stage} already has a non-success record. "
             "No paid retry is permitted: " + str(task_file(job, stage))
         )
-    balance_result = client.check_balance()
-    balance_before = record_balance(job, stage, balance_result, estimate)
+    balance_before, _ = gate_paid_call(client, job, stage, request, estimate)
     initial = create()
     task_id = task_id_from(initial)
     write_json(
@@ -550,6 +700,9 @@ def provider_task(
             "initial_response": _payload(initial),
             "estimated_credits": estimate,
             "input_stage": input_stage,
+            "fingerprint": request.fingerprint,
+            "operation": request.operation,
+            "model": request.model,
             "provider": {
                 "server_package": "@meshy-ai/meshy-mcp-server",
                 "server_version": server_version(),
@@ -564,52 +717,29 @@ def provider_task(
         actor="meshy_mcp",
         details={"task_id": task_id, "task_type": task_type, "estimated_credits": estimate},
     )
-    try:
-        final = client.wait_for_task(task_id, task_type=task_type)
-    except MeshyTaskFailed as exc:
-        save_task(
-            job,
-            stage,
-            task_id=task_id,
-            task_type=task_type,
-            initial=initial,
-            final=exc.final,
-            estimate=estimate,
-            input_stage=input_stage,
-        )
-        try:
-            balance_after = balance_value(client.check_balance())
-            record_paid_reconciliation(
-                job,
-                stage,
-                balance_before=balance_before,
-                balance_after=balance_after,
-                final=exc.final,
-                estimate=estimate,
-            )
-        except Exception:
-            pass
-        raise
-    save_task(
-        job,
-        stage,
-        task_id=task_id,
-        task_type=task_type,
-        initial=initial,
-        final=final,
-        estimate=estimate,
-        input_stage=input_stage,
+    return finish_task(
+        client, job, stage, request, task_id=task_id, task_type=task_type, initial=initial,
+        estimate=estimate, input_stage=input_stage, balance_before=balance_before,
     )
-    balance_after = balance_value(client.check_balance())
-    record_paid_reconciliation(
+
+
+def note_stage_reuse(job: Path, stage: str, request: PaidRequest, estimate: int, task: Dict[str, Any]) -> None:
+    """Record, once per task, that a succeeded stage in this job spared a new paid call."""
+
+    if already_reused(read_ledger(job), stage, str(task["task_id"])):
+        return
+    record_reuse(
         job,
-        stage,
-        balance_before=balance_before,
-        balance_after=balance_after,
-        final=final,
+        stage=stage,
+        operation=request.operation,
         estimate=estimate,
+        reason="the stage already succeeded in this job",
+        model=request.model,
+        fingerprint=request.fingerprint,
+        scope=request.scope,
+        task_id=str(task["task_id"]),
+        reused_from={"tier": "job_stage", "job": job.name, "stage": stage},
     )
-    return task_id
 
 
 def download_once(
@@ -1067,6 +1197,12 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
             pose_mode=spec["meshy_pose_mode"],
             estimate_credits=spec["image_to_3d_estimate_credits"],
         ),
+        request=paid_request(
+            spec,
+            "image_to_3d",
+            "meshy_image_to_3d",
+            image_to_3d_arguments(reference.resolve(), spec["generation"], spec["meshy_pose_mode"]),
+        ),
     )
     generation_glb = download_once(
         client,
@@ -1280,6 +1416,17 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def record_local_rig_saving(job: Path, spec: Dict[str, Any]) -> None:
+    """Record that the Blender rig and actions replaced the provider rig and its provider actions."""
+
+    spec = prepare_spec(spec)
+    roles = provider_animated_roles(spec)
+    saved = int(spec["rig_estimate_credits"]) + int(spec["animation_estimate_credits"]) * len(roles)
+    reason = f"Blender humanoid rig and {len(roles)} action(s) replace the provider rig and animations"
+    if not any(row["outcome"] == "local_repair" and row["reason"] == reason for row in read_ledger(job)):
+        record_local_repair(job, stage="local_humanoid_rig", operation="rig_and_animation", estimate=saved, reason=reason)
+
+
 def continue_humanoid_local(spec: Dict[str, Any]) -> Dict[str, Any]:
     """Finish a Meshy humanoid geometry package through the local rig route."""
 
@@ -1354,6 +1501,7 @@ def continue_humanoid_local(spec: Dict[str, Any]) -> Dict[str, Any]:
         )
 
     mesh_file = job / mesh_rel
+    record_local_rig_saving(job, spec)
     update_job(
         job,
         status="pdx_exported",
@@ -1434,6 +1582,12 @@ def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
                 target_polycount=spec["rig_source_target_polycount"],
                 estimate_credits=remesh_estimate,
             ),
+            request=paid_request(
+                spec,
+                "remesh",
+                "meshy_remesh",
+                remesh_arguments(generation_id, spec["rig_source_target_polycount"]),
+            ),
         )
         remesh_glb = download_once(
             client,
@@ -1475,6 +1629,14 @@ def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
             model_url=rig_input_url,
             height_meters=spec["target_height_m"],
             estimate_credits=spec["rig_estimate_credits"],
+        ),
+        request=paid_request(
+            spec,
+            "rig",
+            "meshy_rig",
+            rig_arguments(
+                rig_input_id if rig_input_url is None else None, rig_input_url, spec["target_height_m"]
+            ),
         ),
     )
     rig_glb = download_once(
@@ -1523,6 +1685,13 @@ def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
                 rig_task_id=rig_id,
                 action_id=action_id,
                 estimate_credits=spec["animation_estimate_credits"],
+            ),
+            request=paid_request(
+                spec,
+                "animation",
+                "meshy_animate",
+                animate_arguments(rig_id, action["provider_action_id"], None),
+                role=role,
             ),
         )
         animation_downloads[role] = download_once(
@@ -2423,6 +2592,31 @@ def require_route_ready(spec: Dict[str, Any]) -> None:
     )
 
 
+def pending_stages(spec: Dict[str, Any], phase: str = "full") -> List[Dict[str, Any]]:
+    """Planned paid stages that have not succeeded yet; a candidate phase plans only the generation."""
+
+    job = ensure_job_layout(resolve_job_root(spec["asset_id"].rsplit(".", 1)[-1]))
+    stages = planned_stages(spec)[: 1 if phase == "candidate" else None]
+    return [{**item, "job": job.name} for item in stages if not stage_succeeded(job, item["stage"])]
+
+
+def require_budget_headroom(pending: List[Dict[str, Any]], specs: List[Dict[str, Any]]) -> None:
+    """Stop before the first paid call when a job's remaining budget cannot cover its pending stages."""
+
+    for spec in specs:
+        job = ensure_job_layout(resolve_job_root(spec["asset_id"].rsplit(".", 1)[-1]))
+        needed = sum(int(item["estimate_credits"]) for item in pending if item["job"] == job.name)
+        state = budget_state(ledger_entries(job), spec["credit_budget"])
+        if needed > state["remaining"]:
+            shortfall = needed - state["remaining"]
+            raise RuntimeError(
+                f"Credit budget stop before any paid call: {job.name} still plans {needed} credits but only "
+                f"{state['remaining']} of its {state['credit_budget']}-credit budget remain "
+                f"({state['consumed']} consumed, {state['reserved']} reserved). Short by {shortfall}. "
+                f"Ask the user once to raise credit_budget to at least {state['credit_budget'] + shortfall}."
+            )
+
+
 def vet_spec(spec: Dict[str, Any]) -> Dict[str, Any]:
     """Refuse a job before any provider call: route blockers, reference approval, then settings and budget."""
 
@@ -2436,6 +2630,7 @@ def preflight_selected_credits(specs: List[Dict[str, Any]], phase: str) -> None:
 
     if not specs:
         return
+    require_budget_headroom([item for spec in specs for item in pending_stages(spec, phase)], specs)
     estimates = []
     for spec in specs:
         if not spec.get("_requires_reference_approval"):
@@ -2582,6 +2777,7 @@ def run_shared_humanoid_batch(
             )
 
     required_credits = sum(int(item["estimate_credits"]) for item in pending_estimates)
+    require_budget_headroom(pending_estimates, [owner_spec] + recipient_specs + creature_specs)
     balance: Optional[int] = None
     if required_credits:
         balance_result = MeshyClient(REPO_ROOT).check_balance()

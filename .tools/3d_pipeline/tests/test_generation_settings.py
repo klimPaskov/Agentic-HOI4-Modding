@@ -14,17 +14,17 @@ from unittest.mock import Mock, patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-import bootstrap_3d_workflow as bootstrap  # noqa: E402
-import run_pilot  # noqa: E402
-import verify_environment  # noqa: E402
-from lib.generation import (  # noqa: E402
+import bootstrap_3d_workflow as bootstrap
+import run_pilot
+import verify_environment
+from lib.generation import (
     GenerationError,
     generation_credits,
     generation_problems,
     operation_credits,
     validate_generation,
 )
-from meshy_client import MeshyClient, image_to_3d_arguments  # noqa: E402
+from meshy_client import MeshyClient, image_to_3d_arguments
 
 LEGACY = {
     "ai_model": "meshy-7",

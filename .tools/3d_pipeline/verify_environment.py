@@ -24,7 +24,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = PIPELINE_ROOT.parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib.generation import generation_problems, load_pricing  # noqa: E402
+from lib.generation import generation_problems, load_pricing
 from lib.mcp_stdio import MCPRouteError, call_stdio  # noqa: E402
 from meshy_client import MOTION_TOOL_ARGUMENTS, MeshyClient, _payload  # noqa: E402
 

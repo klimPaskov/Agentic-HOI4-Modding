@@ -11,8 +11,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-import bootstrap_3d_workflow as bootstrap  # noqa: E402
-from meshy_client import MOTION_TOOL_ARGUMENTS, refuse_forbidden_arguments, rig_arguments  # noqa: E402
+import bootstrap_3d_workflow as bootstrap
+from meshy_client import MOTION_TOOL_ARGUMENTS, refuse_forbidden_arguments, rig_arguments
 
 
 def read(relative: str) -> dict:
