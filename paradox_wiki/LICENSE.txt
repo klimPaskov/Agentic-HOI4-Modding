@@ -1,0 +1,51 @@
+Offline Hearts of Iron IV Wiki snapshot: source, license and changes
+=====================================================================
+
+Source
+------
+The pages in this folder are adapted from the Hearts of Iron 4 Wiki
+(hoi4.paradoxwikis.com), written by its editors. The first line of every page
+names the wiki page and the revision it was captured from, and the capture date.
+
+License
+-------
+The Paradox Wikis copyright policy (central.paradoxwikis.com/Central:Copyrights)
+states that editors publish their contributions under the Creative Commons
+Attribution-ShareAlike 3.0 license (CC BY-SA 3.0,
+creativecommons.org/licenses/by-sa/3.0/). The wiki's site information reports the
+same license. The license covers articles as a whole; images and other pieces may
+be held by someone else under different terms.
+
+This snapshot, including everything the kit added to it, is distributed under
+CC BY-SA 3.0. Reuse it with attribution to the Hearts of Iron 4 Wiki and its
+editors and to the Agentic HOI4 Modding Kit contributors, and share adaptations
+under the same license.
+
+Changes made to the wiki text
+-----------------------------
+* Each page was converted from the wiki's rendered HTML to Markdown. Navigation
+  chrome, edit links and maintenance banners were removed, tables and code
+  samples were reshaped for Markdown, and links were pointed at local files or
+  reduced to their text.
+* Text between "<!-- kit:begin ... -->" and "<!-- kit:end ... -->" markers was
+  written by the Agentic HOI4 Modding Kit contributors. It corrects, updates and
+  extends the wiki text against the installed game, and says which build it was
+  checked against.
+* Pages whose header carries "<!-- kit:page -->" have no wiki counterpart. The
+  kit contributors wrote them in full.
+
+Images
+------
+The files in media/ are the images those wiki pages display. Many show Hearts of
+Iron IV game artwork or screenshots. Their copyright belongs to Paradox
+Interactive AB or to the uploader named on the wiki, and the wiki uses them under
+its own terms. They are included only as part of the pages that show them.
+
+Game data
+---------
+The kit's additions state facts read from the installed game's documentation and
+script files, which are copyright Paradox Interactive AB. The pages repeat only
+identifiers and short illustrative examples from those files.
+
+This snapshot is not made, endorsed or supported by Paradox Interactive or the
+Paradox Wikis team.
