@@ -2,8 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "AI focuses", revision 34354, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="none" checked="never" -->
-**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="34354" sources="common/ai_focuses/ common/ai_strategy_plans/ common/technology_tags/ common/country_leader/00_traits.txt common/ideas/italy.txt common/ai_strategy/_documentation.md documentation/modifiers_documentation.md documentation/triggers_documentation.md" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all 8 vanilla files in `common/ai_focuses/`, the nine `ai_focus_*_factor` modifiers, historical focus lists in the strategy plans and the technology category list.
+- Kit blocks added: `ai-focus-ids-1193` (real block ids, modifier names, links to production planning), `ai-focus-research-format` (what a vanilla file holds and which keys are valid), `ai-focus-historical-moved`.
+- Errors found: the focus called "Defensive" here is `defense` in files and modifier names; `ai_focuses` files hold only `research` weights, not national focus lists; the historical focus list moved into `ai_strategy_plans` (`ai_national_focuses`).
+- Gaps left: the default values quoted for each focus (50 at peace, 100 at war and so on) are engine constants that no game file shows, so they stay unverified; what the `defensive` and `offensive` research keys do is not documented.
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -29,6 +32,26 @@
 AI focuses balance competing interests in several aspects of the game such as being more or less careful with attacks or prioritizing one field of research over another. Every AI country has a value for each of the focuses with higher values making the country focus more on that characteristic.
 
 ## Focus Types <a id="Focus_Types"></a>
+
+<!-- kit:begin id="ai-focus-ids-1193" at="section:Focus_Types" -->
+**Kit correction** Names of the nine AI focuses as the game files spell them. The section titles below are prose names; scripts use these ids. All rows: [vanilla-confirmed 1.19.3] `common/ai_focuses/generic.txt` (block ids), [docs] `documentation/modifiers_documentation.md` (the nine modifiers, category `ai`, one decimal).
+
+| Section title | Block id in `common/ai_focuses` | Modifier |
+| --- | --- | --- |
+| Defensive | `ai_focus_defense` | `ai_focus_defense_factor` |
+| Aggressive | `ai_focus_aggressive` | `ai_focus_aggressive_factor` |
+| War production | `ai_focus_war_production` | `ai_focus_war_production_factor` |
+| Military advancements | `ai_focus_military_advancements` | `ai_focus_military_advancements_factor` |
+| Peaceful | `ai_focus_peaceful` | `ai_focus_peaceful_factor` |
+| Naval | `ai_focus_naval` | `ai_focus_naval_factor` |
+| Naval air | `ai_focus_naval_air` | `ai_focus_naval_air_factor` |
+| Aviation | `ai_focus_aviation` | `ai_focus_aviation_factor` |
+| Military equipment | `ai_focus_military_equipment` | `ai_focus_military_equipment_factor` |
+
+- `ai_focus_defensive` and `ai_focus_production_factor` appear in no documentation, in no live vanilla script (the second only as a commented line) and in no `hoi4.exe` string, so do not use them; use the ids above. [vanilla-confirmed 1.19.3] `common/country_leader/00_traits.txt`.
+- Vanilla applies the modifiers in a few places: `ai_focus_aggressive_factor = 0.5` in 4 country leader traits and 1 Italian idea, `ai_focus_aggressive_factor = 1` in another Italian idea, and `ai_focus_defense_factor = 0.5` in 1 trait. [vanilla-confirmed 1.19.3] `common/country_leader/00_traits.txt`, `common/ideas/italy.txt`.
+- The aviation and naval air focus values also steer air production: the AI strategy documentation multiplies the number of wanted land-based planes by the hard-coded aviation focus value (after `ai_focus_aviation_factor`) and the wanted carrier planes by the naval air focus value (after `ai_focus_naval_air_factor`). [docs] `common/ai_strategy/_documentation.md`.
+<!-- kit:end id="ai-focus-ids-1193" -->
 
 ### Defensive <a id="Defensive"></a>
 
@@ -103,6 +126,15 @@ Here is a generic example:
 }
 ```
 
+<!-- kit:begin id="ai-focus-research-format" at="section:Research_weights" -->
+**Kit note** What vanilla `common/ai_focuses/` holds in 1.19.3. All lines: [vanilla-confirmed 1.19.3] `common/ai_focuses/*.txt`, `common/technology_tags/00_technology.txt`.
+
+- 8 files: `generic.txt` (block ids `ai_focus_<name>`) and one per country with its own weights (`ENG`, `FRA`, `GER`, `ITA`, `JAP`, `SOV`, `USA`; block ids `ai_focus_<name>_<TAG>`, for example `ai_focus_naval_USA`). Each block holds only `research = { <key> = <weight> }`. No block holds national focuses.
+- A country file replaces the whole generic block for that country, so a country block should list every research key it still wants. Not confirmed by a test [unverified].
+- Research keys in vanilla are technology categories from `common/technology_tags/00_technology.txt`, such as `armor`, `artillery`, `industry`, `electronics`, `infantry_weapons`, `radar_tech`, `naval_doctrine`, `land_doctrine`, `air_doctrine`, `jet_technology`, `nuclear`, `para_tech`, `dd_tech` to `ss_tech`. Two keys are not categories: `defensive` (weight 5.0 in the defense block) and `offensive` (5.0 in the aggressive block). What they do is not documented.
+- Weights are plain numbers; doctrine keys use large ones (`land_doctrine = 100.0`, `naval_doctrine = 100.0`, `air_doctrine = 50.0` generic, 75.0 for the USA). Weights are multipliers for the research score of every technology in that category. The multiplier reading is the wiki's statement [unverified].
+<!-- kit:end id="ai-focus-research-format" -->
+
 ### Historical focuses <a id="Historical_focuses_2"></a>
 
 To add historical national focuses, you add a **ai_historical_focus_list_<tag>** that contains the national focuses the AI should prioritize. This system has been somewhat super-seeded by AI strategy plans which allow for historical focus lists but also deviating from them when basic assumptions are broken.
@@ -116,6 +148,10 @@ ai_historical_focus_list_<tag> = {
     }
 }
 ```
+
+<!-- kit:begin id="ai-focus-historical-moved" at="section:Historical_focuses_2" -->
+**Kit correction** In 1.19.3 historical focus lists are written in strategy plans, not in `ai_focuses`. The only `ai_historical_focus_list_USA` in vanilla sits in `common/ai_focuses/USA.txt`, and every line of it is commented out. Live lists are the `ai_national_focuses = { ... }` blocks of `common/ai_strategy_plans/*.txt` (124 plan files hold one; 72 plan files test `is_historical_focus_on = yes`, a trigger documented as "check if the historical focus is active"). See [AI modding](<AI modding - Hearts of Iron 4 Wiki.md#AI_strategy_plans>) for the plan format and `focus_factors`. [vanilla-confirmed 1.19.3] `common/ai_focuses/USA.txt`, `common/ai_strategy_plans/`; [docs] `documentation/triggers_documentation.md` (`is_historical_focus_on`). That the string `ai_historical_focus_list` still exists in `hoi4.exe` does not show that the old block is read [unverified].
+<!-- kit:end id="ai-focus-historical-moved" -->
 
 ---
 
