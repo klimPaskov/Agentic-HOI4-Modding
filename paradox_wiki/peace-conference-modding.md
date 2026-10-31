@@ -54,7 +54,7 @@ All rows: [vanilla-confirmed 1.19.3] the folders, files and keys exist in the in
 
 Vanilla size: 18 cost modifier files with 108 entries, 15 AI files with 158 entries, and 1 category file with 11 categories. [vanilla-confirmed 1.19.3] `common/peace_conference/`, counted by script.
 
-Related wiki pages: [Faction modding](<faction-modding.md#Rules>), [AI modding](<ai-modding.md#AI_peace>), [On actions](<on-actions.md#Politics>), [Triggers](<triggers.md#Peace_conferences>), [Effects](<effects.md#War>), [Autonomy state modding](<autonomy-state-modding.md>) and [Defines](<defines.md#NDiplomacy>).
+Related wiki pages: [Faction modding](<faction-modding.md#Rules>), [AI modding](<ai-modding.md#AI_peace>), [On actions](<on-actions.md#Politics>), [Triggers](<triggers.md#Peace_conferences>), [Effects](<effects.md#War>), [Autonomy state modding](<autonomy-state-modding.md>) and [Defines](<defines.md#NDiplomacy>) (its 1.19.3 additions are in [Defines additions](<defines-additions.md#NDiplomacy>)).
 
 ## Scope chain <a id="Scope_chain"></a>
 
@@ -270,6 +270,8 @@ The game's own files give two readings of `ai_desire`, and they do not agree:
 
 Safe usage that holds under both readings: use -200 or lower to veto an action, use positive values to prefer one, and do not depend on 0 meaning "no change". The exact combination rule, and whether a baseline is added before the sum is tested against zero, is [unverified].
 
+**Needs a game run** [unverified] Only a run settles the scale. Give one action a single active entry with `ai_desire = 0` and no other entry for that action, and see whether the AI still takes it: under reading A (additive) a total of 0 means no action, under reading B (percent) 0 leaves the AI's own desire unchanged. Repeat with `100` and `-200`.
+
 ### Vanilla patterns <a id="AI_desire_patterns"></a>
 
 - Veto: `dont_puppet_and_force_government` gives -200 to `puppet` when the giver already had its government forced to the ideology of the top-level country, and `dont_force_government_and_puppet` gives -200 to `force_government` when the giver is already puppeted by `ROOT`. [vanilla-confirmed 1.19.3] `ai_peace/00_misc.txt`.
@@ -373,7 +375,7 @@ on_actions = {
 
 ## Defines <a id="Defines"></a>
 
-All values below are in `common/defines/00_defines.lua`. [vanilla-confirmed 1.19.3] Meanings follow the file comments. See also the wiki [Defines](<defines.md#NDiplomacy>) page.
+All values below are in `common/defines/00_defines.lua`. [vanilla-confirmed 1.19.3] Meanings follow the file comments. See also the wiki [Defines](<defines.md#NDiplomacy>) page and [Defines additions](<defines-additions.md#NDiplomacy>).
 
 Base costs and cost factors, namespace `NDiplomacy`:
 

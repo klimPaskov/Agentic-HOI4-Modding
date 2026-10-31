@@ -47,7 +47,7 @@ All rows: [vanilla-confirmed 1.19.3] file lists and block counts.
 
 - Operation ids, phase ids and token ids are separate namespaces. A phase can be shared by many operations: 29 of the 39 vanilla operations use `infiltration_border`, and `SIA_operations.txt` builds a DLC operation only from phases that already existed. [vanilla-confirmed 1.19.3] `common/operations/`.
 - Operatives (the people who run operations) are not defined in these folders. See Operatives below and [Character modding](<character-modding.md#Unit_leader_traits>) for operative traits.
-- Effects, triggers and modifiers of the system are in [Effects](<effects.md#Operatives>), [Triggers](<triggers.md#Operatives>), [Modifiers](<modifiers.md#Operatives>) and the `NOperatives` section of [Defines](<defines.md#NOperatives>).
+- Effects, triggers and modifiers of the system are in [Effects](<effects.md#Operatives>), [Triggers](<triggers.md#Operatives>), [Modifiers](<modifiers.md#Operatives>) and the `NOperatives` section of [Defines](<defines.md#NOperatives>) (its 1.19.3 additions are in [Defines additions](<defines-additions.md#NOperatives>)).
 
 ## Scopes and life cycle <a id="Scopes_and_life_cycle"></a>
 

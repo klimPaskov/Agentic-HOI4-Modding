@@ -252,7 +252,8 @@ Evidence for the table: [docs] `sp/prototype_rewards/documentation.md`; counts [
 Notes:
 
 - **Window.** The doc text says the minimum is inside the window and the maximum is not ("from 0 up to and not including 60"), although its interval notation `(Min, Max]` says the opposite. Write windows so that neither reading matters, for example by not relying on the exact edge value [docs] `sp/prototype_rewards/documentation.md`.
-- **Once per what.** `fire_only_once = yes` limits a reward to one firing, but the documentation does not say whether that is per project, per country or per facility [unverified].
+- **Needs a game run** [unverified] Which edge is inside the window is settled only by a run: with `threshold = { min = 25 max = 45 }`, see whether the reward can fire at exactly 25 and at exactly 45 progress.
+- **Once per what.** `fire_only_once = yes` limits a reward to one firing, but the documentation does not say whether that is per project, per country or per facility [unverified]. **Needs a game run:** let a `fire_only_once` reward fire once, then see whether another facility, project or country can still draw it.
 - **Progress scale.** The old draft describes 0 to 1 thresholds; vanilla uses 0 to 100 (for example `min = 25 max = 45`) [vanilla-confirmed 1.19.3] `sp/projects/nuclear_projects.txt`.
 - **Drawing a reward.** After each iteration the game weighs the eligible rewards of the project together with the empty outcome (`empty_reward_weight`) and draws one. Eligible means the progress is inside `threshold`, `allowed` is true and a `fire_only_once` reward has not fired yet. This reading comes from the weight and threshold descriptions; no document spells out the algorithm [unverified].
 - **Themes.** Vanilla generic rewards reduce repeats of one theme by setting a project flag in the output (`FROM = { set_project_flag = <flag> }`) and multiplying the weight when `has_project_flag = <flag>` is true (`factor = @reward_weight_factor_theme`) [vanilla-confirmed 1.19.3] `sp/prototype_rewards/generic_land_prototype_rewards.txt`.
@@ -421,7 +422,7 @@ The `<...>_speed_factor` family: the documentation lists project ids, the 13 tag
 
 ### Defines <a id="Defines"></a>
 
-`NProject` holds the numbers quoted above (`DEFAULT_COMPLEXITY`, `PROTOTYPE_PHASE_MAX_PROGRESS`, `SCIENTIST_SKILL_LEVEL_THRESHOLDS`, `SCIENTIST_SKILL_LEVEL_SPEED_MODIFIER`, supply and capture factors) [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. Wiki: [Defines](<defines.md#NProject>). `FACTION_ASSIGN_SCIENTIST_COST`, `AMOUNT_OF_SUPPORTIVE_SCIENTISTS` and `ASSIGN_FACILITY_TO_FACTION_INITIATIVE_COST` are in `NProject` and `NFactions`.
+`NProject` holds the numbers quoted above (`DEFAULT_COMPLEXITY`, `PROTOTYPE_PHASE_MAX_PROGRESS`, `SCIENTIST_SKILL_LEVEL_THRESHOLDS`, `SCIENTIST_SKILL_LEVEL_SPEED_MODIFIER`, supply and capture factors) [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. Wiki: [Defines](<defines.md#NProject>); the defines its table lacks are in [Defines additions](<defines-additions.md#NProject>). `FACTION_ASSIGN_SCIENTIST_COST`, `AMOUNT_OF_SUPPORTIVE_SCIENTISTS` and `ASSIGN_FACILITY_TO_FACTION_INITIATIVE_COST` are in `NProject` and `NFactions`.
 
 ## AI <a id="AI"></a>
 

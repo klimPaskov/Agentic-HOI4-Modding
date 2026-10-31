@@ -158,6 +158,6 @@ All 16 batches were merged on 2026-10-31. `wiki_status.py` reports 63 of 63 page
 
 ### Gaps left for later work
 
-- Nothing is `[game-tested 1.19.3]`. The `[unverified]` statements are the candidates for in-game checks, above all the documentation conflicts listed on the kit pages (the `collection_size` comparison rule, the peace `ai_desire` scale, special project reward thresholds, the scope inside raid `target_type` state filters).
+- Nothing is `[game-tested 1.19.3]`. The `[unverified]` statements are the candidates for in-game checks, above all the documentation conflicts listed on the kit pages (the `collection_size` comparison rule, the peace `ai_desire` scale, special project reward thresholds, the scope inside raid `target_type` state filters). These four, and MIO `task_capacity` with its switch off, now carry a **Needs a game run** note on the page that makes the claim.
 - Version-added columns in the wiki's effect, trigger and modifier tables were not re-checked.
 - Engine behaviour that no game file states, such as defines the engine still reads and the order of on_action effects, stays `[unverified]`.

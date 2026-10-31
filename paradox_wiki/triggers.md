@@ -96,6 +96,7 @@ Not all triggers support the equality sign or comparison signs. See the details 
 - `any_collection_element` takes an optional `count`, documented as "equal or larger", so `count = 3` passes when at least 3 elements pass. [docs] `documentation/triggers_documentation.md`
 - Where the documentation gives worked examples for other triggers they read as strict: for `has_navy_size` it comments `size > 10` as "more than 10" and `size > 39` as "40 or more". [docs] `documentation/triggers_documentation.md`
 - Vanilla writes `collection_size` bounds the way a strict comparison would be written, for example `value < 1` and `value > 19` in `common/factions/goals/faction_goals_short_term.txt` and `common/decisions/USA.txt`. [vanilla-confirmed 1.19.3] Under the documented inclusive rule these mean "at most 1" and "at least 19", so check the boundary case before copying a vanilla number. [docs] `documentation/triggers_documentation.md`
+- **Needs a game run** [unverified] No game file settles whether the engine applies the inclusive rule; the test is described under [Comparison notes](<collection-modding.md#Comparison_notes>).
 <!-- kit:end id="comparison-notes" -->
 
 ## Context scopes <a id="Context_scopes"></a>

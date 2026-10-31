@@ -238,6 +238,7 @@ For the `limit` of an operator or of a named collection: [docs] `common/collecti
 - The docs warn that the comparison is inclusive: `value > X` actually means `value >= X`, and likewise for `<`. [docs] `documentation/triggers_documentation.md`.
 - Vanilla does not follow that warning. It writes `value > 0` for "at least one" and `value < 1` for "none", for example the goal that is complete when no faction-owned core state is left without full control. Under an inclusive reading `value > 0` would always be true and `value < 1` would allow one item. [vanilla-confirmed 1.19.3] `common/factions/goals/faction_goals_long_term.txt`.
 - Which reading the engine applies is [unverified]. Avoid boundary cases that depend on it: compare with a margin, or pair the check with a second condition.
+- **Needs a game run** [unverified] Only a run settles the boundary: with a collection of exactly 3 items, see whether `value > 3` passes (inclusive reading) or fails (strict reading), and the same for `value < 3`. Test `count_in_collection` and `has_resources_in_collection` the same way, because the documentation says nothing about their inclusivity.
 - For `count_in_collection` (`size`) and `has_resources_in_collection` (`amount`) the docs say nothing about inclusivity. Vanilla uses `size > 19`, `size > 99` and `amount > 799`. [vanilla-confirmed 1.19.3] `common/factions/goals/faction_goals_medium_term.txt`, `common/national_focus/germany.txt`.
 
 ## Examples <a id="Collection_examples"></a>

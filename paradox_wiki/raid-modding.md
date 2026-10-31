@@ -172,6 +172,7 @@ Scopes [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3] `raids/*.txt
 | `captured_army_leader = yes` | a captured commander (the target is a character) | 1 (`rescue_captured_general`) |
 
 - The documentation also lists `level = { min = X max = Y }` and `is_coastal = yes` inside `building` and `type = <type/tag>`; vanilla never uses `level` or `is_coastal` there, and spells the tag form `tags` [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3].
+- **Needs a game run** [unverified] No game file states the scope a `state = { }` filter runs in, so reading `ROOT` as the acting country is unconfirmed. A run settles it: put `ROOT = { original_tag = <your tag> }` in the filter of a test raid and see whether the list of targets changes with the acting country.
 - A raid hitting a facility with `building = { tags = facility }` ties raids to special projects (see [Raids and special projects](#Raids_and_special_projects)).
 - The scope a `state = { }` filter runs in is not documented. Vanilla writes `is_owned_by = FROM` there in two types, which only makes sense if `FROM` is bound in the filter. A claim that the state is `ROOT` there is [unverified]; do not read the acting country through `ROOT` in a target filter.
 - The target name in the UI is `RAID_TARGET_NAME` ("$WHAT in $LOCATION"), or your own key set with `target_loc_key`, which can use `$LOCATION$` [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3] `localisation/english/military_raids_l_english.yml`.
