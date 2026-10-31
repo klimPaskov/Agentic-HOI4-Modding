@@ -33,6 +33,7 @@ from lib.paths import (  # noqa: E402
 from lib.credits import (
     CreditStop,
     PaidRequest,
+    UnreconciledSubmission,
     attempt_limit,
     attempt_scope,
     budget_state,
@@ -56,6 +57,13 @@ from lib.generation import (
     load_pricing,
     operation_credits,
     validate_generation,
+)
+from lib.reuse import (
+    block_message,
+    copy_artifacts,
+    find_other_job_result,
+    sibling_jobs,
+    unreconciled_submissions,
 )
 from meshy_client import (  # noqa: E402
     REQUIRED_KEY_MESSAGE,
@@ -477,6 +485,7 @@ def gate_paid_call(
     stage: str,
     request: PaidRequest,
     estimate: int,
+    reuse_checks: Dict[str, str],
 ) -> Tuple[int, str]:
     """Stop before submission unless attempts, the job budget and the live balance allow this call.
 
@@ -489,9 +498,12 @@ def gate_paid_call(
         budget = check_budget(entries, request, stage, estimate)
         balance_before = record_balance(job, stage, client.check_balance(), estimate, budget)
     except (CreditStop, RuntimeError) as stop:
-        reject(job, request, stage=stage, estimate=estimate, reason=str(stop))
+        reject(job, request, stage=stage, estimate=estimate, reason=str(stop), reuse_checks=reuse_checks)
         raise
-    return balance_before, reserve(job, request, stage=stage, estimate=estimate, reason="paid create about to be submitted")
+    attempt_id = reserve(
+        job, request, stage=stage, estimate=estimate, reason="paid create about to be submitted", reuse_checks=reuse_checks
+    )
+    return balance_before, attempt_id
 
 
 def existing_task(job: Path, stage: str) -> Optional[Dict[str, Any]]:
@@ -686,7 +698,10 @@ def provider_task(
             f"Paid stage {stage} already has a non-success record. "
             "No paid retry is permitted: " + str(task_file(job, stage))
         )
-    balance_before, _ = gate_paid_call(client, job, stage, request, estimate)
+    adopted, reuse_checks = reuse_before_paying(job, stage, request, estimate)
+    if adopted:
+        return adopted
+    balance_before, _ = gate_paid_call(client, job, stage, request, estimate, reuse_checks)
     initial = create()
     task_id = task_id_from(initial)
     write_json(
@@ -721,6 +736,90 @@ def provider_task(
         client, job, stage, request, task_id=task_id, task_type=task_type, initial=initial,
         estimate=estimate, input_stage=input_stage, balance_before=balance_before,
     )
+
+
+def adopt_other_job_result(
+    job: Path,
+    stage: str,
+    request: PaidRequest,
+    estimate: int,
+    match: Dict[str, Any],
+) -> str:
+    """Continue from another job's succeeded task: copy its record and downloads, pay nothing."""
+
+    source_job, source = match["job"], match["record"]
+    task_id = str(source["task_id"])
+    copied = copy_artifacts(source_job, job, task_id)
+    origin = {"tier": "other_job", "job": source_job.name, "stage": source.get("stage"), "task_id": task_id}
+    write_json(
+        task_file(job, stage),
+        {
+            **source,
+            "stage": stage,
+            "estimated_credits": estimate,
+            "consumed_credits": 0,
+            "fingerprint": request.fingerprint,
+            "reused_from": {**origin, "source_consumed_credits": source.get("consumed_credits"), "files": copied},
+            "recorded_at": utc_now(),
+        },
+    )
+    record_reuse(
+        job,
+        stage=stage,
+        operation=request.operation,
+        estimate=estimate,
+        reason=f"the same request already succeeded in job {source_job.name} (stage {source.get('stage')})",
+        model=request.model,
+        fingerprint=request.fingerprint,
+        scope=request.scope,
+        task_id=task_id,
+        reused_from=origin,
+    )
+    append_history(
+        job,
+        state="provider_task_reused",
+        event=stage,
+        actor="hoi4_3d_model_pipeline",
+        details={**origin, "files": copied, "saved_credits": estimate},
+    )
+    return task_id
+
+
+def reuse_before_paying(
+    job: Path,
+    stage: str,
+    request: PaidRequest,
+    estimate: int,
+) -> Tuple[Optional[str], Dict[str, str]]:
+    """The checks that come before paying, after this job's own succeeded stage.
+
+    A succeeded result for the same request in another job is adopted (returns its task id). An
+    unreconciled submission for the same request blocks the call. Otherwise the call may be paid, and
+    the checks are returned to be written into its reservation.
+    """
+
+    checks = {"job_stage": "no succeeded task for this stage"}
+    found = find_other_job_result(job, request.fingerprint)
+    if found["match"]:
+        return adopt_other_job_result(job, stage, request, estimate, found["match"]), checks
+    skipped = f"; {len(found['expired'])} expired" if found["expired"] else ""
+    checks["other_jobs"] = f"no usable succeeded result with this fingerprint in {found['jobs_checked']} other job(s){skipped}"
+    blockers = unreconciled_submissions([job] + sibling_jobs(job), request.fingerprint)
+    if blockers:
+        message = block_message(stage, request.operation, blockers)
+        checks["submission_journal"] = f"{len(blockers)} unreconciled submission(s)"
+        reject(job, request, stage=stage, estimate=estimate, reason=message, reuse_checks=checks)
+        raise UnreconciledSubmission(message)
+    checks["submission_journal"] = "no unreconciled submission for this request"
+    checks["meshy_lookup"] = "not searched: meshy_list_tasks cannot identify the input image"
+    append_history(
+        job,
+        state="provider_reuse_decision",
+        event=stage,
+        actor="hoi4_3d_model_pipeline",
+        details={"decision": "pay", "checks": checks},
+    )
+    return None, checks
 
 
 def note_stage_reuse(job: Path, stage: str, request: PaidRequest, estimate: int, task: Dict[str, Any]) -> None:

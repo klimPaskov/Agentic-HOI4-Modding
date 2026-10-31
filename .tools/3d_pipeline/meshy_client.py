@@ -17,6 +17,7 @@ from typing import Any, Dict, Optional, Tuple
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
+from lib.credits import request_fingerprint
 from lib.generation import (
     load_contract,
     locked_server_version,
@@ -336,6 +337,7 @@ class MeshyClient:
                 raise RuntimeError("Paid submissions require a job-local upfront journal.")
             journal = self.job_root / "provider/submissions" / f"{uuid.uuid4().hex}.json"
             entry = {"timestamp": utc_now(), "tool": tool, "arguments": redact(arguments),
+                     "fingerprint": request_fingerprint(tool, arguments),
                      "estimate_credits": estimate_credits, "state": "submission_started",
                      "automatic_retry": False}
             write_json(journal, entry)

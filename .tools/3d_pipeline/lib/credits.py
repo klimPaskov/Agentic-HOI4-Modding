@@ -71,6 +71,10 @@ class AttemptLimitReached(CreditStop):
     pass
 
 
+class UnreconciledSubmission(CreditStop):
+    pass
+
+
 @dataclass(frozen=True)
 class PaidRequest:
     """What the gates need to know about one paid create, before it is sent."""
