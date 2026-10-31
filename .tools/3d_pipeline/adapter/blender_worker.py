@@ -27,6 +27,8 @@ import bmesh
 from mathutils import Euler, Matrix, Quaternion, Vector
 from mathutils.bvhtree import BVHTree
 from mathutils.kdtree import KDTree
+from exporter_log_capture import exporter_warnings, run_captured
+from mesh_components import count_connected_components
 from normalization_convergence import evaluate_convergence_step
 
 
@@ -2104,10 +2106,16 @@ def topology_metrics_from_bmesh(bm: bmesh.types.BMesh) -> Dict[str, Any]:
             }
         )
     zero_length_normals = sum(1 for face in bm.faces if face.normal.length <= 1e-8)
+    bm.verts.index_update()
+    loose_component_count = count_connected_components(
+        len(bm.verts),
+        ((edge.verts[0].index, edge.verts[1].index) for edge in bm.edges),
+    )
     return {
         "loose_boundary_edges": loose_edges,
         "non_manifold_edges": non_manifold_edges,
         "degenerate_faces": degenerate_faces,
+        "loose_component_count": loose_component_count,
         "triangles": sum(max(0, len(face.verts) - 2) for face in bm.faces),
         "boundary_component_count": len(boundary_components),
         "closed_boundary_component_count": sum(
@@ -2159,6 +2167,7 @@ def geometry_metrics(
     loose_edges = 0
     non_manifold_edges = 0
     degenerate_faces = 0
+    loose_component_count = 0
     boundary_component_count = 0
     closed_boundary_component_count = 0
     branched_boundary_component_count = 0
@@ -2170,6 +2179,7 @@ def geometry_metrics(
         loose_edges += object_metrics["loose_boundary_edges"]
         non_manifold_edges += object_metrics["non_manifold_edges"]
         degenerate_faces += object_metrics["degenerate_faces"]
+        loose_component_count += object_metrics["loose_component_count"]
         zero_length_normals += object_metrics["zero_length_normals"]
         boundary_component_count += object_metrics["boundary_component_count"]
         closed_boundary_component_count += object_metrics["closed_boundary_component_count"]
@@ -2193,6 +2203,7 @@ def geometry_metrics(
         "loose_boundary_edges": loose_edges,
         "non_manifold_edges": non_manifold_edges,
         "degenerate_faces": degenerate_faces,
+        "loose_component_count": loose_component_count,
         "boundary_component_count": boundary_component_count,
         "closed_boundary_component_count": closed_boundary_component_count,
         "branched_boundary_component_count": branched_boundary_component_count,
@@ -5479,7 +5490,9 @@ def export_mesh(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
             rig.data.pose_position = "REST"
         bpy.context.view_layer.update()
         exported_locators = locator_records(locators)
-        pdx["export_meshfile"](
+        exporter_report = run_captured(
+            pdx,
+            "export_meshfile",
             str(output),
             exp_mesh=True,
             exp_skel=True,
@@ -5523,7 +5536,9 @@ def export_mesh(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
         "locators": exported_locators,
         "selected_export_objects": sorted(obj.name for obj in working + locators),
         "locator_coordinate_policy": "bone_head_local_rest_export_with_uniform_rig_scale_conversion",
-        "warnings": [],
+        # None means the exporter could not be heard; an empty list means it reported nothing.
+        "warnings": exporter_warnings(exporter_report),
+        "exporter_report": exporter_report,
     }
     report = job / "blender" / "reports" / "export_mesh.json"
     report.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -6847,7 +6862,9 @@ def export_animation(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]
             if not old_output.is_file():
                 raise RuntimeError(f"Animation export target is not a file: {old_output}")
             old_output.unlink()
-    pdx["export_animfile"](
+    exporter_report = run_captured(
+        pdx,
+        "export_animfile",
         str(output),
         frame_start=start,
         frame_end=end,
@@ -6873,7 +6890,9 @@ def export_animation(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]
         else None,
         "scale_normalization": scale_normalization,
         "initial_root_world_pose": initial_root_world_pose,
-        "warnings": [],
+        # None means the exporter could not be heard; an empty list means it reported nothing.
+        "warnings": exporter_warnings(exporter_report),
+        "exporter_report": exporter_report,
     }
     report = job / "blender" / "reports" / f"export_anim_{safe_name(action.name)[:32]}_{hashlib.sha256(action.name.encode()).hexdigest()[:10]}.json"
     report.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")

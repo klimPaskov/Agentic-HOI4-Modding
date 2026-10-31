@@ -9,6 +9,7 @@ from typing import Any, Dict, Literal, Optional
 
 from lib.mcp_stdio import MCPRouteError, call_stdio
 from lib.paths import resolve_job_root
+from lib.profile_gates import exporter_report_failures, job_profile_exception
 
 
 def _structured(result: Dict[str, Any]) -> Dict[str, Any]:
@@ -234,15 +235,40 @@ class BlenderAdapterClient:
             },
         )
 
+    def _accepted_export(self, job_id: str, tool: str, result: Dict[str, Any]) -> Dict[str, Any]:
+        """Refuse an export whose exporter output was not captured or reported an error.
+
+        The export files are already written; the refusal withholds acceptance. A
+        profile's recorded `exporter_report` exception accepts the export and is
+        copied into the result.
+        """
+
+        failures = exporter_report_failures(result)
+        if not failures:
+            return result
+        exception = None
+        if isinstance(job_id, str) and Path(job_id).name == job_id:
+            exception = job_profile_exception(resolve_job_root(job_id), "exporter_report")
+        if exception is not None:
+            return {**result, "exporter_report_exception": {**exception, "failures": failures}}
+        raise RuntimeError(
+            f"{tool} output is not accepted: {'; '.join(failures)}. "
+            "Inspect the export report, or record an 'exporter_report' exception with a reason in the asset profile."
+        )
+
     def export_mesh(self, job_id: str, blend_rel: str, output_rel: str, split_verts: bool = False) -> Dict[str, Any]:
-        return self.call(
+        return self._accepted_export(
+            job_id,
             "hoi4_blender_export_mesh",
-            {
-                "job_id": job_id,
-                "blend_rel": blend_rel,
-                "output_rel": output_rel,
-                "split_verts": split_verts,
-            },
+            self.call(
+                "hoi4_blender_export_mesh",
+                {
+                    "job_id": job_id,
+                    "blend_rel": blend_rel,
+                    "output_rel": output_rel,
+                    "split_verts": split_verts,
+                },
+            ),
         )
 
     def export_animation(
@@ -252,14 +278,18 @@ class BlenderAdapterClient:
         action_name: str,
         output_rel: str,
     ) -> Dict[str, Any]:
-        return self.call(
+        return self._accepted_export(
+            job_id,
             "hoi4_blender_export_animation",
-            {
-                "job_id": job_id,
-                "blend_rel": blend_rel,
-                "action_name": action_name,
-                "output_rel": output_rel,
-            },
+            self.call(
+                "hoi4_blender_export_animation",
+                {
+                    "job_id": job_id,
+                    "blend_rel": blend_rel,
+                    "action_name": action_name,
+                    "output_rel": output_rel,
+                },
+            ),
         )
 
     def author_locomotion_action(

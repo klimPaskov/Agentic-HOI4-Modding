@@ -20,6 +20,11 @@ from mcp.server.fastmcp import FastMCP
 
 
 MODULE_ROOT = Path(__file__).resolve().parent
+if str(MODULE_ROOT) not in sys.path:
+    sys.path.insert(0, str(MODULE_ROOT))
+
+from texture_size_gate import TextureSizeGateError, texture_size_decision
+
 PIPELINE_ROOT = MODULE_ROOT.parent
 REPO_ROOT = PIPELINE_ROOT.parents[1]
 CONFIG_PATH = Path(
@@ -198,46 +203,30 @@ def _run(job_id: str, operation: str, payload: Dict[str, Any]) -> Dict[str, Any]
     return result
 
 
-def _texture_resize_for_job(job: Path, png: Path) -> tuple[int | None, int | None]:
-    """Return a profile-bounded size while preserving the source aspect ratio."""
+def _job_profile(job: Path) -> Dict[str, Any]:
+    """Resolve the job's asset profile, failing closed when it cannot be proven."""
 
-    if not PROFILE_CONFIG_PATH.exists():
-        return None, None
+    if not PROFILE_CONFIG_PATH.is_file():
+        raise TextureSizeGateError(f"The asset profile registry is missing: {PROFILE_CONFIG_PATH}")
     try:
         job_record = json.loads((job / "job.yaml").read_text(encoding="utf-8"))
-        profile_name = job_record.get("profile")
         profiles = json.loads(PROFILE_CONFIG_PATH.read_text(encoding="utf-8")).get("profiles", {})
-        max_dimension = profiles.get(profile_name, {}).get("texture_max_dimension")
-        if not max_dimension:
-            return None, None
-        probe = subprocess.run(
-            [
-                "ffprobe",
-                "-v",
-                "error",
-                "-select_streams",
-                "v:0",
-                "-show_entries",
-                "stream=width,height",
-                "-of",
-                "csv=p=0:s=x",
-                str(png),
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            timeout=30,
-            check=True,
-            stdin=subprocess.DEVNULL,
+    except (OSError, ValueError, AttributeError) as exc:
+        raise TextureSizeGateError(f"Unable to read the job profile for the texture size cap: {exc}") from exc
+    profile_name = job_record.get("profile") if isinstance(job_record, dict) else None
+    profile = profiles.get(profile_name) if isinstance(profile_name, str) else None
+    if not isinstance(profile, dict):
+        raise TextureSizeGateError(
+            f"Job profile {profile_name!r} is not in the asset profile registry, so the texture size cap cannot be checked."
         )
-        width, height = (int(value) for value in probe.stdout.strip().split("x", 1))
-        largest = max(width, height)
-        if largest <= int(max_dimension):
-            return None, None
-        ratio = int(max_dimension) / largest
-        return max(1, round(width * ratio)), max(1, round(height * ratio))
-    except (OSError, ValueError, json.JSONDecodeError, subprocess.SubprocessError):
-        return None, None
+    return profile
+
+
+def _texture_resize_for_job(job: Path, png: Path) -> tuple[int | None, int | None, Dict[str, Any]]:
+    """Return a profile-bounded size and the cap record; unprovable caps raise."""
+
+    record = texture_size_decision(png, _job_profile(job))
+    return record["width"], record["height"], record
 
 
 def _dds_converter() -> Path:
@@ -273,7 +262,7 @@ def _process_textures(job_id: str, blend_rel: str) -> Dict[str, Any]:
                 dds.unlink()
             except OSError as exc:
                 raise RuntimeError(f"Unable to replace existing DDS output: {dds}") from exc
-        width, height = _texture_resize_for_job(job, png)
+        width, height, size_cap = _texture_resize_for_job(job, png)
         converter_args = [
             sys.executable,
             str(converter),
@@ -307,6 +296,7 @@ def _process_textures(job_id: str, blend_rel: str) -> Dict[str, Any]:
                 "log": str(log.relative_to(job)).replace("\\", "/"),
                 "width": width,
                 "height": height,
+                "size_cap": size_cap,
             }
         )
     if dds_map:
