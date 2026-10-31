@@ -86,8 +86,12 @@ def index_document(text: str) -> Dict[str, str]:
             body.append(line)
             continue
         if key is not None:
-            entries[key] = short_hash("\n".join(body))
-        title = re.sub(r"[`*]", "", match.group(2)).strip().rstrip(":")
+            # A heading can repeat (template families); number the repeats.
+            unique, n = key, 2
+            while unique in entries:
+                unique, n = f"{key} ({n})", n + 1
+            entries[unique] = short_hash("\n".join(body))
+        title = re.sub(r"[`*]|<span[^>]*></span>", "", match.group(2)).strip().rstrip(":")
         body = []
         top = len(match.group(1)) == 2
         if top:
