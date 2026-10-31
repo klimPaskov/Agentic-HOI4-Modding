@@ -59,7 +59,7 @@ When the wiki later removes the heading a block points at, the sync keeps the bl
 
 ### Kit pages
 
-A kit page covers a system the wiki has no page for. It uses the same file name pattern (no prefix: the marker below and the capture line identify it), has `<!-- kit:page -->` on the line after its capture line (`*Kit page: written by the Agentic HOI4 Modding Kit ...*`), and keeps the review block and the `---` furniture of a wiki page. The sync never fetches a kit page. It refreshes the page's table of contents and navigation footer, and lists every kit page in the navigation footer of all pages. If the wiki later gains a page with the same title, the sync says so; move the kit text into kit blocks on the wiki page then.
+A kit page covers a system the wiki has no page for. (`Defines additions` is the one exception: it holds the kit's define tables so that the wiki's Defines page can stay an unchanged snapshot.) It uses the same file name pattern (no prefix: the marker below and the capture line identify it), has `<!-- kit:page -->` on the line after its capture line (`*Kit page: written by the Agentic HOI4 Modding Kit ...*`), and keeps the review block and the `---` furniture of a wiki page. The sync never fetches a kit page. It refreshes the page's table of contents and navigation footer, and lists every kit page in the navigation footer of all pages. If the wiki later gains a page with the same title, the sync says so; move the kit text into kit blocks on the wiki page then.
 
 ### Review block and evidence
 

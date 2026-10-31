@@ -84,6 +84,7 @@ Each batch is one reviewer with explicitly owned files. Reviewers add kit blocks
 All 16 batches were merged on 2026-10-31. `wiki_status.py` reports 63 of 63 pages current for 1.19.3.0, the verify check reports no findings, and wiki text outside kit blocks is unchanged on every page. Each page's review block holds its own record: what was checked, what the kit added or corrected, and the gaps left.
 
 - 54 wiki pages carry 563 kit blocks. 9 kit pages were added: Special project, Raid, Peace conference, Collection, Script constant, Intelligence operation, Map mode, Game rule, and Occupation and resistance modding.
+- After the review, the Defines page's 26 kit blocks of new-define tables (101 KB) moved to a tenth kit page, Defines additions, so the Defines page keeps its wiki text and a review block only. The Defines row below counts the blocks as written.
 - About 1.4 MB of kit text. Evidence tags: 1,609 `[vanilla-confirmed 1.19.3]`, 897 `[docs]`, 536 `[unverified]`, no `[game-tested 1.19.3]` (nobody ran the game).
 - Every documented effect, trigger, modifier, dynamic variable and console command is now named on its reference page. Every game documentation file is cited by at least one page's `sources`.
 - Every empty section the inventory found is filled, and every stub marker was checked. Most were ordinary prose. The real ones are now covered by kit blocks.

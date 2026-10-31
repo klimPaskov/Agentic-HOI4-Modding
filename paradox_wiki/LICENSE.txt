@@ -31,8 +31,9 @@ Changes made to the wiki text
   written by the Agentic HOI4 Modding Kit contributors. It corrects, updates and
   extends the wiki text against the installed game, and says which build it was
   checked against.
-* Pages whose header carries "<!-- kit:page -->" have no wiki counterpart. The
-  kit contributors wrote them in full.
+* Pages whose header carries "<!-- kit:page -->" were written in full by the kit
+  contributors. Most cover systems the wiki has no page for; "Defines additions"
+  supplements the wiki's Defines page, whose text it leaves unchanged.
 
 Images
 ------
