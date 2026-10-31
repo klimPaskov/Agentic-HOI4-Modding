@@ -26,14 +26,14 @@ Gaps left: the wiki's long behaviour descriptions (shift-click rules, save and u
 
 The nudger is a tool in Hearts of Iron IV used in creation of map-related files.
 
-The nudger is accessed via the [nudge console command](<console-commands.md>) or the "Nudge!" button in the main menu, which appears when the [debug launch option](<modding.md>) is used when launching the game. Upon launching, it will show the default state of the world, as it appears in the [bookmark](<bookmark-modding.md>) that's set to be the default. If there is no default bookmark, then the map will appear as having no countries.
+The nudger is accessed via the [nudge console command](<console_commands.md>) or the "Nudge!" button in the main menu, which appears when the [debug launch option](<modding.md>) is used when launching the game. Upon launching, it will show the default state of the world, as it appears in the [bookmark](<bookmark_modding.md>) that's set to be the default. If there is no default bookmark, then the map will appear as having no countries.
 
 The nudger will always output the files directly into the [user directory](<modding.md>), such as `C:/Users/username/Documents/Paradox Interactive/Hearts of Iron IV/` (the default location on Windows without OneDrive). **Unless moved, the generated files will be loaded when opening the base game**, potentially causing crashes and at the very least map definition errors that cause the game to close itself without the debug mode. This potentially includes the `history/states/`, `map/`, and `localisation/english/`.
 
 ## Overview <a id="Overview"></a>
 
 - States: Used to edit the state history files. It doesn't modify the state-wide building model positions, necessary for a new state to work as intended.
-- Supply areas: The supply areas were removed in 1.11 (the update with the ![No Step Back](media/country-creation_1d4220f262__img16.png)No Step Back DLC), and the button is currently non-functional.
+- Supply areas: The supply areas were removed in 1.11 (the update with the ![No Step Back](media/country_creation_1d4220f262__img16.png)No Step Back DLC), and the button is currently non-functional.
 - Strategic regions: Edits the strategic region borders and, for naval regions, terrain and modifiers.
 - Ambient objects: Edits the 3D models rendered consistently on the world's map, most notably the borders on the North and the South.
 - Database: Edits the `/Hearts of Iron IV/map/definition.csv` file, used for province information.
@@ -55,7 +55,7 @@ The game's own map error text tells the player: "You can still access the Nudger
 
 ## States <a id="States"></a>
 
-*See also: [State modding](<state-modding.md>)*
+*See also: [State modding](<state_modding.md>)*
 
 The state section of the nudger is used for defining the borders and names of states. Any state border changes will also automatically change the borders of the strategic regions that cover the states, taking provinces out of strategic regions completely for new states. Within the user directory, this edits the `/Hearts of Iron IV/history/states/` and `/Hearts of Iron IV/map/strategicregions/` folders and the `/Hearts of Iron IV/localisation/english/state_names_l_english.yml` file (for the English language).
 **The nudger will remove quotation marks from the state file, aside from the `name` attribute.** This can break the rest of the script that's located inside of them. Most commonly, this will break any [has_dlc](<triggers.md>) checks, which will result in the entirety of the state breaking thereafter.
@@ -92,7 +92,7 @@ Among the buttons that can always be selected, there are "Delete all empty" and 
 \*Please help improve this article or section by expanding it .\*
 
 <!-- kit:begin id="nudger-buildings" at="section:Buildings" -->
-**Kit addition** The Buildings section writes `map/buildings.txt` (to the user directory, like the other sections). The row layout is `state id;building id;x;y;z;rotation;sea province` and is explained on [Map modding](<map-modding.md#Buildings>) and [Building modding](<building-modding.md#Models>). The output path is inferred from the file names in the exe. [unverified] `hoi4.exe`
+**Kit addition** The Buildings section writes `map/buildings.txt` (to the user directory, like the other sections). The row layout is `state id;building id;x;y;z;rotation;sea province` and is explained on [Map modding](<map_modding.md#Buildings>) and [Building modding](<building_modding.md#Models>). The output path is inferred from the file names in the exe. [unverified] `hoi4.exe`
 
 What a correct vanilla file looks like, to check a nudged file against. All rows: [vanilla-confirmed 1.19.3] `map/buildings.txt`.
 
@@ -139,12 +139,12 @@ The game folder holds `buildings_nudger_markers.txt` (874 bytes). Every byte is 
 
 The panels line up with the page's overview line "Edits the strategic region borders and, for naval regions, terrain and modifiers". What each button does is read from its label only. [unverified] `interface/nudge.gui`
 
-Vanilla has 304 strategic region files in `map/strategicregions/` (for example `1-Southern England.txt`). Their format is on [Map modding](<map-modding.md#Strategic_regions>) and [Strategic region modding](<strategic-region-modding.md>). [vanilla-confirmed 1.19.3] `map/strategicregions/`
+Vanilla has 304 strategic region files in `map/strategicregions/` (for example `1-Southern England.txt`). Their format is on [Map modding](<map_modding.md#Strategic_regions>) and [Strategic region modding](<strategic_region_modding.md>). [vanilla-confirmed 1.19.3] `map/strategicregions/`
 <!-- kit:end id="nudger-strategic-regions" -->
 
 ### Weather <a id="Weather"></a>
 
-*See also: [Map modding § Weather](<map-modding.md#Weather>)*
+*See also: [Map modding § Weather](<map_modding.md#Weather>)*
 
 ![Nudger weather](media/nudger_14dc29a6a3__img2.png)Instruments in the Weather section
 
@@ -211,7 +211,7 @@ There are the following buttons present in the Database section:
 \*Please help improve this article or section by expanding it .\*
 
 <!-- kit:begin id="nudger-units" at="section:Units" -->
-**Kit addition** The Units section writes `map/unitstacks.txt`. The row layout is `province id;type;x;y;z;rotation;offset`, with 39 types (0 Standstill ... 38 Victory point); the type table is on [Map modding](<map-modding.md#Unit_model_and_victory_point_positions>). The output path is inferred from the file name in the exe. [unverified] `hoi4.exe`
+**Kit addition** The Units section writes `map/unitstacks.txt`. The row layout is `province id;type;x;y;z;rotation;offset`, with 39 types (0 Standstill ... 38 Victory point); the type table is on [Map modding](<map_modding.md#Unit_model_and_victory_point_positions>). The output path is inferred from the file name in the exe. [unverified] `hoi4.exe`
 
 Vanilla `map/unitstacks.txt`, as a reference for a nudged file. All rows: [vanilla-confirmed 1.19.3] `map/unitstacks.txt`.
 
@@ -228,7 +228,7 @@ The game folder holds `unit_nudger_markers.txt` (13208 bytes), also all NUL byte
 
 ## Supply <a id="Supply"></a>
 
-*"Supply hub" and "Supply node" are used interchangeably here**See also: [Map modding § Supply](<map-modding.md#Supply>)*
+*"Supply hub" and "Supply node" are used interchangeably here**See also: [Map modding § Supply](<map_modding.md#Supply>)*
 
 The supply section in the nudge is used for determining the starting positions and levels of supply hubs and railways. This edits the `/Hearts of Iron IV/map/supply_nodes.txt` and `/Hearts of Iron IV/map/railways.txt` files. **If either of these files contains references to provinces that don't exist or aren't in any state, the nudger will crash upon selecting this tab.**
 
@@ -274,10 +274,10 @@ While `^Ctrl`, the edit mode is enabled. Letting go of `^Ctrl` will immediately 
 | Supply | `map/railways.txt` | 909 lines |
 | Weather | `map/weatherpositions.txt` | 588 rows |
 | Database | `map/definition.csv` | 13414 lines (ids 0 to 13413) |
-| Ambient objects | `map/ambient_object.txt` | see [Entity modding](<entity-modding.md>) |
+| Ambient objects | `map/ambient_object.txt` | see [Entity modding](<entity_modding.md>) |
 | Supply areas | `map/supplyareas/` | 1 file, `1-SupplyArea.txt` |
 
-Related pages: [Map modding](<map-modding.md>), [State modding](<state-modding.md>), [Strategic region modding](<strategic-region-modding.md>), [Supply areas modding](<supply-areas-modding.md>), [Building modding](<building-modding.md>), [Console commands](<console-commands.md>).
+Related pages: [Map modding](<map_modding.md>), [State modding](<state_modding.md>), [Strategic region modding](<strategic_region_modding.md>), [Supply areas modding](<supply_areas_modding.md>), [Building modding](<building_modding.md>), [Console commands](<console_commands.md>).
 
 The nudger's own windows are in `interface/nudge.gui` (about 2760 lines) and its sprites in `interface/nudge.gfx`. [vanilla-confirmed 1.19.3] `interface/nudge.gui`, `interface/nudge.gfx`
 <!-- kit:end id="nudger-references" -->
@@ -288,10 +288,10 @@ The nudger's own windows are in `interface/nudge.gui` (about 2760 lines) and its
 
 **[Modding](<modding.md>)**
 
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list-of-modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on-actions.md>) • [Data structures](<data-structures.md>) • [Flags](<data-structures.md#Flags>) • [Event targets](<data-structures.md#Event_targets>) • [Country tag aliases](<data-structures.md#Country_tag_aliases>) • [Variables](<data-structures.md#Variables>) • [Arrays](<data-structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement-modding.md>) • [AI](<ai-modding.md>) • [AI focuses](<ai-focuses.md>) • [Autonomous states](<autonomy-state-modding.md>) • [Balances of power](<balance-of-power-modding.md>) • [Bookmarks/Scenarios](<bookmark-modding.md>) • [Game rules](<bookmark-modding.md#Game_rules>) • [Buildings](<building-modding.md>) • [Characters and traits](<character-modding.md>) • [Cosmetic tags](<cosmetic-tag-modding.md>) • [Countries](<country-creation.md>) • [Divisions](<division-modding.md>) • [Decisions](<decision-modding.md>) • [Doctrines](<doctrine-modding.md>) • [Equipment](<equipment-modding.md>) • [Events](<event-modding.md>) • [Factions](<faction-modding.md>) • [Ideas](<idea-modding.md>) • [Ideologies](<ideology-modding.md>) • [Military industrial organizations](<military-industrial-organization-modding.md>) • [National focuses](<national-focus-modding.md>) • [Resources](<resources-modding.md>) • [Scripted GUI](<scripted-gui-modding.md>) • [Technologies and doctrines](<technology-modding.md>) • [Units](<unit-modding.md>)
-- **Map**: [Map](<map-modding.md>) • [States](<state-modding.md>) • [Supply areas](<supply-areas-modding.md>) • [Strategic regions](<strategic-region-modding.md>)
-- **Graphical**: [Interface](<interface-modding.md>) • [Graphical assets](<graphical-asset-modding.md>) • [Entities](<entity-modding.md>) • [Posteffects](<posteffect-modding.md>) • [Particles](<particle-modding.md>) • [Fonts](<font-modding.md>)
-- **Cosmetic**: [Portraits](<portrait-modding.md>) • [Namelists](<namelist-modding.md>) • [Music](<music-modding.md>) • [Sound](<sound-modding.md>)
-- **Other**: [Console commands](<console-commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod-structure.md>) • [Mods](<mods.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection-modding.md>) • [Defines additions](<defines-additions.md>) • [Game rule modding](<game-rule-modding.md>) • [Intelligence operation modding](<intelligence-operation-modding.md>) • [Map mode modding](<map-mode-modding.md>) • [Occupation and resistance modding](<occupation-and-resistance-modding.md>) • [Peace conference modding](<peace-conference-modding.md>) • [Raid modding](<raid-modding.md>) • [Script constant modding](<script-constant-modding.md>) • [Special project modding](<special-project-modding.md>)
+- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
+- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
+- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
+- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
+- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
+- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)

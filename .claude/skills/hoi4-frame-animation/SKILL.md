@@ -72,10 +72,10 @@ Before wiring an animated asset into the game, inspect the local sources that ap
 
 Required references:
 
-- `paradox_wiki/graphical-asset-modding.md`
-- `paradox_wiki/interface-modding.md` when the animation appears in GUI
-- `paradox_wiki/scripted-gui-modding.md` when the animation appears in scripted GUI
-- `paradox_wiki/character-modding.md` when the animation is a portrait
+- `paradox_wiki/graphical_asset_modding.md`
+- `paradox_wiki/interface_modding.md` when the animation appears in GUI
+- `paradox_wiki/scripted_gui_modding.md` when the animation appears in scripted GUI
+- `paradox_wiki/character_modding.md` when the animation is a portrait
 - relevant vanilla `.gfx` and `.gui` files under `<HOI4_INSTALL_DIR>/`
 - existing repository `.gfx`, `.gui`, portrait, focus, decision, and scripted GUI examples when available
 

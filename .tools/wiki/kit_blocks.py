@@ -28,9 +28,12 @@ Every page has one ``review`` block at ``top``. Its begin marker records the rev
 (the date) and, on wiki pages, ``revision`` (the wiki revision that was reviewed).
 
 File names: a page's title is its level-1 heading, and its file is ``file_name(title)``,
-the title in lowercase kebab-case plus ``.md`` (``Scripted GUI modding`` is
-``scripted-gui-modding.md``). The file name never carries the title, so tools read the
-title from the heading.
+the title in lowercase snake_case plus ``.md`` (``Scripted GUI modding`` is
+``scripted_gui_modding.md``). Tools read the title from the heading, not from the file
+name. The underscore is deliberate: HOI4 Agent Tools derives a wiki page's title from
+its file name by reading ``_`` as a space and compares it with the page names it asks
+for without regard to case, so ``event_modding.md`` is the page "Event modding"
+(see ``agent_title``).
 
 Standard library only; Python 3.9 or newer.
 """
@@ -63,19 +66,29 @@ DEFAULT_REVIEW = (
 
 Heading = Tuple[int, int, str, List[str]]  # line index, level, visible text, anchors
 
-PAGE_FILE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
-MEDIA_FILE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
+PAGE_FILE = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*\.md$")
+MEDIA_FILE = re.compile(r"^[a-z0-9][a-z0-9_.]*$")
 TITLE_LINE = re.compile(r"^# (.+?)\s*$", re.M)
 
 
 def file_stem(title: str) -> str:
-    """The title in lowercase kebab-case: ``Scripted GUI modding`` -> ``scripted-gui-modding``."""
-    return re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    """The title in lowercase snake_case: ``Scripted GUI modding`` -> ``scripted_gui_modding``."""
+    return re.sub(r"[^a-z0-9]+", "_", title.lower()).strip("_")
 
 
 def file_name(title: str) -> str:
     """The snapshot file name of the page titled `title`."""
     return file_stem(title) + ".md"
+
+
+def agent_title(name: str) -> str:
+    """The title HOI4 Agent Tools derives from a snapshot file name (``event_modding.md`` -> ``event modding``).
+
+    It strips the extension and turns each underscore into a space, then compares the
+    result with the page names it looks for, ignoring case. For a title made of letters,
+    digits and single spaces this equals the heading apart from case.
+    """
+    return re.sub(r"\.md$", "", name, flags=re.I).replace("_", " ")
 
 
 def page_title(text: str) -> Optional[str]:

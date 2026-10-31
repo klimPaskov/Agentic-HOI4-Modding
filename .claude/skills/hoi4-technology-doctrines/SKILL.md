@@ -18,14 +18,14 @@ If a route fails once, retry once with narrower input, then read the local files
 
 | Question | Read |
 | --- | --- |
-| Technology fields, cost, paths, folders, GUI, sharing groups | `WIKI/technology-modding.md` |
+| Technology fields, cost, paths, folders, GUI, sharing groups | `WIKI/technology_modding.md` |
 | Doctrine concepts, effects, triggers, modifiers | `GAME/common/doctrines/_documentation.md` |
 | Doctrine folder, grand doctrine, track, and sub-doctrine syntax | `GAME/common/doctrines/folders/_documentation.md`, `grand_doctrines/_documentation.md`, `tracks/_documentation.md`, `subdoctrines/_documentation.md` |
 | Effects (`set_technology`, `add_tech_bonus`, `set_grand_doctrine`, and the rest) | `GAME/documentation/effects_documentation.md` |
 | Triggers (`has_tech`, `has_doctrine`, `has_mastery`, and the rest) | `GAME/documentation/triggers_documentation.md` |
 | Modifiers (`research_speed_factor`, `<folder>_doctrine_cost_factor`, mastery gain factors) | `GAME/documentation/modifiers_documentation.md` |
 | Defines (`NTechnology`, `NDoctrines`) | `GAME/common/defines/00_defines.lua` |
-| Research weighting for the AI | `WIKI/technology-modding.md` (AI weighting), `WIKI/ai-focuses.md`, `hoi4-ai-strategies` |
+| Research weighting for the AI | `WIKI/technology_modding.md` (AI weighting), `WIKI/ai_focuses.md`, `hoi4-ai-strategies` |
 
 The tree and folder interface authoring detail is in `references/technology-tree-gui.md`.
 Doctrine authoring skeletons, loc keys, and GUI notes are in `references/doctrine-authoring.md`.

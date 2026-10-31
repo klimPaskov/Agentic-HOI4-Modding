@@ -1,6 +1,6 @@
 # Offline Paradox wiki snapshot tooling
 
-`paradox_wiki/` is the kit's offline Hearts of Iron IV modding reference. It holds one Markdown file per page, named after the page title in lowercase kebab-case (`scripted-gui-modding.md`), `media/` with every image those pages show, and `LICENSE.txt`. Most pages are captured from the wiki's modding pages. The kit corrects and extends them against the installed game in kit blocks, and adds kit pages for systems the wiki does not cover. The project instructions point every implementation task at it, so it has to stay current and self-contained, and read cleanly as plain Markdown.
+`paradox_wiki/` is the kit's offline Hearts of Iron IV modding reference. It holds one Markdown file per page, named after the page title in lowercase snake_case (`scripted_gui_modding.md`), `media/` with every image those pages show, and `LICENSE.txt`. Most pages are captured from the wiki's modding pages. The kit corrects and extends them against the installed game in kit blocks, and adds kit pages for systems the wiki does not cover. The project instructions point every implementation task at it, so it has to stay current and self-contained, and read cleanly as plain Markdown.
 
 These tools maintain it. None of them launches Hearts of Iron IV.
 
@@ -146,17 +146,19 @@ The snapshot covers the wiki's `Category:Modding` members and the pages in `Temp
 
 #### File name scheme
 
-A page's file is its title in lowercase kebab-case plus `.md`: lowercase every letter, turn each run of other characters into one hyphen, and trim the ends. The title is the page's level-1 heading.
+A page's file is its title in lowercase snake_case plus `.md`: lowercase every letter, turn each run of other characters into one underscore, and trim the ends. The title is the page's level-1 heading.
 
 | Title | File |
 | --- | --- |
 | `Defines` | `defines.md` |
-| `AI focuses` | `ai-focuses.md` |
-| `Scripted GUI modding` | `scripted-gui-modding.md` |
-| `Military industrial organization modding` | `military-industrial-organization-modding.md` |
+| `AI focuses` | `ai_focuses.md` |
+| `Scripted GUI modding` | `scripted_gui_modding.md` |
+| `Military industrial organization modding` | `military_industrial_organization_modding.md` |
 
 - File names have no spaces, capitals or site name, so they are easy to type, glob and pass between tools. `kit_blocks.file_name(title)` is the one definition; the sync, verify and status tools all use it, and the verify check fails a page whose file is not named after its heading.
-- Tools read the title from the heading and never parse it out of the file name.
+- The kit's tools read the title from the heading and never parse it out of the file name.
+- **Why underscores.** HOI4 Agent Tools (`hoi4.reference_context`, `hoi4.reference_search`) derives a wiki page's title from its file name: it strips `.md` and turns each `_` into a space, then looks up the pages it needs ("Event modding", "Data structures", "Console commands") by title without regard to case. `event_modding.md` is therefore the page "Event modding" in the pinned release (4.0.3) and later ones, with no change on the Agent Tools side. A hyphen would not be read as a space, so the required pages would be reported as `missing` and the console commands page would lose its console-only ranking. Keep `_` between words.
+- That reading only recovers titles made of letters, digits and single spaces. A title with punctuation would be read back differently, and the verify check reports it (`agent_title`).
 - Kit pages follow the same pattern. The `<!-- kit:page -->` marker and the "written by the kit" capture line identify them; no tool needs a prefix.
 - Media files are `<page-slug>_<url hash>__img<n>.<ext>`, lowercase without spaces, named for the page that first showed the image. The sync reuses a file by its image alt text, so a refresh keeps existing media names.
 - Links between pages are written `[text](<file-name.md#anchor>)` and must match the file name letter for letter, so they also resolve on case-sensitive file systems.
@@ -197,4 +199,4 @@ The wiki's text is CC BY-SA 3.0 (see `paradox_wiki/LICENSE.txt`), and the kit's 
 ## Copies in other repositories
 
 - **HOI4 Mod Setup** installs the snapshot as the `wiki.snapshot` component of `hoi4-mod-setup.manifest.json`. The manifest workflow on `main` regenerates its file evidence after a merge; for a local release, run `scripts/generate_manifest_evidence.py --revision <commit>` as `RELEASING.md` describes.
-- **Mods with their own copy**, such as Chaos Redux, should replace their `paradox_wiki/` with this one rather than editing it. Replace the whole folder: every file name changed with the move to kebab-case names, so copying over an old snapshot would leave both sets of files. Generic corrections belong in kit blocks here; mod-specific notes belong in the mod's own docs. Copy `kit_blocks.py`, `wiki_status.py` and `game_docs_index.json` with the updated sync and verify tools when the mod refreshes the snapshot itself.
+- **Mods with their own copy**, such as Chaos Redux, should replace their `paradox_wiki/` with this one rather than editing it. Replace the whole folder: every file name changed with the move to snake_case names, so copying over an old snapshot would leave both sets of files. Generic corrections belong in kit blocks here; mod-specific notes belong in the mod's own docs. Copy `kit_blocks.py`, `wiki_status.py` and `game_docs_index.json` with the updated sync and verify tools when the mod refreshes the snapshot itself.

@@ -69,19 +69,19 @@ A modifier's current total value can be received as a variable by reading `modif
 
 The following are *not* modifiers, even if they are similar:
 
-- Research bonuses allowing to grant a boost to a specific technology category. This is, instead, [an argument within ideas](<idea-modding.md#Modifiers>), which can be applied in the same way for advisors, but not elsewhere.
-- Equipment bonuses, such as decreasing the cost to build an equipment archetype. Similarly, this is [an argument within ideas](<idea-modding.md#Modifiers>), which can be applied in the same way for advisors and country leader traits, but not elsewhere.
+- Research bonuses allowing to grant a boost to a specific technology category. This is, instead, [an argument within ideas](<idea_modding.md#Modifiers>), which can be applied in the same way for advisors, but not elsewhere.
+- Equipment bonuses, such as decreasing the cost to build an equipment archetype. Similarly, this is [an argument within ideas](<idea_modding.md#Modifiers>), which can be applied in the same way for advisors and country leader traits, but not elsewhere.
 - Opinion modifiers, which can be applied to change the opinion (including trade influence) within countries, defined in `/Hearts of Iron IV/common/opinion_modifiers/*.txt` files.
 
 ## Applying a modifier <a id="Applying_a_modifier"></a>
 
 There are a large variety of ways to apply modifiers, but these are the primary ones:
 
-- [Ideas](<idea-modding.md>) - This primarily includes but is not limited to national spirits and hidden ideas. **These are the simplest way to add a modifier to a country** by using an [effect block](<effects.md>), such as a national focus reward, by using [add_ideas](<effects.md>) or [add_timed_idea](<effects.md>). These only work for countries.
-- [Dynamic modifiers](#Dynamic_modifiers) - This is similar to ideas (Showing up in the same screen for countries), but they accept [variables](<data-structures.md>) and can also be applied on states and unit leaders. **These are the primary way to add modifiers to a state.**
+- [Ideas](<idea_modding.md>) - This primarily includes but is not limited to national spirits and hidden ideas. **These are the simplest way to add a modifier to a country** by using an [effect block](<effects.md>), such as a national focus reward, by using [add_ideas](<effects.md>) or [add_timed_idea](<effects.md>). These only work for countries.
+- [Dynamic modifiers](#Dynamic_modifiers) - This is similar to ideas (Showing up in the same screen for countries), but they accept [variables](<data_structures.md>) and can also be applied on states and unit leaders. **These are the primary way to add modifiers to a state.**
 - Traits:
-  - [Country leader traits](<character-modding.md#Country_leader_traits>) - These can be added to ideas (including advisors which function similarly) and country leaders, which'll apply on the country.
-  - [Unit leader traits](<character-modding.md#Unit_leader_traits>) - These can be added to unit leaders and apply effects on the leaders themselves or their units. These are the primary way to add a modifier to a unit leader.
+  - [Country leader traits](<character_modding.md#Country_leader_traits>) - These can be added to ideas (including advisors which function similarly) and country leaders, which'll apply on the country.
+  - [Unit leader traits](<character_modding.md#Unit_leader_traits>) - These can be added to unit leaders and apply effects on the leaders themselves or their units. These are the primary way to add a modifier to a unit leader.
 - [Static modifiers](#Static_modifiers):
   - [Global modifiers](#Global_modifiers) - These are entirely hard-coded on *when* they apply, such as those used for stability and war support bonuses. However, these can be changed in *what* they apply.
   - [Provincial modifiers](#Province_modifiers) - These are the primary if not the only way to apply a modifier towards a specific province.
@@ -135,17 +135,17 @@ Custom modifiers now support dynamic commands (anything within square brackets).
 
 ## Dynamic modifiers <a id="Dynamic_modifiers"></a>
 
-*If you want to apply a consistent modifier to a country, [it's easier to use ideas instead.](<idea-modding.md>)*
+*If you want to apply a consistent modifier to a country, [it's easier to use ideas instead.](<idea_modding.md>)*
 
 Dynamic modifiers, defined in `/Hearts of Iron IV/common/dynamic_modifiers/*.txt` files, are a type to apply modifiers that accept variables. The modifiers are updated daily, unless the [force_update_dynamic_modifier effect](<effects.md>) is used to forcefully refresh the impact of modifiers. They can be applied to both countries and states, in case of the latter, the variable must be defined for the state, not for the country-owner or controller. They can also be applied to unit leaders.
 
-Unlike ideas, **there is no way to reload definitions of dynamic modifiers** via debug mode or console, any changes to their definitions require a game restart to apply in-game. Additionally, due to the daily refresh of the variable check, these are more poorly optimised than ideas are. Due to this, when it's feasible to not use variables for a country-scoped dynamic modifier, it's both easier and more optimised [to use national spirits instead.](<idea-modding.md>)
+Unlike ideas, **there is no way to reload definitions of dynamic modifiers** via debug mode or console, any changes to their definitions require a game restart to apply in-game. Additionally, due to the daily refresh of the variable check, these are more poorly optimised than ideas are. Due to this, when it's feasible to not use variables for a country-scoped dynamic modifier, it's both easier and more optimised [to use national spirits instead.](<idea_modding.md>)
 
 The dynamic modifiers are evaluated daily for each scope. The process consists of the following:
 
 - At the beginning of each day, each variable modifier value for each dynamic modifier is temporarily reset to 0, even if the null-coalescing operator is used to assume a different number as the default. Constant values do not get reset.
 - Dynamic modifiers are then evaluated in the order that they were given to the scope with `add_dynamic_modifier`.
-- The variable values inside of a dynamic modifier are assumed to be 0 until every variable inside is calculated. This includes those that rely on other modifiers, which includes the `modifier@modifier_name` [game variable](<data-structures.md>) or [MTTH variables](<data-structures.md#MTTH_variables>) that utilise that game variable.
+- The variable values inside of a dynamic modifier are assumed to be 0 until every variable inside is calculated. This includes those that rely on other modifiers, which includes the `modifier@modifier_name` [game variable](<data_structures.md>) or [MTTH variables](<data_structures.md#MTTH_variables>) that utilise that game variable.
 - After the variables are calculated for a single dynamic modifier, the modifiers apply to the scope with the dynamic modifier and the game moves onto the next dynamic modifier added to the current scope until each one is calculated.
 
 <!-- kit:begin id="dynamic-scopes" at="section:Dynamic_modifiers" -->
@@ -468,7 +468,7 @@ The function of modifier definitions is to modify the value of a game variable, 
 
 Note that, unlike countries and states, unit leaders use leader_modifier@modifier_definition_name or unit_modifier@modifier_definition_name in their scopes.
 
-Example usage of making a modifier token create civilian factories in random core states monthly, in any [on action](<on-actions.md>) file:
+Example usage of making a modifier token create civilian factories in random core states monthly, in any [on action](<on_actions.md>) file:
 
 **Example**
 
@@ -559,7 +559,7 @@ l_english:
 
 ### Implementation <a id="Implementation"></a>
 
-New opinion modifiers can only be added using the [add_opinion_modifier effect](<effects.md>) (or the similar [reverse_add_opinion_modifier](<effects.md>)) in any effect block, such as a [focus reward](<national-focus-modding.md#Effects>), a [country history file](<country-creation.md>), or an idea's [on_add and on_remove](<idea-modding.md#Effects>). Similarly, already applied new opinion modifiers can only be removed with [remove_opinion_modifier](<effects.md>). When `add_opinion_modifier` is used to apply an opinion modifier, only the country where the effect is executed will change its opinion towards the target.
+New opinion modifiers can only be added using the [add_opinion_modifier effect](<effects.md>) (or the similar [reverse_add_opinion_modifier](<effects.md>)) in any effect block, such as a [focus reward](<national_focus_modding.md#Effects>), a [country history file](<country_creation.md>), or an idea's [on_add and on_remove](<idea_modding.md#Effects>). Similarly, already applied new opinion modifiers can only be removed with [remove_opinion_modifier](<effects.md>). When `add_opinion_modifier` is used to apply an opinion modifier, only the country where the effect is executed will change its opinion towards the target.
 
 There is no way to use a modifier block to directly apply an opinion modifier, but it can be simulated by adding or removing an opinion modifier at the same time the modifier block's effects are. For example, this national spirit would simulate applying an opinion modifier towards every other country that has the idea:
 
@@ -736,7 +736,7 @@ Political country-scoped modifiers:
 | trade_opinion_factor | Makes AI more likely to purchase resources from this country. | `trade_opinion_factor = 0.5` | Percentual. |  | 1.0 |
 | defensive_war_stability_factor | Changes the penalty to the stability invoked by participating in a defensive war. | `defensive_war_stability_factor = 0.5` | Percentual. |  | 1.0 |
 | disabled_ideas | Disables manually changing ideas (including ministers and laws). | `disabled_ideas = 1` | Boolean (only 1). |  | 1.9 |
-| \<idea\|character slot>_cost_factor | Changes the cost in political power to add an idea or character within the specified slot. | `political_advisor_cost_factor = 0.5` | Percentual. | Idea slots can be found in common/idea_tags. [Requires an idea or a character of that category to be present in an earlier-evaluated file.](<idea-modding.md>) | 1.4 |
+| \<idea\|character slot>_cost_factor | Changes the cost in political power to add an idea or character within the specified slot. | `political_advisor_cost_factor = 0.5` | Percentual. | Idea slots can be found in common/idea_tags. [Requires an idea or a character of that category to be present in an earlier-evaluated file.](<idea_modding.md>) | 1.4 |
 | <idea category type>_category_type_cost_factor | Changes the cost in army experience to add an idea within any of the categories with the specified type. | `air_spirit_category_type_cost_factor = 0.5` | Percentual. | Idea category definitions can be found in `/Hearts of Iron IV/common/idea_tags/*.txt` files, a type is assigned with `type = army_spirit`. | 1.10 |
 | <ledger>_advisor_cost_factor | Changes the cost in political power to add an advisor assigned the specified military ledger. | `air_advisor_cost_factor = 0.5` | Percentual. | Ledgers are assigned to categories and characters in common/idea_tags and common/ideas. Modifier works with air, army, and navy. | 1.11 |
 | unit_leader_as_advisor_cp_cost_factor | Changes the cost in command power to turn a unit leader into an advisor. | `unit_leader_as_advisor_cp_cost_factor = 0.5` | Percentual. |  | 1.11 |
@@ -1048,10 +1048,10 @@ Intelligence-related country-scoped modifiers:
 | Name | Effects | Examples | Modifier type | Notes | Version added |
 | --- | --- | --- | --- | --- | --- |
 | agency_upgrade_time | Changes the time it takes to upgrade the agency | `agency_upgrade_time = 0.5` | Percentual. |  | 1.9 |
-| decryption | Changes the decription capability of the country. | `decryption = 1` | Flat. | Only works with the ![La Résistance](media/ai-modding_04cfcba22e__img6.png)La Résistance DLC disabled. | 1.0 |
-| decryption_factor | Changes the decription capability of the country by a percentage. | `decryption_factor = 0.5` | Percentual. | Only works with the ![La Résistance](media/ai-modding_04cfcba22e__img6.png)La Résistance DLC disabled. | 1.0 |
-| encryption | Changes the encryption capability of the country. | `encryption = 1` | Flat. | Only works with the ![La Résistance](media/ai-modding_04cfcba22e__img6.png)La Résistance DLC disabled. | 1.0 |
-| encryption_factor | Changes the encryption capability of the country by a percentage. | `encryption_factor = 0.5` | Percentual. | Only works with the ![La Résistance](media/ai-modding_04cfcba22e__img6.png)La Résistance DLC disabled. | 1.0 |
+| decryption | Changes the decription capability of the country. | `decryption = 1` | Flat. | Only works with the ![La Résistance](media/ai_modding_04cfcba22e__img6.png)La Résistance DLC disabled. | 1.0 |
+| decryption_factor | Changes the decription capability of the country by a percentage. | `decryption_factor = 0.5` | Percentual. | Only works with the ![La Résistance](media/ai_modding_04cfcba22e__img6.png)La Résistance DLC disabled. | 1.0 |
+| encryption | Changes the encryption capability of the country. | `encryption = 1` | Flat. | Only works with the ![La Résistance](media/ai_modding_04cfcba22e__img6.png)La Résistance DLC disabled. | 1.0 |
+| encryption_factor | Changes the encryption capability of the country by a percentage. | `encryption_factor = 0.5` | Percentual. | Only works with the ![La Résistance](media/ai_modding_04cfcba22e__img6.png)La Résistance DLC disabled. | 1.0 |
 | <type>_intel_decryption_bonus | Adds a cipher bonus to the specified intel. | `civilian_intel_decryption_bonus = 0.5` | Percentual. | Types are: airforce, army, civilian, navy. | 1.9 |
 | <type>_intel_factor | Modifies the intelligence you receive of the specified type. | `navy_intel_factor = 0.5` | Percentual. | Types are: airforce, army, civilian, navy. | 1.9 |
 | <type>_intel_to_others | Changes the amount of intel other countries will receive of the specified type. | `civilian_intel_to_others = 0.5` | Percentual. | Types are: airforce, army, civilian, navy. | 1.9 |
@@ -1069,9 +1069,9 @@ Intelligence-related country-scoped modifiers:
 | <mission>_factor | Modifies the effect of the specified mission. | `boost_ideology_mission_factor = 0.5` | Percentual. | Types are: boost_ideology_mission, boost_resistance, control_trade_mission, diplomatic_pressure_mission, propaganda_mission, root_out_resistance_effectiveness. | 1.9 |
 | commando_trait_chance_factor | Modifies the chance for an operative to get the commando trait when hired. | `commando_trait_chance_factor = 0.5` | Percentual. |  | 1.9 |
 | crypto_department_enabled | Enables the crypto department. | `crypto_department_enabled = 1` | Boolean (only 1). |  | 1.9 |
-| crypto_strength | Modifies the cryptology level. | `crypto_strength = 1` | Flat. | ![La Résistance](media/ai-modding_04cfcba22e__img6.png)La Résistance DLC enabled. | 1.9 |
-| decryption_power | Modifies the decryption power. | `decryption_power = 1` | Flat. | ![La Résistance](media/ai-modding_04cfcba22e__img6.png)La Résistance DLC enabled. | 1.9 |
-| decryption_power_factor | Modifies the decryption power by a percentage. | `decryption_power_factor = 0.3` | Percentual. | ![La Résistance](media/ai-modding_04cfcba22e__img6.png)La Résistance DLC enabled. | 1.9 |
+| crypto_strength | Modifies the cryptology level. | `crypto_strength = 1` | Flat. | ![La Résistance](media/ai_modding_04cfcba22e__img6.png)La Résistance DLC enabled. | 1.9 |
+| decryption_power | Modifies the decryption power. | `decryption_power = 1` | Flat. | ![La Résistance](media/ai_modding_04cfcba22e__img6.png)La Résistance DLC enabled. | 1.9 |
+| decryption_power_factor | Modifies the decryption power by a percentage. | `decryption_power_factor = 0.3` | Percentual. | ![La Résistance](media/ai_modding_04cfcba22e__img6.png)La Résistance DLC enabled. | 1.9 |
 | defense_impact_on_blueprint_stealing | Modifies the impact of enemy defense on the blueprint stealing operation. | `defense_impact_on_blueprint_stealing = 0.3` | Percentual. |  | 1.9 |
 | intel_from_combat_factor | Modifies the intelligence gained from combat. | `intel_from_combat_factor = 0.3` | Percentual. |  | 1.9 |
 | intel_from_operatives_factor | Modifies the intelligence gained from operatives and infiltrated assets. | `intel_from_operatives_factor = 0.3` | Percentual. |  | 1.9 |
@@ -1785,10 +1785,10 @@ Strategic region-scoped modifiers:
 
 **[Modding](<modding.md>)**
 
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [List of modifiers](<list-of-modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on-actions.md>) • [Data structures](<data-structures.md>) • [Flags](<data-structures.md#Flags>) • [Event targets](<data-structures.md#Event_targets>) • [Country tag aliases](<data-structures.md#Country_tag_aliases>) • [Variables](<data-structures.md#Variables>) • [Arrays](<data-structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement-modding.md>) • [AI](<ai-modding.md>) • [AI focuses](<ai-focuses.md>) • [Autonomous states](<autonomy-state-modding.md>) • [Balances of power](<balance-of-power-modding.md>) • [Bookmarks/Scenarios](<bookmark-modding.md>) • [Game rules](<bookmark-modding.md#Game_rules>) • [Buildings](<building-modding.md>) • [Characters and traits](<character-modding.md>) • [Cosmetic tags](<cosmetic-tag-modding.md>) • [Countries](<country-creation.md>) • [Divisions](<division-modding.md>) • [Decisions](<decision-modding.md>) • [Doctrines](<doctrine-modding.md>) • [Equipment](<equipment-modding.md>) • [Events](<event-modding.md>) • [Factions](<faction-modding.md>) • [Ideas](<idea-modding.md>) • [Ideologies](<ideology-modding.md>) • [Military industrial organizations](<military-industrial-organization-modding.md>) • [National focuses](<national-focus-modding.md>) • [Resources](<resources-modding.md>) • [Scripted GUI](<scripted-gui-modding.md>) • [Technologies and doctrines](<technology-modding.md>) • [Units](<unit-modding.md>)
-- **Map**: [Map](<map-modding.md>) • [States](<state-modding.md>) • [Supply areas](<supply-areas-modding.md>) • [Strategic regions](<strategic-region-modding.md>)
-- **Graphical**: [Interface](<interface-modding.md>) • [Graphical assets](<graphical-asset-modding.md>) • [Entities](<entity-modding.md>) • [Posteffects](<posteffect-modding.md>) • [Particles](<particle-modding.md>) • [Fonts](<font-modding.md>)
-- **Cosmetic**: [Portraits](<portrait-modding.md>) • [Namelists](<namelist-modding.md>) • [Music](<music-modding.md>) • [Sound](<sound-modding.md>)
-- **Other**: [Console commands](<console-commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod-structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection-modding.md>) • [Defines additions](<defines-additions.md>) • [Game rule modding](<game-rule-modding.md>) • [Intelligence operation modding](<intelligence-operation-modding.md>) • [Map mode modding](<map-mode-modding.md>) • [Occupation and resistance modding](<occupation-and-resistance-modding.md>) • [Peace conference modding](<peace-conference-modding.md>) • [Raid modding](<raid-modding.md>) • [Script constant modding](<script-constant-modding.md>) • [Special project modding](<special-project-modding.md>)
+- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
+- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
+- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
+- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
+- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
+- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)

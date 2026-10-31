@@ -42,15 +42,15 @@ Installed documentation outranks the wiki; record any disagreement.
 | --- | --- | --- |
 | Effect syntax | `GAME/documentation/effects_documentation.md` (search the effect name); `WIKI/effects.md` sections "Diplomacy", "Autonomy", "War", "Factions" | Decisions, events, and `GAME/common/scripted_effects/00_scripted_effects.txt` |
 | Trigger syntax | `GAME/documentation/triggers_documentation.md` | |
-| Factions: goals, rules, rule groups, templates, manifests, member upgrades | `GAME/common/factions/_documentation.md`; `WIKI/faction-modding.md` | `GAME/common/factions/templates/generic_factions.txt`, `rules/joining_rules.txt`, `rules/war_declaration_rules.txt`, `goals/faction_goals_short_term.txt` |
-| Autonomous states | `WIKI/autonomy-state-modding.md` (there is no installed documentation file for this folder) | `GAME/common/autonomous_states/puppet.txt`, `dominion.txt`, `integrated_puppet.txt` |
+| Factions: goals, rules, rule groups, templates, manifests, member upgrades | `GAME/common/factions/_documentation.md`; `WIKI/faction_modding.md` | `GAME/common/factions/templates/generic_factions.txt`, `rules/joining_rules.txt`, `rules/war_declaration_rules.txt`, `goals/faction_goals_short_term.txt` |
+| Autonomous states | `WIKI/autonomy_state_modding.md` (there is no installed documentation file for this folder) | `GAME/common/autonomous_states/puppet.txt`, `dominion.txt`, `integrated_puppet.txt` |
 | Wargoal types | No installed or wiki documentation page; read the vanilla definition | `GAME/common/wargoals/00_invasion.txt` |
 | Opinion modifiers | Header comments of `GAME/common/opinion_modifiers/00_opinion_modifiers.txt`; wiki Effects, "Diplomacy" | `00_opinion_modifiers.txt`, `00_diplomatic.txt` |
 | Scripted diplomatic actions | Commented template at the top of `GAME/common/scripted_diplomatic_actions/scripted_diplomatic_actions.txt` | The same file (documentation only in vanilla) |
 | Peace conference cost modifiers and AI desires | `GAME/common/peace_conference/cost_modifiers/_documentation.md`, `ai_peace/_documentation.md` | `cost_modifiers/00_generic_peace.txt`, `ai_peace/00_misc.txt` |
-| On actions | `GAME/common/on_actions/_documentation.md` (list, updated 2024-11); `WIKI/on-actions.md` (scopes) | `GAME/common/on_actions/00_on_actions.txt` |
-| Rules, game-rule options | `WIKI/autonomy-state-modding.md` rule table; `set_rule` / `has_rule` in the effects and triggers docs | |
-| Decision war warnings | `WIKI/decision-modding.md` ("Warning for war", missions) | |
+| On actions | `GAME/common/on_actions/_documentation.md` (list, updated 2024-11); `WIKI/on_actions.md` (scopes) | `GAME/common/on_actions/00_on_actions.txt` |
+| Rules, game-rule options | `WIKI/autonomy_state_modding.md` rule table; `set_rule` / `has_rule` in the effects and triggers docs | |
+| Decision war warnings | `WIKI/decision_modding.md` ("Warning for war", missions) | |
 | Tuning constants | `GAME/common/defines/00_defines.lua` (`NDefines.NCountry`, `NFactions`, `NAI`, wargoal and tension entries); `WIKI/defines.md` | |
 
 Use the hoi4 MCP routes (`hoi4_reference_search`, `hoi4_reference_read`, `hoi4_source_lookup`, `hoi4_script_validate`) to cite exact lines.
@@ -299,7 +299,7 @@ wargoal_types = {
 
 ## On actions for diplomacy and war
 
-The full list is in `GAME/common/on_actions/_documentation.md` and the scope notes in `WIKI/on-actions.md`; the scope table is in `references/syntax-reference.md`.
+The full list is in `GAME/common/on_actions/_documentation.md` and the scope notes in `WIKI/on_actions.md`; the scope table is in `references/syntax-reference.md`.
 Groups: diplomacy and war (`on_declare_war`, `on_war_relation_added`, `on_war`, `on_peace`, `on_capitulation`, `on_annex`, `on_puppet`, `on_liberate`, `on_release_as_free`, `on_release_as_puppet`), factions (`on_create_faction`, `on_faction_formed`, `on_offer_join_faction`, `on_join_faction`, `on_assume_faction_leadership`, `on_leave_faction`), autonomy (`on_subject_annexed`, `on_subject_free`, `on_subject_autonomy_level_change`), peace (`on_before_peace_conference_start`, `on_peaceconference_started`, `on_peaceconference_ended`), and wargoals (`on_justifying_wargoal_pulse`, `on_wargoal_expire`).
 ROOT and FROM differ per action (for example `on_declare_war` has ROOT as the aggressor and FROM as the target, `on_capitulation` has ROOT as the loser and FROM as the winner), so read the table before using FROM.
 Repository rule: `on_daily`, `on_weekly`, and `on_monthly` iterate all countries and need explicit permission; prefer these event-style on actions, which fire only on the relevant change.

@@ -34,7 +34,7 @@ Do not reproduce the files below from memory; read the section that bears on the
 | Dynamic variables such as `num_equipment@type` | `GAME/documentation/dynamic_variables_documentation.md` |
 | Modifiers (`equipment_conversion_speed`, licence modifiers, design cost factors) | `GAME/documentation/modifiers_documentation.md` |
 | Defines (stockpile, licence, module XP costs) | `GAME/common/defines/00_defines.lua` |
-| Concepts and legacy notes | `WIKI/equipment-modding.md`, `WIKI/division-modding.md` (equipment production), `WIKI/country-creation.md` (Variants) |
+| Concepts and legacy notes | `WIKI/equipment_modding.md`, `WIKI/division_modding.md` (equipment production), `WIKI/country_creation.md` (Variants) |
 
 The detailed module, designer, and AI design material is in `references/modular-equipment-and-designer.md`.
 The full effect, trigger, and dynamic variable catalogue is in `references/production-and-stockpile.md`.

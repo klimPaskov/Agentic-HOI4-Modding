@@ -46,7 +46,7 @@ Manually downloaded mods should include a *.mod* text file along with a folder. 
 
 - The launcher keeps the ordered list of enabled mods (a playset). At start the game reads the enabled mods from `dlc_load.json` in the user directory, which also carries the disabled DLCs. `hoi4.exe` contains the strings `dlc_load.json`, `enabled_mods`, `disabled_dlcs` and `mods_registry.json`. The format of `dlc_load.json` is described on [Modding](<modding.md#Mod_structure>). [unverified] (file names found only as strings in `hoi4.exe`)
 - A mod appears as "outdated" in the launcher when its `supported_version` does not fit the game. The launcher text says either "The mod does not have supported_version set." or "The mod supports version ...". The installed build is `1.19.3.0`, so a mod that targets it uses `supported_version = "1.19.*"` or `"1.19.3.0"`. [vanilla-confirmed 1.19.3] `pdx_launcher/common/localisation/l_english.yml`, `launcher-settings.json`.
-- The Steam Workshop folder name is the game's Steam app id: `steam_appid.txt` is `394360`, matching `workshop/content/394360` on [Mod structure](<mod-structure.md#Steam_Workshop_Mods>). [vanilla-confirmed 1.19.3] `steam_appid.txt`.
+- The Steam Workshop folder name is the game's Steam app id: `steam_appid.txt` is `394360`, matching `workshop/content/394360` on [Mod structure](<mod_structure.md#Steam_Workshop_Mods>). [vanilla-confirmed 1.19.3] `steam_appid.txt`.
 <!-- kit:end id="mods-mod-lists" -->
 
 ## Mods with Wiki pages <a id="Mods_with_Wiki_pages"></a>

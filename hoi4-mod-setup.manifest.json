@@ -11924,17 +11924,17 @@
     "destination": "paradox_wiki/",
     "snapshot_marker": null,
     "required_pages": [
-      "data-structures.md",
+      "data_structures.md",
       "triggers.md",
       "effects.md",
       "modifiers.md",
       "localisation.md",
       "scopes.md",
-      "on-actions.md",
-      "event-modding.md",
-      "decision-modding.md",
-      "idea-modding.md",
-      "ai-modding.md"
+      "on_actions.md",
+      "event_modding.md",
+      "decision_modding.md",
+      "idea_modding.md",
+      "ai_modding.md"
     ],
     "required_media_policy": "all_declared",
     "provenance": {

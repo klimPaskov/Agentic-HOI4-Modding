@@ -2,7 +2,7 @@
 """Regenerate the offline Paradox wiki snapshot from the live Hearts of Iron IV wiki.
 
 ``paradox_wiki/`` holds one markdown file per wiki modding page, named after its
-title in lowercase kebab-case (``Scripted GUI modding`` is ``scripted-gui-modding.md``),
+title in lowercase snake_case (``Scripted GUI modding`` is ``scripted_gui_modding.md``),
 plus ``media/`` with every image those pages reference. ``AGENTS.md`` treats that
 snapshot as the required wiki reference, so it has to stay current and self-contained.
 
@@ -1227,10 +1227,12 @@ LEGACY_NAME = " - Hearts of Iron 4 Wiki.md"
 
 
 def legacy_files():
-    """Files named the way the snapshot was before it moved to kebab-case file names."""
+    """Page files that do not follow the snake_case scheme, notably the old
+    '<Page Title> - Hearts of Iron 4 Wiki.md' names."""
     if not os.path.isdir(WIKI_DIR):
         return []
-    return sorted(n for n in os.listdir(WIKI_DIR) if n.endswith(LEGACY_NAME))
+    return sorted(n for n in os.listdir(WIKI_DIR)
+                  if n.endswith(".md") and not kit_blocks.PAGE_FILE.match(n))
 
 
 def snapshot_pages():
@@ -1381,10 +1383,11 @@ def main():
     legacy = legacy_files()
     if legacy:
         # Writing the new names beside the old files would double every page.
-        sys.exit(f"paradox_wiki/ still has {len(legacy)} file(s) with the old "
-                 f"'<Page Title>{LEGACY_NAME}' names, for example {legacy[0]!r}. The snapshot "
-                 "now uses lowercase kebab-case names (scripted-gui-modding.md); replace "
-                 "paradox_wiki/ with the kit's current snapshot before refreshing.")
+        sys.exit(f"paradox_wiki/ still has {len(legacy)} page file(s) whose names do not "
+                 f"follow the snapshot's scheme, for example {legacy[0]!r} (the old names were "
+                 f"'<Page Title>{LEGACY_NAME}'). The snapshot now uses lowercase snake_case "
+                 "names (scripted_gui_modding.md); replace paradox_wiki/ with the kit's "
+                 "current snapshot before refreshing.")
     existing, kit_pages = snapshot_pages()
     full_set = sorted(set(existing) | set(NEW_PAGES))
     targets = select_targets(args, full_set)

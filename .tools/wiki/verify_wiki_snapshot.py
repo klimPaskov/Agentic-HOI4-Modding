@@ -6,8 +6,9 @@ non-zero when the snapshot is not self-contained and readable, and reports:
 
 * unbalanced code fences and fenced blocks that would break a table row;
 * outbound hyperlinks, which the snapshot must not contain;
-* page and media file names that are not lowercase kebab-case without spaces, and
-  pages whose file name is not the slug of their level-1 heading;
+* page and media file names that are not lowercase snake_case without spaces, pages
+  whose file name is not the slug of their level-1 heading, and titles that HOI4
+  Agent Tools would not read back from the file name (it turns `_` into a space);
 * links to missing snapshot files (a link must match the file name letter for
   letter, so it also works on a case-sensitive file system), and section links
   whose anchor is absent;
@@ -136,11 +137,16 @@ def verify(directory, show_details=True):
         # --- file name -----------------------------------------------------
         title = kit_blocks.page_title(text)
         if not kit_blocks.PAGE_FILE.match(name):
-            report("file_name", name, "page file names are lowercase kebab-case without "
-                   "spaces, for example scripted-gui-modding.md")
+            report("file_name", name, "page file names are lowercase snake_case without "
+                   "spaces, for example scripted_gui_modding.md")
         elif title is not None and kit_blocks.file_name(title) != name:
             report("file_name", name, f"the page {title!r} belongs in "
                    f"{kit_blocks.file_name(title)}")
+        elif title is not None and kit_blocks.agent_title(name).lower() != title.lower():
+            # HOI4 Agent Tools reads the page title from the file name (`_` as a space)
+            # and matches it without regard to case; punctuation in a title is lost.
+            report("agent_title", name, f"HOI4 Agent Tools would read this file as the page "
+                   f"{kit_blocks.agent_title(name)!r}, not {title!r}")
 
         # --- code fences ---------------------------------------------------
         fences = [i + 1 for i, l in enumerate(lines) if l.strip().startswith(FENCE)]
