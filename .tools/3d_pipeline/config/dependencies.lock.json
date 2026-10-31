@@ -4,7 +4,7 @@
   "resolution_policy": "exact_package_and_source_commit_pins",
   "bootstrap": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
   "sources": {
-    "meshy_mcp": "npm:@meshy-ai/meshy-mcp-server@0.6.2",
+    "meshy_mcp": "npm:@meshy-ai/meshy-mcp-server@0.6.7",
     "blender_lab_mcp": "https://projects.blender.org/lab/blender_mcp.git@dbbf836ad4b1025f14a2b3b504c43903f39e0b04",
     "io_pdx_mesh": "https://github.com/ross-g/io_pdx_mesh/releases/download/0.91/blender-io_pdx_mesh.zip"
   },
@@ -26,8 +26,7 @@
   "policy": {
     "provider_input_image_count": 1,
     "allow_meshy_multiview_thumbnails": false,
-    "required_generation_model": "meshy-7",
-    "default_generation_model": "Meshy 7 via explicit ai_model=meshy-7",
+    "generation_model_source": "config/asset_profiles.json profiles.<profile>.generation.ai_model",
     "paid_generation_attempts_per_pilot": 1,
     "retry_paid_calls": false,
     "runtime_sources_must_not_reference_docs_assets": true
