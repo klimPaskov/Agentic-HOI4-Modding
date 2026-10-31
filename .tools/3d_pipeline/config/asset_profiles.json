@@ -28,6 +28,13 @@
         },
         "raw_roughness_as_specular": false
       },
+      "validation": {
+        "max_non_manifold_edges": 0,
+        "max_boundary_edges": 0,
+        "max_loose_components": 1,
+        "max_residual_zero_weight_vertices": 0
+      },
+      "exceptions": [],
       "rig_route": "none",
       "actions": [],
       "root_policy": "world_origin_on_ground",
@@ -81,6 +88,13 @@
         },
         "raw_roughness_as_specular": false
       },
+      "validation": {
+        "max_non_manifold_edges": 0,
+        "max_boundary_edges": 0,
+        "max_loose_components": 1,
+        "max_residual_zero_weight_vertices": 0
+      },
+      "exceptions": [],
       "rig_route": "none",
       "actions": [],
       "root_policy": "world_origin_on_ground",
@@ -131,6 +145,13 @@
         },
         "raw_roughness_as_specular": false
       },
+      "validation": {
+        "max_non_manifold_edges": 0,
+        "max_boundary_edges": 0,
+        "max_loose_components": 1,
+        "max_residual_zero_weight_vertices": 0
+      },
+      "exceptions": [],
       "rig_route": "meshy_humanoid_candidate_then_blender_audit",
       "actions": [
         {
@@ -204,6 +225,13 @@
         },
         "raw_roughness_as_specular": false
       },
+      "validation": {
+        "max_non_manifold_edges": 0,
+        "max_boundary_edges": 0,
+        "max_loose_components": 1,
+        "max_residual_zero_weight_vertices": 0
+      },
+      "exceptions": [],
       "rig_route": "blender_custom_winged_biped_rig",
       "actions": [
         {
@@ -283,6 +311,13 @@
         },
         "raw_roughness_as_specular": false
       },
+      "validation": {
+        "max_non_manifold_edges": 0,
+        "max_boundary_edges": 0,
+        "max_loose_components": 1,
+        "max_residual_zero_weight_vertices": 0
+      },
+      "exceptions": [],
       "rig_route": "blender_custom_creature_rig",
       "actions": [
         {

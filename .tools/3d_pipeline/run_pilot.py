@@ -584,7 +584,20 @@ def candidate_gate(
     stage: str,
     max_runtime_footprint_m: Optional[float] = None,
     runtime_entity_scale: float = 1.0,
+    profile: Optional[Dict[str, Any]] = None,
+    weights_after: Any = None,
 ) -> None:
+    """Block a candidate that fails a measured check.
+
+    The profile checks (non-manifold and boundary edges, loose parts, preferred
+    triangle range, material slots, residual zero-weight vertices) come from the
+    job's asset profile and block unless the profile records an exception with a
+    reason. A measurement missing from the report blocks too.
+    """
+
+    # Imported here so this gate stays self-contained.
+    from lib.profile_gates import ProfileGateError, evaluate_candidate, job_profile
+
     geometry = prep.get("geometry", {})
     failures = []
     if geometry.get("triangles", 0) <= 0:
@@ -603,26 +616,33 @@ def candidate_gate(
                 f"runtime footprint {runtime_footprint:.4f}m exceeds "
                 f"budget {float(max_runtime_footprint_m):.4f}m"
             )
+    profile_name: Optional[str] = None
+    evaluation: Dict[str, Any] = {"checks": {}, "exceptions_applied": []}
+    try:
+        if profile is None:
+            profile_name, profile = job_profile(job)
+        evaluation = evaluate_candidate(profile, prep, weights_after=weights_after)
+        failures.extend(evaluation["failures"])
+    except ProfileGateError as exc:
+        failures.append(f"asset profile checks could not run: {exc}")
+    record = {
+        "failures": failures,
+        "geometry": geometry,
+        "runtime_footprint": prep.get("runtime_footprint"),
+        "profile": profile_name,
+        "checks": evaluation["checks"],
+        "exceptions_applied": evaluation["exceptions_applied"],
+    }
     if failures:
-        write_json(
-            job / "validation" / f"{stage}_gate.json",
-            {
-                "status": "blocked",
-                "failures": failures,
-                "geometry": geometry,
-                "runtime_footprint": prep.get("runtime_footprint"),
-            },
-        )
+        write_json(job / "validation" / f"{stage}_gate.json", {"status": "blocked", **record})
         raise RuntimeError(f"Geometry gate failed for {stage}: {failures}")
     write_json(
         job / "validation" / f"{stage}_gate.json",
         {
-            "status": "passed",
-            "failures": [],
-            "geometry": geometry,
-            "runtime_footprint": prep.get("runtime_footprint"),
+            "status": "passed_with_exceptions" if evaluation["exceptions_applied"] else "passed",
+            **record,
             "visual_review_required": True,
-            "visual_review": "parent_agent_reviewed_preview_set",
+            "visual_review": "pending_parent_review",
         },
     )
 
