@@ -2,8 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Decision modding", revision 103880, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="none" checked="never" -->
-**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="103880" sources="common/decisions/ common/wargoals/ dlc/ common/defines/00_graphics.lua documentation/effects_documentation.md documentation/dynamic_variables_documentation.md documentation/console_commands_documentation.md hoi4.exe" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `common/decisions/_documentation.md`, all 88 decision files (4,148 decisions) and 57 category files (597 categories) in `common/decisions/`, the decision effects, triggers and dynamic variables in `documentation/`, the colour define in `common/defines/00_graphics.lua`, and message strings in `hoi4.exe`.
+- Kit blocks added: gate semantics and vanilla gating habits, the `state_target` key name, key usage counts, timer notes, mission facts with the related effects and triggers, `war_with_*` keys, highlight colour indexes, category keys.
+- Errors found in the wiki text: the DLC name "One Step Back" (should be "No Step Back"), the wargoal `puppet_focus_wargoal` (should be `puppet_wargoal_focus`) and the trigger `has_command_power` (should be `command_power`); highlight colours are indexes into a 15 entry define, not 0 to 3, and an unset colour is probably "no highlight"; `visible` is written in 315 of 443 vanilla missions although the wiki says it does nothing there; the state selector is `state_target` in vanilla and `state_trigger` in the documentation.
+- Gaps left: `war_with_on_timeout` and `war_with_target_on_complete` are real tokens that no vanilla file uses, and the meaning of `name`, `desc`, `cosmetic_tag` and category `custom_icon` is inferred from usage only. `BHR_category`, `QAT_category`, `find_resources` and `develop_infrastructure` are placeholder names in the wiki examples.
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -112,6 +115,26 @@ available = {
 }
 ```
 
+<!-- kit:begin id="decision-gates" at="section:Triggers" -->
+**Kit addition** Gate semantics, from `common/decisions/_documentation.md`. All rows: [docs] `common/decisions/_documentation.md`.
+
+| Block | THIS and FROM | When checked | Purpose |
+| --- | --- | --- | --- |
+| `allowed` | THIS = country | once per game at start, or when a save is loaded | drops decisions a country can never have, usually with `original_tag = XXX`; important for performance on targeted decisions |
+| `visible` | THIS = country; FROM = target country or state when targeted | on every interface refresh, if `allowed` was true | whether the decision is listed; can get expensive on targeted decisions |
+| `available` | the same as `visible` | on every interface refresh, if `allowed` and `visible` were true | whether a listed decision can be taken now; no condition here should be impossible to meet |
+| `target_root_trigger` | THIS = country | once a day (one of the 24 hourly ticks, depending on the country), if `allowed` was true | cheap pre-check of the acting country; should be a subset of `visible` |
+| `target_trigger` | THIS = country; FROM = target country or state | once a day for each state or country in the world, if `allowed` and `target_root_trigger` were true | picks the targets; each match creates its own decision entry; should be a subset of `visible` |
+
+- In targeted decisions THIS (ROOT) is the country that takes the decision and FROM is the target, in `visible`, `available` and `target_trigger`. [docs] `common/decisions/_documentation.md`.
+- Vanilla gates with `allowed`: 2,513 of 4,148 decisions have one. 1,588 test `original_tag`, 298 test `tag`, 211 are empty and 96 are `allowed = { always = no }`, the pattern for decisions that only appear through an activation effect. [vanilla-confirmed 1.19.3] `common/decisions/`.
+- Categories follow the same habit: 582 of 597 have `allowed`, and 386 of those test `original_tag` (212 with only that test, 161 together with `has_dlc`). Country categories are gated with `allowed = { original_tag = X }`. [vanilla-confirmed 1.19.3] `common/decisions/categories/`.
+- The effects documentation says `activate_mission` and `activate_targeted_decision` ignore the normal trigger conditions of what they activate. [docs] `documentation/effects_documentation.md`.
+- Vanilla pairs `allowed = { always = no }` with an activation effect, with the comment "Activated from effect" (for example in `common/decisions/JAP.txt`). [vanilla-confirmed 1.19.3] `common/decisions/`.
+- The `has_dlc` example in the `allowed` text above uses a DLC name that does not exist. The DLC is called "No Step Back" (`dlc/dlc034_no_step_back/dlc034.dlc`; about 950 vanilla lines write `has_dlc = "No Step Back"`), and no vanilla file contains "One Step Back". [vanilla-confirmed 1.19.3]
+- The documentation also names a `state_trigger` key; see the note on state targeted decisions below for what vanilla writes instead. [docs] `common/decisions/_documentation.md`.
+<!-- kit:end id="decision-gates" -->
+
 ### Icon <a id="Icon"></a>
 
 The icon is the small picture displayed to the left of decision's or category's name. Icons use sprites, defined in any `/Hearts of Iron IV/interface/*.gfx` file, by default in `decisions.gfx`. Within a decision or a category, it is set with `icon = icon_name`.
@@ -166,6 +189,27 @@ highlight_states = {
 
 `highlight_color_while_active` is the colour that the state highlighting will have after selecting the decision during the timer before it gets removed, from 0 to 3. If not set, it will default to a white outline.
 
+<!-- kit:begin id="decision-highlight-colours" at="section:State_highlighting" -->
+**Kit correction** `highlight_color_before_active` and `highlight_color_while_active` are indexes into the `BORDER_COLOR_CUSTOM_HIGHLIGHTS` list in `common/defines/00_graphics.lua`. The list has 15 entries (0 to 14), not four. [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`.
+
+| Index | Meaning in the define's comment |
+| --- | --- |
+| 0 | mouse hover |
+| 1 | bad, while active |
+| 2 | good, while active |
+| 3 | bad, while passive |
+| 4 | good, while passive |
+| 5 and 6 | controlled and neutral positive, not ours and neutral negative |
+| 7 to 12 | construction targets: valid, invalid and foreign, primary then secondary |
+| 13 and 14 | faction theater colours |
+
+All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`.
+
+- The wiki says an unset colour is a white outline. The error text in `hoi4.exe` says the value should be -1 for no highlight, "the default if not specified", or an index into that list. Treat an unset colour as no highlight. [unverified] (string in `hoi4.exe`).
+- Vanilla values: `highlight_color_while_active` is 1 (21 uses), 2 (21) or 3 (2); `highlight_color_before_active` is 3 (20) or 2 (1). [vanilla-confirmed 1.19.3] `common/decisions/`.
+- Inside `highlight_states` blocks vanilla uses `highlight_state_targets` 751 times and `highlight_states_trigger` 101 times (one in a category). [vanilla-confirmed 1.19.3] `common/decisions/`, `common/decisions/categories/`.
+<!-- kit:end id="decision-highlight-colours" -->
+
 ### Province Highlighting <a id="Province_Highlighting"></a>
 
 In addition to highlighting states, it is also possible to highlight individual provinces since patch 'Stella Pollaris': 1.13.6. This is the code required to do that:
@@ -178,6 +222,18 @@ highlight_states = {
 ```
 
 With `highlight_provinces = { ... }` being the effect that stores the individual provinces to be highlighted.
+
+<!-- kit:begin id="decision-highlight-provinces" at="section:Province_Highlighting" -->
+**Kit addition** `highlight_provinces` is used 13 times in vanilla. Two decisions (`common/decisions/HOL.txt`, `common/decisions/IRQ.txt`) add `highlight_only_provinces = yes` next to it, which the wiki does not mention; the token exists in `hoi4.exe`, and the likely meaning is that only the listed provinces are outlined and not the whole state. [vanilla-confirmed 1.19.3] for the usage, [unverified] for the meaning.
+
+```text
+highlight_states = {
+    highlight_state_targets = { state = 7 }
+    highlight_provinces = { 9498 391 11456 6241 }
+    highlight_only_provinces = yes
+}
+```
+<!-- kit:end id="decision-highlight-provinces" -->
 
 ## Arguments for categories <a id="Arguments_for_categories"></a>
 
@@ -265,9 +321,58 @@ my_map_category = {
 }
 ```
 
+<!-- kit:begin id="decision-category-vanilla" at="section:Category_examples" -->
+**Kit addition** Category keys in vanilla 1.19.3 (597 categories in 57 files of `common/decisions/categories/`). Counts are categories that use the key. All rows: [vanilla-confirmed 1.19.3] `common/decisions/categories/`.
+
+| Key | Categories | Notes |
+| --- | --- | --- |
+| `allowed` | 582 | see the gate note above |
+| `icon` | 556 | |
+| `visible` | 436 | |
+| `priority` | 436 | |
+| `picture` | 252 | |
+| `visible_when_empty` | 185 | 143 write `no`, 42 write `yes` |
+| `on_map_area` | 39 | 55 blocks; every block has `name` and `zoom`; `state` in 43, `target_array` in 24, `target_trigger` in 16, `target_root_trigger` in 9 and `targets` in 9 |
+| `scripted_gui` | 17 | |
+| `available` | 12 | |
+| `custom_icon` | 9 | 24 blocks, each with `tag`, `value`, `desc` and `visible` |
+| `visibility_type` | 3 | `map_and_decisions_view` twice, `always` once |
+| `highlight_states` | 1 | |
+
+- `visibility_type` and `custom_icon` are not described on this page or in `common/decisions/_documentation.md`. In `custom_icon`, `value` and `desc` hold localisation keys and `tag` names a country flag; that reading comes from the usage in `BUL_decision_categories.txt` and `HOL_decision_categories.txt` only. [unverified]
+- 14 vanilla categories contain no decision, for example `BRA_propaganda_campaigns` and `USA_war_measures`. [vanilla-confirmed 1.19.3] `common/decisions/`.
+- The `targets = { capital }` line in the wiki's map category example has no vanilla precedent: `targets` holds country tags, state ids and the word `host`. Use `state`, `target_array` or `target_trigger` for a dynamic map area. [unverified]
+<!-- kit:end id="decision-category-vanilla" -->
+
 ## Arguments for decisions <a id="Arguments_for_decisions"></a>
 
 These can only be used within decisions and cannot be used in categories.
+
+<!-- kit:begin id="decision-keys-vanilla" at="section:Arguments_for_decisions" -->
+**Kit addition** Decision keys in vanilla 1.19.3. Counts are decisions that use the key (4,148 decisions in 88 files). All rows: [vanilla-confirmed 1.19.3] `common/decisions/`.
+
+| Key | Decisions | Files | Values seen |
+| --- | --- | --- | --- |
+| `targets` | 280 | 38 | country tags, state ids (bare or as `state = N`, 118 entries), and `host` (10 uses, all in `NOR.txt`) |
+| `target_array` | 179 | 27 | `ROOT.core_states` 19, `ROOT.allies` 14, `subjects` 13, `ROOT.subjects` 9, `exiles` 8, `global.is_chinese_warlord` 8 |
+| `targets_dynamic` | 51 | 8 | always `yes` |
+| `target_non_existing` | 11 | 7 | always `yes` |
+| `state_target` | 278 | 47 | see the note on state targeted decisions |
+| `on_map_mode` | 528 | 52 | `map_only` 267, `map_and_decisions_view` 167, `decision_view_only` 94 |
+| `highlight_states` | 856 | 43 | |
+| `activation` | 382 | 43 | 371 of them in missions |
+| `days_mission_timeout` | 443 | 46 | number, script constant or variable |
+| `timeout_effect` | 436 | 46 | |
+| `is_good` | 432 | 48 | `no` 327, `yes` 105 |
+| `selectable_mission` | 66 | 12 | `no` 54, `yes` 12 |
+| `fixed_random_seed` | 102 | 13 | `no` 98, `yes` 4 |
+| `targeted_modifier` | 37 | 9 | |
+| `name` | 71 | 12 | a localisation key, often shared by several decisions |
+| `desc` | 21 | 1 | a localisation key |
+| `cosmetic_tag` and `cosmetic_ideology` | 21 each | 2 | missions in `ITA.txt` and `SOV.txt` |
+
+- `name` and `desc` replace the localisation key a decision would otherwise take from its id, and `cosmetic_tag` with `cosmetic_ideology` pick the flag shown on a mission. That reading comes from the usage (for example `ENG_trade_unions_demand_minister_appointment_1` through `_5` all use one `name`) and was not tested. [unverified]
+<!-- kit:end id="decision-keys-vanilla" -->
 
 ### Effects on selection <a id="Effects_on_selection"></a>
 
@@ -338,6 +443,15 @@ In order to show icons, [text icons](<Localisation - Hearts of Iron 4 Wiki.md#Te
 
 As the custom cost can't be used in conjunction with the regular cost, if it includes political power, the AI will not be aware that it should save up an amount of it before taking the decision. This can be remidified with `ai_hint_pp_cost = 100`: this attribute will make the AI think that the decision will use 100 political power regardless of whether it does or not, making sure it will save up that much before trying to use it. This must be a constant amount rather than being a variable.
 
+<!-- kit:begin id="decision-cost-notes" at="section:Decision_cost" -->
+**Kit addition** Cost keys in vanilla 1.19.3. All counts: [vanilla-confirmed 1.19.3] `common/decisions/`.
+
+- `cost` is set in 2,920 decisions: 2,554 integers, 10 script constants and 356 variable names.
+- `custom_cost_trigger` and `custom_cost_text` are always used together (368 decisions each, 38 files). The `_blocked` suffix described above exists in vanilla localisation, for example `decision_cost_50_convoy_25_pp_blocked` in `localisation/english/aat_tooltips_l_english.yml`.
+- `ai_hint_pp_cost` is set in 72 decisions.
+- The console command `easy_decisions` makes every decision with `days_remove` take one day to be removed and removes all costs and cost triggers, which helps when testing. [docs] `documentation/console_commands_documentation.md`.
+<!-- kit:end id="decision-cost-notes" -->
+
 ### Timer upon selection <a id="Timer_upon_selection"></a>
 
 In order to add a timer between the decision being selected and some of its effects applying, `days_remove = 123` is used to define the amount of days. If set to `-1`, the decision will never be removed by the timer running out, although additional trigger blocks can remove it.
@@ -357,6 +471,15 @@ targeted_modifier = {
 In order to make the timer cancel early without providing the effects, `visible = { ... }` does not work by default.
 Instead, `cancel_trigger = { ... }` is used as a trigger block. Upon it being evaluated as true, the decision timer ends without `remove_effect = { ... }` being executed. `cancel_if_not_visible = yes`, false by default, serves as an easy way to add visible's triggers into the `cancel_trigger = { ... }` block.
 Upon the decision being cancelled, `cancel_effect = { ... }` is an effect block that gets executed. This can be useful as a way to reverse the effects applied within the complete effect.
+
+<!-- kit:begin id="decision-timer-notes" at="section:Timer_upon_selection" -->
+**Kit addition** Timer keys in vanilla 1.19.3 (4,148 decisions). All counts: [vanilla-confirmed 1.19.3] `common/decisions/`.
+
+- `days_remove` is set in 2,124 decisions: 1,771 integers (19 of them `-1`), 20 script constants such as `@DAYS_REMOVE_INFILTRATE_STATE`, and 333 variable names (89 written `name?default`). 17 of the 19 `-1` decisions also have a `remove_trigger` or `cancel_trigger`, so the decision ends on a condition and not on time.
+- Every one of the 928 decisions with a non-empty `modifier` block also has `days_remove` or `days_mission_timeout`. The 109 decisions that have neither carry an empty `modifier = {}`. `hoi4.exe` has the message "Decision scripted with modifier, but no days_remove duration. ID: %s", so give every decision that has a `modifier` a timer. [unverified] (string in `hoi4.exe`).
+- `cancel_if_not_visible` is set in 392 decisions (375 `yes`, 17 `no`). `cancel_trigger` is in 634, `cancel_effect` in 402, `remove_effect` in 2,063 and `remove_trigger` in 25.
+- `days_re_enable` is set in 402 decisions; 123 write `0`. It also takes a variable, for example `SOV_default_propaganda_campaign_cooldown`.
+<!-- kit:end id="decision-timer-notes" -->
 
 ### AI <a id="AI"></a>
 
@@ -383,6 +506,22 @@ If your decision leads to a nation declaring war on another nation, there are se
 `war_with_on_complete = TAG` will make the game assume that the decision, within its `complete_effect` will declare war on the specified country, making it prepare when the decision becomes available.
 
 These arguments do not work for targeted decisions; see [Targeted Decisions: Warning for War](#Warning_for_war_2).
+
+<!-- kit:begin id="decision-war-with-keys" at="section:Warning_for_war" -->
+**Kit addition** The `war_with_*` family. All six names below exist as tokens in `hoi4.exe`; a `war_with_on_add` form does not exist in any vanilla script or in `hoi4.exe`. Vanilla counts are for `common/decisions/`. [vanilla-confirmed 1.19.3] for the counts, [unverified] for the `hoi4.exe` tokens.
+
+| Key | Value | Vanilla use |
+| --- | --- | --- |
+| `war_with_on_complete` | tag | 2 decisions, both in `CZE.txt` (`HUN` and `AUS`) |
+| `war_with_on_remove` | tag; may repeat | 7 decisions in 5 files (`FIN.txt`, `INS.txt`, `JAP.txt`, `PRC.txt`, `SLO.txt`); one in `PRC.txt` lists three tags |
+| `war_with_on_timeout` | tag | none |
+| `war_with_target_on_complete` | `yes` | none |
+| `war_with_target_on_remove` | `yes` | 5 decisions in `JAP.txt`, `USA.txt` and `WTT_border_conflicts.txt` |
+| `war_with_target_on_timeout` | `yes` | 6 missions in `JAP.txt` and `WTT_border_conflicts.txt` |
+
+- The two names with no vanilla use (`war_with_on_timeout`, `war_with_target_on_complete`) appear in the wiki examples on this page. They are real tokens, but untested, so check the tooltip in game before relying on them. [unverified]
+- Vanilla missions that warn a target of a coming war use `war_with_target_on_timeout = yes` together with `allowed = { always = no }` and activation by effect, for example `JAP_border_conflict_warning_SOV` in `JAP.txt`. [vanilla-confirmed 1.19.3] `common/decisions/JAP.txt`.
+<!-- kit:end id="decision-war-with-keys" -->
 
 ### Fixed random seed <a id="Fixed_random_seed"></a>
 
@@ -466,6 +605,19 @@ BHR_category = {
 }
 ```
 
+<!-- kit:begin id="decision-example-corrections" at="section:Decision_examples" -->
+**Kit correction** Errors in the two decision examples below. Sources: `common/wargoals/00_invasion.txt`, `common/decisions/`, `documentation/triggers_documentation.md`.
+
+| In the example | In 1.19.3 |
+| --- | --- |
+| `type = puppet_focus_wargoal` in `QAT_example` | the wargoal is `puppet_wargoal_focus`; the name written in the example exists nowhere in the game files |
+| `has_command_power > 14` in `BHR_example` | no trigger called `has_command_power` exists; the trigger is `command_power > 14`, which vanilla writes 13 times in `custom_cost_trigger` blocks |
+
+All rows: [vanilla-confirmed 1.19.3] and, for `command_power`, [docs].
+
+- `QAT_category` and `BHR_category` are placeholders for categories you define in `common/decisions/categories/`, and `find_resources` (category) and `develop_infrastructure` (decision) in the cost example are invented names. No vanilla category or decision uses any of the four names. [vanilla-confirmed 1.19.3] `common/decisions/`.
+<!-- kit:end id="decision-example-corrections" -->
+
 ## Missions <a id="Missions"></a>
 
 Missions are another type of decisions, activated when the triggers are true and requiring the player to do an action in order for the mission to have a positive outcome. These mostly use the same attributes as regular decisions, but there are some crucial differences. In particular:
@@ -480,6 +632,32 @@ Missions are another type of decisions, activated when the triggers are true and
 - `war_with_on_timeout = TAG` will make the game assume that the mission, within its `timeout_effect = { ... }` will declare war on the specified country. This is used to make the AI prepare for a declaration of war and amass its troops on the border. This will also grant a notification to the target and all of its allies that a wargoal is being justified.
 
 Other attributes, such as `cancel_trigger` or `cancel_effect` generally may be used inside of missions and should work how they do outside of them.
+
+<!-- kit:begin id="decision-missions-vanilla" at="section:Missions" -->
+**Kit addition** Missions in vanilla 1.19.3: a mission is a decision with `days_mission_timeout`, and there are 443 of them in 46 files. All counts: [vanilla-confirmed 1.19.3] `common/decisions/`.
+
+- 441 have `available`, 435 have `timeout_effect`, 402 set `is_good`, 371 have `activation`, 258 have `allowed`, 163 have `complete_effect` and 65 set `selectable_mission`.
+- The wiki says `visible` does nothing in missions. Vanilla still writes a `visible` block in 315 of the 443 missions (36 of them empty). `common/decisions/_documentation.md` does not say that `visible` is ignored for missions, so this stays open. [unverified]
+- Only 3 missions carry a `cost`: `TSR_pay_for_support_from_warlord_PP`, `_manpower` and `_equipment` in `CHI_warlord_decisions.txt`, all with `selectable_mission = yes`. `hoi4.exe` has the message "Cost for normal missions not implemented. ID: %s", so do not put `cost` on a mission that is not selectable. [unverified] (string in `hoi4.exe`).
+
+Documented effects, triggers and dynamic variables for decisions and missions. All rows: [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`, `documentation/dynamic_variables_documentation.md`. Uses are counted over `events/`, `common/` and `history/` ([vanilla-confirmed 1.19.3]).
+
+| Name | What the documentation says | Vanilla uses |
+| --- | --- | --- |
+| `activate_decision = <id>` | activates the decision for the scoped country | 46 |
+| `activate_mission = <id>` | activates a mission and ignores its normal trigger conditions; cannot activate a mission that is already active | 572 |
+| `activate_targeted_decision = { target = <TAG or state> decision = <id> }` | activates a targeted decision or mission and ignores its trigger conditions, cooldown and `fire_only_once`; cannot activate it while it is active in the interface | 190 |
+| `remove_decision = <id>` | removes an active decision without running `remove_effect` or starting a cooldown; ignores `fire_only_once` | 7 |
+| `remove_mission = <id>` | removes a mission without running its complete or timeout effects | 51 |
+| `remove_targeted_decision = { target = <TAG> decision = <id> }` | removes a targeted decision or mission | 36 |
+| `remove_decision_on_cooldown = <id>` | removes a decision from cooldown so that it can be reactivated or removed | 11 |
+| `add_days_remove = { decision = <id> days = N }` | adds days to the `days_remove` value of a decision | 1 |
+| `add_days_mission_timeout = { mission = <id> days = N }` | adds days to a mission's timeout | 180 |
+| `unlock_decision_tooltip = <id>` or a block with `decision`, `show_effect_tooltip`, `show_modifiers` | shows what a decision does; both show flags default to `no` | 688 |
+| `unlock_decision_category_tooltip`, `activate_mission_tooltip` | tooltip helpers for a category and for a mission | 133 and 16 |
+| `has_decision = <id>`, `has_active_mission = <id>` | country triggers for an active decision and an active mission | 107 and 293 |
+| `days_mission_timeout@<mission id>`, `days_decision_timeout@<decision id>` | country dynamic variables: days left on a timed mission or decision, for example `days_mission_timeout@GER_mefo_bills_mission` | used in `GER.txt` |
+<!-- kit:end id="decision-missions-vanilla" -->
 
 ### Mission example <a id="Mission_example"></a>
 
@@ -547,6 +725,10 @@ The regular arguments of `war_with_on_` do not work if using FROM as a target. I
 `war_with_target_on_remove = yes` - Equivalent to `war_with_on_remove = FROM`
 `war_with_target_on_timeout = yes` - Equivalent to `war_with_on_timeout = FROM`
 
+<!-- kit:begin id="decision-war-with-target" at="section:Warning_for_war_2" -->
+**Kit note** The three `war_with_target_on_*` keys take only `yes` in vanilla (11 uses in `common/decisions/`), and they stand for FROM, the target of the decision. The table of all six `war_with_*` keys is in the note on the first "Warning for war" section above. [vanilla-confirmed 1.19.3] `common/decisions/`.
+<!-- kit:end id="decision-war-with-target" -->
+
 ### Additional note <a id="Additional_note"></a>
 
 Similarly to missions, the `activate_targeted_decision = { target = TAG decision = my_decision }` effect exists. If possible, it is recommended to use this effect instead of letting it automatically activate, making it never allowed. For instance, if the targeted decision activates by being at war with a country, [on_war_relation_added in on_actions](<On actions - Hearts of Iron 4 Wiki.md>) can be used to activate it instead of using `target_array = enemies`.
@@ -596,6 +778,16 @@ Additionally, The argument `on_map_mode` will determine where the targeted decis
 `on_map_mode = map_only` will make the targeted decisions only appear on the map.
 `on_map_mode = decision_view_only` will make the targeted decisions only appear in the decisions menu.
 `on_map_mode = map_and_decisions_view` will make the targeted decisions appear on both the map and the decisions menu.
+
+<!-- kit:begin id="decision-state-target-key" at="section:State_targeted_decisions" -->
+**Kit correction** `common/decisions/_documentation.md` calls the state selector `state_trigger` (values `yes`, `no`, `any`, `any_owned_state`, `any_controlled_state` or a continent key such as `europe`). Vanilla never writes `state_trigger`; all 278 state targeted decisions write `state_target`. Use `state_target`. [docs] for the documented name, [vanilla-confirmed 1.19.3] `common/decisions/` for the usage.
+
+- `state_target` values in vanilla: `yes` 210, `any_controlled_state` 34, `any_owned_state` 19, and continent keys 15 (`asia`, `middle_east` and `africa` 3 each, `south_america` and `europe` 2 each, `north_america` and `australia` 1 each). `any` is never written. [vanilla-confirmed 1.19.3] `common/decisions/`.
+- The 138 vanilla decisions that combine `state_target` with `targets` or `target_array` all use `state_target = yes`. The 140 that use `yes`, `any_owned_state`, `any_controlled_state` or a continent key without explicit targets all have a `target_trigger`. This matches the documentation: the selector only matters without explicit targets, and with them it must be `any` or `yes`. [vanilla-confirmed 1.19.3] and [docs] `common/decisions/_documentation.md`.
+- The documentation says `any_owned_state` is the faster equal of `owner = ROOT` in the `target_trigger`, `any_controlled_state` of `is_controlled_by = ROOT`, and a continent key of `is_on_continent = <key>`. [docs] `common/decisions/_documentation.md`.
+- Both `state_trigger` and `state_target` exist as tokens in `hoi4.exe`, so whether the documented name is accepted as an alias is unknown. [unverified]
+- `on_map_mode` is set in 528 decisions; the values are listed in the key table in the "Arguments for decisions" section. [vanilla-confirmed 1.19.3] `common/decisions/`.
+<!-- kit:end id="decision-state-target-key" -->
 
 ### Example <a id="Example"></a>
 
