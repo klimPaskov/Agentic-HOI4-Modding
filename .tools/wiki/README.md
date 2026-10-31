@@ -1,6 +1,6 @@
 # Offline Paradox wiki snapshot tooling
 
-`paradox_wiki/` is the kit's offline Hearts of Iron IV modding reference. It holds one Markdown file per page, named `<Page Title> - Hearts of Iron 4 Wiki.md`, `media/` with every image those pages show, and `LICENSE.txt`. Most pages are captured from the wiki's modding pages. The kit corrects and extends them against the installed game in kit blocks, and adds kit pages for systems the wiki does not cover. The project instructions point every implementation task at it, so it has to stay current and self-contained, and read cleanly as plain Markdown.
+`paradox_wiki/` is the kit's offline Hearts of Iron IV modding reference. It holds one Markdown file per page, named after the page title in lowercase kebab-case (`scripted-gui-modding.md`), `media/` with every image those pages show, and `LICENSE.txt`. Most pages are captured from the wiki's modding pages. The kit corrects and extends them against the installed game in kit blocks, and adds kit pages for systems the wiki does not cover. The project instructions point every implementation task at it, so it has to stay current and self-contained, and read cleanly as plain Markdown.
 
 These tools maintain it. None of them launches Hearts of Iron IV.
 
@@ -59,7 +59,7 @@ When the wiki later removes the heading a block points at, the sync keeps the bl
 
 ### Kit pages
 
-A kit page covers a system the wiki has no page for. It uses the same file name pattern, has `<!-- kit:page -->` on the line after its capture line (`*Kit page: written by the Agentic HOI4 Modding Kit ...*`), and keeps the review block and the `---` furniture of a wiki page. The sync never fetches a kit page. It refreshes the page's table of contents and navigation footer, and lists every kit page in the navigation footer of all pages. If the wiki later gains a page with the same title, the sync says so; move the kit text into kit blocks on the wiki page then.
+A kit page covers a system the wiki has no page for. It uses the same file name pattern (no prefix: the marker below and the capture line identify it), has `<!-- kit:page -->` on the line after its capture line (`*Kit page: written by the Agentic HOI4 Modding Kit ...*`), and keeps the review block and the `---` furniture of a wiki page. The sync never fetches a kit page. It refreshes the page's table of contents and navigation footer, and lists every kit page in the navigation footer of all pages. If the wiki later gains a page with the same title, the sync says so; move the kit text into kit blocks on the wiki page then.
 
 ### Review block and evidence
 
@@ -142,7 +142,25 @@ A normal run fetches the live wiki, so a stale snapshot cannot be written by acc
 
 The snapshot covers the wiki's `Category:Modding` members and the pages in `Template:Modding navbox`; a full sync reports category members it lacks. Add a new wiki modding page to `NEW_PAGES` and refresh. Pages the wiki redirects elsewhere need no file: `REDIRECT_ANCHORS` maps them so links land on the target page and section.
 
-`Effects` keeps its historical file name, `Effects - Hearts of Iron 4 Wiki.md`, although the wiki page is now `Effect`, because the kit links to that exact path. `FILENAME_OVERRIDES` holds the mapping. Keep file names and heading anchors stable; skills and instructions link to them.
+#### File name scheme
+
+A page's file is its title in lowercase kebab-case plus `.md`: lowercase every letter, turn each run of other characters into one hyphen, and trim the ends. The title is the page's level-1 heading.
+
+| Title | File |
+| --- | --- |
+| `Defines` | `defines.md` |
+| `AI focuses` | `ai-focuses.md` |
+| `Scripted GUI modding` | `scripted-gui-modding.md` |
+| `Military industrial organization modding` | `military-industrial-organization-modding.md` |
+
+- File names have no spaces, capitals or site name, so they are easy to type, glob and pass between tools. `kit_blocks.file_name(title)` is the one definition; the sync, verify and status tools all use it, and the verify check fails a page whose file is not named after its heading.
+- Tools read the title from the heading and never parse it out of the file name.
+- Kit pages follow the same pattern. The `<!-- kit:page -->` marker and the "written by the kit" capture line identify them; no tool needs a prefix.
+- Media files are `<page-slug>_<url hash>__img<n>.<ext>`, lowercase without spaces, named for the page that first showed the image. The sync reuses a file by its image alt text, so a refresh keeps existing media names.
+- Links between pages are written `[text](<file-name.md#anchor>)` and must match the file name letter for letter, so they also resolve on case-sensitive file systems.
+- `Effects` keeps its historical title, `Effects`, although the wiki page is `Effect`, so its file is `effects.md`. `FILENAME_OVERRIDES` holds the mapping.
+- Keep file names and heading anchors stable; skills and instructions link to them.
+- Earlier copies of the snapshot named files `<Page Title> - Hearts of Iron 4 Wiki.md`. The sync refuses to run while any such file is present, because it would write the new files beside them. Replace the whole `paradox_wiki/` folder with the kit's current one instead.
 
 ## Verify details
 
@@ -152,7 +170,7 @@ python -B .tools/wiki/verify_wiki_snapshot.py .tmp/wiki-preview
 python -B .tools/wiki/verify_wiki_snapshot.py --quiet
 ```
 
-It reports unbalanced or table-breaking code fences, outbound hyperlinks, links to missing files, section links whose anchor is absent, images with no file, image files nothing references, table rows whose column count differs from their header, pages without exactly one level-1 heading, `:` definition-list lines, a multi-line code sample flattened into one code span of 300 characters or more, code indented four spaces or more inside a table cell, encoding damage (byte order marks, non-breaking or zero-width characters, mojibake), kit blocks that are unpaired, misplaced, unlabelled or point at a missing heading, snapshot pages without a review block, and a missing `LICENSE.txt`.
+It reports unbalanced or table-breaking code fences, outbound hyperlinks, page or media file names that break the naming scheme, links to missing files (the link's capitalisation must match the file name), section links whose anchor is absent, images with no file, image files nothing references, table rows whose column count differs from their header, pages without exactly one level-1 heading, `:` definition-list lines, a multi-line code sample flattened into one code span of 300 characters or more, code indented four spaces or more inside a table cell, encoding damage (byte order marks, non-breaking or zero-width characters, mojibake), kit blocks that are unpaired, misplaced, unlabelled or point at a missing heading, snapshot pages without a review block, and a missing `LICENSE.txt`.
 
 It also prints the number of table rows over 400 characters. That is a report, not a failure. Valid Markdown backslash escapes are accepted. Every reported finding is a defect.
 
@@ -177,4 +195,4 @@ The wiki's text is CC BY-SA 3.0 (see `paradox_wiki/LICENSE.txt`), and the kit's 
 ## Copies in other repositories
 
 - **HOI4 Mod Setup** installs the snapshot as the `wiki.snapshot` component of `hoi4-mod-setup.manifest.json`. The manifest workflow on `main` regenerates its file evidence after a merge; for a local release, run `scripts/generate_manifest_evidence.py --revision <commit>` as `RELEASING.md` describes.
-- **Mods with their own copy**, such as Chaos Redux, should replace their `paradox_wiki/` with this one rather than editing it. Generic corrections belong in kit blocks here; mod-specific notes belong in the mod's own docs. Copy `kit_blocks.py`, `wiki_status.py` and `game_docs_index.json` with the updated sync and verify tools when the mod refreshes the snapshot itself.
+- **Mods with their own copy**, such as Chaos Redux, should replace their `paradox_wiki/` with this one rather than editing it. Replace the whole folder: every file name changed with the move to kebab-case names, so copying over an old snapshot would leave both sets of files. Generic corrections belong in kit blocks here; mod-specific notes belong in the mod's own docs. Copy `kit_blocks.py`, `wiki_status.py` and `game_docs_index.json` with the updated sync and verify tools when the mod refreshes the snapshot itself.

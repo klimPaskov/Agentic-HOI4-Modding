@@ -58,7 +58,7 @@ Before 3D work, read:
 - `.claude/skills/hoi4-feature-assets/SKILL.md`.
 - `.claude/skills/hoi4-subagents/SKILL.md` when a subagent is used.
 - The parent brief, accepted spec, plan, manifest, job, dependency lock, and handoff.
-- The offline Paradox wiki pages relevant to the target surface, especially `paradox_wiki/Graphical asset modding - Hearts of Iron 4 Wiki.md` and `paradox_wiki/Entity modding - Hearts of Iron 4 Wiki.md`.
+- The offline Paradox wiki pages relevant to the target surface, especially `paradox_wiki/graphical-asset-modding.md` and `paradox_wiki/entity-modding.md`.
 - Relevant character or interface pages when the target consumes those systems.
 - Relevant documentation under `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`.
 - Local vanilla `.mesh`, `.anim`, `.asset`, entity, material, texture, and model precedents for the exact domain, plus existing repository model precedents.

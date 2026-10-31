@@ -1,0 +1,2124 @@
+# Data structures
+
+*Offline snapshot of the Hearts of Iron IV Wiki page "Data structures", revision 103616, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="103616" sources="documentation/dynamic_variables_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md documentation/script_concept_documentation.md documentation/script_math_functions.md documentation/script_collection_input.md documentation/script_collection_operator.md documentation/loc_formatter_documentation.md common/script_constants/ common/country_tag_aliases/ common/scorers/ common/mtth/ common/modifier_definitions/ common/defines/ common/factions/goals/ common/unit_leader/ localisation/english/" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the effect, trigger, dynamic variable, script concept, math function, collection and formatter documentation, plus vanilla script and English localisation for usage counts.
+Kit blocks added: script constants, define files, flag types (corrects the five-scope list), event-target commands, tag alias rules, `hidden_trigger` evaluation, variable tooltips (corrects "check_variable has no tooltip"), variable format codes, bindable localisation, operator additions (`randomize_variable`), math expression rules, modifier token defaults, a collections pointer, loop and array defaults, scorer notes (corrects an example), and the 41 dynamic variables the page never named.
+Gaps left: the lifetime rule for regular event targets, `clear_global_event_targets`, `days_left`, the `id` rows and the conscription rows cannot be confirmed from the docs and stay `[unverified]`. The 1.12 list of tokenizable types and the variable range text were not re-checked. Inventory code keys such as `fascom_pop`, `CAN_beavers` and `flag_counter` are page-local example names; `pow`, `sin`, `print_global`, `var_list` and `scores` are real keys of the math functions, `print_variables` and `get_sorted_scored_countries`; `majors_owned_states` is corrected below.
+<!-- kit:end id="review" -->
+
+## Table of contents
+
+- [Constants](#Constants)
+  - [Kit: Script constants with constant:](#kit-script-constants)
+  - [Defines](#Defines)
+- [Flags](#Flags)
+  - [Example](#Example)
+  - [Non-boolean usage](#Non-boolean_usage)
+  - [Debugging](#Debugging)
+- [Event targets](#Event_targets)
+  - [Global event targets](#Global_event_targets)
+  - [Regular event targets](#Regular_event_targets)
+- [Country tag aliases](#Country_tag_aliases)
+- [Variables](#Variables)
+  - [Variable types](#Variable_types)
+  - [Scoping](#Scoping)
+  - [Trigger usage](#Trigger_usage)
+  - [Localisation](#Localisation)
+    - [Kit: Bindable and formatted localisation](#kit-bindable-localisation)
+  - [Additional usage](#Additional_usage)
+  - [Operators](#Operators)
+  - [Math expressions](#Math_expressions)
+  - [Math functions](#Math_functions)
+  - [Usage examples](#Usage_examples)
+  - [MTTH variables](#MTTH_variables)
+  - [Debugging variables](#Debugging_variables)
+  - [Token-valued variables](#Token-valued_variables)
+  - [Advanced use of tokens](#Advanced_use_of_tokens)
+- [Modifier tokens](#Modifier_tokens)
+  - [Examples](#Examples)
+  - [Using in variables](#Using_in_variables)
+- [Arrays](#Arrays)
+  - [Arguments](#Arguments)
+  - [Scorers](#Scorers)
+    - [Example](#Example_2)
+- [Game variables](#Game_variables)
+  - [Kit: Dynamic variables in 1.19.3](#kit-dynamic-variables)
+  - [Game arrays](#Game_arrays)
+- [References](#References)
+
+---
+
+Within Hearts of Iron IV, there are several types of data structures, used to store data to be used for later. This can be used in-game as a way to check if some effect block was executed or not, as a counter of sorts, or something else.
+
+## Constants <a id="Constants"></a>
+
+Constants serve as a way to use the same value with a reference. The constants are marked with the `@` symbol when defining or using them. An example definition is the following:
+
+```text
+@CONSTANT_1 = 10
+@CONSTANT_2 = "TAG_my_idea"
+```
+
+This can later be used in the file as, for example, `cost = @CONSTANT_1`. These definitions can be in any point of the file.
+
+Constants are available in the vast majority of game files, including most, if not all, \*.txt and \*.gui files. Constants can be used as a way to link several values to be the same if they can easily be changed at any point in the development. However, constants that store a string for its value can only be used in triggers and the attributes of elements and windows, trying to use them in an effect will result in an "invalid database object for effect/trigger" error.
+For example, if there is a large decision system where every decision is intended to have the same cost, then these constants may be used if the political power cost gets changed mid-development for better balance.
+Another example would be a scripted GUI container: if a large multitude of elements are to be at the same X or Y position, it might be worth it to link them to be a constant in case their position could be changed for better appearance or to fit in another GUI element.
+
+Example [decision file](<decision-modding.md>) that utilises constants:
+
+```text
+@CONSTANT_1 = 10
+@CONSTANT_2 = "TAG_my_idea"
+TAG_decision_category = {
+    TAG_decision = {
+        icon = test_icon
+        cost = @CONSTANT_1
+        complete_effect = {
+            if = {
+                limit = {
+                    has_ideas = @CONSTANT_2
+                }
+                add_stability = 0.1
+            }
+        }
+    }
+}
+```
+
+<!-- kit:begin id="script-constants" at="section:Constants" -->
+### Kit: Script constants with constant: <a id="kit-script-constants"></a>
+
+**Kit addition** The `@` constants above only work inside the file that defines them. HOI4 1.19.3 also has script constants, which any script file can read through the `constant:` prefix. [docs] `documentation/script_concept_documentation.md`
+
+- Where: definition files sit in `common/script_constants/`. Vanilla ships `country_groups.txt`, `state_groups.txt`, `propaganda_campaigns.txt` and `special_project_constants.txt`. [vanilla-confirmed 1.19.3] `common/script_constants/`
+- Format: one block per category. Its first entry must be `schema = { ... }`, which uses either `key = name` or `any_key = yes`, plus a `data` rule (`int`, `fixed_point`, a nested rule list, or `array = country` as in `country_groups.txt`). All other entries are the data. [docs] `common/script_constants/documentation.md`
+- Reading: `constant:<category>.<entry>`, with a dot between category and entry. Every scoped variable accepts a constant that holds one fixed-point number; everything else works only where the entry's documentation says it takes script constants. [docs] `documentation/script_concept_documentation.md`
+- Reloading: reload the constants database first, then the database that reads them, because the values are injected into the script when it loads. [docs] `common/script_constants/documentation.md`
+- Vanilla reads constants in 19 files under `common/`, `events/` and `interface/`, both as target lists and as variable values. [vanilla-confirmed 1.19.3] `common/decisions/CHI_decisions.txt`, `common/decisions/SIA.txt`
+
+```text
+# common/script_constants/country_groups.txt (shortened)
+country_groups = {
+    schema = { any_key = yes  array = country }
+    nordics = { SWE NOR FIN DEN ICE }
+}
+
+# reading it, in the style of common/decisions/CHI_decisions.txt
+any_country_with_original_tag_of = {
+    target = constant:country_groups.nordics
+    has_defensive_war = yes
+}
+```
+<!-- kit:end id="script-constants" -->
+
+### Defines <a id="Defines"></a>
+
+*Main article: [Defines](<defines.md>)*
+
+Defines are a particular type of constant that are used within internal calculations only, defined within `/Hearts of Iron IV/common/defines/*.lua` files. These cannot be referenced in any other files and are only used within the internal, unchangeable code.
+
+Some of the things included in the defines are that events by default stay for 13 days before auto-selecting the first option[1] or that the ai_will_do value is 50% higher for focuses which were unlocked by the just-completed focus[2]. Most defines are numerical in nature, but some can be strings or blocks, such as the end date at which the game over screen appears[3] or the list of experience need for a division to progress to the next level[4].
+The list of defines is vast and touches on every mechanic in the game, so if something can't be changed within the mechanic's respective files, it may be worth to check defines. Defines don't include the [Modifiers#Static modifiers](<modifiers.md#Static_modifiers>), which can serve a similar purpose but with modifier blocks.
+
+As defines are Lua code rather than a PDXscript-interpreted file, any Lua code can go in there, however modules allowing to go out of this directory are not available. As a consequence of this, **there is no need to copy the entire file to edit it**. Defines, including graphical defines, are merely a Lua-contained array, and it is possible to modify a single member of the array in Lua using, for example, `NDefines.NGame.START_DATE = "1936.1.2.12"`. Each of these lines is contained on a separate line and there are no commas separating them, such as the following:
+
+```lua
+NDefines.NGame.START_DATE = "1936.1.2.12"
+NDefines.NGraphics.COUNTRY_FLAG_TEX_MAX_SIZE = 2048
+```
+
+This goes into a separate file set to be evaluated after the base game defines, which is done by making the filename be later in the alphabetical order (decided by Unicode character IDs). As most Unicode characters (including every uppercase or lowercase letter) have larger IDs than the code used for the number 0, the filename is almost irrelevant.
+In the base game files, the graphical defines are set to be merged into NDefines in the last line of the base game file. However, since Lua does not create copies of tables by default, the base game's NDefines contains pointers to the actual elements, which are contained within NDefines_Graphics regardless. For this reason, modifying either NDefines or NDefines_Graphics works for changing graphical defines.
+A mod should **never** contain the 00_defines.lua and 00_graphics.lua files within of itself: these files are commonly changed even in minor game updates, and having a define missing from a file results in the mod being unstable, potentially having a crash on startup.
+
+<!-- kit:begin id="defines-files" at="section:Defines" -->
+**Kit note** In 1.19.3 `common/defines/` holds three base files: `00_defines.lua`, `00_graphics.lua` and the new `01_career_profile.lua`. The warning above names only the first two. [vanilla-confirmed 1.19.3] `common/defines/`. Whether the same do-not-copy warning applies to it is [unverified].
+
+The values behind the references below are unchanged: `EVENT_TIMEOUT_DEFAULT = 13`, `FOCUS_TREE_CONTINUE_FACTOR = 1.5`, `END_DATE = "1949.1.1.1"`, `UNIT_EXP_LEVELS = { 0.1, 0.3, 0.75, 0.9 }` and `MAX_EFFECT_ITERATION = 1000`. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+<!-- kit:end id="defines-files" -->
+
+## Flags <a id="Flags"></a>
+
+In this case, flags are used in the sense of a computer variable that is used to set data to and later read it from, commonly but not necessarily of a boolean value (i.e. either 0 or 1). For editing the flags used for representing countries in-game, see [Country creation](<country-creation.md>) for the starting flags and [cosmetic tags](<cosmetic-tag-modding.md>) for changing them in the middle of the game.
+
+Flags within PDXScript are a 32-bit signed integer, ranging from -2147483648 to 2147483647. A flag can only be set to a specific value (Potentially for a certain amount of days), modified in an additive way by a certain value and read, no other operations can be done. [Variables](#Variables) serve as a more operational alternative, with far more capacity for changing (Such as multiplication or non-integer values, reading game values, being able to set to other database entries rather than numbers, etc). Flags are still recommended to use as a boolean value, as these are more optimised than the variables, and so using variables will lead to an unnecessary increase in memory usage and will lead to the game running slower compared to flags.
+
+Flags are divided into 5 scopes:
+
+- Global. These can be read from anywhere in the game, without the need for scoping.
+- Country. These are assigned to individual countries, being impossible to assign or read elsewhere. A country flag can have different values depending on which country it's checked in.
+- State. These are assigned to individual states, being impossible to assign or read elsewhere. A state flag can have different values depending on which state it's checked in.
+- Character. These are assigned to individual characters, being impossible to assign or read elsewhere. A character flag can have different values depending on which character it's checked in.
+- Military industrial organisation. The `mio` shortnening is used in code for them, such as `set_mio_flag`.
+
+In general, the same principles apply to them with little changes. While unit leader flags exist, these are marked as deprecated and are likely to be removed within the next updates.
+
+A flag can be set in *any* [effect](<effects.md>) block. There is no file where flags need to be defined, they will exist if set and stop existing when cleared.
+The simplest formatting for setting a flag is `set_country_flag = my_flag_name`. This will create the country flag (If it did not exist otherwise) and set it to be a value of 1. *This has no tooltip* and so it will be invisible to the player. [custom_effect_tooltip](<effects.md>) may be used to tell the player that something will be done, if wanting to keep them in the know.
+Afterwards, that flag can be checked with `has_country_flag = my_flag_name` as a trigger. This is set to be true if the flag was set, regardless of which value it has. This will create a tooltip using the flag's name as the [localisation key](<localisation.md>). As such, `my_flag_name: "Has my flag"` will make that appear when the country flag is checked.
+If a flag is no longer useful, it can be cleared by using `clr_country_flag = my_flag_name`, which'll mark it as no longer being set. This also has no tooltip and the player will not be aware unless specifically told with the custom effect tooltip that the flag was cleared.
+
+The exact same principles apply with global, state, and character flags. The only differences are in the used effects/triggers (In which case the word `country` is swapped with the type's name like `set_global_flag`, `has_state_flag`, or `clr_character_flag`) scopes in which they can be set and where they can be checked. For global flags, it can be done in any scope rather than the 'global' scope: it can be set in either country, state, character, or rare other scopes.
+
+Flags can also be targeted towards a certain country. This is usually done by appending the `@TAG` to the name of the flag, though it can be placed anywhere within the tag name except for the first character. For example, `set_country_flag = my_targeted_flag_@PREV` will set it to be targeted towards the country represented by PREV, which we'll take as TAG. *This just appends the PREV's tag to the flag's name*. After this, `has_country_flag = my_targeted_flag_TAG` will come up as true for the same country it was set in. This can be used to create dynamic flags without relying on [meta effects](<effects.md#Meta_effects>). You cannot have more than one target specifier in a single tag, You can only use @ROOT, @PREV, @FROM, and @THIS, even @PREV.PREV does not work. Both of these restrictions do not apply to targeted variables, so those may be a more flexible alternative if you need.
+
+<!-- kit:begin id="flag-types" at="section:Flags" -->
+**Kit correction** The list of five flag scopes above is incomplete for 1.19.3. There are six current flag types and one deprecated type. Every row: [docs] `documentation/effects_documentation.md` and `documentation/triggers_documentation.md`.
+
+| Flag type | Set / clear / modify (effects) | Check (trigger) | Scope |
+| --- | --- | --- | --- |
+| global | `set_global_flag` / `clr_global_flag` / `modify_global_flag` | `has_global_flag` | any |
+| country | `set_country_flag` / `clr_country_flag` / `modify_country_flag` | `has_country_flag` | COUNTRY |
+| state | `set_state_flag` / `clr_state_flag` / `modify_state_flag` | `has_state_flag` | STATE |
+| character | `set_character_flag` / `clr_character_flag` / `modify_character_flag` | `has_character_flag` | CHARACTER |
+| military industrial organization | `set_mio_flag` / `clr_mio_flag` / `modify_mio_flag` | `has_mio_flag` | INDUSTRIAL_ORG |
+| special project | `set_project_flag` / `clr_project_flag` / `modify_project_flag` | `has_project_flag` | SPECIAL_PROJECT |
+| unit leader (deprecated) | `set_unit_leader_flag` / `clr_unit_leader_flag` / `modify_unit_leader_flag` | `has_unit_leader_flag` | CHARACTER |
+
+- Special project flags are the type the wiki text never mentions. Vanilla uses them in 4 files under `common/special_projects/` (61 `set_project_flag` lines, 66 `has_project_flag` lines). `has_project_flag` measures `date` and `days` from the last time the flag was modified. [vanilla-confirmed 1.19.3] `common/special_projects/projects/land_projects.txt`
+- MIO flags are documented but no vanilla file sets or checks one. [vanilla-confirmed 1.19.3] `common/` (0 files)
+- The docs mark `set_unit_leader_flag` as deprecated in favour of `set_character_flag`, and `has_unit_leader_flag` in favour of `has_character_flag`. Vanilla still uses the old pair (14 and 21 files), so it keeps working; write new script with the character pair. The wiki's guess that it will be removed soon is [unverified]. [docs] `documentation/effects_documentation.md`
+- `modify_<type>_flag = { flag = <name> value = <number> }` only changes a flag that already exists. Vanilla uses `modify_country_flag` in 7 files, `modify_state_flag` in 7 and `modify_global_flag` in 3; `modify_character_flag` has no vanilla use. [docs] `documentation/effects_documentation.md`
+- The block form with a timer is common in vanilla: `set_country_flag = { flag = ENG_trade_unions_demand_timer value = 1 days = 30 }` appears on 22 lines. [vanilla-confirmed 1.19.3] `common/decisions/ENG.txt`
+<!-- kit:end id="flag-types" -->
+
+### Example <a id="Example"></a>
+
+The most common use of flags is to simply to mark a certain event (in the generic sense of a word, not necessarily the in-game event mechanic) as having occurred, such as an election, an invasion, a diplomatic deal, et cetera. For example, here's an event that starts off an election campaign in the country:
+
+```text
+country_event = {
+    id = algeria_election.0         # Namespace is assumed to exist.
+    title = algeria_election.0.t
+    desc = algeria_election.0.desc
+
+    is_triggered_only = yes
+
+    immediate = {
+        set_country_flag = ALG_1936_elect_campaign  # Since set_country_flag has no tooltip, no need to hide it.
+    }
+
+    option = {
+        < ... >                     # Irrelevant what's in the option
+    }
+}
+```
+
+Flags provide a way to mark that this event has been received, in this case set within the immediate effect block of the event.
+
+In order to utilise this, the `has_country_flag` trigger will have to be used similarly to this example decision:
+
+```text
+ALG_1936_campaign_category = {         # Decision category is assumed to exist and contain 'allowed = { tag = ALG }'
+    ALG_1936_select_candidate_A = {
+        available = {
+            has_country_flag = ALG_1936_elect_campaign
+        }
+
+        icon = ALG_elect
+        cost = 50
+        fire_only_once = yes
+
+        complete_effect = {
+            country_event = algeria_election.1
+        }
+    }
+}
+```
+
+This will work fine, however, as is, the player will see either a ![Yes](media/data-structures_6e1fd6f20a__img1.png) check mark or a ![No](media/data-structures_6e1fd6f20a__img2.png) cross next to 'ALG_1936_elect_campaign', with no indication what that truly means. In order to correct that, a localisation entry can be added to any working localisation file (i.e. is an \*.yml file within the `/Hearts of Iron IV/localisation/` folder or any of its subfolders, has the internal name of the language in the end of filename before the extension, and is encoded in UTF-8 with the byte order mark present):
+
+```text
+ ALG_1936_elect_campaign: "The 1936 election campaign is currently ongoing"
+```
+
+In order to clear the flag when needed, the `clr_country_flag` effect would be used as such:
+
+```text
+country_event = {
+    id = algeria_election.100         # Namespace is assumed to exist.
+    title = algeria_election.100.t
+    desc = algeria_election.100.desc
+
+    is_triggered_only = yes
+    option = {
+        name = algeria_election.100.a
+        trigger = {
+            has_country_flag = ALG_candidate_A_won
+        }
+        clr_country_flag = ALG_1936_elect_campaign
+        < ... >                     # Irrelevant what else is in the option
+    }
+    option = {
+        name = algeria_election.100.b
+        trigger = {
+            has_country_flag = ALG_candidate_B_won
+        }
+        clr_country_flag = ALG_1936_elect_campaign
+        < ... >                     # Irrelevant what else is in the option
+    }
+    < ... >                         # Other potential options
+}
+```
+
+Note that neither of the effects that modify country flags have tooltips, so [a custom effect tooltip can be used to notify the player](<effects.md>) in some cases.
+Everything is the exact same for flags of other scope types.
+
+### Non-boolean usage <a id="Non-boolean_usage"></a>
+
+This will cover the non-boolean usage of flags. [Variables](#Variables) usually do this job better, but this still has some usages.
+
+The `set_<type>_flag` effect can also be expanded with the optional `days` and `value` arguments. This will appear like the following:
+
+```text
+set_state_flag = {
+    flag = my_state_flag
+    days = 50
+    value = 3
+}
+```
+
+This in particular will set the flag my_state_flag to the state to be equal to 3 for 50 days. After these 50 days end, the flag will be cleared completely, reset to 0. If days are left out, the flag will be set to that value forever. If the value is left out, the flag will not be changed.
+
+And the trigger if a flag is set can also be expanded as such:
+
+```text
+has_global_flag = {
+    flag = my_global_flag
+    value > 2
+    days > 30
+    date < "1938.1.1"
+}
+```
+
+While the flag and the value arguments are self-explanatory, `days` checks how many days it was *since the flag was set* (Not how many are remaining), while the `date` checks the date at which the flag is set. Every argument aside from the `flag` one is optional, just assumed to be always true if not set. This trigger will still always fail if the flag was never set or if it was cleared.
+
+Additionally, it is possible to *modify* a flag as such:
+
+```text
+modify_character_flag = {
+    flag = my_character_flag
+    value = 4
+}
+```
+
+This *adds* the amount to the flag, with negatives being possible. However, there's one catch: **this does nothing if the flag is not set**, having a value of 0.
+
+Each of the preceding examples can be used for any flag type.
+
+### Debugging <a id="Debugging"></a>
+
+The following console commands exist for debugging variables. In console commands, the 'current scope' is what is currently selected: the country opened in diplomacy, the state selected, the unit leader that's selected. If left out, assumes to be the player country.
+
+Debugging-related console commands:
+
+| Name | Parameters | Examples | Description |
+| --- | --- | --- | --- |
+| set_country_flag | `<flag>`<br>The name of the flag to set. | `set_country_flag my_flag` | Sets the country flag for the country controlled by the player. |
+| set_global_flag | `<flag>`<br>The name of the flag to set. | `set_global_flag my_flag` | Sets the global flag. |
+| list_flags | `<scope>`Optional. Changes the scope from the currently-selected scope to what's specified. | `list_vars` | Lists currently active flags in the console window, with their value. Context senstive if nothing (global_flag), country (country_flag) or state (state_flag) is selected when entering this command. |
+
+## Event targets <a id="Event_targets"></a>
+
+Event targets serve as a primitive way to set a pointer to a scope (country, state, character) to be referred to later. Any single event target can only point towards a single scope at a time, however a scope may have several event targets at the same time. Similarly to flags, there is no set folder for event targets, they can be assigned in any event block.
+There are two types of event targets: regular and global. The difference between them is purely when they get cleared.
+
+A scope can be checked if it has an event target assigned using `has_event_target = name_of_event_target`.
+
+<!-- kit:begin id="event-target-commands" at="section:Event_targets" -->
+**Kit note** The four event-target commands as the 1.19.3 documentation describes them. The docs give one line each and say nothing about lifetime, so the wiki's rule that a regular target disappears after the effect block and the event chain it started is [unverified]. Wording column: [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`.
+
+| Command | Kind and scope | Docs wording | Vanilla use |
+| --- | --- | --- | --- |
+| `save_event_target_as` | effect, any scope | save an event target | 515 lines in 83 files |
+| `save_global_event_target_as` | effect, any scope | save a global event target | 134 lines in 40 files |
+| `clear_global_event_target` | effect, any scope | clear a global event target | 61 lines in 17 files |
+| `clear_global_event_targets` | effect, takes a scope keyword | clear all global event targets | none |
+| `has_event_target` | trigger, any scope | checks if the current scope or the global scope has the target saved | 105 lines in 16 files |
+
+Use column: [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/` (line and file counts of the command name).
+
+- `clear_global_event_targets` accepts the scope keywords THIS, ROOT, PREV, FROM, OWNER, CONTROLLER, OCCUPIED and CAPITAL as its value, but vanilla never uses it. What a keyword selects is not documented, so the wiki's `clear_global_event_targets = ROOT` meaning is [unverified]. Clear named targets one at a time with `clear_global_event_target = <name>` instead. [docs] `documentation/effects_documentation.md`
+- A saved target is read as a scope (`event_target:name = { ... }`, 639 block openers in 79 files) and as a target value (`target = event_target:name`, 445 uses). Both kinds of target use the same `event_target:` prefix. [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/`
+<!-- kit:end id="event-target-commands" -->
+
+### Global event targets <a id="Global_event_targets"></a>
+
+Global event targets can be declared using `save_global_event_target_as = my_event_target` as an effect. This will create the global event target with the name of `my_event_target` and it will last forever. Afterwards, it can be referred to as `event_target:my_event_target`, both as a scope and as a target.
+
+If `save_global_event_target_as = my_event_target` is used when the event target is already set, the event target will change scopes to the one where the effect is used.
+Additionally, `clear_global_event_target = my_event_target` (to be used in any scope, not necessarily the event target) will clear the specified global event target entirely, while `clear_global_event_targets = ROOT` will clear every global event target from the specified scope.
+
+For example, by using [start_civil_war](<effects.md>) as an effect block, the following will assign the TAG_democratic_side event target to the revolter:
+
+```text
+start_civil_war = {
+    size = 0.5
+    ideology = democratic
+    save_global_event_target_as = TAG_democratic_side
+}
+```
+
+After this, TAG_democratic_side event target will refer to the democratic side. For example, this code later in another effect block can be used to transfer a state and a part of the armies to the event target:
+
+```text
+event_target:TAG_democratic_side = {
+    transfer_state = 123
+}
+transfer_units_fraction = {
+    target = event_target:TAG_democratic_side
+    size = 0.2
+}
+```
+
+It would make sense to clear the event target after it no longer exist, such as by using the [on_civil_war_end on action](<on-actions.md>).
+
+When using the event target as a scope for a namespace in localisation, the `event_target:` prefix is not needed, instead it'll look like `[TAG_democratic_side.GetName]`.
+
+### Regular event targets <a id="Regular_event_targets"></a>
+
+Regular event targets can be declared using `save_event_target_as = my_event_target` as an effect. The difference between regular and global event targets is in when they get cleared. While global event targets are used forever and can only be cleared manually, regular event targets only last as long as the effect block does (carrying over into events fired within as well), clearing automatically afterwards, and there is no way to clear them manually.
+
+For example, this in an effect block will save a random owned and controlled state as the event target `target_state` and then fire the event mod_event.0 in 10 days:
+
+```text
+random_owned_controlled_state = {
+    save_event_target_as = target_state
+}
+country_event = { id = mod_event.0 days = 10 }
+```
+
+Assuming no other events, this event target will only exist within this effect block and the event mod_event.0 (Where it can be used in its corresponding trigger or effect blocks). If the event mod_event.0 fires another event within a corresponding effect block, this event target will exist in that event as well, meaning that this carries over to the entire mod_event.0-starting event chain. For example, the generic event generic.23 (`[From.GetNameDefCap]` Demands Control of `[demanded_prov_target.GetName]`) uses this with demanded_prov_target as the event target. In order to make ROOT demand the state 123 from TAG using this, this effect block will be used:
+
+```text
+123 = {
+    save_event_target_as = demanded_prov_target
+}
+TAG = {
+    country_event = generic.23
+}
+```
+
+Event targets can be used in *most* effect blocks, they are called event targets only because they carry over to events. However, there are a few effect blocks, such as scripted diplomatic actions, where event targets are impossible to set.
+
+## Country tag aliases <a id="Country_tag_aliases"></a>
+
+Country tag aliases are somewhat similar to event targets: they are used as pointers towards a specific scope, a single alias can point towards a single scope, and a single scope can have several aliases. However, there are differences. Primarily, country tag aliases can only point towards countries (as per the name) and they are set and cleared entirely automatically without any manual involvement. A country tag alias can point towards a non-existing country.
+
+Country tag aliases are stored within `/Hearts of Iron IV/common/country_tag_aliases/*.txt` files. Each country tag alias is stored as a separate block within the file, with the name of the block being the name of the alias. Additionally, the country tag aliases serve as a trigger block, so any trigger can be used within. These are the arguments that can be used within:
+
+- `variable = global.var_name` - This will make sure that the country tag alias is equivalent to the country that the specified [variable](#Variables) points to, in this case `var_name` assigned to the global scope.
+- `event_target = my_event_target` - This will make sure that the country tag alias is equivalent to the country that the specified **regular** event target points to, in this case `my_event_target`.
+- `global_event_target = my_event_target` - This will make sure that the country tag alias is equivalent to the country that the specified **global** event target points to, in this case `my_event_target`.
+- `original_tag = TAG` - This puts every country that originates from TAG (created with [start_civil_war](<effects.md>) or [create_dynamic_country](<effects.md>)) as a possible target for the alias. In this case, further specification is needed with triggers. This is equivalent to the [original_tag trigger](<triggers.md>), but this is treated as an argument here as it does make certain errors go away.
+- `targets = { ABC DEF GHI }` - This is a whitespace-separated list of country tags that the country tag alias can select. In this case, further specification is needed with triggers.
+- `target_array = global.my_array` - This puts every country that's within the specified array (`my_array` in the global scope in this case) as a possible target for the country tag alias. In this case, further specification is needed with triggers.
+- `country_score = { ... }` - This is a [MTTH block](<ai-modding.md#MTTH_blocks>) evaluated for each country. The country which has the highest total score will be picked for the country tag alias, provided the conditions imposed by every other argument are met.
+- `fallback = TAG` - This is what the country tag alias will point to if no country fulfills the conditions specified within triggers or other arguments.
+
+Here are some examples of country tag aliases:
+
+```text
+MOD = {
+    targets = { ABC DEF GHI }
+    has_country_flag = my_flag
+    country_score = {
+        base = 1
+        modifier = {
+            add = 2
+            tag = ABC
+        }
+        modifier = {
+            add = 1
+            tag = DEF
+        }
+    }
+    fallback = ABC  # This will point to ABC, DEF, or GHI if they have the specified country flags. ABC is prioritised over DEF, which is prioritised over GHI. If neither have the country flag, defaults to ABC.
+}
+ARB = {
+    target_array = global.arab_countries
+    has_cosmetic_tag = ARABIA_UNITED    # This will point to any country in the global.arab_countries array if they have the ARABIA_UNITED cosmetic tag, provided they exist.
+    exists = yes
+}
+```
+
+This is most commonly used with [start_civil_war](<effects.md>) or [create_dynamic_country](<effects.md>). For example:
+
+```text
+SDA = {
+    original_tag = SDI
+    has_country_flag = SDI_side_A
+}
+```
+
+In order for this country tag alias to get used for side A of the civil war, it must have the country flag set. This is usually done directly in the effect that spawns it:
+
+```text
+start_civil_war = {
+    ideology = neutrality
+    size = 0.5
+    set_country_flag = SDI_side_A
+}
+```
+
+After doing this, it's possible to use `SDA` as if it's a regular country tag, e.g. `SDA = { add_political_power = 100 }` or `transfer_state_to = SDA`.
+
+separate from the method above another easier method to give custom tag to a dynamic d## country eg d04 (this method does not require a flag to be set)
+
+in common\country_tag_aliases\tag_aliases.txt add
+
+```text
+INA = {                                  #new tag
+	original_tag = INS
+	has_government = monarchism     #change monarchism to democratic etc to define which faction you want
+}
+```
+
+The INA tag above will be functional without any other changes e.g. `INA = { add_political_power = 100 }`
+
+using a limit
+
+```text
+        if = {                                          ## Put this inside completion reward in a focus to create a custom cosmetic tag for a dynamic country,
+	limit = { 					##checks both conditions below match
+		any_country = { original_tag = INS } 	##INS is original country Tag
+		NOT = { has_government = democratic } 	## democratic/neutrality etc is government type change it to usually the government type of the original country or  , custom ideologies can be used here too.
+		}					##  if the civil war has  MORE than 2 factions of differing government types  copy the NOT line and enter the third factions government type.
+	set_cosmetic_tag = INA				## set any country matching the above conditions to cosmetic tag INA that can be used.
+	}
+```
+
+To Change a Dynamic country Name the name file you need is \localisation\countries_cosmetic_l_english.yml
+
+add the below lines (rename inside " " to suit your needs)
+
+```text
+ INA:0 "Indonesia Royalist uprising"                         #INA is new cosmetic tag created above
+ INA_AST_autonomy_puppet_DEF:0 "Royal $OVERLORDADJ$ Indies"  # will change name to overlords adjective
+```
+
+<!-- kit:begin id="tag-alias-rules" at="section:Country_tag_aliases" -->
+**Kit addition** Rules from the comment header of the vanilla alias file, which the wiki list above only partly covers. All bullets: [vanilla-confirmed 1.19.3] `common/country_tag_aliases/tag_aliases.txt`.
+
+- An alias name is a three-letter tag and must differ from every real tag.
+- `variable`, `event_target` and `global_event_target` map the alias straight to one target. Use only one of them; once one is present the game does no other check.
+- Otherwise the candidates come from any mix of `original_tag`, `targets` and `target_array`. With none of them the game scans every existing country, which the file warns against for performance.
+- Inside the alias trigger list the current scope is the candidate country and `PREV` is the scope that wrote the alias.
+- Without `country_score` the alias returns the first existing country that matches. With it, the highest score above 0 wins. `fallback` is used without any trigger or score check.
+- The file defines 21 aliases. The Spanish civil war sides `SPA` to `SPD` use `original_tag = SPR` plus a country flag, `VIC` uses `has_focus_tree`, and `SOS` uses `has_cosmetic_tag`.
+<!-- kit:end id="tag-alias-rules" -->
+
+## Variables <a id="Variables"></a>
+
+A variable within Hearts of Iron IV is defined by appending a signed 32-bit integer ranging from -2 147 483 648 to 2 147 483 648 to another integer ranging from 0 to 99 999, representing the whole number and fractional parts of the variable respectively as `<whole numbers>.<decimals>`. As such, it effectively ranges from -2 147 483 648.99 999 to 2 147 483 647.99 999. Adding further amounts above or below the variable will result in an overflow, causing the value go from the maximum to the minimum or vice-versa. Additionally, this means that the highest level of accuracy achievable using the variable system is to the closest 0.00001, and any levels of precision beyond this will be truncated.
+
+Variables are not stored within any particular file and can be created dynamically with any [effect](<effects.md>) or (temporary variables-only) [trigger](<triggers.md>). Each database object (such as countries, states, ideas, or even equipment types) has a unique internal numeric ID, which can be assigned to a variable. For example, setting a variable's value to a country tag will make it take on the ID of the tag, and then the variable will be taken as a country when used as a target or as a scope. For [tokenizable database types](#Token-valued_variables), a `token:` prefix is necessary when assigning a literal, for example: `var_name = token:some_idea_name`.
+
+When using a variable as a scope, the `var:` prefix is needed, however in some cases the prefix is optional: most notably when using it as the target of an effect or trigger. For example, in `transfer_state = var:my_state_variable`, the `var:` can be omitted with no difference (For some cases, there will be logged errors, yet it will work in-game), but in `var:my_country_variable = { transfer_state = 123 }` the `var:` is *mandatory*. Despite functioning similarly to a scope, the `var:` prefix is optional when a variable is used as a weight inside of [random_list](<effects.md#Random_effects>). Same as with event targets, using variables in localisation for namespaces does not require the `var:` prefix, such as `[?var_name.GetName]`. A good rule of thumb is that when passing a variable in a place where a raw token (rather than, say, a quoted string, a number, or a numeric state ID) is acceptable, it must usually be prefixed with `var:` so that the parser can distinguish whether the token being passed is meant to reference a database object or a variable. If `var:` is absent in a location where it should be present, the code may work, but the game will often complain in the error log. In general, it is best to err on the side of caution in this regard, as what may result in a merely-complaining error in one context, might result in an effect-nullifying, or worse, trigger-falsifying, error in another context. However, `var:` is always optional in variable and array manipulation operators (including `check_variable`), and so it can be elided in those operators for readability's sake.
+
+Within their names, variables can have any word character, i.e. the 26 English letters (Either lowercase or uppercase), underscores, and the decimal digits from 0 to 9. However, a variable name cannot *begin* with a decimal digit, so a name like `123_my_variable` is invalid. This requirement common in many programming languages, and is implemented here for the same reason that the `var:` prefix exists: so that the parser can determine what syntactic type a token will be from the first (few) characters, and therefore doesn't have to worry about backtracking as much. In addition, it is recommended to avoid any names by variables that are already used for something else. For example, naming a variable `capital` can prevent any subsequent usage of the [game variable with the same name](#Game_variables) within the internal code. A common naming convention to avoid overlap is to add a prefix signifying where it's used, such as the country's tag (`POL_capital`) or the name of the mechanic (Usually shortened like `PC_capital`).
+
+### Variable types <a id="Variable_types"></a>
+
+There are two types of variables: regular and temporary. There are the following differences between the two:
+
+- Different effects are used to set and modify regular and temporary variables. Typically, the difference is just in changing `variable` to `temp_variable`.
+- Temporary variables only exist within the effect or trigger block where they're defined, similarly to regular event targets (although without carrying over to events). This does not mean they don't survive outside of the scope where they're defined, but the '*entire* effect block, such as a focus reward or an event option. Meanwhile, regular variables exist forever. Note that this, however, does not always function properly in regards to scripted effects or triggers: temporary variables defined within of them may not still exist outside of them within the same effect/trigger block. However, a temporary variable defined before the scripted effect or trigger's usage will always carry on into it and get modified properly within.
+- Due to the previous point, **temporary variables can be defined and modified in trigger blocks** as well as in effect blocks. This enables them to be computed as-needed in scripted triggers called from the `trigger` block of scripted localizations. Meanwhile, regular variables are restricted to only being defined in effect blocks.
+- Temporary variables are unscoped: they will remain the same regardless of in which scope they're defined and where they're checked. Meanwhile, regular variables are restricted to scopes, so that the variable has different values depending on which scope it's checked in, such as how different countries may have different stability values.
+
+### Scoping <a id="Scoping"></a>
+
+**Scoping only exists for regular variables.** They can and must be assigned to countries, states, characters, and to the global scope.
+If nothing else is specified, the current scope, or [THIS](<scopes.md>), is used as the scope of the variable. For example, `ABC = { set_variable = { my_var = 1 } }` will set the variable with the name of my_var within the scope of ABC. `CBA = { check_variable = { my_var = 1 } }` would then come up as false, since it checks for the variable only within CBA, while the variable is set in ABC.
+
+The scope where the variable is read can be changed by prepending any [dual scope](<scopes.md#Dual_scopes>) that can be used as a target and can be used in any scope (For example, character scopes can not be prepended before variable because character scopes are not any-scoping scopes, which means they can not be used in other character scopes.) before the variable's name, separated with a dot, such as `PREV.PREV.var_name` being the value of `var_name` as checked for `PREV.PREV` or `event_target:my_event_target.var_name`. This also includes `global` in order to assign it globally, **which is necessary to scope into global**. Other variables, if pointing to a scope, can also be used, but the `var:` is unneeded. Variables must be chained using the `:` separator (rather than the usual dot), such as `ABC.capital:var_name` being the variable `var_name` as it's assigned to the capital state of the country ABC, where `capital` is a built-in variable pointing to the capital state of the country. Note that the scope specifier preceding `capital` is separated from it by a `.` since it is a static (that is, non-variable) scope. The way to intuit this syntax is that the whole `ABC.capital` clause forms a variable scope specifier, in which `var_name` is accessed.
+
+Here are some examples of scoped variable references:
+
+```text
+var_name                                    # Scopes to THIS
+GER.var_name                                # Scopes to GER
+123.var_name                                # Scopes to state 123
+global.var_name                             # Scopes to global
+province_controllers^1234:capital:var_name  # Scopes to the capital state of the country that controls the province 1234.
+```
+
+In practice, scoping to distinguish variables may look like this:
+
+```text
+every_country = {
+    set_variable = { weighted_manpower = 0 } # Reset the counter to default in case it already exists
+    every_owned_state = {
+        set_variable = { weighted_manpower = state_population_k } # Completely unrelated to the above variable due to being in a different scope
+        if = {
+            limit = {
+                NOT = { is_core_of = PREV } # Is core of the owner
+            }
+            divide_variable = { weighted_manpower  = 10 } # Divides the state's equivalent
+        }
+        add_to_variable = { PREV.weighted_manpower = weighted_manpower } # Adds to the owner's counter
+    }
+}
+```
+
+In this case, each state has a `weighted_manpower` variable which is equal to the population in thousands if it's a core of the owner at the time of being set and it's divided by 10 otherwise. Each country will also have a `weighted_manpower` variable, which sums up the weighted manpower of each state. Despite having the same name, these variables are completely unrelated to each other due to one being country-level and the other being state-level.
+
+### Trigger usage <a id="Trigger_usage"></a>
+
+**Only temporary variables can be modified within a trigger block.** Regular variables can only be used in effects, while temporary can be used in both triggers and effects.
+
+However, there's one aspect of triggers that's important to know: *when* each scope stops evaluating. If a scope stops evaluating, then the variable will not be modified anymore. In general, [trigger scopes](<scopes.md#Trigger_scopes>) that can select multiple targets are divided into two groups: `all_<scope type>` and `any_<scope type>`. The first group, requiring all targets to meet triggers, evaluates each target in order and stops when it encounters one where the triggers aren't met. The second group, requiring any target to meet triggers, evaluates each target and stops when it encounters a true one.
+Empty trigger blocks are considered true by default, so one would instantly stop the validation of the second group (`any_` triggers). For this reason, [since scope limits are not supported in trigger scopes](<scopes.md>), then the proper usage for modifying temp variables would be an [if statement](<triggers.md>) that modifies the variable if the limit is met with no other triggers that can come up as true or false coming up.
+
+<!-- kit:begin id="hidden-trigger-evaluation" at="section:Trigger_usage" -->
+**Kit note** A `hidden_trigger` is not shown in the tooltip, but the game can still evaluate it while it builds the tooltip. Set `tooltip_evaluation = eval` when the hidden trigger has side effects such as temp variable changes or uses random choices. `no_eval` skips that evaluation and is only safe when there are no side effects or random parts. `legacy` is the old, less predictable behaviour and the docs call explicit use very likely a bug. [docs] `documentation/triggers_documentation.md` (the three values are listed in the HTML copy; the Markdown copy drops that text)
+
+Vanilla sets `tooltip_evaluation = eval` twice, both in `common/factions/goals/faction_goals_short_term.txt`. [vanilla-confirmed 1.19.3]
+
+The temp variable operators that count as triggers are the `_temp_` forms of set, add, subtract, multiply, divide, modulo, clamp, round and random, the temp array operators, `find_highest_in_array`, `find_lowest_in_array`, the `_temp` scorer triggers, `log` and `print_variables`. `randomize_temp_variable` is documented as an effect only. [docs] `documentation/triggers_documentation.md`
+<!-- kit:end id="hidden-trigger-evaluation" -->
+
+### Localisation <a id="Localisation"></a>
+
+*Parts of this section are transcluded from [Localisation § Formatting variables](<localisation.md#Formatting_variables>)*
+
+In order to display the value of a variable in localisation, `[?var_name]` is used, with the question mark signifying that it's a variable. **The question mark is mandatory** in order to distinguish the variable from the event targets. For example, such a localisation value will work:  `var_value_tt: "There are [?num_of_dogs] dog(s) in the country"`
+By default, the scope where this is used gets assumed. Scoping works the same way as it does with variables regularly:  `GER_var_value_tt: "There are [?GER.num_of_dogs] dog(s) in [GER.GetNameWithFlag]"`
+When the variable is a scope by itself, the question mark is still mandatory to use to distinguish from event targets:  `target_tt: "The target country is [?target_country.GetName]"`. **Variables can only be displayed in UI that supports dynamic localisation**, otherwise it will appear exactly as in the localisation file. List of such UI elements and necessary conditions for them to support dynamic localisation can be found in [Localisation § Namespaces](<localisation.md#Namespaces>).
+
+If the variable points to a certain address with more localised text, such as a country, namespaces can be used in the same manner as with a regular tag or event target:  `most_dogs_tt: "[?most_dogs.GetNameDefCap] has the most dogs out of any country."` Question marks are still mandatory to include in this case.
+
+Variables have a unique way for applying colouring, also allowing extra formatting characters. These are applied after a pipe placed at the end of the variable's name, such as `[?my_variable|R]` that will turn the colour of the variable `my_variable` red. If no colouring is applied, it will use the same colour as regular text: the §-colour block, textbox's `text_color_mode`, or the font's default colour in that order.
+
+The list of formatting characters that are restricted to variables only are the following:
+
+| Code | Effect |
+| --- | --- |
+| \* | Converts the variable to SI units—appends "K" or "M" and divides the variable appropriately, such as 65 536 becoming 65.53K and 1 500 000 becoming 1.50M. Displays 2 decimals after the dot by default. |
+| ^ | Same as \*. |
+| = | Prefixes the variable with **+** if the value is positive or **-** if it is negative. |
+| 0..9 | Controls the number of decimals to display. Due to the nature of the game's variables, there are no more than 5 decimals that can be shown. Using any digit greater than 5 will instead have the same result as 5. |
+| % | Converts the variable to percentage, multiplying by 100 and appending a %. By default, will show 2 digits after the decimal point, though the second digit will always be 0. |
+| %% | Appends a percentage to the end of the variable without multiplying by 100. |
+| + | Colours the variable green if positive, yellow if zero, red if negative. |
+| - | Colours the variable red if positive, yellow if zero, green if negative. |
+
+Any unrecognised symbols will neither change how the variable is localised nor get recognised as an error in-game. For example, it's common practice in the base game to prepend a dot before the digit used to control the amount of displayed digits as `[?var|.1]`. In case of overlap between mutually-exclusive rules, the last-used one will be prioritised. However, static colouring has a lower priority than dynamic colouring (e.g. `[?var|+Y]` will be treated as `[?var|+]`), and using `%%` will also override `%`.
+
+Some examples of formatting characters in usage:
+
+```yaml
+l_english:
+ loc_key: "Democratic party popularity: [?party_popularity@democracy|%G0]"
+ loc_key_2: "Modifier token's value: [?modifier@my_modifier|.1%%+]"
+ pol_power_trigger_tt: "Has more than [?var_name|Y] political power"
+```
+
+Within these examples, the first string depicts the current scope's democratic popularity as a percentage multiplied by 100 (%), in green (G), rounded to a whole number with 0 decimals (0). The second string displays the `my_modifier` [modifier token](<modifiers.md>)'s value as a 'good' number (+ making it green if positive, red if negative), with a percentage sign appended in the end (%%) and rounded to a number with one decimal (.1). The third string displays the variable in yellow colouring (as is common in the base game's tooltips), leaving it unchanged otherwise.
+
+By default, variable-related arguments such as `set_variable` or `check_variable` do not have a tooltip. For *some* of these arguments, such as `add_to_temp_variable`, it is possible to set a tooltip with an optional `tooltip = localisation_key` argument within. Others, such as `check_variable`, do not support this and a custom tooltip must be used instead, whether it's for [effects](<effects.md#Tooltip_manipulation>) or for [triggers](<triggers.md>).
+
+This tooltip argument is notable since the value of that localisation key allows using two [strictly-internal variables](<localisation.md>) marked with dollar signs: `$LEFT$` and `$RIGHT$`.
+`$LEFT$` represents the variable's value before the operation, while `$RIGHT$` represents the variable's value after the operation. This can be used to let the player know the current and/or the potential value of the variable in the same localisation key without taking up more space with `custom_effect_tooltip`.
+
+Here's an example of it being done:
+
+```text
+add_to_variable = {
+    var = num_dogs
+    value = ENG.num_cats
+    tooltip = add_cats_to_dogs_tt
+}
+```
+
+This is the effect itself. Within localisation, this would be done:
+
+```text
+ add_cat_to_dogs_tt: "Adds [ENG.GetAdjective] cats to our $LEFT$ dog(s) to get $RIGHT$ in total."
+```
+
+<!-- kit:begin id="variable-tooltip-correction" at="section:Localisation" -->
+**Kit correction** The text above says `check_variable` cannot take a tooltip. In 1.19.3 it can. [docs] `documentation/triggers_documentation.md`
+
+- `check_variable` accepts `tooltip = <loc key>`, and the text may use `$LEFT$` and `$RIGHT$`. [docs] `documentation/triggers_documentation.md`
+- `set_variable` and `set_temp_variable` document the same `tooltip`. [docs] `documentation/effects_documentation.md`
+- `add_to_variable` and its siblings do not list `tooltip` in the docs, yet vanilla uses it on most `add_to_variable` blocks. Counts are block-form uses with a direct `tooltip` key, temp and regular variants together. [vanilla-confirmed 1.19.3] `common/` (scan of all `.txt` files under `common/`, `events/`, `history/`)
+
+| Operator | Blocks | With tooltip | Files with tooltip |
+| --- | --- | --- | --- |
+| `add_to_variable` | 6591 | 3973 | 97 |
+| `set_variable` | 8225 | 147 | 18 |
+| `subtract_from_variable` | 886 | 18 | 7 |
+| `check_variable` | 5608 | 37 | 6 |
+| `multiply_variable` | 495 | 0 | 0 |
+| `divide_variable` | 161 | 0 | 0 |
+| `modulo_variable` | 3 | 0 | 0 |
+| `clamp_variable` | 271 | 0 | 0 |
+
+- The operator table above lists `tooltip` for `multiply_variable`, `divide_variable` and `modulo_variable`. The docs do not list it there and no vanilla block uses it, so it is [unverified] for those three.
+- The example on this page uses `tooltip = add_cats_to_dogs_tt` but defines the key `add_cat_to_dogs_tt`. The two spellings differ, so copy one spelling into both places. [unverified]
+- `$LEFT$` and `$RIGHT$` take the same pipe codes as `[?var|code]`. Vanilla writes `$RIGHT|+=%1$` 288 times, `$RIGHT|-=%1$` 81 times and `$RIGHT|0Y$` 5 times. `$LEFT` appears on only 8 lines in 6 files, `$RIGHT` on 524 lines in 15 files. [vanilla-confirmed 1.19.3] `localisation/english/`
+<!-- kit:end id="variable-tooltip-correction" -->
+
+<!-- kit:begin id="variable-format-codes" at="section:Localisation" -->
+**Kit addition** Codes after the pipe in `[?variable|code]` that vanilla localisation uses. There are 440 such references in `localisation/english/`; the table lists the most common ones. All rows: [vanilla-confirmed 1.19.3] `localisation/english/`.
+
+| Code | Uses | Files |
+| --- | --- | --- |
+| `+0` | 145 | 5 |
+| `Y0` | 82 | 14 |
+| `%` | 60 | 5 |
+| `%Y0` | 19 | 2 |
+| `G0` | 14 | 3 |
+| `0` | 14 | 5 |
+| `R0` | 12 | 1 |
+| `%G0` | 9 | 1 |
+| `H0` | 9 | 2 |
+| `0H` | 8 | 4 |
+| `%0G` | 5 | 2 |
+| `%+` | 4 | 1 |
+| `+%0` | 3 | 1 |
+
+- The digit, the colour letter and the sign or percent symbol can come in either order (`%G0` and `%0G`, `H0` and `0H`). [vanilla-confirmed 1.19.3] `localisation/english/`
+- The colour letter `H` is common in vanilla but the table above does not explain it, so its meaning is [unverified]. The exact string `%+0` does not occur in 1.19.3 vanilla; `+0`, `%+` and `+%0` do.
+<!-- kit:end id="variable-format-codes" -->
+
+<!-- kit:begin id="bindable-localisation" at="section:Localisation" -->
+#### Kit: Bindable and formatted localisation <a id="kit-bindable-localisation"></a>
+
+**Kit addition** Many 1.19.3 tooltip arguments take more than a plain key.
+
+- Bound object: `tooltip = { localization_key = KEY PARAM = <value> }`. Each `PARAM` fills `$PARAM$` in the text of `KEY`, and a value can itself be a plain key, a string or another bound object. [docs] `documentation/script_concept_documentation.md`
+- Formatted form: `formatter|token`, for example `custom_effect_tooltip = idea_desc|canadian_pacific_railway`. The shipped formatters are `advisor_desc`, `building_state_modifier`, `character_name`, `country_culture`, `country_leader_desc`, `idea_desc`, `idea_name` and `tech_effect`. [docs] `documentation/loc_formatter_documentation.md`
+- Vanilla uses `localization_key =` in 98 files under `common/` and `events/`, and a parameter value may be a scripted localisation call such as `CHARACTER = [GetAscendedAdvisorName1]`. [vanilla-confirmed 1.19.3] `common/scripted_effects/GER_scripted_effects.txt`
+- Formatter strings on `custom_effect_tooltip` appear on 18 vanilla lines. [vanilla-confirmed 1.19.3] `common/` and `events/`
+- Support is per argument. `custom_effect_tooltip` and `custom_override_tooltip` take it, and the docs say the `tooltip` of `every_allied_country`, `random_allied_country`, `any_country_of` and `all_claimant` does too. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
+- The `tooltip` of the variable operators is documented only as a loc key with LEFT and RIGHT tokens, so the bound-object form there is [unverified].
+<!-- kit:end id="bindable-localisation" -->
+
+### Additional usage <a id="Additional_usage"></a>
+
+By default, an unset variable is equal to zero when checked. However, the game also provides a null coalescing operator for variables, used with a question mark. For example, `cost = var_name?100` within a decision will result in the cost of the decision being the same as var_name for the country. However, if that variable was never set or was cleared beforehand, then the decision will cost 100 ![Political Power](media/building-modding_811161eae8__img1.png)Political Power instead of 0.
+
+Similarly to flags, a variable can be set as targeted by appending the target with `@TAG`. However, there are differences: in variables this does not append the target's ID to the name but stores it as a separate variable, as well as it being possible to target far more than countries, but also, for example, states or ideology groups. A variable reference `var_name_@GER` would resolve to a variable named `var_name_GER`. If called in a scope where PREV`= { tag = ENG }`, a variable reference `var_name_@PREV` would resolve to a variable named `var_name_ENG`. This can even be applied to temporary variables. You can also target variables using the syntax `var_name_@var:target_var_name`, regardless of the type of their value: be it country, state, token, even a raw integer. Variables targeting tokenizable types such as ideology groups and ideas provides a powerful alternative to scoped variables for associating a set of variable fields together, enabling one to get around the fact that ideas, ideologies, etc. do not have their own scopes. Generally, when you target a token, it is pasted in as its underlying integer ID (a number in the ten-thousands, usually), but this generally works fine, because it's consistent; the only problem is it's not human-readable. In general, variable targeting is substantially more optimized than meta-effect/trigger token pasting, not to mention more readable and understandable, so should be preferred wherever feasible.
+
+It is technically possible, under some circumstances, to use multiple target specifiers in one variable name, usually strung together back-to-back at the end of the name, like `var_name_@THIS_@PREV`. However, this is extremely inconsistent, and the exact rules that govern how it behaves are currently an open question.
+
+### Operators <a id="Operators"></a>
+
+The following is a list of variable-related effects and triggers. Variable-modifying effects have an equivalent for temporary variables, with `temp_variable` being used instead of `variable`, and these temporary variable operators are also valid triggers, as described above. Every operator can be used with variables that do not exist, assuming a value of 0 unless a null-coalescing operator is used.
+
+Variable-related arguments:
+
+| Name | Parameters | Examples | Description | Notes |  |
+| --- | --- | --- | --- | --- | --- |
+| set_variable | `var = <variable>`<br>The variable to modify or create.<br> `value = <decimal>/<variable>`<br>The value to set the variable to.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`set_temp_variable = { temp_var = ROOT.overlord }` | Sets a variable's value to the specified amount, creating it if not defined. | Shortened version exists with `set_variable = { <variable> = <value> }`. |  |
+| set_variable_to_random | `var = <variable>`<br>The variable to modify or create.<br> `min = <decimal>`<br>The minimum possible value, defaults to 0.<br> `max = <decimal>`<br>The maximum possible value, defaults to 1.<br> `integer = <bool>`<br>Sets if the variable *must* be an integer or if it can be decimal. Defaults to false.<br> | *(example below)*`set_temp_variable_to_random = my_var` | Sets a variable's value to the specified amount, creating it if not defined. The result will be greater than or equal than the minimum and strictly less than the maximum. | Shortened version exists with `set_variable_to_random = <variable>`, setting it to a decimal between 0 and 1. Can be used in triggers. |  |
+| clear_variable | `<variable>`<br>Variable to clear. | `clear_variable = my_variable` | Clears the value from the memory entirely. | Can only be used on regular variables. |  |
+| check_variable | `var = <variable>`<br>Variable to compare.<br> `value = <decimal>/<variable>`<br>The value to compare the variable to.<br> `compare = <compare type>/<variable>`<br>The comparison type. Variants are `equals`, `not_equals`, `less_than`, `less_than_or_equals`, `greater_than`, and `greater_than_or_equals`. Defaults to `greater_than_or_equals`. | *(example below)*`check_variable = { var_name > 10 }` | Compares the value of a variable. Used as a trigger. | Temporary and regular formatting use the exact same formatting. Shortened variant exists as `check_variable = { <variable> < <value> }`, where the operator in the middle is an equality sign (=), greater than sign (>), or a lesser than sign (<). The comparison type is always strict in this case: `check_variable = { var_name > 10 }` will come up as false if `var_name` is exactly 10. |  |
+| has_variable | `<variable>`<br>Variable to check. | `has_variable = my_variable` | Checks if the value was set, regardless of its amount. Used as a trigger. | A variable is considered set even if its value is 0, as long as it wasn't cleared. |  |
+| add_to_variable | `var = <variable>`<br>The variable to add to.<br> `value = <decimal>/<variable>`<br>The value to add to the variable.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`add_to_temp_variable = { temp_var = num_owned_states }` | Increases a variable's value by the specified amount, creating it if not defined. | Shortened version exists with `add_to_variable = { <variable> = <value> }`. |  |
+| subtract_from_variable | `var = <variable>`<br>The variable to subtract from.<br> `value = <decimal>/<variable>`<br>The value to subtract from the variable.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`subtract_from_temp_variable = { temp_var = num_owned_states }` | Decreases a variable's value by the specified amount, creating it if not defined. | Shortened version exists with `subtract_from_variable = { <variable> = <value> }`. Equivalent to adding a negative amount. |  |
+| multiply_variable | `var = <variable>`<br>The variable to multiply.<br> `value = <decimal>/<variable>`<br>The value to multiply the variable by.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`multiply_temp_variable = { temp_var = num_owned_states }` | Multiplies a variable's value by the specified amount. | Shortened version exists with `multiply_variable = { <variable> = <value> }`. |  |
+| divide_variable | `var = <variable>`<br>The variable to divide.<br> `value = <decimal>/<variable>`<br>The value to divide the variable by.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`divide_temp_variable = { temp_var = num_owned_states }` | Divides a variable's value by the specified amount. | Shortened version exists with `divide_variable = { <variable> = <value> }`. |  |
+| modulo_variable | `var = <variable>`<br>The variable to modulo.<br> `value = <decimal>/<variable>`<br>The value to modulo the variable by.<br> `tooltip = localisation_key`Localisation used by the operation. Optional. | *(example below)*`modulo_temp_variable = { temp_var = num_controlled_states }` | Makes the variable become the remainder of Euclidean division of the variable by the specified value. | Shortened version exists with `modulo_variable = { <variable> = <value> }`. |  |
+| round_variable | `<variable>`<br>The variable to round. | `round_variable = my_variable``round_temp_variable = temp` | Rounds the variable towards the closest integer value. | If exactly between two integers (Such as 1.5), the option with lager absolute val gets chosen ( if -1.5,will be -2 ). |  |
+| clamp_variable | `var = <variable>`<br>The variable to clamp.<br> `min = <decimal>/<variable>`<br>The minimum value of the variable after the clamp.<br> `max = <decimal>/<variable>`<br>The maximum value of the variable after the clamp. | *(example below)* *(example below)* | Clamps the variable to ensure its value is between the two specified numbers, raising to the minimum if smaller or lowering to the maximum if larger. | Either min or max can be omitted, in which case it'll not be checked. Does nothing if the variable is already in the range between min and max. **This only changes the current value of the variable**, it can still go beyond the minimum or the maximum after the clamp. |  |
+| career_profile_set_temp_playthrough_variable | `var = <variable>`<br>The variable to modify or create. `value = <decimal>/<variable>`<br>The value to set the variable to. | *(example below)* | Sets a temporary variable to a value or another variable. |  | ??? |
+| career_profile_set_temp_variable | `var = <variable>`<br>The variable to modify or create. `value = <decimal>/<variable>`<br>The value to set the variable to. | *(example below)* | Sets a temporary variable to a value or another variable. |  | ??? |
+
+**Example: set_variable**
+
+```text
+set_variable = {
+    var = my_variable
+    value = 100
+    tooltip = set_var_to_100_tt
+}
+```
+
+**Example: set_variable_to_random**
+
+```text
+set_variable_to_random = {
+    var = random_num
+    max = 11
+    integer = yes
+}
+```
+
+**Example: check_variable**
+
+```text
+check_variable = {
+    var = my_var
+    value = 10
+    compare = greater_than_or_equals
+}
+```
+
+**Example: add_to_variable**
+
+```text
+add_to_variable = {
+    var = my_variable
+    value = 100
+    tooltip = add_100_to_var_tt
+}
+```
+
+**Example: subtract_from_variable**
+
+```text
+subtract_from_variable = {
+    var = my_variable
+    value = 100
+    tooltip = sub_100_from_var_tt
+}
+```
+
+**Example: multiply_variable**
+
+```text
+multiply_variable = {
+    var = my_variable
+    value = 100
+    tooltip = multiply_var_by_100_tt
+}
+```
+
+**Example: divide_variable**
+
+```text
+divide_variable = {
+    var = my_variable
+    value = 100
+    tooltip = divide_var_by_100_tt
+}
+```
+
+**Example: modulo_variable**
+
+```text
+modulo_variable = {
+    var = my_variable
+    value = 50
+    tooltip = get_modulo_of_var_by_50_tt
+}
+```
+
+**Example: clamp_variable**
+
+```text
+clamp_variable = {
+    var = my_var
+    min = 0
+}
+```
+
+**Example: clamp_variable**
+
+```text
+clamp_temp_variable = {
+    var = my_var
+    min = 0
+}
+```
+
+**Example: career_profile_set_temp_playthrough_variable**
+
+```text
+career_profile_set_temp_playthrough_variable = {
+  sum = rocket_sites_built_1936
+}
+```
+
+**Example: career_profile_set_temp_variable**
+
+```text
+career_profile_set_temp_variable = {
+  var = num_dogs
+  value = num_dogs_in_career_profile
+}
+```
+
+<!-- kit:begin id="operator-additions" at="section:Operators" -->
+**Kit addition** Operators and details the table above lacks.
+
+- `randomize_variable` and `randomize_temp_variable` draw a value from a distribution. The short form `randomize_temp_variable = num_dogs` is uniform from 0 to 1. The block form takes `var`, `distribution` (`uniform`, `binomial` or `poisson`), `min`, `max` and, for poisson, `lambda`; binomial needs `max` when `min` is given. The temp form is an effect only. [docs] `documentation/effects_documentation.md`
+- Vanilla has 9 such blocks in 3 files. [vanilla-confirmed 1.19.3] `common/scripted_effects/BUL_scripted_effects.txt`, `common/on_actions/13_goe_on_actions.txt`, `history/countries/BUL - Bulgaria.txt`
+
+```text
+randomize_temp_variable = {
+    var = BUL_random_ff_forming_chance
+    distribution = binomial
+    min = 0
+    max = 100
+}
+```
+
+- Every arithmetic operator accepts a math expression where it takes a number, for example `add_to_variable = { num_dogs = { value = num_cats multiply = 2 } }`. The docs list this for set, add, subtract, multiply and divide, and do not list it for `modulo_variable` or `clamp_variable`. [docs] `documentation/effects_documentation.md`
+- `clamp_variable` computes max(min(var, max), min), and logs an error (debug mode) when `max` is below `min`. [docs] `documentation/effects_documentation.md`
+- `career_profile_set_temp_variable` and `career_profile_set_temp_playthrough_variable` are documented only in the trigger documentation and take `var` and `value`. The example above uses a `sum` key that the docs do not mention, so treat that example as wrong. [docs] `documentation/triggers_documentation.md`
+<!-- kit:end id="operator-additions" -->
+
+### Math expressions <a id="Math_expressions"></a>
+
+Calculations with extensive number of steps and complex usage of temporary variables may be simplified with the usage of math expressions.
+
+Math expressions is a block of consecutive math functions that gets executed on the given value. Template for building a math expression looks like this:
+
+`{ value = 0 add = 1 }`
+
+value parameter is used as the default value, on which all the following functions are used.
+
+add is a function name that is being executed on the value parameter. There could be multiple functions in one math expression, but there's no priorities for functions, thus they get executed by an order they are given in a block.
+
+`{ value = 0 add = 2 multiply = 3 }` this block results in `6`, not `2`.
+
+This whole block could be used in any of the short-hand variable operations given above. For example:
+
+```text
+set_variable = {
+     x = { value = y sin = yes }
+}
+```
+
+For the boolean functions, `1.0` is considered `true`, with `0.0` considered `false`.
+
+`{ value = 10 less_than = 3 }` results in `0.0`.
+
+### Math functions <a id="Math_functions"></a>
+
+Below is the list of all existing math functions in the game.
+
+Math functions
+
+| Name | Description | Examples | Notes |
+| --- | --- | --- | --- |
+| less_than | Returns 1 if the accumulator is less than the value, otherwise 0. | `{ value = 2 less_than = 10 }` |  |
+| greater_than | Returns 1 if the accumulator is greater than the value, otherwise 0. | `{ value = 2 greater_than = 10 }` |  |
+| add | Adds a value to the accumulator. | `{ value = 2 add = 10 }` |  |
+| and | Returns 1 if both the accumulator and the value are non-zero, otherwise 0. | `{ value = 1  and = 1 }` |  |
+| atan | Sets the accumulator to the arctangent of itself. The result is expressed in radians. | `{ value = 1  atan = yes }` | This is computed with a numerical approximation and may be off by a few hundredths of a radian. Follow with `round = yes` if you need an exact result. |
+| atan2 | Sets the accumulator to the quadrant-aware arctangent atan2(y, x), where the accumulator is y and the value is x. The result is expressed in radians. | `{ value = 1  atan2 = 1 }` | This is computed with a numerical approximation and may be off by a few hundredths of a radian; follow with `round = yes` if you need an exact result. The degenerate case atan2(0, 0) returns roughly pi/2 rather than 0. |
+| clamp | Clamps the accumulator between a minimum and maximum bound. Note that arguments are order sensitive. | `{ value = num_units  clamp = { min = 0 max = 100 } }` |  |
+| cos | Sets the accumulator to the cosine of itself. The angle is expressed in radians. | `{ value = 0  cos = yes }` |  |
+| divide | Divides the accumulator by a value. | `{ value = 100  divide = 5 }` |  |
+| equals | Returns 1 if the accumulator equals the value, otherwise 0. | `{ value = 7  equals = 7 }` |  |
+| every_collection | Iterates over a named collection, applying statements to the accumulator for each element. | *(example below)* |  |
+| greater_than_or_equals | Returns 1 if the accumulator is greater than or equal to the value, otherwise 0. | `{ value = 5  greater_than_or_equals = 5 }` |  |
+| if | Conditional statement that modifies the accumulator based on a condition. Note that the limit is a math expression. It is considered true if the value is anything but 0. | *(example below)* |  |
+| lerp | Linearly interpolates from the accumulator towards `to` by `alpha`, where alpha is clamped between 0 and 1. An alpha of 0 keeps the accumulator, 1 returns `to`. | `{ value = 10  lerp = { to = 20  alpha = 0.5 } }` |  |
+| less_than_or_equals | Returns 1 if the accumulator is less than or equal to the value, otherwise 0. | `{ value = 5  less_than_or_equals = 5 }` |  |
+| log | Sets the accumulator to its logarithm in the given base. | *(example below)* | This is computed with a numerical approximation and may produce small rounding errors (e.g. 3.00001 instead of 3). Follow with `round = yes` if you need an exact integer result. |
+| max | Sets the accumulator to the maximum of itself and the value. | `{ value = 9  max = 15 }` |  |
+| min | Sets the accumulator to the minimum of itself and the value. | `{ value = 9  min = 4 }` |  |
+| mod | Sets the accumulator to the remainder of dividing it by the value. | `{ value = 17  mod = 5 }` |  |
+| multiply | Multiplies the accumulator by a value. | `{ value = 2.3  multiply = num_units }` |  |
+| not | Returns 1 if the accumulator is zero, otherwise 0. | `{ value = 0  not = yes }` |  |
+| not_equals | Returns 1 if the accumulator does not equal the value, otherwise 0. | `{ value = 7  not_equals = 5 }` |  |
+| or | Returns 1 if either the accumulator or the value is non-zero, otherwise 0. | `{ value = 0  or = 1 }` |  |
+| pow | Raises the accumulator to the given power. | *(example below)* | Integer exponents are computed exactly by repeated multiplication. Fractional exponents (e.g. `pow = 0.5`) use a numerical approximation and may produce small rounding errors; follow with `round = yes` if you need an exact integer result. |
+| root | Takes the root of the accumulator. The argument is the degree of the root, so 2 gives the square root, 3 the cube root and so on. | *(example below)* | This is a numerical approximation and may produce small rounding errors (e.g. 4.00001 instead of 4). Follow with `round = yes` if you need an exact integer result. |
+| round | Rounds the accumulator to the nearest integer. | `{ value = 3.7  round = yes }` |  |
+| sin | Sets the accumulator to the sine of itself. The angle is expressed in radians. | `{ value = 0  sin = yes }` |  |
+| subtract | Subtracts a value from the accumulator. | `{ value = 20  subtract = 5 }` |  |
+| tan | Sets the accumulator to the tangent of itself. The angle is expressed in radians. | `{ value = 0  tan = yes }` |  |
+| xor | Returns 1 if exactly one of the accumulator and the value is non-zero, otherwise 0. | `{ value = 1  xor = 0 }` |  |
+
+**Example: every_collection**
+
+```text
+{ value = 0
+ every_collection = {
+    named_collection = my_collection
+    add = element_value } }
+```
+
+**Example: if**
+
+```text
+{ value = x
+  if = { limit = { value = x  greater_than = 10 }  add = 100 }
+  else = { subtract = 1 } }
+```
+
+**Example: log**
+
+```text
+{ value = 1000  log = 10 }
+{ value = 1000  log = 10  round = yes }
+```
+
+**Example: pow**
+
+```text
+{ value = 2  pow = 10 }
+{ value = 2  pow = 10  round = yes }
+```
+
+**Example: root**
+
+```text
+{ value = 16  root = 2 }
+{ value = 27  root = 3 }
+{ value = 16  root = 2  round = yes }
+```
+
+<!-- kit:begin id="math-expression-details" at="section:Math_functions" -->
+**Kit addition** Rules the 1.19.3 documentation adds to the function table above.
+
+- A math expression is a `value` accumulator that sequential statements change. Statement kinds: no-argument operations (`round = yes`), operations that take a number, variable or nested expression (`add = 5`, `clamp = { min = 0 max = 100 }`), flow control (`if` whose `limit` is itself a math expression, plus `else`), and collection iterators (`every_collection`). [docs] `documentation/script_concept_documentation.md`
+- All arithmetic is fixed point. Any non-zero value is true, and every comparison or logic function returns 1.0 or 0.0. [docs] `documentation/script_concept_documentation.md`
+- Silent failure: an expression that does not parse is replaced by 0.0 at runtime. [docs] `documentation/script_concept_documentation.md`
+- The docs expect expressions to run faster than the same calculation spread over temp variables. [docs] `documentation/script_concept_documentation.md`
+- The documentation's table of contents names the comparison functions `<` and `>`, while its examples use `less_than` and `greater_than`, as the table above does. [docs] `documentation/script_math_functions.md`
+- Vanilla writes `else_if` after `if` inside an expression and passes a nested expression as an argument, for example `multiply = { value = 0 if = { limit = { value = num_researched_technologies less_than = 50 } add = 1.25 } else_if = { ... } }`. [vanilla-confirmed 1.19.3] `common/factions/goals/faction_goals_short_term.txt`
+- `every_collection = { named_collection = <name> <statements> }` runs the statements once per element with that element as the scope. The named collection comes from `common/collections/`; vanilla uses `faction_members`. [vanilla-confirmed 1.19.3] `common/factions/goals/faction_goals_short_term.txt`. For collections see [Collection modding](<collection-modding.md>).
+- An expression also works as a trigger: `check_expr = { value = num_infantry greater_than = { value = num_units multiply = 0.8 } }` in unit leader trait `gain_xp` blocks. [vanilla-confirmed 1.19.3] `common/unit_leader/00_traits.txt`
+- A scan of vanilla blocks that start with `value =` found 28 expressions in 3 files. They use only `add`, `subtract`, `multiply`, `divide`, `clamp`, `round`, `less_than`, `greater_than`, `if`/`else_if` and `every_collection`. The other documented functions (`and`, `or`, `not`, `xor`, `equals`, `not_equals`, `greater_than_or_equals`, `less_than_or_equals`, `min`, `max`, `mod`, `pow`, `root`, `log`, `lerp`, `sin`, `cos`, `tan`, `atan`, `atan2`) have no vanilla use. Their syntax is documented but not exercised. [vanilla-confirmed 1.19.3] `common/factions/goals/faction_goals_short_term.txt`, `common/unit_leader/00_traits.txt`, `common/scripted_effects/INS_scripted_effects.txt`
+<!-- kit:end id="math-expression-details" -->
+
+### Usage examples <a id="Usage_examples"></a>
+
+A common usage for variables is to grant a more 'complex' effect or a trigger. This is best done with temporary variables, as they can be set in either triggers or effects and they're not bound to scopes making operations on them more simple.
+For example, the following can take 0.1% of every controlled state's population and add it directly to the manpower pool if the country has more democratic party support than fascist and communist party support combined:
+
+```text
+if = {
+    limit = {
+        set_temp_variable = { fascom_pop = party_popularity@fascism }
+        add_to_temp_variable = { fascom_pop = party_popularity@communism }
+        check_variable = { party_popularity@democratic > fascom_pop }   # Completely hidden from the player.
+
+    }                                                                   # 'limit = {}' is always hidden so it doesn't matter here, but use custom_trigger_tooltip when wanting the player to be aware.
+    hidden_effect = {   # Every controlled state can look weird to the player otherwise.
+        set_temp_variable = { temp_manpower = 0 }   # Optional, can be omitted as variables are assumed to be 0 if unset.
+        every_controlled_state = {
+            add_to_temp_variable = { temp_manpower = state_population_k } # Executed in the state's scope, so state_population_k is of the state.
+        }                                                                 # Temp variables are unscoped so it doesn't matter where they're edited.
+    }                                                                     # For regular varibles, "add_to_variable" would need to scope into the correct country such as with "PREV.temp_manpower".
+    add_manpower = var:temp_manpower # 'add_manpower = temp_manpower' also works
+}
+```
+
+Since temporary variables can be set in triggers, they can be used as an alternative version of [count_triggers](<triggers.md>), to count the amount of scopes where the trigger is fulfilled instead of counting the amount of fulfilled triggers:
+
+```text
+if = {
+    limit = {
+        all_country = { # all_-typed scopes iterate over each entity until encountering a false, making them preferred over any_-typed ones that will exit out at a true.
+            if = {                              # Direct limiting is only supported in effect scopes.
+                limit = {
+                    has_country_flag = example_flag
+                }
+                add_to_temp_variable = { flag_counter = 1 } # Assumed to be zero if unset
+            }
+        }
+        check_variable = { flag_counter > 9 }
+    }
+    country_event = example.0 # The event fires if at least 10 countries have the example_flag flag.
+}
+```
+
+Additionally, it is common for a variable to be a counter of something within a mechanic. For example, let CAN_beavers be a counter of beavers within the country.
+When using variables in this sense, **it is better to use [scripted effects](<effects.md#Scripted_effects>) to modify them**, in order to make changes to the variable easier. For example, a small gain in beavers could be the following:
+
+```text
+CAN_beavers_small_add = {
+    custom_effect_tooltip = CAN_beavers_small_add_tt    # Tooltip for the player to be aware.
+    add_to_variable = { CAN_beavers = 100 } # Adds 100 beavers.
+}
+```
+
+However, if 100 seems like too little, the scripted effect can be changed and it'll immediately apply the changes every single time that scripted effect was used without needing to find them manually. These effects may also share a single 'recalculating' scripted effect in common. This can be used to clamp the variable between a minimum and a maximum, to have an instant effect as soon as some variable value is reached, or to have another variable 'tied' to the value to be kept at an exact or a dynamic ratio. For example, these scripted effects can be used with the same CAN_beavers example:
+
+```text
+CAN_beavers_calibrate = {
+    clamp_variable = {  # The variable will be kept between these levels by calling this each time the variable is changed.
+        var = CAN_beavers
+        min = 0
+        max = 2000
+    }
+
+    set_variable = { CAN_beavers_modifier = CAN_beavers }
+    divide_variable = { CAN_beavers_modifier = 1000 }   # Another variable tied to the base value, as long as the scripted effect is called upon each change of CAN_beavers.
+
+    if = {
+        limit = {
+            check_variable = { CAN_beavers = 0 }
+        }
+        country_event = CAN_beavers_extinction.0    # The event gets fired as soon as CAN_beavers hits 0.
+    }
+}
+
+CAN_beavers_small_add = {   # Same as before, but with calling the previous effect
+    custom_effect_tooltip = CAN_beavers_small_add_tt
+    add_to_variable = { CAN_beavers = 100 }
+    CAN_beavers_calibrate = yes
+}
+
+CAN_beavers_small_remove = { # Another example of a variable-modifying effect
+    custom_effect_tooltip = CAN_beavers_small_remove_tt
+    add_to_variable = { CAN_beavers = -100 }    # 'subtract_from_variable = { CAN_beavers = 100 }' also works.
+    CAN_beavers_calibrate = yes
+}
+```
+
+After creating these scripted effects, these can be used within any effect block to modify the variable at will. [Showing its value in localisation to the player](#Additional_usage) would also be helpful, such as within a [decision category](<decision-modding.md>) or in [scripted GUI](<scripted-gui-modding.md>). **Variables cannot be used within idea modifiers directly, [dynamic modifiers can be used instead.](<modifiers.md#Dynamic_modifiers>)**
+
+Remember that variables are not necessarily used as numbers only. For example, the simplest way to make the current ideology group to change to the one that's the most popular (aside from the ruling party) would be a `set_politics = { ruling_party = highest_party_ideology@exclude_ruling_party }`. Similarly, some event target-type variables can be used to cut down on code, such as `transfer_state = GER.capital` immediately transferring the capital of GER to the current scope.
+
+### MTTH variables <a id="MTTH_variables"></a>
+
+MTTH variables allow to dynamically create a [MTTH block](<ai-modding.md#MTTH_blocks>) to be used as a variable. These are stored within `/Hearts of Iron IV/common/mtth/*.txt` files, where each MTTH variable is a separate block, the name of which gets taken as the MTTH variable.
+As per the name, the MTTH variables serve as a MTTH block, so everything that applies to MTTH blocks applies here: The starting base is defined with `factor` or `base` and then each `modifier = { ... }` begin a trigger block needed to be fulfilled for the `add` (for adding) or/and `factor` (for multiplying) within to be applied.
+For example, the following is an example of a `/Hearts of Iron IV/common/mtth/*.txt` file:
+
+```text
+my_mtth_variable_1 = {
+    base = 10
+    modifier = {
+        factor = 10
+        is_major = yes
+    }
+    modifier = {
+        add = -10
+        tag = FRA
+    }
+}
+my_mtth_variable_2 = {
+    base = other_variable
+    factor = 0.5
+    add = 10
+}
+```
+
+This can be called the same way as a game variable, but somewhat differently: `set_variable = { my_var = mtth:my_mtth_variable_1 }`. This will check the MTTH block for the scope where it's checked and return the total result as a variable.
+
+### Debugging variables <a id="Debugging_variables"></a>
+
+There are the following arguments that can be used in trigger or effect blocks:
+
+Debugging-related arguments:
+
+| Name | Parameters | Examples | Description | Notes |
+| --- | --- | --- | --- | --- |
+| log | `<string>`<br> What to write in the log. | `log = "Current value of myVar in [THIS.GetName]: [?myVar]"` | Creates an entry in the `/Hearts of Iron IV/logs/game.log` file in the [user directory](<modding.md>) and, if console is open and debug mode is turned on, in console as well. | While it nominally has nothing to do with variables, its most common use is for variables. |
+| print_variables | `file = <string>`<br>The name of the file, not counting the file extension. Defaults to "variable_dump".<br> `text = <string>`<br>What will be printed in the beginning of the file. Defaults to "No Header".<br> `append = yes`<br>If set, will append the current variables (and the text) to the end of the file instead of overwriting.<br> `print_global = yes`<br>If true, will print the variables from the global scope as well.<br> `var_list = { ... }`<br>A whitespace-separated list of variables the values of which should be printed. Optional: every variable in the scope (and global if set) if left out. | *(example below)* *(example below)* | Dumps the specified variables from the current scope and optionally the global scope into a log file with the specified name. | The log will be within `/Hearts of Iron IV/logs/variable_dumps/` in the [user directory](<modding.md>). |
+
+**Example: print_variables**
+
+```text
+print_variables = {
+    file = my_file
+    text = "These variables are printed at [GetDateText]"
+    append = yes
+    print_global = yes
+}
+```
+
+**Example: print_variables**
+
+```text
+print_variables = {
+    file = my_file_2
+    var_list = { temp1 temp2 temp3 }
+}
+```
+
+Additionally, the following console commands exist for variables. In console commands, the 'current scope' is what is currently selected: the country opened in diplomacy, the state selected, the unit leader that's selected. If left out, assumes to be the player country.
+
+Debugging-related console commands:
+
+| Name | Parameters | Examples | Description |
+| --- | --- | --- | --- |
+| set_var | `<variable>`<br>The variable to get the value of.<br> `<value>`<br>What to set the variable to. | `set_var my_variable 10` | Changes the value of the variable within the specified scope. |
+| get_var | `<variable>`<br>The variable to get the value of. | `get_var my_variable` | Prints the value of the variable in console. |
+| list_vars | `<scope>`Optional. Changes the scope from the currently-selected scope to what's specified. | `list_vars` | Lists the variables and their values as within the currently-selected scope. |
+
+### Token-valued variables <a id="Token-valued_variables"></a>
+
+When one uses a literal of the form `token:some_tokenizable_value`, what is actually returned is an integer variable (commonly with a large value), with an internal flag set so that it is interpreted as an index into a central table of token strings that exists within the game's memory. This can be placed into a variable and passed around freely, it can be compared for equality to other token variables, and it can even be treated as a numeric in arithmetic even if usages for such cases are rare if nonexistent. Variables that have the token flag set can be distinguished in the output of the `list_vars` console command by dint of being automatically translated into their underlying raw-token strings. For example, `some_var_name = token:some_tokenizable_value (27012)`.
+
+When the variable contains a token value, it is possible to use the `GetTokenKey` [localisation function](<localisation.md#Functions>) (such as `[?some_var_with_token_value.GetTokenKey]`) to get the token string value of the variable, `token:` prefix not included. This is useful for pasting in [meta-effects](<effects.md#Meta_effects>) and [meta-triggers](<triggers.md#Meta_triggers>), however note that the `token:` prefix is still required if using it within the `set_(temp_)variable` operator. With some token-valued variables (specifically, those backed by named database objects of a tokenizable datatype), it is possible to use `GetTokenLocalizedKey` to retrieve the value of the localisation key with the same name as the token itself. This can be used to produce and/or define human-readable names, but it can also be taken advantage of to pass around arbitrary localisation values.
+
+At present (1.12), known tokenizable datatypes include (but are probably not limited to):
+
+- Ideas: These are generally the most flexible tokenizable datatype to use for a token that represents some arbitrary value by using a dummy idea. They can also carry an effectual payload in their `on_add` clauses, which can be used to pass around effects, or better yet, to return a set of variables encoding information relevant to the token value.
+- Everything listed in `/Hearts of Iron IV/common/script_enums.txt`
+- Ideologies/Ideology groups
+- Technologies
+- Equipment types - Sometimes this is a bit inconsistent with regards to the archetype/non-archetype distinction, so be wary.
+- Operations
+- Characters/Unit leaders: These are finicky in the game's core. When a character is promoted to a unit leader position, all tokenizations of that character's token will begin to return a different value, representing the token for the unit leader with the same identifier, which is linked to, but not the same as, the original character. The unit leader version of the token returns the same `GetTokenKey` and `GetTokenLocalizedKey`, but it is *not numerically equal to the character version of the token.* This can come into play if code compares the equality of two character-pointing variables.
+- Decisions
+- Buildings
+
+### Advanced use of tokens <a id="Advanced_use_of_tokens"></a>
+
+Using tokenizable values in variables is the key to a number of advanced techniques that enable relatively seamless abstraction and metaprogramming, with a minimum of scripted-localisation boilerplate code. These techniques are, however, difficult to learn how to apply and can be unintuitive for those not already experienced. Therefore, caution is advised.
+
+It is often useful to define related dummy tokenizable database entries, especially ideas, to represent arbitrary (possibly enumerable) custom datatypes. In most cases, ideas are preferable, however there can be uses for other token types, such as technologies if the code is to implement something that can't be done with a regular idea. The reason for idea preference is little to no downstream effects simply from existing, ease to define in bulk with minimal syntactic overhead, and ease to separate different custom datatypes by using custom idea categories and by placing the definitions for different custom datatypes in different files within `/Hearts of Iron IV/common/ideas/`. Decisions or technologies are common alternatives for custom datatypes with different usages, but generally datatypes other than these have too much downstream baggage (i.e. their very existence has consequences elsewhere, such as custom building types appearing automatically in certain UIs) to be worth using for dummy values.
+
+Using a systematic naming scheme, custom tokenizable datatypes can also convey multiple related localisation keys, similarly to the approach that the base game does for country naming with separate `TAG`, `TAG_DEF`, and `TAG_ADJ` keys. An example of that would be creating an idea `foo_bar` to act as the key identifier of the custom data value, whose localisation value carries the human-readable name of the data value, and another idea `foo_bar_description` (**NOT `foo_bar_desc`, this collides with the localisation key generated for `foo_bar`**) to carry the localisation value for the description that would be associated with the data value identified by `foo_bar`. This description localisation can be accessed with a meta-effect or meta-trigger (including in scripted localisation), such as `set_temp_variable = { description_var = token:[IDEA_TOKEN]_description }` (where `IDEA_TOKEN = "[?idea_var_name.GetTokenKey]"`). This allows accessing `[?description_var.GetTokenLocalizedKey]` in localisation where `description_var` is visible, such as the `localization_key` following the scripted localisation `trigger` block where the pasting meta-trigger is called.
+
+As far more advanced usage, it is possible to rig up the dummy tokenizable values with arbitrary localisation payloads that carry fragments of Clausewitz code which can then be pasted together in meta-effects (or triggers) to approximate true token string manipulation or at least concatenation, as there's presently no way to split strings, token or otherwise. This is probably most useful for encoding a set of suffixes that can be applied to an idea token to dynamically navigate within the custom datatype's naming scheme. For example, if the mod has a custom datatype representing positions within a government such as the Secretary of State and the Attorney General, such that it might have a base idea `position_attorney_general`, a corresponding description idea (suffixed with `_description`), a singular name idea (suffixed with `_singular`, carrying the name of the data value in singular form, like "Attorney General"), and a plural name idea (suffixed with `_plural`, carrying the name in plural form, like "Attorneys General"), it is possible to select which name to use by having a dummy idea called `enum_position_name_singular` with the localisation value `"_singular"`, and another called `enum_position_name_plural` with the localisation value `"_plural"`. After that, the mod may pass one of the `enum_position` ideas in a variable and then paste its `GetTokenLocalizedKey` after the `GetTokenKey` of the base idea in a meta-effect/trigger to produce either `token:position_attorney_general_singular` or `token:position_attorney_general_plural`. This is a contrived example, and is also possible to be done using a scripted localisation system with hard-coded entries to access the singular vs. plural ideas, but this approach has far more use in more complex systems where creating a scripted localisation file can prove to be far too bulky.
+
+From 1.12 onwards, anything defined in `/Hearts of Iron IV/common/script_enums.txt` can be freely tokenized, even if defined in a totally custom enumeration block, seperate from the ones hard-coded into the game. It is therefore theoretically possible to define arbitrary tokens of a custom enum type in this file. However, for compatibility reasons, using `script_enums` for custom enumeration types should be avoided, as this will ensure that the mod will not be compatible with any other mod that overwrites that file, no matter which mod gets priority on the file. As before, it's preferable to have a custom idea category with a set of dummy ideas in their own file that will not be overridden by other mods representing the values the custom enum can take on. This pattern is a useful replacement for passing around arbitrary integers that have some enumerable meaning when interpreted by code, especially if those integers are interpreted to yield names in scripted localisation, in which case this pattern can substantially remove the need for scripted localisation boilerplate by allowing defining the localised name for each enum member directly in a localisation file, as similarly to defining the localised name for an idea.
+
+Technically, any raw token used in the language can actually be tokenized: for instance, `token:set_stability` (that is, a token literal of the name of the [set_stability effect](<effects.md#Mana>)) is perfectly valid, and yields a token for which `GetTokenKey` and `GetTokenLocalizedKey` both return `set_stability`. However, this is rarely useful (especially since it does not apply to scripted effect and trigger names), and arguably counts as a bug; it mostly just provides an interesting peek into the internals of the tokenization system, indicating that it most likely delegates to a pre-existing string de-duplication system built into the Clausewitz engine.
+
+## Modifier tokens <a id="Modifier_tokens"></a>
+
+*This section is transposed from [Modifiers § Modifier definitions](<modifiers.md>)*
+
+Modifier definitions allow the creation of a custom modifier, which can be accessed as a variable when you wish to use it. After being defined, they function entirely like a new variable, being possible to read as a variable with the same `modifier@modifier_name` procedure. They will not have any effect by default and function only as a way to change the variable's value in an additive way with modifier blocks.
+Each modifier token is defined within `/Hearts of Iron IV/common/modifier_definitions/*.txt` files as a separate code block, where the name of the code block serves as the ID of the modifier definition. There are the following arguments that can go inside of it:
+
+- `color_type = good` decides the colour of the modifier's value itself. There are three values, `good`, `bad`, and `neutral`. `neutral` is permamently yellow, while `good` turns the positive values **green** and negative values **red**. `bad` is the reversal of `good`.
+- `value_type = percentage` decides the way the number will show up in the tooltip. There are the following values this argument can be set to:
+  - `number` will make the exact value of the modifier show up. 0.02 will show up like "Modifier definition: 0.02".
+  - `percentage` will make the modifier show up as a percentage on the scale from 0 to 1. 0.2 will show up like "Modifier token: 20%".
+  - `percentage_in_hundred` will make the modifier show up as a percentage on the scale from 0 to 100. 10 will show up like "Modifier token: 10%".
+  - `yes_no` shows up as a boolean: anything larger than 1 will shows up as `yes`, while 0 will show up as `no`.
+- `precision = 1` decides how many numbers will be shown after the period in the tooltip. For example, if it is set to 1, the tooltip will show 0.341 as if it was 0.3. Note that the game inherently does not support more than 3 decimal numbers, so it cannot be larger than 3.
+- `postfix` decides what will be added after the value of the modifier in the tooltip. Allowed values are 'none' (Default), 'days', 'hours', and 'daily'.
+- `category` decides on the category of the modifier. By default, the category is 'all', which makes it be in every single category. Certain tooltips will only show modifiers if they belong to a certain category. It is possible to set multiple categories for the same modifier definition by defining them one after another.
+
+The allowed values are 'none', 'all', 'country', 'state', 'unit_leader', 'army', 'naval', 'air', 'peace', 'politics', 'ai', 'defensive', 'aggressive', 'war_production', 'military_advancements', 'military_equipment', 'autonomy', 'government_in_exile', and 'intelligence_agency'.
+
+The modifier definition's ID is also used as the [localisation](<localisation.md>) key needed to change the name of the modifier depending on the currently turned on language.
+
+<!-- kit:begin id="modifier-token-defaults" at="section:Modifier_tokens" -->
+**Kit addition** Defaults and reach that the section above leaves out. All bullets: [vanilla-confirmed 1.19.3] `common/modifier_definitions/modifier_definitions.txt`.
+
+- Defaults in the shipped template: `color_type` is `bad`, `value_type` is `number`, `postfix` is `none`, `category` is `all`.
+- `modifier@token` reads a token in state and country scope; `leader_modifier@token` and `unit_modifier@token` read it in unit leader scope. The dynamic variable documentation also lists `modifier` for military industrial organizations (`modifier@military_industrial_organization_research_bonus`) and for states (`123.modifier@local_manpower`).
+- The shipped file contains only the commented template. Vanilla defines no custom modifier tokens, so every token you read this way must be defined by your mod.
+<!-- kit:end id="modifier-token-defaults" -->
+
+### Examples <a id="Examples"></a>
+
+```text
+modifier_definition_example = {
+	color_type = good
+	value_type = number
+	precision = 1
+	postfix = daily
+
+	category = country
+	category = state
+}
+modifier_definition_example_2 = {
+    color_type = bad
+    value_type = percentage
+}
+```
+
+### Using in variables <a id="Using_in_variables"></a>
+
+The function of modifier definitions is to modify the value of a game variable, which can be read by other variables. You can set a variable to be equal to the sum of all values of the same modifier token in the current scope by doing `set_variable = { var_name = modifier@modifier_token_name }`. This example will set var_name to be equal to the total value of modifier_token_name.
+
+Note that, unlike countries and states, unit leaders use leader_modifier@modifier_definition_name or unit_modifier@modifier_definition_name in their scopes.
+
+Example usage of making a modifier token create civilian factories in random core states monthly, in any [on action](<on-actions.md>) file:
+
+**Example**
+
+```text
+on_actions = {
+    on_monthly = {
+        effect = {
+            if = {
+                limit = {
+                    check_variable = { modifier@modifier_definition_example > 0 }
+                }
+                for_loop_effect = {
+                    start = 0
+                    end = modifier@modifier_definition_example
+                    random_owned_controlled_state = {
+                        limit = {
+                            is_core_of = ROOT
+                            free_building_slots = {
+                                building = industrial_complex
+                                size > 0
+                                include_locked = no
+                            }
+                        }
+                        add_building_construction = {
+                            type = industrial_complex
+                            level = 1
+                            instant_build = yes
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+## Arrays <a id="Arrays"></a>
+
+Arrays are similar to variables, but they instead store a collection of variables.
+An array in the game is structured with indexes starting from 0. `arrayname^0` as a variable refers to the first item of `arrayname`, `arrayname^1` refers to the second item in the array, and so on. In order to obtain the total amount of items within the given array, `arrayname^num` is used. An array is assumed to have no elements by default, if not already created, with add_to_array or add_to_temp_array usually being used to create an array.
+
+Temporary and regular arrays exist, with the same distinction between them as in variables: temp arrays can be set and modified in triggers and effects, are unscoped, and cleared after the effect/trigger block ends; regular arrays can only be set or modified in effects, are linked to a specific scope, and persist forever until cleared manually.
+
+A single element of an array is considered a variable in every regard: `set_variable = { arrayname^0 = 10 }` will set the first element to be equal to 10 (with `set_temp_variable` used for temporary arrays), `check_variable = { arrayname^0 > 10 }` is also valid syntax, and `[?arrayname^0]` will print the value of the element in localisation. However, the element must already exist for it to be edited. **There is no simple way to print an entire array in localisation**, however a recursive scripted localisation can be used, which modifies the value of a temporary variable by one until hitting the array's size each time that it's used.
+
+<!-- kit:begin id="collections-pointer" at="section:Arrays" -->
+**Kit note** Collections are the 1.19.3 alternative to an array plus a loop when you need to build or filter a set of scopes: a collection has an `input`, optional `operators` and an optional `name`. The docs call them more efficient and easier to script in many cases, and warn that a collection can contain the same object more than once. [docs] `documentation/script_concept_documentation.md`
+
+Syntax, inputs, operators and the triggers and effects that read collections are on [Collection modding](<collection-modding.md>).
+<!-- kit:end id="collections-pointer" -->
+
+### Arguments <a id="Arguments"></a>
+
+The following arguments exist for arrays. Similarly to variables, temporary versions exist by replacing `array` with `temp_array`.
+
+Arguments for modifying arrays:
+
+| Name | Parameters | Examples | Description | Notes |
+| --- | --- | --- | --- | --- |
+| add_to_array | `array = <array>`<br>The array to modify.<br> `value = <decimal>/<variable>`<br>The variable to add.<br> `index = <integer>`<br>The index to place the variable on in the array. Optional, defaults to the end of the array. | *(example below)*`add_to_temp_array = { temp_states = THIS }` | Adds an element to the array either at the specified index, defaulting to the end otherwise. | Shortened version exists with `add_to_array = { <array> = <value> }`. |
+| remove_from_array | `array = <array>`<br>The array to modify.<br> `value = <decimal>/<variable>`<br>The variable to remove. Optional.<br> `index = <integer>`<br>The index to remove the variable from in the array. Optional. | *(example below)*`remove_from_temp_array = { temp_states = THIS }` | Removes an element from the array with the specified value or index. | Shortened version exists with `remove_from_array = { <array> = <value> }`. If neither value nor index are specified, then the last element is deleted. |
+| clear_array | `<array>`<br>The array to clear. | `clear_array = global.my_countries``clear_temp_array = temp_states` | Clears the array, removing every element inside. |  |
+| resize_array | `array = <array>`<br>The array to modify.<br> `value = <decimal>/<variable>`<br>The variable to add to the array if the size is larger than the array's current size. Optional, defaults to 0.<br> `size = <integer>`<br>The amount of elements inside of the array after the resizing. | *(example below)*`resize_temp_array = { temp_states = 20 }` | Resizes the array, removing or adding elements in the end if necessary. | Shortened version exists with `resize_array = { <array> = <size> }`. |
+| find_highest_in_array | `array = <array>`<br>The array to modify.<br> `value = <variable>`<br>The temporary variable where the largest value will get stored.<br> `index = <variable>`<br>The temporary variable where the index of the largest value will get stored. | *(example below)* | Finds the largest value in the array and assigns its value and index to a temporary variable. | Either value or index are optional to specify. |
+| find_lowest_in_array | `array = <array>`<br>The array to modify.<br> `value = <variable>`<br>The temporary variable where the smallest value will get stored.<br> `index = <variable>`<br>The temporary variable where the index of the smallest value will get stored. | *(example below)* | Finds the smallest value in the array and assigns its value and index to a temporary variable. | Either value or index are optional to specify. |
+
+**Example: add_to_array**
+
+```text
+add_to_array = {
+    array = global.my_countries
+    value = THIS.id
+}
+```
+
+**Example: remove_from_array**
+
+```text
+remove_from_array = {
+    array = global.my_countries
+    index = 0
+}
+```
+
+**Example: resize_array**
+
+```text
+resize_array = {
+    array = global.countries_by_states
+    value = 10
+    size = global.countries^num
+}
+```
+
+**Example: find_highest_in_array**
+
+```text
+find_highest_in_array = {
+    array = global.countries_by_states
+    value = temp_largest_country
+    index = temp_country_index
+}
+```
+
+**Example: find_lowest_in_array**
+
+```text
+find_lowest_in_array = {
+    array = global.countries_by_states
+    value = temp_largest_country
+    index = temp_country_index
+}
+```
+
+Meanwhile, the following triggers exist that are array-related. As with variables, these are the exact same for temporary and regular variables.
+
+Array-related triggers:
+
+| Name | Parameters | Examples | Description | Notes |
+| --- | --- | --- | --- | --- |
+| is_in_array | `array = <array>`<br>The array to check.<br> `value = <decimal>/<variable>`<br>The value to check for. | *(example below)*`is_in_array = { temp_states = THIS }` | Checks if any value within the array is the same as the specified value. | Shortened version exists with `is_in_array = { <array> = <value> }`. |
+| any_of | `array = <array>`<br>The array to check.<br> `value = <variable>`<br>The name of the temporary variable where the value of the currently-selected element is stored.<br> `index = <variable>`<br>The name of the temporary variable where the index of the currently-selected element is stored.<br> `<triggers>`<br> An AND trigger block. | *(example below)* | Checks if any value within the array fulfills the triggers, halting and returning true if that's the case. | The scope does not change from the one this is checked in by default, requiring one of [scopes](<scopes.md>). |
+| any_of_scopes | `array = <array>`<br>The array to check.<br> `tooltip = <localisation key>`<br>The localisation key used for the trigger.<br> `<triggers>`<br> An AND trigger block. | *(example below)* | Checks if any value within the array fulfills the triggers, halting and returning true if that's the case, scoping into each element in the array. | Appending `_NOT` to the tooltip's key (such as has_more_states_than_any_other_major_tt_NOT in the example) results in the localisation key used if this any_of_scopes is put inside of `NOT = { ... }`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope this trigger is checked in. |
+| all_of | `array = <array>`<br>The array to check.<br> `value = <variable>`<br>The name of the temporary variable where the value of the currently-selected element is stored.<br> `index = <variable>`<br>The name of the temporary variable where the index of the currently-selected element is stored.<br> `<triggers>`<br> An AND trigger block. | *(example below)* | Checks if every value within the array fulfills the triggers, halting and returning false if any one doesn't. | The scope does not change from the one this is checked in by default, requiring one of [scopes](<scopes.md>). |
+| all_of_scopes | `array = <array>`<br>The array to check.<br> `tooltip = <localisation key>`<br>The localisation key used for the trigger.<br> `<triggers>`<br> An AND trigger block. | *(example below)* | Checks if every value within the array fulfills the triggers, halting and returning false if any one doesn't, scoping into each element in the array. | Appending `_NOT` to the tooltip's key (such as has_more_states_than_every_other_major_tt_NOT in the example) results in the localisation key used if this any_of_scopes is put inside of `NOT = { ... }`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope this trigger is checked in. |
+
+**Example: is_in_array**
+
+```text
+is_in_array = {
+    array = global.my_countries
+    value = THIS.id
+}
+```
+
+**Example: any_of**
+
+```text
+any_of = {
+    array = temp_numbers
+    value = v
+    index = i
+    multiply_temp_variable = { v = i }
+    check_variable = { v > political_power }     # Checks if the value multiplied by the index is larger than the political power of the country this is checked in.
+}
+```
+
+**Example: any_of_scopes**
+
+```text
+any_of_scopes = {
+    array = global.majors
+    tooltip = has_more_states_than_any_other_major_tt
+    NOT = { tag = PREV }
+    check_variable = { num_owned_controlled_states > PREV.num_owned_controlled_states }
+}
+```
+
+**Example: all_of**
+
+```text
+all_of = {
+    array = temp_numbers
+    value = v
+    index = i
+    multiply_temp_variable = { v = i }
+    check_variable = { v > political_power }     # Checks if the value multiplied by the index is larger than the political power of the country this is checked in.
+}
+```
+
+**Example: all_of_scopes**
+
+```text
+all_of_scopes = {
+    array = global.majors
+    tooltip = has_more_states_than_every_other_major_tt
+    OR = {
+        tag = PREV
+        check_variable = { num_owned_controlled_states < PREV.num_owned_controlled_states }
+    }
+}
+```
+
+The following effects also exist in addition used, with arrays. While some are nominally unrelated to arrays, they are often used in conjunction.
+
+Array-related effects:
+
+| Name | Parameters | Examples | Description | Notes |
+| --- | --- | --- | --- | --- |
+| for_each_loop | `array = <array>`<br>The array to check.<br> `value = <variable>`<br>The name of the temporary variable where the value of the currently-selected element is stored.<br> `index = <variable>`<br>The name of the temporary variable where the index of the currently-selected element is stored.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `<effects>`<br> An effect block. | *(example below)* | Runs an effect once for every element in the array. | The scope does not change from the one this is checked in by default, requiring one of [scopes](<scopes.md>). You cannot remove any elements in the array with the effects block whilst the loop is running. |
+| for_each_scope_loop | `array = <array>`<br>The array to check.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `tooltip = <loc>` <br>If defined, the effect will output a tooltip for sub effects using this localization as title.<br> `<effects>`<br> An effect block. | *(example below)* | Runs the effects for every scope within the array. | Equivalent to a `every_<...>` effect scope type, with additional `break`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope the effect is executed in. |
+| random_scope_in_array | `array = <array>`<br>The array to check.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `limit = { <triggers> }`<br>An AND trigger block deciding which scopes can be picked.<br> `<effects>`<br> An effect block. | *(example below)* | Runs the effects for a random scope within the array. | Equivalent to a `random_<...>` effect scope type, with additional `break`. Since this changes scopes, PREV would, unless there's deeper scoping, refer to the scope this effect is executed in. |
+| while_loop_effect | `limit = { <triggers> }`<br>An AND trigger block deciding when the effect would repeat.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `<effects>`<br> An effect block. | *(example below)* | Runs the effects as long as the limit is fulfilled. | The limit is only checked at the beginning and once the effect block is executed. Can't run for more than 1000 times by default[5]. |
+| for_loop_effect | `start = <decimal>/<variable>`<br>The value at which the evaluation starts. Default to 0.<br> `end = <decimal>/<variable>`<br>The value at which the evaluation ends. Default to 0.<br> `compare = <compare type>`<br>How the currently-evaluated value must compare with the `end` for the for loop to continue. Defaults to `less_than`, leading to the end value never being picked.<br> `add = <variable>`<br>How much is being added to the `start` value for every iteration. Defaults to 1.<br> `break = <variable>`<br>The temporary variable that can be set to be not 0 to instantly break the loop.<br> `value = <variable>`<br>The name of the temporary variable where the current value of evaluation is stored.<br> `<effects>`<br> An effect block. | *(example below)* | Runs the effects as long as the limit is fulfilled. | The limit is only checked at the beginning and once the effect block is executed. Can't run for more than 1000 times by default[5]. Comparison types are the same as used in check_variable. |
+
+**Example: for_each_loop**
+
+```text
+for_each_loop = {
+    array = temp_numbers
+    value = v
+    break = break
+    random_list = {
+        10 = { add_political_power = v }
+        10 = {
+            divide_temp_variable = { v = 100 }
+            add_stability = v
+        }
+        10 = {
+            divide_temp_variable = { v = 100 }
+            add_war_support = v
+        }
+    }
+}
+```
+
+**Example: for_each_scope_loop**
+
+```text
+for_each_scope_loop = {
+    array = global.majors
+    if = {
+        limit = {
+            NOT = { tag = PREV } # Not the country where the for_each_scope_loop is executed
+        }
+        random_owned_controlled_state = {
+            transfer_state_to = PREV.PREV
+        }
+    }
+}
+```
+
+**Example: random_scope_in_array**
+
+```text
+random_scope_in_array = {
+    array = global.countries
+    break = break
+    limit = {
+        is_dynamic_country = no
+        exists = no
+        any_state = {
+            is_core_of = PREV   # Is core of the currently-checked country
+        }
+    }
+    random_core_state = {
+        transfer_state_to = PREV    # Transfers to the currently-selected country.
+    }
+}
+```
+
+**Example: while_loop_effect**
+
+```text
+while_loop_effect = {
+    limit = {
+        any_country = {
+            num_owned_controlled_states > 10
+        }
+    }
+    random_country = {
+        limit = {
+            num_owned_controlled_states > 10
+        }
+        random_other_country = {
+            limit = {
+                num_owned_controlled_states < 10
+            }
+            PREV = {
+                random_owned_controlled_state = {
+                    transfer_state_to = PREV.PREV
+                }
+            }
+        }
+    }
+}
+```
+
+**Example: for_loop_effect**
+
+```text
+for_loop_effect = {
+    end = 4
+    value = temp
+    if = {
+        limit = {
+            NOT = {
+                count_triggers = {
+                    amount = 2
+                    check_variable = { temparr^temp < temparr^0 }
+                    check_variable = { temparr^temp < temparr^1 }
+                    check_variable = { temparr^temp < temparr^2 }
+                    check_variable = { temparr^temp < temparr^3 }
+                }
+            }
+        }
+        add_to_array = { potential_max = temp }
+    }
+}
+```
+
+<!-- kit:begin id="loop-array-defaults" at="section:Arguments" -->
+**Kit addition** Defaults the 1.19.3 documentation gives for the commands above. All rows: [docs] `documentation/effects_documentation.md` and `documentation/triggers_documentation.md`.
+
+| Command | Documented defaults |
+| --- | --- |
+| `for_each_loop` | `value` is `v`, `index` is `i`, `break` is `break` |
+| `for_loop_effect` | `start` 0, `end` 0, `compare` `less_than`, `add` 1, `value` `v`, `break` `break` |
+| `while_loop_effect` | `break` is `break`; `limit` is tested before every iteration |
+| `for_each_scope_loop` | `break` is `break`; optional `tooltip` |
+| `random_scope_in_array` | `break` is `break`; optional `limit` |
+| `find_highest_in_array`, `find_lowest_in_array` | `value` is `v`, `index` is `i`; both optional |
+| `all_of` | `value` is `v`, `index` is `i` |
+| `any_of` | `value` is `value`, `index` is `index` |
+| `add_to_array` | `value` optional (the current scope is added); `index` optional (default end, later elements shift) |
+| `remove_from_array` | `value` or `index`; with neither, the last element goes |
+| `resize_array` | `value` optional, default 0, fills new slots |
+
+- The docs disagree between `any_of` and `all_of` on the default names. Name `value` and `index` explicitly in both. [docs] `documentation/triggers_documentation.md`
+- A loop stops when the temp variable named by `break` is set to a non-zero value. [docs] `documentation/effects_documentation.md`
+- Correction: the `for_loop_effect` row says its limit is checked at the beginning and after each run. `for_loop_effect` has no `limit`; `start`, `end`, `compare` and `add` control it. `while_loop_effect` is the one with a `limit`. [docs] `documentation/effects_documentation.md`
+- The loop cap is `MAX_EFFECT_ITERATION = 1000` ("maximum allowed iteration for loop effects"), so the wiki figure still holds. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+- Vanilla use (lines / files): `for_each_scope_loop` 187 / 49, `is_in_array` 321 / 67, `any_of` 251 / 24, `all_of_scopes` 61 / 16, `while_loop_effect` 45 / 20, `for_loop_effect` 23 / 9, `for_each_loop` 6 / 4, `random_scope_in_array` 3 / 2. `all_of`, `find_lowest_in_array` and `resize_array` have no vanilla use. [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/`
+<!-- kit:end id="loop-array-defaults" -->
+
+### Scorers <a id="Scorers"></a>
+
+Scorers are defined within `/Hearts of Iron IV/common/scorers/country/*.txt` files, serving as a sorted list of targeted countries, based on how well they did in the specified [MTTH block](<ai-modding.md>). The scorer has the primary country which the scorer is used for and targeted countries.
+
+Each scorer is a separate block within the file, with the name of the block being the name of the scorer. The scorer then has the `targets = { ... }` block that encompasses everything else about the scorer.
+
+Scorers target countries similarly to [targeted decisions](<decision-modding.md#Targeted_decisions>) but with differences, with the following arguments being used within of `targets = { ... }`:
+
+As with targetted decisions, [FROM](<scopes.md>) is the scope of the country being targeted by the scorer, while ROOT is the scope of the country invoking the scorer.
+
+Scorers do not seem to hotreload very reliably. But, assuming you're changing an existing file rather than making a brand new one, edits to a scorer are reflected if you quit to main menu and then re-enter the game.
+
+- `targets = { TAG, TAG }` - A list of country tags, including other [dual scopes](<scopes.md#Dual_scopes>) such as [overlord](<scopes.md>), that can be targeted by this scorer. Unlike targeted decisions, this seems to be comma-separated.
+- `target_array = global.majors` - The array to target. The default scope is the primary country.
+- `target_root_trigger = { ... }` - The trigger block which the primary country must fulfill for the target to work. In here, ROOT (default scope) is the country running the scorer.
+  - It's not clear if there's any difference between `target_root_trigger` and `target_trigger` except that `target_root_trigger` is presumably only run once when invoking a scorer, and FROM cannot be used within it.
+- `target_trigger = { ... }` - The trigger block that target country must fulfill for the target to work. In here, ROOT (default scope) is the country running the scorer and FROM is the potential target of the scorer.
+- `targets_dynamic = yes` - If set, makes the dynamic countries possible targets. Defaults to no.
+- `target_non_existing = yes` - If set, makes non-existing countries possible targets. Defaults to no.
+- `score = { ... }` - This is the MTTH block itself that ranks the countries in the list. By default, THIS (the default scope) is the target, FROM is the primary country initialising the check.
+
+For example, the following is a scorer that sorts every major country depending on the amount of states they own:
+
+```text
+asian_countries_owned_states_scorer = {
+	majors_owned_states = {
+		targets = {
+			target_array = global.countries
+			target_trigger = {
+				FROM = {
+					capital_scope = {
+						is_on_continent = asia
+					}
+				}
+			}
+			score = {
+				modifier = {
+					add = num_owned_states
+				}
+			}
+		}
+	}
+}
+```
+
+After defining a scorer, there is the way to use it: an argument, similar to arrays and variables. Similarly to them, regular and temporary versions exist, which decides whether the variable/array it's writing to is regular or temporary. Both can only be used inside of country scope. Regular versions can only be used in effects, and temporary versions can be used in effects and triggers.
+
+Scorer-related arguments:
+
+| Name | Parameters | Examples | Description | Notes |
+| --- | --- | --- | --- | --- |
+| get_highest_scored_country | `scorer = <scorer>`<br>The scorer to use.<br> `var = <variable>`<br>The variable where the result will be stored. | *(example below)* *(example below)* | Sets the specified variable to be the highest-scoring country within the scorer, as checked for the country where this is used. |  |
+| get_sorted_scored_countries | `scorer = <scorer>`<br>The scorer to use.<br> `array = <variable>`<br>The array where the countries will be stored.<br> `scores = <variable>`<br>The array where the scores will be stored. Optional. | *(example below)* *(example below)* | Creates two arrays of countries and their corresponding values, sorted in the ascending order. | Values with the same index are connected: in the example, `asian_countries_by_size^0` is the country that got `asian_countries_scores^0` points in the `majors_owned_states` scorer. |
+
+**Example: get_highest_scored_country**
+
+```text
+get_highest_scored_country = {
+    scorer = asian_countries_owned_states_scorer
+    var = largest_asian_country
+}
+```
+
+**Example: get_highest_scored_country**
+
+```text
+get_highest_scored_country_temp = {
+    scorer = asian_countries_owned_states_scorer
+    var = largest_asian_country
+}
+```
+
+**Example: get_sorted_scored_countries**
+
+```text
+get_sorted_scored_countries = {
+    scorer = asian_countries_owned_states_scorer
+    array = asian_countries_by_size
+    scores = asian_country_size_scores
+}
+```
+
+**Example: get_sorted_scored_countries**
+
+```text
+get_sorted_scored_countries_temp = {
+    scorer = asian_countries_owned_states_scorer
+    array = asian_countries_by_size
+    scores = asian_country_size_scores
+}
+```
+
+<!-- kit:begin id="scorer-notes" at="section:Scorers" -->
+**Kit correction** The first scorer example wraps `targets` in an extra block named `majors_owned_states`. Vanilla scorer files put `targets` directly under the scorer name, as the second example on this page does. Drop the wrapper when copying it. [vanilla-confirmed 1.19.3] `common/scorers/country/generic_platonic_scorers.txt`
+
+- A `targets` block may repeat `target_array`; one vanilla scorer lists four arrays (`potential_and_current_enemies`, `enemies_of_allies`, `neighbors`, `global.majors`). The other keys vanilla uses in scorers are `targets_dynamic`, `target_non_existing`, `target_trigger`, `target_root_trigger`, `score` and `base`. [vanilla-confirmed 1.19.3] `common/scorers/country/`
+- In `score` the vanilla comment says THIS is the target and FROM is the initiator, so `FROM.ai_strategy_conquer@THIS` reads the initiator's strategy value towards the target. [vanilla-confirmed 1.19.3] `common/scorers/country/`
+- Defaults when you leave names out: `get_highest_scored_country` stores into `highest_scored_country`, and `get_sorted_scored_countries` uses `sorted_country_list` and `country_list_scores`. Only the `_temp` forms exist as triggers. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
+- The docs describe the plain `get_highest_scored_country` as writing a temp variable and the `_temp` form as writing a regular one. Vanilla shows the opposite: the plain form writes scoped regular variables, for example `var = GLOBAL.platonic_big_fascist` (9 uses). This matches the page. [vanilla-confirmed 1.19.3] `common/scripted_effects/00_scripted_effects.txt`
+- `get_sorted_scored_countries` has no vanilla use, so the wiki's claim about its sort order is [unverified].
+<!-- kit:end id="scorer-notes" -->
+
+#### Example <a id="Example_2"></a>
+
+Scorers can be helpful to create a sorted list of scopes by a certain element, such as political power. For example, the following can be used to find the countries with the most infantry equipment.
+
+Within the scorer file:
+
+```text
+infantry_equipment_scorer = {
+	targets = {
+		target_array = global.countries
+		targets_dynamic = yes
+		score = {
+		    modifier = {
+		    	add = num_equipment@infantry_equipment
+		    }
+		}
+	}
+}
+```
+
+Within an effect block:
+
+```text
+ROOT = {
+	get_sorted_scored_countries_temp = {
+		scorer = infantry_equipment_scorer
+		array = scored_array
+		scores = scored_values
+	}
+
+	for_loop_effect = {
+		end = scored_array^num
+		value = s
+		log = "[?scored_array^s.GetName] had inf equipment [?scored_values^s]"
+	}
+}
+```
+
+## Game variables <a id="Game_variables"></a>
+
+Game variables are read-only variables that are used to read certain aspects of the game, such as the current political power that the player has. These cannot be modified using any variable-modifying argument, but they can serve as the value within them (such as `add_to_temp_variable = { temp = GER.army_experience }` adding the amount of army experience that GER has to the `temp` temporary variable). Some are targeted, requiring one more argument in the target's place. For example, `modifier` has a modifier token as the target, so it would be used as `set_temp_variable = { temp = modifier@consumer_goods_factor }`, where `consumer_goods_factor` is the name of the modifier used as the argument.
+
+Remember that to get global-scoped game variables, it is necessary to scope into global as `global.year` rather than leaving out the scope. A list of game variables can be found within `/Hearts of Iron IV/documentation/dynamic_variables_documentation`. A large portion of purely numeric [Triggers](<triggers.md>) also have corresponding game variables that are not mentioned in the documentation. The following game variables exist in the game (Some duplicates are omitted):
+
+Global-scoped game variables:
+
+| Variable | Target | Description/Notes |
+| --- | --- | --- |
+| year | None. | The current year, such as 1936. |
+| date | None. | The ID of the current date. This can be localised in [a multitude of different ways](<localisation.md#Functions>), using the localisation functions beginning with `GetDateString`. This variable functions by having one game hour be 0.00001, with 0 of the variable corresponding to the date 1st January -5000, 1:00. |
+| num_days | None. | The amount of days passed since the start of year 0. The value on the 1st of January 1936 is 706640. |
+| difficulty | None. | The current difficulty value on the scale from 0 (For Civilian) to 4 (For Elite). |
+| threat | None. | The current world tension value on the scale from 0 to 1. |
+| pc_turn | None. | The turn in the currently-ongoing peace conference. |
+| power_balance_value | BoP, such as `@ITA_power_balance` | The current value of the balance of power on the scale from -1 to 1. |
+| power_balance_daily_change | BoP, such as `@ITA_power_balance` | The current daily change in the value of the balance of power. |
+| power_balance_weekly_change | BoP, such as `@ITA_power_balance` | The current weekly change in the value of the balance of power. |
+| num_of_career_profile_points |  | Check amount of gained career points. |
+
+Country-scoped general game variables:
+
+| Variable | Target | Description/Notes |
+| --- | --- | --- |
+| modifier | Modifier's name, such as `@political_power_gain`. | The total value of the current [modifier](<modifiers.md>) as the country has in total. Targeted modifiers have separate definitions. |
+| id | None. | The internal ID of the country. Equivalent to not specifying anything, like `set_temp_variable = { temp = TAG }`. |
+| max_manpower | None. | Total population of the country. Deprecated, recommended to use max_manpower_k instead as to push the necessary number for an overflow to ~2 billion from the very possible ~2 million. |
+| max_manpower_k | None. | Total population of the country in thousands. |
+| party_popularity | Ideology group or `ruling_party`, such as `@ruling_party`. | The popularity of the specified political party in the range from 0 to 1. |
+| party_popularity_100 | Ideology group or `ruling_party`, such as `@neutrality`. | The popularity of the specified political party in the range from 0 to 100. |
+| highest_party_ideology | `exclude_ruling_party` or nothing. | The ideology group that has the highest party popularity within the country, optionally excluding the ruling party. |
+| highest_party_popularity | `exclude_ruling_party` or nothing. | The popularity of the ideology group that has the highest party popularity within the country, optionally excluding the ruling party. The popularity is on the scale from 0 to 1. |
+| current_party_ideology_group | None. | Ideology group that the country currently has. |
+| original_tag | None. | The tag from which the current country originates. Same as the regular tag for non-dynamic countries. |
+| opinion | Country. | The opinion of the current country towards the specified one. |
+| days_decision_timeout | Decision, such as `@my_decision`. | The remaining amount of days for a completed decision before it gets removed. |
+| days_mission_timeout | Mission. | The remaining amount of days for an ongoing mission before it times out. |
+| political_power | None. | Total current political power of the country. `has_political_power` can be used in the same way. |
+| political_power_daily | None. | Current amount of daily gain of political power, equivalent to `political_power_growth`. |
+| stability | None. | Current stability of the country on the scale from 0 to 1. `has_stability` can be used in the same way. |
+| has_war_support | None. | Current war support of the country on the scale from 0 to 1. |
+| has_casualties_war_support | None. | The malus from casualties towards war support on the scale from 0 to 1. |
+| has_convoys_war_support | None. | The malus from sunk convoys towards war support on the scale from 0 to 1. |
+| has_bombing_war_support | None. | The malus from bombing towards war support on the scale from 0 to 1. |
+| power_balance_value | None. | The current power balance value. |
+| power_balance_daily | None. | The current daily change in power balance. |
+| power_balance_weekly | None. | The current weekly change in power balance. |
+| capital | None. | The capital state of the country. |
+| autonomy_ratio | None. | How close the country is to taking the next autonomy level. 0 if can be downgraded, 1 if can be upgraded, -1 if independent. `compare_autonomy_progress_ratio` can be used in a similar way. |
+| overlord | None. | The country that the current country is a subject of. |
+| num_subjects | None. | The number of subjects that the country has as an overlord. |
+| core_compliance | Country. | Average compliance within cores of the target country occupied by the current country. |
+| core_resistance | Country. | Average resistance within cores of the target country occupied by the current country. |
+| has_collaboration | Country. | The collaboration of the target country with the current country within target's cores currently occupied by the current country. |
+| faction_leader | None. | The leader of the faction the current country is in. Returns nothing if not in a faction. |
+| country_leader | None. | The leader of the current country. |
+| num_faction_members | None. | The number of members in the faction with the current country. |
+| fuel_k | None. | Current fuel of country in thousands. |
+| max_fuel_k | None. | Maximum fuel of country in thousands. |
+| fuel_ratio | None. | Ratio of the current fuel compared to the maximum amount, from 0 to 1. |
+| host | None. | The host of the current country. Returns nothing if not exiled. |
+| legitimacy | None. | The legitimacy of the currently-exiled country. Returns -1 if not exiled. |
+| num_controlled_states | None. | The amount of states that are controlled but not necessarily owned by the current country. |
+| num_core_states | None. | The amount of states that are national territory of the current country. |
+| num_owned_controlled_states | None. | The amount of states that are owned and controlled by the current country. |
+| num_owned_states | None. | The amount of states that are owned but not necessarily controlled by the current country. |
+| num_occupied_states | None. | The number of states occupied by the country. |
+| resource | Resource, such as `@steel`. | The amount of surplus resource of the specified type, which isn't exported or used in production. |
+| resource_consumed | Resource, such as `@aluminium`. | The amount of resource of the specified type currently used for equipment production. |
+| resource_exported | Resource, such as `@oil`. | The amount of resource of the specified type currently set to be exported with the [min_export modifier](<modifiers.md>). |
+| resource_imported | Resource, such as `@tungsten`. | The amount of resource of the specified type currently set to be imported from trade with other countries. |
+| resource_produced | Resource, such as `@rubber`. | The amount of resource of the specified type produced from the country's controlled states, buildings on them, and resource rights. |
+| alliance_strength_ratio | Country. | The ratio of land strength between the current country's faction and the target's faction. |
+| alliance_naval_strength_ratio | Country. | The ratio of naval strength between the current country's faction and the target's faction. |
+| enemies_naval_strength_ratio | None. | The estimated navy strength between the current country and all its enemies. |
+| enemies_strength_ratio | None. | The estimated army strength between the current country and all its enemies. |
+| amount_research_slots | None. | The current amount of research slots the country has. |
+| original_research_slots | None. | The amount of research slots that the country had in the beginning of the game, as set in the [history file](<country-creation.md#Effects>). |
+| any_war_score | None. | The highest war score that the country has among wars it's in, on the scale from 0 to 100. |
+| casualties | None. | The amount of casualties a country has suffered in all of its wars. |
+| casualties_k | None. | The amount of casualties a country has suffered in all of its wars in thousands. |
+| days_since_capitulated | None. | The amount of days since the country has capitulated. If the country has never capitulated, returns 2147483. |
+| convoy_threat | None. | Returns, in the range from 0 to 1, the current danger that enemy convoys pose to the current country. Uses NDefines.NNavy.NAVAL_CONVOY_DANGER_RATIOS as the baseline. |
+| mine_threat | None. | Returns, in the range from 0 to 1, the current danger that enemy mines pose to the current country. Uses NDefines.NNavy.NAVAL_MINE_DANGER_RATIOS as the baseline. |
+| foreign_manpower | None. | The amount of foreign garrison manpower that the country has. |
+| garrison_manpower_need | None. | The amount of manpower needed by garrisons. |
+| has_added_tension_amount | None. | The amount of world tension currently added by the country. |
+| manpower_per_military_factory | None. | The amount of manpower that the country has for each military factory. |
+| num_of_available_civilian_factories | None. | Amount of available civilian factories. |
+| num_of_available_military_factories | None. | Amount of available military factories. |
+| num_of_available_naval_factories | None. | Amount of available naval factories. |
+| num_of_civilian_factories | None. | Amount of civilian factories. |
+| num_of_civilian_factories_available_for_projects | None. | Amount of civilian factories available for a new project to use. |
+| total_constructed_<building> | None. | Amount of buildings of a certain type that have been constructed after the game's start by the country. The following options exist:  - Name: total_constructed_civilian_factory - Name: total_constructed_infrastructure - Name: total_constructed_military_factory - Name: total_constructed_dockyard - Name: total_constructed_port - Name: total_constructed_air_base - Name: total_constructed_rocket_site - Name: total_constructed_radar - Name: total_constructed_anti_air - Name: total_constructed_refinery - Name: total_constructed_fuel_silo - Name: total_constructed_supply_node - Name: total_constructed_nuclear_reactor - Name: total_constructed_land_fort - Name: total_constructed_naval_fort - Name: total_constructed_other |
+| num_of_factories | None. | Amount of total factories. |
+| num_of_military_factories | None. | Amount of military factories. |
+| num_of_naval_factories | None. | Amount of naval factories. |
+| num_of_controlled_factories | None. | Amount of factories within controlled states. |
+| num_of_owned_factories | None. | Amount of factories within owned states. |
+| num_of_supply_nodes | None. | Amount of supply nodes. |
+| num_of_nukes | None. | Amount of nukes. |
+| num_researched_technologies | None. | Number of technologies a tag has researched. |
+| num_tech_sharing_groups | None. | How many tech sharing groups a nation is a member of. |
+| surrender_progress | None. | How close the country is to surrendering on the scale from 0 to 1. |
+| has_legitimacy | None. | Legitimacy of the government in exile on the scale from 0 to 100. Defaults to 0 if none. |
+| pc_total_score | None. | Total score of the country on the currently-ongoing peace conference where it is a winner. |
+| pc_current_score | None. | Current score of the country on the currently-ongoing peace conference where it is a winner. |
+| days_left | Country flag such as `:my_flag` | The current number of remaining days for a country flag. Must be targeted with a `:` rather than a `@` with the position of the target and the variable being swapped unlike in most other game variables, e.g. `my_flag:days_left`. The value of the variable cannot be directly passed into another variable; instead, a [meta effect](<effects.md#Meta_effects>) must be used. |
+
+Country-scoped intelligence-related game variables:
+
+| Variable | Target | Description/Notes |
+| --- | --- | --- |
+| army_intel | Country. | Army intel against the target country. |
+| navy_intel | Country. | Navy intel against the target country. |
+| airforce_intel | Country. | Air intel against the target country.(If you need to use this variable as a trigger for checking, please write a localization yourself.) |
+| civilian_intel | Country. | Civilian intel against the target country. |
+| encryption_strength | None. | Total encryption strength of the country. Only without the ![La Résistance](media/ai-modding_04cfcba22e__img6.png)La Résistance DLC. |
+| decryption_speed | None. | Total decryption speed of the country. Only without the ![La Résistance](media/ai-modding_04cfcba22e__img6.png)La Résistance DLC. |
+| cryptology_defense_level | None. | cryptology defense level of the country. |
+| agency_upgrade_number | None. | The number of upgrade done in the intelligence agency. |
+| decryption_progress | Country. | Decryption progress against the target country. |
+| network_national_coverage | Country. | Network national coverage the current country has over the target country. |
+| num_fake_intel_divisions | None. | The amount of fake intel division that the country has. |
+| num_operative_slots | None. | The number of available operative slots a country has. If this differs from the number of operative, this does not mean the country can recruit an operative, but that it will eventually be able to. |
+| num_free_operative_slots | None. | The amount of operative slots that are currently empty and an operative can be recruited in. |
+| num_of_operatives | None. | The number of operatives the country controls. |
+
+Country-scoped military-related game variables:
+
+| Variable | Target | Description/Notes |
+| --- | --- | --- |
+| manpower | None. | Manpower that the country has, both in the army and reserved. Deprecated, recommended to use manpower_k instead as to push the necessary number for an overflow to ~2 billion from the very possible ~2 million. `has_manpower` can be used in the same way. |
+| manpower_k | None. | Manpower that the country has, both in the army and reserved, in thousands. |
+| deployed_army_manpower_k | None. | Manpower in the army in the field in thousands. Do not count manpower in training. |
+| deployed_navy_manpower_k | None. | Manpower in the navy in thousands. |
+| deployed_airforce_manpower_k | None. | Manpower in the airforce in thousands. |
+| max_available_manpower | None. | Manpower that the country has, both in the army and reserved, taking into account those that are in the process of being drafted as the result of a recent conscription amount change. Deprecated, recommended to use max_available_manpower_k instead as to push the necessary number for an overflow to ~2 billion from the very possible ~2 million. |
+| max_available_manpower_k | None. | Manpower that the country has, both in the army and reserved, taking into account those that are in the process of being drafted as the result of a recent conscription amount change, in thousands. |
+| target_conscription_amount | None. | The target conscription amount of the country. |
+| amount_manpower_in_deployment_queue | None. | Amount of manpower currently in the deployment view. |
+| conscription_ratio | None. | Conscription ratio of the country compared to target conscription ratio. |
+| current_conscription_amount | None. | The current conscription amount of the country. |
+| command_power | None. | The current command power of country. |
+| command_power_daily | None. | The current daily gain of command power by country. |
+| army_experience | None. | Army experience that the country has. |
+| navy_experience | None. | Naval experience that the country has. |
+| air_experience | None. | Air experience that the country has. |
+| num_armies | None. | Amount of land divisions. |
+| num_armies_in_state | State such as `@123`. | Amount of land divisions within the target state. |
+| num_armies_with_type | Subunit type such as `@light_armor`. | Amount of land divisions that are majority of the same subunit type. |
+| num_battalions | None. | Amount of battalions within land divisions the country has. |
+| num_battalions_with_type | Subunit type such as `@cavalry`. | Amount of battalions within land divisions the country has that have the specified subunit type. |
+| num_deployed_planes | None. | Amount of deployed planes. |
+| num_deployed_planes_with_type | Subunit type such as `@fighter`. | Amount of deployed planes with equipment type. |
+| num_divisions | None. | Amount of land and naval divisions. |
+| num_equipment | Equipment type or archetype such as `@infantry_equipment`. | Amount of equipment within the country's stockpile. |
+| num_equipment_in_armies | Equipment type or archetype such as `@artillery_equipment`. | Amount of equipment in country that are used in armies. If there's a large amount of equipment possible, use num_equipment_in_armies_k. |
+| num_equipment_in_armies_k | Equipment type or archetype such as `@support_equipment`. | Amount of equipment in country that are used in armies, in thousands. |
+| num_target_equipment_in_armies | Equipment type or archetype such as `@motorized_equipment_1`. | Amount of equipment in country that are wanted in armies. If there's a large amount of equipment possible, use num_target_equipment_in_armies_k. |
+| num_target_equipment_in_armies_k | Equipment type or archetype such as `@anti_air_equipment_1`. | Amount of equipment in country that are wanted in armies, in thousands. |
+| total_equipment_produced_<type> | None. | The total amount of produced equipment with the specified type of equipment archetypes. The following options exist:  - Name: total_equipment_produced_infantry; Base game notes: Includes infantry equipment, support equipment, artillery (non-rocket), anti-air, and anti-tank. - Name: total_equipment_produced_artillery; Base game notes: Also includes anti-air, anti-tank, and rocket artillery. - Name: total_equipment_produced_anti_air - Name: total_equipment_produced_anti_tank - Name: total_equipment_produced_rocket - Name: total_equipment_produced_support - Name: total_equipment_produced_motorized; Base game notes: Also includes armoured cars, rocket artillery, and support equipment. - Name: total_equipment_produced_mechanized - Name: total_equipment_produced_capital_ship - Name: total_equipment_produced_submarine - Name: total_equipment_produced_carrier - Name: total_equipment_produced_screen_ship - Name: total_equipment_produced_fighter - Name: total_equipment_produced_heavy_fighter - Name: total_equipment_produced_cas - Name: total_equipment_produced_interceptor - Name: total_equipment_produced_strategic_bomber - Name: total_equipment_produced_tactical_bomber - Name: total_equipment_produced_naval_bomber - Name: total_equipment_produced_maritime_patrol_plane - Name: total_equipment_produced_scout_plane - Name: total_equipment_produced_air_transport - Name: total_equipment_produced_suicide; Base game notes: Suicide bombers. - Name: total_equipment_produced_missile - Name: total_equipment_produced_convoy - Name: total_equipment_produced_armor - Name: total_equipment_produced_amphibious; Base game notes: Only includes amphibious tanks and not amphibious mechanised equipment. - Name: total_equipment_produced_flame - Name: total_equipment_produced_train - Name: total_equipment_produced_railway_gun - Name: total_equipment_produced_floating_harbor |
+| num_ships | None. | Amount of ships. |
+| num_ships_with_type | Subunit type such as `@carrier`. | Amount of ships with the specified subunit type. |
+| land_doctrine_level | None. | The currently-researched land doctrine level. |
+
+A large portion of the AI-related game variables can have values seen in-game by using the `aiview` console command.
+
+Country-scoped AI-related game variables:
+
+| Variable | Target | Description/Notes |
+| --- | --- | --- |
+| ai_attitude_allied_weight | Country. | The total amount of the `attitude_allied` AI attribute. |
+| ai_attitude_friendly_weight | Country. | The total amount of the `attitude_friendly` AI attribute. |
+| ai_attitude_hostile_weight | Country. | The total amount of the `attitude_hostile` AI attribute. |
+| ai_attitude_is_threatened | None. | Returns 1 if the AI is threatened, 0 otherwise. |
+| ai_attitude_neutral_weight | Country. | The total amount of the `attitude_neutral` AI attribute. |
+| ai_attitude_outraged_weight | Country. | The total amount of the `attitude_outraged` AI attribute. |
+| ai_attitude_protective_weight | Country. | The total amount of the `attitude_protective` AI attribute. |
+| ai_attitude_threatened_weight | Country. | The total amount of the `attitude_threatened` AI attribute. |
+| ai_attitude_wants_ally | None. | Returns 1 if the AI wants to ally any country, 0 otherwise. |
+| ai_attitude_wants_antagonize | None. | Returns 1 if the AI wants to antagonize any country, 0 otherwise. |
+| ai_attitude_wants_ignore | None. | Returns 1 if the AI wants to ignore any country, 0 otherwise. |
+| ai_attitude_wants_protect | None. | Returns 1 if the AI wants to protect any country, 0 otherwise. |
+| ai_attitude_wants_weaken | None. | Returns 1 if the AI wants to weaken any country, 0 otherwise. |
+| ai_strategy_activate_crypto | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `activate_crypto` towards the target country. |
+| ai_strategy_alliance | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `alliance` towards the target country. |
+| ai_strategy_antagonize | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `antagonize` towards the target country. |
+| ai_strategy_befriend | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `befriend` towards the target country. |
+| ai_strategy_conquer | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `conquer` towards the target country. |
+| ai_strategy_consider_weak | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `consider_weak` towards the target country. |
+| ai_strategy_contain | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `contain` towards the target country. |
+| ai_strategy_declare_war | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `declare_war` towards the target country. |
+| ai_strategy_decrypt_target | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `decrypt_target` towards the target country. |
+| ai_strategy_dont_defend_ally_borders | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `dont_defend_ally_borders` towards the target country. |
+| ai_strategy_force_defend_ally_borders | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `force_defend_ally_borders` towards the target country. |
+| ai_strategy_ignore | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `ignore` towards the target country. |
+| ai_strategy_ignore_claim | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `ignore_claim` towards the target country. |
+| ai_strategy_influence | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `influence` towards the target country. |
+| ai_strategy_invade | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `invade` towards the target country. |
+| ai_strategy_occupation_policy | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `occupation_policy` towards the target country. |
+| ai_strategy_prepare_for_war | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `prepare_for_war` towards the target country. |
+| ai_strategy_protect | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `protect` towards the target country. |
+| ai_strategy_send_volunteers_desire | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `send_volunteers_desire` towards the target country. |
+| ai_strategy_support | Country. | Total sum of the [AI strategy](<ai-modding.md#AI_strategies>) values of the type `support` towards the target country. |
+| ai_irrationality | None. | The AI's irrationality value. |
+| ai_wants_divisions | None. | The total amount of divisions that the AI aims for. |
+
+State-scoped game variables:
+
+| Variable | Target | Description/Notes |
+| --- | --- | --- |
+| id | None. | The internal ID of the state. While regular `set_variable = { my_state_pointer = 123 }` would still work as a pointer to the state, this can remove ambiguity within the code whether the number is used as a state ID or the number that refers to the state with the state ID of 123. **Not the same value as the state ID** defined with `id=123` in the file, typically returns some negative number instead. For fetching the state ID, a [meta effect](<effects.md>) using [the GetID namespace](<localisation.md>) can be used. |
+| building_level | Building such as `@nuclear_reactor`. | The level of a building with the target type. |
+| arms_factory_level | None. | Military factory level in the state |
+| industrial_complex_level | None. | civilian factory level in the state |
+| infrastructure_level | None. | infrastructure level in the state |
+| damaged_building_level | Building such as `@industrial_complex`. | Damaged building level of a building with target type. |
+| non_damaged_building_level | Building such as `@arms_factory`. | Non-damaged building level of a building with target type. |
+| modifier | Modifier's name, such as `@political_power_gain`. | The total value of the current [modifier](<modifiers.md>) as the country has in total. Targeted modifiers have separate definitions. |
+| controller | None. | Controller of the state. |
+| owner | None. | Owner of the state. |
+| distance_to | State. | Distance between the current state and the target state. |
+| resource | Resource type such as `@chromium` | Amount of the resource produced within state. |
+| compliance | None. | Current compliance level of the state. |
+| compliance_speed | None. | Current compliance speed of the state. |
+| days_since_last_strategic_bombing | None. | Amount of days since the state was last strategic bombed. |
+| resistance | None. | Current resistance level of the state. On the scale from 0 to 100. |
+| resistance_speed | None. | Current resistance speed of the state. |
+| resistance_target | None. | Current resistance target of the state. On the scale from 0 to 100. |
+| state_population | None. | Current population of the state. Recommended to use state_population_k when possible to push the necessary number for an overflow to ~2 billion from the very possible ~2 million. |
+| state_population_k | None. | Current population of the state in thousands. |
+| state_and_terrain_strategic_value | None. | Current state and terrain strategic value, decided by buildings and terrain of provinces. |
+| state_strategic_value | None. | Current state strategic value, decided by buildings. |
+| days_left | State flag such as `:my_flag` | The current number of remaining days for a state flag. Must be targeted with a `:` rather than a `@` with the position of the target and the variable being swapped unlike in most other game variables, e.g. `my_flag:days_left`. The value of the variable cannot be directly passed into another variable; instead, a [meta effect](<effects.md#Meta_effects>) must be used. |
+
+Unit leader-scoped game variables:
+
+| Variable | Target | Description/Notes |
+| --- | --- | --- |
+| leader_modifier | Modifier's name, such as `@navy_max_range`. | The total value of the specified [modifier](<modifiers.md>) as the unit leader has in total, applied towards the leader. This is represented with `non_shared_modifier = { ... }` in [unit leader traits](<character-modding.md#Unit_leader_traits>). |
+| unit_modifier | Modifier type, such as `@army_attack_factor` | The total value of the specified [modifier](<modifiers.md>) as the unit leader has in total, applied towards the units. This is represented with `modifier = { ... }` in [unit leader traits](<character-modding.md#Unit_leader_traits>). |
+| sum_unit_terrain_modifier | Modifier type, such as `@sickness_chance` | The total sum of the modifier value applied by each province that this unit leader has divisions on. |
+| army_attack_level | None. | The attack level of the leader. |
+| army_defense_level | None. | The defense level of the leader. |
+| attack_level | None. | The attack level of the leader. `attack_skill_level` exists as a synonym. |
+| coordination_level | None. | The coordination level of the leader. |
+| defense_level | None. | The defense level of the leader. `defense_skill_level` exists as a synonym. |
+| logistics_level | None. | The logistics level of the leader. `logistics_skill_level` exists as a synonym. |
+| maneuvering_level | None. | The maneuvering level of the leader. |
+| planning_level | None. | The planning level of the leader. `planning_skill_level` exists as a synonym. |
+| skill_level | None. | The general skill level of the leader. `skill` exists as a synonym. |
+| average_stats | None. | The average stats of the unit leader. |
+| avg_combat_status | None. | The average status of each engagement that units led by the leader are participating in. |
+| avg_defensive_combat_status | None. | The average status of each defensive engagement that units led by the leader are participating in. |
+| avg_offensive_combat_status | None. | The average status of each offensive engagement that units led by the leader are participating in. |
+| avg_unit_planning_ratio | None. | The average ratio of planning bonus that each unit has. |
+| avg_units_acclimation | Acclimatization type, such as `@hot_climate` | Average unit acclimatization for the specified climate, which is defined in `/Hearts of Iron IV/common/acclimatation.txt` |
+| has_orders_group | None. | Returns 1 if the general has any order groups assigned to them, 0 otherwise. |
+| num_traits | None. | Amount of traits that the unit leader has. |
+| num_assigned_traits | None. | Amount of assigned traits the leader has. |
+| num_basic_traits | None. | Amount of basic traits that the unit leader has. |
+| num_personality_traits | None. | Amount of personality traits that the unit leader has. |
+| num_status_traits | None. | Amount of status traits that the unit leader has. |
+| num_max_traits | None. | Amount of maximum assignable traits the leader can have. |
+| num_terrain_traits | None. | Amount of terrain traits that the unit leader has. |
+| num_battalions | None. | Amount of battalions that the army leader has within units under their control. |
+| num_battalions_with_type | Subunit type such as `@artillery_brigade` | Amount of battalions with sub unit type, sub unit type is defined in target, example: num_battalions_with_type@light_armor |
+| num_battle_plans | None. | Amount of battle plans that the unit leader is assigned to. |
+| num_orders_groups | None. | Number of order groups assigned to the unit leader. |
+| num_equipment | Equipment type or archetype such as `@light_tank_chassis`. | Amount of equipment fulfilled within units led by the unit leader. |
+| num_target_equipment | Equipment type or archetype such as `@anti_tank_equipment` | Amount of equipment required within units led by the unit leader. |
+| num_units_with_type | Subunit type such as `@modern_armor` | The amount of units controlled by the unit leader that are predominantly filled with subunits that are assigned the specified type. |
+| num_armored | None. | The amount of units controlled by the unit leader that are predominantly filled with subunits that are assigned the `armored` type. |
+| num_artillery | None. | The amount of units controlled by the unit leader that are predominantly filled with subunits that are assigned the `artillery` type. |
+| num_cavalry | None. | The amount of units controlled by the unit leader that are predominantly filled with subunits that are assigned the `cavalry` type. |
+| num_infantry | None. | The amount of units controlled by the unit leader that are predominantly filled with subunits that are assigned the `infantry` type. |
+| num_mechanized | None. | The amount of units controlled by the unit leader that are predominantly filled with subunits that are assigned the `mechanized` type. |
+| num_motorized | None. | The amount of units controlled by the unit leader that are predominantly filled with subunits that are assigned the `motorized` type. |
+| num_rocket | None. | The amount of units controlled by the unit leader that are predominantly filled with subunits that are assigned the `rocket` type. |
+| num_special | None. | The amount of units controlled by the unit leader that are predominantly filled with subunits that are assigned the `special` type. |
+| num_ships | None. | Amount of ships controlled by the unit leader |
+| num_ships_with_type | Subunit type such as `@destroyer`. | Amount of ships controlled by the unit leader, ship type is defined in target, example: num_ships_with_type@carrier |
+| num_units | None. | Amount of units controlled by the unit leader. |
+| num_units_crossing_river | None. | Amount of units currently passing through a river. |
+| num_units_in_combat | None. | Amount of units currently fighting under control of this unit leader. |
+| num_units_defensive_combats | None. | Amount of units in defensive combat under control of this unit leader. |
+| num_units_defensive_combats_on | Provincial terrain, such as `@marsh` | Amount of units that are currently defensively fighting on the specified terrain under control of this unit leader. |
+| num_units_offensive_combats | None. | Amount of units in offensive combat under control of this unit leader. |
+| num_units_offensive_combats_against | Provincial terrain type such as `@urban` | Amount of units that are currently offensively fighting on the specified terrain under control of this unit leader. |
+| num_units_in_state | State. | Amount of units controlled by the unit leader within the target state. |
+| num_units_on_climate | Acclimatization type, such as `@cold_climate` | Amount of units under control of the unit leader that are on provinces with a climate that requires the specified acclimatization type. |
+| unit_ratio_ready_for_plan | None. | The percentage of units, on the scale from 0 to 1, under control of this unit leader that have the full planning bonus. |
+
+Operative-scoped game variables:
+
+| Variable | Target | Description/Notes |
+| --- | --- | --- |
+| intel_yield_factor_on_capture | None. | The rate at which intel is extracted from this operative by an enemy country. |
+| operation_country | None. | The country that the operative is assigned to work in. 0 if not assigned to a country. |
+| operation_state | None. | The state that the operative is assigned to work in. 0 if not assigned to a country. |
+| operation_type | None. | The operation that the operative to work on. |
+| operative_captor | None. | The country that the operative is captured by. |
+| own_capture_chance_factor | None. | The chance that the operative has to be captured. |
+| own_forced_into_hiding_time_factor | None. | The chance that the operative has to be forced into hiding. |
+| own_harmed_time_factor | None. | The chance that the operative has to be harmed. |
+
+Military industrial organisation-scoped game variables:
+
+| Variable | Target | Description/Notes |
+| --- | --- | --- |
+| modifier | Modifier name, such as `@military_industrial_organization_research_bonus` | The total value of the modifier applied to the MIO. |
+| research_bonus | None. | Research bonus of the MIO when assigned to a research slot. |
+| size | None. | Size of the MIO. |
+| funds | None. | Total MIO funds. |
+| number_of_currently_assigned_tasks | None. | Amount of tasks that the MIO is assigned to. |
+| max_task_capacity | None. | Maximum task capacity of the MIO. |
+| number_of_unlocked_traits | None. | Unlocked traits in the MIO. |
+| number_of_unused_trait_points | None. | Unused trait points in the MIO. |
+
+<!-- kit:begin id="dynamic-variables-1-19-3" at="section:Game_variables" -->
+### Kit: Dynamic variables in 1.19.3 <a id="kit-dynamic-variables"></a>
+
+**Kit addition** The game documents these read-only variables as dynamic variables, in six scopes: global, country, state, unit_leader, military_industrial_organization and special_project. There is no operative scope: the operative rows in the tables above (`operation_country`, `operative_captor` and the rest) are listed under unit_leader. [docs] `documentation/dynamic_variables_documentation.md`
+
+- Variables per scope: country 265, unit_leader 66, state 22, global 19, military_industrial_organization 8, special_project 3. [docs] `documentation/dynamic_variables_documentation.md`
+- Some names exist in several scopes: `modifier` (country, state, MIO), `resource` (country, state), `power_balance_value` (country, global), and `num_battalions`, `num_battalions_with_type`, `num_equipment`, `num_ships`, `num_ships_with_type` (country, unit_leader). [docs] `documentation/dynamic_variables_documentation.md`
+- 94 entries are generated from the trigger of the same name. [docs] `documentation/dynamic_variables_documentation.md`
+- Targets use `@`, for example `GER.air_intel@ENG` or `faction_resource_extracted@steel`. [docs] `documentation/dynamic_variables_documentation.md`
+
+The 41 documented variables this page never named. Every row: [docs] `documentation/dynamic_variables_documentation.md` (meaning restated in the kit's words).
+
+| Variable | Scope | Meaning |
+| --- | --- | --- |
+| `army_chief`, `navy_chief`, `air_chief`, `theorist` | country | the character currently hired in that slot |
+| `high_command`, `political_advisor` | country | an array of the currently hired high command members or political advisors |
+| `air_intel` | country | air intel on a target country (`GER.air_intel@ENG`); the page's `airforce_intel` row uses a different name |
+| `avg_unit_entrenchment_ratio` | unit_leader | average entrenchment ratio over the leader's units |
+| `convoys_destroyed` | country | total convoys this country has sunk |
+| `days_until_next_election` | country | days until the next election, -1 if there will never be one |
+| `deployed_total_manpower_k` | country | total deployed manpower in thousands |
+| `energy_ratio` | country | current energy fulfilment compared with what the factories need, 1 is 100% |
+| `facility_province_id`, `facility_state` | special_project | province and state where the project is researched |
+| `scientist` | special_project | the scientist researching the project |
+| `faction_influence_rank`, `faction_influence_ratio`, `faction_influence_score` | country | the country's influence rank, ratio and value inside its faction |
+| `faction_manifest_fulfillment` | country | fulfilment value of the country's faction manifest |
+| `faction_power_projection` | country | power value of the country's faction projection |
+| `faction_resource_extracted` | country | resource extracted by the country's faction, resource as target (`@steel`) |
+| `faction_resource_extracted_total` | country | all resources extracted by the country's faction |
+| `global_resource_extracted` | global | resource extracted by the whole world, resource as target (`@steel`) |
+| `global_resource_extracted_total` | global | all resources extracted by the world |
+| `longest_war_length` | country | months the country has been at war |
+| `num_nukes_being_dropped` | country | nukes currently ready to be dropped |
+| `num_nukes_left_to_drop` | country | nukes still to drop in this game tick, useful between drops such as in `on_nuke_drop` |
+| `num_of_civilian_factories_in_cores`, `num_of_military_factories_in_cores`, `num_of_naval_factories_in_cores` | country | factories of that type in the scope country's core states controlled by the target country (`num_of_civilian_factories_in_cores@GER`); the docs text of all three says "civilian" |
+| `num_of_controlled_states` | country | number of controlled states; the page's `num_controlled_states` is a separate row |
+| `total_constructed_gun_emplacement`, `total_constructed_naval_headquarter`, `total_constructed_naval_supply_hub` | country | buildings of that type the country has constructed in total |
+| `total_equipment_produced_ballistic_missile`, `total_equipment_produced_emplacement_gun_ammo`, `total_equipment_produced_land_cruiser`, `total_equipment_produced_missile_launcher`, `total_equipment_produced_nuclear_missile`, `total_equipment_produced_sam_missile`, `total_equipment_produced_support_ship` | country | total produced equipment of that type |
+
+- The page's `airforce_intel` row has no counterpart in the docs. Vanilla uses `airforce_intel` only as a key of `intel_level_over` and `add_intel`, never as a variable, so use `air_intel`. [vanilla-confirmed 1.19.3] `common/achievements.txt`, `common/operations/00_operations.txt`
+- Not in the dynamic variable docs: `id` (but `THIS.id` is used in vanilla, for example `common/decisions/CZE.txt`), `days_left`, `target_conscription_amount`, `conscription_ratio` and `current_conscription_amount` (the last three exist as triggers). Treat their variable use as [unverified], except `THIS.id`, which is [vanilla-confirmed 1.19.3].
+- Vanilla localisation prints a dynamic variable the same way as any other, for example `[?days_until_next_election|0Y]`. [vanilla-confirmed 1.19.3] `localisation/english/`
+<!-- kit:end id="dynamic-variables-1-19-3" -->
+
+### Game arrays <a id="Game_arrays"></a>
+
+Global-scoped game arrays:
+
+| Array | Description/Notes |
+| --- | --- |
+| countries | Every single country, regardless if they exist or not, including the 50 dynamic countries even if they do not have an original tag defined. |
+| majors | Every country that is currently major. |
+| states | Every state that exists in the game. |
+| ideology_groups | Every ideology group that exists in the game. |
+| operations | Every operation that exists in the game. |
+| province_controllers | An array of controller countries for each province. In this case, the province ID serves as the index: the controller of province 1234 is province_controllers^1234. |
+| technology | Every technology in the game. |
+
+Country-scoped game arrays:
+
+| Array | Description/Notes |
+| --- | --- |
+| allies | Countries that are considered an ally, including fellow faction members, subjects, and the overlord. |
+| army_leaders | Army leaders recruited by the country. |
+| enemies | Countries that the current country is at war with. |
+| enemies_of_allies | Countries that are considered an ally of any country that is at war with the current country. |
+| faction_members | Countries that are in the same faction as this one. |
+| occupied_countries | Countries that are currently occupied by this one. |
+| subjects | Countries that are subject to this one. |
+| owned_controlled_states | States that are owned and controlled by the current country. |
+| owned_states | States that are owned, but not necessarily controlled, by the current country. |
+| potential_and_current_enemies | Countries that are considered enemies and that 'may' become enemies (due to being an ally of an enemy or by having a wargoal) |
+| controlled_states | States that are controlled, but not necessarily owned, by the current country. |
+| core_states | States that are considered national territory of the current country. |
+| neighbors | Countries that are considered neighbours to the current country, having at least one border within controlled provinces. |
+| neighbors_owned | Countries that are considered neighbours to the current country, having at least one owned state that borders any state that the current country owns. |
+| researched_techs | Technologies that were researched by the current country. |
+| navy_leaders | Navy leaders recruited by the country. |
+| operatives | Operatives recruited by the country. |
+| exiles | The exiled governments that the current country is hosting. |
+
+State-scoped game arrays:
+
+| Array | Description/Notes |
+| --- | --- |
+| core_countries | Countries that consider this state to be national territory. |
+
+## References <a id="References"></a>
+
+1. ↑ `NDefines.NGame.EVENT_TIMEOUT_DEFAULT = 13` in [Defines](<defines.md>)
+2. ↑ `NDefines.NAI.FOCUS_TREE_CONTINUE_FACTOR = 1.5` in [Defines](<defines.md>)
+3. ↑ `NDefines.NGame.END_DATE = "1949.1.1.1"` in [Defines](<defines.md>)
+4. ↑ `NDefines.NMilitary.UNIT_EXP_LEVELS = { 0.1, 0.3, 0.75, 0.9 }` in [Defines](<defines.md>)
+5. ↑ 5.0 5.1 `NDefines.NGame.MAX_EFFECT_ITERATION = 1000` in [Defines](<defines.md>)
+
+---
+
+## Navigation
+
+**[Modding](<modding.md>)**
+
+- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list-of-modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on-actions.md>) • [Flags](<data-structures.md#Flags>) • [Event targets](<data-structures.md#Event_targets>) • [Country tag aliases](<data-structures.md#Country_tag_aliases>) • [Variables](<data-structures.md#Variables>) • [Arrays](<data-structures.md#Arrays>)
+- **Scripting**: [Achievements](<achievement-modding.md>) • [AI](<ai-modding.md>) • [AI focuses](<ai-focuses.md>) • [Autonomous states](<autonomy-state-modding.md>) • [Balances of power](<balance-of-power-modding.md>) • [Bookmarks/Scenarios](<bookmark-modding.md>) • [Game rules](<bookmark-modding.md#Game_rules>) • [Buildings](<building-modding.md>) • [Characters and traits](<character-modding.md>) • [Cosmetic tags](<cosmetic-tag-modding.md>) • [Countries](<country-creation.md>) • [Divisions](<division-modding.md>) • [Decisions](<decision-modding.md>) • [Doctrines](<doctrine-modding.md>) • [Equipment](<equipment-modding.md>) • [Events](<event-modding.md>) • [Factions](<faction-modding.md>) • [Ideas](<idea-modding.md>) • [Ideologies](<ideology-modding.md>) • [Military industrial organizations](<military-industrial-organization-modding.md>) • [National focuses](<national-focus-modding.md>) • [Resources](<resources-modding.md>) • [Scripted GUI](<scripted-gui-modding.md>) • [Technologies and doctrines](<technology-modding.md>) • [Units](<unit-modding.md>)
+- **Map**: [Map](<map-modding.md>) • [States](<state-modding.md>) • [Supply areas](<supply-areas-modding.md>) • [Strategic regions](<strategic-region-modding.md>)
+- **Graphical**: [Interface](<interface-modding.md>) • [Graphical assets](<graphical-asset-modding.md>) • [Entities](<entity-modding.md>) • [Posteffects](<posteffect-modding.md>) • [Particles](<particle-modding.md>) • [Fonts](<font-modding.md>)
+- **Cosmetic**: [Portraits](<portrait-modding.md>) • [Namelists](<namelist-modding.md>) • [Music](<music-modding.md>) • [Sound](<sound-modding.md>)
+- **Other**: [Console commands](<console-commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod-structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<collection-modding.md>) • [Game rule modding](<game-rule-modding.md>) • [Intelligence operation modding](<intelligence-operation-modding.md>) • [Map mode modding](<map-mode-modding.md>) • [Occupation and resistance modding](<occupation-and-resistance-modding.md>) • [Peace conference modding](<peace-conference-modding.md>) • [Raid modding](<raid-modding.md>) • [Script constant modding](<script-constant-modding.md>) • [Special project modding](<special-project-modding.md>)

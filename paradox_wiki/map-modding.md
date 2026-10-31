@@ -1,0 +1,1246 @@
+# Map modding
+
+*Offline snapshot of the Hearts of Iron IV Wiki page "Map modding", revision 105627, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="105627" sources="map/ map/default.map map/definition.csv map/adjacencies.csv map/adjacency_rules.txt map/buildings.txt map/unitstacks.txt map/weatherpositions.txt map/ambient_object.txt map/cities.txt map/supply_nodes.txt map/railways.txt map/terrain/ map/strategicregions/ map/supplyareas/ common/terrain/00_terrain.txt common/defines/00_defines.lua common/defines/00_graphics.lua gfx/entities/trees.gfx hoi4.exe" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the full `map/` folder of the installed game (every file listed, the bitmaps and DDS headers read, the CSV and text files parsed), `common/terrain/00_terrain.txt`, the river and supply defines, and map error strings in `hoi4.exe`.
+Kit blocks added: the real file list and bitmap table, corrections for `weatherpositions.txt` sizes, line endings, the terrain palette ids 27 and 31, the terrain values, adjacency format and rules, plus counts, a defaults table for `default.map` and the map error texts the exe still holds.
+The "deprecated" marker is the supply area note (still true; see the Supply areas page) and "incomplete" is about a definition file, not about the page.
+Gaps left: exe-only strings are `[unverified]`. The wiki's size limits (13,238,272 pixels, 65536 borders) and the sea level of 9.5 are in no game file I could read; vanilla provinces.bmp is 11,534,336 pixels.
+<!-- kit:end id="review" -->
+
+## Table of contents
+
+- [Quick overview](#Quick_overview)
+- [Notes](#Notes)
+  - [BMP format](#BMP_format)
+  - [Correcting a broken 8-bit map](#Correcting_a_broken_8-bit_map)
+  - [Coordinate system](#Coordinate_system)
+- [State modding](#State_modding)
+- [Strategic regions](#Strategic_regions)
+  - [Weather](#Weather)
+- [Provinces](#Provinces)
+  - [Continents](#Continents)
+- [Terrain](#Terrain)
+  - [Provincial terrain](#Provincial_terrain)
+  - [Graphical terrain](#Graphical_terrain)
+- [Height map](#Height_map)
+- [Normal map](#Normal_map)
+- [Rivers](#Rivers)
+- [Trees](#Trees)
+- [Colour maps](#Colour_maps)
+  - [Water](#Water)
+  - [RGB and city lights](#RGB_and_city_lights)
+- [Buildings](#Buildings)
+- [Unit model and victory point positions](#Unit_model_and_victory_point_positions)
+- [Adjacencies](#Adjacencies)
+  - [Adjacency rules](#Adjacency_rules)
+- [Supply](#Supply)
+  - [Supply areas (For versions prior to 1.11)](#Supply_areas_.28For_versions_prior_to_1.11.29)
+- [Ambient objects](#Ambient_objects)
+- [References](#References)
+- [Kit: default.map, cities.txt and the map error texts](#kit-map-default-map-keys)
+
+---
+
+The map of the game is primarily changed within the `/Hearts of Iron IV/map/` folder. This includes provinces and details about them as well as the cosmetic appearance of the map: trees, terrain, cities.
+
+`/Hearts of Iron IV/map/*.bmp` files are referred to as bitmaps. Commonly these are used for the cosmetic appearance of the map, aside from the provinces bitmap.
+`/Hearts of Iron IV/map/*.csv` files are CSV tables. These may be edited within a text editor or a table editor such as Excel or OpenOffice. It can be preferable to open these with text editors for greater performance.
+
+## Quick overview <a id="Quick_overview"></a>
+
+These files in the map folder are common to edit:
+
+- `/Hearts of Iron IV/map/provinces.bmp` is used as a map assigning the province borders.
+- `/Hearts of Iron IV/map/definition.csv` is used in order to assign in-game province information, including terrain, continent, and the coastal status. This does not change the graphical appearance.
+- `/Hearts of Iron IV/map/terrain.bmp` is used as the terrain map, assigning textures to the specified positions. This does not change the actual province terrain, just the appearance.
+- `/Hearts of Iron IV/map/heightmap.bmp` is used as the heightmap, assigning a height for each pixel on the map. This is also used to put areas underwater.
+- `/Hearts of Iron IV/map/world_normal.bmp` is used as the normal mapping, assigning a slope to each pixel that gets used in lightning calculates. This is used to create more accurate shadows.
+- `/Hearts of Iron IV/map/terrain/colormap_rgb_cityemissivemask_a.dds` is used to create an overall colouring of the world and to change the opacity of city lights. **Oddities about the world's colouring typically come from this file not being adjusted**.
+- `/Hearts of Iron IV/map/terrain/colormap_water_0.dds` is used to create a colouring of the world oceans.
+- `/Hearts of Iron IV/map/buildings.txt` is used to assign the positions of building models and to assign the neighbouring sea province to the buildings that require it, i.e. naval bases and floating harbours. **This can cause a game crash if left unedited while adding new states or provinces.**
+- `/Hearts of Iron IV/map/unitstacks.txt` is used to assign the information regarding the position and rotation of unit models and positions of unit models.
+- `/Hearts of Iron IV/map/rivers.bmp` is used to assign rivers that appear in the world.
+- `/Hearts of Iron IV/map/trees.bmp` is used to assign tree models that appear in the world.
+- `/Hearts of Iron IV/map/supply_nodes.txt` and `/Hearts of Iron IV/map/railways.txt` are used to assign the supply nodes and railways at the game's start. **This will cause a game crash if unedited on a new map.**
+- `/Hearts of Iron IV/map/adjacencies.csv` is used to create special relationships between pairs of provinces, whether it's making the border impassable or creating a passage without a border.
+- `/Hearts of Iron IV/map/adjacency_rules.txt` is used to establish more complex rules for province relationships, primarily in regards to making straits that can be passable or not depending on circumstances.
+- `/Hearts of Iron IV/map/ambient_object.txt` is used to create models that are constantly present on the world map. **This includes the base game's world borders in the north and the south.**
+- `/Hearts of Iron IV/map/cities.txt` is used to assign different city models to different parts of the world, by default using `/Hearts of Iron IV/map/cities.bmp` as the map.
+- `/Hearts of Iron IV/map/airports.txt` and `/Hearts of Iron IV/map/rocketsites.txt` were deprecated and removed in the patch 1.15.
+
+<!-- kit:begin id="map-folder-1193" at="section:Quick_overview" -->
+**Kit addition** The `map/` folder of 1.19.3, complete. All rows: [vanilla-confirmed 1.19.3] folder listing and file contents of `map/`.
+
+| Entry | What it is |
+| --- | --- |
+| `default.map` | names the files it loads (keys at the end of this page); 13 active keys |
+| `provinces.bmp`, `definition.csv`, `terrain.bmp`, `heightmap.bmp`, `rivers.bmp`, `trees.bmp`, `world_normal.bmp`, `cities.bmp` | the bitmaps and the province table (sizes and depths in the BMP section) |
+| `adjacencies.csv`, `adjacency_rules.txt` | adjacencies and strait rules |
+| `continent.txt` | 7 continents |
+| `buildings.txt`, `unitstacks.txt`, `cities.txt`, `weatherpositions.txt`, `ambient_object.txt`, `supply_nodes.txt`, `railways.txt` | placement and start data; the exe holds these as fixed paths (`map/buildings.txt`, `map/unitstacks.txt`, `map/cities.txt`, `map/weatherpositions.txt`, `map/supply_nodes.txt`, `map/railways.txt`) |
+| `seasons.txt` | 4 season blocks: `winter`, `spring`, `summer`, `autumn`, each with `start_date` and `end_date` written `00.<month>.<day>` (for example `00.12.01`) and `hsv_north` / `hsv_center` / `hsv_south` and `colorbalance_north` / `_center` / `_south` |
+| `positions.txt` | listed in `default.map`, but the file is empty (0 bytes) |
+| `colors.txt` | 200 lines of `color = { r g b }`; no game file explains the use [unverified] |
+| `strategicregions/` | 304 region files (see Strategic region modding) |
+| `supplyareas/` | one leftover file (see Supply areas modding) |
+| `terrain/` | 64 DDS and BMP files: the atlases, colour maps, borders, river surface, mud, snow, fog of war and underwater textures |
+
+`map/airports.txt` and `map/rocketsites.txt` are absent, which agrees with the wiki line above. [vanilla-confirmed 1.19.3] folder listing of `map/`
+<!-- kit:end id="map-folder-1193" -->
+
+## Notes <a id="Notes"></a>
+
+- **Due to [how the game reads BMP files](#BMP_format), many image editors such as Paint.net or Microsoft Paint can't be used for most bitmap files**, with only provinces and world_normal working. Photoshop and GIMP are alternatives that will always work, but the mode should never be changed from indexed when using them. If a map was saved incorrectly, the later section on details of the BMP format provides an easy way to correct the map. The method described there can also be used to export a new file.
+- When exporting the map in GIMP, **"do not write color space information" must be checked on**.
+- [Debug mode](<modding.md>) turned on via launch settings is essentially necessary for map modding. Without debug mode, any error marked with MAP_ERROR will cause the game to fail to load and it wouldn't be possible to open the [nudger](<nudger.md>) within the main menu: some map errors may lead to the game being impossible to open in singleplayer.
+- Some of the errors marked with MAP_ERROR may not appear in the error log when it opens during the main menu loading. The error log after selecting a country in singleplayer will contain all of the map errors for sure.
+- Using the [nudger](<nudger.md>) can make the map editing much easier, but the tool is still unstable. At times it can be better to do manual editing, but the nudge is still important to know of and use.
+- The [nudger](<nudger.md>) will export files in the [User directory](<modding.md>) directly, such as the `Documents/Paradox Interactive/Hearts of Iron IV/` folder (Default location within Windows), with the folders of `/history/`, `/map/`, and `/localisation/` potentially being created inside of that folder. These will be loaded by default in base game as well if left there. Additionally, these [have lower priority](<modding.md>) than the mod files: if a mod is set to unload previously-loaded files within a generated folder via [replace_path](<modding.md>) or contains a copy of the edited file, editing via the nudger may appear to not show changes. However, the outputs will still be created, and moving the files to the mod files and making them get loaded – such as via the 'update'/'load' button in the nudger, depending on the menu, or by restarting the game – will still work as intended.
+- [replace_path](<modding.md>) can be used to fully unload the contents of a single folder (but not subfolders) that get indexed at the main menu loading. This can be used to ensure that none of the base game's strategic regions or states will appear in the loaded files when the mod is enabled.
+- `/Hearts of Iron IV/map/default.map` can be used in order to change the file used for a certain purpose, such as the name of the provinces bitmap. Within this article, it'll be assumed that `/Hearts of Iron IV/map/default.map` is unchanged, with the filenames being the same as in base game.
+
+### BMP format <a id="BMP_format"></a>
+
+*This section is primarily the technical details on why the first two notes are necessary to be followed, as well as explaining some terminology used later in the article such as 'colourmaps' and '8-bit'/'8 bitdepth'/'8 bpp'.*
+
+There are 3 primary types of BMP files used in Hearts of Iron IV: 8-bit greyscale/indexed greyscale, 8-bit indexed, and 24-bit RGB. A BMP file may have compression, but Hearts of Iron IV requires that absolutely none is present and the rest here will assume it being off. No compression means that each pixel is assigned the same amount of bits.
+Bitdepth is the amount of bits per pixel, sometimes shortened as -bit (e.g. 8-bit) or bpp. The amount of bits per pixel assigns the total amount of possible colours in the file: bitdepth of 8 means `2^{8}=256` colours in the file, while bitdepth of 24 means `2^{24}=16777216` different possible colours. As the amount of bits per pixel, **wrong bitdepth on a file can be detected due to a large filesize difference** between the mod's and base game's versions of an image.
+Some image editors, e.g. GIMP, don't explicitly have bitdepth as an option. In those, the bitdepth can be set by limiting the amount of possible colours. The RGB image mode allows each pixel to have 256 values for red, green, and blue colours, for a total of `256^{3}=2^{24}`, making a bitdepth of 24. If the image or a layer contains an alpha channel (i.e. making transparency allowed), which can be toggled on accidentally when creating a second layer as an overlay, the option of transparency adds even more possible colours, up to `256^{4}=2^{32}`, making a bitdepth of 32. If the image mode is set to Greyscale, then there are a total of 256 possible colours each pixel can be, making `2^{8}` total colours and a bitdepth of 8. With the indexed image mode, the amount of possible colours depends on the size of the colourmap/colour table and can be anything from 2 to 256. In Photoshop however, the bitdepth is explicitly set in the save settings window when exporting the file to bmp, with RGB mode images being able to select 16, 24 and 32-bit and Indexed mode images being able to select 4 or 8-bit.
+
+In more detail on each image mode used:
+
+- 24-bit RGB is used for `provinces` and `world_normal` bitmaps. Every pixel is assigned a direct colour value in each of the three colour channels, which gets read by the game to interpret it; either to assign province IDs in case of the former or to assign the vector proportions in case of the latter.
+- 8-bit greyscale/indexed greyscale is used for the `heightmap` bitmap. The image mode is interpreted differently per image editor: in GIMP, the greyscale mode is used, while in Photoshop indexed colors mode is used, shown below, with a greyscale color table. This happens because of an internal behavior of Photoshop's greyscale mode.[1] **Paint.net and MS Paint cannot be used to edit the heightmap bitmap**, since they generate a completely new colormap/color table when saving. Every pixel is assigned a value from 00 to FF that decides on the brightness of it and directly translates to height by the game.
+- 8-bit indexed is used for every other bitmap: `cities`, `rivers`, `terrain`, and `trees`. This mode creates a colourmap (called color table in Photoshop), which is a list of 256 colours arranged in order from 00 to FF. Each pixel is assigned a value from 00 to FF, which directly corresponds to an entry on the colourmap. **The game checks this value on each pixel rather than the colour** and picks an entry based on the numeric value of that ID. Due to this, in order for the file to work correctly, the colourmap cannot be altered in any shape or form. For example, the image mode cannot be changed from Indexed to another one, since the image editor will not be able to preserve the order in memory, generating a new order after the image mode is set back to Indexed. For the same reason, **Paint.net and MS Paint cannot be used to edit the indexed bitmaps**, since they generate a completely new colormap/color table when saving rather than preserving it for the entirety of editing.[2] In Photoshop, it is possible to save the indexed colors table to a .ACT file from the menu Image -> Mode -> Color Table, so the table can be loaded later when changing the image mode to Indexed. Newer versions of GIMP have access to a similar feature in the "use custom palette" option when changing the image from RGB to Indexed mode, which can be used to transfer the colormap from the base game file, by having it open in another tab.
+
+When using image editors that don't have a complete support of editing the colormap/color table, 8-bit Indexed bitmaps cannot be easily converted back to how they're intended to be. Adding a new layer or changing the image mode will break how the map will be interpreted. Instead, it's possible to keep another image within the mod files as a backup and, when needed to use a layer as an overlay, edit the backup rather than the one interpreted by the game. After finishing the edits, it's possible to copy the contents of the backup inside of the image editor and paste them into the file interpreted by the game: that way it's possible to copy the color of each pixel without copying over the rest of the file's format. **Paint.net or MS Paint will not work for this.**
+
+![The image shows the black dialogue box reading Export image as BMP. Under the compatibility header, "Write colorspace information" is checked. RGB format is set to 24 bit(R8 G8 B8)](media/map-modding_52a03661c6__img1.png)Correct export settings for provinces.bmp in GIMP 3.2.4
+
+*Correct export settings for provinces.bmp in GIMP 3.2.4*
+
+BMP files contain a DIB header at the beginning that assigns image file information. The game is set-up to expect BITMAPINFOHEADER as the format of the header for all BMP files. This depends on the image editor and most should save within this one by default.
+However, other formats for the header exist: the most common one to accidentally save in is BITMAPV5HEADER, written by the GIMP foundation. This is used in order to add the ICC information, characterizing in which colour space the image has to be read in. *Hearts of Iron IV's engine is not set to recognise this header*. For this reason, **when exporting in GIMP, "do not write colour space information" must be checked on** in order to save with BITMAPINFOHEADER rather than BITMAPV5HEADER.
+
+<!-- kit:begin id="map-bitmap-table" at="section:BMP_format" -->
+**Kit addition** The vanilla bitmaps, read from their headers. All rows: [vanilla-confirmed 1.19.3] `map/*.bmp`. All are uncompressed.
+
+| File | Size in pixels | Bit depth | DIB header size |
+| --- | --- | --- | --- |
+| `provinces.bmp` | 5632 x 2048 | 24 | 40 |
+| `heightmap.bmp` | 5632 x 2048 | 8 | 40 |
+| `rivers.bmp` | 5632 x 2048 | 8 | 40 |
+| `cities.bmp` | 5632 x 2048 | 8 | 40 |
+| `terrain.bmp` | 5632 x 2048 | 8 | 124 |
+| `trees.bmp` | 1650 x 600 | 8 | 124 |
+| `world_normal.bmp` | 2816 x 1024 | 24 | 40 |
+
+**Kit correction** Two vanilla files, `terrain.bmp` and `trees.bmp`, carry a 124-byte header (the BITMAPV5HEADER the section above says the game does not recognise), so the statement is not true for every bitmap; the wiki's advice to export with BITMAPINFOHEADER (40 bytes) still matches the other six. [vanilla-confirmed 1.19.3] `map/terrain.bmp`, `map/trees.bmp`. What the engine accepts for a new file was not tested. [unverified]
+
+`trees.bmp` is exactly 75/256 of the province bitmap in each direction (5632 x 75 / 256 = 1650, 2048 x 75 / 256 = 600), and `world_normal.bmp` and the colour maps are half size. The province-sized bitmaps and `world_normal.bmp` are multiples of 256; `trees.bmp` (1650 x 600) is not, so the multiple-of-256 rule applies to the province bitmap and its full-size companions only. [vanilla-confirmed 1.19.3] `map/*.bmp`
+<!-- kit:end id="map-bitmap-table" -->
+
+### Correcting a broken 8-bit map <a id="Correcting_a_broken_8-bit_map"></a>
+
+As it's possible to edit an 8-bit file without palette restrictions by keeping a separate 24-bit copy of the file, the same can also be used to correct a file which had its colourmap reset or which was erroneously saved in a higher bitdepth. This needs to be done in an editor that does have support for Indexed mode images, except for Paint.net and MS Paint. Photoshop and newer versions of GIMP have better alternatives to fix this. To do this type of fix, this checklist can be followed:
+
+- Change the filename of the mod's broken bitmap. For this example, `map/terrain_broken.bmp` will be used (with `map/terrain.bmp` as the original file), but the same can be applied to every other bitmap.
+- Copy the base game's according `map/terrain.bmp` file into the mod. If the mod's map had its dimensions changed, this image should be resized to the proper ones, otherwise it shouldn't be touched.
+- Open both `map/terrain_broken.bmp` and `map/terrain.bmp` within the editor. **Paint.net or MS Paint will not work.**
+- Within the image editor, select everything in `map/terrain_broken.bmp` (using ctrl+A or Select -> All) and copy it to the clipboard.
+- Paste the contents of the file into `map/terrain.bmp`.
+- Export the opened `map/terrain.bmp` file with correct settings.
+- Optionally delete the `map/terrain_broken.bmp` file.
+
+In Photoshop, this can be done easily using the indexed Color Table menu. For a BMP file that is already in 8-bit indexed mode but with incorrect palette:
+
+- Open the corresponding base game file in Photoshop.
+- Select the menu Image -> Mode -> Color Table.
+- Click "Save" to save a .ACT file with the table.
+- Open the broken file in Photoshop.
+- Select the menu Image -> Mode -> Color Table.
+- Click "Load" and load the saved .ACT file, then click OK.
+- Go to "File" menu and click "Save".
+
+The same can be done for exporting a new file, starting in RGB mode:
+
+- Open the RGB mode image in Photoshop.
+- Select the menu Image -> Mode -> Indexed Colors.
+- In palette, select "Custom".
+- In the Color Table menu, select "Load" and select the .ACT file saved from the corresponding base game file, then click OK.
+- Go to "File" menu and click "Save a copy".
+- In the save dialog, select BMP.
+- In the settings dialog that comes up, select "Windows" in format, "8 bits" in depth and leave the boxes unchecked, then click OK.
+
+In newer versions of GIMP, this can be done with the "use custom palette" option in the Indexed mode window:
+
+- Open the corresponding base game file in GIMP.
+- Open the broken file in GIMP, keeping both files open.
+- Go to Image -> Mode and change it to RGB, if it isn't already.
+- Go to Image -> Mode and select Indexed.
+- Select the "Use Custom Palette" option and click on the icon below it.
+- In the dropdown list, select "Colormap of Image#(number)...", which is the base game file.
+- Click convert.
+- Export the opened file, disabling the option to write color space information.
+
+### Coordinate system <a id="Coordinate_system"></a>
+
+Since the map is a 3D object, there are X, Y, and Z positions using a typical Cartesian coordinate system, which are commonly referred to in a multitude of map files. For disambiguation, these are the coordinates that the game uses:
+
+- A single X coordinate is equivalent to a single pixel within the provinces bitmap horizontally. The horizontal edges of the map are at 0, and it goes left-to-right (or west-to-east). Note that the map loops horizontally.
+- A single Y coordinate is equivalent to a value of 10 (in decimal) within the heightmap. A Y position of 0 is equivalent to pure black on the heightmap, while a Y position of 25.5 is equivalent to pure white on the heightmap. The water level, for example, is located at 9.5 by the Y position[3].
+- A single Z coordinate is equivalent to a single pixel within the provinces bitmap vertically. The lower (or southern) edge of the map is at 0, and it goes down-to-up (or south-to-north). **Note that most image editors have it the other way around**: the position at 0 by the axis would be at the top and it going up-to-down. When wanting to know the Z coordinate, it can be useful to change the coordinate system that the editor uses (if possible) or temporarily flip the image upside down.
+
+## State modding <a id="State_modding"></a>
+
+*Main article: [State modding](<state-modding.md>)*
+
+States are defined within `/Hearts of Iron IV/history/states/*.txt` files, with information about the states: provinces containing them, the state category, the starting buildings and owner.
+The nudger works for editing states, however, there are several issues:
+
+- If a state's name contains any special character requiring more than one byte to represent in UTF-8 (e.g. any letters outside of the English alphabet), the nudger will crash when trying to create one.
+- Every quote within the state's history file will get removed if a nudger edits it. This can break DLC checks (e.g. `has_dlc = "Waking the Tiger"`), present in base game Turkish or Chinese states.
+
+Additionally, note that the nudger dynamically updates strategic regions with states: a newly-created state will not have its provinces assigned to strategic regions and that will have to be done via the nudger. Since strategic regions are assigned for each province individually, deleting the strategic region outputs within the user directory's `/Hearts of Iron IV/map/strategicregions/` folder may work, as long as the strategic region borders don't need to be adjusted, as all provinces of one state must be within the same strategic region.
+
+## Strategic regions <a id="Strategic_regions"></a>
+
+*Main article: [Strategic region modding](<strategic-region-modding.md>)*
+
+Strategic regions are defined within `/Hearts of Iron IV/map/strategicregions/*.txt` files, where provinces are added to them individually. A province *must* have a strategic region, and all provinces of a state must be assigned the same strategic region. Otherwise, many interactions with that province can cause a game crash, sometimes appearing before the game can launch. The strategic regions are used for ships and airforce as regions where they can be assigned, but they also serve for assigning weather. A naval strategic region may also have [naval terrain](#Provincial_terrain) assigned with `naval_terrain = terrain_name`.
+
+### Weather <a id="Weather"></a>
+
+*See also: [Nudger § Weather](<nudger.md#Weather>)*
+
+Each strategic region has weather defined in periods, as
+
+```text
+weather={
+		period={
+			between={ 0.0 30.11 }
+			temperature={ -6.0 12.0 }
+			no_phenomenon=0.500
+			rain_light=1.000
+			rain_heavy=0.150
+			snow=0.200
+			blizzard=0.000
+			arctic_water=0.000
+			mud=0.300
+			sandstorm=0.000
+			min_snow_level=0.000
+		}
+    }
+}
+```
+
+- `between = { ... }` decides in which period the weather applies: both dates within the definition of the period are included within the period; the first number is the day, the second is the month; the count for days and months starts from 0 rather than 1.
+- `temperature = { ... }` assign the maximum and minimum temperatures for the period.
+
+Most of the lines decide the chance for each province in the strategic region to have that weather type, assuming that the chance `no_phenomenon` evaluates as false. Multiple weather types can happen at the same time, and weather is calculated daily.
+`min_snow_level` decides the visual appearance of snow in the region. Usually set to 0.1 in the particularly snowy periods such as winter in Northern Scandinavia.
+
+Additionally, the `/Hearts of Iron IV/map/weatherpositions.txt` file decides the *position* of weather objects such as the clouds. A single entry in the file has the following layout:
+
+```text
+strategic region ID;X position;Y position;Z position;size
+```
+
+For example, `1;2781.24;9.90;1571.49;small` means that the strategic region with the ID of 1 has a small weather object in the specified position.
+The size only has 2 values: small and large. Multiple definitions or none at all may be present for the same strategic region, however, there should be at least one definition in the file for both large and small objects to avoid a game crash.
+
+Weather is best generated with nudger in the strategic region menu.
+
+<!-- kit:begin id="map-weatherpositions-correction" at="section:Weather" -->
+**Kit correction** The two sizes in `weatherpositions.txt` are `small` and `big`, not `large`. Vanilla has 588 rows: 452 `big` and 136 `small`, in the layout `region id;x;y;z;size` (for example `1;2781.24;9.90;1571.49;small`). [vanilla-confirmed 1.19.3] `map/weatherpositions.txt`
+
+The `period` keys vanilla actually uses, including `arctic_water`, and the `naval_terrain` and `static_modifiers` keys of a region are listed in [Strategic region modding](<strategic-region-modding.md>). [vanilla-confirmed 1.19.3] `map/strategicregions/`
+<!-- kit:end id="map-weatherpositions-correction" -->
+
+## Provinces <a id="Provinces"></a>
+
+*See also: [Nudger § Database](<nudger.md#Database>)*
+
+There are two files related to the province definitions:
+
+- `/Hearts of Iron IV/map/provinces.bmp`, which decides how the provinces are placed on the map.
+- `/Hearts of Iron IV/map/definition.csv`, which decides the exact details about the province: ID, RGB value to link to the map, coastal status, terrain.
+
+The provinces bitmap is saved as a 24-bit RGB file. Saving in 32-bit will result in a 'We do not support bitdepth at 32' error, resulting in a crash on startup. The province bitmap being saved wrong (Such as the prior 32 bitdepth or being the wrong format renamed to BMP) will result in 'X4008: floating point division by zero' errors. Due to proportions of other map files, **both length and width have to be a multiple of 256**. Due to the engine limitations, the total area of the file in pixels cannot exceed 13 238 272, approximately.
+
+An unused colour for the bitmap can be picked by using the database menu within the nudger. However, considering the sheer amount of possible colours, randomising a colour using a site such as random.org can also be used, with a chance of overlap being extremely low.
+If the province definitions are incomplete or incorrect, the game creates a 'corrected' copy of this file in the [user directory](<modding.md>) to replace the CSV table for province definitions, with any incomplete or missing province definitions filled in, as `/Hearts of Iron IV/map/definition.csv.fixed` and other copies of the file in that folder. It might be necessary to delete this copy after making changes to the original file.[4]
+Both of these can be used to speed up province creation by painting random colours on the map, then letting the game generate the CSV table which'll be adjusted manually once ported over to the mod.
+
+The previously-mentioned corrected copy of the province definition within the user directory would contain every province definition from the mod's definition.csv alongside every colour that's present on the bitmap but doesn't have a definition, which'll have a default entry as a land province with no continent and unknown terrain. This can be used with an image editor to locate any unintended colours in the provinces.bmp file. These can be the result of picking a wrong colour or of anti-aliasing being turned on when editing the map. To locate them, one can choose the colour that the newly-generated province has and paint it over a spot that's safe to paint (Such as a large sea province or a corner of the map), and then use the colour select tool with 0% tolerance/0 threshold (name for the option depends on the image editor) in order to select it. In image editors, this is commonly either a separate option (Such as in GIMP) or an option within the magic wand tool for it to have a global flood mode (Such as in Paint.net).
+After having located the province in question, the question of what to do with it is left up to the modder: it can be made into a separate province entirely (and so should be assigned to a state and strategic region), possibly altering its borders to fit better, or it could be removed entirely from the provinces.bmp file. In either of these cases, the spot that has been made in order to find the province should be reverted to its initial state.
+
+An entry within the `/Hearts of Iron IV/map/definition.csv` follows the specified format:
+
+```text
+Province ID; R value; G value; B value; Province type (land|sea|lake); Coastal status (true/false); Terrain; Continent (integer)
+```
+
+Example definition of these include the following:
+
+```text
+7;212;179;179;sea;true;ocean;0
+114;40;15;15;land;false;plains;1
+260;170;235;235;land;true;urban;1
+```
+
+The RGB values for each province should be unique in order for them to be identifiable on the bitmap and are integers on the scale from 0 to 255. [The continent](#Continents) must be an integer that represents a continent. For sea provinces, it must be kept at 0, while for lakes it *may* be kept at 0.
+[Terrain](#Terrain) is defined for each province individually here. This *does not* change the appearance of the province, just the terrain it's assigned, which changes naval or land combat. For lake provinces, terrain must be 'lakes' while for sea provinces it must be 'ocean'.
+In here, the coastal status is used for both seas and land provinces. For land provinces, it means that a border with a sea province (not a lake), and for sea provinces it means that a border with a land province. This is used for determining, for example, where naval bases can be built and where they can't. If bitmap and province definition disagree on whether or not a province is coastal, such as if a land province is specified as non-coastal but still borders sea provinces or vise-versa, bitmap's results will be preferred. This does mean that there is no reason to specify the coastal status within the province definition, and it remains a leftover from before 1.11.
+
+**Province IDs should go in order**. While a gap in province IDs will not necessarily crash the game, it will instead create a different problem: each province after the gap will take on the properties of the next province by ID other than the colour on the bitmap. For example, if province 23 doesn't exist, province 24 will take on the terrain, type (land|sea|lake), coastal status, and continent of province 25, which will copy from province 26 in turn and so on. This can cause highly unintended behaviour if not crashes, so it's best to not have any province gaps: if a province is to be deleted, another one must fill the gap, such as the last province by ID.
+
+![HOI4 NSB map explanation.jpg](media/map-modding_67296116c0__img6.jpg)
+
+Hearts of Iron IV has a limit on province displaying. No more than 65536 different province borders can be displayed at the same time before an integer overflow causes the in-game engine to stop displaying any additional ones. In-game, this is usually hit at about 21000 provinces. In other words, **province amount should be kept low**, with the base game's roughly 13000-14000 provinces being an amount to aim for. More can cause the game to run more slowly and unstably. If a province borders another province several times in a disjointed manner, such as in the attached image, each one counts as a separate border.
+
+These disjointed island provinces may also cause a game crash if they're *too* disjoined with large distances between them. This is not anything to worry about with regular provinces, but if two share a colour by accident, this may happen.
+Province borders are also not drawn between provinces that are on land and those that are in a sea or a lake, according to definition.csv. If there is a particular spot or series of spots where provinces don't work, it might also be caused by a wrong province type assignment in definition.csv.
+
+Additionally, these errors are common to encounter:
+
+- "Map invalid X crossing. Please fix pixels at coords": Four provinces share a common corner. The game connects the bottom left and the top right provinces but this situation is confusing to the player and should be avoided. Keep in mind that the map loops horizontally, so this X crossing may be right at the edge of the province bitmap. The coordinate system used in the coordinates is the more traditional left-to-right then down-to-up, rather than [the one used by the game in other circumstances](#Coordinate_system).
+- "Province X has TOO LARGE BOX. Perhaps pixels are spread around the world in provinces.bmp": The province has a width/height of more than 1/8th of the total map width/height. This might be an indication that two provinces inadvertently share a colour, but it may also be a large province. Large provinces aren't treated stably by the game and should be avoided.
+- "Province X has only N pixels": The province consists of no more than NGraphics.MINIMUM_PROVINCE_SIZE_IN_PIXELS (8 by default). This is likely too small to be easily usable by the player.
+- "Prov 12345 has no continent": There are two common causes for the error.
+  - The province is a land province, yet its continent ID is left at zero. **This also includes the auto-generated province definitions**, present if a colour is found that isn't present in the definition file. If the province doesn't exist in the regular provinces.csv file, check the "fixed" variant created by the game in user directory.
+  - The province entry doesn't end with the Windows-style CRLF line ending. If every single province continent is broken, this is a sign that the line break is improper in the file (The Unix LF format is a common cause, as certain programs will change it in .csv files). The exact process of conversion to CRLF depends on the text editor. For example: in Visual Studio Code, this is changed with the bottom bar; in Notepad++, this is changed with the "EOL conversion" in the Edit menu; in Sublime Text, this is changed with the "Line endings" in the View menu.
+- "Bitmap and province definition disagree on whether or not province 12345 is coastal. Bitmap adjacency result will be prefered. ": This error has these common causes:
+  - Exactly what the error states: the province is a coastal land province yet it's marked as non-coastal within `/Hearts of Iron IV/map/definition.csv` or vise-versa. Adjust the province definition accordingly.
+  - There's a missing province ID somewhere earlier in the file, which offsets the province definitions from their intended colours later on in the file. This is typically the case if there is a large quantity of such errors and the province definition matches up with the coastal status. A broken-looking terrain map mode can also be an indicator of this issue. This can be checked by comparing the difference between the province ID and the line number where it is defined: if the definition for the province 0 exists, the line number and the province ID must have a difference of 1.
+- "Province X has no pixels in provinces.bmp": There are two common causes for the error, depending on whether there are any pixels with that colour in the bitmap, which can be checked using a colour select tool within an image editor.
+  - The colour within the province's definition has no pixels in the provinces.bmp. This may be a sign that the wrong colour has been used for the province or that the entry remains while the province has been erased. Ensure that there are no new provinces in the "fixed" definition generated by the game that may be intended to be the pixelless province; otherwise remove the province definition, with one another province definition to fill the gap since there can be no province ID gaps.
+  - There are several provinces with the same colour on the bitmap. If this is the case, the game will assign each pixel of the colour to only one of the provinces, leading the other with no pixels. If this is the case, change the colour of the second province if they're intended to be separate, otherwise remove one of the definitions while still making sure to have one another province definition to fill the gap. This may commonly, though not necessary, occur together with a TOO LARGE BOX error for the other province.
+
+<!-- kit:begin id="map-definition-facts" at="section:Provinces" -->
+**Kit correction** The line ending advice is not a general rule in 1.19.3. Vanilla `map/definition.csv` has LF-only line endings (13413 line feeds, no carriage return), and so do `adjacencies.csv`, `railways.txt` and `supply_nodes.txt`. The game loads these, so CRLF is not required for them. The "has no continent" error for every province has some other cause; the wiki's CRLF explanation covers at most files saved by some editors. [vanilla-confirmed 1.19.3] `map/definition.csv`, `map/adjacencies.csv`, `map/railways.txt`, `map/supply_nodes.txt`
+
+**Kit addition** What vanilla `definition.csv` contains. All rows: [vanilla-confirmed 1.19.3] `map/definition.csv`.
+
+- 13414 rows, ids 0 to 13413 with no gap. Row 0 is `0;0;0;0;land;false;unknown;0`. There is no header row, no BOM and no final newline.
+- Types: 10155 `land` (including row 0), 3133 `sea`, 126 `lake`. Every sea province has terrain `ocean`, every lake has `lakes`, and `unknown` is used only by row 0.
+- Land terrain counts: plains 3031, forest 2364, mountain 1708, hills 1352, desert 815, jungle 477, urban 265, marsh 142.
+- Continents: 1 Europe 3321, 2 North America 1157, 3 South America 558, 4 Australia 376, 5 Africa 743, 6 Asia 3560, 7 Middle East 489; 3133 sea provinces have 0 and so do 76 of the 126 lakes (the other 50 lakes have a continent), which agrees with the wiki ("lakes may be kept at 0").
+- The 5th field `true` / `false` is the coastal flag, written as in the wiki's example.
+
+The exe still contains these map error texts (strings only, not run): "Map invalid X crossing. Please fix pixels at coords:", "has TOO LARGE BOX. Perhaps pixels are spread around the world in provinces.bmp", "has only", "prov %d has no continent", "Bitmap and province definition disagree on whether or not province", "has no pixels in provinces.bmp", and "We do not support bitdepth at". They match the list above. For the corrected copy of the table the exe holds the string `.fixed.csv` (next to `.cache` and `lake`) and no `definition.csv.fixed`, so the file name given above may be stale. [unverified] Exe strings only (`hoi4.exe`).
+<!-- kit:end id="map-definition-facts" -->
+
+### Continents <a id="Continents"></a>
+
+Continents are defined within the `/Hearts of Iron IV/map/continent.txt` file within the `continents = { ... }` table. The continents have several uses in-game:
+
+- Used for a [state-scoped trigger](<triggers.md>) checking the continent.
+- Used for assigning [AI areas](<ai-modding.md#AI_areas>) for a variety of AI strategies.
+- Used for assigning a [set of randomly-generated portraits](<portrait-modding.md>) to a country if there is not a country-specific one defined.
+
+The continents block is a simple list of continents. The IDs are assigned in the order defined.
+
+All land provinces must belong to a continent to avoid errors. The continents are assigned in `/Hearts of Iron IV/map/definition.csv`, also possible to apply via the Database menu in nudger. Continents do not need to follow state borders.
+These continents exist in base game:
+
+| ID | Internal name | Localised name | Notes |
+| --- | --- | --- | --- |
+| 1 | europe | Europe | Includes Cyprus. The border between Europe and Asia runs in the Ural mountains, cutting states such as Kalmykia and Archangelsk in half. |
+| 2 | north_america | North America | Erroneously includes 2 provinces in Albania's North Epirus. |
+| 3 | south_america | South America | This also includes Central America (up to Guatemala/Belize, including these) and the Caribbean. |
+| 4 | australia | Australia | This *only* includes the Australian mainland, New Zealand, as well as the islands and archipelagos of Papua, Tasmania, Bismarck, Solomon Islands, and French Polynesia. The rest of the Pacific islands are Asian. |
+| 5 | africa | Africa | The Suez canal is considered the border: the entire state of Sinai is in the Middle East. |
+| 6 | asia | Asia | The border with the Middle East runs cutting the states of Herat and Baluchistan in half, while others are almost entirely contained in one or the other. |
+| 7 | middle_east | Middle East | The border with Europe in Caucasus Mountains cuts Abkhazia, Kabardino-Balkaria, North Ossetia, Azerbaijan, and Istanbul in half. The rest are entirely contained within one or the other. |
+
+<!-- kit:begin id="map-continent-note" at="section:Continents" -->
+**Kit note** `map/continent.txt` in 1.19.3 has exactly the seven names in the table below, in that order (`europe`, `north_america`, `south_america`, `australia`, `africa`, `asia`, `middle_east`); ids 1 to 7 follow the order. [vanilla-confirmed 1.19.3] `map/continent.txt`
+<!-- kit:end id="map-continent-note" -->
+
+## Terrain <a id="Terrain"></a>
+
+There are two primary types of terrain in the game: graphical and provincial. Both terrain types are defined within `/Hearts of Iron IV/common/terrain/*.txt` files.
+Provincial terrain is assigned within `/Hearts of Iron IV/map/definition.csv` to each province for land provinces and within the [strategic regions](#Strategic_regions) for sea provinces. This does not change the graphical appearance in any way (aside from the 'simple terrain' map mode), instead, this assigns modifiers to the province and details about land or naval combat.
+Graphical terrain is assigned within `/Hearts of Iron IV/map/terrain.bmp` to the map itself. This file is a 8-bit indexed image with the same dimensions as the provinces bitmap. This is purely the visual appearance of the map and doesn't change it in any actual way. However, the database section in the nudger has a setting to auto-generate the provincial terrain based off the graphical terrain.
+
+Provided are tables of base game terrain types.
+Since the game decides the terrain based off the [colourmap IDs](#BMP_format), the colours in the graphical terrain can be changed to anything as long as the colourmap ID (specified in the ID column) is the same and the file will be treated no different, so the colours here are merely the ones that the base game uses. 'Terrain type' in the graphical terrain table refers to the nudger-generated provincial terrain type. Appearance in the graphical terrain table is the specified segment of the [atlas file](#Graphical_terrain) set to full opacity: in practice, the atlas file has transparency so that some parts of the terrain are more visible than others.
+
+**ID**
+
+**Colour**
+
+**Appearance**
+
+**Terrain type**
+
+**Notes**
+
+0
+(86, 124, 27)
+![Atlas terrain 1.png](media/map-modding_67296116c0__img7.png)
+plains
+1
+(0, 86, 6)
+![Atlas terrain 4.png](media/map-modding_67296116c0__img8.png)
+forest
+Typically used for the dense forests.
+2
+(112, 74, 31)
+![Atlas terrain 3.png](media/map-modding_67296116c0__img9.png)
+hills
+3
+(206, 169, 99)
+![Atlas terrain 9.png](media/map-modding_67296116c0__img10.png)
+desert
+4
+(6, 200, 11)
+![Atlas terrain 5.png](media/map-modding_67296116c0__img11.png)
+forest
+Typically used for the sparse forests.
+5
+(255, 0, 24)
+![Atlas terrain 0.png](media/map-modding_67296116c0__img12.png)
+plains
+Typically used for farmland.
+6
+(134, 84, 30)
+![Atlas terrain 11.png](media/map-modding_67296116c0__img13.png)
+mountain
+7
+(252, 255, 0)
+![Atlas terrain 12.png](media/map-modding_67296116c0__img14.png)
+desert
+8
+(73, 59, 15)
+![Atlas terrain 14.png](media/map-modding_67296116c0__img15.png)
+desert
+9
+(75, 147, 174)
+![Atlas terrain 6.png](media/map-modding_67296116c0__img16.png)
+marsh
+10
+(174, 0, 255)
+![Atlas terrain 13.png](media/map-modding_67296116c0__img17.png)
+mountain
+11
+(92, 83. 76)
+![Atlas terrain 11.png](media/map-modding_67296116c0__img13.png)
+mountain
+12
+(255, 0, 240)
+![Atlas terrain 8.png](media/map-modding_67296116c0__img19.png)
+desert
+13
+(240, 255, 0)
+![Atlas terrain 10.png](media/map-modding_67296116c0__img20.png)
+urban
+Automatically spawns city models.
+14
+(55, 90, 220)
+lakes
+Never used in-game, seems to refer to an invalid texture. Instead, the ocean terrain is used for lakes.
+15
+(8, 31, 130)
+![Atlas terrain 9.png](media/map-modding_67296116c0__img10.png)
+ocean
+16
+(255, 255, 255)
+![Atlas terrain 11.png](media/map-modding_67296116c0__img13.png)
+mountain
+Is permamently covered in snow, unlike the other graphical terrain using the same appearance
+17
+(132, 255, 0)
+![Atlas terrain 2.png](media/map-modding_67296116c0__img23.png)
+hills
+18
+(255, 126, 0)
+![Atlas terrain 7.png](media/map-modding_67296116c0__img24.png)
+mountain
+Never used in base game.
+19
+(114, 137, 105)
+![Atlas terrain 0.png](media/map-modding_67296116c0__img12.png)
+plains
+Is permamently covered in snow, unlike the other graphical terrain using the same appearance
+20
+(58, 131, 82)
+![Atlas terrain 7.png](media/map-modding_67296116c0__img24.png)
+mountain
+21
+(255, 0, 127)
+![Atlas terrain 4.png](media/map-modding_67296116c0__img8.png)
+jungle
+22
+(0, 82, 82)
+![Atlas terrain 5.png](media/map-modding_67296116c0__img11.png)
+jungle
+Never used in base game.
+27
+(243, 199, 147)
+![Atlas terrain 7.png](media/map-modding_67296116c0__img24.png)
+mountain
+31
+(27, 27, 27)
+![Atlas terrain 15.png](media/map-modding_67296116c0__img30.png)
+mountain
+Never used in base game.
+
+**Internal name**
+
+**Localised name**
+
+**Terrain type**
+
+**Notes**
+
+unknown
+Unknown
+land
+Default terrain for new provinces.
+forest
+Forest
+land
+84 optimal combat width, -15% division attack.
+hills
+Hills
+land
+80 optimal combat width, -25% division attack.
+mountain
+Mountain
+land
+75 optimal combat width, -50% division attack.
+plains
+Plains
+land
+90 optimal combat width
+urban
+Urban
+land
+96 optimal combat width, -30% division attack.
+jungle
+Jungle
+land
+84 optimal combat width, -30% division attack.
+marsh
+Marsh
+land
+78 optimal combat width, -40% division attack.
+desert
+Desert
+land
+90 optimal combat width
+ocean
+Ocean
+sea
+Default terrain for sea provinces.
+lakes
+Lakes
+sea
+Default terrain for lake provinces.
+water_fjords
+Fjords and Archipelagos
+naval
+Makes battlecruisers, battleships, heavy cruisers, and carriers less viable (-20% attack, defence, and movement), makes the navy harder to detect (-20% visibility), and removes 15% from positioning.
+water_shallow_sea
+Shallow Sea
+naval
+Makes submarines easier to detect (+100% visibility) and removes 5% from positioning.
+water_deep_ocean
+Deep Oceans
+naval
+Makes destroyers have 20% less of attack, movement, and defence; light cruisers have 10% less of attack, movement, and defence; makes the submarines harder to detect (-15% visibility) but slower by 25%. The chance to hit a naval mine is halved.
+
+<!-- kit:begin id="map-terrain-graphical-corrections" at="section:Terrain" -->
+**Kit correction** The graphical terrain table above has errors against the 1.19.3 palette of `map/terrain.bmp` and its use. All rows: [vanilla-confirmed 1.19.3] `map/terrain.bmp` (palette and pixel counts), `common/terrain/00_terrain.txt`.
+
+- The colours of ids 27 and 31 are swapped: palette index 27 is `(27, 27, 27)` and index 31 is `(243, 199, 147)`. The rest of those two rows (atlas tile 7 for 27, tile 15 for 31, type `mountain`) matches the terrain file.
+- Id 31 is used: 2589 pixels in vanilla. Id 27 is used by 18 pixels. Only ids 14 (`lakes`, texture 255) and 18 are unused in the vanilla bitmap.
+- Id 22 is used, by 208146 pixels (type `jungle`, atlas tile 5), so "never used in base game" is wrong for it; id 21 uses 30662 pixels.
+- A handful of stray pixels use ids outside the table (48, 61, 63, 64, 74, 77 and 80).
+- Id 15 is the sea (7.2 million pixels). Ids 16 and 19 are the permanent-snow variants (`perm_snow = yes`).
+<!-- kit:end id="map-terrain-graphical-corrections" -->
+
+### Provincial terrain <a id="Provincial_terrain"></a>
+
+Provincial terrain types are defined within `/Hearts of Iron IV/common/terrain/*.txt` files in the `categories = { ... }` block. Each terrain is a code block, and the name of the block gets taken as the terrain's name, such as this creating terrains my_terrain_1 and my_terrain_2.
+
+```text
+categories = {
+    my_terrain_1 = {
+        <...>
+    }
+    my_terrain_2 = {
+        <...>
+    }
+}
+```
+
+The following arguments go into terrain:
+
+- `color = { 100 120 140 }` assigns a colour to the terrain in the 'Simplified terrain' map mode. This is a RGB value, where each one goes on the scale from 0 to 255.
+- `sound_type = forest` assigns the ambient sound played by the terrain. This appears to be unused.
+- `movement_cost = 1.0` assigns the move speed for this terrain in particular. A higher value means that divisions or ships will move slower.
+- `units = { ... }` assigns unit-scoped modifiers that would apply on every land division or ship within this province within battle, such as `attack = 0.1` or `defence = -0.1`.
+- `my_subunit = { ... }` serves to make these apply to specific sub-units, with `units = { ... }` within being for combat and the rest for outside. For example,
+
+```text
+carrier = {
+    units = {
+        attack = -0.2
+    }
+    navy_fuel_consumption_factor = 0.2
+}
+```
+
+- Additionally, the terrain serves as a modifier block, allowing any provincial [modifier](<modifiers.md>) to be used within. These include many combat-related and state-scoped modifiers.
+- `is_water = yes` if set, will mark this as water terrain, making it only possible to use for seas and lakes. Additionally, `naval_terrain = yes` would be needed to mark it as a naval terrain which can be used in strategic regions.
+
+The following arguments are **only for land** terrain:
+
+- `combat_width = 78` assigns the base combat width. Up to this many units would be able to participate in the battle without penalties.
+- `combat_support_width = 24` assigns the combat width *on top* of the combat_width. After combat_width is exceeded, combat_support_width more worth of troops can still engage in combat, but with penalties.
+- `supply_flow_penalty_factor = 0.2` assigns a penalty to supply flow through provinces with this terrain.
+- `match_value = 8` assigns a terrain value for this province. This is primarily used for the [state_and_terrain_strategic_value](<triggers.md>) trigger/variable and to assign costs to the peace conference.
+- `ai_terrain_importance_factor = 8.0` assigns a strategic importance value for AI on this terrain. A higher value means that AI would recognise this as a defensible province.
+- `buildings_max_level = { bunker = 4 }` modifies the maximum level of province level buildings.
+
+Some common [modifiers](<modifiers.md>) to use include the following:
+
+- `attrition = 0.1` sets the base attrition for the land province.
+- `enemy_army_bonus_air_superiority_factor = -0.1` modifies the bonus that would be given to the attacker from air superiority.
+- `sickness_chance = 1.0` makes combat on this province result in a possibility of the army leader becoming sick.
+- `positioning = 0.1` modifies the navy positioning within this sea province.
+- `navy_visibility = -0.2` modifies the visibility of navies within this sea province.
+
+[Localisation](<localisation.md>) can be added with using the terrain's ID as the localisation key:
+
+```text
+ my_terrain_1: "My terrain"
+ my_terrain_1_desc: ""
+```
+
+For land provinces, there are 2 sprites: regular (with GFX_terrain_ prepended before the terrain's name) and winter (Additionally with _winter appended in the end). The winter sprite appears when the province is covered in snow, while the regular one appears regularly. These would be the following for `my_terrain_1`:
+
+```text
+spriteType = {
+    name = GFX_terrain_my_terrain_1
+    textureFile = gfx/interface/terrains/terrain_my_terrain_1.dds
+}
+spriteType = {
+    name = GFX_terrain_my_terrain_1_winter
+    textureFile = gfx/interface/terrains/terrain_my_terrain_1_winter.dds
+}
+```
+
+For naval terrain, there are 10 sprites: regular, rain, storm, snow, and snowstorm for both day and night.
+
+**Examples of sprite definitions for a naval terrain named my_naval_terrain_1**
+
+```text
+
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_day
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_day_rain
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_rain.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_day_storm
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_storm.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_day_snow
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_snow.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_day_snow_storm
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_day_snow_storm.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_night
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_night_rain
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_rain.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_night_storm
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_storm.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_night_snow
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_snow.dds
+}
+spriteType = {
+    name = GFX_terrain_my_naval_terrain_1_night_snow_storm
+    textureFile = gfx/interface/terrains/terrain_my_naval_terrain_1_night_snow_storm.dds
+}
+```
+
+<!-- kit:begin id="map-terrain-values" at="section:Provincial_terrain" -->
+**Kit correction** The provincial terrain values in the table above (the "optimal combat width" notes and the shallow sea and deep ocean notes) do not match the terrain file of 1.19.3. Vanilla sets `combat_width` and `combat_support_width` directly in each category. All rows: [vanilla-confirmed 1.19.3] `common/terrain/00_terrain.txt`.
+
+| Terrain | `movement_cost` | `combat_width` / `combat_support_width` | `units` attack | `attrition` | `buildings_max_level` bunker / coastal | `supply_flow_penalty_factor` | `truck_attrition_factor` |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `forest` | 1.5 | 60 / 30 | -0.15 | | 4 / 6 | 0.08 | 0.2 |
+| `hills` | 1.5 | 70 / 35 | -0.25 | | 5 / 6 | 0.1 | 0.2 |
+| `mountain` | 2.0 | 50 / 25 | -0.5 | 0.3 | 4 / 6 | 0.12 | 1.0 |
+| `plains` | 1.0 | 70 / 35 | | | 5 / 6 | | |
+| `urban` | 1.2 | 80 / 40 | -0.3 | | 5 / 6 | -0.2 | |
+| `jungle` | 1.5 | 60 / 30 | -0.3 | 0.2 | 3 / 6 | 0.16 | 3.0 |
+| `marsh` | 2.0 | 50 / 25 | -0.4 | 0.35 | 3 / 6 | 0.16 | 4.0 |
+| `desert` | 1.05 | 70 / 35 | | 0.15 | 4 / 6 | 0.14 | 0.5 |
+
+`sickness_chance = 1.0` is set on `jungle`, `marsh` and `desert`. `ai_terrain_importance_factor` ranges from 0.1 (`plains`) to 10.0 (`mountain`) and `match_value` from 0.5 to 10. `enemy_army_bonus_air_superiority_factor` is set on forest (-0.1), hills (-0.05), mountain (-0.1), urban (-0.5) and jungle (-0.25). [vanilla-confirmed 1.19.3] `common/terrain/00_terrain.txt`
+
+Naval terrains (`naval_terrain = yes`, `is_water = yes`): `ocean` has `naval_mine_hit_chance = -0.75` and `minimum_seazone_dominance = 250`. `water_fjords` gives -0.2 attack, movement and defence to battle cruisers, battleships, heavy cruisers and carriers (+0.2 fuel use), `navy_visibility = -0.2`, `positioning = -0.15`, dominance 100. `water_shallow_sea` has `submarine = { navy_visibility = 0.33 }` (not +100%), `positioning = -0.05`, `naval_mine_hit_chance = -0.5`, dominance 100. `water_deep_ocean` gives -0.2 to destroyers and -0.1 to light cruisers (attack, movement, defence), submarines -0.15 visibility and -0.25 movement, `naval_mine_hit_chance = -0.95` (not "halved") and dominance 250. `lakes` has no `naval_terrain`. [vanilla-confirmed 1.19.3] `common/terrain/00_terrain.txt`. Keys the page does not list: `naval_mine_hit_chance`, `minimum_seazone_dominance`, `truck_attrition_factor`. [docs] `documentation/modifiers_documentation.md` has `naval_mine_hit_chance` and `truck_attrition_factor`; `minimum_seazone_dominance` is in no documentation file.
+<!-- kit:end id="map-terrain-values" -->
+
+### Graphical terrain <a id="Graphical_terrain"></a>
+
+Graphical terrain is defined within the `/Hearts of Iron IV/common/terrain/*.txt` files within the `terrain = { ... }` block. Each graphical terrain type is a separate block within that overarching block, with the name of the block being irrelevant, with overlaps possible. Example definitions include:
+
+```text
+terrain = {
+    my_terrain = {
+        type = urban
+        color = { 23 }
+        texture = 1
+        spawn_city = yes
+    }
+    my_terrain = { type = plains color = { 24 } texture = 2 }
+}
+```
+
+In here, `type = urban` tells the [provincial terrain](#Provincial_terrain) type that the nudger would assign to the graphical terrain of this type when auto-generating province terrains, `color = { ... }` is a list of [colourmap indices](#BMP_format) that get used for the graphical texture, and `texture = 1` assigns the atlas definition, beginning with 0.
+Optional arguments are `spawn_city = yes`, which automatically spawns city models, and `perm_snow = yes`, which makes the specified regions be covered in snow permamently.
+
+The atlas files are `/Hearts of Iron IV/map/terrain/atlas0.dds` and `/Hearts of Iron IV/map/terrain/atlas_normal0.dds`. These must be squares. By default, each is a map of tiles in a 4x4[5], where each tile is 512x512 pixels large.[6]
+The tiles are arranged in the left-to-right then up-to-down order starting from 0, as in the attached table.
+
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+
+This order means that, for example, `texture = 11` within a graphical definition will result in the rightmost lower-middle tile being chosed assuming the default 4x4 arrangement.
+atlas0 is the regular texture map, for the textures that will get assigned on the terrain, while atlas_normal0 is a normal map, which gets used to assign vectors perpendicular to each point on the texture which get used when shading the map.
+
+The files atlas1 and atlas2, as well as atlas_normal1 and atlas_normal2 serve for farther zoom levels: the game uses lower-quality textures when the camera is more zoomed-out or with different graphics settings to save on performance. atlas1 has each of its dimensions at half-size of atlas0, and atlas2 has them at the quarter-size of atlas0.
+
+For the game to read the file, mipmaps must be generated and DXT5 must be the compression algorithm used.
+
+<!-- kit:begin id="map-graphical-terrain-dds" at="section:Graphical_terrain" -->
+**Kit note** The `terrain = { }` block of `common/terrain/00_terrain.txt` has 25 entries in 1.19.3. Names repeat (three blocks are called `desert`, two `jungle_blend_18`), which agrees with the wiki ("the name is irrelevant"). Vanilla uses `spawn_city = yes` once (id 13, `urban`) and `perm_snow = yes` twice (ids 16 and 19). Lakes use `texture = 255`. [vanilla-confirmed 1.19.3] `common/terrain/00_terrain.txt`
+
+`atlas0.dds` and `atlas_normal0.dds` are 2048 x 2048 DXT5 with 10 mip levels, `atlas1.dds` is 1024 x 1024 and `atlas2.dds` 512 x 512, all DXT5. That is the 4 x 4 grid of 512 x 512 tiles the wiki describes. [vanilla-confirmed 1.19.3] DDS headers of `map/terrain/atlas*.dds`
+<!-- kit:end id="map-graphical-terrain-dds" -->
+
+## Height map <a id="Height_map"></a>
+
+`/Hearts of Iron IV/map/heightmap.bmp` is used in order to determine the height of a given position on the map. A minimum value (or pure black) translates to a height of 0 by the Y axis, while the maximum value (or pure white) translates to a height of 25.5 by the Y axis.
+The sea level is set at the height of 9.5 by default[3], and so anything below the value of 95 (on the scale from 0 to 255) will be shown as underwater, while everything above 95 will be shown as above water. Water is always at the constant height.
+
+It should be preferred to create smooth transitions in pixel's values in order to create more smooth-looking transitions. In addition to the heightmap, the [Normal map](#Normal_map) also contributes to smoothness.
+
+Heightmap has the same image dimensions as the provinces bitmap and is saved as a [8-bit greyscale/indexed greyscale](#BMP_format) image.
+
+## Normal map <a id="Normal_map"></a>
+
+`/Hearts of Iron IV/map/world_normal.bmp` is a a normal map saved in the 24-bit RGB format, deciding on the exact slope of each pixel within the 3D rendering of the map. This is used in the lighting calculations.
+The red channel decides on the X value of the vector from -1 to 1: a value of 0 is pointing to the left (West) as much as possible while a value of 255 is pointing to the right (East) as much as possible.
+The green channel decides on the Y value of the vector from -1 to 1: a value of 0 is pointing to the bottom (South) as much as possible, while a value of 255 is pointing to the top (North) as much as possible.
+The blue channel decides on the Z value of the vector from 0 to -1: a value of 128 corresponds to 0, meaning it is not pointing at the viewer but rather perpendicularly depending on the X and Y values, while a value of 255 corresponds to -1, which means it's pointing at the viewer as much as possible.
+
+There are several tools that can be used in order to generate a normal map from a heightmap. Some include:
+
+- NVIDIA's Texture Tools Exporter for Photoshop
+  Open the heightmap and change the image mode to RGB, save a copy menu -> select the NVIDIA exporter's DDS format. In Image Type, select "Normal Map : Tangent Space". In "Height Source", select either "Max RGB" or "Average RGB" and in "Height Generation", check "Wrap" and "Invert Y". The "Filter Type" can be changed at will, look at the preview to see the results. "Scale" is the most important factor that will change the general look of the map, as this controls the intensity of the Normal Map. The larger the Scale, the "bumpier" the map becomes. At lower levels, this makes the generated map empty. Set "Alpha Field" to "Unchanged" and check "Normalize". Then open the saved DDS file and export to the BMP format.
+- NVIDIA's Texture Tools standalone app
+  Works the same way as the screen in the Photoshop plugin.
+- Within older versions of Photoshop CC, Filter -> 3D -> Generate Normal Map.
+  The 3D features of Photoshop were discontinued in 2021 and fully removed in 2024. The last fully working version was 2021 v22.2.
+- Within GIMP, using the normal map plugin
+  Download the plugin, open the heightmap, change image mode to RGB, Filter -> Map -> Normal, and invert the Y axis.
+
+## Rivers <a id="Rivers"></a>
+
+![River Map Colour Scheme.png](media/map-modding_67296116c0__img31.png)
+
+![Example rivers](media/map-modding_7c98f708b3__img28.png)An example of how rivers will look like in the bitmap. Each of the pixels has been resized to a 50x50 pixels large square and the rivers flow from right to left.
+
+*An example of how rivers will look like in the bitmap. Each of the pixels has been resized to a 50x50 pixels large square and the rivers flow from right to left.*
+
+`/Hearts of Iron IV/map/rivers.bmp` is an 8-bit indexed bitmap file that decides the positioning of rivers. Rivers *must* be exactly one pixel thick and only go in orthogonal directions: pixels do not connect diagonally. As the river counts as a level 1 railway[7], particularly long rivers can cause the game to slow down or run unstably. The river map is a 8-bit indexed bitmap with the same dimensions as the provinces bitmap.
+
+To correctly render, each river must have exactly one, by default green, start marker. In this case a river is taken as a single contiguous block of river pixels: those connected with red flow-in or yellow flow-out sources count as the same river as the main flow. **Only the 'main branch' of the river should have the green source pixel, any branch connected to it via the red flow-in shouldn't have it.**
+
+Colours used in **rivers.bmp**
+
+| Index | Colour | Function |
+| --- | --- | --- |
+| 0 | (0, 255, 0) | The source of a river |
+| 1 | (255, 0, 0) | Flow-in source. Used to join multiple 'source' paths into one river. |
+| 2 | (255, 252, 0) | Flow-out source. Used to branch outwards from one river. |
+| 3 | (0, 225, 255) | River with narrowest texture. |
+| 4 | (0, 200, 255) | River with narrow texture |
+| 5 | (0, 150, 255) |  |
+| 6 | (0, 100, 255) | River with wide texture. |
+| 7 | (0, 0, 255) |  |
+| 8 | (0, 0, 225) |  |
+| 9 | (0, 0, 200) |  |
+| 10 | (0, 0, 150) |  |
+| 11 | (0, 0, 100) | River with widest texture. |
+
+By default, indexes 0[8] up to including 6[9] are treated as small rivers for game mechanics, indexes up to including 11[10] as large rivers. Pixels with any other index within the file do not get read in-game and serve as 'comments', usually used to signify the land province outlines to make it easier to place rivers.
+
+If the path connecting the centres of two provinces overlaps at least one river pixel, it is considered a river crossing. If it intersects multiple river pixels of different types, the crossing type is implementation defined. To avoid player confusion, province paths should either clearly cut or stay clear of a river.
+
+A possible error to encounter is `MAP_ERROR: Palette in rivers.bmp is probably not correct`. This can *entirely be ignored*: the rivers.bmp file will be loaded regardless and, unlike other map errors, this does not prevent the game from loading without debug mode.
+This error is caused by GIMP: editing in Photoshop does not produce this. By default, [the DIB header](#BMP_format) is set to say that the colourmap has 0 colours despite the fact that the colourmap still contains 256 colours. This is to ensure that the game does not spend time reading colours within the BMP file and instead skips straight to the bitmap itself. GIMP instead sets the DIB header to say that there are 256 colours in the palette, which is unexpected by the game. This cannot be fixed within GIMP itself, however, assuming that the rivers bitmap is otherwise correct (Saved in 8-bit indexed mode with BITMAPINFOHEADER) this can also be fixed by opening the rivers bitmap within a hex editor and changing two values: addresses `00 00 00 2F` and `00 00 00 33` should both be `00` instead of `01` as set by GIMP.
+
+<!-- kit:begin id="map-rivers-defines" at="section:Rivers" -->
+**Kit note** The palette in the table above matches vanilla `rivers.bmp` exactly (indices 0 to 11), and its DIB header says 0 colours, as the page says. Pixel indices 254 and 255 are the "comment" colours (7.5 and 4.0 million pixels); indices 5 and 8 are not used in vanilla. [vanilla-confirmed 1.19.3] `map/rivers.bmp`
+
+The defines behind it, all [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`: `RIVER_SMALL_START_INDEX = 0`, `RIVER_SMALL_STOP_INDEX = 6`, `RIVER_LARGE_STOP_INDEX = 11` (matching "0 to 6 small, up to 11 large"), `RIVER_CROSSING_PENALTY = -0.3` and `RIVER_CROSSING_PENALTY_LARGE = -0.6`, `RIVER_CROSSING_SPEED_PENALTY = -0.25` and `..._LARGE = -0.5`, `NSupply.RIVER_RAILWAY_LEVEL = 1` and `NSupply.SUPPLY_FLOW_PENALTY_CROSSING_RIVERS = 0.2`.
+
+The exe also holds "MAP_ERROR: Bitdepth of rivers.bmp does not equal 8" and "MAP_ERROR: Size of the world map [...] is not equal to the size of rivers.bmp". [unverified] Exe strings only.
+<!-- kit:end id="map-rivers-defines" -->
+
+## Trees <a id="Trees"></a>
+
+*See also: [Entity modding](<entity-modding.md>)*
+
+`/Hearts of Iron IV/map/trees.bmp` is a 8-bit indexed bitmap that decides on the position of tree models on the map. The resolution of the map decides on the density of trees, by default each side is `{\frac {75}{256}}` of the provinces bitmap.
+
+The map decides on the positions of pdxmesh objects. A sprite with the ID of 14 will cause the pdxmesh with the name of `mapobject_14` to spawn on that location, for example:
+
+```text
+pdxmesh = {
+    name = "mapobject_14"
+    file = "gfx/models/mapitems/trees/my_tree.mesh"
+    scale = 0.5
+}
+```
+
+This definition would be within a `/Hearts of Iron IV/gfx/entities/*.gfx` file within the `objectTypes = { ... }` block. By default, these tree types exist within the base game:
+
+List of trees:
+
+| colourmap ID | Colour | Tree Type/Density |
+| --- | --- | --- |
+| 2 | (30, 139, 109) | Sparse Palm |
+| 3 | (18, 100, 78) | Dense Palm |
+| 5 | (76, 156, 51) | Sparse Forest |
+| 6 | (47, 120, 24) | Dense Forest |
+| 11 | (255, 255, 0) | Impassable Jungle |
+| 28 | (150, 0, 255) | Sparse Jungle |
+| 29 | (88, 0, 138) | Dense Jungle |
+
+<!-- kit:begin id="map-trees-facts" at="section:Trees" -->
+**Kit note** The palette ids and colours in the table above match vanilla `trees.bmp`. Vanilla pixels use only 0 (empty) and the ids 2, 3, 5, 6, 11, 28 and 29. The models are `pdxmesh` entries named `mapobject_<id>` in `gfx/entities/trees.gfx` (7 entries: 2, 3, 5, 6, 11, 28, 29), for example `mapobject_5` with `file = "gfx/models/mapitems/trees/forest_dunge_blend.mesh"` and `scale = 1`. [vanilla-confirmed 1.19.3] `map/trees.bmp`, `gfx/entities/trees.gfx`
+
+`map/default.map` has a line `tree = { 3 4 7 10 }` ("which indices in trees.bmp palette should count as trees for automatic terrain assignment"). Those four ids are not the ids the vanilla bitmap uses, so do not derive the model ids from it. [vanilla-confirmed 1.19.3] `map/default.map`
+<!-- kit:end id="map-trees-facts" -->
+
+## Colour maps <a id="Colour_maps"></a>
+
+The colourmap files define the overall colour tint applied to the map. Without a colourmap file, all land will appear the same overall colour, regardless of terrain type. They should be saved in the .DDS format, using the 8.8.8.8 ARGB 32-bit profile with no mipmaps.
+
+<!-- kit:begin id="map-colourmap-formats" at="section:Colour_maps" -->
+**Kit correction** Only `colormap_rgb_cityemissivemask_a.dds` follows the "8.8.8.8 ARGB, 32-bit, no mipmaps" rule: it is 2816 x 1024, uncompressed 32-bit, one mip level. The water colour maps are DXT5: `colormap_water_0.dds` is 2816 x 1024, `_1` 1408 x 512 and `_2` 704 x 256, all without mip levels. [vanilla-confirmed 1.19.3] DDS headers of `map/terrain/colormap_*.dds`
+<!-- kit:end id="map-colourmap-formats" -->
+
+### Water <a id="Water"></a>
+
+`/Hearts of Iron IV/map/terrain/colormap_water_0.dds` is used to give tint to the *water*. Each of its dimensions is halved compared to the provinces bitmap. Similarly applies for the water colourmaps 1 and 2: they are the same but with the dimensions halved compared to the previous level. This is for performance reasons as to make the game use lower-quality textures when zoomed out or with different graphics settings.
+
+### RGB and city lights <a id="RGB_and_city_lights"></a>
+
+`/Hearts of Iron IV/map/terrain/colormap_rgb_cityemissivemask_a.dds` serves two purposes. The RGB channels define the default colouring of the map, which gets modified by terrain. When making changes to the terrain or height map, this colour map should be updated too to reflect the changes visually. The alpha channel is used for city lights at night: more opacity means stronger night lights. The file should use half of the vertical and horizontal resolution of the provinces bitmap.
+Editing this colourmap in particular would be much easier if the alpha channel should be separated from the RGB channels, as these serve different purposes. The process to do so depends on the image editor.
+
+- In GIMP it is done by adding a layer mask with the setting of "Transfer layer's alpha channel" selected, which'll allow editing the alpha channel by editing the mask and the RGB channels by editing the now non-transparent layer.
+- In Photoshop it is done by using the channels tab. The channel being edited is the one that is both selected and set to visible. To visualize the edits on each channel separately, one must be both selected and set to visible, and the other must be set to not visible. When opening the dds file with the NVIDIA plugin, the box "Load Alpha as Channel Instead of Transparency" must be checked.
+- **Paint.net cannot be used to edit this colourmap**, since it does not allow separate usage of the RGB and Alpha channels. The channels can't be visualized separately and the edits are applied to all channels at once, rather than allowing to edit each channel separately.
+
+## Buildings <a id="Buildings"></a>
+
+*See also: [Nudger § Buildings](<nudger.md#Buildings>)*
+
+Since the patch 1.15, there is only one primary file for buildings in the map folder: `/Hearts of Iron IV/map/buildings.txt`, which primarily decides the position of building models in each state. An entry in that file is defined as such (If unspecified, assume a number with up to 2 decimal digits):
+
+```text
+State ID (integer); building ID (string); X position; Y position; Z position; Rotation; Adjacent sea province (integer)
+```
+
+- State ID defines which state the building is located in. Even for provincial buildings, this is the ID of the state, not the province. Instead, provincial buildings have several entries per state, with the XYZ position being used by the game to know which province it's for.
+- Building ID defines which model is being located. While this includes each building, this also includes floating harbours as floating_harbor.
+- X, Y, and Z position represent the position on the map of the building model using the [coordinate system](#Coordinate_system).
+- Rotation is measured in radians. A rotation of 0 will result in the building model pointing in the same direction as the model is set, while positives will rotate it counter-clockwise and negatives will rotate it clockwise. A full rotation resulting in the same position as 0 is equal to the number π multiplied by 2, roughly 6.28.
+- Adjacent sea province is only necessary to define for naval bases and floating harbours, in order to let the game know from which sea province ships or convoys can access the land province where it is located. If the building type is not a naval base, it should be left at 0.
+
+It is preferable to generate the building models in the building section in the nudger, rather than filling it out manually. However, note that the game will crash if the currently-existing `/Hearts of Iron IV/map/buildings.txt` file is entirely empty. The content of the file doesn't matter for this, as long as it's not entirely empty.
+
+**If some naval base or floating harbour is missing a definition within this file, the game will crash** once any province with one would be evaluated by AI or tried to be used as a naval base. This represents as a crash with the [client_ping or hourly_ping last read file](<troubleshooting.md#Crash_data_log>) a few hours into the game, fixed by turning off AI. This is because the building definition is used not only for the model of the naval base, but also for assigning the sea province that the port goes out into. If there is no definition, the game fails at evaluating the spot where the navy would be placed, resulting in an infinite loop that eats the RAM and the CPU leading to a crash.
+
+<!-- kit:begin id="map-buildings-ids" at="section:Buildings" -->
+**Kit note** The second column of `map/buildings.txt` is a building id or, for a building that sets `spawn_point = X` in `common/buildings/`, the spawn point name `X`; the list of 22 ids and the per-building details are in [Building modding](<building-modding.md#Models>). In vanilla all 2362 `naval_base_spawn` rows and all 2334 `floating_harbor` rows have a sea province in the last column, and all 10154 `supply_node` rows have 0. The file has 66664 rows. [vanilla-confirmed 1.19.3] `map/buildings.txt`
+
+The exe prints ": map building location is not over the land ..." for a row whose position is not over a land province. [unverified] Exe string only.
+<!-- kit:end id="map-buildings-ids" -->
+
+## Unit model and victory point positions <a id="Unit_model_and_victory_point_positions"></a>
+
+*See also: [Nudger § Units](<nudger.md#Units>)*
+
+The `/Hearts of Iron IV/map/unitstacks.txt` file decides on the positions of unit models and victory points within each individual province. This is edited via the `Unit` menu in nudger.
+In particular, this decides the position of the victory point on the map if one is present within the province. Whether one is present, how it's called, and how much it's worth is decided within [state history files and localisation](<state-modding.md#History>).
+
+An entry in the file has the following formatting:
+
+```text
+Province ID; Type; X position; Y position; Z position; Rotation; Offset
+```
+
+- Province ID assigns to which province the model is aimed for.
+- Rotation is done in radians, 0 being the default state and positives rotating it counterclockwise.
+- The offset is used for the animation in order to make it so that the animations of units within provinces are not directly happening at the same time, but have a delay.
+- Type is an integer from 0 to 38 assigning a purpose.
+
+List of unitstacks types:
+
+| ID | Internal name | Notes |
+| --- | --- | --- |
+| 0 | Standstill |  |
+| 1 | Moving 0 | Different numbers represent different needed levels of rotation |
+| 2 | Moving 1 | Different numbers represent different needed levels of rotation |
+| 3 | Moving 2 | Different numbers represent different needed levels of rotation |
+| 4 | Moving 3 | Different numbers represent different needed levels of rotation |
+| 5 | Moving 4 | Different numbers represent different needed levels of rotation |
+| 6 | Moving 5 | Different numbers represent different needed levels of rotation |
+| 7 | Moving 6 | Different numbers represent different needed levels of rotation |
+| 8 | Moving 7 | Different numbers represent different needed levels of rotation |
+| 9 | Attacking |  |
+| 10 | Defending |  |
+| 11 | Disembarck 0 | Different numbers represent different needed levels of rotation |
+| 12 | Disembarck 1 | Different numbers represent different needed levels of rotation |
+| 13 | Disembarck 2 | Different numbers represent different needed levels of rotation |
+| 14 | Disembarck 3 | Different numbers represent different needed levels of rotation |
+| 15 | Disembarck 4 | Different numbers represent different needed levels of rotation |
+| 16 | Disembarck 5 | Different numbers represent different needed levels of rotation |
+| 17 | Disembarck 6 | Different numbers represent different needed levels of rotation |
+| 18 | Disembarck 7 | Different numbers represent different needed levels of rotation |
+| 19 | Ship in port |  |
+| 20 | Ship in port moving |  |
+| 21 | Standstill RG | RG stands for regrouping |
+| 22 | Moving 0 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 23 | Moving 1 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 24 | Moving 2 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 25 | Moving 3 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 26 | Moving 4 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 27 | Moving 5 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 28 | Moving 6 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 29 | Moving 7 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 30 | Disembarck 0 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 31 | Disembarck 1 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 32 | Disembarck 2 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 33 | Disembarck 3 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 34 | Disembarck 4 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 35 | Disembarck 5 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 36 | Disembarck 6 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 37 | Disembarck 7 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
+| 38 | Victory point |  |
+
+<!-- kit:begin id="map-unitstacks-facts" at="section:Unit_model_and_victory_point_positions" -->
+**Kit note** Vanilla `unitstacks.txt` has 265355 rows and uses all 39 types 0 to 38. Type 38 (victory point) has 13281 rows. The exe prints "map/unitstacks.txt: Invalid province id: ... at line:" for a bad province id. [vanilla-confirmed 1.19.3] `map/unitstacks.txt`. [unverified] for the exe string.
+<!-- kit:end id="map-unitstacks-facts" -->
+
+## Adjacencies <a id="Adjacencies"></a>
+
+The adjacencies file is `/Hearts of Iron IV/map/adjacencies.csv`. This decides the relationships between borders of provinces, allowing to create borders between non-directly adjacent provinces (such as strait crossings), block the border between two directly adjacent provinces (making it impassable), or otherwise set up adjacency rules that make crossing the border limited (such as the Gibraltar strait).
+
+The following format is used for adjacencies:
+
+```text
+Start province ID;End province ID;Adjacency type;Through province ID;Starting X position;Starting Y position;Ending X position;Ending Y position;Adjacency rule;Comment
+```
+
+For example, these are valid adjacencies:
+
+```text
+6891;3838;sea;5579;-1;-1;-1;-1;;Sardinia-Corsica
+10910;12807;impassable;-1;-1;-1;-1;-1;;Himalayas
+# Comment
+3314;6336;sea;2752;2885;1578;2890;1581;;Afsluitdijk
+```
+
+There are 2 primary types of an adjacency: sea and impassable. 'Impassable' fully blocks the connection between two provinces, while 'sea' creates a conditional border between the provinces (using an adjacency rule or otherwise), not requiring these provinces to have a direct border. If a type is not specified, then it assumes to be sea. The sea connection must be between two provinces of the same type: sea or land. If the connection is between two land provinces, they can't directly border each other.
+Since the impassable type can't go 'through' a province, does not have a start or ending positions for graphics, and can't have an adjacency rule set, these should remain unset. This is done by leaving the adjacency rule field completely blank and having the rest be left as -1.
+'Through' marks a province that serves as a gateway for the adjacency for the sea type. If the two provinces do not directly border each other, it is *mandatory* to define a Through province. Enemy control of that province (such as an enemy ship in the sea province between the two land provinces) will prevent the adjacency from being possible to use. Additionally, it is possible to define an [adjacency rule](#Adjacency_rules) in this case to apply to the provinces.
+
+X and Y positions decide the start and end of the red line created with a strait crossing between two land provinces. These use [the X and Z coordinates in the 3D coordinate system](#Coordinate_system). If set to -1, then the position will be calculated automatically, as the middles of the starting and ending provinces.
+
+The last line of the file must be `-1;-1;-1;-1;-1;-1;-1;-1;-1`. This is used as an indicator that the file should stop being read, and any adjacency entries later in the file would get ignored. Even if the file is otherwise empty, this line should still be present to avoid hangup on loading.
+
+<!-- kit:begin id="map-adjacency-facts" at="section:Adjacencies" -->
+**Kit correction** The real file has a header row, which the format line above does not show: `From;To;Type;Through;start_x;start_y;stop_x;stop_y;adjacency_rule_name;Comment`. The closing line is `-1;-1;;-1;-1;-1;-1;-1;-1` (note the empty third field, and a trailing space in the vanilla file), not nine `-1`. A line starting with `#` is a comment (one in vanilla). [vanilla-confirmed 1.19.3] `map/adjacencies.csv` (253 lines)
+
+Vanilla has 251 entries: 151 `sea`, 93 `impassable`, and 7 with an empty type. The 7 empty-type entries are strait entries between provinces that already border each other: they set `Through` to -1 and only name a rule (`GIBRALTAR_STRAIT` twice, `DANISH_BELTS_STRAIT`, `BOSPHORUS_STRAIT`, `DARDANELLES_STRAIT`, `HORMUZ_STRAIT`, `OTRANTO_STRAIT`). The sea entries that name a rule are `PANAMA_CANAL`, `KIEL_CANAL` and `SUEZ_CANAL`. The file is UTF-8 without BOM with LF line endings. [vanilla-confirmed 1.19.3] `map/adjacencies.csv`
+<!-- kit:end id="map-adjacency-facts" -->
+
+### Adjacency rules <a id="Adjacency_rules"></a>
+
+Adjacency rules, found at `/Hearts of Iron IV/map/adjacency_rules.txt` are ways to establish more complex rules on who can access a specified adjacency, either a strait or a canal. In order to establish an adjacency rule, it must first specify the name in `/Hearts of Iron IV/map/adjacency.csv`. **This file must be encoded in UTF-8** without the byte order mark.
+
+Determining what each type of relation has access to is next. Friends are any nation that is a subject, is given military access to, or in a faction with the controlling power of the specified adjacency. Contested is when two nations contest the adjacency by controlling different provinces within the required_provinces. Enemy is any nation at war with the controlling power, and neutral is any nation that has no specific relation. Each relation should specify whether armies can pass through (transports), navies can pass through, submarines can pass through, and whether you can use it to get trade through.
+
+After is the required provinces, these specify what a nation must control in order to be the owner of the adjacency. All of the provinces do not need to be within the same state or from the same country. A minimum of two provinces must be specified in this field.
+
+`is_disabled` is a trigger block evaluated for the country trying to use the adjacency rule that blocks it entirely if true. `tooltip = localisation_key` serves as assigning a localisation key
+
+`icon` specifies over which province the icon for the adjacency appears in the navy view. This should be a sea province.
+
+`offset` specifies where the icon should move graphically starting from the middle of the province specified as the icon ( in the order { X value Z value Y value } ).
+
+**Example adjacency rule**
+
+```text
+adjacency_rule =
+{
+	name = "BOSPHORUS_STRAIT"
+
+	contested =
+	{
+		army = no
+		navy = no
+		submarine = no
+		trade = no
+	}
+	enemy =
+	{
+		army = no
+		navy = no
+		submarine = no
+		trade = no
+	}
+	friend =
+	{
+		army = yes
+		navy = yes
+		submarine = yes
+		trade = yes
+	}
+	neutral =
+	{
+		army = no
+		navy = no
+		submarine = no
+		trade = yes
+	}
+
+	required_provinces = { 9833 11829 }
+
+	is_disabled = {
+		has_country_flag = BOSPHORUS_STRAIT_BLOCKED_FOR_COUNTRY
+		tooltip = bosporus_strait_blocked_tt
+	}
+
+	icon = 9833
+	offset = { -2 0 -9 }
+}
+```
+
+<!-- kit:begin id="map-adjacency-rule-facts" at="section:Adjacency_rules" -->
+**Kit correction** The rule names are referenced from `map/adjacencies.csv` (plural), not `adjacency.csv`. The vanilla file `map/adjacency_rules.txt` starts with `# A` (ASCII, no BOM) and defines 9 rules: `SUEZ_CANAL`, `GIBRALTAR_STRAIT`, `DANISH_BELTS_STRAIT`, `PANAMA_CANAL`, `BOSPHORUS_STRAIT`, `DARDANELLES_STRAIT`, `KIEL_CANAL`, `HORMUZ_STRAIT`, `OTRANTO_STRAIT`. [vanilla-confirmed 1.19.3] `map/adjacency_rules.txt`, `map/adjacencies.csv`
+
+**Kit addition** Keys the page does not describe, from the header comment of the vanilla file. All rows: [vanilla-confirmed 1.19.3] `map/adjacency_rules.txt`.
+
+- Optional triggers `is_enemy`, `is_friend` and `is_neutral` are checked in that order and can override the relation: with `is_friend` false the neutral rule is used instead of the friend rule, and so on (the comment at the top of the file spells out the order). Vanilla uses only `is_friend`, in `BOSPHORUS_STRAIT` and `DARDANELLES_STRAIT`, with a trigger of the form `TUR_is_friend_for_bosphorus = yes`.
+- Each of the four relation blocks `contested`, `enemy`, `friend`, `neutral` has `army`, `navy`, `submarine` and `trade` (36 blocks of each key in vanilla).
+- `is_disabled` is used in 5 of the 9 rules, with a `tooltip` key; `has_country_flag`, `has_global_flag` and `has_dynamic_modifier` (with `scope` and `modifier`) appear inside these trigger blocks.
+- `required_provinces`, `icon` and `offset` are present in all 9 rules; `offset` is three numbers (vanilla example `offset = { -31.0 0.0 -2.0 }`).
+<!-- kit:end id="map-adjacency-rule-facts" -->
+
+## Supply <a id="Supply"></a>
+
+*See also: [Nudger § Supply](<nudger.md#Supply>)*
+
+Starting positions of supply nodes and railways are defined within `/Hearts of Iron IV/map/supply_nodes.txt` and `/Hearts of Iron IV/map/railways.txt` respectively. **An invalid definition can cause crashes** when trying to open singleplayer or when trying to open the 'Supply' section in nudger. An invalid definition in this case is one that's going over non-existing or stateless provinces or a very disjointed railway definition.
+It is recommended to use the nudger's Supply section to assign supply nodes and railways.
+
+An entry in the supply nodes file has this formatting, without the semicolon:
+
+```text
+Level; Province
+```
+
+The level represents the level of the supply node. By default, supply nodes have the max level of 1[11], so this is limited to 1.
+The province represents the ID of the province in which the supply node is located.
+Example entry is `1 1234`
+
+An entry in the railways file has this formatting, without the semicolons:
+
+```text
+Level; Amount of provinces; List of provinces
+```
+
+The level represents the level of the railway. By default, this is no more than 5.[12]
+The amount of provinces is how many provinces the railway lasts.
+The list of provinces is a whitespace character-separated list of province IDs on which this railway goes.
+A valid railway definition is the following: `4 4 693 1444 12 11`
+
+<!-- kit:begin id="map-supply-facts" at="section:Supply" -->
+**Kit note** The formats match vanilla. `map/supply_nodes.txt` has 727 rows, all level 1 (the wiki's limit of 1 holds), and `map/railways.txt` has 909 rows with levels 1 to 4 in use (the define `NSupply.MAX_RAILWAY_LEVEL` is 5), whose second number is the count of provinces listed after it in every row. Both files are LF-only, and the supply rows are space separated with a trailing space. The supply system around them, including the state key `local_supplies` and the defines, is described in [Supply areas modding](<supply-areas-modding.md>). [vanilla-confirmed 1.19.3] `map/supply_nodes.txt`, `map/railways.txt`, `common/defines/00_defines.lua`
+<!-- kit:end id="map-supply-facts" -->
+
+### Supply areas (For versions prior to 1.11) <a id="Supply_areas_.28For_versions_prior_to_1.11.29"></a><a id="Supply_areas_(For_versions_prior_to_1.11)"></a>
+
+<!-- kit:begin id="map-supply-areas-1193" at="heading:Supply_areas_.28For_versions_prior_to_1.11.29" -->
+**Kit note** The deprecation note below is still accurate for 1.19.3: the folder `map/supplyareas/` is not listed in `default.map`, and the exe has no path string for it. The game still ships one file there (`1-SupplyArea.txt`, a single area with `value=12` over states 5, 85, 763 and 807). Do not create supply areas for a new map; see [Supply areas modding](<supply-areas-modding.md>). [vanilla-confirmed 1.19.3] `map/supplyareas/1-SupplyArea.txt`, `map/default.map`. [unverified] for the exe, which was searched for strings only.
+<!-- kit:end id="map-supply-areas-1193" -->
+
+**Note: With the release of 1.11 and No Step Back, supply areas are deprecated and instead the initial logistics/supply system is defined through supply_nodes.txt and railways.txt; see previous section. For further information on updating your map from 1.10 to 1.11, see this post.**
+
+All states must be associated with a supply area. Each supply area can take any number of states, and each state should be in only one supply area.
+
+Supply areas are formatted as follows:
+
+```text
+supply_area={
+	id=1
+	name="SUPPLYAREA_1"
+	value=12
+	states={
+		5 85
+	}
+}
+```
+
+## Ambient objects <a id="Ambient_objects"></a>
+
+*See also: [Entity modding](<entity-modding.md>)*
+
+The `/Hearts of Iron IV/map/ambient_object.txt` file is used to define the cosmetic 3D objects found in the map that are always generated, such as the map frame or winds.
+Each ambient object is a separate definition within the file of `type = { ... }`. The following arguments go inside of an ambient object definition:
+
+- `type = object_type` refers to an entity defined within a `/Hearts of Iron IV/gfx/entities/*.asset` file.
+- `use_animation = no` sets whether the ambient object has an animation that should be used or not.
+- `time_duration = 300` sets the time for how long the animation takes place.
+- `scale = 100.0` sets the size of the ambient object. The default size is 1.
+- `always_visible = yes`, if set, enforces the ambient object to be permamently visible such as the frames.
+- `object = { ... }` decides each instance of the entity. Multiple can exist in the same ambient object. In particular, these arguments are used:
+  - `name = my_entity_name` is the name of the object. This does not have to be unique and only shows up within the nudge.
+  - `position = { ... }` is the [XYZ position](#Coordinate_system) of the object.
+  - `rotation = { ... }` is the rotation of the object by XYZ axes.
+
+This is an example of an ambient object definition:
+
+```text
+type = {
+    type = my_entity
+    use_animation = no
+    scale = 1000
+    always_visible = yes
+    object = {
+        name = my_entity_name
+		position={
+			420.090 10.000 382.670
+		}
+		rotation={
+			0.000 0.000 0.000
+		}
+    }
+    object = {
+        name = my_entity_name
+		position={
+			1234.890 10.000 407.440
+		}
+		rotation={
+			0.000 0.000 0.000
+		}
+    }
+}
+```
+
+The nudge can edit existing ambient objects, but it is unable to create new ones: they have to be created manually first.
+
+<!-- kit:begin id="map-ambient-facts" at="section:Ambient_objects" -->
+**Kit correction** Vanilla `ambient_object.txt` has 6 `type = { }` blocks: `ambient_wind_entity`, `ambient_water_entity`, `frame_border_entity`, `frame_border_bottom_entity`, `frame_border_logo_entity` and `chinese_wall_entity`. The `frame_border_*` entities are most likely the map frame the page mentions; which one is the northern or southern border is not stated in the files. [unverified] The `type` value is quoted (`type="ambient_wind_entity"`), and all six entities are defined in `gfx/entities/mapitems.asset`. [vanilla-confirmed 1.19.3] `map/ambient_object.txt`, `gfx/entities/mapitems.asset`
+
+Keys in use: `type`, `use_animation` (always `no`), `always_visible` (5 blocks), `scale` (values 0.2, 10, 100, 100, 300) and `object = { name position rotation }` (position and rotation are three numbers). `time_duration` from the list above does not appear in the vanilla file, but the exe knows the key. [vanilla-confirmed 1.19.3] `map/ambient_object.txt`. [unverified] for the exe.
+<!-- kit:end id="map-ambient-facts" -->
+
+## References <a id="References"></a>
+
+When editing [Defines](<defines.md>), make sure to use an override file rather than copying the entire file, as that can cause game crashes when new defines get added, which can happen even in 'minor' updates.
+
+<!-- kit:begin id="map-default-map-keys" at="bottom" -->
+## Kit: default.map, cities.txt and the map error texts <a id="kit-map-default-map-keys"></a>
+
+`map/default.map` in 1.19.3. All rows: [vanilla-confirmed 1.19.3] `map/default.map`.
+
+| Key | Vanilla value |
+| --- | --- |
+| `definitions` | `"definition.csv"` |
+| `provinces` | `"provinces.bmp"` |
+| `positions` | `"positions.txt"` (the file is empty) |
+| `terrain` | `"terrain.bmp"` |
+| `rivers` | `"rivers.bmp"` |
+| `heightmap` | `"heightmap.bmp"` |
+| `tree_definition` | `"trees.bmp"` |
+| `continent` | `"continent.txt"` |
+| `adjacency_rules` | `"adjacency_rules.txt"` |
+| `adjacencies` | `"adjacencies.csv"` |
+| `ambient_object` | `"ambient_object.txt"` |
+| `seasons` | `"seasons.txt"` |
+| `tree` | `{ 3 4 7 10 }`, a list of palette ids |
+| `climate` | commented out (`#climate = "climate.txt"`) |
+
+`map/cities.txt` starts with `types_source = "map/cities.bmp"`, `pixel_step_x = 2` and `pixel_step_y = 2`, then 4 `city_group = { color_index = N density = X building = { distance = D mesh = { "<mesh name>" } } ... }` blocks. `color_index` is the palette index in `cities.bmp`, `density` the share of pixels that get a model, and the `building` entries are sorted by growing `distance` from the edge of the urban area. [vanilla-confirmed 1.19.3] `map/cities.txt`
+
+Other map error texts still in `hoi4.exe` (strings only, nothing was run). [unverified] Exe strings only.
+
+| Text (fragment) | Looks like |
+| --- | --- |
+| "Strategic region ... is fractioned! The following provinces are separated from the rest" | a region whose provinces are not connected |
+| "The land province ... has no strategic region assigned" | a land province missing from `map/strategicregions/` |
+| "Definition for state id ... belonging to different strategic areas" | a state split over two regions |
+| "Invalid adjacency rule name" | a rule name in `adjacencies.csv` that `adjacency_rules.txt` lacks |
+| "Province is invalid or added twice to the same or different rules" | a duplicate in `required_provinces` |
+| "no air base site defined for state", "no rocket site defined for state", "no gun emplacement defined for state" | a state without the matching rows in `map/buildings.txt` |
+| "Errors while reading cities.txt" | a broken `cities.txt` |
+<!-- kit:end id="map-default-map-keys" -->
+
+---
+
+## Navigation
+
+**[Modding](<modding.md>)**
+
+- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list-of-modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on-actions.md>) • [Data structures](<data-structures.md>) • [Flags](<data-structures.md#Flags>) • [Event targets](<data-structures.md#Event_targets>) • [Country tag aliases](<data-structures.md#Country_tag_aliases>) • [Variables](<data-structures.md#Variables>) • [Arrays](<data-structures.md#Arrays>)
+- **Scripting**: [Achievements](<achievement-modding.md>) • [AI](<ai-modding.md>) • [AI focuses](<ai-focuses.md>) • [Autonomous states](<autonomy-state-modding.md>) • [Balances of power](<balance-of-power-modding.md>) • [Bookmarks/Scenarios](<bookmark-modding.md>) • [Game rules](<bookmark-modding.md#Game_rules>) • [Buildings](<building-modding.md>) • [Characters and traits](<character-modding.md>) • [Cosmetic tags](<cosmetic-tag-modding.md>) • [Countries](<country-creation.md>) • [Divisions](<division-modding.md>) • [Decisions](<decision-modding.md>) • [Doctrines](<doctrine-modding.md>) • [Equipment](<equipment-modding.md>) • [Events](<event-modding.md>) • [Factions](<faction-modding.md>) • [Ideas](<idea-modding.md>) • [Ideologies](<ideology-modding.md>) • [Military industrial organizations](<military-industrial-organization-modding.md>) • [National focuses](<national-focus-modding.md>) • [Resources](<resources-modding.md>) • [Scripted GUI](<scripted-gui-modding.md>) • [Technologies and doctrines](<technology-modding.md>) • [Units](<unit-modding.md>)
+- **Map**: [States](<state-modding.md>) • [Supply areas](<supply-areas-modding.md>) • [Strategic regions](<strategic-region-modding.md>)
+- **Graphical**: [Interface](<interface-modding.md>) • [Graphical assets](<graphical-asset-modding.md>) • [Entities](<entity-modding.md>) • [Posteffects](<posteffect-modding.md>) • [Particles](<particle-modding.md>) • [Fonts](<font-modding.md>)
+- **Cosmetic**: [Portraits](<portrait-modding.md>) • [Namelists](<namelist-modding.md>) • [Music](<music-modding.md>) • [Sound](<sound-modding.md>)
+- **Other**: [Console commands](<console-commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod-structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<collection-modding.md>) • [Game rule modding](<game-rule-modding.md>) • [Intelligence operation modding](<intelligence-operation-modding.md>) • [Map mode modding](<map-mode-modding.md>) • [Occupation and resistance modding](<occupation-and-resistance-modding.md>) • [Peace conference modding](<peace-conference-modding.md>) • [Raid modding](<raid-modding.md>) • [Script constant modding](<script-constant-modding.md>) • [Special project modding](<special-project-modding.md>)

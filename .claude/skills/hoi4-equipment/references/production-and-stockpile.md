@@ -60,7 +60,7 @@ create_equipment_variant = {
 | `create_unit` | Any scope; used for spawning divisions, covered by `hoi4-units-divisions` |
 | `load_oob` | Loads an order of battle file; covered by `hoi4-units-divisions` |
 
-Starting production in an order of battle uses the same syntax inside an `instant_effect = { add_equipment_production = { ... } }` block (`WIKI/Division modding - Hearts of Iron 4 Wiki.md`, Equipment production).
+Starting production in an order of battle uses the same syntax inside an `instant_effect = { add_equipment_production = { ... } }` block (`WIKI/division-modding.md`, Equipment production).
 Division entries accept `force_equipment_variants`, `start_equipment_factor`, and `start_manpower_factor` as documented in the same page.
 
 Meta effects can make the type name dynamic (`type = [EQ_TYPE]_[EQ_LEVEL]`); use `meta_effect` because `type` does not accept variables.

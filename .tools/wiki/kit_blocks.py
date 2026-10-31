@@ -27,6 +27,11 @@ Every page has one ``review`` block at ``top``. Its begin marker records the rev
 ``build`` (the game build the page was checked against, or ``none``), ``checked``
 (the date) and, on wiki pages, ``revision`` (the wiki revision that was reviewed).
 
+File names: a page's title is its level-1 heading, and its file is ``file_name(title)``,
+the title in lowercase kebab-case plus ``.md`` (``Scripted GUI modding`` is
+``scripted-gui-modding.md``). The file name never carries the title, so tools read the
+title from the heading.
+
 Standard library only; Python 3.9 or newer.
 """
 
@@ -57,6 +62,33 @@ DEFAULT_REVIEW = (
 )
 
 Heading = Tuple[int, int, str, List[str]]  # line index, level, visible text, anchors
+
+PAGE_FILE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
+MEDIA_FILE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
+TITLE_LINE = re.compile(r"^# (.+?)\s*$", re.M)
+
+
+def file_stem(title: str) -> str:
+    """The title in lowercase kebab-case: ``Scripted GUI modding`` -> ``scripted-gui-modding``."""
+    return re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+
+
+def file_name(title: str) -> str:
+    """The snapshot file name of the page titled `title`."""
+    return file_stem(title) + ".md"
+
+
+def page_title(text: str) -> Optional[str]:
+    """The page title: its first level-1 heading outside code fences, or None."""
+    inside = False
+    for line in text.split("\n"):
+        if line.lstrip().startswith(FENCE):
+            inside = not inside
+            continue
+        match = None if inside else TITLE_LINE.match(line.rstrip("\r"))
+        if match:
+            return match.group(1)
+    return None
 
 
 class KitBlockError(ValueError):

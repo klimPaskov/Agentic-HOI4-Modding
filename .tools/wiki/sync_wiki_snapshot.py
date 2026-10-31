@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """Regenerate the offline Paradox wiki snapshot from the live Hearts of Iron IV wiki.
 
-``paradox_wiki/`` holds one markdown file per wiki modding page, named
-``<Page Title> - Hearts of Iron 4 Wiki.md``, plus ``media/`` with every image
-those pages reference. ``AGENTS.md`` treats that snapshot as the required wiki
-reference, so it has to stay current and self-contained.
+``paradox_wiki/`` holds one markdown file per wiki modding page, named after its
+title in lowercase kebab-case (``Scripted GUI modding`` is ``scripted-gui-modding.md``),
+plus ``media/`` with every image those pages reference. ``AGENTS.md`` treats that
+snapshot as the required wiki reference, so it has to stay current and self-contained.
 
 For each page the tool:
 
@@ -92,9 +92,9 @@ SITE = "https://hoi4.paradoxwikis.com"
 UA = "agentic-hoi4-wiki-sync/1.0 (maintains a local offline HOI4 modding reference snapshot)"
 CAPTURE_DATE = time.strftime("%Y-%m-%d")
 
-# Local file name for a wiki page title. The snapshot keeps the historical
-# "Effects" name for the wiki page "Effect" because the rest of the repository
-# links to that exact file name.
+# Local page title for a wiki page title. The snapshot keeps the historical title
+# "Effects" (so the file effects.md) for the wiki page "Effect" because the rest
+# of the repository links to that exact file name.
 FILENAME_OVERRIDES = {
     "Effect": "Effects",
 }
@@ -260,9 +260,9 @@ def old_media_index():
     for name in os.listdir(WIKI_DIR):
         if not name.endswith(".md"):
             continue
-        title = re.sub(r" - Hearts of Iron 4 Wiki\.md$", "", name)
         with open(os.path.join(WIKI_DIR, name), "r", encoding="utf-8") as fh:
             text = fh.read()
+        title = kit_blocks.page_title(text) or name[:-len(".md")]
         for m in re.finditer(r"!\[([^\]]*)\]\(([^)]*media/[^)]+)\)", text):
             alt, src = m.group(1), m.group(2)
             base = os.path.basename(src)
@@ -286,7 +286,7 @@ _URL_CACHE = {}
 
 
 def _slug(title):
-    return re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-") + "-hearts-of-iron-4-wiki"
+    return kit_blocks.file_stem(title)
 
 
 def _alt_from_url(url):
@@ -447,7 +447,7 @@ class WikiConverter(MarkdownConverter):
 
     @staticmethod
     def local_name(page):
-        return FILENAME_OVERRIDES.get(page, page) + " - Hearts of Iron 4 Wiki.md"
+        return kit_blocks.file_name(FILENAME_OVERRIDES.get(page, page))
 
     def link_for(self, page, anchor, text):
         redirect = REDIRECT_ANCHORS.get(page)
@@ -1000,7 +1000,7 @@ def navbox_footer(navboxes, known, kit_pages=()):
     out = ["## Navigation", ""]
     if modding:
         MODDING_BOX[:] = [modding]
-        out += ["**[Modding](<Modding - Hearts of Iron 4 Wiki.md>)**", ""]
+        out += [f"**[Modding](<{WikiConverter.local_name('Modding')}>)**", ""]
         for label, links in modding["groups"]:
             rendered, seen = [], set()
             for page, anchor, text in links:
@@ -1223,15 +1223,31 @@ def repair_anchors(directory):
     return fixed
 
 
+LEGACY_NAME = " - Hearts of Iron 4 Wiki.md"
+
+
+def legacy_files():
+    """Files named the way the snapshot was before it moved to kebab-case file names."""
+    if not os.path.isdir(WIKI_DIR):
+        return []
+    return sorted(n for n in os.listdir(WIKI_DIR) if n.endswith(LEGACY_NAME))
+
+
 def snapshot_pages():
-    """Return (wiki page titles, kit page titles) present in paradox_wiki/."""
+    """Return (wiki page titles, kit page titles) present in paradox_wiki/.
+
+    A page's title is its level-1 heading; the file name is only derived from it.
+    """
     wiki, kit = [], []
     for name in sorted(os.listdir(WIKI_DIR)):
         if not name.endswith(".md"):
             continue
-        title = re.sub(r" - Hearts of Iron 4 Wiki\.md$", "", name)
-        is_kit = kit_blocks.is_kit_page(read_page(os.path.join(WIKI_DIR, name)))
-        (kit if is_kit else wiki).append(title)
+        text = read_page(os.path.join(WIKI_DIR, name))
+        title = kit_blocks.page_title(text) or name[:-len(".md")]
+        if kit_blocks.file_name(title) != name:
+            sys.exit(f"{name} holds the page {title!r}, whose file name is "
+                     f"{kit_blocks.file_name(title)}; rename it with git mv")
+        (kit if kit_blocks.is_kit_page(text) else wiki).append(title)
     return wiki, kit
 
 
@@ -1362,6 +1378,13 @@ def main():
     global CACHE_DIR
     CACHE_DIR = args.cache
 
+    legacy = legacy_files()
+    if legacy:
+        # Writing the new names beside the old files would double every page.
+        sys.exit(f"paradox_wiki/ still has {len(legacy)} file(s) with the old "
+                 f"'<Page Title>{LEGACY_NAME}' names, for example {legacy[0]!r}. The snapshot "
+                 "now uses lowercase kebab-case names (scripted-gui-modding.md); replace "
+                 "paradox_wiki/ with the kit's current snapshot before refreshing.")
     existing, kit_pages = snapshot_pages()
     full_set = sorted(set(existing) | set(NEW_PAGES))
     targets = select_targets(args, full_set)

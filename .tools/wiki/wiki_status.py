@@ -46,7 +46,6 @@ from lib import game  # .tools/lib: locates the installed game
 REPO = HERE.parents[1]
 WIKI_DIR = REPO / "paradox_wiki"
 INDEX = HERE / "game_docs_index.json"
-SUFFIX = " - Hearts of Iron 4 Wiki.md"
 DOC_GLOBS = ("documentation/*.md", "common/**/*documentation*.md",
              "interface/**/_documentation.info", "gfx/**/_documentation.info")
 SKIP_HEADING = re.compile(r"^(table of contents?|.+ for scope .+)$", re.I)
@@ -130,8 +129,12 @@ def diff_index(old: Dict[str, object], new: Dict[str, object]) -> Dict[str, Dict
 # --- the snapshot pages ---------------------------------------------------
 
 def load_pages() -> Dict[str, str]:
-    return {path.name[:-len(SUFFIX)] if path.name.endswith(SUFFIX) else path.stem:
-            path.read_text(encoding="utf-8") for path in sorted(WIKI_DIR.glob("*.md"))}
+    """Page title -> text. The title is the page's level-1 heading, not its file name."""
+    pages: Dict[str, str] = {}
+    for path in sorted(WIKI_DIR.glob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        pages[kit_blocks.page_title(text) or path.stem] = text
+    return pages
 
 
 def page_sources(text: str) -> List[str]:
@@ -201,9 +204,12 @@ def write_lf(path: Path, text: str) -> None:
 
 
 def page_path(name: str) -> Path:
-    for candidate in (WIKI_DIR / name, WIKI_DIR / (name + SUFFIX), WIKI_DIR / (name + ".md")):
-        if candidate.is_file():
-            return candidate
+    """The page file for a title (``Effects``), a file stem (``effects``) or a file name."""
+    wanted = {name.lower(), kit_blocks.file_name(name)}
+    for path in sorted(WIKI_DIR.glob("*.md")):
+        title = kit_blocks.page_title(path.read_text(encoding="utf-8")) or path.stem
+        if path.name in wanted or title.lower() == name.lower():
+            return path
     raise SystemExit(f"no snapshot page named {name!r}")
 
 

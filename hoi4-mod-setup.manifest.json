@@ -11867,17 +11867,17 @@
     "destination": "paradox_wiki/",
     "snapshot_marker": null,
     "required_pages": [
-      "Data structures - Hearts of Iron 4 Wiki.md",
-      "Triggers - Hearts of Iron 4 Wiki.md",
-      "Effects - Hearts of Iron 4 Wiki.md",
-      "Modifiers - Hearts of Iron 4 Wiki.md",
-      "Localisation - Hearts of Iron 4 Wiki.md",
-      "Scopes - Hearts of Iron 4 Wiki.md",
-      "On actions - Hearts of Iron 4 Wiki.md",
-      "Event modding - Hearts of Iron 4 Wiki.md",
-      "Decision modding - Hearts of Iron 4 Wiki.md",
-      "Idea modding - Hearts of Iron 4 Wiki.md",
-      "AI modding - Hearts of Iron 4 Wiki.md"
+      "data-structures.md",
+      "triggers.md",
+      "effects.md",
+      "modifiers.md",
+      "localisation.md",
+      "scopes.md",
+      "on-actions.md",
+      "event-modding.md",
+      "decision-modding.md",
+      "idea-modding.md",
+      "ai-modding.md"
     ],
     "required_media_policy": "all_declared",
     "provenance": {

@@ -6,7 +6,11 @@ non-zero when the snapshot is not self-contained and readable, and reports:
 
 * unbalanced code fences and fenced blocks that would break a table row;
 * outbound hyperlinks, which the snapshot must not contain;
-* links to missing snapshot files, and section links whose anchor is absent;
+* page and media file names that are not lowercase kebab-case without spaces, and
+  pages whose file name is not the slug of their level-1 heading;
+* links to missing snapshot files (a link must match the file name letter for
+  letter, so it also works on a case-sensitive file system), and section links
+  whose anchor is absent;
 * images with no file on disk, or image files nothing references;
 * table rows whose column count differs from their header;
 * pages that do not have exactly one level-1 heading;
@@ -102,6 +106,19 @@ def verify(directory, show_details=True):
         details.append(f"  [{kind}] {page}: {message}")
 
     files = sorted(f for f in os.listdir(directory) if f.endswith(".md"))
+    # Exact-case names: Windows and macOS would resolve a link with the wrong case.
+    names = set(os.listdir(directory))
+    media_dir = os.path.join(directory, "media")
+    media_names = set(os.listdir(media_dir)) if os.path.isdir(media_dir) else set()
+
+    def exists_exact(relative):
+        head, _, tail = relative.partition("/")
+        if not tail:
+            return head in names
+        if head == "media" and "/" not in tail:
+            return tail in media_names
+        return os.path.exists(os.path.join(directory, relative.replace("/", os.sep)))
+
     anchors_by_file = {}
     for name in files:
         text = Path(directory, name).read_text(encoding="utf-8")
@@ -115,6 +132,15 @@ def verify(directory, show_details=True):
 
         if raw.startswith(b"\xef\xbb\xbf"):
             report("bom", name, "file starts with a byte order mark")
+
+        # --- file name -----------------------------------------------------
+        title = kit_blocks.page_title(text)
+        if not kit_blocks.PAGE_FILE.match(name):
+            report("file_name", name, "page file names are lowercase kebab-case without "
+                   "spaces, for example scripted-gui-modding.md")
+        elif title is not None and kit_blocks.file_name(title) != name:
+            report("file_name", name, f"the page {title!r} belongs in "
+                   f"{kit_blocks.file_name(title)}")
 
         # --- code fences ---------------------------------------------------
         fences = [i + 1 for i, l in enumerate(lines) if l.strip().startswith(FENCE)]
@@ -144,7 +170,7 @@ def verify(directory, show_details=True):
             for m in re.finditer(r"\]\(<([^>]+)>\)", line):
                 target = m.group(1)
                 page, _, anchor = target.partition("#")
-                if not os.path.exists(os.path.join(directory, page)):
+                if not exists_exact(page):
                     report("broken_link", name, f"line {i + 1}: missing file {page}")
                     continue
                 if anchor and anchor not in anchors_by_file.get(page, set()):
@@ -156,8 +182,7 @@ def verify(directory, show_details=True):
                 src = m.group(1)
                 if src.startswith("http"):
                     report("remote_image", name, f"line {i + 1}: {src[:70]}")
-                elif not os.path.exists(os.path.join(directory,
-                                                     src.replace("/", os.sep))):
+                elif not exists_exact(src):
                     report("missing_media", name, f"line {i + 1}: {src}")
 
         # --- tables --------------------------------------------------------
@@ -229,7 +254,10 @@ def verify(directory, show_details=True):
             report("license", name, "names LICENSE.txt, which is missing")
 
     # --- media coverage ----------------------------------------------------
-    media_dir = os.path.join(directory, "media")
+    for media_name in sorted(media_names):
+        if not kit_blocks.MEDIA_FILE.match(media_name):
+            report("file_name", "(media)", f"{media_name}: media file names are "
+                   "lowercase without spaces")
     referenced = set()
     long_rows = 0
     for name in files:
@@ -238,7 +266,7 @@ def verify(directory, show_details=True):
                           for m in re.findall(r"\]\((media/[^)]+)\)", text))
         long_rows += sum(1 for line in text.split("\n")
                          if line.startswith("|") and len(line) > 400)
-    on_disk = set(os.listdir(media_dir)) if os.path.isdir(media_dir) else set()
+    on_disk = media_names
     orphans = sorted(on_disk - referenced)
     missing = sorted(referenced - on_disk)
     if missing:
