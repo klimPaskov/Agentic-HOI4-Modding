@@ -2,8 +2,10 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Ideology modding", revision 90513, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="none" checked="never" -->
-**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="90513" sources="common/ideologies/ common/peace_conference/ common/country_leader/ common/ideas/zzz_generic.txt history/general/generic_advisors.txt history/countries/ interface/countrypoliticsview.gfx localisation/english/parties_l_english.yml localisation/english/modifiers_l_english.yml documentation/modifiers_documentation.md documentation/effects_documentation.md" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `common/ideologies/00_ideologies.txt` (the only vanilla ideology file), the peace conference folders, `set_politics` / `set_popularities` / `add_popularity` in every vanilla file under `common/`, `events/` and `history/`, the ideology sprites and localisation, the generic advisor setup, the modifier documentation and `hoi4.exe` strings.
+Kit blocks added: vanilla group and type table, corrections to the example block (`take_states_cost_factor`, `ai_<ideology>`, placeholder names), `can_be_boosted`, the duplicate group id risk, the moved AI peace folder, localisation and sprite checks, `set_politics` and popularity counts, the political advisor setup in 1.19.3 and the `<group>_drift` modifier family.
+Gaps left: whether a duplicate group id is rejected at load, and what `can_be_boosted` does, are not shown by script. The wiki's `_booster` suffix is a naming idea, not a vanilla convention.
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -84,7 +86,42 @@ ideologies = {
 }
 ```
 
+<!-- kit:begin id="ideology-vanilla-structure" at="section:Ideologies" -->
+**Kit note** What vanilla `common/ideologies/00_ideologies.txt` defines: 4 groups and 22 types. All items: [vanilla-confirmed 1.19.3] `common/ideologies/00_ideologies.txt`.
+
+| Group | Types | `rules` block | Other group keys |
+| --- | --- | --- | --- |
+| `democratic` | `conservatism`, `liberalism`, `socialism`, `populism` (4) | all 8 rules: `can_create_collaboration_government = no`, `can_declare_war_on_same_ideology = no`, `can_force_government = yes`, `can_send_volunteers = no`, `can_puppet = no`, `can_lower_tension = yes`, `can_only_justify_war_on_threat_country = yes`, `can_guarantee_other_ideologies = yes` | `can_host_government_in_exile = yes`, `ai_democratic = yes`, `ai_ideology_wanted_units_factor = 1.10`, `ai_give_core_state_control_threshold = 0`, `faction_modifiers = { faction_trade_opinion_factor = 0.50 }` |
+| `communism` | `marxism`, `leninism`, `stalinism`, `anti_revisionism`, `anarchist_communism`, `buddhist_socialism` (6) | `can_force_government = yes`, `can_send_volunteers = yes`, `can_puppet = yes` | `can_collaborate = yes`, `ai_communist = yes`, 1.20, 10 |
+| `fascism` | `nazism`, `gen_nazism`, `fascism_ideology`, `falangism`, `rexism`, `emperor_fascism` (6) | same three, all `yes` | `can_collaborate = yes`, `ai_fascist = yes`, 1.65, 10000, `justify_war_goal_when_in_major_war_time = -0.80` |
+| `neutrality` | `despotism`, `oligarchism`, `anarchism`, `moderatism`, `centrism`, `japan_militarism_ideology` (6) | `can_force_government = yes`, `can_puppet = yes`, `can_send_volunteers = no` | `ai_neutral = yes`, 1.15, 10000 |
+
+- The last two numbers in each "Other group keys" cell are `ai_ideology_wanted_units_factor` and `ai_give_core_state_control_threshold`. The wiki example omits both keys; every vanilla group sets them.
+- `can_be_randomly_selected = no` is set on exactly 4 types: `buddhist_socialism`, `emperor_fascism`, `anarchism` and `japan_militarism_ideology`. No type sets its own `color`.
+- All groups set `types`, `dynamic_faction_names` (6 names for `democratic`, 5 for the others), `color` (`democratic` 0 0 255, `communism` 255 0 0, `fascism` 150 75 0, `neutrality` 124 124 124), `war_impact_on_world_tension`, `faction_impact_on_world_tension` and `modifiers`. `faction_modifiers` is set in `democratic`, empty in `communism` and `neutrality` and missing in `fascism`.
+- Inside `modifiers`, vanilla also uses `civilian_intel_to_others`, `army_intel_to_others`, `navy_intel_to_others`, `airforce_intel_to_others`, `embargo_cost_factor`, `embargo_threshold_factor`, `drift_defence_factor` and, in `communism` and `fascism`, `hidden_modifier = { join_faction_tension = -0.1 }`.
+<!-- kit:end id="ideology-vanilla-structure" -->
+
+<!-- kit:begin id="ideology-example-corrections" at="section:Ideologies" -->
+**Kit correction** Problems in the example block above. Items 1 to 4 are checked against the game files; each carries its own tag.
+
+1. `take_states_cost_factor` is not a modifier. It is absent from `documentation/modifiers_documentation.md`, from `hoi4.exe` and from every vanilla file. The vanilla ideology file lists `annex_cost_factor` and `puppet_cost_factor` only as commented lines marked deprecated in favour of `00_generic_peace.txt`, which now sits in `common/peace_conference/cost_modifiers/`. Peace conference costs come from that folder (`peace_action_modifiers` with `cost_multiplier`). `annex_cost_factor` (categories peace and aggressive) and `puppet_cost_factor` (peace and defensive) are still documented modifiers. [vanilla-confirmed 1.19.3] `common/ideologies/00_ideologies.txt`, `common/peace_conference/cost_modifiers/`; [docs] `documentation/modifiers_documentation.md`, `common/peace_conference/cost_modifiers/_documentation.md`.
+2. `ai_<ideology> = yes` is not a free pattern. Vanilla uses exactly four keys, `ai_democratic`, `ai_communist`, `ai_fascist` and `ai_neutral`, and these four are the only ideology AI strings in `hoi4.exe`. Note `communist` and `neutral`, not `communism` and `neutrality`. A new group picks one of the four. [vanilla-confirmed 1.19.3] `common/ideologies/00_ideologies.txt`; that no other `ai_` key exists is [unverified] (executable strings only).
+3. `anarchist` and `anarcho_syndicalism` are placeholders. Neither id appears anywhere in vanilla. Vanilla has no `anarchist` group; its anarchism is the type `anarchism` inside `neutrality`. [vanilla-confirmed 1.19.3] `common/ideologies/00_ideologies.txt`.
+4. `can_be_boosted` is a string in `hoi4.exe` but is set by no vanilla group and is not in the documentation, so its meaning (the wiki says it controls whether other countries can boost the ideology) is [unverified]. The related rules `can_boost_own_ideology` and `can_boost_other_ideologies` exist as rule names used in idea `rule` blocks; see the rule table on [Idea modding](<Idea modding - Hearts of Iron 4 Wiki.md#Modifiers>).
+
+The wiki also says the `_drift` entries are per ideology. The documented modifier families `<Ideology>_drift`, `<Ideology>_acceptance` and `<Ideology>_drift_from_guarantees` list exactly the four groups as their valid names (`communism_drift`, `democratic_drift`, `fascism_drift`, `neutrality_drift`), not the types, so `marxism_drift` is not a modifier (0 vanilla uses). [docs] `documentation/modifiers_documentation.md`
+<!-- kit:end id="ideology-example-corrections" -->
+
+<!-- kit:begin id="ideology-duplicate-group-id" at="section:Ideologies" -->
+**Kit note** Define a new group under a new id and leave the four vanilla ids (`democratic`, `communism`, `fascism`, `neutrality`) alone. `hoi4.exe` contains the database loader message "Duplicate database id", so a second definition of an existing id is the likely cause of a duplicate-id problem; whether the engine uses that message for ideology groups is not shown by script. To change a vanilla group, replace `common/ideologies/00_ideologies.txt` in the mod instead of adding a second definition. [unverified]
+<!-- kit:end id="ideology-duplicate-group-id" -->
+
 ## Ai peace <a id="Ai_peace"></a>
+
+<!-- kit:begin id="ideology-ai-peace-correction" at="heading:Ai_peace" -->
+**Kit correction** The folder `common/ai_peace/` and the file `1_fascist.txt` do not exist in 1.19.3. AI peace desires are in `common/peace_conference/ai_peace/` (for example `00_misc.txt`, `GER.txt`, `yalta.txt`, `warlords.txt`), written as `peace_ai_desires = { name = { peace_action_type = ... enable = { ... } ai_desire = 100 } }`. `peace_action_type` is `take_states`, `puppet`, `force_government` or `liberate` (one or a list). `ROOT` is the negotiator, `ROOT.FROM` the taker, `ROOT.FROM.FROM` the giver and `ROOT.FROM.FROM.FROM` the state. `ai_desire` is a percentage change, and a total of zero or less means the AI will not take the action. Costs are separate, in `common/peace_conference/cost_modifiers/`. [docs] `common/peace_conference/ai_peace/_documentation.md`, `common/peace_conference/cost_modifiers/_documentation.md`; folder contents [vanilla-confirmed 1.19.3] `common/peace_conference/`.
+<!-- kit:end id="ideology-ai-peace-correction" -->
 
 AI peace determines the AI's behaviour in a peace deal. The triggers can be seen inside of enable = {} in the files, and they are generally reliant on ideologies.
 
@@ -128,6 +165,14 @@ Note that you will also have to add localisation for your ideology's drift. The 
 ```text
 my_ideology_drift:0 "Daily Ideology Support"
 ```
+
+<!-- kit:begin id="ideology-localisation-vanilla" at="section:Localisation" -->
+**Kit note** Checks against `localisation/english/parties_l_english.yml` and `localisation/english/modifiers_l_english.yml`. All items: [vanilla-confirmed 1.19.3] those two files.
+
+- Each vanilla group has the three keys the wiki names: `democratic` with `democratic_noun` and `democratic_desc`, and likewise `communism`, `fascism` and `neutrality`. Types have a noun and a description only, for example `conservatism` and `conservatism_desc`, `fascism_ideology` and `fascism_ideology_desc`.
+- Country-specific type names exist with the tag in front: `TUR_liberalism`, `ARG_marxism`, `AUS_stalinism` (plus `_DEF`), and group names such as `GER_fascism` and `GER_democratic_DEF`.
+- The drift names are `communism_drift`, `democratic_drift`, `fascism_drift` and `neutrality_drift` in `modifiers_l_english.yml` (for example `democratic_drift: "Daily Democracy Support"`), and the acceptance names are `<group>_acceptance`.
+<!-- kit:end id="ideology-localisation-vanilla" -->
 
 ### GFX <a id="GFX"></a>
 
@@ -187,6 +232,10 @@ spriteTypes = {
 }
 ```
 
+<!-- kit:begin id="ideology-gfx-vanilla" at="section:GFX" -->
+**Kit note** Vanilla declares only six ideology sprites, all in `interface/countrypoliticsview.gfx`: `GFX_ideology_neutrality_group`, `GFX_ideology_communism_group`, `GFX_ideology_fascism_group`, `GFX_ideology_democratic_group`, `GFX_ideology_anarchism` (the one type with its own icon) and `GFX_ideology_unknown`. Textures are in `gfx/interface/ideologies/`. No vanilla sprite uses the `GFX_ideology_<TAG>_...` country pattern, so that pattern comes from the wiki alone. [vanilla-confirmed 1.19.3] `interface/countrypoliticsview.gfx`; country-specific sprites [unverified].
+<!-- kit:end id="ideology-gfx-vanilla" -->
+
 ### Country history <a id="Country_history"></a>
 
 If you want the ideology to appear in a country you will have to add it like this to a countries history file like this: In France, for example
@@ -221,7 +270,23 @@ create_country_leader = {
 }
 ```
 
+<!-- kit:begin id="ideology-country-history-vanilla" at="section:Country_history" -->
+**Kit note** How vanilla scripts the political setup. Counts cover every file under `common/`, `events/` and `history/`. Syntax: [docs] `documentation/effects_documentation.md`; counts: [vanilla-confirmed 1.19.3].
+
+- `set_politics` has 1,048 uses. `ruling_party` takes an ideology group name: of its 1,047 values, 1,027 are literal group names (`neutrality` 355, `democratic` 302, `fascism` 193, `communism` 177) and none is a type such as `conservatism`. The rest are `ROOT` (10), `FROM` (7), a variable (2: `var:ROOT.current_party_ideology_group`, `var:ROOT.ruling_ideology_before_change`) and the tag `ETH` (1, with a comment in `events/LAR_occupation.txt` saying it copies Ethiopia's setup). Use the group name; the scope forms are [unverified].
+- The effect documentation lists only `ruling_party`, `elections_allowed`, `name` and `long_name` for `set_politics`. Vanilla also uses `last_election` (498 times) and `election_frequency` (507 times), as the wiki example does.
+- `set_popularities` has 515 uses and its keys are only the four group names. 476 literal blocks add up to exactly 100; 36 use variables; 3 in `common/national_focus/brazil.txt` set a single group to 0. The documentation says unlisted groups become 0 and the total must be exactly 100.
+- `add_popularity = { ideology = group popularity = 0.05 }` takes group names (`fascism` 573, `communism` 487, `democratic` 329, `neutrality` 287) as well as scope or variable values. 1,825 uses.
+- `create_country_leader` (181 uses) is still in vanilla, but new leaders are normally characters with a `country_leader` role; see [Character modding](<Character modding - Hearts of Iron 4 Wiki.md#Country_leaders>). The `ideology` there is a type, not a group.
+<!-- kit:end id="ideology-country-history-vanilla" -->
+
 ### Political advisor <a id="Political_advisor"></a>
+
+<!-- kit:begin id="ideology-advisor-correction" at="heading:Political_advisor" -->
+**Kit correction** In 1.19.3 vanilla builds the generic ideology booster advisors with `generate_character` in `history/general/generic_advisors.txt`, not as ideas in `zzz_generic.txt` as the template below does: `token_base = generic_communist_revolutionary` (and `generic_democratic_reformer`, `generic_fascist_demagogue`), each with `advisor = { slot = political_advisor traits = { communist_revolutionary } available = { ... } ai_will_do = { factor = 1 } }` and `portraits = { army = { small = GFX_idea_generic_communist_revolutionary } }`. The guard is `NOT = { has_allowed_idea_with_traits = { idea = communist_revolutionary characters = yes } }`. `zzz_generic.txt` still exists but holds hidden ideas, national spirits and designer and company ideas, and `has_available_idea_with_traits` (used in the wiki template) has no vanilla use, while `has_allowed_idea_with_traits` has 15. [vanilla-confirmed 1.19.3] `history/general/generic_advisors.txt`, `common/ideas/zzz_generic.txt`.
+
+The trait part matches the wiki. Vanilla `communist_revolutionary`, `democratic_reformer` and `fascist_demagogue` in `common/country_leader/00_traits.txt` each set `random = no`, `sprite = 13` and `<group>_drift = 0.1` plus an `ai_will_do`. The `<ideology>_booster` suffix in the template is the wiki's own and occurs in no vanilla file. [vanilla-confirmed 1.19.3] `common/country_leader/00_traits.txt`. For a custom advisor, define a character with an advisor role instead; see [Character modding](<Character modding - Hearts of Iron 4 Wiki.md#Advisors>).
+<!-- kit:end id="ideology-advisor-correction" -->
 
 In order to add a political advisor increasing the popularity of the ideology, first, a trait that will be added to that advisor must be added in `/Hearts of Iron IV/common/country_leader/*.txt`
 

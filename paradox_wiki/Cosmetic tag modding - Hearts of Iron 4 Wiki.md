@@ -2,8 +2,10 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Cosmetic tag modding", revision 67378, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="none" checked="never" -->
-**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="67378" sources="common/countries/cosmetic.txt localisation/english/countries_cosmetic_l_english.yml gfx/flags/ common/names/ portraits/ gfx/entities/ common/autonomous_states/ common/on_actions/_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `common/countries/cosmetic.txt` (387 entries), the vanilla cosmetic localisation file (3,230 keys), `gfx/flags/`, `common/names/`, `portraits/`, `gfx/entities/`, every vanilla use of `set_cosmetic_tag` and `drop_cosmetic_tag`, and the effect, trigger and on action documentation.
+Kit blocks added: scopes and vanilla use of the effects, flag file checks, `cosmetic.txt` format counts, localisation key shapes with counts, names, portraits and entities in vanilla.
+Gaps left: how the game ranks competing flag and name variants, and the "one tag at a time" rule, are engine behaviour that script does not show. `COSMETICTAG` and `EUROPEAN_COSMETIC_TAG` are the wiki's placeholder names, not vanilla names. No vanilla entity is named after a cosmetic tag, so the entity example is unconfirmed.
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -37,6 +39,13 @@ Flags are added in for cosmetic tags the same way as they would be added for the
 
 The name of the flag follows the same pattern as for regular flags: if ideology-specific, `COSMETICTAG_ideology.tga`, for the non-ideology fallback `COSMETICTAG.tga`. **The fallback does not have priority over an ideology-specific base country flag.** If the country TAG may choose between `TAG_ideology.tga` and `COSMETICTAG.tga`, it will use the former. Therefore, if the cosmetic tag should change the flag, adding ideology-specific flags for cosmetic tags is mandatory, unless the base country doesn't have ideology-specific flags itself.
 
+<!-- kit:begin id="cosmetic-flag-vanilla" at="section:Flag" -->
+**Kit note** Checks of the flag rules against `gfx/flags/`. All items: [vanilla-confirmed 1.19.3] `gfx/flags/`, `common/countries/cosmetic.txt`.
+
+- The three sizes and the format hold: a sampled cosmetic flag (`RAJ_UK.tga`) is a 32-bit uncompressed TGA of 82x52 pixels in `gfx/flags/`, 41x26 in `gfx/flags/medium/` and 10x7 in `gfx/flags/small/`. The folders are only `medium` and `small`.
+- File names follow `TAG.tga` and `TAG_<group>.tga` where `<group>` is one of `democratic`, `communism`, `fascism`, `neutrality` (for example `MAL_UK_democratic.tga`). Of the 386 distinct tags in `cosmetic.txt`, 91 have a plain `TAG.tga`, 196 have at least one group flag and 115 have no flag file at all, so they only change name, colour or the other cosmetic parts.
+<!-- kit:end id="cosmetic-flag-vanilla" -->
+
 ## Map colour <a id="Map_colour"></a>
 
 *See also: [Country creation § Country file](<Country creation - Hearts of Iron 4 Wiki.md#Country_file>)*
@@ -51,6 +60,10 @@ COSMETICTAG = {
 ```
 
 Either the RGB colour model or the HSV colour model may be used, signified by the `rgb`/`hsv` before the brackets. The RGB model may use decimals between 0 and 1 or between 0 and 255 for each value, while the HSV model must have its values limited to decimals between 0 and 1.
+
+<!-- kit:begin id="cosmetic-colour-vanilla" at="section:Map_colour" -->
+**Kit note** `common/countries/cosmetic.txt` has 387 entries (386 distinct ids; `SOV_ROME` is defined twice) and every one sets both `color` and `color_ui`. `color` is written with `rgb` in 385 entries and `hsv` in 2; `color_ui` with `rgb` in 386 and `hsv` in 1. An entry is optional: vanilla sets 191 cosmetic tag ids that have no entry in the file. [vanilla-confirmed 1.19.3] `common/countries/cosmetic.txt`, and every vanilla `set_cosmetic_tag` call.
+<!-- kit:end id="cosmetic-colour-vanilla" -->
 
 ## Localisation <a id="Localisation"></a>
 
@@ -71,6 +84,24 @@ The cosmetic tag takes priority over the base localisation of the country. Each 
 l_english:
  COSMETICTAG_despotism_subject: "$OVERLORDADJ$ despotist cosmetic tag"
 ```
+
+<!-- kit:begin id="cosmetic-localisation-vanilla" at="section:Localisation" -->
+**Kit note** Key shapes in the vanilla cosmetic localisation file, `localisation/english/countries_cosmetic_l_english.yml` (UTF-8 with BOM, `l_english:` header). The file mixes cosmetic tags and ordinary country tags; the counts below cover only keys whose tag is a cosmetic id (an id from `cosmetic.txt` or one set by script that is not a plain 3-letter tag): 2,459 keys. Counts and examples: [vanilla-confirmed 1.19.3] `localisation/english/countries_cosmetic_l_english.yml`.
+
+| Shape | Keys | Example |
+| --- | --- | --- |
+| `<TAG>`, `<TAG>_DEF`, `<TAG>_ADJ` | 650 | `INS_HOL`, `INS_HOL_DEF`, `INS_JAP_ADJ` |
+| `<TAG>_<group>` with optional `_DEF` or `_ADJ` | 1,700 | `RAJ_UK_democratic`, `RAJ_UK_democratic_DEF` |
+| `<TAG>_autonomy_<autonomy id>` with optional `_DEF` or `_ADJ` | 106 | `INS_HOL_autonomy_dominion`, `INS_HOL_autonomy_dominion_DEF` |
+| `<TAG>_subject` | 3 | `RAJ_UK_subject` |
+| `<TAG>_<group>_autonomy_<autonomy id>` with optional suffix | 12 | `UKR_SOV_communism_autonomy_dominion` |
+| `<TAG>_<overlord tag>_<group>_subject` or `<TAG>_<overlord tag>_subject`, optional suffix | 34 | `turkestan_united_SOV_communism_subject`, `dalmatia_YUG_subject` |
+
+- `<group>` is one of the four ideology groups (`democratic`, `communism`, `fascism`, `neutrality`). The file has no key that adds a sub-ideology type such as `despotism` to a cosmetic tag, so the wiki's `COSMETICTAG_despotism_subject` has no vanilla precedent. [unverified]
+- `<autonomy id>` is the `id` of an autonomy state in `common/autonomous_states/`, written with its `autonomy_` prefix, for example `autonomy_dominion` or `autonomy_puppet`.
+- Cosmetic ids need not be 3 letters or upper case: the file has keys such as `turkestan_united_...` and `FRA_THIRD_EMPIRE_def`. 90 cosmetic keys end in a lower-case `_def` or `_adj` (for example `USA_wallis_simpson_neutrality_def`) next to the upper-case `_DEF` and `_ADJ` forms. Write `_DEF` and `_ADJ` in upper case; whether the lower-case keys are read is not shown by script. [unverified]
+- Keys can reuse others with `$KEY$`, for example `INS_HOL_FLAG_autonomy_dominion: "$INS_HOL_autonomy_dominion$"`, and use the tokens `$OVERLORDADJ$` (`RAJ_UK_subject: "$OVERLORDADJ$ Raj"`) and `$NONIDEOLOGY$`. `INS_HOL_FLAG` is a separate entry in `cosmetic.txt` with the same colours as `INS_HOL`, and its names point back to `INS_HOL`.
+<!-- kit:end id="cosmetic-localisation-vanilla" -->
 
 ## Other changes <a id="Other_changes"></a>
 
@@ -103,6 +134,14 @@ entity = {
     clone = "FRA_artillery_entity"
 }
 ```
+
+<!-- kit:begin id="cosmetic-other-vanilla" at="section:Other_changes" -->
+**Kit note** What vanilla does with the three minor uses. The placeholder ids `COSMETICTAG` and `EUROPEAN_COSMETIC_TAG` are not vanilla names; use a real id. All items: [vanilla-confirmed 1.19.3] `common/names/00_names.txt`, `portraits/00_portraits.txt`, `portraits/998_scientist_portraits.txt`, `gfx/entities/`.
+
+- Names: only `RAJ_UK` and `MAL_UK` have a cosmetic entry in `common/names/00_names.txt`.
+- Portraits: `RAJ_UK`, `MAL_UK`, `INS_HOL` and `SAF_COM` have top-level entries in `portraits/00_portraits.txt` and in `portraits/998_scientist_portraits.txt`, next to the real tag entries (`GER`, `ENG`, ...). The file also has `default` and `continent` blocks.
+- Entities: no `.asset` file in `gfx/entities/` defines an entity whose name starts with a cosmetic tag id, so the wiki's `COSMETICTAG_artillery_entity` pattern is not exercised by vanilla and stays [unverified].
+<!-- kit:end id="cosmetic-other-vanilla" -->
 
 ## Application <a id="Application"></a>
 
@@ -153,6 +192,21 @@ on_actions = {
     }
 }
 ```
+
+<!-- kit:begin id="cosmetic-effects-vanilla" at="section:Application" -->
+**Kit note** Scopes, forms and use of the cosmetic tag effects and trigger. Scope and syntax: [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`. Counts: [vanilla-confirmed 1.19.3] over `common/`, `events/` and `history/`.
+
+| Name | Kind | Scope | Vanilla form and use |
+| --- | --- | --- | --- |
+| `set_cosmetic_tag` | effect | COUNTRY, no targets | Always `set_cosmetic_tag = ID` (911 uses in 176 files, 559 different ids). |
+| `drop_cosmetic_tag` | effect | COUNTRY, no targets | Always `drop_cosmetic_tag = yes` (249 uses in 70 files). The documentation example `INS = { drop_cosmetic_tag }` has no value; write `= yes` as vanilla does. |
+| `has_cosmetic_tag` | trigger | COUNTRY | `has_cosmetic_tag = ID`. Almost all of its 87,045 uses are in scripted localisation. |
+
+- Where `set_cosmetic_tag` appears: national focuses 279, events 202, scripted effects 138, decisions 134, on actions 132, `history/countries/` 24, and 2 inside an idea's effect block (`common/ideas/czechoslovakia.txt`), so country history files, idea effects and on actions all accept it.
+- `on_ruling_party_change`, `on_government_change`, `on_puppet`, `on_release_as_puppet` and `on_subject_autonomy_level_change` are all listed in the on action documentation, so a cosmetic tag can be tied to an ideology change, a puppeting or a change of autonomy level. [docs] `common/on_actions/_documentation.md`
+- Since it takes a bare id, the scope the effect runs in decides which country gets the tag; wrap it in `TAG = { set_cosmetic_tag = ID }` when you are not already in that country's scope. [docs] `documentation/effects_documentation.md`
+- Of the ids vanilla sets, 191 are not listed in `common/countries/cosmetic.txt`, and 18 ids listed there are never set by vanilla script. [vanilla-confirmed 1.19.3] `common/countries/cosmetic.txt`.
+<!-- kit:end id="cosmetic-effects-vanilla" -->
 
 ## Notes and references <a id="Notes_and_references"></a>
 
