@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Move the Meshy MCP pin from 0.6.2 to 0.6.7 (runtime lock, bootstrap identities and the tool schema lock re-captured from a live `tools/list`). The Text-to-Motion tools the contract named did not exist; it now names `meshy_text_to_motion`, `meshy_list_animations` and the generic task tools, and the deprecated `meshy_rig` `texture_image_url` is never sent.
+- Make the Meshy generation model a per-profile `generation` block in `asset_profiles.json`. The shipped values keep today's request (`meshy-7`, standard, `should_remesh` false). Retired models (`meshy-t1`, `meshy-5`, `meshy-4`, `lowpoly`), unpinned aliases, Smart Topology face caps and a standard-model target that Meshy would ignore are refused before any paid call.
+- Read every credit estimate from `config/meshy_pricing.json` (docs.meshy.ai pricing page, retrieved 2026-10-31) instead of hard-coded 30/5/3 constants and a 44-credit fallback.
+- Require a `credit_budget` for paid jobs. A paid create that would exceed the remaining budget, the contract's attempt limit for its operation, or the live balance stops before submission with the shortfall named; renaming a stage no longer bypasses the no-retry guard.
+- Reuse before paying: a succeeded stage in the job, then a succeeded result in another job with the same request fingerprint; an unreconciled submission for the same request blocks the call.
+- Record every paid attempt, stop, reuse and local rig route in `provider/credits/ledger.jsonl`, and add `run_pilot.py --credits-report` (no API key, no provider call).
+- Run the 3D pipeline suite in `.tools/check.py full`.
+
 ## 2026-10-18
 
 - Bound the Blender adapter to the `mcp` 1.x SDK; a fresh bootstrap resolved `mcp` 2.3.0, which removed `FastMCP`, and the adapter crashed at startup.
