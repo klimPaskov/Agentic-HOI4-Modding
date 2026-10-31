@@ -5,6 +5,15 @@
 - Check 3D model registration in the `asset-wiring` audit (`GFX-3D-*`): `.mesh` and `.anim` files that are missing, `pdxmesh` animation types no `animation` block defines, entities whose `pdxmesh` is defined nowhere, sub-unit `sprite` tokens without a `<sprite>_entity`, `meshsettings` names that are not objects of the exported PDX `.mesh` (read by a small read-only PDX binary reader), and missing model textures. Each finding carries `file:line`; `--calibrate-vanilla` reports how often each rule fires on the installed game.
 - The diffuse texture of a `pdxmesh` under `gfx/` or `interface/` is now reported once, as `GFX-3D-TEXTURE-MISSING`, instead of as `GFX-MISSING-FILE` without a line.
 
+## 2026-10-31
+
+- Review the offline Paradox wiki snapshot against HOI4 1.19.3: kit blocks hold every local correction and addition and survive a refresh, each page records the game build and sources it was checked against, and nine kit pages cover systems the wiki lacks (special projects, raids, peace conferences, collections, script constants, intelligence operations, map modes, game rules, occupation and resistance).
+- Add `.tools/wiki/wiki_status.py`, which compares the installed game's documentation with the recorded index and lists the pages to re-check after a game update.
+- Name the snapshot's files after the page title in lowercase snake_case (`scripted_gui_modding.md`) instead of `<Page Title> - Hearts of Iron 4 Wiki.md`. HOI4 Agent Tools reads the underscore as a space, so its page lookups keep working. The sync and the verify check enforce the scheme, and a mod with its own copy replaces the whole `paradox_wiki/` folder.
+- Move the Defines page's new-define tables into the kit page `defines_additions.md`, so the wiki page stays an unchanged snapshot.
+- Mark the claims only a game run can settle (`collection_size` inclusivity, the peace `ai_desire` scale, special project reward thresholds, the raid `target_type` scope, MIO task capacity) with a "Needs a game run" note on their pages.
+- Record the snapshot's CC BY-SA 3.0 license in `paradox_wiki/LICENSE.txt`, the manifest and `NOTICE`.
+
 ## 2026-10-18
 
 - Bound the Blender adapter to the `mcp` 1.x SDK; a fresh bootstrap resolved `mcp` 2.3.0, which removed `FastMCP`, and the adapter crashed at startup.

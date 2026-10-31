@@ -2,7 +2,7 @@
 
 Read this file when you need exact parameters, scope tables, or vanilla file indexes for the mechanisms summarised in `SKILL.md`.
 `GAME` is the installed Hearts of Iron IV folder named in `CLAUDE.md`; `WIKI` is `paradox_wiki/` at the mod root.
-Primary sources: `GAME/documentation/effects_documentation.md`, `GAME/documentation/triggers_documentation.md`, `GAME/common/factions/_documentation.md`, `GAME/common/on_actions/_documentation.md`, `WIKI/Effects - Hearts of Iron 4 Wiki.md`, `WIKI/Autonomy state modding - Hearts of Iron 4 Wiki.md`, `WIKI/Faction modding - Hearts of Iron 4 Wiki.md`, `WIKI/On actions - Hearts of Iron 4 Wiki.md`.
+Primary sources: `GAME/documentation/effects_documentation.md`, `GAME/documentation/triggers_documentation.md`, `GAME/common/factions/_documentation.md`, `GAME/common/on_actions/_documentation.md`, `WIKI/effects.md`, `WIKI/autonomy_state_modding.md`, `WIKI/faction_modding.md`, `WIKI/on_actions.md`.
 
 ## Contents
 

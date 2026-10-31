@@ -34,12 +34,12 @@ Installed documentation is more authoritative than the wiki; where they disagree
 
 | Topic | Authoritative text | Vanilla precedent |
 | --- | --- | --- |
-| Idea fields, categories, slots, cost, hidden ideas, slot cost modifiers | `WIKI/Idea modding - Hearts of Iron 4 Wiki.md` | `GAME/common/ideas/_event.txt` (event-granted spirits and a hidden idea), `_economic.txt` and `_manpower.txt` (laws), `GER.txt` (designers `tank_manufacturer`, advisors, `custom_modifier_tooltip`), `_debug_spirits.txt` |
+| Idea fields, categories, slots, cost, hidden ideas, slot cost modifiers | `WIKI/idea_modding.md` | `GAME/common/ideas/_event.txt` (event-granted spirits and a hidden idea), `_economic.txt` and `_manpower.txt` (laws), `GER.txt` (designers `tank_manufacturer`, advisors, `custom_modifier_tooltip`), `_debug_spirits.txt` |
 | Idea categories and slots | same page, section Categories | `GAME/common/idea_tags/00_idea.txt` |
-| Advisor characters (`advisor = { idea_token ... }`) | `WIKI/Character modding - Hearts of Iron 4 Wiki.md` | `GAME/common/characters/GER.txt` |
+| Advisor characters (`advisor = { idea_token ... }`) | `WIKI/character_modding.md` | `GAME/common/characters/GER.txt` |
 | Idea effects and triggers | `GAME/documentation/effects_documentation.md` (`add_ideas`, `remove_ideas`, `swap_ideas`, `add_timed_idea`, `modify_timed_idea`, `remove_ideas_with_trait`, `show_ideas_tooltip`, `add_dynamic_modifier`, `remove_dynamic_modifier`, `force_update_dynamic_modifier`, `custom_effect_tooltip`), `triggers_documentation.md` (`has_idea`, `has_idea_with_trait`, `has_dynamic_modifier`, `amount_taken_ideas`, `has_allowed_idea_with_traits`, `has_available_idea_with_traits`) | |
-| Argument tables for those effects | `WIKI/Effects - Hearts of Iron 4 Wiki.md`, rows `add_ideas`, `add_timed_idea`, `modify_timed_idea`, `swap_ideas`, `remove_ideas`, `add_dynamic_modifier` | |
-| Modifier mechanics, dynamic modifiers, static modifiers, modifier definitions, tooltips | `WIKI/Modifiers - Hearts of Iron 4 Wiki.md` | `GAME/common/dynamic_modifiers/0_dynamic_modifiers.txt`, `bba_dynamic_modifiers.txt` (state), `TAOG_dynamic_modifiers.txt` (variable-driven country spirit), `GAME/common/modifiers/00_static_modifiers.txt`, `01_event_modifiers.txt`, `GAME/common/modifier_definitions/modifier_definitions.txt` |
+| Argument tables for those effects | `WIKI/effects.md`, rows `add_ideas`, `add_timed_idea`, `modify_timed_idea`, `swap_ideas`, `remove_ideas`, `add_dynamic_modifier` | |
+| Modifier mechanics, dynamic modifiers, static modifiers, modifier definitions, tooltips | `WIKI/modifiers.md` | `GAME/common/dynamic_modifiers/0_dynamic_modifiers.txt`, `bba_dynamic_modifiers.txt` (state), `TAOG_dynamic_modifiers.txt` (variable-driven country spirit), `GAME/common/modifiers/00_static_modifiers.txt`, `01_event_modifiers.txt`, `GAME/common/modifier_definitions/modifier_definitions.txt` |
 | Complete modifier list by scope and the template modifiers | `GAME/documentation/modifiers_documentation.md` (sections "Modifiers for scope country", "state", "unit_leader", and the `<Building>`, `<Resource>`, `<IdeaGroup>` templates) | |
 | Modifier values as variables | `GAME/documentation/dynamic_variables_documentation.md` (`modifier@`, `leader_modifier@`, `unit_modifier@`) | |
 | Idea description formatter | `GAME/documentation/loc_formatter_documentation.md` (`idea_desc`, `idea_name`) | `custom_effect_tooltip = idea_desc\|<idea>` in `GAME/common/decisions/GER.txt` |
@@ -63,7 +63,7 @@ If a route fails once, retry once with narrower input, then read the local file 
 
 ## How modifiers work
 
-Source: `WIKI/Modifiers`, intro and section Applying a modifier.
+Source: `WIKI/modifiers.md`, intro and section Applying a modifier.
 
 - A modifier is `name = number`. Values add: `political_power_gain = 0.2` and `political_power_gain = -0.05` from two sources give +0.15. A value of 0 does nothing. Booleans are numbers and must be 1 to have an effect. Modifiers have no `if`; use dynamic modifiers for conditions.
 - Total value is readable as a variable: `set_variable = { v = modifier@political_power_gain }` in country or state scope; unit leaders use `unit_modifier@name` and `leader_modifier@name`. A modifier definition with no engine effect can still accumulate this way.
@@ -78,7 +78,7 @@ Source: `WIKI/Modifiers`, intro and section Applying a modifier.
 - Ideas live in `common/ideas/*.txt`: `ideas = { <slot_or_category> = { <idea_id> = { ... } } }`. Keep idea ids unique across files and slots (duplicate-id resolution is unverified). Files load in Unicode filename order (capitals, then underscore, then lowercase).
 - Category and slot declarations live in `common/idea_tags/*.txt` under `idea_categories = { ... }` with keys `slot`, `character_slot`, `type`, `cost`, `removal_cost`, `ledger`, `hidden`, `politics_tab`. Vanilla `GAME/common/idea_tags/00_idea.txt` declares `hidden_ideas` (`hidden = yes`, `removal_cost = -1`), `country` (`type = national_spirit`, `cost = 0`, `removal_cost = -1`), `government` (slots `economy`, `trade_laws`, `mobilization_laws`, character slots `political_advisor` x3), `research_production`, `military_staff`, and spirit categories with `type = army_spirit`, `navy_spirit`, `air_spirit`.
 - The block name inside `ideas = { }` is the slot (or the category for `country` and `hidden_ideas`): `economy = { law = yes ... }`, `tank_manufacturer = { designer = yes ... }`, `political_advisor = { ... }`.
-- A new slot needs a category entry, a sprite `GFX_idea_slot_<slot>` for the empty-slot icon (see `GAME/interface/countrypoliticsview.gfx`), and GUI room: the politics view gridbox defaults to 7 horizontal slots per row, and `GFX_idea_categories` is a frame strip whose frame count must match the number of categories (`WIKI/Idea modding`, GFX and GUI).
+- A new slot needs a category entry, a sprite `GFX_idea_slot_<slot>` for the empty-slot icon (see `GAME/interface/countrypoliticsview.gfx`), and GUI room: the politics view gridbox defaults to 7 horizontal slots per row, and `GFX_idea_categories` is a frame strip whose frame count must match the number of categories (`WIKI/idea_modding.md`, GFX and GUI).
 - Cost factors: the modifier `<slot>_cost_factor` only works if the slot already has an idea or character defined when the modifier is loaded. Idea files starting with a capital letter load before `_economic.txt` and `_manpower.txt`, so an idea in `GER.txt` using `economy_cost_factor` errors; name country idea files with lowercase initials or add a placeholder idea in an earlier-loading file. Character slots (for example `political_advisor_cost_factor`) need at least one idea defined in the slot for the same reason.
 
 ## Idea body: every field that matters
@@ -112,8 +112,8 @@ ideas = {
 }
 ```
 
-- `modifier = { }`: static numbers only. Variables are not read here ("Variables do not work in this section", `WIKI/Idea modding`). Negative values allowed.
-- `targeted_modifier = { tag = TAG <targeted modifiers> }`: applied by the idea holder, effective against TAG; see the Targeted modifiers section of `WIKI/List of modifiers`.
+- `modifier = { }`: static numbers only. Variables are not read here ("Variables do not work in this section", `WIKI/idea_modding.md`). Negative values allowed.
+- `targeted_modifier = { tag = TAG <targeted modifiers> }`: applied by the idea holder, effective against TAG; see the Targeted modifiers section of `WIKI/list_of_modifiers.md`.
 - `research_bonus = { <technology category> = <number> }`: categories from `common/technology_tags/` (examples: `infantry`, `armor`, `dd_tech`, `artillery`).
 - `equipment_bonus = { <archetype or type> = { instant = yes <stat> = <number> } }`: without `instant = yes` the bonus applies only to equipment researched after the idea was added. Archetypes and types come from `common/units/equipment/*.txt`.
 - `rule = { <game rule> = yes|no }`: tooltip lists only rules that differ from the default. The wiki's table of rules includes `can_join_factions`, `can_create_factions`, `can_send_volunteers`, `can_not_declare_war`, `can_puppet`, `can_boost_own_ideology`.
@@ -135,11 +135,11 @@ ideas = {
 - Hidden idea as a token carrier: a modifier-free hidden idea is a database-enumerable token that a dispatcher can read as an idea key. It is not a spirit and needs no icon or localisation when it is never applied to a country.
 - Law: a category with `law = yes` and usually `use_list_view = yes`; each idea has `cost`, `removal_cost`, optional `level`, `default`, `available`, `allowed_to_remove`. `GAME/common/ideas/_economic.txt` and `_manpower.txt`.
 - Designer: a slot such as `tank_manufacturer` with `designer = yes`; fields `allowed`, `visible`, `available`, `research_bonus`, `traits`, `on_add`, `ai_will_do`. `GAME/common/ideas/GER.txt` around its `tank_manufacturer` block.
-- Advisor, two forms. Legacy idea-based: `political_advisor = { id = { picture traits allowed do_effect ai_will_do } }` (for example `GAME/common/ideas/andalusia.txt`). Current character-based: a character with `advisor = { slot = political_advisor idea_token = my_token allowed visible available traits cost can_be_fired }` in `common/characters/*.txt` (`GAME/common/characters/GER.txt`). `idea_token` is mandatory: without it recruiting that character hides every other token-less advisor, and `has_idea` and `show_ideas_tooltip` take the token, not the character id. `on_add` and `on_remove` in an advisor block run in character scope; use `owner = { ... }` to reach the country. See `WIKI/Character modding`.
+- Advisor, two forms. Legacy idea-based: `political_advisor = { id = { picture traits allowed do_effect ai_will_do } }` (for example `GAME/common/ideas/andalusia.txt`). Current character-based: a character with `advisor = { slot = political_advisor idea_token = my_token allowed visible available traits cost can_be_fired }` in `common/characters/*.txt` (`GAME/common/characters/GER.txt`). `idea_token` is mandatory: without it recruiting that character hides every other token-less advisor, and `has_idea` and `show_ideas_tooltip` take the token, not the character id. `on_add` and `on_remove` in an advisor block run in character scope; use `owner = { ... }` to reach the country. See `WIKI/character_modding.md`.
 
 ## Adding, removing, swapping, and timing ideas
 
-Verified against `GAME/documentation/effects_documentation.md` and `WIKI/Effects`.
+Verified against `GAME/documentation/effects_documentation.md` and `WIKI/effects.md`.
 
 ```
 add_ideas = my_idea                      # one
@@ -169,7 +169,7 @@ show_ideas_tooltip = my_idea             # tooltip only, does not add
 
 ## Dynamic modifiers
 
-Source: `WIKI/Modifiers`, section Dynamic modifiers; `GAME/common/dynamic_modifiers/0_dynamic_modifiers.txt` header comment; effects documentation.
+Source: `WIKI/modifiers.md`, section Dynamic modifiers; `GAME/common/dynamic_modifiers/0_dynamic_modifiers.txt` header comment; effects documentation.
 
 Definition (`common/dynamic_modifiers/*.txt`, no wrapper block):
 
