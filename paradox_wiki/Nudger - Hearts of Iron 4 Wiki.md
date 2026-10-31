@@ -1,6 +1,12 @@
 # Nudger
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Nudger", captured 2026-09-19.*
+*Offline snapshot of the Hearts of Iron IV Wiki page "Nudger", revision 97432, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="97432" sources="interface/nudge.gui interface/nudge.gfx interface/frontendmainview.gui map/buildings.txt map/unitstacks.txt map/supply_nodes.txt map/railways.txt map/weatherpositions.txt map/definition.csv map/strategicregions/ history/states/ buildings_nudger_markers.txt unit_nudger_markers.txt common/defines/00_graphics.lua documentation/console_commands_documentation.md" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the nudger's own interface file `interface/nudge.gui` (every window and button label), `interface/frontendmainview.gui`, the map files the nudger reads and writes (row counts and column layout of `map/buildings.txt` and `map/unitstacks.txt`, sizes of the others), the two marker files in the game folder, the nudger define, the `nudge` console command, and class names in `hoi4.exe`.
+Kit blocks added: the nudger menu in 1.19.3, the filled "Strategic regions", "Buildings", "Units" and "References and notes" sections, a folder name correction in "Weather".
+Gaps left: the wiki's long behaviour descriptions (shift-click rules, save and update semantics, crash causes) cannot be checked from game files and are left as written. What the "Mark/Unmark", "Random" and "Validate" buttons do exactly, and what the marker files hold, is not documented, so those statements are marked `[unverified]`.
+<!-- kit:end id="review" -->
 
 ## Table of contents
 
@@ -36,6 +42,16 @@ The nudger will always output the files directly into the [user directory](<Modd
 - Units: Used for establishing the exact position of unit models and victory points.
 - Supply: Used for positioning the starting locations and levels of supply hubs and railways.
 - Leave nudge: Attempts to return to the main menu. If the nudger was entered using the console instead of the main menu, results in a crash to desktop.
+
+<!-- kit:begin id="nudger-menu" at="section:Overview" -->
+**Kit note** The nudger menu as 1.19.3 defines it. The selection window is headed "Choose nudger" and lists, in this order: States, Supply Areas, Strategic Regions, Ambient objects, Database, Weather, Buildings, Units, Supply, and a "Leave Nudge" button. The main menu button is `nudge_button`, labelled "Nudge!". [vanilla-confirmed 1.19.3] `interface/nudge.gui`, `interface/frontendmainview.gui`
+
+The console command `nudge` is documented as "Go to the nudge tool". [docs] `documentation/console_commands_documentation.md`
+
+"Supply Areas" is still in the menu and `nudge_window_supplyarea` is still in the interface file (fields "Supply area name" and "Base value", buttons "Apply value", "Generate", "Regenerate All", "Open File", "Delete region", "Create region", "Update", "Save"). `hoi4.exe` has nudger classes for states, strategic regions, ambient objects, the database, weather, buildings, units and supply hubs, and none for supply areas, which fits the page's remark that the button does nothing. [vanilla-confirmed 1.19.3] `interface/nudge.gui`. The class list is [unverified] `hoi4.exe`
+
+The game's own map error text tells the player: "You can still access the Nudger to attempt to fix the issues", and after coming back from it, restart the game so everything reloads. [vanilla-confirmed 1.19.3] `localisation/english/core_l_english.yml` (`MAP_LOADING_ERROR_INGAME_MITIGATION`)
+<!-- kit:end id="nudger-menu" -->
 
 ## States <a id="States"></a>
 
@@ -75,9 +91,56 @@ Among the buttons that can always be selected, there are "Delete all empty" and 
 
 \*Please help improve this article or section by expanding it .\*
 
+<!-- kit:begin id="nudger-buildings" at="section:Buildings" -->
+**Kit addition** The Buildings section writes `map/buildings.txt` (to the user directory, like the other sections). The row layout is `state id;building id;x;y;z;rotation;sea province` and is explained on [Map modding](<Map modding - Hearts of Iron 4 Wiki.md#Buildings>) and [Building modding](<Building modding - Hearts of Iron 4 Wiki.md#Models>). The output path is inferred from the file names in the exe. [unverified] `hoi4.exe`
+
+What a correct vanilla file looks like, to check a nudged file against. All rows: [vanilla-confirmed 1.19.3] `map/buildings.txt`.
+
+- 66664 rows, each with exactly 7 `;` separated columns, LF line ends, no final newline, coordinates with 2 decimals.
+- State ids run from 1 to 1081 and every one of the 1081 files in `history/states/` has rows.
+- Every state has exactly 1 `air_base`, 1 `rocket_site_spawn`, 1 `nuclear_reactor_spawn`, 1 `synthetic_refinery`, 1 `fuel_silo`, 1 `radar_station` and 1 `stronghold_network` row, 3 `anti_air_building` rows, 6 `arms_factory` rows and 6 `industrial_complex` rows.
+- The last column is non-zero in all 4696 `naval_base_spawn` and `floating_harbor` rows and 0 in all other rows.
+- The page's overview says each state needs one province for the air base and the rocket site. The 1081 single `air_base` and `rocket_site_spawn` rows are the data behind that.
+- The page warns that a new state without these rows crashes the game. Why it crashes is not stated in any game file. [unverified] `map/buildings.txt`
+
+The window `nudge_window_buildings` has these controls. All rows: [vanilla-confirmed 1.19.3] `interface/nudge.gui`.
+
+| Control | Label or key |
+| --- | --- |
+| Check boxes | "Show state only", "Show type only" |
+| Lists | `templates_list` (building types), `instances_list` (placed instances) |
+| Buttons | "Add", "Remove", "Clear state", "Remove All", "Open file" |
+| Positioning | "Random In State", "Random All States", "Random All Unmarked" |
+| Checking | "Validate In State" (key `v`), "Validate All States", "Find Error" (key `f`) |
+| Marking | "Mark/Unmark" (key `m`) |
+| Output | "Save", "Cancel" |
+| Text boxes | `hints` and `message`, filled in by the game at run time |
+
+What the buttons do is read from their labels; no game file describes them. In particular "Random" probably places models and "Validate" probably checks the rows against rules like the list above. [unverified] `interface/nudge.gui`
+
+The define `DEFAULT_NUDGE_FLOATING_HARBOR_DIST = 7.0` is the default distance of a floating harbor from the coast in pixels, "for nudger". [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`
+
+The game folder holds `buildings_nudger_markers.txt` (874 bytes). Every byte is NUL (0x00), so it is not a readable text file; its name is also a string in `hoi4.exe`. It probably stores the marks set with "Mark/Unmark", but no game file says so. [vanilla-confirmed 1.19.3] `buildings_nudger_markers.txt`. The purpose is [unverified] `hoi4.exe`
+<!-- kit:end id="nudger-buildings" -->
+
 ## Strategic regions <a id="Strategic_regions"></a>
 
 \*Please help improve this article or section by expanding it .\*
+
+<!-- kit:begin id="nudger-strategic-regions" at="section:Strategic_regions" -->
+**Kit addition** The strategic region window in `interface/nudge.gui`. All rows: [vanilla-confirmed 1.19.3] `interface/nudge.gui`.
+
+| Part | Controls |
+| --- | --- |
+| Header | text "Strategic region name:" and a name box |
+| File buttons | "Open File", "Delete region", "Create region", "Update", "Save" |
+| Modifiers panel | heading "Modifiers", boxes "Name" and "Trigger", buttons "Update" and "Delete", a list of the region's modifiers |
+| Naval Terrains panel | heading "Naval Terrains", ten buttons: the first is labelled "Default"; the other nine are all labelled "Supply Areas" in the file, which looks like a copy-paste placeholder |
+
+The panels line up with the page's overview line "Edits the strategic region borders and, for naval regions, terrain and modifiers". What each button does is read from its label only. [unverified] `interface/nudge.gui`
+
+Vanilla has 304 strategic region files in `map/strategicregions/` (for example `1-Southern England.txt`). Their format is on [Map modding](<Map modding - Hearts of Iron 4 Wiki.md#Strategic_regions>) and [Strategic region modding](<Strategic region modding - Hearts of Iron 4 Wiki.md>). [vanilla-confirmed 1.19.3] `map/strategicregions/`
+<!-- kit:end id="nudger-strategic-regions" -->
 
 ### Weather <a id="Weather"></a>
 
@@ -94,6 +157,12 @@ The weather instruments can be split into 4 general groups: previewing effects o
 Weather can only be modified with a strategic region selected. When a region is selected, yellow gizmos representing the weather positions will be shown on the map, with the text "small" or "big" representing the volume of the generated particles.
 
 "Save" in the bottom left will output all of the changes to the user directory, "Cancel" will purge all of the changes from memory, while "Reload regions" in the top left will purge the changes from memory and re-read the strategic region and weather position files.
+
+<!-- kit:begin id="nudger-weather-correction" at="section:Weather" -->
+**Kit correction** The text above names `/Hearts of Iron IV/map/strategic_regions/`. The vanilla folder is `map/strategicregions/` without an underscore, as the States section writes it. [vanilla-confirmed 1.19.3] `map/strategicregions/`
+
+`map/weatherpositions.txt` has one row per weather position: `region id;x;y;z;size`, with `size` either `small` or `big`. Vanilla has 588 rows over 287 regions (452 `big`, 136 `small`), for example `1;2781.24;9.90;1571.49;small`. [vanilla-confirmed 1.19.3] `map/weatherpositions.txt`. The first column is probably the strategic region id, the number at the start of the region's file name. [unverified] `map/weatherpositions.txt`
+<!-- kit:end id="nudger-weather-correction" -->
 
 #### Weather positions <a id="Weather_positions"></a>
 
@@ -141,6 +210,22 @@ There are the following buttons present in the Database section:
 
 \*Please help improve this article or section by expanding it .\*
 
+<!-- kit:begin id="nudger-units" at="section:Units" -->
+**Kit addition** The Units section writes `map/unitstacks.txt`. The row layout is `province id;type;x;y;z;rotation;offset`, with 39 types (0 Standstill ... 38 Victory point); the type table is on [Map modding](<Map modding - Hearts of Iron 4 Wiki.md#Unit_model_and_victory_point_positions>). The output path is inferred from the file name in the exe. [unverified] `hoi4.exe`
+
+Vanilla `map/unitstacks.txt`, as a reference for a nudged file. All rows: [vanilla-confirmed 1.19.3] `map/unitstacks.txt`.
+
+- 265355 rows with 7 columns each, LF line ends, final newline present.
+- Rows cover 13282 provinces. 132 provinces of `map/definition.csv` have no rows (ids 0, 1, 843, 1050 and others).
+- 13281 provinces have exactly one type 0 (Standstill) row and exactly one type 38 (victory point) row. Province 13257 has rows for types 1 and 2 only, and no type 0 and no type 38 row. Type 38 exists for every province, not only for provinces that hold a victory point.
+- The supply nudger takes the position of the "Standstill" model as the province's position, as the Supply section says, so a province without a type 0 row falls back to the middle of the province.
+- The `offset` column holds small positive decimals (0.18 to 1.34 seen at the top of the file).
+
+The window `nudge_window_units` has: "Save", "Cancel", "Mark/Unmark" (key `m`), "Auto in Prov" (key `a`), "Auto in All", a list `stacks_list` and a `hints` text box. All rows: [vanilla-confirmed 1.19.3] `interface/nudge.gui`. "Auto" probably generates positions for the selected province or for all provinces; that is read from the label only. [unverified] `interface/nudge.gui`
+
+The game folder holds `unit_nudger_markers.txt` (13208 bytes), also all NUL bytes and named in `hoi4.exe`, probably the unit counterpart of the buildings marker file. [vanilla-confirmed 1.19.3] `unit_nudger_markers.txt`. The purpose is [unverified] `hoi4.exe`
+<!-- kit:end id="nudger-units" -->
+
 ## Supply <a id="Supply"></a>
 
 *"Supply hub" and "Supply node" are used interchangeably here**See also: [Map modding § Supply](<Map modding - Hearts of Iron 4 Wiki.md#Supply>)*
@@ -176,6 +261,27 @@ While `^Ctrl`, the edit mode is enabled. Letting go of `^Ctrl` will immediately 
 
 ## References and notes <a id="References_and_notes"></a>
 
+<!-- kit:begin id="nudger-references" at="section:References_and_notes" -->
+**Kit addition** Which file each nudger section works on, with the size of the vanilla file. The file names come from the page text; the sizes were counted in the installed game. All rows: [vanilla-confirmed 1.19.3] the files named in the table.
+
+| Section | File | Vanilla size |
+| --- | --- | --- |
+| States | `history/states/*.txt` | 1081 files |
+| States, Strategic regions | `map/strategicregions/*.txt` | 304 files |
+| Buildings | `map/buildings.txt` | 66664 rows |
+| Units | `map/unitstacks.txt` | 265355 rows |
+| Supply | `map/supply_nodes.txt` | 727 lines |
+| Supply | `map/railways.txt` | 909 lines |
+| Weather | `map/weatherpositions.txt` | 588 rows |
+| Database | `map/definition.csv` | 13414 lines (ids 0 to 13413) |
+| Ambient objects | `map/ambient_object.txt` | see [Entity modding](<Entity modding - Hearts of Iron 4 Wiki.md>) |
+| Supply areas | `map/supplyareas/` | 1 file, `1-SupplyArea.txt` |
+
+Related pages: [Map modding](<Map modding - Hearts of Iron 4 Wiki.md>), [State modding](<State modding - Hearts of Iron 4 Wiki.md>), [Strategic region modding](<Strategic region modding - Hearts of Iron 4 Wiki.md>), [Supply areas modding](<Supply areas modding - Hearts of Iron 4 Wiki.md>), [Building modding](<Building modding - Hearts of Iron 4 Wiki.md>), [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>).
+
+The nudger's own windows are in `interface/nudge.gui` (about 2760 lines) and its sprites in `interface/nudge.gfx`. [vanilla-confirmed 1.19.3] `interface/nudge.gui`, `interface/nudge.gfx`
+<!-- kit:end id="nudger-references" -->
+
 ---
 
 ## Navigation
@@ -188,3 +294,4 @@ While `^Ctrl`, the edit mode is enabled. Letting go of `^Ctrl` will immediately 
 - **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
 - **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
 - **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md>) • [Game rule modding](<Game rule modding - Hearts of Iron 4 Wiki.md>) • [Intelligence operation modding](<Intelligence operation modding - Hearts of Iron 4 Wiki.md>) • [Map mode modding](<Map mode modding - Hearts of Iron 4 Wiki.md>) • [Occupation and resistance modding](<Occupation and resistance modding - Hearts of Iron 4 Wiki.md>) • [Peace conference modding](<Peace conference modding - Hearts of Iron 4 Wiki.md>) • [Raid modding](<Raid modding - Hearts of Iron 4 Wiki.md>) • [Script constant modding](<Script constant modding - Hearts of Iron 4 Wiki.md>) • [Special project modding](<Special project modding - Hearts of Iron 4 Wiki.md>)

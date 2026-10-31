@@ -1,6 +1,13 @@
 # Event modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Event modding", captured 2026-09-19.*
+*Offline snapshot of the Hearts of Iron IV Wiki page "Event modding", revision 102070, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="102070" sources="events/ history/ common/defines/00_defines.lua documentation/effects_documentation.md hoi4.exe" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all 128 files in `events/` (6,974 events), the event effects in `documentation/effects_documentation.md`, the event defines in `common/defines/00_defines.lua`, vanilla effect calls in `history/` and `common/`, and message strings in `hoi4.exe`.
+- Kit blocks added: event types and how rare state events are, id rules and exceptions, title, desc and picture usage, triggered-only events with `mean_time_to_happen`, major news events, option `ai_chance`, optional keys (`immediate`, `after`, `timeout_days`, `hidden`), arguments of the fire effects, engine log messages.
+- Errors found in the wiki text: `major = yes` is not set in every news event (596 of 677 have it); `random_hours` and `random_days` exclude their upper bound.
+- Gaps left: no game file documents `timeout_days`, `minor_flavor`, `after` or `original_recipient_only`, and the id collision for non-integer ids was not tested in the game.
+<!-- kit:end id="review" -->
 
 ## Table of contents
 
@@ -38,6 +45,23 @@ A country that doesn't exist may still get events [if fired via an effect](#Effe
 
 Each event is contained within a code block corresponding to the event type, such as `country_event` or `news_event`. Within the event, a mandatory line is `id`, corresponding to the event's ID, such as `id = my_event.123`.
 
+<!-- kit:begin id="event-types-in-use" at="section:Event_creation" -->
+**Kit addition** Event types in vanilla 1.19.3, counted as top-level definitions in `events/*.txt` (128 files, 6,974 events). All rows: [vanilla-confirmed 1.19.3] `events/`.
+
+| Type | Events | Files | Notes |
+| --- | --- | --- | --- |
+| `country_event` | 6,251 | 114 | the default type |
+| `news_event` | 677 | 36 | 596 set `major = yes` |
+| `unit_leader_event` | 33 | 7 | all set `is_triggered_only = yes` |
+| `operative_leader_event` | 7 | 2 | all set `is_triggered_only = yes` |
+| `state_event` | 6 | 4 | all set `is_triggered_only = yes` |
+
+- State events are rare: 6 of 6,974 definitions, fired by 10 effects, and every one of those effects is written `state_event = { id = <id> trigger_for = controller }`. [vanilla-confirmed 1.19.3] `events/`, `common/on_actions/00_on_actions.txt`, `common/on_actions/07_nsb_on_actions.txt`.
+- 6,574 events (94%) set `is_triggered_only = yes`, 9 set it to `no`, and 391 leave it out and are therefore automatic events. [vanilla-confirmed 1.19.3] `events/`.
+- Effect scopes: `country_event` and `news_event` run in country scope, `state_event` in state or country scope, `unit_leader_event` and `operative_leader_event` in character scope (the event goes to the owner country of the character). [docs] `documentation/effects_documentation.md`.
+- `hoi4.exe` contains the message "Event is a leader event and has to be triggered only."; all 40 vanilla leader events are triggered only, so always write `is_triggered_only = yes` on them. [unverified] (string in `hoi4.exe`, condition not tested).
+<!-- kit:end id="event-types-in-use" -->
+
 ### ID rules <a id="ID_rules"></a>
 
 Within an event file, all events have to have an ID in the format of `<namespace>.<integer ID>`. For example, in an event `my_event.123`, the namespace will be "my_event", while the ID is "123".
@@ -45,6 +69,18 @@ Within an event file, all events have to have an ID in the format of `<namespace
 **A namespace must be first created** before defining any events that use it. This is done with the line `add_namespace = my_event` **which must be outside of any event**. If a namespace is not defined, then the event ID will be considered a malformed token, leading it to not working in-game. The event namespace consists of word characters (e.g. letters of the English alphabet or underscores). This includes dots: `add_namespace = my_event.subtopic` can be used for events of the type of `id = my_event.subtopic.1`. The numeric ID will be taken to be everything after the last dot converted to an integer, or 0 if the conversion fails.
 
 Internal IDs are defined for events by assigning an ID to each namespace (IDs are assigned in the order in the code, files being loaded by filename in the character order), with the first-defined namespace being assigned an ID of 10, incrementing it by 1 for each next created namespace, multiplying it by 100000, and adding the integer ID. If the ID after the namespace fails conversion to an integer, then it'll default to 0. For this reason, every event with a non-integer ID will be considered the same event, so **the ID of the event after the namespace must be an integer**.
+
+<!-- kit:begin id="event-id-vanilla" at="section:ID_rules" -->
+**Kit addition** Event ids in vanilla 1.19.3. All items: [vanilla-confirmed 1.19.3] `events/`.
+
+- 6,967 of 6,974 events use the plain form `<namespace>.<integer>`. The files hold 436 `add_namespace` lines and none is repeated. The largest numeric part is 2102, so no vanilla id comes near the 100000 limit. 225 ids have leading zeros, such as `namespace.01`.
+- Nested namespace (3 events in 2 namespaces): `events/MUN_Czechoslovakia.txt` declares `add_namespace = MUN_czech.news` and defines `MUN_czech.news.1` and `MUN_czech.news.2`; `events/MUN_Slovakia.txt` declares `MUN_slovakia.news` and defines `MUN_slovakia.news.1`.
+- Non-integer suffix (4 events): `BBA_italy_missiolinis.02_north`, `.03_north`, `.04_south` and `.05_south` in `events/BBA_Italy.txt`. No script in `events/`, `common/` or `history/` fires them.
+- Letter case differs from the namespace line in 34 events: 31 events in `events/BBA_Switzerland.txt` use `BBA_switzerland.N` while the file declares `BBA_Switzerland`; 2 events use `taog_news.N` where `TAOG_news` is declared; `NSB_news.200` is declared as `nsb_news`.
+
+Vanilla ships those 34 events, so the namespace match looks case-insensitive, but that is only an inference from the files; keep the case identical anyway. [unverified]
+The wiki's collision rule for non-integer ids would give the four `BBA_italy_missiolinis` events above the same internal id as `BBA_italy_missiolinis.00`; this was not tested. [unverified]
+<!-- kit:end id="event-id-vanilla" -->
 
 ### Localisation <a id="Localisation"></a>
 
@@ -72,6 +108,14 @@ title = {
 ```
 
 The game will choose the first localisation key where the conditions are met. In this case, the event title will use the my_event.123.t.a localisation key if the country receiving the event has the tag of ENG, and every other country will have the event title use the my_event.123.t.b localisation key. `trigger` is a [trigger](<Triggers - Hearts of Iron 4 Wiki.md>) block, requiring all of the triggers inside to be true by default. The formatting for event descriptions is the same, with `title` changed for `desc`.
+
+<!-- kit:begin id="event-localisation-vanilla" at="section:Localisation" -->
+**Kit addition** Title, desc and options in vanilla 1.19.3.
+
+- All 6,788 events that are not hidden have a `title`, a `desc` and at least one `option`. [vanilla-confirmed 1.19.3] `events/`.
+- Conditional text is common for `desc` and rare for `title`: 212 events use `desc = { text = ... trigger = ... }` blocks and 13 use `title` blocks. [vanilla-confirmed 1.19.3] `events/`.
+- `hoi4.exe` contains the log messages "Event is missing a title.", "Event is missing a desc." and "Event has no options.", so a visible event without all three is reported. [unverified] (strings in `hoi4.exe`, conditions not tested).
+<!-- kit:end id="event-localisation-vanilla" -->
 
 ### Picture <a id="Picture"></a>
 
@@ -114,6 +158,13 @@ defined_text = {
 }
 ```
 
+<!-- kit:begin id="event-picture-vanilla" at="section:Picture" -->
+**Kit addition** Picture usage in vanilla 1.19.3. All items: [vanilla-confirmed 1.19.3] `events/`.
+
+- 6,775 events set a picture: 6,767 write `picture` and 8 write `Picture`. The value is always a single sprite name or a string. 18 events use the scripted localisation form `picture = "[Name]"`; none uses a block form.
+- The 8 `Picture` events are in `events/BBA_Ethiopia.txt`, `events/BBA_Switzerland.txt` and `events/LaR_France.txt`. Write the key in lowercase.
+<!-- kit:end id="event-picture-vanilla" -->
+
 ### Triggering <a id="Triggering"></a>
 
 The `trigger = { ... }` block of [triggers](<Triggers - Hearts of Iron 4 Wiki.md>) is used to declare conditions that must be met so that the event is possible to appear. If it's false, there's no way to fire the event aside from using [the console command](<Console commands - Hearts of Iron 4 Wiki.md>). This will look like the following:
@@ -148,6 +199,23 @@ The automatic firing can be disabled by adding `is_triggered_only = yes` into th
 
 `major = yes` is used to make the event fire for every country once any country receives it. **This is done in every news event**, since news events are purely a graphical reskin of country events. In case of overlap with `fire_only_once = yes`, the latter will take priority and remove any effect of the event being major, making it only appear for the country receiving it for the first time. Countries other than the first country receiving it will ignore `trigger = { ... }`. To make only some countries get the event shown while it's still major, `show_major = { ... }` is used as a [trigger](<Triggers - Hearts of Iron 4 Wiki.md>) block that makes the event show up only if it's true. If `fire_for_sender = no` is also added, the event will fire for every country that meets `show_major` aside from the country that was intended to receive it.
 
+<!-- kit:begin id="event-triggered-only-mtth" at="section:Triggering" -->
+**Kit addition** Triggered-only events and `mean_time_to_happen` in vanilla 1.19.3.
+
+- 6,574 of 6,974 events set `is_triggered_only = yes`. Of the 400 that do not, 373 define `mean_time_to_happen`; 375 events define it in total. [vanilla-confirmed 1.19.3] `events/`.
+- 298 triggered-only events also carry a `trigger` block, the normal way to gate an event that an effect or an on_action fires. [vanilla-confirmed 1.19.3] `events/`.
+- Two vanilla events combine `is_triggered_only = yes` with `mean_time_to_happen = { days = 1 }`: `JUNO_brazil_events.202` (`events/TOA_Brazil.txt`, also `hidden = yes`) and `ww_BEL_event_war.3` (`events/WUW_Belgium.txt`). Effects fire both (`country_event = { id = JUNO_brazil_events.202 months = 48 }` in `events/TOA_Brazil.txt`, and `id = ww_BEL_event_war.3 hours = 6` in `common/on_actions/12_wuw_on_actions.txt`), so a triggered-only event with a leftover timer still fires when it is called. [vanilla-confirmed 1.19.3]
+- The wiki says the timer has no effect on a triggered-only event, which fits both vanilla events being started by effects. `hoi4.exe` has the message "Event is triggered only, but does not have a 1 base-factor." The wording points at the size of the timer, and both vanilla events use `days = 1`, which is also the shape of the wiki's broken example below. When exactly the message is logged is unknown, so leave `mean_time_to_happen` out of every triggered-only event. [unverified] (wiki claim and a string in `hoi4.exe`).
+<!-- kit:end id="event-triggered-only-mtth" -->
+
+<!-- kit:begin id="event-major-news" at="section:Triggering" -->
+**Kit correction** The wiki says `major = yes` "is done in every news event". In 1.19.3 only 596 of 677 vanilla news events set it, and 81 do not (for example `AAT_norway_news.2` in `events/AAT_Norway.txt`). [vanilla-confirmed 1.19.3] `events/`.
+
+- `major` is not limited to news events: `south_american_events.61` and `.62` (country events in `events/TOA_Generic_Events.txt`) set `major = yes`, and the 6 operative leader events in `events/LaR_agent_events.txt` set `major = no`. [vanilla-confirmed 1.19.3]
+- `show_major = { ... }` appears in 5 news events (`news.44` to `news.47` and `news.124`, all in `events/NewsEvents.txt`). `fire_for_sender = no` appears in 36 news events in `events/NewsEvents.txt` and `events/WTT_NewsEvents.txt`. [vanilla-confirmed 1.19.3]
+- 7 news events set both `major = yes` and `fire_only_once = yes`: `news.55`, `news.270` to `news.273` and `news.337` (`events/NewsEvents.txt`) and `nuke_dropped.0` (`events/NukeEvents.txt`). The wiki says `fire_only_once` then limits the news to one country; no game file documents the combination. [vanilla-confirmed 1.19.3]
+<!-- kit:end id="event-major-news" -->
+
 ### Options <a id="Options"></a>
 
 An event option is added with an `option = { ... }` block. An event option is an [effect](<Effects - Hearts of Iron 4 Wiki.md>) block, with a few extra options:
@@ -177,6 +245,25 @@ ai_chance = {
 }
 ```
 
+<!-- kit:begin id="event-option-ai-chance" at="section:Options" -->
+**Kit addition** Options and `ai_chance` in vanilla 1.19.3 (11,547 options in `events/`). All counts: [vanilla-confirmed 1.19.3] `events/`.
+
+- 6,247 options (54%) set `ai_chance` and 3,275 set a `trigger`. No vanilla option uses `original_recipient_only`; the token exists in `hoi4.exe`, so the wiki's description stands but is untested. [unverified]
+- The 6,249 `ai_chance` blocks have these top-level keys:
+
+| Top-level keys | Blocks |
+| --- | --- |
+| `base` only | 3,138 |
+| `base` and `modifier` | 1,947 |
+| `factor` only | 643 |
+| `factor` and `modifier` | 515 |
+| `modifier` only | 2 |
+| empty block | 4 |
+
+- No block mixes a top-level `base` with a top-level `factor`, and `base` is never used inside a `modifier`: modifiers inside `ai_chance` use `factor` (4,806 times) and `add` (1,262 times). The most common `base` values are 10 (1,678 blocks), 1 (775) and 0 (604).
+- Prefer `base = N` (81% of vanilla blocks) and put `factor` and `add` inside `modifier` blocks. No game document defines how a top-level `factor` behaves when `base` is absent, and the wiki example that sets `base` and a top-level `factor` together has no vanilla precedent. [unverified]
+<!-- kit:end id="event-option-ai-chance" -->
+
 ### Additional arguments <a id="Additional_arguments"></a>
 
 `immediate = { ... }` is an [effect](<Effects - Hearts of Iron 4 Wiki.md>) block, executed as soon as the event is fired, before an option is chosen by the player. This can also be used for AI: AI only picks an option after the event triggers are evaluated for every other country, while immediate is executed immediately, before evaluating other events. This can be used in mean-time-to-happen type major events: by making the immediate set a global flag, which is required to be unset in the event trigger, this will prevent it from being fired more than once for each country, but it is preferable to avoid mean-time-to-happen events in entirety. Note that the effect will appear in the tooltip after the event's description, so the [hidden_effect](<Effects - Hearts of Iron 4 Wiki.md#Tooltip_manipulation>) flow tool can be helpful.
@@ -188,6 +275,24 @@ ai_chance = {
 `hidden = yes` will make an event hidden. A hidden event does not need a title or a description. The first defined option, if one is present, will be automatically picked upon being fired. Hidden events can be useful instead of [scripted effects](<Effects - Hearts of Iron 4 Wiki.md>) to delay the execution of an effect block by a period of time or to utilise the FROM scope.
 
 `minor_flavor = yes` marks the event as being a minor flavour event. This does not change its appearance or change its effects, but allows turning off the pop-up within the game's decision menu.
+
+<!-- kit:begin id="event-optional-keys" at="section:Additional_arguments" -->
+**Kit addition** Optional event keys in vanilla 1.19.3 (6,974 events). Counts: [vanilla-confirmed 1.19.3] `events/`.
+
+| Key | Events | Notes |
+| --- | --- | --- |
+| `immediate` | 959 | about 14% of all events |
+| `hidden = yes` | 184 | 2 more write `Hidden = yes` (`events/USA.txt`); 54 events write `hidden = no` |
+| `fire_only_once` | 1,391 | 1,155 `yes`, 236 `no` |
+| `after` | 8 | `bftb_turkey.134`, `germany.55`, `MUN_czech.1034`, `MUN_the_fall_of_the_republic.3`, `SEA_japan_foreign_policy.60` and `.67`, `SEA_japan_popup_events.22` and `.29` |
+| `timeout_days` | 6 | `AAT_Sweden.28`, `.29` and `.30` use 6; `MUN_czech_skoda_priority.1` uses 30; `MUN_czech.1` uses 1; `MUN_czech.1017` uses 7 |
+| `minor_flavor = yes` | 6 | all in `events/AcePilots.txt` |
+
+- Of the 186 hidden events, 116 have no `option` and 70 have one or more (2 of those have several). [vanilla-confirmed 1.19.3] `events/`.
+- `timeout_days` is rare and no game documentation file describes it. The define `NDefines.NGame.EVENT_TIMEOUT_DEFAULT = 13` is commented as the default number of days before an event times out if not scripted. What the game does when the timeout expires is not documented; the wiki says the first option is picked. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` for the define; [unverified] for the behaviour.
+- `NDefines.NCountry.EVENT_PROCESS_OFFSET = 20` is commented "Events are checked every X day per country or state", which matches the 20 day trigger check described above. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+- No game documentation file explains `after` or `minor_flavor`; both tokens exist in `hoi4.exe`. [unverified]
+<!-- kit:end id="event-optional-keys" -->
 
 ## Effect <a id="Effect"></a>
 
@@ -226,6 +331,29 @@ Additionally, there are these event type-specific arguments:
 - `set_root = TAG` (Unique to operative leader events) — Changes the scope of ROOT within the dynamic localisation of the event, without actually changing it in code.
 - `set_from = TAG` (Unique to operative leader events) — Changes the scope of FROM within the dynamic localisation of the event, without actually changing it in code.
 - `set_from_from = TAG` (Unique to operative leader events) — Changes the scope of FROM.FROM within the dynamic localisation of the event, without actually changing it in code.
+
+<!-- kit:begin id="event-fire-effects" at="section:Effect" -->
+**Kit correction** Delay arguments of the event-firing effects, from `documentation/effects_documentation.md`:
+
+- `hours`, `days` and `months` are added together; a month counts as 30 days. [docs]
+- `random_hours` adds a random delay from 0 up to but not including its value, and `random_days` adds one from 0 up to one hour less than its value. The wiki text above says the range includes both ends; the game documentation says the upper bound is excluded. If both are given they are added. [docs]
+- `random = 6` is an older spelling of `random_hours = 6`. `random = { chance = 50 ... }` is a different feature: a group of child effects that run with that percentage chance. [docs]
+- `tooltip = <loc key>` picks the tooltip text for the effect. No vanilla file uses it. [docs] for the key, [vanilla-confirmed 1.19.3] for the absence in `events/`, `common/` and `history/`.
+
+| Effect | Scope | Arguments named in the documentation |
+| --- | --- | --- |
+| `country_event` | country | `id`, `hours`, `days`, `months`, `random_hours`, `random_days`, `random`, `tooltip` |
+| `news_event` | country | the same as `country_event` |
+| `state_event` | state or country | the same, plus `trigger_for` (`controller`, `owner`, `occupied`, `from`, `prev`, `root` or a tag) |
+| `unit_leader_event` | character | `id`, the delay arguments, `random`, `tooltip` |
+| `operative_leader_event` | character | the same as `unit_leader_event`, plus `originator`, `recipient`, `set_root`, `set_from`, `set_from_from` |
+
+All rows: [docs] `documentation/effects_documentation.md`.
+
+- Vanilla calls across `events/`, `common/` and `history/`: `country_event` is written in block form 7,457 times and as `country_event = <id>` 1,506 times; `news_event` 711 block and 13 short; `unit_leader_event` 32 block and 6 short; `state_event` 10; `operative_leader_event` 7, all with `set_from_from`. Inside `country_event` blocks: `hours` 3,709, `days` 2,633, `random_hours` 797, `random_days` 781, `random` 118, `months` 28. [vanilla-confirmed 1.19.3]
+- There is no effect that cancels, disables or lists a pending delayed event: no effect or trigger in `documentation/effects_documentation.md` or `documentation/triggers_documentation.md` has such a name. [docs]
+- To make a pending call harmless, give the target event a `trigger` that tests a flag and clear the flag when the call should lapse. The wiki says an event's `trigger` is checked when the delayed event is about to fire. [unverified]
+<!-- kit:end id="event-fire-effects" -->
 
 ## Common mistakes <a id="Common_mistakes"></a>
 
@@ -568,6 +696,22 @@ country_event = {
 }
 ```
 
+<!-- kit:begin id="event-engine-messages" at="section:Unintuitive_logged_errors" -->
+**Kit addition** Event log messages found as strings in `hoi4.exe`. All rows: [unverified] (strings read from `hoi4.exe`; the exact trigger conditions were not tested).
+
+| Message | Likely cause |
+| --- | --- |
+| "Event is missing a title." | a visible event without `title` |
+| "Event is missing a desc." | a visible event without `desc` |
+| "Event has no options." | a visible event without `option` |
+| "Event is triggered only, but does not have a 1 base-factor." | `is_triggered_only = yes` together with a `mean_time_to_happen` timer |
+| "Event is set to trigger every day." | automatic event with a timer of one day or less that can repeat |
+| "Event is a leader event and has to be triggered only." | `unit_leader_event` or `operative_leader_event` without `is_triggered_only = yes` |
+| "Malformed token" and "Failed to create id" | namespace problems and duplicate internal ids, as described above |
+
+The first three do not occur in vanilla: every non-hidden vanilla event has a title, a desc and an option. [vanilla-confirmed 1.19.3] `events/`.
+<!-- kit:end id="event-engine-messages" -->
+
 ## Event file example <a id="Event_file_example"></a>
 
 ```text
@@ -866,6 +1010,10 @@ country_event = {
 }
 ```
 
+<!-- kit:begin id="event-history-vanilla" at="section:Integration_with_history" -->
+**Kit addition** Vanilla fires events from country history files in 8 files (`BRA`, `CHL`, `CZE`, `FIN`, `RAJ`, `SOV`, `SWI` and `USA` in `history/countries/`), 14 calls in total, and every call carries a delay (`days` or `months`, in some with `random_days` or `random_hours`). No vanilla history file fires an event without a delay. [vanilla-confirmed 1.19.3] `history/countries/`.
+<!-- kit:end id="event-history-vanilla" -->
+
 ## Notes and references <a id="Notes_and_references"></a>
 
 **^** **a:** `delayed_event` is used for tracking events that are to be fired with a time delay in the save games (as they're formatted with `save_as_binary=no` in `/Hearts of Iron IV/settings.txt`). This is used for every single event type, such as country events or state events.
@@ -887,3 +1035,4 @@ Note that when editing defines, it is far preferable to use an [override file](<
 - **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
 - **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
 - **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md>) • [Game rule modding](<Game rule modding - Hearts of Iron 4 Wiki.md>) • [Intelligence operation modding](<Intelligence operation modding - Hearts of Iron 4 Wiki.md>) • [Map mode modding](<Map mode modding - Hearts of Iron 4 Wiki.md>) • [Occupation and resistance modding](<Occupation and resistance modding - Hearts of Iron 4 Wiki.md>) • [Peace conference modding](<Peace conference modding - Hearts of Iron 4 Wiki.md>) • [Raid modding](<Raid modding - Hearts of Iron 4 Wiki.md>) • [Script constant modding](<Script constant modding - Hearts of Iron 4 Wiki.md>) • [Special project modding](<Special project modding - Hearts of Iron 4 Wiki.md>)

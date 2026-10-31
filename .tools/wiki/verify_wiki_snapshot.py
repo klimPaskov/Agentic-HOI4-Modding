@@ -11,7 +11,10 @@ non-zero when the snapshot is not self-contained and readable, and reports:
 * table rows whose column count differs from their header;
 * pages that do not have exactly one level-1 heading;
 * encoding damage: byte order marks, non-breaking and
-  zero-width characters, and mojibake.
+  zero-width characters, and mojibake;
+* kit blocks that are unpaired, sit away from the place their ``at`` names,
+  point at a heading the page no longer has, or do not say they are kit text;
+* snapshot pages without a review block, and a missing ``LICENSE.txt``.
 
 Usage::
 
@@ -26,6 +29,9 @@ import re
 import sys
 from collections import Counter
 from pathlib import Path
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kit_blocks  # the page format, next to this script
 
 FENCE = "`" * 3
 PIPE = re.compile(r"(?<!\\)\|")
@@ -45,6 +51,46 @@ def find_repo_root(start):
 
 def columns(line):
     return len(PIPE.findall(line))
+
+
+def check_encoding(name, text, report):
+    """Non-breaking, zero-width and control characters, and mojibake."""
+    # Markdown escapes preserve literal punctuation and are not encoding damage.
+    for pat, kind in (("\u00a0", "nbsp"), ("\u200b", "zwsp"),
+                      ("\u2011", "nb_hyphen"),
+                      ("[\u0080-\u009f]", "control_char")):
+        hits = re.findall(pat, text)
+        if hits:
+            report(kind, name, f"{len(hits)} occurrence(s)")
+
+    for bad in ("\u00e2\u20ac", "\u00c3\u00a9", "\u00d0\u0178",
+                "\u00ef\u00bb\u00bf", "\u00c2 "):
+        if bad in text:
+            report("mojibake", name, bad)
+
+
+def check_kit(name, text, report):
+    """Kit blocks, the review block, and the label that marks kit text."""
+    # A Windows checkout with core.autocrlf=true has CRLF pages.
+    text = text.replace("\r\n", "\n")
+    lines = text.split("\n")
+    snapshot_page = kit_blocks.CAPTURE.match(lines[kit_blocks.layout(lines)["capture"]])
+    for problem in kit_blocks.position_problems(text):
+        if snapshot_page or "no review block" not in problem:
+            report("kit_block", name, problem)
+    try:
+        blocks = kit_blocks.find_blocks(text)
+    except kit_blocks.KitBlockError:
+        return  # already reported
+    for block in blocks:
+        body = [line for line in block.text.split("\n")[1:-1] if line.strip()]
+        if not body or "Kit" not in body[0]:
+            report("kit_label", name,
+                   f"kit block {block.id!r}: first line must say it is kit text")
+    review = kit_blocks.review(text)
+    if review and not re.match(r"^(none|\d+(\.\d+){1,3})$", review.get("build", "")):
+        report("kit_block", name, f"review build {review.get('build')!r} is not a "
+               "game version or none")
 
 
 def verify(directory, show_details=True):
@@ -176,19 +222,11 @@ def verify(directory, show_details=True):
         if h1 != 1:
             report("h1_count", name, f"{h1} level-1 headings")
 
-        # --- encoding artefacts --------------------------------------------
-        # Markdown escapes preserve literal punctuation and are not encoding damage.
-        for pat, kind in (("\u00a0", "nbsp"), ("\u200b", "zwsp"),
-                          ("\u2011", "nb_hyphen"),
-                          ("[\u0080-\u009f]", "control_char")):
-            hits = re.findall(pat, text)
-            if hits:
-                report(kind, name, f"{len(hits)} occurrence(s)")
-
-        for bad in ("\u00e2\u20ac", "\u00c3\u00a9", "\u00d0\u0178",
-                    "\u00ef\u00bb\u00bf", "\u00c2 "):
-            if bad in text:
-                report("mojibake", name, bad)
+        check_encoding(name, text, report)
+        check_kit(name, text, report)
+        if "LICENSE.txt" in text and not os.path.exists(
+                os.path.join(directory, "LICENSE.txt")):
+            report("license", name, "names LICENSE.txt, which is missing")
 
     # --- media coverage ----------------------------------------------------
     media_dir = os.path.join(directory, "media")

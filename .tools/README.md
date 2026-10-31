@@ -129,16 +129,17 @@ Do not commit secrets, provider outputs, job artifacts, virtual environments, ve
 
 ### Offline Paradox wiki snapshot
 
-`wiki/sync_wiki_snapshot.py` regenerates `paradox_wiki/` from the live Hearts of Iron IV wiki, and `wiki/verify_wiki_snapshot.py` is the read-only acceptance check for the result.
-The snapshot ships as the `wiki.snapshot` manifest component and is named by the project instructions as the required modding reference, so both commands run as a pair whenever the wiki moves:
+`wiki/sync_wiki_snapshot.py` regenerates `paradox_wiki/` from the live Hearts of Iron IV wiki and keeps the kit's local additions (kit blocks and kit pages), `wiki/verify_wiki_snapshot.py` is the read-only acceptance check for the result, and `wiki/wiki_status.py` reports which pages are current for the installed game build and which to re-check after a game update.
+The snapshot ships as the `wiki.snapshot` manifest component and is named by the project instructions as the required modding reference, so the commands run together whenever the wiki or the game moves:
 
 ```powershell
 python -B .tools/wiki/sync_wiki_snapshot.py
 python -B .tools/wiki/verify_wiki_snapshot.py
+python -B .tools/wiki/wiki_status.py
 ```
 
 After a refresh, regenerate `hoi4-mod-setup.manifest.json` with `scripts/generate_manifest_evidence.py --revision <new commit>` so `wiki.snapshot` pins the refreshed hashes.
-Contract, options, and the page set are in `wiki/README.md`.
+The page format, evidence tags, refresh workflow and options are in `wiki/README.md`.
 
 ## Generated and local-only data
 

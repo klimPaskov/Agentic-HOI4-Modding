@@ -1,6 +1,12 @@
 # Font modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Font modding", captured 2026-09-19.*
+*Offline snapshot of the Hearts of Iron IV Wiki page "Font modding", revision 72880, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="72880" sources="interface/core.gfx interface/core_chinese.gfx interface/core_korean.gfx interface/chatfonts.gfx interface/fonts.gfx interface/load_screen_font.gfx interface/core_bare_minimum.gfx gfx/fonts/ localisation/languages.yml" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all 7 vanilla files that hold `bitmapfonts` blocks, the 59 `.fnt` descriptors and the font bitmaps in `gfx/fonts/` (including `chinese/`, `japanese/`, `korean/`), `localisation/languages.yml`, and token strings in `hoi4.exe`.
+Kit blocks added: how the game finds the bitmap behind a `.fnt`, kerning in vanilla, the correct override file names and language codes, notes for a `bitmapfont` entry, a minimal vanilla-style entry.
+Gaps left: the BMFont steps (settings, export, character sets) cannot be checked from game files; the map font lookup for `tahoma_60` happens inside the engine.
+<!-- kit:end id="review" -->
 
 ## Table of contents
 
@@ -92,6 +98,17 @@ Save the font by clicking "Save bitmap font as..." (CTRL+S) in the options menu.
 
 The font's location is decided by the [bitmapfont definition](#Defining_bitmaps), so it is not necessary to use the `/Hearts of Iron IV/gfx/fonts/` folder, however, the base game keeps all of its fonts there. The map font is the `tahoma_60` bitmapfont, which links to the `/Hearts of Iron IV/gfx/fonts/hoi_mapfont4` files by default, and the appropriate `../chinese/` and `../japanese/` folders.
 
+<!-- kit:begin id="font-bitmap-lookup" at="section:Saving_the_font" -->
+**Kit note** What vanilla shows about the `.fnt` and its bitmap.
+
+- A `.fnt` is a BMFont text descriptor: an `info` line, a `common` line, an optional `page` line, `chars count=`, one `char id=` line per glyph and optional `kerning first= second= amount=` lines. [vanilla-confirmed 1.19.3] `gfx/fonts/garamond_16.fnt`, `gfx/fonts/hoi_mapfont4.fnt`
+- The `page` line often names a file that does not exist. `hoi_18.fnt` names `hoi_18_0.dds` and the folder holds `hoi_18.dds`; `hoi_mapfont4.fnt` names `Hoi4_mapfont_tahoma84_merged_0.dds` and the folder holds `hoi_mapfont4.dds`. This matches the page: the bitmap with the same name as the `.fnt` is the one that loads. [vanilla-confirmed 1.19.3] `gfx/fonts/`
+- `garamond_16.fnt` has no `page` line at all and sits next to `garamond_16.tga`, with no `.dds`, and `ToolTip_Font` uses it. So a same-name `.tga` also works. [vanilla-confirmed 1.19.3] `gfx/fonts/garamond_16.fnt`, `interface/core.gfx`
+- Of the font `.dds` files in `gfx/fonts/` and its subfolders, 278 are DXT5, 2 are DXT3, 1 is DXT1 and 85 are uncompressed. [vanilla-confirmed 1.19.3] `gfx/fonts/`
+- The 11 Chinese map font bitmaps `hoi_mapfont4_<n>of11EX.dds` are 4096 pixels wide, 3400 to 4000 high, DXT5. The largest is 16,384,128 bytes, which is the "16,001KB" the page mentions. [vanilla-confirmed 1.19.3] `gfx/fonts/chinese/`
+- Vanilla spells the Cyrillic bitmaps `..._cryllic` (for example `hoi_18_cryllic.dds`). The spelling is only a file name, so any name works if `fontfiles` matches it. [vanilla-confirmed 1.19.3] `gfx/fonts/`, `interface/core.gfx`
+<!-- kit:end id="font-bitmap-lookup" -->
+
 ### Quick check-list <a id="Quick_check-list"></a>
 
 - Open BMFont and select a font.
@@ -129,6 +146,10 @@ A character's position within a font can be seen in BMFont by looking at the low
     file.close()
 ```
 
+<!-- kit:begin id="font-kerning-vanilla" at="section:Kerning" -->
+**Kit note** Kerning is optional. 27 of the 59 `.fnt` files in the top level of `gfx/fonts/` have no `kerning` line, including `hoi_18.fnt` and `hoi_mapfont4.fnt`. The most kerning lines in one file is 4819 (`vic_36.fnt`); `garamond_16.fnt` has 199, for example `kerning first=44  second=148 amount=-1`. The script above writes one line for nearly every pair of the 253 codes, which is far more than any vanilla font has. [vanilla-confirmed 1.19.3] `gfx/fonts/*.fnt`
+<!-- kit:end id="font-kerning-vanilla" -->
+
 ## Defining bitmaps <a id="Defining_bitmaps"></a>
 
 To link a new font in `/Hearts of Iron IV/gfx/fonts`, an entry must be created in a `/Hearts of Iron IV/interface/*.gfx` file. **If editing an already existing font, this entry already exists and does not need to be modified.** An example entry looks like the following:
@@ -155,6 +176,32 @@ bitmapfonts = {
 - `color` defines the colour of the font in hex code of the ARGB format. The first 2 characters after the `0x` define the transparency of the font, `00` meaning full transparency and `FF` meaning full opacity. The latter 6 characters provide the RGB hex code, each colour defined on the scale from `00` to `FF`.
 - `textcolors` provides an override of [text colours](<Localisation - Hearts of Iron 4 Wiki.md>), allowing to change a particular text colour to give a different colour when used on this font compared to the default value.
 
+<!-- kit:begin id="font-define-notes" at="section:Defining_bitmaps" -->
+**Kit note** Vanilla facts for a `bitmapfont` entry.
+
+- The base game defines 44 fonts in 7 `interface/*.gfx` files. `interface/fonts.gfx` only holds two debug fonts, so a mod puts its own fonts in a new `interface/*.gfx` file. [vanilla-confirmed 1.19.3] `interface/core.gfx`, `interface/fonts.gfx`
+- A `.gui` file picks a font with `font = "<name>"`, and the same name is used for `buttonFont`. The most used names are `hoi_18mbs` and `hoi_16mbs`. [vanilla-confirmed 1.19.3] `interface/*.gui`
+- `color = 0xAARRGGBB`. Vanilla uses `0xffffffff`, `0xff000000`, `0xffbbbbbb` and others. One font (`hoi_22chat`) has a nine digit value, `0x4ffffffff`; write eight digits. [vanilla-confirmed 1.19.3] `interface/core.gfx`
+- Latin and Cyrillic live in separate bitmaps that one font lists together, for example `hoi_18` plus `hoi_18_cryllic`. 24 of the 44 fonts use `fontfiles`; 20 use `path`. [vanilla-confirmed 1.19.3] `interface/core.gfx`
+
+```text
+bitmapfonts = {
+	bitmapfont = {
+		name = "AnimatedMapText"
+		fontfiles = {
+			"gfx/fonts/hoi_18"
+			"gfx/fonts/hoi_18_cryllic"
+		}
+		color = 0xff7799ff
+	}
+}
+```
+
+Vanilla entry, unchanged apart from layout. [vanilla-confirmed 1.19.3] `interface/core.gfx`
+
+The map font is `tahoma_60` (`path = "gfx/fonts/hoi_mapfont4"`). No vanilla `.gui` or `.gfx` file refers to it with `font =`, so the engine must look it up by name; that is consistent with the page. [vanilla-confirmed 1.19.3] `interface/core.gfx`. The name also exists as a token string in `hoi4.exe`. [unverified] `hoi4.exe`
+<!-- kit:end id="font-define-notes" -->
+
 ### Overriding bitmaps <a id="Overriding_bitmaps"></a>
 
 Additionally, it is possible to override a bitmapfont when the game is set to use a specific language. Primarily, fonts are overwritten for languages that don't use the Latin alphabet, and thus can't be small enough to fit into a 16 MB file (i.e. Simplified Chinese). By default, HoI4 has the necessary Cyrillic and Latin map font characters in one file, but the list of (Simplified) Chinese logographs is so enormous **it must encompass 11 ~4096x4000 bitmaps** with an override block in `/Hearts of Iron IV/interface/code_chinese.gfx`.
@@ -179,6 +226,25 @@ bitmapfonts = {
 
 The work involved in generating multiple bitmaps is the only downside. However, using multiple bitmaps is an effective way to organize fonts between different alphabets. Should a mod use custom fonts in entirety, it also provides more space to use larger/higher quality characters and font designs without aliasing.
 
+<!-- kit:begin id="font-override-correction" at="section:Overriding_bitmaps" -->
+**Kit correction** The page names `interface/code_chinese.gfx`; the file is `interface/core_chinese.gfx`. Where vanilla keeps the language overrides:
+
+| Language code | Where | Override files |
+| --- | --- | --- |
+| `l_simp_chinese` | `interface/core_chinese.gfx` (37 overrides), `interface/chatfonts.gfx`, `interface/load_screen_font.gfx` | `gfx/fonts/chinese/`, usually four `..._<n>of4` bitmaps per font, eleven for `tahoma_60` |
+| `l_korean` | `interface/core_korean.gfx` (37), `interface/chatfonts.gfx`, `interface/load_screen_font.gfx` | `gfx/fonts/korean/`, one bitmap per font |
+| `l_japanese` | `interface/core.gfx` (37) | `gfx/fonts/japanese/`, one bitmap per font (two for `tahoma_60`) |
+| `l_russian` `l_polish` | `interface/core.gfx` (16) | the normal Latin and Cyrillic bitmaps, listed together |
+
+All rows: [vanilla-confirmed 1.19.3] the files named in the table.
+
+All 139 vanilla `bitmapfont_override` blocks use `fontfiles`; none uses `path`, and the `languages` list takes one or two codes (`"l_russian" "l_polish"` is the only pair). The page's remark that `path` may replace `fontfiles` in an override is not shown by any game file. [vanilla-confirmed 1.19.3] `interface/core.gfx`, `interface/core_chinese.gfx`
+
+The language codes are the keys of `localisation/languages.yml`: `l_english`, `l_braz_por`, `l_french`, `l_german`, `l_polish`, `l_russian`, `l_spanish`, `l_japanese`, `l_simp_chinese`, `l_korean`. [vanilla-confirmed 1.19.3] `localisation/languages.yml`
+
+A font that has no override for the active language keeps its default bitmap. Vanilla overrides 41 of its 44 fonts (all fonts of `core.gfx`, `chatfonts.gfx` and `load_screen_font.gfx`) for Chinese, Korean and Japanese; only the debug fonts `garamond_12`, `cw_3d_debug` and `null_font` have no override. English, French, German, Spanish and Portuguese have none. [vanilla-confirmed 1.19.3] `interface/core.gfx`
+<!-- kit:end id="font-override-correction" -->
+
 ---
 
 ## Navigation
@@ -191,3 +257,4 @@ The work involved in generating multiple bitmaps is the only downside. However, 
 - **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>)
 - **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
 - **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md>) • [Game rule modding](<Game rule modding - Hearts of Iron 4 Wiki.md>) • [Intelligence operation modding](<Intelligence operation modding - Hearts of Iron 4 Wiki.md>) • [Map mode modding](<Map mode modding - Hearts of Iron 4 Wiki.md>) • [Occupation and resistance modding](<Occupation and resistance modding - Hearts of Iron 4 Wiki.md>) • [Peace conference modding](<Peace conference modding - Hearts of Iron 4 Wiki.md>) • [Raid modding](<Raid modding - Hearts of Iron 4 Wiki.md>) • [Script constant modding](<Script constant modding - Hearts of Iron 4 Wiki.md>) • [Special project modding](<Special project modding - Hearts of Iron 4 Wiki.md>)
