@@ -132,6 +132,52 @@ class BudgetTests(JobCase):
             run_pilot.require_budget_headroom(pending[:1], [spec])
 
 
+class PreflightTests(JobCase):
+    """The whole plan is checked against the budget before the first paid call, ahead of the balance probe."""
+
+    def spec(self, budget: int) -> dict:
+        return {
+            "asset_id": "hoi4.model.job.unit_a",
+            "asset_kind": "humanoid",
+            "profile": "humanoid_unit",
+            "credit_budget": budget,
+            "_requires_reference_approval": True,
+            "required_actions": [
+                {"role": "idle", "provider_action_id": 0},
+                {"role": "attack", "provider_action_id": 4},
+                {"role": "death", "provider_action_id": 8},
+            ],
+        }
+
+    def preflight(self, budget: int, phase: str, balance: int = 100) -> None:
+        self.client.balance = balance
+        spec = run_pilot.prepare_spec(self.spec(budget))
+        with patch.object(run_pilot, "resolve_job_root", return_value=self.job), patch.object(
+            run_pilot, "ensure_job_layout", return_value=self.job
+        ), patch.object(run_pilot, "MeshyClient", return_value=self.client):
+            run_pilot.preflight_selected_credits([spec], phase)
+
+    def test_a_budget_below_the_plan_stops_before_the_balance_is_read(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "plans 49 credits but only 40.*Short by 9"):
+            self.preflight(40, "full", balance=0)
+
+    def test_a_budget_that_covers_the_plan_goes_on_to_the_balance_gate(self) -> None:
+        self.preflight(49, "full")
+        with self.assertRaisesRegex(RuntimeError, "balance=48, required=49"):
+            self.preflight(49, "full", balance=48)
+
+    def test_a_candidate_phase_plans_only_the_generation(self) -> None:
+        self.preflight(30, "candidate")
+        with self.assertRaisesRegex(RuntimeError, "plans 30 credits but only 29"):
+            self.preflight(29, "candidate")
+
+    def test_stages_that_already_succeeded_are_not_planned_again(self) -> None:
+        run_pilot.write_json(run_pilot.task_file(self.job, "generation"), {"stage": "generation", "task_id": "t", "status": "SUCCEEDED"})
+        self.preflight(19, "full")
+        with self.assertRaisesRegex(RuntimeError, "plans 19 credits but only 18"):
+            self.preflight(18, "full")
+
+
 class AttemptTests(JobCase):
     def test_a_new_stage_name_does_not_reset_the_attempt_count(self) -> None:
         self.client.outcomes = [{"status": "FAILED", "consumed_credits": 0}]

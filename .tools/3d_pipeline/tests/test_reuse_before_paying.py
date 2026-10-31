@@ -17,7 +17,7 @@ from lib import credits
 from lib.credits import PaidRequest, UnreconciledSubmission
 from lib.mcp_stdio import MCPRouteError
 from lib.reuse import reconcile_submission
-from meshy_client import MeshyClient
+from meshy_client import MeshyClient, image_to_3d_arguments
 from test_credit_budget import FakeClient
 
 FINGERPRINT = "FP-SHARED-INPUT"
@@ -250,6 +250,38 @@ class ClientJournalTests(unittest.TestCase):
             entry = json.loads(next((client.job_root / "provider" / "submissions").glob("*.json")).read_text(encoding="utf-8"))
             self.assertEqual(entry["state"], "uncertain")
             self.assertEqual(entry["fingerprint"], credits.request_fingerprint("meshy_image_to_3d", arguments))
+
+    def test_the_runner_and_the_client_fingerprint_the_same_request(self) -> None:
+        spec = run_pilot.prepare_spec(
+            {
+                "asset_id": "hoi4.model.job.unit_a",
+                "asset_kind": "static",
+                "profile": "static_prop",
+                "credit_budget": 60,
+                "meshy_pose_mode": "a-pose",
+            }
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            client = object.__new__(MeshyClient)
+            client.repo_root = Path(temporary)
+            client.job_root = Path(temporary).resolve() / "job"
+            client.job_root.mkdir()
+            client.launcher = Path(temporary) / "launcher.exe"
+            client.sequence = 0
+            image = client.job_root / "meshy_input.png"
+            image.write_bytes(b"image")
+            expected = run_pilot.paid_request(
+                spec,
+                "image_to_3d",
+                "meshy_image_to_3d",
+                image_to_3d_arguments(image.resolve(), spec["generation"], "a-pose"),
+            )
+            with patch("meshy_client.require_meshy_key"), patch("meshy_client.call_stdio", side_effect=MCPRouteError("lost")):
+                with self.assertRaises(MCPRouteError):
+                    client.image_to_3d(image_path=image, generation=spec["generation"], pose_mode="a-pose", estimate_credits=15)
+            entry = json.loads(next((client.job_root / "provider" / "submissions").glob("*.json")).read_text(encoding="utf-8"))
+        self.assertEqual(entry["fingerprint"], expected.fingerprint)
+        self.assertEqual((expected.operation, expected.scope, expected.attempt_limit, expected.model), ("image_to_3d", "image_to_3d", 1, "meshy-7"))
 
 
 if __name__ == "__main__":
