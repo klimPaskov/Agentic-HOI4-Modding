@@ -49,7 +49,7 @@ Installed documentation is more authoritative than the wiki. Root: the installed
 | Idea categories and character slots | `common/idea_tags/00_idea.txt` |
 | Ideology types | `common/ideologies/00_ideologies.txt` |
 
-Offline wiki (`paradox_wiki/`): `Character modding - Hearts of Iron 4 Wiki.md` (primary), `Country creation - Hearts of Iron 4 Wiki.md` (Starting characters, Character names, Character portraits), `Ideology modding - Hearts of Iron 4 Wiki.md`, `Idea modding - Hearts of Iron 4 Wiki.md` (advisor-as-idea arguments, categories), `Portrait modding - Hearts of Iron 4 Wiki.md`, `Scopes - Hearts of Iron 4 Wiki.md` (character iterators, `owner`, `party_leader`), `Effects - Hearts of Iron 4 Wiki.md` and `Triggers - Hearts of Iron 4 Wiki.md`.
+Offline wiki (`paradox_wiki/`): `character_modding.md` (primary), `country_creation.md` (Starting characters, Character names, Character portraits), `ideology_modding.md`, `idea_modding.md` (advisor-as-idea arguments, categories), `portrait_modding.md`, `scopes.md` (character iterators, `owner`, `party_leader`), `effects.md` and `triggers.md`.
 
 Vanilla precedents to mirror:
 
