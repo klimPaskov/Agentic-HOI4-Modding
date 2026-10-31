@@ -14,24 +14,11 @@ from typing import Any, Dict, List, Optional
 from PIL import Image
 
 
-if not os.environ.get("MESHY_API_KEY", "").strip():
-    print(
-        "MESHY_API_KEY is missing or blank. Stop. Run this PowerShell command, "
-        "then restart the shell or Codex:\n\n"
-        '[Environment]::SetEnvironmentVariable(\n'
-        '    "MESHY_API_KEY",\n'
-        '    "msy_your_actual_key_here",\n'
-        '    "User"\n'
-        ")\n"
-    )
-    raise SystemExit(2)
-
 PIPELINE_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = PIPELINE_ROOT.parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from blender_client import BlenderAdapterClient  # noqa: E402
-from init_pilot_jobs import initialize_one  # noqa: E402
 from lib.paths import (  # noqa: E402
     append_history,
     dds_converter,
@@ -43,11 +30,19 @@ from lib.paths import (  # noqa: E402
     utc_now,
     write_json,
 )
+from lib.generation import (  # noqa: E402
+    generation_estimate,
+    load_pricing,
+    operation_credits,
+    validate_generation,
+)
 from meshy_client import (  # noqa: E402
+    REQUIRED_KEY_MESSAGE,
     MeshyClient,
     MeshyTaskFailed,
     _first_key,
     _payload,
+    server_version,
     status_from,
     task_id_from,
 )
@@ -61,9 +56,7 @@ from pack_pdx_material import (  # noqa: E402
 STATIC_ASSET_KINDS = {"static", "building", "static_building"}
 CREATURE_ASSET_KINDS = {"creature"}
 REFERENCE_CALIBRATED_ASSET_KINDS = {"humanoid", "creature", "building", "static_building"}
-MESHY_TEXTURED_IMAGE_TO_3D_ESTIMATE = 30
-MESHY_REMESH_ESTIMATE = 5
-MESHY_TEXTURED_IMAGE_MODEL_IDS = {"meshy-7"}
+SUCCEEDED_STATUSES = {"SUCCEEDED", "SUCCESS", "COMPLETED", "DONE"}
 
 
 def task_file(job: Path, stage: str) -> Path:
@@ -125,6 +118,120 @@ def update_job(job: Path, **changes: Any) -> Dict[str, Any]:
     return value
 
 
+def require_api_key() -> None:
+    """Hard gate before any provider or downstream work."""
+
+    if not os.environ.get("MESHY_API_KEY", "").strip():
+        print(REQUIRED_KEY_MESSAGE)
+        raise SystemExit(2)
+
+
+def load_profile(name: str) -> Dict[str, Any]:
+    return read_json(PIPELINE_ROOT / "config" / "asset_profiles.json")["profiles"][name]
+
+
+def resolve_generation(spec: Dict[str, Any], profile: Dict[str, Any]) -> Dict[str, Any]:
+    """The profile's validated generation settings, ready to send.
+
+    A job may restate the model it expects but never change it, and may override only the
+    target face count. Any disagreement stops the run before a paid call.
+    """
+
+    generation = dict(profile.get("generation") or {})
+    expected = str(generation.get("ai_model", "")).lower()
+    for key in ("meshy_ai_model", "resolved_meshy_ai_model"):
+        stated = spec.get(key)
+        if stated and str(stated).lower() != expected:
+            raise RuntimeError(
+                f"The job states {key}={stated!r}, but profile {spec.get('profile')!r} generates with "
+                f"{expected!r}. A model never changes silently: edit the profile's generation block."
+            )
+    if spec.get("target_polycount"):
+        generation["target_polycount"] = int(spec["target_polycount"])
+    return validate_generation(generation)
+
+
+def provider_animated_roles(spec: Dict[str, Any]) -> List[str]:
+    return [
+        str(action["role"])
+        for action in spec.get("required_actions", [])
+        if action.get("provider_action_id") is not None
+        and action.get("task_type") != "blender_authored_skeletal"
+    ]
+
+
+def planned_stages(spec: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """The paid stages a job plans, in order, each with its price-table estimate."""
+
+    def stage(name: str, operation: str, role: Optional[str], estimate: Any) -> Dict[str, Any]:
+        return {"stage": name, "operation": operation, "role": role, "estimate_credits": int(estimate)}
+
+    stages = [stage(generation_stage_for(spec), "image_to_3d", None, spec["image_to_3d_estimate_credits"])]
+    if spec.get("asset_kind") != "humanoid" or uses_local_humanoid_route(spec):
+        return stages
+    generation = spec["generation"]
+    if generation["model_type"] == "standard" and not generation["should_remesh"]:
+        # Meshy ignores target_polycount here, so the rig source is usually over the rig limit.
+        stages.append(stage(continuation_stage_for(spec, "rig_remesh"), "remesh", None, spec["remesh_estimate_credits"]))
+    stages.append(stage(rig_stage_for(spec), "rig", None, spec["rig_estimate_credits"]))
+    for role in provider_animated_roles(spec):
+        stages.append(stage(animation_stage_for(spec, role), "animation", role, spec["animation_estimate_credits"]))
+    return stages
+
+
+def require_credit_budget(spec: Dict[str, Any]) -> int:
+    budget = spec.get("credit_budget")
+    if isinstance(budget, bool) or not isinstance(budget, int) or budget <= 0:
+        raise RuntimeError(
+            f"{spec['asset_id']} has no credit_budget. Paid Meshy stages need one whole number of "
+            f"credits in the job spec and job.yaml; the plan costs {spec['planned_total_credits']} credits "
+            "at config/meshy_pricing.json prices. Ask the user for the budget once."
+        )
+    return budget
+
+
+def prepare_spec(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Fill in generation settings, price-table estimates and the job budget before any provider call.
+
+    Idempotent. Estimates always come from config/meshy_pricing.json, never from the job.
+    """
+
+    if spec.get("_credits_prepared"):
+        return spec
+    generation = resolve_generation(spec, load_profile(spec["profile"]))
+    pricing = load_pricing()
+    spec["generation"] = generation
+    spec["meshy_ai_model"] = spec["resolved_meshy_ai_model"] = generation["ai_model"]
+    spec["target_polycount"] = generation["target_polycount"]
+    spec["image_to_3d_estimate_credits"] = generation_estimate(generation, pricing=pricing)
+    for operation in ("remesh", "rig", "animation"):
+        spec[f"{operation}_estimate_credits"] = operation_credits(operation, pricing=pricing)
+    spec["planned_total_credits"] = sum(item["estimate_credits"] for item in planned_stages(spec))
+    spec["credit_budget"] = require_credit_budget(spec)
+    spec["pricing_source"] = {key: pricing[key] for key in ("source_url", "retrieved")}
+    spec["_credits_prepared"] = True
+    return spec
+
+
+def initialize_job(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Initialize the job and keep its budget, generation settings and estimates in job.yaml."""
+
+    from init_pilot_jobs import initialize_one  # imported here: that module gates on the API key at import
+
+    result = initialize_one(prepare_spec(spec))
+    update_job(
+        ensure_job_layout(resolve_job_root(spec["asset_id"].rsplit(".", 1)[-1])),
+        credit_budget=spec["credit_budget"],
+        generation=spec["generation"],
+        image_to_3d_estimate_credits=spec["image_to_3d_estimate_credits"],
+        remesh_estimate_credits=spec["remesh_estimate_credits"],
+        rig_estimate_credits=spec["rig_estimate_credits"],
+        animation_estimate_credits=spec["animation_estimate_credits"],
+        estimated_credits=spec["planned_total_credits"],
+    )
+    return result
+
+
 def result_value(result: Dict[str, Any], key: str) -> Optional[Any]:
     value = _first_key(result, (key.lower(),))
     return value
@@ -183,7 +290,7 @@ def save_task(
         "input_stage": input_stage,
         "provider": {
             "server_package": "@meshy-ai/meshy-mcp-server",
-            "server_version": os.environ.get("MESHY_MCP_VERSION", "0.6.2"),
+            "server_version": server_version(),
         },
         "recorded_at": utc_now(),
     }
@@ -445,7 +552,7 @@ def provider_task(
             "input_stage": input_stage,
             "provider": {
                 "server_package": "@meshy-ai/meshy-mcp-server",
-                "server_version": os.environ.get("MESHY_MCP_VERSION", "0.6.2"),
+                "server_version": server_version(),
             },
             "created_at": utc_now(),
         },
@@ -928,6 +1035,7 @@ def finalize_pdx_runtime_textures(
 
 
 def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
+    prepare_spec(spec)
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
     client = MeshyClient(REPO_ROOT, job)
@@ -955,10 +1063,8 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
         estimate=spec["image_to_3d_estimate_credits"],
         create=lambda: client.image_to_3d(
             image_path=reference,
-            ai_model=spec["meshy_ai_model"],
-            model_type="standard",
+            generation=spec["generation"],
             pose_mode=spec["meshy_pose_mode"],
-            target_polycount=spec["target_polycount"],
             estimate_credits=spec["image_to_3d_estimate_credits"],
         ),
     )
@@ -1175,7 +1281,7 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def continue_humanoid_local(spec: Dict[str, Any]) -> Dict[str, Any]:
-    """Finish a Meshy 7 humanoid geometry package through the local rig route."""
+    """Finish a Meshy humanoid geometry package through the local rig route."""
 
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
@@ -1183,7 +1289,7 @@ def continue_humanoid_local(spec: Dict[str, Any]) -> Dict[str, Any]:
     generation_stage = generation_stage_for(spec)
     generation = existing_task(job, generation_stage)
     if not generation or generation.get("status") not in {"SUCCEEDED", "SUCCESS", "COMPLETED", "DONE"}:
-        raise RuntimeError("Local humanoid continuation requires a completed Meshy 7 geometry task.")
+        raise RuntimeError("Local humanoid continuation requires a completed Meshy geometry task.")
     candidate_report = read_json(
         job / "blender" / "reports" / f"{spec['runtime_stem']}_candidate_prepare.json"
     )
@@ -1260,7 +1366,7 @@ def continue_humanoid_local(spec: Dict[str, Any]) -> Dict[str, Any]:
         runtime_source={
             "geometry_generation_stage": generation_stage,
             "geometry_generation_task_id": generation.get("task_id"),
-            "geometry_source_policy": "Meshy 7 generated geometry",
+            "geometry_source_policy": "Meshy generated geometry (the profile generation model)",
             "rig_source_policy": "repository-owned Blender humanoid recovery route after failed provider rig attempts",
             "distinct_geometry_package": True,
             "distinct_runtime_animations": True,
@@ -1313,7 +1419,7 @@ def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     rig_input_id = generation_id
     rig_input_url: Optional[str] = None
     remesh_id: Optional[str] = None
-    remesh_estimate = int(spec.get("remesh_estimate_credits", MESHY_REMESH_ESTIMATE))
+    remesh_estimate = int(prepare_spec(spec)["remesh_estimate_credits"])
     source_triangles = int(candidate_report.get("imported_geometry", {}).get("triangles", 0))
     if source_triangles > 300000:
         remesh_id = provider_task(
@@ -2050,7 +2156,11 @@ def continue_humanoid_shared(
 
 
 def _shared_humanoid_spec(slug: str, job_root: Path, job: Dict[str, Any]) -> Dict[str, Any]:
-    """Build a pilot spec from a repository-owned shared humanoid job manifest."""
+    """Build a pilot spec from a repository-owned shared humanoid job manifest.
+
+    The spec still needs prepare_spec, which adds the profile's generation settings, the
+    price-table estimates and the job's credit_budget.
+    """
 
     asset_profiles = read_json(PIPELINE_ROOT / "config" / "asset_profiles.json")["profiles"]
     job_profile_name = str(job.get("profile") or "humanoid_unit")
@@ -2200,42 +2310,7 @@ def _shared_humanoid_spec(slug: str, job_root: Path, job: Dict[str, Any]) -> Dic
             {"role": "death", "provider_action_id": 8, "fps": 24, "loop": False, "root_policy": "in_place"},
         ]
     )
-    meshy_ai_model = str(job.get("provider_model") or provider_plan.get("ai_model") or "meshy-7")
-    resolved_meshy_ai_model = str(
-        job.get("resolved_provider_model")
-        or provider_plan.get("resolved_ai_model")
-        or meshy_ai_model
-    )
-    if meshy_ai_model.lower() != "meshy-7" or resolved_meshy_ai_model.lower() != "meshy-7":
-        raise RuntimeError(
-            "The HOI4 3D workflow requires explicit Meshy 7 generation. "
-            f"Received provider_model={meshy_ai_model!r}, "
-            f"resolved_provider_model={resolved_meshy_ai_model!r}."
-        )
     generation_stage = str(job.get("generation_stage") or "generation")
-    image_to_3d_estimate = int(
-        job.get("image_to_3d_estimate_credits") or MESHY_TEXTURED_IMAGE_TO_3D_ESTIMATE
-    )
-    if meshy_ai_model.lower() in MESHY_TEXTURED_IMAGE_MODEL_IDS and bool(provider_plan.get("should_texture", True)):
-        # A stale job manifest may still contain a 20-credit no-texture
-        # estimate. Never under-preflight the required textured Meshy 7 route.
-        image_to_3d_estimate = max(image_to_3d_estimate, MESHY_TEXTURED_IMAGE_TO_3D_ESTIMATE)
-    remesh_estimate = int(job.get("remesh_estimate_credits") or MESHY_REMESH_ESTIMATE)
-    rig_estimate = int(job.get("rig_estimate_credits") or 5)
-    animation_estimate = int(job.get("animation_estimate_credits") or 3)
-    planned_total = int(
-        job.get("estimated_credits")
-        or (
-            image_to_3d_estimate
-            if is_creature
-            else image_to_3d_estimate + remesh_estimate + rig_estimate + (3 * animation_estimate)
-        )
-    )
-    required_minimum = (
-        image_to_3d_estimate
-        if is_creature
-        else image_to_3d_estimate + remesh_estimate + rig_estimate + (3 * animation_estimate)
-    )
     return {
         "asset_id": f"hoi4.model.job.{slug}",
         "asset_kind": "creature" if is_creature else "humanoid",
@@ -2265,16 +2340,11 @@ def _shared_humanoid_spec(slug: str, job_root: Path, job: Dict[str, Any]) -> Dic
         "vanilla_scale_reference": vanilla_reference,
         "target_polycount": target_triangles,
         "rig_source_target_polycount": rig_source_target_polycount,
-        "meshy_ai_model": meshy_ai_model,
-        "resolved_meshy_ai_model": resolved_meshy_ai_model,
+        # A job may restate the model it expects; prepare_spec refuses any other than the profile's.
+        "meshy_ai_model": job.get("provider_model") or provider_plan.get("ai_model"),
+        "resolved_meshy_ai_model": job.get("resolved_provider_model") or provider_plan.get("resolved_ai_model"),
         "meshy_pose_mode": provider_plan.get("pose_mode"),
-        # Textured Meshy 7 generation is billed at 30 credits. Keep this
-        # fallback aligned with the required textured request.
-        "image_to_3d_estimate_credits": image_to_3d_estimate,
-        "remesh_estimate_credits": remesh_estimate,
-        "rig_estimate_credits": rig_estimate,
-        "animation_estimate_credits": animation_estimate,
-        "planned_total_credits": max(planned_total, required_minimum),
+        "credit_budget": job.get("credit_budget"),
         "generation_stage": generation_stage,
         "rig_stage": job.get("rig_stage"),
         "rig_input_mode": str(job.get("rig_input_mode") or "input_task_id"),
@@ -2353,6 +2423,14 @@ def require_route_ready(spec: Dict[str, Any]) -> None:
     )
 
 
+def vet_spec(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Refuse a job before any provider call: route blockers, reference approval, then settings and budget."""
+
+    require_route_ready(spec)
+    require_reference_approval(spec)
+    return prepare_spec(spec)
+
+
 def preflight_selected_credits(specs: List[Dict[str, Any]], phase: str) -> None:
     """Check the full selected tranche before any paid provider call."""
 
@@ -2365,7 +2443,7 @@ def preflight_selected_credits(specs: List[Dict[str, Any]], phase: str) -> None:
         estimate = (
             int(spec["image_to_3d_estimate_credits"])
             if phase == "candidate"
-            else int(spec.get("planned_total_credits", 44 if spec.get("asset_kind") == "humanoid" else 30))
+            else int(spec["planned_total_credits"])
         )
         estimates.append((spec["asset_id"], estimate))
     total = sum(value for _, value in estimates)
@@ -2398,7 +2476,7 @@ def run_shared_humanoid_batch(
 ) -> List[Dict[str, Any]]:
     """Produce a configured specialized-unit batch with explicit per-job rig routes.
 
-    The batch always keeps one distinct Meshy 7 geometry task per unit. Jobs
+    The batch always keeps one distinct Meshy geometry task per unit. Jobs
     that explicitly select the local failure-recovery route receive their own
     locally authored rig and four skeletal actions. Provider-rig jobs retain the
     shared-humanoid lineage route. Creature jobs stay on their custom Blender
@@ -2414,8 +2492,7 @@ def run_shared_humanoid_batch(
         raise RuntimeError(f"No configured specialized 3D jobs belong to batch {batch_id!r}.")
     selected.sort(key=lambda item: item[0])
     for _, spec in selected:
-        require_route_ready(spec)
-        require_reference_approval(spec)
+        vet_spec(spec)
 
     owner_slugs = {
         str(spec.get("shared_humanoid_rig_owner") or "")
@@ -2445,7 +2522,7 @@ def run_shared_humanoid_batch(
     )
 
     for _, spec in selected:
-        initialize_one(spec)
+        initialize_job(spec)
 
     def current_status(spec: Dict[str, Any]) -> str:
         slug = spec["asset_id"].rsplit(".", 1)[-1]
@@ -2490,7 +2567,7 @@ def run_shared_humanoid_batch(
         add_pending(
             owner_job,
             continuation_stage_for(owner_spec, "rig_remesh"),
-            int(owner_spec.get("remesh_estimate_credits", MESHY_REMESH_ESTIMATE)),
+            int(owner_spec["remesh_estimate_credits"]),
         )
         add_pending(
             owner_job,
@@ -2525,7 +2602,7 @@ def run_shared_humanoid_batch(
             "required_credits_for_missing_paid_stages": required_credits,
             "pending_stages": pending_estimates,
             "humanoid_policy": (
-                "distinct Meshy 7 geometry plus per-job local Blender rig and four skeletal actions"
+                "distinct Meshy geometry plus per-job local Blender rig and four skeletal actions"
                 if local_humanoid_batch
                 else "one verified standard provider rig and three provider actions; distinct geometry and exports per unit"
             ),
@@ -2622,6 +2699,7 @@ def main() -> int:
     parser.add_argument("--shared-humanoid-batch")
     parser.add_argument("assets", nargs="*")
     args = parser.parse_args()
+    require_api_key()
     configs = load_job_configs(args.jobs_config)
     if args.shared_humanoid_batch:
         batch_id = args.shared_humanoid_batch
@@ -2635,13 +2713,12 @@ def main() -> int:
         raise KeyError(f"Unknown configured 3D jobs: {missing}")
     selected_specs = [configs[item] for item in assets]
     for spec in selected_specs:
-        require_route_ready(spec)
-        require_reference_approval(spec)
+        vet_spec(spec)
     if phase in {"full", "candidate"}:
         preflight_selected_credits(selected_specs, phase)
     for asset in assets:
         spec = configs[asset]
-        initialize_one(spec)
+        initialize_job(spec)
         if phase in {"full", "candidate"}:
             candidate = run_candidate(spec)
             results.append({"asset": asset, "candidate": candidate})

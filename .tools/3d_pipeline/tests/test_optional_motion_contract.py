@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from meshy_client import MeshyClient, task_id_from
+from meshy_client import MOTION_TOOL_ARGUMENTS, MeshyClient, task_id_from
 from lib.mcp_stdio import MCPRouteError
 from lib.paths import redact
 from blender_client import BlenderAdapterClient
@@ -30,14 +30,8 @@ class OptionalMotionTests(unittest.TestCase):
         self.client.sequence = 0
 
     def live_tools(self):
-        arguments = {
-            "meshy_text_to_motion": ["prompt", "mode", "duration"],
-            "meshy_get_motion_status": ["task_id"],
-            "meshy_list_motion_tasks": ["page_num", "page_size"],
-            "meshy_download_motion": ["task_id", "format", "save_to"],
-            "meshy_animation_library": [],
-            "meshy_animate": ["rig_task_id", "motion_task_id"],
-        }
+        arguments = {name: sorted(keys) for name, keys in MOTION_TOOL_ARGUMENTS.items()}
+        arguments["meshy_animate"] = ["rig_task_id", "motion_task_id"]
         return {"tools": [{"name": name, "inputSchema": {"properties": {key: {} for key in keys}}} for name, keys in arguments.items()]}
 
     def test_live_optional_tool_names_and_arguments_are_required(self):
@@ -91,17 +85,34 @@ class OptionalMotionTests(unittest.TestCase):
         self.assertEqual(entry["state"], "uncertain")
         self.assertIs(entry["automatic_retry"], False)
 
-    def test_motion_download_receipt_identity_and_bytes_match(self):
+    def test_motion_download_uses_the_registered_download_tool_and_hashes_the_saved_bytes(self):
         output = self.client.job_root / "clip.fbx"
         self.client._require_motion_tools = Mock()
         def downloaded(*args, **kwargs):
             output.write_bytes(b"fixture FBX bytes")
-            return {"structuredContent": {"task_id": "motion", "sha256": hashlib.sha256(output.read_bytes()).hexdigest()}}
+            return {"structuredContent": {"saved": True}}
         self.client.call = Mock(side_effect=downloaded)
         receipt = self.client.download_motion(task_id="motion", format_name="fbx", destination=output)
+        self.assertEqual(self.client.call.call_args.args[0], "meshy_download_model")
+        self.assertEqual(self.client.call.call_args.args[1]["task_type"], "text-to-motion")
         self.assertEqual(receipt["task_id"], "motion")
+        self.assertEqual(receipt["file"]["sha256"], hashlib.sha256(b"fixture FBX bytes").hexdigest().upper())
         with self.assertRaises(FileExistsError):
             self.client.download_motion(task_id="motion", format_name="fbx", destination=output)
+
+    def test_motion_status_and_listing_use_the_generic_task_tools(self):
+        self.client._require_motion_tools = Mock()
+        self.client.call = Mock(return_value={})
+        self.client.motion_status("motion")
+        self.assertEqual(self.client.call.call_args.args[0], "meshy_get_task_status")
+        self.assertEqual(self.client.call.call_args.args[1]["task_type"], "text-to-motion")
+        self.client.list_motion_tasks(page_num=2, page_size=10)
+        self.assertEqual(self.client.call.call_args.args[0], "meshy_list_tasks")
+        self.assertEqual(self.client.call.call_args.args[1]["offset"], 10)
+        self.client.list_animations(search="shoot")
+        self.assertEqual(self.client.call.call_args.args[0], "meshy_list_animations")
+        with self.assertRaises(ValueError):
+            self.client.list_animations(page=2)
 
     def test_motion_urls_remain_redacted(self):
         result = redact({"motion_url": "https://assets.meshy.ai/clip?signature=private", "task_id": "motion"})

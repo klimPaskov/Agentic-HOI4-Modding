@@ -6,6 +6,7 @@ import argparse
 import ast
 import datetime as dt
 import hashlib
+import importlib.util
 import io
 import json
 import os
@@ -1389,6 +1390,26 @@ def write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
+def verify_generation_profiles(pipeline_root: Path) -> None:
+    """Refuse setup when a profile's Meshy generation settings cannot be sent to the locked schema."""
+
+    module_spec = importlib.util.spec_from_file_location(
+        "three_d_generation", pipeline_root / "lib" / "generation.py"
+    )
+    if module_spec is None or module_spec.loader is None:
+        raise SetupError("The generation settings validator is missing from the 3D pipeline.")
+    generation = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(generation)
+    profiles = json.loads((pipeline_root / "config/asset_profiles.json").read_text(encoding="utf-8"))["profiles"]
+    problems = [
+        f"{name}: {problem}"
+        for name, profile in profiles.items()
+        for problem in generation.generation_problems(profile.get("generation"))
+    ]
+    if problems:
+        raise SetupError("Invalid Meshy generation settings in asset_profiles.json: " + "; ".join(problems))
+
+
 def write_dependency_record(root: Path, payload: dict) -> Path:
     lock_path = root / ".tools/3d_pipeline/config/dependencies.lock.json"
     previous = {}
@@ -1400,14 +1421,17 @@ def write_dependency_record(root: Path, payload: dict) -> Path:
     previous_policy = previous.get("policy", {})
     legacy_attempt_key = "paid_generation_attempts_per_" + "pilot"
     previous_policy.pop(legacy_attempt_key, None)
+    # The generation model is a per-profile setting now; drop the single model older locks recorded.
+    previous_policy.pop("required_generation_model", None)
+    previous_policy.pop("default_generation_model", None)
     policy = {
         **previous_policy,
         "provider_input_image_count": 1,
         "allow_meshy_multiview_thumbnails": False,
-        "required_generation_model": "meshy-7",
-        "default_generation_model": "Meshy 7 via explicit ai_model=meshy-7",
+        "generation_model_source": "config/asset_profiles.json profiles.<profile>.generation.ai_model",
         "silent_generation_model_downgrade": False,
         "planned_paid_operations_pre_authorized": True,
+        "paid_operations_require_credit_budget": True,
         "failure_recovery_requires_confirmation": True,
         "runtime_sources_must_not_reference_docs_assets": True,
         "runtime_copy_requires_selected_source_hash": True,
@@ -1484,9 +1508,7 @@ def main() -> int:
             "contract": json.loads(meshy_contract_path.read_text(encoding="utf-8")),
             "live_schema_verification_required_before_provider_calls": True,
         }
-        provider_policy = meshy_tool_contract["contract"].get("provider_policy", {})
-        if provider_policy.get("required_generation_model") != "meshy-7":
-            raise SetupError("The checked-in Meshy contract does not require meshy-7.")
+        verify_generation_profiles(pipeline_root)
         blender_mcp = resolve_blender_mcp()
         blender_mcp_project = ensure_blender_mcp(pipeline_root, blender_mcp)
         io_resolution = resolve_io_pdx_mesh(pipeline_root)

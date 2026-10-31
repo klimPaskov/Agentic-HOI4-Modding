@@ -12,10 +12,6 @@
       "required_arguments": [
         "ai_model"
       ],
-      "required_ai_model": "meshy-7",
-      "accepted_ai_models": [
-        "meshy-7"
-      ],
       "required_argument_groups": [
         [
           "file_path",
@@ -56,6 +52,9 @@
       "input_exclusivity": [
         "input_task_id",
         "model_url"
+      ],
+      "forbidden_arguments": [
+        "texture_image_url"
       ]
     },
     "meshy_convert": {
@@ -77,8 +76,19 @@
     "meshy_animate": {
       "paid": true,
       "required_arguments": [
-        "rig_task_id",
-        "action_id"
+        "rig_task_id"
+      ],
+      "required_argument_groups": [
+        [
+          "action_id",
+          "action_ids",
+          "motion_task_id"
+        ]
+      ],
+      "input_exclusivity": [
+        "action_id",
+        "action_ids",
+        "motion_task_id"
       ]
     }
   },
@@ -87,10 +97,10 @@
       "requires_live_verified_app_launcher_exposure": true,
       "tool_names": [
         "meshy_text_to_motion",
-        "meshy_get_motion_status",
-        "meshy_list_motion_tasks",
-        "meshy_download_motion",
-        "meshy_animation_library"
+        "meshy_list_animations",
+        "meshy_get_task_status",
+        "meshy_list_tasks",
+        "meshy_download_model"
       ],
       "generated_retarget_requires": {
         "tool": "meshy_animate",
@@ -106,12 +116,43 @@
   "provider_policy": {
     "input_image_count": 1,
     "allow_multi_view_thumbnails": false,
-    "required_generation_model": "meshy-7",
-    "default_generation_model": "Meshy 7 via explicit ai_model=meshy-7",
+    "generation_model_source": "config/asset_profiles.json profiles.<profile>.generation.ai_model",
+    "retired_generation_models": [
+      "meshy-t1",
+      "meshy-5",
+      "meshy-4",
+      "meshy-3"
+    ],
+    "retired_model_types": [
+      "lowpoly"
+    ],
+    "unpinned_model_aliases": [
+      "latest"
+    ],
+    "smart_topology_models": {
+      "meshy-t2": {
+        "max_target_polycount": 15000
+      },
+      "meshy-t2.5": {
+        "max_target_polycount": 30000
+      }
+    },
     "silent_model_downgrade": false,
+    "pricing_table": "config/meshy_pricing.json",
+    "paid_operations_require_credit_budget": true,
     "planned_paid_operations_pre_authorized": true,
+    "pre_authorization_scope": "the job's credit_budget; a call that would exceed it stops before submission",
+    "reuse_before_paying": [
+      "succeeded stage in this job",
+      "succeeded result in another job under the same jobs root with the same request fingerprint",
+      "unreconciled submission journal entry for the same request fingerprint blocks the new call"
+    ],
+    "task_retention_hours": 72,
+    "max_generation_attempts": 1,
+    "max_remesh_attempts": 1,
     "max_rig_attempts": 1,
     "max_action_attempts_per_role": 1,
+    "max_text_to_motion_attempts": 1,
     "blender_recovery_pre_authorized": true,
     "geometry_recovery_within_declared_limits_pre_authorized": true,
     "provider_source_substitution_requires_confirmation": true

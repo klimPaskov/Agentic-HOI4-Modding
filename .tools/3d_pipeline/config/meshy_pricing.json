@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "source_url": "https://docs.meshy.ai/en/api/pricing",
+  "retrieved": "2026-10-31",
+  "unit": "credits per request, animation per action",
+  "note": "The only price table the 3D pipeline reads. Re-read the source page and update `retrieved` whenever Meshy changes a price or the pipeline adds a model.",
+  "image_to_3d": {
+    "models": {
+      "meshy-7.1": {
+        "mesh_only": 20,
+        "textured": {"2k": 30, "4k": 30, "8k": 35}
+      },
+      "meshy-7": {
+        "same_price_as": "meshy-7.1",
+        "note": "Legacy model; the pricing page says it costs the same as meshy-7.1."
+      },
+      "meshy-6": {
+        "mesh_only": 20,
+        "textured": {"2k": 30, "4k": 30, "8k": 35}
+      },
+      "meshy-6-lite": {
+        "mesh_only": 5,
+        "textured": {"2k": 15}
+      },
+      "meshy-t2": {
+        "mesh_only": 5,
+        "textured": {"2k": 15, "4k": 15, "8k": 20}
+      },
+      "meshy-t2.5": {
+        "mesh_only": 5,
+        "textured": {"2k": 15, "4k": 15, "8k": 20}
+      }
+    },
+    "ultra_geometry_surcharge": {
+      "credits": 5,
+      "models": ["meshy-7.1"],
+      "note": "geometry_resolution 2k or 4k; the pipeline never sends it."
+    }
+  },
+  "operations": {
+    "remesh": 5,
+    "rig": 5,
+    "animation_per_action": 3,
+    "text_to_motion": {"prime": 10, "swift": 3},
+    "convert": 1,
+    "resize": 1,
+    "uv_unwrap": 5,
+    "retexture": {"2k": 10, "4k": 10, "8k": 15}
+  }
+}
