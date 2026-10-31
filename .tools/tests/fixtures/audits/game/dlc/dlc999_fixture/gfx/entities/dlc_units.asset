@@ -1,0 +1,4 @@
+entity = {
+	name = "dlc_unit_entity"
+	clone = "vanilla_unit_entity"
+}

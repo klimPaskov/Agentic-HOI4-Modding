@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Check 3D model registration in the `asset-wiring` audit (`GFX-3D-*`): `.mesh` and `.anim` files that are missing, `pdxmesh` animation types no `animation` block defines, entities whose `pdxmesh` is defined nowhere, sub-unit `sprite` tokens without a `<sprite>_entity`, `meshsettings` names that are not objects of the exported PDX `.mesh` (read by a small read-only PDX binary reader), and missing model textures. Each finding carries `file:line`; `--calibrate-vanilla` reports how often each rule fires on the installed game.
+- The diffuse texture of a `pdxmesh` under `gfx/` or `interface/` is now reported once, as `GFX-3D-TEXTURE-MISSING`, instead of as `GFX-MISSING-FILE` without a line.
+
 ## 2026-10-18
 
 - Bound the Blender adapter to the `mcp` 1.x SDK; a fresh bootstrap resolved `mcp` 2.3.0, which removed `FastMCP`, and the adapter crashed at startup.

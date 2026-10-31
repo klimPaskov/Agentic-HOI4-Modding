@@ -50,6 +50,42 @@ install before reporting a name as unresolved.
    rule confirmed against vanilla; those entries are explicit `icon =` tokens
    that question 1 already covers.
 
+6. Is a custom 3D model registered so that the game can load it? The `.gfx` and
+   `.asset` files below `gfx/` and `interface/` of the mod are read for `pdxmesh` (name, file,
+   animation ids and types, `meshsettings` names and textures), `entity` (name,
+   `pdxmesh`, states, attaches) and `animation` (name, file) blocks, and
+   `common/units` for the sub-unit `sprite` tokens. Names resolve against the mod
+   first and then the installed game with every DLC package. Each rule below was
+   measured on the installed game with `--calibrate-vanilla`:
+
+   - `GFX-3D-MESH-MISSING`, `GFX-3D-ANIM-MISSING`: a `.mesh` or `.anim` file that
+     does not exist. A `pdxmesh` `file` is a path from the mod root and an
+     `animation` `file` is a name next to its `.asset`; both may also come from
+     the game or a DLC package. `GFX-3D-FILE-PATH` (warning) is the same
+     mistake when a file of that name exists elsewhere, because the declared path
+     is then wrong even though the file is not lost;
+   - `GFX-3D-ANIM-UNDEFINED`: a `pdxmesh` animation `type` that no `animation`
+     block defines;
+   - `GFX-3D-ENTITY-PDXMESH`: an `entity` whose `pdxmesh` names no `pdxmesh` in
+     the mod or the game. An entity with only `clone` is not checked;
+   - `GFX-3D-UNIT-ENTITY`: a `sprite = x` of a `sub_units` block with no entity
+     named `x_entity`. Every sprite of every vanilla sub-unit has one, and the
+     mod's own units follow the same naming;
+   - `GFX-3D-MESHSETTINGS`: a `meshsettings` `name` that is not an object of the
+     `.mesh` file, so the textures and shader of that block reach no object.
+     The object names are read from the PDX binary mesh (`pdx_object_names`);
+     `GFX-3D-MESHSETTINGS-CASE` (warning) is a name that differs only in case,
+     and `GFX-3D-MESH-UNREADABLE` (warning) a mesh the reader cannot decode.
+     The game itself ships stale names in 27 of 799 settings blocks, so the rule
+     reports only definitions that belong to the audited mod;
+   - `GFX-3D-TEXTURE-MISSING`: a `texture_diffuse`, `texture_normal` or
+     `texture_specular` of a `meshsettings` block that exists in neither the
+     mod nor the game. A texture is found by file name, as the game does;
+   - `GFX-3D-STATE-ANIMATION`, `GFX-3D-ATTACH-ENTITY` (warnings): an entity
+     state whose animation id its `pdxmesh` does not define, and an attach
+     target that names no entity. The game ships a small share of both, so
+     they never fail the run.
+
 Usage:
 	python .tools/audits/audit_asset_wiring_static.py
 	python .tools/audits/audit_asset_wiring_static.py --json out.json
@@ -58,8 +94,9 @@ Usage:
 	python .tools/audits/audit_asset_wiring_static.py --root path/to/mod   # audit another mod folder
 
 Levels and exit status follow `.tools/lib/report.py`. Unresolved `GFX_` references, missing
-files, missing vanilla backing files and missing implicit lookups are `error`; unverified
-bare event pictures are `warning`; dead registrations, dynamic prefixes and
+files, missing vanilla backing files, missing implicit lookups and the `GFX-3D-` registration
+errors above are `error`; unverified bare event pictures and the `GFX-3D-` warnings are
+`warning`; dead registrations, dynamic prefixes and
 documentation-only names are `review`. The command exits 1 when an error is reported,
 unless `--fail-on none` is given. With `--paths` the console lists only the findings located
 in those files or folders; a missing vanilla backing file is located in the vanilla tree and
@@ -71,15 +108,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import posixpath
 import re
+import struct
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Set, Tuple
+from typing import Dict, Iterable, List, NamedTuple, Optional, Sequence, Set, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # .tools, for the shared lib package
 from lib.game import game_dir, require_game_dir
-from lib.clausewitz import pairs, parse
+from lib.clausewitz import pairs, parse, unquote
 from lib.report import Finding, add_arguments, exit_code, merge_json, print_findings, relative, requested_paths, select
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -163,6 +202,8 @@ def _resolve_exact(normalised: str) -> bool:
 
 FILE_REF = re.compile(r'"[^"]*?\.(?:dds|tga|png|bmp|jpg)"', re.IGNORECASE)
 
+Row = Tuple[str, str, int, str]
+
 
 class Findings:
 	def __init__(self) -> None:
@@ -178,6 +219,8 @@ class Findings:
 		self.implicit_unverified: List[Dict[str, str]] = []
 		self.dynamic_refs: List[Dict[str, object]] = []
 		self.documentation_refs: List[Dict[str, object]] = []
+		# One (rule, file, line, message) row per 3D model registration finding.
+		self.registration: List[Row] = []
 
 
 def read_text(path: Path) -> str:
@@ -275,13 +318,16 @@ def audit_definitions(findings: Findings) -> None:
 			target = match.group(1)
 			if target.startswith(("gfx/", "GFX_")) and "/" not in target:
 				continue
+			if match.group(0).startswith("texture_diffuse") and parts[0] in MODEL_SOURCE_FOLDERS:
+				continue  # a `meshsettings` texture of a model file: GFX-3D-TEXTURE-MISSING reports it, with its line
 			if resolve_asset(target):
 				continue
 			findings.missing_files.append({"file": rel, "reference": target})
 
 
 def audit_entities(findings: Findings) -> None:
-	"""Check `.gfx` entity blocks for mesh and texture files that are absent."""
+	"""Check `.gfx` entity blocks for absent mesh and texture files, then the 3D model registration."""
+	audit_model_registration(findings, [REPO_ROOT], game_model_roots())
 	for path in iter_source_files(REPO_ROOT, EXCLUDED_TOP_LEVEL, "*.gfx"):
 		parts = path.relative_to(REPO_ROOT).parts
 		if parts and parts[0] in EXCLUDED_TOP_LEVEL:
@@ -701,6 +747,7 @@ def run_calibration() -> int:
 		print(f"{family:24s} checked {counts['checked']:6d}  resolved {counts['resolved']:6d}  unresolved {counts['checked'] - counts['resolved']:6d}")
 		for sample in samples.get(family, []):
 			print(f"    e.g. {sample}")
+	calibrate_model_rules()
 	return 0
 
 
@@ -719,7 +766,421 @@ def audit_implicit(findings: Findings, sprites: Set[str]) -> None:
 		findings.implicit_unverified.append(row)
 
 
+# ---------------------------------------------------------------------------
+# 3D model registration (question 6). A model reaches the game through four
+# links: a `.mesh` file, a `pdxmesh` block that names it, an `entity` block that
+# names the `pdxmesh`, and a sub-unit `sprite` whose `<sprite>_entity` is that
+# entity. Every link is read from source, and the mesh objects are read from the
+# PDX binary, so a break shows before anyone launches the game.
+# ---------------------------------------------------------------------------
+
+MODEL_TEXTURE_KEYS = ("texture_diffuse", "texture_normal", "texture_specular")
+MODEL_SOURCE_SUFFIXES = (".asset", ".gfx")
+MODEL_SOURCE_FOLDERS = ("gfx", "interface")
+PDX_BINARY_MAGIC = b"@@b@"
+PDX_TEXT_MAGIC = b"@@t@"
+
+
+# These are NamedTuples, not dataclasses: `gfx/gfx.py` imports this file without registering it in
+# `sys.modules`, and a dataclass defined under `from __future__ import annotations` fails there.
+class MeshSettings(NamedTuple):
+	"""A `meshsettings` block: the mesh object it configures and the textures it names."""
+	name: str
+	line: int
+	textures: List[Tuple[str, str, int]]  # (key, file name, line)
+
+
+class PdxMesh(NamedTuple):
+	"""A `pdxmesh` block: the `.mesh` file, its animation ids and its `meshsettings`."""
+	name: str
+	file: str
+	path: str
+	line: int
+	file_line: int
+	animations: List[Tuple[str, str, int]]  # (id, animation name, line)
+	settings: List[MeshSettings]
+
+
+class ModelAnimation(NamedTuple):
+	"""An `animation` block of an `.asset` file: a name for one `.anim` file."""
+	name: str
+	file: str
+	path: str
+	line: int
+	file_line: int
+
+
+class ModelEntity(NamedTuple):
+	"""An `entity` block: the `pdxmesh` it shows, its states and the entities it attaches."""
+	name: str
+	pdxmesh: Optional[str]
+	path: str
+	line: int
+	pdxmesh_line: int
+	states: List[Tuple[str, str, int]]  # (state, animation id, line)
+	attaches: List[Tuple[str, str, int]]  # (slot, entity, line)
+
+
+class ModelRegistry:
+	"""The model definitions of some roots, by name; the first definition of a name wins."""
+
+	def __init__(self) -> None:
+		self.pdxmeshes: Dict[str, PdxMesh] = {}
+		self.animations: Dict[str, ModelAnimation] = {}
+		self.entities: Dict[str, ModelEntity] = {}
+
+
+def pdx_object_names(data: bytes) -> Optional[List[str]]:
+	"""Return the names of the mesh objects in the bytes of a PDX binary `.mesh` file.
+
+	The file is the `@@b@` header followed by nested objects and typed properties. `[`
+	repeated `depth` times starts an object whose name ends at a NUL byte. `!` starts a
+	property: one length byte, the name, a type letter and a counted array (`i` int32,
+	`f` float32, or `s` strings that each carry a length). The mesh objects are the
+	children of the top-level `object`. This reads names only. A text mesh (`@@t@`)
+	returns None, and anything malformed raises ValueError, IndexError or struct.error.
+	"""
+	if data[:4] == PDX_TEXT_MAGIC:
+		return None
+	if data[:4] != PDX_BINARY_MAGIC:
+		raise ValueError("missing the PDX '@@b@' header")
+	names: List[str] = []
+	top = ""
+	position = 4
+	while position < len(data):
+		marker = data[position]
+		if marker == 0x5B:
+			depth = 0
+			while position < len(data) and data[position] == 0x5B:
+				depth += 1
+				position += 1
+			end = data.find(b"\0", position)
+			if end < 0:
+				raise ValueError("an object name has no end")
+			name = data[position:end].decode("utf-8", errors="replace")
+			if depth == 1:
+				top = name
+			elif depth == 2 and top == "object":
+				names.append(name)
+			position = end + 1
+		elif marker == 0x21:
+			position = _skip_pdx_property(data, position)
+		else:
+			raise ValueError(f"unexpected byte {marker:#04x} at offset {position}")
+	return names
+
+
+def _skip_pdx_property(data: bytes, position: int) -> int:
+	"""Return the offset after the property that starts at `position` (its `!`)."""
+	position += 2 + data[position + 1]
+	kind = data[position:position + 1]
+	if kind not in (b"i", b"f", b"s"):
+		raise ValueError(f"unknown property type {kind!r} at offset {position}")
+	(count,) = struct.unpack_from("<I", data, position + 1)
+	position += 5
+	if kind == b"s":
+		for _ in range(count):
+			(length,) = struct.unpack_from("<I", data, position)
+			position += 4 + length
+	else:
+		position += 4 * count
+	if position > len(data):
+		raise ValueError("a property runs past the end of the file")
+	return position
+
+
+def _scalar_node(nodes: list, key: str) -> Optional[Tuple[str, int]]:
+	"""Return the unquoted value of the first `key = value` in `nodes` and its line."""
+	for name, _operator, value, line in nodes:
+		if name == key and isinstance(value, str):
+			return unquote(value), line
+	return None
+
+
+def _read_meshsettings(block: list, line: int) -> Optional[MeshSettings]:
+	name = _scalar_node(block, "name")
+	if name is None:
+		return None
+	textures = []
+	for key in MODEL_TEXTURE_KEYS:
+		texture = _scalar_node(block, key)
+		if texture is not None:
+			textures.append((key, texture[0], texture[1]))
+	return MeshSettings(name[0], line, textures)
+
+
+def _read_pdxmesh(block: list, path: str, line: int) -> Optional[PdxMesh]:
+	name, file = _scalar_node(block, "name"), _scalar_node(block, "file")
+	if name is None or file is None:
+		return None
+	animations: List[Tuple[str, str, int]] = []
+	settings: List[MeshSettings] = []
+	for key, _operator, value, child_line in block:
+		if not isinstance(value, list):
+			continue
+		if key == "animation":
+			identifier, kind = _scalar_node(value, "id"), _scalar_node(value, "type")
+			if identifier is not None and kind is not None:
+				animations.append((identifier[0], kind[0], child_line))
+		elif key == "meshsettings":
+			block_settings = _read_meshsettings(value, child_line)
+			if block_settings is not None:
+				settings.append(block_settings)
+	return PdxMesh(name[0], file[0], path, line, file[1], animations, settings)
+
+
+def _read_entity(block: list, path: str, line: int) -> Optional[ModelEntity]:
+	name = _scalar_node(block, "name")
+	if name is None:
+		return None
+	pdxmesh = _scalar_node(block, "pdxmesh")
+	states: List[Tuple[str, str, int]] = []
+	attaches: List[Tuple[str, str, int]] = []
+	for key, _operator, value, _child_line in block:
+		if not isinstance(value, list):
+			continue
+		if key == "state":
+			state, animation = _scalar_node(value, "name"), _scalar_node(value, "animation")
+			if state is not None and animation is not None:
+				states.append((state[0], animation[0], animation[1]))
+		elif key == "attach":
+			slot = _scalar_node(value, "name")
+			for target_key, _op, target, target_line in value:
+				if target_key not in (None, "name") and isinstance(target, str):
+					attaches.append((slot[0] if slot else "", unquote(target), target_line))
+	return ModelEntity(name[0], pdxmesh[0] if pdxmesh else None, path, line, pdxmesh[1] if pdxmesh else line, states, attaches)
+
+
+def _read_animation(block: list, path: str, line: int) -> Optional[ModelAnimation]:
+	name, file = _scalar_node(block, "name"), _scalar_node(block, "file")
+	if name is None or file is None:
+		return None
+	return ModelAnimation(name[0], file[0], path, line, file[1])
+
+
+def _collect_model_definitions(nodes: list, registry: ModelRegistry, path: str, is_asset: bool) -> None:
+	"""Add the `pdxmesh`, `entity` and (in `.asset` files) `animation` blocks of `nodes` to the registry.
+
+	The first definition of a name wins. `animation` blocks of a `.gfx` file are 2D sprite
+	animations, so only an `.asset` file defines a model animation.
+	"""
+	for key, _operator, value, line in nodes:
+		if not isinstance(value, list):
+			continue
+		if key == "pdxmesh":
+			mesh = _read_pdxmesh(value, path, line)
+			if mesh is not None:
+				registry.pdxmeshes.setdefault(mesh.name, mesh)
+		elif key == "entity":
+			entity = _read_entity(value, path, line)
+			if entity is not None:
+				registry.entities.setdefault(entity.name, entity)
+		elif key == "animation":
+			animation = _read_animation(value, path, line) if is_asset else None
+			if animation is not None:
+				registry.animations.setdefault(animation.name, animation)
+		else:
+			_collect_model_definitions(value, registry, path, is_asset)
+
+
+def _parse_source(path: Path) -> list:
+	"""Parse a script file into `lib.clausewitz` nodes with their lines; an unreadable file is empty."""
+	try:
+		return parse(path.read_bytes().decode("utf-8-sig", errors="replace"))
+	except OSError:
+		return []
+
+
+def scan_model_registry(roots: Sequence[Path]) -> ModelRegistry:
+	"""Read every `.gfx` and `.asset` file below `gfx/` and `interface/` of each root; the game keeps its models in `gfx/`."""
+	registry = ModelRegistry()
+	for root in roots:
+		for folder in MODEL_SOURCE_FOLDERS:
+			base = root / folder
+			paths = sorted(base.rglob("*")) if base.is_dir() else []
+			for path in paths:
+				suffix = path.suffix.lower()
+				if suffix in MODEL_SOURCE_SUFFIXES and path.is_file():
+					_collect_model_definitions(_parse_source(path), registry, _rel(root, path), suffix == ".asset")
+	return registry
+
+
+def game_model_roots() -> List[Path]:
+	"""Return the installed game's root and the root of each DLC package; each is laid out like a mod."""
+	roots = [VANILLA_ROOT]
+	for folder in ("dlc", "integrated_dlc"):
+		base = VANILLA_ROOT / folder
+		if base.is_dir():
+			roots.extend(sorted(path for path in base.iterdir() if path.is_dir()))
+	return roots
+
+
+class ModelLookup:
+	"""Resolve model names and files against the audited roots first and then the installed game."""
+
+	def __init__(self, mod_roots: Sequence[Path], game_roots: Sequence[Path]) -> None:
+		self.roots = [*mod_roots, *game_roots]
+		self.mod = scan_model_registry(mod_roots)
+		self.game = self.mod if list(mod_roots) == list(game_roots) else scan_model_registry(game_roots)
+		self._objects: Dict[Path, Tuple[Optional[List[str]], str]] = {}
+
+	def pdxmesh(self, name: str) -> Optional[PdxMesh]:
+		return self.mod.pdxmeshes.get(name) or self.game.pdxmeshes.get(name)
+
+	def has_animation(self, name: str) -> bool:
+		return name in self.mod.animations or name in self.game.animations
+
+	def has_entity(self, name: str) -> bool:
+		return name in self.mod.entities or name in self.game.entities
+
+	def find_file(self, relative_path: str) -> Optional[Path]:
+		"""Return the file at `relative_path` below the first root that has it, or None."""
+		relative_path = relative_path.replace("\\", "/").lstrip("/")
+		for root in self.roots:
+			candidate = root / relative_path
+			if candidate.is_file():
+				return candidate
+		return None
+
+	def mesh_objects(self, path: Path) -> Tuple[Optional[List[str]], str]:
+		"""Return (object names, "") for a readable mesh, (None, "") for a text mesh and (None, reason) for an unreadable one."""
+		if path not in self._objects:
+			try:
+				self._objects[path] = (pdx_object_names(path.read_bytes()), "")
+			except (OSError, ValueError, IndexError, struct.error) as error:
+				self._objects[path] = (None, str(error) or type(error).__name__)
+		return self._objects[path]
+
+
+def _missing_file_row(source: str, line: int, declared: str, missing_rule: str, kind: str) -> Row:
+	"""A declared file that is absent: an error, or a warning when the file name exists elsewhere."""
+	if resolve_asset(posixpath.basename(declared.replace("\\", "/"))):
+		return ("GFX-3D-FILE-PATH", source, line, f"{kind} {declared} is not at that path, but a file of that name exists elsewhere, so the declared path is wrong")
+	return (missing_rule, source, line, f"{kind} {declared} does not exist in the mod or the installed game")
+
+
+def _meshsettings_rows(mesh: PdxMesh, mesh_path: Path, lookup: ModelLookup) -> List[Row]:
+	"""Compare the `meshsettings` names of `mesh` with the object names stored in its `.mesh` file."""
+	objects, problem = lookup.mesh_objects(mesh_path)
+	if problem:
+		return [("GFX-3D-MESH-UNREADABLE", mesh.path, mesh.file_line, f"{mesh.file} cannot be read as a PDX binary mesh: {problem}")]
+	if objects is None:
+		return []
+	lowered = {name.lower() for name in objects}
+	listing = ", ".join(objects[:6]) + (", ..." if len(objects) > 6 else "")
+	rows: List[Row] = []
+	for settings in mesh.settings:
+		if settings.name in objects:
+			continue
+		if settings.name.lower() in lowered:
+			rows.append(("GFX-3D-MESHSETTINGS-CASE", mesh.path, settings.line, f"meshsettings {settings.name} of {mesh.name} differs only in case from an object of {mesh.file} ({listing})"))
+		else:
+			rows.append(("GFX-3D-MESHSETTINGS", mesh.path, settings.line, f"meshsettings {settings.name} of {mesh.name} is not an object of {mesh.file} (objects: {listing})"))
+	return rows
+
+
+def check_pdxmesh(mesh: PdxMesh, lookup: ModelLookup) -> List[Row]:
+	"""Check the mesh file, animation types, textures and `meshsettings` names of one `pdxmesh` block."""
+	rows: List[Row] = []
+	mesh_path = lookup.find_file(mesh.file)
+	if mesh_path is None:
+		rows.append(_missing_file_row(mesh.path, mesh.file_line, mesh.file, "GFX-3D-MESH-MISSING", "mesh"))
+	for identifier, animation, line in mesh.animations:
+		if not lookup.has_animation(animation):
+			rows.append(("GFX-3D-ANIM-UNDEFINED", mesh.path, line, f"animation {identifier} of {mesh.name} uses {animation}, which no animation block defines in the mod or the installed game"))
+	for settings in mesh.settings:
+		for key, texture, line in settings.textures:
+			if not resolve_asset(texture):
+				rows.append(("GFX-3D-TEXTURE-MISSING", mesh.path, line, f"{key} {texture} of {mesh.name} does not exist in the mod or the installed game"))
+	if mesh_path is not None and mesh.settings:
+		rows.extend(_meshsettings_rows(mesh, mesh_path, lookup))
+	return rows
+
+
+def check_animation(animation: ModelAnimation, lookup: ModelLookup) -> List[Row]:
+	"""An animation `file` is a name next to its `.asset` file; a path from the root also works."""
+	declared = animation.file.replace("\\", "/")
+	if lookup.find_file(posixpath.join(posixpath.dirname(animation.path), declared)) or lookup.find_file(declared):
+		return []
+	return [_missing_file_row(animation.path, animation.file_line, animation.file, "GFX-3D-ANIM-MISSING", "animation file")]
+
+
+def check_entity(entity: ModelEntity, lookup: ModelLookup) -> List[Row]:
+	"""Check that the `pdxmesh` of an entity exists, defines its states' animations, and that attach targets exist."""
+	rows: List[Row] = []
+	if entity.pdxmesh is not None:
+		mesh = lookup.pdxmesh(entity.pdxmesh)
+		if mesh is None:
+			rows.append(("GFX-3D-ENTITY-PDXMESH", entity.path, entity.pdxmesh_line, f"entity {entity.name} uses pdxmesh {entity.pdxmesh}, which neither the mod nor the installed game defines"))
+		else:
+			known = {identifier for identifier, _animation, _line in mesh.animations}
+			for state, animation, line in entity.states:
+				if animation not in known:
+					rows.append(("GFX-3D-STATE-ANIMATION", entity.path, line, f"state {state} of {entity.name} plays animation {animation}, which pdxmesh {mesh.name} does not define"))
+	for slot, target, line in entity.attaches:
+		if not lookup.has_entity(target):
+			rows.append(("GFX-3D-ATTACH-ENTITY", entity.path, line, f"attach {slot} of {entity.name} names entity {target}, which neither the mod nor the installed game defines"))
+	return rows
+
+
+def check_unit_sprites(mod_roots: Sequence[Path], lookup: ModelLookup) -> List[Row]:
+	"""Every sub-unit `sprite = x` needs an entity named `x_entity`; all 42 sprites of vanilla follow this."""
+	rows: List[Row] = []
+	for root in mod_roots:
+		for path in _files(root, "common/units"):
+			for key, _operator, value, _line in _parse_source(path):
+				if key != "sub_units" or not isinstance(value, list):
+					continue
+				for unit, _unit_operator, block, _unit_line in value:
+					sprite = _scalar_node(block, "sprite") if isinstance(block, list) else None
+					if sprite is not None and not lookup.has_entity(f"{sprite[0]}_entity"):
+						rows.append(("GFX-3D-UNIT-ENTITY", _rel(root, path), sprite[1], f"sprite {sprite[0]} of {unit} has no entity named {sprite[0]}_entity in the mod or the installed game"))
+	return rows
+
+
+def audit_model_registration(findings: Findings, mod_roots: Sequence[Path], game_roots: Sequence[Path]) -> None:
+	"""Run every 3D registration rule over the definitions of `mod_roots`, resolving names against `game_roots` too."""
+	lookup = ModelLookup(mod_roots, game_roots)
+	for mesh in lookup.mod.pdxmeshes.values():
+		findings.registration.extend(check_pdxmesh(mesh, lookup))
+	for animation in lookup.mod.animations.values():
+		findings.registration.extend(check_animation(animation, lookup))
+	for entity in lookup.mod.entities.values():
+		findings.registration.extend(check_entity(entity, lookup))
+	findings.registration.extend(check_unit_sprites(mod_roots, lookup))
+
+
+def calibrate_model_rules() -> None:
+	"""Run the 3D rules on the installed game and every DLC against itself and print what each reports."""
+	roots = game_model_roots()
+	findings = Findings()
+	audit_model_registration(findings, roots, roots)
+	lookup = ModelLookup(roots, roots)
+	print()
+	print("3D registration rules on the installed game (its definitions and every DLC package, resolved against themselves)")
+	print(f"  {len(lookup.mod.pdxmeshes)} pdxmesh, {len(lookup.mod.entities)} entity, {len(lookup.mod.animations)} animation definitions")
+	counts = Counter(row[0] for row in findings.registration)
+	for rule in sorted(MODEL_RULES):
+		print(f"{rule:28s} {MODEL_RULES[rule]:8s} reported {counts[rule]:6d}")
+		for _rule, source, line, message in [row for row in findings.registration if row[0] == rule][:3]:
+			print(f"    e.g. {source}:{line}: {message}")
+
+
 CHECK = "asset-wiring"
+MODEL_RULES = {
+	"GFX-3D-MESH-MISSING": "error",
+	"GFX-3D-ANIM-MISSING": "error",
+	"GFX-3D-ANIM-UNDEFINED": "error",
+	"GFX-3D-ENTITY-PDXMESH": "error",
+	"GFX-3D-UNIT-ENTITY": "error",
+	"GFX-3D-MESHSETTINGS": "error",
+	"GFX-3D-TEXTURE-MISSING": "error",
+	"GFX-3D-FILE-PATH": "warning",
+	"GFX-3D-MESH-UNREADABLE": "warning",
+	"GFX-3D-MESHSETTINGS-CASE": "warning",
+	"GFX-3D-STATE-ANIMATION": "warning",
+	"GFX-3D-ATTACH-ENTITY": "warning",
+}
 LEVELS = {
 	"GFX-UNRESOLVED": "error",
 	"GFX-MISSING-FILE": "error",
@@ -729,6 +1190,7 @@ LEVELS = {
 	"GFX-DEAD-REGISTRATION": "review",
 	"GFX-DYNAMIC-PREFIX": "review",
 	"GFX-DOCUMENTATION-NAME": "review",
+	**MODEL_RULES,
 }
 
 
@@ -756,6 +1218,7 @@ def normalised_findings(findings: Findings) -> List[Finding]:
 		add("GFX-DYNAMIC-PREFIX", row["sources"][0] if row["sources"] else "", f"{row['name']} is a runtime-built prefix")
 	for row in findings.documentation_refs:
 		add("GFX-DOCUMENTATION-NAME", row["sources"][0] if row["sources"] else "", f"{row['name']} appears only in documentation")
+	rows.extend(Finding(CHECK, rule, LEVELS[rule], relative(path), line, message) for rule, path, line, message in findings.registration)
 	return rows
 
 
@@ -765,7 +1228,7 @@ def main() -> int:
 	parser.add_argument(
 		"--calibrate-vanilla",
 		action="store_true",
-		help="measure each implicit lookup rule against the vanilla install and exit",
+		help="measure each implicit lookup rule and each 3D registration rule against the vanilla install and exit",
 	)
 	parser.add_argument("--root", type=Path, help="audit this mod folder instead of the repository that holds the tool")
 	add_arguments(parser)
