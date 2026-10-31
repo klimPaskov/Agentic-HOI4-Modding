@@ -4,12 +4,28 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path
 from urllib.parse import unquote
 
 import generate_manifest_evidence as generator
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / ".tools" / "sync"))
+
+import generators  # noqa: E402
+
+
+def check_generators(snapshot: dict, covered: set) -> int:
+    """Every registered generator runs and is in sync, and every tracked generated file ships in the manifest."""
+    entries = generators.load_registry(ROOT)
+    outcomes = generators.run(ROOT, None, check=True, entries=entries)
+    stale = [f"{outcome.entry.id}: {' | '.join(outcome.problems)}" for outcome in outcomes if outcome.status != 0]
+    assert not stale, f"Generated files are stale or a generator could not run: {stale}"
+    outputs = {name for name in snapshot for entry in entries if generators.match(entry.outputs, name)[0]}
+    unshipped = outputs - covered
+    assert not unshipped, f"Generated files missing from manifest: {sorted(unshipped)}"
+    return len(entries)
 
 
 def main() -> None:
@@ -21,6 +37,7 @@ def main() -> None:
     canonical = {name for name in snapshot if name.startswith((".claude/skills/", ".claude/agents/"))}
     missing = canonical - covered
     assert not missing, f"Canonical files missing from manifest: {sorted(missing)}"
+    registered = check_generators(snapshot, covered)
     for name, raw in snapshot.items():
         if not name.endswith((".md", ".json", ".toml", ".yml", ".yaml", ".py", ".cmd", ".html")):
             continue
@@ -45,7 +62,8 @@ def main() -> None:
             target = unquote(target.split("#", 1)[0].split("?", 1)[0])
             assert (page.parent / target).exists(), f"Missing link: {page.relative_to(ROOT)} -> {target}"
             checked += 1
-    print(f"Release inventory covers {len(canonical)} canonical files; {checked} local documentation links pass.")
+    print(f"Release inventory covers {len(canonical)} canonical files; {registered} registered generators are in sync; "
+          f"{checked} local documentation links pass.")
 
 
 if __name__ == "__main__":

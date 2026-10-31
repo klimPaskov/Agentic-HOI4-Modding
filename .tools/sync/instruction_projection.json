@@ -4,6 +4,6 @@
     { "source": "CLAUDE_template.md", "target": "AGENTS_template.md" }
   ],
   "replacements": [
-    ["Install this template as `CLAUDE.md`", "Install this template as `AGENTS.md`"]
+    ["Install this template as `CLAUDE.md`", "Install this template as `AGENTS.md`", ["CLAUDE_template.md"]]
   ]
 }

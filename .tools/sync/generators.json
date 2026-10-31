@@ -1,0 +1,59 @@
+{
+  "_about": "Every generator and generated-file check in this project, read by .tools/sync/generators.py, check.py, the Claude Code hook and the release checks. Paths are relative to the project root. `inputs` are the files whose change reruns an entry, `outputs` the files it writes, `sources` the canonical files that must exist for it to have anything to do. `{item}` captures one folder name, so editing one skill refreshes only that skill's copies. `needs` orders entries and reruns an entry whenever one it needs runs. Add a generator here, never in a script.",
+  "version": 1,
+  "generators": [
+    {
+      "id": "instructions",
+      "label": "AGENTS.md instruction projection",
+      "script": ".tools/sync/sync_instructions.py",
+      "sources": ["CLAUDE.md", "CLAUDE_template.md"],
+      "inputs": ["CLAUDE.md", "CLAUDE_template.md", ".tools/sync/instruction_projection.json", ".tools/sync/sync_instructions.py"],
+      "outputs": ["AGENTS.md", "AGENTS_template.md"]
+    },
+    {
+      "id": "agents",
+      "label": "agent definitions",
+      "script": ".tools/sync/sync_agents.py",
+      "sources": [".claude/agents"],
+      "inputs": [".claude/agents/*.md", ".tools/sync/agent_profiles.json", ".tools/sync/sync_agents.py", ".tools/sync/agent_sync_common.py"],
+      "outputs": [
+        ".claude/agent-map.md",
+        ".codex/agents/*.toml",
+        ".codex/config.toml",
+        ".cursor/agents/*.md",
+        ".cursor/agent-map.md",
+        ".qoder/agents/*.md",
+        ".qoder/agent-map.md",
+        ".opencode/agent/*.md",
+        ".opencode/agent-map.md"
+      ]
+    },
+    {
+      "id": "skills",
+      "label": "skill copies",
+      "script": ".tools/sync/sync_skills.py",
+      "sources": [".claude/skills"],
+      "inputs": [".claude/skills/{item}/**", ".tools/sync/sync_skills.py"],
+      "outputs": [".agents/skills/{item}/**", ".qoder/skills/{item}/**"],
+      "item_args": ["--skill", "{item}"]
+    },
+    {
+      "id": "guidance",
+      "label": "single-read size limit",
+      "kind": "check",
+      "script": ".tools/sync/check_guidance_size.py",
+      "sources": ["CLAUDE.md", "CLAUDE_template.md", ".claude/skills", ".claude/agents"],
+      "inputs": [
+        "CLAUDE.md",
+        "AGENTS.md",
+        "CLAUDE_template.md",
+        "AGENTS_template.md",
+        ".claude/skills/*/SKILL.md",
+        ".claude/agents/*.md",
+        ".tools/sync/read_limits.json",
+        ".tools/sync/check_guidance_size.py"
+      ],
+      "needs": ["instructions"]
+    }
+  ]
+}

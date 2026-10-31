@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-31
+
+- List every generator and generated-file check in `.tools/sync/generators.json` and run them through one runner, `.tools/sync/generators.py`, which `check.py`, `check.py setup`, CI and the release check share. A change to one skill regenerates only that skill's copies, and unrelated edits start nothing.
+- Regenerate projections automatically in Claude Code: a `PostToolUse` hook in `.claude/settings.json` reruns the generators a canonical edit affects, names the outputs to commit with it, and refuses hand edits of generated files. Deny rules stop the edit tools from writing generated files. `.tools/py.sh` starts the first working Python for the hooks.
+- Make sync failures visible: a missing or crashing generator, a broken registry or a folder with nothing to check now exits 2 instead of passing, `check.py setup` exits non-zero when a generator fails, and an installed mod with `.codex/` or `.qoder/` fails the check when its skill copy is missing.
+- Add `--root` to every sync tool, `--skill` to `sync_skills.py`, and the `UNUSED` check for instruction replacements whose phrase no longer occurs. `check.py setup --git-hook` adds an optional pre-commit check of staged changes.
+- Test every synchronization requirement on fixture mods (`.tools/tests/test_sync.py`) on Linux, macOS and Windows in CI, and stop the contract test from hard-coding the number of agents.
+
 ## 2026-10-18
 
 - Bound the Blender adapter to the `mcp` 1.x SDK; a fresh bootstrap resolved `mcp` 2.3.0, which removed `FastMCP`, and the adapter crashed at startup.
