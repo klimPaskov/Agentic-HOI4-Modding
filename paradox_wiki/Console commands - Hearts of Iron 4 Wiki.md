@@ -1,6 +1,10 @@
 # Console commands
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Console commands", captured 2026-09-19.*
+*Offline snapshot of the Hearts of Iron IV Wiki page "Console commands", revision 105778, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="none" checked="never" -->
+**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:end id="review" -->
 
 ## Table of contents
 
@@ -19,6 +23,10 @@
 This page lists the codes which may be input into the Console Window, a special debugging window which may be accessed on non-ironman games by hitting `^` , `°` or tilde (~) (key varies based on keyboard layout). Press the up or down arrow keys to traverse through previously executed commands. Many codes can be turned off by repeating the command, but sometimes reloading the save or exiting the game is necessary. Please note that many of these commands come in and out with each DLC making some of them not work. Mods may introduce commands and more commonly, tags into the game to enhance their gameplay.
 
 Also of note, commands may not work in ironman games by design.
+
+```text
+Hint: You must launch the game in debug mode `-debug` in order to use the console.
+```
 
 ## List of commands <a id="List_of_commands"></a>
 

@@ -1,6 +1,10 @@
 # Division modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Division modding", captured 2026-09-19.*
+*Offline snapshot of the Hearts of Iron IV Wiki page "Division modding", revision 105628, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="none" checked="never" -->
+**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:end id="review" -->
 
 ## Table of contents
 
@@ -250,6 +254,8 @@ units = {
 - **Version Name** is for custom classes of ship. Optional
 
 Note: The owner or creator country needs to have the technology unlocked and the version needs to exist in their countries history file.
+
+Note 2: While the Owner section is technically optional, if there are multiple classes that use the same ship hull (e.g. ship_hull_cruiser_2) and no owner is defined, it will ignore version_name and use the last class defined in the country history of the said ship hull type.
 
 ### Non-Man The Guns <a id="Non-Man_The_Guns"></a>
 

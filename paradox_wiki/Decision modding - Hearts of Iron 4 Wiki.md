@@ -1,6 +1,10 @@
 # Decision modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Decision modding", captured 2026-09-19.*
+*Offline snapshot of the Hearts of Iron IV Wiki page "Decision modding", revision 103880, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="none" checked="never" -->
+**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:end id="review" -->
 
 ## Table of contents
 

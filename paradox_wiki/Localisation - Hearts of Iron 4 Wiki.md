@@ -1,6 +1,10 @@
 # Localisation
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Localisation", captured 2026-09-19.*
+*Offline snapshot of the Hearts of Iron IV Wiki page "Localisation", revision 105503, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="none" checked="never" -->
+**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:end id="review" -->
 
 ## Table of contents
 
@@ -705,7 +709,7 @@ defined_text = {
 
 ### Dynamic scripted localisation <a id="Dynamic_scripted_localisation"></a>
 
-The `localization_key` argument now directly supports the use of dynamic localisation. That is, it is possible put a piece of dynamic localisation *as part* of a localisation key call. This allows for a much streamlined system of localisation automation when it is needed. For example:
+The `localization_key` argument now directly supports the use of dynamic localisation. That is, it is possible to use a piece of dynamic localisation *as part* of a localisation key call. This allows for a far more streamlined system of localisation automation when it is needed. For example:
 
 ```text
 defined_text = {

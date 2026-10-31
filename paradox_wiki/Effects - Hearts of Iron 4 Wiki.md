@@ -1,6 +1,10 @@
 # Effects
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Effect", captured 2026-09-19.*
+*Offline snapshot of the Hearts of Iron IV Wiki page "Effect", revision 105661, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="none" checked="never" -->
+**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:end id="review" -->
 
 ## Table of contents
 
@@ -1442,7 +1446,7 @@ Autonomy-related country-scoped effects:
 | end_puppet | `<country>`<br>The target country. | `end_puppet = GER` | Removes the subject status between the target and the current scope. | Must be used within the overlord's scope. | 1.0 |
 | add_autonomy_ratio | `value = <float>`<br>The freedom score to add. `localization = <string>`<br>The localization key for the modifier. | *(example below)* | Adds a freedom score ratio modifier to the current scope. | Used in the subject's scope. | 1.3 |
 | add_autonomy_score | `value = <float>`<br>The freedom score to add. `localization = <string>`<br>The localization key for the modifier. | *(example below)* | Adds an exact freedom score modifier to the current scope. | Used in the subject's scope. | 1.3 |
-| set_autonomy | `target = <country> / <variable>`<br>The subject country. `autonomous_state = <type>`<br>The type of autonomy state to set.<br> `freedom_level = <float>`<br>The new freedom level value. Optional.<br> `end_wars = <yes/no>`<br>Will end any wars the subject is involved in.<br> `end_civil_wars = <yes/no>`<br>Will end any civil wars the subject is subject to<br> | *(example below)* | Sets the autonomy level for the specified country, **including independence**. | The autonomy_free state will free the subject, **however this effect has to be executed within the scope of the target country's current overlord** for this to have effect. The autonomy states are found in `/Hearts of Iron IV/common/autonomous_states/*.txt` files. Although end_wars is an optional argument defaulting to no, omitting it results in the country's occupied states returning to its control, stranding enemy units.<br>When setting the autonomy level in the history files, it is preferable to do it before the political effects in the subject's history file scoping to the overlord's tag, to avoid overwriting. | 1.3 |
+| set_autonomy | `target = <country> / <variable>`<br>The subject country. `autonomous_state = <type>`<br>The type of autonomy state to set.<br> `freedom_level = <float>`<br>The new freedom level value. Optional.<br> `end_wars = <yes/no>`<br>Will end any wars the subject is involved in.<br> `end_civil_wars = <yes/no>`<br>Will end any civil wars the subject is subject to<br> `keep_subjects = <yes/no>`<br>If yes, the new subject keeps its own subjects instead of releasing them. Defaults to no<br> | *(example below)* | Sets the autonomy level for the specified country, **including independence**. | The autonomy_free state will free the subject, **however this effect has to be executed within the scope of the target country's current overlord** for this to have effect. The autonomy states are found in `/Hearts of Iron IV/common/autonomous_states/*.txt` files. Although end_wars is an optional argument defaulting to no, omitting it results in the country's occupied states returning to its control, stranding enemy units.<br>When setting the autonomy level in the history files, it is preferable to do it before the political effects in the subject's history file scoping to the overlord's tag, to avoid overwriting. | 1.3 |
 
 **Example: puppet**
 
@@ -1479,6 +1483,7 @@ set_autonomy = {
     autonomous_state = autonomy_free
     end_wars = no
     end_civil_wars = no
+    keep_subjects = no
 }
 ```
 
@@ -1940,6 +1945,7 @@ Technology-related country-scoped effects:
 | modify_tech_sharing_bonus | `id = <string>`<br>The group to modify. `bonus = <float>`<br>The new bonus. | *(example below)* | Modifies the specified technology sharing group. | Technology sharing groups are found in `Hearts of Iron IV\common\technology_sharing\*.txt` | 1.3 |  |
 | inherit_technology | `<tag>` The country to inherit technology from. | `inherit_technology = CAN` | Makes the current country's researched technologies be copied from the specified country. | Useful when making a country independent. | 1.6 |  |
 | mark_technology_tree_layout_dirty | `<bool>`<br>Boolean. | `mark_technology_tree_layout_dirty = yes` | Forces the refresh of the hidden technologies for the scoped country. |  | 1.15 |  |
+| select_tech_tree_icon_origin | `<tag>` The country to inherit technology icons from. | `select_tech_tree_icon_origin = JAP` | Force tech tree to use another country's icons. |  | 1.17 |  |
 
 **Example: add_tech_bonus**
 

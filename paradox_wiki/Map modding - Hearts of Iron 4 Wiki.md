@@ -1,6 +1,10 @@
 # Map modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Map modding", captured 2026-09-19.*
+*Offline snapshot of the Hearts of Iron IV Wiki page "Map modding", revision 105627, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="none" checked="never" -->
+**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:end id="review" -->
 
 ## Table of contents
 
@@ -163,7 +167,7 @@ Additionally, note that the nudger dynamically updates strategic regions with st
 
 *Main article: [Strategic region modding](<Strategic region modding - Hearts of Iron 4 Wiki.md>)*
 
-Strategic regions are defined within `/Hearts of Iron IV/map/strategicregions/*.txt` files, where provinces are added to them individually. A province *must* have a strategic region. Otherwise, many interactions with that province can cause a game crash, sometimes appearing before the game can launch. The strategic regions are used for ships and airforce as regions where they can be assigned, but they also serve for assigning weather. A naval strategic region may also have [naval terrain](#Provincial_terrain) assigned with `naval_terrain = terrain_name`.
+Strategic regions are defined within `/Hearts of Iron IV/map/strategicregions/*.txt` files, where provinces are added to them individually. A province *must* have a strategic region, and all provinces of a state must be assigned the same strategic region. Otherwise, many interactions with that province can cause a game crash, sometimes appearing before the game can launch. The strategic regions are used for ships and airforce as regions where they can be assigned, but they also serve for assigning weather. A naval strategic region may also have [naval terrain](#Provincial_terrain) assigned with `naval_terrain = terrain_name`.
 
 ### Weather <a id="Weather"></a>
 

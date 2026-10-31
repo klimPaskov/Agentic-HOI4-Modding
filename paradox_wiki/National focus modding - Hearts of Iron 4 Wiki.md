@@ -1,6 +1,10 @@
 # National focus modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "National focus modding", captured 2026-09-19.*
+*Offline snapshot of the Hearts of Iron IV Wiki page "National focus modding", revision 105626, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+
+<!-- kit:begin id="review" at="top" build="none" checked="never" -->
+**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:end id="review" -->
 
 ## Table of contents
 
@@ -848,6 +852,8 @@ A joint focus is defined as a root-level `joint_focus = { ... }` block. Each att
 - `completion_reward_joint_member = { ... }` is a completion reward executed to every country where the focus is completed other than the one that has directly completed it.
 
 Other than these, joint focuses are identical to shared focuses.
+
+However, editing the generic tree to have joint focuses will cause the error log to be filled with missing scope error, although if the game was launched in debug mode saving any focus tree will cause the problem to stop for the duration of that session. A shared focus tree that doesn't have joint focuses do not have that problem.
 
 ### Example <a id="Example"></a>
 
