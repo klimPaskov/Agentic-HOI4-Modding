@@ -19,8 +19,8 @@ from unittest import mock
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-import blender_client  # noqa: E402
-from lib import profile_gates as gates  # noqa: E402
+import blender_client
+from lib import profile_gates as gates
 
 
 def captured(*records: tuple[str, str], warnings: list | None = None) -> dict:

@@ -30,7 +30,6 @@ CHECK_IDS = frozenset(
         "triangle_range",
         "material_slots",
         "zero_weight_vertices",
-        "visual_preflight",
     }
 )
 

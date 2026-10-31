@@ -184,7 +184,7 @@ def load_worker():
     namespace = {
         "Path": Path, "math": math, "os": os, "re": re, "hashlib": hashlib, "json": json,
         "Matrix": MatrixDouble, "LOCATOR_REGISTRY_VERSION": 1, "LOCATOR_TRANSFORM_TOLERANCE": 1e-5,
-        "ExporterLogCapture": exporter_log_capture.ExporterLogCapture,
+        "run_captured": exporter_log_capture.run_captured,
         "exporter_warnings": exporter_log_capture.exporter_warnings,
     }
     exec(compile(module, str(WORKER_PATH), "exec"), namespace)

@@ -27,7 +27,7 @@ import bmesh
 from mathutils import Euler, Matrix, Quaternion, Vector
 from mathutils.bvhtree import BVHTree
 from mathutils.kdtree import KDTree
-from exporter_log_capture import ExporterLogCapture, exporter_warnings
+from exporter_log_capture import exporter_warnings, run_captured
 from mesh_components import count_connected_components
 from normalization_convergence import evaluate_convergence_step
 
@@ -5490,9 +5490,9 @@ def export_mesh(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
             rig.data.pose_position = "REST"
         bpy.context.view_layer.update()
         exported_locators = locator_records(locators)
-        exporter_capture = ExporterLogCapture(getattr(pdx.get("module"), "IO_PDX_LOG", None))
-        exporter_capture.call(
-            pdx["export_meshfile"],
+        exporter_report = run_captured(
+            pdx,
+            "export_meshfile",
             str(output),
             exp_mesh=True,
             exp_skel=True,
@@ -5513,7 +5513,6 @@ def export_mesh(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
         for rig, pose_position in locator_pose_positions.items():
             rig.data.pose_position = pose_position
         bpy.context.view_layer.update()
-    exporter_report = exporter_capture.report()
     text_output = output.with_suffix(".txt")
     streams = exported_mesh_streams(text_output)
     from skeletal_export_partition import require_bounded_export_streams
@@ -6863,16 +6862,15 @@ def export_animation(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]
             if not old_output.is_file():
                 raise RuntimeError(f"Animation export target is not a file: {old_output}")
             old_output.unlink()
-    exporter_capture = ExporterLogCapture(getattr(pdx.get("module"), "IO_PDX_LOG", None))
-    exporter_capture.call(
-        pdx["export_animfile"],
+    exporter_report = run_captured(
+        pdx,
+        "export_animfile",
         str(output),
         frame_start=start,
         frame_end=end,
         uniform_scale=True,
         plain_txt=True,
     )
-    exporter_report = exporter_capture.report()
     scale_normalization = normalize_exported_animation_scales(output, pdx, 1.0)
     from animation_root_export import correct_exported_initial_roots
     initial_root_world_pose = correct_exported_initial_roots(output, rig, start, bpy)

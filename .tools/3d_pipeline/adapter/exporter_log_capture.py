@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import logging
 import warnings
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 
 CAPTURED = "captured"
@@ -118,6 +118,14 @@ class ExporterLogCapture:
             "error_count": sum(item["level"] in {"ERROR", "CRITICAL"} for item in records),
             "log_records_seen": self._collector.seen,
         }
+
+
+def run_captured(pdx: Mapping[str, Any], name: str, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    """Run `pdx[name](*args, **kwargs)` under a capture on io_pdx_mesh's logger; return the report."""
+
+    capture = ExporterLogCapture(getattr(pdx.get("module"), "IO_PDX_LOG", None))
+    capture.call(pdx[name], *args, **kwargs)
+    return capture.report()
 
 
 def exporter_warnings(report: Dict[str, Any]) -> Optional[List[str]]:

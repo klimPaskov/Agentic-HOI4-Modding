@@ -17,7 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from test_pipeline_startup_regressions import AdapterHarness  # noqa: E402
+from test_pipeline_startup_regressions import AdapterHarness
 
 
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]

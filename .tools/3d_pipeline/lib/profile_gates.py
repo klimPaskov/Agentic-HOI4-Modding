@@ -26,9 +26,9 @@ PROFILE_REGISTRY_PATH = PIPELINE_ROOT / "config" / "asset_profiles.json"
 if str(ADAPTER_ROOT) not in sys.path:
     sys.path.insert(0, str(ADAPTER_ROOT))
 
-from profile_exceptions import ProfileExceptionError, index_exceptions  # noqa: E402
+from profile_exceptions import ProfileExceptionError, index_exceptions
 
-from lib.paths import read_job_document, read_json  # noqa: E402
+from lib.paths import read_job_document, read_json
 
 
 # Allowances used when a profile has no `validation` block (or omits a field).
@@ -119,6 +119,122 @@ def post_sanitize_weights(prep: Mapping[str, Any], explicit: Any = None) -> Any:
     return None
 
 
+class _Evaluation:
+    """Collects one record per check, the blocking messages and the waived failures."""
+
+    def __init__(self, profile: Mapping[str, Any]) -> None:
+        try:
+            self.exceptions = index_exceptions(profile)
+        except ProfileExceptionError as exc:
+            raise ProfileGateError(str(exc)) from exc
+        self.failures: List[str] = []
+        self.checks: Dict[str, Dict[str, Any]] = {}
+        self.exceptions_applied: List[Dict[str, Any]] = []
+
+    def record(self, check: str, measured: Any, limit: Any, passed: bool, problem: str) -> None:
+        entry: Dict[str, Any] = {"measured": measured, "limit": limit}
+        if passed:
+            entry["status"] = "passed"
+        elif check in self.exceptions:
+            entry["status"] = "excepted"
+            entry["exception"] = self.exceptions[check]
+            self.exceptions_applied.append(
+                {**self.exceptions[check], "measured": measured, "limit": limit, "problem": problem}
+            )
+        else:
+            entry["status"] = "failed"
+            self.failures.append(problem)
+        self.checks[check] = entry
+
+    def at_most(self, check: str, label: str, measured: Any, limit: int) -> None:
+        if not _is_number(measured):
+            self.record(check, None, limit, False, f"{label} was not measured in the candidate report")
+        else:
+            self.record(check, measured, limit, measured <= limit, f"{label} {measured} exceed profile allowance {limit}")
+
+    def as_dict(self) -> Dict[str, Any]:
+        return {"failures": self.failures, "checks": self.checks, "exceptions_applied": self.exceptions_applied}
+
+
+def _is_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _check_topology(evaluation: _Evaluation, profile: Mapping[str, Any], geometry: Mapping[str, Any]) -> None:
+    evaluation.at_most(
+        "non_manifold_edges", "non-manifold edges", geometry.get("non_manifold_edges"), _limit(profile, "max_non_manifold_edges")
+    )
+    # The worker's "loose_boundary_edges" counts edges with exactly one face.
+    evaluation.at_most(
+        "boundary_edges", "boundary edges", geometry.get("loose_boundary_edges"), _limit(profile, "max_boundary_edges")
+    )
+    evaluation.at_most(
+        "loose_components", "loose components", geometry.get("loose_component_count"), _limit(profile, "max_loose_components")
+    )
+
+
+def _check_triangle_range(evaluation: _Evaluation, profile: Mapping[str, Any], geometry: Mapping[str, Any]) -> None:
+    triangle_range = profile.get("triangle_range", {})
+    if not isinstance(triangle_range, dict):
+        triangle_range = {}
+    preferred = (triangle_range.get("preferred_min"), triangle_range.get("preferred_max"))
+    triangles = geometry.get("triangles")
+    if not all(_is_number(value) for value in preferred):
+        evaluation.record("triangle_range", triangles, None, False, "profile defines no preferred triangle range")
+    elif not _is_number(triangles):
+        evaluation.record(
+            "triangle_range", None, list(preferred), False, "triangle count was not measured in the candidate report"
+        )
+    else:
+        evaluation.record(
+            "triangle_range",
+            triangles,
+            list(preferred),
+            preferred[0] <= triangles <= preferred[1],
+            f"triangles {triangles} are outside the profile's preferred range {preferred[0]}-{preferred[1]}",
+        )
+
+
+def _check_material_slots(evaluation: _Evaluation, profile: Mapping[str, Any], prep: Mapping[str, Any]) -> None:
+    materials = prep.get("materials", {})
+    names = materials.get("materials") if isinstance(materials, dict) else None
+    profile_materials = profile.get("materials", {})
+    max_slots = profile_materials.get("max_slots") if isinstance(profile_materials, dict) else None
+    if isinstance(max_slots, bool) or not isinstance(max_slots, int):
+        evaluation.record("material_slots", None, None, False, "profile defines no materials.max_slots")
+    elif not isinstance(names, list):
+        evaluation.record("material_slots", None, max_slots, False, "material slots were not listed in the candidate report")
+    else:
+        used = len({name for name in names if isinstance(name, str)})
+        evaluation.record(
+            "material_slots", used, max_slots, used <= max_slots, f"material slots {used} exceed profile maximum {max_slots}"
+        )
+
+
+def _check_zero_weights(
+    evaluation: _Evaluation, profile: Mapping[str, Any], prep: Mapping[str, Any], weights_after: Any
+) -> None:
+    weights = post_sanitize_weights(prep, weights_after)
+    if weights is None:
+        evaluation.checks["zero_weight_vertices"] = {
+            "status": "not_evaluated",
+            "reason": "the report carries no post-sanitize weight metrics",
+        }
+        return
+    limit = _limit(profile, "max_residual_zero_weight_vertices")
+    residual = residual_zero_weight_vertices(weights)
+    if residual is None:
+        evaluation.record("zero_weight_vertices", None, limit, False, "post-sanitize weight metrics are malformed")
+    else:
+        evaluation.record(
+            "zero_weight_vertices",
+            residual,
+            limit,
+            residual <= limit,
+            f"residual zero-weight deforming vertices {residual} exceed profile allowance {limit}",
+        )
+
+
 def evaluate_candidate(
     profile: Mapping[str, Any],
     prep: Mapping[str, Any],
@@ -132,98 +248,15 @@ def evaluate_candidate(
     profile exception, with the measurement and the reason).
     """
 
-    try:
-        exceptions = index_exceptions(profile)
-    except ProfileExceptionError as exc:
-        raise ProfileGateError(str(exc)) from exc
-    result: Dict[str, Any] = {"failures": [], "checks": {}, "exceptions_applied": []}
-
-    def record(check: str, measured: Any, limit: Any, passed: bool, problem: str) -> None:
-        entry: Dict[str, Any] = {"measured": measured, "limit": limit}
-        if passed:
-            entry["status"] = "passed"
-        elif check in exceptions:
-            entry["status"] = "excepted"
-            entry["exception"] = exceptions[check]
-            result["exceptions_applied"].append(
-                {**exceptions[check], "measured": measured, "limit": limit, "problem": problem}
-            )
-        else:
-            entry["status"] = "failed"
-            result["failures"].append(problem)
-        result["checks"][check] = entry
-
-    def at_most(check: str, label: str, measured: Any, limit: int) -> None:
-        if isinstance(measured, bool) or not isinstance(measured, (int, float)):
-            record(check, None, limit, False, f"{label} was not measured in the candidate report")
-        else:
-            record(check, measured, limit, measured <= limit, f"{label} {measured} exceed profile allowance {limit}")
-
+    evaluation = _Evaluation(profile)
     geometry = prep.get("geometry", {})
     if not isinstance(geometry, dict):
         geometry = {}
-    at_most("non_manifold_edges", "non-manifold edges", geometry.get("non_manifold_edges"), _limit(profile, "max_non_manifold_edges"))
-    # The worker's "loose_boundary_edges" counts edges with exactly one face.
-    at_most("boundary_edges", "boundary edges", geometry.get("loose_boundary_edges"), _limit(profile, "max_boundary_edges"))
-    at_most("loose_components", "loose components", geometry.get("loose_component_count"), _limit(profile, "max_loose_components"))
-
-    triangle_range = profile.get("triangle_range", {})
-    preferred = (
-        triangle_range.get("preferred_min") if isinstance(triangle_range, dict) else None,
-        triangle_range.get("preferred_max") if isinstance(triangle_range, dict) else None,
-    )
-    triangles = geometry.get("triangles")
-    if any(isinstance(value, bool) or not isinstance(value, (int, float)) for value in preferred):
-        record("triangle_range", triangles, None, False, "profile defines no preferred triangle range")
-    elif isinstance(triangles, bool) or not isinstance(triangles, (int, float)):
-        record("triangle_range", None, list(preferred), False, "triangle count was not measured in the candidate report")
-    else:
-        record(
-            "triangle_range",
-            triangles,
-            list(preferred),
-            preferred[0] <= triangles <= preferred[1],
-            f"triangles {triangles} are outside the profile's preferred range {preferred[0]}-{preferred[1]}",
-        )
-
-    materials = prep.get("materials", {})
-    names = materials.get("materials") if isinstance(materials, dict) else None
-    profile_materials = profile.get("materials", {})
-    max_slots = profile_materials.get("max_slots") if isinstance(profile_materials, dict) else None
-    if isinstance(max_slots, bool) or not isinstance(max_slots, int):
-        record("material_slots", None, None, False, "profile defines no materials.max_slots")
-    elif not isinstance(names, list):
-        record("material_slots", None, max_slots, False, "material slots were not listed in the candidate report")
-    else:
-        used = len({name for name in names if isinstance(name, str)})
-        record("material_slots", used, max_slots, used <= max_slots, f"material slots {used} exceed profile maximum {max_slots}")
-
-    weights = post_sanitize_weights(prep, weights_after)
-    if weights is None:
-        result["checks"]["zero_weight_vertices"] = {
-            "status": "not_evaluated",
-            "reason": "the report carries no post-sanitize weight metrics",
-        }
-    else:
-        residual = residual_zero_weight_vertices(weights)
-        if residual is None:
-            record(
-                "zero_weight_vertices",
-                None,
-                _limit(profile, "max_residual_zero_weight_vertices"),
-                False,
-                "post-sanitize weight metrics are malformed",
-            )
-        else:
-            limit = _limit(profile, "max_residual_zero_weight_vertices")
-            record(
-                "zero_weight_vertices",
-                residual,
-                limit,
-                residual <= limit,
-                f"residual zero-weight deforming vertices {residual} exceed profile allowance {limit}",
-            )
-    return result
+    _check_topology(evaluation, profile, geometry)
+    _check_triangle_range(evaluation, profile, geometry)
+    _check_material_slots(evaluation, profile, prep)
+    _check_zero_weights(evaluation, profile, prep, weights_after)
+    return evaluation.as_dict()
 
 
 def exporter_report_failures(result: Mapping[str, Any]) -> List[str]:

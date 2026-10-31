@@ -10,6 +10,7 @@ from __future__ import annotations
 import ast
 import importlib.util
 import logging
+import types
 import unittest
 import warnings
 from pathlib import Path
@@ -65,7 +66,7 @@ class ExporterLogCaptureTests(unittest.TestCase):
 
     def test_python_warnings_raised_inside_the_exporter_are_recorded_too(self) -> None:
         def exporter() -> None:
-            warnings.warn("Mesh.calc_normals is deprecated", DeprecationWarning)
+            warnings.warn("Mesh.calc_normals is deprecated", DeprecationWarning, stacklevel=2)
 
         capture = ExporterLogCapture(self.logger)
         capture.call(exporter)
@@ -124,20 +125,44 @@ class ExporterLogCaptureTests(unittest.TestCase):
         capture.call(lambda: None)
         self.assertEqual(capture.report()["status"], "not_captured")
 
+    def test_run_captured_calls_the_named_exporter_and_listens_on_the_modules_logger(self) -> None:
+        calls = []
+
+        def export_meshfile(path: str, **kwargs: object) -> str:
+            calls.append((path, kwargs))
+            self.logger.warning("texture path missing")
+            return "ignored"
+
+        pdx = {"module": types.SimpleNamespace(IO_PDX_LOG=self.logger), "export_meshfile": export_meshfile}
+        report = capture_module.run_captured(pdx, "export_meshfile", "out/unit.mesh", exp_mesh=True)
+        self.assertEqual(calls, [("out/unit.mesh", {"exp_mesh": True})])
+        self.assertEqual(exporter_warnings(report), ["WARNING: texture path missing"])
+
+    def test_run_captured_reports_not_captured_when_the_module_has_no_logger(self) -> None:
+        calls = []
+        for pdx in (
+            {"export_animfile": lambda path: calls.append(path)},
+            {"module": types.SimpleNamespace(), "export_animfile": lambda path: calls.append(path)},
+        ):
+            report = capture_module.run_captured(pdx, "export_animfile", "out/a.anim")
+            self.assertEqual(report["status"], "not_captured")
+            self.assertIsNone(exporter_warnings(report))
+        self.assertEqual(calls, ["out/a.anim", "out/a.anim"])
+
     def test_report_before_the_call_finishes_is_refused(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "after the export call"):
             ExporterLogCapture(self.logger).report()
 
     def test_worker_export_reports_no_longer_hardcode_an_empty_warnings_list(self) -> None:
         tree = ast.parse((ADAPTER_ROOT / "blender_worker.py").read_text(encoding="utf-8"))
-        for name in ("export_mesh", "export_animation"):
+        for name, exporter in (("export_mesh", "export_meshfile"), ("export_animation", "export_animfile")):
             function = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == name)
             source = ast.unparse(function)
             with self.subTest(function=name):
                 self.assertNotIn("'warnings': []", source)
                 self.assertIn("'warnings': exporter_warnings(exporter_report)", source)
                 self.assertIn("'exporter_report': exporter_report", source)
-                self.assertIn("ExporterLogCapture(getattr(pdx.get('module'), 'IO_PDX_LOG', None))", source)
+                self.assertIn("exporter_report = run_captured(pdx, '" + exporter + "'", source)
 
 
 if __name__ == "__main__":

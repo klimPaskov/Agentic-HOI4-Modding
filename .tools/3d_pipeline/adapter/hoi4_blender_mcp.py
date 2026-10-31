@@ -23,7 +23,7 @@ MODULE_ROOT = Path(__file__).resolve().parent
 if str(MODULE_ROOT) not in sys.path:
     sys.path.insert(0, str(MODULE_ROOT))
 
-from texture_size_gate import TextureSizeGateError, texture_size_decision  # noqa: E402
+from texture_size_gate import TextureSizeGateError, texture_size_decision
 
 PIPELINE_ROOT = MODULE_ROOT.parent
 REPO_ROOT = PIPELINE_ROOT.parents[1]
@@ -211,7 +211,7 @@ def _job_profile(job: Path) -> Dict[str, Any]:
     try:
         job_record = json.loads((job / "job.yaml").read_text(encoding="utf-8"))
         profiles = json.loads(PROFILE_CONFIG_PATH.read_text(encoding="utf-8")).get("profiles", {})
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, AttributeError) as exc:
         raise TextureSizeGateError(f"Unable to read the job profile for the texture size cap: {exc}") from exc
     profile_name = job_record.get("profile") if isinstance(job_record, dict) else None
     profile = profiles.get(profile_name) if isinstance(profile_name, str) else None

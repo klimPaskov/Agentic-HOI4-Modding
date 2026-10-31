@@ -21,8 +21,8 @@ from unittest import mock
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib import profile_gates as gates  # noqa: E402
-import profile_exceptions  # noqa: E402  (placed on sys.path by lib.profile_gates)
+from lib import profile_gates as gates
+import profile_exceptions  # placed on sys.path by lib.profile_gates
 
 
 def profile(**overrides) -> dict:

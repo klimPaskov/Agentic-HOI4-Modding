@@ -23,7 +23,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 with mock.patch.dict(os.environ, {"MESHY_API_KEY": "placeholder-not-a-real-key"}):
-    import init_pilot_jobs as init  # noqa: E402
+    import init_pilot_jobs as init
 
 
 def png_bytes(width: int = 64, height: int = 64, tint: int = 0) -> bytes:

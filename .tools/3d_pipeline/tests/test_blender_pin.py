@@ -24,8 +24,8 @@ ADAPTER_ROOT = PIPELINE_ROOT / "adapter"
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import bootstrap_3d_workflow as bootstrap  # noqa: E402
-from test_io_pdx_compat import compatibility_resolution, sha256, source_archive  # noqa: E402
+import bootstrap_3d_workflow as bootstrap
+from test_io_pdx_compat import compatibility_resolution, sha256, source_archive
 
 
 def load_lock() -> dict:
