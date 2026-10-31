@@ -2,8 +2,10 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Music modding", revision 88012, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="none" checked="never" -->
-**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="88012" sources="music/ interface/music_station_base.gui interface/music_station_classic.gui interface/musicplayer.gui localisation/english/music_l_english.yml common/defines/00_defines.lua documentation/effects_documentation.md" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `music/` and the `music/` folders of every DLC (13 `.asset` files, 124 songs, 13 song assignment `.txt` files with 120 assigned songs), `interface/music_station_base.gui`, `interface/music_station_classic.gui`, `interface/musicplayer.gui`, `integrated_dlc/dlc023_man_the_guns/interface/mtg_music.gui`, `localisation/english/music_l_english.yml`, and `play_song` in `documentation/effects_documentation.md`.
+Kit blocks added: song definition census (volume range, subfolders, localisation), what the `chance` block can contain in vanilla, the two vanilla stations and their interface windows, the script side (`play_song`).
+Gaps left: no game file defines the play modes, so "Weighted Shuffle" and how a chance of 0 behaves stay as the wiki states them; the 63 character limit on song names is not shown by vanilla.
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -34,6 +36,17 @@ music = {
 *file* is the song's filename, including the \*.ogg extension.
 *volume* allows to adjust the volume of the \*.ogg file without editing it.
 
+<!-- kit:begin id="music-song-notes" at="section:Song_definition" -->
+**Kit note** Facts from the 124 vanilla `music` blocks. All rows: [vanilla-confirmed 1.19.3] `music/music.asset`, `music/hoi2/hoi2_music.asset`, `music/hoi3/`, and the `music/` folder of each DLC.
+
+- Every block sets exactly `name`, `file` and `volume`.
+- `volume` runs from 0.4 to 1.5. The most common values are 0.8 (32 songs) and 0.65 (28). Eight songs are above 1.0 (1.1 three times, 1.2, 1.4 twice, 1.45, 1.5), so `volume` is not capped at 1.
+- `file` is relative to the folder of the `.asset` file and may name a subfolder: `file = "China/stillness_over_the_north.ogg"` in the No Compromise, No Surrender DLC.
+- The longest song name in vanilla has 34 characters, so the page's limit of 63 is never reached. The limit itself is not shown by any game file. [unverified] `music/`
+- The name doubles as the localisation key, written without a version number: ` general_peace_1: "Hearts of Men"` in `localisation/english/music_l_english.yml`.
+- Vanilla `.asset` file names vary (`music.asset`, `music_ncns.asset`, `hoi2_music.asset`); no name is required.
+<!-- kit:end id="music-song-notes" -->
+
 ## Assigning to a station <a id="Assigning_to_a_station"></a>
 
 In order to work properly, songs must be assigned to a station. The assignments are stored in \*.txt files, within the same folder as the \*.asset and \*.ogg files.
@@ -60,6 +73,32 @@ music = {
 
 *song* accepts the ID of the song, defined as its name within the \*.asset file.
 *chance* defines the chance for a song to be picked if the playmode is set to Weighted Shuffle. The allowed arguments are `factor`, for multiplying the chance, `add`, for adding to the chance, and `base`, replacing the chance entirely. `modifier = {}` allows the argument to modify the chance only be executed if all of the [triggers](<Triggers - Hearts of Iron 4 Wiki.md>) within are met.
+
+<!-- kit:begin id="music-chance-notes" at="section:Assigning_to_a_station" -->
+**Kit note** What the vanilla assignment files show about `music_station` and `chance`. All rows: [vanilla-confirmed 1.19.3] `music/_songs.txt`, `music/hoi2/hoi2_soundtrack.txt`, `music/hoi3/hoi3_soundtrack.txt`, and the `*_songs.txt` of each DLC.
+
+- Two stations have songs: `"base_music"` (11 files: the base game and 10 DLC folders) and `"classic"` (the Hearts of Iron 2 and 3 soundtracks). `music_station = "..."` is the first line of the file.
+- Of 120 `music` assignments, 35 have no `chance` block at all, so `chance` is optional.
+- When present, `chance` holds only `modifier` blocks (22 assignments), `factor` and `modifier` together (35), `base` and `modifier` together (18), `factor` alone (7) or `base` alone (3). `add`, which the page lists, is not used by vanilla.
+- A `modifier` with no trigger and only `factor = 0.5` is valid and applies to every case: this is how `maintheme` is written. Triggers seen inside `modifier` include `has_war`, `has_government`, `original_tag`, `is_in_faction_with`, `has_war_with`, `any_enemy_country`, `has_idea_with_trait`, `has_completed_focus`, `NOT` and `OR`; they run in country scope. The scope is an inference from the triggers used. [unverified] `music/_songs.txt`
+- 4 songs are defined but assigned to no station: `resistance_spanish`, `resistance_french`, `resistance_fascist`, `resistance_spying`. [vanilla-confirmed 1.19.3] `dlc/dlc028_la_resistance/music/`
+
+```text
+music_station = "base_music"
+
+music = {
+	song = "general_peace_1"
+	chance = {
+		modifier = {
+			factor = 1
+			has_war = no
+		}
+	}
+}
+```
+
+Vanilla assignment, one of several peace songs. [vanilla-confirmed 1.19.3] `music/_songs.txt`
+<!-- kit:end id="music-chance-notes" -->
 
 ## Radio stations <a id="Radio_stations"></a>
 
@@ -204,6 +243,24 @@ The album cover is assigned a sprite as the quadTextureSprite within select_stat
 ```
 
 The \*.dds file must be split horizontally into 2 sprites: when it is unselected, and when it is selected.
+
+<!-- kit:begin id="music-station-notes" at="section:Radio_stations" -->
+**Kit note** What 1.19.3 ships for stations. `interface/music_station_base.gui` defines `base_music_faceplate` and `base_music_stations_entry`; `interface/music_station_classic.gui` defines `classic_faceplate` and `classic_stations_entry`. The entry window holds one `checkBoxType` named `select_station_button` whose `quadTextureSprite` is the album art (`GFX_classic_album_art`). Both names follow the page's `<MUSIC STATION>_faceplate` and `<MUSIC STATION>_stations_entry` pattern. [vanilla-confirmed 1.19.3] `interface/music_station_base.gui`, `interface/music_station_classic.gui`
+
+The player window `interface/musicplayer.gui` has the grids that these windows fill: a `faceplate` slot, `default_stations_window` with `stations_grid`, and a `tracks_grid`. [vanilla-confirmed 1.19.3] `interface/musicplayer.gui`
+
+The Man the Guns DLC has `man_the_guns_faceplate` and `man_the_guns_stations_entry` in `integrated_dlc/dlc023_man_the_guns/interface/mtg_music.gui`, but its `mtg_songs.txt` assigns songs to `base_music`, so no song uses that station. [vanilla-confirmed 1.19.3] `integrated_dlc/dlc023_man_the_guns/`
+
+The define `MUSIC_PLAYER_RECENTLY_PLAYED_SIZE = 10` is the size of the list of recently played songs that the player uses to avoid repeats. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+<!-- kit:end id="music-station-notes" -->
+
+<!-- kit:begin id="music-script-effects" at="bottom" -->
+**Kit addition** Script can play a song from a decision, focus or event. `play_song = "<song name>"` plays a song from the song database in any scope, and `scoped_play_song` plays it only for the player of the current scope. [docs] `documentation/effects_documentation.md`
+
+Vanilla uses `play_song = "comintern_war_1"` in `common/national_focus/soviet.txt` and `play_song = "peace_in_our_time"` in `common/scripted_effects/zzz_play_speech_effects.txt`. [vanilla-confirmed 1.19.3] `common/national_focus/soviet.txt`
+
+`play_song = "bella_ciao"` in `common/national_focus/italy.txt` names a song that no `music` block in the game files defines. [vanilla-confirmed 1.19.3] `common/national_focus/italy.txt`, `music/`. What the game does with an undefined song name is not shown; define every name you use. [unverified] `common/national_focus/italy.txt`
+<!-- kit:end id="music-script-effects" -->
 
 ---
 
