@@ -9082,7 +9082,9 @@
         "engine behavior reference"
       ],
       "notes": [
-        "No formal wiki source or license metadata was verified at this revision."
+        "Pages are adapted from the Hearts of Iron 4 Wiki (hoi4.paradoxwikis.com) and licensed CC BY-SA 3.0; the kit's additions to them are distributed under the same license. paradox_wiki/LICENSE.txt records the source, the license and the changes.",
+        "Evidence: the Hearts of Iron 4 Wiki reports its license as \"Attribution-ShareAlike 3.0\" in its site rights information and points to the Paradox Wikis copyright policy, https://central.paradoxwikis.com/Central:Copyrights, which says all editors publish their contributions under the Creative Commons Attribution-Share Alike 3.0 license.",
+        "The license covers the article text. Images and game material in the snapshot keep their own terms (see paradox_wiki/LICENSE.txt), and the package's Apache-2.0 license does not apply to the snapshot."
       ],
       "expected_files": [
         {
@@ -11881,10 +11883,11 @@
     ],
     "required_media_policy": "all_declared",
     "provenance": {
-      "source_status": "repository_only",
-      "license_status": "not_found",
+      "source_status": "verified",
+      "license_status": "verified",
       "notes": [
-        "Provenance and license remain visibly unverified because the inspected repository did not declare them."
+        "License: CC BY-SA 3.0 for the wiki article text and the kit's additions to it; images keep their own terms.",
+        "Evidence: the Hearts of Iron 4 Wiki reports its license as \"Attribution-ShareAlike 3.0\" in its site rights information and points to the Paradox Wikis copyright policy, https://central.paradoxwikis.com/Central:Copyrights, which says all editors publish their contributions under the Creative Commons Attribution-Share Alike 3.0 license."
       ]
     }
   },
