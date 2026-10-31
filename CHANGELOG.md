@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Make the 3D model pipeline's silent checks fail closed. The profile texture-size cap reads the PNG header itself instead of running `ffprobe`, and an unreadable texture or a profile without a cap blocks the conversion. `candidate_gate` also blocks on non-manifold edges, boundary edges, loose components, a triangle count outside the profile's preferred range, too many material slots, and residual zero-weight deforming vertices; a measurement missing from the report blocks too. Each profile in `asset_profiles.json` gets a `validation` block of limits and an `exceptions` list; a profile waives one check only by listing it with a reason, and the gate record lists every exception applied.
+- Capture what io_pdx_mesh reports during mesh and animation export instead of returning an empty `warnings` list. When the exporter's logger cannot be reached, `warnings` is `null` with an `exporter_report` that says why, and the Blender client refuses that export unless the profile records an `exporter_report` exception. The worker's geometry metrics gain `loose_component_count`.
+- Start the reference image's `visual_preflight` flags unreviewed (`null`) with `reference_preflight.json` at `pending_review`. `init_pilot_jobs.py --record-visual-review SLUG --reviewer NAME --review-file answers.json` records the parent's answers, and `run_pilot.py` refuses to proceed from a job still in preflight until the review passes, before any paid call.
+- Pin Blender: `dependencies.lock.json` lists the supported minors (5.1 and 5.2), `find_blender` picks the highest supported minor and refuses others, and every supported minor installs the deterministic io_pdx_mesh compatibility archive with its patched files hash-checked. Blender 5.1.2 bundles Python 3.13.9 without the `imp` module that the upstream 0.91 archive imports. A bootstrap on a machine with an existing Blender 5.1 `io_pdx_mesh` whose patched files do not match the lock replaces that folder.
+
 ## 2026-10-18
 
 - Bound the Blender adapter to the `mcp` 1.x SDK; a fresh bootstrap resolved `mcp` 2.3.0, which removed `FastMCP`, and the adapter crashed at startup.
