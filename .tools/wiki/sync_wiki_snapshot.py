@@ -218,11 +218,12 @@ def modding_category():
 
 
 def existing_titles(titles):
-    """The subset of `titles` that exist as wiki pages."""
+    """The subset of `titles` that exist as wiki pages (redirects do not count)."""
     found = set()
     for i in range(0, len(titles), 20):
         data = api(action="query", titles="|".join(titles[i:i + 20]), prop="info")
-        found.update(p["title"] for p in data["query"]["pages"] if not p.get("missing"))
+        found.update(p["title"] for p in data["query"]["pages"]
+                     if not p.get("missing") and not p.get("redirect"))
     return found
 
 
