@@ -274,7 +274,7 @@ Markdown prose must not be hard-wrapped in the middle of a sentence. Keep each s
    - Prefer the explicit fixed-point access: `constant:category.key` (e.g. `value = constant:system_ratio.low`).
 10. Use event targets (`event_target:`) to persist a scope pointer across blocks/events when variables/scopes alone are insufficient.
     - Required references:
-    - `paradox_wiki/Data structures - Hearts of Iron 4 Wiki.md` (Event targets section)
+    - `paradox_wiki/data_structures.md` (Event targets section)
     - `[HOI4_GAME_DIR]/documentation/effects_documentation.md` (`save_event_target_as`, `save_global_event_target_as`, `clear_global_event_target`, `clear_global_event_targets`)
     - `[HOI4_GAME_DIR]/documentation/triggers_documentation.md` (`has_event_target`)
     - Prefer regular event targets (`save_event_target_as`) for short-lived chains, they automatically clear when the originating effect chain ends (but do carry into events fired from that chain).

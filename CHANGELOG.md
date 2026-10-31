@@ -12,6 +12,12 @@
 - Import the engine traps confirmed on HOI4 1.19.3 into the system skills, each with its evidence tag, and add references for military industrial organisations and special projects, intelligence operations, and script variables and math. Correct six skill rules that vanilla contradicts (`state_target`, supply hub construction, weather position sizes, the force concentration define, the equipment type enum, the special project documentation).
 - Add a feasibility check to `hoi4-feature-planning`, evidence tags for engine facts in skills, and `LESSONS.md`, which ties each incident-driven rule to its regression fixture.
 - Resolve the contradiction between the template and the skills on unavailable MCP routes: the evidence is reported as missing and marked unresolved, never passed. Shorten three subagent routing bullets whose full rules live in `hoi4-subagents`; `docs/development/guidance-audit-2026-10-31.md` lists every moved or changed sentence.
+- Review the offline Paradox wiki snapshot against HOI4 1.19.3: kit blocks hold every local correction and addition and survive a refresh, each page records the game build and sources it was checked against, and nine kit pages cover systems the wiki lacks (special projects, raids, peace conferences, collections, script constants, intelligence operations, map modes, game rules, occupation and resistance).
+- Add `.tools/wiki/wiki_status.py`, which compares the installed game's documentation with the recorded index and lists the pages to re-check after a game update.
+- Name the snapshot's files after the page title in lowercase snake_case (`scripted_gui_modding.md`) instead of `<Page Title> - Hearts of Iron 4 Wiki.md`. HOI4 Agent Tools reads the underscore as a space, so its page lookups keep working. The sync and the verify check enforce the scheme, and a mod with its own copy replaces the whole `paradox_wiki/` folder.
+- Move the Defines page's new-define tables into the kit page `defines_additions.md`, so the wiki page stays an unchanged snapshot.
+- Mark the claims only a game run can settle (`collection_size` inclusivity, the peace `ai_desire` scale, special project reward thresholds, the raid `target_type` scope, MIO task capacity) with a "Needs a game run" note on their pages.
+- Record the snapshot's CC BY-SA 3.0 license in `paradox_wiki/LICENSE.txt`, the manifest and `NOTICE`.
 
 ## 2026-10-18
 

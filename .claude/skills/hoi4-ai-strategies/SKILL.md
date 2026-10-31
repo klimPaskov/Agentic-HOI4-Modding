@@ -39,12 +39,12 @@ Installed documentation is more authoritative than the wiki; where they disagree
 | Topic | Authoritative text | Vanilla precedent |
 | --- | --- | --- |
 | Every `ai_strategy` token, value semantics, unit ratios | `GAME/common/ai_strategy/_documentation.md` (updated 2024-11) | `GAME/common/ai_strategy/default.txt` (generic), `GER.txt`, `FRA.txt`, `INS.txt` (reversed), `SOV.txt` (front_control) |
-| AI strategy plans, ai_will_do math, ai_chance, AI areas | `WIKI/AI modding - Hearts of Iron 4 Wiki.md` (sections MTTH blocks, AI strategies, AI areas, AI strategy plans) | `GAME/common/ai_strategy_plans/GER_historical_strategy_plan.txt`, `ENG_historical_strategy_plan.txt` |
-| Research and focus weighting | `WIKI/AI focuses - Hearts of Iron 4 Wiki.md` | `GAME/common/ai_focuses/generic.txt`, `GER.txt` |
-| Focus `ai_will_do` and the plan override | `WIKI/National focus modding - Hearts of Iron 4 Wiki.md` (AI will do, AI strategy plans) | `GAME/common/national_focus/*.txt` |
-| Decision `ai_will_do` | `WIKI/Decision modding - Hearts of Iron 4 Wiki.md` (AI section) | `GAME/common/decisions/political_decisions.txt` |
-| Event option `ai_chance` | `WIKI/Event modding - Hearts of Iron 4 Wiki.md` (options) | `GAME/events/Germany.txt` |
-| Technology `ai_will_do`, `ai_research_weights` | `WIKI/Technology modding - Hearts of Iron 4 Wiki.md` | `GAME/common/technologies/*.txt` |
+| AI strategy plans, ai_will_do math, ai_chance, AI areas | `WIKI/ai_modding.md` (sections MTTH blocks, AI strategies, AI areas, AI strategy plans) | `GAME/common/ai_strategy_plans/GER_historical_strategy_plan.txt`, `ENG_historical_strategy_plan.txt` |
+| Research and focus weighting | `WIKI/ai_focuses.md` | `GAME/common/ai_focuses/generic.txt`, `GER.txt` |
+| Focus `ai_will_do` and the plan override | `WIKI/national_focus_modding.md` (AI will do, AI strategy plans) | `GAME/common/national_focus/*.txt` |
+| Decision `ai_will_do` | `WIKI/decision_modding.md` (AI section) | `GAME/common/decisions/political_decisions.txt` |
+| Event option `ai_chance` | `WIKI/event_modding.md` (options) | `GAME/events/Germany.txt` |
+| Technology `ai_will_do`, `ai_research_weights` | `WIKI/technology_modding.md` | `GAME/common/technologies/*.txt` |
 | AI templates | `GAME/common/ai_templates/_documentation.md` (updated 2024-08) | `GAME/common/ai_templates/generic.txt`, `templates_ENG.txt` |
 | AI equipment designer | `GAME/common/ai_equipment/_documentation.md` | `GAME/common/ai_equipment/generic_tank.txt` |
 | Goal-based naval AI | `GAME/common/ai_navy/_documentation.md`, `ai_navy/taskforce/_documentation.md` | `GAME/common/ai_navy/goals/goals_generic.txt`, `fleet/generic_fleet_templates.txt` |
