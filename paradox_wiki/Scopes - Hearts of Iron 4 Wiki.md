@@ -2,8 +2,10 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Scopes", revision 103725, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="none" checked="never" -->
-**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="103725" sources="documentation/effects_documentation.md documentation/triggers_documentation.md documentation/dynamic_variables_documentation.md documentation/script_concept_documentation.md documentation/script_collection_input.md documentation/script_collection_operator.md common/script_constants/ common/country_tag_aliases/ common/factions/ common/raids/ common/special_projects/ common/combat_tactics.txt" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the scope lists and every `every_`, `random_`, `any_` and `all_` name in the effect and trigger documentation, the script concept and collection docs, the faction, raid and special project docs, and vanilla script for usage counts.
+Kit blocks added: the scope types the docs name (COMBATANT, ACE, FACTION, OPERATION, RAID_INSTANCE, STRATEGIC_REGION and more), `include_invisible`, tooltip keys, undocumented `visible_when_empty`, the five `prioritize` effects, scope keyword spelling, eleven trigger names the table lacks with five corrections to it, effect scope notes, array scope use, and flow control additions (`custom_override_tooltip`, `tooltip_evaluation`, `random_list` seed).
+Gaps left: how ACE and STRATEGIC_REGION scopes are entered, what `OCCUPIED` and `CAPITAL` select, `any_claim`, and the `count` option on ordinary `any_` triggers stay `[unverified]`. The version-added columns were not re-checked. The inventory keys `ai_area` (an `any_state_in` argument) and `not_tooltip` (a `custom_override_tooltip` argument) are real documented keys.
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -65,6 +67,34 @@ Additionally, scopes can be divided into 6 types by the targets of the scope for
 - Special Project scopes - Executed for special projects.
 
 Only [effects](<Effects - Hearts of Iron 4 Wiki.md>) or [triggers](<Triggers - Hearts of Iron 4 Wiki.md>) of the same target type can be used. For example, `add_building_construction` can only be used in a state scope such as `random_owned_controlled_state = { ... }`, as you can only construct buildings in states. For countries, [offsite buildings are used instead](<Effects - Hearts of Iron 4 Wiki.md>).
+
+<!-- kit:begin id="scope-types-1-19-3" at="section:Types" -->
+### Kit: Scope types in the 1.19.3 documentation <a id="kit-scope-types"></a>
+
+**Kit addition** The list above misses several scope types. The effect and trigger documentation sorts commands under the types below. Counts are the commands listed for that type; scope-agnostic commands are listed under `any`. All rows: [docs] `documentation/effects_documentation.md` and `documentation/triggers_documentation.md`.
+
+| Scope type | Effects | Triggers | What the docs list there |
+| --- | --- | --- | --- |
+| COUNTRY | 323 | 336 | the bulk of the commands |
+| STATE | 58 | 63 | state commands |
+| CHARACTER | 68 | 64 | unit leaders, country leaders, advisors, scientists, operatives |
+| COMBATANT | 0 | 44 | combat triggers such as `is_attacker`, `is_winning`, `phase`, `has_trait` |
+| ACE | 0 | 3 | `hidden_trigger`, `is_female`, `meta_trigger` |
+| FACTION | 0 | 2 | `hidden_trigger`, `meta_trigger` |
+| INDUSTRIAL_ORG | 24 | 16 | military industrial organization commands |
+| OPERATION | 3 | 5 | effects `every_operative`, `random_operative`, `execute_operation_coordinated_strike`; triggers `all_operative_leader`, `any_operative_leader`, `is_operation_type` |
+| PURCHASE_CONTRACT | 1 | 6 | effect `cancel_purchase_contract`; triggers `buyer`, `seller`, `contract_contains_equipment`, `deal_completion` |
+| RAID_INSTANCE | 3 | 2 | effects `add_raid_history_entry`, `raid_add_unit_experience`, `raid_damage_units` |
+| SPECIAL_PROJECT | 8 | 3 | project flags, dynamic modifiers, `add_project_progress_ratio`, `complete_prototype_reward_option` |
+| STRATEGIC_REGION | 1 | 2 | effect `add_region_efficiency` |
+| any | 104 | 94 | commands that work in every scope |
+
+- `hidden_trigger` and `meta_trigger` are listed for all twelve trigger scope types. [docs] `documentation/triggers_documentation.md`
+- There is no DIVISION section. Division commands are listed under `any` and are reached through `every_country_division`, `every_state_division`, `any_country_division` and `any_state_division`. [docs] `documentation/effects_documentation.md`
+- Where vanilla enters these scopes: COMBATANT in the `trigger` block of a combat tactic, whose comment calls it a "combined scope for both country and combatant"; FACTION as `scope:faction = { ... }` in faction goal effects (4 uses in one file); RAID_INSTANCE in the `actor_effects` and `victim_effects` blocks of a raid outcome; SPECIAL_PROJECT through `sp:<id>`; INDUSTRIAL_ORG through `mio:<id>`. [vanilla-confirmed 1.19.3] `common/combat_tactics.txt`, `common/factions/goals/faction_goals_short_term.txt`, `common/raids/_documentation.md`
+- How a script enters ACE or STRATEGIC_REGION scope is not shown in the docs or vanilla script I checked. [unverified]
+- The pattern table says every `any_<object>` has an optional `count`. The docs describe `count` only for `any_collection_element`, and no vanilla `any_` block sets it directly, so the option is [unverified] for the ordinary iterators. [docs] `documentation/triggers_documentation.md`
+<!-- kit:end id="scope-types-1-19-3" -->
 
 ## Examples <a id="Examples"></a>
 
@@ -131,6 +161,12 @@ every_country = {
 }
 ```
 
+<!-- kit:begin id="limiting-additions" at="section:Limiting" -->
+**Kit addition** `include_invisible = yes` (default no) is documented on more iterators than the page names: `every_unit_leader`, `every_army_leader`, `global_every_army_leader`, `every_character`, `every_scientist`, `every_military_industrial_organization` and the trigger `any_unit_leader`. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
+
+Vanilla sets it once, in `common/national_focus/finland.txt`, so most vanilla script relies on the default. `random_select_amount` is documented on the `every_` iterators and appears in 32 vanilla files. [vanilla-confirmed 1.19.3] `common/`, `events/`
+<!-- kit:end id="limiting-additions" -->
+
 ### Tooltip <a id="Tooltip"></a>
 
 By default, using a scope of either of the `any_`, `all_`, and `every_` types will show a title specific to that scope in the tooltip, such as `Every country:` or `All neighbor states:`. If scope limits are used, then this changes to the list of scopes that fulfill the limit, such as `Corsica, Rome, Sardinia:`. For countries, the order in which [country tags are created](<Country creation - Hearts of Iron 4 Wiki.md>) is used in ordering; for states, the state ID is used. If the tooltip differs depending on the scope where it's executed, such as with if statements, then only the first-selected scope is used in the evaluation.
@@ -191,6 +227,12 @@ Gain Base War Support: **-10%**.
 
 Gain Base Stability: **-10%**.
 
+<!-- kit:begin id="tooltip-additions" at="section:Tooltip" -->
+**Kit addition** `tooltip = <key>` replaces the title on the `every_`, `random_`, `any_` and `all_` iterators the docs describe. On `every_allied_country`, `random_allied_country`, the `_of` triggers (`any_country_of`, `all_country_of` and their relatives) and `all_claimant` the value can be a bound localisation object, not only a key; see [Data structures](<Data structures - Hearts of Iron 4 Wiki.md#kit-bindable-localisation>). [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
+
+`display_individual_scopes = yes` (default no) is documented on the `every_` iterators and used in 13 vanilla files. [vanilla-confirmed 1.19.3] `common/`, `events/`
+<!-- kit:end id="tooltip-additions" -->
+
 ### Empty Effect Scopes <a id="Empty_Effect_Scopes"></a>
 
 An effect scope argument that is frequently used in conjunction with `tooltip` is `visible_when_empty = yes` which will show the scope's effects even when no valid targets can be found (that meet the limit).
@@ -230,6 +272,10 @@ every_other_country = {
 }
 ```
 
+<!-- kit:begin id="visible-when-empty-undocumented" at="section:Empty_Effect_Scopes" -->
+**Kit note** `visible_when_empty` does not appear anywhere in `documentation/effects_documentation.md`, yet 45 vanilla files use it, so it is a working but undocumented key. [vanilla-confirmed 1.19.3] `common/`, `events/`
+<!-- kit:end id="visible-when-empty-undocumented" -->
+
 ### Priority <a id="Priority"></a>
 
 Within effect scopes of the `random_` type, if it is aimed at states, it is possible to prioritize a certain state if possible, by using `prioritize` as such:
@@ -245,6 +291,12 @@ random_owned_controlled_state = {
 ```
 
 In this case, the limit will first be evaluated for states 123 and 321. Only if neither of the states 123 or 321 meets the conditions of being owned, controlled, and cored by the country will the random_owned_controlled_state scope be able to select a state that isn't 123 or 321. States 123 and 321, in this case, have the same priority: if both have conditions fulfilled, which one will be picked is random. This only applies at scopes of the `random_` type which target states, this cannot be done with countries or characters.
+
+<!-- kit:begin id="prioritize-effects" at="section:Priority" -->
+**Kit addition** `prioritize = { <state id> ... }` is documented for exactly five effects: `random_state`, `random_owned_state`, `random_core_state`, `random_controlled_state` and `random_owned_controlled_state`. [docs] `documentation/effects_documentation.md`
+
+Vanilla uses it in 75 files, mostly under `random_owned_controlled_state`; `random_neighbor_state` is not among the documented five. [vanilla-confirmed 1.19.3] `common/`, `events/`
+<!-- kit:end id="prioritize-effects" -->
 
 ## Dual scopes <a id="Dual_scopes"></a>
 
@@ -329,6 +381,24 @@ controller = {
     }
 }
 ```
+
+<!-- kit:begin id="scope-keywords" at="section:Dual_scopes" -->
+**Kit addition** Scope keywords and prefixes the table above does not cover.
+
+- The docs name eight keywords that can stand as a scope target: THIS, ROOT, PREV, FROM, OWNER, CONTROLLER, OCCUPIED and CAPITAL. They do not describe `OCCUPIED` or `CAPITAL`, and vanilla never opens a scope with either, so what they select is [unverified]. [docs] `documentation/effects_documentation.md` (Supported Targets lines)
+- Vanilla spells several scope words in both cases. Counts are scope blocks opened with the word (lines / files). [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/`
+
+| Word | Lower case | Upper case |
+| --- | --- | --- |
+| owner | 1001 / 123 | 598 / 82 |
+| controller | 953 / 109 | 513 / 48 |
+| overlord | 99 / 31 | 442 / 86 |
+| faction_leader | 49 / 23 | 3 / 1 |
+| capital_scope | 753 / 147 | none |
+
+- `scope:<name>` is a saved scope that vanilla uses only inside faction goals (`scope:faction`). It is separate from `save_event_target_as`. [vanilla-confirmed 1.19.3] `common/factions/goals/faction_goals_short_term.txt`
+- `temp_var:<name> = { ... }` inside `random_list` is a weight, not a scope. `game:`, `collection:`, `constant:` and `token:` are prefixes for values, not for scope blocks. [vanilla-confirmed 1.19.3] `common/on_actions/05_lar_on_actions.txt`, `common/collections/collections.txt`
+<!-- kit:end id="scope-keywords" -->
 
 ### Invalid event target <a id="Invalid_event_target"></a>
 
@@ -503,6 +573,35 @@ any_state_of = {
 }
 ```
 
+<!-- kit:begin id="trigger-scope-additions" at="section:Trigger_scopes" -->
+### Kit: Trigger scopes missing from the table <a id="kit-trigger-scope-additions"></a>
+
+**Kit addition** The docs list 61 `any_` and `all_` iterator triggers. These are the ones the table above lacks. Description and scope column: [docs] `documentation/triggers_documentation.md`; use column: [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/`.
+
+| Trigger | Scope | What the docs say | Vanilla files |
+| --- | --- | --- | --- |
+| `any_country_of`, `all_country_of` | any | any or all of the countries in `target` pass the triggers | 0, 1 |
+| `any_other_country_of` | any | like `any_country_of`, without the current country | 0 |
+| `any_state_of` | any | any state in `target` passes the triggers | 1 |
+| `any_country_with_original_tag_of` | any | any country whose original tag matches a listed country | 2 |
+| `any_other_country_with_original_tag_of` | any | the same, excluding the current country | 1 |
+| `all_claimant` | STATE | all countries that claim the state in scope | 1 |
+| `any_claim` | COUNTRY | "check if there is a claim between a country and all others" | 0 |
+| `any_collection_element`, `all_collection_elements` | any | trigger block over a collection; `any_collection_element` takes an optional `count` | 2, 0 |
+| `scope_exists` | any | true if the current scope exists, which differs from `exists` (does the country exist); variable scopes always exist | 0 |
+
+- `target` takes either a list (`target = { SWE NOR FIN DEN ICE }`) or `constant:<category>.<entry>`. Collection triggers are covered on [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md#Collection_triggers>). [docs] `documentation/triggers_documentation.md`
+- `any_claim` is documented in one line, so its exact meaning is [unverified].
+
+**Kit correction** Errors in the table and examples above:
+
+- `all_purchase_contract` is not a trigger. The documented name is `all_purchase_contracts`; `any_purchase_contract` is singular. [docs] `documentation/triggers_documentation.md`
+- `all_core_state` and `any_core_state` have their descriptions swapped: `all_` checks that every core state passes, `any_` that at least one does. [docs] `documentation/triggers_documentation.md`
+- `any_scientist` is described as "active scientist". The docs give two separate pairs: `any_scientist` / `all_scientists` and `any_active_scientist` / `all_active_scientist`. The example `all_scientistst` has a typo. [docs] `documentation/triggers_documentation.md`
+- The `_of` examples write `constant:country_groups:nordics` with a colon. Vanilla separates category and entry with a dot, as in `target = constant:country_groups.literally_china`. The `any_state_of` example also takes a country group; state groups live in `common/script_constants/state_groups.txt`. [vanilla-confirmed 1.19.3] `common/decisions/CHI_decisions.txt`, `common/script_constants/state_groups.txt`
+- The docs example under `any_other_country_with_original_tag_of` shows the name `any_country_with_original_tag_of`; the documented heading is the longer name. [docs] `documentation/triggers_documentation.md`
+<!-- kit:end id="trigger-scope-additions" -->
+
 ## Effect scopes <a id="Effect_scopes"></a>
 
 These can only be used as [effects](<Effects - Hearts of Iron 4 Wiki.md>); trying to use them as [triggers](<Triggers - Hearts of Iron 4 Wiki.md>) will result in nothing happening.
@@ -655,6 +754,15 @@ every_collection_element = {
 ```
 
 **NOTE:** Some of these scopes may have no countries/states that match the criteria.
+
+<!-- kit:begin id="effect-scope-notes" at="section:Effect_scopes" -->
+**Kit note** The effect side of the table is complete for 1.19.3: all 53 `every_`, `random_` and `global_every_` iterator effects in the documentation (not counting `random_list` and `random_scope_in_array`) are listed above. [docs] `documentation/effects_documentation.md` (compared by name)
+
+- The docs list `every_other_country` and `every_country_with_original_tag` for country scope only, and `random_other_country` and `random_country_with_original_tag` for any scope; the table above says otherwise for some of them. Call all four from country scope, which both readings allow. [docs] `documentation/effects_documentation.md`
+- `global_every_army_leader` is listed under COUNTRY scope in the docs and has no vanilla use, so the table's "Always usable" is [unverified]. [docs] `documentation/effects_documentation.md`
+- Vanilla use (lines / files): `every_faction_member` 128 / 7, `every_allied_country` 24 / 16, `every_collection_element` 26 / 4. `random_allied_country` and `party_leader` have none. [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/`
+- For `every_collection_element` see [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md#Collection_effects>).
+<!-- kit:end id="effect-scope-notes" -->
 
 ### Effects with scopes <a id="Effects_with_scopes"></a>
 
@@ -811,6 +919,14 @@ random_scope_in_array = {
     }
 }
 ```
+
+<!-- kit:begin id="array-scope-notes" at="section:Array_scopes" -->
+**Kit note** `for_each_scope_loop` also takes `tooltip = <loc>`, which prints the sub-effects under that title, and every array scope names its break variable `break` unless you set another. [docs] `documentation/effects_documentation.md`
+
+Vanilla use (lines / files): `for_each_scope_loop` 187 / 49, `all_of_scopes` 61 / 16, `any_of_scopes` 24 / 11, `random_scope_in_array` 3 / 2. [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/`
+
+Collections do the same job without a stored array: [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md#Collections_and_loops>) compares them with the array loops. Loop defaults are in [Data structures](<Data structures - Hearts of Iron 4 Wiki.md#Arguments>).
+<!-- kit:end id="array-scope-notes" -->
 
 ## PREV usage <a id="PREV_usage"></a>
 
@@ -1069,6 +1185,16 @@ random_list = {
     }
 }
 ```
+
+<!-- kit:begin id="flow-control-additions" at="section:Flow_control_tools" -->
+**Kit addition** Details the table above lacks.
+
+- `custom_trigger_tooltip` is an alias of `custom_override_tooltip`, kept for old script; the docs prefer `custom_override_tooltip` for new triggers. `custom_override_tooltip` also exists as an effect and takes a bound localisation object, see [Data structures](<Data structures - Hearts of Iron 4 Wiki.md#kit-bindable-localisation>). [docs] `documentation/triggers_documentation.md`, `documentation/effects_documentation.md`
+- `hidden_trigger` accepts `tooltip_evaluation = eval`, `no_eval` or `legacy`. Use `eval` when the hidden trigger sets temp variables or uses random choices; see [Data structures](<Data structures - Hearts of Iron 4 Wiki.md#Trigger_usage>). [docs] `documentation/triggers_documentation.md`
+- `random_list` accepts `log = yes`, which writes the roll to `game.log`, and `seed = <variable, constant or random>`, which replaces the scope's seed. Weights may be variables. [docs] `documentation/effects_documentation.md`
+- Vanilla has a `seed =` line in 12 files, for example `seed = random` inside a `random_list`. [vanilla-confirmed 1.19.3] `common/`, `events/`
+- Loop caps: `MAX_EFFECT_ITERATION = 1000`, which matches the 1000 in the table. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+<!-- kit:end id="flow-control-additions" -->
 
 ---
 
