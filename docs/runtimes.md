@@ -96,6 +96,7 @@ Claude definitions set `effort` per agent: Opus `xhigh`, Sonnet `high`, and Haik
 Other runtimes translate the tier through `.tools/sync/agent_profiles.json`:
 
 - Codex: the tier sets `model_reasoning_effort` (and, when configured, `model`); the read-only or editing authority sets `sandbox_mode`. Without a `model` entry the agent uses the session's model.
+- Codex model routing: `codex.agent_models` maps an agent to a fixed Codex model and overrides the tier's model. The agents whose work is mostly spatial or visual (3D geometry, Blender scenes, rigs, UV layouts, screenshots, reference comparison and GUI layout) use GPT-6.1 Terra (`gpt-6.1-terra`): `hoi4_3d_model_pipeline`, `hoi4_event_ui_worker`, `hoi4_generated_feature_art` and `hoi4_icon_artist`. Terra needs Codex CLI 0.159.0 or later and an account with access to it. If an agent reports that Terra is unavailable, remove its entry from `codex.agent_models` and rerun `sync_agents.py`; the agent then uses the session's model. Do not substitute another model silently. For main-session spatial work, such as map and province placement, choose Terra for the session.
 - Cursor and OpenCode: `model: inherit`.
 - Qoder: the authority sets the tool list.
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Route the Codex 3D model pipeline, event UI worker, generated feature art and icon artist agents to GPT-6.1 Terra (`gpt-6.1-terra`) through a Codex-only `codex.agent_models` map in `.tools/sync/agent_profiles.json`; Terra needs Codex CLI 0.159.0 or later. The synchronizer fails when the map names an agent that does not exist.
+
 ## 2026-10-18
 
 - Bound the Blender adapter to the `mcp` 1.x SDK; a fresh bootstrap resolved `mcp` 2.3.0, which removed `FastMCP`, and the adapter crashed at startup.

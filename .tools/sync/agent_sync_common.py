@@ -195,8 +195,19 @@ def header(agent: Agent) -> str:
     return f"Generated from .claude/agents/{agent.source_name} by .tools/sync/sync_agents.py. Edit the source and rerun it."
 
 
+def check_agent_models(agents: List[Agent], profiles: dict) -> None:
+    """A Codex model override must name an existing canonical agent."""
+    names = {agent.name for agent in agents}
+    unknown = sorted(set(profiles["codex"].get("agent_models", {})) - names)
+    if unknown:
+        raise SyncError("codex.agent_models names agents that do not exist: " + ", ".join(unknown))
+
+
 def render_codex(agent: Agent, profiles: dict) -> str:
-    tier = profiles["codex"]["tiers"][agent.model]
+    tier = dict(profiles["codex"]["tiers"][agent.model])
+    override = profiles["codex"].get("agent_models", {}).get(agent.name)
+    if override:
+        tier["model"] = override
     lines = [
         f"# {header(agent)}",
         f"name = {toml_basic(agent.snake_name)}",
@@ -326,6 +337,7 @@ def synchronize(runtime_keys: List[str], check: bool) -> int:
     try:
         profiles = load_profiles()
         agents = load_agents()
+        check_agent_models(agents, profiles)
     except SyncError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
