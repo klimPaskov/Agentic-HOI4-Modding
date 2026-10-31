@@ -88,6 +88,7 @@ TAG_DD_HISTORICAL = {
 ```
 
 - `ship_types` pairs the MTG archetype with the legacy category (first is MTG, second is legacy). Names are space-separated quoted strings without commas.
+- Write `fallback_name` in lower case, and a ship name file has no size limit near 1,500 lines. [vanilla-confirmed 1.19.3]
 - Variants bind to a group through `name_group` in `create_equipment_variant`.
 - Generic names for equipment without a country list: `common/units/names/*.txt` (wiki Generic Names). Vanilla country files such as `common/units/names/00_ENG_names.txt` use `<TAG> = { <equipment> = { prefix generic unique } }`.
 - `NAME_THEME_*` keys are localised in the usual yml files.

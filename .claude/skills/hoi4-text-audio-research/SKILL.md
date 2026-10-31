@@ -357,6 +357,12 @@ Do not make destructive edits without preserving the source file.
 
 For HOI4 audio, final `.ogg` files commonly need stable sample rate and format. Use repository and vanilla precedents for exact format expectations. When a repository has an existing audio conversion workflow, follow it. If no workflow exists, provide a clear conversion recommendation and mark any uncertainty.
 
+Vanilla precedents for the handoff:
+
+- Vanilla `.wav` files are PCM at 44.1 kHz, 16-bit (959 files) or 24-bit (23), never 32-bit float. [vanilla-confirmed 1.19.3]
+- Every `sound` path must point at an existing `.wav` (9 vanilla paths are broken, so vanilla is no proof a path works), and every `play_song` name needs a matching song definition. [vanilla-confirmed 1.19.3]
+- Radio music uses a `music.asset` plus a `_songs.txt` with `music_station = "base_music"` and per-song chance blocks. [vanilla-confirmed 1.19.3]
+
 ## 15. Audio implementation handoff
 
 The main agent owns final sound wiring. A research handoff should provide enough data to wire without guessing.

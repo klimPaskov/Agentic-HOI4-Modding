@@ -279,6 +279,7 @@ TAG_historical = {
 - `research`, `ideas`, `traits` multiply the AI weight of research categories, individual ideas or advisors (by idea token), and country leader traits.
 - `weight` is an MTTH block that scales the plan's factors (a weight of 1.25 turns a focus factor of 4 into 5). Vanilla recommends about 1.0 because the value is also used as a factor for some research needs.
 - Several plans can be active at once. Make mutually exclusive plans exclude each other in `enable` or `abort`, usually through a game rule option or a randomisation flag set in `on_startup` (`has_game_rule`, `is_historical_focus_on`, `has_country_flag`).
+- Game rules define no rule-level `desc` in vanilla, since every option sets its own, and 18 rule ids are referenced in a different case than they are defined, so copy the definition's spelling. [vanilla-confirmed 1.19.3]
 - `ai_historical_focus_list_<tag>` in `common/ai_focuses` is superseded by plans (vanilla `ai_focuses/USA.txt` has it commented out).
 - Plans are the right place for a path-level decision such as "this country should take the democratic route"; a single focus `ai_will_do` is the right place for local preference.
 

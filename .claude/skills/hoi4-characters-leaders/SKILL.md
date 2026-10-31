@@ -155,6 +155,7 @@ Rules and notes:
 - Characters without a portrait show a silhouette or nothing during country selection and receive a generated portrait only after the game starts (cosmetic tags decide the pool).
 - Portraits can be changed in play with `set_portraits` (country scope with `character = X`, or character scope); animated portraits use `frameAnimatedSpriteType` (see `hoi4-frame-animation`).
 - Conventional locations: advisor art in `gfx/interface/ideas/`, leader art in `gfx/leaders/<TAG>/`; the folder is not enforced.
+- Portrait sprite casing is mixed in vanilla (`GFX_portrait_` and `GFX_Portrait_` are both declared), so copy the declared name exactly. [vanilla-confirmed 1.19.3]
 - Prefer new `.gfx` files for mod sprites; a later-sorted file name overrides an earlier sprite of the same name (wiki `Character modding` > Portraits). Never edit vanilla `.gfx` files.
 - Production of the art, grounded source handling, DDS conversion and manifests are not documented here: use `hoi4-feature-assets` and route every portrait to `hoi4_portrait_creator`.
 
@@ -172,6 +173,7 @@ country_leader = {
 ```
 
 - `ideology` is an ideology type from `common/ideologies/00_ideologies.txt` (`types = { ... }` inside a group), never a group such as `democratic`. Vanilla groups and types: democratic (conservatism, liberalism, socialism, populism), communism (marxism, leninism, stalinism, anti_revisionism, anarchist_communism, buddhist_socialism), fascism (nazism, gen_nazism, fascism_ideology, falangism, rexism, emperor_fascism), neutrality (despotism, oligarchism, anarchism, moderatism, centrism, japan_militarism_ideology). Wiki table lists notes such as "cannot be randomly selected".
+- Declaring a second block for an ideology group that already exists is reported to discard the whole block and cascade into invalid-ideology errors, and the game executable holds the messages "Duplicate database id" and "is not a valid ideology". [unverified]
 - Types change flavour: the tooltip description, an optional type icon, and opinion modifiers: same group gives "Same Ideology" (+10), same type gives "Same Ruling Party" (+20) (wiki).
 - `expire`: date after which the leader cannot be used. A start date after `expire` makes the leader unusable even if recruited.
 - `desc`: must be a localisation key; literal text does not show.
@@ -183,6 +185,7 @@ country_leader = {
 - Initially empty leaders: define a character without a role, recruit it, and add the role later (wiki `Character modding` > Using in-game).
 - `create_country_leader = { name = "..." desc = KEY picture = "..." expire = "..." ideology = ... traits = { ... } }` is the legacy creator. Its documentation says that an existing character with the same token or name only gets the role added. Prefer characters.
 - Politics in country history: `set_politics`, `set_popularities` (must total 100). Ideology and party naming: `<type>`, `<type>_desc`, `<group>_party`-style keys in `parties_l_english.yml`; country naming uses `TAG_<ideology>`, `TAG_<ideology>_ADJ`, `TAG_<ideology>_DEF` (wiki `Ideology modding` > Localisation). Ideology icons: `GFX_ideology_<group>_group`, `GFX_ideology_<type>`, with country prefix variants `GFX_ideology_<TAG>_<name>`.
+- The `ruling_party` value of `set_politics` and the keys of `set_popularities` are ideology group names, never subtypes. [vanilla-confirmed 1.19.3]
 - Effects that touch the sitting leader without naming a character (`kill_country_leader`, `retire_country_leader`, `kill_ideology_leader`, `retire_ideology_leader`) are discouraged by the wiki because they affect whoever currently holds the role. See `references/effects-triggers.md` for how their behaviours differ.
 - Changing a leader's ideology type in play: `set_country_leader_ideology`; names, portraits and descriptions of leaders: `set_country_leader_name`, `set_country_leader_portrait`, `set_country_leader_description` (no tooltip is generated).
 - Inspect with `has_country_leader = { character = ID ruling_only = no }`, `has_country_leader_ideology`, `has_country_leader_with_trait`, `can_be_country_leader`, `has_character`, character-scope `is_country_leader`, `has_ideology`, `has_ideology_group`.
@@ -251,6 +254,7 @@ leader_traits = {
 - `random = no` keeps the trait out of randomly created leaders.
 - `sprite = N` picks frame N (from 1) of the horizontal strip `GFX_idea_traits_strip` (`interface/ideas.gfx`, 18 frames in the installed file, `noOfFrames = 18`). If you replace the strip, redefine the sprite in a later-sorted `.gfx` file with the right `noOfFrames`.
 - Command power pricing: vanilla advisor traits use `command_cap_increase` and `command_power` (with file-scoped `@` constants in `00_traits.txt`); the wiki describes `command_cap`. Mirror the installed vanilla file when pricing military advisors.
+- `nationalist` is not a country leader trait, while `conservative_nationalist` is. [vanilla-confirmed 1.19.3]
 - `targeted_modifier` and `equipment_bonus` blocks work like in ideas. `research_bonus` and `rule` blocks do not work in traits (wiki).
 - `ai_will_do` weights advisor and idea selection by the AI (default 1; 0 means never).
 - Modifiers are country modifiers (they apply to the country that holds the leader or advisor). Look up names in `documentation/modifiers_documentation.md`.

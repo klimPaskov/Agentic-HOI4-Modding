@@ -56,6 +56,7 @@ Division scope accepts: `change_division_template`, `add_units_to_division_templ
 ## Country-scope bonuses
 
 - `add_unit_bonus = { <sub_unit or category> = { <stat> = value name = LOC_KEY } }`: permanent sub-unit or category bonus.
+- `add_temporary_buff_to_units`, which some copied examples use, does not exist in 1.19.3. [docs]
 - `add_manpower = N` (COUNTRY or STATE).
 - `add_dynamic_modifier = { modifier = name days = N scope = TAG }` for variable-driven modifiers.
 

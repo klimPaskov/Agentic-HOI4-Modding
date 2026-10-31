@@ -277,7 +277,16 @@ Every named region should have a tooltip or documentation entry explaining which
 
 ### Trigger evaluation cost
 
-The installed vanilla `common/decisions/_documentation.md` defines how often each block runs. `allowed` runs once at game start or save load, so permanent filters such as `original_tag` belong there. `visible` and `available` run every frame while the decision interface refreshes, so keep them cheap and move expensive or world-scanning checks elsewhere. For targeted decisions, put acting-country prechecks in `target_root_trigger` and per-target selection in `target_trigger`, which run once per day, and narrow the candidates with `targets`, `target_array` (vanilla `AST.txt` uses `target_array = AST.core_states`), or a `state_trigger` value such as `any_owned_state` instead of checking every state or country.
+The installed vanilla `common/decisions/_documentation.md` defines how often each block runs. `allowed` runs once at game start or save load, so permanent filters such as `original_tag` belong there. `visible` and `available` run every frame while the decision interface refreshes, so keep them cheap and move expensive or world-scanning checks elsewhere. For targeted decisions, put acting-country prechecks in `target_root_trigger` and per-target selection in `target_trigger`, which run once per day, and narrow the candidates with `targets`, `target_array` (vanilla `AST.txt` uses `target_array = AST.core_states`), or a `state_target` value such as `any_controlled_state` instead of checking every state or country. Vanilla writes `state_target` (202 `state_target = yes`, 34 `state_target = any_controlled_state`) and never the documentation's `state_trigger`. [vanilla-confirmed 1.19.3]
+
+### Engine facts for decision keys
+
+- In a targeted decision `ROOT` is the taker and `FROM` the current target. [vanilla-confirmed 1.19.3]
+- `activate_targeted_decision` works on decisions that are not missions (43 of 62 vanilla uses). [vanilla-confirmed 1.19.3]
+- The `highlight_color_*` values index the 15-entry define `BORDER_COLOR_CUSTOM_HIGHLIGHTS`, not 0 to 3. [vanilla-confirmed 1.19.3]
+- `visible_when_empty` is used in 45 vanilla files but is undocumented. [vanilla-confirmed 1.19.3]
+- The wiki example name `has_command_power` does not exist, because the trigger is `command_power`. [docs] [vanilla-confirmed 1.19.3]
+- A `cost` on a mission that is not selectable logs "Cost for normal missions not implemented", and all 3 vanilla costed missions are selectable. [unverified]
 
 ## 8. Mission quality
 

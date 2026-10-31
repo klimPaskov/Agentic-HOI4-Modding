@@ -7,6 +7,11 @@
 - Make sync failures visible: a missing or crashing generator, a broken registry or a folder with nothing to check now exits 2 instead of passing, `check.py setup` exits non-zero when a generator fails, and an installed mod with `.codex/` or `.qoder/` fails the check when its skill copy is missing.
 - Add `--root` to every sync tool, `--skill` to `sync_skills.py`, and the `UNUSED` check for instruction replacements whose phrase no longer occurs. `check.py setup --git-hook` adds an optional pre-commit check of staged changes.
 - Test every synchronization requirement on fixture mods (`.tools/tests/test_sync.py`) on Linux, macOS and Windows in CI, and stop the contract test from hard-coding the number of agents.
+- Ask the genuine questions of a new feature once, at the start: the template's Upfront consultation rule and `hoi4-feature-planning/references/consultation-questions.md` sort open points, give each question a suggested answer, record answers in `docs/specs/<feature_slug>/decisions.md`, and list what is never asked. Skills with late questions point to it.
+- Add `hoi4-investigate`, a static root-cause protocol (root cause before any edit, premise tripwires, an evidence ladder, parser cascades, and a reading order for logs the user supplies), and point `hoi4-debug-playtest` to it.
+- Import the engine traps confirmed on HOI4 1.19.3 into the system skills, each with its evidence tag, and add references for military industrial organisations and special projects, intelligence operations, and script variables and math. Correct six skill rules that vanilla contradicts (`state_target`, supply hub construction, weather position sizes, the force concentration define, the equipment type enum, the special project documentation).
+- Add a feasibility check to `hoi4-feature-planning`, evidence tags for engine facts in skills, and `LESSONS.md`, which ties each incident-driven rule to its regression fixture.
+- Resolve the contradiction between the template and the skills on unavailable MCP routes: the evidence is reported as missing and marked unresolved, never passed. Shorten three subagent routing bullets whose full rules live in `hoi4-subagents`; `docs/development/guidance-audit-2026-10-31.md` lists every moved or changed sentence.
 
 ## 2026-10-18
 

@@ -1,0 +1,12 @@
+# Lessons
+
+Every rule added to the kit because something went wrong gets one entry here: what happened, the rule it produced, where the rule lives, and the regression fixture that keeps it fixed. Engine facts in skills carry evidence tags (`[game-tested 1.19.3]`, `[vanilla-confirmed 1.19.3]`, `[docs]`, `[unverified]`), and an entry here names the incident behind a rule, so a later reader can tell a hard-won rule from a guess.
+
+Add an entry in the same change as the rule. Keep entries short and factual, and never record an incident that did not happen.
+
+| ID | Date | Incident | Rule and home | Regression fixture |
+| --- | --- | --- | --- | --- |
+| L-001 | 2026-10-31 | `sync_skills.py --check` passed with "No skill mirrors exist" in the source repository and in CI, so a stale or missing skill copy could never fail a check | An installed mod with `.codex/` or `.qoder/` must have its skill copy, and a missing one is drift (`.tools/sync/sync_skills.py`, `.tools/sync/README.md`) | `.tools/tests/test_sync.py`: `SkillCopies.test_missing_required_mirror_fails_the_check`, `SourcePackageMirror.test_round_trip` |
+| L-002 | 2026-10-31 | A generator with a syntax error exited 1, the same status as "out of date", so a crash looked like ordinary drift | Exit 1 counts as out of date only when the tool printed a `DRIFT`, `STALE`, `OVER` or `UNUSED` finding; anything else is "could not run" (`.tools/sync/generators.py`) | `.tools/tests/test_sync.py`: `VisibleFailures.test_crashing_generator_fails_check_and_hook` |
+| L-003 | 2026-10-31 | `check.py` silently skipped a generator whose script was missing and reported zero errors | A registered generator whose script is missing, or a folder where no generator has its sources, fails with "could not run" (`.tools/sync/generators.py`, `.tools/check.py`) | `.tools/tests/test_sync.py`: `VisibleFailures.test_missing_script_cannot_run`, `VisibleFailures.test_nothing_to_check_is_an_error` |
+| L-004 | 2026-10-31 | The template said an unavailable MCP route does not block completion, while the completion auditor marked the whole claim unresolved, so agents met two contradictory rules | One rule: record the blocker, report the evidence as missing, mark that item unresolved and never passed (`CLAUDE_template.md` HOI4 MCP, `hoi4_feature_completion_auditor`) | None yet; the wording is covered by the guidance audit in `docs/development/guidance-audit-2026-10-31.md` |

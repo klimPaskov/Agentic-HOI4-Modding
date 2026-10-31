@@ -83,7 +83,7 @@ The agent must record which local example was used.
 
 If the wiki and vanilla examples disagree, prefer vanilla and document the difference.
 
-If the surface has no clear vanilla or mod animated precedent, report a blocker or ask for permission to run a narrow exploration pass.
+If the surface has no clear vanilla or mod animated precedent, report a blocker or ask for permission to run a narrow exploration pass, in the upfront consultation when the spec already shows the gap.
 
 ## 5. When to use this skill
 

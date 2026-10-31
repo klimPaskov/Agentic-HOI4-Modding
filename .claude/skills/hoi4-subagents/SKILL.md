@@ -7,7 +7,7 @@ description: Use when coordinating project subagents for HOI4 mod implementation
 
 Use this skill when a HOI4 modding task should be split across project subagents.
 
-The parent agent remains responsible for final integration, validation, and completion claims. Subagents can inspect, patch, create assets, write addenda, or produce reports. The parent must review their outputs, wire final cross-surface behavior, and carry blockers into the final report.
+The parent agent remains responsible for final integration, validation, and completion claims. Subagents can inspect, patch, create assets, write addenda, or produce reports. The parent must review their outputs, wire final cross-surface behavior, and carry blockers into the final report. Subagents never ask the user; they list open questions in their handoff, and the parent adds them to its next batch of questions (Upfront consultation in `CLAUDE.md`).
 
 Capture a task baseline before patch-capable subagents begin. Assign disjoint files and serialize any work that would touch the same source.
 
