@@ -98,6 +98,57 @@ def check_kit(name, text, report):
                "game version or none")
 
 
+def check_file_name(name, text, report):
+    """Lowercase snake_case, the slug of the level-1 heading, and readable by HOI4 Agent Tools."""
+    title = kit_blocks.page_title(text)
+    if not kit_blocks.PAGE_FILE.match(name):
+        report("file_name", name, "page file names are lowercase snake_case without "
+               "spaces, for example scripted_gui_modding.md")
+    elif title is not None and kit_blocks.file_name(title) != name:
+        report("file_name", name, f"the page {title!r} belongs in "
+               f"{kit_blocks.file_name(title)}")
+    elif title is not None and kit_blocks.agent_title(name).lower() != title.lower():
+        # HOI4 Agent Tools reads the page title from the file name (`_` as a space)
+        # and matches it without regard to case; punctuation in a title is lost.
+        report("agent_title", name, f"HOI4 Agent Tools would read this file as the page "
+               f"{kit_blocks.agent_title(name)!r}, not {title!r}")
+
+
+def check_h1(name, lines, report):
+    """One level-1 heading per page; heading-shaped lines inside a code fence are comments."""
+    h1 = 0
+    inside = False
+    for line in lines:
+        if line.lstrip().startswith(FENCE):
+            inside = not inside
+            continue
+        if not inside and re.match(r"^# ", line):
+            h1 += 1
+    if h1 != 1:
+        report("h1_count", name, f"{h1} level-1 headings")
+
+
+def check_media(directory, files, media_names, report):
+    """Media file names, and media that pages reference but lack or that nothing references."""
+    for media_name in sorted(media_names):
+        if not kit_blocks.MEDIA_FILE.match(media_name):
+            report("file_name", "(media)", f"{media_name}: media file names are "
+                   "lowercase without spaces")
+    referenced = set()
+    long_rows = 0
+    for name in files:
+        text = Path(directory, name).read_text(encoding="utf-8")
+        referenced.update(os.path.basename(m)
+                          for m in re.findall(r"\]\((media/[^)]+)\)", text))
+        long_rows += sum(1 for line in text.split("\n")
+                         if line.startswith("|") and len(line) > 400)
+    for name in sorted(referenced - media_names)[:20]:
+        report("missing_media", "(media)", name)
+    for name in sorted(media_names - referenced)[:20]:
+        report("orphan_media", "(media)", name)
+    return referenced, long_rows
+
+
 def verify(directory, show_details=True):
     problems = Counter()
     details = []
@@ -134,19 +185,7 @@ def verify(directory, show_details=True):
         if raw.startswith(b"\xef\xbb\xbf"):
             report("bom", name, "file starts with a byte order mark")
 
-        # --- file name -----------------------------------------------------
-        title = kit_blocks.page_title(text)
-        if not kit_blocks.PAGE_FILE.match(name):
-            report("file_name", name, "page file names are lowercase snake_case without "
-                   "spaces, for example scripted_gui_modding.md")
-        elif title is not None and kit_blocks.file_name(title) != name:
-            report("file_name", name, f"the page {title!r} belongs in "
-                   f"{kit_blocks.file_name(title)}")
-        elif title is not None and kit_blocks.agent_title(name).lower() != title.lower():
-            # HOI4 Agent Tools reads the page title from the file name (`_` as a space)
-            # and matches it without regard to case; punctuation in a title is lost.
-            report("agent_title", name, f"HOI4 Agent Tools would read this file as the page "
-                   f"{kit_blocks.agent_title(name)!r}, not {title!r}")
+        check_file_name(name, text, report)
 
         # --- code fences ---------------------------------------------------
         fences = [i + 1 for i, l in enumerate(lines) if l.strip().startswith(FENCE)]
@@ -240,49 +279,16 @@ def verify(directory, show_details=True):
             if m.group(1) not in own:
                 report("broken_toc", name, m.group(1))
 
-        # --- one level-1 heading per page ----------------------------------
-        # Heading-shaped lines inside a code fence are comments, not headings.
-        h1 = 0
-        inside = False
-        for line in lines:
-            if line.lstrip().startswith(FENCE):
-                inside = not inside
-                continue
-            if not inside and re.match(r"^# ", line):
-                h1 += 1
-        if h1 != 1:
-            report("h1_count", name, f"{h1} level-1 headings")
-
+        check_h1(name, lines, report)
         check_encoding(name, text, report)
         check_kit(name, text, report)
         if "LICENSE.txt" in text and not os.path.exists(
                 os.path.join(directory, "LICENSE.txt")):
             report("license", name, "names LICENSE.txt, which is missing")
 
-    # --- media coverage ----------------------------------------------------
-    for media_name in sorted(media_names):
-        if not kit_blocks.MEDIA_FILE.match(media_name):
-            report("file_name", "(media)", f"{media_name}: media file names are "
-                   "lowercase without spaces")
-    referenced = set()
-    long_rows = 0
-    for name in files:
-        text = Path(directory, name).read_text(encoding="utf-8")
-        referenced.update(os.path.basename(m)
-                          for m in re.findall(r"\]\((media/[^)]+)\)", text))
-        long_rows += sum(1 for line in text.split("\n")
-                         if line.startswith("|") and len(line) > 400)
-    on_disk = media_names
-    orphans = sorted(on_disk - referenced)
-    missing = sorted(referenced - on_disk)
-    if missing:
-        for name in missing[:20]:
-            report("missing_media", "(media)", name)
-    if orphans:
-        for name in orphans[:20]:
-            report("orphan_media", "(media)", name)
+    referenced, long_rows = check_media(directory, files, media_names, report)
 
-    print(f"pages: {len(files)}   media on disk: {len(on_disk)}   "
+    print(f"pages: {len(files)}   media on disk: {len(media_names)}   "
           f"referenced: {len(referenced)}")
     # A markdown table row is one line by definition, so rows carrying a code
     # example are legitimately long. Reported for visibility, not as a defect.
