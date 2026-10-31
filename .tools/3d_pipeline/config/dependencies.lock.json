@@ -9,11 +9,14 @@
     "io_pdx_mesh": "https://github.com/ross-g/io_pdx_mesh/releases/download/0.91/blender-io_pdx_mesh.zip"
   },
   "compatibility": {
+    "blender": {
+      "supported_minors": ["5.1", "5.2"]
+    },
     "io_pdx_mesh": {
       "source_sha256": "A683DF08318CB700014C7FE9A3D15139E5FB2313C7E98715204263E48931F7C2",
       "source_size": 235195,
       "builder": ".tools/3d_pipeline/build_io_pdx_py313_compat.py",
-      "blender_minors": ["5.2"],
+      "blender_minors": ["5.1", "5.2"],
       "archive_sha256": "A0ED30187494889B5415D579C823D888CFEAF197A3D4FC6A2D024E6BB0E10697",
       "archive_size": 244643,
       "installed_patch_files_sha256": {
