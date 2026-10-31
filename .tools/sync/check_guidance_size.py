@@ -9,6 +9,9 @@ linking it from the section that needs it. Never shorten requirements to fit.
 
     python .tools/sync/check_guidance_size.py
 
+Sizes are counted with LF line endings, so a Windows checkout that stores
+CRLF measures the same as every other machine.
+
 Exit codes: 0 every file fits, 1 a file is over the ceiling, 2 the limits
 cannot be read.
 
@@ -46,7 +49,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     for pattern in patterns:
         for path in sorted(root.glob(pattern)):
             checked += 1
-            size = path.stat().st_size
+            # Count LF bytes: a Windows checkout with core.autocrlf turns every LF into CRLF, which a model never reads.
+            size = len(path.read_bytes().replace(b"\r\n", b"\n"))
             limit = skill_limit if path.name == "SKILL.md" else ceiling * ratio
             if size > limit:
                 over.append((path.relative_to(root).as_posix(), size, limit))

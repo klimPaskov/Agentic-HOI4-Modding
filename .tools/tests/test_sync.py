@@ -406,6 +406,27 @@ class VisibleFailures(SyncCase):
 		self.assertIn("cycle", result.stderr)
 
 
+class GuidanceSize(SyncCase):
+	"""The single-read ceiling measures content, so CRLF from a Windows checkout does not push a file over it."""
+
+	def size_check(self, text):
+		self.mod.write("CLAUDE.md", "")
+		self.mod.path("CLAUDE.md").write_bytes(text)
+		return subprocess.run([sys.executable, "-B", str(self.mod.path(".tools/sync/check_guidance_size.py")), "--root", str(self.mod.root)],
+			capture_output=True, text=True)
+
+	def test_crlf_does_not_count(self):
+		line = b"x" * 99 + b"\n"
+		under = line * 595  # 59,500 bytes with LF, 60,095 with CRLF
+		self.assertEqual(self.size_check(under.replace(b"\n", b"\r\n")).returncode, 0)
+
+	def test_content_over_the_ceiling_still_fails(self):
+		over = (b"x" * 99 + b"\n") * 610  # 61,000 bytes with LF
+		result = self.size_check(over)
+		self.assertEqual(result.returncode, 1)
+		self.assertIn("OVER: CLAUDE.md", result.stdout)
+
+
 class Concurrency(SyncCase):
 	def test_parallel_hooks_both_finish(self):
 		self.mod.write(".claude/skills/skill-a/SKILL.md", "---\nname: skill-a\n---\nParallel A.\n")
