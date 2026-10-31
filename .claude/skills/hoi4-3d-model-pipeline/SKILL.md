@@ -14,9 +14,11 @@ dedicated skills; frame sheets use `hoi4-frame-animation`, not skeletal `.anim`.
 
 Read [the production guide](references/production-guide.md) before job intake,
 provider production, Blender processing/repair, custom-unit companion work,
-export, or handoff. It preserves the full job schema/layout, calibrated vanilla
-scale/material rules, source rights, credit/recovery limits, checkpoint and
-runtime-copy discipline, audio/counter requirements, and completion boundaries.
+export, or handoff. It is the full rule set: route selection, hard start gates,
+credits and attempts, the job schema/layout, calibrated vanilla scale/material
+rules, source rights, fail-closed checks, checkpoint and runtime-copy
+discipline, audio/counter requirements, the registration audit and in-game
+check, and completion boundaries. This file only points to it.
 
 Read [source-reference policy](references/source-reference-policy.md) before
 searching or approving a model input. Read [motion and repair QA](references/motion-and-repair-qa.md)
@@ -25,63 +27,29 @@ assembly yaw, or export acceptance. Read only the other system/asset references
 needed for the actual consumer; do not start provider/runtime operations for a
 workflow-documentation task.
 
-## Route and authority
+## Gates in one glance
 
-- Firearm units, including firearm rebuilds, use a fresh weapon-free Meshy 7
-  body plus a separate Meshy 7 geometry task for each required gun. Each task
-  gets one approved body-only/firearm-only image and independent lineage.
-  Try one supported Meshy body rig and action stage for eligible bipeds. Blender
-  owns weapon fitting/attachment, rigid controls, locators, contacts, and
-  missing rigs, weights, actions, and components.
-- Existing non-firearm repairs use Blender directly. They need no Meshy key
-  unless explicit provider work is added. A standalone motion request does not
-  authorize replacing accepted geometry, rigs, or actions.
-- Other provider-eligible bipeds receive one supported rig attempt and one
-  provider motion/preset attempt per missing role, then substantive Blender
-  recovery while preserving passing outputs. Non-bipedal anatomy goes directly
-  to verified Blender authoring. No paid rig/action retries or
-  attempt-reset through endpoint/rig changes.
+Each gate is defined once in the guide:
 
-Required Blender completion and bounded planned provider/geometry work are
-preauthorized within the accepted brief and limits. Other source/provider
-substitution, omitted requirements, identity change, or source-free references
-remain separately approval-gated. Record actual approval basis, not file dates
-or old spec/status labels.
+- **Route**: choose it before any provider call ([Route selection](references/production-guide.md#route-selection-and-component-completion)).
+- **Key and dependencies**: provider work needs a nonblank `MESHY_API_KEY`
+  first, then the reviewed dependency lock, live schemas, Blender bridge and
+  pinned io_pdx_mesh export support ([Hard start gates](references/production-guide.md#hard-start-gates)).
+- **Credits**: one `credit_budget` per job, approved by the user once at job
+  start; no paid retries ([Credits and attempts](references/production-guide.md#credits-and-attempts)).
+- **Reference image**: one approved image per geometry task, visually reviewed
+  by the parent before any paid call ([Exactly one reference image](references/production-guide.md#exactly-one-reference-image-per-meshy-geometry-task)).
+- **Checks**: gates fail closed and every role needs anatomical multi-phase
+  motion with exported-byte reimport proof ([Geometry, materials, rigging, and actions](references/production-guide.md#geometry-materials-rigging-and-actions)).
+- **Custom units**: defensibly sourced audio (including selection) and bespoke
+  vanilla-green counters, or the package stays blocked ([counters](references/production-guide.md#custom-unit-counter-companion), [sound](references/production-guide.md#custom-unit-sound-design-companion)).
 
-## Critical gates
+## Handoff
 
-For provider-dependent work, check a nonblank process `MESHY_API_KEY` first
-and follow the guide's exact missing-key instruction. Never record credentials.
-Require the reviewed dependency lock, live schemas, Blender bridge, and pinned
-io_pdx_mesh export support. Meshy credentials flow only through the external
-app-owned launcher with `--run-verified-meshy-mcp`; never through project
-wrappers, mutable runtime patches, direct REST, or PATH Python.
-
-Use only the upstream or deterministic compatibility archive selected by the
-locked Blender minor. For Blender 5.2, verify the derived archive digest and
-installed patched-file hashes before export; do not patch or replace the
-upstream archive outside the reviewed builder.
-
-Use only actual live-listed capabilities. Optional Text-to-Motion client and
-contract support do not prove launcher exposure. Missing capability is an exact
-blocker; use authorized Blender recovery where applicable. Rebootstrap stale
-adapter deployments and verify the complete local source closure.
-Python 3.9 closure checks include the interpreter's standard-library extension
-directories (`lib-dynload`, `DESTSHARED`, and Windows `DLLs`); they never trust
-`site-packages` as standard library or execute modules to classify imports.
-
-Every role needs anatomical multi-phase motion, contact/deformation proof,
-correct units/root basis, interpolation review, and actual exported-byte
-reimport/parse evidence. Static, whole-rig-only, transform-only or semantic
-aliases cannot pass. Inspect source normals and engine material packing rather
-than trusting a plausible viewport.
-
-Custom units require defensibly sourced/licensed audio (including actual
-selection-consumer scope) and bespoke counters based on inspected installed
-vanilla definitions/DDS and sampled green palette. Missing source/capability
-remains blocked; generated audio or reused placeholder counters cannot pass.
-
-The worker hands off source/checkpoint/export lineage, task/credit records,
-meaningful QA, audio/counter status, exact proposed runtime identifiers, and
-remaining work. The parent owns runtime integration, reviewed live-consumer
-evidence, and final completion. Never launch HOI4 from the 3D worker.
+The worker hands off source/checkpoint/export lineage, task/credit records
+(including the `--credits-report` output), meaningful QA, audio/counter status,
+exact proposed runtime identifiers, and remaining work. The parent owns runtime
+integration, a clean `GFX-3D-*` run of `.tools/audits/audit_asset_wiring_static.py`,
+reviewed live-consumer evidence, and final completion
+([Registration audit and in-game check](references/production-guide.md#registration-audit-and-in-game-check)).
+Never launch HOI4 from the 3D worker.

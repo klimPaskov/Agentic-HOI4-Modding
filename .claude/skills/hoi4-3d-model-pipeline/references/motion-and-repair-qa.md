@@ -12,20 +12,23 @@ requests provider motion. Existing accepted geometry, rig, and actions remain
 protected. Firearm body rigs/actions stay on the declared Blender route;
 separate firearm geometry tasks do not authorize provider-rig regeneration.
 
-Verify actual live creation, status, task inventory, download, and animation
-library tools through the external app-owned launcher. `meshy_client.py`
-checks the optional names and argument exposure before use. Its client support
-and `meshy_tool_contract.json` capability intent are not live-schema evidence.
-The pinned launcher/runtime may not expose this capability: carry the exact
-missing tool/schema and use authorized Blender recovery where applicable.
-Never patch that runtime, create a project credential wrapper, or call REST
-to bypass the launcher. Do not fabricate a live-schema lock or copy one from another project.
+Text-to-Motion uses `meshy_text_to_motion`, `meshy_list_animations` and the
+generic `meshy_get_task_status`, `meshy_list_tasks` and `meshy_download_model`.
+Verify them live through the external app-owned launcher before use;
+`meshy_client.py` checks the optional names and argument exposure. Client
+support and `meshy_tool_contract.json` capability intent are not live-schema
+evidence. If the launcher does not list the tools, carry the exact missing
+tool/schema and use authorized Blender recovery where applicable. Never patch
+that runtime, create a project credential wrapper, or call REST to bypass the
+launcher (the credential-route rules are in the production guide's Hard start
+gates). Do not fabricate a live-schema lock or copy one from another project.
 
 The [official motion contract](https://docs.meshy.ai/en/api/text-to-motion)
 checked on 2026-09-13 permits nonblank prompts up to 400 characters, duration
 2–10 seconds in 0.5-second steps, `prime` FBX or `swift` BVH. Current estimates
-are 10/3 credits respectively; recheck pricing and live balance before each
-paid tranche and record actual consumption. Download immediately within the
+are 10/3 credits respectively, read from `config/meshy_pricing.json`; the
+job's `credit_budget` and the live balance gate each paid call, and actual
+consumption is recorded in the credit ledger. Download immediately within the
 documented three-day retention window. A standalone clip needs no character
 model or provider rig. Preserve task ID, prompt/mode/duration, format, original
 bytes, SHA, and the upfront submission journal. An uncertain response requires
@@ -40,8 +43,9 @@ generated-motion result. Use live-exposed [library discovery](https://docs.meshy
 for IDs/previews; a preset is not bespoke motion.
 
 One selected motion-generation or preset-action attempt per missing role shares
-the existing action allowance. Switching endpoints or regenerating an accepted
-rig does not reset it. Failed/unusable motion or transfer goes to substantive
+the existing action allowance (the contract's `max_text_to_motion_attempts` and
+`max_action_attempts_per_role`, counted from the ledger). Switching endpoints or
+regenerating an accepted rig does not reset it. Failed/unusable motion or transfer goes to substantive
 Blender authoring without paid retries. Polling/downloading the same recorded
 task is continuation. Other providers/sources remain separately approval-gated.
 
