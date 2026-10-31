@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "1bc9246aaa72f340c3a38c431825e4b5ae5f36cc",
+  "generated_for_revision": "400810ae02759a64b494f8aed5d026aaca13f8ed",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,7 +58,7 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "5b026a30c2079cfec4c540fa64b9bb1cf0d6b7c575206a2563c56c8e26cb2609",
+          "sha256": "936fecdee5d38577b423b210c72777ff5894c21a02e18ed4ed240038b0577123",
           "size": 59491
         }
       ]
@@ -108,7 +108,7 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "6a5b4ae9c3e87b71e8fc578acc5ab830ea632bcfea67234cc5065f705eab0cf3",
+          "sha256": "e8826cde32f27cf02d9ab89b82a296b0848d0b5b5ceb9cdaf7312559783447b5",
           "size": 59491
         }
       ]
@@ -1748,7 +1748,7 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "0ebcffa4b304bad2db5441a34bb740fdbae0c31336ee2725592e30c1d3246427",
+          "sha256": "44b0b00cdc45e45ff2fcc50b241b7b0b3dcb347ee2232391f9cd309e156b0a05",
           "size": 59206
         },
         {
@@ -1758,7 +1758,7 @@
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/SKILL.md",
-          "sha256": "3fae7d3ba54eafe91da0bc8a7170f678a8f7ca46e31a9aeda759fc1e063eaca0",
+          "sha256": "5585fff06a9b119d2880701e850f86ee971c71c8b69a851c00a2c866f6e21086",
           "size": 32838
         },
         {
@@ -1768,12 +1768,12 @@
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/references/strategy-token-catalog.md",
-          "sha256": "bd2e89a7b96580cf67ee889660a2eb8869554954883fc2a2a2c8367952737e2f",
+          "sha256": "3d86b146582e00cff5b2d17903de289ee9f46de21ea749b7b4351556595b8927",
           "size": 17272
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/SKILL.md",
-          "sha256": "9a10ff1a40ed02a81d4f043318225df17cf33b9a4b62065d4d43976ee7d5b757",
+          "sha256": "ca856a91f902f854b4d6f61c413228a836139cff20e5c990d306ad014573ca28",
           "size": 34906
         },
         {
@@ -1783,7 +1783,7 @@
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/references/unit-leader-traits.md",
-          "sha256": "6ad83c97e627bc8bc32ef9642e1f3bea429b64450666085e6e35d930f2d3d6c3",
+          "sha256": "862fc5bd2a179cec5b7094d83c0cf54aca641abe8f3be6bc45d031f4f9c696cf",
           "size": 9723
         },
         {
@@ -1808,7 +1808,7 @@
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/templates/formable_state_puzzle/README.md",
-          "sha256": "3ff3e75bea8fbf30ae05aa22145f5e1e5495e5f6da0c24ce9dd15610eb005a79",
+          "sha256": "8a0e586f429ca8ffc073edeeb80846bfd419fa6a7ae6956f0b2fd4d4f8303b0c",
           "size": 19040
         },
         {
@@ -1878,17 +1878,17 @@
         },
         {
           "path": ".claude/skills/hoi4-diplomacy-war/SKILL.md",
-          "sha256": "a5da9b20425d3187fa58b1332af77e7c87821da2ee5e29014d0483b123197c81",
+          "sha256": "b44fb9fe81aa4fc0dd02bc945ce547a30a995c16b3906071ae4deead1fa207f3",
           "size": 36721
         },
         {
           "path": ".claude/skills/hoi4-diplomacy-war/references/syntax-reference.md",
-          "sha256": "c59bf558f8f41b1306e6f84e9a2f87a730fdc49c0639cfaf7945d9d7bcebfaae",
+          "sha256": "a6a488f57ef1f4152c7d1afe3b6ad4abc84116a1f412a41eaac2a5fef050fcf2",
           "size": 12205
         },
         {
           "path": ".claude/skills/hoi4-equipment/SKILL.md",
-          "sha256": "9f04393996dfc2738623906f655d712b112848bd40ea89b7fbce6aa4cb385d8c",
+          "sha256": "bce1c30599a5cd1b6b1d34b55ee4e71bda562a48cd4dbfc9cf18bdb1c271dc4c",
           "size": 22247
         },
         {
@@ -1898,12 +1898,12 @@
         },
         {
           "path": ".claude/skills/hoi4-equipment/references/production-and-stockpile.md",
-          "sha256": "a67883576f7496975ba304657ebb35dcfdc1bf546e48b0383edf1e37ee3dcaad",
+          "sha256": "a436111dcc773b2234e79e8ed26926464f7702ce98a50f9efdc0b6966b078958",
           "size": 11242
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "35cd75de1526bbb31ec288d81a442badcf3aefed23059acbe11dcdeb03e636f2",
+          "sha256": "20fee7e38a43debc9fc97353ca484adfb4b37aef294c7c7fca8800efa134ea2c",
           "size": 55582
         },
         {
@@ -1918,7 +1918,7 @@
         },
         {
           "path": ".claude/skills/hoi4-events/references/major-event-aftermath.md",
-          "sha256": "7670a06ff7469dd1fc6771a9b385489ef83234d52f7ed2335fef3c6ea083bed2",
+          "sha256": "3678a36af85a57842e46f7f4dbb08c7a3b5a1bc4436ebecf8f638ecf3a7a94e4",
           "size": 3813
         },
         {
@@ -4618,12 +4618,12 @@
         },
         {
           "path": ".claude/skills/hoi4-frame-animation/SKILL.md",
-          "sha256": "1a4c7f89b36cc6b379e91e1849630a54db28064d25d276fe08cce4e116b1f425",
+          "sha256": "e8a8eb0db2175b9333cc7d001980cc1d96965d536e953417b77bf5f43d3ec8fd",
           "size": 28385
         },
         {
           "path": ".claude/skills/hoi4-ideas-modifiers/SKILL.md",
-          "sha256": "1cf400852de2a515d1e338b57ac47166057330e603e704c4d4a63792f0014b92",
+          "sha256": "56d6799cfc9884ddc46320c2eb4306f8452fd5eda1ef91dc846a5646d0fdf1d1",
           "size": 32348
         },
         {
@@ -4633,7 +4633,7 @@
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
-          "sha256": "38ca4d3639470cb21bf8d1fedd7c3f1067e6efd20dda446aa4db007ca65a048d",
+          "sha256": "71ee43cfe44c477ac53aa0ce884a1aa04261734d69d12c77ee83476fa12dff0b",
           "size": 36585
         },
         {
@@ -4683,7 +4683,7 @@
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
-          "sha256": "14c72dc8372c3c3c7faa45c7b79fd18519ecee80fc0534641e94f1708ad30223",
+          "sha256": "a378624b90457fb0fdffab3db4f2ff212682b1b6f2baea54ecbbd0864b1ec8e5",
           "size": 25397
         },
         {
@@ -4693,7 +4693,7 @@
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/references/technology-tree-gui.md",
-          "sha256": "550c33e4876850cb3d55ff4e9fcab8ee0dd154be63493445335864b6d02b2878",
+          "sha256": "3e8592d989a1bbfaa6aeea12743c34adace854cb87b435cc2c2a5465c46676cf",
           "size": 8578
         },
         {
@@ -4703,7 +4703,7 @@
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/SKILL.md",
-          "sha256": "afcccbaddac7dc7fd9c9196ad06242a378d6abdb4525ef262045245639eaa78c",
+          "sha256": "a49fdf31f8e8ab35f63e92903bd91bffed57b2a6953ee167a2585c9b7a24a4d8",
           "size": 35941
         },
         {
@@ -4713,7 +4713,7 @@
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/references/naval-air-oob.md",
-          "sha256": "750b82ed6092f8638c1f52673e27e707bae963843e245e1d9b5b6fc8f1cee7c5",
+          "sha256": "efce7a9731025fa63a3ae9c653154db2a81db2adc829aa042a576a8ade9162f4",
           "size": 8711
         },
         {
@@ -5147,7 +5147,7 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "0ebcffa4b304bad2db5441a34bb740fdbae0c31336ee2725592e30c1d3246427",
+          "sha256": "44b0b00cdc45e45ff2fcc50b241b7b0b3dcb347ee2232391f9cd309e156b0a05",
           "size": 59206
         },
         {
@@ -5157,7 +5157,7 @@
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/SKILL.md",
-          "sha256": "3fae7d3ba54eafe91da0bc8a7170f678a8f7ca46e31a9aeda759fc1e063eaca0",
+          "sha256": "5585fff06a9b119d2880701e850f86ee971c71c8b69a851c00a2c866f6e21086",
           "size": 32838
         },
         {
@@ -5167,12 +5167,12 @@
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/references/strategy-token-catalog.md",
-          "sha256": "bd2e89a7b96580cf67ee889660a2eb8869554954883fc2a2a2c8367952737e2f",
+          "sha256": "3d86b146582e00cff5b2d17903de289ee9f46de21ea749b7b4351556595b8927",
           "size": 17272
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/SKILL.md",
-          "sha256": "9a10ff1a40ed02a81d4f043318225df17cf33b9a4b62065d4d43976ee7d5b757",
+          "sha256": "ca856a91f902f854b4d6f61c413228a836139cff20e5c990d306ad014573ca28",
           "size": 34906
         },
         {
@@ -5182,7 +5182,7 @@
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/references/unit-leader-traits.md",
-          "sha256": "6ad83c97e627bc8bc32ef9642e1f3bea429b64450666085e6e35d930f2d3d6c3",
+          "sha256": "862fc5bd2a179cec5b7094d83c0cf54aca641abe8f3be6bc45d031f4f9c696cf",
           "size": 9723
         },
         {
@@ -5207,7 +5207,7 @@
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/templates/formable_state_puzzle/README.md",
-          "sha256": "3ff3e75bea8fbf30ae05aa22145f5e1e5495e5f6da0c24ce9dd15610eb005a79",
+          "sha256": "8a0e586f429ca8ffc073edeeb80846bfd419fa6a7ae6956f0b2fd4d4f8303b0c",
           "size": 19040
         },
         {
@@ -5277,17 +5277,17 @@
         },
         {
           "path": ".claude/skills/hoi4-diplomacy-war/SKILL.md",
-          "sha256": "a5da9b20425d3187fa58b1332af77e7c87821da2ee5e29014d0483b123197c81",
+          "sha256": "b44fb9fe81aa4fc0dd02bc945ce547a30a995c16b3906071ae4deead1fa207f3",
           "size": 36721
         },
         {
           "path": ".claude/skills/hoi4-diplomacy-war/references/syntax-reference.md",
-          "sha256": "c59bf558f8f41b1306e6f84e9a2f87a730fdc49c0639cfaf7945d9d7bcebfaae",
+          "sha256": "a6a488f57ef1f4152c7d1afe3b6ad4abc84116a1f412a41eaac2a5fef050fcf2",
           "size": 12205
         },
         {
           "path": ".claude/skills/hoi4-equipment/SKILL.md",
-          "sha256": "9f04393996dfc2738623906f655d712b112848bd40ea89b7fbce6aa4cb385d8c",
+          "sha256": "bce1c30599a5cd1b6b1d34b55ee4e71bda562a48cd4dbfc9cf18bdb1c271dc4c",
           "size": 22247
         },
         {
@@ -5297,12 +5297,12 @@
         },
         {
           "path": ".claude/skills/hoi4-equipment/references/production-and-stockpile.md",
-          "sha256": "a67883576f7496975ba304657ebb35dcfdc1bf546e48b0383edf1e37ee3dcaad",
+          "sha256": "a436111dcc773b2234e79e8ed26926464f7702ce98a50f9efdc0b6966b078958",
           "size": 11242
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "35cd75de1526bbb31ec288d81a442badcf3aefed23059acbe11dcdeb03e636f2",
+          "sha256": "20fee7e38a43debc9fc97353ca484adfb4b37aef294c7c7fca8800efa134ea2c",
           "size": 55582
         },
         {
@@ -5317,7 +5317,7 @@
         },
         {
           "path": ".claude/skills/hoi4-events/references/major-event-aftermath.md",
-          "sha256": "7670a06ff7469dd1fc6771a9b385489ef83234d52f7ed2335fef3c6ea083bed2",
+          "sha256": "3678a36af85a57842e46f7f4dbb08c7a3b5a1bc4436ebecf8f638ecf3a7a94e4",
           "size": 3813
         },
         {
@@ -8017,12 +8017,12 @@
         },
         {
           "path": ".claude/skills/hoi4-frame-animation/SKILL.md",
-          "sha256": "1a4c7f89b36cc6b379e91e1849630a54db28064d25d276fe08cce4e116b1f425",
+          "sha256": "e8a8eb0db2175b9333cc7d001980cc1d96965d536e953417b77bf5f43d3ec8fd",
           "size": 28385
         },
         {
           "path": ".claude/skills/hoi4-ideas-modifiers/SKILL.md",
-          "sha256": "1cf400852de2a515d1e338b57ac47166057330e603e704c4d4a63792f0014b92",
+          "sha256": "56d6799cfc9884ddc46320c2eb4306f8452fd5eda1ef91dc846a5646d0fdf1d1",
           "size": 32348
         },
         {
@@ -8032,7 +8032,7 @@
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
-          "sha256": "38ca4d3639470cb21bf8d1fedd7c3f1067e6efd20dda446aa4db007ca65a048d",
+          "sha256": "71ee43cfe44c477ac53aa0ce884a1aa04261734d69d12c77ee83476fa12dff0b",
           "size": 36585
         },
         {
@@ -8082,7 +8082,7 @@
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
-          "sha256": "14c72dc8372c3c3c7faa45c7b79fd18519ecee80fc0534641e94f1708ad30223",
+          "sha256": "a378624b90457fb0fdffab3db4f2ff212682b1b6f2baea54ecbbd0864b1ec8e5",
           "size": 25397
         },
         {
@@ -8092,7 +8092,7 @@
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/references/technology-tree-gui.md",
-          "sha256": "550c33e4876850cb3d55ff4e9fcab8ee0dd154be63493445335864b6d02b2878",
+          "sha256": "3e8592d989a1bbfaa6aeea12743c34adace854cb87b435cc2c2a5465c46676cf",
           "size": 8578
         },
         {
@@ -8102,7 +8102,7 @@
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/SKILL.md",
-          "sha256": "afcccbaddac7dc7fd9c9196ad06242a378d6abdb4525ef262045245639eaa78c",
+          "sha256": "a49fdf31f8e8ab35f63e92903bd91bffed57b2a6953ee167a2585c9b7a24a4d8",
           "size": 35941
         },
         {
@@ -8112,7 +8112,7 @@
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/references/naval-air-oob.md",
-          "sha256": "750b82ed6092f8638c1f52673e27e707bae963843e245e1d9b5b6fc8f1cee7c5",
+          "sha256": "efce7a9731025fa63a3ae9c653154db2a81db2adc829aa042a576a8ade9162f4",
           "size": 8711
         },
         {
@@ -9093,427 +9093,427 @@
           "size": 2556
         },
         {
-          "path": "paradox_wiki/achievement-modding.md",
-          "sha256": "44e00d277a4024066f5f5db7377bf20890bc3e87528a3e5e875f3bc50c360179",
+          "path": "paradox_wiki/achievement_modding.md",
+          "sha256": "fc2b7280bc74a0a95b3f24c81afe91d863094106243983fcb09c84b79f62f7de",
           "size": 18408
         },
         {
-          "path": "paradox_wiki/ai-focuses.md",
-          "sha256": "fb065ea49a4dedd9803d144ba660efb17ce58669716356a60c14fca772d01633",
+          "path": "paradox_wiki/ai_focuses.md",
+          "sha256": "bb581056d9f8a56d8281a6e667f46141a48ba0ba83f2cd9e5720b397f66d5126",
           "size": 14475
         },
         {
-          "path": "paradox_wiki/ai-modding.md",
-          "sha256": "33ceaa6cfb175ec53686031930c10cffc0d1982e72a8d2a89983c6bef158405c",
+          "path": "paradox_wiki/ai_modding.md",
+          "sha256": "8bf77cd6a9fbcfb2e947d9d56b863519de1e5e488e6ee76ca1326ab9cf17b06e",
           "size": 116378
         },
         {
-          "path": "paradox_wiki/autonomy-state-modding.md",
-          "sha256": "0aeeda44eb9c246c628e32a891228ef228d8556d6c711805ef56ea981743c5ca",
+          "path": "paradox_wiki/autonomy_state_modding.md",
+          "sha256": "d76d5afbffb1ad6d1a3f58ef2a46942f9e4f52309739f56794e836374ce71a2b",
           "size": 31068
         },
         {
-          "path": "paradox_wiki/balance-of-power-modding.md",
-          "sha256": "079df2f05968b6f16fef4efb0b948cb41840f65d128dac5f23954af5fd450adf",
+          "path": "paradox_wiki/balance_of_power_modding.md",
+          "sha256": "c9e54bac1a7ea7e3fd025f3f5ad7dfd9048f2680a63f08ffeaa0befb5838bbf5",
           "size": 33973
         },
         {
-          "path": "paradox_wiki/bookmark-modding.md",
-          "sha256": "c8fc433371fec50d9b5f6fdef11580110e89243f0919917ee3ad2fd0e8817b15",
+          "path": "paradox_wiki/bookmark_modding.md",
+          "sha256": "261616e78d18757177fe1a91be18eb5c47b032adac59de9660e9d7235223416e",
           "size": 38050
         },
         {
-          "path": "paradox_wiki/building-modding.md",
-          "sha256": "ea993418412f7800871bb1042c20ee8957d5bdb3df0cf4ca96b93c6a7f2aab93",
+          "path": "paradox_wiki/building_modding.md",
+          "sha256": "a219a84332c5f488a6ae68b1aaaee45d8e89b65e6555fc4d8abc9cb2b0cf17e4",
           "size": 51502
         },
         {
-          "path": "paradox_wiki/character-modding.md",
-          "sha256": "85c1e68c2187ab3d465652ed9dc24c1aa28a41d5318421a7ea256953a446a92c",
+          "path": "paradox_wiki/character_modding.md",
+          "sha256": "fa725746b3731b83becd5aaa4f90e63463b58a2839451407bbe7688824403d36",
           "size": 92684
         },
         {
-          "path": "paradox_wiki/collection-modding.md",
-          "sha256": "757e7f8b7fc0f4b3ffa83bb7d9073e53f397d0c94aa85e60c3cde821f0dd7ec3",
+          "path": "paradox_wiki/collection_modding.md",
+          "sha256": "9f5f9ac3d477150a060f75088b748d8764f04aaf8c737a75d8e435cc0ced410c",
           "size": 32339
         },
         {
-          "path": "paradox_wiki/console-commands.md",
-          "sha256": "2149ea3b6b17a2a3d1bb1cecc5ec28da5d6cbc886f693bcb388c8c15fff1739d",
+          "path": "paradox_wiki/console_commands.md",
+          "sha256": "fdaeca3adbe132de7cf9945e5991392ba2854e5bce576dd16a75a6b4795c2b62",
           "size": 76934
         },
         {
-          "path": "paradox_wiki/cosmetic-tag-modding.md",
-          "sha256": "4503bb926ecad845f4ba7d2badf69a1f9055c3729b936f2656c2afa15d0abb12",
+          "path": "paradox_wiki/cosmetic_tag_modding.md",
+          "sha256": "26a321201da7157853103530d7f17cff93f1258a4eaeb63f7f2f1fcd1c76684e",
           "size": 20528
         },
         {
-          "path": "paradox_wiki/country-creation.md",
-          "sha256": "f3723de3ab31081fa12e83776517b61538578a319ddd67750afab6b92820b569",
+          "path": "paradox_wiki/country_creation.md",
+          "sha256": "18b59df3896d106073a6cdf6b50e5a340f40f2c0d8c9699035ac0b3c126b8e12",
           "size": 75078
         },
         {
-          "path": "paradox_wiki/data-structures.md",
-          "sha256": "e955e6f20f473df3c08345e63b0b3a5f3ca7bf6f4b3b6e006df4dc8cfd40b08a",
+          "path": "paradox_wiki/data_structures.md",
+          "sha256": "92a792b56e3566bc63156ab4ad04d62e7459a21c6d8832506e6bf47dc1d781bc",
           "size": 182634
         },
         {
-          "path": "paradox_wiki/decision-modding.md",
-          "sha256": "4cc22657d8cf22adabb49528ff45e4f2ab5fd84b84af8ccfe9166af29e3d7a09",
+          "path": "paradox_wiki/decision_modding.md",
+          "sha256": "5829acc45b7d0fa20bab75e3633814595ba5dc6f326703bd9f00a7da4f683176",
           "size": 57233
         },
         {
-          "path": "paradox_wiki/defines-additions.md",
-          "sha256": "888c20ecbf9cc986a8bc4922712d4b88b4cc3774dde3e1ad993e3beb08c4873a",
-          "size": 105335
-        },
-        {
           "path": "paradox_wiki/defines.md",
-          "sha256": "542a855e19219498f840cb7cd0d49f0feded9a2087f305ff5b03d65db6b3efa6",
+          "sha256": "003e419e68d23016f4ce28184273faca655f86b171b06fb6548d12ce83793417",
           "size": 449071
         },
         {
-          "path": "paradox_wiki/division-modding.md",
-          "sha256": "4af24fbdc0e67c33837eff76392bfd391fbef1c86092e6a206f64e3efa2768e3",
+          "path": "paradox_wiki/defines_additions.md",
+          "sha256": "a27f94784849294653a8871a69f07005c748ddc1ed178bd9bc43f81a0386756b",
+          "size": 105335
+        },
+        {
+          "path": "paradox_wiki/division_modding.md",
+          "sha256": "f9a93cfc48ddd7ba783e9668dee153f72bfcdb76447c429ee2af59ee9253f089",
           "size": 44268
         },
         {
-          "path": "paradox_wiki/doctrine-modding.md",
-          "sha256": "f722523454d82290226f9de525456ce8e2896738d779ab1d4093522dec08f92c",
+          "path": "paradox_wiki/doctrine_modding.md",
+          "sha256": "56b5097703c60c1512953e2c446c04091f085c4ddcdb4a9ed118e21d07a75001",
           "size": 41403
         },
         {
           "path": "paradox_wiki/effects.md",
-          "sha256": "de8ef35751654c680a6e08a2b9041102de418f2096d8c70a0eb3ad6da4203540",
+          "sha256": "e7a96a2df460294aabd0143bf149791448e82a3a9e2ef65bdb6683dad5f39ba3",
           "size": 336748
         },
         {
-          "path": "paradox_wiki/entity-modding.md",
-          "sha256": "8978146eb1b504f2d3b95e41778fc2b3b20bfcbea2814113e1f8c02bfc4a4b02",
+          "path": "paradox_wiki/entity_modding.md",
+          "sha256": "ce58c6f34b530fbac89cb0fc976ab7d6169e12e0488f9cf158aa255c33d11bf9",
           "size": 20741
         },
         {
-          "path": "paradox_wiki/equipment-modding.md",
-          "sha256": "850f27a006b339531564e84ea6fb9cd448164aa154cc9e160777049bf845e515",
+          "path": "paradox_wiki/equipment_modding.md",
+          "sha256": "57cba0be4000fd2fd785977004023dd5320e68cc8d00d7a45e0c464f9b89a9c8",
           "size": 40350
         },
         {
-          "path": "paradox_wiki/event-modding.md",
-          "sha256": "f5f0d2cd7b5b2136bb4e0bfb2026aa2e99c608d2ef22f0e2f41187ca2f0b4641",
+          "path": "paradox_wiki/event_modding.md",
+          "sha256": "202e1e1c13b214546107d151823e60d7086badd33a319fe54f54b38bc79568db",
           "size": 63176
         },
         {
-          "path": "paradox_wiki/faction-modding.md",
-          "sha256": "5cfc1228e5b9d8cf61864f7babec09d33ec1d13275c48f423ec6520aa0830f15",
+          "path": "paradox_wiki/faction_modding.md",
+          "sha256": "acedd15e7c2c37072bc48cbd236339402ba23ba373b63db46f4e8305645c2587",
           "size": 61464
         },
         {
-          "path": "paradox_wiki/font-modding.md",
-          "sha256": "5745dc7c9cdd45493756b98b4b7a090e624ec9d703e6c279dfbc8bfc712b8254",
+          "path": "paradox_wiki/font_modding.md",
+          "sha256": "6e3fa5e21a9958a64fdf513e24264bea0141e2c05caf0466d5dee9237c5fc397",
           "size": 22141
         },
         {
-          "path": "paradox_wiki/game-rule-modding.md",
-          "sha256": "83dbff33e00d66a8e0103fe880b4e96432140ccd2eb1217be35b3ab56480f0aa",
+          "path": "paradox_wiki/game_rule_modding.md",
+          "sha256": "ec2f877c0413d6d4c3398e5fe9f9c76013e13f792d8f620be0bdfa9446a900e2",
           "size": 19167
         },
         {
-          "path": "paradox_wiki/graphical-asset-modding.md",
-          "sha256": "498fdced28a8c4d592f05bb089a2108704c7722d81479cb7f430edba7527e458",
+          "path": "paradox_wiki/graphical_asset_modding.md",
+          "sha256": "fd5ef8ea07cf0bc0ec5978f8086e1cc85091a92643babbe5d8963ae708bd7a65",
           "size": 31886
         },
         {
-          "path": "paradox_wiki/idea-modding.md",
-          "sha256": "6be3c462ac24c632341b8bbff9d38e28b15f1067c3da5c15eba1d6b5d5ce287f",
+          "path": "paradox_wiki/idea_modding.md",
+          "sha256": "db4558a42e847ae52be2a4ba2298f39ccfa0316f5859ae6980dac17e326c01d5",
           "size": 52206
         },
         {
-          "path": "paradox_wiki/ideology-modding.md",
-          "sha256": "6271ef960ec53ba5a6119584b66a980e958199d277add8c639949e508fc3e1c3",
+          "path": "paradox_wiki/ideology_modding.md",
+          "sha256": "3618b375cb1972122c6dea3c749cfbd84335588b903dd07d11a3c806f9deaba6",
           "size": 31717
         },
         {
-          "path": "paradox_wiki/intelligence-agency-modding.md",
-          "sha256": "8bb3d2f28cb85246af95c9b837621fedb425ba89785b03556a352186b599cf7f",
+          "path": "paradox_wiki/intelligence_agency_modding.md",
+          "sha256": "7fc378aecc3d7330a5b627013b9c20843fe174bd022a05fb081e90d6d13a13eb",
           "size": 26279
         },
         {
-          "path": "paradox_wiki/intelligence-operation-modding.md",
-          "sha256": "a5500343600802d130be5612fc5f4a4557ef95d3d45c7fbf6a11fc948c2c5742",
+          "path": "paradox_wiki/intelligence_operation_modding.md",
+          "sha256": "2a531ed26f642975ea2a4beaa06d30f7474ea512bfc62592f069d7a1c6bdb7ba",
           "size": 39833
         },
         {
-          "path": "paradox_wiki/interface-modding.md",
-          "sha256": "d7059c3e7c94239185a2f025f0d1a2de33d153058aa1b50ea1f8db589c291956",
+          "path": "paradox_wiki/interface_modding.md",
+          "sha256": "e188695edf06d35b347856b1a9e3eed508b6467c1c703f2a81bc3b1fd002e951",
           "size": 50306
         },
         {
-          "path": "paradox_wiki/list-of-modifiers.md",
-          "sha256": "b811d6778d981bc217fbaa891f6d9c81c950f5fc2d366c9c233f764788385dd5",
+          "path": "paradox_wiki/list_of_modifiers.md",
+          "sha256": "d7c20220a475a54035505549bd7f3fa0ccac7993166d0aea4f378ea22c8c14e6",
           "size": 100380
         },
         {
           "path": "paradox_wiki/localisation.md",
-          "sha256": "00c53428c236dd45bf469bce6028d042486089296eaf60a79089805c332e8e9c",
+          "sha256": "806333ba8eeea62fdcff497670864e21e5a9a2d3e34a9fd3f2dc1e99f16a906b",
           "size": 86805
         },
         {
-          "path": "paradox_wiki/map-modding.md",
-          "sha256": "8f5f2e8fb36d5543ef2e0f0b9e25fcbc4ce5874fe4760fa56fada99e802f6de5",
+          "path": "paradox_wiki/map_modding.md",
+          "sha256": "fb3d9f63f561853ba4b93c70c4fbb6dd5db0dfc6f5780c5f77f22d3f04c25857",
           "size": 103928
         },
         {
-          "path": "paradox_wiki/map-mode-modding.md",
-          "sha256": "d86077c9d02da9f467e699cbb3f386660105133b7cc11a41679b5fb339fe89c5",
+          "path": "paradox_wiki/map_mode_modding.md",
+          "sha256": "7f6bfe5e56eebb3ccb6c66bccdbc617d8a12ee63bac58aac7897c6d8f4be5090",
           "size": 16280
         },
         {
-          "path": "paradox_wiki/media/ai-modding_04cfcba22e__img12.png",
+          "path": "paradox_wiki/media/ai_modding_04cfcba22e__img12.png",
           "sha256": "6abe5367ee3dddcb3b6f45641234ab3267015f59753b588f89b66f2ff8675136",
           "size": 1767
         },
         {
-          "path": "paradox_wiki/media/ai-modding_04cfcba22e__img6.png",
+          "path": "paradox_wiki/media/ai_modding_04cfcba22e__img6.png",
           "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
           "size": 1784
         },
         {
-          "path": "paradox_wiki/media/ai-modding_25696e0a81__img2.png",
+          "path": "paradox_wiki/media/ai_modding_25696e0a81__img2.png",
           "sha256": "d207012fa230682c9d779c72fce329a917f257fae8a4b5ec0fc94baaf122664c",
           "size": 1849
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img1.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img1.png",
           "sha256": "920e6c1f74f82c4cabb62d216c89b192a05e1454e4b9680f79e92f1af8245eed",
           "size": 4285
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img10.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img10.png",
           "sha256": "a14bb2380e5772ae83214d09fff0fdf0d2359857d8a3fd5a80acac8e8d45155c",
           "size": 3703
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img11.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img11.png",
           "sha256": "a68d6e472fb5dbc77c4aa7bea907cec1d8a4fc74b9caa8bf782ffa327314053f",
           "size": 2650
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img12.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img12.png",
           "sha256": "bd4d26ade78573975cbf09cba0e00289490c9e1241b834ec4c7df0f70a12e986",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img13.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img13.png",
           "sha256": "7e78f137eae3cdb2f9fa189d62e90959965a0958b4a89dfb92fd8ea3841baf01",
           "size": 3274
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img14.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img14.png",
           "sha256": "79384e71807ec6688ef83e6f9f8d8333fc032ff2244b55eafc587b83c8c9f49b",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img15.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img15.png",
           "sha256": "355c8985a5f283f46a73bc4977253b95800efaf16f190e0e3167fdbb59c5977e",
           "size": 2789
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img16.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img16.png",
           "sha256": "536cb522d128474913ebccd717051873be85612d3166e491d03c370d13db9201",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img17.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img17.png",
           "sha256": "74d5b4d4be6c8706760abf63a4120356c6e71f6fa98f95c91eeadef24829cc10",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img18.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img18.png",
           "sha256": "15e5383f3151a38504a63784ef589833c6b59888c544abeecbe26f48fccd2be4",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img19.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img19.png",
           "sha256": "dc5b10db07deaacbd56f8dc688f309f0842e63772d5670e1b01181a9f6ac7763",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img20.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img20.png",
           "sha256": "e43c95761467097b6876d0fa9fed07433827ec330c9baf22b8e82a35d035c456",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img21.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img21.png",
           "sha256": "d112927d1ce438028900937b87f39b9373d79b3548d56242e42d1a29e9b18d3c",
           "size": 2565
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img22.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img22.png",
           "sha256": "79818b98857febcc58cb535a6680e0b8253b995ac40f6117ec362974c2a47229",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img23.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img23.png",
           "sha256": "8ce5746f4c478fd4a5b038ed1f1b753ebae2ad72722364b6e6bd174a18f1b51c",
           "size": 3731
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img24.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img24.png",
           "sha256": "413a76f2099c7e3ac5b331685ea6cdc2aa0c511aab9cf3244f447bdbc53e8e96",
           "size": 3319
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img25.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img25.png",
           "sha256": "1299cf08f826705292a0217e1d057fba2928f3dbfe7bddce35fa9d01ee499fc8",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img27.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img27.png",
           "sha256": "02f50bd1937d58dbd0d1f3031e670fdfcd5b685c665b7340447fd1d719f0002f",
           "size": 2512
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img28.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img28.png",
           "sha256": "cedf3270123ad309d5c3ff823a4d70d45cbf75ce4239a19a61344c2bcf185b7b",
           "size": 2957
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img29.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img29.png",
           "sha256": "c9a2341759546889a03e76a1ffd4bc54b0d5e271950865ae88c038f7bd1b5311",
           "size": 2697
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img30.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img30.png",
           "sha256": "03facbe7e207c7bff8ce27eec3126ae0845d9afeb6f172759d84240346d17120",
           "size": 2339
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img31.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img31.png",
           "sha256": "afbda2b41402ff07b3dbf12e77d5d93a4233c4a52d3e00d655b73475d7db8d82",
           "size": 2979
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img33.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img33.png",
           "sha256": "3b831c17be8fd99c32d7ababedf9ff76deeb55ee12c14f63dc46d6b160ba4f72",
           "size": 2763
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img35.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img35.png",
           "sha256": "50fe469ec0f4dd031435a350af080582b159daf9282516a0883bc0a9db569ebb",
           "size": 4665
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img36.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img36.png",
           "sha256": "476e13f1e3b22529ea672683b1c2258e06240d8ece6cf2bb5c7a2250a8d1c5d5",
           "size": 4393
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img5.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img5.png",
           "sha256": "74afa6f3754025b65e9d7ebcf51183c02330a15a9dd3bd821d96182b89f6ee3a",
           "size": 2774
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img6.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img6.png",
           "sha256": "3cef6edc0789ccb5e76b4088174c0be9eecfcc370dbd6e7f26600f1e67d94ba2",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img7.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img7.png",
           "sha256": "a231e8b78cf5de6e69139a3623dc413ff9683d21dc07c6c9df8f0d80537e7c06",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img8.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img8.png",
           "sha256": "0069c38314143f35b5164166272568741b0c0e969afc9c9d0bf2d30149d230f6",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building-modding_811161eae8__img9.png",
+          "path": "paradox_wiki/media/building_modding_811161eae8__img9.png",
           "sha256": "f1ea9c883a1b2c3a04e00044589411b3c34d2b79f2682266c0fc351fc3615f80",
           "size": 3042
         },
         {
-          "path": "paradox_wiki/media/character-modding_04e3359449__img22.png",
+          "path": "paradox_wiki/media/character_modding_04e3359449__img22.png",
           "sha256": "7bb221936b4982c202dd75a9467b15c0abf557484c239d3360e9ba4833060702",
           "size": 1752
         },
         {
-          "path": "paradox_wiki/media/character-modding_41494a4f46__img8.png",
+          "path": "paradox_wiki/media/character_modding_41494a4f46__img8.png",
           "sha256": "ae9b8880598131a97ba9afb7e200f5cad7c73489fe8262e793db03740371e696",
           "size": 2019
         },
         {
-          "path": "paradox_wiki/media/character-modding_58ea48332f__img14.png",
+          "path": "paradox_wiki/media/character_modding_58ea48332f__img14.png",
           "sha256": "f2193e347f5a61f7860959d52376e940a463d5a2dcd8324c7c5ea0b0d3d957ea",
           "size": 1903
         },
         {
-          "path": "paradox_wiki/media/character-modding_8d43751dba__img2.png",
+          "path": "paradox_wiki/media/character_modding_8d43751dba__img2.png",
           "sha256": "cde24b1ba0c3f363918175909448ef46c1bdc192ac73f35af1ac7830ab7e2fd8",
           "size": 1500
         },
         {
-          "path": "paradox_wiki/media/character-modding_cee5ae9645__img1.png",
+          "path": "paradox_wiki/media/character_modding_cee5ae9645__img1.png",
           "sha256": "1124f74a85b0c728d79b542326509730d55a2a07cc6ef9b7cef7f17bf4efa1a9",
           "size": 4520
         },
         {
-          "path": "paradox_wiki/media/cosmetic-tag-modding_8daa0f4184__img3.png",
+          "path": "paradox_wiki/media/cosmetic_tag_modding_8daa0f4184__img3.png",
           "sha256": "0d5dd564da78e610a9f11afb28136b55c8a243501ad6dff33bc3693825747d63",
           "size": 641
         },
         {
-          "path": "paradox_wiki/media/country-creation_1d4220f262__img10.png",
+          "path": "paradox_wiki/media/country_creation_1d4220f262__img10.png",
           "sha256": "b4dcd508c1718e7943b741d4637c064efa5626686c7f61412dbcb128611ef73a",
           "size": 1738
         },
         {
-          "path": "paradox_wiki/media/country-creation_1d4220f262__img11.png",
+          "path": "paradox_wiki/media/country_creation_1d4220f262__img11.png",
           "sha256": "db0aece24b5728311c411368d75892639e30dce574a5c732b15d2005b97bf8c2",
           "size": 1804
         },
         {
-          "path": "paradox_wiki/media/country-creation_1d4220f262__img12.png",
+          "path": "paradox_wiki/media/country_creation_1d4220f262__img12.png",
           "sha256": "52d0fed9cf1ce26ad26bca62805394d3e36d80bc454d2e7ac97cfb54138cd243",
           "size": 1843
         },
         {
-          "path": "paradox_wiki/media/country-creation_1d4220f262__img13.png",
+          "path": "paradox_wiki/media/country_creation_1d4220f262__img13.png",
           "sha256": "69ad49449a7b00be231755bb03ee0cf886c31faaf62871fc78cc86c360bb1ae5",
           "size": 1936
         },
         {
-          "path": "paradox_wiki/media/country-creation_1d4220f262__img14.png",
+          "path": "paradox_wiki/media/country_creation_1d4220f262__img14.png",
           "sha256": "fdb5e1f0ab01398f8c51bfe568d0eb96dd553a057de6e00dcf04316e2d33638f",
           "size": 1812
         },
         {
-          "path": "paradox_wiki/media/country-creation_1d4220f262__img16.png",
+          "path": "paradox_wiki/media/country_creation_1d4220f262__img16.png",
           "sha256": "41fee98f10905facf3f81c5b9701019481da41234100d1a53da5ca19d3c996dd",
           "size": 1770
         },
         {
-          "path": "paradox_wiki/media/country-creation_1d4220f262__img17.png",
+          "path": "paradox_wiki/media/country_creation_1d4220f262__img17.png",
           "sha256": "d2dbe63c23e894db83a6c778890468712ab3c1359da57e036e1579b952135934",
           "size": 2018
         },
         {
-          "path": "paradox_wiki/media/country-creation_1d4220f262__img19.png",
+          "path": "paradox_wiki/media/country_creation_1d4220f262__img19.png",
           "sha256": "e25b724469422d7ab30b95af371985462c041a3b9d242bb73ae5863d56fe492c",
           "size": 480
         },
         {
-          "path": "paradox_wiki/media/country-creation_1d4220f262__img8.png",
+          "path": "paradox_wiki/media/country_creation_1d4220f262__img8.png",
           "sha256": "cda8f159793fb087f5abe0d2f4fffcb6f5434d4a1be124bc127d23bae4b55715",
           "size": 1847
         },
         {
-          "path": "paradox_wiki/media/data-structures_6e1fd6f20a__img1.png",
+          "path": "paradox_wiki/media/data_structures_6e1fd6f20a__img1.png",
           "sha256": "f535c9d8eef5d7724446d1083711b95142bda81547434b36076ad1e2fa196765",
           "size": 1759
         },
         {
-          "path": "paradox_wiki/media/data-structures_6e1fd6f20a__img2.png",
+          "path": "paradox_wiki/media/data_structures_6e1fd6f20a__img2.png",
           "sha256": "c9218a1bc1518431072109a54f0c424feadf710dc47534d47de73f64db40845f",
           "size": 1815
         },
@@ -9523,12 +9523,12 @@
           "size": 1161
         },
         {
-          "path": "paradox_wiki/media/idea-modding_e610dc0262__img1.png",
+          "path": "paradox_wiki/media/idea_modding_e610dc0262__img1.png",
           "sha256": "2b4368ad088ed3411360acd3328c7950290ca0cc8a19de5cc6310a385e5d7bea",
           "size": 2302
         },
         {
-          "path": "paradox_wiki/media/idea-modding_e610dc0262__img2.png",
+          "path": "paradox_wiki/media/idea_modding_e610dc0262__img2.png",
           "sha256": "59d1764e4a1c7de76347b50517bd729e2d1274794b530925955e7c11ea207c08",
           "size": 1409
         },
@@ -9538,102 +9538,102 @@
           "size": 803
         },
         {
-          "path": "paradox_wiki/media/map-modding_52a03661c6__img1.png",
+          "path": "paradox_wiki/media/map_modding_52a03661c6__img1.png",
           "sha256": "79c40d49ba6735d1ca13eaff1bc36331e876ceb47c0a59cb10fe8c6b44822b88",
           "size": 24882
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img10.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img10.png",
           "sha256": "e635b3b177f8af52b853d15b1ed08edb1af6de61de84fd8fa707293fc9e6640b",
           "size": 39430
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img11.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img11.png",
           "sha256": "abf895deddded67ad7de99a07ee85721ee81d7c30bb7cea5fd8ed51dcb93162a",
           "size": 41247
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img12.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img12.png",
           "sha256": "2cc7f5ae00bcd5b4c331fb57fd03ce520f96984ebb00a1e7a0e7837f2c50bd4f",
           "size": 37224
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img13.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img13.png",
           "sha256": "1711a84efaf541b52bff738501c4e228748b98b159c1b8ea26919999e23ea28b",
           "size": 40348
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img14.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img14.png",
           "sha256": "859d13ae3b51949ac5eee42d522c1049974a80a5a41380bbff85a5ec0df3c76d",
           "size": 25320
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img15.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img15.png",
           "sha256": "f9b5d83d3e270cec84accbb274b895ca827ba83764f1f6161da69fda4eab1bed",
           "size": 41002
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img16.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img16.png",
           "sha256": "ffa062b583c15446027da9b372db264ec08392273b30cb3c39a37c45eb1360cd",
           "size": 41232
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img17.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img17.png",
           "sha256": "0afda50d5ed8318f862b80e9646a29935ef6cca3e4b33a0c5fea4978cae89a3e",
           "size": 43594
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img19.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img19.png",
           "sha256": "44915fb4cbb9da0e351fae0333084bb217182102553390ee90cfeaf8e9284cd4",
           "size": 32337
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img20.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img20.png",
           "sha256": "85e08ce861f98eb68deab25fbc4fe78c041df750efc810a60e050360995692e3",
           "size": 23955
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img23.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img23.png",
           "sha256": "61d318f6bdca156e1e5c58b35ed46b1cf643db5cd639bdb8be90ea9125ca5361",
           "size": 35539
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img24.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img24.png",
           "sha256": "83659f18e9e596c6695a58e128557a39cbb7dba7f7f8b471b21bd2e3ba6ceaf4",
           "size": 37672
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img30.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img30.png",
           "sha256": "d0901c874e230cc6781992329ed6a4cc68b0fac353518a67997da3500c886add",
           "size": 41491
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img31.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img31.png",
           "sha256": "c0359ff3ad38356ace2ab05b0b9d4499b87589abb45d60a6a4152eda3746e7e6",
           "size": 3401
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img6.jpg",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img6.jpg",
           "sha256": "0c87ae522997ef55ebb907eee55a25391e8e5dcdc52a75dec09ad52e73abbe66",
           "size": 11604
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img7.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img7.png",
           "sha256": "f39593cb0c2b95b6cc39383030c6abbc12777f601797d0f406e6252dd7b9f6fe",
           "size": 24331
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img8.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img8.png",
           "sha256": "b6e20292d289504bdc0c901d566c9b6fd556b3f2b53bb5228a7b45d5aaef0f06",
           "size": 44698
         },
         {
-          "path": "paradox_wiki/media/map-modding_67296116c0__img9.png",
+          "path": "paradox_wiki/media/map_modding_67296116c0__img9.png",
           "sha256": "f99fbc65079cb62b3f286cc50ca4d7264a9ebce9c2ab8f2d1f1e1a461672b1f4",
           "size": 36005
         },
         {
-          "path": "paradox_wiki/media/map-modding_7c98f708b3__img28.png",
+          "path": "paradox_wiki/media/map_modding_7c98f708b3__img28.png",
           "sha256": "c4d6fdb91bbb465663bfa1b2e52f9e97a775ac5f827b106d0e95c9afc33abddd",
           "size": 4657
         },
@@ -9648,252 +9648,252 @@
           "size": 12449
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img11.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img11.png",
           "sha256": "a0bdcbfdaecddf4b61d6f125c15b29c47b26b5c4479cde1de2995f4ea60061cf",
           "size": 842
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img14.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img14.png",
           "sha256": "4004f486ef0693f539fe66efa3304a4d28658302c0fbfd884d1927a59719dbaa",
           "size": 564
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img144.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img144.png",
           "sha256": "94df014b3d98083c150cad93766406d82819cb428b7cebdcbac991e3922ba7c9",
           "size": 225
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img145.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img145.png",
           "sha256": "e01dd027f7285fb53e9a09469a2fdd14e46ac6053f8dbecb4d8c69cb8b19a1ee",
           "size": 1125
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img146.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img146.png",
           "sha256": "6f4a3e1da2ef529481add31554aeabd2ba27138c06af67352d3927d087e10f91",
           "size": 818
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img147.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img147.png",
           "sha256": "aca7b441ea6731a0bc82ccc7a4a50eae53029f45af40e8b0597186f3a8105fb2",
           "size": 134
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img148.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img148.png",
           "sha256": "92abac6e5783ed186addfd19bcd6fb294011e4fe9d8936d1127429a992a63e02",
           "size": 132
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img149.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img149.png",
           "sha256": "5732c3b8c7a9b8e98e2999e4d92baef7fdc5b0fffe63a0deb284dc5c3589daee",
           "size": 415
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img15.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img15.png",
           "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
           "size": 1411
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img153.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img153.png",
           "sha256": "02d3292b182116c0f4247c6726891ee53a631543861259815704f73a2f143f86",
           "size": 481
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img16.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img16.png",
           "sha256": "fcd13aed3a8de5a53f4783c629a5677372aed9d2f739d77f3889958ad9bfd605",
           "size": 1713
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img17.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img17.png",
           "sha256": "7db5c6f056c9b4f89688fbeac5cc8f049e64ab24b3a005dd2304c2674df51678",
           "size": 1219
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img18.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img18.png",
           "sha256": "f8067630997887a254caa22cba8591584cfc02304c8702fb247bb620e0ba2839",
           "size": 1922
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img19.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img19.png",
           "sha256": "744d42e70149dec2d567edf983d612cfda4869e001c187903976cd6809f74d56",
           "size": 1872
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img2.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img2.png",
           "sha256": "22dfeb5c5387e3d2e2f5af74656966a0d201a95627276201f209872be6aba34f",
           "size": 675
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img20.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img20.png",
           "sha256": "20570aff238cd1f019ea1280fbf3a588264eea3a810194c4ead5df833685c1da",
           "size": 1518
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img21.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img21.png",
           "sha256": "d72caf3af5ebd3bd4d2f1c6fc34d580f04f0cbc389a80168a18771e50c70fae4",
           "size": 1890
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img22.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img22.png",
           "sha256": "a2f49986a3428e4228334709fb5f5ae0cc54b873532720270d5e45030ae6925a",
           "size": 1574
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img23.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img23.png",
           "sha256": "ebbd852b75124e750103af6e5d9235c29020c685c920cdb244a11560ffa963e6",
           "size": 1096
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img24.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img24.png",
           "sha256": "042c022735458ae24d62050e0ccd0777f69320ab5191ccc2dbfe9d2677085b79",
           "size": 1870
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img25.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img25.png",
           "sha256": "f92d84a1325b2a90cb34655066b830c108455314e4a7b3bc56f36d16ff6bd9d3",
           "size": 1617
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img26.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img26.png",
           "sha256": "7aa6d55874d50864e568a6915fada8601147101950a1c280dff75c660a8b6fa0",
           "size": 1680
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img27.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img27.png",
           "sha256": "6a1f6d7bbd670b115f74518d3030bca3f1b43867ef612302acdf19a7c3ba0f2e",
           "size": 1651
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img28.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img28.png",
           "sha256": "cbbf6956dd7cb075581f19d94a7167f5410a1eb5764892e372f44fca49ec934b",
           "size": 1931
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img29.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img29.png",
           "sha256": "e9e39a70a94c055a9ab6fe214ac0951530f6fcdc4e569d38a2e127daf5a2b88a",
           "size": 1386
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img30.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img30.png",
           "sha256": "6b083884e7d769ae5c38c03e6be1a5f6022a0068b9b8a3fe8dbeaa8db938f4b3",
           "size": 1281
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img32.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img32.png",
           "sha256": "1536235ea750e7a79e4bd705661e9fe33bc65127411cc65706d32c0c25a47dee",
           "size": 1054
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img33.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img33.png",
           "sha256": "0a88bde7645487ca83310789ab06c8dcf3329a609ed7334f0df340a0bab961c5",
           "size": 855
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img34.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img34.png",
           "sha256": "f2c9132ed7b70442dce00a57e00ff7b0b3e556c97dc8d2f7f78c6564c7ba69ac",
           "size": 1971
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img36.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img36.png",
           "sha256": "1fed671d8f92f8028f36acf7188738a945b53b93e536b6ef501b6c6c869649a5",
           "size": 1798
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img37.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img37.png",
           "sha256": "a92d9f589578dcd4b397c755cd267970f704e4936e401756cadc91f4ffa8764e",
           "size": 854
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img38.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img38.png",
           "sha256": "dedd02edfefcbd2635fd7dd8d9009ba2c25c82983c374b804e571e9b96b6c349",
           "size": 1920
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img39.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img39.png",
           "sha256": "33b49d14b44dcfd3386b445c42757cf57934e82780d7ed8aecbfeee08583a91c",
           "size": 969
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img41.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img41.png",
           "sha256": "d4ab66f43f3b7692e7c53ab3236c8090d229625bb0d6ef7f76b012112db9e625",
           "size": 1472
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img42.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img42.png",
           "sha256": "9fdd996bf61ad93aef682592e5cfb89ce067e957d57996f5628f65852363b5c5",
           "size": 1447
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img43.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img43.png",
           "sha256": "167d458e56bdae41d4f62f435ee61635d5e661b7f30c6865aa1274e21dfec5ba",
           "size": 1451
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img44.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img44.png",
           "sha256": "98ed0406925c663c233a96b41b57bc5678ddf9622bfba260e6b42c7e534cb85a",
           "size": 2090
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img45.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img45.png",
           "sha256": "51e865523b5c53ff3d2d8346159135bb632bfdadefa2f691334e5a1733e04b47",
           "size": 465
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img46.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img46.png",
           "sha256": "4a22d1998a04e5c7a3c9a261fa8c557e15f5c3091824bcdcb354591db96a3820",
           "size": 2144
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img47.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img47.png",
           "sha256": "6aabdcb38ec6652878ffabce82c16a5d924db6a17946b415c25fcb47808ffa7f",
           "size": 2345
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img48.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img48.png",
           "sha256": "73fa002692c668b317560b165c5fa7154d1661648a3ba26fc637e6604d6b77a2",
           "size": 1949
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img49.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img49.png",
           "sha256": "6b903013f68ed2e74f1a45c4cda46dbed19c512bc665d0d4d683428634ebe907",
           "size": 1606
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img50.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img50.png",
           "sha256": "c8abddc1fc0aea7364bf22eee1f4fb4f31dd7f4d7f0479283bcfe8362820ff67",
           "size": 2052
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img52.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img52.png",
           "sha256": "4ecc63e5634f32bd463eaf2659423bc5ce918cc7ef06fd9e4835d10c3ba23205",
           "size": 1862
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img53.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img53.png",
           "sha256": "70140dd59cabfe3158b4fd6b9f2c4ee55800821ac23f56d3a21920db6d0b2b25",
           "size": 1752
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img54.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img54.png",
           "sha256": "e5cca5d634ab14e0c915eedd9b37ff2a065fdbde7d67449443e52a3fabecd93a",
           "size": 957
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img55.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img55.png",
           "sha256": "98931c008ee6499648867c5acf13d641b838aad0fc4aa2381a77f25ef244c0bf",
           "size": 1662
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img56.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img56.png",
           "sha256": "74c4e058b52ba17d1d3090e3d3e029424f2f400b670ccb6546d3f519ed78dbd8",
           "size": 1229
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img57.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img57.png",
           "sha256": "4fd9958385be0bc921acae8ceda4ed03fadbc502dc213e540579c76806dfd50a",
           "size": 1563
         },
         {
-          "path": "paradox_wiki/media/national-focus-modding_b6347a9782__img9.png",
+          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img9.png",
           "sha256": "5d6d81ee6bde0668f6fed01b6c43da820c841700f96d9f310acf83e82d29af2a",
           "size": 2510
         },
@@ -9923,163 +9923,163 @@
           "size": 1152
         },
         {
-          "path": "paradox_wiki/media/technology-modding_21e8ff155d__img3.png",
+          "path": "paradox_wiki/media/technology_modding_21e8ff155d__img3.png",
           "sha256": "ef3fbd461644fd48da1ca95a8ef71c334bcf92b737eb5e69ac40d3d322cbfb98",
           "size": 665
         },
         {
-          "path": "paradox_wiki/media/technology-modding_21e8ff155d__img4.png",
+          "path": "paradox_wiki/media/technology_modding_21e8ff155d__img4.png",
           "sha256": "771cdb3d20febe75bd8da85928718d3d1b1f4e291737ab9f39e834bb8d0cd080",
           "size": 789
         },
         {
-          "path": "paradox_wiki/media/technology-modding_21e8ff155d__img5.png",
+          "path": "paradox_wiki/media/technology_modding_21e8ff155d__img5.png",
           "sha256": "a8f0e6a33af0ae86f6443d3ac641e02b61794a9e79dac112c4cd62fe5975d572",
           "size": 756
         },
         {
-          "path": "paradox_wiki/military-industrial-organization-modding.md",
-          "sha256": "eeeeb4f8933367406e45f86eea66fa25acdfa81f64de8f6b74036f38787bf062",
+          "path": "paradox_wiki/military_industrial_organization_modding.md",
+          "sha256": "a8f7817a494e1c8640d98e5efc5dc89d599377738f3710ffcb4b44228d72e558",
           "size": 67713
         },
         {
-          "path": "paradox_wiki/mod-structure.md",
-          "sha256": "bdc48c40f8756bb743661d58b0b08a0128903c93cbfad55bcdc72f6bbf27c2aa",
+          "path": "paradox_wiki/mod_structure.md",
+          "sha256": "47eaefbba3043ba2bd5602c19a4f902b2e76f97aedec396e072e66537dc4c7de",
           "size": 31694
         },
         {
           "path": "paradox_wiki/modding.md",
-          "sha256": "6594b5ac23478423a39d511e31bdc363aae529eac59fb742506382cbb4dd1ef6",
+          "sha256": "40c0c8ea1cd55888e4b132ad214d339092c63b92f4cc51e1999d0cfa884b1f36",
           "size": 93851
         },
         {
           "path": "paradox_wiki/modifiers.md",
-          "sha256": "34290dc2278dadfc0668d3aa56e01235b2c9b72a97eff8d43c0392995c0daa30",
+          "sha256": "f66c5fee7eed29ee4ae9ea27235a3b4d797fdad7b57a5007a14a8ab26353eb1c",
           "size": 188861
         },
         {
           "path": "paradox_wiki/mods.md",
-          "sha256": "a619be22a95a68a66f63e67ba2748bd70273642933711eddf0cb99818cf32616",
+          "sha256": "7e18bb8b28f821c33d12d1d3b24679d84ccf30570598c3f08dc3328f66a36306",
           "size": 4052
         },
         {
-          "path": "paradox_wiki/music-modding.md",
-          "sha256": "aa29fd161b1feab518b318069c4f8869205c2b3ae3a63f39988f6d48594084f8",
+          "path": "paradox_wiki/music_modding.md",
+          "sha256": "89e4a858919eafa67a67dc345365a123ec9c3bec43a89254eeb0bccce6dc7348",
           "size": 15775
         },
         {
-          "path": "paradox_wiki/namelist-modding.md",
-          "sha256": "721d1aade958118db43f15e559593761ba1ec54a45303c89532153176d2b25fb",
+          "path": "paradox_wiki/namelist_modding.md",
+          "sha256": "cb7fa1feb175a8bb9e0ac248e1585028be7bc35d9566323d163840f4dbb55caa",
           "size": 19555
         },
         {
-          "path": "paradox_wiki/national-focus-modding.md",
-          "sha256": "a48cac626bd0f94a4c80a95aab6aed9155fcb3ff233077282ad977ca58eb5bf5",
+          "path": "paradox_wiki/national_focus_modding.md",
+          "sha256": "7a6dee732af23d1bf242527d435fe5164e9bb0084f5a3efc822ca60dced91c20",
           "size": 108772
         },
         {
           "path": "paradox_wiki/nudger.md",
-          "sha256": "5dd6bead23f0edd69abfb92a2c43797897be9c71fdffcb952e6902a3fa5b7af8",
+          "sha256": "75f7e72b2daa85e1df37e38ad3b245224988acb91e065291b4b35a3dfdda0225",
           "size": 37965
         },
         {
-          "path": "paradox_wiki/occupation-and-resistance-modding.md",
-          "sha256": "c226a8992303065669cdb5e47b04e04f1028452ac6e7ce4c6ce9b929002a542d",
+          "path": "paradox_wiki/occupation_and_resistance_modding.md",
+          "sha256": "d5fbcf677adbe34871437d974fa32d1676595a8e63422dd2cb489127efb5914e",
           "size": 37417
         },
         {
-          "path": "paradox_wiki/on-actions.md",
-          "sha256": "2a2498b32ecfcd88ffb57b3531eddecbd5a7a31d9d578bb4184eec0fa69716b2",
+          "path": "paradox_wiki/on_actions.md",
+          "sha256": "12a5f856e6392445e80047bce4a710d20b44bd9435e2752d1cbc0c166f608275",
           "size": 56103
         },
         {
-          "path": "paradox_wiki/particle-modding.md",
-          "sha256": "f330b7b64f7902df789badd2694301036d4e061925ca4ab5f913be5fa0ee5775",
+          "path": "paradox_wiki/particle_modding.md",
+          "sha256": "670464c32f59e6e1a14f308cf5d49bbc7d4b1c47bee1f44274805baeaac112bb",
           "size": 16582
         },
         {
-          "path": "paradox_wiki/peace-conference-modding.md",
-          "sha256": "d2fc3c81574e2f74400699fb9db18bb820fb0589a689530ccc11e17eabe2755e",
+          "path": "paradox_wiki/peace_conference_modding.md",
+          "sha256": "bde9fb1530d952ab7c767249d5f4b6b4921734c8079be8be3833e0015e14beb9",
           "size": 47565
         },
         {
-          "path": "paradox_wiki/portrait-modding.md",
-          "sha256": "1cb18e0e3821d0f2dafe85a6e2570f2f45766922cbb653ac9034bf1e5e9bf33d",
+          "path": "paradox_wiki/portrait_modding.md",
+          "sha256": "f9fc17b2a50673105e73e8c127631fcf8d78a92b0221b04701fd1f5d53c6285e",
           "size": 12025
         },
         {
-          "path": "paradox_wiki/posteffect-modding.md",
-          "sha256": "e12b3705c24642995dd2a420ea4f54ff6c037e3438cab430f2f0231b1628d585",
+          "path": "paradox_wiki/posteffect_modding.md",
+          "sha256": "4165c1aecad63f5aaf10d2673ac91800bc1edce809ac1778bdd136493ddc4be4",
           "size": 13628
         },
         {
-          "path": "paradox_wiki/raid-modding.md",
-          "sha256": "de51f1f0edf09c4216e61095563f1bbcb97a92f111ed8f43940ae084849b110f",
+          "path": "paradox_wiki/raid_modding.md",
+          "sha256": "43ff544ee3f61f86ef520d151a9976113c3edbdf33c63c56327115833f0a1016",
           "size": 52475
         },
         {
-          "path": "paradox_wiki/resources-modding.md",
-          "sha256": "8c76d6ba29fffbc1f525a3726b81e73494dd0bc79161e56ab3404a129ba03b78",
+          "path": "paradox_wiki/resources_modding.md",
+          "sha256": "2cc40db56c130d9b7b50b9571c938780a2af2669f0eea0810c2e5b6d2cfc6cfd",
           "size": 15266
         },
         {
           "path": "paradox_wiki/scopes.md",
-          "sha256": "521751ef265c3ad17727c2c39f7012a4555eead6f3f528d5b491a76bac405f4d",
+          "sha256": "182da337f7b9240ea5499167d97c99b6d46e8c720671bb38f72bc18b64727f92",
           "size": 88795
         },
         {
-          "path": "paradox_wiki/script-constant-modding.md",
-          "sha256": "fc86f962e2af68ec6c8d67c4d5d3ac12344ee0d1dc1994e4838dca7b7bf44e38",
+          "path": "paradox_wiki/script_constant_modding.md",
+          "sha256": "04e1618f094c9141c080bd5f695efa0319131918a88dd4dfc81b0e362c604c88",
           "size": 24031
         },
         {
-          "path": "paradox_wiki/scripted-gui-modding.md",
-          "sha256": "fc86afb04ae4d93b49f8284af878b4e3daa7a947a118c3ad9db411f751998f93",
+          "path": "paradox_wiki/scripted_gui_modding.md",
+          "sha256": "ee844b6d763bca2eee649b61f87679e6407c6802a6c6fb146ec7a936ea7ab15d",
           "size": 45244
         },
         {
-          "path": "paradox_wiki/sound-modding.md",
-          "sha256": "15e1422e21482db3bb64c777d1214fbea89803784c5c334c30d236c95aada396",
+          "path": "paradox_wiki/sound_modding.md",
+          "sha256": "c5b0d01f8692dd314eabfc22123d0dc19685920768a7236a60238ab96a6f63b0",
           "size": 17965
         },
         {
-          "path": "paradox_wiki/special-project-modding.md",
-          "sha256": "cc108d94163f410c4374c3045d5a9e44b2d9546dc127e1213b976aa853126681",
+          "path": "paradox_wiki/special_project_modding.md",
+          "sha256": "0b3ad6918ae747aef14cb4c8b8a27de54fb934dfeaba75961ca8a900958da745",
           "size": 61580
         },
         {
-          "path": "paradox_wiki/state-modding.md",
-          "sha256": "821edf0b76f26aabf38440795ad3b9605b0676e30d5590d7bd3b4ea376c80f97",
+          "path": "paradox_wiki/state_modding.md",
+          "sha256": "2980a2b13debc386aa60037b1675a0dbe73bb0deac360167ad0fd5458599aee4",
           "size": 43122
         },
         {
-          "path": "paradox_wiki/strategic-region-modding.md",
-          "sha256": "e90dedd86a314dccc526c6956eb395e07391a06d0b86bd3046e092edc5393942",
+          "path": "paradox_wiki/strategic_region_modding.md",
+          "sha256": "96a70a96fad75f16c3d56108b728ee8e06bf839f5d84564414a78d8593cf1f75",
           "size": 12228
         },
         {
-          "path": "paradox_wiki/supply-areas-modding.md",
-          "sha256": "3bd565808af92bb88c970a52c3792b6eb3ac085cdc9c496d4aa13e519e62c4fc",
+          "path": "paradox_wiki/supply_areas_modding.md",
+          "sha256": "52f9ebbc563382b99671f45a92a8fdd973979805de1197b7fead26965c3f90f2",
           "size": 10067
         },
         {
-          "path": "paradox_wiki/technology-modding.md",
-          "sha256": "3350c80364677dd208b9fc9d7aa52c62f87f6138df8e45d20edb4097d13ad039",
+          "path": "paradox_wiki/technology_modding.md",
+          "sha256": "9e84ca4a0465bddd46f5f7981e9ce6cb80565cb1282f1765c33af49406f75d85",
           "size": 75562
         },
         {
           "path": "paradox_wiki/triggers.md",
-          "sha256": "c34a85e16430ae01163aae8f32efbce81ba9ab7be805cf8ac035151c31dc262e",
+          "sha256": "a06e117c99d6f98cf4657d275b95ef69d2787a3cbf9ec5c2ad3de1acff009059",
           "size": 238911
         },
         {
           "path": "paradox_wiki/troubleshooting.md",
-          "sha256": "0e39e4a23b2f3011f9ce9d69a4a2423a05cd3b6a55bec8321b79c4db290399ae",
+          "sha256": "ff74e583f2e2e5af9193e46d86fe76397862f1a6dfd8ae6e59c53649f73f655b",
           "size": 42042
         },
         {
-          "path": "paradox_wiki/unit-modding.md",
-          "sha256": "bfaf07269a408aa06cb31c0775c7490bf970e84f29c3bbde895b8d47ec481e43",
+          "path": "paradox_wiki/unit_modding.md",
+          "sha256": "d998e608edd216e11d2a0b43f0d5740034bed69d527cfc02ad0832f91d9f6b37",
           "size": 34727
         }
       ]
