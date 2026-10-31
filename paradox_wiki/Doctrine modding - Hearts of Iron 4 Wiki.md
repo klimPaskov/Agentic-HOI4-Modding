@@ -11,13 +11,23 @@ Gaps left: the exact mastery formula (diminishing returns, reserve mechanics) is
 ## Table of contents
 
 - [Structure](#Structure)
+  - [Kit: How the doctrine files link](#kit-doctrine-overview)
 - [Triggers and Effects](#Triggers_and_Effects)
   - [List of doctrine-related triggers:](#List_of_doctrine-related_triggers:)
   - [List of doctrine-related effects:](#List_of_doctrine-related_effects:)
+    - [Kit: Doctrine effect and trigger syntax](#kit-doctrine-effects-triggers)
 - [Folders](#Folders)
+  - [Kit: Folder files](#kit-doctrine-folders)
 - [Grand Doctrines](#Grand_Doctrines)
+  - [Kit: Grand doctrine files](#kit-doctrine-grand-doctrines)
 - [Tracks](#Tracks)
+  - [Kit: Track files](#kit-doctrine-tracks)
 - [Subdoctrines](#Subdoctrines)
+  - [Kit: Subdoctrine files](#kit-doctrine-subdoctrines)
+- [Kit: Mastery](#kit-doctrine-mastery)
+- [Kit: Doctrine modifiers, localisation and AI](#kit-doctrine-modifiers-ai)
+- [Kit: Minimal grand doctrine with one track and one subdoctrine](#kit-doctrine-example)
+- [Kit: Doctrine traps](#kit-doctrine-traps)
 
 ---
 
@@ -426,3 +436,4 @@ Give a country the doctrines from script with `set_grand_doctrine = my_grand_doc
 - **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
 - **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
 - **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md>) • [Game rule modding](<Game rule modding - Hearts of Iron 4 Wiki.md>) • [Intelligence operation modding](<Intelligence operation modding - Hearts of Iron 4 Wiki.md>) • [Map mode modding](<Map mode modding - Hearts of Iron 4 Wiki.md>) • [Occupation and resistance modding](<Occupation and resistance modding - Hearts of Iron 4 Wiki.md>) • [Peace conference modding](<Peace conference modding - Hearts of Iron 4 Wiki.md>) • [Raid modding](<Raid modding - Hearts of Iron 4 Wiki.md>) • [Script constant modding](<Script constant modding - Hearts of Iron 4 Wiki.md>) • [Special project modding](<Special project modding - Hearts of Iron 4 Wiki.md>)

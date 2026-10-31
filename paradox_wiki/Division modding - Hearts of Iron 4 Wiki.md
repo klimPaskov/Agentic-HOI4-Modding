@@ -11,11 +11,16 @@ Gaps left: the effect of the root-level `start_equipment_factor` and of template
 ## Table of contents
 
 - [Land units](#Land_units)
+  - [Kit: How vanilla names and selects order of battle files](#kit-division-oob-files)
   - [Division template](#Division_template)
+  - [Kit: Division template keys and limits](#kit-division-template-keys)
   - [Division placement](#Division_placement)
+  - [Kit: Division placement keys in vanilla](#kit-division-placement-keys)
 - [Equipment production](#Equipment_production)
 - [Adding Air Wings](#Adding_Air_Wings)
+  - [Kit: Air wing keys in vanilla](#kit-division-air-wings)
 - [Adding Navies](#Adding_Navies)
+  - [Kit: Fleet, task force and ship keys in vanilla](#kit-division-navy-keys)
   - [Man the Guns](#Man_the_Guns)
   - [Non-Man The Guns](#Non-Man_The_Guns)
 - [List of Units](#List_of_Units)
@@ -709,3 +714,4 @@ submarine_4
 - **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
 - **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
 - **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md>) • [Game rule modding](<Game rule modding - Hearts of Iron 4 Wiki.md>) • [Intelligence operation modding](<Intelligence operation modding - Hearts of Iron 4 Wiki.md>) • [Map mode modding](<Map mode modding - Hearts of Iron 4 Wiki.md>) • [Occupation and resistance modding](<Occupation and resistance modding - Hearts of Iron 4 Wiki.md>) • [Peace conference modding](<Peace conference modding - Hearts of Iron 4 Wiki.md>) • [Raid modding](<Raid modding - Hearts of Iron 4 Wiki.md>) • [Script constant modding](<Script constant modding - Hearts of Iron 4 Wiki.md>) • [Special project modding](<Special project modding - Hearts of Iron 4 Wiki.md>)

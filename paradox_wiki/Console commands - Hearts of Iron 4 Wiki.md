@@ -16,7 +16,17 @@ Gaps left: the documentation gives one line per command, so what `loc_check` cou
   - [Glossary](#Glossary)
   - [Useful commands](#Useful_commands)
   - [Modding-useful commands](#Modding-useful_commands)
+    - [Kit: Commands that matter most when modding](#kit-cc-modding-highlights)
   - [Other in-game commands](#Other_in-game_commands)
+    - [Kit: Economy, research and the international market](#kit-cc-economy)
+    - [Kit: Politics, diplomacy, factions and balance of power](#kit-cc-politics)
+    - [Kit: Special projects, medals and achievements](#kit-cc-projects)
+    - [Kit: Intelligence, operations and raids](#kit-cc-intel)
+    - [Kit: Units, combat and fronts](#kit-cc-military)
+    - [Kit: AI and pathfinding debugging](#kit-cc-ai)
+    - [Kit: Map, weather and display](#kit-cc-map-view)
+    - [Kit: Game session, timing, checksums and developer tools](#kit-cc-session)
+    - [Kit: Tweakable variables not on the page](#kit-cc-tweakables)
 - [See also](#See_also)
 - [References](#References)
 
@@ -735,6 +745,7 @@ The page already covers `Agency.AutoComplete`, `Agency.InstantSlotUnlock`, `Agen
 - **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
 - **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
 - **Other**: [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md>) • [Game rule modding](<Game rule modding - Hearts of Iron 4 Wiki.md>) • [Intelligence operation modding](<Intelligence operation modding - Hearts of Iron 4 Wiki.md>) • [Map mode modding](<Map mode modding - Hearts of Iron 4 Wiki.md>) • [Occupation and resistance modding](<Occupation and resistance modding - Hearts of Iron 4 Wiki.md>) • [Peace conference modding](<Peace conference modding - Hearts of Iron 4 Wiki.md>) • [Raid modding](<Raid modding - Hearts of Iron 4 Wiki.md>) • [Script constant modding](<Script constant modding - Hearts of Iron 4 Wiki.md>) • [Special project modding](<Special project modding - Hearts of Iron 4 Wiki.md>)
 
 **Hearts of Iron IV**
 

@@ -11,6 +11,7 @@ Gaps left: the lifetime rule for regular event targets, `clear_global_event_targ
 ## Table of contents
 
 - [Constants](#Constants)
+  - [Kit: Script constants with constant:](#kit-script-constants)
   - [Defines](#Defines)
 - [Flags](#Flags)
   - [Example](#Example)
@@ -25,6 +26,7 @@ Gaps left: the lifetime rule for regular event targets, `clear_global_event_targ
   - [Scoping](#Scoping)
   - [Trigger usage](#Trigger_usage)
   - [Localisation](#Localisation)
+    - [Kit: Bindable and formatted localisation](#kit-bindable-localisation)
   - [Additional usage](#Additional_usage)
   - [Operators](#Operators)
   - [Math expressions](#Math_expressions)
@@ -42,6 +44,7 @@ Gaps left: the lifetime rule for regular event targets, `clear_global_event_targ
   - [Scorers](#Scorers)
     - [Example](#Example_2)
 - [Game variables](#Game_variables)
+  - [Kit: Dynamic variables in 1.19.3](#kit-dynamic-variables)
   - [Game arrays](#Game_arrays)
 - [References](#References)
 
@@ -2118,3 +2121,4 @@ State-scoped game arrays:
 - **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
 - **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
 - **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md>) • [Game rule modding](<Game rule modding - Hearts of Iron 4 Wiki.md>) • [Intelligence operation modding](<Intelligence operation modding - Hearts of Iron 4 Wiki.md>) • [Map mode modding](<Map mode modding - Hearts of Iron 4 Wiki.md>) • [Occupation and resistance modding](<Occupation and resistance modding - Hearts of Iron 4 Wiki.md>) • [Peace conference modding](<Peace conference modding - Hearts of Iron 4 Wiki.md>) • [Raid modding](<Raid modding - Hearts of Iron 4 Wiki.md>) • [Script constant modding](<Script constant modding - Hearts of Iron 4 Wiki.md>) • [Special project modding](<Special project modding - Hearts of Iron 4 Wiki.md>)

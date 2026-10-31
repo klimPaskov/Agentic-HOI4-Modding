@@ -19,6 +19,34 @@
 - The explicit lists in some rows are shorter than the game's lists: resources (7, with `coal`), buildings (55, the page names up to 16), `production_cost_max_*` (9 tokens, the page names 6), units for `experience_gain_*` (157, and a third `_mission_factor` variant exists) and `special_forces_doctrine_cost_factor` next to the three `<land/air/naval>` doctrine cost rows. Full lists are in [Template modifier families](#kit-template-families). [docs] `documentation/modifiers_documentation.md`
 <!-- kit:end id="list-corrections" -->
 
+## Table of contents
+
+- [Kit: Documented modifiers missing from the table](#kit-missing-from-table)
+  - [Kit: General country modifiers (8)](#kit-missing-gen)
+  - [Kit: Politics (9)](#kit-missing-pol)
+  - [Kit: Diplomacy (11)](#kit-missing-dip)
+  - [Kit: Autonomy (3)](#kit-missing-aut)
+  - [Kit: Governments in exile (1)](#kit-missing-exi)
+  - [Kit: Equipment (4)](#kit-missing-eqp)
+  - [Kit: Fuel and supply (7)](#kit-missing-fuel)
+  - [Kit: Buildings (10)](#kit-missing-bld)
+  - [Kit: Intelligence (7)](#kit-missing-int)
+  - [Kit: Operatives (15)](#kit-missing-ops)
+  - [Kit: Military outside of combat (10)](#kit-missing-mil)
+  - [Kit: MIOs (9)](#kit-missing-mio)
+  - [Kit: Unit leaders (10)](#kit-missing-ldr)
+  - [Kit: Land combat (27)](#kit-missing-land)
+  - [Kit: Invasions (9)](#kit-missing-ninv)
+  - [Kit: Naval combat (15)](#kit-missing-naval)
+  - [Kit: Carriers and their planes (3)](#kit-missing-carr)
+  - [Kit: Air combat (8)](#kit-missing-air)
+  - [Kit: Targeted modifiers (12)](#kit-missing-targ)
+  - [Kit: State scope (13)](#kit-missing-state)
+  - [Kit: Unit leader scope (3)](#kit-missing-ulead)
+  - [Kit: Scientists scope (4)](#kit-missing-sci)
+  - [Kit: Sub-unit modifiers (54)](#kit-missing-sub-units)
+- [Kit: Template modifier families](#kit-template-families)
+
 ---
 
 [Modifiers](<Modifiers - Hearts of Iron 4 Wiki.md>) listed here are recognized by the game, but not necessarily used in any context.
@@ -913,3 +941,4 @@ Corrections to the rows above. [docs] `documentation/modifiers_documentation.md`
 - **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
 - **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
 - **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md>) • [Game rule modding](<Game rule modding - Hearts of Iron 4 Wiki.md>) • [Intelligence operation modding](<Intelligence operation modding - Hearts of Iron 4 Wiki.md>) • [Map mode modding](<Map mode modding - Hearts of Iron 4 Wiki.md>) • [Occupation and resistance modding](<Occupation and resistance modding - Hearts of Iron 4 Wiki.md>) • [Peace conference modding](<Peace conference modding - Hearts of Iron 4 Wiki.md>) • [Raid modding](<Raid modding - Hearts of Iron 4 Wiki.md>) • [Script constant modding](<Script constant modding - Hearts of Iron 4 Wiki.md>) • [Special project modding](<Special project modding - Hearts of Iron 4 Wiki.md>)

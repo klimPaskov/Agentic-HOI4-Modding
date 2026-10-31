@@ -11,6 +11,7 @@ Gaps left: how ACE and STRATEGIC_REGION scopes are entered, what `OCCUPIED` and 
 ## Table of contents
 
 - [Types](#Types)
+  - [Kit: Scope types in the 1.19.3 documentation](#kit-scope-types)
 - [Examples](#Examples)
 - [Settings](#Settings)
   - [Limiting](#Limiting)
@@ -20,6 +21,7 @@ Gaps left: how ACE and STRATEGIC_REGION scopes are entered, what `OCCUPIED` and 
 - [Dual scopes](#Dual_scopes)
   - [Invalid event target](#Invalid_event_target)
 - [Trigger scopes](#Trigger_scopes)
+  - [Kit: Trigger scopes missing from the table](#kit-trigger-scope-additions)
 - [Effect scopes](#Effect_scopes)
   - [Effects with scopes](#Effects_with_scopes)
 - [Array scopes](#Array_scopes)
@@ -1208,3 +1210,4 @@ random_list = {
 - **Graphical**: [Interface](<Interface modding - Hearts of Iron 4 Wiki.md>) • [Graphical assets](<Graphical asset modding - Hearts of Iron 4 Wiki.md>) • [Entities](<Entity modding - Hearts of Iron 4 Wiki.md>) • [Posteffects](<Posteffect modding - Hearts of Iron 4 Wiki.md>) • [Particles](<Particle modding - Hearts of Iron 4 Wiki.md>) • [Fonts](<Font modding - Hearts of Iron 4 Wiki.md>)
 - **Cosmetic**: [Portraits](<Portrait modding - Hearts of Iron 4 Wiki.md>) • [Namelists](<Namelist modding - Hearts of Iron 4 Wiki.md>) • [Music](<Music modding - Hearts of Iron 4 Wiki.md>) • [Sound](<Sound modding - Hearts of Iron 4 Wiki.md>)
 - **Other**: [Console commands](<Console commands - Hearts of Iron 4 Wiki.md>) • [Troubleshooting](<Troubleshooting - Hearts of Iron 4 Wiki.md>) • [Mod structure](<Mod structure - Hearts of Iron 4 Wiki.md>) • [Mods](<Mods - Hearts of Iron 4 Wiki.md>) • [Nudger](<Nudger - Hearts of Iron 4 Wiki.md>)
+- **Kit pages (not on the wiki)**: [Collection modding](<Collection modding - Hearts of Iron 4 Wiki.md>) • [Game rule modding](<Game rule modding - Hearts of Iron 4 Wiki.md>) • [Intelligence operation modding](<Intelligence operation modding - Hearts of Iron 4 Wiki.md>) • [Map mode modding](<Map mode modding - Hearts of Iron 4 Wiki.md>) • [Occupation and resistance modding](<Occupation and resistance modding - Hearts of Iron 4 Wiki.md>) • [Peace conference modding](<Peace conference modding - Hearts of Iron 4 Wiki.md>) • [Raid modding](<Raid modding - Hearts of Iron 4 Wiki.md>) • [Script constant modding](<Script constant modding - Hearts of Iron 4 Wiki.md>) • [Special project modding](<Special project modding - Hearts of Iron 4 Wiki.md>)
