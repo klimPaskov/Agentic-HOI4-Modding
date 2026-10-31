@@ -2,8 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Map modding", revision 105627, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="none" checked="never" -->
-**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="105627" sources="map/ map/default.map map/definition.csv map/adjacencies.csv map/adjacency_rules.txt map/buildings.txt map/unitstacks.txt map/weatherpositions.txt map/ambient_object.txt map/cities.txt map/supply_nodes.txt map/railways.txt map/terrain/ map/strategicregions/ map/supplyareas/ common/terrain/00_terrain.txt common/defines/00_defines.lua common/defines/00_graphics.lua gfx/entities/trees.gfx hoi4.exe" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the full `map/` folder of the installed game (every file listed, the bitmaps and DDS headers read, the CSV and text files parsed), `common/terrain/00_terrain.txt`, the river and supply defines, and map error strings in `hoi4.exe`.
+Kit blocks added: the real file list and bitmap table, corrections for `weatherpositions.txt` sizes, line endings, the terrain palette ids 27 and 31, the terrain values, adjacency format and rules, plus counts, a defaults table for `default.map` and the map error texts the exe still holds.
+The "deprecated" marker is the supply area note (still true; see the Supply areas page) and "incomplete" is about a definition file, not about the page.
+Gaps left: exe-only strings are `[unverified]`. The wiki's size limits (13,238,272 pixels, 65536 borders) and the sea level of 9.5 are in no game file I could read; vanilla provinces.bmp is 11,534,336 pixels.
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -66,6 +69,26 @@ These files in the map folder are common to edit:
 - `/Hearts of Iron IV/map/cities.txt` is used to assign different city models to different parts of the world, by default using `/Hearts of Iron IV/map/cities.bmp` as the map.
 - `/Hearts of Iron IV/map/airports.txt` and `/Hearts of Iron IV/map/rocketsites.txt` were deprecated and removed in the patch 1.15.
 
+<!-- kit:begin id="map-folder-1193" at="section:Quick_overview" -->
+**Kit addition** The `map/` folder of 1.19.3, complete. All rows: [vanilla-confirmed 1.19.3] folder listing and file contents of `map/`.
+
+| Entry | What it is |
+| --- | --- |
+| `default.map` | names the files it loads (keys at the end of this page); 13 active keys |
+| `provinces.bmp`, `definition.csv`, `terrain.bmp`, `heightmap.bmp`, `rivers.bmp`, `trees.bmp`, `world_normal.bmp`, `cities.bmp` | the bitmaps and the province table (sizes and depths in the BMP section) |
+| `adjacencies.csv`, `adjacency_rules.txt` | adjacencies and strait rules |
+| `continent.txt` | 7 continents |
+| `buildings.txt`, `unitstacks.txt`, `cities.txt`, `weatherpositions.txt`, `ambient_object.txt`, `supply_nodes.txt`, `railways.txt` | placement and start data; the exe holds these as fixed paths (`map/buildings.txt`, `map/unitstacks.txt`, `map/cities.txt`, `map/weatherpositions.txt`, `map/supply_nodes.txt`, `map/railways.txt`) |
+| `seasons.txt` | 4 season blocks: `winter`, `spring`, `summer`, `autumn`, each with `start_date` and `end_date` written `00.<month>.<day>` (for example `00.12.01`) and `hsv_north` / `hsv_center` / `hsv_south` and `colorbalance_north` / `_center` / `_south` |
+| `positions.txt` | listed in `default.map`, but the file is empty (0 bytes) |
+| `colors.txt` | 200 lines of `color = { r g b }`; no game file explains the use [unverified] |
+| `strategicregions/` | 304 region files (see Strategic region modding) |
+| `supplyareas/` | one leftover file (see Supply areas modding) |
+| `terrain/` | 64 DDS and BMP files: the atlases, colour maps, borders, river surface, mud, snow, fog of war and underwater textures |
+
+`map/airports.txt` and `map/rocketsites.txt` are absent, which agrees with the wiki line above. [vanilla-confirmed 1.19.3] folder listing of `map/`
+<!-- kit:end id="map-folder-1193" -->
+
 ## Notes <a id="Notes"></a>
 
 - **Due to [how the game reads BMP files](#BMP_format), many image editors such as Paint.net or Microsoft Paint can't be used for most bitmap files**, with only provinces and world_normal working. Photoshop and GIMP are alternatives that will always work, but the mode should never be changed from indexed when using them. If a map was saved incorrectly, the later section on details of the BMP format provides an easy way to correct the map. The method described there can also be used to export a new file.
@@ -99,6 +122,24 @@ When using image editors that don't have a complete support of editing the color
 
 BMP files contain a DIB header at the beginning that assigns image file information. The game is set-up to expect BITMAPINFOHEADER as the format of the header for all BMP files. This depends on the image editor and most should save within this one by default.
 However, other formats for the header exist: the most common one to accidentally save in is BITMAPV5HEADER, written by the GIMP foundation. This is used in order to add the ICC information, characterizing in which colour space the image has to be read in. *Hearts of Iron IV's engine is not set to recognise this header*. For this reason, **when exporting in GIMP, "do not write colour space information" must be checked on** in order to save with BITMAPINFOHEADER rather than BITMAPV5HEADER.
+
+<!-- kit:begin id="map-bitmap-table" at="section:BMP_format" -->
+**Kit addition** The vanilla bitmaps, read from their headers. All rows: [vanilla-confirmed 1.19.3] `map/*.bmp`. All are uncompressed.
+
+| File | Size in pixels | Bit depth | DIB header size |
+| --- | --- | --- | --- |
+| `provinces.bmp` | 5632 x 2048 | 24 | 40 |
+| `heightmap.bmp` | 5632 x 2048 | 8 | 40 |
+| `rivers.bmp` | 5632 x 2048 | 8 | 40 |
+| `cities.bmp` | 5632 x 2048 | 8 | 40 |
+| `terrain.bmp` | 5632 x 2048 | 8 | 124 |
+| `trees.bmp` | 1650 x 600 | 8 | 124 |
+| `world_normal.bmp` | 2816 x 1024 | 24 | 40 |
+
+**Kit correction** Two vanilla files, `terrain.bmp` and `trees.bmp`, carry a 124-byte header (the BITMAPV5HEADER the section above says the game does not recognise), so the statement is not true for every bitmap; the wiki's advice to export with BITMAPINFOHEADER (40 bytes) still matches the other six. [vanilla-confirmed 1.19.3] `map/terrain.bmp`, `map/trees.bmp`. What the engine accepts for a new file was not tested. [unverified]
+
+`trees.bmp` is exactly 75/256 of the province bitmap in each direction (5632 x 75 / 256 = 1650, 2048 x 75 / 256 = 600), and `world_normal.bmp` and the colour maps are half size. The province-sized bitmaps and `world_normal.bmp` are multiples of 256; `trees.bmp` (1650 x 600) is not, so the multiple-of-256 rule applies to the province bitmap and its full-size companions only. [vanilla-confirmed 1.19.3] `map/*.bmp`
+<!-- kit:end id="map-bitmap-table" -->
 
 ### Correcting a broken 8-bit map <a id="Correcting_a_broken_8-bit_map"></a>
 
@@ -211,6 +252,12 @@ The size only has 2 values: small and large. Multiple definitions or none at all
 
 Weather is best generated with nudger in the strategic region menu.
 
+<!-- kit:begin id="map-weatherpositions-correction" at="section:Weather" -->
+**Kit correction** The two sizes in `weatherpositions.txt` are `small` and `big`, not `large`. Vanilla has 588 rows: 452 `big` and 136 `small`, in the layout `region id;x;y;z;size` (for example `1;2781.24;9.90;1571.49;small`). [vanilla-confirmed 1.19.3] `map/weatherpositions.txt`
+
+The `period` keys vanilla actually uses, including `arctic_water`, and the `naval_terrain` and `static_modifiers` keys of a region are listed in [Strategic region modding](<Strategic region modding - Hearts of Iron 4 Wiki.md>). [vanilla-confirmed 1.19.3] `map/strategicregions/`
+<!-- kit:end id="map-weatherpositions-correction" -->
+
 ## Provinces <a id="Provinces"></a>
 
 *See also: [Nudger § Database](<Nudger - Hearts of Iron 4 Wiki.md#Database>)*
@@ -271,6 +318,20 @@ Additionally, these errors are common to encounter:
   - The colour within the province's definition has no pixels in the provinces.bmp. This may be a sign that the wrong colour has been used for the province or that the entry remains while the province has been erased. Ensure that there are no new provinces in the "fixed" definition generated by the game that may be intended to be the pixelless province; otherwise remove the province definition, with one another province definition to fill the gap since there can be no province ID gaps.
   - There are several provinces with the same colour on the bitmap. If this is the case, the game will assign each pixel of the colour to only one of the provinces, leading the other with no pixels. If this is the case, change the colour of the second province if they're intended to be separate, otherwise remove one of the definitions while still making sure to have one another province definition to fill the gap. This may commonly, though not necessary, occur together with a TOO LARGE BOX error for the other province.
 
+<!-- kit:begin id="map-definition-facts" at="section:Provinces" -->
+**Kit correction** The line ending advice is not a general rule in 1.19.3. Vanilla `map/definition.csv` has LF-only line endings (13413 line feeds, no carriage return), and so do `adjacencies.csv`, `railways.txt` and `supply_nodes.txt`. The game loads these, so CRLF is not required for them. The "has no continent" error for every province has some other cause; the wiki's CRLF explanation covers at most files saved by some editors. [vanilla-confirmed 1.19.3] `map/definition.csv`, `map/adjacencies.csv`, `map/railways.txt`, `map/supply_nodes.txt`
+
+**Kit addition** What vanilla `definition.csv` contains. All rows: [vanilla-confirmed 1.19.3] `map/definition.csv`.
+
+- 13414 rows, ids 0 to 13413 with no gap. Row 0 is `0;0;0;0;land;false;unknown;0`. There is no header row, no BOM and no final newline.
+- Types: 10155 `land` (including row 0), 3133 `sea`, 126 `lake`. Every sea province has terrain `ocean`, every lake has `lakes`, and `unknown` is used only by row 0.
+- Land terrain counts: plains 3031, forest 2364, mountain 1708, hills 1352, desert 815, jungle 477, urban 265, marsh 142.
+- Continents: 1 Europe 3321, 2 North America 1157, 3 South America 558, 4 Australia 376, 5 Africa 743, 6 Asia 3560, 7 Middle East 489; 3133 sea provinces have 0 and so do 76 of the 126 lakes (the other 50 lakes have a continent), which agrees with the wiki ("lakes may be kept at 0").
+- The 5th field `true` / `false` is the coastal flag, written as in the wiki's example.
+
+The exe still contains these map error texts (strings only, not run): "Map invalid X crossing. Please fix pixels at coords:", "has TOO LARGE BOX. Perhaps pixels are spread around the world in provinces.bmp", "has only", "prov %d has no continent", "Bitmap and province definition disagree on whether or not province", "has no pixels in provinces.bmp", and "We do not support bitdepth at". They match the list above. For the corrected copy of the table the exe holds the string `.fixed.csv` (next to `.cache` and `lake`) and no `definition.csv.fixed`, so the file name given above may be stale. [unverified] Exe strings only (`hoi4.exe`).
+<!-- kit:end id="map-definition-facts" -->
+
 ### Continents <a id="Continents"></a>
 
 Continents are defined within the `/Hearts of Iron IV/map/continent.txt` file within the `continents = { ... }` table. The continents have several uses in-game:
@@ -293,6 +354,10 @@ These continents exist in base game:
 | 5 | africa | Africa | The Suez canal is considered the border: the entire state of Sinai is in the Middle East. |
 | 6 | asia | Asia | The border with the Middle East runs cutting the states of Herat and Baluchistan in half, while others are almost entirely contained in one or the other. |
 | 7 | middle_east | Middle East | The border with Europe in Caucasus Mountains cuts Abkhazia, Kabardino-Balkaria, North Ossetia, Azerbaijan, and Istanbul in half. The rest are entirely contained within one or the other. |
+
+<!-- kit:begin id="map-continent-note" at="section:Continents" -->
+**Kit note** `map/continent.txt` in 1.19.3 has exactly the seven names in the table below, in that order (`europe`, `north_america`, `south_america`, `australia`, `africa`, `asia`, `middle_east`); ids 1 to 7 follow the order. [vanilla-confirmed 1.19.3] `map/continent.txt`
+<!-- kit:end id="map-continent-note" -->
 
 ## Terrain <a id="Terrain"></a>
 
@@ -488,6 +553,16 @@ Deep Oceans
 naval
 Makes destroyers have 20% less of attack, movement, and defence; light cruisers have 10% less of attack, movement, and defence; makes the submarines harder to detect (-15% visibility) but slower by 25%. The chance to hit a naval mine is halved.
 
+<!-- kit:begin id="map-terrain-graphical-corrections" at="section:Terrain" -->
+**Kit correction** The graphical terrain table above has errors against the 1.19.3 palette of `map/terrain.bmp` and its use. All rows: [vanilla-confirmed 1.19.3] `map/terrain.bmp` (palette and pixel counts), `common/terrain/00_terrain.txt`.
+
+- The colours of ids 27 and 31 are swapped: palette index 27 is `(27, 27, 27)` and index 31 is `(243, 199, 147)`. The rest of those two rows (atlas tile 7 for 27, tile 15 for 31, type `mountain`) matches the terrain file.
+- Id 31 is used: 2589 pixels in vanilla. Id 27 is used by 18 pixels. Only ids 14 (`lakes`, texture 255) and 18 are unused in the vanilla bitmap.
+- Id 22 is used, by 208146 pixels (type `jungle`, atlas tile 5), so "never used in base game" is wrong for it; id 21 uses 30662 pixels.
+- A handful of stray pixels use ids outside the table (48, 61, 63, 64, 74, 77 and 80).
+- Id 15 is the sea (7.2 million pixels). Ids 16 and 19 are the permanent-snow variants (`perm_snow = yes`).
+<!-- kit:end id="map-terrain-graphical-corrections" -->
+
 ### Provincial terrain <a id="Provincial_terrain"></a>
 
 Provincial terrain types are defined within `/Hearts of Iron IV/common/terrain/*.txt` files in the `categories = { ... }` block. Each terrain is a code block, and the name of the block gets taken as the terrain's name, such as this creating terrains my_terrain_1 and my_terrain_2.
@@ -608,6 +683,25 @@ spriteType = {
 }
 ```
 
+<!-- kit:begin id="map-terrain-values" at="section:Provincial_terrain" -->
+**Kit correction** The provincial terrain values in the table above (the "optimal combat width" notes and the shallow sea and deep ocean notes) do not match the terrain file of 1.19.3. Vanilla sets `combat_width` and `combat_support_width` directly in each category. All rows: [vanilla-confirmed 1.19.3] `common/terrain/00_terrain.txt`.
+
+| Terrain | `movement_cost` | `combat_width` / `combat_support_width` | `units` attack | `attrition` | `buildings_max_level` bunker / coastal | `supply_flow_penalty_factor` | `truck_attrition_factor` |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `forest` | 1.5 | 60 / 30 | -0.15 | | 4 / 6 | 0.08 | 0.2 |
+| `hills` | 1.5 | 70 / 35 | -0.25 | | 5 / 6 | 0.1 | 0.2 |
+| `mountain` | 2.0 | 50 / 25 | -0.5 | 0.3 | 4 / 6 | 0.12 | 1.0 |
+| `plains` | 1.0 | 70 / 35 | | | 5 / 6 | | |
+| `urban` | 1.2 | 80 / 40 | -0.3 | | 5 / 6 | -0.2 | |
+| `jungle` | 1.5 | 60 / 30 | -0.3 | 0.2 | 3 / 6 | 0.16 | 3.0 |
+| `marsh` | 2.0 | 50 / 25 | -0.4 | 0.35 | 3 / 6 | 0.16 | 4.0 |
+| `desert` | 1.05 | 70 / 35 | | 0.15 | 4 / 6 | 0.14 | 0.5 |
+
+`sickness_chance = 1.0` is set on `jungle`, `marsh` and `desert`. `ai_terrain_importance_factor` ranges from 0.1 (`plains`) to 10.0 (`mountain`) and `match_value` from 0.5 to 10. `enemy_army_bonus_air_superiority_factor` is set on forest (-0.1), hills (-0.05), mountain (-0.1), urban (-0.5) and jungle (-0.25). [vanilla-confirmed 1.19.3] `common/terrain/00_terrain.txt`
+
+Naval terrains (`naval_terrain = yes`, `is_water = yes`): `ocean` has `naval_mine_hit_chance = -0.75` and `minimum_seazone_dominance = 250`. `water_fjords` gives -0.2 attack, movement and defence to battle cruisers, battleships, heavy cruisers and carriers (+0.2 fuel use), `navy_visibility = -0.2`, `positioning = -0.15`, dominance 100. `water_shallow_sea` has `submarine = { navy_visibility = 0.33 }` (not +100%), `positioning = -0.05`, `naval_mine_hit_chance = -0.5`, dominance 100. `water_deep_ocean` gives -0.2 to destroyers and -0.1 to light cruisers (attack, movement, defence), submarines -0.15 visibility and -0.25 movement, `naval_mine_hit_chance = -0.95` (not "halved") and dominance 250. `lakes` has no `naval_terrain`. [vanilla-confirmed 1.19.3] `common/terrain/00_terrain.txt`. Keys the page does not list: `naval_mine_hit_chance`, `minimum_seazone_dominance`, `truck_attrition_factor`. [docs] `documentation/modifiers_documentation.md` has `naval_mine_hit_chance` and `truck_attrition_factor`; `minimum_seazone_dominance` is in no documentation file.
+<!-- kit:end id="map-terrain-values" -->
+
 ### Graphical terrain <a id="Graphical_terrain"></a>
 
 Graphical terrain is defined within the `/Hearts of Iron IV/common/terrain/*.txt` files within the `terrain = { ... }` block. Each graphical terrain type is a separate block within that overarching block, with the name of the block being irrelevant, with overlaps possible. Example definitions include:
@@ -653,6 +747,12 @@ atlas0 is the regular texture map, for the textures that will get assigned on th
 The files atlas1 and atlas2, as well as atlas_normal1 and atlas_normal2 serve for farther zoom levels: the game uses lower-quality textures when the camera is more zoomed-out or with different graphics settings to save on performance. atlas1 has each of its dimensions at half-size of atlas0, and atlas2 has them at the quarter-size of atlas0.
 
 For the game to read the file, mipmaps must be generated and DXT5 must be the compression algorithm used.
+
+<!-- kit:begin id="map-graphical-terrain-dds" at="section:Graphical_terrain" -->
+**Kit note** The `terrain = { }` block of `common/terrain/00_terrain.txt` has 25 entries in 1.19.3. Names repeat (three blocks are called `desert`, two `jungle_blend_18`), which agrees with the wiki ("the name is irrelevant"). Vanilla uses `spawn_city = yes` once (id 13, `urban`) and `perm_snow = yes` twice (ids 16 and 19). Lakes use `texture = 255`. [vanilla-confirmed 1.19.3] `common/terrain/00_terrain.txt`
+
+`atlas0.dds` and `atlas_normal0.dds` are 2048 x 2048 DXT5 with 10 mip levels, `atlas1.dds` is 1024 x 1024 and `atlas2.dds` 512 x 512, all DXT5. That is the 4 x 4 grid of 512 x 512 tiles the wiki describes. [vanilla-confirmed 1.19.3] DDS headers of `map/terrain/atlas*.dds`
+<!-- kit:end id="map-graphical-terrain-dds" -->
 
 ## Height map <a id="Height_map"></a>
 
@@ -717,6 +817,14 @@ If the path connecting the centres of two provinces overlaps at least one river 
 A possible error to encounter is `MAP_ERROR: Palette in rivers.bmp is probably not correct`. This can *entirely be ignored*: the rivers.bmp file will be loaded regardless and, unlike other map errors, this does not prevent the game from loading without debug mode.
 This error is caused by GIMP: editing in Photoshop does not produce this. By default, [the DIB header](#BMP_format) is set to say that the colourmap has 0 colours despite the fact that the colourmap still contains 256 colours. This is to ensure that the game does not spend time reading colours within the BMP file and instead skips straight to the bitmap itself. GIMP instead sets the DIB header to say that there are 256 colours in the palette, which is unexpected by the game. This cannot be fixed within GIMP itself, however, assuming that the rivers bitmap is otherwise correct (Saved in 8-bit indexed mode with BITMAPINFOHEADER) this can also be fixed by opening the rivers bitmap within a hex editor and changing two values: addresses `00 00 00 2F` and `00 00 00 33` should both be `00` instead of `01` as set by GIMP.
 
+<!-- kit:begin id="map-rivers-defines" at="section:Rivers" -->
+**Kit note** The palette in the table above matches vanilla `rivers.bmp` exactly (indices 0 to 11), and its DIB header says 0 colours, as the page says. Pixel indices 254 and 255 are the "comment" colours (7.5 and 4.0 million pixels); indices 5 and 8 are not used in vanilla. [vanilla-confirmed 1.19.3] `map/rivers.bmp`
+
+The defines behind it, all [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`: `RIVER_SMALL_START_INDEX = 0`, `RIVER_SMALL_STOP_INDEX = 6`, `RIVER_LARGE_STOP_INDEX = 11` (matching "0 to 6 small, up to 11 large"), `RIVER_CROSSING_PENALTY = -0.3` and `RIVER_CROSSING_PENALTY_LARGE = -0.6`, `RIVER_CROSSING_SPEED_PENALTY = -0.25` and `..._LARGE = -0.5`, `NSupply.RIVER_RAILWAY_LEVEL = 1` and `NSupply.SUPPLY_FLOW_PENALTY_CROSSING_RIVERS = 0.2`.
+
+The exe also holds "MAP_ERROR: Bitdepth of rivers.bmp does not equal 8" and "MAP_ERROR: Size of the world map [...] is not equal to the size of rivers.bmp". [unverified] Exe strings only.
+<!-- kit:end id="map-rivers-defines" -->
+
 ## Trees <a id="Trees"></a>
 
 *See also: [Entity modding](<Entity modding - Hearts of Iron 4 Wiki.md>)*
@@ -747,9 +855,19 @@ List of trees:
 | 28 | (150, 0, 255) | Sparse Jungle |
 | 29 | (88, 0, 138) | Dense Jungle |
 
+<!-- kit:begin id="map-trees-facts" at="section:Trees" -->
+**Kit note** The palette ids and colours in the table above match vanilla `trees.bmp`. Vanilla pixels use only 0 (empty) and the ids 2, 3, 5, 6, 11, 28 and 29. The models are `pdxmesh` entries named `mapobject_<id>` in `gfx/entities/trees.gfx` (7 entries: 2, 3, 5, 6, 11, 28, 29), for example `mapobject_5` with `file = "gfx/models/mapitems/trees/forest_dunge_blend.mesh"` and `scale = 1`. [vanilla-confirmed 1.19.3] `map/trees.bmp`, `gfx/entities/trees.gfx`
+
+`map/default.map` has a line `tree = { 3 4 7 10 }` ("which indices in trees.bmp palette should count as trees for automatic terrain assignment"). Those four ids are not the ids the vanilla bitmap uses, so do not derive the model ids from it. [vanilla-confirmed 1.19.3] `map/default.map`
+<!-- kit:end id="map-trees-facts" -->
+
 ## Colour maps <a id="Colour_maps"></a>
 
 The colourmap files define the overall colour tint applied to the map. Without a colourmap file, all land will appear the same overall colour, regardless of terrain type. They should be saved in the .DDS format, using the 8.8.8.8 ARGB 32-bit profile with no mipmaps.
+
+<!-- kit:begin id="map-colourmap-formats" at="section:Colour_maps" -->
+**Kit correction** Only `colormap_rgb_cityemissivemask_a.dds` follows the "8.8.8.8 ARGB, 32-bit, no mipmaps" rule: it is 2816 x 1024, uncompressed 32-bit, one mip level. The water colour maps are DXT5: `colormap_water_0.dds` is 2816 x 1024, `_1` 1408 x 512 and `_2` 704 x 256, all without mip levels. [vanilla-confirmed 1.19.3] DDS headers of `map/terrain/colormap_*.dds`
+<!-- kit:end id="map-colourmap-formats" -->
 
 ### Water <a id="Water"></a>
 
@@ -783,6 +901,12 @@ State ID (integer); building ID (string); X position; Y position; Z position; Ro
 It is preferable to generate the building models in the building section in the nudger, rather than filling it out manually. However, note that the game will crash if the currently-existing `/Hearts of Iron IV/map/buildings.txt` file is entirely empty. The content of the file doesn't matter for this, as long as it's not entirely empty.
 
 **If some naval base or floating harbour is missing a definition within this file, the game will crash** once any province with one would be evaluated by AI or tried to be used as a naval base. This represents as a crash with the [client_ping or hourly_ping last read file](<Troubleshooting - Hearts of Iron 4 Wiki.md#Crash_data_log>) a few hours into the game, fixed by turning off AI. This is because the building definition is used not only for the model of the naval base, but also for assigning the sea province that the port goes out into. If there is no definition, the game fails at evaluating the spot where the navy would be placed, resulting in an infinite loop that eats the RAM and the CPU leading to a crash.
+
+<!-- kit:begin id="map-buildings-ids" at="section:Buildings" -->
+**Kit note** The second column of `map/buildings.txt` is a building id or, for a building that sets `spawn_point = X` in `common/buildings/`, the spawn point name `X`; the list of 22 ids and the per-building details are in [Building modding](<Building modding - Hearts of Iron 4 Wiki.md#Models>). In vanilla all 2362 `naval_base_spawn` rows and all 2334 `floating_harbor` rows have a sea province in the last column, and all 10154 `supply_node` rows have 0. The file has 66664 rows. [vanilla-confirmed 1.19.3] `map/buildings.txt`
+
+The exe prints ": map building location is not over the land ..." for a row whose position is not over a land province. [unverified] Exe string only.
+<!-- kit:end id="map-buildings-ids" -->
 
 ## Unit model and victory point positions <a id="Unit_model_and_victory_point_positions"></a>
 
@@ -846,6 +970,10 @@ List of unitstacks types:
 | 37 | Disembarck 7 RG | Different numbers represent different needed levels of rotation. RG stands for regrouping |
 | 38 | Victory point |  |
 
+<!-- kit:begin id="map-unitstacks-facts" at="section:Unit_model_and_victory_point_positions" -->
+**Kit note** Vanilla `unitstacks.txt` has 265355 rows and uses all 39 types 0 to 38. Type 38 (victory point) has 13281 rows. The exe prints "map/unitstacks.txt: Invalid province id: ... at line:" for a bad province id. [vanilla-confirmed 1.19.3] `map/unitstacks.txt`. [unverified] for the exe string.
+<!-- kit:end id="map-unitstacks-facts" -->
+
 ## Adjacencies <a id="Adjacencies"></a>
 
 The adjacencies file is `/Hearts of Iron IV/map/adjacencies.csv`. This decides the relationships between borders of provinces, allowing to create borders between non-directly adjacent provinces (such as strait crossings), block the border between two directly adjacent provinces (making it impassable), or otherwise set up adjacency rules that make crossing the border limited (such as the Gibraltar strait).
@@ -872,6 +1000,12 @@ Since the impassable type can't go 'through' a province, does not have a start o
 X and Y positions decide the start and end of the red line created with a strait crossing between two land provinces. These use [the X and Z coordinates in the 3D coordinate system](#Coordinate_system). If set to -1, then the position will be calculated automatically, as the middles of the starting and ending provinces.
 
 The last line of the file must be `-1;-1;-1;-1;-1;-1;-1;-1;-1`. This is used as an indicator that the file should stop being read, and any adjacency entries later in the file would get ignored. Even if the file is otherwise empty, this line should still be present to avoid hangup on loading.
+
+<!-- kit:begin id="map-adjacency-facts" at="section:Adjacencies" -->
+**Kit correction** The real file has a header row, which the format line above does not show: `From;To;Type;Through;start_x;start_y;stop_x;stop_y;adjacency_rule_name;Comment`. The closing line is `-1;-1;;-1;-1;-1;-1;-1;-1` (note the empty third field, and a trailing space in the vanilla file), not nine `-1`. A line starting with `#` is a comment (one in vanilla). [vanilla-confirmed 1.19.3] `map/adjacencies.csv` (253 lines)
+
+Vanilla has 251 entries: 151 `sea`, 93 `impassable`, and 7 with an empty type. The 7 empty-type entries are strait entries between provinces that already border each other: they set `Through` to -1 and only name a rule (`GIBRALTAR_STRAIT` twice, `DANISH_BELTS_STRAIT`, `BOSPHORUS_STRAIT`, `DARDANELLES_STRAIT`, `HORMUZ_STRAIT`, `OTRANTO_STRAIT`). The sea entries that name a rule are `PANAMA_CANAL`, `KIEL_CANAL` and `SUEZ_CANAL`. The file is UTF-8 without BOM with LF line endings. [vanilla-confirmed 1.19.3] `map/adjacencies.csv`
+<!-- kit:end id="map-adjacency-facts" -->
 
 ### Adjacency rules <a id="Adjacency_rules"></a>
 
@@ -935,6 +1069,17 @@ adjacency_rule =
 }
 ```
 
+<!-- kit:begin id="map-adjacency-rule-facts" at="section:Adjacency_rules" -->
+**Kit correction** The rule names are referenced from `map/adjacencies.csv` (plural), not `adjacency.csv`. The vanilla file `map/adjacency_rules.txt` starts with `# A` (ASCII, no BOM) and defines 9 rules: `SUEZ_CANAL`, `GIBRALTAR_STRAIT`, `DANISH_BELTS_STRAIT`, `PANAMA_CANAL`, `BOSPHORUS_STRAIT`, `DARDANELLES_STRAIT`, `KIEL_CANAL`, `HORMUZ_STRAIT`, `OTRANTO_STRAIT`. [vanilla-confirmed 1.19.3] `map/adjacency_rules.txt`, `map/adjacencies.csv`
+
+**Kit addition** Keys the page does not describe, from the header comment of the vanilla file. All rows: [vanilla-confirmed 1.19.3] `map/adjacency_rules.txt`.
+
+- Optional triggers `is_enemy`, `is_friend` and `is_neutral` are checked in that order and can override the relation: with `is_friend` false the neutral rule is used instead of the friend rule, and so on (the comment at the top of the file spells out the order). Vanilla uses only `is_friend`, in `BOSPHORUS_STRAIT` and `DARDANELLES_STRAIT`, with a trigger of the form `TUR_is_friend_for_bosphorus = yes`.
+- Each of the four relation blocks `contested`, `enemy`, `friend`, `neutral` has `army`, `navy`, `submarine` and `trade` (36 blocks of each key in vanilla).
+- `is_disabled` is used in 5 of the 9 rules, with a `tooltip` key; `has_country_flag`, `has_global_flag` and `has_dynamic_modifier` (with `scope` and `modifier`) appear inside these trigger blocks.
+- `required_provinces`, `icon` and `offset` are present in all 9 rules; `offset` is three numbers (vanilla example `offset = { -31.0 0.0 -2.0 }`).
+<!-- kit:end id="map-adjacency-rule-facts" -->
+
 ## Supply <a id="Supply"></a>
 
 *See also: [Nudger § Supply](<Nudger - Hearts of Iron 4 Wiki.md#Supply>)*
@@ -963,7 +1108,15 @@ The amount of provinces is how many provinces the railway lasts.
 The list of provinces is a whitespace character-separated list of province IDs on which this railway goes.
 A valid railway definition is the following: `4 4 693 1444 12 11`
 
+<!-- kit:begin id="map-supply-facts" at="section:Supply" -->
+**Kit note** The formats match vanilla. `map/supply_nodes.txt` has 727 rows, all level 1 (the wiki's limit of 1 holds), and `map/railways.txt` has 909 rows with levels 1 to 4 in use (the define `NSupply.MAX_RAILWAY_LEVEL` is 5), whose second number is the count of provinces listed after it in every row. Both files are LF-only, and the supply rows are space separated with a trailing space. The supply system around them, including the state key `local_supplies` and the defines, is described in [Supply areas modding](<Supply areas modding - Hearts of Iron 4 Wiki.md>). [vanilla-confirmed 1.19.3] `map/supply_nodes.txt`, `map/railways.txt`, `common/defines/00_defines.lua`
+<!-- kit:end id="map-supply-facts" -->
+
 ### Supply areas (For versions prior to 1.11) <a id="Supply_areas_.28For_versions_prior_to_1.11.29"></a><a id="Supply_areas_(For_versions_prior_to_1.11)"></a>
+
+<!-- kit:begin id="map-supply-areas-1193" at="heading:Supply_areas_.28For_versions_prior_to_1.11.29" -->
+**Kit note** The deprecation note below is still accurate for 1.19.3: the folder `map/supplyareas/` is not listed in `default.map`, and the exe has no path string for it. The game still ships one file there (`1-SupplyArea.txt`, a single area with `value=12` over states 5, 85, 763 and 807). Do not create supply areas for a new map; see [Supply areas modding](<Supply areas modding - Hearts of Iron 4 Wiki.md>). [vanilla-confirmed 1.19.3] `map/supplyareas/1-SupplyArea.txt`, `map/default.map`. [unverified] for the exe, which was searched for strings only.
+<!-- kit:end id="map-supply-areas-1193" -->
 
 **Note: With the release of 1.11 and No Step Back, supply areas are deprecated and instead the initial logistics/supply system is defined through supply_nodes.txt and railways.txt; see previous section. For further information on updating your map from 1.10 to 1.11, see this post.**
 
@@ -1030,9 +1183,52 @@ type = {
 
 The nudge can edit existing ambient objects, but it is unable to create new ones: they have to be created manually first.
 
+<!-- kit:begin id="map-ambient-facts" at="section:Ambient_objects" -->
+**Kit correction** Vanilla `ambient_object.txt` has 6 `type = { }` blocks: `ambient_wind_entity`, `ambient_water_entity`, `frame_border_entity`, `frame_border_bottom_entity`, `frame_border_logo_entity` and `chinese_wall_entity`. The `frame_border_*` entities are most likely the map frame the page mentions; which one is the northern or southern border is not stated in the files. [unverified] The `type` value is quoted (`type="ambient_wind_entity"`), and all six entities are defined in `gfx/entities/mapitems.asset`. [vanilla-confirmed 1.19.3] `map/ambient_object.txt`, `gfx/entities/mapitems.asset`
+
+Keys in use: `type`, `use_animation` (always `no`), `always_visible` (5 blocks), `scale` (values 0.2, 10, 100, 100, 300) and `object = { name position rotation }` (position and rotation are three numbers). `time_duration` from the list above does not appear in the vanilla file, but the exe knows the key. [vanilla-confirmed 1.19.3] `map/ambient_object.txt`. [unverified] for the exe.
+<!-- kit:end id="map-ambient-facts" -->
+
 ## References <a id="References"></a>
 
 When editing [Defines](<Defines - Hearts of Iron 4 Wiki.md>), make sure to use an override file rather than copying the entire file, as that can cause game crashes when new defines get added, which can happen even in 'minor' updates.
+
+<!-- kit:begin id="map-default-map-keys" at="bottom" -->
+## Kit: default.map, cities.txt and the map error texts <a id="kit-map-default-map-keys"></a>
+
+`map/default.map` in 1.19.3. All rows: [vanilla-confirmed 1.19.3] `map/default.map`.
+
+| Key | Vanilla value |
+| --- | --- |
+| `definitions` | `"definition.csv"` |
+| `provinces` | `"provinces.bmp"` |
+| `positions` | `"positions.txt"` (the file is empty) |
+| `terrain` | `"terrain.bmp"` |
+| `rivers` | `"rivers.bmp"` |
+| `heightmap` | `"heightmap.bmp"` |
+| `tree_definition` | `"trees.bmp"` |
+| `continent` | `"continent.txt"` |
+| `adjacency_rules` | `"adjacency_rules.txt"` |
+| `adjacencies` | `"adjacencies.csv"` |
+| `ambient_object` | `"ambient_object.txt"` |
+| `seasons` | `"seasons.txt"` |
+| `tree` | `{ 3 4 7 10 }`, a list of palette ids |
+| `climate` | commented out (`#climate = "climate.txt"`) |
+
+`map/cities.txt` starts with `types_source = "map/cities.bmp"`, `pixel_step_x = 2` and `pixel_step_y = 2`, then 4 `city_group = { color_index = N density = X building = { distance = D mesh = { "<mesh name>" } } ... }` blocks. `color_index` is the palette index in `cities.bmp`, `density` the share of pixels that get a model, and the `building` entries are sorted by growing `distance` from the edge of the urban area. [vanilla-confirmed 1.19.3] `map/cities.txt`
+
+Other map error texts still in `hoi4.exe` (strings only, nothing was run). [unverified] Exe strings only.
+
+| Text (fragment) | Looks like |
+| --- | --- |
+| "Strategic region ... is fractioned! The following provinces are separated from the rest" | a region whose provinces are not connected |
+| "The land province ... has no strategic region assigned" | a land province missing from `map/strategicregions/` |
+| "Definition for state id ... belonging to different strategic areas" | a state split over two regions |
+| "Invalid adjacency rule name" | a rule name in `adjacencies.csv` that `adjacency_rules.txt` lacks |
+| "Province is invalid or added twice to the same or different rules" | a duplicate in `required_provinces` |
+| "no air base site defined for state", "no rocket site defined for state", "no gun emplacement defined for state" | a state without the matching rows in `map/buildings.txt` |
+| "Errors while reading cities.txt" | a broken `cities.txt` |
+<!-- kit:end id="map-default-map-keys" -->
 
 ---
 

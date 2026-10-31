@@ -2,8 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Country creation", revision 71937, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="none" checked="never" -->
-**Kit review:** not yet checked against the installed game. Treat version-specific statements on this page as unverified until it is.
+<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="71937" sources="common/country_tags/ common/countries/ common/graphicalculturetype.txt history/countries/ history/units/ gfx/flags/ common/defines/00_graphics.lua common/factions/ localisation/english/ localisation/languages.yml documentation/effects_documentation.md" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all 439 tags in `common/country_tags/`, the 364 history files in `history/countries/`, the OOB selection pattern, the `common/countries/` files, and the TGA headers of every file in `gfx/flags/` (2203 standard, 2203 medium and 2226 small flags).
+Kit blocks added: tag counts and a warning that `SCO` already exists in vanilla, country file and colour facts, the vanilla OOB-by-DLC pattern with counts, effect corrections (`set_autonomy`, `create_faction`, `set_stability`, `set_politics`), flag size, header and naming facts, the language list, and the placeholder status of the example character.
+The "obsolete" marker is `obsolete = yes` inside `create_equipment_variant`, a valid key; no section is stale.
+Gaps left: the dynamic-tag counts the wiki gives for medium and small flags (about 10 and 20) and the date-block rule ("strictly later") are in no game file and were not tested.
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -69,6 +72,16 @@ There are some country tags that must be avoided, as they will cause in-game con
 
 A file can have `dynamic_tags = yes` within of itself, which marks every country defined in that file afterwards to be marked as a dynamic country. A dynamic country is one that doesn't have explicit data defined, but instead copies it on the fly from an original country that it branches off. This is most commonly used within civil wars, with [the effect to start one](<Effects - Hearts of Iron 4 Wiki.md>) auto-generating one. **If the mod doesn't have enough dynamic countries defined, the game will crash** if there is a sufficient amount of non-dynamic countries, with [the last read file being marked as map/cities.txt or a savegame](<Troubleshooting - Hearts of Iron 4 Wiki.md#Crash_data_log>) (Though that crash is not necessarily caused by the lack of dynamic countries).
 
+<!-- kit:begin id="country-tag-counts" at="section:Tag" -->
+**Kit note** Tags in 1.19.3. All rows: [vanilla-confirmed 1.19.3] `common/country_tags/00_countries.txt`, `common/country_tags/zz_dynamic_countries.txt`.
+
+- 439 tags, and every one has exactly 3 characters: 364 static tags in `00_countries.txt` and 75 dynamic tags (`D01` to `D75`) in `zz_dynamic_countries.txt`, after a line `dynamic_tags = yes`. No static tag contains a digit or a lowercase letter; only the dynamic ones carry digits.
+- Each static tag has exactly one file in `history/countries/` (364 of 364); dynamic tags have none.
+- Tags share country files: 439 tags use 404 distinct files in `common/countries/`. 35 of the 75 dynamic tags reuse the file of an earlier one (for example `D16 = "countries/D01.txt"`, `D21 = "countries/D01.txt"`) and 40 have their own file. That is the "many tags, one file" case the page describes.
+- `SCO` is already defined in vanilla (`SCO = "countries/Scotland.txt"`, with `history/countries/SCO - Scotland.txt`). The wiki uses `SCO` as an example for a new country; in a mod pick a tag that vanilla does not use, or you override Scotland instead of adding a country.
+- The trigger-like names in the table above (`NOT`, `AND`, `TAG`, `OOB`, `LOG`, `NUM`, `RED`) are not used as tags by vanilla. [vanilla-confirmed 1.19.3] `common/country_tags/`
+<!-- kit:end id="country-tag-counts" -->
+
 ## Country file <a id="Country_file"></a>
 
 The country tag list refers to a file in the `<yourmod>/common/countries/` folder. The file sets the graphical culture and the default colour which may be overwritten by a `colors.txt` entry. An example of a file is as such:
@@ -103,6 +116,15 @@ In HSV, hue, saturation, and value are each on the scale from 0 to 1, using deci
 After reading the colour from the file, the saturation and value of the colour will be multiplied by 0.6 and 0.8 respectively by default[1]. This means the colour appearing in-game will be slightly darker and less saturated (closer to a shade of grey) than defined in the file. In order to have a country colour in HSV have a higher saturation or value than 0.6 or 0.8 respectively, a value larger than 1 can be used as long as it'll end up between 0 and 1 after the application of modifiers. For example, a pure red country colour can be simulated in HSV with `color = hsv { 0 1.66 1.25 }`. After applying the offsets, this will result in a saturation of 0.996 and a value of 1, being as close to pure red as possible.
 For RGB, this calculation is harder: "Saturation" defines the difference between the colour with the largest value and the others (changing it does not change the largest colour's value), while "Value" manifests in multiplying every colour's value by that. For replicating a desired value, let `V_{M}` represent the maximum value of colour. As such, each colour's value, originally `V`, by default should be `{\frac {5}{12}}\left(5V-2V_{M}\right)`. With arbitrary Value/Saturation modifiers (represented with `M_{V}` and `M_{S}`), it's `{\frac {1}{M_{V}}}\left({\frac {V}{M_{S}}}+V_{M}*{\frac {M_{S}-1}{M_{S}}}\right)`. For example, pure green (i.e. what `rgb { 0 255 0 }` intends), would be represented well with `rgb { -107 425 -107 }` plugging numbers into that formula. Indeed, entering this value into the game, the result is exactly pure green, far closer to it than `rgb { 0 255 0 }` or `rgb { 0 425 0 }` are.
 These modifiers do not get applied when using the `tag_color` console command.
+
+<!-- kit:begin id="country-file-facts" at="section:Country_file" -->
+**Kit note** What the 440 vanilla country files in `common/countries/` contain. All rows: [vanilla-confirmed 1.19.3] `common/countries/*.txt`, `common/graphicalculturetype.txt`.
+
+- Keys: `graphical_culture`, `graphical_culture_2d` and `color`. The 75 files `D01.txt` to `D75.txt` have only `color`. Vanilla values for `graphical_culture`: `asian_gfx` (88), `african_gfx` (64), `western_european_gfx` (62), `eastern_european_gfx` (57), `southamerican_gfx` (38), `middle_eastern_gfx` (32), `commonwealth_gfx` (22), `sami_gfx` (1). `common/graphicalculturetype.txt` lists 16 names (the `_gfx` set plus the `_2d` set). One country file (`Guangxi.txt`) uses `asian_european_gfx`, which that list does not contain.
+- `color` is written without a colour model in 314 country files (`color = { 106 119 89 }`) and with one in 126 (`color = rgb { 232 232 0 }`). The model requirement the wiki gives is about `colors.txt` entries: 302 of its 306 entries use `rgb` and 4 use `HSV` or `hsv` (both spellings are accepted).
+- `common/countries/colors.txt` entries are `TAG = { color = rgb { ... } color_ui = rgb { ... } }`. `common/countries/cosmetic.txt` has the same shape for cosmetic tags (for example `RAJ_UK`).
+- The two modifiers behind the footnote live in `NGraphics` in `common/defines/00_graphics.lua` (not in `00_defines.lua`): `COUNTRY_COLOR_SATURATION_MODIFIER = 0.6` and `COUNTRY_COLOR_BRIGHTNESS_MODIFIER = 0.8`.
+<!-- kit:end id="country-file-facts" -->
 
 ## History <a id="History"></a>
 
@@ -149,6 +171,29 @@ if = {
 ```
 
 Note that `else` only works in its nested form in history files.
+
+<!-- kit:begin id="country-history-oob-pattern" at="section:Order_of_battle" -->
+**Kit note** How vanilla history files choose an order of battle. All rows: [vanilla-confirmed 1.19.3] `history/countries/*.txt` (364 files) and `history/units/` (609 files).
+
+- Plain countries write `oob = "ALB_1936"` once. Countries whose army depends on a DLC use `set_oob`, `set_naval_oob` and `set_air_oob` inside a DLC check. Key counts (active lines, any indentation): `set_air_oob` 188, `oob` 165, `set_naval_oob` 128, `set_oob` 104, `load_oob` 4 (in 3 files), and `OOB` in capitals 2, so vanilla itself writes the key in both cases.
+- A DLC check selects the file with a name suffix. A text scan (nearest `has_dlc` within 8 lines above the line) puts about 156 of the `set_air_oob` lines under "By Blood Alone" (files `<TAG>_1936_air_bba` and `_air_legacy`), about 110 of the `set_naval_oob` lines under "Man the Guns" (`_naval_mtg` and `_naval_legacy`), and about 50 of the `set_oob` lines under "No Step Back" (`_nsb`). `set_oob` is also used with "No Compromise, No Surrender" (about 21), "Gotterdammerung" (about 8), "La Resistance", "Trial of Allegiance", "By Blood Alone" and "Graveyard of Empires". In `history/units/` there are 31 files with `_nsb`, 57 with `_naval_mtg`, 62 with `_naval_legacy`, 89 with `_air_bba` and 89 with `_air_legacy`.
+- The vanilla form of the if/else, with `IF` and `ELSE` in capitals and the `ELSE` nested inside (the wiki's note that `else` only works nested):
+
+```text
+oob = "ARG_1936"
+IF = {
+	limit = { has_dlc = "Man the Guns" }
+	set_naval_oob = "ARG_1936_naval_mtg"
+	ELSE = {
+		set_naval_oob = "ARG_1936_naval_legacy"
+	}
+}
+```
+
+- 149 of the 364 history files name no order of battle at all (countries that only appear later or have no army), so the "buildings break without an OOB" rule matters for countries that exist at the start. 5 of them (`DON`, `KUB`, `KUM`, `KUR`, `RUT`) have a file with their prefix in `history/units/`. 64 of the 609 unit files are never named in a country history; events load such files with `load_oob` (for example `events/USA.txt` loads `ENG_destroyers_for_bases`). [vanilla-confirmed 1.19.3] `history/countries/`, `history/units/`
+
+`set_oob`, `set_naval_oob` and `set_air_oob` replace the OOB registered under the same key (no key, `naval`, `air`). `load_oob` loads the file at once. [docs] `documentation/effects_documentation.md`
+<!-- kit:end id="country-history-oob-pattern" -->
 
 ### Effects <a id="Effects"></a>
 
@@ -213,6 +258,23 @@ if = {
 ```
 
 `recruit_character = TAG_character_name` is used to recruit [the specified character](#Starting_characters). This includes country leaders, commanders, admirals, and advisors. Country leaders that are recruited *after* setting political information can fail to appear, so it's recommended to recruit them before setting any political information. If multiple country leaders fall under the same political party, the game will place the first-recruited one as its leader. The recruitment will fail if the effect is placed as the last line in the file: there must be at least one line after the recruitment, even if it's empty.
+
+<!-- kit:begin id="country-history-effect-corrections" at="section:Effects" -->
+**Kit correction** Differences between the page and the 1.19.3 documentation or vanilla history files. Tags per row.
+
+| Page says | 1.19.3 |
+| --- | --- |
+| `set_stability = 0.7` (scale 0 to 1) | Vanilla history files use fractions: the 364 files never go above 0.9. The effect documentation's own example says `set_stability = 80`, which does not match vanilla use. [vanilla-confirmed 1.19.3] `history/countries/`. [docs] `documentation/effects_documentation.md` |
+| `set_autonomy = { target = SCO autonomous_state = autonomy_integrated_puppet }` | The documentation names the key `autonomy_state` and adds `freedom_level`, `end_wars`, `end_civil_wars`. Vanilla history: `autonomous_state` 23 times, `autonomy_state` once, `target` 24, `freedom_level` 16. [docs] `documentation/effects_documentation.md`. [vanilla-confirmed 1.19.3] `history/countries/` |
+| `create_faction = key` | The documentation marks `create_faction` as deprecated and recommends `create_faction_from_template`. Vanilla history uses `create_faction_from_template = faction_template_axis` and similar in 5 files (`CHI`, `ENG`, `GER`, `SOV`, `USA`) and no plain `create_faction`. [docs] `documentation/effects_documentation.md`. [vanilla-confirmed 1.19.3] `history/countries/` |
+| `set_politics = { ruling_party last_election election_frequency elections_allowed }` | The keys are right (417 to 422 uses each). The documentation also lists `long_name` and `name` to rename the party (2 vanilla uses of `name`), and does not list `last_election` or `election_frequency`. [vanilla-confirmed 1.19.3] `history/countries/`. [docs] `documentation/effects_documentation.md` |
+| `set_popularities` "if it doesn't add up to 100 it fails" | The documentation says the values must add up to exactly 100, and shows decimals (`54.5` and `45.5`). 415 vanilla uses. [docs] `documentation/effects_documentation.md`. [vanilla-confirmed 1.19.3] `history/countries/` |
+| `set_technology = { ... }` | also accepts `popup = no` inside the block. [docs] `documentation/effects_documentation.md` |
+| `create_equipment_variant` keys | the documentation also has `allow_without_tech`, `parent_version`, `mark_older_equipment_obsolete` and `role_icon_index`; `obsolete = yes` is a valid key (default no). [docs] `documentation/effects_documentation.md` |
+| `capital = 121` as a history key | present in 363 of 364 vanilla files (not in `PRC - ComChina.txt`). The effect `set_capital = { state = N remember_old_capital = no }` also exists in country scope. [vanilla-confirmed 1.19.3] `history/countries/`. [docs] `documentation/effects_documentation.md` |
+
+`recruit_character`, `add_ideas`, `set_research_slots` (values 2, 3, 4, 5 in vanilla; 3 most often) and `add_to_tech_sharing_group` (8 uses) are used as the page says. [vanilla-confirmed 1.19.3] `history/countries/`
+<!-- kit:end id="country-history-effect-corrections" -->
 
 #### Diplomacy-related effects <a id="Diplomacy-related_effects"></a>
 
@@ -485,6 +547,20 @@ For the purpose of this mode, place them in `<yourmod>/gfx/flags`, each flag siz
 
 For medium and small flags to be generated, the game requires there to be a sufficient amount of dynamic country tags, ~10 for medium flags to work and ~20 for small flags to work. If the requirement isn't met, the medium and small flags will appear as transparent for every single country even if they're saved properly, without anything related in `logs/error.log`.
 
+<!-- kit:begin id="country-flag-facts" at="section:Flag" -->
+**Kit addition** What the vanilla flag files look like, from the TGA headers. All rows: [vanilla-confirmed 1.19.3] `gfx/flags/`, `gfx/flags/medium/`, `gfx/flags/small/`.
+
+| Folder | Files | Size | Headers |
+| --- | --- | --- | --- |
+| `gfx/flags/` | 2203 | 82 x 52 | 2187 uncompressed 32-bit (2 with the top-left origin bit set); 9 uncompressed 24-bit; 1 uncompressed 16-bit; 6 run-length encoded (type 10, two of them 24-bit) |
+| `gfx/flags/medium/` | 2203 | 41 x 26 | 2187 uncompressed 32-bit (215 with the top-left origin bit set); 7 uncompressed 24-bit; 9 run-length encoded |
+| `gfx/flags/small/` | 2226 | 10 x 7 (one file, `FRA_VICHY_democratic.tga`, is 10 x 6) | 2216 uncompressed 32-bit; 7 uncompressed 24-bit; 3 run-length encoded |
+
+So the "no RLE" and "32-bit only" rules on this page are not met by every vanilla file; the engine reads these. What the game does with a new file that breaks the rules (the slow-down warning for 24 bit, flipped images) was not tested. [unverified] The sizes match the defines `COUNTRY_FLAG_TEX_WIDTH = 82`, `COUNTRY_FLAG_TEX_HEIGHT = 52`, the `_MEDIUM_` pair 41 x 26 and the `_SMALL_` pair 10 x 7 in `NGraphics` (`common/defines/00_graphics.lua`), which also has `COUNTRY_FLAG_TEX_MAX_SIZE = 256`, `COUNTRY_FLAG_MEDIUM_TEX_MAX_SIZE = 1024` and `COUNTRY_FLAG_SMALL_TEX_MAX_SIZE = 256`, each with the comment "Tweak dependly on amount of countries". [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`. These are probably the sizes of the textures the flags are packed into, which would explain the wiki's remark about many tags; that reading is [unverified].
+
+Naming in vanilla: the four ideology groups `neutrality`, `democratic`, `communism` and `fascism` are the suffixes (`ABK_communism.tga`, `ABK_democratic.tga`). Of the 364 static tags, 302 have all four group flags in `gfx/flags/`, 77 have a plain `TAG.tga` (8 of those have no ideology flag), and the 75 dynamic tags have no flag file. The medium folder has 302 tags with all four files too, the small folder 244. Cosmetic tags and other named countries use the same pattern with a longer stem (`gojjam_democratic.tga`; 351 stems in the standard folder do not start with a vanilla tag), and tags can have extra variants (`PHI_asean_tag_communism.tga`; 452 files of that kind). The three folders do not hold the same names: 112 small flags have no standard flag of the same name, and a few standard flags (for example `PLACEHOLDER.tga`) have no medium flag. [vanilla-confirmed 1.19.3] `gfx/flags/`
+<!-- kit:end id="country-flag-facts" -->
+
 ## Name <a id="Name"></a>
 
 *See also: [Localisation](<Localisation - Hearts of Iron 4 Wiki.md>)*
@@ -547,6 +623,12 @@ These include:
 This can *only* be used in country names, regardless if it's an automatically-applying name or a [cosmetic tag](<Cosmetic tag modding - Hearts of Iron 4 Wiki.md>).
 
 These localisation keys may unintentionally make the country name be something unexpected. For example, the base game ![Flag of Turkey](media/country-creation-hearts-of-iron-4-wiki_1d4220f262__img19.png) Turkish national spirit `TUR_liberalism` gets used as the country's name when it gets a leader with the `liberalism` ideology type, making it have the name of "Liberalism". To find such instances, [most text editors have capacity to search entire folders](<Modding - Hearts of Iron 4 Wiki.md#Searching_multiple_files>). By searching for the country's unintended name surrounded by quotes (in this case, `"Liberalism"`) in all of the loaded localisation files (usually the mod and the base game), the file with the root cause can be found to know the localisation key. From this key, every instance of the database entry with the overlapping name can be found and edited with another folder search, with the localisation key either deleted by copying over the entire file if necessary or [replaced without copying the file](<Localisation - Hearts of Iron 4 Wiki.md#Replacing>).
+
+<!-- kit:begin id="country-name-languages" at="section:Name" -->
+**Kit correction** The language list is out of date. `localisation/languages.yml` in 1.19.3 names ten: `l_english`, `l_braz_por`, `l_french`, `l_german`, `l_polish`, `l_russian`, `l_spanish`, `l_japanese`, `l_simp_chinese` and `l_korean`, and the folders `localisation/korean/` and `localisation/simp_chinese/` exist next to the others. The page's "limited to" list misses Korean and Simplified Chinese. [vanilla-confirmed 1.19.3] `localisation/languages.yml`, `localisation/` folder listing
+
+Vanilla writes country names in `localisation/english/countries_l_english.yml` (for example `GER_fascism`, `GER_fascism_DEF`, `GER_fascism_ADJ`) and the plain tag name `GER: "Germany"`, and party names as `GER_communism_party` and `GER_communism_party_long`. Subject name templates exist in `countries_cosmetic_l_english.yml` (`INS_subject: "$OVERLORDADJ$ East Indies"`). [vanilla-confirmed 1.19.3] `localisation/english/`
+<!-- kit:end id="country-name-languages" -->
 
 ### Other localisation <a id="Other_localisation"></a>
 
@@ -615,6 +697,10 @@ recruit_character = SCO_ronald_mcdonald
 
 If multiple country leaders fall under the same political party, the game will place the first-recruited one as its leader. Since `set_politics = { ... }` forces a leader of the specified ideology group to come to power, any characters recruited after a `set_politics` block will not immediately become country leader since the country already has one: **recruitment of the intended country leader must be before setting politics**.
 Corps commanders, field marshals, admirals, and advisors are also regarded as characters in the in-game code, and are added similarly: [defined in the characters file](<Character modding - Hearts of Iron 4 Wiki.md>) and then recruited in `/Hearts of Iron IV/history/countries/TAG*.txt`
+
+<!-- kit:begin id="country-character-placeholders" at="section:Starting_characters" -->
+**Kit note** `SCO_ronald_mcdonald`, the trait `scary_clown` and the sprite `GFX_SCO_ronald_mcdonald` in this example are placeholders. None of them exists in vanilla (no match in `common/`, `interface/` or `localisation/`), so a mod has to define the character, the trait and the sprite itself; `recruit_character = SCO_ronald_mcdonald` fails when the character does not exist. [vanilla-confirmed 1.19.3] Search of the installed game. [unverified] for the failure mode (not run). The ideology `socialism` used in the example is a type defined in `common/ideologies/00_ideologies.txt`. [vanilla-confirmed 1.19.3] `common/ideologies/00_ideologies.txt`
+<!-- kit:end id="country-character-placeholders" -->
 
 ## Order of battle <a id="Order_of_battle_2"></a>
 
