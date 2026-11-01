@@ -36,6 +36,7 @@ Skill maintenance rules:
 - If a skill update affects subagent routing, mention the AGENTS.md or subagent-skill update that the parent should make.
 - When a skill's workflow gains or changes a tool, update that skill in the same change, document the tool in `.tools/README.md` or its package README, and point the skill at the check and its limits instead of copying the tooling policy in AGENTS.md section 4a.
 - A helper used by one skill lives in that skill's `tools/` or `scripts/` folder; never copy a tool between `.tools/`, `.claude/`, `.agents/` or another runtime folder.
+- When a skill rule rests on the offline wiki, link the snapshot page and section, and correct generic wiki errors in that page's kit blocks (`.tools/wiki/README.md`) rather than only in the skill. After a game update, run `python -B .tools/wiki/wiki_status.py`; re-check each flagged page together with the skills that cite it, then record the page reviews.
 
 Skill packaging note:
 - When the parent asks for a skill output package, create both folder `SKILL.md` files and flat skill-name markdown copies in the output package.

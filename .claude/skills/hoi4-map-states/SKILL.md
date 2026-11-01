@@ -37,16 +37,16 @@ Installed documentation is more authoritative than the wiki; where they disagree
 
 | Topic | Authoritative text | Vanilla precedent |
 | --- | --- | --- |
-| Map folder overview, BMP rules, provinces, terrain, adjacencies, supply files | `WIKI/Map modding - Hearts of Iron 4 Wiki.md` | `GAME/map/` |
-| State file keys, history block, state categories, building list | `WIKI/State modding - Hearts of Iron 4 Wiki.md` | `GAME/history/states/1-France.txt` (minimal), `116-Malta.txt` (strategic_province_location), `1022 - Interior Borneo.txt` (impassable enclave), `1032 - Yanan.txt` (IF with has_dlc inside history) |
-| Strategic region file, weather periods | `WIKI/Strategic region modding - Hearts of Iron 4 Wiki.md` | `GAME/map/strategicregions/1-Southern England.txt`, `100-Red Sea.txt` |
-| Building definition fields, slots, spawn points | `WIKI/Building modding - Hearts of Iron 4 Wiki.md` | `GAME/common/buildings/00_buildings.txt`, `01_landmark_buildings.txt` |
+| Map folder overview, BMP rules, provinces, terrain, adjacencies, supply files | `WIKI/map_modding.md` | `GAME/map/` |
+| State file keys, history block, state categories, building list | `WIKI/state_modding.md` | `GAME/history/states/1-France.txt` (minimal), `116-Malta.txt` (strategic_province_location), `1022 - Interior Borneo.txt` (impassable enclave), `1032 - Yanan.txt` (IF with has_dlc inside history) |
+| Strategic region file, weather periods | `WIKI/strategic_region_modding.md` | `GAME/map/strategicregions/1-Southern England.txt`, `100-Red Sea.txt` |
+| Building definition fields, slots, spawn points | `WIKI/building_modding.md` | `GAME/common/buildings/00_buildings.txt`, `01_landmark_buildings.txt` |
 | Strategic locations (extra provincial building cap) | `GAME/common/strategic_locations/documentation.md` | `GAME/common/strategic_locations/strategic_locations.txt` |
 | Scripted map modes | `GAME/common/map_modes/documentation.md` | none in vanilla (documentation only) |
-| Resources | `GAME/common/resources/_documentation.md`, `WIKI/Resources modding - Hearts of Iron 4 Wiki.md` | `GAME/common/resources/00_resources.txt` |
+| Resources | `GAME/common/resources/_documentation.md`, `WIKI/resources_modding.md` | `GAME/common/resources/00_resources.txt` |
 | State effects | `GAME/documentation/effects_documentation.md`, section "Effects for scope STATE", plus the individual entries named below | `GAME/common/national_focus/*.txt`, `GAME/events/*.txt` |
 | State triggers | `GAME/documentation/triggers_documentation.md`, section "Triggers for scope STATE" | same |
-| Effect argument tables (more detail than the installed file for building and flag effects) | `WIKI/Effects - Hearts of Iron 4 Wiki.md` (rows `add_building_construction`, `set_building_level`, `set_state_flag`, `build_railway`, `add_resource`, `transfer_state_to`) | |
+| Effect argument tables (more detail than the installed file for building and flag effects) | `WIKI/effects.md` (rows `add_building_construction`, `set_building_level`, `set_state_flag`, `build_railway`, `add_resource`, `transfer_state_to`) | |
 | Collections, `game:all_states` | `GAME/documentation/script_concept_documentation.md` (Collections), `script_collection_input.md`, `script_collection_operator.md` | |
 | Loop cap | `GAME/common/defines/00_defines.lua` (`MAX_EFFECT_ITERATION = 1000`) | |
 | State modifiers | `GAME/documentation/modifiers_documentation.md`, section "Modifiers for scope state" | `GAME/common/state_category/*.txt` |
@@ -156,7 +156,7 @@ state_categories = {
 
 ## Buildings (common/buildings) and building models
 
-Definitions live in `common/buildings/*.txt` under `buildings = { name = { ... } }` (`GAME/common/buildings/00_buildings.txt`). Fields verified in the vanilla file and `WIKI/Building modding`:
+Definitions live in `common/buildings/*.txt` under `buildings = { name = { ... } }` (`GAME/common/buildings/00_buildings.txt`). Fields verified in the vanilla file and `WIKI/building_modding.md`:
 
 - Cost: `base_cost`, `per_level_extra_cost`, `per_controlled_building_extra_cost`, `infrastructure_construction_effect = yes`.
 - Slot class from `level_cap`: `shares_slots = yes` (shared, uses state slots), `state_max = N` (non-shared state building), `province_max = N` (provincial), `group_by`, `exclusive_with`. Default `state_max` is 15 when unset.
@@ -267,7 +267,7 @@ Whole-world iteration (`every_state`, `every_country`, and any `on_daily`, `on_w
 
 - State flags are 32-bit integers scoped to one state. `set_state_flag = my_flag` sets 1; the block form is `set_state_flag = { flag = my_flag value = 3 days = 50 }`; `modify_state_flag = { flag = x value = N }` changes an existing flag only; `has_state_flag` tests presence, and its block form tests value and age. Flags have no definition file.
 - A flag name can carry a targeted suffix (`my_flag_@PREV` appends the scope's tag); only `@ROOT`, `@PREV`, `@FROM`, `@THIS` are supported, one per name.
-- State variables: `set_variable`, `add_to_variable`, and friends executed in state scope write that state's variable. Read another state's variable with a numeric prefix (`123.my_var`), a stored scope (`var:target_state.my_var`), or a chain (`province_controllers^1234:capital:my_var`) per `WIKI/Data structures`. Temporary variables have no scope.
+- State variables: `set_variable`, `add_to_variable`, and friends executed in state scope write that state's variable. Read another state's variable with a numeric prefix (`123.my_var`), a stored scope (`var:target_state.my_var`), or a chain (`province_controllers^1234:capital:my_var`) per `WIKI/data_structures.md`. Temporary variables have no scope.
 - Persist a state pointer across blocks and events with a regular event target (`save_event_target_as`) or a global event target that you clear.
 - A state dynamic modifier reads its variables from the state it is attached to, not from the owner. Details, daily refresh, and `scope =` are in `hoi4-ideas-modifiers`; the vanilla state precedent is `ETH_state_development_dynamic_modifier` in `GAME/common/dynamic_modifiers/bba_dynamic_modifiers.txt`.
 - Read the total of a modifier on a state with `set_variable = { v = modifier@local_manpower }` in state scope, or `123.modifier@local_manpower` from elsewhere (`dynamic_variables_documentation.md`).
