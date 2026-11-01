@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import importlib.util
 import json
 import math
 import os
@@ -22,6 +23,11 @@ from unittest.mock import Mock
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 WORKER_PATH = PIPELINE_ROOT / "adapter" / "blender_worker.py"
 ADAPTER_PATH = PIPELINE_ROOT / "adapter" / "hoi4_blender_mcp.py"
+_CAPTURE_SPEC = importlib.util.spec_from_file_location(
+    "exporter_log_capture", PIPELINE_ROOT / "adapter" / "exporter_log_capture.py"
+)
+exporter_log_capture = importlib.util.module_from_spec(_CAPTURE_SPEC)
+_CAPTURE_SPEC.loader.exec_module(exporter_log_capture)
 
 
 class VectorDouble(list):
@@ -178,6 +184,8 @@ def load_worker():
     namespace = {
         "Path": Path, "math": math, "os": os, "re": re, "hashlib": hashlib, "json": json,
         "Matrix": MatrixDouble, "LOCATOR_REGISTRY_VERSION": 1, "LOCATOR_TRANSFORM_TOLERANCE": 1e-5,
+        "run_captured": exporter_log_capture.run_captured,
+        "exporter_warnings": exporter_log_capture.exporter_warnings,
     }
     exec(compile(module, str(WORKER_PATH), "exec"), namespace)
     return namespace, tree

@@ -1,0 +1,8 @@
+{
+  "balance_before_paid_call": 117,
+  "estimated_credits": 3,
+  "hard_limit": 3,
+  "paid_call_authorized_by": "user_task",
+  "stage": "animation_idle",
+  "timestamp": "2026-10-18T16:18:40Z"
+}

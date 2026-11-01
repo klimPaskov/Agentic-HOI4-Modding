@@ -28,7 +28,8 @@ Checks (rule ids and levels are defined by each tool; see `.tools/lib/report.py`
                    profiled icon families and report-image provenance
 - guidance         `sync/check_guidance_size.py`           single-read ceiling for instructions, skills and agents
 - generators       `sync/generators.py --check`            every generated file listed in `sync/generators.json`
-- tests            maintained tests in `.tools/` and in skill `tools/tests/` folders (full, or quick when they change)
+- tests            maintained tests in `.tools/`, the 3D pipeline suite in `.tools/3d_pipeline/tests/` and in skill
+                   `tools/tests/` folders (full, or quick when they change)
 - quality          `quality.py`                            ruff defects, complexity ratchet and mypy --strict for the
                    tooling (skipped with a notice when uv is not installed)
 - script-validate  `audits/validate_scripts_mcp.py`        HOI4 Agent Tools script validation of changed files (quick
@@ -66,6 +67,7 @@ AUDIT_TIMEOUT_SECONDS = 900
 TEST_PATTERNS = (
 	".tools/tests/test_*.py",
 	".tools/gfx/test_*.py",
+	".tools/3d_pipeline/tests/test_*.py",
 	".claude/skills/*/tools/tests/test_*.py",
 	".claude/skills/*/tests/test_*.py",
 )

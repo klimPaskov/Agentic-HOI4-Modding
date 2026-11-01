@@ -45,7 +45,7 @@ Opus maps to `xhigh`, Sonnet to `high`, and Haiku to `medium` reasoning effort i
 
 | Agent | Purpose | Claude tier | Codex effort |
 | --- | --- | --- | --- |
-| [hoi4-3d-model-pipeline](../.claude/agents/hoi4-3d-model-pipeline.md) | Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages from one approved source-informed input per geometry task using Meshy 7, Meshy MCP, the Blender HOI4 adapter, and io_pdx_mesh. | Sonnet | high |
+| [hoi4-3d-model-pipeline](../.claude/agents/hoi4-3d-model-pipeline.md) | Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages from one approved source-informed input per geometry task using the profile's generation model (currently Meshy 7), Meshy MCP, the Blender HOI4 adapter, and io_pdx_mesh. | Sonnet | high |
 | [hoi4-ai-probability-auditor](../.claude/agents/hoi4-ai-probability-auditor.md) | Read-only weighted-logic auditor for HOI4 AI weights, probabilities, MTTH, random selection, focus and research selection, decision and mission scores, strategy factors, and declared weighted pools. | Haiku | medium |
 | [hoi4-asset-source-researcher](../.claude/agents/hoi4-asset-source-researcher.md) | Finds, verifies, and documents non-portrait real or archival visual source assets for HOI4 mods. | Haiku | medium |
 | [hoi4-audio-researcher](../.claude/agents/hoi4-audio-researcher.md) | Researches, verifies, downloads, edits, converts, and documents licensed or public-domain audio for HOI4 mod presentation surfaces. | Haiku | medium |

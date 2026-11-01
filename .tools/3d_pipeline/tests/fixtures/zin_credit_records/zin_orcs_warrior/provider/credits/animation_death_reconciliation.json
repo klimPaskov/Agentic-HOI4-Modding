@@ -1,0 +1,10 @@
+{
+  "balance_after_task": 65,
+  "balance_before_paid_call": 71,
+  "estimate_credits": 3,
+  "observed_balance_delta": 6,
+  "provider_consumed_credits": 3,
+  "stage": "animation_death",
+  "status": "balance_delta_mismatch",
+  "timestamp": "2026-10-18T16:42:00Z"
+}

@@ -1,0 +1,10 @@
+{
+  "balance_after_task": 117,
+  "balance_before_paid_call": 122,
+  "estimate_credits": 5,
+  "observed_balance_delta": 5,
+  "provider_consumed_credits": 5,
+  "stage": "rig",
+  "status": "reconciled",
+  "timestamp": "2026-10-18T16:12:20Z"
+}

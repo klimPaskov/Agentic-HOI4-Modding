@@ -6,6 +6,7 @@ import argparse
 import ast
 import datetime as dt
 import hashlib
+import importlib.util
 import io
 import json
 import os
@@ -27,12 +28,12 @@ from pathlib import Path, PurePosixPath
 
 PIPELINE_ROOT = Path(__file__).resolve().parent
 MESHY_PACKAGE = "@meshy-ai/meshy-mcp-server"
-MESHY_VERSION = "0.6.2"
-MESHY_INTEGRITY = "sha512-xEgw7YE5vmK1mT8kBwO6ytmZf+zdaxPd3jdIvO/4o+YFKSSmv9VDnFob3PE2HojC20g57uslQt7m1w4iaWGFZA=="
-MESHY_RUNTIME_PACKAGE_SHA256 = "1741490e35df4fd92eb7ffe6c31aa753f1c85063cd08948543928331752f79c7"
-MESHY_RUNTIME_LOCK_SHA256 = "5b28ae2903d9b67b9324e3799b6fcf776739dcaa2beb375bcf595df10629dd58"
-MESHY_RUNTIME_TREE_SHA256 = "3ad84a9d8f6a1c4ccd97fe8cc15d710d9102911960664ece373d79f0b32430db"
-MESHY_RUNTIME_FILE_COUNT = 3952
+MESHY_VERSION = "0.6.7"
+MESHY_INTEGRITY = "sha512-kmOyjdcW+FZuc+TZHK4aUjfOID+LbjmQAM7W9YLtLhApW7b7lo+aZLnLl6xnNfM2KvktODXCF61kgDhjwP7dUg=="
+MESHY_RUNTIME_PACKAGE_SHA256 = "a786752193cacd1c01c20db7c1a47d0a4d52fada7eed2ac7b47b7245687aec0b"
+MESHY_RUNTIME_LOCK_SHA256 = "672707686e4a59b644f5bb7e1af58c8987a26f6caadcbf0c5e7e196b7bfa7c18"
+MESHY_RUNTIME_TREE_SHA256 = "dbd2ebfce197a18875c3d367ad4b5325a345b92ce54c2a33440f5490efe7f6b3"
+MESHY_RUNTIME_FILE_COUNT = 3954
 BLENDER_MCP_REPOSITORY = "https://projects.blender.org/lab/blender_mcp.git"
 BLENDER_MCP_REVISION = "dbbf836ad4b1025f14a2b3b504c43903f39e0b04"
 IO_PDX_RELEASE = "0.91"
@@ -61,6 +62,10 @@ MESHY_API_HOSTS = frozenset({"api.meshy.ai"})
 
 class SetupError(RuntimeError):
     """Raised when autonomous setup cannot safely finish."""
+
+
+class UnsupportedBlenderError(SetupError):
+    """Raised for a Blender build whose minor the dependency lock does not support."""
 
 
 def utc_now() -> str:
@@ -288,7 +293,53 @@ def shortcut_target(shortcut: Path) -> Path | None:
     return path if path.is_file() else None
 
 
-def find_blender() -> tuple[Path, Path | None, str]:
+def blender_minor_of(version: str) -> str | None:
+    match = re.match(r"\s*(\d+)\.(\d+)", version)
+    return f"{match.group(1)}.{match.group(2)}" if match else None
+
+
+def supported_blender_minors(pipeline_root: Path = PIPELINE_ROOT) -> list[str]:
+    """Read the Blender minors the dependency lock supports, oldest first."""
+    lock_path = pipeline_root / "config" / "dependencies.lock.json"
+    try:
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SetupError(f"The dependency lock cannot be read for the supported Blender minors: {lock_path}") from exc
+    compatibility = lock.get("compatibility") if isinstance(lock, dict) else None
+    section = compatibility.get("blender") if isinstance(compatibility, dict) else None
+    minors = section.get("supported_minors") if isinstance(section, dict) else None
+    if (
+        not isinstance(minors, list)
+        or not minors
+        or len(set(minors)) != len(minors)
+        or not all(isinstance(value, str) and re.fullmatch(r"\d+\.\d+", value) for value in minors)
+    ):
+        raise SetupError("The dependency lock has no valid compatibility.blender.supported_minors list.")
+    return sorted(minors, key=lambda value: version_tuple(value) or (0, 0, 0))
+
+
+def select_supported_blender(
+    found: list[tuple[str, Path, Path | None]],
+    supported: list[str],
+) -> tuple[Path, Path | None, str]:
+    """Pick the highest supported build from (version, executable, shortcut) entries."""
+    usable = [item for item in found if blender_minor_of(item[0]) in supported]
+    if not usable:
+        if not found:
+            raise SetupError("No usable Blender executable could be discovered autonomously.")
+        seen = "; ".join(f"{version} at {executable}" for version, executable, _ in sorted(found, key=lambda item: (item[0], str(item[1]))))
+        raise UnsupportedBlenderError(
+            f"Blender {' or '.join(supported)} is required, but only unsupported builds were found ({seen}). "
+            "Install a supported Blender minor; the pinned io_pdx_mesh exporter has only been verified on those."
+        )
+    version, executable, shortcut = max(
+        usable, key=lambda item: (version_tuple(item[0]) or (0, 0, 0), str(item[1]))
+    )
+    return executable, shortcut, version
+
+
+def discover_blender_installs() -> list[tuple[str, Path, Path | None]]:
+    """Return every runnable Blender build found as (version, executable, shortcut)."""
     user_profile = Path(os.environ.get("USERPROFILE", str(Path.home())))
     local_appdata = Path(os.environ.get("LOCALAPPDATA", user_profile / "AppData/Local"))
     program_files = Path(os.environ.get("ProgramFiles", "C:/Program Files"))
@@ -323,7 +374,7 @@ def find_blender() -> tuple[Path, Path | None, str]:
         if root.exists():
             candidates.extend((path, None) for path in root.rglob("blender.exe"))
 
-    valid: list[tuple[tuple[int, int, int], Path, Path | None, str]] = []
+    found: list[tuple[str, Path, Path | None]] = []
     seen: set[Path] = set()
     for candidate, shortcut in candidates:
         if not candidate.is_file():
@@ -340,16 +391,29 @@ def find_blender() -> tuple[Path, Path | None, str]:
         except SetupError:
             continue
         match = re.search(r"Blender (\d+\.\d+\.\d+)", version_output)
-        if not match:
-            continue
-        parsed = version_tuple(match.group(1))
-        if parsed is not None:
-            valid.append((parsed, executable, shortcut, match.group(1)))
+        if match and version_tuple(match.group(1)) is not None:
+            found.append((match.group(1), executable, shortcut))
+    return found
 
-    if not valid:
-        raise SetupError("No usable Blender executable could be discovered autonomously.")
-    _, executable, shortcut, version = max(valid, key=lambda item: (item[0], str(item[1])))
-    return executable, shortcut, version
+
+def find_blender(pipeline_root: Path = PIPELINE_ROOT) -> tuple[Path, Path | None, str]:
+    """Select the highest Blender minor the dependency lock supports; refuse the rest."""
+    supported = supported_blender_minors(pipeline_root)
+    found = discover_blender_installs()
+    explicit = os.environ.get("BLENDER_EXE", "").strip()
+    if explicit:
+        # An executable named on purpose is refused, never silently skipped.
+        try:
+            named = Path(explicit).resolve()
+        except OSError:
+            named = None
+        for version, executable, _ in found:
+            if executable == named and blender_minor_of(version) not in supported:
+                raise UnsupportedBlenderError(
+                    f"BLENDER_EXE points to Blender {version}, which is not a supported minor "
+                    f"(supported: {', '.join(supported)})."
+                )
+    return select_supported_blender(found, supported)
 
 
 def ensure_npx() -> Path:
@@ -1032,6 +1096,12 @@ def resolve_io_pdx_mesh(pipeline_root: Path = PIPELINE_ROOT) -> dict:
         isinstance(value, str) and re.fullmatch(r"\d+\.\d+", value) for value in blender_minors
     ):
         raise SetupError("The io_pdx_mesh compatibility lock has invalid Blender version selectors.")
+    supported_minors = supported_blender_minors(pipeline_root)
+    if set(blender_minors) != set(supported_minors):
+        raise SetupError(
+            "The io_pdx_mesh compatibility archive must cover exactly the supported Blender minors "
+            f"({', '.join(supported_minors)}); it lists {', '.join(blender_minors)}."
+        )
     return {
         "release": IO_PDX_RELEASE,
         "download_url": IO_PDX_DOWNLOAD_URL,
@@ -1044,7 +1114,13 @@ def resolve_io_pdx_mesh(pipeline_root: Path = PIPELINE_ROOT) -> dict:
 
 
 def resolve_io_pdx_archive(source_archive: bytes, blender_minor: str, resolution: dict) -> dict:
-    """Select the upstream or locked derived archive for the detected Blender minor."""
+    """Derive the locked compatibility archive for a supported Blender minor.
+
+    Every supported minor installs the derived archive. Blender 5.x bundles
+    Python 3.13, which has no `imp` module, and the upstream 0.91 archive imports
+    it; the derived archive also carries the Blender 4.x operator and shader
+    fixes. An unsupported minor is refused rather than given the upstream archive.
+    """
     if len(source_archive) != resolution["size"]:
         raise SetupError("The pinned io_pdx_mesh archive failed size verification.")
     source_hash = hashlib.sha256(source_archive).hexdigest().upper()
@@ -1052,55 +1128,70 @@ def resolve_io_pdx_archive(source_archive: bytes, blender_minor: str, resolution
         raise SetupError("The pinned io_pdx_mesh archive failed SHA-256 verification.")
 
     compatibility = resolution.get("compatibility", {})
-    compatibility_applied = blender_minor in compatibility.get("blender_minors", [])
-    install_archive = source_archive
-    expected_patch_hashes = {}
-    if compatibility_applied:
-        if compatibility.get("source_size") != resolution["size"]:
-            raise SetupError("The io_pdx_mesh source size disagrees with its compatibility lock.")
-        if compatibility.get("source_sha256", "").upper() != source_hash:
-            raise SetupError("The io_pdx_mesh source hash disagrees with its compatibility lock.")
-        try:
-            from build_io_pdx_py313_compat import compatibility_archive_bytes
+    supported_minors = compatibility.get("blender_minors", [])
+    if blender_minor not in supported_minors:
+        raise UnsupportedBlenderError(
+            f"Blender {blender_minor} is not a supported minor for the pinned io_pdx_mesh "
+            f"(supported: {', '.join(supported_minors)})."
+        )
+    if compatibility.get("source_size") != resolution["size"]:
+        raise SetupError("The io_pdx_mesh source size disagrees with its compatibility lock.")
+    if compatibility.get("source_sha256", "").upper() != source_hash:
+        raise SetupError("The io_pdx_mesh source hash disagrees with its compatibility lock.")
+    try:
+        from build_io_pdx_py313_compat import compatibility_archive_bytes
 
-            install_archive = compatibility_archive_bytes(source_archive)
-        except (ImportError, OSError, ValueError, zipfile.BadZipFile) as exc:
-            raise SetupError("The locked io_pdx_mesh compatibility archive could not be built safely.") from exc
-        install_hash = hashlib.sha256(install_archive).hexdigest().upper()
+        install_archive = compatibility_archive_bytes(source_archive)
+    except (ImportError, OSError, ValueError, zipfile.BadZipFile) as exc:
+        raise SetupError("The locked io_pdx_mesh compatibility archive could not be built safely.") from exc
+    install_hash = hashlib.sha256(install_archive).hexdigest().upper()
+    if (
+        len(install_archive) != compatibility.get("archive_size")
+        or install_hash != compatibility.get("archive_sha256", "").upper()
+    ):
+        raise SetupError("The derived io_pdx_mesh archive failed its compatibility lock.")
+    expected_patch_hashes = compatibility.get("installed_patch_files_sha256", {})
+    if not isinstance(expected_patch_hashes, dict) or not expected_patch_hashes:
+        raise SetupError("The io_pdx_mesh installed patch-file evidence is missing.")
+    required_patch_files = {
+        "__init__.py",
+        "pdx_maya/maya_ui.py",
+        "pdx_blender/blender_import_export.py",
+    }
+    if set(expected_patch_hashes) != required_patch_files:
+        raise SetupError("The io_pdx_mesh compatibility lock has an unexpected installed-file set.")
+    for relative, digest in expected_patch_hashes.items():
         if (
-            len(install_archive) != compatibility.get("archive_size")
-            or install_hash != compatibility.get("archive_sha256", "").upper()
+            not isinstance(relative, str)
+            or relative.startswith("/")
+            or "\\" in relative
+            or ":" in relative
+            or any(part in {"", ".", ".."} for part in relative.split("/"))
+            or not isinstance(digest, str)
+            or re.fullmatch(r"[0-9A-Fa-f]{64}", digest) is None
         ):
-            raise SetupError("The derived io_pdx_mesh archive failed its compatibility lock.")
-        expected_patch_hashes = compatibility.get("installed_patch_files_sha256", {})
-        if not isinstance(expected_patch_hashes, dict) or not expected_patch_hashes:
-            raise SetupError("The io_pdx_mesh installed patch-file evidence is missing.")
-        required_patch_files = {
-            "__init__.py",
-            "pdx_maya/maya_ui.py",
-            "pdx_blender/blender_import_export.py",
-        }
-        if set(expected_patch_hashes) != required_patch_files:
-            raise SetupError("The io_pdx_mesh compatibility lock has an unexpected installed-file set.")
-        for relative, digest in expected_patch_hashes.items():
-            if (
-                not isinstance(relative, str)
-                or relative.startswith("/")
-                or "\\" in relative
-                or ":" in relative
-                or any(part in {"", ".", ".."} for part in relative.split("/"))
-                or not isinstance(digest, str)
-                or re.fullmatch(r"[0-9A-Fa-f]{64}", digest) is None
-            ):
-                raise SetupError("The io_pdx_mesh compatibility lock contains an unsafe path or file hash.")
+            raise SetupError("The io_pdx_mesh compatibility lock contains an unsafe path or file hash.")
 
     return {
         "source_sha256": source_hash,
         "install_archive": install_archive,
-        "install_archive_sha256": hashlib.sha256(install_archive).hexdigest().upper(),
-        "compatibility_applied": compatibility_applied,
+        "install_archive_sha256": install_hash,
+        "compatibility_applied": True,
         "expected_patch_hashes": expected_patch_hashes,
     }
+
+
+def installed_patch_mismatches(install_root: Path, expected_patch_hashes: dict) -> list[str]:
+    """List locked patched files that are missing or whose SHA-256 differs from the lock."""
+    mismatched: list[str] = []
+    for relative, expected_hash in sorted(expected_patch_hashes.items()):
+        installed_file = install_root / Path(*PurePosixPath(relative).parts)
+        if (
+            not installed_file.is_file()
+            or hashlib.sha256(installed_file.read_bytes()).hexdigest().upper() != expected_hash.upper()
+        ):
+            mismatched.append(relative)
+    return mismatched
 
 
 def ensure_io_pdx_mesh(pipeline_root: Path, blender_executable: Path, resolution: dict) -> dict:
@@ -1121,6 +1212,8 @@ def ensure_io_pdx_mesh(pipeline_root: Path, blender_executable: Path, resolution
     archive_bytes = cache.read_bytes()
     try:
         selected_archive = resolve_io_pdx_archive(archive_bytes, minor, resolution)
+    except UnsupportedBlenderError:
+        raise  # the cached archive verified; only this Blender build is refused
     except SetupError:
         cache.unlink(missing_ok=True)
         raise
@@ -1131,22 +1224,12 @@ def ensure_io_pdx_mesh(pipeline_root: Path, blender_executable: Path, resolution
     expected_patch_hashes = selected_archive["expected_patch_hashes"]
     desired_version = version_tuple(resolution["release"])
     installed_version = manifest_version(install_root)
-    installed_patches_match = True
-    if compatibility_applied:
-        for relative, expected_hash in expected_patch_hashes.items():
-            installed_file = install_root / Path(*PurePosixPath(relative).parts)
-            if not installed_file.is_file():
-                installed_patches_match = False
-                break
-            actual_hash = hashlib.sha256(installed_file.read_bytes()).hexdigest().upper()
-            if actual_hash != expected_hash.upper():
-                installed_patches_match = False
-                break
+    # An existing install is kept only when its locked patched files match their hashes.
     installed_matches = (
         installed_version is not None
         and desired_version is not None
         and version_tuple(installed_version) == desired_version
-        and installed_patches_match
+        and not installed_patch_mismatches(install_root, expected_patch_hashes)
     )
 
     if not installed_matches:
@@ -1175,14 +1258,10 @@ def ensure_io_pdx_mesh(pipeline_root: Path, blender_executable: Path, resolution
 
     if not (install_root / "blender_manifest.toml").exists():
         raise SetupError(f"io_pdx_mesh installation is incomplete: {install_root}")
-    installed_patch_hashes = {}
-    if compatibility_applied:
-        for relative in expected_patch_hashes:
-            installed_file = install_root / Path(*PurePosixPath(relative).parts)
-            actual_hash = hashlib.sha256(installed_file.read_bytes()).hexdigest().upper()
-            if actual_hash != expected_patch_hashes[relative].upper():
-                raise SetupError(f"The installed io_pdx_mesh compatibility file failed hash verification: {relative}")
-            installed_patch_hashes[relative] = actual_hash
+    mismatched = installed_patch_mismatches(install_root, expected_patch_hashes)
+    if mismatched:
+        raise SetupError(f"The installed io_pdx_mesh compatibility file failed hash verification: {mismatched[0]}")
+    installed_patch_hashes = {relative: digest.upper() for relative, digest in expected_patch_hashes.items()}
     return {
         "release": resolution["release"],
         "version": installed_version,
@@ -1389,6 +1468,26 @@ def write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
+def verify_generation_profiles(pipeline_root: Path) -> None:
+    """Refuse setup when a profile's Meshy generation settings cannot be sent to the locked schema."""
+
+    module_spec = importlib.util.spec_from_file_location(
+        "three_d_generation", pipeline_root / "lib" / "generation.py"
+    )
+    if module_spec is None or module_spec.loader is None:
+        raise SetupError("The generation settings validator is missing from the 3D pipeline.")
+    generation = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(generation)
+    profiles = json.loads((pipeline_root / "config/asset_profiles.json").read_text(encoding="utf-8"))["profiles"]
+    problems = [
+        f"{name}: {problem}"
+        for name, profile in profiles.items()
+        for problem in generation.generation_problems(profile.get("generation"))
+    ]
+    if problems:
+        raise SetupError("Invalid Meshy generation settings in asset_profiles.json: " + "; ".join(problems))
+
+
 def write_dependency_record(root: Path, payload: dict) -> Path:
     lock_path = root / ".tools/3d_pipeline/config/dependencies.lock.json"
     previous = {}
@@ -1400,14 +1499,17 @@ def write_dependency_record(root: Path, payload: dict) -> Path:
     previous_policy = previous.get("policy", {})
     legacy_attempt_key = "paid_generation_attempts_per_" + "pilot"
     previous_policy.pop(legacy_attempt_key, None)
+    # The generation model is a per-profile setting now; drop the single model older locks recorded.
+    previous_policy.pop("required_generation_model", None)
+    previous_policy.pop("default_generation_model", None)
     policy = {
         **previous_policy,
         "provider_input_image_count": 1,
         "allow_meshy_multiview_thumbnails": False,
-        "required_generation_model": "meshy-7",
-        "default_generation_model": "Meshy 7 via explicit ai_model=meshy-7",
+        "generation_model_source": "config/asset_profiles.json profiles.<profile>.generation.ai_model",
         "silent_generation_model_downgrade": False,
         "planned_paid_operations_pre_authorized": True,
+        "paid_operations_require_credit_budget": True,
         "failure_recovery_requires_confirmation": True,
         "runtime_sources_must_not_reference_docs_assets": True,
         "runtime_copy_requires_selected_source_hash": True,
@@ -1472,7 +1574,7 @@ def main() -> int:
         pipeline_root.joinpath("config").mkdir(parents=True, exist_ok=True)
 
         npx_executable = ensure_npx()
-        blender_executable, blender_shortcut, blender_version = find_blender()
+        blender_executable, blender_shortcut, blender_version = find_blender(pipeline_root)
         uv_executable = ensure_uv()
         meshy = ensure_meshy_runtime(pipeline_root, npx_executable)
         meshy_contract_path = pipeline_root / "config/meshy_tool_contract.json"
@@ -1484,9 +1586,7 @@ def main() -> int:
             "contract": json.loads(meshy_contract_path.read_text(encoding="utf-8")),
             "live_schema_verification_required_before_provider_calls": True,
         }
-        provider_policy = meshy_tool_contract["contract"].get("provider_policy", {})
-        if provider_policy.get("required_generation_model") != "meshy-7":
-            raise SetupError("The checked-in Meshy contract does not require meshy-7.")
+        verify_generation_profiles(pipeline_root)
         blender_mcp = resolve_blender_mcp()
         blender_mcp_project = ensure_blender_mcp(pipeline_root, blender_mcp)
         io_resolution = resolve_io_pdx_mesh(pipeline_root)

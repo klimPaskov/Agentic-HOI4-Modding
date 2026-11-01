@@ -1,0 +1,30 @@
+{
+  "consumed_credits": 5,
+  "estimated_credits": 5,
+  "final_response": {
+    "consumed_credits": 5,
+    "outcome": "SUCCEEDED",
+    "poll_count": 1,
+    "progress": 100,
+    "status": "SUCCEEDED",
+    "task_id": "01a14fc4-9d68-76c6-a98d-15874f206f31",
+    "wait_time_seconds": 1
+  },
+  "initial_response": {
+    "estimated_time": "2-3 minutes",
+    "message": "Rigging task created successfully. Task ID: 01a14fc4-9d68-76c6-a98d-15874f206f31",
+    "status": "PENDING",
+    "task_id": "01a14fc4-9d68-76c6-a98d-15874f206f31"
+  },
+  "input_stage": "rig_remesh",
+  "provider": {
+    "server_package": "@meshy-ai/meshy-mcp-server",
+    "server_version": "0.6.2"
+  },
+  "recorded_at": "2026-10-18T16:10:01Z",
+  "schema_version": "1.0.0",
+  "stage": "rig",
+  "status": "SUCCEEDED",
+  "task_id": "01a14fc4-9d68-76c6-a98d-15874f206f31",
+  "task_type": "rigging"
+}

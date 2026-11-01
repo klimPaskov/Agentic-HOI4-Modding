@@ -8,21 +8,12 @@ dependencies are generated on demand and are not starter files.
 ## Security and bootstrap gate
 
 Provider-dependent work requires a non-blank `MESHY_API_KEY` before provider
-preparation, balance checks, or provider calls. An explicitly requested
-existing non-firearm Blender-only repair may inspect its approved job, source,
-dependency lock, adapter schema, bridge, and export stack without this key and
-must not invoke Meshy. If provider work requires a missing key, stop and set it
-with:
-
-```powershell
-[Environment]::SetEnvironmentVariable(
-    "MESHY_API_KEY",
-    "msy_your_actual_key_here",
-    "User"
-)
-```
-
-Restart the shell or Codex, then let HOI4 Mod Setup invoke:
+preparation, balance checks, or provider calls; the exact command that sets it
+is in the [3D agent's hard start gate](../../.claude/agents/hoi4-3d-model-pipeline.md).
+An explicitly requested existing non-firearm Blender-only repair may inspect its
+approved job, source, dependency lock, adapter schema, bridge, and export stack
+without this key and must not invoke Meshy. Restart the shell or the agent
+runtime after setting the key, then let HOI4 Mod Setup invoke:
 
 ```powershell
 python .tools/3d_pipeline/bootstrap_3d_workflow.py `
@@ -30,8 +21,11 @@ python .tools/3d_pipeline/bootstrap_3d_workflow.py `
   --trusted-launcher <installed-hoi4-mod-setup-executable>
 ```
 
-The bootstrap verifies the pinned Meshy MCP 0.6.2 package and complete runtime
-tree, installs Blender Lab MCP at source commit `dbbf836ad4b1025f14a2b3b504c43903f39e0b04`, discovers Blender, installs
+The bootstrap verifies the pinned Meshy MCP 0.6.7 package (npm integrity
+`sha512-kmOyjdcW+FZuc+TZHK4aUjfOID+LbjmQAM7W9YLtLhApW7b7lo+aZLnLl6xnNfM2KvktODXCF61kgDhjwP7dUg==`,
+upstream head `0f4c10a3c37f74a2625a922aeaff03b2f878887f`) and its complete
+3,954-file runtime tree (SHA-256 `dbd2ebfce197a18875c3d367ad4b5325a345b92ce54c2a33440f5490efe7f6b3`),
+installs Blender Lab MCP at source commit `dbbf836ad4b1025f14a2b3b504c43903f39e0b04`, discovers Blender, installs
 and verifies io_pdx_mesh 0.91, enables the matching Blender MCP add-on, probes
 the loopback bridge, materializes the bounded Blender adapter config, and
 writes observed evidence to `config/dependencies.lock.json`. The rewrite keeps
@@ -39,27 +33,49 @@ the lock's pinned `sources` and `compatibility` evidence, so the bootstrap can
 be rerun on its own output. The adapter requires the `mcp` 1.x SDK; its
 `FastMCP` server API does not exist in `mcp` 2.x.
 
-For Blender 5.2, the bootstrap derives a deterministic io_pdx_mesh compatibility
-archive from the checksum-locked upstream 0.91 bytes. The derived archive fixes
-the removed Python `imp` imports, guards the removed `Material.shadow_method`,
-and uses `bpy.context.temp_override` for object joining. The bootstrap verifies
-the derived archive digest and each installed patched file; it preserves the
-upstream archive unchanged. Meshy remains on the verified app-owned 0.6.2 route.
+Blender is pinned to the minors in the lock's `compatibility.blender.supported_minors`
+(5.1 and 5.2). The bootstrap selects the highest supported minor and refuses any
+other, including a `BLENDER_EXE` that names an unsupported build. Every supported
+minor installs the same deterministic io_pdx_mesh compatibility archive, derived
+from the checksum-locked upstream 0.91 bytes. The derived archive fixes the
+removed Python `imp` imports, guards the removed `Material.shadow_method`, and
+uses `bpy.context.temp_override` for object joining. The bootstrap verifies the
+derived archive digest and each installed patched file on every minor; it
+preserves the upstream archive unchanged. A Blender 5.1 `io_pdx_mesh` whose
+patched files do not match the lock is replaced.
 
-The 0.6.2 schema was captured from the published runtime's `tools/list` without authenticated provider calls. It still accepts the workflow's explicit `meshy-7`, although upstream now marks that model deprecated in favor of `meshy-7.1`. The server upgrade does not change the approved generation-model policy. The app-owned launcher, live balance and paid stages must pass their existing gates before production; a published schema alone does not establish those results.
+Credential routes, the one REST exception (the bootstrap's own bounded balance
+request that verifies the key) and the rest of the start gates are in the
+[production guide](../../.claude/skills/hoi4-3d-model-pipeline/references/production-guide.md#hard-start-gates).
+`meshy_client.py` enforces the reviewed route.
 
-Meshy credentials may flow only through the external app-owned launcher with
-the single argument `--run-verified-meshy-mcp`. Project Python, project
-wrappers, PATH Python, direct REST calls, and mutable `npx` routes are not
-credential routes. `meshy_client.py` enforces this reviewed route.
+## Generation model, credits and recovery
 
-## Meshy 7 contract and recovery
+The generation model is the profile's `generation.ai_model` in
+`config/asset_profiles.json` (currently Meshy 7 for every profile); a job may
+restate it but never change it. Before paid work, require a live `tools/list`
+response whose `meshy_image_to_3d` schema accepts that identifier and compare
+it with both `config/meshy_tool_contract.json` and
+`config/meshy_tool_schema.lock.json`. The pinned schema was captured from the
+published runtime's `tools/list` without authenticated provider calls. Upstream
+marks `meshy-7` deprecated in favor of `meshy-7.1`; the profile keeps its model
+until a maintainer changes it. Retired models (`meshy-t1`, `meshy-5`, `meshy-4`,
+`meshy-3`), the `lowpoly` model type and the alias `latest` are refused before
+any paid call.
 
-Meshy 7 is the only accepted generation model. Before paid work, require a
-live `tools/list` response whose `meshy_image_to_3d` schema accepts
-`ai_model = "meshy-7"`; compare it with both
-`config/meshy_tool_contract.json` and `config/meshy_tool_schema.lock.json`.
-Never alias `latest`, relabel an older result, or silently downgrade.
+Paid work is gated by the job's `credit_budget`, not by a standing
+pre-authorization. Prices come from `config/meshy_pricing.json`. Each paid
+create checks the remaining budget and the live balance, counts attempts from
+`provider/credits/ledger.jsonl` against the contract limits, and reuses an
+earlier result before paying (`lib/credits.py`, `lib/reuse.py`). Print the
+totals with:
+
+```powershell
+python .tools/3d_pipeline/run_pilot.py --credits-report [<job-folder-or-root>]
+```
+
+The rules for budgets, attempts, reuse and the ledger are in the
+[production guide](../../.claude/skills/hoi4-3d-model-pipeline/references/production-guide.md#credits-and-attempts).
 
 The checked-in package pins the official Meshy runtime bytes. Compatibility
 patching, private runtime copying, certificate verification, immediate
@@ -69,32 +85,14 @@ recovery, run two consecutive schema probes plus a concurrent probe pair, then
 one live balance probe through the same app-owned route. A schema mismatch or
 surviving exact-route process blocks paid work.
 
-The verified tool family is `meshy_check_balance`, `meshy_image_to_3d`,
-`meshy_get_task_status`, `meshy_download_model`, `meshy_remesh`, `meshy_rig`,
-`meshy_convert`, and `meshy_animate`. Use only live-listed tools and arguments.
-Planned generation, remesh/retexture, conversion, one supported rig attempt,
-one supported animation attempt per missing role, and bounded geometry recovery
-are pre-authorized while live balance and verified provider capability permit
-them. Do not submit paid rig or animation retries: preserve passing results and
-switch failed, unusable, or unsupported stages to Blender. Download each
-successful GLB immediately and retain FBX when a rig or action route requires
-it.
-
-## Route selection
-
-- Firearm-bearing units use a fresh weapon-free Meshy 7 body and a separate
-  Meshy 7 geometry task for each required firearm. For an eligible biped, try
-  one verified provider body rig/action stage. Blender owns weapon fitting,
-  attachment, rigid controls, locators, contacts, and missing or unusable rigs,
-  weights, actions, and other components.
-- Existing non-firearm repairs proceed directly in Blender.
-- Other provider-eligible bipeds receive one supported Meshy rig attempt and
-  one action attempt per missing role, then Blender recovery without paid
-  retries. Non-bipedal anatomy goes directly to verified Blender authoring.
-
-Complete every required anatomy element, equipment piece, held object, rig
-element, and action through the verified adapter. Static, transform-only,
-whole-rig-only, or semantically aliased motion is not acceptable completion.
+The verified tool family is in `config/meshy_tool_contract.json` (required
+tools and the optional Text-to-Motion tools). Use only live-listed tools and
+arguments. `meshy_image_to_3d` never gets `multi_view_thumbnails`, and
+`meshy_rig` never gets `texture_image_url`. Download each successful GLB
+immediately and retain FBX when a rig or action route requires it. The route
+each kind of asset takes (firearm units, existing repairs, bipeds, non-bipedal
+anatomy) is defined once, in the guide's
+[Route selection](../../.claude/skills/hoi4-3d-model-pipeline/references/production-guide.md#route-selection-and-component-completion).
 
 Every project-side stdio call records an exact process-ownership receipt. The
 receipt includes the launcher PID, Windows Job Object process IDs, and any
@@ -113,9 +111,15 @@ running jobs:
 python .tools/3d_pipeline/init_pilot_jobs.py --jobs-config docs/plans/<feature>/3d_jobs.json --all
 python .tools/3d_pipeline/run_pilot.py --jobs-config docs/plans/<feature>/3d_jobs.json <asset_slug>
 python .tools/3d_pipeline/run_pilot.py --jobs-config docs/plans/<feature>/3d_jobs.json --shared-humanoid-batch <batch_id>
+python .tools/3d_pipeline/init_pilot_jobs.py --jobs-config docs/plans/<feature>/3d_jobs.json --record-visual-review <asset_slug> --reviewer <name> --review-file <answers.json>
 ```
 
-The registry contains a non-empty `jobs` mapping. Each job resolves to:
+The registry contains a non-empty `jobs` mapping, and each paid job needs a
+whole-number `credit_budget`. `run_pilot.py` refuses a paid job without one, and
+refuses a job whose reference image has not passed the recorded visual review
+(see the guide's
+[Exactly one reference image](../../.claude/skills/hoi4-3d-model-pipeline/references/production-guide.md#exactly-one-reference-image-per-meshy-geometry-task)).
+Each job resolves to:
 
 ```text
 docs/assets/<owner_id>/models_3d/<asset_slug>/
@@ -123,7 +127,7 @@ docs/assets/<owner_id>/models_3d/<asset_slug>/
   manifest.md
   history.jsonl
   refs/{original,derived,briefs}/
-  provider/{requests,responses,tasks,credits,downloads,rejected}/
+  provider/{requests,responses,tasks,submissions,credits,downloads,rejected}/
   blender/{source,reference,working,checkpoints,previews,reports}/
   textures/{source,processed,dds}/
   export/{mesh,anim}/
@@ -141,12 +145,13 @@ remain immutable evidence, and all adapter payload paths are job-relative.
 
 ## Optional motion and latest repair tools
 
-The client supports Text-to-Motion creation/status/inventory/download,
-animation-library discovery, and exclusive preset/generated-motion retarget
-inputs. These require actual live schema exposure through the app-owned
-launcher. The checked-in pinned runtime and inherited schema lock do not prove
-that exposure. No project wrapper/runtime patch or direct REST fallback was
-introduced. See the skill's `references/motion-and-repair-qa.md` for source,
+The client supports Text-to-Motion (`meshy_text_to_motion`, with the generic
+`meshy_get_task_status`, `meshy_list_tasks` and `meshy_download_model`),
+animation-library discovery (`meshy_list_animations`), and exclusive
+preset/generated-motion retarget inputs. These require actual live schema
+exposure through the app-owned launcher; the attempt limit is the contract's
+`max_text_to_motion_attempts`. No project wrapper/runtime patch or direct REST
+fallback was introduced. See the skill's `references/motion-and-repair-qa.md` for source,
 attempt, credit, format, measured-root, phase, and interpolation gates.
 
 The adapter adds hash-bound standalone FBX inspection, explicit batch
@@ -227,7 +232,11 @@ bones so tails, weapons, and similar appendages do not define the floor.
 - Calibrate humanoids and buildings against the exact installed vanilla mesh
   and entity consumer. Apply entity scale exactly once.
 - Repair or reject holes, loose components, non-manifold edges, degenerates,
-  missing semantic components, invalid weights, and ungrounded actions.
+  missing semantic components, invalid weights, and ungrounded actions. The
+  gates fail closed: `candidate_gate` blocks on a missing measurement, the
+  texture cap is read from the PNG header, and an uncaptured io_pdx_mesh
+  export report is refused. Limits and per-profile `exceptions` are in
+  `config/asset_profiles.json` (see the guide's Fail-closed gates).
 - Preserve provider textures and derive PDX diffuse, packed specular, and
   normal maps deterministically. For `PdxMeshAdvanced`, packed specular alpha
   is glossiness (`255 - roughness`), not raw roughness.

@@ -24,8 +24,9 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = PIPELINE_ROOT.parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
+from lib.generation import generation_problems, load_pricing
 from lib.mcp_stdio import MCPRouteError, call_stdio  # noqa: E402
-from meshy_client import MeshyClient, _payload  # noqa: E402
+from meshy_client import MOTION_TOOL_ARGUMENTS, MeshyClient, _payload  # noqa: E402
 
 
 def read_json(relative: str) -> dict[str, Any]:
@@ -49,6 +50,28 @@ def registered_tools(source: str) -> list[str]:
             raise ValueError(f"Blender adapter tool is not registered exactly once: {node.name}")
         names.append(node.name)
     return sorted(names)
+
+
+def contract_findings(contract: dict[str, Any], schema: dict[str, Any], profiles: dict[str, Any]) -> list[str]:
+    """Findings for a contract, schema lock, price table or profile that disagree with each other."""
+
+    findings: list[str] = []
+    locked = {**schema.get("required_tools", {}), **schema.get("optional_tools", {})}
+    capabilities = contract.get("optional_capabilities", {})
+    named = set(contract.get("required_tools", {}))
+    for capability in capabilities.values():
+        named.update(capability.get("tool_names", []))
+    for name in sorted(named - set(locked)):
+        findings.append(f"contract names {name}, which the locked schema does not register")
+    motion_names = set(capabilities.get("text_to_motion", {}).get("tool_names", []))
+    if motion_names != set(MOTION_TOOL_ARGUMENTS):
+        findings.append("the Text-to-Motion tool names in the contract differ from the ones the client calls")
+    pricing = load_pricing()
+    if not pricing.get("source_url") or not pricing.get("retrieved"):
+        findings.append("config/meshy_pricing.json must name its source_url and retrieved date")
+    for name, profile in profiles.get("profiles", {}).items():
+        findings.extend(f"profile {name}: {problem}" for problem in generation_problems(profile.get("generation")))
+    return findings
 
 
 def adapter_tools() -> list[str]:
@@ -103,14 +126,7 @@ def main() -> int:
         contract = read_json("config/meshy_tool_contract.json")
         schema = read_json("config/meshy_tool_schema.lock.json")
         profiles = read_json("config/asset_profiles.json")
-        if contract.get("provider_policy", {}).get("required_generation_model") != "meshy-7":
-            findings.append("Meshy contract does not require meshy-7")
-        image_contract = contract.get("required_tools", {}).get("meshy_image_to_3d", {})
-        if image_contract.get("required_ai_model") != "meshy-7":
-            findings.append("meshy_image_to_3d contract does not require meshy-7")
-        image_schema = schema.get("required_tools", {}).get("meshy_image_to_3d", {})
-        if "meshy-7" not in image_schema.get("accepted_ai_models", []):
-            findings.append("locked published schema does not accept required meshy-7")
+        findings.extend(contract_findings(contract, schema, profiles))
         if not profiles.get("profiles"):
             findings.append("asset profile registry is empty")
         tools = adapter_tools()
@@ -140,8 +156,10 @@ def main() -> int:
         live_schema = json.dumps(live.get("meshy_image_to_3d", {}).get("inputSchema", {}), sort_keys=True)
         if missing:
             findings.append(f"live Meshy route is missing tools: {missing}")
-        if '"meshy-7"' not in live_schema:
-            findings.append("live meshy_image_to_3d schema does not expose meshy-7")
+        for name, profile in profiles.get("profiles", {}).items():
+            model = profile.get("generation", {}).get("ai_model")
+            if f'"{model}"' not in live_schema:
+                findings.append(f"live meshy_image_to_3d schema does not expose {model}, the model of profile {name}")
         meshy = {
             "status": "probed",
             "tools": sorted(live),

@@ -1,4 +1,9 @@
-"""Build the reproducible io_pdx_mesh 0.91 compatibility archive for Blender 5.2."""
+"""Build the reproducible io_pdx_mesh 0.91 compatibility archive for Blender 5.1 and 5.2.
+
+The upstream 0.91 archive imports `imp`, which Python 3.13 removed. Blender 5.1.2
+bundles Python 3.13.9 and `import imp` fails there (checked in background mode);
+the lock lists the supported Blender minors, and every one installs this archive.
+"""
 
 from __future__ import annotations
 

@@ -71,7 +71,7 @@ def compatibility_resolution(source: bytes) -> dict:
         "compatibility": {
             "source_sha256": source_hash,
             "source_size": len(source),
-            "blender_minors": ["5.2"],
+            "blender_minors": ["5.1", "5.2"],
             "archive_sha256": sha256(derived),
             "archive_size": len(derived),
             "installed_patch_files_sha256": patch_hashes,
@@ -80,10 +80,10 @@ def compatibility_resolution(source: bytes) -> dict:
 
 
 class IoPdxCompatibilityTests(unittest.TestCase):
-    def test_checked_in_io_pdx_lock_selects_blender_52_only(self) -> None:
+    def test_checked_in_io_pdx_lock_selects_blender_51_and_52(self) -> None:
         resolution = bootstrap.resolve_io_pdx_mesh()
         self.assertEqual(resolution["release"], "0.91")
-        self.assertEqual(resolution["compatibility"]["blender_minors"], ["5.2"])
+        self.assertEqual(resolution["compatibility"]["blender_minors"], ["5.1", "5.2"])
 
     def test_compatibility_archive_changes_only_the_locked_sites(self) -> None:
         source = source_archive()
@@ -109,17 +109,27 @@ class IoPdxCompatibilityTests(unittest.TestCase):
                 source_archive({"io_pdx_mesh/__init__.py": b"from imp import reload\nfrom imp import reload\n"})
             )
 
-    def test_bootstrap_selects_only_the_matching_locked_minor(self) -> None:
+    def test_every_supported_minor_gets_the_locked_compatibility_archive(self) -> None:
         source = source_archive()
         resolution = compatibility_resolution(source)
-        for minor, expected in (("4.5", False), ("5.2", True)):
-            selected = bootstrap.resolve_io_pdx_archive(source, minor, resolution)
-            self.assertEqual(selected["compatibility_applied"], expected)
-            if expected:
+        for minor in ("5.1", "5.2"):
+            with self.subTest(minor=minor):
+                selected = bootstrap.resolve_io_pdx_archive(source, minor, resolution)
+                self.assertTrue(selected["compatibility_applied"])
                 self.assertEqual(selected["install_archive_sha256"], resolution["compatibility"]["archive_sha256"])
                 self.assertNotEqual(selected["install_archive"], source)
-            else:
-                self.assertEqual(selected["install_archive"], source)
+                self.assertEqual(
+                    selected["expected_patch_hashes"], resolution["compatibility"]["installed_patch_files_sha256"]
+                )
+
+    def test_an_unsupported_minor_is_refused_instead_of_getting_the_upstream_archive(self) -> None:
+        source = source_archive()
+        resolution = compatibility_resolution(source)
+        for minor in ("4.4", "4.5", "5.0", "5.3", "6.0"):
+            with self.subTest(minor=minor), self.assertRaisesRegex(
+                bootstrap.UnsupportedBlenderError, "not a supported minor.*supported: 5.1, 5.2"
+            ):
+                bootstrap.resolve_io_pdx_archive(source, minor, resolution)
 
     def test_bootstrap_rejects_unsafe_compatibility_file_evidence(self) -> None:
         source = source_archive()
