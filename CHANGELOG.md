@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Route the Codex 3D model pipeline, event UI worker, generated feature art and icon artist agents to GPT-6.1 Terra (`gpt-6.1-terra`) through a Codex-only `codex.agent_models` map in `.tools/sync/agent_profiles.json`; Terra needs Codex CLI 0.159.0 or later. The synchronizer fails when the map names an agent that does not exist.
+- Route the Codex 3D model pipeline, event UI worker, generated feature art and icon artist agents to GPT-6.1 Terra (`gpt-6.1-terra`) through a Codex-only `codex.agent_models` map in `.tools/sync/agent_profiles.json`; Terra needs Codex CLI 0.159.0 or later. `sync_agents.py --verify` fails when the map names an agent that does not exist.
 
 ## 2026-10-31
 

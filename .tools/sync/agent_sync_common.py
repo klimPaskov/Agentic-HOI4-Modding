@@ -196,7 +196,7 @@ def header(agent: Agent) -> str:
 
 
 def check_agent_models(agents: List[Agent], profiles: dict) -> None:
-    """A Codex model override must name an existing canonical agent."""
+    """In the source package, a Codex model override must name an existing canonical agent."""
     names = {agent.name for agent in agents}
     unknown = sorted(set(profiles["codex"].get("agent_models", {})) - names)
     if unknown:
@@ -337,7 +337,6 @@ def synchronize(runtime_keys: List[str], check: bool) -> int:
     try:
         profiles = load_profiles()
         agents = load_agents()
-        check_agent_models(agents, profiles)
     except SyncError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
@@ -377,6 +376,7 @@ def verify(runtime_keys: List[str]) -> int:
         names = {agent.name for agent in agents}
         if len(declared) != len(set(declared)) or set(declared) - names:
             raise SyncError("tier_policy contains duplicate or absent canonical agents")
+        check_agent_models(agents, profiles)
         failures = []
         for agent in agents:
             tier = next((tier for tier in MODEL_TIERS if agent.name in policy.get(tier, [])), policy["default"])
