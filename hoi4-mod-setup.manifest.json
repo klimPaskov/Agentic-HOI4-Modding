@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "8021e49336fbc375bf414e9ec14d3993f42e3379",
+  "generated_for_revision": "18d66f8cdce2197999f5e604a0a972f53588e7c7",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -199,13 +199,13 @@
       "expected_files": [
         {
           "path": ".tools/README.md",
-          "sha256": "27b4355902af32d66387c3b3c6a5be6fd7af7bd516b7827fdd7bdf985594bb35",
-          "size": 14431
+          "sha256": "12f8e8b6c4b540fe656a914d60e6f423990cec6f1735049dbc5e6c53a7b9d2be",
+          "size": 14729
         },
         {
           "path": ".tools/audits/audit_asset_wiring_static.py",
-          "sha256": "c426a4632cfab1c48dfac1f2fd29358cb8466280711c6e8d1b63506a9f1f0623",
-          "size": 36249
+          "sha256": "585e80700f6425bf92ed025d3d17f56084790e1d76021e1585e9477f718bf507",
+          "size": 57276
         },
         {
           "path": ".tools/audits/audit_localisation_static.py",
@@ -394,13 +394,28 @@
         },
         {
           "path": ".tools/tests/fixtures/audits/README.md",
-          "sha256": "b393cdf12c56eda139da1eb7c7e1b21d8bda8cd8c424e7449a86c4bc31d46f52",
-          "size": 334
+          "sha256": "7f952a7f243860055ab782c69d360c425a8f84f4b6a09553726f9f2e8b52d40f",
+          "size": 621
         },
         {
           "path": ".tools/tests/fixtures/audits/game/common/fixture_marker.txt",
           "sha256": "46f5063c8aec0edece55e6b11c69c5b6c4889e04ebb86cb90fd3c655ebca7d17",
           "size": 57
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/game/dlc/dlc999_fixture/gfx/entities/dlc_units.asset",
+          "sha256": "527a8bacf6fb9eaf23e7dceabc41b01045f34e7de9cc6910a66d576d537bc594",
+          "size": 70
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/game/gfx/entities/vanilla_models.asset",
+          "sha256": "265010bb492e77d23b6c98269ca6dcd813efa5005b47c81ceb59603e58a3a138",
+          "size": 276
+        },
+        {
+          "path": ".tools/tests/fixtures/audits/game/gfx/entities/vanilla_models.gfx",
+          "sha256": "2b3b77c77668255245daf0aede0a245888d60a53cdc76f963eb9ce551727b62f",
+          "size": 179
         },
         {
           "path": ".tools/tests/fixtures/audits/game/gfx/interface/vanilla_ok.dds",
@@ -474,8 +489,8 @@
         },
         {
           "path": ".tools/tests/test_audits.py",
-          "sha256": "88d37957e63bf8279f9906565f7f794cfd1818903ba610d6a69e3612685a4d26",
-          "size": 8380
+          "sha256": "3d34401c1b4955cb614039d1e110aa61acfb593e3eb4ff896ceb05ef31706cbc",
+          "size": 19872
         },
         {
           "path": ".tools/tests/test_game_dir.py",
@@ -4664,8 +4679,8 @@
         },
         {
           "path": ".claude/skills/hoi4-ideas-modifiers/SKILL.md",
-          "sha256": "11f33195e1d93020c8c10716f04584398a44bd60430d22dce595448a6a5ca291",
-          "size": 33573
+          "sha256": "4deb54afe840496dcc16ae91e7f88ef49b4f035ede5118d196e47d99620e1158",
+          "size": 35353
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -4739,8 +4754,8 @@
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/references/technology-tree-gui.md",
-          "sha256": "3e8592d989a1bbfaa6aeea12743c34adace854cb87b435cc2c2a5465c46676cf",
-          "size": 8578
+          "sha256": "c553b68829945de587f1cd90ac43475ceb05b63e3f61a8db71e280265d0448c4",
+          "size": 8803
         },
         {
           "path": ".claude/skills/hoi4-text-audio-research/SKILL.md",
@@ -8088,8 +8103,8 @@
         },
         {
           "path": ".claude/skills/hoi4-ideas-modifiers/SKILL.md",
-          "sha256": "11f33195e1d93020c8c10716f04584398a44bd60430d22dce595448a6a5ca291",
-          "size": 33573
+          "sha256": "4deb54afe840496dcc16ae91e7f88ef49b4f035ede5118d196e47d99620e1158",
+          "size": 35353
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -8163,8 +8178,8 @@
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/references/technology-tree-gui.md",
-          "sha256": "3e8592d989a1bbfaa6aeea12743c34adace854cb87b435cc2c2a5465c46676cf",
-          "size": 8578
+          "sha256": "c553b68829945de587f1cd90ac43475ceb05b63e3f61a8db71e280265d0448c4",
+          "size": 8803
         },
         {
           "path": ".claude/skills/hoi4-text-audio-research/SKILL.md",
