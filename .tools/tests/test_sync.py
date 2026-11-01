@@ -406,6 +406,40 @@ class VisibleFailures(SyncCase):
 		self.assertIn("cycle", result.stderr)
 
 
+class LegacyGenerator(SyncCase):
+	"""A generator that predates the runner: its own interpreter, check flag and drift wording, and no --root."""
+
+	def setUp(self):
+		super().setUp()
+		self.mod.write(".tools/sync/legacy.py", "import sys\nfrom pathlib import Path\n"
+			"root = Path(__file__).resolve().parents[2]\n"
+			"assert '--root' not in sys.argv\n"
+			"source, target = root / 'legacy.src', root / 'legacy.out'\n"
+			"want = source.read_text() if source.exists() else ''\n"
+			"if '--verify' in sys.argv:\n"
+			"    have = target.read_text() if target.exists() else None\n"
+			"    if have != want:\n"
+			"        print('Would update legacy.out')\n"
+			"        sys.exit(1)\n"
+			"    print('legacy.out in sync')\n"
+			"else:\n"
+			"    target.write_text(want)\n")
+		data = self.mod.registry()
+		data["generators"].append({"id": "legacy", "script": ".tools/sync/legacy.py", "interpreter": [sys.executable],
+			"root_args": [], "check_args": ["--verify"], "stale_markers": ["Would update"],
+			"inputs": ["legacy.src"], "outputs": ["legacy.out"]})
+		self.mod.save_registry(data)
+
+	def test_legacy_contract(self):
+		self.mod.write("legacy.src", "v1\n")
+		stale = self.mod.run("--check", "--paths", "legacy.src")
+		self.assertEqual(stale.returncode, 1, stale.stdout + stale.stderr)
+		self.assertIn("Would update legacy.out", stale.stdout)
+		self.assertEqual(self.mod.hook("legacy.src").returncode, 0)
+		self.assertEqual(self.mod.read("legacy.out"), "v1\n")
+		self.assertInSync()
+
+
 class GuidanceSize(SyncCase):
 	"""The single-read ceiling measures content, so CRLF from a Windows checkout does not push a file over it."""
 

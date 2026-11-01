@@ -64,6 +64,12 @@ class Entry:
     outputs: Tuple[str, ...]
     needs: Tuple[str, ...]
     item_args: Tuple[str, ...]
+    # Optional, for generators that predate this runner: the interpreter (default this Python), the check-mode
+    # arguments, how the project root is passed, and the output prefixes that mean "out of date".
+    interpreter: Tuple[str, ...] = ()
+    check_args: Tuple[str, ...] = ("--check",)
+    root_args: Tuple[str, ...] = ("--root", "{root}")
+    stale_markers: Tuple[str, ...] = STALE_PREFIXES
 
 
 @dataclass
@@ -89,7 +95,7 @@ class Outcome:
         """0 in sync, 1 out of date, 2 could not run."""
         if self.code == 0:
             return 0
-        if self.code == 1 and any(line.startswith(STALE_PREFIXES) for line in self.lines):
+        if self.code == 1 and any(line.startswith(self.entry.stale_markers) for line in self.lines):
             return 1
         return 2
 
@@ -102,7 +108,7 @@ class Outcome:
         """The finding lines with their indented details, else the last lines of output."""
         found: List[str] = []
         for line in self.lines:
-            if line.startswith(PROBLEM_PREFIXES) or (found and line[:1].isspace()):
+            if line.startswith(PROBLEM_PREFIXES + self.entry.stale_markers) or (found and line[:1].isspace()):
                 found.append(line)
         return found or self.lines[-3:] or ["no output"]
 
@@ -147,7 +153,10 @@ def load_registry(root: Path) -> List[Entry]:
             entry = Entry(
                 id=row["id"], label=row.get("label", row["id"]), script=row["script"], kind=row.get("kind", "generate"),
                 sources=tuple(row.get("sources", ())), inputs=tuple(row["inputs"]), outputs=tuple(row.get("outputs", ())),
-                needs=tuple(row.get("needs", ())), item_args=tuple(row.get("item_args", ())))
+                needs=tuple(row.get("needs", ())), item_args=tuple(row.get("item_args", ())),
+                interpreter=tuple(row.get("interpreter", ())), check_args=tuple(row.get("check_args", ("--check",))),
+                root_args=tuple(row.get("root_args", ("--root", "{root}"))),
+                stale_markers=tuple(row.get("stale_markers", STALE_PREFIXES)))
         except (KeyError, TypeError) as error:
             raise RegistryError(f"{REGISTRY.as_posix()}: an entry lacks {error}") from error
         if entry.kind not in KINDS:
@@ -220,9 +229,10 @@ def has_sources(root: Path, entry: Entry) -> bool:
 
 
 def command(root: Path, entry: Entry, selection: Selection, check: bool) -> List[str]:
-    line = [sys.executable, "-B", str(root / entry.script), "--root", str(root)]
+    line = [*(entry.interpreter or (sys.executable, "-B")), str(root / entry.script)]
+    line += [argument.replace("{root}", str(root)) for argument in entry.root_args]
     if check and entry.kind == "generate":
-        line.append("--check")
+        line += list(entry.check_args)
     if not selection.whole and entry.item_args:
         for item in sorted(selection.items):
             line += [argument.replace("{item}", item) for argument in entry.item_args]
