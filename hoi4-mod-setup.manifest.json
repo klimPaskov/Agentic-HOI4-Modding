@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "2d645fb354413d35f58d0a704608381dee5440ff",
+  "generated_for_revision": "ab7d40dab87f92326cdbfe85d1fe2c4460183c51",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -10871,8 +10871,8 @@
         },
         {
           "path": ".tools/3d_pipeline/meshy_client.py",
-          "sha256": "889fcc49b906fe7d472553f1557be0cec4e36e730a556589dc1f1c7c8af8a881",
-          "size": 29635
+          "sha256": "06fadbcef4156ac6c02c7f62e01d2b1fce0cd1223321657e275881caaf2e56d7",
+          "size": 30089
         },
         {
           "path": ".tools/3d_pipeline/meshy_runtime/package-lock.json",
@@ -11576,8 +11576,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_optional_motion_contract.py",
-          "sha256": "681f1026fd6058b5ff6c175217c6ba3a9ed94a6c9710be94c6f9953b209e4f1c",
-          "size": 8265
+          "sha256": "2dec1b381a312f6b3122651d7d02f4bd301640f4983f277bee003abe27061622",
+          "size": 8674
         },
         {
           "path": ".tools/3d_pipeline/tests/test_orphan_image_retention.py",

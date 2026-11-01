@@ -121,6 +121,14 @@ class OptionalMotionTests(unittest.TestCase):
     def test_official_result_string_is_a_task_id(self):
         self.assertEqual(task_id_from({"structuredContent": {"result": "motion-id"}}), "motion-id")
 
+    def test_provider_refusal_is_reported_with_its_text(self):
+        refusal = {
+            "content": [{"type": "text", "text": "Error: Payment required (402). Task creation on the free plan is no longer supported."}],
+            "isError": True,
+        }
+        with self.assertRaisesRegex(Exception, "Meshy refused the request: Error: Payment required \\(402\\)"):
+            task_id_from(refusal)
+
 
 class MutationRetryTests(unittest.TestCase):
     def test_blender_mutation_is_not_replayed(self):

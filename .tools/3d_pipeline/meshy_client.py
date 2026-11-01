@@ -106,7 +106,15 @@ def _first_key(value: Any, names: Tuple[str, ...]) -> Optional[Any]:
     return None
 
 
+def provider_error_text(result: Dict[str, Any]) -> str:
+    """The text of an MCP error result, such as Meshy's 402 refusal on the free plan."""
+    parts = [item.get("text", "") for item in result.get("content") or [] if isinstance(item, dict)]
+    return " ".join(part.strip() for part in parts if part.strip()) or "no error text"
+
+
 def task_id_from(result: Dict[str, Any]) -> str:
+    if result.get("isError"):
+        raise MCPRouteError(f"Meshy refused the request: {provider_error_text(result)}")
     value = _first_key(result, ("task_id", "taskid", "id"))
     if not value:
         payload = _payload(result)
