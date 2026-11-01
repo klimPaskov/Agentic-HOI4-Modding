@@ -11,6 +11,12 @@ A profile may waive one check by recording an exception with a reason (see
 failure, never a pass, except the post-sanitize weight check, which only runs
 where a report carries post-sanitize weight metrics.
 
+The topology checks (non-manifold edges, boundary edges, loose components) judge
+the position-welded counts, so UV and normal seams do not count as holes or
+detached parts. The as-imported counts stay in each check's `raw_as_imported`
+field for reference. The limits in `config/asset_profiles.json` are calibrated on
+welded measurements of shipped models (see the profile `validation_calibration`).
+
 Pure Python: no Blender, no network, no provider call.
 """
 
@@ -146,11 +152,14 @@ class _Evaluation:
             self.failures.append(problem)
         self.checks[check] = entry
 
-    def at_most(self, check: str, label: str, measured: Any, limit: int) -> None:
+    def at_most(self, check: str, label: str, measured: Any, limit: int, raw: Any = None) -> None:
         if not _is_number(measured):
             self.record(check, None, limit, False, f"{label} was not measured in the candidate report")
         else:
             self.record(check, measured, limit, measured <= limit, f"{label} {measured} exceed profile allowance {limit}")
+        if raw is not None and check in self.checks:
+            # The as-imported count stays in the record for reference. It is never judged.
+            self.checks[check]["raw_as_imported"] = raw
 
     def as_dict(self) -> Dict[str, Any]:
         return {"failures": self.failures, "checks": self.checks, "exceptions_applied": self.exceptions_applied}
@@ -160,16 +169,45 @@ def _is_number(value: Any) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
+def welded_topology(geometry: Mapping[str, Any]) -> Mapping[str, Any]:
+    """The position-welded topology counts of a geometry report, or an empty mapping.
+
+    The topology checks judge these counts, not the as-imported ones. A glTF or PDX
+    file stores a vertex once per UV or normal seam, so counted as imported every
+    seam is a boundary edge and every UV island a loose part, which no real hole or
+    detached part explains. The worker welds positions at `GATE_POSITION_WELD_DISTANCE`
+    (the adapter's diagnostic weld) and reports the result under
+    `position_welded_topology`. A report without it measured nothing the gate can
+    judge, so the checks fail closed instead of falling back to the seam-inflated counts.
+    """
+
+    block = geometry.get("position_welded_topology")
+    return block if isinstance(block, dict) else {}
+
+
 def _check_topology(evaluation: _Evaluation, profile: Mapping[str, Any], geometry: Mapping[str, Any]) -> None:
+    welded = welded_topology(geometry)
     evaluation.at_most(
-        "non_manifold_edges", "non-manifold edges", geometry.get("non_manifold_edges"), _limit(profile, "max_non_manifold_edges")
+        "non_manifold_edges",
+        "welded non-manifold edges",
+        welded.get("non_manifold_edges"),
+        _limit(profile, "max_non_manifold_edges"),
+        raw=geometry.get("non_manifold_edges"),
     )
     # The worker's "loose_boundary_edges" counts edges with exactly one face.
     evaluation.at_most(
-        "boundary_edges", "boundary edges", geometry.get("loose_boundary_edges"), _limit(profile, "max_boundary_edges")
+        "boundary_edges",
+        "welded boundary edges",
+        welded.get("loose_boundary_edges"),
+        _limit(profile, "max_boundary_edges"),
+        raw=geometry.get("loose_boundary_edges"),
     )
     evaluation.at_most(
-        "loose_components", "loose components", geometry.get("loose_component_count"), _limit(profile, "max_loose_components")
+        "loose_components",
+        "welded loose components",
+        welded.get("loose_component_count"),
+        _limit(profile, "max_loose_components"),
+        raw=geometry.get("loose_component_count"),
     )
 
 

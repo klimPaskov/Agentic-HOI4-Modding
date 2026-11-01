@@ -236,7 +236,10 @@ bones so tails, weapons, and similar appendages do not define the floor.
   gates fail closed: `candidate_gate` blocks on a missing measurement, the
   texture cap is read from the PNG header, and an uncaptured io_pdx_mesh
   export report is refused. Limits and per-profile `exceptions` are in
-  `config/asset_profiles.json` (see the guide's Fail-closed gates).
+  `config/asset_profiles.json` (see the guide's Fail-closed gates). The
+  topology checks count position-welded geometry, so UV seams are not holes or
+  loose parts, and each profile's `validation_calibration` records the
+  measurements behind its limits.
 - Preserve provider textures and derive PDX diffuse, packed specular, and
   normal maps deterministically. For `PdxMeshAdvanced`, packed specular alpha
   is glossiness (`255 - roughness`), not raw roughness.

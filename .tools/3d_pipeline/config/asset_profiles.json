@@ -43,6 +43,10 @@
         "max_loose_components": 1,
         "max_residual_zero_weight_vertices": 0
       },
+      "validation_calibration": {
+        "counted_on": "position-welded geometry (1e-6), so UV and normal seams are not holes or loose parts",
+        "not_measured": "No shipped or candidate model of this profile has been measured yet, so the strict defaults stay: a closed, single-piece, fully skinned mesh. Calibrate from a measured shipped model before relaxing them."
+      },
       "exceptions": [],
       "rig_route": "none",
       "actions": [],
@@ -112,6 +116,10 @@
         "max_loose_components": 1,
         "max_residual_zero_weight_vertices": 0
       },
+      "validation_calibration": {
+        "counted_on": "position-welded geometry (1e-6), so UV and normal seams are not holes or loose parts",
+        "not_measured": "No shipped or candidate model of this profile has been measured yet, so the strict defaults stay: a closed, single-piece, fully skinned mesh. Calibrate from a measured shipped model before relaxing them."
+      },
       "exceptions": [],
       "rig_route": "none",
       "actions": [],
@@ -174,9 +182,18 @@
       },
       "validation": {
         "max_non_manifold_edges": 0,
-        "max_boundary_edges": 0,
-        "max_loose_components": 1,
+        "max_boundary_edges": 600,
+        "max_loose_components": 8,
         "max_residual_zero_weight_vertices": 0
+      },
+      "validation_calibration": {
+        "counted_on": "position-welded geometry (1e-6), so UV and normal seams are not holes or loose parts",
+        "measured_on": "13 shipped humanoid_unit meshes: 5 zin units (zin_elves_warden, zin_men_infantry, zin_orcs_warrior, zin_the_dead_revenant, zin_trolls_brute) and 8 chaos_redux zombie units (demonic, infected, mutant, necrotic, parasitic, rabid, undead, base zombies), read from the exported .mesh files on 2026-11-01 in Blender 5.1",
+        "max_non_manifold_edges": "measured 0 on all 13, limit 0",
+        "max_boundary_edges": "measured 0 on all 8 chaos_redux units and 90, 214, 371, 468, 563 on the five zin units (in small boundary loops of at most 16 edges), limit 600 is the largest measured 563 plus about 7 percent",
+        "max_loose_components": "measured 1 on the five zin units and on 3 of 8 chaos_redux units (demonic, mutant, rabid), 2, 3, 4, 5 and 7 on the other five (separate accessory parts, largest 7 on parasitic_zombies), limit 8 is the largest measured 7 plus 1",
+        "max_residual_zero_weight_vertices": "measured 0 on all 13, limit 0",
+        "not_measured": "the other profiles have no shipped model on disk, so their limits are unchanged"
       },
       "exceptions": [],
       "rig_route": "meshy_humanoid_candidate_then_blender_audit",
@@ -266,6 +283,10 @@
         "max_boundary_edges": 0,
         "max_loose_components": 1,
         "max_residual_zero_weight_vertices": 0
+      },
+      "validation_calibration": {
+        "counted_on": "position-welded geometry (1e-6), so UV and normal seams are not holes or loose parts",
+        "not_measured": "No shipped or candidate model of this profile has been measured yet, so the strict defaults stay: a closed, single-piece, fully skinned mesh. Calibrate from a measured shipped model before relaxing them."
       },
       "exceptions": [],
       "rig_route": "blender_custom_winged_biped_rig",
@@ -361,6 +382,10 @@
         "max_boundary_edges": 0,
         "max_loose_components": 1,
         "max_residual_zero_weight_vertices": 0
+      },
+      "validation_calibration": {
+        "counted_on": "position-welded geometry (1e-6), so UV and normal seams are not holes or loose parts",
+        "not_measured": "No shipped or candidate model of this profile has been measured yet, so the strict defaults stay: a closed, single-piece, fully skinned mesh. Calibrate from a measured shipped model before relaxing them."
       },
       "exceptions": [],
       "rig_route": "blender_custom_creature_rig",
