@@ -171,6 +171,34 @@ class GeometryMetricsAggregationTests(unittest.TestCase):
         self.assertEqual(metrics["objects"], 2)
         self.assertEqual(metrics["triangles"], 2)
         self.assertEqual(metrics["dimensions"], [1, 2, 3])
+        self.assertNotIn("position_welded_topology", metrics)
+
+        # With a weld distance the report also carries the welded counts the gate judges,
+        # summed over objects, including the loose parts and boundary loops.
+        welded = {
+            "Body": {"loose_boundary_edges": 6, "non_manifold_edges": 0, "degenerate_faces": 0,
+                     "loose_component_count": 1, "boundary_component_count": 2, "max_boundary_component_edges": 4},
+            "Cape": {"loose_boundary_edges": 3, "non_manifold_edges": 1, "degenerate_faces": 0,
+                     "loose_component_count": 1, "boundary_component_count": 1, "max_boundary_component_edges": 9},
+        }
+        namespace["position_welded_geometry_metrics_for_object"] = lambda obj, distance: welded[obj.name]
+        metrics = namespace["geometry_metrics"](position_weld_distance=1e-6)
+        self.assertEqual(metrics["loose_component_count"], 3)  # as imported, unchanged
+        block = metrics["position_welded_topology"]
+        self.assertEqual(block["weld_distance"], 1e-6)
+        self.assertEqual(block["loose_boundary_edges"], 9)
+        self.assertEqual(block["non_manifold_edges"], 1)
+        self.assertEqual(block["loose_component_count"], 2)
+        self.assertEqual(block["boundary_component_count"], 3)
+        self.assertEqual(block["max_boundary_component_edges"], 9)
+
+    def test_the_gate_weld_distance_is_the_adapters_diagnostic_one(self) -> None:
+        constants = {
+            node.targets[0].id: ast.literal_eval(node.value)
+            for node in TREE.body
+            if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name) and isinstance(node.value, ast.Constant)
+        }
+        self.assertEqual(constants["GATE_POSITION_WELD_DISTANCE"], 1e-6)
 
 
 if __name__ == "__main__":

@@ -2063,6 +2063,12 @@ def repair_open_surface_boundaries(weld_distance: float = 1e-5) -> Dict[str, Any
     }
 
 
+# The tolerance of the position weld that the topology gate measures. glTF and PDX files store a
+# vertex once per UV or normal seam, so the as-imported edge counts report every seam as a boundary
+# edge and every UV island as a loose part. The gate judges the position-welded counts instead.
+GATE_POSITION_WELD_DISTANCE = 1e-6
+
+
 def topology_metrics_from_bmesh(bm: bmesh.types.BMesh) -> Dict[str, Any]:
     boundary_edges = [edge for edge in bm.edges if len(edge.link_faces) == 1]
     loose_edges = len(boundary_edges)
@@ -2229,6 +2235,11 @@ def geometry_metrics(
             "loose_boundary_edges": sum(item["loose_boundary_edges"] for item in position_welded),
             "non_manifold_edges": sum(item["non_manifold_edges"] for item in position_welded),
             "degenerate_faces": sum(item["degenerate_faces"] for item in position_welded),
+            "loose_component_count": sum(item["loose_component_count"] for item in position_welded),
+            "boundary_component_count": sum(item["boundary_component_count"] for item in position_welded),
+            "max_boundary_component_edges": max(
+                (item["max_boundary_component_edges"] for item in position_welded), default=0
+            ),
         }
     return result
 
@@ -3004,7 +3015,7 @@ def prepare(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
             "pre_reduction": pre_reduction_topology_repair,
             "post_reduction": topology_repair,
         }
-    geometry = geometry_metrics()
+    geometry = geometry_metrics(position_weld_distance=GATE_POSITION_WELD_DISTANCE)
     if vanilla_reference:
         final_height = float(geometry["dimensions"][2])
         vanilla_reference["final_mesh_height"] = final_height
@@ -10213,7 +10224,7 @@ def reimport_export(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]:
             for obj in bpy.context.scene.objects
             if obj.type == "MESH"
         ],
-        "geometry": geometry_metrics(working_only=False, position_weld_distance=1e-6),
+        "geometry": geometry_metrics(working_only=False, position_weld_distance=GATE_POSITION_WELD_DISTANCE),
         "animation_bounds": animation_bounds,
         "previews": sorted(set(preview_paths)),
         "armatures": [
