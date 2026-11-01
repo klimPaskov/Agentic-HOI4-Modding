@@ -338,7 +338,8 @@ def describe_sources(entry: Entry, item: Optional[str]) -> str:
     canonical = [pattern for pattern in entry.inputs if not pattern.startswith(".tools/")]
     if item is not None:
         canonical = [pattern.replace("{item}", item).replace("/**", "/") for pattern in canonical]
-    return " or ".join(f"`{pattern}`" for pattern in canonical)
+    # An output listed by name captures no item, so name the placeholder instead of printing `{item}`.
+    return " or ".join(f"`{pattern.replace('{item}', '<name>')}`" for pattern in canonical)
 
 
 def edited_file(payload: Dict[str, Any]) -> Optional[Tuple[Path, str]]:
