@@ -17,7 +17,6 @@
 # Generated Python bytecode from reusable skill tools.
 /.claude/skills/**/__pycache__/
 /.tools/image_generation/**/__pycache__/
-/.tools/image_generation/**/node_modules/
 /.tools/image_generation/**/.venv/
 
 # Skill copies for Codex, DSH, and Qoder are generated from .claude/skills by

@@ -45,7 +45,6 @@ ALLOWED_REMOTE_HOSTS = {
     "xai_grok": {"api.x.ai", "imgen.x.ai"},
     "together_ai": {"api.together.xyz", "api.together.ai"},
     "openrouter": {"mcp.openrouter.ai", "openrouter.ai"},
-    "vertex_imagen": {"aiplatform.googleapis.com", "oauth2.googleapis.com"},
     "huggingface_inference": {"router.huggingface.co"},
 }
 ALLOWED_IMAGE_HOSTS = {
@@ -61,7 +60,6 @@ ALLOWED_IMAGE_HOSTS = {
     "xai_grok": {"api.x.ai", "imgen.x.ai"},
     "together_ai": {"api.together.xyz", "api.together.ai"},
     "openrouter": {"openrouter.ai"},
-    "vertex_imagen": {"aiplatform.googleapis.com"},
     "huggingface_inference": {"huggingface.co", "hf.co"},
 }
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
@@ -69,72 +67,6 @@ LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
 class ImageRouteError(RuntimeError):
     """A user-safe provider or project-route error."""
-
-
-def _b64url(value: bytes) -> str:
-    return base64.urlsafe_b64encode(value).decode("ascii").rstrip("=")
-
-
-def _der_item(data: bytes, offset: int = 0) -> tuple[int, bytes, int]:
-    if offset + 2 > len(data):
-        raise ImageRouteError("The saved cloud credential has an invalid private key.")
-    tag = data[offset]
-    first = data[offset + 1]
-    if first < 0x80:
-        length, start = first, offset + 2
-    else:
-        size = first & 0x7F
-        if size == 0 or size > 4 or offset + 2 + size > len(data):
-            raise ImageRouteError("The saved cloud credential has an invalid private key.")
-        length = int.from_bytes(data[offset + 2:offset + 2 + size], "big")
-        start = offset + 2 + size
-    end = start + length
-    if end > len(data):
-        raise ImageRouteError("The saved cloud credential has an invalid private key.")
-    return tag, data[start:end], end
-
-
-def _rsa_private_numbers(pem: str) -> tuple[int, int]:
-    encoded = "".join(line.strip() for line in pem.splitlines() if not line.startswith("-----"))
-    try:
-        der = base64.b64decode(encoded, validate=True)
-        tag, outer, _ = _der_item(der)
-        if tag != 0x30:
-            raise ValueError("not a sequence")
-        offset = 0
-        private_key = None
-        while offset < len(outer):
-            child_tag, child, offset = _der_item(outer, offset)
-            if child_tag == 0x04:
-                private_key = child
-                break
-        sequence = outer
-        if private_key is not None:
-            inner_tag, inner, _ = _der_item(private_key)
-            if inner_tag == 0x30:
-                sequence = inner
-        integers = []
-        offset = 0
-        while offset < len(sequence):
-            tag, value, offset = _der_item(sequence, offset)
-            if tag == 0x02:
-                integers.append(int.from_bytes(value, "big"))
-        if len(integers) < 4:
-            raise ValueError("private key fields missing")
-        return integers[1], integers[3]
-    except (ValueError, IndexError):
-        raise ImageRouteError("The saved Google Cloud credential has an unsupported private key.") from None
-
-
-def _rsa_sha256_sign(pem: str, value: bytes) -> bytes:
-    modulus, private_exponent = _rsa_private_numbers(pem)
-    digest_info = bytes.fromhex("3031300d060960864801650304020105000420") + hashlib.sha256(value).digest()
-    size = (modulus.bit_length() + 7) // 8
-    padding = size - len(digest_info) - 3
-    if padding < 8:
-        raise ImageRouteError("The saved Google Cloud private key is too small.")
-    encoded = b"\x00\x01" + b"\xff" * padding + b"\x00" + digest_info
-    return pow(int.from_bytes(encoded, "big"), private_exponent, modulus).to_bytes(size, "big")
 
 
 def _image_dimension(value: Any, default: int = 1024) -> int:
@@ -165,8 +97,6 @@ def _safe_url(provider_id: str, raw_url: str, *, allow_loopback: bool = False) -
         raise ImageRouteError("The provider address is invalid.") from None
     allowed = ALLOWED_REMOTE_HOSTS.get(provider_id, set())
     if host not in allowed:
-        if provider_id == "vertex_imagen" and (host == "aiplatform.googleapis.com" or host.endswith("-aiplatform.googleapis.com")):
-            return raw_url
         if provider_id == "aws_bedrock" and re.fullmatch(r"bedrock-runtime\.[a-z]{2}-[a-z]+-\d\.amazonaws\.com", host):
             return raw_url
         raise ImageRouteError("The provider address is outside its verified host list.")
@@ -1173,8 +1103,6 @@ class Server:
             return self._generate_xai(args)
         if protocol == "comfyui":
             return self._generate_comfyui(args)
-        if protocol == "vertex_ai":
-            return self._generate_vertex(args)
         if protocol == "aws_bedrock":
             return self._generate_bedrock(args)
         raise ImageRouteError("The selected provider route is not supported by this MCP server.")
@@ -1612,42 +1540,6 @@ class Server:
         payload = {"prompt": {"text": args["prompt"]}, "size": {"width": int(args.get("width", 1024)), "height": int(args.get("height", 1024))}}
         response = self._request_json(base.rstrip("/") + "/images/generate", "POST", {"Authorization": "Bearer " + self.require_secret("ims_token"), "x-api-key": self.require_secret("service_key"), "Content-Type": "application/json"}, payload)
         return self.save_output(args["out"], self._image_from_response(response))
-
-    def _generate_vertex(self, args: dict) -> dict:
-        try:
-            service = json.loads(self.require_secret("service_account"))
-            email = service["client_email"]
-            private_key = service["private_key"]
-            project = service["project_id"]
-            token_url = service.get("token_uri", "https://oauth2.googleapis.com/token")
-        except (KeyError, json.JSONDecodeError):
-            raise ImageRouteError("Save a valid Google Cloud service-account key in setup settings.") from None
-        now = int(time.time())
-        claims = {"iss": email, "scope": "https://www.googleapis.com/auth/cloud-platform", "aud": token_url, "iat": now, "exp": now + 3600}
-        header = _b64url(json.dumps({"alg": "RS256", "typ": "JWT"}, separators=(",", ":")).encode())
-        body = _b64url(json.dumps(claims, separators=(",", ":")).encode())
-        unsigned = f"{header}.{body}"
-        assertion = unsigned + "." + _b64url(_rsa_sha256_sign(private_key, unsigned.encode()))
-        token_body = urllib.parse.urlencode({"grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer", "assertion": assertion}).encode()
-        token_data = self._request_bytes(token_url, "POST", {"Content-Type": "application/x-www-form-urlencoded"}, token_body)
-        try:
-            token_response = json.loads(token_data)
-        except json.JSONDecodeError:
-            raise ImageRouteError("Google Cloud returned an unreadable sign-in response.") from None
-        access_token = token_response.get("access_token")
-        if not isinstance(access_token, str):
-            raise ImageRouteError("Google Cloud did not return an access token.")
-        base = _safe_url(self.provider_id, self.route["api_base_url"])
-        region = urllib.parse.urlparse(base).hostname.split("-aiplatform", 1)[0]
-        model = self.selected_model()
-        endpoint = f"{base.rstrip('/')}/projects/{urllib.parse.quote(project, safe='')}/locations/{urllib.parse.quote(region, safe='')}/publishers/google/models/{urllib.parse.quote(model, safe='-._')}:predict"
-        payload = {"instances": [{"prompt": args["prompt"]}], "parameters": {"sampleCount": 1, "aspectRatio": "1:1"}}
-        response = self._request_json(endpoint, "POST", {"Authorization": "Bearer " + access_token, "Content-Type": "application/json"}, payload)
-        for prediction in response.get("predictions", []):
-            encoded = prediction.get("bytesBase64Encoded") if isinstance(prediction, dict) else None
-            if isinstance(encoded, str):
-                return self.save_output(args["out"], base64.b64decode(encoded))
-        raise ImageRouteError("Vertex AI returned no image.")
 
     def _generate_bedrock(self, args: dict) -> dict:
         settings = self.provider.get("settings", {})

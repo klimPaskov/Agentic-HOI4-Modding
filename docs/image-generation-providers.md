@@ -8,6 +8,8 @@ The app registers image tools for each selected coding client. OpenCode uses the
 project's root `opencode.json` and its `mcp` settings, following the
 [OpenCode MCP server guide](https://opencode.ai/docs/mcp-servers/).
 
+The kit's image route is hoi4-imagegen (first section below). It reads its provider from the user's own sign-in or keys, so the other sections describe the services behind the provider adapters and the older Setup routes, which remain documented until HOI4 Mod Setup moves its provider choice into hoi4-imagegen.
+
 An image provider is separate from the coding environment. Pick one primary image route and add optional routes only when the workflow needs them. A route may be a local MCP server, a vendor-hosted MCP server, a direct API adapter, a local image server, or manual art.
 
 Some services allow several images in one request. The HOI4 asset workflow should still request **one finished asset per call**. That gives each icon, portrait, or illustration its own output path and review result. Model-specific limits below are not interchangeable; check the selected model’s live schema before sending a request.
@@ -18,12 +20,14 @@ Keep API keys in Windows Credential Manager, macOS Keychain or the Linux desktop
 
 ## Subscription and account routes
 
-### ChatGPT subscription through GPTImage
+### hoi4-imagegen (default HOI4 route)
 
-- **Route and sign-in:** The installed [GPTImage source repository](https://github.com/Connected-Mate/gptimage) is the source for this local MCP and CLI. The user signs in through a browser with their ChatGPT account; no API key is needed. The current source can read GPTImage or Codex local auth state and calls an undocumented ChatGPT/Codex endpoint. This is an independent, unofficial integration; OpenAI does not publish or support this subscription endpoint.
-- **Cost and model:** No separate API image charge. Generation uses the account’s ChatGPT usage limits, which can change or run out. The checked source defaults to a configurable GPT-5.5 route that calls the image-generation tool; do not promise a particular underlying image model.
-- **References, editing, and alpha:** The pinned MCP revision `dfb4948b6877b5b7febf73e1342fcfacd862a1ed` accepts reference-image paths, discovers project images with `list_references`, and saves PNG. It has one generation tool and no separate edit-session tool. Its current tool schema has no transparent-background setting, so treat output as opaque unless the saved pixels prove otherwise.
-- **Limits:** The tool describes requested output sizes with edges up to 3,840 pixels, dimensions divisible by 16, and a ratio no wider than 3:1. The source does not document the maximum reference-image count or input size.
+- **Route and sign-in:** [hoi4-imagegen-mcp](https://github.com/klimPaskov/hoi4-imagegen-mcp) is the kit's image route. HOI4 Mod Setup installs its binary and the project MCP entry (server id `hoi4_imagegen`, tools `hoi4.image_*`). It makes the 40 HOI4 asset families with six grouped generation tools (`hoi4.image_icon`, `hoi4.image_picture`, `hoi4.image_portrait`, `hoi4.image_flag`, `hoi4.image_unit`, `hoi4.image_interface`), each with a required `family`, and runs every family's processing itself (canvas size from the mod's `.tools/gfx/profiles.json` with the vanilla size as the default, alpha, margins, report-card shadow, achievement triplet, advisor card, portrait crop, flag ladder, focus shine sprite, frame strips, DDS or TGA export).
+- **Providers:** After `hoi4-imagegen login` the ChatGPT login is the default local provider and uses the account's ChatGPT plan. It runs gpt-6-luna at high reasoning effort, checks that the backend reports the same model and effort, and cannot force the quality, because the backend's own image tool chooses it. The login calls an undocumented ChatGPT backend that OpenAI does not support for other tools, so it can change or be blocked without notice, and it is never part of a hosted deployment. Documented providers stay available through keys read from the environment: `OPENAI_API_KEY`, `GEMINI_API_KEY`, `FAL_KEY`, and a ComfyUI endpoint. A plan can name a provider, and the plan shows the cost estimate before any paid call.
+- **References, editing, and alpha:** References are added with `hoi4.image_references` with a role (`style_anchor`, `subject_anchor`, `geometry_anchor`) and come from the mod's own art first (its copy of the asset skill's `assets/` folder and its existing assets of the family) and from the kit's vanilla shelf second, and the tool reports which it used and why. Vanilla references may always be sent to a provider when they help. `hoi4.image_edit` refines a candidate. Transparency is proven from the saved pixels, never from the prompt, and an opaque result for a transparent family is refused.
+- **Limits:** One asset per call. Install needs a passing validation of the family's full check set, an approving review of the exact file and unchanged hashes. A family's asset is never derived from another family's.
+
+Sources: [hoi4-imagegen-mcp](https://github.com/klimPaskov/hoi4-imagegen-mcp) · the kit skill `.claude/skills/hoi4-imagegen/SKILL.md`
 
 ### Codex native ImageGen
 
@@ -32,14 +36,14 @@ Keep API keys in Windows Credential Manager, macOS Keychain or the Linux desktop
 - **References, editing, and alpha:** The built-in tool supports generation, edits, and reference images. Its current source accepts up to five reference paths and has a transparent-background flag. A Codex issue reports transparency can fail when references are included; inspect the actual file’s alpha channel before treating it as a cutout.
 - **Limits:** The public built-in tool schema does not state a reliable maximum output size. The API fallback has its own separate sizes, models, key, and price.
 
-Sources: [GPTImage source and README](https://github.com/Connected-Mate/gptimage) · [Codex image tool](https://github.com/openai/codex/blob/main/codex-rs/ext/image-generation/src/tool.rs) · [Codex image skill](https://github.com/openai/codex/blob/main/codex-rs/skills/src/assets/samples/imagegen/SKILL.md) · [Codex plan access](https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan) · [transparency issue with references](https://github.com/openai/codex/issues/42743)
+Sources: [Codex image tool](https://github.com/openai/codex/blob/main/codex-rs/ext/image-generation/src/tool.rs) · [Codex image skill](https://github.com/openai/codex/blob/main/codex-rs/skills/src/assets/samples/imagegen/SKILL.md) · [Codex plan access](https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan) · [transparency issue with references](https://github.com/openai/codex/issues/42743)
 
 ## API routes and hosted MCP services
 
 ### OpenAI Images API
 
 - **Route and sign-in:** Official Images API and Responses API; authenticate with an OpenAI API key. Organization verification may be required. OpenAI does not publish a dedicated image-generation MCP server. Use the app’s own reviewed adapter to the official API; community MCP packages are not OpenAI-supported.
-- **Models and cost:** Current models include GPT Image 2.5 Sunburst and Flare, GPT Image 2, 1.5, 1, and 1 Mini. Billing is by image and text tokens. As a rough 1K reference, GPT Image 2 examples range from about $0.006 at low quality to $0.211 at high; GPT Image 1.5 examples range from about $0.009 to $0.133. GPT Image 2.5 uses token-based rates, so actual cost depends on image size, quality, prompt, and references.
+- **Models and cost:** Current models include GPT Image 2.5 Sunburst and Flare, GPT Image 2 and GPT Image 1.5. Billing is by image and text tokens. As a rough 1K reference, GPT Image 2 examples range from about $0.006 at low quality to $0.211 at high; GPT Image 1.5 examples range from about $0.009 to $0.133. GPT Image 2.5 uses token-based rates, so actual cost depends on image size, quality, prompt, and references.
 - **References, editing, and alpha:** Generation and edits are supported. GPT Image 2.5 supports transparent backgrounds; set a PNG or WebP output. GPT Image 2 transparency remains in preview. The API permits up to ten outputs in a request; the app should call once per asset.
 - **Limits:** For GPT Image 2 and 2.5, dimensions must satisfy the model’s pixel limits; documented bounds include a 3,840-pixel maximum edge, dimensions divisible by 16, and a ratio no wider than 3:1. Image input cost is separate. The checked image API page does not give one universal reference-image count for every model.
 
@@ -47,7 +51,7 @@ Sources: [image generation guide and cost examples](https://developers.openai.co
 
 ### Google Gemini and Nano Banana
 
-- **Route and sign-in:** Use the Gemini API through Google AI Studio with an API key. Vertex AI is another cloud route using Google Cloud credentials. No first-party image-generation MCP was found; the official route is the API. Community MCP packages exist, including [gemini-mcp](https://github.com/chrischall/gemini-mcp).
+- **Route and sign-in:** Use the Gemini API through Google AI Studio with an API key. No first-party image-generation MCP was found; the official route is the API. Community MCP packages exist, including [gemini-mcp](https://github.com/chrischall/gemini-mcp).
 - **Models and cost:** Current image models are Nano Banana 2.1, Gemini 3.1 Flash Image, Gemini 3.1 Flash Lite Image, and Nano Banana Pro (Gemini 3 Pro Image). Approximate output prices are $0.034–$0.113 for Nano Banana 2.1, $0.067–$0.151 for Flash Image, and $0.134–$0.24 for Pro, by output size. The named image models do not show a free tier in the current pricing table; batch pricing can be lower.
 - **References, editing, and alpha:** Conversational editing is supported. Reference limits vary: Lite supports up to 14 references; Nano Banana 2 supports up to 10 object references and up to 4 character references; Pro supports up to 6 object, 5 character, and 3 style references. The image API docs do not document a native alpha-output option. Use a background-removal step and verify the result.
 - **Limits:** Image outputs run from 512 pixels on selected models through 4K. Aspect ratios and supported reference types differ by model. Google adds a SynthID watermark to generated images.
@@ -177,15 +181,6 @@ Sources: [FLUX.2 Pro model page](https://www.together.ai/models/flux-2-pro) · [
 - **Limits:** Image model and endpoint records list supported aspect ratios, references, parameters, and price. The Setup route offers the selected GPT Image model’s listed ratios; the model chooses pixel dimensions. Check the live endpoint record rather than assuming one OpenRouter-wide size limit.
 
 Sources: [official hosted MCP guide](https://openrouter.ai/docs/guides/overview/mcp-server) · [image API tutorial](https://openrouter.ai/blog/tutorials/image-generation/) · [live image-model list](https://openrouter.ai/docs/api/api-reference/images/list-image-models) · [per-model endpoint pricing and parameters](https://openrouter.ai/docs/api/api-reference/images/list-image-model-endpoints) · [image-generation server tool](https://openrouter.ai/docs/guides/features/server-tools/image-generation)
-
-### Google Vertex AI Imagen
-
-- **Route and sign-in:** Use Vertex AI with Google Cloud credentials and a Google Cloud project. The setup route reads a service-account credential saved in the operating-system credential store. No image-generation MCP was found; the app-managed adapter calls the official API.
-- **Models and cost:** Imagen 4 Fast, Standard, and Ultra are billed per image. Current list prices are about $0.02, $0.04, and $0.06 per image, respectively.
-- **References, editing, and alpha:** Imagen 4 is text-to-image. Use Gemini image models for conversational edits and references. No native transparent output is documented.
-- **Limits:** The app adapter uses the model’s default image size. Check the selected Imagen endpoint for its current output dimensions and regional availability.
-
-Sources: [Imagen 4 model card](https://cloud.google.com/vertex-ai/generative-ai/docs/models/imagen/4-0-generate-001) · [Vertex AI image pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing)
 
 ### Microsoft Foundry MAI Image
 

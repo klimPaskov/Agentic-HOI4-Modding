@@ -144,7 +144,9 @@ class ImageGenerationRuntimeTests(unittest.TestCase):
 
     def test_only_verified_https_and_local_loopback_routes_are_allowed(self) -> None:
         self.assertEqual(server._safe_url("automatic1111_local", "http://127.0.0.1:7860", allow_loopback=True), "http://127.0.0.1:7860")
-        self.assertEqual(server._safe_url("vertex_imagen", "https://us-central1-aiplatform.googleapis.com/v1"), "https://us-central1-aiplatform.googleapis.com/v1")
+        self.assertEqual(server._safe_url("aws_bedrock", "https://bedrock-runtime.us-west-2.amazonaws.com"), "https://bedrock-runtime.us-west-2.amazonaws.com")
+        with self.assertRaisesRegex(server.ImageRouteError, "host list"):
+            server._safe_url("vertex_imagen", "https://us-central1-aiplatform.googleapis.com/v1")
         with self.assertRaisesRegex(server.ImageRouteError, "HTTPS"):
             server._safe_url("openai_api", "http://api.openai.com/v1")
         with self.assertRaisesRegex(server.ImageRouteError, "host list"):
