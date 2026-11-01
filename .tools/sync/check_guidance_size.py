@@ -9,33 +9,51 @@ linking it from the section that needs it. Never shorten requirements to fit.
 
     python .tools/sync/check_guidance_size.py
 
+Sizes are counted with LF line endings, so a Windows checkout that stores
+CRLF measures the same as every other machine.
+
+Exit codes: 0 every file fits, 1 a file is over the ceiling, 2 the limits
+cannot be read.
+
 Standard library only; runs on Python 3.9 or newer.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
+from typing import List, Optional
 
 TOOLS_DIR = Path(__file__).resolve().parent
 MOD_ROOT = TOOLS_DIR.parents[1]
 
 
-def main() -> int:
-    limits = json.loads((TOOLS_DIR / "read_limits.json").read_text(encoding="utf-8"))
-    ceiling = limits["guidance_file_tokens"]
-    ratio = limits["estimated_bytes_per_token"]
+def main(argv: Optional[List[str]] = None) -> int:
+    parser = argparse.ArgumentParser(description="Check that guidance files stay below the single-read ceiling.")
+    parser.add_argument("--root", type=Path, default=MOD_ROOT, help="project root (default: the project holding this tool)")
+    root = parser.parse_args(argv).root.resolve()
+    limits_path = root / ".tools" / "sync" / "read_limits.json"
+    try:
+        limits = json.loads((limits_path if limits_path.is_file() else TOOLS_DIR / "read_limits.json").read_text(encoding="utf-8"))
+        ceiling = limits["guidance_file_tokens"]
+        ratio = limits["estimated_bytes_per_token"]
+        patterns = limits["checked"]
+    except (OSError, ValueError, KeyError) as error:
+        print(f"ERROR: read_limits.json cannot be read: {error}", file=sys.stderr)
+        return 2
     skill_limit = limits.get("root_skill_max_bytes", ceiling * ratio)
     over = []
     checked = 0
-    for pattern in limits["checked"]:
-        for path in sorted(MOD_ROOT.glob(pattern)):
+    for pattern in patterns:
+        for path in sorted(root.glob(pattern)):
             checked += 1
-            size = path.stat().st_size
+            # Count LF bytes: a Windows checkout with core.autocrlf turns every LF into CRLF, which a model never reads.
+            size = len(path.read_bytes().replace(b"\r\n", b"\n"))
             limit = skill_limit if path.name == "SKILL.md" else ceiling * ratio
             if size > limit:
-                over.append((path.relative_to(MOD_ROOT).as_posix(), size, limit))
+                over.append((path.relative_to(root).as_posix(), size, limit))
     for name, size, limit in over:
         print(f"OVER: {name} is {size:,} bytes (about {size // ratio:,} tokens); the limit is {limit:,} bytes. Move a complete topic into a linked reference file.")
     if not over:

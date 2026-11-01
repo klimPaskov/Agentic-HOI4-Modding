@@ -349,6 +349,12 @@ Common event pieces:
 
 Keep ids stable when updating existing chains. If an event already exists in a namespace, do not renumber it for cosmetic tidiness.
 
+- Leader events (`unit_leader_event`, `operative_leader_event`) must set `is_triggered_only = yes`, as the engine message and 40 of 40 vanilla leader events show. [vanilla-confirmed 1.19.3]
+- A non-integer event id suffix is dead in vanilla, since `BBA_italy_missiolinis.02_north` and 3 more never fire. [vanilla-confirmed 1.19.3]
+- Public news events normally set `major = yes`, as 596 of 677 vanilla news events do. [vanilla-confirmed 1.19.3]
+- The delay arguments of `country_event` include `days`, `hours`, `months`, `random_days` and `random_hours`, and the upper bounds of the `random_*` ones are exclusive. [docs]
+- No script effect disables or cancels an event. [docs]
+
 ### Baseline stages and escalation variants
 
 Baseline stages are the ordinary flow of the event chain. They are not automatically special mod systems. They can be represented by flags, variables, follow-up events, timed missions, decisions, focus unlocks, or scripted GUI state.
@@ -472,7 +478,7 @@ Before writing an effect, identify the expected scope:
 
 If an effect chain needs a scope later, save it as an event target. Use regular event targets for short chains and global event targets only when persistence is required. Clean global event targets when the system ends.
 
-For country activation, deferred setup, player transfer, or coalesced refreshes, read [country-activation.md](references/country-activation.md) before implementing the receiver chain.
+For country activation, deferred setup, player transfer, or coalesced refreshes, read [country-activation.md](references/country-activation.md) before implementing the receiver chain. For variables, arrays, loops and script math, read [variables-and-math.md](references/variables-and-math.md).
 
 When inlining a multi-condition scripted trigger inside `NOT`, retain an explicit `AND` around its conditions because sibling conditions in `NOT` use NOR semantics. Preserve rejection when either a shared precondition or native legality check fails. State-scoped diagnostics must check country flags through the intended country scope.
 
@@ -561,6 +567,8 @@ Do not use a news event for every ordinary result. Use it for public shifts, war
 
 Use `on_actions` when an event should react to engine events such as war, capitulation, annexation, peace, state control changes, focus completion, monthly pulses, or other supported hooks.
 
+An `on_actions` block holds only `effect` and `random_events`. [vanilla-confirmed 1.19.3]
+
 Do not use whole-world daily or weekly scans unless the repository rules allow that and the feature truly needs it. Prefer narrower hooks, targeted pulses, country flags, scripted triggers, and cleanup events.
 
 When using `on_actions`, document:
@@ -633,6 +641,10 @@ For numeric `defined_text` output, put the formatted variable in a real `.yml` l
 An inline formatted variable string such as `localization_key = "[?temp_value|0]"` is tokenized as a dynamic key and may fail with dynamic-token errors.
 Temporary variables assigned in the same `text.trigger` remain visible to the selected localisation key, so calculate the display value there.
 Retain constant-backed temporary getters where the installed documentation supports the assignment, and do not introduce persistent globals solely for formatting.
+A scripted localisation `random_list` needs `seed = <scoped variable>`, or it repeats the same result. [vanilla-confirmed 1.19.3]
+The triggers of a scripted localisation entry must be valid for the scope the key is called in. [vanilla-confirmed 1.19.3]
+`§[ScriptedLocName]` yields a computed colour letter. [vanilla-confirmed 1.19.3]
+The checksum covers only `common`, `events`, `history` and `map`, so a localisation-only mod keeps the checksum. [vanilla-confirmed 1.19.3] `checksum_manifest.txt`
 
 Report and event descriptions drawn on a light parchment or paper background must use plain text for names and values, without `§` colour formatting, including strings returned by scripted localisation.
 Keep colours only in consumers with a supported dark background, such as options, tooltips, decisions, or GUI text; use separate plain and coloured localisation variants when a shared helper feeds both.

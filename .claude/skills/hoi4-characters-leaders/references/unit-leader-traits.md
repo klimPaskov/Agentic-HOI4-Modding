@@ -94,6 +94,7 @@ Additional keys seen in vanilla `00_traits.txt` and the wiki: `slot`, `specialis
 ## Skill levels and skill definitions
 
 - Level definitions: `leader_skills`, `leader_attack_skills` and similar roots in `00_skills.txt`, `00_attack_skills.txt` and siblings, with `cost`, `type = navy` or `land`, `modifier`, and for navy `building_module_modifier`. They are the source for what each level grants; copy structure when adding a new level.
+- The overall `skill` level grants no modifier in `leader_skills`. [vanilla-confirmed 1.19.3]
 - Character effects that change skill: `add_skill_level`, `add_attack`, `add_defense`, `add_planning`, `add_logistics`, `add_maneuver`, `add_coordination`, `gain_xp`, `add_max_trait`.
 
 ## Abilities

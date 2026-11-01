@@ -39,6 +39,9 @@ on:
       - ".tools/gfx/**"
       - ".tools/tests/**"
       - ".tools/ruff.toml"
+      - ".tools/py.sh"
+      - ".tools/wiki/**"
+      - ".gitattributes"
       - "scripts/check_shared_tools.py"
       - "scripts/shared_tools.json"
   pull_request:
@@ -73,10 +76,28 @@ jobs:
       - run: |
           mkdir -p "$RUNNER_TEMP/hoi4/common" "$RUNNER_TEMP/hoi4/localisation"
           python .tools/check.py setup --save-game-dir "$RUNNER_TEMP/hoi4"
-      - run: python .tools/sync/sync_agents.py --check
-      - run: python .tools/sync/sync_instructions.py --check
-      - run: python .tools/sync/check_guidance_size.py
-      - run: python .tools/sync/sync_skills.py --check
+      # Every generator and size check in .tools/sync/generators.json, in check mode. Pull requests run it
+      # unfiltered, so a required check always reports.
+      - run: python .tools/sync/generators.py --check
       - run: python .tools/wiki/verify_wiki_snapshot.py --quiet
       - run: python scripts/check_release_package.py
       - run: python scripts/validate_published_manifests.py
+
+  # The generator runner, the hook and the launcher run on every machine the kit supports.
+  sync-tools:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.13"
+      - run: sh .tools/py.sh -c "import sys; print(sys.version)"
+      - run: python -B -m unittest discover -s .tools/tests -p "test_sync.py"
+      - run: python -B .tools/sync/generators.py --check

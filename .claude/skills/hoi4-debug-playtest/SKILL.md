@@ -148,15 +148,13 @@ A path, namespace, localisation key, sprite name, event ID, focus ID, decision I
 
 For a repeated pre-menu crash with an empty fresh `error.log`, check `common/script_constants/` category schemas early; the empty log does not prove successful startup. Read installed vanilla `common/script_constants/documentation.md` and the Script Constants section of `documentation/script_concept_documentation.md`: each category requires `schema` as its first entry, and scalar declarations use `data = int` or `data = fixed_point`, not `any_value`. Preserve valid array declarations using installed vanilla `common/script_constants/country_groups.txt` (`array = country`) and `state_groups.txt` (`array = state`) precedents; absence of scalar `data` alone is not an array-schema defect. Repair confirmed declaration defects without changing tuning values, constant names, or consumers.
 
-A parsed-object key recovered from a crash dump is an investigative lead, not proof that the named entry alone caused the crash. Shortening or removing it does not establish a cause without a successful controlled retest. Resolving an early parse crash can expose a large downstream error batch that earlier launches never reached, so distinguish newly observable errors from demonstrated patch regressions. Keep the clean-start gate pending until the required main-menu and country-map observations and fresh-log checks pass.
+Apply `hoi4-investigate` to every attributed line: root cause before an edit, the evidence ladder, parser cascades and crash-dump leads (section 5), and your own patch's new errors (section 1). Keep the clean-start gate pending until the required main-menu and country-map observations and fresh-log checks pass.
 
 For startup parse errors involving `check_variable`, distinguish valid shorthand such as `{ some_value > threshold }` from malformed mixed form `{ var = some_value > threshold }`. Consult installed `documentation/triggers_documentation.md` and the offline Data structures comparison examples. In a confirmed mixed form, remove only the redundant `var =`, preserving the comparator, scoped variable token, and right-hand value, including a `constant:category.threshold` token. Keep valid shorthand and genuine long-form blocks such as `{ var = some_value value = threshold compare = greater_than }` intact; `>` is supported syntax.
 
 For unsupported `clear_temp_variable`, do not mechanically rename it to `clear_variable` or delete all occurrences: the offline Data structures documentation restricts `clear_variable` to regular variables. Inventory each exact identifier's writes, reads, callers, nested helpers, and caller continuations before choosing a repair. Delete terminal cleanup only when every later invocation initializes before any read and no downstream consumer observes absence or retention. Cross-helper inputs or sentinel semantics require an explicit repair that preserves the consumer contract; setting zero or assuming deletion at a helper's closing brace does not prove equivalence to absence.
 
 For deliberately inert ordinary country templates, a comment-only history file can still be reported missing by the loader. When the accepted package model supplies all country attributes at runtime, an empty dated history block such as `1936.1.1 = { }` can provide a recognized input with no child effects; confirm acceptance in fresh logs for the installed engine. Do not use this instead of required starting history or OOB content, or switch tags into a dynamic pool merely to remove the warning: inspect `create_dynamic_country` origin, copy-source, and reservation semantics first. Loader acceptance does not validate runtime country creation, reservation, transfer, or cleanup.
-
-Do not dismiss a new error introduced after the agent's own patch as pre-existing. Treat it as part of the current change set until disproven with evidence.
 
 ## 8. Startup repair loop
 
@@ -181,7 +179,7 @@ For each repair cycle:
 
 Continue until the clean-startup criterion is met or a hard stop is reached.
 
-Do not fix warnings by suppressing, deleting, or renaming content without understanding the gameplay consequence. Do not replace missing content with placeholders or fallbacks unless the user approved that exact fallback.
+Fix by root cause as `hoi4-investigate` section 1 requires, never by suppressing a warning. Do not replace missing content with placeholders or fallbacks unless the user approved that exact fallback.
 
 ## 9. Hard stops
 
@@ -228,6 +226,8 @@ Prefer normal UI, decisions, focuses, and mod-provided debug or scenario control
 Use console or debug commands only to create a deterministic prerequisite state, shorten dead time, or reproduce a reported issue. Record every command and its purpose.
 
 Never use a console command to bypass the exact trigger, cost, AI choice, or state transition that the test is supposed to validate.
+
+Command names to get right: `acclimatization` (not `acclimization`), `reload_textures`, `update_loc <tag>`, and `addfunds`, which defaults to 700. [docs]
 
 ### 10.4 Checkpoint policy
 

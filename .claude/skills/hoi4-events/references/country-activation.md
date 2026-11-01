@@ -10,6 +10,9 @@ When a country helper enters its exact source-state pointer, PREV there is the c
 Within a state's stored-owner or holder country scope, return explicitly to the state through PREV for state flags.
 PREV depends on the actual nesting, and ROOT remains valid wherever the contract explicitly requires it.
 
+A misspelled hook name fails silently, so copy names from `common/on_actions/_documentation.md`. [docs]
+Wiki-listed hooks that appear in neither the documentation nor vanilla script, such as `on_guarantee` or `on_military_access`, stay unverified until tested. [docs]
+
 In a participant-country iterator reached from a country event, `ROOT` remains that event's original recipient across participant-country and state scope changes.
 For targeted decisions, verify the actual callback's `ROOT`/`FROM` contract against installed documentation and a native precedent rather than assuming the owner's country-event contract: in the standard targeted-decision context, `ROOT` is the country taking the decision and `FROM` is its target country or state.
 Capture the intended current participant with regular `save_event_target_as = participant` in that participant's country scope before entering state scope, then use `event_target:participant` for helper payer, victim, and target-country inputs and for participant receipt or idempotence flags.

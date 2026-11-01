@@ -129,6 +129,7 @@
           "sync/README.md",
           "sync/*.py",
           "sync/*.json",
+          "py.sh",
           "README.md",
           "package_chatgpt_project_sources.py",
           "package_chatgpt_project_sources.bat",

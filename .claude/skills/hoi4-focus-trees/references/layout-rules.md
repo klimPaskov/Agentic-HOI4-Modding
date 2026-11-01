@@ -22,6 +22,9 @@ Reward-only changes that deliberately preserve layout use inspect, render, and c
 
 Repeat inspect, render, rewrite, and render until the first-glance branch review passes. One clean render is not completion evidence.
 
+- `relative_position_id` must name a focus defined earlier, and a loop logs "Circular reference detected for relative position." [vanilla-confirmed 1.19.3]
+- `initial_show_position` is set at tree level in 29 of 67 vanilla focus trees. [vanilla-confirmed 1.19.3]
+
 Required layout checks:
 
 - every supported major branch family is recognizable at normal zoom, with a visible root, meaningful fork, and payoff or convergence

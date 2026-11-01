@@ -10,9 +10,7 @@ Release from the Claude-first source repository. Keep package code, generated ru
 
    ```powershell
    python -m pip install "jsonschema==4.25.1" "Pillow==12.2.0" "openpyxl==3.1.5" "numpy==2.2.6" "scipy==1.15.3" "uv==0.7.8"
-   python .tools/sync/sync_agents.py
-   python .tools/sync/sync_instructions.py
-   python .tools/sync/sync_skills.py
+   python .tools/sync/generators.py
    python -m unittest discover -s scripts -p "test_*.py"
    python scripts/test_agent_sync_contract.py
    python -m unittest discover -s .claude/skills/hoi4-feature-assets/tools/tests -p "test_*.py"
@@ -21,11 +19,8 @@ Release from the Claude-first source repository. Keep package code, generated ru
    python -m unittest discover -s .tools/gfx -p "test_*.py"
    python scripts/check_shared_tools.py
    python .tools/check.py full --only script-rules gfx guidance generators quality
-   python .tools/sync/sync_agents.py --check
+   python .tools/sync/generators.py --check
    python .tools/sync/sync_agents.py --verify
-   python .tools/sync/sync_instructions.py --check
-   python .tools/sync/sync_skills.py --check
-   python .tools/sync/check_guidance_size.py
    python .tools/wiki/verify_wiki_snapshot.py
    python -m compileall -q .tools/3d_pipeline
    python -m unittest discover -s .tools/3d_pipeline/tests -p "test_*.py"

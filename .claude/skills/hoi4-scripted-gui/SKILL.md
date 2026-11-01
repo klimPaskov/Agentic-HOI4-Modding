@@ -17,6 +17,10 @@ Read `AGENTS.md` and the linked source for the exact window. Verify live schemas
 
 For an attached visual meter, vanilla `interface/sov_paranoia_system_scripted_gui.gui` and `common/scripted_guis/SOV_paranoia_system_scripted_gui.txt` demonstrate separate background, meter, text, and dynamic-frame consumers. Choose a closer precedent when the requested interaction differs. Verify context-specific scope, variable, and event-target support against installed documentation and actual consumers. Inspect pointer lifecycle, stale-target handling, and cleanup instead of assuming support or prohibition from memory.
 
+In a scripted GUI definition, `weight` and `ignore_lower_weights` sit beside `ai_will_do`, not inside it. [docs]
+Use `parent_window_name` for the parent window, because the documentation's `parent_window_window` is a slip. [docs] [unverified] (executable string)
+Font overrides for Chinese and Korean live in `core_chinese.gfx` and `core_korean.gfx`, not `code_chinese.gfx`. [vanilla-confirmed 1.19.3]
+
 Name the authorized window, files, entry point, parent or context, linked assets, states, resolutions, and exclusions before editing. Route a dedicated UI introduced and owned by one named event to `hoi4_event_ui_worker` under `hoi4-subagents`. Shared event logs, event-detail frameworks, settings, super-event frameworks, shared registries, and unrelated interfaces remain parent-owned and require their own task authorization. Using this skill or opening a shared window does not authorize changing it.
 
 ## Reference image before implementation

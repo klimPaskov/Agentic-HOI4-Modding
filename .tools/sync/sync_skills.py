@@ -5,14 +5,23 @@ Claude Code, Cursor, and OpenCode read `.claude/skills/` directly. Codex and
 DeepSeek Harness read `.agents/skills/`, and Qoder reads `.qoder/skills/`.
 This tool keeps those folders identical to the canonical library.
 
-    python .tools/sync/sync_skills.py                 # refresh every mirror that exists
+    python .tools/sync/sync_skills.py                 # refresh every mirror this project needs
     python .tools/sync/sync_skills.py --target agents # create or refresh .agents/skills
+    python .tools/sync/sync_skills.py --skill hoi4-mtth   # refresh one skill's copies
     python .tools/sync/sync_skills.py --check         # report drift, write nothing
+
+An installed mod needs `.agents/skills` when it has a `.codex/` folder and
+`.qoder/skills` when it has a `.qoder/` folder, and `--check` reports a missing
+required mirror. The source package (`CLAUDE_template.md` without `CLAUDE.md`)
+tracks only the canonical library, because HOI4 Mod Setup builds the mirrors at
+install, so there only mirrors that already exist are refreshed.
 
 Copies are the default because HOI4 Mod Setup tracks the mirrored files it
 installs. `--mode link` replaces a mirror folder with a directory junction
 (Windows) or symbolic link (elsewhere) for a project that does not use the app.
 A skill folder that exists only in a mirror is reported, never deleted.
+
+Exit codes: 0 in sync, 1 drift, 2 the canonical library is missing.
 
 Standard library only; runs on Python 3.9 or newer.
 """
@@ -26,21 +35,37 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 MOD_ROOT = Path(__file__).resolve().parents[2]
-CANONICAL = MOD_ROOT / ".claude" / "skills"
-TARGETS: Dict[str, Path] = {
-    "agents": MOD_ROOT / ".agents" / "skills",
-    "qoder": MOD_ROOT / ".qoder" / "skills",
+TARGETS: Dict[str, str] = {
+    "agents": ".agents/skills",
+    "qoder": ".qoder/skills",
+}
+# A mirror is required in an installed mod when the runtime that reads it is installed.
+REQUIRED_BY: Dict[str, str] = {
+    "agents": ".codex",
+    "qoder": ".qoder",
 }
 IGNORED = {"__pycache__", ".DS_Store"}
 
 
-def canonical_skills() -> List[Path]:
-    if not CANONICAL.is_dir():
-        raise SystemExit(f"ERROR: canonical skill folder not found: {CANONICAL.relative_to(MOD_ROOT)}")
-    return sorted(path for path in CANONICAL.iterdir() if path.is_dir() and (path / "SKILL.md").is_file())
+def canonical_skills(canonical: Path, names: Optional[List[str]]) -> List[Path]:
+    skills = sorted(path for path in canonical.iterdir() if path.is_dir() and (path / "SKILL.md").is_file())
+    if names:
+        wanted = set(names)
+        skills = [skill for skill in skills if skill.name in wanted]
+    return skills
+
+
+def is_source_package(root: Path) -> bool:
+    return (root / "CLAUDE_template.md").is_file() and not (root / "CLAUDE.md").is_file()
+
+
+def required_targets(root: Path) -> List[str]:
+    if is_source_package(root):
+        return []
+    return [key for key, marker in REQUIRED_BY.items() if (root / marker).is_dir()]
 
 
 def is_link(path: Path) -> bool:
@@ -88,45 +113,61 @@ def copy_skill(skill: Path, mirror: Path) -> int:
     return written
 
 
-def link_folder(mirror_root: Path) -> None:
+def link_folder(mirror_root: Path, canonical: Path) -> None:
     if mirror_root.exists() and not is_link(mirror_root):
         shutil.rmtree(mirror_root)
     elif is_link(mirror_root):
         return
     mirror_root.parent.mkdir(parents=True, exist_ok=True)
     if os.name == "nt":
-        subprocess.run(["cmd", "/c", "mklink", "/J", str(mirror_root), str(CANONICAL)], check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(["cmd", "/c", "mklink", "/J", str(mirror_root), str(canonical)], check=True, stdout=subprocess.DEVNULL)
     else:
-        mirror_root.symlink_to(os.path.relpath(CANONICAL, mirror_root.parent), target_is_directory=True)
+        mirror_root.symlink_to(os.path.relpath(canonical, mirror_root.parent), target_is_directory=True)
 
 
-def main() -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Mirror .claude/skills for runtimes that read another skill folder.")
-    parser.add_argument("--target", action="append", choices=sorted(TARGETS), help="mirror to create or refresh (repeatable); default: every mirror that already exists")
+    parser.add_argument("--target", action="append", choices=sorted(TARGETS), help="mirror to create or refresh (repeatable); default: every mirror that exists or that an installed runtime needs")
+    parser.add_argument("--skill", action="append", metavar="NAME", help="limit to this canonical skill (repeatable)")
     parser.add_argument("--mode", choices=("copy", "link"), default="copy")
     parser.add_argument("--check", action="store_true", help="report drift without writing; exit 1 when a mirror is out of date")
-    args = parser.parse_args()
+    parser.add_argument("--root", type=Path, default=MOD_ROOT, help="project root (default: the project holding this tool)")
+    args = parser.parse_args(argv)
+    root = args.root.resolve()
+    canonical = root / ".claude" / "skills"
+    if not canonical.is_dir():
+        print("ERROR: canonical skill folder not found: .claude/skills", file=sys.stderr)
+        return 2
 
-    targets = args.target or [key for key, path in TARGETS.items() if path.exists()]
+    required = required_targets(root)
+    targets = args.target or [key for key, folder in TARGETS.items() if (root / folder).exists() or key in required]
     if not targets:
-        print("No skill mirrors exist. Claude Code, Cursor, and OpenCode read .claude/skills directly; pass --target agents for Codex or DSH, or --target qoder for Qoder.")
+        reason = "the source package keeps only the canonical library" if is_source_package(root) else "no installed runtime needs one"
+        print(f"No skill mirrors exist and {reason}. Claude Code, Cursor, and OpenCode read .claude/skills directly; pass --target agents for Codex or DSH, or --target qoder for Qoder.")
         return 0
-    skills = canonical_skills()
-    names = {skill.name for skill in skills}
+    skills = canonical_skills(canonical, args.skill)
+    for name in sorted(set(args.skill or ()) - {skill.name for skill in skills}):
+        print(f"NOTE: .claude/skills/{name} is not a canonical skill (no SKILL.md); its copies were left alone.")
+    names = {path.name for path in canonical.iterdir() if path.is_dir()}
     failures = 0
     for key in targets:
-        mirror_root = TARGETS[key]
-        label = mirror_root.relative_to(MOD_ROOT).as_posix()
+        mirror_root = root / TARGETS[key]
+        label = TARGETS[key]
         if is_link(mirror_root):
             print(f"{label}: linked to the canonical library.")
             continue
         if args.mode == "link" and not args.check:
-            link_folder(mirror_root)
+            link_folder(mirror_root, canonical)
             print(f"{label}: now linked to .claude/skills.")
             continue
-        extra = sorted(path.name for path in mirror_root.iterdir() if path.is_dir() and path.name not in names) if mirror_root.is_dir() else []
-        for name in extra:
-            print(f"NOTE: {label}/{name} has no canonical source in .claude/skills and was left alone.")
+        if args.check and not mirror_root.is_dir():
+            print(f"DRIFT: {label} is missing; {REQUIRED_BY[key]}/ needs it. Run python .tools/sync/sync_skills.py to create it.")
+            failures += 1
+            continue
+        if not args.skill:
+            extra = sorted(path.name for path in mirror_root.iterdir() if path.is_dir() and path.name not in names) if mirror_root.is_dir() else []
+            for name in extra:
+                print(f"NOTE: {label}/{name} has no canonical source in .claude/skills and was left alone.")
         if args.check:
             problems = {skill.name: drift_for(skill, mirror_root / skill.name) for skill in skills}
             problems = {name: items for name, items in problems.items() if items}

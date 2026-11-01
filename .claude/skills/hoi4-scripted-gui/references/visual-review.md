@@ -19,6 +19,10 @@ Distinguish the source texture canvas, painted or alpha-visible shape, designed 
 
 Use actual native properties documented by the installed game and existing consumers. Do not invent CSS-style alignment fields or assume a sprite's scale transforms label metrics and hit geometry identically. If native button text cannot meet the layout, use a proven native text and control composition with verified click-through and state synchronization; do not leave a second painted label underneath.
 
+In `.gui` files a `buttonType` takes `size = { x y }` (77 of 77 vanilla sizes), while a `containerWindowType` uses `{ width height }`. [vanilla-confirmed 1.19.3]
+Spell the key `alwaystransparent` (3,253 vanilla uses against 8 of `allwaystransparent`). [vanilla-confirmed 1.19.3]
+The key `animationframes` is a list of frame numbers. [vanilla-confirmed 1.19.3]
+
 ## Background and reference coverage
 
 Treat a designed background as the composition blueprint. Map each prominent panel, inset, slot, medallion, divider, illustration, ornament, and functional anchor before placing content. Preserve intentional negative space while assigning each designed usable region a purpose; a crowded corner next to abandoned functional panels is a defect. Keep text and controls inside intended interiors, clear of borders, handles, seals, illustrations, and important art. If content cannot fit, revise the composition or background within the accepted design instead of layering an unrelated generic layout over it.

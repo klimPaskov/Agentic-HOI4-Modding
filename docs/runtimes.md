@@ -5,7 +5,7 @@ The HOI4 rules themselves are runtime-neutral; only the discovery paths, the sub
 
 The package keeps canonical instruction, skill, and subagent sources under `.claude`. Choose any supported coding client; the setup app creates the matching client files.
 Every other runtime reads a generated projection of the same instructions, skills, and subagents.
-Edit the canonical file, then regenerate the projections with the synchronizers in `.tools/sync/`.
+Edit the canonical file, then regenerate the projections with `python .tools/sync/generators.py`, which runs the synchronizers in `.tools/sync/` that the change affects. In Claude Code a hook in `.claude/settings.json` does this after every edit and refuses edits to generated files.
 
 | Canonical source | Projection | Synchronizer |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ Edit the canonical file, then regenerate the projections with the synchronizers 
 | `.claude/skills/<name>/` | `.agents/skills/<name>/` (Codex, DSH), `.qoder/skills/<name>/` (Qoder) | `python .tools/sync/sync_skills.py` |
 | `.claude/agents/<name>.md` | `.codex/agents/<name>.toml` and the `[agents.*]` registry in `.codex/config.toml`, `.cursor/agents/`, `.qoder/agents/`, `.opencode/agent/`, and every `agent-map.md` | `python .tools/sync/sync_agents.py` |
 
-Run each synchronizer with `--check` during validation; it exits with status 1 when a projection is out of date.
+Run `python .tools/sync/generators.py --check` during validation; it exits with status 1 when a projection is out of date and 2 when a synchronizer could not run. `.tools/sync/generators.json` lists every synchronizer with its inputs and outputs.
 Never hand-edit a projection.
 
 ## Instruction files
@@ -52,7 +52,7 @@ Consequences worth knowing:
 | DSH | `<project_root>/.dsh/skills` and `<project_root>/.agents/skills` (copy), then configured, user, and bundled roots |
 | Qoder | `.qoder/skills/` (copy) |
 
-`python .tools/sync/sync_skills.py` refreshes every copy that exists; `--target agents` or `--target qoder` creates one.
+`python .tools/sync/sync_skills.py` refreshes every copy that exists or that an installed runtime needs (`.agents/skills` when `.codex/` exists, `.qoder/skills` when `.qoder/` exists); `--target agents` or `--target qoder` creates one, and `--skill <name>` limits the run to one skill.
 Copies are the default because HOI4 Mod Setup tracks the files it installs; `--mode link` replaces a copy with a junction or symbolic link in a project that does not use the app.
 A skill folder that exists only in a copy is reported and left alone.
 Cursor and OpenCode would see a skill twice if both `.claude/skills/` and an `.agents/skills/` copy exist; both copies are identical, so the duplicate is harmless.
