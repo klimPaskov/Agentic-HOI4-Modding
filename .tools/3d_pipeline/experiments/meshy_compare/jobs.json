@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.0.0",
+  "feature": "meshy_model_comparison",
+  "owner_id": "hoi4_3d_model_jobs",
+  "route": "experiment branch exp/meshy-model-comparison; decision M-10; at most 50 credits",
+  "budget_credits": 50,
+  "jobs": {
+    "zin_infantry_cmp_m71": {
+      "asset_id": "zin.model.unit.zin_infantry_cmp_m71",
+      "people": "men (model comparison, not for the mod)",
+      "serves_subunits": "none: Meshy model comparison, M-10",
+      "profile": "humanoid_unit_cmp_m71",
+      "asset_kind": "humanoid",
+      "reference_path": "refs/original/meshy_input.png",
+      "reference_source_mode": "source_free_owner_rule",
+      "reference_generator_output": "gptimage gpt-6-astra 1024x1536 high; prompt, owner approval quote and checksum in refs/source/provenance.json",
+      "asset_brief": "Middle Kingdom royal infantryman of the Golden King: sturdy human soldier, dark steel open-faced helmet with short gold crest, mail shirt under a deep blue tabard with a small gold sun emblem, steel shoulder plates, leather belt and pouches, steel greaves over boots. Weapon-free A-pose body; weapons become separate attachment entities later.",
+      "required_components": [
+        "complete weapon-free humanoid body matching the approved reference",
+        "head, torso, two arms with hands, two legs with feet, all attached",
+        "armour and clothing pieces solid and attached to the body",
+        "grounded riggable biped proportions"
+      ],
+      "forbidden_additions": [
+        "weapons or held props on the body mesh",
+        "shields, banners, staffs",
+        "extra characters",
+        "floating disconnected geometry",
+        "ground plane or base",
+        "multi-view board",
+        "turnaround collage",
+        "text or watermark"
+      ],
+      "excluded_provider_objects": [
+        "Icosphere"
+      ],
+      "meshy_ai_model": "meshy-7.1",
+      "resolved_meshy_ai_model": "meshy-7.1",
+      "meshy_pose_mode": "a-pose",
+      "pose_preparation_mode": "a_pose",
+      "target_polycount": 21000,
+      "rig_source_target_polycount": 50000,
+      "target_height_m": 1.8,
+      "provider_height_policy": "Meshy rig height_meters is the in-world character height; Blender calibration uses blender_target_height_m (vanilla source-mesh height x ZIN size factor).",
+      "size_factor_vs_vanilla_infantry": 1.0,
+      "blender_target_height_m": 7.3518242835,
+      "blender_effective_runtime_height_m": 5.8814594268,
+      "runtime_entity_scale": 0.8,
+      "runtime_diffuse_gamma": 0.72,
+      "vanilla_scale_reference": {
+        "mesh": "C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/gfx/models/units/western_european_infantry.mesh",
+        "pdxmesh": "generic_western_european_rifle_infantry_mesh",
+        "entity": "gfx/entities/units_infantry.asset#infantry_rifle_entity (and infantry_entity clone, scale 0.8)",
+        "mesh_object_names": [
+          "polySurface106"
+        ],
+        "exclude_name_patterns": [
+          "collision"
+        ],
+        "forward_axis": "-Y",
+        "up_axis": "+Z",
+        "mesh_height": 7.3518242835,
+        "entity_scale": 0.8,
+        "runtime_height": 5.8814594268
+      },
+      "provider_paid_attempts": 1,
+      "provider_retry_paid_calls": false,
+      "generation_stage": "generation",
+      "rig_input_mode": "input_task_id",
+      "humanoid_rig_route": "blender_failure_recovery_humanoid_v1",
+      "texture_source_rels": {
+        "diffuse": "provider/downloads/generation_model_textures/base_color.png",
+        "normal": "provider/downloads/generation_model_textures/normal.png",
+        "specular": "provider/downloads/generation_model_textures/metallic_roughness.png"
+      },
+      "required_actions": [],
+      "additional_blender_actions": [],
+      "deferred_roles": {},
+      "runtime_stem": "zin_infantry_cmp_m71",
+      "proposed_runtime_identifiers": {
+        "sprite": "zin_infantry_cmp_m71",
+        "entity": "zin_infantry_cmp_m71_entity",
+        "pdxmesh": "zin_infantry_cmp_m71_mesh",
+        "animations": {},
+        "model_dir": "gfx/models/units/zin/zin_infantry_cmp_m71/",
+        "entity_scale": 0.8,
+        "consumer": "land-unit entity"
+      },
+      "_requires_reference_approval": true,
+      "credit_budget": 30
+    },
+    "zin_infantry_cmp_t25": {
+      "asset_id": "zin.model.unit.zin_infantry_cmp_t25",
+      "people": "men (model comparison, not for the mod)",
+      "serves_subunits": "none: Meshy model comparison, M-10",
+      "profile": "humanoid_unit_cmp_t25",
+      "asset_kind": "humanoid",
+      "reference_path": "refs/original/meshy_input.png",
+      "reference_source_mode": "source_free_owner_rule",
+      "reference_generator_output": "gptimage gpt-6-astra 1024x1536 high; prompt, owner approval quote and checksum in refs/source/provenance.json",
+      "asset_brief": "Middle Kingdom royal infantryman of the Golden King: sturdy human soldier, dark steel open-faced helmet with short gold crest, mail shirt under a deep blue tabard with a small gold sun emblem, steel shoulder plates, leather belt and pouches, steel greaves over boots. Weapon-free A-pose body; weapons become separate attachment entities later.",
+      "required_components": [
+        "complete weapon-free humanoid body matching the approved reference",
+        "head, torso, two arms with hands, two legs with feet, all attached",
+        "armour and clothing pieces solid and attached to the body",
+        "grounded riggable biped proportions"
+      ],
+      "forbidden_additions": [
+        "weapons or held props on the body mesh",
+        "shields, banners, staffs",
+        "extra characters",
+        "floating disconnected geometry",
+        "ground plane or base",
+        "multi-view board",
+        "turnaround collage",
+        "text or watermark"
+      ],
+      "excluded_provider_objects": [
+        "Icosphere"
+      ],
+      "meshy_ai_model": "meshy-t2.5",
+      "resolved_meshy_ai_model": "meshy-t2.5",
+      "meshy_pose_mode": "a-pose",
+      "pose_preparation_mode": "a_pose",
+      "target_polycount": 21000,
+      "rig_source_target_polycount": 50000,
+      "target_height_m": 1.8,
+      "provider_height_policy": "Meshy rig height_meters is the in-world character height; Blender calibration uses blender_target_height_m (vanilla source-mesh height x ZIN size factor).",
+      "size_factor_vs_vanilla_infantry": 1.0,
+      "blender_target_height_m": 7.3518242835,
+      "blender_effective_runtime_height_m": 5.8814594268,
+      "runtime_entity_scale": 0.8,
+      "runtime_diffuse_gamma": 0.72,
+      "vanilla_scale_reference": {
+        "mesh": "C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/gfx/models/units/western_european_infantry.mesh",
+        "pdxmesh": "generic_western_european_rifle_infantry_mesh",
+        "entity": "gfx/entities/units_infantry.asset#infantry_rifle_entity (and infantry_entity clone, scale 0.8)",
+        "mesh_object_names": [
+          "polySurface106"
+        ],
+        "exclude_name_patterns": [
+          "collision"
+        ],
+        "forward_axis": "-Y",
+        "up_axis": "+Z",
+        "mesh_height": 7.3518242835,
+        "entity_scale": 0.8,
+        "runtime_height": 5.8814594268
+      },
+      "provider_paid_attempts": 1,
+      "provider_retry_paid_calls": false,
+      "generation_stage": "generation",
+      "rig_input_mode": "input_task_id",
+      "humanoid_rig_route": "",
+      "texture_source_rels": {
+        "diffuse": "provider/downloads/generation_model_textures/base_color.png",
+        "normal": "provider/downloads/generation_model_textures/normal.png",
+        "specular": "provider/downloads/generation_model_textures/metallic_roughness.png"
+      },
+      "required_actions": [],
+      "additional_blender_actions": [],
+      "deferred_roles": {},
+      "runtime_stem": "zin_infantry_cmp_t25",
+      "proposed_runtime_identifiers": {
+        "sprite": "zin_infantry_cmp_t25",
+        "entity": "zin_infantry_cmp_t25_entity",
+        "pdxmesh": "zin_infantry_cmp_t25_mesh",
+        "animations": {},
+        "model_dir": "gfx/models/units/zin/zin_infantry_cmp_t25/",
+        "entity_scale": 0.8,
+        "consumer": "land-unit entity"
+      },
+      "_requires_reference_approval": true,
+      "credit_budget": 20
+    }
+  }
+}

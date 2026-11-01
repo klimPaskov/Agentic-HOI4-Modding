@@ -1,0 +1,9 @@
+{
+  "single_subject": true,
+  "complete_silhouette": true,
+  "component_separation": true,
+  "neutral_background": true,
+  "no_multi_view_board": true,
+  "no_side_profile_sheet": true,
+  "notes": "Answered by the parent agent looking at refs/original/meshy_input.png (SHA-256 4F337148EFB179C2..., the image already approved and used for the zin_men_infantry job): one weapon-free armoured infantryman in a front A-pose on a flat grey background, head to boots inside the frame, arms and legs clearly apart from the torso, no board, turnaround or side view. Not a fresh approval of a new image."
+}

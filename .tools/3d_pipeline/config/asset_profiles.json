@@ -207,6 +207,184 @@
       "root_policy": "root_bone_at_ground_origin",
       "runtime_consumer": "land-unit entity"
     },
+    "humanoid_unit_cmp_m71": {
+      "generation": {
+        "ai_model": "meshy-7.1",
+        "model_type": "standard",
+        "target_polycount": 21000,
+        "target_polycount_applies": true,
+        "should_remesh": true,
+        "texture_resolution": "2k",
+        "enable_pbr": true
+      },
+      "axis": "z_up",
+      "scale_reference": "western_european_infantry.mesh source height 7.351824 with infantry_rifle_entity scale 0.8",
+      "runtime_entity_scale": 0.8,
+      "runtime_diffuse_gamma": 0.72,
+      "vanilla_reference": {
+        "mesh": "gfx/models/units/western_european_infantry.mesh",
+        "entity": "gfx/entities/units_infantry.asset#infantry_rifle_entity",
+        "mesh_object_names": [
+          "polySurface106"
+        ],
+        "exclude_name_patterns": [
+          "collision"
+        ],
+        "forward_axis": "-Y",
+        "up_axis": "+Z",
+        "mesh_height": 7.3518242835,
+        "entity_scale": 0.8,
+        "runtime_height": 5.8814594268,
+        "measurement": "io_pdx_mesh import, main polySurface106 object, collision object excluded"
+      },
+      "texture_max_dimension": 1024,
+      "triangle_range": {
+        "preferred_min": 12000,
+        "preferred_max": 50000,
+        "hard_max": 90000,
+        "working_triangle_target": 21000
+      },
+      "controlled_reduction_allowed": true,
+      "materials": {
+        "max_slots": 6,
+        "required_channels": [
+          "diff",
+          "spec",
+          "n"
+        ],
+        "shader": "PdxMeshAdvanced",
+        "specular_packing": {
+          "red": 0,
+          "green": 32,
+          "blue": "metallic",
+          "alpha": "roughness"
+        },
+        "raw_roughness_as_specular": false
+      },
+      "validation": {
+        "max_non_manifold_edges": 0,
+        "max_boundary_edges": 0,
+        "max_loose_components": 1,
+        "max_residual_zero_weight_vertices": 0
+      },
+      "exceptions": [],
+      "rig_route": "meshy_humanoid_candidate_then_blender_audit",
+      "actions": [
+        {
+          "role": "idle",
+          "provider_action_id": 0,
+          "fps": 24,
+          "loop": true,
+          "root_policy": "in_place"
+        },
+        {
+          "role": "attack",
+          "provider_action_id": 4,
+          "fps": 24,
+          "loop": false,
+          "root_policy": "in_place"
+        },
+        {
+          "role": "move",
+          "provider_action_id": null,
+          "fps": 24,
+          "loop": true,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        }
+      ],
+      "root_policy": "root_bone_at_ground_origin",
+      "runtime_consumer": "land-unit entity"
+    },
+    "humanoid_unit_cmp_t25": {
+      "generation": {
+        "ai_model": "meshy-t2.5",
+        "model_type": "smart-topology",
+        "target_polycount": 21000,
+        "target_polycount_applies": true,
+        "should_remesh": false,
+        "texture_resolution": "2k",
+        "enable_pbr": true
+      },
+      "axis": "z_up",
+      "scale_reference": "western_european_infantry.mesh source height 7.351824 with infantry_rifle_entity scale 0.8",
+      "runtime_entity_scale": 0.8,
+      "runtime_diffuse_gamma": 0.72,
+      "vanilla_reference": {
+        "mesh": "gfx/models/units/western_european_infantry.mesh",
+        "entity": "gfx/entities/units_infantry.asset#infantry_rifle_entity",
+        "mesh_object_names": [
+          "polySurface106"
+        ],
+        "exclude_name_patterns": [
+          "collision"
+        ],
+        "forward_axis": "-Y",
+        "up_axis": "+Z",
+        "mesh_height": 7.3518242835,
+        "entity_scale": 0.8,
+        "runtime_height": 5.8814594268,
+        "measurement": "io_pdx_mesh import, main polySurface106 object, collision object excluded"
+      },
+      "texture_max_dimension": 1024,
+      "triangle_range": {
+        "preferred_min": 12000,
+        "preferred_max": 50000,
+        "hard_max": 90000,
+        "working_triangle_target": 21000
+      },
+      "controlled_reduction_allowed": true,
+      "materials": {
+        "max_slots": 6,
+        "required_channels": [
+          "diff",
+          "spec",
+          "n"
+        ],
+        "shader": "PdxMeshAdvanced",
+        "specular_packing": {
+          "red": 0,
+          "green": 32,
+          "blue": "metallic",
+          "alpha": "roughness"
+        },
+        "raw_roughness_as_specular": false
+      },
+      "validation": {
+        "max_non_manifold_edges": 0,
+        "max_boundary_edges": 0,
+        "max_loose_components": 1,
+        "max_residual_zero_weight_vertices": 0
+      },
+      "exceptions": [],
+      "rig_route": "meshy_humanoid_candidate_then_blender_audit",
+      "actions": [
+        {
+          "role": "idle",
+          "provider_action_id": 0,
+          "fps": 24,
+          "loop": true,
+          "root_policy": "in_place"
+        },
+        {
+          "role": "attack",
+          "provider_action_id": 4,
+          "fps": 24,
+          "loop": false,
+          "root_policy": "in_place"
+        },
+        {
+          "role": "move",
+          "provider_action_id": null,
+          "fps": 24,
+          "loop": true,
+          "root_policy": "in_place",
+          "authoring_route": "blender_authored_skeletal"
+        }
+      ],
+      "root_policy": "root_bone_at_ground_origin",
+      "runtime_consumer": "land-unit entity"
+    },
     "nonhumanoid_winged_biped": {
       "generation": {
         "ai_model": "meshy-7",

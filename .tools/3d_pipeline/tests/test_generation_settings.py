@@ -53,6 +53,8 @@ class ShippedProfileTests(unittest.TestCase):
 
     def test_shipped_defaults_keep_todays_request_values(self) -> None:
         for name, profile in profiles().items():
+            if "_cmp_" in name:
+                continue  # experiment profiles (exp/meshy-model-comparison) set other models on purpose
             settings = profile["generation"]
             with self.subTest(profile=name):
                 self.assertEqual(settings["ai_model"], "meshy-7")
@@ -60,6 +62,19 @@ class ShippedProfileTests(unittest.TestCase):
                 self.assertIs(settings["should_remesh"], False)
                 self.assertIs(settings["enable_pbr"], True)
                 self.assertEqual(settings["target_polycount"], profile["triangle_range"]["working_triangle_target"])
+
+
+class ExperimentProfileTests(unittest.TestCase):
+    """The two comparison profiles (exp/meshy-model-comparison) validate and price as planned."""
+
+    def test_comparison_profiles_validate_and_price(self) -> None:
+        shipped = profiles()
+        for name, credits in (("humanoid_unit_cmp_m71", 30), ("humanoid_unit_cmp_t25", 15)):
+            with self.subTest(profile=name):
+                settings = validate_generation(shipped[name]["generation"])
+                self.assertEqual(generation_credits(settings["ai_model"], settings["texture_resolution"]), credits)
+                self.assertEqual(settings["target_polycount"], 21000)
+        self.assertEqual(operation_credits("rig"), 5)
 
 
 class ValidationTests(unittest.TestCase):

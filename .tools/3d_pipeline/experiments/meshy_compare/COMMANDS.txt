@@ -1,0 +1,117 @@
+Meshy model comparison (decision M-10): command sequence for the paid phase.
+Branch exp/meshy-model-comparison. Nothing below has been run with a paid call. At most 50 credits.
+
+Run everything from the worktree root unless a line says otherwise:
+  cd C:/Users/klimp/Documents/Projects/agentic-hoi4-modding/.claude/worktrees/meshy-compare
+Python is `py -3.13 -B`. PIPE below means .tools/3d_pipeline, so `cd .tools/3d_pipeline` first for
+the run_pilot.py lines. MESHY_API_KEY is read from the environment and never printed.
+
+PLAN AND CREDITS
+  A  meshy-7.1, standard, textured 2k, should_remesh true, triangle, target 21000   30  (job zin_infantry_cmp_m71, budget 30)
+  B  meshy-t2.5, smart-topology, textured 2k, triangle, target 21000                15  (job zin_infantry_cmp_t25, budget 20)
+  C  one meshy_rig on B's generation task, no animation                               5  (same job, same budget)
+  total 50. Nothing else is planned: no remesh, no retexture, no animation, no retry.
+  The account held 110 credits (100 monthly + 10 permanent) when read on 2026-11-01.
+
+STEP 0. PREREQUISITES (all free; items marked DECISION need the maintainer)
+
+0.1 DECISION. A Setup build whose launcher accepts the 0.6.7 runtime.
+    The installed C:/Users/klimp/AppData/Local/HOI4 Mod Setup/hoi4-mod-setup.exe (30,493,184 bytes,
+    2026-10-31 18:16) embeds the runtime folder name for 0.6.2, not 0.6.7. HOI4-Mod-Setup main has
+    the 0.6.7 pin (commit 584c317, PR #135, 2026-11-01 19:15) under "Unreleased"; the newest tag
+    is v0.8.2 and was cut before it. So the installed launcher cannot start a 0.6.7 runtime.
+    Needed: a build of HOI4-Mod-Setup main installed in place of that exe (or a v0.8.3 release).
+    Without it, `--run-verified-meshy-mcp` would look for runtimes/meshy-0.6.2 and the 0.6.2 server
+    has no meshy-t2.5 and the retired-model checks the contract expects.
+
+0.2 The runtime folder %LOCALAPPDATA%/HOI4 Mod Setup/runtimes/meshy-0.6.7 (free, network = npm only).
+    Source of truth: bootstrap_3d_workflow.ensure_meshy_runtime(). It checks the npm integrity of
+    @meshy-ai/meshy-mcp-server@0.6.7, copies .tools/3d_pipeline/meshy_runtime/package.json and
+    package-lock.json there, runs `npm ci --ignore-scripts --no-audit --no-fund --prefix <folder>`
+    and requires the tree to hash to dbd2ebfce197a18875c3d367ad4b5325a345b92ce54c2a33440f5490efe7f6b3
+    with 3,954 files. It calls no Meshy API and touches no Blender folder. Run only that function:
+      py -3.13 -B -c "import sys; sys.path.insert(0, '.tools/3d_pipeline'); import bootstrap_3d_workflow as b; print(b.ensure_meshy_runtime(b.PIPELINE_ROOT, b.ensure_npx()))"
+    (node 24.15.0 and npx are on PATH, so ensure_npx will not install anything.)
+    Do NOT use the whole bootstrap or Setup's "Repair": see 0.5.
+
+0.3 The launcher route in the worktree's .codex/config.toml (a local file write; do not commit it).
+    MeshyClient reads [mcp_servers.meshy] from <repo>/.codex/config.toml and accepts only an
+    absolute launcher outside the repository with args exactly ["--run-verified-meshy-mcp"].
+    This worktree's config.toml has no such block. Free, one call:
+      py -3.13 -B -c "import sys; from pathlib import Path; sys.path.insert(0, '.tools/3d_pipeline'); import bootstrap_3d_workflow as b; print(b.materialize_config(Path('.').resolve(), Path(r'C:/Users/klimp/AppData/Local/HOI4 Mod Setup/hoi4-mod-setup.exe')))"
+    It appends the meshy, blender_hoi4 and (disabled) blender_lab blocks.
+
+0.4 The Blender adapter route (free; writes only inside this worktree, all untracked or ignored).
+    BlenderAdapterClient needs .tools/3d_pipeline/config/blender_hoi4_adapter.json, which only
+    the bootstrap writes, and the adapter .venv. materialize_hoi4_adapter() does exactly that part:
+    `uv lock --upgrade`, `uv sync --locked` in adapter/, then writes the config. It does not install
+    anything into Blender. uv 0.11.14 is at C:/Program Files/Python313/Scripts/uv.exe.
+      py -3.13 -B -c "import sys, os; from pathlib import Path; sys.path.insert(0, '.tools/3d_pipeline'); import bootstrap_3d_workflow as b; root = Path('.').resolve(); print(b.materialize_hoi4_adapter(root, b.PIPELINE_ROOT, b.ensure_uv(), Path(r'C:/Program Files/Blender Foundation/Blender 5.1/blender.exe'), {'install_root': os.environ['APPDATA'] + '/Blender Foundation/Blender/5.1/extensions/user_default/io_pdx_mesh'}))"
+    Dependency note: the config then points at the io_pdx_mesh already installed; see 0.5.
+
+0.5 DECISION. Do not run the full bootstrap or Setup Repair on this machine without a decision.
+    The installed io_pdx_mesh 0.91.0 does not match dependencies.lock.json: its three patched files
+    (__init__.py, pdx_maya/maya_ui.py, pdx_blender/blender_import_export.py) hash differently from
+    installed_patch_files_sha256, so ensure_io_pdx_mesh() would delete and replace the add-on in
+    %APPDATA%/Blender Foundation/Blender/5.1/extensions/user_default, and the bootstrap also
+    installs the Blender MCP add-on and starts its bridge. This phase forbids that. Steps 0.2 to 0.4
+    avoid it; the cost is that exports in this experiment use the add-on as it is installed now (the
+    same one the zin baseline was exported with, as far as the evidence shows).
+
+0.6 Free checks before any paid call:
+      cd .tools/3d_pipeline
+      py -3.13 -B experiments/meshy_compare/budget_preflight.py          # plan 30 / 15+5, no provider call
+      py -3.13 -B -m unittest discover -s tests -p "test_*.py"             # expects OK
+    Read the balance (free REST read, key from the environment, never echoed):
+      py -3.13 -B -c "import os,json,urllib.request as u; r=u.Request('https://api.meshy.ai/openapi/v1/balance',headers={'Authorization':'Bearer '+os.environ['MESHY_API_KEY']}); print(u.urlopen(r,timeout=30).read().decode())"
+    Needs balance >= 50.
+
+STEP 1. RUN A (30 credits). One generation, then Blender prepares the candidate and the fail-closed gate judges it.
+      cd .tools/3d_pipeline
+      py -3.13 -B run_pilot.py --jobs-config experiments/meshy_compare/jobs.json --phase candidate zin_infantry_cmp_m71
+    Paid call: meshy_image_to_3d only (30). Free: balance reads, task polling, GLB and FBX downloads.
+    The runner stops before the call if the ledger, attempt limit (1), job budget (30) or live balance
+    disallows it. If the gate then blocks the candidate, the 30 credits are spent and the downloads are in
+    provider/downloads: score them (step 4) and do not run anything again.
+
+STEP 2. RUN B (15 credits).
+      py -3.13 -B run_pilot.py --jobs-config experiments/meshy_compare/jobs.json --phase candidate zin_infantry_cmp_t25
+    Paid call: meshy_image_to_3d with model_type smart-topology (15). The job budget is 20, so 5 remain for C.
+
+STEP 3. RUN C (5 credits). Only if B's generation succeeded and downloaded. Rig only, no animation.
+    run_pilot.py cannot do rig-only: its humanoid continuation needs an `attack` provider animation and
+    then authors and exports in Blender. run_rig_only.py uses the runner's own gated paid path
+    (reuse check, attempt limit, budget, balance, ledger reservation and settlement, submission journal).
+      py -3.13 -B experiments/meshy_compare/run_rig_only.py zin_infantry_cmp_t25               # prints the request, submits nothing
+      py -3.13 -B experiments/meshy_compare/run_rig_only.py zin_infantry_cmp_t25 --submit-rig  # the 5-credit call
+    Paid call: meshy_rig with input_task_id = B's generation task, height_meters 1.8 (5). If Meshy
+    rejects a Smart Topology task as rig input, the rig stops with the ledger row failed; do not retry.
+
+STEP 4. SCORE with the same harness that scored the baseline (free; Blender background mode).
+      cd .tools/3d_pipeline
+      SCRATCH=C:/Users/klimp/AppData/Local/Temp/claude/C--Users-klimp-Documents-Projects-hoi4-factory/e896efbb-4c47-4d87-91c2-9a95f31fa8b8/scratchpad/meshy-compare
+      JOBS=../../docs/assets/hoi4_3d_model_jobs/models_3d
+      py -3.13 -B experiments/meshy_compare/score_models.py --out-dir $SCRATCH/runs --profile humanoid_unit \
+        --item A_generation=$JOBS/zin_infantry_cmp_m71/provider/downloads/generation_model.glb \
+        --item B_generation=$JOBS/zin_infantry_cmp_t25/provider/downloads/generation_model.glb \
+        --item C_rigged=$JOBS/zin_infantry_cmp_t25/provider/downloads/rigged_provider_model.glb
+    Compare against $SCRATCH/baseline (results.json, summary.txt, previews). The runner's own gate
+    verdict on the Blender-prepared candidate is in <job>/validation/provider_candidate_gate.json.
+    Credits actually used, per model and stage:
+      py -3.13 -B run_pilot.py --credits-report ../../docs/assets/hoi4_3d_model_jobs/models_3d
+
+STEP 5. EXPORT through the PDX path (free; needs 0.4 and Blender; no Meshy call).
+      py -3.13 -B experiments/meshy_compare/export_pdx.py zin_infantry_cmp_m71
+      py -3.13 -B experiments/meshy_compare/export_pdx.py zin_infantry_cmp_t25
+      py -3.13 -B experiments/meshy_compare/export_pdx.py zin_infantry_cmp_t25 --rigged     # C; not exercised yet
+    Then score the .mesh files and their DDS textures the same way:
+      py -3.13 -B experiments/meshy_compare/score_models.py --out-dir $SCRATCH/runs_pdx --profile humanoid_unit \
+        --item A_pdx=$JOBS/zin_infantry_cmp_m71/export/mesh/zin_infantry_cmp_m71.mesh --texture-dir A_pdx=$JOBS/zin_infantry_cmp_m71/export/mesh \
+        --item B_pdx=$JOBS/zin_infantry_cmp_t25/export/mesh/zin_infantry_cmp_t25.mesh --texture-dir B_pdx=$JOBS/zin_infantry_cmp_t25/export/mesh \
+        --item C_pdx=$JOBS/zin_infantry_cmp_t25/export/mesh/zin_infantry_cmp_t25_rigged.mesh --texture-dir C_pdx=$JOBS/zin_infantry_cmp_t25/export/mesh
+
+CREDIT TOTAL: 30 (step 1) + 15 (step 2) + 5 (step 3) = 50. Steps 0, 4 and 5 cost nothing.
+
+Where the job folders are: docs/assets/hoi4_3d_model_jobs/models_3d/<slug> inside this worktree. They hold
+the copied input (SHA-256 4F337148EFB179C2E2B167CB3385FAD06C30D46A4860B3E09F826E00606A4086), the recorded
+visual review, and later the ledger and downloads. They are untracked on purpose.
