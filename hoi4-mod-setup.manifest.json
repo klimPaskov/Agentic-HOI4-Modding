@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "aa09a0c5bcbc15cdbf33244c46e519d703a0baf3",
+  "generated_for_revision": "9fed8ba18da14c3dd408be46b051e48e4887433f",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -334,18 +334,18 @@
         },
         {
           "path": ".tools/sync/README.md",
-          "sha256": "e925147ccf6718245ac8681d060288ffdaa09bad9e1561bf1066a980a907da28",
-          "size": 3911
+          "sha256": "11c8d7d7bd77ef1f22181f4c3e1dc3b4f8a51233578c1c64bac40bfcb465512a",
+          "size": 4159
         },
         {
           "path": ".tools/sync/agent_profiles.json",
-          "sha256": "025f214466e3b86c50c834dd7ed96fb46c78ffd3f9873148bbf871d54110c820",
-          "size": 885
+          "sha256": "70c133b7fab47399765468edc37638fe3625ab16e3fccc9e604949fbdd617726",
+          "size": 1105
         },
         {
           "path": ".tools/sync/agent_sync_common.py",
-          "sha256": "82ec58369fe264bb562230c6b8cc10b52ce8ce0d2354721e99190d17bffa59ab",
-          "size": 17880
+          "sha256": "139b4e072c88803647ad6c54eb5c54784cc5719a3ceda65f346fbfcd0f4451a8",
+          "size": 18458
         },
         {
           "path": ".tools/sync/check_guidance_size.py",
@@ -4995,8 +4995,8 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_3d_model_pipeline.toml",
-          "sha256": "a800dfc4e0c2ab5d32c4361a57994e16c6f13f8cd21e49235b858ba976515de5",
-          "size": 27631
+          "sha256": "d7188c31e3d76d30988d29ff6a7084b9a6ddfc4515082a6ba75115cde7910f50",
+          "size": 27655
         },
         {
           "path": ".codex/agents/hoi4_ai_probability_auditor.toml",
@@ -5030,8 +5030,8 @@
         },
         {
           "path": ".codex/agents/hoi4_event_ui_worker.toml",
-          "sha256": "efd4e8faf14f1a7771ec6780c497345564ee7bbf56ac764a5f85aa5903f165f0",
-          "size": 11481
+          "sha256": "690c719e3d71a955ba5f63078e422e6ae59b905b1c9ee35d4ae8ed39ba71bf3e",
+          "size": 11505
         },
         {
           "path": ".codex/agents/hoi4_feature_completion_auditor.toml",
@@ -5045,13 +5045,13 @@
         },
         {
           "path": ".codex/agents/hoi4_generated_feature_art.toml",
-          "sha256": "cd22fa22b3d2e4e9fe6d02a2cc07f324b72df6485e331ed812912cf46126c869",
-          "size": 6559
+          "sha256": "81ff8c2a7a89aeaecaba7679ef5153c49cc904b3c89fe9e1728b0ee7273a8e7f",
+          "size": 6583
         },
         {
           "path": ".codex/agents/hoi4_icon_artist.toml",
-          "sha256": "67e9dcd0b25b180a65d056dacd69c027a2695629b8d4762755e0007613601a79",
-          "size": 12192
+          "sha256": "f570038c901d3a152129abf577ba0b01c0a8bea2b1f14c0035238cf66600ebd6",
+          "size": 12216
         },
         {
           "path": ".codex/agents/hoi4_improvement_loop_planner.toml",
@@ -9033,8 +9033,8 @@
       "expected_files": [
         {
           "path": "docs/runtimes.md",
-          "sha256": "b64b7c104fe8b7a34031ead0f3e9b4ac5dcfe8fabf58711d7cce32f7117f5945",
-          "size": 12818
+          "sha256": "e2f68944054e76b61f5657ee0cdc403eebc524a648316e3568f5d12c2f1a28c7",
+          "size": 13590
         }
       ]
     },
