@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "18d66f8cdce2197999f5e604a0a972f53588e7c7",
+  "generated_for_revision": "2d645fb354413d35f58d0a704608381dee5440ff",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "c385780ae9114c5561c2e0cfd2737f64c1407ef979fbfcc4d2de6b969d82cdd2",
-          "size": 59717
+          "sha256": "0c6e3dbc87eb34258d1c3914839a793ecebf3c66a6b31cde75e4f401ff548288",
+          "size": 59819
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "3c08eda4d406fa3d0a33f3d2a0db14ef5605349cecc5778accfa49f9ab380fa1",
-          "size": 59717
+          "sha256": "57e663a6eafce7fff3473a72a7f73bd687903c36ab623f6f35d952f46a7058ce",
+          "size": 59819
         }
       ]
     },
@@ -224,8 +224,8 @@
         },
         {
           "path": ".tools/check.py",
-          "sha256": "71b1fa16983ef69c7ad5531bbf24ad0fe8bc4ef3395f8aa6ce74de02c18cb533",
-          "size": 20046
+          "sha256": "1923091539d400c54e6764324cac8a2c0e8688046a94522e30ac72b04a2c37dd",
+          "size": 20158
         },
         {
           "path": ".tools/gfx/README.md",
@@ -722,8 +722,8 @@
         },
         {
           "path": ".cursor/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "28c1150be9deec051159c902652e637db6b57fc78b04cfcb6929fcc953391e89",
-          "size": 27468
+          "sha256": "117fb2f8619d7d199ddd3c720c13d2b478b15b3d20db18d1345896ddd4361e22",
+          "size": 10560
         },
         {
           "path": ".cursor/agents/hoi4-ai-probability-auditor.md",
@@ -889,8 +889,8 @@
         },
         {
           "path": ".qoder/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "216c56ae5e250cc2fe9ab403b43f68d23248a6ff428dcff0804c9f0aec8d56c4",
-          "size": 27524
+          "sha256": "f208a2e0df77788c74396fd2f9aa38bc6bd51f5ac8c5cccede6dbc4a260b1c48",
+          "size": 10616
         },
         {
           "path": ".qoder/agents/hoi4-ai-probability-auditor.md",
@@ -1056,8 +1056,8 @@
         },
         {
           "path": ".opencode/agent/hoi4-3d-model-pipeline.md",
-          "sha256": "99c71c5b0175a27b314a9de56c67b9e8d7e4cc20b0db951b237fa897b3325f10",
-          "size": 27454
+          "sha256": "7ad9d633b541c08fbb186b4257eb0b4fb75ff0de69c87ffa175c62c2c7b26d6f",
+          "size": 10546
         },
         {
           "path": ".opencode/agent/hoi4-ai-probability-auditor.md",
@@ -1774,18 +1774,18 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "c4ff12f39d26feb917a81220805b909ed98c706f6b2b5e0ace2586072f8bcc0a",
-          "size": 4979
+          "sha256": "06e699ba0c50b0ad819e7989047cceb7ecf341782cfc5faeabd1738faed3d2be",
+          "size": 3478
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
-          "sha256": "1d5a3a9690447225eb12a3cff67d3142538708fcf6cbde79dd1dde0b4c430372",
-          "size": 8157
+          "sha256": "9c4db80555ad6bfd8d1a0f7cb98c40779483f462e5a617d1a3129f10d06b1687",
+          "size": 8474
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "44b0b00cdc45e45ff2fcc50b241b7b0b3dcb347ee2232391f9cd309e156b0a05",
-          "size": 59206
+          "sha256": "16dcbe6023c1b655f3deaf4d281ad745e3b50d85a21094c71f1afce311ddb97e",
+          "size": 68092
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -4534,8 +4534,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/unit-visuals-and-3d-handoff.md",
-          "sha256": "2116bf68d89472f55b81f08b9c2cdded8ec25fb581eb146be904dddafd707a2a",
-          "size": 7624
+          "sha256": "91c66d91bd4fbc20b1ba01d64f9cace9cb2a15581788edee96242782cd55202f",
+          "size": 7221
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/README.md",
@@ -4629,8 +4629,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/forces-and-3d-planning.md",
-          "sha256": "23d0c1c5533afda1066bf36f1d7a2710c96ff818335d96a0e31a1ad86df7f7cf",
-          "size": 15132
+          "sha256": "bb907655275d12f456fbe7ff854a608143b75ebf5e4844396b312bae0c398890",
+          "size": 14697
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/presentation-and-research-planning.md",
@@ -4684,8 +4684,8 @@
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
-          "sha256": "269de60b66f5d83c6ff78b55d9bc062be1702f97543018c1515d9e530addc011",
-          "size": 30664
+          "sha256": "cb452ccf9ca94f4a7d7a0eb9fdf5e1367d9c9e93791e910ac0dd6d25cd506353",
+          "size": 30397
         },
         {
           "path": ".claude/skills/hoi4-investigate/SKILL.md",
@@ -4739,8 +4739,8 @@
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "ee1a491289e5fcef0cf74e3eaea4f356119c300b1bf45b56b91799b680fc9938",
-          "size": 40320
+          "sha256": "0622781dd47a6e4c068bd93b28f386547fa0a6ffa49e1fd34ad39028b9be5622",
+          "size": 39853
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
@@ -4855,8 +4855,8 @@
       "expected_files": [
         {
           "path": ".claude/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "7bca5545044105dc520365c813345623014ed24f9ec513a593340d2ef11beb0f",
-          "size": 27361
+          "sha256": "0e67889fa87794a604e43fff3afd49798636f96f575822edaea2b883a4673f2b",
+          "size": 10453
         },
         {
           "path": ".claude/agents/hoi4-ai-probability-auditor.md",
@@ -5007,8 +5007,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "13c2f2627b5b1de229a30a4aa568bb63a915d3f2edda6d0d7e98cada21f42a56",
-          "size": 9744
+          "sha256": "c8f564f280c7c8f5035daa0d00da4287089028588d3245d34d9fbf65c412ddff",
+          "size": 9781
         }
       ]
     },
@@ -5055,8 +5055,8 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_3d_model_pipeline.toml",
-          "sha256": "d7188c31e3d76d30988d29ff6a7084b9a6ddfc4515082a6ba75115cde7910f50",
-          "size": 27655
+          "sha256": "d450f4f9c2e083c56cde89a5daafefd41744a0c800dbed8cd7b09d38cb88501f",
+          "size": 10747
         },
         {
           "path": ".codex/agents/hoi4_ai_probability_auditor.toml",
@@ -5198,18 +5198,18 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "c4ff12f39d26feb917a81220805b909ed98c706f6b2b5e0ace2586072f8bcc0a",
-          "size": 4979
+          "sha256": "06e699ba0c50b0ad819e7989047cceb7ecf341782cfc5faeabd1738faed3d2be",
+          "size": 3478
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
-          "sha256": "1d5a3a9690447225eb12a3cff67d3142538708fcf6cbde79dd1dde0b4c430372",
-          "size": 8157
+          "sha256": "9c4db80555ad6bfd8d1a0f7cb98c40779483f462e5a617d1a3129f10d06b1687",
+          "size": 8474
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "44b0b00cdc45e45ff2fcc50b241b7b0b3dcb347ee2232391f9cd309e156b0a05",
-          "size": 59206
+          "sha256": "16dcbe6023c1b655f3deaf4d281ad745e3b50d85a21094c71f1afce311ddb97e",
+          "size": 68092
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -7958,8 +7958,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/unit-visuals-and-3d-handoff.md",
-          "sha256": "2116bf68d89472f55b81f08b9c2cdded8ec25fb581eb146be904dddafd707a2a",
-          "size": 7624
+          "sha256": "91c66d91bd4fbc20b1ba01d64f9cace9cb2a15581788edee96242782cd55202f",
+          "size": 7221
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/tools/README.md",
@@ -8053,8 +8053,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/forces-and-3d-planning.md",
-          "sha256": "23d0c1c5533afda1066bf36f1d7a2710c96ff818335d96a0e31a1ad86df7f7cf",
-          "size": 15132
+          "sha256": "bb907655275d12f456fbe7ff854a608143b75ebf5e4844396b312bae0c398890",
+          "size": 14697
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/presentation-and-research-planning.md",
@@ -8108,8 +8108,8 @@
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
-          "sha256": "269de60b66f5d83c6ff78b55d9bc062be1702f97543018c1515d9e530addc011",
-          "size": 30664
+          "sha256": "cb452ccf9ca94f4a7d7a0eb9fdf5e1367d9c9e93791e910ac0dd6d25cd506353",
+          "size": 30397
         },
         {
           "path": ".claude/skills/hoi4-investigate/SKILL.md",
@@ -8163,8 +8163,8 @@
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "ee1a491289e5fcef0cf74e3eaea4f356119c300b1bf45b56b91799b680fc9938",
-          "size": 40320
+          "sha256": "0622781dd47a6e4c068bd93b28f386547fa0a6ffa49e1fd34ad39028b9be5622",
+          "size": 39853
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
@@ -10671,8 +10671,8 @@
       "expected_files": [
         {
           "path": ".tools/3d_pipeline/README.md",
-          "sha256": "ead8697bf11b7f5034942a1f9a6c7072d352f92342e3a25807ff38322a4e2c2d",
-          "size": 14442
+          "sha256": "9e50f9e705a41a6478e7b942f8002884285507f279ef7cc40a5ac8c085df0b62",
+          "size": 15579
         },
         {
           "path": ".tools/3d_pipeline/adapter/animation_root_export.py",
@@ -10686,8 +10686,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/blender_worker.py",
-          "sha256": "71c830d0f6b6bc3ebc011dae1a7cb90fb849633bef60f78ecefbfba828b186f9",
-          "size": 538637
+          "sha256": "255da843db01545f1deee89bed1716127d1a1fe709f7b4b525c5d0613ccb92c8",
+          "size": 539606
         },
         {
           "path": ".tools/3d_pipeline/adapter/explicit_batch_repair.py",
@@ -10705,14 +10705,19 @@
           "size": 11536
         },
         {
+          "path": ".tools/3d_pipeline/adapter/exporter_log_capture.py",
+          "sha256": "509ebf3c5f754640637ea746d32cc246f19b60b675f230d66b81b1bb984fa442",
+          "size": 5754
+        },
+        {
           "path": ".tools/3d_pipeline/adapter/fitted_humanoid_repair.py",
           "sha256": "0459cd347d3a387c79c737a1eadec1f550716e23ab978d67f1bd234af705d699",
           "size": 31816
         },
         {
           "path": ".tools/3d_pipeline/adapter/hoi4_blender_mcp.py",
-          "sha256": "489b7dca7b126f5b1cf3e3d90f8ea46785608207e0b79340a23d7d1dbd4316bf",
-          "size": 56666
+          "sha256": "eca738973d441a357ecc715c685e6feee5a330ec913122734b6146693f430674",
+          "size": 56618
         },
         {
           "path": ".tools/3d_pipeline/adapter/identity_leaf_alias.py",
@@ -10728,6 +10733,11 @@
           "path": ".tools/3d_pipeline/adapter/material_visibility_probe.py",
           "sha256": "b69aac8c92a335f3b686e13c45ebae5b9b915888d112d4eeeb15188563c3cbfb",
           "size": 14250
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/mesh_components.py",
+          "sha256": "c6a35449650a0d91a87219adbbb97b648fac4b0a55d409e1642e5ba08ab9a714",
+          "size": 1295
         },
         {
           "path": ".tools/3d_pipeline/adapter/mesh_patch_repair.py",
@@ -10760,6 +10770,11 @@
           "size": 7796
         },
         {
+          "path": ".tools/3d_pipeline/adapter/profile_exceptions.py",
+          "sha256": "2d2ed711dc939d02c001fe23eaf4b4717034ee5da66db223a6980428f4dad657",
+          "size": 2847
+        },
+        {
           "path": ".tools/3d_pipeline/adapter/pyproject.toml",
           "sha256": "c57f011fc17570362088b1baebf6c3fd4178c39d43132f5cbf50d06d4d9a9953",
           "size": 270
@@ -10775,44 +10790,64 @@
           "size": 23975
         },
         {
+          "path": ".tools/3d_pipeline/adapter/texture_size_gate.py",
+          "sha256": "1fe0d7731b208a63c30251c4f6dbf8353044b52326890e26ad9b0a6785514942",
+          "size": 3777
+        },
+        {
           "path": ".tools/3d_pipeline/blender_client.py",
-          "sha256": "059821977db86ef8362a0e8cd5ef7820f595cfd69bba00bdffb3d0da240a896a",
-          "size": 32949
+          "sha256": "4e8072fc3e76abf773f34e2aaf51c2e12ef8d67fab7e410626a24a0b9b920952",
+          "size": 34348
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "30d39ba575ddd7fcf2835442a83eecaceb836522337c7dd9c0cba820c43a1276",
-          "size": 66941
+          "sha256": "dc481194ba0c3ea3991324b711f38ea93c860b55434331680f1be0d49d04bf98",
+          "size": 71896
         },
         {
           "path": ".tools/3d_pipeline/build_io_pdx_py313_compat.py",
-          "sha256": "8750c2156f00aa1a9aa49eb24a80b6d69451b07fb407c808f259d3e38c7e544d",
-          "size": 4247
+          "sha256": "874ed7789f19df3e76381d81c4dc8d381e0baf50c4b41f4f721a7664b89fa008",
+          "size": 4502
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
-          "sha256": "7e6a235692c942f6092ab6fa0aeece359b77ee08b141cb6ed2e5da7ff15da378",
-          "size": 10357
+          "sha256": "4776def5c894533fa8001a11b80d855acb55233c7338a4f4441de59087835d6f",
+          "size": 12736
+        },
+        {
+          "path": ".tools/3d_pipeline/config/meshy_pricing.json",
+          "sha256": "8bf6eb7676e2630321032b7bace4e82e5ad5a5acf1e15488bb2f2b4d694b49de",
+          "size": 1446
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_tool_contract.json",
-          "sha256": "7af308b44b818f261601e7a5bf1a336b76fe54f6b1adb27b51d3cd4a476010e2",
-          "size": 2904
+          "sha256": "aca26b20ab66909ee92e1812d0791ca1b1d1db0cba72c2200d1dd2b2cfa26a44",
+          "size": 4079
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_tool_schema.lock.json",
-          "sha256": "9bf3b903a59786a99ae99465d6bd9c326765062b30125701aef4a6022939160a",
-          "size": 27786
+          "sha256": "4cd7018aff0715ecbafbd4dbe2677ebab6a2d102782b7401ade23ca70412034b",
+          "size": 32285
         },
         {
           "path": ".tools/3d_pipeline/init_pilot_jobs.py",
-          "sha256": "c580f1e736770c89ce97215c652d0d3eb1927464fd0e2c80858b9c841e242a20",
-          "size": 13115
+          "sha256": "7718acfc4cfe90857b19a8e7a24abbdff3e68bee97663365f1b248dc1dbf62eb",
+          "size": 20109
         },
         {
           "path": ".tools/3d_pipeline/lib/__init__.py",
           "sha256": "b9f05673b4c2e79ec597a17d4964bc0dbe8d22ad55e6ccf67f677cd6b882146c",
           "size": 57
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/credits.py",
+          "sha256": "60ece827b3cff8848ecc8faabe13c4ab2cf2ae3b63f46371cece8955810e4a10",
+          "size": 19598
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/generation.py",
+          "sha256": "e95c714817c6e825a9a4e8d1c246d52871e123dc5ea5e0a23a70aa567ef233c5",
+          "size": 9211
         },
         {
           "path": ".tools/3d_pipeline/lib/mcp_stdio.py",
@@ -10825,18 +10860,28 @@
           "size": 8173
         },
         {
+          "path": ".tools/3d_pipeline/lib/profile_gates.py",
+          "sha256": "ff5bc750ac38be4724722c53bc02e8695bfba54765c1b287dc444119b4bd8e8e",
+          "size": 12661
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/reuse.py",
+          "sha256": "3eb153205bdeae90d2fac9d3bfb01a2470b087ad9c31d043aae6a6751dd3a38b",
+          "size": 9769
+        },
+        {
           "path": ".tools/3d_pipeline/meshy_client.py",
-          "sha256": "eaab214161c29683d639865c7e17384d2e75b95c309675bc14d102365e170a33",
-          "size": 26531
+          "sha256": "889fcc49b906fe7d472553f1557be0cec4e36e730a556589dc1f1c7c8af8a881",
+          "size": 29635
         },
         {
           "path": ".tools/3d_pipeline/meshy_runtime/package-lock.json",
-          "sha256": "5b28ae2903d9b67b9324e3799b6fcf776739dcaa2beb375bcf595df10629dd58",
+          "sha256": "672707686e4a59b644f5bb7e1af58c8987a26f6caadcbf0c5e7e196b7bfa7c18",
           "size": 65624
         },
         {
           "path": ".tools/3d_pipeline/meshy_runtime/package.json",
-          "sha256": "1741490e35df4fd92eb7ffe6c31aa753f1c85063cd08948543928331752f79c7",
+          "sha256": "a786752193cacd1c01c20db7c1a47d0a4d52fada7eed2ac7b47b7245687aec0b",
           "size": 151
         },
         {
@@ -10846,8 +10891,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "72fbb542b95b05a812a6347d48b70bac582252297fb56873695ab9025563ad0c",
-          "size": 101188
+          "sha256": "5480a9e62539e16125331ef5c73fe5704f6276537467fcb48bc05e30f2dfa988",
+          "size": 118009
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_rigid_weapon_attachment_integration.py",
@@ -10865,6 +10910,551 @@
           "size": 1892
         },
         {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/001_meshy_check_balance.json",
+          "sha256": "21449eaa6bf5d2669b5d5a75686c3bc01bfc806e6abcdbaebfe13c9cc9f1bf70",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/002_meshy_image_to_3d.json",
+          "sha256": "a075d9da56ce385bb3007bedc79e6e46a72f3612e042a5c807ea88be24742bcb",
+          "size": 143
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/003_meshy_get_task_status.json",
+          "sha256": "c2d5ef3423725035864c8bb8a91bd0bfba2d88106166cab5f45e820825c96938",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/004_meshy_check_balance.json",
+          "sha256": "cb9fc38e709586eeb4b3c63ef7456226920cb545e65a1b7d549524074f4ac718",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/005_meshy_download_model.json",
+          "sha256": "df96f4d5d8a24a4d2dbc16c250c722f3cc6abaa4713ea8bcb2f624eecc51e3fd",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/006_meshy_download_model.json",
+          "sha256": "c023ef3d97f548aaf463bc99d713bff993f3295e5b4af057befb9dcdc115ce93",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/007_meshy_check_balance.json",
+          "sha256": "9f725ec5486d4f059dd2da8f01351b679ad7d6414a7a930efed67c109222658c",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/008_meshy_remesh.json",
+          "sha256": "9c9a083d45e8e2e940869e695310dd629a2e10ea93c505f3f2c3a2251ce6f655",
+          "size": 137
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/009_meshy_get_task_status.json",
+          "sha256": "acb42a7a0eaddd8cdc38e6b0af402571f7bbd6855c5ebb52ba6a4e32fa9012de",
+          "size": 147
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/010_meshy_check_balance.json",
+          "sha256": "d4ca78fa69adb57c129e2023b72ac93901207d669a63c014e2c20e3f785bf971",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/011_meshy_download_model.json",
+          "sha256": "7953e60ddfa44bbc799b1e28ff201462447c247185360f13a6f8b46008702522",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/012_meshy_download_model.json",
+          "sha256": "9c4a2d6fc6b68f52c1855e9c2ce3ae6000cacaba0f03d2349db9f6211d31ee2a",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/013_meshy_check_balance.json",
+          "sha256": "7a9102f40f518fe29a17b7b5054e9b4047163f6809f246ca342b5c5ef66b4c57",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/014_meshy_rig.json",
+          "sha256": "9ca72fac6bb29572e6220588cd72b43a3c66af17d9f27b943dec7f5515d74985",
+          "size": 134
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/015_meshy_get_task_status.json",
+          "sha256": "7069f69428511f0544d95c24c2ac409e830da5b533fe8d649ac0b5a58eb0c1c0",
+          "size": 147
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/016_meshy_check_balance.json",
+          "sha256": "a4ab8ae13c2edb3bd0cebccbc21c0e8541134e881df9d028477223c5f7ee7e28",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/017_meshy_download_model.json",
+          "sha256": "57e7364e8617dc3de5248019bc81f4fe940f48e605ea6f27cfa659ac12cdfb04",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/018_meshy_download_model.json",
+          "sha256": "646e077beacfb68f8437747f256dd9db2be76b7ab5cf9f23246c6f824400f8a9",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/019_meshy_check_balance.json",
+          "sha256": "a37b6cd9fd26adac87aed9b59714beaf068c0bf8f81ff47d2d3e1d334518faf1",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/020_meshy_animate.json",
+          "sha256": "abe5c140dfd08462eed061bba890c685f10f7f39b97036c3443a5cb35ab5bf9e",
+          "size": 138
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/021_meshy_get_task_status.json",
+          "sha256": "b429dab0ef7637f3b503989723c1da9ba262d10b3e769a367115d37fedd40606",
+          "size": 147
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/022_meshy_check_balance.json",
+          "sha256": "d8297c8e338cb1816bb24ff57d68f3d880fe3dde9e449dc19a11258090161b4b",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/023_meshy_download_model.json",
+          "sha256": "5f405ba42a14145190d1f962646625dd30cccd24411d2ee6d8a5b8a5ea034335",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/024_meshy_download_model.json",
+          "sha256": "13435944493bf3c7689c15f2f5834f4f5806b82b4d00617167b4d92910be50a9",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/025_meshy_check_balance.json",
+          "sha256": "6b906d6c5bef8b3fb260bdc80bcb5453b5af49104bc19d0c7a3ec08a3f2c406f",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/026_meshy_animate.json",
+          "sha256": "170cf3e621a848fa03b34a30cd87bc1939053532f83e04af0bf549f7904555b7",
+          "size": 138
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/027_meshy_get_task_status.json",
+          "sha256": "47b2afed9b2064fe627b1c99d45e565f12d71ede6c72c8f546e77a17665d28ee",
+          "size": 147
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/028_meshy_check_balance.json",
+          "sha256": "4869bb3289490c7cf217d4fa495d1098af6d97e6795d2f412bbe1de613170f7b",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/029_meshy_download_model.json",
+          "sha256": "75069f9dc379342a65a06f804c27911f94cd94b00e29cc30c8247d6d246d4ba8",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/030_meshy_download_model.json",
+          "sha256": "e4ed6f08266526405bd5eac9959ce1c56e23025fbd774fac4fd665a7417cc51a",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/031_meshy_check_balance.json",
+          "sha256": "761aa8c5521359bb2b54e25d10ab3d5189ed801a2afa8ad3ccce813a2931cf0f",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/032_meshy_animate.json",
+          "sha256": "797bff5a34004228c9ebc059d1c2fc0009736ce9e395b14e0f3eaf1c76a6e5bc",
+          "size": 138
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/033_meshy_get_task_status.json",
+          "sha256": "e5b509186948ea580fdd84fd46abb85132b87c19cdef2483215666eef138574d",
+          "size": 147
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/034_meshy_check_balance.json",
+          "sha256": "9946b70d50a8d842e47cf76f7f661bd37da7e70d28efc9cb4b203de3304be8b9",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/035_meshy_download_model.json",
+          "sha256": "6f4fed85b8bfe69500971367f623ffac67ea8746450a8b58002e8d3d7adfb903",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/036_meshy_download_model.json",
+          "sha256": "e20020058ff6976d226f860026b60d83d0218ecf123e769a236e9898812160ff",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/animation_attack_preflight.json",
+          "sha256": "41b682c212999d61361aca1b127a77e62227d8c73dfbb3427d7f1de2152dd2d2",
+          "size": 195
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/animation_attack_reconciliation.json",
+          "sha256": "41934a9033ed57e4eba192a46ed316e982ccf2261ec7c88c029e054bcc4ccd76",
+          "size": 253
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/animation_death_preflight.json",
+          "sha256": "45dcb5d0f458aab87871159630237b9276eb88789bef971fa911201c4aa308a1",
+          "size": 194
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/animation_death_reconciliation.json",
+          "sha256": "860d8a07331696c3c369c85699bd1ddf6b259cf8a365968665ae1cab2171e3dc",
+          "size": 252
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/animation_idle_preflight.json",
+          "sha256": "37471198d6af3be305f95baf7e522705873d007fccb8977d8a60fc72ded1af95",
+          "size": 193
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/animation_idle_reconciliation.json",
+          "sha256": "257e03d79227e14b8ec1200562238a71f132b38ddc80aa1bdb22156fba1946db",
+          "size": 251
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/generation_preflight.json",
+          "sha256": "98a3cbb63cf6adcab1c7f600cfad92cb81b0dc7ce40b850bd33013be3a8f15b7",
+          "size": 191
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/generation_reconciliation.json",
+          "sha256": "d9240286bbd8eb22309526a5c3b121a5dcafdb942d818539c3f50f024f0e0b1b",
+          "size": 250
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/rig_preflight.json",
+          "sha256": "299e95c7e936cf2119a89b111da7c87acef31bdd77368abf0b6e1286f45edf24",
+          "size": 182
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/rig_reconciliation.json",
+          "sha256": "9eb68498b9560cd8550021cb3f92b8b108fc9be3d80a7fc26ce8aefa60e14050",
+          "size": 240
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/rig_remesh_preflight.json",
+          "sha256": "b2744e889d414311e5fde4a1b832e8fdd24622e36073d370ce280666b9058ae3",
+          "size": 189
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/credits/rig_remesh_reconciliation.json",
+          "sha256": "747190e8dcd1337f09fc6afac0bcb9981d189f714b7d4d79100b59453e9eea04",
+          "size": 247
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/tasks/animation_attack.json",
+          "sha256": "1c9b5bfde5c1b3b81fcf0d11500784ba70ba518a0cc1e37df47c88a1f4fd2126",
+          "size": 867
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/tasks/animation_death.json",
+          "sha256": "9c3becf881492807f13377493f81ff7b1a5319161320ec802e7b1412070c5ac0",
+          "size": 866
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/tasks/animation_idle.json",
+          "sha256": "a93bbd73f59ed22e0454c564339cd765577ad72a14207d39d1ac17b0b84a76b3",
+          "size": 865
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/tasks/generation.json",
+          "sha256": "b63132a6f9640a4bd5e23db4fa866e838717d2696e8f6f3407863fe838d7fc04",
+          "size": 904
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/tasks/rig.json",
+          "sha256": "511c597919e5a4623137e5db8109f9f918c69cec5fb3949dfb2ed87ad485335a",
+          "size": 857
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_men_infantry/provider/tasks/rig_remesh.json",
+          "sha256": "2f7ae09541ef984998064419cb09d714351b1c5edc817185c6811ede334cdd15",
+          "size": 895
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/001_meshy_check_balance.json",
+          "sha256": "1a2b62ffad0da862064023c26c4eceb33687d9634e0dfc4dd2e1127a4599d363",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/002_meshy_image_to_3d.json",
+          "sha256": "44af369a7455a4616d82abc22165e9b8fa804b18b39de53cd2f4d238ecb5e4b4",
+          "size": 143
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/003_meshy_get_task_status.json",
+          "sha256": "14eaaa0e91090837fdd4f4076e43f37438bd92fca7958f5eff01a116d28ead97",
+          "size": 150
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/004_meshy_get_task_status.json",
+          "sha256": "36ac831430a11ebd42a7dbe72fa98cc2d5dd83452f7e35bc944bf9509ab2eca9",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/005_meshy_check_balance.json",
+          "sha256": "4e78b6bdc4f1840ae5cdaac82b09931869f2ad8638546a972b57973c1e69574f",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/006_meshy_download_model.json",
+          "sha256": "eaa08665450ef121d60929483b622adb372a7c121a316e747663ae9a3b8c6b23",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/007_meshy_download_model.json",
+          "sha256": "2232e15a888e30e662452a224b36e1705eca0361b509bc0bbbd90a8ef9b71c20",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/008_meshy_check_balance.json",
+          "sha256": "a605efeaf008f2325652bc7ef92b34d527ff3eaa1513ba2befdab19ece1ac17c",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/009_meshy_remesh.json",
+          "sha256": "408e339965c3fa3138a440ee0d4b50d3c71297e4cbd2072e6e5fe87848762a09",
+          "size": 137
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/010_meshy_get_task_status.json",
+          "sha256": "edec99c247cc9d49948a46db586454f639184c41944a2ce5af26ffb9d7dab4f3",
+          "size": 147
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/011_meshy_check_balance.json",
+          "sha256": "fbe9185eac04d158f9962e0351a48cd404afcecaaa7a96be52bb763d02bd8a70",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/012_meshy_download_model.json",
+          "sha256": "e9223b5af9f46d26d46c68549f89eef79b530b665fea814e7c410efd25f7484f",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/013_meshy_download_model.json",
+          "sha256": "c44f1938c6406b4e6508440a0253993b6201bdf18af481da795e11b0f1ca4b2d",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/014_meshy_check_balance.json",
+          "sha256": "3f3785842fe9d6f8720ddb279dce618e51fcab058abddb59c1d1e16d64667d5c",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/015_meshy_rig.json",
+          "sha256": "4804fecfd4e084e5e1dd9c26793c7d5970d426012f031e91a8f9ecf253682934",
+          "size": 134
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/016_meshy_get_task_status.json",
+          "sha256": "87f15ad6bf4d8bf8f19e42ba1492c20bf56df850ed3304338c883fd1400047c6",
+          "size": 147
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/017_meshy_check_balance.json",
+          "sha256": "63407100dceaac9142230009b14f3438cc061b8ddc5a8cf6f7127b4fffd8b105",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/018_meshy_download_model.json",
+          "sha256": "2635d17b3e1cf3706a4626308bd7f8e963ca5e8df40d20f5b7ff7eefd565945c",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/019_meshy_download_model.json",
+          "sha256": "1c5539681af4da64846d4f621bbfc191839f1df1ba9a543b61c02eedc051dbd7",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/020_meshy_check_balance.json",
+          "sha256": "638875258f9d1c7219a578c54a7ced6af9f23eae2c4b270a83d167789aeeb241",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/021_meshy_animate.json",
+          "sha256": "3d4acfa91a5bca7f0ac40b69a7752f92b608d87fb3db3a8d8306218feed1a9d1",
+          "size": 138
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/022_meshy_get_task_status.json",
+          "sha256": "5e0bff7751b1d972b0c1eb288a8d7ce61343499f0a90f8cf0285d57a8a5f769d",
+          "size": 147
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/023_meshy_check_balance.json",
+          "sha256": "12d6fd1df143b07e4be5f3a9fcdedeeb5b87190429f012c2d5f40a2a29f781f2",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/024_meshy_download_model.json",
+          "sha256": "9eba22dddc859e393cf13ca7b22aa11ad9180906170ba958762e60c817023135",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/025_meshy_download_model.json",
+          "sha256": "fceb871514a8827bf770754ca1a41766130adce5b65c81192e6c6309375c89c2",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/026_meshy_check_balance.json",
+          "sha256": "e0e4268c34fe4e231324b4ba8800642e9ad9b3baa84493b42d1b182b36f8f457",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/027_meshy_animate.json",
+          "sha256": "e30a6b983a0519dc6b6ff5b7dd0c0e52d56564e56e2572090b2c4ccbd423ab61",
+          "size": 138
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/028_meshy_get_task_status.json",
+          "sha256": "2794d80b5264d57b4404397a9ab60fda789f32e90b67c98593f0f9f94c664b0e",
+          "size": 147
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/029_meshy_check_balance.json",
+          "sha256": "c01e76c9d313f13ec87c72e27470463298e0906df285a0ba075a10a8d1c7f483",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/030_meshy_download_model.json",
+          "sha256": "6385442c5610c345a5ad0923aaeefe772dedad9945d2e217826741a960007f06",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/031_meshy_download_model.json",
+          "sha256": "1797d8fbe7fa59209e7856ed6de23332719ae5d90828c0234a9054c19b2a5ed0",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/032_meshy_check_balance.json",
+          "sha256": "667f92db309894bf3f8ff09943fc232fdc6f3b3048376fb81b25e2285209abd0",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/033_meshy_animate.json",
+          "sha256": "5358171e56d605abbcdee618e61beb52700286cd3d86791b99af5a1a6edca160",
+          "size": 138
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/034_meshy_get_task_status.json",
+          "sha256": "8ab3a6abfc7976c967e181b5fdc0beb5513e15c24177ef7d843e6bf287fa7425",
+          "size": 147
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/035_meshy_check_balance.json",
+          "sha256": "61ad9706e3c8ed554b348533c27d44ef2342f598eb5d1507177807151489729a",
+          "size": 148
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/036_meshy_download_model.json",
+          "sha256": "34fcd372b56c5e2ad49388c2092d116dc6d47a1689b27bbe3dec79c00495fbf0",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/037_meshy_download_model.json",
+          "sha256": "57d71df786fe900fab4ef7621c9f794261346be071a14aabebdcf6be1f6e5276",
+          "size": 149
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/animation_attack_preflight.json",
+          "sha256": "234d37a07ff6a14233e92d8d33aeac3f7a1baad0f0f1e41a6c11ddfb71eee3c6",
+          "size": 194
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/animation_attack_reconciliation.json",
+          "sha256": "722d546a01f29b899387a94c72998a48738bdfeda981359db5f9fd9b3d7a2e8b",
+          "size": 263
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/animation_death_preflight.json",
+          "sha256": "d5f96c1010b6199446581045177cd57c30508e42b9c0e65fe6d9b729fc2f9dc1",
+          "size": 193
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/animation_death_reconciliation.json",
+          "sha256": "a64e180f16b9eb2799e8a46c8b58a9e1ca508c246940b7c5863b7857c9ba3e51",
+          "size": 262
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/animation_idle_preflight.json",
+          "sha256": "87a274d594ad70166131b10e6db621f78590cae08f8484418e85943fe3a15b13",
+          "size": 193
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/animation_idle_reconciliation.json",
+          "sha256": "6b956bf048cf124ed8c472e9223918f46520758d34b478f655664d8dcf2d22ed",
+          "size": 263
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/generation_preflight.json",
+          "sha256": "009371d7b0ca3494723f30a0fd5b3f4e3edca3d68091c88da7e18d0b8942efa3",
+          "size": 191
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/generation_reconciliation.json",
+          "sha256": "e10dd117e9de1d73ef098f873de5314f29ffab0fa168a85a31ed2322318a0efa",
+          "size": 262
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/rig_preflight.json",
+          "sha256": "5b994f27af2bd5a98c69eaeacd7dc5d05c7e11ff5c19224b6e1e5b6d4b43beb7",
+          "size": 182
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/rig_reconciliation.json",
+          "sha256": "6021aad8c935e7354d38c93a3658f389b52031aeff70f519db654f83a6e0eca5",
+          "size": 240
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/rig_remesh_preflight.json",
+          "sha256": "5b6606d552bffa721408cb433e12124df9da14806c9d75610fa9aeaf2bc89071",
+          "size": 189
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/credits/rig_remesh_reconciliation.json",
+          "sha256": "d5b521d36b06eb0c99d57f3fe5716614cf04ab7703ba80effda127921b5764dc",
+          "size": 260
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/tasks/animation_attack.json",
+          "sha256": "ddea05e74c624988f37a4f6d50fa4a2ab1467007438035bf4441b8a760e00220",
+          "size": 867
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/tasks/animation_death.json",
+          "sha256": "b01787ffdcd9eac352e393bebb049d871904dcbf56b2a45ae814b5ba37963d0b",
+          "size": 866
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/tasks/animation_idle.json",
+          "sha256": "ae955ce0a01c214024be44b987b8df411ea6dc81abb9da66c11584689c00ef57",
+          "size": 865
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/tasks/generation.json",
+          "sha256": "5d7cc6e712bfa254c303756995cdbef710d973f0b40d3d95bd5f51e371f3e9be",
+          "size": 901
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/tasks/rig.json",
+          "sha256": "a72d45d50c5bfe1e692ff7741149f5fdbe322e1e0a90ab90f497fac37e98f188",
+          "size": 857
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/fixtures/zin_credit_records/zin_orcs_warrior/provider/tasks/rig_remesh.json",
+          "sha256": "fb6d40ed24bd2893dbf2c11e187b82532597d91590790ac798652d9e508bceab",
+          "size": 894
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_action_phase_patch.py",
           "sha256": "58eaea29b09ce425e17a409f3926de442e60b718896c365146b9bd017cae06dd",
           "size": 11831
@@ -10873,6 +11463,11 @@
           "path": ".tools/3d_pipeline/tests/test_animation_retarget.py",
           "sha256": "8bb220f255f13a086c2121e49c788274238fb2693b9e61ada57ce83fa0cd2bd7",
           "size": 4541
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_blender_pin.py",
+          "sha256": "fb4e962ccc6924bdffc1385ad1442ad32d56d80402f98f3de6d5b937a4795514",
+          "size": 16687
         },
         {
           "path": ".tools/3d_pipeline/tests/test_blender_stdio_response.py",
@@ -10885,6 +11480,21 @@
           "size": 9153
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_check_runs_3d_suite.py",
+          "sha256": "b3ec224c82d7988bb405c97b0118ffdc5c841821857755b96d0b907d88bbaf1b",
+          "size": 1609
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_credit_budget.py",
+          "sha256": "b065c33e266d79e96db5a1280c2c89cfcb7d5df179af61a8d99570d0e796d363",
+          "size": 18638
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_credits_report.py",
+          "sha256": "2d51be845b160b8a6405ddcfdbe0166405ba8c21493f06bb32afb193e8725b6a",
+          "size": 10718
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_explicit_batch_repair.py",
           "sha256": "0076ecf1b1bc62194b1847bf8fd1b6f3c8b6190eff49ff3d04554e2f179a200c",
           "size": 6191
@@ -10895,9 +11505,24 @@
           "size": 2226
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_export_acceptance.py",
+          "sha256": "4d3c64aac766ad747cfccc8b993a8180d6d8fa15b8023932e8d3f6b0b54f2437",
+          "size": 7260
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_exporter_log_capture.py",
+          "sha256": "0b160e83914de0660a03b7c7ae14bc58105d9e5a4256e034aacb244543eaae6e",
+          "size": 7933
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_fitted_humanoid_repair.py",
           "sha256": "adc34ffa5c1483a7ece07cf932ba07926e7cd61f429d5fcce212444ee5ce204c",
           "size": 9051
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_generation_settings.py",
+          "sha256": "c7811071995c2046fefc05da8e241ec5641f9a0af3d6edc5360e83facea8818f",
+          "size": 17543
         },
         {
           "path": ".tools/3d_pipeline/tests/test_humanoid_component_review.py",
@@ -10906,13 +11531,13 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_io_pdx_compat.py",
-          "sha256": "c061c7518151a44635ad2fcf86382f828c223cf6aea98b8cbf5d1c1b46c898b0",
-          "size": 8758
+          "sha256": "e9b45eca10d59df60a64065933c27d210650d6205d133358311dd39f453cc9c4",
+          "size": 9355
         },
         {
           "path": ".tools/3d_pipeline/tests/test_locator_adapter_contract.py",
-          "sha256": "99e39649bc55c5b242852ca03d690d055534432d324e629d416f3f7546fc1cee",
-          "size": 28895
+          "sha256": "f3ae58b89a6e0c6ed9fd3b145f81b6f815533679f39f239d9437a321a21b2aef",
+          "size": 29310
         },
         {
           "path": ".tools/3d_pipeline/tests/test_manual_creature_rig_contract.py",
@@ -10923,6 +11548,11 @@
           "path": ".tools/3d_pipeline/tests/test_material_visibility_probe.py",
           "sha256": "b57bdf895c978266d99f5ab37127dde9ec369851ad3e2e42edebae8d7373b9a2",
           "size": 4998
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_mesh_components.py",
+          "sha256": "b8587df9bb7d17ff86c4a3d7ce2050e82310753f0bcda9cdd75e61598112e0e0",
+          "size": 7120
         },
         {
           "path": ".tools/3d_pipeline/tests/test_mesh_region_inspection.py",
@@ -10940,9 +11570,14 @@
           "size": 3347
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_meshy_contract_lock.py",
+          "sha256": "3459d793d0acc3c77a0789b750525c302720c80ab1afa48c54003fc94283ca5b",
+          "size": 6925
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_optional_motion_contract.py",
-          "sha256": "9eea5d2e9731225dcabfb07a8d1b36fafc0f760ded12b1da49f3e61226a06da1",
-          "size": 7382
+          "sha256": "681f1026fd6058b5ff6c175217c6ba3a9ed94a6c9710be94c6f9953b209e4f1c",
+          "size": 8265
         },
         {
           "path": ".tools/3d_pipeline/tests/test_orphan_image_retention.py",
@@ -10965,6 +11600,11 @@
           "size": 17861
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_profile_gates.py",
+          "sha256": "0409f133e97ca494863a9e501fcdf507760f7cda691c16373b35d6b41a8bf7ee",
+          "size": 23497
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_reimport_promotion_contract.py",
           "sha256": "272194534cf77f86ee053aae6469c2137ae10ae139f1a3f6e49ac4b8b931ae18",
           "size": 31850
@@ -10973,6 +11613,11 @@
           "path": ".tools/3d_pipeline/tests/test_reusable_adapter_advances.py",
           "sha256": "52b9384da794c2d272d0bc8b2e22f6f946b7cae37d1c149fe0028a0ba9286d25",
           "size": 5069
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_reuse_before_paying.py",
+          "sha256": "f1c00dfcb03e9aa82aaa7c7a7404995a51f82374b80555d188084f77530c4cca",
+          "size": 14588
         },
         {
           "path": ".tools/3d_pipeline/tests/test_rig_animation_regressions.py",
@@ -10990,14 +11635,24 @@
           "size": 9012
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_texture_size_gate.py",
+          "sha256": "b316d57c9c903ce73cb3e86db2bb3704bc360c8d8bc0ae6d92efb494bf969953",
+          "size": 8744
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_visual_preflight.py",
+          "sha256": "21c6dcaed66f23661d82f4e945bb16671980e3cb58109e70f50de475962827e4",
+          "size": 11916
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_workflow_sync_contracts.py",
           "sha256": "3851b3b0dba7b73acb75a555fd9dc11c9cb98c221a81ab054212a12beb1741bc",
           "size": 7161
         },
         {
           "path": ".tools/3d_pipeline/verify_environment.py",
-          "sha256": "1cff0875eab40925166888f0aae77aa4224efdde520f41add2fa7f248e3fed5a",
-          "size": 6789
+          "sha256": "fdf8a8227e466c031d3a611c1b8c42ce190e5079013b599da62ccb0a2d9931ef",
+          "size": 7794
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
