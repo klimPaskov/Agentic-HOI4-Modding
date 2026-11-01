@@ -1,0 +1,129 @@
+{
+ "_about": "Shelf files that are not vanilla family references: inputs of the kit's asset tools and the 3D and GUI review folders. Hashes are SHA-256 of the committed files. .tools/audits/audit_shelf.py checks them.",
+ "groups": [
+  {
+   "folder": "icons/achievements/template",
+   "purpose": "Achievement processor inputs: completed and grey 64x64 backgrounds and the red not-eligible overlay. Used only through tools/process_achievement_icons.py and by hoi4-imagegen for the achievement triplet; not vanilla references.",
+   "files": {
+    "icons/achievements/template/achievement_template.png": "248db006611eb3942550c43df83802aa6fb24761035fc928b5d34586c0c4c5ba",
+    "icons/achievements/template/achievement_template_grey.png": "70e073694c1a7d9fe40c63b1eb2e987a8a45b3ffd15ccf789eeaa5b843b90022",
+    "icons/achievements/template/overlay.png": "89bc80c6ac975bf6f1ff000ff3070b20c337bfb8b8ae966ae35a5540c004d6dd"
+   }
+  },
+  {
+   "folder": "portraits/advisors",
+   "purpose": "Advisor card template composited by tools/create_advisor_icon.py and by hoi4-imagegen for the advisor_card family; not a vanilla reference.",
+   "files": {
+    "portraits/advisors/advisor_template.png": "8f594ef62afba6fdec58de66a80609350dcfe884320b11e6cb6220f1a0e19f58"
+   }
+  },
+  {
+   "folder": "units/equipment/technology_art",
+   "purpose": "Equipment art for the 3D and unit pipeline (technology pictures of equipment). Not a hoi4-imagegen family; the technology family has its own shelf in icons/technologies.",
+   "files": {
+    "units/equipment/technology_art/anti_tank_equipment.png": "12e141b05e390cdc30e7fa5daba2585827e819751d5035371b66744f38ba5b65",
+    "units/equipment/technology_art/artillery1.png": "e28604807ea992d80b9a651aa3ed1513d764d13da88da3e74d29f2df31b84e49",
+    "units/equipment/technology_art/artillery2.png": "e92905c6c65aed3b5031012943aa0c01e77c2925e621f370cb9691e585cfd00a",
+    "units/equipment/technology_art/basic_battleship.png": "bec8b05e425767af759bf57128d434f5cf575e2edd3c5336876baf32508a06b8",
+    "units/equipment/technology_art/basic_carrier.png": "e56132909085783f87ff5820698995d5a88248c8b1ba8467a2c8523ad26777f7",
+    "units/equipment/technology_art/basic_destroyer.png": "f87ff0d778757188fb5ecce67a60bbf2ad7b9ab76ed4deacc899f2f56dbb8534",
+    "units/equipment/technology_art/basic_light_cruiser.png": "cbd2a20e7d0543094c945cdd49f5f3d73a859328f3aec0e0367378070d1a49c8",
+    "units/equipment/technology_art/basic_light_tank.png": "8976343953be4e2a1324262f8442df2702d1ac07826142a2ac9ce059c2658c28",
+    "units/equipment/technology_art/cas1.png": "9cb5aa924b80351b1f6e3db311a2149495f3943d25ffc57c5344691dc0de183c",
+    "units/equipment/technology_art/contact_sheet.png": "b8a2f2cd641bba79b9f49d71df3b4b3fbab7df05ff6c5787da750121391ea80e",
+    "units/equipment/technology_art/fighter1.png": "75782540c21e2b2c4328b51e71c1ea8aa1ca2531a075a2f42d2a4fa251c17889",
+    "units/equipment/technology_art/infantry1.png": "dc2857e9c8e7d4fcc1574af166b74c8541b26947b829f93c4be0113aecd7f520",
+    "units/equipment/technology_art/infantry_equipment_0.png": "52d7240ee05bc21bc0fcf426fd04171706f1974f85604202ccf4dae71c0b9f5d",
+    "units/equipment/technology_art/motorized_equipment_0.png": "1a94a467bbf33156eaf4fa6404cff28215af6dc73e1e22d7f93e1cd4aed4899a",
+    "units/equipment/technology_art/motorized_equipment_1.png": "f19d4fc36aa7cd0ed49c9b1a73cdff76ca5cf44db94719edee3b76fda1414be6",
+    "units/equipment/technology_art/naval_bomber1.png": "4d357f754dd522547c54c209a87084b7a50afd9d591b7049bfaef7ed4fc4bb0d",
+    "units/equipment/technology_art/support_equipment_1.png": "2d2ecf2693c96a431ecb4cb0f2daf59ef66d5694ec8f27d2f61614f241002180",
+    "units/equipment/technology_art/tactical_bomber1.png": "0247d59659576dcd5ea682a4b3dcf4868807e1a4db23cc60adbb9b83e9d29264"
+   }
+  },
+  {
+   "folder": "units/models_3d/air_materials",
+   "purpose": "Vanilla 3D model material references for the 3D pipeline (hoi4-3d-model-pipeline).",
+   "files": {
+    "units/models_3d/air_materials/contact_sheet.png": "b91a85e334e11af2b47514a6833c4c318e1874bd44a13d91602be968914bed72",
+    "units/models_3d/air_materials/generic_guided_missile_diffuse.png": "1ad363684c5b5443f2a35cf7d07dddba668c56da1b96605a945d211ebddb92cc",
+    "units/models_3d/air_materials/generic_jet_plane_diffuse.png": "b15ca4571a797cd493b3b1409d368b79f0fbe85925cc3765274e38f70479f037",
+    "units/models_3d/air_materials/generic_plane_heavy_diffuse.png": "642cec75832308152148becdb02bbce28618426db642ff65580ca2d94e0252e3",
+    "units/models_3d/air_materials/generic_plane_light_diffuse.png": "68614b769d0b9252aa0637cfee6d2f0de38bbd536984267085e8bb000fb797dd",
+    "units/models_3d/air_materials/generic_plane_medium_diffuse.png": "63e38657a9adc5747c2c5c26ecb2b3571741e812952039890c2932d7a0109c3f"
+   }
+  },
+  {
+   "folder": "units/models_3d/land_materials",
+   "purpose": "Vanilla 3D model material references for the 3D pipeline (hoi4-3d-model-pipeline).",
+   "files": {
+    "units/models_3d/land_materials/asian_infantry_diffuse.png": "bd489772457a89c8ad3a930e98d9ddbc90e8fb38a832d8e652c40116149d5b64",
+    "units/models_3d/land_materials/cavalry_horse_diffuse.png": "7c37c48dd18bc32f24777690a1a184544b0aad14ed8dee01d092ba2ffddbd8c7",
+    "units/models_3d/land_materials/contact_sheet.png": "447a0e35fbfeb4ae1b354fd46ed87106c8e7b15060ff126a35d13d435a84ae79",
+    "units/models_3d/land_materials/eastern_european_infantry_diffuse.png": "eebc9e3c39132e2ce5e5984ac23b57bae7e6de494996e91ef7e6a033def94f72",
+    "units/models_3d/land_materials/eng_infantry_diffuse.png": "eca246e36f4a27546a818106ccc14284ff8409756021254c89faf723db3c2459",
+    "units/models_3d/land_materials/generic_tank_medium_diffuse.png": "e1dd7d4a38eca141319048f0f4853b89c8cdba66c86367ba1835ee9ba0176a62"
+   }
+  },
+  {
+   "folder": "units/models_3d/naval_materials",
+   "purpose": "Vanilla 3D model material references for the 3D pipeline (hoi4-3d-model-pipeline).",
+   "files": {
+    "units/models_3d/naval_materials/contact_sheet.png": "3d93f543eeaa8d090305aa0c43b01737598e66c50c7b72dc23cec6f2000d2e90",
+    "units/models_3d/naval_materials/generic_battleship_diffuse.png": "b1b866713529dbdb54a4c953eba5868be772a98354d24c7b2d356820e0f9dbf3",
+    "units/models_3d/naval_materials/generic_carrier_diffuse.png": "2371cf5931ff72ee5b42bf36621c88ce104ea1ac56ba383a7344ac4ddebe7994",
+    "units/models_3d/naval_materials/generic_destroyer_diffuse.png": "fff91da975fdb357ec5ee97d8b51b1ee72b9bc1f8dbbc835d01f44a5113a0534",
+    "units/models_3d/naval_materials/generic_heavy_cruiser_diffuse.png": "8a87dce3e7067c7d2c43d2f47b8d50993a55d51d04124385c46f583d042b7dcf",
+    "units/models_3d/naval_materials/generic_light_cruiser_diffuse.png": "681a59a56382287bf9d3c06024f51f9090b95ef55e1896262de1b28312a85607"
+   }
+  },
+  {
+   "folder": "interface/vanilla",
+   "purpose": "Vanilla GUI window review shelf for hoi4-scripted-gui and event UI work (see interface/README.md). The gui_texture and super_event families have no measured vanilla canvas, so a mod's window art follows these windows.",
+   "files": {
+    "interface/vanilla/_review_contact_sheet.png": "e6a9bbdcdeb82323fbf7cadd349dd0cad10de9d92d5759b7b8cb6d3bfd1cae36",
+    "interface/vanilla/design_and_organization/countryequipmentdesignerview.png": "5075df6078218dbd3d00c20215943dc85a4380bf2838352a0b77243d7e48d35a",
+    "interface/vanilla/design_and_organization/industrial_organisation_detail_window.png": "75e9befe3942fbc4104df40c759e2899f21da7d942af1cc48f63013b9854944f",
+    "interface/vanilla/design_and_organization/skoda_priority.full.png": "2a43a07e0423788c4d78f606e4bd6a4c9b0e0abf325809fb0b104ba739302ad8",
+    "interface/vanilla/design_and_organization/skoda_priority.png": "68b3dd3a0289c947e1b9b4ced46d55fb781933569dd6d0d68687f91ac32b0f62",
+    "interface/vanilla/design_and_organization/skoda_priority.svg": "a07a2d8d3e7e445afd49c932ccf9317a3efa41b8e1d50b931cf26670e36dfcb4",
+    "interface/vanilla/design_and_organization/unitleader_trait_tree_window.full.png": "513382e9560627811cbee6b07126e8dba66c5645a8ef02aff674ada9777bf704",
+    "interface/vanilla/design_and_organization/unitleader_trait_tree_window.png": "b644a0bb9d3459039fe823d420cbd8524431949fa1e80fc4bf923e8dbae423a6",
+    "interface/vanilla/design_and_organization/unitleader_trait_tree_window.svg": "2d942dcd051acfb05a14a5719c2db54f59218b77cee7edf0c509aa104caf2925",
+    "interface/vanilla/diplomacy_and_outcomes/peaceconference_full_window.png": "61390ce281e3271b5b7b317c5ef60c26c7dc384f8f658e200ec431109714347c",
+    "interface/vanilla/market_and_inventory/edit_market_stockpile_window.png": "2335321f99979d561867d6d7611c8afb551a0ff670525f8c7ddd9e5772e756fe",
+    "interface/vanilla/market_and_inventory/market_equipment_stockpile_window.png": "44c1a947cd8854d3bf89cc138aff6553c64dc85f22bb8b3a6037b3e9970bb79c",
+    "interface/vanilla/market_and_inventory/market_purchasable_equipment_window.png": "9f8b2212fcc3be7b29bc4db13f2a3d41fbe52f3e2f58ba6201c7ae79afdfe92d",
+    "interface/vanilla/market_and_inventory/market_purchase_draft_window.png": "aae25034300f260408dcc85d0b21df3366ddb0fb27f5ac96f111d53aaa0d7771",
+    "interface/vanilla/market_and_inventory/tradeoffer_window.full.png": "291d8f264a029777db1cbbbb293447610a736ecd5a25c8e5317d0c090389059c",
+    "interface/vanilla/market_and_inventory/tradeoffer_window.png": "712dc6cfc80988fa2c3ddcb07eaaaa345eaaf72eb9c7c45578b479cdeb3b287c",
+    "interface/vanilla/market_and_inventory/tradeoffer_window.svg": "22b8e1e5fef53e87b75e2a04471275a20e7751ce96de64f3802b0d207a8390e0",
+    "interface/vanilla/projects_and_research/detailed_project_history_window.png": "7c39cd05b787a8454daf6f216016b34dfac8ec8991abaaa8d84fda80eb8f404a",
+    "interface/vanilla/projects_and_research/program_window.png": "070f3b69a22f995b36961a28b430c24e2579a159ff6ab9e8d0fedc6e5302f87d",
+    "interface/vanilla/projects_and_research/scientist_roster_window.full.png": "3eab5b76126d7cc9af2fe6f3a7631408b5b974fa9761ecd985f491de7d8e26c2",
+    "interface/vanilla/projects_and_research/scientist_roster_window.png": "64aa70bcfd9623cf727c495591a2853b4474800418721d33576ef5451cf7d365",
+    "interface/vanilla/projects_and_research/scientist_roster_window.svg": "301ef8abb73070d1368fae562f21b5e87ea65535b632a0ca4a76a6d0cdca9936",
+    "interface/vanilla/projects_and_research/scientist_roster_window_clean.full.png": "bd3ef3220a14772eb912f790aa61c234bdefe05d04f0f424e9037f0a3c6d968e",
+    "interface/vanilla/projects_and_research/scientist_roster_window_clean.png": "25c3b282cff3ecb1bb51ba10816f2852bdd3be8decb9ae013ebde01472448199",
+    "interface/vanilla/projects_and_research/scientist_roster_window_clean.svg": "0ede36867b12addb173d3cd8a4d474a48d5f16e4ea73c5920ffa487c9dc1d187",
+    "interface/vanilla/projects_and_research/scientist_roster_window_v4.full.png": "9ecad375dbd4cb2d485f9db533d299a4454f5a7f794684ed3d7afb84bbafefd0",
+    "interface/vanilla/projects_and_research/scientist_roster_window_v4.png": "4d54418e030bd9df7525c03ba6c3f341f2101f50d1ab00587b91b3c24b1d09af",
+    "interface/vanilla/settings_and_controls/ingamemenu.full.png": "3e37234fb7890404f6746f800f88499744cc6ef3d70fb57baf6525a181436183",
+    "interface/vanilla/settings_and_controls/ingamemenu.png": "29705e9de0d777eeb8f0d6c2e4ec31a69c0bca2ccce946d56adb1636ff745889",
+    "interface/vanilla/settings_and_controls/ingamemenu.svg": "f865dbb14faba28d72ee830e85cbb7adad0a0120c365a84bb5281793d3e3adef",
+    "interface/vanilla/settings_and_controls/menu_settings_accessibility.full.png": "a00e5e5ff9621555e11e40803001125cd04cc428146b05744ae1e84b0d773193",
+    "interface/vanilla/settings_and_controls/menu_settings_accessibility.png": "1bfdeca816d73c6e637e98df9363253c76fb369e04fee2762958e29a8e79ccb5",
+    "interface/vanilla/settings_and_controls/menu_settings_accessibility.svg": "8c8e888b354cb2d66ce4969767fa644920b529b93534889ba800db8410556bc4",
+    "interface/vanilla/settings_and_controls/menu_settings_audio.full.png": "f68064c6467430d67311bbe5472bd722ab2fbdf2d4cbdb117683fcac70c82844",
+    "interface/vanilla/settings_and_controls/menu_settings_audio.png": "5b03fa436d66bfcab9d8d23f7a329ecda3d639f3d44979a5d227cbfee3de86ce",
+    "interface/vanilla/settings_and_controls/menu_settings_audio.svg": "971880ff6967ec600d83501d2985dae018f87a31bbe9a3a285ddaabd6cdf9bec",
+    "interface/vanilla/settings_and_controls/menu_settings_ingame.full.png": "29801502735a4edf0975a7ecb12978247afddc6b24861e7ca986226b653dec83",
+    "interface/vanilla/settings_and_controls/menu_settings_ingame.png": "7d55a0e3ba60256ee6ad2fb26697141c506e3c031202331ff927ee7745d01bff",
+    "interface/vanilla/settings_and_controls/menu_settings_ingame.svg": "1f601bd93898c65ee491954677027dffce9a836b5afd149dc3c4c501b687cace",
+    "interface/vanilla/settings_and_controls/menu_settings_video.full.png": "295f12c62bec4ffce64b817c6bf5fba7c75de36ca174af5ea251d3855871ac4d",
+    "interface/vanilla/settings_and_controls/menu_settings_video.png": "ede74849a488be80db1dc9dca7f964002c259f7c70be9dabf74b4ac950b42afc",
+    "interface/vanilla/settings_and_controls/menu_settings_video.svg": "7f7f6bb685251cf3b6ebd3b4f329a6d41255d13065771847ddd08f753c35df01"
+   }
+  }
+ ]
+}
