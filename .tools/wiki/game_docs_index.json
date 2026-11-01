@@ -1,5 +1,24 @@
 {
- "build": "1.19.3.0",
+ "build": "1.19.4.1",
+ "depots": {
+  "1158100": "4721386625305758373",
+  "1348661": "2398449775181876803",
+  "1880650": "1063531940111172762",
+  "2183930": "8666729742739656847",
+  "3152780": "2597162523324191326",
+  "3796260": "8733835811564979229",
+  "394361": "1788788840131312370",
+  "394362": "6421553452046622612",
+  "460559": "5093762405086364885",
+  "460600": "1482098517571169599",
+  "460610": "6692245069856235421",
+  "472410": "1902430195696851694",
+  "530760": "7737702241375883740",
+  "584140": "5338798216403972785",
+  "642010": "8268665884695314227",
+  "702350": "7446681591222407330",
+  "815460": "9035856187811656401"
+ },
  "files": {
   "common/ai_equipment/_documentation.md": {
    "entries": {
@@ -74,6 +93,7 @@
     "Examples of AI strategy usage / raid_target_country": "3babf101",
     "Examples of AI strategy usage / research_tech": "22c4d11c",
     "Examples of AI strategy usage / research_weight_factor": "7e6806b1",
+    "Examples of AI strategy usage / stockpile_fuel": "6d51d8d1",
     "Examples of AI strategy usage / strategic_air_importance": "7f26cbe1",
     "Examples of AI strategy usage / theatre_distribution_demand_increase": "2f54a3f5",
     "Examples of AI strategy usage / unit_ratio": "4a82616a",
@@ -83,14 +103,14 @@
     "List of available strategy tokens / Related to fronts and armies": "0d34018d",
     "List of available strategy tokens / Related to intelligence": "5e9d5d57",
     "List of available strategy tokens / Related to navies": "5336e29d",
-    "List of available strategy tokens / Related to production and resources": "aee78fdf",
+    "List of available strategy tokens / Related to production and resources": "e2bf799c",
     "List of available strategy tokens / Related to raids": "cc4e9666",
     "UNIT RATIOS": "da39a3ee",
     "UNIT RATIOS / AIR": "a42d04ea",
     "UNIT RATIOS / ALL BUT AIR": "2843b436",
     "UNIT RATIOS / EQUIPMENT PRODUCTION FACTOR": "4293d633"
    },
-   "sha1": "e35a3ed4865ad9b801815298016ecc72c25b6200"
+   "sha1": "35f307cc9c787d95f20544df8de87070baadc7b0"
   },
   "common/ai_templates/_documentation.md": {
    "entries": {
@@ -503,7 +523,6 @@
     "debug_textures": "2255d722",
     "debug_tooltip": "cf671dc3",
     "debug_trees": "804fef36",
-    "debug_types": "2e7e699e",
     "debug_unit_controller_weights": "64184612",
     "debug_unit_entity": "ca9c7797",
     "debug_validate_supply": "1304441d",
@@ -753,7 +772,7 @@
     "window": "df637c5b",
     "xp": "2bd739d6"
    },
-   "sha1": "89df95a1d2424c126ab79b42fbaa75cfc1a88abf"
+   "sha1": "63b46e31fd4faf7f9974858836a5783afb30c1f6"
   },
   "documentation/dynamic_variables_documentation.md": {
    "entries": {
@@ -3365,6 +3384,6 @@
    "sha1": "2540c4e30525578503ea07ab9146738781557fd2"
   }
  },
- "recorded": "2026-10-31",
- "version": "Operation Postern v1.19.3.0.c01a (5632)"
+ "recorded": "2026-11-01",
+ "version": "Operation Postern v1.19.4.1.99a5 (f584)"
 }

@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Technology modding", revision 104524, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="104524" sources="common/technologies/ common/technology_tags/00_technology.txt common/technology_sharing/ interface/countrytechtreeview.gui interface/countrytechtreeview.gfx common/defines/00_defines.lua documentation/effects_documentation.md documentation/triggers_documentation.md common/doctrines/ hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="104524" sources="common/technologies/ common/technology_tags/00_technology.txt common/technology_sharing/ interface/countrytechtreeview.gui interface/countrytechtreeview.gfx common/defines/00_defines.lua documentation/effects_documentation.md documentation/triggers_documentation.md common/doctrines/ hoi4.exe" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against all 552 technologies in the 13 vanilla files of `common/technologies/`, `common/technology_tags/00_technology.txt` (16 folders, 133 categories), the 90 technology sharing groups, the 118 `gridboxtype` blocks of `interface/countrytechtreeview.gui`, `NDefines.NTechnology`, the technology effects and triggers in the documentation, and tokens in `hoi4.exe`. The "to be added" marker the inventory flagged is only the phrase "need to be added" in the Folders section and needs no action.
 Kit blocks added: `tech-triggers-note`, `tech-effects-triggers`, `tech-enabling-note`, `tech-cost-note`, `tech-grid-box`, `tech-categories`, `tech-xp-note`, `tech-doctrines-warning` (doctrines are no longer technologies), `tech-keys-extra`, `tech-folders`, `tech-sharing-extra`.
 Gaps left: the `ledger` values `military` and `all`, the AI category rule and the `on_research_complete` behaviour for history-file technologies are repeated from the wiki and not confirmed; the GUI sections were checked for names and counts only.
+**1.19.4.1 re-check (2026-11-01).** 16 statements depended on files the update changed (five files in `common/technologies/`, `00_technology.txt` in `common/technology_tags/`, `countrytechtreeview.gui`, and the folders behind the `add_tech_bonus` counts), and all 16 were re-measured: the 552 technologies, 133 categories, 16 folders, the enabling and layout key counts and the folder membership are unchanged. Changed: `countrytechtreeview.gui` holds 117 `gridboxtype` blocks (was 118), of which 62 are branch grids with 59 distinct names (was 63 and 60), and `add_tech_bonus` is now counted outside comments as 1946 blocks, 2155 `category` lines, 187 `technology` lines and 90 distinct categories (the old totals 1966, 2156, 189 and 91 could not be reproduced). Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -99,7 +100,7 @@ There are two types of trigger blocks used in technologies.
 `allow_branch = { ... }` is a trigger block that, instead, needs to be met in order for the technology to be visible. If it's not met, then any technology connected to it via `path = { ... }` will also become invisible. If it's met, AI will also not be able to select the technology to research.
 
 <!-- kit:begin id="tech-triggers-note" at="section:Triggers" -->
-**Kit addition** Vanilla use of the two trigger blocks: `allow` appears in 132 of 552 technologies and `allow_branch` in 47. All 47 `allow_branch` blocks are DLC gates (`has_dlc` in 38, `NOT = { has_dlc = ... }` in 9), so in practice it is the "branch exists only with this DLC" switch. The wiki's last sentence for `allow_branch` (that the AI cannot select the technology when it is met) is not supported by anything in vanilla. [vanilla-confirmed 1.19.3] `common/technologies/*.txt`; the AI sentence [unverified]
+**Kit addition** Vanilla use of the two trigger blocks: `allow` appears in 132 of 552 technologies and `allow_branch` in 47. All 47 `allow_branch` blocks are DLC gates (`has_dlc` in 38, `NOT = { has_dlc = ... }` in 9), so in practice it is the "branch exists only with this DLC" switch. The wiki's last sentence for `allow_branch` (that the AI cannot select the technology when it is met) is not supported by anything in vanilla. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`; the AI sentence [unverified]
 <!-- kit:end id="tech-triggers-note" -->
 
 ### Modifiers <a id="Modifiers"></a>
@@ -161,7 +162,7 @@ my_technology_1 = {
 <!-- kit:begin id="tech-effects-triggers" at="section:Effects" -->
 ### Kit: Technology effects and triggers <a id="kit-tech-effects-triggers"></a>
 
-**Kit addition** `on_research_complete_limit` is the supported form: `hoi4.exe` holds the message "limit inside on_research_complete is deprecated, use on_research_complete_limit outside of on_research_complete instead". Vanilla has 107 technologies with `on_research_complete` and 12 with `on_research_complete_limit`. [vanilla-confirmed 1.19.3] `common/technologies/*.txt`; the message [unverified] (found only in `hoi4.exe`)
+**Kit addition** `on_research_complete_limit` is the supported form: `hoi4.exe` holds the message "limit inside on_research_complete is deprecated, use on_research_complete_limit outside of on_research_complete instead". Vanilla has 107 technologies with `on_research_complete` and 12 with `on_research_complete_limit`. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`; the message [unverified] (found only in `hoi4.exe`)
 
 Country-scope effects and triggers about technology, from the game documentation. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
 
@@ -182,7 +183,7 @@ Country-scope effects and triggers about technology, from the game documentation
 | `amount_research_slots`, `original_research_slots` | trigger | Current and starting number of slots. |
 | `is_in_tech_sharing_group`, `num_tech_sharing_groups` | trigger | Membership checks. |
 
-`add_tech_bonus` appears in 1966 vanilla blocks: 2156 `category` lines in total, `technology` in 189, `ahead_reduction` in 177. Every one of the 91 distinct `category` values is a name from `technology_categories` (see the category list below). `mark_technology_tree_layout_dirty` and `select_tech_tree_icon_origin` are documented but not used by any vanilla file. [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/`
+`add_tech_bonus` appears in 1946 vanilla blocks outside comments: 2155 `category` lines in total, `technology` in 187, `ahead_reduction` in 177. Every one of the 90 distinct `category` values is a name from `technology_categories` (see the category list below). `mark_technology_tree_layout_dirty` and `select_tech_tree_icon_origin` are documented but not used by any vanilla file. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
 <!-- kit:end id="tech-effects-triggers" -->
 
 ### Enabling objects <a id="Enabling_objects"></a>
@@ -212,7 +213,7 @@ If desiring to make multiple buildings be unlocked by the same technology, anoth
 When unresearched via an effect, this doesn't work entirely properly, rather, the database object in question will remain possible to use for the country until a restart of the game. For this reason, it's better to avoid unresearching technologies such as this and treat these database objects as being granted for forever without being possible to take away.
 
 <!-- kit:begin id="tech-enabling-note" at="section:Enabling_objects" -->
-**Kit addition** Vanilla use of the enabling keys across 552 technologies: `enable_equipments` 223, `enable_equipment_modules` 136, `enable_subunits` 70, `enable_building` 14 (always `building` plus `level`). `enable_tactic` appears in none of them; vanilla enables combat tactics through the `enable_tactic` line of a doctrine instead (see the [Doctrine modding](<doctrine_modding.md>) page), so the wiki's `enable_tactic = my_tactic` in a technology is untested in 1.19.3. [vanilla-confirmed 1.19.3] `common/technologies/*.txt`, `common/doctrines/`; the untested claim [unverified]
+**Kit addition** Vanilla use of the enabling keys across 552 technologies: `enable_equipments` 223, `enable_equipment_modules` 136, `enable_subunits` 70, `enable_building` 14 (always `building` plus `level`). `enable_tactic` appears in none of them; vanilla enables combat tactics through the `enable_tactic` line of a doctrine instead (see the [Doctrine modding](<doctrine_modding.md>) page), so the wiki's `enable_tactic = my_tactic` in a technology is untested in 1.19.4.1. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`, `common/doctrines/`; the untested claim [unverified]
 <!-- kit:end id="tech-enabling-note" -->
 
 ### Hidden technology examples <a id="Hidden_technology_examples"></a>
@@ -346,15 +347,15 @@ Additionally, `XOR = { ... }` is used to make the technology be mutually-exclusi
 <!-- kit:begin id="tech-grid-box" at="section:Position" -->
 ### Kit: The grid box rule, verified <a id="kit-tech-grid-box"></a>
 
-**Kit addition** A technology only renders in a folder when the tree GUI has a grid box for its branch. `interface/countrytechtreeview.gui` holds 118 `gridboxtype` blocks: 63 are technology branch grids named `<first technology>_tree` (60 distinct names; `experimental_rockets_tree` is repeated in three folders and `early_ship_hull_light_tree` in two), and 55 belong to other windows (`special_project_specialization_list` 23, `stats_grid` 7, `leader_bonuses_grid` 7, `support_category_multipliers_grid` 7, `terrain_modifiers_grid` 5, `subunit_stats_grid` 4, `air_missions_grid` 2). [vanilla-confirmed 1.19.3] `interface/countrytechtreeview.gui`
+**Kit addition** A technology only renders in a folder when the tree GUI has a grid box for its branch. `interface/countrytechtreeview.gui` holds 117 `gridboxtype` blocks: 62 are technology branch grids named `<first technology>_tree` (59 distinct names; `experimental_rockets_tree` is repeated in three folders and `early_ship_hull_light_tree` in two), and 55 belong to other windows (`special_project_specialization_list` 23, `stats_grid` 7, `leader_bonuses_grid` 7, `support_category_multipliers_grid` 7, `terrain_modifiers_grid` 5, `subunit_stats_grid` 4, `air_missions_grid` 2). [vanilla-confirmed 1.19.4.1] `interface/countrytechtreeview.gui`
 
-Check against the technologies: the 59 (folder, technology) pairs where no other technology of the same folder paths to the technology (the branch roots) all have a grid box named `<tech>_tree` in the file; none is missing. Technologies that are reached by `path` use the grid box of the root they connect to. [vanilla-confirmed 1.19.3] `common/technologies/*.txt`, `interface/countrytechtreeview.gui`
+Check against the technologies: the 59 (folder, technology) pairs where no other technology of the same folder paths to the technology (the branch roots) all have a grid box named `<tech>_tree` in the file; none is missing. Technologies that are reached by `path` use the grid box of the root they connect to. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`, `interface/countrytechtreeview.gui`
 
 `hoi4.exe` holds the messages that report a break in this rule: "Found no grid box for tech %s", "Found multiple potential grid boxes for tech %s (%s and %s)" (the case `ignore_for_layout = yes` on a secondary `path` avoids; vanilla uses it 3 times), "couldn't find grid box window with name %s", "Technology %s has no coordinates in folder %s for parent %s", "Mutually exclusive Technologies %s and %s have different starting points in folder %s for parent %s" and "Subtechnology %s has two parents (%s and %s), which is undefined behaviour supported". [unverified] (strings seen only in `hoi4.exe`)
 
-A `path` block does not need `leads_to_tech`: vanilla has `path = { research_cost_coeff = 1 }` on 8 technologies (the `excavation` chain, `motorised_infantry`, `heavy_battleship2`, `NOR_rikstanken_tech`). [vanilla-confirmed 1.19.3] `common/technologies/industry.txt`
+A `path` block does not need `leads_to_tech`: vanilla has `path = { research_cost_coeff = 1 }` on 8 technologies (the `excavation` chain, `motorised_infantry`, `heavy_battleship2`, `NOR_rikstanken_tech`). [vanilla-confirmed 1.19.4.1] `common/technologies/industry.txt`
 
-Tab buttons: the `folder_tabs` window has a `<folder>_tab` button for each of the 12 technology folders that vanilla fills (`industry_folder_tab` included), and item windows are named `techtree_<folder>_item` and `techtree_<folder>_small_item`. [vanilla-confirmed 1.19.3] `interface/countrytechtreeview.gui`
+Tab buttons: the `folder_tabs` window has a `<folder>_tab` button for each of the 12 technology folders that vanilla fills (`industry_folder_tab` included), and item windows are named `techtree_<folder>_item` and `techtree_<folder>_small_item`. [vanilla-confirmed 1.19.4.1] `interface/countrytechtreeview.gui`
 <!-- kit:end id="tech-grid-box" -->
 
 ### Sub-technologies <a id="Sub-technologies"></a>
@@ -384,9 +385,9 @@ Technology categories are defined within a `technology_categories = { ... }` blo
 In particular, the first one, the same as the category's name, is used for most cases (such as the one-time bonuses and technology sharing groups), while the second one, with _research appended in the end, is used for the research_bonus-type modifiers.
 
 <!-- kit:begin id="tech-categories" at="section:Categories" -->
-### Kit: Technology categories in 1.19.3 <a id="kit-tech-categories"></a>
+### Kit: Technology categories in 1.19.4.1 <a id="kit-tech-categories"></a>
 
-**Kit addition** `common/technology_tags/00_technology.txt` defines 133 distinct categories in `technology_categories = { }`. The file says not to change tags without changing every reference, and that names must be unique. Vanilla technologies use 105 of them in `categories`. The `category` of `add_tech_bonus` comes from this list: `industry` and `construction_tech` are valid, `construction` and `infrastructure` are not in it, and all 91 distinct categories that vanilla passes to `add_tech_bonus` are in it. [vanilla-confirmed 1.19.3] `common/technology_tags/00_technology.txt`, `common/`, `history/`, `events/`
+**Kit addition** `common/technology_tags/00_technology.txt` defines 133 distinct categories in `technology_categories = { }`. The file says not to change tags without changing every reference, and that names must be unique. Vanilla technologies use 105 of them in `categories`. The `category` of `add_tech_bonus` comes from this list: `industry` and `construction_tech` are valid, `construction` and `infrastructure` are not in it, and all 90 distinct categories that vanilla passes to `add_tech_bonus` are in it. [vanilla-confirmed 1.19.4.1] `common/technology_tags/00_technology.txt`, `common/`, `history/`, `events/`
 
 ```text
 light_air medium_air heavy_air armor cat_light_armor cat_medium_armor cat_heavy_armor artillery
@@ -422,7 +423,7 @@ mio_cat_tech_all_cruiser_and_modules mio_cat_tech_all_destroyer_and_modules
 mio_cat_tech_all_motorized_mechanized mio_cat_artillery
 ```
 
-The `mio_cat_*` entries at the end are the categories for military industrial organizations. [vanilla-confirmed 1.19.3] `common/technology_tags/00_technology.txt`
+The `mio_cat_*` entries at the end are the categories for military industrial organizations. [vanilla-confirmed 1.19.4.1] `common/technology_tags/00_technology.txt`
 <!-- kit:end id="tech-categories" -->
 
 ### Experience costs <a id="Experience_costs"></a>
@@ -435,7 +436,7 @@ After this, there are two types of experience costs that can be used:
 - `xp_unlock_cost = 100` makes the experience cost fully grant the technology. This in particular was commonly done with doctrines.
 
 <!-- kit:begin id="tech-xp-note" at="section:Experience_costs" -->
-**Kit addition** Vanilla uses `xp_research_type` on 20 technologies, always `navy`, together with `xp_boost_cost` and `xp_research_bonus` (the Man the Guns boost). No technology sets `xp_unlock_cost`; the wiki says that form was commonly used with doctrines, which are no longer technologies. The defines `DEFAULT_XP_UNLOCK_RESEARCH_COST`, `DEFAULT_XP_BOOST_RESEARCH_COST` and `DEFAULT_XP_BOOST_RESEARCH_BONUS` default to 0. [vanilla-confirmed 1.19.3] `common/technologies/*.txt`, `common/defines/00_defines.lua`
+**Kit addition** Vanilla uses `xp_research_type` on 20 technologies, always `navy`, together with `xp_boost_cost` and `xp_research_bonus` (the Man the Guns boost). No technology sets `xp_unlock_cost`; the wiki says that form was commonly used with doctrines, which are no longer technologies. The defines `DEFAULT_XP_UNLOCK_RESEARCH_COST`, `DEFAULT_XP_BOOST_RESEARCH_COST` and `DEFAULT_XP_BOOST_RESEARCH_BONUS` default to 0. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`, `common/defines/00_defines.lua`
 <!-- kit:end id="tech-xp-note" -->
 
 ### AI weighting <a id="AI_weighting"></a>
@@ -465,7 +466,7 @@ Additionally, `ai_research_weights = { offensive = -1.0 }` can be used to make t
 ### Doctrines <a id="Doctrines"></a>
 
 <!-- kit:begin id="tech-doctrines-warning" at="heading:Doctrines" -->
-**Kit correction** Doctrines are not technologies in 1.19.3. None of the 552 vanilla technologies uses `doctrine = yes` or `doctrine_name`, no technology is placed in `land_doctrine_folder`, `naval_doctrine_folder`, `air_doctrine_folder` or `special_forces_doctrine_folder` (the four folders still exist in `technology_folders` with `doctrine = yes`), and the doctrine window is built from `common/doctrines/` instead. Write new doctrines as grand doctrines, tracks and subdoctrines; see the [Doctrine modding](<doctrine_modding.md>) page. [vanilla-confirmed 1.19.3] `common/technologies/*.txt`, `common/technology_tags/00_technology.txt`, `common/doctrines/`
+**Kit correction** Doctrines are not technologies in 1.19.4.1. None of the 552 vanilla technologies uses `doctrine = yes` or `doctrine_name`, no technology is placed in `land_doctrine_folder`, `naval_doctrine_folder`, `air_doctrine_folder` or `special_forces_doctrine_folder` (the four folders still exist in `technology_folders` with `doctrine = yes`), and the doctrine window is built from `common/doctrines/` instead. Write new doctrines as grand doctrines, tracks and subdoctrines; see the [Doctrine modding](<doctrine_modding.md>) page. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`, `common/technology_tags/00_technology.txt`, `common/doctrines/`
 <!-- kit:end id="tech-doctrines-warning" -->
 
 In order to mark a technology as a doctrine, it must have `doctrine = yes`. It also will have to be within a technology folder that's assigned to hold doctrines.
@@ -483,7 +484,7 @@ In order to mark a technology as a doctrine, it must have `doctrine = yes`. It a
 <!-- kit:begin id="tech-keys-extra" at="section:Additional" -->
 ### Kit: Technology keys the page omits <a id="kit-tech-keys-extra"></a>
 
-**Kit addition** Keys in vanilla technologies that the page does not mention. Counts are technologies out of 552. Source: [vanilla-confirmed 1.19.3] `common/technologies/*.txt`, with the exe tokens as [unverified] for meaning.
+**Kit addition** Keys in vanilla technologies that the page does not mention. Counts are technologies out of 552. Source: [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`, with the exe tokens as [unverified] for meaning.
 
 | Key | Count | Notes |
 | --- | --- | --- |
@@ -498,7 +499,7 @@ In order to mark a technology as a doctrine, it must have `doctrine = yes`. It a
 | `ai_research_weights` | 19 | Keys seen: `offensive`, `defensive`, `rubber`, `oil`. |
 | `desc` | 1 | Extra tooltip text key. |
 
-Unit and category bonus blocks (`category_all_infantry`, `armored_car`, `destroyer`, ...) are written directly inside the technology, as the Modifiers section says; vanilla has many hundreds of them. Folder blocks use only `name` and `position`; `path` uses `leads_to_tech`, `research_cost_coeff` and `ignore_for_layout`. [vanilla-confirmed 1.19.3] `common/technologies/*.txt`
+Unit and category bonus blocks (`category_all_infantry`, `armored_car`, `destroyer`, ...) are written directly inside the technology, as the Modifiers section says; vanilla has many hundreds of them. Folder blocks use only `name` and `position`; `path` uses `leads_to_tech`, `research_cost_coeff` and `ignore_for_layout`. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`
 <!-- kit:end id="tech-keys-extra" -->
 
 ### Examples <a id="Examples"></a>
@@ -634,7 +635,7 @@ If any of these isn't present, it will be impossible for the player to research 
 <!-- kit:begin id="tech-folders" at="section:Folders" -->
 ### Kit: The real folder ids <a id="kit-tech-folders"></a>
 
-**Kit addition** `common/technology_tags/00_technology.txt` defines 16 folders. The armour folders use the British spelling, `armour_folder` and `nsb_armour_folder`; `armor_folder` does not exist. [vanilla-confirmed 1.19.3] `common/technology_tags/00_technology.txt`
+**Kit addition** `common/technology_tags/00_technology.txt` defines 16 folders. The armour folders use the British spelling, `armour_folder` and `nsb_armour_folder`; `armor_folder` does not exist. [vanilla-confirmed 1.19.4.1] `common/technology_tags/00_technology.txt`
 
 | Folder id | `ledger` | `available` | Technologies in vanilla |
 | --- | --- | --- | --- |
@@ -655,7 +656,7 @@ If any of these isn't present, it will be impossible for the player to research 
 | `air_doctrine_folder` | air | always (`doctrine = yes`) | 0 |
 | `special_forces_doctrine_folder` | hidden | "Arms Against Tyranny" or "No Compromise, No Surrender" (`doctrine = yes`) | 0 |
 
-411 technologies have a `folder` block, and 12 of them sit in more than one folder: 4 in both `armour_folder` and `nsb_armour_folder`, 4 in both air folders, 2 in `naval_folder` and `mtgnavalsupportfolder`, and one each in `electronics_folder` with `support_folder` and `infantry_folder` with `support_folder`. Base-game and DLC variants of a folder mostly hold different technology ids. Vanilla `ledger` values are `army`, `navy`, `air`, `civilian` and `hidden`; the wiki's `military` and `all` are not used by vanilla [unverified]. [vanilla-confirmed 1.19.3] `common/technologies/*.txt`
+411 technologies have a `folder` block, and 12 of them sit in more than one folder: 4 in both `armour_folder` and `nsb_armour_folder`, 4 in both air folders, 2 in `naval_folder` and `mtgnavalsupportfolder`, and one each in `electronics_folder` with `support_folder` and `infantry_folder` with `support_folder`. Base-game and DLC variants of a folder mostly hold different technology ids. Vanilla `ledger` values are `army`, `navy`, `air`, `civilian` and `hidden`; the wiki's `military` and `all` are not used by vanilla [unverified]. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`
 <!-- kit:end id="tech-folders" -->
 
 ## Graphical user interface <a id="Graphical_user_interface"></a>

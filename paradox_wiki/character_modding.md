@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Character modding", revision 99479, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="99479" sources="common/characters/ common/characters/_documentation.md common/country_leader/ common/unit_leader/ common/scientist_traits/ common/special_projects/specialization/ common/ideologies/ common/opinion_modifiers/ common/on_actions/ common/operations/ common/raids/ history/general/ history/countries/ interface/ dlc/ documentation/effects_documentation.md documentation/triggers_documentation.md" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="99479" sources="common/characters/ common/characters/_documentation.md common/country_leader/ common/unit_leader/ common/scientist_traits/ common/special_projects/specialization/ common/ideologies/ common/opinion_modifiers/ common/on_actions/ common/operations/ common/raids/ history/general/ history/countries/ interface/ dlc/ documentation/effects_documentation.md documentation/triggers_documentation.md" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all 232 files in `common/characters/` (5,404 characters, parsed), `common/characters/_documentation.md`, the four `common/country_leader/` files (2,103 traits), the `common/unit_leader/` files (194 traits plus the skill-level files), `common/scientist_traits/`, the character effects and triggers in the documentation, and `hoi4.exe` strings.
 Kit blocks added: role and key counts, portrait casing counts, advisor keys, country leader keys, skill-level values (corrects the skill table), captured generals, scientist roles, instances, leader effects (promote, add role, rename, kill versus retire, recruit timing), effect and trigger reference, `generate_character` use, trait data (corrects `command_cap`, `parent`), full example notes.
 Gaps left: recruit and portrait behaviour that only the running game shows (case-insensitive sprite lookup, what a second scientist specialization does, `allowed_civil_war` on a character) are marked `[unverified]`. `UKR_nestor_makhno` is the wiki's own example character, not a vanilla one. `command_cap` is not a game key (see the correction under "Country leader traits").
+**1.19.4.1 re-check (2026-11-01).** About 75 statements depended on files the update changed (20 character files, the country leader and unit leader trait files, the interface sprite files, `hoi4.exe` and the vanilla-wide effect counts), and all were re-measured. Characters went from 5,404 to 5,409, country leader traits from 2,103 to 2,116 and unit leader traits from 194 to 196, `anarchism` is now used by a country leader, and most portrait, advisor and effect-use counts moved by a few. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -67,12 +68,12 @@ Every character must be assigned to a country in that country's file in the `/He
 - If the character isn't intended to have one of their roles at the start, then the character is created without that role, having it added with any [effect](<effects.md>) block using [add_country_leader_role](<effects.md>), [add_corps_commander_role](<effects.md>), [add_field_marshal_role](<effects.md>), [add_naval_commander_role](<effects.md>), or [add_advisor_role](<effects.md>). Since `add_advisor_role` is limited in what is possible to add and what isn't, instead using `visible = { ... }` with a [flag](<data_structures.md>) is an alternative for creating advisors.
 
 <!-- kit:begin id="char-vanilla-roles" at="section:Quick_checklist" -->
-**Kit note** What vanilla `common/characters/` contains, counted over 5,404 characters in 232 files (parsed with a script, `instance` blocks included).
+**Kit note** What vanilla `common/characters/` contains, counted over 5,409 characters in 232 files (parsed with a script, `instance` blocks included).
 
-- Vanilla uses exactly 11 top-level keys in a character: `name`, `portraits`, `gender`, `advisor`, `country_leader`, `corps_commander`, `field_marshal`, `navy_leader`, `scientist`, `instance` and `allowed_civil_war`. Characters that have each key: `portraits` 4,941, `advisor` 3,728, `name` 3,579, `corps_commander` 624, `country_leader` 557, `instance` 463, `navy_leader` 135, `scientist` 102, `allowed_civil_war` 100, `field_marshal` 99, `gender` 60. The `gender` lines are `female` (40) and `male` (24); none writes `undefined`. [vanilla-confirmed 1.19.3] `common/characters/`.
-- There are six roles: `country_leader`, `corps_commander`, `field_marshal`, `navy_leader`, `advisor`, `scientist`. There is no air commander role and no operative role in the character files; air appears only as the `air_chief` advisor slot and the `specialization_air` scientist specialization. [vanilla-confirmed 1.19.3] `common/characters/`.
+- Vanilla uses exactly 11 top-level keys in a character: `name`, `portraits`, `gender`, `advisor`, `country_leader`, `corps_commander`, `field_marshal`, `navy_leader`, `scientist`, `instance` and `allowed_civil_war`. Characters that have each key: `portraits` 4,946, `advisor` 3,732, `name` 3,584, `corps_commander` 624, `country_leader` 558, `instance` 463, `navy_leader` 135, `scientist` 102, `allowed_civil_war` 100, `field_marshal` 99, `gender` 60. The `gender` lines are `female` (40) and `male` (24); none writes `undefined`. [vanilla-confirmed 1.19.4.1] `common/characters/`.
+- There are six roles: `country_leader`, `corps_commander`, `field_marshal`, `navy_leader`, `advisor`, `scientist`. There is no air commander role and no operative role in the character files; air appears only as the `air_chief` advisor slot and the `specialization_air` scientist specialization. [vanilla-confirmed 1.19.4.1] `common/characters/`.
 - Operatives are created with `create_operative_leader` (country scope), not in character files. The documentation still runs the operative effects and triggers in character scope (`is_operative`, `has_nationality`, `is_operative_captured`, `capture_operative`, `free_operative`, `kill_operative`, `turn_operative`), so an operative is addressed as a character scope even though the wiki intro says operatives are not characters. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
-- A character can hold several roles. 417 characters have an `advisor` role together with at least one of `corps_commander`, `field_marshal` or `navy_leader`; 284 of them have both blocks at the top level and the rest get one through an `instance`. 121 characters define no role block at all. [vanilla-confirmed 1.19.3] `common/characters/`.
+- A character can hold several roles. 417 characters have an `advisor` role together with at least one of `corps_commander`, `field_marshal` or `navy_leader`; 284 of them have both blocks at the top level and the rest get one through an `instance`. 121 characters define no role block at all. [vanilla-confirmed 1.19.4.1] `common/characters/`.
 - `allowed_civil_war = { ... }` sits at the top level of 100 characters and holds scripted triggers such as `NOR_char_cw_democratic = yes` (`common/characters/NOR.txt`). By analogy with ideas it decides which side of a civil war keeps the character. [unverified]
 - `can_be_captured = no` is documented as an optional character key (default yes). See [Captured generals](#kit-captured-generals) under "Unit leaders". [docs] `common/characters/_documentation.md`.
 <!-- kit:end id="char-vanilla-roles" -->
@@ -169,20 +170,20 @@ portraits = {
 ```
 
 <!-- kit:begin id="char-portraits-vanilla" at="section:Portraits" -->
-**Kit note** Portrait references in vanilla characters, counted over the 7,548 values inside `portraits = { }` blocks of `common/characters/` (`instance` blocks included).
+**Kit note** Portrait references in vanilla characters, counted over the 7,557 values inside `portraits = { }` blocks of `common/characters/` (`instance` blocks included).
 
 | Slot | Values |
 | --- | --- |
-| `army` / `small` | 4,420 |
+| `army` / `small` | 4,422 |
 | `army` / `large` | 1,212 |
-| `civilian` / `large` | 1,004 |
-| `civilian` / `small` | 844 |
+| `civilian` / `large` | 1,005 |
+| `civilian` / `small` | 850 |
 | `navy` / `small` | 41 |
 | `navy` / `large` | 27 |
 
-- Prefixes of the values: `GFX_portrait_` 4,150, `GFX_idea_` 3,222 (small portraits reuse idea sprites), `GFX_Portrait_` with a capital P 120, other `GFX_` prefixes 54, direct file paths 2. [vanilla-confirmed 1.19.3] `common/characters/`.
-- Sprites declared in `interface/` and `dlc/*/interface/`: 3,724 start with `GFX_portrait_` and 407 with `GFX_Portrait_`, so both casings are in use. 25 character references differ from a declared sprite only in letter case, for example `GFX_portrait_Europe_Generic_1` against a declared `GFX_Portrait_Europe_Generic_1`. Script cannot show whether sprite lookup ignores case, so copy the declared name exactly. [vanilla-confirmed 1.19.3] `interface/`, `dlc/*/interface/`, `common/characters/`. Case-insensitive lookup is [unverified].
-- 1,358 of the 7,546 `GFX_` references have no sprite declared anywhere in `interface/` or `dlc/*/interface/` (6,188 do). Vanilla ships these dangling references, so a clean game log does not prove a portrait works. [vanilla-confirmed 1.19.3] `common/characters/`, `interface/`, `dlc/*/interface/`.
+- Prefixes of the values: `GFX_portrait_` 4,157, `GFX_idea_` 3,224 (small portraits reuse idea sprites), `GFX_Portrait_` with a capital P 120, other `GFX_` prefixes 54, direct file paths 2. [vanilla-confirmed 1.19.4.1] `common/characters/`.
+- Sprites declared in `interface/` and `dlc/*/interface/`: 3,724 start with `GFX_portrait_` and 407 with `GFX_Portrait_`, so both casings are in use. 25 character references differ from a declared sprite only in letter case, for example `GFX_portrait_Europe_Generic_1` against a declared `GFX_Portrait_Europe_Generic_1`. Script cannot show whether sprite lookup ignores case, so copy the declared name exactly. [vanilla-confirmed 1.19.4.1] `interface/`, `dlc/*/interface/`, `common/characters/`. Case-insensitive lookup is [unverified].
+- 1,367 of the 7,555 `GFX_` references have no sprite declared anywhere in `interface/` or `dlc/*/interface/` (6,188 do). Vanilla ships these dangling references, so a clean game log does not prove a portrait works. [vanilla-confirmed 1.19.4.1] `common/characters/`, `interface/`, `dlc/*/interface/`.
 <!-- kit:end id="char-portraits-vanilla" -->
 
 ### Gender <a id="Gender"></a>
@@ -226,10 +227,10 @@ advisor = {
 ```
 
 <!-- kit:begin id="char-advisor-vanilla" at="section:Advisors" -->
-**Kit note** What vanilla `advisor` blocks contain, counted over 4,459 blocks (`instance` blocks included). All counts: [vanilla-confirmed 1.19.3] `common/characters/`.
+**Kit note** What vanilla `advisor` blocks contain, counted over 4,464 blocks (`instance` blocks included). All counts: [vanilla-confirmed 1.19.4.1] `common/characters/`.
 
-- Slots used: `political_advisor` 1,858, `high_command` 931, `theorist` 512, `army_chief` 452, `air_chief` 357, `navy_chief` 349. These are the six slots in the table above.
-- Every block has `slot`, `idea_token` and `traits` (4,459 of 4,459), so `idea_token` is not optional in practice. Other keys: `allowed` 4,422, `ai_will_do` 2,919, `cost` 1,924, `available` 1,482, `ledger` 1,454, `visible` 836, `do_effect` 231, `on_add` 188, `on_remove` 170, `name` 75, `can_be_fired` 59, `research_bonus` 15, `removal_cost` 2, `always_show_on_actions_tooltip` 2, `modifier` 1. The wiki page covers `do_effect`, `name` and `research_bonus` only through "everything else is identical to ideas"; `always_show_on_actions_tooltip = yes` (2 blocks in `common/characters/AST.txt`, next to `on_add`) is in neither the wiki nor the documentation, but is a string in `hoi4.exe`, and its effect is [unverified].
+- Slots used: `political_advisor` 1,861, `high_command` 932, `theorist` 512, `army_chief` 452, `air_chief` 358, `navy_chief` 349. These are the six slots in the table above.
+- Every block has `slot`, `idea_token` and `traits` (4,464 of 4,464), so `idea_token` is not optional in practice. Other keys: `allowed` 4,427, `ai_will_do` 2,923, `cost` 1,926, `available` 1,496, `ledger` 1,455, `visible` 838, `do_effect` 231, `on_add` 190, `on_remove` 172, `name` 75, `can_be_fired` 59, `research_bonus` 15, `removal_cost` 2, `always_show_on_actions_tooltip` 2, `modifier` 1. The wiki page covers `do_effect`, `name` and `research_bonus` only through "everything else is identical to ideas"; `always_show_on_actions_tooltip = yes` (2 blocks in `common/characters/AST.txt`, next to `on_add`) is in neither the wiki nor the documentation, but is a string in `hoi4.exe`, and its effect is [unverified].
 - Advisor-only triggers and effects in the documentation: `has_advisor_role = slot`, `is_hired_as_advisor`, `is_advisor`, `is_political_advisor`, `is_theorist`, `is_army_chief`, `is_navy_chief`, `is_air_chief`, `is_high_command`, `advisor_can_be_fired` (false when the character has no matching advisor role, so test `has_advisor_role` first), and `not_already_hired_except_as = slot` for a character with several advisor roles that must be hired in one only (24 vanilla uses). [docs] `documentation/triggers_documentation.md`
 - `set_can_be_fired_in_advisor_role = { character = id slot = political_advisor value = no }` changes the `can_be_fired` flag after the start; `slot` is mandatory if the character has several advisor roles, and the character-scope form omits `character`. [docs] `documentation/effects_documentation.md`
 - `add_advisor_role = { character = id advisor = { slot = air_chief idea_token = x traits = { ... } } activate = yes }` adds a role during play and `activate = yes` hires at once; `deactivate_advisor = idea_token` dismisses. `hoi4.exe` carries the message that an advisor role created through script cannot contain effects or triggers, which matches the wiki text above. [docs] `documentation/effects_documentation.md`; the message is [unverified] (executable string only).
@@ -294,12 +295,12 @@ If a country leader is recruited in the country history file, then they will be 
 - In case of differences between startdates, use the [promote_character](<effects.md>) effect to ensure the new character becomes leader.
 
 <!-- kit:begin id="char-country-leader-vanilla" at="section:Country_leaders" -->
-**Kit note** What vanilla `country_leader` blocks contain, counted over 774 blocks (`instance` blocks included). All counts: [vanilla-confirmed 1.19.3] `common/characters/`, `common/ideologies/00_ideologies.txt`.
+**Kit note** What vanilla `country_leader` blocks contain, counted over 776 blocks (`instance` blocks included). All counts: [vanilla-confirmed 1.19.4.1] `common/characters/`, `common/ideologies/00_ideologies.txt`.
 
-- Keys used: `ideology` 774, `expire` 772, `id` 753, `traits` 540. No vanilla block sets `desc`. The wiki calls `id` a leftover to omit; vanilla still writes it (usually `id = -1`), so it is harmless.
-- `expire` is written as `YYYY.M.D.H` in 736 blocks (for example `1965.1.1.1`) and as `YYYY.M.D` in 36.
-- `ideology` always names a sub-ideology. Vanilla characters use 20 of the 22 types in the table above; `buddhist_socialism` and `anarchism` never appear. `common/ideologies/00_ideologies.txt` defines 22 types in 4 groups, which matches the table. Most used: `despotism` 168, `fascism_ideology` 88, `marxism` 81, `conservatism` 78.
-- The two opinion modifiers behind the wiki's "+20" and "+10" are `same_ruling_party` (value 20, shown as "Same Ruling Party") and `similar_ruling_party` (value 10, shown as "Same Ideology"); `different_party_types` is -10 ("Different Ideology"). [vanilla-confirmed 1.19.3] `common/opinion_modifiers/00_opinion_modifiers.txt`, `localisation/english/diplomacy_l_english.yml`. Which pair of leaders triggers which one is engine logic. [unverified]
+- Keys used: `ideology` 776, `expire` 774, `id` 755, `traits` 543. No vanilla block sets `desc`. The wiki calls `id` a leftover to omit; vanilla still writes it (usually `id = -1`), so it is harmless.
+- `expire` is written as `YYYY.M.D.H` in 738 blocks (for example `1965.1.1.1`) and as `YYYY.M.D` in 36.
+- `ideology` always names a sub-ideology. Vanilla characters use 21 of the 22 types in the table above; `buddhist_socialism` never appears. `common/ideologies/00_ideologies.txt` defines 22 types in 4 groups, which matches the table. Most used: `despotism` 168, `fascism_ideology` 88, `marxism` 81, `conservatism` 79.
+- The two opinion modifiers behind the wiki's "+20" and "+10" are `same_ruling_party` (value 20, shown as "Same Ruling Party") and `similar_ruling_party` (value 10, shown as "Same Ideology"); `different_party_types` is -10 ("Different Ideology"). [vanilla-confirmed 1.19.4.1] `common/opinion_modifiers/00_opinion_modifiers.txt`, `localisation/english/diplomacy_l_english.yml`. Which pair of leaders triggers which one is engine logic. [unverified]
 <!-- kit:end id="char-country-leader-vanilla" -->
 
 ### Unit leaders <a id="Unit_leaders"></a>
@@ -368,13 +369,13 @@ navy_leader = {
 
 The navy entries in `leader_planning_skills` and `leader_logistics_skills` carry `naval_hit_chance` and `naval_coordination`, but navy leaders have no planning or logistics skill in the character files, so those entries are not reachable from a character block. [unverified]
 
-Vanilla characters stay low: `skill` is 1 to 5 for every unit leader type; corps commander and navy `attack_skill`, navy `defense_skill` and navy `coordination_skill` reach 6; navy `maneuvering_skill` reaches 4. The wiki examples with `skill = 10` are above the 9 levels `leader_skills` defines. [vanilla-confirmed 1.19.3] `common/characters/`. What happens above the defined levels is [unverified].
+Vanilla characters stay low: `skill` is 1 to 5 for every unit leader type; corps commander and navy `attack_skill`, navy `defense_skill` and navy `coordination_skill` reach 6; navy `maneuvering_skill` reaches 4. The wiki examples with `skill = 10` are above the 9 levels `leader_skills` defines. [vanilla-confirmed 1.19.4.1] `common/characters/`. What happens above the defined levels is [unverified].
 
-Vanilla unit leader blocks use only these keys: `skill`, `attack_skill`, `defense_skill`, `traits`, `legacy_id` (704 of 785 corps commanders), `visible`, plus `planning_skill` and `logistics_skill` (army) or `maneuvering_skill` and `coordination_skill` (navy). Counts: 785 `corps_commander`, 135 `field_marshal`, 165 `navy_leader` blocks. [vanilla-confirmed 1.19.3] `common/characters/`.
+Vanilla unit leader blocks use only these keys: `skill`, `attack_skill`, `defense_skill`, `traits`, `legacy_id` (704 of 785 corps commanders), `visible`, plus `planning_skill` and `logistics_skill` (army) or `maneuvering_skill` and `coordination_skill` (navy). Counts: 785 `corps_commander`, 135 `field_marshal`, 165 `navy_leader` blocks. [vanilla-confirmed 1.19.4.1] `common/characters/`.
 
 #### Kit: Captured generals <a id="kit-captured-generals"></a>
 
-**Kit addition** Defeated deployed generals can be captured in 1.19.3. All rows: [docs] `common/characters/_documentation.md`, `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`; vanilla counts are [vanilla-confirmed 1.19.3] over `common/`.
+**Kit addition** Defeated deployed generals can be captured in 1.19.4.1. All rows: [docs] `common/characters/_documentation.md`, `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`; vanilla counts are [vanilla-confirmed 1.19.4.1] over `common/`.
 
 | Name | Kind and scope | Notes |
 | --- | --- | --- |
@@ -387,7 +388,7 @@ Vanilla unit leader blocks use only these keys: `skill`, `attack_skill`, `defens
 | `has_any_captured_general = yes` | trigger, COUNTRY | True when any general of the scoped country is captured by another country. |
 | `has_any_general_captured_by = TAG` | trigger, COUNTRY | True when the scoped country has a leader captured by the target. |
 
-Vanilla wiring: the `on_deployed_leader_defeated` on action in `common/on_actions/00_on_actions.txt` checks `can_be_captured = yes`, then runs `capture_by = FROM`; a leader that cannot be captured, such as a country leader, instead gets the `wounded` trait for 90 days. [vanilla-confirmed 1.19.3] `common/on_actions/00_on_actions.txt`.
+Vanilla wiring: the `on_deployed_leader_defeated` on action in `common/on_actions/00_on_actions.txt` checks `can_be_captured = yes`, then runs `capture_by = FROM`; a leader that cannot be captured, such as a country leader, instead gets the `wounded` trait for 90 days. [vanilla-confirmed 1.19.4.1] `common/on_actions/00_on_actions.txt`.
 <!-- kit:end id="char-unit-leader-vanilla" -->
 
 ### Scientists <a id="Scientists"></a>
@@ -413,13 +414,13 @@ scientist = {
 ```
 
 <!-- kit:begin id="char-scientist-vanilla" at="section:Scientists" -->
-**Kit note** Scientist roles in 1.19.3. Each item ends with its own evidence tag.
+**Kit note** Scientist roles in 1.19.4.1. Each item ends with its own evidence tag.
 
 1. The documented keys of `scientist = { }` are `desc`, `traits`, `skills` and `visible` (trigger, ROOT is the character). Every specialization starts at level 1 and `skills = { specialization_land = 2 }` overrides only those listed. [docs] `common/characters/_documentation.md`
-2. The wiki says specializations after the first are ignored. The documentation says each listed one overrides its level, and vanilla has one scientist that lists two (`SOV_igor_kurchatov`: `specialization_nuclear = 2` and `specialization_naval = 2`). What the game does with the second entry is [unverified]. [docs] `common/characters/_documentation.md`; [vanilla-confirmed 1.19.3] `common/characters/SOV.txt`
-3. Vanilla has 103 scientist roles; 102 list one specialization and 1 lists two. The four specializations are `specialization_air` (46 entries), `specialization_nuclear` (28), `specialization_naval` (16) and `specialization_land` (14), defined in `common/special_projects/specialization/specializations.txt`. [vanilla-confirmed 1.19.3] `common/characters/`, `common/special_projects/specialization/`
-4. Scientist traits come from their own database, `common/scientist_traits/00_traits.txt` (21 traits, each a top-level block). All 139 trait references in vanilla scientist roles resolve there, although the character documentation still says the traits come from the country leader database. The folder documentation says scientist traits only affect special projects, so use only modifiers that apply to them. [vanilla-confirmed 1.19.3] `common/scientist_traits/00_traits.txt`, `common/characters/`; [docs] `common/scientist_traits/_documentation.md`
-5. Role effects: `add_scientist_role`, `remove_scientist_role`, `add_scientist_trait`, `add_scientist_level`, `add_scientist_xp`, `injure_scientist_for_days`, `generate_scientist_character`; triggers `has_scientist_level`, `has_scientist_specialization`, `is_active_scientist`, `is_scientist_injured`. A role added through `add_scientist_role` cannot carry a `visible` trigger. Vanilla uses `generate_scientist_character` 3 times and `add_scientist_role` never. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
+2. The wiki says specializations after the first are ignored. The documentation says each listed one overrides its level, and vanilla has one scientist that lists two (`SOV_igor_kurchatov`: `specialization_nuclear = 2` and `specialization_naval = 2`). What the game does with the second entry is [unverified]. [docs] `common/characters/_documentation.md`; [vanilla-confirmed 1.19.4.1] `common/characters/SOV.txt`
+3. Vanilla has 103 scientist roles; 102 list one specialization and 1 lists two. The four specializations are `specialization_air` (46 entries), `specialization_nuclear` (28), `specialization_naval` (16) and `specialization_land` (14), defined in `common/special_projects/specialization/specializations.txt`. [vanilla-confirmed 1.19.4.1] `common/characters/`, `common/special_projects/specialization/`
+4. Scientist traits come from their own database, `common/scientist_traits/00_traits.txt` (21 traits, each a top-level block). All 139 trait references in vanilla scientist roles resolve there, although the character documentation still says the traits come from the country leader database. The folder documentation says scientist traits only affect special projects, so use only modifiers that apply to them. [vanilla-confirmed 1.19.4.1] `common/scientist_traits/00_traits.txt`, `common/characters/`; [docs] `common/scientist_traits/_documentation.md`
+5. Role effects: `add_scientist_role`, `remove_scientist_role`, `add_scientist_trait`, `add_scientist_level`, `add_scientist_xp`, `injure_scientist_for_days`, `generate_scientist_character`; triggers `has_scientist_level`, `has_scientist_specialization`, `is_active_scientist`, `is_scientist_injured`. A role added through `add_scientist_role` cannot carry a `visible` trigger. Vanilla uses `generate_scientist_character` 3 times and `add_scientist_role` never. [vanilla-confirmed 1.19.4.1] [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
 <!-- kit:end id="char-scientist-vanilla" -->
 
 ## Full example <a id="Full_example"></a>
@@ -481,7 +482,7 @@ recruit_character = SOV_georgy_zhukov
 ```
 
 <!-- kit:begin id="char-full-example-notes" at="section:Full_example" -->
-**Kit note** `UKR_nestor_makhno` is the wiki's own example, not a vanilla character (0 vanilla files use the id). `SOV_georgy_zhukov` is the vanilla character; the vanilla version also sets `cost = 150` in the advisor block. No vanilla `country_leader` block sets `desc`, so the example's `desc` line has no vanilla precedent. [vanilla-confirmed 1.19.3] `common/characters/SOV.txt`, `common/characters/`.
+**Kit note** `UKR_nestor_makhno` is the wiki's own example, not a vanilla character (0 vanilla files use the id). `SOV_georgy_zhukov` is the vanilla character; the vanilla version also sets `cost = 150` in the advisor block. No vanilla `country_leader` block sets `desc`, so the example's `desc` line has no vanilla precedent. [vanilla-confirmed 1.19.4.1] `common/characters/SOV.txt`, `common/characters/`.
 <!-- kit:end id="char-full-example-notes" -->
 
 ## Instances <a id="Instances"></a>
@@ -514,7 +515,7 @@ my_character = {
 Due to its purpose, each instance must have an `allowed` block and the character must have multiple instances to work properly. If the character only has a single pre-determined state, then the instance should be omitted.
 
 <!-- kit:begin id="char-instances-vanilla" at="section:Instances" -->
-**Kit note** Vanilla has 882 `instance` blocks in 463 characters, and every block has an `allowed` trigger. 404 characters have 2 instances (typically a `has_dlc` check and its `NOT`), 52 have 1, 6 have 3 and 1 has 4. The 52 single-instance characters show that one gated instance is valid; the wiki's "must have multiple instances" is not a hard rule. `allowed` starts with `has_dlc` in 457 instances and with `NOT` in 412. [vanilla-confirmed 1.19.3] `common/characters/`.
+**Kit note** Vanilla has 882 `instance` blocks in 463 characters, and every block has an `allowed` trigger. 404 characters have 2 instances (typically a `has_dlc` check and its `NOT`), 52 have 1, 6 have 3 and 1 has 4. The 52 single-instance characters show that one gated instance is valid; the wiki's "must have multiple instances" is not a hard rule. `allowed` starts with `has_dlc` in 457 instances and with `NOT` in 411. [vanilla-confirmed 1.19.4.1] `common/characters/`.
 <!-- kit:end id="char-instances-vanilla" -->
 
 ## Using in-game <a id="Using_in-game"></a>
@@ -645,36 +646,36 @@ set_portraits = {
 ```
 
 <!-- kit:begin id="char-leader-effects" at="section:Using_in-game" -->
-**Kit note** Exact behaviour of the character effects this section names. Syntax: [docs] `documentation/effects_documentation.md`; counts: [vanilla-confirmed 1.19.3] over `common/`, `events/` and `history/`.
+**Kit note** Exact behaviour of the character effects this section names. Syntax: [docs] `documentation/effects_documentation.md`; counts: [vanilla-confirmed 1.19.4.1] over `common/`, `events/` and `history/`.
 
-- `recruit_character = id` runs in country scope. All 5,606 vanilla uses sit in 257 files under `history/countries/`; none is anywhere else, and `generate_character` (129 uses) is only in `history/general/`. `hoi4.exe` contains the text "recruit_character should only happen in game/history files in order to be executed only at game start", and also "cannot be assigned to ... as it is already assigned to ...", so one character belongs to one country at a time. The documentation sets no timing limit, so treat history-only as a convention; what the engine does outside history is [unverified]. Do not recruit in events or focuses without testing.
-- `promote_character` has a country form (`promote_character = id`, or `{ character = id ideology = x }`) and a character form (`promote_character = yes`, `= ideology`, or `{ ideology = x }`). The ideology is mandatory only when the character has several country leader roles. 368 vanilla uses. [docs]
-- `add_country_leader_role = { character = id promote_leader = yes country_leader = { ideology = x expire = "1965.1.1.1" traits = { ... } } }` (`character` is optional in character scope). `hoi4.exe` has the messages "Character already has a country leader role for ideology:" and "Character already has a country leader role with this ideology", so adding a second role for an ideology the character already leads for is refused; check with `has_ideology = x` in character scope first. 894 vanilla uses. [docs] for syntax; the refusal is [unverified] (executable strings only).
+- `recruit_character = id` runs in country scope. All 5,612 vanilla uses sit in 257 files under `history/countries/`; none is anywhere else, and `generate_character` (128 uses) is only in `history/general/`. `hoi4.exe` contains the text "recruit_character should only happen in game/history files in order to be executed only at game start", and also "cannot be assigned to ... as it is already assigned to ...", so one character belongs to one country at a time. The documentation sets no timing limit, so treat history-only as a convention; what the engine does outside history is [unverified]. Do not recruit in events or focuses without testing.
+- `promote_character` has a country form (`promote_character = id`, or `{ character = id ideology = x }`) and a character form (`promote_character = yes`, `= ideology`, or `{ ideology = x }`). The ideology is mandatory only when the character has several country leader roles. 376 vanilla uses. [docs]
+- `add_country_leader_role = { character = id promote_leader = yes country_leader = { ideology = x expire = "1965.1.1.1" traits = { ... } } }` (`character` is optional in character scope). `hoi4.exe` has the messages "Character already has a country leader role for ideology:" and "Character already has a country leader role with this ideology", so adding a second role for an ideology the character already leads for is refused; check with `has_ideology = x` in character scope first. 898 vanilla uses. [docs] for syntax; the refusal is [unverified] (executable strings only).
 - `remove_country_leader_role = { character = id ideology = x }` removes one leader role. 113 vanilla uses.
 - `set_character_name` takes the new name, not a character token. Block form: `set_character_name = { character = id name = KEY_OR_TEXT }` in country scope, with `character` dropped inside a character scope; `name` is a localisation key or a literal. Scalar form in character scope: `set_character_name = KEY`. Vanilla passes keys such as `ITA_benito_mussolini_roman_emperor`. 12 vanilla uses.
 - `kill_country_leader = yes` (country scope) removes the leader completely and makes the next in line the new party and country leader (42 uses). `retire_country_leader` (163 uses) removes the leader from party leadership and also hands over to the next in line. The documentation matches the wiki's kill/retire split for this pair, but its texts for `kill_ideology_leader` (9 uses) and `retire_ideology_leader` (21 uses) are the other way round, so do not rely on the ideology pair. Prefer `promote_character`, `retire_character` and `remove_country_leader_role`, which name the character.
-- `retire_character = id` (country) and `retire = yes` (character) remove the character from the country with all roles; `set_nationality` brings them back. 290 and 40 vanilla uses.
+- `retire_character = id` (country) and `retire = yes` (character) remove the character from the country with all roles; `set_nationality` brings them back. 289 and 41 vanilla uses.
 - `set_portraits = { character = id civilian = { large = GFX_x small = GFX_y } army = { ... } }` (country scope; `character` is dropped in character scope). 53 vanilla uses.
 <!-- kit:end id="char-leader-effects" -->
 
 <!-- kit:begin id="char-effects-reference" at="section:Using_in-game" -->
 #### Kit: Character effects and triggers in the documentation <a id="kit-character-effects-triggers"></a>
 
-**Kit addition** Documented names this page never lists. Scopes and meanings: [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`. Use counts: [vanilla-confirmed 1.19.3].
+**Kit addition** Documented names this page never lists. Scopes and meanings: [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`. Use counts: [vanilla-confirmed 1.19.4.1].
 
 | Name | Scope | What it does |
 | --- | --- | --- |
 | `add_corps_commander_role`, `add_field_marshal_role`, `add_naval_commander_role` | COUNTRY, CHARACTER | Add a unit leader role: `{ character = id traits = { } skill = 4 attack_skill = 2 defense_skill = 3 ... }` (army: `planning_skill`, `logistics_skill`; navy: `maneuvering_skill`, `coordination_skill`). 85, 25 and 14 vanilla uses. |
 | `remove_unit_leader_role` | COUNTRY, CHARACTER | Removes the unit leader role. The documentation's own example spells it `remove_corps_commander_role`, which no vanilla file uses. 26 uses of the real name. |
-| `promote_leader`, `demote_leader` | CHARACTER | General to field marshal and back. `promote_leader = yes` is also the key that makes a new leader take over inside `add_country_leader_role`, which accounts for most of its 908 vanilla uses. |
-| `create_corps_commander`, `create_field_marshal`, `create_navy_leader`, `create_country_leader` | COUNTRY | Older direct creation. `create_country_leader` takes `name`, `desc`, `picture`, `expire`, `ideology`, `traits`, and adds the role to an existing character with the same token or name. 33, 4, 3 and 181 uses. |
-| `add_country_leader_trait`, `remove_country_leader_trait` | COUNTRY, CHARACTER | `trait_id`, or `{ ideology = x trait = id }` when a character has several leader roles. 268 and 46 uses. |
-| `swap_country_leader_traits` | CHARACTER | `{ remove = a add = b ideology = x }`. 81 uses. |
+| `promote_leader`, `demote_leader` | CHARACTER | General to field marshal and back. `promote_leader = yes` is also the key that makes a new leader take over inside `add_country_leader_role`, which accounts for most of its 912 vanilla uses. |
+| `create_corps_commander`, `create_field_marshal`, `create_navy_leader`, `create_country_leader` | COUNTRY | Older direct creation. `create_country_leader` takes `name`, `desc`, `picture`, `expire`, `ideology`, `traits`, and adds the role to an existing character with the same token or name. 33, 4, 3 and 176 uses. |
+| `add_country_leader_trait`, `remove_country_leader_trait` | COUNTRY, CHARACTER | `trait_id`, or `{ ideology = x trait = id }` when a character has several leader roles. 269 and 46 uses. |
+| `swap_country_leader_traits` | CHARACTER | `{ remove = a add = b ideology = x }`. 84 uses. |
 | `add_unit_leader_trait`, `remove_unit_leader_trait`, `add_timed_unit_leader_trait`, `add_random_trait` | CHARACTER | Unit leader traits; the timed form takes `trait` and `days`; `add_random_trait = { a b c }` picks one. 137, 17 and 9 uses for the first, third and fourth. |
 | `add_trait`, `remove_trait` | COUNTRY, CHARACTER | `{ character = id trait = id slot = x ideology = y }`; `slot` selects the advisor role, `ideology` the country leader role. |
 | `add_skill_level`, `add_attack`, `add_defense`, `add_planning`, `add_logistics`, `add_maneuver`, `add_coordination`, `gain_xp` | CHARACTER | Raise a unit leader skill by the number given; `gain_xp = 5` gives experience and levels the leader up when possible. |
 | `set_country_leader_name`, `set_country_leader_portrait`, `set_country_leader_description`, `set_country_leader_ideology` | COUNTRY | Change the current leader. The first three take `{ ideology = x name = "..." }` (or `portrait`, `desc`), where `ideology` can be left out. No tooltip. |
-| `set_character_flag`, `clr_character_flag`, `modify_character_flag`, `has_character_flag` | CHARACTER | Character flags. `has_character_flag = { flag = x value < n days > n }`; `has_unit_leader_flag` is deprecated for it. 561 uses of `set_character_flag`. |
+| `set_character_flag`, `clr_character_flag`, `modify_character_flag`, `has_character_flag` | CHARACTER | Character flags. `has_character_flag = { flag = x value < n days > n }`; `has_unit_leader_flag` is deprecated for it. 566 uses of `set_character_flag`. |
 | `every_character`, `random_character`, `every_unit_leader`, `every_army_leader`, `every_navy_leader`, `random_unit_leader`, `any_character`, `any_unit_leader` | COUNTRY | Iterate characters; optional `tooltip`, `random_select_amount`, `include_invisible` (default no) and, for the `every_` forms, `display_individual_scopes`. |
 | `is_country_leader`, `is_corps_commander`, `is_field_marshal`, `is_navy_leader`, `is_army_leader`, `is_unit_leader`, `is_character = id`, `has_character = id` | CHARACTER / COUNTRY | Role and identity checks (`has_character` is COUNTRY scope, the rest CHARACTER). |
 | `has_ideology = sub`, `has_ideology_group = group`, `can_be_country_leader`, `has_country_leader`, `has_country_leader_with_trait`, `has_country_leader_ideology` | CHARACTER / COUNTRY | Does the character hold a leader role for that sub-ideology or group; does the country's leader match. `has_country_leader = { character = id ruling_only = yes }`. |
@@ -682,7 +683,7 @@ set_portraits = {
 | `is_assigned`, `is_leading_army`, `is_leading_army_group`, `is_female`, `is_exiled_leader`, `is_promoted_from_unit` | CHARACTER | Further unit leader checks. |
 | `set_faction_leader` | COUNTRY | Makes the scoped country leader of its faction (a country effect, not a character one). |
 
-The documentation lists `promote_officer_to_general`, `party_leader`, `set_leader_name`, `set_leader_portrait`, `replace_unit_leader_trait` and `add_max_trait`, but no vanilla file uses them. [docs] `documentation/effects_documentation.md`; the zero counts are [vanilla-confirmed 1.19.3].
+The documentation lists `promote_officer_to_general`, `party_leader`, `set_leader_name`, `set_leader_portrait`, `replace_unit_leader_trait` and `add_max_trait`, but no vanilla file uses them. [docs] `documentation/effects_documentation.md`; the zero counts are [vanilla-confirmed 1.19.4.1].
 <!-- kit:end id="char-effects-reference" -->
 
 ### The special case of generate_character <a id="The_special_case_of_generate_character"></a>
@@ -738,10 +739,10 @@ generate_character = { token_base = generic_guy }
 **The effect will fail if the "template" does not exist in the history files.** Using the full effect directly mid-game will not work.
 
 <!-- kit:begin id="char-generate-character-vanilla" at="section:The_special_case_of_generate_character" -->
-**Kit note** `generate_character` in 1.19.3. Syntax: [docs] `documentation/effects_documentation.md`; counts: [vanilla-confirmed 1.19.3] `history/general/`.
+**Kit note** `generate_character` in 1.19.4.1. Syntax: [docs] `documentation/effects_documentation.md`; counts: [vanilla-confirmed 1.19.4.1] `history/general/`.
 
 - `token_base` is the only mandatory key. The character token is `token_base`; an advisor idea token is `token_base_<idea_token>`, or `token_base_<slot>` when `idea_token` is left out. `name` is optional (a random name when missing), and the rest is written like a character definition.
-- All 129 vanilla uses sit in two files in `history/general/` (`generic_advisors.txt` 54, `spain_shared_advisors.txt` 75), none elsewhere. Vanilla builds its generic ideology advisors this way, for example `token_base = generic_communist_revolutionary` with `advisor = { slot = political_advisor traits = { communist_revolutionary } }` and the portrait `GFX_idea_generic_communist_revolutionary`.
+- All 128 vanilla uses sit in two files in `history/general/` (`generic_advisors.txt` 53, `spain_shared_advisors.txt` 75), none elsewhere. Vanilla builds its generic ideology advisors this way, for example `token_base = generic_communist_revolutionary` with `advisor = { slot = political_advisor traits = { communist_revolutionary } }` and the portrait `GFX_idea_generic_communist_revolutionary`.
 - `generate_scientist_character` creates and recruits a scientist (`portrait`, `portrait_tag_override`, `gender`, `skills`, `traits`; all optional). 3 vanilla uses. [docs] `documentation/effects_documentation.md`
 <!-- kit:end id="char-generate-character-vanilla" -->
 
@@ -788,12 +789,12 @@ Additionally, [special modifier types that can be used in ideas](<idea_modding.m
 Localisation is defined by using the trait's name as a localisation key within any localisation file, with an entry as  `my_trait: "My trait"`.
 
 <!-- kit:begin id="char-country-leader-traits-vanilla" at="section:Country_leader_traits" -->
-**Kit correction** `command_cap` is not a game key. It appears in no vanilla file, in no documentation and not in `hoi4.exe`, so the wiki's `command_cap = @tier1` line and the example above do nothing useful. Vanilla traits use two keys instead: `command_power = <cost>` (162 traits), which is the command power price of the advisor, and `command_cap_increase = <amount>` (163 traits), which raises the command power cap. Both take values from constants at the top of `common/country_leader/00_traits.txt`: `@tier1_cp_cost`, `@tier2_cp_cost`, `@tier3_cp_cost` (all 0 in 1.19.3) and `@tier1_cp_cap_increase`, `@tier2_cp_cap_increase`, `@tier3_cp_cap_increase` (10, 20, 30). [vanilla-confirmed 1.19.3] `common/country_leader/00_traits.txt`. That `command_power` is a price is inferred from the vanilla AI weight `command_power < @tier1_cp_cost` giving factor 0. [unverified]
+**Kit correction** `command_cap` is not a game key. It appears in no vanilla file, in no documentation and not in `hoi4.exe`, so the wiki's `command_cap = @tier1` line and the example above do nothing useful. Vanilla traits use two keys instead: `command_power = <cost>` (162 traits), which is the command power price of the advisor, and `command_cap_increase = <amount>` (163 traits), which raises the command power cap. Both take values from constants at the top of `common/country_leader/00_traits.txt`: `@tier1_cp_cost`, `@tier2_cp_cost`, `@tier3_cp_cost` (all 0 in 1.19.4.1) and `@tier1_cp_cap_increase`, `@tier2_cp_cap_increase`, `@tier3_cp_cap_increase` (10, 20, 30). [vanilla-confirmed 1.19.4.1] `common/country_leader/00_traits.txt`. That `command_power` is a price is inferred from the vanilla AI weight `command_power < @tier1_cp_cost` giving factor 0. [unverified]
 
-**Kit note** Country leader traits in vanilla, counted over 2,103 traits in `common/country_leader/00_traits.txt`, `goe_traits.txt`, `taog_traits.txt` and `toa_traits.txt`. All counts: [vanilla-confirmed 1.19.3] `common/country_leader/`.
+**Kit note** Country leader traits in vanilla, counted over 2,116 traits in `common/country_leader/00_traits.txt`, `goe_traits.txt`, `taog_traits.txt` and `toa_traits.txt`. All counts: [vanilla-confirmed 1.19.4.1] `common/country_leader/`.
 
-- `random = no` is set on 1,763 traits and `random = yes` on 23. `sprite` is set on 1,539 traits and goes up to 18, matching `noOfFrames = 18` for `GFX_idea_traits_strip` in `interface/ideas.gfx`. `ai_will_do` is on 709 traits.
-- `equipment_bonus` (72), `targeted_modifier` (16), `hidden_modifier` (15) and `custom_modifier_tooltip` (70) appear directly in traits. `research_bonus` and `rule` appear in none, as the wiki says.
+- `random = no` is set on 1,778 traits and `random = yes` on 23. `sprite` is set on 1,553 traits and goes up to 18, matching `noOfFrames = 18` for `GFX_idea_traits_strip` in `interface/ideas.gfx`. `ai_will_do` is on 710 traits.
+- `equipment_bonus` (72), `targeted_modifier` (16), `hidden_modifier` (15) and `custom_modifier_tooltip` (74) appear directly in traits. `research_bonus` and `rule` appear in none, as the wiki says.
 - Ideology booster traits such as `communist_revolutionary`, `democratic_reformer` and `fascist_demagogue` use `random = no`, `sprite = 13` and `<group>_drift = 0.1`. The `_booster` suffix in the [Ideology modding](<ideology_modding.md#Political_advisor>) template is not a vanilla naming convention (0 vanilla uses).
 - Trait ids are exact. `conservative_nationalist` is a country leader trait (defined once in `common/country_leader/00_traits.txt`), but `nationalist` is defined in no country leader, unit leader or scientist trait file and appears in no vanilla script as a trait. What the game does with an undefined trait id in `traits = { }` is [unverified]; check every id against these folders before use.
 <!-- kit:end id="char-country-leader-traits-vanilla" -->
@@ -827,9 +828,9 @@ In particular, these are the important notes:
 Units leader traits are defined in any `/Hearts of Iron IV/common/unit_leader/*.txt` file, possible to assign to unit leader characters of any type as well as operatives. Each one is defined within the `leader_traits = { ... }` block as a separate entry with the name of the trait's ID.
 
 <!-- kit:begin id="char-unit-leader-traits-vanilla" at="section:Unit_leader_traits" -->
-**Kit note** Unit leader traits in vanilla: 194 traits in six `leader_traits` blocks across the `common/unit_leader/` files (`00_traits.txt`, `ETH_traits.txt`, `JAP_traits.txt`, `NSB_traits.txt`, `SIA_traits.txt`, `SWE_traits.txt`). `type` values used: `navy` 60, `land` 41, `all` 41, `corps_commander` 37, `operative` 12, `field_marshal` 10. `trait_type` values used: `personality_trait` 94, `assignable_trait` 46, `status_trait` 15, `basic_terrain_trait` 12, `basic_trait` 8, `assignable_terrain_trait` 2, `exile` 1, which is the full list the wiki gives. [vanilla-confirmed 1.19.3] `common/unit_leader/`.
+**Kit note** Unit leader traits in vanilla: 196 traits in six `leader_traits` blocks across the `common/unit_leader/` files (`00_traits.txt`, `ETH_traits.txt`, `JAP_traits.txt`, `NSB_traits.txt`, `SIA_traits.txt`, `SWE_traits.txt`). `type` values used: `navy` 62, `land` 42, `all` 42, `corps_commander` 37, `operative` 12, `field_marshal` 10. `trait_type` values used: `personality_trait` 96, `assignable_trait` 46, `status_trait` 15, `basic_terrain_trait` 12, `basic_trait` 8, `assignable_terrain_trait` 2, `exile` 1, which is the full list the wiki gives. [vanilla-confirmed 1.19.4.1] `common/unit_leader/`.
 
-The same folder also holds the skill-level definitions covered under "Unit leaders", and the head of `common/unit_leader/00_traits.txt` is a comment that documents the trait format. [vanilla-confirmed 1.19.3] `common/unit_leader/00_traits.txt`.
+The same folder also holds the skill-level definitions covered under "Unit leaders", and the head of `common/unit_leader/00_traits.txt` is a comment that documents the trait format. [vanilla-confirmed 1.19.4.1] `common/unit_leader/00_traits.txt`.
 <!-- kit:end id="char-unit-leader-traits-vanilla" -->
 
 ### Localisation <a id="Localisation"></a>
@@ -912,7 +913,7 @@ unit_trigger = {
 ```
 
 <!-- kit:begin id="char-trait-general-extras" at="section:General_arguments" -->
-**Kit addition** Trait keys that vanilla uses but the tables on this page omit. All rows: [vanilla-confirmed 1.19.3] `common/unit_leader/00_traits.txt` (counts over 194 traits).
+**Kit addition** Trait keys that vanilla uses but the tables on this page omit. All rows: [vanilla-confirmed 1.19.4.1] `common/unit_leader/00_traits.txt` (counts over 196 traits).
 
 | Key | Uses | Notes |
 | --- | --- | --- |
@@ -1064,7 +1065,7 @@ trait_xp_factor = {
 ```
 
 <!-- kit:begin id="char-trait-selection-correction" at="section:Selection" -->
-**Kit correction** The parent syntax in the table above differs from the vanilla format. The comment at the top of `common/unit_leader/00_traits.txt` documents it as a block: `parent = { traits = { a b c } num_parents_needed = 1 }`, which can be repeated, plus two shorthands: `any_parent = { a b c }` (one of them is enough) and `all_parents = { a b c }` (every one is needed). Vanilla uses `any_parent` in 41 traits and the block `parent` once (with `num_parents_needed = 2`); `all_parents` and a plain `parent = trait_id` appear nowhere. `hoi4.exe` has the validation message "num_parents_needed is superior to the number of parents". The wiki's `parent = my_trait` with a separate `num_parents_needed` is [unverified]; write the vanilla form. [vanilla-confirmed 1.19.3] `common/unit_leader/00_traits.txt`; the message is [unverified] (executable string only).
+**Kit correction** The parent syntax in the table above differs from the vanilla format. The comment at the top of `common/unit_leader/00_traits.txt` documents it as a block: `parent = { traits = { a b c } num_parents_needed = 1 }`, which can be repeated, plus two shorthands: `any_parent = { a b c }` (one of them is enough) and `all_parents = { a b c }` (every one is needed). Vanilla uses `any_parent` in 41 traits and the block `parent` once (with `num_parents_needed = 2`); `all_parents` and a plain `parent = trait_id` appear nowhere. `hoi4.exe` has the validation message "num_parents_needed is superior to the number of parents". The wiki's `parent = my_trait` with a separate `num_parents_needed` is [unverified]; write the vanilla form. [vanilla-confirmed 1.19.4.1] `common/unit_leader/00_traits.txt`; the message is [unverified] (executable string only).
 <!-- kit:end id="char-trait-selection-correction" -->
 
 ### Example <a id="Example"></a>

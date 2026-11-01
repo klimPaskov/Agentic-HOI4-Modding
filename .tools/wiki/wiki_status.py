@@ -12,6 +12,9 @@ for the build the snapshot was last checked against: every heading of
 ``documentation/*.md`` and of the ``_documentation.md`` files under ``common/``,
 with a short hash of its text. When a new game build changes those files, this tool
 lists the entries that were added, removed or changed and the pages to re-check.
+The index also records the installed Steam depot manifests (``steam_depots.py``), so
+after an update the tool can list every game file that changed and flag the pages
+whose ``sources`` name one, not only the pages that cite documentation.
 
     python -B .tools/wiki/wiki_status.py                      # status and documentation diff
     python -B .tools/wiki/wiki_status.py --strict             # exit 1 unless every page is current
@@ -41,6 +44,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent))
 import kit_blocks  # the page format, next to this script
+import steam_depots  # the game files that changed between two Steam builds
 from lib import game  # .tools/lib: locates the installed game
 
 REPO = HERE.parents[1]
@@ -107,7 +111,12 @@ def build_index(game_dir: Path) -> Dict[str, object]:
         text = (game_dir / relative).read_text(encoding="utf-8", errors="replace")
         files[relative] = {"sha1": hashlib.sha1(text.encode("utf-8")).hexdigest(),
                            "entries": index_document(text)}
-    return {**installed_build(game_dir), "recorded": datetime.date.today().isoformat(), "files": files}
+    index: Dict[str, object] = {**installed_build(game_dir), "recorded": datetime.date.today().isoformat(),
+                                "files": files}
+    depots = steam_depots.installed_depots(game_dir)
+    if depots:
+        index["depots"] = depots
+    return index
 
 
 def diff_index(old: Dict[str, object], new: Dict[str, object]) -> Dict[str, Dict[str, List[str]]]:
@@ -167,6 +176,47 @@ def affected_pages(diff: Dict[str, Dict[str, List[str]]], pages: Dict[str, str])
                 for title in pages:
                     if name and name in words[title] and not covers(sources[title], doc):
                         reasons.setdefault(title, []).append(f"mentions {kind} entry {name} ({doc})")
+    return reasons
+
+
+def is_documentation(path: str) -> bool:
+    return path.startswith("documentation/") or "_documentation." in path
+
+
+def game_file_changes(game_dir: Path, recorded: Dict[str, object]) -> Dict[str, str]:
+    """Game files the Steam depot manifests show as changed since the recorded build (empty when unknown)."""
+    old = recorded.get("depots")
+    if not isinstance(old, dict) or not old:
+        print("game files: the recorded index has no Steam depot ids, so changed script and define files "
+              "cannot be listed; check the pages' sources by hand (see README)")
+        return {}
+    new = steam_depots.installed_depots(game_dir)
+    if not new:
+        print("game files: no Steam app manifest next to the game folder, so changed files cannot be listed")
+        return {}
+    changes, notes = steam_depots.changed_files(old, new, steam_depots.depot_caches(game_dir, game.steam_roots()))
+    for note in notes:
+        print(f"game files: {note}")
+    counts = {kind: sum(1 for k in changes.values() if k == kind) for kind in ("added", "removed", "changed")}
+    print("game files changed since the recorded build: " + ", ".join(f"{n} {k}" for k, n in counts.items()))
+    folders: Dict[str, int] = {}
+    for path in changes:
+        folder = "/".join(path.split("/")[:2]) if "/" in path else path
+        folders[folder] = folders.get(folder, 0) + 1
+    for folder, count in sorted(folders.items(), key=lambda item: (-item[1], item[0]))[:15]:
+        print(f"  {folder}: {count}")
+    return changes
+
+
+def file_reasons(changes: Dict[str, str], pages: Dict[str, str]) -> Dict[str, List[str]]:
+    """Page title -> reasons to re-check: sources (other than documentation) that cover changed game files."""
+    scripts = [path for path in changes if not is_documentation(path)]
+    reasons: Dict[str, List[str]] = {}
+    for title, text in pages.items():
+        for source in page_sources(text):
+            count = sum(1 for path in scripts if covers([source], path))
+            if count:
+                reasons.setdefault(title, []).append(f"source {source}: {count} game file(s) changed")
     return reasons
 
 
@@ -266,13 +316,18 @@ def report(game_dir: Path, pages: Dict[str, str]) -> Dict[str, List[str]]:
         return {}
     recorded = json.loads(INDEX.read_text(encoding="utf-8"))
     diff = diff_index(recorded, current)
-    if not diff:
+    if diff:
+        print(f"documentation changed between the recorded index ({recorded['build']}) and the installed game:")
+        print_diff(diff)
+    else:
         print(f"documentation index: {recorded['build']} recorded {recorded['recorded']}, "
               "matches the installed files")
-        return {}
-    print(f"documentation changed between the recorded index ({recorded['build']}) and the installed game:")
-    print_diff(diff)
     reasons = affected_pages(diff, pages)
+    if recorded.get("build") != current["build"]:
+        for title, why in file_reasons(game_file_changes(game_dir, recorded), pages).items():
+            reasons.setdefault(title, []).extend(why)
+    if not reasons:
+        return {}
     print(f"\npages to re-check ({len(reasons)}):")
     for title in sorted(reasons):
         print(f"  {title}: " + "; ".join(dict.fromkeys(reasons[title])))

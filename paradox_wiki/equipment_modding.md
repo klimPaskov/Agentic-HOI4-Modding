@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Equipment modding", revision 104717, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="104717" sources="common/units/equipment/ common/units/equipment/modules/ common/equipment_groups/ common/script_enums.txt interface/equipmentdesigner/ gfx/interface/equipmentdesigner/graphic_db/ localisation/english/equipment_l_english.yml hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="104717" sources="common/units/equipment/ common/units/equipment/modules/ common/equipment_groups/ common/script_enums.txt interface/equipmentdesigner/ gfx/interface/equipmentdesigner/graphic_db/ localisation/english/equipment_l_english.yml hoi4.exe" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against `common/units/equipment/_documentation.md`, `common/equipment_groups/_documentation.md`, the two equipment designer `_documentation.info` files, all 45 vanilla equipment files (308 equipment blocks and 34 duplicated archetypes), the module files, `script_enum_equipment_category` and `script_enum_equipment_stat`, and a token search of `hoi4.exe`.
 Kit blocks added: `equipment-keys` (keys the templates omit, `manpower` and `is_frame` corrections), `equipment-types` (real type values), `equipment-group-by`, `equipment-interface-categories`, `equipment-designer-notes` (`duplicate_archetypes`, window lookup, graphic_db, modules), `equipment-stats-enum`, `equipment-naval-stats-warning` (four dead stat names), `equipment-air-stats`, `equipment-localization`.
 Gaps left: the in-game effect of `group_by`, `visual_level`, `priority` and `abbreviation` is not documented and is marked [unverified]; module files are summarised, not documented key by key.
+**1.19.4.1 re-check (2026-11-01).** 13 statements depended on files the update changed (`tank_chassis.txt`, `sam_missile.txt` and `00_tank_modules.txt` in `common/units/equipment/`, plus the sub-unit files in `common/units/`), and all 13 were re-measured: the 308 equipment blocks, 34 duplicated archetypes, 316 modules and every per-key count are unchanged except two. `multiply_stats` is written in 207 modules (205 before), and the list of secondary types was missing `carrier`, which the submarine carrier hull uses. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -151,15 +152,15 @@ equipments = {
 ```
 
 <!-- kit:begin id="equipment-keys" at="section:Equipment" -->
-### Kit: Equipment keys in 1.19.3 <a id="kit-equipment-keys"></a>
+### Kit: Equipment keys in 1.19.4.1 <a id="kit-equipment-keys"></a>
 
 **Kit correction** Two statements in the templates above are out of date, and both templates leave out keys that vanilla uses.
 
-- `manpower` is not naval only. The documentation says so, but vanilla also sets it on plane airframes (`plane_airframes.txt`, `x_plane_airframes.txt`, `quad_engine_airframe.txt`), tank chassis (`tank_chassis.txt`) and railway guns. It is on 125 of the 308 equipment blocks. [vanilla-confirmed 1.19.3] `common/units/equipment/*.txt`
-- `is_frame` and `max_dockyard_factories` are real keys: both are in the documentation and both strings are in `hoi4.exe`. No vanilla file sets either. `max_military_factories` is set in 3 blocks (value 5; `artillery.txt` twice, `tank_chassis.txt` once). [docs] `common/units/equipment/_documentation.md`, [vanilla-confirmed 1.19.3] for the usage counts
-- The documentation's `type` list includes `naval_transport`, but no vanilla equipment uses it and it is not in `script_enum_equipment_category`. [vanilla-confirmed 1.19.3] `common/script_enums.txt`
+- `manpower` is not naval only. The documentation says so, but vanilla also sets it on plane airframes (`plane_airframes.txt`, `x_plane_airframes.txt`, `quad_engine_airframe.txt`), tank chassis (`tank_chassis.txt`) and railway guns. It is on 125 of the 308 equipment blocks. [vanilla-confirmed 1.19.4.1] `common/units/equipment/*.txt`
+- `is_frame` and `max_dockyard_factories` are real keys: both are in the documentation and both strings are in `hoi4.exe`. No vanilla file sets either. `max_military_factories` is set in 3 blocks (value 5; `artillery.txt` twice, `tank_chassis.txt` once). [docs] `common/units/equipment/_documentation.md`, [vanilla-confirmed 1.19.4.1] for the usage counts
+- The documentation's `type` list includes `naval_transport`, but no vanilla equipment uses it and it is not in `script_enum_equipment_category`. [vanilla-confirmed 1.19.4.1] `common/script_enums.txt`
 
-Keys vanilla uses that the templates do not show. Counts are blocks in `common/units/equipment/*.txt` out of 308 (archetypes and regular equipment). Source of every row: [vanilla-confirmed 1.19.3] unless the row says [docs].
+Keys vanilla uses that the templates do not show. Counts are blocks in `common/units/equipment/*.txt` out of 308 (archetypes and regular equipment). Source of every row: [vanilla-confirmed 1.19.4.1] unless the row says [docs].
 
 | Key | Count | What vanilla shows |
 | --- | --- | --- |
@@ -224,9 +225,9 @@ Keys vanilla uses that the templates do not show. Counts are blocks in `common/u
 - suicide
 
 <!-- kit:begin id="equipment-types" at="section:Air" -->
-#### Kit: Equipment type values in 1.19.3 <a id="kit-equipment-types"></a>
+#### Kit: Equipment type values in 1.19.4.1 <a id="kit-equipment-types"></a>
 
-**Kit correction** The three lists above are partly obsolete. `heavy_tank_chassis`, `light_tank_chassis` and `medium_tank_chassis` are archetype ids, not types (tank chassis have `type = armor`), `support_equipment` is the equipment id and the type is `support`, `strat_bomber` is `strategic_bomber`, and `naval_transport` does not exist. The valid values are the 38 entries of `script_enum_equipment_category`; every `type` that vanilla equipment uses is in it. [vanilla-confirmed 1.19.3] `common/script_enums.txt`, `common/units/equipment/*.txt`
+**Kit correction** The three lists above are partly obsolete. `heavy_tank_chassis`, `light_tank_chassis` and `medium_tank_chassis` are archetype ids, not types (tank chassis have `type = armor`), `support_equipment` is the equipment id and the type is `support`, `strat_bomber` is `strategic_bomber`, and `naval_transport` does not exist. The valid values are the 38 entries of `script_enum_equipment_category`; every `type` that vanilla equipment uses is in it. [vanilla-confirmed 1.19.4.1] `common/script_enums.txt`, `common/units/equipment/*.txt`
 
 | Group | Values |
 | --- | --- |
@@ -234,9 +235,9 @@ Keys vanilla uses that the templates do not show. Counts are blocks in `common/u
 | Naval | `capital_ship`, `carrier`, `screen_ship`, `submarine`, `convoy`, `support_ship`, `floating_harbor`, `missile_launcher` |
 | Air | `fighter`, `heavy_fighter`, `interceptor`, `cas`, `naval_bomber`, `tactical_bomber`, `strategic_bomber`, `scout_plane`, `maritime_patrol_plane`, `air_transport`, `suicide`, `missile`, `ballistic_missile`, `nuclear_missile`, `sam_missile`, `emplacement_gun_ammo` |
 
-`land_cruiser` and `missile_launcher` are in the enum but no vanilla equipment block uses them as `type`. The grouping in the table is the kit's, not the game's. [vanilla-confirmed 1.19.3]
+`land_cruiser` and `missile_launcher` are in the enum but no vanilla equipment block uses them as `type`. The grouping in the table is the kit's, not the game's. [vanilla-confirmed 1.19.4.1]
 
-`type` may be a list: the first value is the main type and the rest are secondary types, for example `type = { screen_ship anti_air }` on `light_cruiser_1` and `type = { armor anti_air }` for the anti-air tank chassis. Every secondary value that vanilla uses (`anti_air`, `anti_tank`, `artillery`, `amphibious`, `flame`, `rocket`, `support`, `infantry`, `motorized`) is also a sub-unit `type` in `common/units/*.txt`. The wiki adds that a new type needs at least one sub-unit using it. [vanilla-confirmed 1.19.3] `common/units/equipment/ship_hull_cruiser.txt`, `common/units/equipment/x_tank_chassis.txt`; the wiki's rule [unverified]
+`type` may be a list: the first value is the main type and the rest are secondary types, for example `type = { screen_ship anti_air }` on `light_cruiser_1` and `type = { armor anti_air }` for the anti-air tank chassis. Every secondary value that vanilla uses (`anti_air`, `anti_tank`, `artillery`, `amphibious`, `flame`, `rocket`, `support`, `infantry`, `motorized`, and `carrier` on the submarine carrier hull) is also a sub-unit `type` in `common/units/*.txt`. The wiki adds that a new type needs at least one sub-unit using it. [vanilla-confirmed 1.19.4.1] `common/units/equipment/ship_hull_cruiser.txt`, `common/units/equipment/x_tank_chassis.txt`; the wiki's rule [unverified]
 
 These values are also the keys that `equipment_bonus` and military industrial organizations accept, together with equipment ids and groups (`script_enum_equipment_bonus_type`). [vanilla-confirmed 1.19.3] `common/script_enums.txt`
 <!-- kit:end id="equipment-types" -->
@@ -247,7 +248,7 @@ These values are also the keys that `equipment_bonus` and military industrial or
 - type
 
 <!-- kit:begin id="equipment-group-by" at="section:Group_By_types" -->
-**Kit addition** `group_by` has two values, `archetype` and `type`. Vanilla sets it only on archetypes: 37 blocks use `archetype` (every tank chassis, `small_plane_airframe`, `convoy`, `ship_hull_carrier`, `ship_hull_submarine`, the land equipment archetypes) and 5 use `type` (`ballistic_missile_equipment`, `explosive_ammo_equipment`, `guided_missile_equipment`, `nuclear_missile_equipment`, `sam_missile_equipment`). The other ship hull archetypes set no `group_by`. The token is in `hoi4.exe`; the documentation does not describe it, and the wiki's explanation (how the equipment is grouped in the production screen) is the only description. [vanilla-confirmed 1.19.3] `common/units/equipment/*.txt`; the effect [unverified]
+**Kit addition** `group_by` has two values, `archetype` and `type`. Vanilla sets it only on archetypes: 37 blocks use `archetype` (every tank chassis, `small_plane_airframe`, `convoy`, `ship_hull_carrier`, `ship_hull_submarine`, the land equipment archetypes) and 5 use `type` (`ballistic_missile_equipment`, `explosive_ammo_equipment`, `guided_missile_equipment`, `nuclear_missile_equipment`, `sam_missile_equipment`). The other ship hull archetypes set no `group_by`. The token is in `hoi4.exe`; the documentation does not describe it, and the wiki's explanation (how the equipment is grouped in the production screen) is the only description. [vanilla-confirmed 1.19.4.1] `common/units/equipment/*.txt`; the effect [unverified]
 <!-- kit:end id="equipment-group-by" -->
 
 ### Interface Categories <a id="Interface_Categories"></a>
@@ -260,7 +261,7 @@ These values are also the keys that `equipment_bonus` and military industrial or
 - interface_category_air
 
 <!-- kit:begin id="equipment-interface-categories" at="section:Interface_Categories" -->
-**Kit addition** The six values above are the only ones vanilla equipment uses: `interface_category_land` 17 blocks, `interface_category_air` 12, `interface_category_armor` 9, `interface_category_other_ships` 7, `interface_category_screen_ships` 4 and `interface_category_capital_ships` 2. `hoi4.exe` also holds `interface_category_resources`, `_stockpiling`, `_reinforcing`, `_upgrading` and `_outdated`; these are not used by any vanilla equipment and their purpose is unknown. [vanilla-confirmed 1.19.3] `common/units/equipment/*.txt`; the extra tokens [unverified]
+**Kit addition** The six values above are the only ones vanilla equipment uses: `interface_category_land` 17 blocks, `interface_category_air` 12, `interface_category_armor` 9, `interface_category_other_ships` 7, `interface_category_screen_ships` 4 and `interface_category_capital_ships` 2. `hoi4.exe` also holds `interface_category_resources`, `_stockpiling`, `_reinforcing`, `_upgrading` and `_outdated`; these are not used by any vanilla equipment and their purpose is unknown. [vanilla-confirmed 1.19.4.1] `common/units/equipment/*.txt`; the extra tokens [unverified]
 <!-- kit:end id="equipment-interface-categories" -->
 
 ### Equipment Designer <a id="Equipment_Designer"></a>
@@ -335,7 +336,7 @@ The wiki says new variants must be listed in "script_enums"; the file is `common
 
 **Icons and models per equipment (graphic_db).** `gfx/interface/equipmentdesigner/graphic_db/*.txt` (vanilla: `00_tank_icons.txt`, `00_plane_icons.txt`, `00_hq_icons.txt`) maps an equipment type or archetype to icons and 3D models. Root keys are `default`, a continent name or a country tag; under them each key is an equipment type or archetype holding `pool` blocks. A `pool` may hold `limit` (trigger), `weight` (sort order, default 1), `icons` (GFX names), `models` (entity names) and three filters: `sub_units`, `ideologies` and `cultures` (graphical culture keys from `common/graphicalculturetype.txt`); an empty filter is unrestricted, and every filter that is set must match. Country beats continent beats `default`, type beats archetype, and later definitions beat earlier ones when weights tie. [docs] `gfx/interface/equipmentdesigner/graphic_db/_documentation.info`
 
-**Module files.** Modules are defined in `common/units/equipment/modules/` (vanilla: `00_tank_modules.txt`, `00_ship_modules.txt`, `00_plane_modules.txt`), inside `equipment_modules = { }`: 316 modules. Keys they use: `category` and `abbreviation` (312 each), `add_stats` (311), `sfx` (280), `multiply_stats` (205), `can_convert_from` (168), `xp_cost` (153), `dismantle_cost_ic` (129), `parent` (114), `build_cost_resources` (66), `critical_parts` (54), `add_equipment_type` (47), `gfx` (42), `mission_type_stats` (33), `allow_mission_type` (30), `gui_category` (28), `add_average_stats` (28), `allow_equipment_type` (23), `allowed_module_categories` (11), `forbid_module_categories` (10), `forbid_equipment_type` and `forbid_equipment_type_exact_match` (4 and 6). Technologies unlock modules with `enable_equipment_modules`. [vanilla-confirmed 1.19.3] `common/units/equipment/modules/*.txt`
+**Module files.** Modules are defined in `common/units/equipment/modules/` (vanilla: `00_tank_modules.txt`, `00_ship_modules.txt`, `00_plane_modules.txt`), inside `equipment_modules = { }`: 316 modules. Keys they use: `category` and `abbreviation` (312 each), `add_stats` (311), `sfx` (280), `multiply_stats` (207), `can_convert_from` (168), `xp_cost` (153), `dismantle_cost_ic` (129), `parent` (114), `build_cost_resources` (66), `critical_parts` (54), `add_equipment_type` (47), `gfx` (42), `mission_type_stats` (33), `allow_mission_type` (30), `gui_category` (28), `add_average_stats` (28), `allow_equipment_type` (23), `allowed_module_categories` (11), `forbid_module_categories` (10), `forbid_equipment_type` and `forbid_equipment_type_exact_match` (4 and 6). Technologies unlock modules with `enable_equipment_modules`. [vanilla-confirmed 1.19.4.1] `common/units/equipment/modules/*.txt`
 <!-- kit:end id="equipment-designer-notes" -->
 
 ## Stats <a id="Stats"></a>
@@ -386,7 +387,7 @@ carrier_surface_detection carrier_sub_detection acclimatization_hot_climate_gain
 acclimatization_cold_climate_gain_factor night_penalty build_cost_ic naval_weather_penalty_factor
 ```
 
-The enum's own comment says stats owned by the battalion rather than the equipment do not work with military industrial organizations: `default_morale`, `recon`, `initiative`, `casualty_trickleback`, the supply consumption and suppression stats, `experience_loss_factor`, `equipment_capture_factor`, `railway_gun_attack`, `max_organisation`, `max_strength` and the two acclimatization factors. `entrenchment` only works for tanks with dozer blades, not infantry. No vanilla equipment block sets `entrenchment` or `recon`, although the Stats and Modifiers sections below list them for equipment. `lend_lease_cost`, `manpower`, `can_license` and `is_convertable` are not in the enum but are ordinary equipment keys. [vanilla-confirmed 1.19.3] `common/script_enums.txt`, `common/units/equipment/*.txt`
+The enum's own comment says stats owned by the battalion rather than the equipment do not work with military industrial organizations: `default_morale`, `recon`, `initiative`, `casualty_trickleback`, the supply consumption and suppression stats, `experience_loss_factor`, `equipment_capture_factor`, `railway_gun_attack`, `max_organisation`, `max_strength` and the two acclimatization factors. `entrenchment` only works for tanks with dozer blades, not infantry. No vanilla equipment block sets `entrenchment` or `recon`, although the Stats and Modifiers sections below list them for equipment. `lend_lease_cost`, `manpower`, `can_license` and `is_convertable` are not in the enum but are ordinary equipment keys. [vanilla-confirmed 1.19.4.1] `common/script_enums.txt`, `common/units/equipment/*.txt`
 <!-- kit:end id="equipment-stats-enum" -->
 
 ## Modifiers <a id="Modifiers"></a>
@@ -443,7 +444,7 @@ recon = 1                       # Reconnaissance - Increases the chance that thi
 ### Navy-specific <a id="Navy-specific"></a>
 
 <!-- kit:begin id="equipment-naval-stats-warning" at="heading:Navy-specific" -->
-**Kit correction** Four stat names in the list below do not exist in 1.19.3: `fire_range`, `shore_bombardment`, `evasion` and `port_capacity_usage`. None is set in any vanilla equipment or unit file, none is in the game documentation or in `script_enum_equipment_stat`, and `hoi4.exe` holds no script token with these exact names (only the longer `shore_bombardment_bonus` and `shore_bombardment_collateral_damage_factor` exist). The word `evasion` survives only in the comments of the defines `COMBAT_EVASION_TO_HIT_CHANCE` and `COMBAT_EVASION_TO_HIT_CHANCE_TORPEDO_MULT` in `common/defines/00_defines.lua`. The wiki already marks the first three OBSOLETE; treat all four as dead and do not write them. `search_and_destroy_coordination` and `convoy_raiding_coordination` are valid stats (in the enum), but no vanilla equipment block sets them. Real naval hull stats that the list omits include `naval_dominance_factor` (50 blocks), `naval_weather_penalty_factor` (7), `lg_attack`, `hg_attack` and the armour piercing pair (see the enum above). [vanilla-confirmed 1.19.3] `common/script_enums.txt`, `common/units/equipment/ship_hull_*.txt`
+**Kit correction** Four stat names in the list below do not exist in 1.19.4.1: `fire_range`, `shore_bombardment`, `evasion` and `port_capacity_usage`. None is set in any vanilla equipment or unit file, none is in the game documentation or in `script_enum_equipment_stat`, and `hoi4.exe` holds no script token with these exact names (only the longer `shore_bombardment_bonus` and `shore_bombardment_collateral_damage_factor` exist). The word `evasion` survives only in the comments of the defines `COMBAT_EVASION_TO_HIT_CHANCE` and `COMBAT_EVASION_TO_HIT_CHANCE_TORPEDO_MULT` in `common/defines/00_defines.lua`. The wiki already marks the first three OBSOLETE; treat all four as dead and do not write them. `search_and_destroy_coordination` and `convoy_raiding_coordination` are valid stats (in the enum), but no vanilla equipment block sets them. Real naval hull stats that the list omits include `naval_dominance_factor` (50 blocks), `naval_weather_penalty_factor` (7), `lg_attack`, `hg_attack` and the armour piercing pair (see the enum above). [vanilla-confirmed 1.19.4.1] `common/script_enums.txt`, `common/units/equipment/ship_hull_*.txt`
 <!-- kit:end id="equipment-naval-stats-warning" -->
 
 ```text
@@ -486,7 +487,7 @@ carrier_capable = yes           # Is usable in carriers (air only)
 ```
 
 <!-- kit:begin id="equipment-air-stats" at="section:Air-specific" -->
-**Kit addition** `carrier_capable` is a boolean equipment key, not a stat: 11 vanilla airframes set `carrier_capable = yes`. `default_carrier_composition_weight` is set in two vanilla blocks and is not in `script_enum_equipment_stat`. `air_ground_attack` (12 blocks), `air_bombing` (21), `air_superiority` (52), `naval_strike_attack` (72), `naval_strike_targetting` (70) and `carrier_size` (6) are all in the enum. [vanilla-confirmed 1.19.3] `common/units/equipment/*.txt`, `common/script_enums.txt`
+**Kit addition** `carrier_capable` is a boolean equipment key, not a stat: 11 vanilla airframes set `carrier_capable = yes`. `default_carrier_composition_weight` is set in two vanilla blocks and is not in `script_enum_equipment_stat`. `air_ground_attack` (12 blocks), `air_bombing` (21), `air_superiority` (52), `naval_strike_attack` (72), `naval_strike_targetting` (70) and `carrier_size` (6) are all in the enum. [vanilla-confirmed 1.19.4.1] `common/units/equipment/*.txt`, `common/script_enums.txt`
 <!-- kit:end id="equipment-air-stats" -->
 
 ## Localization <a id="Localization"></a>

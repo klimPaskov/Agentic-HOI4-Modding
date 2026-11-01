@@ -2,11 +2,12 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Balance of power modding", revision 67049, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="67049" sources="common/bop/ common/modifiers/ common/decisions/ localisation/english/Juno_bop_l_english.yml localisation/english/bba_bop_l_english.yml documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md documentation/dynamic_variables_documentation.md" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="67049" sources="common/bop/ common/modifiers/ common/decisions/ localisation/english/Juno_bop_l_english.yml localisation/english/bba_bop_l_english.yml documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md documentation/dynamic_variables_documentation.md" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all 10 vanilla files in `common/bop/` (including `_test.txt`), every BoP effect, trigger, modifier and dynamic variable in the documentation, and vanilla use of each.
 - Kit blocks added: `bop-initial-value-typo`, `bop-vanilla-format`, `bop-example-rule-fix`, `bop-variables-and-modifiers`, `bop-scopes-and-operators`, `bop-triggers-1193` (bottom).
 - Errors found: `intial_value` (typo) and `can_create_faction` (the rule is `can_create_factions`) in wiki examples; no vanilla range uses `rule`; the "tracked globally" claim is not confirmed.
 - Gaps left: the clamping of `add_power_balance_value` beyond -1 and 1 and the exact end-point rule for `max` are not documented; the wiki's version column (1.12) was not re-checked.
+**1.19.4.1 re-check (2026-11-01).** Seven statements depended on files the update changed (the vanilla decision, focus, scripted effect and static modifier files), and all seven were re-measured. Two facts changed: `tooltip_side = ITA_communism_side` now appears 6 times in the Italian scripted effects (was 3), and the two `SWI_DEBUG_*` BoP modifiers have no loc key. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -53,7 +54,7 @@ In addition, `side = { ... }` and `range = { ... }` are possible with more detai
 <!-- kit:end id="bop-initial-value-typo" -->
 
 <!-- kit:begin id="bop-vanilla-format" at="section:Code_structure" -->
-**Kit note** What the 10 vanilla BoP files use in 1.19.3. All lines: [vanilla-confirmed 1.19.3] `common/bop/*.txt` (parsed by script) and `localisation/english/Juno_bop_l_english.yml`, `bba_bop_l_english.yml`.
+**Kit note** What the 10 vanilla BoP files use in 1.19.4.1. All lines: [vanilla-confirmed 1.19.4.1] `common/bop/*.txt` (parsed by script) and `localisation/english/Juno_bop_l_english.yml`, `bba_bop_l_english.yml`.
 
 - Root block keys: `initial_value`, `left_side`, `right_side`, `decision_category`, `side`, `range`. Side keys: `id`, `icon`, `range`. Range keys: `id`, `min`, `max`, `modifier`, `on_activate`, `on_deactivate`. No vanilla range sets `rule`, so the wiki's `rule = { ... }` inside a range is untested here [unverified].
 - Vanilla has 10 BoPs (`BRA`, `CZE`, `DEN` twice, `ETH`, `FIN`, `ITA`, `PRC`, `SWE`, `SWI`), plus `_test_balance` in `_test.txt`, which is the wiki's example without `decision_category` and `rule`. Sides per BoP: 2 for most (both `DEN` BoPs included), 3 for `PRC`, 4 for `ETH`, 9 for `ITA`. So a BoP really can hold more sides than the two shown.
@@ -179,7 +180,7 @@ TAG_example_balance = {
 ```
 
 <!-- kit:begin id="bop-example-rule-fix" at="section:Example" -->
-**Kit correction** The example's `can_create_faction = yes` is not a rule. The game rule is `can_create_factions` (plural), used in vanilla and listed in the rule table of [Autonomy state modding](<autonomy_state_modding.md>). [vanilla-confirmed 1.19.3] `common/autonomous_states/`, searched by script. A misspelled rule name is most likely ignored without an error [unverified].
+**Kit correction** The example's `can_create_faction = yes` is not a rule. The game rule is `can_create_factions` (plural), used in vanilla and listed in the rule table of [Autonomy state modding](<autonomy_state_modding.md>). [vanilla-confirmed 1.19.4.1] `common/`, searched by script. A misspelled rule name is most likely ignored without an error [unverified].
 <!-- kit:end id="bop-example-rule-fix" -->
 
 ## Implementation <a id="Implementation"></a>
@@ -242,12 +243,12 @@ The remove_power_balance_modifier effect, with the same syntax, or remove_all_po
 Since these are duplicated to each country that has the BoP, the weekly or daily effect for each modifier will increase for each country that is assigned the BoP. For example, if the BoP is assigned to 3 countries, `power_balance_daily = 0.01` in a BoP modifier will, in practice, make the balance get pushed by 3% to the right in total daily.
 
 <!-- kit:begin id="bop-variables-and-modifiers" at="section:Balance_of_power_modifiers" -->
-**Kit addition** Facts about the modifier side of a BoP in 1.19.3.
+**Kit addition** Facts about the modifier side of a BoP in 1.19.4.1.
 
 - `power_balance_daily` and `power_balance_weekly` are country modifiers with two decimals. [docs] `documentation/modifiers_documentation.md`.
-- Vanilla keeps BoP modifiers in `common/modifiers/` (`AAT_power_balance_modifiers.txt`, `BBA_power_balance_modifiers.txt`, `MUN_power_balance_modifiers.txt`) and gives each a loc key of the same name, which the tooltip shows (`FIN_bop_modifier_eradicate_socialism` in `aat_bop_l_english.yml`). `00_static_modifiers.txt` holds a test one, `_test_power_balance_mod = { power_balance_daily = 0.02 }`. [vanilla-confirmed 1.19.3] files named.
+- Vanilla keeps BoP modifiers in `common/modifiers/` (`AAT_power_balance_modifiers.txt`, `BBA_power_balance_modifiers.txt`, `MUN_power_balance_modifiers.txt`) and gives each a loc key of the same name, which the tooltip shows (`FIN_bop_modifier_eradicate_socialism` in `aat_bop_l_english.yml`). The two `SWI_DEBUG_*` entries in the BBA file have no loc key. `00_static_modifiers.txt` holds a test one, `_test_power_balance_mod = { power_balance_daily = 0.02 }`. [vanilla-confirmed 1.19.4.1] files named.
 - `power_balance_weekly` can also be driven by a variable inside a dynamic modifier: `power_balance_weekly = DEN_resistance_power_balance_weekly` in `common/dynamic_modifiers/aat_dynamic_modifiers.txt`. This pushes the balance without a static BoP modifier. [vanilla-confirmed 1.19.3] `common/dynamic_modifiers/aat_dynamic_modifiers.txt`.
-- Three dynamic variables read the country's active BoP: `power_balance_value` (current value), `power_balance_daily` and `power_balance_weekly` (current total change). Vanilla reads the value with `set_temp_variable = { fascism_to_add = power_balance_value }` after `has_power_balance`. [docs] `documentation/dynamic_variables_documentation.md`; [vanilla-confirmed 1.19.3] `common/national_focus/czechoslovakia_mu.txt`.
+- Three dynamic variables read the country's active BoP: `power_balance_value` (current value), `power_balance_daily` and `power_balance_weekly` (current total change). Vanilla reads the value with `set_temp_variable = { fascism_to_add = power_balance_value }` after `has_power_balance`. [docs] `documentation/dynamic_variables_documentation.md`; [vanilla-confirmed 1.19.4.1] `common/national_focus/czechoslovakia_mu.txt`.
 <!-- kit:end id="bop-variables-and-modifiers" -->
 
 ## Effects <a id="Effects"></a>
@@ -333,7 +334,7 @@ set_power_balance_gfx = {
 | `remove_all_power_balance_modifiers` | any | `id` |
 | `set_power_balance_gfx` | any | `id`, `side`, `gfx` |
 
-Vanilla starts a BoP in a country's history with `set_power_balance = { id = FIN_power_balance left_side = FIN_bad_side right_side = FIN_good_side set_value = -0.45 }`, and resets one with `set_default = yes` (`SWI_centralization_bop` in `common/national_focus/switzerland.txt`). `tooltip_side = ITA_communism_side` appears 3 times in `common/scripted_effects/ITA_scripted_effects.txt`. [vanilla-confirmed 1.19.3] `history/countries/FIN - Finland.txt`, `common/national_focus/switzerland.txt`, `common/scripted_effects/ITA_scripted_effects.txt`.
+Vanilla starts a BoP in a country's history with `set_power_balance = { id = FIN_power_balance left_side = FIN_bad_side right_side = FIN_good_side set_value = -0.45 }`, and resets one with `set_default = yes` (`SWI_centralization_bop` in `common/national_focus/switzerland.txt`). `tooltip_side = ITA_communism_side` appears 6 times in `common/scripted_effects/ITA_scripted_effects.txt`. [vanilla-confirmed 1.19.4.1] `history/countries/FIN - Finland.txt`, `common/national_focus/switzerland.txt`, `common/scripted_effects/ITA_scripted_effects.txt`.
 <!-- kit:end id="bop-scopes-and-operators" -->
 
 ## Triggers <a id="Triggers"></a>
@@ -422,9 +423,9 @@ has_power_balance_modifier = {
 
 Scopes of the BoP triggers, from the documentation: `has_power_balance` and `has_any_power_balance` are country-scope only; `power_balance_value`, `power_balance_daily_change`, `power_balance_weekly_change`, `is_power_balance_in_range`, `is_power_balance_side_active` and `has_power_balance_modifier` are documented for any scope, but read the BoP of the country in scope. The three value triggers accept `>`, `<` and `=` on `value`. [docs] `documentation/triggers_documentation.md`.
 
-- Vanilla also writes `range < SWI_centralization_bop_balanced` and `range > ...` in `is_power_balance_in_range`, so the strict comparison form on `range` is real. A plain `range = <id>` is the documented form. [vanilla-confirmed 1.19.3] `common/decisions/SWI.txt`, `common/national_focus/switzerland.txt`.
+- Vanilla also writes `range < SWI_centralization_bop_balanced` and `range > ...` in `is_power_balance_in_range`, so the strict comparison form on `range` is real. A plain `range = <id>` is the documented form. [vanilla-confirmed 1.19.4.1] `common/decisions/SWI.txt`, `common/national_focus/switzerland.txt`.
 - The `side` argument of `is_power_balance_side_active` is a side id, for example `side = FIN_good_side`. The wiki example passes a name ending in `_right_range`, which reads like a range id; a range id is not a side. [vanilla-confirmed 1.19.3] `common/on_actions/09_aat_on_actions.txt`, `common/bop/FIN.txt`.
-- Vanilla guards reads with `has_power_balance = { id = X }` when the BoP may not be active yet, for example before reading `power_balance_value` in `common/national_focus/czechoslovakia_mu.txt`. [vanilla-confirmed 1.19.3]
+- Vanilla guards reads with `has_power_balance = { id = X }` when the BoP may not be active yet, for example before reading `power_balance_value` in `common/national_focus/czechoslovakia_mu.txt`. [vanilla-confirmed 1.19.4.1]
 - The introduction says a BoP is "tracked globally" and identical in all countries that have it. The documentation words it per country: `set_power_balance` sets the "active power balance for country", `remove_power_balance` removes it "from country", `has_power_balance` is country scope, and the dynamic variables `power_balance_value`, `power_balance_daily` and `power_balance_weekly` are country scope. Vanilla starts each BoP in one country's history. The global claim is [unverified]. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`, `documentation/dynamic_variables_documentation.md`.
 <!-- kit:end id="bop-triggers-1193" -->
 

@@ -1,12 +1,13 @@
 # Script constant modding
 
-*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files. The wiki has no page for this topic. CC BY-SA 3.0 (see LICENSE.txt).*
+*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files and re-checked against 1.19.4.1. The wiki has no page for this topic. CC BY-SA 3.0 (see LICENSE.txt).*
 <!-- kit:page -->
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" sources="common/script_constants/ documentation/script_concept_documentation.md documentation/triggers_documentation.md documentation/effects_documentation.md common/special_projects/ common/collections/ common/factions/goals/ common/decisions/ localisation/english/TAOG_decisions_l_english.yml" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" sources="common/script_constants/ documentation/script_concept_documentation.md documentation/triggers_documentation.md documentation/effects_documentation.md common/special_projects/ common/collections/ common/factions/goals/ common/decisions/ localisation/english/TAOG_decisions_l_english.yml" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Written from `common/script_constants/documentation.md`, the script constants section of the script concept document, the 4 vanilla constant files, and every `constant:` and bare constant reference found in vanilla script and localisation.
 - Documentation conflicts found (a misprinted reference form, an out-of-date schema note) and one vanilla schema mismatch are listed under Confirmed traps.
 - Gaps left: behaviour when a schema is violated, when two files share a category name, and whether constants can be nested inside `@` values; nothing was run in the game.
+**1.19.4.1 re-check (2026-11-01).** 17 statements depended on files the update changed (`country_groups.txt`, `state_groups.txt`, and vanilla scans of `common/`, `events/`, `history/`, `interface/` and localisation) and all 17 were re-measured. What changed: `state_groups` has three new entries (`bul_black_sea_states`, `bul_aegean_sea_states`, `bul_adriatic_sea_states`), reference counts moved (`country_groups` 5 to 10, `state_groups` 9 to 18, `propaganda` 74 to 71), the users list now names three non-SIA decision files and three focus files, and 43 files (was 41) define top-level `@` constants. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -36,14 +37,14 @@ A script constant is a named value, or a named list, that is defined once in `co
 - Constants define simple and complex script values that are reusable in different files. Only parameters that are documented to support script constants accept them. [docs] `common/script_constants/documentation.md`.
 - Script constants can replace the script macro `@` where a value should be shared between files. They have a negligible load time cost and no runtime cost. [docs] `documentation/script_concept_documentation.md`.
 - A constant is read through its category and key path, for example `constant:propaganda.SIA.propaganda_cost_increase`. [vanilla-confirmed 1.19.3] `common/scripted_effects/SIA_scripted_effects.txt`.
-- Vanilla ships 4 constant files with 9 categories. They are used by special projects, the propaganda decisions and scripted effects of the SIA tag, faction goals, collections, one Chinese decision and one Nordic scripted trigger. [vanilla-confirmed 1.19.3] `common/script_constants/` and the files named below.
+- Vanilla ships 4 constant files with 9 categories. They are used by special projects, the propaganda decisions, scripted effects, scripted triggers and scripted localisation of the SIA tag, faction goals, collections, three more decision files (`BUL.txt`, `CHI_decisions.txt`, `NORDIC.txt`), three focus files (`bulgaria.txt`, `china_communist_sea.txt`, `china_nationalist_sea.txt`) and one Nordic scripted trigger. [vanilla-confirmed 1.19.4.1] `common/script_constants/` and the files named below.
 
 Related pages: [Data structures](<data_structures.md#Constants>) for `@` constants, [Localisation](<localisation.md#Formatting_variables>) for `[?variable]`, [Collection modding](<collection_modding.md>), [Triggers](<triggers.md#Any_scope>).
 
 ## File layout <a id="File_layout"></a>
 
 - Folder: `common/script_constants/`, any number of `.txt` files. [docs] `common/script_constants/documentation.md`.
-- Vanilla files: `country_groups.txt`, `propaganda_campaigns.txt`, `special_project_constants.txt`, `state_groups.txt`. [vanilla-confirmed 1.19.3] `common/script_constants/`.
+- Vanilla files: `country_groups.txt`, `propaganda_campaigns.txt`, `special_project_constants.txt`, `state_groups.txt`. [vanilla-confirmed 1.19.4.1] `common/script_constants/`.
 - One file can hold several categories, as `special_project_constants.txt` does (6 categories). [vanilla-confirmed 1.19.3]
 - Each category is a top-level block. Its first entry must be `schema`; the data entries follow. [docs] `common/script_constants/documentation.md`.
 
@@ -69,8 +70,8 @@ category_name = {
 | `data = int` | The value is an integer | [docs] |
 | `data = fixed_point` | The value is a floating point number | [docs] |
 | `data = { ... }` | A complex entry: a list of schema objects, each with its own `key` or `any_key` and `data` | [docs] |
-| `array = country` | The entries are lists of country tags | [vanilla-confirmed 1.19.3] `country_groups.txt` |
-| `array = state` | The entries are lists of state ids | [vanilla-confirmed 1.19.3] `state_groups.txt` |
+| `array = country` | The entries are lists of country tags | [vanilla-confirmed 1.19.4.1] `country_groups.txt` |
+| `array = state` | The entries are lists of state ids | [vanilla-confirmed 1.19.4.1] `state_groups.txt` |
 
 All [docs] rows: `common/script_constants/documentation.md`.
 
@@ -83,18 +84,18 @@ Shapes used by vanilla, with the key path they produce:
 | `any_key`, `data = { { key = min data = int } { key = max data = int } }` | `small = { min = 15 max = 25 }` | `category.small` (whole entry) |
 | `any_key`, `array = country` | `nordics = { SWE NOR FIN DEN ICE }` | `category.nordics` |
 
-All rows: [vanilla-confirmed 1.19.3] `common/script_constants/*.txt`.
+All rows: [vanilla-confirmed 1.19.4.1] `common/script_constants/*.txt`.
 
-- The documentation says `any_key` accepts alphabetic characters, but vanilla keys include upper case, digits and underscores (`SIA`, `continental_europe_1936`). Treat the "alphabetic" note as loose. [docs] `common/script_constants/documentation.md`; [vanilla-confirmed 1.19.3] `propaganda_campaigns.txt`, `country_groups.txt`.
+- The documentation says `any_key` accepts alphabetic characters, but vanilla keys include upper case, digits and underscores (`SIA`, `continental_europe_1936`). Treat the "alphabetic" note as loose. [docs] `common/script_constants/documentation.md`; [vanilla-confirmed 1.19.4.1] `propaganda_campaigns.txt`, `country_groups.txt`.
 - `int` is for whole numbers and `fixed_point` for floating point numbers, so any non-integer value needs `fixed_point`. [docs] `common/script_constants/documentation.md`.
 
 ## Vanilla constants <a id="Vanilla_constants"></a>
 
 | Category | File | Entries | Used as | Vanilla references |
 | --- | --- | --- | --- | --- |
-| `country_groups` | `country_groups.txt` | `nordics`, `continental_europe_1936`, `literally_china`, `chinese_warlords`, `islamic_world` | `target` of country iterators; collection input | 5 (`chinese_warlords` unused) |
-| `state_groups` | `state_groups.txt` | `balkans`, `comintern_starting_border`, `mare_nostrum_states`, `pax_romana_states`, `central_powers_border_states` | Collection input | 9 |
-| `propaganda` | `propaganda_campaigns.txt` | `SIA` with 11 keys (slot indexes, costs, campaign durations) | Variable values, `days_remove`, event `days`, loc | 74 |
+| `country_groups` | `country_groups.txt` | `nordics`, `continental_europe_1936`, `literally_china`, `chinese_warlords`, `islamic_world` | `target` of country iterators; collection input | 10 (`chinese_warlords` unused) |
+| `state_groups` | `state_groups.txt` | `balkans`, `comintern_starting_border`, `mare_nostrum_states`, `pax_romana_states`, `central_powers_border_states`, `bul_black_sea_states`, `bul_aegean_sea_states`, `bul_adriatic_sea_states` | Collection input; `target` of `any_state_of` | 18 |
+| `propaganda` | `propaganda_campaigns.txt` | `SIA` with 11 keys (slot indexes, costs, campaign durations) | Variable values, `days_remove`, event `days`, loc | 71 |
 | `sp_complexity` | `special_project_constants.txt` | `small`, `medium`, `large`, `insane`, each with `min` and `max` | Bare `complexity = sp_complexity.large` | 49 |
 | `sp_time` | `special_project_constants.txt` | `prototype` with `short`, `medium`, `long`, `very_long` | Bare `prototype_time = sp_time.prototype.long` | 49 |
 | `sp_scientist_xp_gain` | `special_project_constants.txt` | `low`, `medium`, `high`, `very_high` | `experience = constant:...` | 57 |
@@ -102,7 +103,7 @@ All rows: [vanilla-confirmed 1.19.3] `common/script_constants/*.txt`.
 | `sp_military_xp_gain` | `special_project_constants.txt` | `low`, `medium`, `high` | `army_experience`, `navy_experience`, `air_experience` | 9 |
 | `sp_breakthrough_progress` | `special_project_constants.txt` | `low`, `medium`, `high` | Bare `value = sp_breakthrough_progress.medium` in `add_breakthrough_progress` | 21 |
 
-All rows: [vanilla-confirmed 1.19.3] `common/script_constants/`, references counted over `common/`, `events/`, `history/`, `interface/` and `localisation/english/` (occurrences, bare and prefixed forms counted by category).
+All rows: [vanilla-confirmed 1.19.4.1] `common/script_constants/`, references counted over `common/`, `events/`, `history/`, `interface/` and `localisation/english/` (occurrences, bare and prefixed forms counted by category).
 
 ## Referencing a constant <a id="Referencing_a_constant"></a>
 
@@ -119,7 +120,7 @@ multiply_variable = { SIA_propaganda_cost = constant:propaganda.SIA.propaganda_c
 country_event = { id = TAOG_siam_movie_campaign_events.101 days = constant:propaganda.SIA.default_propaganda_campaign_old_days }
 ```
 
-- Other vanilla positions: `days_remove` and `days_re_enable` in decisions (`common/decisions/SIA.txt`), `experience = constant:sp_scientist_xp_gain.very_high` and `add_project_progress_ratio = constant:sp_progress.gain.high` in special project rewards, and `check_variable` inside a scripted trigger and a scripted localisation. [vanilla-confirmed 1.19.3] `common/special_projects/`, `common/scripted_triggers/SIA_scripted_triggers.txt`, `common/scripted_localisation/TAOG_SIA_scripted_loc.txt`.
+- Other vanilla positions: `days_remove` and `days_re_enable` in decisions (`common/decisions/SIA.txt`), `experience = constant:sp_scientist_xp_gain.very_high` and `add_project_progress_ratio = constant:sp_progress.gain.high` in special project rewards, and `check_variable` inside a scripted trigger and a scripted localisation. [vanilla-confirmed 1.19.4.1] `common/special_projects/`, `common/scripted_triggers/SIA_scripted_triggers.txt`, `common/scripted_localisation/TAOG_SIA_scripted_loc.txt`.
 
 ### Bare form in documented parameters <a id="Reference_bare_form"></a>
 
@@ -146,21 +147,21 @@ any_other_country_with_original_tag_of = {
 
 ### In localisation <a id="Reference_in_localisation"></a>
 
-- Vanilla reads a constant in a localisation string through the variable display syntax: `[?constant:propaganda.SIA.default_propaganda_campaign_cooldown]`. It is the only use in the English localisation. [vanilla-confirmed 1.19.3] `localisation/english/TAOG_decisions_l_english.yml` (`SIA_propaganda_campaign_cooldown_tt`).
+- Vanilla reads a constant in a localisation string through the variable display syntax: `[?constant:propaganda.SIA.default_propaganda_campaign_cooldown]`. It is the only use in the English localisation. [vanilla-confirmed 1.19.4.1] `localisation/english/TAOG_decisions_l_english.yml` (`SIA_propaganda_campaign_cooldown_tt`).
 
 ```text
 SIA_propaganda_campaign_cooldown_tt: "This campaign will be available again [?constant:propaganda.SIA.default_propaganda_campaign_cooldown] days after its removal."
 ```
 
 - Formatting characters after a pipe, such as `[?constant:...|0]`, follow the normal `[?variable]` rules. See [Localisation](<localisation.md#Formatting_variables>). [unverified] for constants specifically.
-- No other loc syntax for constants is documented, and no interface file references one. [vanilla-confirmed 1.19.3] searched `localisation/`, `interface/`.
+- No other loc syntax for constants is documented, and no interface file references one. [vanilla-confirmed 1.19.4.1] searched `localisation/`, `interface/`.
 
 ## Scoping and naming <a id="Scoping_and_naming"></a>
 
 - Constants are global database entries, and every scoped variable can read them through the `constant:` prefix. [docs] `common/script_constants/documentation.md`.
-- The category is the first path segment and must be unique in the database. Vanilla categories never repeat across files. What happens when a mod reuses a vanilla category or defines the same category twice is [unverified]. [vanilla-confirmed 1.19.3] `common/script_constants/`.
+- The category is the first path segment and must be unique in the database. Vanilla categories never repeat across files. What happens when a mod reuses a vanilla category or defines the same category twice is [unverified]. [vanilla-confirmed 1.19.4.1] `common/script_constants/`.
 - Prefix your own categories with the mod tag (`MYM_costs`) so they cannot collide. [unverified]
-- Keys cannot contain dots. [docs] `common/script_constants/documentation.md`. The dot is the path separator in every vanilla reference. [vanilla-confirmed 1.19.3]
+- Keys cannot contain dots. [docs] `common/script_constants/documentation.md`. The dot is the path separator in every vanilla reference. [vanilla-confirmed 1.19.4.1]
 - Keys inside one category follow the schema: `any_key = yes` accepts any key, `key = name` accepts exactly that one. [docs] `common/script_constants/documentation.md`.
 - Constants can be used in any script file except for other script constants files. [docs] `documentation/script_concept_documentation.md`.
 
@@ -176,9 +177,9 @@ SIA_propaganda_campaign_cooldown_tt: "This campaign will be available again [?co
 
 The script constant column: [docs] `documentation/script_concept_documentation.md` and `common/script_constants/documentation.md`. The `@` column: the concept document calls `@` file local; the rest is the wiki's description on [Data structures](<data_structures.md#Constants>). [unverified]
 
-- No vanilla line combines the two: nothing writes `@NAME = constant:...` or puts `@` inside a script constant file. Whether either works is [unverified]. [vanilla-confirmed 1.19.3] searched `common/`, `events/`, `history/`, `interface/`.
+- No vanilla line combines the two: nothing writes `@NAME = constant:...` or puts `@` inside a script constant file. Whether either works is [unverified]. [vanilla-confirmed 1.19.4.1] searched `common/`, `events/`, `history/`, `interface/`.
 - Use `@` for a value shared inside one file, for strings, and for interface coordinates. Use a script constant for a number or list that several files, collections or tooltips need. [unverified] recommendation drawn from the two descriptions above.
-- 41 vanilla files define `@` constants at the top level; none of them is a script constant file. [vanilla-confirmed 1.19.3] counted over `common/`, `events/`, `history/` and `interface/`.
+- 43 vanilla files define `@` constants at the top level; none of them is a script constant file. [vanilla-confirmed 1.19.4.1] counted over `common/`, `events/`, `history/` and `interface/`.
 
 ## Reloading <a id="Reloading"></a>
 
@@ -235,11 +236,11 @@ The example combines the schema shapes of `sp_scientist_xp_gain` and `country_gr
 
 - The trigger documentation writes the constant path with a colon, `constant:country_groups:nordics`. Vanilla and the concept document use a dot: `constant:country_groups.nordics`. Use the dot. [docs] `documentation/triggers_documentation.md` (six triggers); [vanilla-confirmed 1.19.3] `common/scripted_triggers/NORDIC_scripted_triggers.txt`.
 - The same trigger examples use `country_groups` for `any_state_of`, which wants a list of states. Use a `state_groups` entry or another `array = state` constant there. [docs] `documentation/triggers_documentation.md`; [unverified] that a country list fails in a state iterator.
-- The effect documentation's `cost_factor = cost.high` example refers to a constant `cost` that does not exist in vanilla. Define it yourself before copying it. [docs] `documentation/effects_documentation.md`; [vanilla-confirmed 1.19.3] no `cost` category in `common/script_constants/`.
+- The effect documentation's `cost_factor = cost.high` example refers to a constant `cost` that does not exist in vanilla. Define it yourself before copying it. [docs] `documentation/effects_documentation.md`; [vanilla-confirmed 1.19.4.1] no `cost` category in `common/script_constants/`.
 - `propaganda_campaigns.txt` declares `data = int` for the `SIA` keys but gives `propaganda_cost_increase` the value `1.35`, and vanilla multiplies a variable by it. Whether the engine rounds it is [unverified]; declare `fixed_point` for any non-integer in your own files. [vanilla-confirmed 1.19.3] `common/script_constants/propaganda_campaigns.txt`, `common/scripted_effects/SIA_scripted_effects.txt`.
 - The special project documentation lists `complexity` values as the enums `simple`, `medium`, `complex`, `very_complex`, `insane`. The real constant keys are `small`, `medium`, `large`, `insane`. [docs] `common/special_projects/special_projects_documentation.md`; [vanilla-confirmed 1.19.3] `common/script_constants/special_project_constants.txt`.
 - The documentation's `sp_complexity` example shows `small` as 20 to 30 while vanilla has 15 to 25; the documentation example is illustrative. [docs] and [vanilla-confirmed 1.19.3]
-- `sp_basic_research_time` appears only in the documentation example. It is not a vanilla constant. [docs] `common/script_constants/documentation.md`; [vanilla-confirmed 1.19.3] no such category.
+- `sp_basic_research_time` appears only in the documentation example. It is not a vanilla constant. [docs] `common/script_constants/documentation.md`; [vanilla-confirmed 1.19.4.1] no such category.
 - Constants are not available everywhere `@` is. Using one in a parameter that is not documented to support it is not a documented case, so check the parameter against the lists above. [docs] `common/script_constants/documentation.md`.
 - Reloading only the constant database leaves old values in scripts that are already loaded. [docs] `documentation/script_concept_documentation.md`.
 

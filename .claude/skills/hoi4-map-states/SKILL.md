@@ -135,7 +135,7 @@ Top-level keys seen in the 1,081 vanilla state files: `id`, `name`, `manpower`, 
 - `victory_points = { <province> <value> }` takes one province per line; repeat the line for several. Localise each as `VICTORY_POINTS_<province>` in `victory_points_l_english.yml`. The marker position comes from `unitstacks.txt` type 38.
 - `strategic_province_location = { <location_name> = <province> }` and `strategic_state_location` assign entries from `common/strategic_locations` that add or subtract provincial building caps (vanilla example in `116-Malta.txt`).
 - Quotes: the Nudger strips quotation marks from state files, which breaks `has_dlc = "..."` checks. Reread any state file the Nudger rewrote.
-- `has_dlc` strings in state files carry no diacritics, for example `La Resistance` and `Gotterdammerung`. [vanilla-confirmed 1.19.3]
+- `has_dlc` strings in state files carry no diacritics, for example `Gotterdammerung` and `Waking the Tiger`. [vanilla-confirmed 1.19.4.1]
 
 ## State categories and building slots
 
@@ -165,15 +165,15 @@ Definitions live in `common/buildings/*.txt` under `buildings = { name = { ... }
 - Effects: `country_modifiers = { modifiers = { ... } }`, `state_modifiers = { ... }`, `show_modifier = yes`, `province_damage_modifiers`, `state_damage_modifier`.
 - Availability and UI: `only_costal` (sic), `disabled_in_dmz`, `need_supply`, `allied_build`, `is_buildable = no`, `dlc_allowed`, `icon_frame` (frame in `GFX_buildings_strip`), `special_icon`, `only_display_if_exists`, `tags`, `value`, `damage_factor`, `specialization`.
 - Models: `show_on_map`, `show_on_map_meshes`, `always_shown`, `has_destroyed_mesh`, `centered`, `spawn_point = <name>`. Spawn points are declared in the same file under `spawn_points = { name = { type = state|province max = N only_costal = yes } }`; several buildings can share one (vanilla `naval_base_spawn`, `rocket_site_spawn`, `dam_spawn`). The entity name must be `building_<name>`, with `_1`, `_2` suffixes for multiple meshes and `_destroyed` for the destroyed mesh.
-- In `map/buildings.txt` a building that has a `spawn_point` is listed under the spawn point name (`naval_base_spawn`, `special_project_facility_spawn`) instead of the building id. [vanilla-confirmed 1.19.3]
-- Every state in `map/buildings.txt` carries one `air_base`, one `rocket_site_spawn` and one `nuclear_reactor_spawn` row. [vanilla-confirmed 1.19.3]
+- In `map/buildings.txt` a building that has a `spawn_point` is listed under the spawn point name (`naval_base_spawn`, `special_project_facility_spawn`) instead of the building id. [vanilla-confirmed 1.19.4.1]
+- Every state in `map/buildings.txt` carries one `air_base`, one `rocket_site_spawn` and one `nuclear_reactor_spawn` row. [vanilla-confirmed 1.19.4.1]
 - Terrain limits: `buildings_max_level` inside `common/terrain` categories; `strategic_locations` add per-province offsets.
 
 Localisation for building `my_building`: `my_building`, `my_building_desc`, `my_building_plural`, and for the generated modifiers `modifier_production_speed_my_building_factor` (and `_desc`) and `modifier_state_production_my_building_factor` (and `_desc`). Adding an equipment type, building, or other modifier-bearing archetype may also need `common/script_enums.txt` entries in this repository.
 
 `need_detection` is only safe on provincial buildings. Vanilla sets it only on facilities and dams (`naval_facility`, `nuclear_facility`, `air_facility`, `land_facility`, `dam`, `dam_mountain`, `cataract_dam_mountain`), all with `province_max = 1`, together with `detecting_intel_type`. A state-level building with `need_detection = yes` crashed the map in live testing when a foreign player zoomed onto it; the engine keeps raid-detection records for provincial buildings only. The installed wiki marks the field's meaning as unknown.
 
-Railways (`rail_way`) and supply hubs (`supply_node`) are provincial buildings. Build railways with `build_railway`: vanilla never uses `add_building_construction` for `rail_way`, and the wiki states that the generic building effects crash on it. Supply hubs work with `add_building_construction = { type = supply_node ... }`, which vanilla uses 72 times. [vanilla-confirmed 1.19.3]
+Railways (`rail_way`) and supply hubs (`supply_node`) are provincial buildings. Build railways with `build_railway`: vanilla never uses `add_building_construction` for `rail_way`, and the wiki states that the generic building effects crash on it. Supply hubs work with `add_building_construction = { type = supply_node ... }`, which vanilla uses 72 times. [vanilla-confirmed 1.19.4.1]
 
 ## Runtime state effects
 
@@ -213,8 +213,8 @@ Scope and quirks:
 - `remove_building` and `damage_building` can name a building by `type` or by `tags`. `remove_building` without `province` in state scope removes state-level buildings only and does not search the state's provinces; `damage_building` in state scope does find provincial buildings through the state. Both can also be called in country scope with an explicit `state` or `province`.
 - `add_victory_points` and `set_victory_points` take a province id, not a state id, and need no state scope.
 - `should_initiate_resistance` runs in state scope with `FROM` as the occupier, so write `FROM = { tag = X }`. [vanilla-confirmed 1.19.3]
-- An occupation law `visible` block is evaluated with `FROM` set in 10 of 15 vanilla blocks despite the header comment, and `main_fallback_law` is unused in vanilla and absent from `hoi4.exe`, which use `default_law` and `starting_law`. [vanilla-confirmed 1.19.3]
-- The resistance modifier header comment misspells `icon_small` and `core_compliancemodifier`, where vanilla uses `small_icon` and `core_compliance_modifier`. [vanilla-confirmed 1.19.3]
+- An occupation law `visible` block is evaluated with `FROM` set in 10 of 15 vanilla blocks despite the header comment, and `main_fallback_law` is unused in vanilla and absent from `hoi4.exe`, which use `default_law` and `starting_law`. [vanilla-confirmed 1.19.4.1]
+- The resistance modifier header comment misspells `icon_small` and `core_compliancemodifier`, where vanilla uses `small_icon` and `core_compliance_modifier`. [vanilla-confirmed 1.19.4.1]
 
 ## Runtime state triggers
 
@@ -262,10 +262,10 @@ every_owned_state = {
 Other ways to hold a state set:
 
 - Arrays of state ids with `for_each_loop` (value variable holds the id) or `for_each_scope_loop` (changes scope to each element), and `random_scope_in_array`.
-- A bare `any_of` over an array leaves the current element in `v`, which vanilla reads as `var:v`, while the documentation names only `value` and `index`. [vanilla-confirmed 1.19.3]
+- A bare `any_of` over an array leaves the current element in `v`, which vanilla reads as `var:v`, while the documentation names only `value` and `index`. [vanilla-confirmed 1.19.4.1]
 - Collections: `collection_size = { input = game:all_states value > 42 }` and operators such as `owned_states` and `controlled_states` (`script_collection_input.md`, `script_collection_operator.md`). Collections may contain duplicates.
-- The key that carries the collection differs per consumer: `collection_size` takes `input =`, other collection triggers take `collection =`, and some consumers take `named_collection =`. [docs] [vanilla-confirmed 1.19.3]
-- Inside `operators` the filter key is `limit`, not the `trigger` shown in the operator documentation example (194 of 194 vanilla filters use `limit`). [vanilla-confirmed 1.19.3]
+- The key that carries the collection differs per consumer: `collection_size` takes `input =`, other collection triggers take `collection =`, and some consumers take `named_collection =`. [docs] [vanilla-confirmed 1.19.4.1]
+- Inside `operators` the filter key is `limit`, not the `trigger` shown in the operator documentation example (194 of 194 vanilla filters use `limit`). [vanilla-confirmed 1.19.4.1]
 - `faction_members` is empty for a country that has no faction, so use `country_and_all_subjects` to mean a country and its subjects. [docs]
 - `any_state_of` accepts a literal id list or a script constant as its `target` (documented with a country-group constant example).
 
@@ -292,7 +292,7 @@ Whole-world iteration (`every_state`, `every_country`, and any `on_daily`, `on_w
 
 - Scripted map modes live in `common/map_modes/*.txt` inside `scripted_map_modes = { name = { top = { ... } bottom = { ... } far_text near_text update_daily } }` (`GAME/common/map_modes/documentation.md`). Each layer has `type` (`none`, `country`, `state`, `state_controller`, or a hard-coded `game_map_mode_*`), a `color` trigger block that sets the temporary variables `red`, `green`, `blue`, `alpha` (0 to 1) plus `thickness` and `highlighted`, an optional `targets` block (strongly recommended for performance), and `thickness = yes`. In a state layer `FROM` is the state being rendered. `update_daily = yes` refreshes daily; otherwise call `force_update_map_mode = { mapmode = <id> }`.
 - The mode name drives loc keys `MAPMODE_<NAME>`, `MAPMODE_<NAME>_NAME`, `MAPMODE_<NAME>_DESCRIPTION`, `<name>_tooltip`, `<name>_tooltip_delayed`, and sprites `GFX_mapmode_buttons_selected_small_<name>` and `GFX_mapmode_buttons_deselected_small_<name>` (the button strip sprites are declared in `GAME/interface/mapmodes_interface.gfx`).
-- No effect switches the player's map mode, and the `on_map_mode` key in decisions is unrelated to scripted map modes. [vanilla-confirmed 1.19.3]
+- No effect switches the player's map mode, and the `on_map_mode` key in decisions is unrelated to scripted map modes. [vanilla-confirmed 1.19.4.1]
 - Map-facing sprites and entities: building icon strip `GFX_buildings_strip` in `interface/countrystateview.gfx`; building models are entities named `building_<id>` in `gfx/entities/*.asset`; terrain and border textures are in `GAME/map/terrain/`.
 
 ## MCP map tools
@@ -347,8 +347,8 @@ The Agent Nudger exposes three tools; inspect and render never write source, rew
 18. Expecting a dated `history` block to run during play; it is evaluated once when the game starts, for dates before the chosen start date.
 19. Trusting the wiki claim that `airports.txt` and `rocketsites.txt` are required; the installed game has neither.
 20. Forgetting that peace or ceasefire resets `set_province_controller` to the owner.
-21. Overriding a vanilla state file under a name that is off by one character, which loads both, since spacing differs even between neighbouring vanilla names (`333-British Borneo.txt`, `1023 - Brunei.txt`). [vanilla-confirmed 1.19.3]
-22. A start other than 1936 needs the bookmark `date`, the `START_DATE` define and the dated history blocks to describe the same date, as vanilla does at 1936.1.1.12 for its default bookmark and the define. [vanilla-confirmed 1.19.3]
+21. Overriding a vanilla state file under a name that is off by one character, which loads both, since spacing differs even between neighbouring vanilla names (`333-British Borneo.txt`, `1023 - Brunei.txt`). [vanilla-confirmed 1.19.4.1]
+22. A start other than 1936 needs the bookmark `date`, the `START_DATE` define and the dated history blocks to describe the same date, as vanilla does at 1936.1.1.12 for its default bookmark and the define. [vanilla-confirmed 1.19.4.1]
     What an inconsistent start date does in game is untested. [unverified]
 
 ## Unverified or conflicting points

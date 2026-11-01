@@ -1,12 +1,13 @@
 # Raid modding
 
-*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files. The wiki has no page for this topic. CC BY-SA 3.0 (see LICENSE.txt).*
+*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files and re-checked against 1.19.4.1. The wiki has no page for this topic. CC BY-SA 3.0 (see LICENSE.txt).*
 <!-- kit:page -->
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" sources="common/raids/ common/defines/00_defines.lua common/ai_strategy/ common/on_actions/ documentation/effects_documentation.md documentation/triggers_documentation.md documentation/console_commands_documentation.md interface/military_raids/ interface/buildings/landmarks.gfx localisation/english/military_raids_l_english.yml gfx/entities/" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" sources="common/raids/ common/defines/00_defines.lua common/ai_strategy/ common/on_actions/ documentation/effects_documentation.md documentation/triggers_documentation.md documentation/console_commands_documentation.md interface/military_raids/ interface/buildings/landmarks.gfx localisation/english/military_raids_l_english.yml gfx/entities/" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Written from: `common/raids/_documentation.md` (read in full), all 8 vanilla raid files (37 raid types) and the category file (5 categories), the `NRaids` and `NAI` defines, the RAID_INSTANCE effect and trigger documentation, raid localisation, raid GFX and entities. Every rule taken from the kit's `hoi4-native-raids` skill was re-checked against these files and is tagged where it appears.
 Also checked: whether `hoi4.exe` contains the keys on which the documentation and vanilla disagree (read-only string search).
 Gaps left: how the three success factors become four outcomes, the meaning of `range_factor` and `cancel_trigger` (undocumented), and the scope a `target_type` state filter runs in are not settled by any game file; they are tagged `[unverified]`. No game was run.
+**1.19.4.1 re-check (2026-11-01).** 59 tagged lines depended on files the update changed (five raid files, defines, raid localisation, a few other script files, `hoi4.exe` strings) and all were re-measured. Changed: the nuclear raid gate uses the flag `early_nuclear_raid_unlock` instead of `num_of_nukes > 0`, `ai_min_success_chance` 2 -> 4 types, `unit_animations` 5 -> 9 types, custom modifiers with `formula` 13 -> 14, the unlock tooltips now sit in `military_raids_l_english.yml`, and `raid_land_launchable_sound` joins the launch sounds. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -42,9 +43,9 @@ Gaps left: how the three success factors become four outcomes, the meaning of `r
 
 ---
 
-Raids are one-off strikes that a country prepares and launches against a province, a state or a building: air bombing, paratrooper drops, marine commando landings, land infiltrations and nuclear strikes. A raid type defines what the raid needs, what it can hit, what it costs, how likely it is to work and what each result does. All definitions live in `common/raids/`. The system is DLC-gated in vanilla: 35 of the 37 raid types name a DLC in `allowed` (22 need Gotterdammerung), and only `nuclear_strike` and `JAP_pearl_harbor_strike` name none [vanilla-confirmed 1.19.3] `common/raids/*.txt`.
+Raids are one-off strikes that a country prepares and launches against a province, a state or a building: air bombing, paratrooper drops, marine commando landings, land infiltrations and nuclear strikes. A raid type defines what the raid needs, what it can hit, what it costs, how likely it is to work and what each result does. All definitions live in `common/raids/`. The system is DLC-gated in vanilla: 35 of the 37 raid types name a DLC in `allowed` (22 need Gotterdammerung), and only `nuclear_strike` and `JAP_pearl_harbor_strike` name none [vanilla-confirmed 1.19.4.1] `common/raids/*.txt`.
 
-Evidence tags used on this page: `[docs]` = the game's own documentation, `[vanilla-confirmed 1.19.3]` = seen in vanilla script, `[unverified]` = plausible but not confirmed. File names in tags are relative to the game folder; `raids/` stands for `common/raids/`.
+Evidence tags used on this page: `[docs]` = the game's own documentation, `[vanilla-confirmed 1.19.4.1]` and `[vanilla-confirmed 1.19.3]` = seen in vanilla script of that build, `[unverified]` = plausible but not confirmed. File names in tags are relative to the game folder; `raids/` stands for `common/raids/`.
 
 ## Overview <a id="Overview"></a>
 
@@ -54,7 +55,7 @@ Evidence tags used on this page: `[docs]` = the game's own documentation, `[vani
 | Raid type | `raids/*.txt`, root `types = { }` | One definition: gating, target, cost, units, odds, outcomes |
 | Raid instance | created in game | A raid being assembled, prepared, launched; the scope of outcome blocks |
 
-All rows: [docs] `raids/_documentation.md`; roots and counts [vanilla-confirmed 1.19.3] `raids/*.txt`, `raids/categories/raid_categories.txt`.
+All rows: [docs] `raids/_documentation.md`; roots and counts [vanilla-confirmed 1.19.4.1] `raids/*.txt`, `raids/categories/raid_categories.txt`.
 
 ### Raid lifecycle <a id="Raid_lifecycle"></a>
 
@@ -63,9 +64,9 @@ All rows: [docs] `raids/_documentation.md`; roots and counts [vanilla-confirmed 
 3. **Preparing.** Takes `days_to_prepare` days; the `prep_time` success modifier follows this progress.
 4. **Prepared.** The raid can be launched when `launchable` is true and the intel on the target is high enough, by hand or by auto-launch above a chosen success chance.
 5. **In progress.** The unit travels along the `arrow` path at `speed_multiplier` times the global raid speed.
-6. **Ended.** One of four outcomes runs. A raid can also be canceled, and is canceled by the game when its unit disappears, cannot reach the starting point, or the starting point moves out of range.
+6. **Ended.** One of four outcomes runs. A raid can also be canceled, and is canceled by the game when its unit disappears, is busy with other orders and cannot be unassigned, cannot reach the starting point, or the starting point moves out of range.
 
-The phases and the outcome names are the localisation strings `RAID_INST_PHASE_*`, `RAID_INST_OUTCOME_*` and `raid_canceled_*`; the order follows the documentation of `essential_equipment`, `additional_equipment` and `days_to_prepare` [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3] `localisation/english/military_raids_l_english.yml`. The outcome report stays on the map for `RAID_OUTCOME_REPORT_DAYS_TO_LIVE = 30` days [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+The phases and the outcome names are the localisation strings `RAID_INST_PHASE_*`, `RAID_INST_OUTCOME_*` and `raid_canceled_*`; the order follows the documentation of `essential_equipment`, `additional_equipment` and `days_to_prepare` [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.4.1] `localisation/english/military_raids_l_english.yml`. The outcome report stays on the map for `RAID_OUTCOME_REPORT_DAYS_TO_LIVE = 30` days [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`.
 
 ## Files and loading <a id="Files_and_loading"></a>
 
@@ -81,15 +82,15 @@ The phases and the outcome names are the localisation strings `RAID_INST_PHASE_*
 | `raids/land_infiltration_custom.txt` | country-specific | 4 |
 | `raids/naval_commando_raids.txt` | marine commando raids | 3 |
 
-All rows: [vanilla-confirmed 1.19.3] `raids/*.txt`. File names are free; the category of a type comes from its `category` key, not from the file.
+All rows: [vanilla-confirmed 1.19.4.1] `raids/*.txt`. File names are free; the category of a type comes from its `category` key, not from the file.
 
-- **Root blocks.** Every raid file starts with `types = { ... }` and the category file with `categories = { ... }`. The documentation template shows the type and category bodies without these roots; follow vanilla [vanilla-confirmed 1.19.3] (8 of 8 type files, 1 of 1 category file). That a file without the root is ignored is [unverified].
+- **Root blocks.** Every raid file starts with `types = { ... }` and the category file with `categories = { ... }`. The documentation template shows the type and category bodies without these roots; follow vanilla [vanilla-confirmed 1.19.4.1] (8 of 8 type files, 1 of 1 category file). That a file without the root is ignored is [unverified].
 - **Duplicates.** The documentation does not say what happens when two files define one id. Override a vanilla type by reusing its file name [unverified].
-- **Ids.** Country-specific types are prefixed with a tag (`GER_eben_emael_raid`); the prefix is part of the id, and the localisation key is `raid_type_<id>` [vanilla-confirmed 1.19.3] `raids/paratrooper_raids_custom.txt`, `localisation/english/military_raids_l_english.yml`.
+- **Ids.** Country-specific types are prefixed with a tag (`GER_eben_emael_raid`); the prefix is part of the id, and the localisation key is `raid_type_<id>` [vanilla-confirmed 1.19.4.1] `raids/paratrooper_raids_custom.txt`, `localisation/english/military_raids_l_english.yml`.
 
 ## Raid categories <a id="Raid_categories"></a>
 
-A category is `<category_id> = { ... }` in `raids/categories/`. Keys: [docs] `raids/_documentation.md`; vanilla counts [vanilla-confirmed 1.19.3] `raids/categories/raid_categories.txt` (5 categories).
+A category is `<category_id> = { ... }` in `raids/categories/`. Keys: [docs] `raids/_documentation.md`; vanilla counts [vanilla-confirmed 1.19.4.1] `raids/categories/raid_categories.txt` (5 categories).
 
 | Key | Value | Meaning | Vanilla |
 | --- | --- | --- | --- |
@@ -103,17 +104,17 @@ A category is `<category_id> = { ... }` in `raids/categories/`. Keys: [docs] `ra
 | --- | --- | --- |
 | `air_raids` | air | visible with Gotterdammerung |
 | `paratrooper_raids` | air | visible with Gotterdammerung, available with `has_tech = paratroopers` |
-| `nuclear_raids` | air | `free_targeting = yes`; available when `is_special_project_completed = sp:sp_nuclear_bomb` or `num_of_nukes > 0` |
+| `nuclear_raids` | air | `free_targeting = yes`; available when `is_special_project_completed = sp:sp_nuclear_bomb` or the country flag `early_nuclear_raid_unlock` is set |
 | `land_infiltration_raids` | army | visible with Thunder at Our Gates, or with No Compromise No Surrender for China |
 | `naval_commando_raids` | naval | visible with Thunder at Our Gates for `INS`, `AST` or `SIA` |
 
-Second table: [vanilla-confirmed 1.19.3] `raids/categories/raid_categories.txt`. The define `NUCLEAR_RAID_CATEGORY_NAME = "nuclear_raids"` names the category the rocket "nuclear" button opens, so that category id is fixed by the engine [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` (`NRaids`).
+Second table: [vanilla-confirmed 1.19.4.1] `raids/categories/raid_categories.txt`. The define `NUCLEAR_RAID_CATEGORY_NAME = "nuclear_raids"` names the category the rocket "nuclear" button opens, so that category id is fixed by the engine [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua` (`NRaids`).
 
-Category text and sprites: `raid_category_<id>`, `raid_category_header_<id>`, `tooltip_raid_category_<id>`, `raid_category_fluff_text_<id>` (a `TAG_` prefix gives a country-specific fluff text), `GFX_raid_category_small_<id>` and `GFX_raid_unit_icon_<id>`, each with an `unknown` fallback sprite [vanilla-confirmed 1.19.3] `localisation/english/military_raids_l_english.yml`, `interface/military_raids/military_raids.gfx`.
+Category text and sprites: `raid_category_<id>`, `raid_category_header_<id>`, `tooltip_raid_category_<id>`, `raid_category_fluff_text_<id>` (a `TAG_` prefix gives a country-specific fluff text), `GFX_raid_category_small_<id>` and `GFX_raid_unit_icon_<id>`, each with an `unknown` fallback sprite [vanilla-confirmed 1.19.4.1] `localisation/english/military_raids_l_english.yml`, `interface/military_raids/military_raids.gfx`.
 
 ## Raid type reference <a id="Raid_type_reference"></a>
 
-A raid type is `<raid_type_id> = { ... }` inside `types = { }`. Meanings: [docs] `raids/_documentation.md`. Counts: [vanilla-confirmed 1.19.3] `raids/*.txt`, n = 37 types (a block that may repeat is counted per block).
+A raid type is `<raid_type_id> = { ... }` inside `types = { }`. Meanings: [docs] `raids/_documentation.md`. Counts: [vanilla-confirmed 1.19.4.1] `raids/*.txt`, n = 37 types (a block that may repeat is counted per block).
 
 ### Gating and triggers <a id="Gating_and_triggers"></a>
 
@@ -130,7 +131,7 @@ A raid type is `<raid_type_id> = { ... }` inside `types = { }`. Meanings: [docs]
 | `fire_only_once` | yes or no | the raid can be executed once; default no [unverified] | 23 (16 yes, 7 no) |
 | `days_re_enable` | days | wait before the same target can be raided again; 0 means no cooldown; default `RAID_DEFAULT_TARGET_COOLDOWN_DAYS = 365` | 5 (0, 0, 0, 60, 120) |
 
-Scopes [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3] `raids/*.txt`:
+Scopes [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.4.1] `raids/*.txt`:
 
 - In `allowed`, `visible`, `show_target`, `available`, `launchable` and `ai_will_do` the scope is the acting country. `FROM` is the target country. `var:target_state` and `var:target_province` are set where a target exists. `ROOT` is the acting country, as in `CZE = { NOT = { has_war_with = ROOT } }` in `visible` of `SOV_transport_volunteers_to_CZE` and `ROOT.indochina_states` in `show_target` of `SIA_indochina_port_raid`.
 - A state id can be used as a scope in these blocks: `34 = { is_owned_and_controlled_by = BEL }` in `GER_eben_emael_raid`.
@@ -156,11 +157,11 @@ Scopes [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3] `raids/*.txt
 - `essential_equipment` and `additional_equipment` keys are equipment archetypes, the pseudo-entries `nukes` and `convoy` (vanilla `convoy = 40` for marine raids), and the docs add that ship hulls (`ship_hull_light = 5`) are allowed and are taken from existing fleets. Vanilla: `nukes = 1` 6, `convoy = 40` 3, `transport_plane_equipment` 5 or 10 in 4, and `support_equipment` and `infantry_equipment` as additional equipment.
 - `starting_point` takes `types = { air_base naval_base rocket_site carrier submarine }` (vanilla: `air_base` 24, `rocket_site` 2, `naval_base` 2, `submarine` 2, `carrier` 1), `building_types = { supply_node }` (a list of building ids or tags; vanilla also `naval_base`, `rail_way`, `bunker`) and `allow_faction_buildings = yes` (use buildings in allied territory; vanilla 6 uses, five with `building_types` and one with `types`).
 
-[docs] `raids/_documentation.md`; vanilla values [vanilla-confirmed 1.19.3] `raids/*.txt`.
+[docs] `raids/_documentation.md`; vanilla values [vanilla-confirmed 1.19.4.1] `raids/*.txt`.
 
 ### Targets <a id="Targets"></a>
 
-`target_type = { ... }` (singular, 37 of 37 types) lists what the raid can hit [vanilla-confirmed 1.19.3]. Forms:
+`target_type = { ... }` (singular, 37 of 37 types) lists what the raid can hit [vanilla-confirmed 1.19.4.1]. Forms:
 
 | Form | Meaning | Vanilla |
 | --- | --- | --- |
@@ -171,11 +172,11 @@ Scopes [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3] `raids/*.txt
 | `state = { <state triggers> }` | any state that passes the triggers, for example `oil > 24`, `steel > 69`, `is_coastal = yes`, `is_core_of = MAL` | 6 types |
 | `captured_army_leader = yes` | a captured commander (the target is a character) | 1 (`rescue_captured_general`) |
 
-- The documentation also lists `level = { min = X max = Y }` and `is_coastal = yes` inside `building` and `type = <type/tag>`; vanilla never uses `level` or `is_coastal` there, and spells the tag form `tags` [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3].
+- The documentation also lists `level = { min = X max = Y }` and `is_coastal = yes` inside `building` and `type = <type/tag>`; vanilla never uses `level` or `is_coastal` there, and spells the tag form `tags` [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.4.1].
 - **Needs a game run** [unverified] No game file states the scope a `state = { }` filter runs in, so reading `ROOT` as the acting country is unconfirmed. A run settles it: put `ROOT = { original_tag = <your tag> }` in the filter of a test raid and see whether the list of targets changes with the acting country.
 - A raid hitting a facility with `building = { tags = facility }` ties raids to special projects (see [Raids and special projects](#Raids_and_special_projects)).
 - The scope a `state = { }` filter runs in is not documented. Vanilla writes `is_owned_by = FROM` there in two types, which only makes sense if `FROM` is bound in the filter. A claim that the state is `ROOT` there is [unverified]; do not read the acting country through `ROOT` in a target filter.
-- The target name in the UI is `RAID_TARGET_NAME` ("$WHAT in $LOCATION"), or your own key set with `target_loc_key`, which can use `$LOCATION$` [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3] `localisation/english/military_raids_l_english.yml`.
+- The target name in the UI is `RAID_TARGET_NAME` ("$WHAT in $LOCATION"), or your own key set with `target_loc_key`, which can use `$LOCATION$` [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.4.1] `localisation/english/military_raids_l_english.yml`.
 
 ### Presentation keys <a id="Presentation_keys"></a>
 
@@ -189,26 +190,26 @@ Scopes [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3] `raids/*.txt
 | `launch_sound` | sound effect id | played at launch | 37 |
 | `arrow` | `{ type = line / ballistic / air / naval / land }` | travel path style | 37 (air 25, land 5, ballistic 4, naval 3) |
 | `unit_model` | `{ entity default_entity equipment start_offset scale }` | what travels; see below | 17 |
-| `unit_animations` | `{ stage = { state intro at_progress } }` | animation by travel progress | 5 |
+| `unit_animations` | `{ stage = { state intro at_progress } }` | animation by travel progress | 9 |
 
 - `unit_model.entity` is looked up as the country entity (`GER_<name>`), then the culture entity (`westerngfx_<name>`), then `<name>`, then `default_entity`. `equipment = air_transport` uses an air equipment model (only air equipment is supported). `start_offset` moves the start so convoys begin at sea. `scale` is multiplied by the graphics define `RAID_UNIT_ENTITY_BASE_SCALE` (2.0 in `common/defines/00_graphics.lua`). Vanilla uses `entity` 8, `equipment` 5, `scale` 5, `start_offset` 3; `default_entity` 0.
 - `unit_animations` stages must be listed in ascending `at_progress` order; the stage with the highest `at_progress` not above the current progress wins; a state missing on the entity is skipped without error.
 
-[docs] `raids/_documentation.md`; counts [vanilla-confirmed 1.19.3] `raids/*.txt`.
+[docs] `raids/_documentation.md`; counts [vanilla-confirmed 1.19.4.1] `raids/*.txt`.
 
 ### AI keys <a id="AI_keys"></a>
 
 | Key | Value | Rule | Vanilla |
 | --- | --- | --- | --- |
 | `ai_will_do` | weight block | the AI only does the raid when the weight is above 0; `FROM` = target country; `var:target_state`, `var:target_province` | 35 |
-| `ai_min_success_chance` | 0.0 to 1.0 | per-type override of `RAIDS_MIN_SUCCESS_FOR_LAUNCH` (0.65) | 2 |
+| `ai_min_success_chance` | 0.0 to 1.0 | per-type override of `RAIDS_MIN_SUCCESS_FOR_LAUNCH` (0.65) | 4 (0.1, 0.15 and 0.45 twice) |
 | `unlimited_ai_range` | yes | the AI ignores `max_distance` | 3 |
 
 See [AI](#AI).
 
 ## Success chance <a id="Success_chance"></a>
 
-`success_factors = { success = { ... } critical = { ... } disaster = { ... } }`. [docs] `raids/_documentation.md`, counts [vanilla-confirmed 1.19.3] `raids/*.txt`:
+`success_factors = { success = { ... } critical = { ... } disaster = { ... } }`. [docs] `raids/_documentation.md`, counts [vanilla-confirmed 1.19.4.1] `raids/*.txt`:
 
 - `success` is the chance that the raid succeeds (all 37 types define it). `critical` is the chance that a success is critical (conditional; 21 types). `disaster` is the chance of the worst outcome (not conditional; 1 type, `CZE_sokolov_raid_pfot`). Nuclear raids define only `success`.
 - Each formula has an optional `base` (default 0.0) and any number of modifiers.
@@ -216,7 +217,7 @@ See [AI](#AI).
 
 ### Predefined modifiers <a id="Predefined_modifiers"></a>
 
-Meanings and reference ranges: [docs] `raids/_documentation.md`. Use counts in `success` formulas: [vanilla-confirmed 1.19.3] `raids/*.txt`.
+Meanings and reference ranges: [docs] `raids/_documentation.md`. Use counts in `success` formulas: [vanilla-confirmed 1.19.4.1] `raids/*.txt`.
 
 | Name | Measures | Vanilla |
 | --- | --- | --- |
@@ -237,7 +238,7 @@ Meanings and reference ranges: [docs] `raids/_documentation.md`. Use counts in `
 | `strength` | land unit's strength, 0 to 1 | 12 |
 | `radar` | enemy radar in the region; not in the documentation | 2 (nuclear strike types) |
 
-`radar` has loc keys `success_modifier_radar*`, so it is a real predefined modifier that the documentation omits [vanilla-confirmed 1.19.3] `raids/nuclear_raids.txt`, `localisation/english/military_raids_l_english.yml`. The documentation's own example writes `agility`; the predefined name is `air_agility` (a string in `hoi4.exe`, used by 21 vanilla types). What an unknown name does is [unverified].
+`radar` has loc keys `success_modifier_radar*`, so it is a real predefined modifier that the documentation omits [vanilla-confirmed 1.19.4.1] `raids/nuclear_raids.txt`, `localisation/english/military_raids_l_english.yml`. The documentation's own example writes `agility`; the predefined name is `air_agility` (a string in `hoi4.exe`, used by 21 vanilla types). What an unknown name does is [unverified].
 
 ### Custom modifiers <a id="Custom_modifiers"></a>
 
@@ -259,20 +260,20 @@ INS_infrastructure_modifier_militia = {
 
 - The formula is a normal MTTH-style block. Triggers in it make the scope implicit: `has_completed_focus = X` with `add = 1` needs no `scope`. A formula that reads a variable needs `scope` because variables cannot be sampled from more than one source [docs].
 - A custom modifier that uses only unit or character scope also shows up in the unit selection menu [docs].
-- Vanilla: 13 custom modifiers with `formula`, with scopes `state` 6, `country` 2, `character` 2, `unit` 1; variable reads seen: `infrastructure_level` (state), `level` (character), `var:INS_level_of_militias` (country) [vanilla-confirmed 1.19.3] `raids/naval_commando_raids.txt`, `raids/land_infiltration_custom.txt`.
+- Vanilla: 14 custom modifiers with `formula`, with scopes `state` 6, `country` 2, `character` 2, `unit` 1, and 3 with no `scope`; variable reads seen: `infrastructure_level` (state), `level` (character), `var:INS_level_of_militias` (country) [vanilla-confirmed 1.19.4.1] `raids/naval_commando_raids.txt`, `raids/land_infiltration_custom.txt`.
 - Text: `success_modifier_<name>` (required), plus optional `_negative`, `_improvement` (required when `can_actor_affect = yes`), `_counterplay` and `_source` [docs]. For `air_superiority`, vanilla also has `_source_counterplay`.
 
 ### Risk dial <a id="Risk_dial"></a>
 
-The player can set the risk of a raid to low, medium or high. `NRaids` adds +0, +0.10 and +0.25 to the success chance and the same amounts to the disaster chance [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` (`RAID_*_RISK_SETTING_*`). The localisation says the success chance can be capped by a high disaster risk (`tooltip_success_chance_capped_by_risk`) [vanilla-confirmed 1.19.3].
+The player can set the risk of a raid to low, medium or high. `NRaids` adds +0, +0.10 and +0.25 to the success chance and the same amounts to the disaster chance [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua` (`RAID_*_RISK_SETTING_*`). The localisation says the success chance can be capped by a high disaster risk (`tooltip_success_chance_capped_by_risk`) [vanilla-confirmed 1.19.4.1].
 
 ### How the odds become outcomes <a id="Odds_to_outcomes"></a>
 
-There are four outcomes: `failure`, `limited_success`, `success`, `critical_success`. The documentation says `failure`, "critical failure" and "disaster" are one thing, the worst outcome, and the UI string for `failure` is "Critical Failure" (`RAID_INST_OUTCOME_FAILURE`) [docs], [vanilla-confirmed 1.19.3]. 36 of 37 types have no `disaster` formula at all [vanilla-confirmed 1.19.3]. How the game splits an unsuccessful roll between `failure` and `limited_success` is not documented [unverified].
+There are four outcomes: `failure`, `limited_success`, `success`, `critical_success`. The documentation says `failure`, "critical failure" and "disaster" are one thing, the worst outcome, and the UI string for `failure` is "Critical Failure" (`RAID_INST_OUTCOME_FAILURE`) [docs], [vanilla-confirmed 1.19.4.1]. 36 of 37 types have no `disaster` formula at all [vanilla-confirmed 1.19.4.1]. How the game splits an unsuccessful roll between `failure` and `limited_success` is not documented [unverified].
 
 ## Outcomes and scopes <a id="Outcomes_and_scopes"></a>
 
-`success_levels = { failure = { } limited_success = { } success = { } critical_success = { } }`. All 37 vanilla types define all four [vanilla-confirmed 1.19.3] `raids/*.txt`. Keys inside a level [docs] `raids/_documentation.md`:
+`success_levels = { failure = { } limited_success = { } success = { } critical_success = { } }`. All 37 vanilla types define all four [vanilla-confirmed 1.19.4.1] `raids/*.txt`. Keys inside a level [docs] `raids/_documentation.md`:
 
 | Key | Scope | Content | Vanilla (of 148 level blocks) |
 | --- | --- | --- | --- |
@@ -284,11 +285,11 @@ There are four outcomes: `failure`, `limited_success`, `success`, `critical_succ
 | `destroy_additional_equipment` | | share of the additional equipment destroyed, default 100% | 0 |
 
 - **Names are only for the UI.** `actor_effects` and `victim_effects` run in the same scope, the raid instance. Separating them only splits the outcome report into two lists [docs].
-- **Enter a scope before country or state effects.** Vanilla never puts a country or state effect directly inside either block. The first-level entries are raid effects (`raid_damage_units` 122, `raid_add_unit_experience` 121, `add_raid_history_entry` 48), `var:` scopes (`var:target_state` 122, `var:actor_country` 101, `var:victim_country` 31, `var:target_leader` 3, `var:target_province` 1), numeric state scopes (`16 = { }`), `event_target:` scopes, and a few scope-less helpers (`set_temp_variable` 3, `damage_units` 3) [vanilla-confirmed 1.19.3] `raids/*.txt`.
-- **Variables** of the raid instance: `var:actor_country`, `var:victim_country`, `var:target_state`, `var:target_province` [docs]. Rescue raids also use `var:target_leader` [vanilla-confirmed 1.19.3] `raids/land_infiltration_raids.txt`.
-- **ROOT stays the raid instance** inside nested scopes, so a nested block can read the instance with `ROOT`: `province = var:ROOT.target_province`, `scope = var:ROOT.victim_country`, `state = var:ROOT.target_state` [docs], [vanilla-confirmed 1.19.3] (36 uses in `air_raids_custom.txt` alone).
-- **Temporary variables survive scope changes.** `set_temp_variable = { PRC_equipment_producer = var:victim_country }` in `actor_effects`, then `producer = PRC_equipment_producer` inside `var:actor_country = { }` [vanilla-confirmed 1.19.3] `raids/land_infiltration_custom.txt`.
-- **Events from outcomes.** Vanilla fires events from inside a scoped block with a delay, for example `var:victim_country = { country_event = { id = INS_revolution_events.11 hours = 4 } }` (23 uses), and records completion with country flags such as `has_successfully_bombed_a_landmark_flag` [vanilla-confirmed 1.19.3] `raids/naval_commando_raids.txt`, `raids/air_raids_custom.txt`. No on action, trigger or effect in the documentation reports a finished raid; vanilla `common/on_actions/` has no raid hook [vanilla-confirmed 1.19.3]. Pass actors and targets to the event as event targets saved in the outcome; temporary variables do not cross into events [unverified].
+- **Enter a scope before country or state effects.** Vanilla never puts a country or state effect directly inside either block. The first-level entries are raid effects (`raid_damage_units` 122, `raid_add_unit_experience` 121, `add_raid_history_entry` 48), `var:` scopes (`var:target_state` 122, `var:actor_country` 101, `var:victim_country` 31, `var:target_leader` 3, `var:target_province` 1), numeric state scopes (`16 = { }`), `event_target:` scopes, and a few scope-less helpers (`set_temp_variable` 3, `damage_units` 3) [vanilla-confirmed 1.19.4.1] `raids/*.txt`.
+- **Variables** of the raid instance: `var:actor_country`, `var:victim_country`, `var:target_state`, `var:target_province` [docs]. Rescue raids also use `var:target_leader` [vanilla-confirmed 1.19.4.1] `raids/land_infiltration_raids.txt`.
+- **ROOT stays the raid instance** inside nested scopes, so a nested block can read the instance with `ROOT`: `province = var:ROOT.target_province`, `scope = var:ROOT.victim_country`, `state = var:ROOT.target_state` [docs], [vanilla-confirmed 1.19.4.1] (36 uses in `air_raids_custom.txt` alone).
+- **Temporary variables survive scope changes.** `set_temp_variable = { PRC_equipment_producer = var:victim_country }` in `actor_effects`, then `producer = PRC_equipment_producer` inside `var:actor_country = { }` [vanilla-confirmed 1.19.4.1] `raids/land_infiltration_custom.txt`.
+- **Events from outcomes.** Vanilla fires events from inside a scoped block with a delay, for example `var:victim_country = { country_event = { id = INS_revolution_events.11 hours = 4 } }` (23 `country_event` calls, 19 of them with `hours` or `days`), and records completion with country flags such as `has_successfully_bombed_a_landmark_flag` [vanilla-confirmed 1.19.4.1] `raids/naval_commando_raids.txt`, `raids/air_raids_custom.txt`. No on action, trigger or effect in the documentation reports a finished raid; vanilla `common/on_actions/` has no raid hook [vanilla-confirmed 1.19.4.1]. Pass actors and targets to the event as event targets saved in the outcome; temporary variables do not cross into events [unverified].
 
 ### Effects and triggers for raids <a id="Effects_and_triggers"></a>
 
@@ -304,24 +305,24 @@ Parameters: [docs] `documentation/effects_documentation.md`. Wiki: [Effects (rai
 | `launch_nuke` | country | `{ province = <id> or state = <id> controller = <tag> use_nuke = yes/no nuke_type = <type> }` | 13, nuclear raids |
 | `destroy_unit`, `add_divisional_commander_xp` | division | in `division_effects` | 10, 46 |
 
-Triggers: only `hidden_trigger` and `meta_trigger` are listed for the raid instance scope [docs] `documentation/triggers_documentation.md`. Use ordinary country and state triggers inside `var:` scopes. Raid-related country triggers seen in `visible`, `show_target` and `available`: `is_special_project_completed = sp:...`, `has_naval_invasion_against_state = { state = var:target_state preparation > 0.1 }`, `has_any_captured_general = yes`, `is_leader_visible = var:target_leader`, `num_of_nukes > 0`, `is_in_array = { array = potential_and_current_enemies value = FROM }` [vanilla-confirmed 1.19.3] `raids/*.txt`. The scripted effect `bathe_in_hellfire_nuclear` used by the nuclear strike comes from `common/scripted_effects/RAJ_GOE_scripted_effects.txt` [vanilla-confirmed 1.19.3].
+Triggers: only `hidden_trigger` and `meta_trigger` are listed for the raid instance scope [docs] `documentation/triggers_documentation.md`. Use ordinary country and state triggers inside `var:` scopes. Raid-related country triggers seen in `visible`, `show_target` and `available`: `is_special_project_completed = sp:...`, `has_naval_invasion_against_state = { state = var:target_state preparation > 0.1 }`, `has_any_captured_general = yes`, `is_leader_visible = var:target_leader`, `has_country_flag = early_nuclear_raid_unlock`, `is_in_array = { array = potential_and_current_enemies value = FROM }` [vanilla-confirmed 1.19.4.1] `raids/*.txt`. The scripted effect `bathe_in_hellfire_nuclear` used by the nuclear strike comes from `common/scripted_effects/RAJ_GOE_scripted_effects.txt` [vanilla-confirmed 1.19.4.1].
 
-Dynamic modifiers are the usual way to leave a mark on the target: `var:target_state = { add_dynamic_modifier = { modifier = sokolov_raided_limited_success_modifier days = 30 } }` (56 uses in 15 types); `scope = var:ROOT.victim_country` limits a modifier to the victim [vanilla-confirmed 1.19.3] `raids/paratrooper_raids_custom.txt`, `raids/land_infiltration_custom.txt`.
+Dynamic modifiers are the usual way to leave a mark on the target: `var:target_state = { add_dynamic_modifier = { modifier = sokolov_raided_limited_success_modifier days = 30 } }` (54 uses in 15 types, two more are commented out); `scope = var:ROOT.victim_country` limits a modifier to the victim [vanilla-confirmed 1.19.4.1] `raids/paratrooper_raids_custom.txt`, `raids/land_infiltration_custom.txt`.
 
 ## Raids and special projects <a id="Raids_and_special_projects"></a>
 
-Raids and [special projects](<special_project_modding.md>) meet in four places [vanilla-confirmed 1.19.3]:
+Raids and [special projects](<special_project_modding.md>) meet in four places [vanilla-confirmed 1.19.4.1]:
 
-- **Unlocking.** Raid gates read projects: `lock_bombing_raid` and `dam_bombing_raid` are `available` after `is_special_project_completed = sp:sp_air_bouncing_bomb`; the mega-gun strike after `sp:sp_air_earthshaker_bomb`; the four missile strikes (nuclear and thermonuclear, land and submarine) are `visible` after `sp:sp_nuclear_warheads`, `thermonuclear_strike` after `sp:sp_thermo_nuclear_bomb`, and `nuclear_strike` and the nuclear category after `sp:sp_nuclear_bomb` or while the country holds nukes (`raids/air_raids.txt`, `raids/nuclear_raids.txt`, `raids/categories/raid_categories.txt`).
+- **Unlocking.** Raid gates read projects: `lock_bombing_raid` and `dam_bombing_raid` are `available` after `is_special_project_completed = sp:sp_air_bouncing_bomb`; the mega-gun strike after `sp:sp_air_earthshaker_bomb`; the four missile strikes (nuclear and thermonuclear, land and submarine) are `visible` after `sp:sp_nuclear_warheads`, `thermonuclear_strike` after `sp:sp_thermo_nuclear_bomb`, and `nuclear_strike` and the nuclear category after `sp:sp_nuclear_bomb` or while the country flag `early_nuclear_raid_unlock` is set (`raids/air_raids.txt`, `raids/nuclear_raids.txt`, `raids/categories/raid_categories.txt`). The `keep_bomb` option of the `sp_nuclear_bomb_test_prototype_reward` project reward sets that flag and adds one bomb (`common/special_projects/projects/nuclear_projects.txt`).
 - **Targets.** `facility_strike` targets `building = { tags = facility }`, the tag the four facility buildings carry. Leftover assets exist for facility raids that no vanilla type defines (`raid_type_paratrooper_facility_sabotage` and `raid_type_commando_facility_raid` texts, `GFX_raid_type_icon_paratrooper_facility_sabotage`).
 - **Damage to a project.** Inside `var:target_state = { }`, `raid_reduce_project_progress_ratio = 0.05` (limited success), `0.15` (success) or `0.25` (critical success) cuts the facility's project progress, next to `damage_building = { tags = facility damage = 0.55 province = var:ROOT.target_province repair_speed_modifier = -0.25 }` (damage 0.15, 0.55 and 0.85 levels at the three success levels). The failure outcome only damages the building, by 0.05 (`raids/air_raids.txt`).
-- **Tooltips.** `SP_UNLOCK_RAID` and `SP_UNLOCK_RAID_CATEGORY` are the unlock tooltips in `special_projects_l_english.yml`; a technology uses the first as `custom_effect_tooltip = { localization_key = SP_UNLOCK_RAID RAID_TYPE = raid_type_mine_sabotage_raid }` (the full `raid_type_<id>` key is the parameter) (`common/technologies/infantry.txt`).
+- **Tooltips.** `SP_UNLOCK_RAID` and `SP_UNLOCK_RAID_CATEGORY` are the unlock tooltips in `military_raids_l_english.yml`; a technology uses the first as `custom_effect_tooltip = { localization_key = SP_UNLOCK_RAID RAID_TYPE = raid_type_mine_sabotage_raid }` (the full `raid_type_<id>` key is the parameter) (`common/technologies/infantry.txt`).
 
-Nothing makes a raid unlock automatically: a raid type is available when its own triggers are true, so unlocking is done with flags, focuses or completed projects tested in `visible` or `available` [vanilla-confirmed 1.19.3] `raids/*.txt`.
+Nothing makes a raid unlock automatically: a raid type is available when its own triggers are true, so unlocking is done with flags, focuses or completed projects tested in `visible` or `available` [vanilla-confirmed 1.19.4.1] `raids/*.txt`.
 
 ## Localisation <a id="Localisation"></a>
 
-Keys from `localisation/english/military_raids_l_english.yml` and `TAOG_raids_l_english.yml` [vanilla-confirmed 1.19.3]:
+Keys from `localisation/english/military_raids_l_english.yml` and `TAOG_raids_l_english.yml` [vanilla-confirmed 1.19.4.1]:
 
 | Text | Key | Notes |
 | --- | --- | --- |
@@ -333,13 +334,13 @@ Keys from `localisation/english/military_raids_l_english.yml` and `TAOG_raids_l_
 | Outcome tooltips | any key used with `custom_effect_tooltip` in an outcome | for example `raid_aborted_tt`, `raid_facility_damage_tt` with `DAMAGE = 55` |
 | Outcome names | `RAID_INST_OUTCOME_FAILURE` ("Critical Failure"), `_LIMITED_SUCCESS`, `_SUCCESS`, `_CRITICAL_SUCCESS`, `_CANCELED` | engine strings |
 | Dynamic modifier names | the modifier id, for example `dam_blown_modifier` | modifiers raids add |
-| Unlock tooltips | `SP_UNLOCK_RAID`, `SP_UNLOCK_RAID_CATEGORY` | in `special_projects_l_english.yml` |
+| Unlock tooltips | `SP_UNLOCK_RAID`, `SP_UNLOCK_RAID_CATEGORY` | in `military_raids_l_english.yml` |
 
 The documentation lists the loc keys of custom modifiers [docs] `raids/_documentation.md`; the rest is read from the vanilla yml files. Wiki: [Localisation](<localisation.md>).
 
 ## GFX, entities and sounds <a id="GFX"></a>
 
-Rules [docs] `raids/_documentation.md`; vanilla names [vanilla-confirmed 1.19.3] `interface/military_raids/military_raids.gfx`, `interface/buildings/landmarks.gfx`, `gfx/entities/particle_entities.asset`, `gfx/entities/nuke.asset`, `sound/gui/gtd/gtd_gui.asset`.
+Rules [docs] `raids/_documentation.md`; vanilla names [vanilla-confirmed 1.19.4.1] `interface/military_raids/military_raids.gfx`, `interface/buildings/landmarks.gfx`, `gfx/entities/particle_entities.asset`, `gfx/entities/nuke.asset`, `sound/gui/gtd/gtd_gui.asset`.
 
 | Asset | Name | Notes |
 | --- | --- | --- |
@@ -350,7 +351,7 @@ Rules [docs] `raids/_documentation.md`; vanilla names [vanilla-confirmed 1.19.3]
 | Outcome icons | `GFX_raid_outcome_failure`, `_limited_success`, `_success`, `_critical_success`, `GFX_raid_disaster_icon` | |
 | Outcome effects | `visual_effect` entities | `raid_failed_entity`; `air_raids_1_`, `air_raids_2_`, `air_raids_paradrop_`, `air_raids_naval_`, `air_raids_leaflet_`, `land_raids_` each with `limited_success_entity`, `success_entity`, `critical_success_entity`; `nuke_entity` |
 | Travelling unit | `unit_model.entity` | for example `westerngfx_traderoute_convoy` (`gfx/entities/units_ships.asset`) |
-| Launch sounds | `launch_sound` | `raid_launch_air`, `raid_launch_marine`, `raid_launch_paratrooper`, `raid_launch_nuclear_missile`, `raid_launch_nuclear_strike` |
+| Launch sounds | `launch_sound` | `raid_launch_air`, `raid_launch_marine`, `raid_launch_paratrooper`, `raid_launch_nuclear_missile`, `raid_launch_nuclear_strike`, `raid_land_launchable_sound` (the five land raids) |
 | Outcome sound | `custom_sound` | `raid_result_success_nuclear`, `raid_result_critical_success_nuclear` |
 
 Wiki: [Graphical asset modding](<graphical_asset_modding.md#spriteType>), [Entity modding](<entity_modding.md>), [Sound modding](<sound_modding.md>).
@@ -358,15 +359,15 @@ Wiki: [Graphical asset modding](<graphical_asset_modding.md#spriteType>), [Entit
 ## AI <a id="AI"></a>
 
 - **Weight.** `ai_will_do` on the raid type. The AI only does a raid when the resulting weight is above 0. Scope is the acting country, `FROM` the target, with `var:target_state` and `var:target_province`. A vanilla comment says a weight of 1 roughly stands for 1% of the success chance, that the base should stay at 1, and that reductions should use `factor` so the weight never drops to 0 by accident [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3] `raids/naval_commando_raids.txt`.
-- **Keeping the AI off or on.** `factor = 0` modifiers gate the AI to potential enemies: `NOT = { is_in_array = { array = potential_and_current_enemies value = FROM } }` (facility strike and the nuclear types) [vanilla-confirmed 1.19.3] `raids/air_raids.txt`. Unique raids use a high base (`base = 100`).
-- **Success threshold.** The AI launches only above `RAIDS_MIN_SUCCESS_FOR_LAUNCH = 0.65`, or the type's `ai_min_success_chance`; it cancels a raid that has been launchable for `RAIDS_CANCEL_AFTER_DAYS_LAUNCHABLE = 60` days [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` (`NAI`).
-- **Other `NAI` defines:** `RAIDS_ENABLE_AI = true`, `RAIDS_CREATE_FREQUENCY_DAYS = 7`, `RAIDS_COMMAND_POWER_CAP_TO_CREATE = 60.0`, `RAIDS_SCORE_DIFF_TO_CANCEL = 0.3`, `RAIDS_NUKE_TARGET_CUT_OFF = 10`, `RAIDS_AVOID_SAME_TARGET_DURATION_DAYS = 180`, `RAIDS_AVOID_SAME_TARGET_FACTOR = 0.4` [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
-- **Country bias.** The AI strategy type `raid_target_country` (`id` = target tag, `value` = percent change in how likely it is targeted): `ENG_raids` uses `value = 200` against `GER` [docs] `common/ai_strategy/_documentation.md`, [vanilla-confirmed 1.19.3] `common/ai_strategy/ENG.txt`. Wiki: [AI modding](<ai_modding.md#AI_strategies>).
-- **Range.** `unlimited_ai_range = yes` lets the AI ignore `max_distance`. The marine raid range is `BASE_NAVAL_COMMANDO_RAID_DISTANCE = 1500` km and the country modifier `naval_commando_raid_distance` is probably added to it (an Indonesian idea sets 5000) [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`, `common/ideas/indonesia.txt`; the addition is [unverified].
+- **Keeping the AI off or on.** `factor = 0` modifiers gate the AI to potential enemies: `NOT = { is_in_array = { array = potential_and_current_enemies value = FROM } }` (facility strike and the nuclear types) [vanilla-confirmed 1.19.4.1] `raids/air_raids.txt`. Unique raids use a high base (`base = 100`).
+- **Success threshold.** The AI launches only above `RAIDS_MIN_SUCCESS_FOR_LAUNCH = 0.65`, or the type's `ai_min_success_chance`; it cancels a raid that has been launchable for `RAIDS_CANCEL_AFTER_DAYS_LAUNCHABLE = 60` days [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua` (`NAI`).
+- **Other `NAI` defines:** `RAIDS_ENABLE_AI = true`, `RAIDS_CREATE_FREQUENCY_DAYS = 7`, `RAIDS_COMMAND_POWER_CAP_TO_CREATE = 60.0`, `RAIDS_SCORE_DIFF_TO_CANCEL = 0.3`, `RAIDS_NUKE_TARGET_CUT_OFF = 10`, `RAIDS_AVOID_SAME_TARGET_DURATION_DAYS = 180`, `RAIDS_AVOID_SAME_TARGET_FACTOR = 0.4` [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`.
+- **Country bias.** The AI strategy type `raid_target_country` (`id` = target tag, `value` = percent change in how likely it is targeted): `ENG_raids` uses `value = 200` against `GER` [docs] `common/ai_strategy/_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/ai_strategy/ENG.txt`. Wiki: [AI modding](<ai_modding.md#AI_strategies>).
+- **Range.** `unlimited_ai_range = yes` lets the AI ignore `max_distance`. The marine raid range is `BASE_NAVAL_COMMANDO_RAID_DISTANCE = 1500` km and the country modifier `naval_commando_raid_distance` is probably added to it (an Indonesian idea sets 5000) [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`, `common/ideas/indonesia.txt`; the addition is [unverified].
 
 ## DLC gating in vanilla <a id="DLC_gating"></a>
 
-Raid types: [vanilla-confirmed 1.19.3] `raids/*.txt`, `allowed` blocks, 37 types.
+Raid types: [vanilla-confirmed 1.19.4.1] `raids/*.txt`, `allowed` blocks, 37 types.
 
 | DLC in `allowed` | Types |
 | --- | --- |
@@ -377,11 +378,11 @@ Raid types: [vanilla-confirmed 1.19.3] `raids/*.txt`, `allowed` blocks, 37 types
 | Peace For Our Time | 2 (`SOV_transport_volunteers_to_CZE`, `CZE_sokolov_raid_pfot`) |
 | none | `nuclear_strike`, `JAP_pearl_harbor_strike` |
 
-Categories add their own gates (see [Raid categories](#Raid_categories)): `air_raids` and `paratrooper_raids` are hidden without Gotterdammerung, so `JAP_pearl_harbor_strike` (category `air_raids`) is probably gated too [unverified]. Country raids combine `has_dlc` with `tag` or `original_tag` in `allowed` [vanilla-confirmed 1.19.3].
+Categories add their own gates (see [Raid categories](#Raid_categories)): `air_raids` and `paratrooper_raids` are hidden without Gotterdammerung, so `JAP_pearl_harbor_strike` (category `air_raids`) is probably gated too [unverified]. Country raids combine `has_dlc` with `tag` or `original_tag` in `allowed` [vanilla-confirmed 1.19.4.1].
 
 ## Defines <a id="Defines"></a>
 
-Wiki: [Defines](<defines.md#NRaids>). Values [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`:
+Wiki: [Defines](<defines.md#NRaids>). Values [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`:
 
 | Define | Value | Use |
 | --- | --- | --- |
@@ -403,7 +404,7 @@ Wiki: [Defines](<defines.md#NRaids>). Values [vanilla-confirmed 1.19.3] `common/
 
 ## Minimal example <a id="Minimal_example"></a>
 
-An air raid on enemy naval bases with a new category, modelled on `SIA_indochina_port_raid` and `facility_strike`. Ids use a `mod_` prefix; `air_raids` is the vanilla category [vanilla-confirmed 1.19.3] `raids/air_raids_custom.txt`, `raids/air_raids.txt`.
+An air raid on enemy naval bases with a new category, modelled on `SIA_indochina_port_raid` and `facility_strike`. Ids use a `mod_` prefix; `air_raids` is the vanilla category [vanilla-confirmed 1.19.4.1] `raids/air_raids_custom.txt`, `raids/air_raids.txt`.
 
 `common/raids/mod_air_raids.txt`:
 
@@ -528,31 +529,31 @@ Sprites named `GFX_raid_category_small_mod_sabotage_raids` and `GFX_raid_unit_ic
 
 | Trap | What the files show | Evidence |
 | --- | --- | --- |
-| `target_types` (plural) from the documentation template | vanilla uses `target_type` in 37 of 37 types; the plural is not a string in `hoi4.exe` | [vanilla-confirmed 1.19.3], string search; that the plural is ignored is [unverified] |
-| `preparation_time` and `cost` from the template | vanilla uses `days_to_prepare` and `command_power`; `preparation_time` is not a standalone string in `hoi4.exe` | [vanilla-confirmed 1.19.3], string search |
-| Writing a type or category without its root block | all vanilla files use `types = { }` or `categories = { }` | [vanilla-confirmed 1.19.3]; effect of omitting [unverified] |
-| `agility` from the documentation's success example | the predefined modifier is `air_agility` | [vanilla-confirmed 1.19.3] |
-| Looking for `radar` in the modifier list | it is used by vanilla and missing from the documentation | [vanilla-confirmed 1.19.3] |
-| Country or state effects directly in `actor_effects` or `victim_effects` | both blocks start in raid instance scope; vanilla always enters `var:...` first | [docs], [vanilla-confirmed 1.19.3] |
-| `building = { type = <tag> }` | the documentation says `type` takes a type or tag; vanilla uses `type` for ids and `tags` for tags | [docs], [vanilla-confirmed 1.19.3] |
-| `province = any` without `free_targeting` | the only types using it are in the one category that sets `free_targeting = yes` | [docs], [vanilla-confirmed 1.19.3] |
+| `target_types` (plural) from the documentation template | vanilla uses `target_type` in 37 of 37 types; the plural is not a string in `hoi4.exe` | [vanilla-confirmed 1.19.4.1], string search; that the plural is ignored is [unverified] |
+| `preparation_time` and `cost` from the template | vanilla uses `days_to_prepare` and `command_power`; `preparation_time` is not a standalone string in `hoi4.exe` | [vanilla-confirmed 1.19.4.1], string search |
+| Writing a type or category without its root block | all vanilla files use `types = { }` or `categories = { }` | [vanilla-confirmed 1.19.4.1]; effect of omitting [unverified] |
+| `agility` from the documentation's success example | the predefined modifier is `air_agility` | [vanilla-confirmed 1.19.4.1] |
+| Looking for `radar` in the modifier list | it is used by vanilla and missing from the documentation | [vanilla-confirmed 1.19.4.1] |
+| Country or state effects directly in `actor_effects` or `victim_effects` | both blocks start in raid instance scope; vanilla always enters `var:...` first | [docs], [vanilla-confirmed 1.19.4.1] |
+| `building = { type = <tag> }` | the documentation says `type` takes a type or tag; vanilla uses `type` for ids and `tags` for tags | [docs], [vanilla-confirmed 1.19.4.1] |
+| `province = any` without `free_targeting` | the only types using it are in the one category that sets `free_targeting = yes` | [docs], [vanilla-confirmed 1.19.4.1] |
 | `weight` of an `ai_will_do` pushed to 0 by a negative add | the AI never does the raid; the vanilla comment advises `factor` over negative `add` | [docs], [vanilla-confirmed 1.19.3] |
 | `critical` read as an absolute chance | it is conditional on success; `disaster` is not | [docs] |
 | Putting the same amount in `essential_equipment` and `additional_equipment` and expecting double | the larger amount is used | [docs] |
-| Re-raiding the same target quickly | without `days_re_enable` the cooldown is 365 days | [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` |
-| `failure` shown as "Critical Failure" | `failure`, "critical failure" and "disaster" are one outcome | [docs], [vanilla-confirmed 1.19.3] |
-| `provinve` in the `launch_nuke` documentation | the documentation example spells the key `provinve`; vanilla uses `province` | [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.3] |
-| `use_nuke = yes` in an outcome of a type that already lists `nukes` in `essential_equipment` | would consume a second nuke; vanilla always writes `use_nuke = no` there | [docs], [vanilla-confirmed 1.19.3] (13 of 13); the double use is [unverified] |
+| Re-raiding the same target quickly | without `days_re_enable` the cooldown is 365 days | [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua` |
+| `failure` shown as "Critical Failure" | `failure`, "critical failure" and "disaster" are one outcome | [docs], [vanilla-confirmed 1.19.4.1] |
+| `provinve` in the `launch_nuke` documentation | the documentation example spells the key `provinve`; vanilla uses `province` | [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1] |
+| `use_nuke = yes` in an outcome of a type that already lists `nukes` in `essential_equipment` | would consume a second nuke; vanilla always writes `use_nuke = no` there | [docs], [vanilla-confirmed 1.19.4.1] (13 of 13); the double use is [unverified] |
 | Reading `ROOT` as the acting country inside `target_type` state filters | not settled by any game file | [unverified] |
 
 ## Practice notes (kit skill) <a id="Practice_notes"></a>
 
 These rules come from the kit's `hoi4-native-raids` skill and were checked against the files above.
 
-- Put the cost of creating a raid in `essential_equipment` and `command_power`, and do not debit or refund the same cost in an outcome: the documentation defines both as native payments [docs] `raids/_documentation.md`. Vanilla shows the pattern: the nuclear types take the nuke with `essential_equipment = { nukes = 1 }`, and all 13 of their `launch_nuke` calls say `use_nuke = no` [vanilla-confirmed 1.19.3] `raids/nuclear_raids.txt`; the reason, avoiding a second consumption, is inferred [unverified]. Promising refunds on cancellation is [unverified].
-- Keep country helpers that need the acting country as `ROOT` out of the raid instance: enter `var:actor_country` first, or fire an event from there, as vanilla does with delayed events [vanilla-confirmed 1.19.3]. A hidden actor event with saved event targets is the kit's pattern [unverified].
+- Put the cost of creating a raid in `essential_equipment` and `command_power`, and do not debit or refund the same cost in an outcome: the documentation defines both as native payments [docs] `raids/_documentation.md`. Vanilla shows the pattern: the nuclear types take the nuke with `essential_equipment = { nukes = 1 }`, and all 13 of their `launch_nuke` calls say `use_nuke = no` [vanilla-confirmed 1.19.4.1] `raids/nuclear_raids.txt`; the reason, avoiding a second consumption, is inferred [unverified]. Promising refunds on cancellation is [unverified].
+- Keep country helpers that need the acting country as `ROOT` out of the raid instance: enter `var:actor_country` first, or fire an event from there, as vanilla does with delayed events [vanilla-confirmed 1.19.4.1]. A hidden actor event with saved event targets is the kit's pattern [unverified].
 - For several raid types that share one reward path, use separate markers (flags or fixed hidden events) per type; a single pending variable can be overwritten by raids that end together [unverified].
-- Credit a delayed reward or achievement only from the outcome block that ran, not from raid creation: no creation hook exists in the documentation [docs], [vanilla-confirmed 1.19.3] (the only completion records are flags and events set inside outcomes).
+- Credit a delayed reward or achievement only from the outcome block that ran, not from raid creation: no creation hook exists in the documentation [docs], [vanilla-confirmed 1.19.4.1] (the only completion records are flags and events set inside outcomes).
 - At resolution, test again the target and actor that make the effect valid; the final `success_levels` effects run whatever `launchable` said earlier [unverified].
 
 ## See also <a id="See_also"></a>

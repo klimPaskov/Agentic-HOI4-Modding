@@ -2,11 +2,12 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Map modding", revision 105627, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="105627" sources="map/ map/default.map map/definition.csv map/adjacencies.csv map/adjacency_rules.txt map/buildings.txt map/unitstacks.txt map/weatherpositions.txt map/ambient_object.txt map/cities.txt map/supply_nodes.txt map/railways.txt map/terrain/ map/strategicregions/ map/supplyareas/ common/terrain/00_terrain.txt common/defines/00_defines.lua common/defines/00_graphics.lua gfx/entities/trees.gfx hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105627" sources="map/ map/default.map map/definition.csv map/adjacencies.csv map/adjacency_rules.txt map/buildings.txt map/unitstacks.txt map/weatherpositions.txt map/ambient_object.txt map/cities.txt map/supply_nodes.txt map/railways.txt map/terrain/ map/strategicregions/ map/supplyareas/ common/terrain/00_terrain.txt common/defines/00_defines.lua common/defines/00_graphics.lua gfx/entities/trees.gfx hoi4.exe" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the full `map/` folder of the installed game (every file listed, the bitmaps and DDS headers read, the CSV and text files parsed), `common/terrain/00_terrain.txt`, the river and supply defines, and map error strings in `hoi4.exe`.
 Kit blocks added: the real file list and bitmap table, corrections for `weatherpositions.txt` sizes, line endings, the terrain palette ids 27 and 31, the terrain values, adjacency format and rules, plus counts, a defaults table for `default.map` and the map error texts the exe still holds.
 The "deprecated" marker is the supply area note (still true; see the Supply areas page) and "incomplete" is about a definition file, not about the page.
 Gaps left: exe-only strings are `[unverified]`. The wiki's size limits (13,238,272 pixels, 65536 borders) and the sea level of 9.5 are in no game file I could read; vanilla provinces.bmp is 11,534,336 pixels.
+**1.19.4.1 re-check (2026-11-01).** 13 kit statements depended on files the update changed (`map/buildings.txt`, the defines file and the strings of `hoi4.exe`) and all were re-measured. One fact changed: all 2334 `floating_harbor` rows in `map/buildings.txt` name a land province in the last column, not a sea province. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -71,7 +72,7 @@ These files in the map folder are common to edit:
 - `/Hearts of Iron IV/map/airports.txt` and `/Hearts of Iron IV/map/rocketsites.txt` were deprecated and removed in the patch 1.15.
 
 <!-- kit:begin id="map-folder-1193" at="section:Quick_overview" -->
-**Kit addition** The `map/` folder of 1.19.3, complete. All rows: [vanilla-confirmed 1.19.3] folder listing and file contents of `map/`.
+**Kit addition** The `map/` folder of 1.19.4.1, complete. All rows: [vanilla-confirmed 1.19.4.1] folder listing and file contents of `map/`.
 
 | Entry | What it is |
 | --- | --- |
@@ -87,7 +88,7 @@ These files in the map folder are common to edit:
 | `supplyareas/` | one leftover file (see Supply areas modding) |
 | `terrain/` | 64 DDS and BMP files: the atlases, colour maps, borders, river surface, mud, snow, fog of war and underwater textures |
 
-`map/airports.txt` and `map/rocketsites.txt` are absent, which agrees with the wiki line above. [vanilla-confirmed 1.19.3] folder listing of `map/`
+`map/airports.txt` and `map/rocketsites.txt` are absent, which agrees with the wiki line above. [vanilla-confirmed 1.19.4.1] folder listing of `map/`
 <!-- kit:end id="map-folder-1193" -->
 
 ## Notes <a id="Notes"></a>
@@ -821,7 +822,7 @@ This error is caused by GIMP: editing in Photoshop does not produce this. By def
 <!-- kit:begin id="map-rivers-defines" at="section:Rivers" -->
 **Kit note** The palette in the table above matches vanilla `rivers.bmp` exactly (indices 0 to 11), and its DIB header says 0 colours, as the page says. Pixel indices 254 and 255 are the "comment" colours (7.5 and 4.0 million pixels); indices 5 and 8 are not used in vanilla. [vanilla-confirmed 1.19.3] `map/rivers.bmp`
 
-The defines behind it, all [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`: `RIVER_SMALL_START_INDEX = 0`, `RIVER_SMALL_STOP_INDEX = 6`, `RIVER_LARGE_STOP_INDEX = 11` (matching "0 to 6 small, up to 11 large"), `RIVER_CROSSING_PENALTY = -0.3` and `RIVER_CROSSING_PENALTY_LARGE = -0.6`, `RIVER_CROSSING_SPEED_PENALTY = -0.25` and `..._LARGE = -0.5`, `NSupply.RIVER_RAILWAY_LEVEL = 1` and `NSupply.SUPPLY_FLOW_PENALTY_CROSSING_RIVERS = 0.2`.
+The defines behind it, all [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`: `RIVER_SMALL_START_INDEX = 0`, `RIVER_SMALL_STOP_INDEX = 6`, `RIVER_LARGE_STOP_INDEX = 11` (matching "0 to 6 small, up to 11 large"), `RIVER_CROSSING_PENALTY = -0.3` and `RIVER_CROSSING_PENALTY_LARGE = -0.6`, `RIVER_CROSSING_SPEED_PENALTY = -0.25` and `..._LARGE = -0.5`, `NSupply.RIVER_RAILWAY_LEVEL = 1` and `NSupply.SUPPLY_FLOW_PENALTY_CROSSING_RIVERS = 0.2`.
 
 The exe also holds "MAP_ERROR: Bitdepth of rivers.bmp does not equal 8" and "MAP_ERROR: Size of the world map [...] is not equal to the size of rivers.bmp". [unverified] Exe strings only.
 <!-- kit:end id="map-rivers-defines" -->
@@ -904,7 +905,7 @@ It is preferable to generate the building models in the building section in the 
 **If some naval base or floating harbour is missing a definition within this file, the game will crash** once any province with one would be evaluated by AI or tried to be used as a naval base. This represents as a crash with the [client_ping or hourly_ping last read file](<troubleshooting.md#Crash_data_log>) a few hours into the game, fixed by turning off AI. This is because the building definition is used not only for the model of the naval base, but also for assigning the sea province that the port goes out into. If there is no definition, the game fails at evaluating the spot where the navy would be placed, resulting in an infinite loop that eats the RAM and the CPU leading to a crash.
 
 <!-- kit:begin id="map-buildings-ids" at="section:Buildings" -->
-**Kit note** The second column of `map/buildings.txt` is a building id or, for a building that sets `spawn_point = X` in `common/buildings/`, the spawn point name `X`; the list of 22 ids and the per-building details are in [Building modding](<building_modding.md#Models>). In vanilla all 2362 `naval_base_spawn` rows and all 2334 `floating_harbor` rows have a sea province in the last column, and all 10154 `supply_node` rows have 0. The file has 66664 rows. [vanilla-confirmed 1.19.3] `map/buildings.txt`
+**Kit note** The second column of `map/buildings.txt` is a building id or, for a building that sets `spawn_point = X` in `common/buildings/`, the spawn point name `X`; the list of 22 ids and the per-building details are in [Building modding](<building_modding.md#Models>). In vanilla all 2362 `naval_base_spawn` rows have a sea province in the last column, all 2334 `floating_harbor` rows have a land province there, and all 10154 `supply_node` rows have 0. The file has 66664 rows. [vanilla-confirmed 1.19.4.1] `map/buildings.txt`, `map/definition.csv`
 
 The exe prints ": map building location is not over the land ..." for a row whose position is not over a land province. [unverified] Exe string only.
 <!-- kit:end id="map-buildings-ids" -->
@@ -1110,13 +1111,13 @@ The list of provinces is a whitespace character-separated list of province IDs o
 A valid railway definition is the following: `4 4 693 1444 12 11`
 
 <!-- kit:begin id="map-supply-facts" at="section:Supply" -->
-**Kit note** The formats match vanilla. `map/supply_nodes.txt` has 727 rows, all level 1 (the wiki's limit of 1 holds), and `map/railways.txt` has 909 rows with levels 1 to 4 in use (the define `NSupply.MAX_RAILWAY_LEVEL` is 5), whose second number is the count of provinces listed after it in every row. Both files are LF-only, and the supply rows are space separated with a trailing space. The supply system around them, including the state key `local_supplies` and the defines, is described in [Supply areas modding](<supply_areas_modding.md>). [vanilla-confirmed 1.19.3] `map/supply_nodes.txt`, `map/railways.txt`, `common/defines/00_defines.lua`
+**Kit note** The formats match vanilla. `map/supply_nodes.txt` has 727 rows, all level 1 (the wiki's limit of 1 holds), and `map/railways.txt` has 909 rows with levels 1 to 4 in use (the define `NSupply.MAX_RAILWAY_LEVEL` is 5), whose second number is the count of provinces listed after it in every row. Both files are LF-only, and the supply rows are space separated with a trailing space. The supply system around them, including the state key `local_supplies` and the defines, is described in [Supply areas modding](<supply_areas_modding.md>). [vanilla-confirmed 1.19.4.1] `map/supply_nodes.txt`, `map/railways.txt`, `common/defines/00_defines.lua`
 <!-- kit:end id="map-supply-facts" -->
 
 ### Supply areas (For versions prior to 1.11) <a id="Supply_areas_.28For_versions_prior_to_1.11.29"></a><a id="Supply_areas_(For_versions_prior_to_1.11)"></a>
 
 <!-- kit:begin id="map-supply-areas-1193" at="heading:Supply_areas_.28For_versions_prior_to_1.11.29" -->
-**Kit note** The deprecation note below is still accurate for 1.19.3: the folder `map/supplyareas/` is not listed in `default.map`, and the exe has no path string for it. The game still ships one file there (`1-SupplyArea.txt`, a single area with `value=12` over states 5, 85, 763 and 807). Do not create supply areas for a new map; see [Supply areas modding](<supply_areas_modding.md>). [vanilla-confirmed 1.19.3] `map/supplyareas/1-SupplyArea.txt`, `map/default.map`. [unverified] for the exe, which was searched for strings only.
+**Kit note** The deprecation note below is still accurate for 1.19.4.1: the folder `map/supplyareas/` is not listed in `default.map`, and the exe has no path string for it. The game still ships one file there (`1-SupplyArea.txt`, a single area with `value=12` over states 5, 85, 763 and 807). Do not create supply areas for a new map; see [Supply areas modding](<supply_areas_modding.md>). [vanilla-confirmed 1.19.3] `map/supplyareas/1-SupplyArea.txt`, `map/default.map`. [unverified] for the exe, which was searched for strings only.
 <!-- kit:end id="map-supply-areas-1193" -->
 
 **Note: With the release of 1.11 and No Step Back, supply areas are deprecated and instead the initial logistics/supply system is defined through supply_nodes.txt and railways.txt; see previous section. For further information on updating your map from 1.10 to 1.11, see this post.**

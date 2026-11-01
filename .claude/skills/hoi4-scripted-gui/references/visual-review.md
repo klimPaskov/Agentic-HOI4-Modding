@@ -19,9 +19,9 @@ Distinguish the source texture canvas, painted or alpha-visible shape, designed 
 
 Use actual native properties documented by the installed game and existing consumers. Do not invent CSS-style alignment fields or assume a sprite's scale transforms label metrics and hit geometry identically. If native button text cannot meet the layout, use a proven native text and control composition with verified click-through and state synchronization; do not leave a second painted label underneath.
 
-In `.gui` files a `buttonType` takes `size = { x y }` (77 of 77 vanilla sizes), while a `containerWindowType` uses `{ width height }`. [vanilla-confirmed 1.19.3]
-Spell the key `alwaystransparent` (3,253 vanilla uses against 8 of `allwaystransparent`). [vanilla-confirmed 1.19.3]
-The key `animationframes` is a list of frame numbers. [vanilla-confirmed 1.19.3]
+In `.gui` files a `buttonType` takes `size = { x y }` (82 of 82 vanilla sizes), while a `containerWindowType` uses `{ width height }`. [vanilla-confirmed 1.19.4.1]
+Spell the key `alwaystransparent` (3,291 vanilla uses against 8 of `allwaystransparent`). [vanilla-confirmed 1.19.4.1]
+The key `animationframes` is a list of frame numbers. [vanilla-confirmed 1.19.4.1]
 
 ## Background and reference coverage
 

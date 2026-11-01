@@ -2,19 +2,20 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Effect", revision 105661, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="105661" sources="documentation/effects_documentation.md documentation/triggers_documentation.md documentation/script_math_functions.md common/raids/ common/strategic_locations/ common/scripted_effects/ common/game_rules/ common/resistance_compliance_modifiers/ common/special_projects/ common/operations/ common/medals/ common/on_actions/" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105661" sources="documentation/effects_documentation.md documentation/triggers_documentation.md documentation/script_math_functions.md common/raids/ common/strategic_locations/ common/scripted_effects/ common/game_rules/ common/resistance_compliance_modifiers/ common/special_projects/ common/operations/ common/medals/ common/on_actions/" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against `documentation/effects_documentation.md` (all 553 effects: scope, parameter keys and stated defaults compared with the tables), the raid, strategic location, game rule, scripted effect and special project files under `common/`, and text searches of vanilla script and `hoi4.exe`.
 - Kit blocks added: 34, from `coverage` (scope check, the 21 effects the wiki never named, non-effects) to `scripted-effect-corrections`. Each is named after what it fixes or adds.
 - Wrong or stale wiki text found: `add_temporary_buff_to_units` (not in 1.19.3); the examples for `modify_project_flag` and `set_mio_funds_gain_factor`; the first `raid_damage_units` parameter row; the `end_wars` default of `set_autonomy`; the "inclusive" bounds of `random_hours` and `random_days`; `tag` for `remove_building`; the notes "Only works on missions" (`activate_targeted_decision`) and "Deprecated" (`create_corps_commander`); the set_rule list; and the paths `commmon/autonomous_states`, `common/decisions/catergories` and `common/resistance_modifiers.txt`.
 - Deprecated or obsolete notes: `create_faction` and the three unit leader flag effects match the documentation; "extremely buggy" for `replace_unit_leader_trait` is unverified. Example keys flagged as unknown are documented (`controller_priority`, `mapmode`, `copy_completed_from`, `base_bonus`, `scores`, `set_root`, `ignore_death_chance`, and `prototyp_reward_option` in the documentation's own spelling) or are placeholders (`EQ_TYPE`, `EQ_LEVEL`, `eq_amount`, `NESTEDLOC`, `specialization_token`, `d_transfer_states`).
 - Gaps left: values and defaults were compared only where the documentation states them; effects with a one-line documentation stub (`boost_planning`, `ai_message`, `set_leader_name`, `add_scaled_political_power`) stay `[unverified]`. The "Version Added" column was not re-checked.
+**1.19.4.1 re-check (2026-11-01).** 51 statements depended on vanilla scans or files that the update changed, and all 51 were re-measured on the installed files. Numbers moved: `while_loop_effect` in 21 files (was 20), `random_hours` in 92 (91), `leader_score` in 7 (8), `destroy_unit` 10 uses (8), `activate_targeted_decision` 63 distinct decisions (62), `add_to_war` with `single_target_only` in 3 files (2), `create_field_marshal` 4 blocks (5), 23 of the 27 `set_rule` names occur in vanilla (24), and vanilla now passes `version_name` to `create_production_license` in 3 blocks, while four older notes (the ribbons use of `career_profile_set_temp_variable`, `legacy_id`, the 13 character files with `navy`, and the `seed` and `log` counts) were corrected against the installed files. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 <!-- kit:begin id="coverage" at="top" -->
 **Kit note** How this page lines up with the 1.19.3 documentation.
 
 - `documentation/effects_documentation.md` documents 553 effects. Before the kit blocks the wiki text named 532 of them; the other 21 are written up in kit blocks: `for_each_loop`, `for_loop_effect`, `while_loop_effect`, `random_scope_in_array`, `get_highest_scored_country`, `get_sorted_scored_countries` and `print_variables` (under "Arrays"), `randomize_variable` and `randomize_temp_variable` (under "Variables"), `clear_rule`, `set_relation_rule` and `ai_message` (under "Country scope > General"), `add_scaled_political_power` (under "Mana"), `capture_by`, `release_captured_generals_from`, `release_from_captivity`, `set_leader_name`, `set_leader_description` and `set_leader_portrait` (under "Unit leaders"), `boost_planning` (under "Combat") and `add_region_efficiency` (under "Other scopes"). [docs]
-- Every effect row in the scope sections sits under a scope that the documentation also supports. For the effects below the documentation names one more scope than the page shows. Treat the extra scope as documented but unproven: vanilla runs `remove_unit_leader_role` and `set_portraits` inside character scope, for example `GER_karl_donitz = { remove_unit_leader_role = yes }`. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.3] `common/decisions/GER.txt`
+- Every effect row in the scope sections sits under a scope that the documentation also supports. For the effects below the documentation names one more scope than the page shows. Treat the extra scope as documented but unproven: vanilla runs `remove_unit_leader_role` and `set_portraits` inside character scope, for example `GER_karl_donitz = { remove_unit_leader_role = yes }`. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/decisions/GER.txt`
 
 | Effect | Where the page shows it | Scopes in the documentation |
 | --- | --- | --- |
@@ -25,9 +26,9 @@
 | `set_occupation_law_where_available`, `set_faction_name`, `activate_targeted_decision`, `remove_targeted_decision` | Country scope | STATE, COUNTRY |
 | `add_dynamic_modifier`, `remove_dynamic_modifier`, `force_update_dynamic_modifier` | Any scope (country, state, character) | also SPECIAL_PROJECT |
 
-- Names in the tables that are not engine effects: `overlord`, `owner`, `controller`, `faction_leader` and `capital_scope` are scopes, and the rows under "Useful scripted effects" are scripted effects written in vanilla script. [vanilla-confirmed 1.19.3] `common/scripted_effects/00_scripted_effects.txt`
+- Names in the tables that are not engine effects: `overlord`, `owner`, `controller`, `faction_leader` and `capital_scope` are scopes, and the rows under "Useful scripted effects" are scripted effects written in vanilla script. [vanilla-confirmed 1.19.4.1] `common/scripted_effects/00_scripted_effects.txt`
 - `career_profile_set_temp_variable` and `career_profile_set_temp_playthrough_variable` are listed in `documentation/triggers_documentation.md`, not in the effects documentation. [docs]
-- `add_temporary_buff_to_units` does not exist in 1.19.3 (see the correction under "Combat"). [unverified]
+- `add_temporary_buff_to_units` does not exist in 1.19.4.1 (see the correction under "Combat"). [unverified]
 <!-- kit:end id="coverage" -->
 
 ## Table of contents
@@ -278,7 +279,7 @@ every_collection_element = {
 | `display_individual_scopes = yes` | `every_*` only | Default `no`: the block's effects are shown once in the tooltip. `yes` shows them once per matching scope. |
 | `include_invisible = yes` | `every_unit_leader`, `every_army_leader`, `every_navy_leader`, `every_character`, `every_scientist`, `every_active_scientist`, `every_military_industrial_organization`, and `random_unit_leader`, `random_army_leader`, `random_navy_leader`, `random_military_industrial_organization` | Default `no`. The documentation gives no further detail. |
 
-Usage in vanilla: `random_select_amount` in 32 files, `display_individual_scopes` in 13 files and `include_invisible` in 1 file (`common/national_focus/finland.txt`, inside `every_army_leader`). [vanilla-confirmed 1.19.3]
+Usage in vanilla: `random_select_amount` in 32 files, `display_individual_scopes` in 13 files and `include_invisible` in 1 file (`common/national_focus/finland.txt`, inside `every_army_leader`). [vanilla-confirmed 1.19.4.1]
 
 ```text
 every_other_country = {
@@ -680,7 +681,7 @@ create_purchase_contract = {
 **Kit correction** Notes for the "Any scope" effects above.
 
 - The dynamic modifier effects also run in special project scope. `days` may be a variable, and `remove_dynamic_modifier` takes the same optional `scope` key as `add_dynamic_modifier`; it must match the value used when the modifier was added. [docs] `documentation/effects_documentation.md`
-- The folder named in the notes of `add_state_resistance_compliance_modifier` and `remove_state_resistance_compliance_modifier` is wrong. The files are `common/resistance_compliance_modifiers/resistance_modifiers.txt` and `common/resistance_compliance_modifiers/compliance_modifiers.txt`. A modifier must carry `is_dynamic = yes` to be added or removed by these effects, and this works only for state resistance and state compliance modifiers. [vanilla-confirmed 1.19.3] `common/resistance_compliance_modifiers/resistance_modifiers.txt`
+- The folder named in the notes of `add_state_resistance_compliance_modifier` and `remove_state_resistance_compliance_modifier` is wrong. The files are `common/resistance_compliance_modifiers/resistance_modifiers.txt` and `common/resistance_compliance_modifiers/compliance_modifiers.txt`. A modifier must carry `is_dynamic = yes` to be added or removed by these effects, and this works only for state resistance and state compliance modifiers. [vanilla-confirmed 1.19.4.1] `common/resistance_compliance_modifiers/resistance_modifiers.txt`
 - `custom_override_tooltip` accepts a plain localisation key or a block for `tooltip`; the block holds `localization_key` plus named replacements, as for `custom_effect_tooltip`. [docs]
 - `not_tooltip` (in the `custom_override_tooltip` row) is not in the effects documentation and no vanilla script uses it. The string exists once in `hoi4.exe`. [unverified]
 <!-- kit:end id="general-corrections" -->
@@ -763,7 +764,7 @@ finalize_border_war = {
 | `minimum_duration_in_days = <int>` | top level | Minimum duration of the fight. |
 | `leader_score = { base = <n> modifier = { ... } }` | inside `attacker` | Scores candidate commanders to pick the leader. |
 
-Vanilla sets all three: `minimum_duration_in_days` in 6 files and `leader_score` in 8 files, for example `common/decisions/IRQ.txt`, which also sets `combat_width = 180`. [vanilla-confirmed 1.19.3]
+Vanilla sets all three: `minimum_duration_in_days` in 6 files and `leader_score` in 7 files, for example `common/decisions/IRQ.txt`, which also sets `combat_width = 180`. [vanilla-confirmed 1.19.4.1]
 
 ```text
 start_border_war = {
@@ -939,9 +940,9 @@ randomize_temp_variable = {
 }
 ```
 
-Vanilla uses the binomial form above in `common/scripted_effects/BUL_scripted_effects.txt`, and `randomize_variable` with `distribution = uniform`, `min = 3000`, `max = 6500` in `common/on_actions/13_goe_on_actions.txt`. [vanilla-confirmed 1.19.3] The documentation's comment on the binomial form ("with N=2") is garbled, so the exact meaning of `min` and `max` for `binomial` and `poisson` is not stated. [unverified]
+Vanilla uses the binomial form above in `common/scripted_effects/BUL_scripted_effects.txt`, and `randomize_variable` with `distribution = uniform`, `min = 3000`, `max = 6500` in `common/on_actions/13_goe_on_actions.txt`. [vanilla-confirmed 1.19.4.1] The documentation's comment on the binomial form ("with N=2") is garbled, so the exact meaning of `min` and `max` for `binomial` and `poisson` is not stated. [unverified]
 
-`career_profile_set_temp_playthrough_variable` and `career_profile_set_temp_variable` in the table above are documented as triggers, not effects. Vanilla uses `career_profile_set_temp_variable` only inside the `bronze`, `silver` and `gold` trigger blocks of `common/medals/00_medals.txt`. [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.3] `common/medals/00_medals.txt`
+`career_profile_set_temp_playthrough_variable` and `career_profile_set_temp_variable` in the table above are documented as triggers, not effects. Vanilla uses `career_profile_set_temp_variable` inside the `bronze`, `silver` and `gold` trigger blocks of `common/medals/00_medals.txt` (24 uses) and in the condition blocks of `common/ribbons/00_ribbons.txt` (5 uses). [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/medals/00_medals.txt`
 <!-- kit:end id="variables-corrections" -->
 
 ### Arrays <a id="Arrays"></a>
@@ -1022,7 +1023,7 @@ find_lowest_in_array = {
 
 - Setting the `break` temp variable to a non-zero value ends the loop. [docs]
 - With the default `compare = less_than` the loop stops before `end`; use `compare = less_than_or_equals` to include it. [docs]
-- Vanilla uses `for_each_loop` (4 files), `for_loop_effect` (9), `while_loop_effect` (20), `random_scope_in_array` (2), `get_highest_scored_country` (2, with `var = GLOBAL.<name>`) and `print_variables` (1, in `common/scripted_effects/00_scripted_effects.txt`). `get_sorted_scored_countries` is not used in vanilla script. [vanilla-confirmed 1.19.3]
+- Vanilla uses `for_each_loop` (4 files), `for_loop_effect` (9), `while_loop_effect` (21), `random_scope_in_array` (2), `get_highest_scored_country` (2, with `var = GLOBAL.<name>`) and `print_variables` (1, in `common/scripted_effects/00_scripted_effects.txt`). `get_sorted_scored_countries` is not used in vanilla script. [vanilla-confirmed 1.19.4.1]
 
 ```text
 for_each_loop = {
@@ -1196,7 +1197,7 @@ create_dynamic_country = {
 
 - `random_hours` and `random_days` can be used together; their results are added too. [docs]
 - `trigger_for` belongs to `state_event` only: one of `controller`, `owner`, `occupied`, `from`, `prev`, `root` or a tag. `operative_leader_event` also takes `originator`, `recipient`, `set_from`, `set_from_from` and `set_root`. [docs]
-- Vanilla uses `months` inside event effects in 7 files (for example `events/AAT_Sweden.txt`) and `random_hours` in 91 files. [vanilla-confirmed 1.19.3]
+- Vanilla uses `months` inside event effects in 7 files (for example `events/AAT_Sweden.txt`) and `random_hours` in 92 files. [vanilla-confirmed 1.19.4.1]
 
 ```text
 country_event = { id = AAT_Sweden.9 months = 26 random_days = 70 }
@@ -1207,16 +1208,16 @@ country_event = { id = AAT_Sweden.9 months = 26 random_days = 70 }
 **Kit addition** Rule effects, a deprecated one and a stub. Scope for all of them: country. [docs] `documentation/effects_documentation.md`
 
 - `clear_rule = { <rule> = yes }` clears a rule that `set_rule` added; the documentation's example clears `can_not_declare_war = yes`. `set_rule` overrides all other rules on the country and takes a `desc`. [docs]
-- Vanilla uses `clear_rule` twice, in `common/ideas/bulgaria.txt`, inside idea blocks next to `country_lock_all_division_template = no`. [vanilla-confirmed 1.19.3]
-- `set_relation_rule` is marked deprecated in the documentation; use `add_relation_rule_override` and `remove_relation_rule_override` above. No vanilla script uses it. [docs], [vanilla-confirmed 1.19.3]
+- Vanilla uses `clear_rule` twice, in `common/ideas/bulgaria.txt`, inside idea blocks next to `country_lock_all_division_template = no`. [vanilla-confirmed 1.19.4.1]
+- `set_relation_rule` is marked deprecated in the documentation; use `add_relation_rule_override` and `remove_relation_rule_override` above. No vanilla script uses it. [docs], [vanilla-confirmed 1.19.4.1]
 - `ai_message`: the documentation entry is only the text "ai message... ?". No vanilla script uses it and its keys are unknown. [unverified]
 
 Corrections to the "Game rule list" in the `set_rule` row:
 
-- `can_use_underway_replenishment` is a valid rule that the list lacks. Vanilla sets it with `set_rule` in `common/special_projects/projects/naval_projects.txt`. [vanilla-confirmed 1.19.3]
+- `can_use_underway_replenishment` is a valid rule that the list lacks. Vanilla sets it with `set_rule` in `common/special_projects/projects/naval_projects.txt`. [vanilla-confirmed 1.19.4.1]
 - `can_join_factions_not_allowed_diplomacy` is only a localisation key (`CAN_JOIN_FACTIONS_NOT_ALLOWED_DIPLOMACY` in `localisation/english/rules_l_english.yml`). The lowercase name is in neither vanilla script nor `hoi4.exe`, so it is probably not a rule you can set. [unverified]
-- Of the 27 listed names, 24 occur in vanilla script. The three that do not are `can_join_factions_not_allowed_diplomacy`, `can_not_build_buildings` and `can_occupy_non_war`; the last two occur once each as strings in `hoi4.exe`. [vanilla-confirmed 1.19.3], [unverified]
-- The documentation for `add_relation_rule_override` spells a supported rule `can_send_volunteer`; vanilla uses `can_send_volunteers`, as the row above says. [vanilla-confirmed 1.19.3] `common/decisions/AUS.txt`
+- Of the 27 listed names, 23 occur in vanilla script. The four that do not are `can_declare_war_without_wargoal_when_in_war`, `can_join_factions_not_allowed_diplomacy`, `can_not_build_buildings` and `can_occupy_non_war`; all but `can_join_factions_not_allowed_diplomacy` occur once each as strings in `hoi4.exe`. [vanilla-confirmed 1.19.4.1], [unverified]
+- The documentation for `add_relation_rule_override` spells a supported rule `can_send_volunteer`; vanilla uses `can_send_volunteers`, as the row above says. [vanilla-confirmed 1.19.4.1] `common/decisions/AUS.txt`
 - The documentation example for `set_party_rule` spells the party selector `ideologly`, while the row above says `ideology`. No vanilla script uses `set_party_rule`, so neither spelling is confirmed. [unverified]
 <!-- kit:end id="country-rule-effects" -->
 
@@ -1687,11 +1688,11 @@ set_autonomy = {
 **Kit correction** `set_autonomy`, `puppet` and `release_autonomy`.
 
 - The documentation names the key `autonomy_state` and gives `end_wars` and `end_civil_wars` a default of `yes`. The `set_autonomy` row says `autonomous_state` and says `end_wars` defaults to no. [docs] `documentation/effects_documentation.md`
-- Vanilla accepts both key names. Within a few lines of `set_autonomy = {` it writes `autonomy_state` on 522 lines and `autonomous_state` on 82 (for example `common/decisions/JAP.txt`). Prefer `autonomy_state`. [vanilla-confirmed 1.19.3]
-- `keep_subjects` is not in the documentation; vanilla uses it twice in `common/national_focus/australia_taog.txt`. [vanilla-confirmed 1.19.3]
+- Vanilla accepts both key names. Within a few lines of `set_autonomy = {` it writes `autonomy_state` on 522 lines and `autonomous_state` on 83 (for example `common/decisions/JAP.txt`). Prefer `autonomy_state`. [vanilla-confirmed 1.19.4.1]
+- `keep_subjects` is not in the documentation; vanilla uses it twice in `common/national_focus/australia_taog.txt`. [vanilla-confirmed 1.19.4.1]
 - `release_autonomy` has two more keys, both default `no`: `release_non_owned_controlled = yes` also releases states you only control, and `force_change_controller_for_non_ally_controlled = yes` changes the controller of states that neither you nor your allies control. [docs]
-- Vanilla uses the first key in 3 files and the second once (`common/national_focus/indonesia.txt`). [vanilla-confirmed 1.19.3]
-- The `puppet` row writes the folder as `commmon/autonomous_states/`; it is `common/autonomous_states/`. [vanilla-confirmed 1.19.3]
+- Vanilla uses the first key in 3 files and the second once (`common/national_focus/indonesia.txt`). [vanilla-confirmed 1.19.4.1]
+- The `puppet` row writes the folder as `commmon/autonomous_states/`; it is `common/autonomous_states/`. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="autonomy-defaults" -->
 
 ### Governments in exile <a id="Governments_in_exile"></a>
@@ -1920,7 +1921,7 @@ launch_nuke = {
 <!-- kit:begin id="war-keys" at="section:War" -->
 **Kit addition** Keys the documentation lists that the rows in this section lack. [docs] `documentation/effects_documentation.md`
 
-- `add_to_war` takes `single_target_only = yes`: join only against the given `enemy` instead of against every enemy of `targeted_alliance`. Vanilla uses it in 2 files (`common/decisions/SOV.txt`). [docs], [vanilla-confirmed 1.19.3]
+- `add_to_war` takes `single_target_only = yes`: join only against the given `enemy` instead of against every enemy of `targeted_alliance`. Vanilla uses it in 3 files (`common/decisions/SOV.txt`). [docs], [vanilla-confirmed 1.19.4.1]
 - `launch_nuke` takes `province`. The documentation's own example misspells it as `provinve`; do not copy that. [docs]
 <!-- kit:end id="war-keys" -->
 
@@ -1969,7 +1970,7 @@ give_resource_rights = {
 ```
 
 <!-- kit:begin id="resource-days-key" at="section:Resources" -->
-**Kit addition** `add_resource` also takes `days = <int>` in the documentation: the resource is added or removed temporarily. No vanilla script passes `days`. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.3]
+**Kit addition** `add_resource` also takes `days = <int>` in the documentation: the resource is added or removed temporarily. No vanilla script passes `days`. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="resource-days-key" -->
 
 ### Buildings <a id="Buildings"></a>
@@ -2131,9 +2132,9 @@ add_days_remove  = {
 <!-- kit:begin id="targeted-decision-correction" at="section:Decisions" -->
 **Kit correction** The note on `activate_targeted_decision` ("Only works on missions; regular decisions targeted this way become visible but do not activate") does not match 1.19.3. The documentation says the effect activates targeted decisions "or mission", ignoring the normal trigger conditions, the cooldown and fire-only-once, and that it cannot activate one that is already active in the interface. Its `target` may be a country tag or a state. [docs] `documentation/effects_documentation.md`
 
-Vanilla passes 62 distinct decisions to the effect, and 43 of them have no `days_mission_timeout`, so they are not missions. One example is `BUL_aircraft_agreements` in `common/decisions/BUL.txt`, which has `allowed = { always = no }` with the comment "Activated from effect". [vanilla-confirmed 1.19.3]
+Vanilla passes 63 distinct decisions to the effect, and 44 of them have no `days_mission_timeout`, so they are not missions. One example is `BUL_aircraft_agreements` in `common/decisions/BUL.txt`, which has `allowed = { always = no }` with the comment "Activated from effect". [vanilla-confirmed 1.19.4.1]
 
-The `unlock_decision_category_tooltip` row names the folder `common/decisions/catergories/`. The folder is `common/decisions/categories/`. [vanilla-confirmed 1.19.3]
+The `unlock_decision_category_tooltip` row names the folder `common/decisions/catergories/`. The folder is `common/decisions/categories/`. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="targeted-decision-correction" -->
 
 ### Missions <a id="Missions"></a>
@@ -2262,7 +2263,7 @@ remove_ideas = {
 ```
 
 <!-- kit:begin id="swap-ideas-keys" at="section:Ideas" -->
-**Kit addition** `swap_ideas` also takes `days = <n>` (the duration of the new idea) and `add_days = <n>` (added to or subtracted from the duration). The documentation's syntax line calls the effect `swap_idea`; the name is `swap_ideas`. No vanilla script uses either key. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.3]
+**Kit addition** `swap_ideas` also takes `days = <n>` (the duration of the new idea) and `add_days = <n>` (added to or subtracted from the duration). The documentation's syntax line calls the effect `swap_idea`; the name is `swap_ideas`. No vanilla script uses either key. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="swap-ideas-keys" -->
 
 ### Units <a id="Units"></a>
@@ -2675,7 +2676,7 @@ set_equipment_version_number = {
 ```
 
 <!-- kit:begin id="equipment-license-key" at="section:Equipment" -->
-**Kit addition** `create_production_license` takes `version_name = "<name>"` inside `equipment` to pick a variant by name. `new_prioritised` (default yes) ignores `version` but not `version_name`. If nothing matches, no license is created. No vanilla script uses `version_name`. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.3]
+**Kit addition** `create_production_license` takes `version_name = "<name>"` inside `equipment` to pick a variant by name. `new_prioritised` (default yes) ignores `version` but not `version_name`. If nothing matches, no license is created. Vanilla uses `version_name` in 3 `create_production_license` blocks, in `common/national_focus/siam.txt` and `common/on_actions/07_nsb_on_actions.txt`. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="equipment-license-key" -->
 
 ### Military <a id="Military"></a>
@@ -2748,7 +2749,7 @@ add_ace = {
 <!-- kit:begin id="navy-transfer-key" at="section:Military" -->
 **Kit addition** `transfer_navy` has an optional `is_government_in_exile = yes` (default no): the navy is then tagged as exile and goes back to its owner if the owner returns from exile. The effect does not support carriers. [docs] `documentation/effects_documentation.md`
 
-Vanilla uses the key in 3 files, for example `common/decisions/_exiled_governments_decisions.txt`. [vanilla-confirmed 1.19.3]
+Vanilla uses the key in 3 files, for example `common/decisions/_exiled_governments_decisions.txt`. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="navy-transfer-key" -->
 
 ### Doctrine <a id="Doctrine"></a>
@@ -3168,9 +3169,9 @@ add_naval_commander_role = {
 <!-- kit:begin id="create-leader-keys" at="section:Unit_leaders" -->
 **Kit correction** Keys of `create_corps_commander`, `create_field_marshal` and `create_navy_leader`.
 
-- The documentation entries are one-line stubs and do not call the effects deprecated, and vanilla script still uses them (33, 5 and 3 blocks in 14, 2 and 3 files). The "Deprecated" note in the `create_corps_commander` row comes from the wiki. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.3]
-- Vanilla gives the portrait as `gfx = GFX_...` (24 blocks) or `portrait_path = "..."` (8 blocks), never as `picture`. [vanilla-confirmed 1.19.3]
-- The numeric leader id is written `id = <n>` in vanilla (9 `create_corps_commander` blocks, for example `id = 600` in `common/national_focus/china_shared.txt`), not `legacy_id`. `legacy_id` is not used in vanilla script and occurs once as a string in `hoi4.exe`. `remove_unit_leader = <id>` takes that id. [vanilla-confirmed 1.19.3], [docs]
+- The documentation entries are one-line stubs and do not call the effects deprecated, and vanilla script still uses them (33, 4 and 3 blocks in 14, 1 and 3 files). The "Deprecated" note in the `create_corps_commander` row comes from the wiki. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1]
+- Vanilla gives the portrait as `gfx = GFX_...` (24 blocks) or `portrait_path = "..."` (7 blocks), never as `picture`. [vanilla-confirmed 1.19.4.1]
+- The numeric leader id is written `id = <n>` in vanilla (9 `create_corps_commander` blocks, for example `id = 600` in `common/national_focus/china_shared.txt`), not `legacy_id`. `legacy_id` is not used in the vanilla blocks of these three effects (it appears in character definitions and `add_*_role` blocks) and occurs once as a string in `hoi4.exe`. `remove_unit_leader = <id>` takes that id. [vanilla-confirmed 1.19.4.1], [docs]
 <!-- kit:end id="create-leader-keys" -->
 
 <!-- kit:begin id="unit-leader-captivity" at="section:Unit_leaders" -->
@@ -3553,7 +3554,7 @@ set_keyed_oob = {
 <!-- kit:begin id="history-only-claim" at="section:History" -->
 **Kit note** "Only within history files" is documented for the order of battle effects: `set_oob`, `set_air_oob`, `set_naval_oob` and `set_keyed_oob` are "only intended to be used within history files". The documentation does not say this for `recruit_character` (it says "must be in country scope") or `generate_character` (its example runs inside `every_country`). [docs] `documentation/effects_documentation.md`
 
-Vanilla uses `recruit_character` in 257 history files and `generate_character` only in 3 files under `history/general/`; no vanilla file uses `set_keyed_oob`. [vanilla-confirmed 1.19.3]
+Vanilla uses `recruit_character` in 257 history files and `generate_character` only in 3 files under `history/general/`; no vanilla file uses `set_keyed_oob`. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="history-only-claim" -->
 
 ### Variable <a id="Variable"></a>
@@ -3878,10 +3879,10 @@ strategic_state_location = {
 <!-- kit:begin id="state-event-and-locations" at="section:General_3" -->
 **Kit correction** `state_event` and strategic locations.
 
-- `state_event` supports `trigger_for` (see the `event-effect-options` block above), which the parameter list lacks although the example uses it. Vanilla uses `trigger_for = controller` on all 10 lines that use the key, for example in `events/USA.txt`. [docs], [vanilla-confirmed 1.19.3]
+- `state_event` supports `trigger_for` (see the `event-effect-options` block above), which the parameter list lacks although the example uses it. Vanilla uses `trigger_for = controller` on all 10 lines that use the key, for example in `events/USA.txt`. [docs], [vanilla-confirmed 1.19.4.1]
 - The strategic location effects are `strategic_province_location` and `strategic_state_location`. The pair inside is `<location id> = <province id>`; the location ids are defined in `common/strategic_locations/strategic_locations.txt`. [docs] `documentation/effects_documentation.md`
-- Vanilla puts both effects inside the `history = { }` block of a state file (11 and 8 files), for example `history/states/116-Malta.txt`: `strategic_province_location = { defensible_coastline = 12003 }`. [vanilla-confirmed 1.19.3]
-- `common/strategic_locations/documentation.md` names the effect `strategic_location_building` and shows a `strategic_location` block; the effects documentation's example also writes `strategic_location`. Neither is the effect name vanilla uses. [docs], [vanilla-confirmed 1.19.3]
+- Vanilla puts both effects inside the `history = { }` block of a state file (11 and 8 files), for example `history/states/116-Malta.txt`: `strategic_province_location = { defensible_coastline = 12003 }`. [vanilla-confirmed 1.19.4.1]
+- `common/strategic_locations/documentation.md` names the effect `strategic_location_building` and shows a `strategic_location` block; the effects documentation's example also writes `strategic_location`. Neither is the effect name vanilla uses. [docs], [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="state-event-and-locations" -->
 
 ### Buildings <a id="Buildings_2"></a>
@@ -4010,7 +4011,7 @@ remove_building = {
 
 For `damage_building` with only a `state` given, all provinces of that state are searched for the first matching province building. [docs]
 
-No vanilla script uses `tag` or `tags` with `remove_building`. It uses `province` in 3 files, for example `common/national_focus/germany.txt`. [vanilla-confirmed 1.19.3]
+No vanilla script uses `tag` or `tags` with `remove_building`. It uses `province` in 3 files, for example `common/national_focus/germany.txt`. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="building-tags" -->
 
 ### Resistance and compliance <a id="Resistance_and_compliance"></a>
@@ -4322,7 +4323,7 @@ set_can_be_fired_in_advisor_role = {
 <!-- kit:begin id="character-portrait-groups" at="section:General_4" -->
 **Kit correction** The `set_portraits` row labels its keys "Army scope" and "Character scope". The keys are portrait groups, each holding `small` and `large`, in the same shape as `portraits = { }` in a character file; the documentation's example uses `army` and `civilian`. `character = <token>` is only needed outside character scope. [docs] `documentation/effects_documentation.md`
 
-Of 53 vanilla `set_portraits` blocks in 23 files, 36 use `civilian`, 27 use `army` and none uses `navy`, although vanilla character files use `navy` in 29 files. Whether `set_portraits` accepts `navy` is not documented. [vanilla-confirmed 1.19.3] `common/decisions/JAP.txt`, [unverified]
+Of 53 vanilla `set_portraits` blocks in 23 files, 36 use `civilian`, 27 use `army` and none uses `navy`, although vanilla character files use `navy` in 13 files. Whether `set_portraits` accepts `navy` is not documented. [vanilla-confirmed 1.19.4.1] `common/decisions/JAP.txt`, [unverified]
 
 ```text
 JAP_kozo_sasaki = {
@@ -4408,8 +4409,8 @@ replace_unit_leader_trait = {
 
 All rows: [docs] `documentation/effects_documentation.md`.
 
-- Vanilla uses `capture_by` in `common/on_actions/00_on_actions.txt` (`on_deployed_leader_defeated`, guarded by `can_be_captured = yes`, with `capture_by = FROM`) and in `common/decisions/_debug_decisions.txt`. It runs `var:target_leader = { release_from_captivity = yes }` in `victim_effects` of `common/raids/land_infiltration_raids.txt`. [vanilla-confirmed 1.19.3]
-- No vanilla script uses the three `set_leader_*` effects. [vanilla-confirmed 1.19.3]
+- Vanilla uses `capture_by` in `common/on_actions/00_on_actions.txt` (`on_deployed_leader_defeated`, guarded by `can_be_captured = yes`, with `capture_by = FROM`) and in `common/decisions/_debug_decisions.txt`. It runs `var:target_leader = { release_from_captivity = yes }` in `victim_effects` of `common/raids/land_infiltration_raids.txt`. [vanilla-confirmed 1.19.4.1]
+- No vanilla script uses the three `set_leader_*` effects. [vanilla-confirmed 1.19.4.1]
 - The `set_leader_*` names look like the older unit leader versions of `set_character_name` and `set_portraits`; whether they still work on recruited characters is not documented. [unverified]
 - `replace_unit_leader_trait`: its documentation entry says only "add trait to unit leader" and no vanilla script uses it, so the keys `trait` and `replace` and the "extremely buggy" warning in its row are unverified. [unverified]
 - The documentation's example for `remove_unit_leader_role` names `remove_corps_commander_role`, which is not an effect. The effect is `remove_unit_leader_role = yes` and removes every unit leader role. [docs]
@@ -4489,7 +4490,7 @@ add_temporary_buff_to_units = {
 ```
 
 <!-- kit:begin id="combat-corrections" at="section:Combat" -->
-**Kit correction** `add_temporary_buff_to_units` is not an effect in 1.19.3. It is absent from `documentation/effects_documentation.md`, from all vanilla script and from the strings of `hoi4.exe`; so are its keys `combat_offense` and `combat_breakthrough`. Several other keys in its row (`org_damage_multiplier`, `str_damage_multiplier`, `war_support_reduction_on_damage`) are modifier names. Do not use the row or its example; `add_timed_unit_leader_trait` above is the documented way to give a leader a time-limited bonus. [unverified], [docs] `documentation/modifiers_documentation.md`
+**Kit correction** `add_temporary_buff_to_units` is not an effect in 1.19.4.1. It is absent from `documentation/effects_documentation.md`, from all vanilla script and from the strings of `hoi4.exe`; so are its keys `combat_offense` and `combat_breakthrough`. Several other keys in its row (`org_damage_multiplier`, `str_damage_multiplier`, `war_support_reduction_on_damage`) are modifier names. Do not use the row or its example; `add_timed_unit_leader_trait` above is the documented way to give a leader a time-limited bonus. [unverified], [docs] `documentation/modifiers_documentation.md`
 
 **Kit addition** `boost_planning` (scope: CHARACTER). The documentation says it boosts the planning of the units that belong to the army group or navy of the unit leader. It lists no keys, and no vanilla script uses it. [docs] `documentation/effects_documentation.md`, [unverified]
 <!-- kit:end id="combat-corrections" -->
@@ -4589,11 +4590,11 @@ add_unit_medal_to_latest_entry = {
 <!-- kit:begin id="division-scope-notes" at="section:Division_scope" -->
 **Kit note** Division scope effects. All statements are [docs] `documentation/effects_documentation.md` unless marked.
 
-- `change_division_template` is documented as `change_division_template = "My Template Name"`. Vanilla uses only the block form of the example above, `change_division_template = { division_template = "..." }`, in 4 files, for example `common/national_focus/sweden.txt`. [vanilla-confirmed 1.19.3]
-- `set_unit_organization = <0 to 1>` is described as "set unit organization to current * value". Vanilla runs it on enemy divisions with `0.50` in `common/scripted_effects/00_scripted_effects.txt` (`SF_PARA_combat_effect`). [vanilla-confirmed 1.19.3]
+- `change_division_template` is documented as `change_division_template = "My Template Name"`. Vanilla uses only the block form of the example above, `change_division_template = { division_template = "..." }`, in 4 files, for example `common/national_focus/sweden.txt`. [vanilla-confirmed 1.19.4.1]
+- `set_unit_organization = <0 to 1>` is described as "set unit organization to current * value". Vanilla runs it on enemy divisions with `0.50` in `common/scripted_effects/00_scripted_effects.txt` (`SF_PARA_combat_effect`). [vanilla-confirmed 1.19.4.1]
 - `promote_officer_to_general = yes`: the value is ignored. No vanilla script uses it.
 - `reseed_division_commander` is marked as a debug and testing effect, and `add_random_valid_trait_from_unit` works only when the division scope is the root scope. No vanilla script uses either.
-- `destroy_unit = yes` is used in the `division_effects` of raid outcomes (8 uses in 2 files, `common/raids/land_infiltration_custom.txt` and `common/raids/naval_commando_raids.txt`). [vanilla-confirmed 1.19.3]
+- `destroy_unit = yes` is used in the `division_effects` of raid outcomes (10 uses in 2 files, `common/raids/land_infiltration_custom.txt` and `common/raids/naval_commando_raids.txt`). [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="division-scope-notes" -->
 
 ## MIO scope <a id="MIO_scope"></a>
@@ -4732,7 +4733,7 @@ raid_damage_units = {
 **Kit addition** Where raid scope comes from. Each outcome of a raid (`failure`, `limited_success`, `success`, `critical_success`) has `actor_effects` and `victim_effects`, both in raid instance scope, and `division_effects` in division scope. [docs] `common/raids/_documentation.md`
 
 - Raid instance scope has the dynamic variables `var:actor_country`, `var:victim_country`, `var:target_state` and `var:target_province`; use them to change scope, for example `var:target_state = { damage_building = { type = dam damage = 1 province = var:ROOT.target_province } }`. [docs] `common/raids/_documentation.md`
-- Vanilla also changes scope with `var:target_leader` in `victim_effects` of `common/raids/land_infiltration_raids.txt`. [vanilla-confirmed 1.19.3]
+- Vanilla also changes scope with `var:target_leader` in `victim_effects` of `common/raids/land_infiltration_raids.txt`. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="raid-scope-notes" -->
 
 ## Special Project scope <a id="Special_Project_scope"></a>
@@ -4791,9 +4792,9 @@ modify_mproject_flag = {
 **Kit correction**
 
 - The `modify_project_flag` example is written `modify_mproject_flag`, which is not an effect. Use `modify_project_flag = { flag = my_flag value = 3 }`. The documentation's own example calls it `modify_facility_flag`, which is a copy error as well. [docs] `documentation/effects_documentation.md`
-- `modify_mproject_flag` is absent from the documentation, from vanilla script and from `hoi4.exe`. [vanilla-confirmed 1.19.3]
+- `modify_mproject_flag` is absent from the documentation, from vanilla script and from `hoi4.exe`. [vanilla-confirmed 1.19.4.1]
 - `prototyp_reward_option` in `complete_prototype_reward_option` is not a typo on the wiki. The documentation spells the key this way, and the string exists in `hoi4.exe`. Keep the spelling. [docs] `documentation/effects_documentation.md`
-- No vanilla script uses `complete_prototype_reward_option`. [vanilla-confirmed 1.19.3] `common/special_projects/prototype_rewards/`
+- No vanilla script uses `complete_prototype_reward_option`. [vanilla-confirmed 1.19.4.1] `common/special_projects/prototype_rewards/`
 - `raid_reduce_project_progress_ratio` (State scope, "Raids" section above) runs with a raid instance as root. [docs]
 <!-- kit:end id="special-project-corrections" -->
 
@@ -4955,9 +4956,9 @@ random_list = {
 }
 ```
 
-Vanilla uses `seed =` in 47 lists across 15 files and `log = yes` inside `random_list` in 6 files. [vanilla-confirmed 1.19.3] `common/decisions/CHI_decisions.txt`. Using `seed = random` to get a fresh result on repeated runs is a reading of the name and the documentation, not a documented guarantee. [unverified]
+Vanilla has 43 `seed =` lines across 12 files (47 in 15 when commented-out lines count) and uses `log = yes` inside `random_list` in 3 files. [vanilla-confirmed 1.19.4.1] `common/decisions/CHI_decisions.txt`. Using `seed = random` to get a fresh result on repeated runs is a reading of the name and the documentation, not a documented guarantee. [unverified]
 
-`fixed_random_seed` is not in any game documentation file. Vanilla script uses it only under `common/decisions/` (13 files), which fits the statement above that it is for decisions. [vanilla-confirmed 1.19.3] `common/decisions/BUL.txt`
+`fixed_random_seed` is not in any game documentation file. Vanilla script uses it only under `common/decisions/` (13 files), which fits the statement above that it is for decisions. [vanilla-confirmed 1.19.4.1] `common/decisions/BUL.txt`
 <!-- kit:end id="random-list-options" -->
 
 ### Tooltip manipulation <a id="Tooltip_manipulation"></a>
@@ -5083,7 +5084,7 @@ meta_effect = {
 }
 ```
 
-- Vanilla builds idea names like this in `common/scripted_effects/CZE_scripted_effects.txt`, with the bare `[?variable]` form and no `|.0` suffix; the matching ideas are named `..._1_idea` and so on. `meta_effect` appears in 2 vanilla files. [vanilla-confirmed 1.19.3]
+- Vanilla builds idea names like this in `common/scripted_effects/CZE_scripted_effects.txt`, with the bare `[?variable]` form and no `|.0` suffix; the matching ideas are named `..._1_idea` and so on. `meta_effect` appears in 2 vanilla files. [vanilla-confirmed 1.19.4.1]
 - The wiki's `|.0` suffix (above) is the safe choice when the variable may hold decimals. [unverified]
 <!-- kit:end id="meta-effect-notes" -->
 
@@ -5145,13 +5146,13 @@ Base game scripted effects:
 | store_core_states_on_game_start | Country | `store_core_states_on_game_start = yes` | Stores the current core states of the current scope in an [array](<data_structures.md>) in ROOT's scope. | The created array will be named `core_states_at_game_start`. Intended to be called in [country history](<country_creation.md>) only once. |
 
 <!-- kit:begin id="scripted-effect-corrections" at="section:Useful_scripted_effects" -->
-**Kit correction** Notes on the scripted effects above. They are defined in `common/scripted_effects/00_scripted_effects.txt`, except `lerp`. [vanilla-confirmed 1.19.3]
+**Kit correction** Notes on the scripted effects above. They are defined in `common/scripted_effects/00_scripted_effects.txt`, except `lerp`. [vanilla-confirmed 1.19.4.1]
 
 - `lerp` is defined in `common/scripted_effects/SWE_scripted_effects.txt`, a Sweden file, not in the generic base file. It reads `lerp_a`, `lerp_b` and `lerp_x` from variables of any kind (vanilla sets `lerp_x` as a temp variable and the other two with `set_variable`) and writes the regular variable `lerp_result` in the calling scope. [vanilla-confirmed 1.19.3]
 - Prefer the native `lerp` math function, `{ value = 10 lerp = { to = 20 alpha = 0.5 } }`, which clamps `alpha` between 0 and 1. [docs] `documentation/script_math_functions.md`
-- `add_potential_special_forces_tree` raises the variable `sf_trees` (it starts at 2 when unset); `remove_potential_special_forces_tree` lowers it. [vanilla-confirmed 1.19.3]
-- `remove_any_country_role_from_character` removes the advisor roles in the slots it lists: `air_chief`, `army_chief`, `navy_chief`, `high_command`, `theorist` and `political_advisor`. [vanilla-confirmed 1.19.3]
-- `add_ruling_to_fas`, `add_ruling_to_com` and `add_ruling_to_neu` exist next to `add_ruling_to_dem`. [vanilla-confirmed 1.19.3]
+- `add_potential_special_forces_tree` raises the variable `sf_trees` (it starts at 2 when unset); `remove_potential_special_forces_tree` lowers it. [vanilla-confirmed 1.19.4.1]
+- `remove_any_country_role_from_character` removes the advisor roles in the slots it lists: `air_chief`, `army_chief`, `navy_chief`, `high_command`, `theorist` and `political_advisor`. [vanilla-confirmed 1.19.4.1]
+- `add_ruling_to_fas`, `add_ruling_to_com` and `add_ruling_to_neu` exist next to `add_ruling_to_dem`. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="scripted-effect-corrections" -->
 
 ---

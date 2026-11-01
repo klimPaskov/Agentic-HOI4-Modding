@@ -108,7 +108,7 @@ my_design_group = {
 - Module slot comparisons: `slot = category`, `slot = module`, `slot < module`, `slot > module`, `slot = empty`, `slot > empty`, nested `{ module = ... any_of = { ... } upgrade > current }`. A lesser restriction favours the earliest module, a greater one the latest.
 - `roles` are generated dynamically and can be used with `role_ratio`.
 - `allowed_modules` fills remaining open slots after requirements are met; modules not in the list are not used.
-- `allowed_types` does nothing in `ai_equipment`. [vanilla-confirmed 1.19.3]
+- `allowed_types` does nothing in `ai_equipment`. [vanilla-confirmed 1.19.4.1]
 - The documentation does not state a precedence rule between a group `priority` and a design `priority`; both are described as adding weight. Compare cases rather than assuming a product or a sum.
 - `priority` factors of 0 on a design ("let's not waste XP here" in vanilla) stop the AI spending XP on obsolete designs.
 - Related strategy types: `equipment_variant_production_factor`, `production_upgrade_desire_offset`, `*_xp_spend_priority` (`equipment_variant`).

@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Console commands", revision 105778, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="105778" sources="documentation/console_commands_documentation.md localisation/ignored_loc_keys.txt launcher-settings.json documentation/triggers_documentation.md documentation/effects_documentation.md" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105778" sources="documentation/console_commands_documentation.md localisation/ignored_loc_keys.txt launcher-settings.json documentation/triggers_documentation.md documentation/effects_documentation.md" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `documentation/console_commands_documentation.md` (386 commands and 44 tweakable variables), `localisation/ignored_loc_keys.txt`, `launcher-settings.json`, and a string search of `hoi4.exe` for commands the documentation does not list.
 Kit blocks added: an intro and a glossary, three correction blocks (rows that differ from the documentation, commands that are gone or undocumented, and the "no longer exists" and "unknown what" notes), a table of the commands that matter most for modding (`loc_check` family, `debug_checkportraitssanity`, reload commands, `event`, `effect`, `eval_effect`, `trigger`, `error`, `list_*`), eight tables for the 180 documented commands the page never named, and the 33 tweakable variables it never named.
 Gaps left: the documentation gives one line per command, so what `loc_check` counts as a bad key, which `reload <target>` names work, and how `setowner` and `annex all` take arguments are [unverified]. Commands were not run in the game.
+**1.19.4.1 re-check (2026-11-01).** The documentation index diff shows one change: `debug_types` is gone, so the file now lists 385 commands (70 of them not in release builds) and the same 44 tweakable variables, and `hoi4.exe` 1.19.4.1 no longer contains the string. The correction block at the end of the page now lists it as removed, and the build named in the [docs] blocks is 1.19.4.1. The two other statements that cite changed files were re-measured: the debug launch arguments in `launcher-settings.json` and the `FUNDS_FOR_SIZE_UP` default of 700. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -45,12 +46,12 @@ Hint: You must launch the game in debug mode `-debug` in order to use the consol
 Press Shift+2, §, ~, \\, \`, ", º, ^ or ALT+2+1, or Shift+3 to access the console (key varies based on keyboard layout)
 
 <!-- kit:begin id="cc-intro" at="section:List_of_commands" -->
-**Kit note** What the installed documentation covers. `documentation/console_commands_documentation.md` lists 386 console commands and 44 tweakable variables. 71 of the commands and 30 of the variables carry the label "Not available in release build". [docs]
+**Kit note** What the installed documentation covers. `documentation/console_commands_documentation.md` lists 385 console commands and 44 tweakable variables. 70 of the commands and 30 of the variables carry the label "Not available in release build". [docs] 1.19.4.1 removed `debug_types`, which 1.19.3 listed as not available in release builds. [docs]
 
-- Rows below marked "Not in release build" are those labelled commands. Do not rely on them in the shipped game; 33 of them are rows already on this page (listed in the correction block at the end of the page). [docs]
-- A tweakable variable is a switch you type by name. A Boolean one toggles when typed alone, turns on with a non-zero number after it, and off with `0` (`Agency.AutoComplete 1`). All 44 variables in 1.19.3 are Boolean. [docs]
+- Rows below marked "Not in release build" are those labelled commands. Do not rely on them in the shipped game; 32 of them are rows already on this page (listed in the correction block at the end of the page). [docs]
+- A tweakable variable is a switch you type by name. A Boolean one toggles when typed alone, turns on with a non-zero number after it, and off with `0` (`Agency.AutoComplete 1`). All 44 variables in 1.19.4.1 are Boolean. [docs]
 - `help` prints all commands or one description, `helplog` writes the whole command list to `game.log`, and `trigger_docs` (aliases `effect_docs`, `scripting_docs`, `docs`) prints the trigger, effect and variable documentation. [docs]
-- Debug launch: the Paradox launcher entry "Open game in Debug Mode" starts `hoi4.exe` with `-gdpr-compliant -debug_mode` (`launcher-settings.json`). [vanilla-confirmed 1.19.3] The `is_debug` trigger documentation names the argument `-debug`. [docs] How the game matches the two spellings is not documented. [unverified]
+- Debug launch: the Paradox launcher entry "Open game in Debug Mode" starts `hoi4.exe` with `-gdpr-compliant -debug_mode` (`launcher-settings.json`). [vanilla-confirmed 1.19.4.1] The `is_debug` trigger documentation names the argument `-debug`. [docs] How the game matches the two spellings is not documented. [unverified]
 - `Focus.NoChecks`, `Decision.NoChecks`, `Operation.Instant` and the other dotted names in the variable list are tweakable variables, not commands, so they are typed alone to toggle. `Agency.Instant` is the exception: it is a command that switches on four other switches. [docs]
 <!-- kit:end id="cc-intro" -->
 
@@ -83,7 +84,7 @@ MIOs is an acronym for Military Industrial Organizations
 | --- | --- |
 | Alias | A second name for the same command. The documentation lists them per command and either name works. |
 | Selected scope | Many commands act on what is currently selected: `effect`, `eval_effect`, `trigger`, `eval_trigger` run in the selected scope, and `list_flags`, `list_vars` and `list_modifiers` read the selected country, state or unit leader. |
-| Tweakable variable | A named on/off switch (all Boolean in 1.19.3) that is toggled by typing its name. |
+| Tweakable variable | A named on/off switch (all Boolean in 1.19.4.1) that is toggled by typing its name. |
 | Release build | The shipped game. Commands labelled "Not available in release build" are missing from it. |
 | Debug mode | The game started with the debug launch option. The `debug` command toggles it on and off. |
 | MIO | Military industrial organisation (`AddFunds`, `AddSize`, `AddTaskCapacity`). |
@@ -198,9 +199,9 @@ MIOs is an acronym for Military Industrial Organizations
 ```
 
 <!-- kit:begin id="cc-fix-useful" at="section:Useful_commands" -->
-**Kit correction** Rows in the table above that differ from the 1.19.3 documentation. All rows: [docs] `documentation/console_commands_documentation.md`, except where a cell says [unverified].
+**Kit correction** Rows in the table above that differ from the 1.19.4.1 documentation. All rows: [docs] `documentation/console_commands_documentation.md`, except where a cell says [unverified].
 
-| Page row | What 1.19.3 documents |
+| Page row | What 1.19.4.1 documents |
 | --- | --- |
 | `acclimization` | The command is spelled `acclimatization`, alias `acc`, arguments `<climate_name>, <value 0-100>`. The spelling `acclimization` appears nowhere in the documentation or in hoi4.exe. [unverified] |
 | `add_core <state_id>` | Takes a `<Province ID>`, not a state id. |
@@ -221,7 +222,7 @@ MIOs is an acronym for Military Industrial Organizations
 | `add_autonomy` | Listed with no description and no arguments. |
 | `set_country_flag` | The documentation says it sets the flag on a given tag for a duration and defaults to the current country, value 1 and no expiry, but its argument list shows only the flag name. The page's note that another tag does not work is not in the documentation. [unverified] |
 | `Focus.AutoComplete (fa)` | `fa` is documented as its own Boolean tweakable variable next to `Focus.AutoComplete`. |
-| `addfunds` ("adds 1000 funds") | The command is `AddFunds` with aliases `mio.AddFunds` and `IndustrialOrganisation.AddFunds`. The first argument is an optional MIO token, the second an optional amount. With no amount it adds `NDefines::NIndustrialOrganisation::FUNDS_FOR_SIZE_UP`, which is 700 in 1.19.3 (`common/defines/00_defines.lua`, [vanilla-confirmed 1.19.3]), not 1000. |
+| `addfunds` ("adds 1000 funds") | The command is `AddFunds` with aliases `mio.AddFunds` and `IndustrialOrganisation.AddFunds`. The first argument is an optional MIO token, the second an optional amount. With no amount it adds `NDefines::NIndustrialOrganisation::FUNDS_FOR_SIZE_UP`, which is 700 in 1.19.4.1 (`common/defines/00_defines.lua`, [vanilla-confirmed 1.19.4.1]), not 1000. |
 | `addTaskCapacity`, `addSize` | Real names `AddTaskCapacity` and `AddSize`, with the same `mio.` and `IndustrialOrganisation.` aliases. A negative task capacity is allowed but the result is capped at 0. |
 | `add_cic_bank` | Also has the aliases `stonks`, `cic` and `bank`. A negative value subtracts. |
 | `force_operative_detection` | Alias `snitch`. The documentation text is a copy of `print_intel_network`'s, so its description is unreliable. |
@@ -266,9 +267,9 @@ Several other commands previously mentioned, such as event, are useful in moddin
 | goto_state `[state id]` | Moves the camera position to the specified state. |  |
 
 <!-- kit:begin id="cc-fix-modding" at="section:Modding-useful_commands" -->
-**Kit correction** Rows in the table above that differ from the 1.19.3 documentation. All rows: [docs] `documentation/console_commands_documentation.md`, except where a cell says [unverified].
+**Kit correction** Rows in the table above that differ from the 1.19.4.1 documentation. All rows: [docs] `documentation/console_commands_documentation.md`, except where a cell says [unverified].
 
-| Page row | What 1.19.3 documents |
+| Page row | What 1.19.4.1 documents |
 | --- | --- |
 | `reload [<type>]` | There is no `reload` entry in the documentation. hoi4.exe contains the string `reload %s` and the messages `' reloaded!`, `No such reload target that takes arguments: '`, `Please specify the file name/target` and `defines reloaded!`. The page's examples (`reload loc`, `reload focus`, `reload landcombat.gui`) are therefore not confirmed. [unverified] The documented reload commands are `reloadoob`, `reloadinterface`, `reloadtechnologies`, `reload_textures` (aliases `rt`, `reload_texture`), `reloadfx`, `reloadweather`, `cityreload`, `rebuildlayers`, `update_loc`, `updateequipments` and `updatesubunits`. |
 | `effect (e) [<scripted_effect_name>]` | Arguments are `<tag> scripted_effect_name`. It runs a scripted effect on the selected scope. Inline effect code goes through `eval_effect`. |
@@ -285,12 +286,12 @@ Several other commands previously mentioned, such as event, are useful in moddin
 <!-- kit:begin id="cc-modding-highlights" at="section:Modding-useful_commands" -->
 #### Kit: Commands that matter most when modding <a id="kit-cc-modding-highlights"></a>
 
-All rows: [docs] `documentation/console_commands_documentation.md`, except the cell marked [unverified]. Every command here exists in 1.19.3 under exactly this name, and none is labelled "Not available in release build".
+All rows: [docs] `documentation/console_commands_documentation.md`, except the cell marked [unverified]. Every command here exists in 1.19.4.1 under exactly this name, and none is labelled "Not available in release build".
 
 | Command | Aliases | Arguments (as documented) | Use |
 | --- | --- | --- | --- |
 | `loc_check` |  |  | Checks the localisation the game knows about for missing keys. Per-kind variants are in the next row. The exclusion list is `localisation/ignored_loc_keys.txt` (see the note below the table). |
-| `loc_check_characters`, `loc_check_decisions`, `loc_check_events`, `loc_check_focuses`, `loc_check_modifiers`, `loc_check_national_spirits` | | | The same check restricted to one kind of content. These six are the only variants in 1.19.3. |
+| `loc_check_characters`, `loc_check_decisions`, `loc_check_events`, `loc_check_focuses`, `loc_check_modifiers`, `loc_check_national_spirits` | | | The same check restricted to one kind of content. These six are the only variants in 1.19.4.1. |
 | `debug_checkportraitssanity` |  |  | Checks the portraits of all characters and writes failures to the error log. Run it after adding characters or portrait sprites, then read `error.log`. |
 | `error` |  |  | Shows errors from the log. |
 | `event` |  | `event id, <Target Country Tag>` | Fires an event for the target country. |
@@ -463,9 +464,9 @@ Duplicate localisation keys are not a console check. The game reports them at st
 | armageddon | Causes 100% damage to all state/shared/provincial buildings and facilities every state in every country. | Although the nuke detonation animation is played for all states, it does not give the Nuclear Fallout state modifier. |
 
 <!-- kit:begin id="cc-fix-other" at="section:Other_in-game_commands" -->
-**Kit correction** Rows in the tables above that the 1.19.3 documentation does not support. Sources: [docs] `documentation/console_commands_documentation.md`; where a cell says [unverified], the evidence is a string search in `hoi4.exe`.
+**Kit correction** Rows in the tables above that the 1.19.4.1 documentation does not support. Sources: [docs] `documentation/console_commands_documentation.md`; where a cell says [unverified], the evidence is a string search in `hoi4.exe`.
 
-| Page row | Status in 1.19.3 |
+| Page row | Status in 1.19.4.1 |
 | --- | --- |
 | `winwars`, `debug_nuking` | Absent from the documentation, and no such string is in hoi4.exe [unverified]. That agrees with the page's "no longer exists" notes (1.9.1 and 1.15.1). The documented replacement for nuking is `launch_nuke` (alias `ln`): it launches a nuke at given provinces without checking conditions. |
 | `nextsong`, `poll`, `reloadsupply (relsup)`, `add_interest`, `remove_interest`, `requestgamestate`, `debug_commands`, `debug_volume`, `debug_ai_budget`, `profilelog`, `filewatcher`, `browser_base_url` | Not in the documentation and no matching command string in hoi4.exe. Treat them as removed. [unverified] hoi4.exe has only a `nofilewatcher` launch argument and game-state command class names, not a `filewatcher` or `requestgamestate` console string. |
@@ -474,8 +475,9 @@ Duplicate localisation keys are not a console check. The game reports them at st
 | `ShowTechBonus` ("unknown what it does") | A Boolean tweakable variable, labelled "Not available in release build", with no description in the documentation. |
 | `night`, `massconquer`, `aircombat`, `debug_achievements_clear`, `gbreload`, `oos`, `toggle_silhouette_portraits` | The page calls these developer-only or not working. The documentation confirms it: all are labelled "Not available in release build". |
 | `remove_core` ("Command does not work") | Documented with a `<Province ID>` argument. Whether it works is not stated. [unverified] |
+| `debug_types` | Removed in 1.19.4.1. 1.19.3 documented it as not available in release builds; the 1.19.4.1 documentation no longer lists it and hoi4.exe 1.19.4.1 contains no `debug_types` string. [docs] |
 
-The page rows that the documentation labels "Not available in release build" are: `debug_crash`, `ShowTechBonus`, `massconquer`, `aircombat`, `ai_front_dump`, `debug_types`, `debug_diploactions`, `debug_dumpdiploactions`, `debug_assert`, `debug_fronts`, `debug_off_front_snap`, `debug_lines`, `debug_entities`, `debug_info`, `debug_particle`, `debug_textures`, `debug_texture`, `debug_wireframe`, `debug_achievements_clear`, `debug_air_vs_land`, `gbreload`, `gbpaint`, `oos`, `hdr`, `hdr_debug`, `srgb`, `bloom`, `PostEffectVolumes.Default`, `night`, `createlean`, `hsv`, `browser`, `toggle_silhouette_portraits`. Do not expect them to work in the shipped game. [docs]
+The page rows that the documentation labels "Not available in release build" are: `debug_crash`, `ShowTechBonus`, `massconquer`, `aircombat`, `ai_front_dump`, `debug_diploactions`, `debug_dumpdiploactions`, `debug_assert`, `debug_fronts`, `debug_off_front_snap`, `debug_lines`, `debug_entities`, `debug_info`, `debug_particle`, `debug_textures`, `debug_texture`, `debug_wireframe`, `debug_achievements_clear`, `debug_air_vs_land`, `gbreload`, `gbpaint`, `oos`, `hdr`, `hdr_debug`, `srgb`, `bloom`, `PostEffectVolumes.Default`, `night`, `createlean`, `hsv`, `browser`, `toggle_silhouette_portraits`. Do not expect them to work in the shipped game. [docs]
 <!-- kit:end id="cc-fix-other" -->
 
 <!-- kit:begin id="cc-economy" at="section:Other_in-game_commands" -->

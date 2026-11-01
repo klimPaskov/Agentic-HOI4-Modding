@@ -1,12 +1,13 @@
 # Game rule modding
 
-*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files. The wiki has no page for this topic. CC BY-SA 3.0 (see LICENSE.txt).*
+*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files and re-checked against 1.19.4.1. The wiki has no page for this topic. CC BY-SA 3.0 (see LICENSE.txt).*
 <!-- kit:page -->
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" sources="common/game_rules/ common/achievements.txt common/on_actions/ common/scripted_triggers/ common/ai_strategy/ common/ai_strategy_plans/ common/operations/ documentation/triggers_documentation.md interface/game_rules.gfx localisation/english/game_rules_l_english.yml" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" sources="common/game_rules/ common/achievements.txt common/on_actions/ common/scripted_triggers/ common/ai_strategy/ common/ai_strategy_plans/ common/operations/ documentation/triggers_documentation.md interface/game_rules.gfx localisation/english/game_rules_l_english.yml" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Written from: the header comment and all 86 rules of `common/game_rules/00_game_rules.txt`, every `has_game_rule` use in vanilla script (2253 calls, counted by folder, rule and option), the two rule triggers in `documentation/triggers_documentation.md`, the rule sprites and `game_rules_l_english.yml`.
 The wiki covers the file format in a section of [Bookmark modding](<bookmark_modding.md#Game_rules_2>). This page adds the 1.19.3 key census, the script-side patterns and the traps. The wiki redirect "Game rules" points at Custom difficulty, which is a different system.
 Gaps left: how the engine matches rule and option names (case), what a missing rule evaluates to, and the six hard-coded rules are inferred from vanilla only.
+**1.19.4.1 re-check (2026-11-01).** Ten statements depended on files the update changed (achievements, on actions, diplomacy triggers, the game rules localisation, and every script file that the has_game_rule counts cover), and all ten were re-measured on the installed files. Two numbers moved: the total of has_game_rule calls is now 2256 (the review text above says 2253), and 17 rule ids (was 18) differ from their definition only by case. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -29,7 +30,7 @@ Gaps left: how the engine matches rule and option names (case), what a missing r
 
 ---
 
-A game rule is a named setting with a short list of options that the player picks in the game setup. The rule file only declares the setting and its texts. A rule changes nothing by itself: script reads it with `has_game_rule`, or the engine reads it for a few hard-coded rules. [vanilla-confirmed 1.19.3] `common/game_rules/00_game_rules.txt` and a search of all vanilla script for `has_game_rule`.
+A game rule is a named setting with a short list of options that the player picks in the game setup. The rule file only declares the setting and its texts. A rule changes nothing by itself: script reads it with `has_game_rule`, or the engine reads it for a few hard-coded rules. [vanilla-confirmed 1.19.4.1] `common/game_rules/00_game_rules.txt` and a search of all vanilla script for `has_game_rule`.
 
 ## Overview <a id="Overview"></a>
 
@@ -75,12 +76,12 @@ Counts over the 512 `option` and `default` blocks (434 plus 78). [vanilla-confir
 - A `default` block does not have to come first: in `peace_score_to_faction_leader` the option `YES` is listed first and `NO` is the default. [vanilla-confirmed 1.19.3] `00_game_rules.txt`.
 - `allow_achievements = no` blocks achievements when that option is selected. If the key is missing it is `yes` for the default option and `no` for every other option. [vanilla-confirmed 1.19.3] header of `00_game_rules.txt`.
 - Vanilla sets `allow_achievements = yes` on chosen non-default options, for example `AI_ONLY` in `allow_coups` and `FASCIST` in `GER_ai_behavior`. [vanilla-confirmed 1.19.3] `00_game_rules.txt`.
-- The trigger `game_rules_allow_achievements = yes` is true when every active rule option allows achievements. It is in the `possible` block of the vanilla achievements (293 lines in `common/achievements.txt`). [docs] `documentation/triggers_documentation.md`; [vanilla-confirmed 1.19.3] `common/achievements.txt`.
+- The trigger `game_rules_allow_achievements = yes` is true when every active rule option allows achievements. It is in the `possible` block of the vanilla achievements (293 lines in `common/achievements.txt`). [docs] `documentation/triggers_documentation.md`; [vanilla-confirmed 1.19.4.1] `common/achievements.txt`.
 - The wiki's Bookmark modding page says a modded game already has another checksum and no achievements, so `allow_achievements` changes nothing in a mod. [unverified]
 
 ### Groups <a id="Groups"></a>
 
-- A group is only a string. No block defines it; the string is the loc key of the group name. [vanilla-confirmed 1.19.3] no `common/` file defines a group; `localisation/english/game_rules_l_english.yml` holds the names.
+- A group is only a string. No block defines it; the string is the loc key of the group name. [vanilla-confirmed 1.19.4.1] no `common/` file defines a group; `localisation/english/game_rules_l_english.yml` holds the names.
 - Vanilla uses seven groups: `RULE_GROUP_AI_BEHAVIOR` (51 rules), `RULE_GROUP_GAME_SETUP` (15), `RULE_GROUP_GENERAL_FOREIGN_POLICY` (11), `RULE_GROUP_GAMEPLAY` (3), `RULE_GROUP_PEACE_SCORE` (3), `RULE_GROUP_COVERT_ACTIONS` (2), `RULE_GROUP_GENERAL_UI` (1). [vanilla-confirmed 1.19.3] `00_game_rules.txt`.
 - A mod that uses a new group string only needs a loc entry for it. [unverified] inferred from the vanilla pattern.
 
@@ -88,11 +89,11 @@ Counts over the 512 `option` and `default` blocks (434 plus 78). [vanilla-confir
 
 - Rule-level `required_dlc` appears on 61 rules, with 15 different DLC names. The names are written the way the game spells them, with no accents: `"La Resistance"`, `"Gotterdammerung"`. [vanilla-confirmed 1.19.3] `00_game_rules.txt`.
 - Option-level `required_dlc` and `exclude_dlc` let one option id exist in two versions. `AST_ai_behavior` has two `RANDOM` options, one with `exclude_dlc = "Thunder at Our Gates"` and one with `required_dlc = "Thunder at Our Gates"`. [vanilla-confirmed 1.19.3] `00_game_rules.txt`.
-- Base-game script reads rules that need a DLC. `allow_release_nations` has `required_dlc = "Death or Dishonor"` and `common/scripted_triggers/diplomacy_scripted_triggers.txt` reads it 49 times without a DLC check on that name. What a missing rule evaluates to is not documented; the wiki says error.log entries may follow. [vanilla-confirmed 1.19.3] for the reads, [unverified] for the result.
+- Base-game script reads rules that need a DLC. `allow_release_nations` has `required_dlc = "Death or Dishonor"` and `common/scripted_triggers/diplomacy_scripted_triggers.txt` reads it 49 times without a DLC check on that name. What a missing rule evaluates to is not documented; the wiki says error.log entries may follow. [vanilla-confirmed 1.19.4.1] for the reads, [unverified] for the result.
 
 ## Localisation and GFX <a id="Localisation_and_GFX"></a>
 
-Vanilla keys are in `localisation/english/game_rules_l_english.yml`. [vanilla-confirmed 1.19.3]
+Vanilla keys are in `localisation/english/game_rules_l_english.yml`. [vanilla-confirmed 1.19.4.1]
 
 | Text | Source key | Vanilla example |
 | --- | --- | --- |
@@ -102,7 +103,7 @@ Vanilla keys are in `localisation/english/game_rules_l_english.yml`. [vanilla-co
 | Option hover text | option `desc` | `RULE_ALLOW_COUPS_FREE_DESC` |
 | Trigger tooltip | built in | `TRIGGER_HAS_GAME_RULE: "Game rule §Y$RULE$§! is set to the option §Y$OPTION$§!."` in `triggers_l_english.yml` |
 
-- AI behaviour rule titles start with a flag token: `GER_AI_BEHAVIOR: "@GER Germany"`. [vanilla-confirmed 1.19.3] `game_rules_l_english.yml`.
+- AI behaviour rule titles start with a flag token: `GER_AI_BEHAVIOR: "@GER Germany"`. [vanilla-confirmed 1.19.4.1] `game_rules_l_english.yml`.
 - `$RULE$` and `$OPTION$` in the trigger tooltip are filled from the rule title and option label. [unverified]
 - `icon` names a `spriteType`. Vanilla defines them in `interface/game_rules.gfx` with textures in `gfx/game_rules/`; 16 of 17 textures are 29 by 30 pixels and `allow_paratroopers.dds` is 32 by 32. [vanilla-confirmed 1.19.3] `interface/game_rules.gfx`, DDS headers.
 - The icon is optional: 70 of the 86 vanilla rules have none. [vanilla-confirmed 1.19.3] `00_game_rules.txt`.
@@ -123,7 +124,7 @@ has_game_rule = {
 
 ### Patterns in vanilla <a id="Patterns_in_vanilla"></a>
 
-Counts are `has_game_rule` calls in `.txt` files. [vanilla-confirmed 1.19.3] whole game folder.
+Counts are `has_game_rule` calls in `.txt` files. [vanilla-confirmed 1.19.4.1] whole game folder.
 
 | Pattern | Where it appears | Example |
 | --- | --- | --- |
@@ -136,12 +137,12 @@ Counts are `has_game_rule` calls in `.txt` files. [vanilla-confirmed 1.19.3] who
 ### AI behaviour rules <a id="AI_behaviour_rules"></a>
 
 - All 51 AI behaviour rules have a `default` option named `DEFAULT` and an option `RANDOM`; 47 also have an option with `HISTORICAL` in its name. The other options are one per national path. [vanilla-confirmed 1.19.3] `00_game_rules.txt`.
-- `RANDOM` is resolved once at game start. `on_startup` tests `option = RANDOM` (60 times in `common/on_actions/00_on_actions.txt`), rolls a `random_list` and sets a country flag such as `GER_AI_RANDOM_KAISER`. The plan's `enable` then reads `OR = { has_country_flag = GER_AI_RANDOM_KAISER has_game_rule = { rule = GER_ai_behavior option = KAISER } }`. Only one plan, `CHL_historical_strategy_plan.txt`, tests `RANDOM` itself, together with a flag. [vanilla-confirmed 1.19.3] `common/on_actions/00_on_actions.txt`, `common/ai_strategy_plans/GER_alternate_strategy_plan.txt`.
+- `RANDOM` is resolved once at game start. `on_startup` tests `option = RANDOM` (60 times in `common/on_actions/00_on_actions.txt`), rolls a `random_list` and sets a country flag such as `GER_AI_RANDOM_KAISER`. The plan's `enable` then reads `OR = { has_country_flag = GER_AI_RANDOM_KAISER has_game_rule = { rule = GER_ai_behavior option = KAISER } }`. Only one plan, `CHL_historical_strategy_plan.txt`, tests `RANDOM` itself, together with a flag. [vanilla-confirmed 1.19.4.1] `common/on_actions/00_on_actions.txt`, `common/ai_strategy_plans/GER_alternate_strategy_plan.txt`.
 - See [AI modding](<ai_modding.md#AI_strategy_plans>) for plan syntax.
 
 ### Hard-coded rules <a id="Hard-coded_rules"></a>
 
-- Six rules are never read by vanilla script: `allow_paratroopers`, `maximum_fort_level`, `allow_scorched_earth`, `peace_score_to_overlord`, `peace_score_to_faction_leader`, `peace_score_reset_low_scores`. Their effect must come from the engine; script can still test them with `has_game_rule`. [vanilla-confirmed 1.19.3] search of every `.txt` file for `has_game_rule`; engine reading is [unverified].
+- Six rules are never read by vanilla script: `allow_paratroopers`, `maximum_fort_level`, `allow_scorched_earth`, `peace_score_to_overlord`, `peace_score_to_faction_leader`, `peace_score_reset_low_scores`. Their effect must come from the engine; script can still test them with `has_game_rule`. [vanilla-confirmed 1.19.4.1] search of every `.txt` file for `has_game_rule`; engine reading is [unverified].
 - The peace score rules go with defines such as `PEACE_SCORE_TRANSFERRED_TO_FACTION_LEADER = 0.1` and `PEACE_SCORE_RESET_LOW_SCORE_THRESHOLD = 0.05`. The comment above them says to update the matching loc keys when the values change. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
 
 ## Related systems <a id="Related_systems"></a>
@@ -198,7 +199,7 @@ available = {
 
 ## Traps <a id="Traps"></a>
 
-- Rule and option names in vanilla script do not always match the case of the definition: 18 rule ids differ only by case (script `SWE_AI_BEHAVIOR`, definition `SWE_ai_behavior`) and 4 option names do (`default` against `DEFAULT`). No vanilla call names a rule that does not exist, so the engine very likely ignores case. Copy the spelling of the definition anyway. [vanilla-confirmed 1.19.3] cross-check of all calls against `00_game_rules.txt`; case-insensitivity is [unverified].
+- Rule and option names in vanilla script do not always match the case of the definition: 17 rule ids differ only by case (script `SWE_AI_BEHAVIOR`, definition `SWE_ai_behavior`) and 4 option names do (`default` against `DEFAULT`). No vanilla call names a rule that does not exist, so the engine very likely ignores case. Copy the spelling of the definition anyway. [vanilla-confirmed 1.19.4.1] cross-check of all calls against `00_game_rules.txt`; case-insensitivity is [unverified].
 - The same option token may appear in two option blocks of one rule when `required_dlc` or `exclude_dlc` separates them. Do not reuse a token otherwise. [vanilla-confirmed 1.19.3] `AST_ai_behavior`. Behaviour for plain duplicates is [unverified].
 - `has_game_rule` with a rule or option that is spelled wrongly is not caught by the file format. Search your script for every `rule =` after you rename a rule. [unverified]
 - A new rule changes script only: giving it a hard-coded effect is not possible. For a visible behaviour, add `has_game_rule` to the triggers, `allow_branch` blocks or on actions that should change. [unverified] inferred from the six vanilla rules that script never reads.

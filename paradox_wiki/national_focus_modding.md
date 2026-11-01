@@ -2,11 +2,12 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "National focus modding", revision 105626, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="105626" sources="common/national_focus/ common/continuous_focus/ common/focus_inlay_windows/ common/ai_strategy_plans/ common/technology_tags/ common/defines/00_defines.lua documentation/effects_documentation.md documentation/triggers_documentation.md documentation/console_commands_documentation.md documentation/modifiers_documentation.md interface/nationalfocusview.gfx localisation/english/core_l_english.yml localisation/english/focus_filter_tag_l_english.yml hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105626" sources="common/national_focus/ common/continuous_focus/ common/focus_inlay_windows/ common/ai_strategy_plans/ common/technology_tags/ common/defines/00_defines.lua documentation/effects_documentation.md documentation/triggers_documentation.md documentation/console_commands_documentation.md documentation/modifiers_documentation.md interface/nationalfocusview.gfx localisation/english/core_l_english.yml localisation/english/focus_filter_tag_l_english.yml hoi4.exe" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all 81 files in `common/national_focus/` (67 trees, 10,333 focuses, 335 shared and 280 joint focuses), `common/continuous_focus/`, the 7 inlay windows and their `documentation.md`, `common/ai_strategy_plans/`, the focus effects and triggers in `documentation/`, the focus defines, and error strings in `hoi4.exe`.
 - Kit blocks added: tree and shortcut keys, a corrected inlay window format and declaration, prerequisite, exclusivity and relative position rules, cost units, icon extras, search filters missing from the table, trigger and bypass keys, focus effects (`load_focus_tree`, `add_tech_bonus`), shared and joint focus facts, continuous focus palettes, AI strategy plan keys.
 - Errors found in the wiki text: the inlay window example is missing a closing brace and the average tree example has `tag = 25` where `add = 25` is meant; the search filter table lacks three real filters; the wiki's `advisor_portrait`, `gfx_name_fallback`, `inlay_window_id`, `BHR_*` names are placeholders.
 - Gaps left: the `on_uncomplete` focus key, the `allowed_is_joint` key and `copy_completed_from` are named by the game but not documented or used in a way that shows their effect; the wiki sentence under `joint_trigger` is cut off in the captured text.
+**1.19.4.1 re-check (2026-11-01).** About 55 statements depended on files the update changed (the 59 changed focus files, the AI strategy plans, the technology categories, two English loc files and the vanilla-wide effect counts), and all were re-measured. Numbers that moved: tree focuses 10,333 to 10,341, `prerequisite` blocks 10,901 to 10,912, `mutually_exclusive` entries 2,612 to 2,614, the cost, search filter and availability key counts, `complete_national_focus` 3,152 to 3,150 and `add_tech_bonus` 1,948 to 1,946 (the `technology` count is now 78). Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -100,11 +101,11 @@ initial_show_position = {
 `focus = { ... }` are the focuses themselves. Each focus that's put within the focus tree will. The focuses **have** to be within a `focus_tree = { ... }` in order to let the game know which focus tree exactly to assign them to. If a `focus = { ... }` blocks ends up outside of a `focus_tree = { ... }` or within another `focus = { ... }`, this gets marked within the [error log](<modding.md>) as "focus" being an unexpected token, fixed by adjusting brackets as needed.
 
 <!-- kit:begin id="focus-tree-vanilla" at="section:Focus_tree" -->
-**Kit addition** Focus tree files in vanilla 1.19.3 (81 files in `common/national_focus/`). All counts: [vanilla-confirmed 1.19.3] `common/national_focus/`.
+**Kit addition** Focus tree files in vanilla 1.19.4.1 (81 files in `common/national_focus/`). All counts: [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
 
 | Top-level block | Count |
 | --- | --- |
-| `focus_tree` | 67, holding 10,333 focuses |
+| `focus_tree` | 67, holding 10,341 focuses |
 | `shared_focus` | 335 |
 | `joint_focus` | 280 |
 | `style` | 22 |
@@ -112,9 +113,9 @@ initial_show_position = {
 
 - Tree keys: `id`, `country` and `default` appear in all 67 trees; `continuous_focus_position` in 57; `initial_show_position` in 29; `shared_focus` lines (71 of them) in 37; `shortcut` blocks (52) in 7 trees; `inlay_window` in 5 trees (6 declarations); `reset_on_civilwar` in 1; `alternate_icon_set` in 1 (`germany.txt`).
 - `country` blocks: 64 trees use `factor` with `modifier` blocks, 2 use only `factor` and 1 uses `base` with `modifier`.
-- `default`: 66 trees write `default = no` and one writes `default = yes`, the generic tree `generic_focus` in `generic.txt`. `hoi4.exe` has the message "Only one national focus tree should be default, switching from %s to %s". [vanilla-confirmed 1.19.3] for the values, [unverified] for the message.
-- `initial_show_position` forms: `x` with `y` (22 trees, one with an `offset`), `focus` (6 trees, one with an `offset`) and one tree with only `x`. `hoi4.exe` reports "Both focus and the pair x, y cannot be specified at the same time" and "initial_show_position references invalid focus". [vanilla-confirmed 1.19.3] for the forms, [unverified] for the messages.
-- `shortcut` always has `name` and `target`; `scroll_wheel_factor` is set in 28 of the 52 shortcut blocks and `trigger` in 31. [vanilla-confirmed 1.19.3]
+- `default`: 66 trees write `default = no` and one writes `default = yes`, the generic tree `generic_focus` in `generic.txt`. `hoi4.exe` has the message "Only one national focus tree should be default, switching from %s to %s". [vanilla-confirmed 1.19.4.1] for the values, [unverified] for the message.
+- `initial_show_position` forms: `x` with `y` (22 trees, one with an `offset`), `focus` (6 trees, one with an `offset`) and one tree with only `x`. `hoi4.exe` reports "Both focus and the pair x, y cannot be specified at the same time" and "initial_show_position references invalid focus". [vanilla-confirmed 1.19.4.1] for the forms, [unverified] for the messages.
+- `shortcut` always has `name` and `target`; `scroll_wheel_factor` is set in 28 of the 52 shortcut blocks and `trigger` in 31. [vanilla-confirmed 1.19.4.1]
 - `hoi4.exe` also has "Duplicate focus name will cause database problems" and "Focus %s has a hash collision in tree %s, this must be fixed for correct behaviour", which fits the wiki's warning about duplicate focus ids. [unverified]
 <!-- kit:end id="focus-tree-vanilla" -->
 
@@ -170,7 +171,7 @@ focus_tree = {
 ```
 
 <!-- kit:begin id="focus-example-corrections" at="section:Examples" -->
-**Kit correction** The "Average tree" example above has `tag = 25` inside the `country` modifier. The `tag` trigger takes a country tag, so this is a typo for `add = 25`; vanilla writes `modifier = { add = 10 tag = GER }` in `common/national_focus/germany.txt`. [vanilla-confirmed 1.19.3]
+**Kit correction** The "Average tree" example above has `tag = 25` inside the `country` modifier. The `tag` trigger takes a country tag, so this is a typo for `add = 25`; vanilla writes `modifier = { add = 10 tag = GER }` in `common/national_focus/germany.txt`. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="focus-example-corrections" -->
 
 ### Shortcuts <a id="Shortcuts"></a>
@@ -304,7 +305,7 @@ inlay_window = {
 ```
 
 <!-- kit:begin id="focus-inlay-declaration" at="section:Declaration" -->
-**Kit addition** Declarations in vanilla 1.19.3. All items: [vanilla-confirmed 1.19.3] `common/national_focus/`.
+**Kit addition** Declarations in vanilla 1.19.4.1. All items: [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
 
 - 6 `inlay_window` declarations in 5 trees (`australia_taog_focus` declares two windows at the same position, an empty one and the real one; `mu_czech_focus`, `german_focus`, `japan_wtt_focus`, `siam_focus`). Positions are in pixels, for example `x = 4500 y = 1150` for the German window.
 - The Czech and Japanese trees add `override_position = { x = ... y = ... trigger = { ... } }` blocks (10 and 9) that move the window when branches are hidden. `override_position` is not mentioned in the documentation or on this page. A vanilla position block is also written with a capital `X` once, so key names look case-insensitive; keep them lowercase.
@@ -369,12 +370,12 @@ In order to avoid this, duplicate focus IDs must be avoided. A simple way to dec
 Additionally, the game intends for a focus' prerequisite to be placed above the focus that requires it and it is unable to correctly generate the path to the focus otherwise, which will show up as having a path that uses the wrong sprites in the 90° turns.
 
 <!-- kit:begin id="focus-prerequisites-vanilla" at="section:Interaction_with_other_focuses" -->
-**Kit addition** Prerequisites, exclusivity and relative positions, checked against vanilla 1.19.3 (focuses inside the 67 `focus_tree` blocks).
+**Kit addition** Prerequisites, exclusivity and relative positions, checked against vanilla 1.19.4.1 (focuses inside the 67 `focus_tree` blocks).
 
-- Prerequisite logic matches the wiki: one `prerequisite` block with several `focus` lines means one of them, several blocks mean all blocks, and mixing both means every block must be met, each by one of its focuses. The vanilla tooltips say so: "Requires one of the following" (`FOCUS_SINGLE_OR_PREREQ_HEADER`) and "Requires all of the following" (`FOCUS_AND_PREREQ_HEADER`, `FOCUS_MIX_PREREQ_HEADER`) in `localisation/english/core_l_english.yml`. [vanilla-confirmed 1.19.3]
-- Vanilla uses 10,901 `prerequisite` blocks: 1,784 list more than one focus, 825 focuses have more than one block and 61 focuses mix both forms. [vanilla-confirmed 1.19.3] `common/national_focus/`.
-- `mutually_exclusive` is written on both focuses: all 2,612 vanilla entries have the reverse entry on the target focus, and none is one-way. `hoi4.exe` contains the log text "Has mutual exclusivity with ... but the other focus does not." [vanilla-confirmed 1.19.3] for the counts, [unverified] for the message.
-- `relative_position_id` is used by 10,139 focuses and always points at a focus defined earlier in the same tree (none later, none in another tree). `hoi4.exe` contains "Error in focus: ... does not exist. Relative focus must be scripted before this." and "Circular reference detected for relative position.", so define the anchor focus first and never close a loop. [vanilla-confirmed 1.19.3] for the counts, [unverified] for the messages.
+- Prerequisite logic matches the wiki: one `prerequisite` block with several `focus` lines means one of them, several blocks mean all blocks, and mixing both means every block must be met, each by one of its focuses. The vanilla tooltips say so: "Requires one of the following" (`FOCUS_SINGLE_OR_PREREQ_HEADER`) and "Requires all of the following" (`FOCUS_AND_PREREQ_HEADER`, `FOCUS_MIX_PREREQ_HEADER`) in `localisation/english/core_l_english.yml`. [vanilla-confirmed 1.19.4.1]
+- Vanilla uses 10,912 `prerequisite` blocks: 1,786 list more than one focus, 828 focuses have more than one block and 61 focuses mix both forms. [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
+- `mutually_exclusive` is written on both focuses: all 2,614 vanilla entries in tree focuses have the reverse entry on the target focus, and none is one-way. `hoi4.exe` contains the log text "Has mutual exclusivity with ... but the other focus does not." [vanilla-confirmed 1.19.4.1] for the counts, [unverified] for the message.
+- `relative_position_id` is used by 10,145 focuses and always points at a focus defined earlier in the same tree (none later, none in another tree). `hoi4.exe` contains "Error in focus: ... does not exist. Relative focus must be scripted before this." and "Circular reference detected for relative position.", so define the anchor focus first and never close a loop. [vanilla-confirmed 1.19.4.1] for the counts, [unverified] for the messages.
 <!-- kit:end id="focus-prerequisites-vanilla" -->
 
 ### Cost <a id="Cost"></a>
@@ -386,8 +387,8 @@ Focus cost can be changed on a per focus basis via the `reduce_focus_completion_
 <!-- kit:begin id="focus-cost-units" at="section:Cost" -->
 **Kit addition** Cost units. `cost` counts in units of `FOCUS_POINT_DAYS` days: `NDefines.NFocus.FOCUS_POINT_DAYS = 7` ("Each point takes a week"), with `FOCUS_PROGRESS_PEACE = 1`, `FOCUS_PROGRESS_WAR = 1` and `MAX_SAVED_FOCUS_PROGRESS = 10`. At the default progress of 1 per day, `cost = 10` is 70 days. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
 
-- Vanilla costs: 10 in 6,738 of 10,334 entries (70 days), 5 in 3,484 (35 days); the rest are 0, 1, 2, 3, 4, 12, 15, 20, 30 or 35, or a file-scoped constant: `germany.txt` defines `@inner_circle_time_tier_1 = 20` and uses `cost = @inner_circle_time_tier_1`. No vanilla cost has decimals. [vanilla-confirmed 1.19.3] `common/national_focus/`.
-- `reduce_focus_completion_cost = { focus = <id> cost = N }` accepts script constants, and `focus` can be a single token or a list. Vanilla uses it 152 times. [docs] `documentation/effects_documentation.md` and [vanilla-confirmed 1.19.3].
+- Vanilla costs: 10 in 6,735 of 10,341 entries (70 days), 5 in 3,494 (35 days); the rest are 0, 1, 2, 3, 4, 12, 15, 20, 30 or 35, or a file-scoped constant: `germany.txt` defines `@inner_circle_time_tier_1 = 20` and uses `cost = @inner_circle_time_tier_1`. No vanilla cost has decimals. [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
+- `reduce_focus_completion_cost = { focus = <id> cost = N }` accepts script constants, and `focus` can be a single token or a list. Vanilla uses it 152 times. [docs] `documentation/effects_documentation.md` and [vanilla-confirmed 1.19.4.1].
 <!-- kit:end id="focus-cost-units" -->
 
 ### Icon <a id="Icon"></a>
@@ -472,11 +473,11 @@ spriteTypes = {
 When copying from the template, note to change the `animationmaskfile` in each animation within the sprite with the shine alongside the `texturefile` and `name`.
 
 <!-- kit:begin id="focus-icon-extras" at="section:Icon" -->
-**Kit addition** Icon keys and messages in vanilla 1.19.3.
+**Kit addition** Icon keys and messages in vanilla 1.19.4.1.
 
 - `hoi4.exe` has "Missing icon for focus: " and "Missing icon shine for focus: ", which fits the wiki's rule that both `GFX_name` and `GFX_name_shine` must exist. [unverified]
-- `overlay = GFX_...` is set in 94 focuses (`czechoslovakia_mu.txt` 44, `australia_taog.txt` 21, `philippines.txt` 17, `indonesia_joint.txt` 4, `japan.txt` 4, `china_communist_sea.txt` 3, `indonesia.txt` 1). The wiki does not mention it; the name suggests an image drawn over the icon. [vanilla-confirmed 1.19.3] `common/national_focus/` for the usage, [unverified] for the effect.
-- `alternate_icon = GFX_...` is set in 22 focuses, all in `germany.txt`, and the tree sets `alternate_icon_set = FOCUS_ICON_SET_HISTORICAL_KEY_FOCUS` (sprite `GFX_FOCUS_ICON_SET_HISTORICAL_KEY_FOCUS` in `interface/nationalfocusview.gfx`, name in `localisation/english/wuw_focus_l_english.yml`). A commented line in `germany.txt` shows the other set name `FOCUS_ALTERNATE_ICONS`, whose toggle button needs a localisation key and a `GFX_` sprite of the same name. [vanilla-confirmed 1.19.3]
+- `overlay = GFX_...` is set in 94 focuses (`czechoslovakia_mu.txt` 44, `australia_taog.txt` 21, `philippines.txt` 17, `indonesia_joint.txt` 4, `japan.txt` 4, `china_communist_sea.txt` 3, `indonesia.txt` 1). The wiki does not mention it; the name suggests an image drawn over the icon. [vanilla-confirmed 1.19.4.1] `common/national_focus/` for the usage, [unverified] for the effect.
+- `alternate_icon = GFX_...` is set in 22 focuses, all in `germany.txt`, and the tree sets `alternate_icon_set = FOCUS_ICON_SET_HISTORICAL_KEY_FOCUS` (sprite `GFX_FOCUS_ICON_SET_HISTORICAL_KEY_FOCUS` in `interface/nationalfocusview.gfx`, name in `localisation/english/wuw_focus_l_english.yml`). A commented line in `germany.txt` shows the other set name `FOCUS_ALTERNATE_ICONS`, whose toggle button needs a localisation key and a `GFX_` sprite of the same name. [vanilla-confirmed 1.19.4.1]
 - `hoi4.exe` also has "Missing alternate icon for focus: " and "Missing alternate icon shine for focus: ", so an alternate icon needs its own `_shine` sprite as well. [unverified]
 <!-- kit:end id="focus-icon-extras" -->
 
@@ -502,7 +503,7 @@ focus = {
 ```
 
 <!-- kit:begin id="focus-dynamic-vanilla" at="section:Dynamic_appearance" -->
-**Kit addition** Dynamic icons in vanilla 1.19.3. All counts: [vanilla-confirmed 1.19.3] `common/national_focus/`.
+**Kit addition** Dynamic icons in vanilla 1.19.4.1. All counts: [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
 
 - 254 focuses set `dynamic = yes` (127 in trees, 26 shared, 101 joint). 60 focuses write `icon` as a block; 24 of them set `dynamic = yes` and 36 do not, which is the case the wiki describes where the icon is chosen once at game start.
 - Every one of the 60 icon blocks contains a default entry written `GFX_name = yes`. `hoi4.exe` has "Focus %s (%s) does not have a default icon case." and "Focus %s (%s) has alternate icons but does not have a default case.", so always add the default. [unverified] (strings in `hoi4.exe`).
@@ -534,28 +535,28 @@ available = {
 `historical_ai = { ... }` decides when the AI is able to pick this focus with the historical focus turned on. This does not ensure it picks this focus, rather prevents it from picking it when false. This takes priority over the order of focuses granted within [AI strategy plans](#AI_strategy_plans): if the AI were to do this focus next by the plan, yet `historical_ai = { ... }` is false and historical focus is turned on, then it won't be able to.
 
 <!-- kit:begin id="focus-trigger-keys-vanilla" at="section:Triggers" -->
-**Kit addition** Availability keys in vanilla 1.19.3. Counts are focuses inside `focus_tree` blocks (10,333) unless stated. All rows: [vanilla-confirmed 1.19.3] `common/national_focus/`.
+**Kit addition** Availability keys in vanilla 1.19.4.1. Counts are focuses inside `focus_tree` blocks (10,341) unless stated. All rows: [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
 
 | Key | Focuses | Notes |
 | --- | --- | --- |
-| `available` | 9,721 | |
-| `bypass` | 5,882 | |
-| `available_if_capitulated` | 5,512 | across tree, shared and joint focuses: 4,142 `no`, 1,689 `yes` |
-| `cancel_if_invalid` | 3,806 | across all kinds: 3,477 `yes`, 563 `no` |
-| `continue_if_invalid` | 3,779 | across all kinds: 3,554 `no`, 458 `yes` |
+| `available` | 9,728 | |
+| `bypass` | 5,889 | |
+| `available_if_capitulated` | 5,514 | across tree, shared and joint focuses: 4,143 `no`, 1,690 `yes` |
+| `cancel_if_invalid` | 3,807 | across all kinds: 3,478 `yes`, 563 `no` |
+| `continue_if_invalid` | 3,780 | across all kinds: 3,555 `no`, 458 `yes` |
 | `allow_branch` | 523 | plus 20 shared and 11 joint |
-| `will_lead_to_war_with` | 776 | |
+| `will_lead_to_war_with` | 777 | |
 | `complete_tooltip` | 370 | |
 | `select_effect` | 75 | |
 | `enable_automatic_bypass = no` | 23 | |
 | `cancel` | 20 | |
-| `bypass_effect` | 16 | |
+| `bypass_effect` | 18 | |
 | `historical_ai` | 10 | |
 | `bypass_if_unavailable = yes` | 8 | |
 | `cancelable = no` | 2 | |
 
 - Vanilla writes the defaults explicitly (`cancel_if_invalid = yes`, `continue_if_invalid = no`), so a missing line is not a mistake.
-- The vanilla tooltips for the four outcomes when `available` turns false are `FOCUS_WILL_PAUSE`, `FOCUS_WILL_CANCEL`, `FOCUS_WILL_BYPASS_IF_UNAVAILABLE` and `FOCUS_WILL_CONTINUE` in `localisation/english/core_l_english.yml`, matching the key names above. [vanilla-confirmed 1.19.3]
+- The vanilla tooltips for the four outcomes when `available` turns false are `FOCUS_WILL_PAUSE`, `FOCUS_WILL_CANCEL`, `FOCUS_WILL_BYPASS_IF_UNAVAILABLE` and `FOCUS_WILL_CONTINUE` in `localisation/english/core_l_english.yml`, matching the key names above. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="focus-trigger-keys-vanilla" -->
 
 ### Effects <a id="Effects"></a>
@@ -584,11 +585,11 @@ Additionally, `bypass_effect = { ... }` is used to execute an effect when focus 
 - Forcefully marking the focus to be complete. This, for example, can be done by using [load_focus_tree](<effects.md>) for the same focus tree with the completed focuses being kept. Doing so will not interrupt the completion reward's execution.
 
 <!-- kit:begin id="focus-effects-vanilla" at="section:Effects" -->
-**Kit addition** Focus effects and triggers that this page does not name. Documentation: `documentation/effects_documentation.md` and `documentation/triggers_documentation.md` ([docs]). Uses are counted over `events/`, `common/` and `history/` ([vanilla-confirmed 1.19.3]).
+**Kit addition** Focus effects and triggers that this page does not name. Documentation: `documentation/effects_documentation.md` and `documentation/triggers_documentation.md` ([docs]). Uses are counted over `events/`, `common/` and `history/` ([vanilla-confirmed 1.19.4.1]).
 
 | Name | What the documentation says | Uses |
 | --- | --- | --- |
-| `complete_national_focus = <id>` | completes a focus for the country | 3,152 short; 36 in block form `{ focus = <id> use_side_message = yes originator_name = ... }`, which the documentation does not describe |
+| `complete_national_focus = <id>` | completes a focus for the country | 3,150 short; 36 in block form `{ focus = <id> use_side_message = yes originator_name = ... }`, which the documentation does not describe |
 | `unlock_national_focus = <id>` | unlocks a focus for the country | 354 |
 | `uncomplete_national_focus = { focus = <id> uncomplete_children = yes refund_political_power = yes }` | uncompletes a focus; both flags default to `no`; runs an `on_uncomplete` effect on each uncompleted focus if one is specified | 101 |
 | `activate_shine_on_focus = <id>`, `deactivate_shine_on_focus = <id>` | switch the shine on a focus; a completed focus cannot be given a shine and the current focus cannot lose it; tooltips show only in debug mode | 24 and 32 |
@@ -600,13 +601,13 @@ Additionally, `bypass_effect = { ... }` is used to execute an effect when focus 
 
 **`load_focus_tree`.** The documentation names `tree`, `keep_completed` (default `no`: keep the completed focuses of the old tree that also exist in the new one) and `copy_completed_from = <country>` (mark everything that country has completed as completed in the new tree); the effect retains finished shared focuses. [docs] `documentation/effects_documentation.md`.
 
-- Vanilla has 80 uses: 25 short (`load_focus_tree = <tree id>`) and 55 block form, every block with `tree` and `keep_completed`; none uses `copy_completed_from`. [vanilla-confirmed 1.19.3]
+- Vanilla has 80 uses: 25 short (`load_focus_tree = <tree id>`) and 55 block form, every block with `tree` and `keep_completed`; none uses `copy_completed_from`. [vanilla-confirmed 1.19.4.1]
 - `hoi4.exe` logs "Unable to find focus tree with ID: %s" for a wrong tree id. [unverified]
 
 **`add_tech_bonus`.** The documentation only says "adds a limited use tech bonus". [docs] `documentation/effects_documentation.md`.
 
-- Vanilla has 1,948 uses with the keys `name`, `bonus` or `ahead_reduction` (177 uses), `uses`, and either one or more `category` lines or one `technology` line (189 uses). [vanilla-confirmed 1.19.3] `common/national_focus/generic.txt` and others.
-- `category` takes a technology category from `common/technology_tags/00_technology.txt`, which lists 134 names, such as `industry` (117 uses), `construction_tech` (25 uses), `electronics` and `infantry_weapons`. There is no category called `construction`. [vanilla-confirmed 1.19.3]
+- Vanilla has 1,946 uses. Keys: `name` (1,893), `bonus` (1,899) or `ahead_reduction` (177, and 130 of those also write `bonus`), `uses` (1,918), and either one or more `category` lines (1,868 uses, 211 of them with two or more) or one `technology` line (78 uses). [vanilla-confirmed 1.19.4.1] `common/national_focus/generic.txt` and others.
+- `category` takes a technology category from `common/technology_tags/00_technology.txt`, which lists 134 names, such as `industry` (117 uses), `construction_tech` (25 uses), `electronics` and `infantry_weapons`. There is no category called `construction`. [vanilla-confirmed 1.19.4.1]
 
 ```text
 add_tech_bonus = {
@@ -618,7 +619,7 @@ add_tech_bonus = {
 }
 ```
 
-**`research_bonus`** is not an effect. It is a key of ideas (1,086 uses in `common/ideas/`), characters (15) and military industrial organizations (2), and `documentation/effects_documentation.md` has no effect of that name. In a focus reward use `add_tech_bonus`, or add an idea that carries `research_bonus`. [vanilla-confirmed 1.19.3] and [docs]
+**`research_bonus`** is not an effect. It is a key of ideas (1,086 uses in `common/ideas/`), characters (15) and military industrial organizations (2), and `documentation/effects_documentation.md` has no effect of that name. In a focus reward use `add_tech_bonus`, or add an idea that carries `research_bonus`. [vanilla-confirmed 1.19.4.1] and [docs]
 <!-- kit:end id="focus-effects-vanilla" -->
 
 ### Search filters <a id="Search_filters"></a>
@@ -680,9 +681,9 @@ A list of every base game focus filter:
 In addition, it is possible to set the priority of focus filters. This is done with the `search_filter_prios = { ... }` block *outside of the `focus_tree = { ... }`*. This priority is impossible to set to be focus tree-specific and instead is global. An entry within that block is done in the format of `FOCUS_FILTER_MY_MOD = 1200`, where the first part decides the filter and the second part decides the priority. Focus filters with the higher priority appear earlier in the top view. By default, the game does it in the file containing the generic focus tree: `/Hearts of Iron IV/common/national_focus/generic.txt`.
 
 <!-- kit:begin id="focus-search-filters-vanilla" at="section:Search_filters" -->
-**Kit addition** Search filters in vanilla 1.19.3. The focuses in `common/national_focus/` use 38 distinct `FOCUS_FILTER_*` names, and 9,044 of the 10,333 tree focuses set `search_filters`. The most used are `FOCUS_FILTER_INDUSTRY` (2,635 uses), `FOCUS_FILTER_POLITICAL` (2,550) and `FOCUS_FILTER_RESEARCH` (1,686). [vanilla-confirmed 1.19.3] `common/national_focus/`.
+**Kit addition** Search filters in vanilla 1.19.4.1. The focuses in `common/national_focus/` use 38 distinct `FOCUS_FILTER_*` names, and 8,980 of the 10,341 tree focuses write `search_filters` (9,052 lines, 944 of them empty blocks). The most used are `FOCUS_FILTER_INDUSTRY` (2,657 uses), `FOCUS_FILTER_POLITICAL` (2,551) and `FOCUS_FILTER_RESEARCH` (1,717). [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
 
-Real filters that the table above lacks. All rows: [vanilla-confirmed 1.19.3] `common/national_focus/`, `interface/nationalfocusview.gfx`, `localisation/english/focus_filter_tag_l_english.yml`.
+Real filters that the table above lacks. All rows: [vanilla-confirmed 1.19.4.1] `common/national_focus/`, `interface/nationalfocusview.gfx`, `localisation/english/focus_filter_tag_l_english.yml`.
 
 | Internal name | Uses | Localised name |
 | --- | --- | --- |
@@ -690,8 +691,8 @@ Real filters that the table above lacks. All rows: [vanilla-confirmed 1.19.3] `c
 | `FOCUS_FILTER_INNER_CIRCLE` | 30 | Inner Circle |
 | `FOCUS_FILTER_COMPLETED_BY_EVENT` | 13 | Completed Through Events |
 
-- `FOCUS_FILTER_INDUSTRIAL` (one use, in `paraguay_uruguay_shared_branch.txt`) has no sprite and no localisation key anywhere in the game files: it is a typo for `FOCUS_FILTER_INDUSTRY`. [vanilla-confirmed 1.19.3]
-- `search_filter_prios` in `generic.txt` holds 10 entries. Its entry `FOCUS_FILTER_MISSIOLINI = 110` does not match the name focuses use (`FOCUS_FILTER_ITA_MISSIOLINI`), so it probably never applies. `hoi4.exe` has "Prio is already set for focus tree filter" for a repeated entry. [vanilla-confirmed 1.19.3] for the entries, [unverified] for the effect and the message.
+- `FOCUS_FILTER_INDUSTRIAL` (one use, in `paraguay_uruguay_shared_branch.txt`) has no sprite and no localisation key anywhere in the game files: it is a typo for `FOCUS_FILTER_INDUSTRY`. [vanilla-confirmed 1.19.4.1]
+- `search_filter_prios` in `generic.txt` holds 10 entries. Its entry `FOCUS_FILTER_MISSIOLINI = 110` does not match the name focuses use (`FOCUS_FILTER_ITA_MISSIOLINI`), so it probably never applies. `hoi4.exe` has "Prio is already set for focus tree filter" for a repeated entry. [vanilla-confirmed 1.19.4.1] for the entries, [unverified] for the effect and the message.
 <!-- kit:end id="focus-search-filters-vanilla" -->
 
 ### Titlebar styles <a id="Titlebar_styles"></a>
@@ -786,7 +787,7 @@ spriteTypes = {
 ```
 
 <!-- kit:begin id="focus-titlebar-vanilla" at="section:Titlebar_styles" -->
-**Kit addition** Titlebar styles in vanilla 1.19.3. All 22 `style` blocks are in `common/national_focus/00_titlebar_styles.txt`, each with exactly `name`, `unavailable`, `completed`, `available` and `current`; one (`default_style`) also sets `default = yes`. `text_icon` is set in 316 focuses (20 in trees, 16 shared, all 280 joint). [vanilla-confirmed 1.19.3] `common/national_focus/`.
+**Kit addition** Titlebar styles in vanilla 1.19.4.1. All 22 `style` blocks are in `common/national_focus/00_titlebar_styles.txt`, each with exactly `name`, `unavailable`, `completed`, `available` and `current`; one (`default_style`) also sets `default = yes`. `text_icon` is set in 316 focuses (20 in trees, 16 shared, all 280 joint). [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
 <!-- kit:end id="focus-titlebar-vanilla" -->
 
 ### AI will do <a id="AI_will_do"></a>
@@ -1040,7 +1041,7 @@ Other than these, joint focuses are identical to shared focuses.
 However, editing the generic tree to have joint focuses will cause the error log to be filled with missing scope error, although if the game was launched in debug mode saving any focus tree will cause the problem to stop for the duration of that session. A shared focus tree that doesn't have joint focuses do not have that problem.
 
 <!-- kit:begin id="focus-joint-shared-vanilla" at="section:Joint_focuses" -->
-**Kit addition** Shared and joint focuses in vanilla 1.19.3. All counts: [vanilla-confirmed 1.19.3] `common/national_focus/`.
+**Kit addition** Shared and joint focuses in vanilla 1.19.4.1. All counts: [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
 
 - 335 shared focuses sit in 7 files (largest: `toa_shared_military_branch.txt` 76, `china_shared_TSR.txt` 69, `china_shared.txt` 65, `baltic_shared.txt` 60, `paraguay_uruguay_shared_branch.txt` 49).
 - 280 joint focuses sit in 8 files: `indonesia_joint.txt` 96, `congo_shared.txt` 57, `nordic_shared.txt` 51, `habsburg_joint.txt` 35, `goe_shared_saadabad_branch.txt` 18, `abdacom_shared_branch.txt` 11, `TSR_lingguang_incident_joint_branch.txt` 7 and `ncns_ma_clique_joint_branch.txt` 5.
@@ -1128,7 +1129,7 @@ focus_tree = {
 Continuous focuses are defined in `/Hearts of Iron IV/common/continuous_focus/*.txt` files. These are the focuses that can be selected after having completed 10 national focuses[5] and which last eternally without being able to complete them entirely.
 
 <!-- kit:begin id="focus-continuous-vanilla" at="section:Continuous_focuses" -->
-**Kit addition** Continuous focuses in vanilla 1.19.3. All counts: [vanilla-confirmed 1.19.3] `common/continuous_focus/generic.txt` and `common/national_focus/`.
+**Kit addition** Continuous focuses in vanilla 1.19.4.1. All counts: [vanilla-confirmed 1.19.4.1] `common/continuous_focus/generic.txt` and `common/national_focus/`.
 
 - All of vanilla is one file with one palette: `generic.txt` defines `continuous_focus_palette = { id = generic_focus ... }` with `country = { factor = 1 }`, `default = yes`, `reset_on_civilwar = no`, `position = { x = 50 y = 1000 }` and 14 focuses.
 - Keys used by the 14 focuses: `id`, `icon`, `available`, `ai_will_do`, `supports_ai_strategy`, `daily_cost` and `available_if_capitulated` in all 14; `modifier` in 11; `enable` in 7; `select_effect` and `cancel_effect` in 4; `idea` in 2.
@@ -1274,7 +1275,7 @@ Within that plan, `name = "AI plan's name"` and `desc = "AI plan's description"`
 `weight = { ... }` is a [MTTH block](<ai_modding.md>) assigning an overall weight to the plan. Defined in the same way as [a national focus' ai_will_do](#AI_will_do), this multiplies each factor within the AI strategy plan by the weight before applying them. A weight of 1.25 will turn a focus factor of 4 into 5 before applying it, for instance. This can be used to make the AI follow the strategy plan more strictly in some cases and less strictly in others.
 
 <!-- kit:begin id="focus-ai-plans-vanilla" at="section:AI_strategy_plans" -->
-**Kit addition** AI strategy plans in vanilla 1.19.3: 376 plans in 128 files of `common/ai_strategy_plans/`. Keys per plan: `enable` 376, `abort` 368, `name` 366, `allowed` 366, `ideas` 365, `desc` 364, `weight` 362, `ai_national_focuses` 352, `research` 351, `focus_factors` 252, `traits` 125 and `ai_strategy` 61. The keys `ideas`, `research`, `traits` and `ai_strategy` are not covered on this page; see [AI modding](<ai_modding.md>). [vanilla-confirmed 1.19.3] `common/ai_strategy_plans/`.
+**Kit addition** AI strategy plans in vanilla 1.19.4.1: 376 plans in 128 files of `common/ai_strategy_plans/`. Keys per plan: `enable` 376, `abort` 368, `name` 366, `allowed` 366, `ideas` 365, `desc` 364, `weight` 362, `ai_national_focuses` 352, `research` 351, `focus_factors` 252, `traits` 125 and `ai_strategy` 61. The keys `ideas`, `research`, `traits` and `ai_strategy` are not covered on this page; see [AI modding](<ai_modding.md>). [vanilla-confirmed 1.19.4.1] `common/ai_strategy_plans/`.
 
 The nine modifiers `ai_focus_aggressive_factor`, `ai_focus_aviation_factor`, `ai_focus_defense_factor`, `ai_focus_military_advancements_factor`, `ai_focus_military_equipment_factor`, `ai_focus_naval_air_factor`, `ai_focus_naval_factor`, `ai_focus_peaceful_factor` and `ai_focus_war_production_factor` are listed in `documentation/modifiers_documentation.md`. [docs]
 <!-- kit:end id="focus-ai-plans-vanilla" -->

@@ -1,3 +1,4 @@
 .tools/image_generation/providers/gptimage/** text eol=lf
 .tools/tests/fixtures/**/*.dds binary
 .tools/py.sh text eol=lf
+.tools/3d_pipeline/meshy_runtime/** text eol=lf

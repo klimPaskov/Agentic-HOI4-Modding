@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Data structures", revision 103616, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="103616" sources="documentation/dynamic_variables_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md documentation/script_concept_documentation.md documentation/script_math_functions.md documentation/script_collection_input.md documentation/script_collection_operator.md documentation/loc_formatter_documentation.md common/script_constants/ common/country_tag_aliases/ common/scorers/ common/mtth/ common/modifier_definitions/ common/defines/ common/factions/goals/ common/unit_leader/ localisation/english/" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="103616" sources="documentation/dynamic_variables_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md documentation/script_concept_documentation.md documentation/script_math_functions.md documentation/script_collection_input.md documentation/script_collection_operator.md documentation/loc_formatter_documentation.md common/script_constants/ common/country_tag_aliases/ common/scorers/ common/mtth/ common/modifier_definitions/ common/defines/ common/factions/goals/ common/unit_leader/ localisation/english/" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the effect, trigger, dynamic variable, script concept, math function, collection and formatter documentation, plus vanilla script and English localisation for usage counts.
 Kit blocks added: script constants, define files, flag types (corrects the five-scope list), event-target commands, tag alias rules, `hidden_trigger` evaluation, variable tooltips (corrects "check_variable has no tooltip"), variable format codes, bindable localisation, operator additions (`randomize_variable`), math expression rules, modifier token defaults, a collections pointer, loop and array defaults, scorer notes (corrects an example), and the 41 dynamic variables the page never named.
 Gaps left: the lifetime rule for regular event targets, `clear_global_event_targets`, `days_left`, the `id` rows and the conscription rows cannot be confirmed from the docs and stay `[unverified]`. The 1.12 list of tokenizable types and the variable range text were not re-checked. Inventory code keys such as `fascom_pop`, `CAN_beavers` and `flag_counter` are page-local example names; `pow`, `sin`, `print_global`, `var_list` and `scores` are real keys of the math functions, `print_variables` and `get_sorted_scored_countries`; `majors_owned_states` is corrected below.
+**1.19.4.1 re-check (2026-11-01).** 33 statements depended on files the update changed (vanilla scans of `common/`, `events/`, `history/` and English localisation, and the define values) and all 33 were re-measured. Numbers that moved: script constants are read in 23 files (was 19), `save_event_target_as` 516 lines (was 515), event-target block openers in 80 files (was 79), `$RIGHT` 525 lines in 16 files, 444 format-code references (was 440, with new counts for `%` and `0` and a new `2` row), `localization_key` in 99 files (was 98), six variable-operator block totals, and the `is_in_array`, `any_of` and `while_loop_effect` counts. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -93,11 +94,11 @@ TAG_decision_category = {
 
 **Kit addition** The `@` constants above only work inside the file that defines them. HOI4 1.19.3 also has script constants, which any script file can read through the `constant:` prefix. [docs] `documentation/script_concept_documentation.md`
 
-- Where: definition files sit in `common/script_constants/`. Vanilla ships `country_groups.txt`, `state_groups.txt`, `propaganda_campaigns.txt` and `special_project_constants.txt`. [vanilla-confirmed 1.19.3] `common/script_constants/`
+- Where: definition files sit in `common/script_constants/`. Vanilla ships `country_groups.txt`, `state_groups.txt`, `propaganda_campaigns.txt` and `special_project_constants.txt`. [vanilla-confirmed 1.19.4.1] `common/script_constants/`
 - Format: one block per category. Its first entry must be `schema = { ... }`, which uses either `key = name` or `any_key = yes`, plus a `data` rule (`int`, `fixed_point`, a nested rule list, or `array = country` as in `country_groups.txt`). All other entries are the data. [docs] `common/script_constants/documentation.md`
 - Reading: `constant:<category>.<entry>`, with a dot between category and entry. Every scoped variable accepts a constant that holds one fixed-point number; everything else works only where the entry's documentation says it takes script constants. [docs] `documentation/script_concept_documentation.md`
 - Reloading: reload the constants database first, then the database that reads them, because the values are injected into the script when it loads. [docs] `common/script_constants/documentation.md`
-- Vanilla reads constants in 19 files under `common/`, `events/` and `interface/`, both as target lists and as variable values. [vanilla-confirmed 1.19.3] `common/decisions/CHI_decisions.txt`, `common/decisions/SIA.txt`
+- Vanilla reads constants in 23 files under `common/`, `events/` and `interface/`, both as target lists and as variable values. [vanilla-confirmed 1.19.4.1] `common/decisions/CHI_decisions.txt`, `common/decisions/SIA.txt`
 
 ```text
 # common/script_constants/country_groups.txt (shortened)
@@ -135,9 +136,9 @@ In the base game files, the graphical defines are set to be merged into NDefines
 A mod should **never** contain the 00_defines.lua and 00_graphics.lua files within of itself: these files are commonly changed even in minor game updates, and having a define missing from a file results in the mod being unstable, potentially having a crash on startup.
 
 <!-- kit:begin id="defines-files" at="section:Defines" -->
-**Kit note** In 1.19.3 `common/defines/` holds three base files: `00_defines.lua`, `00_graphics.lua` and the new `01_career_profile.lua`. The warning above names only the first two. [vanilla-confirmed 1.19.3] `common/defines/`. Whether the same do-not-copy warning applies to it is [unverified].
+**Kit note** In 1.19.4.1 `common/defines/` holds three base files: `00_defines.lua`, `00_graphics.lua` and `01_career_profile.lua`. The warning above names only the first two. [vanilla-confirmed 1.19.4.1] `common/defines/`. Whether the same do-not-copy warning applies to it is [unverified].
 
-The values behind the references below are unchanged: `EVENT_TIMEOUT_DEFAULT = 13`, `FOCUS_TREE_CONTINUE_FACTOR = 1.5`, `END_DATE = "1949.1.1.1"`, `UNIT_EXP_LEVELS = { 0.1, 0.3, 0.75, 0.9 }` and `MAX_EFFECT_ITERATION = 1000`. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+The values behind the references below are unchanged: `EVENT_TIMEOUT_DEFAULT = 13`, `FOCUS_TREE_CONTINUE_FACTOR = 1.5`, `END_DATE = "1949.1.1.1"`, `UNIT_EXP_LEVELS = { 0.1, 0.3, 0.75, 0.9 }` and `MAX_EFFECT_ITERATION = 1000`. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`
 <!-- kit:end id="defines-files" -->
 
 ## Flags <a id="Flags"></a>
@@ -178,11 +179,11 @@ Flags can also be targeted towards a certain country. This is usually done by ap
 | special project | `set_project_flag` / `clr_project_flag` / `modify_project_flag` | `has_project_flag` | SPECIAL_PROJECT |
 | unit leader (deprecated) | `set_unit_leader_flag` / `clr_unit_leader_flag` / `modify_unit_leader_flag` | `has_unit_leader_flag` | CHARACTER |
 
-- Special project flags are the type the wiki text never mentions. Vanilla uses them in 4 files under `common/special_projects/` (61 `set_project_flag` lines, 66 `has_project_flag` lines). `has_project_flag` measures `date` and `days` from the last time the flag was modified. [vanilla-confirmed 1.19.3] `common/special_projects/projects/land_projects.txt`
-- MIO flags are documented but no vanilla file sets or checks one. [vanilla-confirmed 1.19.3] `common/` (0 files)
+- Special project flags are the type the wiki text never mentions. Vanilla uses them in 4 files under `common/special_projects/` (61 `set_project_flag` lines, 66 `has_project_flag` lines). `has_project_flag` measures `date` and `days` from the last time the flag was modified. [vanilla-confirmed 1.19.4.1] `common/special_projects/projects/land_projects.txt`
+- MIO flags are documented but no vanilla file sets or checks one. [vanilla-confirmed 1.19.4.1] `common/` (0 files)
 - The docs mark `set_unit_leader_flag` as deprecated in favour of `set_character_flag`, and `has_unit_leader_flag` in favour of `has_character_flag`. Vanilla still uses the old pair (14 and 21 files), so it keeps working; write new script with the character pair. The wiki's guess that it will be removed soon is [unverified]. [docs] `documentation/effects_documentation.md`
 - `modify_<type>_flag = { flag = <name> value = <number> }` only changes a flag that already exists. Vanilla uses `modify_country_flag` in 7 files, `modify_state_flag` in 7 and `modify_global_flag` in 3; `modify_character_flag` has no vanilla use. [docs] `documentation/effects_documentation.md`
-- The block form with a timer is common in vanilla: `set_country_flag = { flag = ENG_trade_unions_demand_timer value = 1 days = 30 }` appears on 22 lines. [vanilla-confirmed 1.19.3] `common/decisions/ENG.txt`
+- The block form with a timer is common in vanilla: `set_country_flag = { flag = ENG_trade_unions_demand_timer value = 1 days = 30 }` appears on 22 lines. [vanilla-confirmed 1.19.4.1] `common/decisions/ENG.txt`
 <!-- kit:end id="flag-types" -->
 
 ### Example <a id="Example"></a>
@@ -333,16 +334,16 @@ A scope can be checked if it has an event target assigned using `has_event_targe
 
 | Command | Kind and scope | Docs wording | Vanilla use |
 | --- | --- | --- | --- |
-| `save_event_target_as` | effect, any scope | save an event target | 515 lines in 83 files |
+| `save_event_target_as` | effect, any scope | save an event target | 516 lines in 83 files |
 | `save_global_event_target_as` | effect, any scope | save a global event target | 134 lines in 40 files |
 | `clear_global_event_target` | effect, any scope | clear a global event target | 61 lines in 17 files |
 | `clear_global_event_targets` | effect, takes a scope keyword | clear all global event targets | none |
 | `has_event_target` | trigger, any scope | checks if the current scope or the global scope has the target saved | 105 lines in 16 files |
 
-Use column: [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/` (line and file counts of the command name).
+Use column: [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/` (line and file counts of the command name).
 
 - `clear_global_event_targets` accepts the scope keywords THIS, ROOT, PREV, FROM, OWNER, CONTROLLER, OCCUPIED and CAPITAL as its value, but vanilla never uses it. What a keyword selects is not documented, so the wiki's `clear_global_event_targets = ROOT` meaning is [unverified]. Clear named targets one at a time with `clear_global_event_target = <name>` instead. [docs] `documentation/effects_documentation.md`
-- A saved target is read as a scope (`event_target:name = { ... }`, 639 block openers in 79 files) and as a target value (`target = event_target:name`, 445 uses). Both kinds of target use the same `event_target:` prefix. [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/`
+- A saved target is read as a scope (`event_target:name = { ... }`, 639 block openers in 80 files) and as a value (`key = event_target:name`, 459 lines in 75 files, for example `tag`, `target` and `is_in_faction_with`). Both kinds of target use the same `event_target:` prefix. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
 <!-- kit:end id="event-target-commands" -->
 
 ### Global event targets <a id="Global_event_targets"></a>
@@ -577,7 +578,7 @@ Empty trigger blocks are considered true by default, so one would instantly stop
 <!-- kit:begin id="hidden-trigger-evaluation" at="section:Trigger_usage" -->
 **Kit note** A `hidden_trigger` is not shown in the tooltip, but the game can still evaluate it while it builds the tooltip. Set `tooltip_evaluation = eval` when the hidden trigger has side effects such as temp variable changes or uses random choices. `no_eval` skips that evaluation and is only safe when there are no side effects or random parts. `legacy` is the old, less predictable behaviour and the docs call explicit use very likely a bug. [docs] `documentation/triggers_documentation.md` (the three values are listed in the HTML copy; the Markdown copy drops that text)
 
-Vanilla sets `tooltip_evaluation = eval` twice, both in `common/factions/goals/faction_goals_short_term.txt`. [vanilla-confirmed 1.19.3]
+Vanilla sets `tooltip_evaluation = eval` twice, both in `common/factions/goals/faction_goals_short_term.txt`. [vanilla-confirmed 1.19.4.1]
 
 The temp variable operators that count as triggers are the `_temp_` forms of set, add, subtract, multiply, divide, modulo, clamp, round and random, the temp array operators, `find_highest_in_array`, `find_lowest_in_array`, the `_temp` scorer triggers, `log` and `print_variables`. `randomize_temp_variable` is documented as an effect only. [docs] `documentation/triggers_documentation.md`
 <!-- kit:end id="hidden-trigger-evaluation" -->
@@ -646,45 +647,46 @@ This is the effect itself. Within localisation, this would be done:
 
 - `check_variable` accepts `tooltip = <loc key>`, and the text may use `$LEFT$` and `$RIGHT$`. [docs] `documentation/triggers_documentation.md`
 - `set_variable` and `set_temp_variable` document the same `tooltip`. [docs] `documentation/effects_documentation.md`
-- `add_to_variable` and its siblings do not list `tooltip` in the docs, yet vanilla uses it on most `add_to_variable` blocks. Counts are block-form uses with a direct `tooltip` key, temp and regular variants together. [vanilla-confirmed 1.19.3] `common/` (scan of all `.txt` files under `common/`, `events/`, `history/`)
+- `add_to_variable` and its siblings do not list `tooltip` in the docs, yet vanilla uses it on most `add_to_variable` blocks. Counts are block-form uses with a direct `tooltip` key, temp and regular variants together. [vanilla-confirmed 1.19.4.1] `common/` (scan of all `.txt` files under `common/`, `events/`, `history/`)
 
 | Operator | Blocks | With tooltip | Files with tooltip |
 | --- | --- | --- | --- |
-| `add_to_variable` | 6591 | 3973 | 97 |
-| `set_variable` | 8225 | 147 | 18 |
-| `subtract_from_variable` | 886 | 18 | 7 |
-| `check_variable` | 5608 | 37 | 6 |
-| `multiply_variable` | 495 | 0 | 0 |
+| `add_to_variable` | 6593 | 3973 | 97 |
+| `set_variable` | 8255 | 147 | 18 |
+| `subtract_from_variable` | 882 | 18 | 7 |
+| `check_variable` | 5619 | 37 | 6 |
+| `multiply_variable` | 492 | 0 | 0 |
 | `divide_variable` | 161 | 0 | 0 |
 | `modulo_variable` | 3 | 0 | 0 |
-| `clamp_variable` | 271 | 0 | 0 |
+| `clamp_variable` | 272 | 0 | 0 |
 
 - The operator table above lists `tooltip` for `multiply_variable`, `divide_variable` and `modulo_variable`. The docs do not list it there and no vanilla block uses it, so it is [unverified] for those three.
 - The example on this page uses `tooltip = add_cats_to_dogs_tt` but defines the key `add_cat_to_dogs_tt`. The two spellings differ, so copy one spelling into both places. [unverified]
-- `$LEFT$` and `$RIGHT$` take the same pipe codes as `[?var|code]`. Vanilla writes `$RIGHT|+=%1$` 288 times, `$RIGHT|-=%1$` 81 times and `$RIGHT|0Y$` 5 times. `$LEFT` appears on only 8 lines in 6 files, `$RIGHT` on 524 lines in 15 files. [vanilla-confirmed 1.19.3] `localisation/english/`
+- `$LEFT$` and `$RIGHT$` take the same pipe codes as `[?var|code]`. Vanilla writes `$RIGHT|+=%1$` 288 times, `$RIGHT|-=%1$` 81 times and `$RIGHT|0Y$` 5 times. `$LEFT` appears on only 8 lines in 6 files, `$RIGHT` on 525 lines in 16 files. [vanilla-confirmed 1.19.4.1] `localisation/english/`
 <!-- kit:end id="variable-tooltip-correction" -->
 
 <!-- kit:begin id="variable-format-codes" at="section:Localisation" -->
-**Kit addition** Codes after the pipe in `[?variable|code]` that vanilla localisation uses. There are 440 such references in `localisation/english/`; the table lists the most common ones. All rows: [vanilla-confirmed 1.19.3] `localisation/english/`.
+**Kit addition** Codes after the pipe in `[?variable|code]` that vanilla localisation uses. There are 444 such references in `localisation/english/`; the table lists the most common ones. All rows: [vanilla-confirmed 1.19.4.1] `localisation/english/`.
 
 | Code | Uses | Files |
 | --- | --- | --- |
 | `+0` | 145 | 5 |
 | `Y0` | 82 | 14 |
-| `%` | 60 | 5 |
+| `%` | 50 | 5 |
+| `0` | 20 | 6 |
 | `%Y0` | 19 | 2 |
 | `G0` | 14 | 3 |
-| `0` | 14 | 5 |
 | `R0` | 12 | 1 |
 | `%G0` | 9 | 1 |
 | `H0` | 9 | 2 |
 | `0H` | 8 | 4 |
+| `2` | 8 | 1 |
 | `%0G` | 5 | 2 |
 | `%+` | 4 | 1 |
 | `+%0` | 3 | 1 |
 
-- The digit, the colour letter and the sign or percent symbol can come in either order (`%G0` and `%0G`, `H0` and `0H`). [vanilla-confirmed 1.19.3] `localisation/english/`
-- The colour letter `H` is common in vanilla but the table above does not explain it, so its meaning is [unverified]. The exact string `%+0` does not occur in 1.19.3 vanilla; `+0`, `%+` and `+%0` do.
+- The digit, the colour letter and the sign or percent symbol can come in either order (`%G0` and `%0G`, `H0` and `0H`). [vanilla-confirmed 1.19.4.1] `localisation/english/`
+- The colour letter `H` is common in vanilla but the table above does not explain it, so its meaning is [unverified]. The exact code `%+0` does not occur in 1.19.4.1 vanilla `[?variable|code]` references; `+0`, `%+` and `+%0` do.
 <!-- kit:end id="variable-format-codes" -->
 
 <!-- kit:begin id="bindable-localisation" at="section:Localisation" -->
@@ -694,8 +696,8 @@ This is the effect itself. Within localisation, this would be done:
 
 - Bound object: `tooltip = { localization_key = KEY PARAM = <value> }`. Each `PARAM` fills `$PARAM$` in the text of `KEY`, and a value can itself be a plain key, a string or another bound object. [docs] `documentation/script_concept_documentation.md`
 - Formatted form: `formatter|token`, for example `custom_effect_tooltip = idea_desc|canadian_pacific_railway`. The shipped formatters are `advisor_desc`, `building_state_modifier`, `character_name`, `country_culture`, `country_leader_desc`, `idea_desc`, `idea_name` and `tech_effect`. [docs] `documentation/loc_formatter_documentation.md`
-- Vanilla uses `localization_key =` in 98 files under `common/` and `events/`, and a parameter value may be a scripted localisation call such as `CHARACTER = [GetAscendedAdvisorName1]`. [vanilla-confirmed 1.19.3] `common/scripted_effects/GER_scripted_effects.txt`
-- Formatter strings on `custom_effect_tooltip` appear on 18 vanilla lines. [vanilla-confirmed 1.19.3] `common/` and `events/`
+- Vanilla uses `localization_key =` in 99 files under `common/` and `events/`, and a parameter value may be a scripted localisation call such as `CHARACTER = [GetAscendedAdvisorName1]`. [vanilla-confirmed 1.19.4.1] `common/scripted_effects/GER_scripted_effects.txt`
+- Formatter strings on `custom_effect_tooltip` appear on 18 vanilla lines. [vanilla-confirmed 1.19.4.1] `common/` and `events/`
 - Support is per argument. `custom_effect_tooltip` and `custom_override_tooltip` take it, and the docs say the `tooltip` of `every_allied_country`, `random_allied_country`, `any_country_of` and `all_claimant` does too. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
 - The `tooltip` of the variable operators is documented only as a loc key with LEFT and RIGHT tokens, so the bound-object form there is [unverified].
 <!-- kit:end id="bindable-localisation" -->
@@ -850,7 +852,7 @@ career_profile_set_temp_variable = {
 **Kit addition** Operators and details the table above lacks.
 
 - `randomize_variable` and `randomize_temp_variable` draw a value from a distribution. The short form `randomize_temp_variable = num_dogs` is uniform from 0 to 1. The block form takes `var`, `distribution` (`uniform`, `binomial` or `poisson`), `min`, `max` and, for poisson, `lambda`; binomial needs `max` when `min` is given. The temp form is an effect only. [docs] `documentation/effects_documentation.md`
-- Vanilla has 9 such blocks in 3 files. [vanilla-confirmed 1.19.3] `common/scripted_effects/BUL_scripted_effects.txt`, `common/on_actions/13_goe_on_actions.txt`, `history/countries/BUL - Bulgaria.txt`
+- Vanilla has 9 such blocks in 3 files. [vanilla-confirmed 1.19.4.1] `common/scripted_effects/BUL_scripted_effects.txt`, `common/on_actions/13_goe_on_actions.txt`, `history/countries/BUL - Bulgaria.txt`
 
 ```text
 randomize_temp_variable = {
@@ -980,8 +982,8 @@ Math functions
 - The documentation's table of contents names the comparison functions `<` and `>`, while its examples use `less_than` and `greater_than`, as the table above does. [docs] `documentation/script_math_functions.md`
 - Vanilla writes `else_if` after `if` inside an expression and passes a nested expression as an argument, for example `multiply = { value = 0 if = { limit = { value = num_researched_technologies less_than = 50 } add = 1.25 } else_if = { ... } }`. [vanilla-confirmed 1.19.3] `common/factions/goals/faction_goals_short_term.txt`
 - `every_collection = { named_collection = <name> <statements> }` runs the statements once per element with that element as the scope. The named collection comes from `common/collections/`; vanilla uses `faction_members`. [vanilla-confirmed 1.19.3] `common/factions/goals/faction_goals_short_term.txt`. For collections see [Collection modding](<collection_modding.md>).
-- An expression also works as a trigger: `check_expr = { value = num_infantry greater_than = { value = num_units multiply = 0.8 } }` in unit leader trait `gain_xp` blocks. [vanilla-confirmed 1.19.3] `common/unit_leader/00_traits.txt`
-- A scan of vanilla blocks that start with `value =` found 28 expressions in 3 files. They use only `add`, `subtract`, `multiply`, `divide`, `clamp`, `round`, `less_than`, `greater_than`, `if`/`else_if` and `every_collection`. The other documented functions (`and`, `or`, `not`, `xor`, `equals`, `not_equals`, `greater_than_or_equals`, `less_than_or_equals`, `min`, `max`, `mod`, `pow`, `root`, `log`, `lerp`, `sin`, `cos`, `tan`, `atan`, `atan2`) have no vanilla use. Their syntax is documented but not exercised. [vanilla-confirmed 1.19.3] `common/factions/goals/faction_goals_short_term.txt`, `common/unit_leader/00_traits.txt`, `common/scripted_effects/INS_scripted_effects.txt`
+- An expression also works as a trigger: `check_expr = { value = num_infantry greater_than = { value = num_units multiply = 0.8 } }` in unit leader trait `gain_xp` blocks. [vanilla-confirmed 1.19.4.1] `common/unit_leader/00_traits.txt`
+- A scan of vanilla blocks that start with `value =` found 28 expressions in 3 files. They use only `add`, `subtract`, `multiply`, `divide`, `clamp`, `round`, `less_than`, `greater_than`, `if`/`else_if` and `every_collection`. The other documented functions (`and`, `or`, `not`, `xor`, `equals`, `not_equals`, `greater_than_or_equals`, `less_than_or_equals`, `min`, `max`, `mod`, `pow`, `root`, `log`, `lerp`, `sin`, `cos`, `tan`, `atan`, `atan2`) have no vanilla use. Their syntax is documented but not exercised. [vanilla-confirmed 1.19.4.1] `common/factions/goals/faction_goals_short_term.txt`, `common/unit_leader/00_traits.txt`, `common/scripted_effects/INS_scripted_effects.txt`
 <!-- kit:end id="math-expression-details" -->
 
 ### Usage examples <a id="Usage_examples"></a>
@@ -1549,8 +1551,8 @@ for_loop_effect = {
 - The docs disagree between `any_of` and `all_of` on the default names. Name `value` and `index` explicitly in both. [docs] `documentation/triggers_documentation.md`
 - A loop stops when the temp variable named by `break` is set to a non-zero value. [docs] `documentation/effects_documentation.md`
 - Correction: the `for_loop_effect` row says its limit is checked at the beginning and after each run. `for_loop_effect` has no `limit`; `start`, `end`, `compare` and `add` control it. `while_loop_effect` is the one with a `limit`. [docs] `documentation/effects_documentation.md`
-- The loop cap is `MAX_EFFECT_ITERATION = 1000` ("maximum allowed iteration for loop effects"), so the wiki figure still holds. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
-- Vanilla use (lines / files): `for_each_scope_loop` 187 / 49, `is_in_array` 321 / 67, `any_of` 251 / 24, `all_of_scopes` 61 / 16, `while_loop_effect` 45 / 20, `for_loop_effect` 23 / 9, `for_each_loop` 6 / 4, `random_scope_in_array` 3 / 2. `all_of`, `find_lowest_in_array` and `resize_array` have no vanilla use. [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/`
+- The loop cap is `MAX_EFFECT_ITERATION = 1000` ("maximum allowed iteration for loop effects"), so the wiki figure still holds. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`
+- Vanilla use (lines / files): `for_each_scope_loop` 187 / 49, `is_in_array` 325 / 68, `any_of` 249 / 23, `all_of_scopes` 61 / 16, `while_loop_effect` 46 / 21, `for_loop_effect` 23 / 9, `for_each_loop` 6 / 4, `random_scope_in_array` 3 / 2. `all_of`, `find_lowest_in_array` and `resize_array` have no vanilla use. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
 <!-- kit:end id="loop-array-defaults" -->
 
 ### Scorers <a id="Scorers"></a>
@@ -1651,7 +1653,7 @@ get_sorted_scored_countries_temp = {
 - A `targets` block may repeat `target_array`; one vanilla scorer lists four arrays (`potential_and_current_enemies`, `enemies_of_allies`, `neighbors`, `global.majors`). The other keys vanilla uses in scorers are `targets_dynamic`, `target_non_existing`, `target_trigger`, `target_root_trigger`, `score` and `base`. [vanilla-confirmed 1.19.3] `common/scorers/country/`
 - In `score` the vanilla comment says THIS is the target and FROM is the initiator, so `FROM.ai_strategy_conquer@THIS` reads the initiator's strategy value towards the target. [vanilla-confirmed 1.19.3] `common/scorers/country/`
 - Defaults when you leave names out: `get_highest_scored_country` stores into `highest_scored_country`, and `get_sorted_scored_countries` uses `sorted_country_list` and `country_list_scores`. Only the `_temp` forms exist as triggers. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
-- The docs describe the plain `get_highest_scored_country` as writing a temp variable and the `_temp` form as writing a regular one. Vanilla shows the opposite: the plain form writes scoped regular variables, for example `var = GLOBAL.platonic_big_fascist` (9 uses). This matches the page. [vanilla-confirmed 1.19.3] `common/scripted_effects/00_scripted_effects.txt`
+- The docs describe the plain `get_highest_scored_country` as writing a temp variable and the `_temp` form as writing a regular one. Vanilla shows the opposite: the plain form writes scoped regular variables, for example `var = GLOBAL.platonic_big_fascist` (9 uses). This matches the page. [vanilla-confirmed 1.19.4.1] `common/scripted_effects/00_scripted_effects.txt`
 - `get_sorted_scored_countries` has no vanilla use, so the wiki's claim about its sort order is [unverified].
 <!-- kit:end id="scorer-notes" -->
 
@@ -2053,9 +2055,9 @@ The 41 documented variables this page never named. Every row: [docs] `documentat
 | `total_constructed_gun_emplacement`, `total_constructed_naval_headquarter`, `total_constructed_naval_supply_hub` | country | buildings of that type the country has constructed in total |
 | `total_equipment_produced_ballistic_missile`, `total_equipment_produced_emplacement_gun_ammo`, `total_equipment_produced_land_cruiser`, `total_equipment_produced_missile_launcher`, `total_equipment_produced_nuclear_missile`, `total_equipment_produced_sam_missile`, `total_equipment_produced_support_ship` | country | total produced equipment of that type |
 
-- The page's `airforce_intel` row has no counterpart in the docs. Vanilla uses `airforce_intel` only as a key of `intel_level_over` and `add_intel`, never as a variable, so use `air_intel`. [vanilla-confirmed 1.19.3] `common/achievements.txt`, `common/operations/00_operations.txt`
-- Not in the dynamic variable docs: `id` (but `THIS.id` is used in vanilla, for example `common/decisions/CZE.txt`), `days_left`, `target_conscription_amount`, `conscription_ratio` and `current_conscription_amount` (the last three exist as triggers). Treat their variable use as [unverified], except `THIS.id`, which is [vanilla-confirmed 1.19.3].
-- Vanilla localisation prints a dynamic variable the same way as any other, for example `[?days_until_next_election|0Y]`. [vanilla-confirmed 1.19.3] `localisation/english/`
+- The page's `airforce_intel` row has no counterpart in the docs. Vanilla uses `airforce_intel` only as a key of `intel_level_over` and `add_intel`, never as a variable, so use `air_intel`. [vanilla-confirmed 1.19.4.1] `common/achievements.txt`, `common/operations/00_operations.txt`
+- Not in the dynamic variable docs: `id` (but `THIS.id` is used in vanilla, for example `common/decisions/CZE.txt`), `days_left`, `target_conscription_amount`, `conscription_ratio` and `current_conscription_amount` (the last three exist as triggers). Treat their variable use as [unverified], except `THIS.id`, which is [vanilla-confirmed 1.19.4.1].
+- Vanilla localisation prints a dynamic variable the same way as any other, for example `[?days_until_next_election|0Y]`. [vanilla-confirmed 1.19.4.1] `localisation/english/`
 <!-- kit:end id="dynamic-variables-1-19-3" -->
 
 ### Game arrays <a id="Game_arrays"></a>

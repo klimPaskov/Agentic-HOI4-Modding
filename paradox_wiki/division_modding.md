@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Division modding", revision 105628, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="105628" sources="history/units/ history/countries/ common/units/ common/units/names_divisions/ common/defines/00_defines.lua documentation/effects_documentation.md hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105628" sources="history/units/ history/countries/ common/units/ common/units/names_divisions/ common/defines/00_defines.lua documentation/effects_documentation.md hoi4.exe" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against all 609 files in `history/units/` (land, `_nsb`, `_air_legacy`, `_air_bba`, `_naval_legacy`, `_naval_mtg` and event OOBs), the `oob`, `set_oob`, `set_naval_oob` and `set_air_oob` lines of the country history files, 1025 division name groups in `common/units/names_divisions/`, the `NMilitary` defines, the unit effects in the documentation, and tokens in `hoi4.exe`.
 Kit blocks added: `division-oob-files` (file naming and DLC selection; the wiki's `_legacy` land example is wrong), `division-template-keys`, `division-unit-effects`, `division-placement-keys`, `division-name-groups`, `division-equipment-production`, `division-air-wings`, `division-navy-keys`, `division-regiments-correction`, `division-support-correction`, `division-aircraft-note`, `division-ship-lists-note`, `division-references-note`.
 Gaps left: the effect of the root-level `start_equipment_factor` and of template `role` and `obsolete` is inferred from usage, and the ship `ordered_name` lookup was not traced to a name file.
+**1.19.4.1 re-check (2026-11-01).** 17 statements depended on files the update changed (five files in `history/units/`, 35 country history files and the sub-unit files in `common/units/`), and all 17 were re-measured. Nothing moved: the 609 OOB files, 804 templates, 5074 divisions, 270 fleets, 692 task forces, 6682 ships, 507 air wing entries, 923 production lines, the sub-unit groups and the `oob` lines in country history are the same as before. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -58,9 +59,9 @@ if = {
 <!-- kit:begin id="division-oob-files" at="section:Land_units" -->
 ### Kit: How vanilla names and selects order of battle files <a id="kit-division-oob-files"></a>
 
-**Kit correction** The land example above is out of date: vanilla has no `TAG_1936_legacy` land file. The land file without a suffix is the base-game version (`set_oob = "AFG_1936"` when the country does not have No Step Back) and `TAG_1936_nsb` is the No Step Back version (`set_oob = "AFG_1936_nsb"`), each under its own `if` with `has_dlc = "No Step Back"` or `NOT = { has_dlc = ... }`. The suffix `_legacy` appears only on air and naval files. [vanilla-confirmed 1.19.3] `history/countries/AFG - Afghanistan.txt`, `history/units/`
+**Kit correction** The land example above is out of date: vanilla has no `TAG_1936_legacy` land file. The land file without a suffix is the base-game version (`set_oob = "AFG_1936"` when the country does not have No Step Back) and `TAG_1936_nsb` is the No Step Back version (`set_oob = "AFG_1936_nsb"`), each under its own `if` with `has_dlc = "No Step Back"` or `NOT = { has_dlc = ... }`. The suffix `_legacy` appears only on air and naval files. [vanilla-confirmed 1.19.4.1] `history/countries/AFG - Afghanistan.txt`, `history/units/`
 
-File names in `history/units/` (609 files). The file name is free; the string in the effect must match it. Suffix counts are files. [vanilla-confirmed 1.19.3] `history/units/`
+File names in `history/units/` (609 files). The file name is free; the string in the effect must match it. Suffix counts are files. [vanilla-confirmed 1.19.4.1] `history/units/`
 
 | Suffix | Files | Holds | Selected by |
 | --- | --- | --- | --- |
@@ -73,7 +74,7 @@ File names in `history/units/` (609 files). The file name is free; the string in
 | other suffixes (`_ncns`, `_lar`, `_LaR`, `_mun`, `_GOE`, `_BBA`, `_nsb_LaR`, ...) | a few | DLC or mod-pack variants chosen with `set_oob` | their own `has_dlc` gates [unverified] |
 | event and decision files | the rest | `load_oob` targets such as `unlock_tanks`, `cossack_host`, `Civil_War` | `load_oob = "..."` |
 
-In country history files vanilla uses these lines: top-level `oob = "TAG_1936"` (192 uses across 110 files), `set_oob` (56 plain, 25 with `_nsb`), `set_naval_oob` (62 `_naval_legacy`, 57 `_naval_mtg`, 7 `_naval`) and `set_air_oob` (95 `_air_legacy`, 95 `_air_bba`). The air and naval pair is chosen like this: [vanilla-confirmed 1.19.3] `history/countries/ARG - Argentina.txt`
+In country history files vanilla uses these lines: top-level `oob = "TAG_1936"` (192 uses across 110 files), `set_oob` (56 plain, 25 with `_nsb`), `set_naval_oob` (62 `_naval_legacy`, 57 `_naval_mtg`, 7 `_naval`) and `set_air_oob` (95 `_air_legacy`, 95 `_air_bba`). The air and naval pair is chosen like this: [vanilla-confirmed 1.19.4.1] `history/countries/ARG - Argentina.txt`
 
 ```text
 oob = "ARG_1936"
@@ -89,9 +90,9 @@ IF = {
 }
 ```
 
-What the effects do. `set_oob`, `set_naval_oob` and `set_air_oob` register an order of battle to load at game start; each replaces an earlier registration with the same key (no key, `naval`, `air`), so a mod can swap only the air file. `set_keyed_oob = { key = naval name = "ENG_1936_Naval" }` does the same for any key. They are meant for history files. `load_oob` loads a file immediately and is used in decisions, events and focuses (32 vanilla files). [docs] `documentation/effects_documentation.md`; [vanilla-confirmed 1.19.3] `common/decisions/GER.txt`
+What the effects do. `set_oob`, `set_naval_oob` and `set_air_oob` register an order of battle to load at game start; each replaces an earlier registration with the same key (no key, `naval`, `air`), so a mod can swap only the air file. `set_keyed_oob = { key = naval name = "ENG_1936_Naval" }` does the same for any key. They are meant for history files. `load_oob` loads a file immediately and is used in decisions, events and focuses (32 vanilla files). [docs] `documentation/effects_documentation.md`; [vanilla-confirmed 1.19.4.1] `common/decisions/GER.txt`
 
-Root keys that vanilla OOB files use: `division_template` (804 blocks), `units` (408 files), `instant_effect` (329), `air_wings` (188), `start_equipment_factor` (22), `create_colonial_division_template` (5). [vanilla-confirmed 1.19.3] `history/units/*.txt`
+Root keys that vanilla OOB files use: `division_template` (804 blocks), `units` (408 files), `instant_effect` (329), `air_wings` (188), `start_equipment_factor` (22), `create_colonial_division_template` (5). [vanilla-confirmed 1.19.4.1] `history/units/*.txt`
 <!-- kit:end id="division-oob-files" -->
 
 ### Division template <a id="Division_template"></a>
@@ -134,9 +135,9 @@ There are also optional arguments:
 <!-- kit:begin id="division-template-keys" at="section:Division_template" -->
 ### Kit: Division template keys and limits <a id="kit-division-template-keys"></a>
 
-**Kit addition** Grid sizes. The page's reference [1] still holds, and there is a third grid: `MAX_REGIMENTAL_SUPPORT_WIDTH` is 5 and `MAX_REGIMENTAL_SUPPORT_HEIGHT` is 1 (a row), with `REGIMENTAL_SUPPORT_REQUIRED_BATTALIONS = { 3 }` (a regimental support needs 3 battalions in its row). Headquarters templates have `MAX_HQ_REGIMENTAL_SUPPORT_WIDTH` and `_HEIGHT` of 0. In vanilla templates, `regiments` coordinates reach x 4 and y 4, `support` always uses `x = 0` with y up to 4, and `regimental_support` (4 templates, all CZE) uses `x = 1 y = 0`. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`, `history/units/CZE_1936.txt`
+**Kit addition** Grid sizes. The page's reference [1] still holds, and there is a third grid: `MAX_REGIMENTAL_SUPPORT_WIDTH` is 5 and `MAX_REGIMENTAL_SUPPORT_HEIGHT` is 1 (a row), with `REGIMENTAL_SUPPORT_REQUIRED_BATTALIONS = { 3 }` (a regimental support needs 3 battalions in its row). Headquarters templates have `MAX_HQ_REGIMENTAL_SUPPORT_WIDTH` and `_HEIGHT` of 0. In vanilla templates, `regiments` coordinates reach x 4 and y 4, `support` always uses `x = 0` with y up to 4, and `regimental_support` (4 templates, all CZE) uses `x = 1 y = 0`. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`, `history/units/CZE_1936.txt`
 
-Usage of the documented keys across the 804 vanilla templates, and keys the page omits. [vanilla-confirmed 1.19.3] `history/units/*.txt`
+Usage of the documented keys across the 804 vanilla templates, and keys the page omits. [vanilla-confirmed 1.19.4.1] `history/units/*.txt`
 
 | Key | Count | Notes |
 | --- | --- | --- |
@@ -238,7 +239,7 @@ There are also optional arguments:
 <!-- kit:begin id="division-placement-keys" at="section:Division_placement" -->
 ### Kit: Division placement keys in vanilla <a id="kit-division-placement-keys"></a>
 
-**Kit addition** Counts over the 5074 divisions in vanilla `units = { }` blocks. [vanilla-confirmed 1.19.3] `history/units/*.txt`
+**Kit addition** Counts over the 5074 divisions in vanilla `units = { }` blocks. [vanilla-confirmed 1.19.4.1] `history/units/*.txt`
 
 | Key | Divisions | Notes |
 | --- | --- | --- |
@@ -290,7 +291,7 @@ The `add_equipment_production = { ... }` has these attributes:
 - `efficiency = 100` is, with 0 as 0% and 100 as 100%, the production efficiency which the factories should have immediately.
 
 <!-- kit:begin id="division-equipment-production" at="section:Equipment_production" -->
-**Kit addition** Vanilla `instant_effect` blocks hold `add_equipment_production` 923 times (plus a few `if` wrappers). The effect takes more keys than the page lists: `name` (172 uses; a string shown for the line), `amount` (399; number of items to build, a value or variable) and `industrial_manufacturer` (614; a military industrial organization written as `mio:<token>`). `requested_factories` and `progress` are set in all 923, `efficiency` in 524; vanilla efficiency values are percentages (100 in 420 uses, 50 in 108), while the documentation example shows `0.1`. [docs] `documentation/effects_documentation.md`; [vanilla-confirmed 1.19.3] `history/units/*.txt`
+**Kit addition** Vanilla `instant_effect` blocks hold `add_equipment_production` 923 times (plus a few `if` wrappers). The effect takes more keys than the page lists: `name` (172 uses; a string shown for the line), `amount` (399; number of items to build, a value or variable) and `industrial_manufacturer` (614; a military industrial organization written as `mio:<token>`). `requested_factories` and `progress` are set in all 923, `efficiency` in 524; vanilla efficiency values are percentages (100 in 420 uses, 50 in 108), while the documentation example shows `0.1`. [docs] `documentation/effects_documentation.md`; [vanilla-confirmed 1.19.4.1] `history/units/*.txt`
 <!-- kit:end id="division-equipment-production" -->
 
 ## Adding Air Wings <a id="Adding_Air_Wings"></a>
@@ -315,9 +316,9 @@ air_wings = {
 <!-- kit:begin id="division-air-wings" at="section:Adding_Air_Wings" -->
 ### Kit: Air wing keys in vanilla <a id="kit-division-air-wings"></a>
 
-**Kit addition** The key of each entry in `air_wings` is a state id (453 of 507 entries) or, for carrier-based wings, a quoted ship name (`"HMS Furious" = { ... }`, 54 entries). Carrier wings can also sit in an `air_wings = { }` block inside the `ship` itself (10 ships in the naval files). Each equipment entry holds `owner` and `amount` (1274 of 1274), plus `version_name` (661), `creator` (187) and `create_if_missing` (5). A wing can carry a `name = "..."` string (43) and an optional `ace` block with `modifier`, `name`, `surname`, `callsign`, `is_female` and `portrait` (21 in vanilla); the vanilla comment says the order is important and the ace joins the equipment entry above it. [vanilla-confirmed 1.19.3] `history/units/*_air_*.txt`, `history/units/ENG_1936_air_bba.txt`, `history/units/GER_1936_air_bba.txt`
+**Kit addition** The key of each entry in `air_wings` is a state id (453 of 507 entries) or, for carrier-based wings, a quoted ship name (`"HMS Furious" = { ... }`, 54 entries). Carrier wings can also sit in an `air_wings = { }` block inside the `ship` itself (10 ships in the naval files). Each equipment entry holds `owner` and `amount` (1274 of 1274), plus `version_name` (661), `creator` (187) and `create_if_missing` (5). A wing can carry a `name = "..."` string (43) and an optional `ace` block with `modifier`, `name`, `surname`, `callsign`, `is_female` and `portrait` (21 in vanilla); the vanilla comment says the order is important and the ace joins the equipment entry above it. [vanilla-confirmed 1.19.4.1] `history/units/*_air_*.txt`, `history/units/ENG_1936_air_bba.txt`, `history/units/GER_1936_air_bba.txt`
 
-The equipment ids differ by file family: `_air_legacy` files use ids like `fighter_equipment_0` and `CAS_equipment_1` (the page's list), `_air_bba` files use airframe ids such as `small_plane_airframe_0` (138 uses), `medium_plane_airframe_1` (84) and `small_plane_cas_airframe_0` (47), usually with a `version_name`. Both id families exist in `common/units/equipment/` in 1.19.3. [vanilla-confirmed 1.19.3] `history/units/*.txt`, `common/units/equipment/`
+The equipment ids differ by file family: `_air_legacy` files use ids like `fighter_equipment_0` and `CAS_equipment_1` (the page's list), `_air_bba` files use airframe ids such as `small_plane_airframe_0` (138 uses), `medium_plane_airframe_1` (84) and `small_plane_cas_airframe_0` (47), usually with a `version_name`. Both id families exist in `common/units/equipment/` in 1.19.4.1. [vanilla-confirmed 1.19.4.1] `history/units/*.txt`, `common/units/equipment/`
 
 ```text
 air_wings = {
@@ -338,7 +339,7 @@ The snippet condenses lines of `ENG_1936_air_bba.txt` (state 129 and the "HMS Fu
 <!-- kit:begin id="division-navy-keys" at="section:Adding_Navies" -->
 ### Kit: Fleet, task force and ship keys in vanilla <a id="kit-division-navy-keys"></a>
 
-**Kit addition** Counts over the 270 fleets, 692 task forces and 6682 ships in vanilla naval OOBs. [vanilla-confirmed 1.19.3] `history/units/*.txt`
+**Kit addition** Counts over the 270 fleets, 692 task forces and 6682 ships in vanilla naval OOBs. [vanilla-confirmed 1.19.4.1] `history/units/*.txt`
 
 | Level | Keys (count) |
 | --- | --- |
@@ -347,7 +348,7 @@ The snippet condenses lines of `ENG_1936_air_bba.txt` (state 129 and the "HMS Fu
 | `ship` | `definition` (6682), `equipment` (6682), `name` (6427) or `ordered_name` (255), `pride_of_the_fleet` (64), `start_experience_factor` (769), `officer` (16), `air_wings` (10) |
 | ship `equipment` entry | `amount` (6682), `owner` (6682), `version_name` (4289), `creator` (100), `create_if_missing` (3) |
 
-`definition` takes the sub-unit id of the ship category, and vanilla uses exactly seven: `destroyer` (3124), `submarine` (2209), `light_cruiser` (590), `heavy_cruiser` (430), `battleship` (230), `carrier` (69) and `battle_cruiser` (30); all are ids in `common/units/`. `ordered_name = 5` replaces `name` (255 ships); how the number resolves to a ship name was not traced. Every vanilla ship equipment entry sets `owner`, so omitting it (the page's Note 2) is untested in vanilla. [vanilla-confirmed 1.19.3] `history/units/*.txt`, `common/units/`; the `ordered_name` meaning [unverified]
+`definition` takes the sub-unit id of the ship category, and vanilla uses exactly seven: `destroyer` (3124), `submarine` (2209), `light_cruiser` (590), `heavy_cruiser` (430), `battleship` (230), `carrier` (69) and `battle_cruiser` (30); all are ids in `common/units/`. `ordered_name = 5` replaces `name` (255 ships); how the number resolves to a ship name was not traced. Every vanilla ship equipment entry sets `owner`, so omitting it (the page's Note 2) is untested in vanilla. [vanilla-confirmed 1.19.4.1] `history/units/*.txt`, `common/units/`; the `ordered_name` meaning [unverified]
 <!-- kit:end id="division-navy-keys" -->
 
 ### Man the Guns <a id="Man_the_Guns"></a>
@@ -456,7 +457,7 @@ units = {
 ### Regiments <a id="Regiments"></a>
 
 <!-- kit:begin id="division-regiments-correction" at="heading:Regiments" -->
-**Kit correction** This list is incomplete and wrong in four entries. By the page's own rule, a sub-unit's `group` decides where it goes: `group = support` sub-units go in `support = { }` (column `x = 0`) and every other group goes in `regiments = { }`. Four ids in the list below have `group = support` and so belong in `support`: `super_heavy_armor`, `super_heavy_sp_anti_air_brigade`, `super_heavy_sp_artillery_brigade`, `super_heavy_tank_destroyer_brigade`. Vanilla has 54 sub-units in the regiment groups (`infantry`, `mobile`, `armor`, `combat_support`, `mobile_combat_support`, `armor_combat_support`). Regiment-group ids that the list lacks: `amphibious_light_armor`, `amphibious_medium_armor`, `amphibious_heavy_armor`, `bus`, `hq_infantry`, `hq_motorized`, `hq_armored_car`, `hq_paratrooper`, `hq_light_armor`, `hq_medium_armor`, `hq_heavy_armor`, `marine_commando`, `ranger_battalion`, `fake_intel_unit`, `penal_battalion`, `irregular_infantry`, `militia`. The `hq_*` entries are headquarters sub-units that need Thunder at Our Gates. Vanilla OOB files themselves use only 18 regiment ids: `infantry`, `cavalry`, `motorized`, `bicycle_battalion`, `marine`, `paratrooper`, `mountaineers`, `ranger_battalion`, `irregular_infantry`, `militia`, `light_armor`, `medium_armor`, `heavy_armor`, `armored_car`, `artillery_brigade`, `mot_artillery_brigade`, `anti_tank_brigade` and `light_tank_destroyer_brigade`. [vanilla-confirmed 1.19.3] `common/units/*.txt`, `history/units/*.txt`
+**Kit correction** This list is incomplete and wrong in four entries. By the page's own rule, a sub-unit's `group` decides where it goes: `group = support` sub-units go in `support = { }` (column `x = 0`) and every other group goes in `regiments = { }`. Four ids in the list below have `group = support` and so belong in `support`: `super_heavy_armor`, `super_heavy_sp_anti_air_brigade`, `super_heavy_sp_artillery_brigade`, `super_heavy_tank_destroyer_brigade`. Vanilla has 54 sub-units in the regiment groups (`infantry`, `mobile`, `armor`, `combat_support`, `mobile_combat_support`, `armor_combat_support`). Regiment-group ids that the list lacks: `amphibious_light_armor`, `amphibious_medium_armor`, `amphibious_heavy_armor`, `bus`, `hq_infantry`, `hq_motorized`, `hq_armored_car`, `hq_paratrooper`, `hq_light_armor`, `hq_medium_armor`, `hq_heavy_armor`, `marine_commando`, `ranger_battalion`, `fake_intel_unit`, `penal_battalion`, `irregular_infantry`, `militia`. The `hq_*` entries are headquarters sub-units that need Thunder at Our Gates. Vanilla OOB files themselves use only 18 regiment ids: `infantry`, `cavalry`, `motorized`, `bicycle_battalion`, `marine`, `paratrooper`, `mountaineers`, `ranger_battalion`, `irregular_infantry`, `militia`, `light_armor`, `medium_armor`, `heavy_armor`, `armored_car`, `artillery_brigade`, `mot_artillery_brigade`, `anti_tank_brigade` and `light_tank_destroyer_brigade`. [vanilla-confirmed 1.19.4.1] `common/units/*.txt`, `history/units/*.txt`
 <!-- kit:end id="division-regiments-correction" -->
 
 ```text
@@ -506,7 +507,7 @@ modern_tank_destroyer_brigade
 ### Support Companies <a id="Support_Companies"></a>
 
 <!-- kit:begin id="division-support-correction" at="heading:Support_Companies" -->
-**Kit correction** This list names 14 of the 68 sub-units with `group = support`. The other 54 are listed here, including the four super-heavy ids that the Regiments list wrongly holds. Regimental support sub-units (`field_guns`, `fire_support`, `mot_fire_support`, `rocket_battery`, `anti_air_battery`, `anti_tank_battery`) go in a `regimental_support` block, which 4 vanilla templates use; the placement of the other ids is not documented [unverified]. Vanilla OOB files use only 12 support ids: `anti_air`, `anti_tank`, `armored_car_recon`, `artillery`, `engineer`, `light_tank_recon`, `logistics_company`, `maintenance_company`, `military_police`, `mot_recon`, `recon` and `signal_company`. [vanilla-confirmed 1.19.3] `common/units/*.txt`, `history/units/*.txt`
+**Kit correction** This list names 14 of the 68 sub-units with `group = support`. The other 54 are listed here, including the four super-heavy ids that the Regiments list wrongly holds. Regimental support sub-units (`field_guns`, `fire_support`, `mot_fire_support`, `rocket_battery`, `anti_air_battery`, `anti_tank_battery`) go in a `regimental_support` block, which 4 vanilla templates use; the placement of the other ids is not documented [unverified]. Vanilla OOB files use only 12 support ids: `anti_air`, `anti_tank`, `armored_car_recon`, `artillery`, `engineer`, `light_tank_recon`, `logistics_company`, `maintenance_company`, `military_police`, `mot_recon`, `recon` and `signal_company`. [vanilla-confirmed 1.19.4.1] `common/units/*.txt`, `history/units/*.txt`
 
 ```text
 super_heavy_artillery self_propelled_super_heavy_artillery blackshirt_assault_battalion
@@ -546,7 +547,7 @@ signal_company
 ### Aircraft <a id="Aircraft"></a>
 
 <!-- kit:begin id="division-aircraft-note" at="heading:Aircraft" -->
-**Kit correction** The list shows the legacy air equipment ids. With By Blood Alone the ids in vanilla air OOBs are the airframe ids (`small_plane_airframe_0` and so on) with a `version_name`; see the air wings kit block above. Both families exist as equipment in 1.19.3. [vanilla-confirmed 1.19.3] `history/units/*_air_bba.txt`, `common/units/equipment/`
+**Kit correction** The list shows the legacy air equipment ids. With By Blood Alone the ids in vanilla air OOBs are the airframe ids (`small_plane_airframe_0` and so on) with a `version_name`; see the air wings kit block above. Both families exist as equipment in 1.19.4.1. [vanilla-confirmed 1.19.4.1] `history/units/*_air_bba.txt`, `common/units/equipment/`
 <!-- kit:end id="division-aircraft-note" -->
 
 CV references the carrier variant of the aircraft. All aircraft have a carrier variant unless otherwise specified.
@@ -598,7 +599,7 @@ rocket_suicide_equipment_1
 ### Ship Categories <a id="Ship_Categories"></a>
 
 <!-- kit:begin id="division-ship-lists-note" at="heading:Ship_Categories" -->
-**Kit addition** These seven values are exactly the `definition` values vanilla naval OOBs use. The ship equipment lists below are checked: every id in the MTG and Non-MTG lists exists in `common/units/equipment/` in 1.19.3, and the 36 hull and ship equipment ids that vanilla OOBs use are all valid equipment ids. [vanilla-confirmed 1.19.3] `history/units/*.txt`, `common/units/equipment/*.txt`
+**Kit addition** These seven values are exactly the `definition` values vanilla naval OOBs use. The ship equipment lists below are checked: every id in the MTG and Non-MTG lists exists in `common/units/equipment/` in 1.19.4.1, and the 36 hull and ship equipment ids that vanilla OOBs use are all valid equipment ids. [vanilla-confirmed 1.19.4.1] `history/units/*.txt`, `common/units/equipment/*.txt`
 <!-- kit:end id="division-ship-lists-note" -->
 
 ```text

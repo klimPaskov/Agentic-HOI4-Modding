@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Troubleshooting", revision 105132, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="105132" sources="launcher-settings.json documentation/console_commands_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md localisation/ignored_loc_keys.txt common/script_enums.txt map/" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105132" sources="launcher-settings.json documentation/console_commands_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md localisation/ignored_loc_keys.txt common/script_enums.txt map/" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `launcher-settings.json`, the console, effect and trigger documentation, the `common/` and `map/` folder listings, and string searches of `hoi4.exe`. Log file names and contents also come from the log folder of an earlier 1.19.3 session, which is a user file and not part of the game.
 Kit blocks added: corrections for the fatal-error file (`exceptions.log` is not in this build), the console command table and the log file names; a log file table; debug launch and start-up arguments; what a crash folder holds; a warning that `map/rocketsites.txt` no longer exists; a table of 26 engine messages with their log and likely meaning; and a short debugging loop.
 Gaps left: most of the page's crash causes could not be re-created without running the game, so they stay as the wiki states them. The words "incomplete", "outdated" and "unknown what" on this page are ordinary prose, not placeholders. Nothing was run in the game.
+**1.19.4.1 re-check (2026-11-01).** Twenty-eight statements depended on files the update changed (the console commands documentation, `launcher-settings.json`, `hoi4.exe` and the folder listings), and all 28 were re-measured on the installed files. No fact changed: every documented command, `hoi4.exe` string, launcher argument and file name still holds, and the page never mentions the removed console command `debug_types`. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -35,7 +36,7 @@ Fatal errors occur when the game cannot load a vital piece of data and cannot op
 Non-fatal errors occur when the game encountered invalid data or broken syntax. These errors are almost always printed to the **error.log**.
 
 <!-- kit:begin id="ts-fatal-errors" at="section:Overview" -->
-**Kit correction** The wiki says fatal errors print an exception to `exceptions.log`. hoi4.exe 1.19.3 has no `exceptions.log` string. It has the strings `crashes/`, `exceptions/`, `meta.yml` and `LastRead: %s (%d)`, which fits a per-crash folder under the user folder, `crashes/hoi4_<yyyymmdd>_<hhmmss>/` (see the crash data section below). [unverified]
+**Kit correction** The wiki says fatal errors print an exception to `exceptions.log`. hoi4.exe 1.19.4.1 has no `exceptions.log` string. It has the strings `crashes/`, `exceptions/`, `meta.yml` and `LastRead: %s (%d)`, which fits a per-crash folder under the user folder, `crashes/hoi4_<yyyymmdd>_<hhmmss>/` (see the crash data section below). [unverified]
 
 Non-fatal errors are still written to `logs/error.log`; the file name is a string in hoi4.exe. [unverified]
 
@@ -75,20 +76,20 @@ These are useful console commands for modders:
 | add_ideas | Adds the specified idea to the current country. |
 
 <!-- kit:begin id="ts-testing-check" at="section:Testing" -->
-**Kit correction** The rows above checked against 1.19.3. Rows not named here exist as written: `event`, `nocb` (alias of `allowdiplo`), `observe` (alias `spectator`), `aiview`, `tag`, `update_loc`, `updateequipments`, `updatesubunits`, `research_on_icon_click` (alias `roic`), `Focus.NoChecks`, `Focus.AutoComplete`, `set_country_flag` and `add_ideas`. [docs] `documentation/console_commands_documentation.md`
+**Kit correction** The rows above checked against 1.19.4.1. Rows not named here exist as written: `event`, `nocb` (alias of `allowdiplo`), `observe` (alias `spectator`), `aiview`, `tag`, `update_loc`, `updateequipments`, `updatesubunits`, `research_on_icon_click` (alias `roic`), `Focus.NoChecks`, `Focus.AutoComplete`, `set_country_flag` and `add_ideas`. [docs] `documentation/console_commands_documentation.md`
 
-| Wiki row | In 1.19.3 |
+| Wiki row | In 1.19.4.1 |
 | --- | --- |
 | `reload texture` | The documented command is `reload_textures` (aliases `rt`, `reload_texture`) with optional file-name filters. [docs] `documentation/console_commands_documentation.md` |
 | `reload localization` | The documented command is `update_loc <localization tag>`. There is no `reload` entry in the documentation. [docs] `documentation/console_commands_documentation.md` |
 | `reload defines`, `reload focus`, `reload decision` | `reload` is not documented. hoi4.exe contains the message `defines reloaded!` and keeps the short names `focus`, `cfocus`, `ideas`, `ability`, `scriptedgui` and `scripted_effects` next to `common/` folder paths, so `reload <name>` probably exists. [unverified] |
-| `reload focus` ("`common/national_focuses/`") | The folder is `common/national_focus/`. There is no `national_focuses` folder in the installed game. [vanilla-confirmed 1.19.3] folder listing of `common/` |
+| `reload focus` ("`common/national_focuses/`") | The folder is `common/national_focus/`. There is no `national_focuses` folder in the installed game. [vanilla-confirmed 1.19.4.1] folder listing of `common/` |
 | `reloadfx all` | `reloadfx` is documented with `map`, `mapname`, `postfx` or a `*.fx` file name. hoi4.exe also prints `reloadfx all` in its usage message. [docs] `documentation/console_commands_documentation.md` and [unverified] for `all` |
 | `reloadtechnologies` ("will cause a crash if an error is encountered") | Documented only as "Reloads the technology database". The crash remark is not in any game file. [unverified] |
 | `tdebug` | Alias of `provtooltipdebug`, which toggles the debug info in the province tooltip. [docs] `documentation/console_commands_documentation.md` |
 | `reloadoob`, `reloadinterface`, `updateequipments`, `updatesubunits` | Exist with the documented effect "reload orders of battle" (argument `<Target Country Tag>`), "reload the entire interface", "update the equipment database" and "update the sub-unit database". [docs] `documentation/console_commands_documentation.md` |
 
-Commands that are more useful for finding script mistakes than the ones above are `loc_check`, `loc_check_events`, `loc_check_focuses`, `loc_check_decisions`, `loc_check_characters`, `loc_check_modifiers`, `loc_check_national_spirits`, `debug_checkportraitssanity`, `error`, `list_flags`, `list_vars`, `list_ideas`, `list_modifiers`, `eval_effect`, `eval_trigger` and `testevent`. All exist in 1.19.3. [docs] `documentation/console_commands_documentation.md` They are described in [Console commands](<console_commands.md#Modding-useful_commands>).
+Commands that are more useful for finding script mistakes than the ones above are `loc_check`, `loc_check_events`, `loc_check_focuses`, `loc_check_decisions`, `loc_check_characters`, `loc_check_modifiers`, `loc_check_national_spirits`, `debug_checkportraitssanity`, `error`, `list_flags`, `list_vars`, `list_ideas`, `list_modifiers`, `eval_effect`, `eval_trigger` and `testevent`. All exist in 1.19.4.1. [docs] `documentation/console_commands_documentation.md` They are described in [Console commands](<console_commands.md#Modding-useful_commands>).
 <!-- kit:end id="ts-testing-check" -->
 
 ## Log files <a id="Log_files"></a>
@@ -121,7 +122,7 @@ To enable full error logging, add the `-debug` launch command via *Set Launch Op
 <!-- kit:begin id="ts-log-files" at="section:Log_files" -->
 **Kit correction** Log file names and locations in 1.19.3.
 
-- User folder: `launcher-settings.json` sets `gameDataPath` to `%USER_DOCUMENTS%/Paradox Interactive/Hearts of Iron IV`, so the logs are in `logs/` under that folder. [vanilla-confirmed 1.19.3] `launcher-settings.json` The Windows Documents folder can be redirected (for example by OneDrive), so look where `%USER_DOCUMENTS%` points. hoi4.exe also contains the argument `userdir=` and the file name `userdir.txt`, which suggests the folder can be moved. [unverified]
+- User folder: `launcher-settings.json` sets `gameDataPath` to `%USER_DOCUMENTS%/Paradox Interactive/Hearts of Iron IV`, so the logs are in `logs/` under that folder. [vanilla-confirmed 1.19.4.1] `launcher-settings.json` The Windows Documents folder can be redirected (for example by OneDrive), so look where `%USER_DOCUMENTS%` points. hoi4.exe also contains the argument `userdir=` and the file name `userdir.txt`, which suggests the folder can be moved. [unverified]
 - The four command logs use underscores: `executed_commands.log`, `posted_commands.log`, `received_commands.log` and `sent_commands.log`. The wiki table spells them without underscores. The names `executed_commands`, `posted_commands`, `received_commands`, `sent_commands`, `error`, `game`, `graphics`, `memory`, `message`, `random`, `setup`, `system_debug`, `text`, `time` and `ai_trace` are strings in hoi4.exe, next to `code_revisions`, `scenario_testing` and `custom_automated_stats`. [unverified]
 - `exceptions.log` has no matching string in hoi4.exe; a crash writes a folder under `crashes/` instead (see the crash data section). [unverified]
 - A line starts with `[hh:mm:ss][game date][source.cpp:line]:`. The game date reads `no_game_date` until a game has started. [unverified] (seen in the log files of an earlier 1.19.3 session, not in the installed game files)
@@ -151,7 +152,7 @@ Script can write to the logs on purpose. The `log` effect and the `log` trigger 
 <!-- kit:begin id="ts-debug-launch" at="section:Log_files" -->
 **Kit note** Debug launch and start-up arguments.
 
-- The Paradox launcher offers an alternative executable labelled "Open game in Debug Mode" that runs `hoi4.exe` with `-gdpr-compliant -debug_mode`. The normal entry passes only `-gdpr-compliant`. [vanilla-confirmed 1.19.3] `launcher-settings.json`
+- The Paradox launcher offers an alternative executable labelled "Open game in Debug Mode" that runs `hoi4.exe` with `-gdpr-compliant -debug_mode`. The normal entry passes only `-gdpr-compliant`. [vanilla-confirmed 1.19.4.1] `launcher-settings.json`
 - The `is_debug` trigger returns true when the game runs in debug mode and its documentation names the argument `-debug`. [docs] `documentation/triggers_documentation.md` The wiki's advice to add `-debug` as a Steam launch option therefore matches the documentation. How `-debug` and `-debug_mode` relate inside the engine is not documented. [unverified]
 - The game files do not show whether a Steam launch option reaches `hoi4.exe` through the Paradox launcher, whose only listed arguments are the ones above. [unverified]
 - The `debug` console command toggles debug mode while the game runs. [docs] `documentation/console_commands_documentation.md`
@@ -188,17 +189,17 @@ If the last read file proves useless, it's possible to temporarily remove files 
 **This list is non-exhaustive**: There are more potential crashes, and any given file or script can have more causes that are not outlined in the list. This has been broken up into sections on when they happen for easier navigation. The file provided is the file marked as last read by the crash data log.
 
 <!-- kit:begin id="ts-last-read-labels" at="section:Common_crash_causes" -->
-**Kit note** The "last read" labels the wiki uses are partly present in 1.19.3. hoi4.exe contains the exact strings `client_ping`, `hourly_tick`, `set_controller` and `shared_focus`, so those labels can still appear in `LastRead` or `LastScript`. It contains no string `savegame.hoi4` or `numbers.pr`. [unverified]
+**Kit note** The "last read" labels the wiki uses are partly present in 1.19.4.1. hoi4.exe contains the exact strings `client_ping`, `hourly_tick`, `set_controller` and `shared_focus`, so those labels can still appear in `LastRead` or `LastScript`. It contains no string `savegame.hoi4` or `numbers.pr`. [unverified]
 <!-- kit:end id="ts-last-read-labels" -->
 
 ### Main menu loading <a id="Main_menu_loading"></a>
 
 <!-- kit:begin id="ts-menu-loading-fix" at="heading:Main_menu_loading" -->
-**Kit correction** The `map/rocketsites.txt` bullets are out of date. The installed 1.19.3 `map/` folder has no `rocketsites.txt` (it holds `adjacencies.csv`, `adjacency_rules.txt`, `ambient_object.txt`, `buildings.txt`, `cities.txt`, `colors.txt`, `continent.txt`, `default.map`, `definition.csv`, `positions.txt`, `railways.txt`, `seasons.txt`, `supply_nodes.txt`, `unitstacks.txt`, `weatherpositions.txt`, the bitmaps and the `strategicregions`, `supplyareas` and `terrain` folders), and hoi4.exe has no `rocketsites` string. The "last read" file for those crashes will be a different one now. [vanilla-confirmed 1.19.3] folder listing; [unverified] for hoi4.exe and for the new last-read file.
+**Kit correction** The `map/rocketsites.txt` bullets are out of date. The installed 1.19.4.1 `map/` folder has no `rocketsites.txt` (it holds `adjacencies.csv`, `adjacency_rules.txt`, `ambient_object.txt`, `buildings.txt`, `cities.txt`, `colors.txt`, `continent.txt`, `default.map`, `definition.csv`, `positions.txt`, `railways.txt`, `seasons.txt`, `supply_nodes.txt`, `unitstacks.txt`, `weatherpositions.txt`, the bitmaps and the `strategicregions`, `supplyareas` and `terrain` folders), and hoi4.exe has no `rocketsites` string. The "last read" file for those crashes will be a different one now. [vanilla-confirmed 1.19.4.1] folder listing; [unverified] for hoi4.exe and for the new last-read file.
 
 `numbers.pr` is also absent from hoi4.exe. The career profile file in the user folder is named `career_profile_<id>_v3.pr` in a 1.19.3 install. [unverified]
 
-Files named in the other bullets still exist in 1.19.3: `common/countries/cosmetic.txt`, `gfx/models/supply/railroad.shader`, `tutorial/tutorial.txt`, `map/cities.txt`, `map/buildings.txt`, `map/supply_nodes.txt`, `map/railways.txt`, `history/general/`, `history/countries/`, `history/units/`, `common/ai_templates/`, `common/national_focus/`, `common/continuous_focus/`, `common/unit_leader/` and `common/country_tags/` (which holds `00_countries.txt` and `zz_dynamic_countries.txt`). [vanilla-confirmed 1.19.3]
+Files named in the other bullets still exist in 1.19.4.1: `common/countries/cosmetic.txt`, `gfx/models/supply/railroad.shader`, `tutorial/tutorial.txt`, `map/cities.txt`, `map/buildings.txt`, `map/supply_nodes.txt`, `map/railways.txt`, `history/general/`, `history/countries/`, `history/units/`, `common/ai_templates/`, `common/national_focus/`, `common/continuous_focus/`, `common/unit_leader/` and `common/country_tags/` (which holds `00_countries.txt` and `zz_dynamic_countries.txt`). [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="ts-menu-loading-fix" -->
 
 - `common/countries/cosmetic.txt` – Caused by a complete overwriting of `common/national_focus/` or `common/continuous_focus/`.
@@ -240,7 +241,7 @@ In case the game crashes on startup, but there's no obvious reason why in the er
 <!-- kit:begin id="ts-engine-messages" at="section:Additional_details" -->
 ### Kit: Engine messages a modding agent meets most <a id="kit-engine-messages"></a>
 
-Every message in the first column is a string in hoi4.exe 1.19.3. [unverified] The "Seen in" column records which log held the message in an earlier 1.19.3 session (modded, single player); "not seen" means it was not in those logs. The "Usual meaning" column is an interpretation of the message text and the surrounding strings, not a documented rule. [unverified]
+Every message in the first column is a string in hoi4.exe 1.19.4.1. [unverified] The "Seen in" column records which log held the message in an earlier 1.19.3 session (modded, single player); "not seen" means it was not in those logs. The "Usual meaning" column is an interpretation of the message text and the surrounding strings, not a documented rule. [unverified]
 
 Most script errors carry two numbers, `near line: <a>` inside the message and `near line: <b>` after the file path. Treat both as pointers and look at the lines between them. [unverified]
 

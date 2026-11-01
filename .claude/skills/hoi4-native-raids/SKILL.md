@@ -11,10 +11,10 @@ Use this skill for `common/raids/` definitions and effects launched by their `su
 
 Inspect the installed vanilla `common/raids/_documentation.md`, relevant vanilla raid definitions, and installed effect and trigger documentation before editing. The installed documentation controls native fields and scope. Record the exact vanilla precedent in the handoff.
 
-- The raid type key is the singular `target_type` (37 of 37 vanilla raid types), so the documentation template's `target_types`, `preparation_time` and `cost` are wrong. [vanilla-confirmed 1.19.3]
-- Raid files wrap their content in a root `types = { }` or `categories = { }` block. [vanilla-confirmed 1.19.3]
-- The raid success modifier is `air_agility`, not the `agility` of the documentation example, and `radar` exists but is undocumented. [vanilla-confirmed 1.19.3]
-- The raid define `LAND_DEFENSE_FIGHERS_PER_RAID` keeps the game's own typo. [vanilla-confirmed 1.19.3]
+- The raid type key is the singular `target_type` (37 of 37 vanilla raid types), so the documentation template's `target_types`, `preparation_time` and `cost` are wrong. [vanilla-confirmed 1.19.4.1]
+- Raid files wrap their content in a root `types = { }` or `categories = { }` block. [vanilla-confirmed 1.19.4.1]
+- The raid success modifier is `air_agility`, not the `agility` of the documentation example, and `radar` exists but is undocumented. [vanilla-confirmed 1.19.4.1]
+- The raid define `LAND_DEFENSE_FIGHERS_PER_RAID` keeps the game's own typo. [vanilla-confirmed 1.19.4.1]
 
 ## Scope and dispatch
 
@@ -31,7 +31,7 @@ Inspect the installed vanilla `common/raids/_documentation.md`, relevant vanilla
 ## Cost and final gate
 
 - Put equipment needed to create a raid in native `essential_equipment` and Command Power allocation in native `command_power`. Do not debit or refund the same native payment again in scripted effects.
-- Nuclear raid outcomes call `launch_nuke = { use_nuke = no }` (13 of 13 vanilla), because `essential_equipment` has already consumed the nuke. [vanilla-confirmed 1.19.3]
+- Nuclear raid outcomes call `launch_nuke = { use_nuke = no }` (13 of 13 vanilla), because `essential_equipment` has already consumed the nuke. [vanilla-confirmed 1.19.4.1]
 - Keep `visible`, `available`, and `launchable` distinct: they control type display, preparation, and starting a prepared raid. If installed documentation does not settle whether a prepared instance remains visible after a type's `visible` gate closes, record that as a live-game question.
 - At resolution, recheck the exact target and current policy authorizing the effect, including actor, victim, state, and province where relevant. If the final gate can reject an effect, make the outcome tooltip conditional or neutral.
 - Do not promise cancellation refunds or resource recovery without verified engine behavior for that case.

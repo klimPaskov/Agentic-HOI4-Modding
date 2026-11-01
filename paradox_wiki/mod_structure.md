@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Mod structure", revision 96970, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="96970" sources="launcher-settings.json steam_appid.txt dlc/ localisation/english/loading_tips_l_english.yml common/ pdx_launcher/common/localisation/l_english.yml hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="96970" sources="launcher-settings.json steam_appid.txt dlc/ localisation/english/loading_tips_l_english.yml common/ pdx_launcher/common/localisation/l_english.yml hoi4.exe" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `launcher-settings.json`, `steam_appid.txt`, `dlc/*/*.dlc`, the launcher localisation, vanilla `loading_tips_l_english.yml`, the byte order mark of every vanilla script and localisation file, all 81 folders and 13 loose files under `common/` (28 folders ship documentation), and `hoi4.exe` strings.
 Kit blocks added: `mod-structure-workshop-descriptor` (the workshop sample is not a HOI4 descriptor), `mod-structure-descriptors` (which file holds `path`, a 1.19 example), `mod-structure-encoding` (vanilla BOM counts), `mod-structure-loading-tips` (wrong file name and path in the walkthrough), and the common folder index.
 Gaps left: no game file defines the descriptor format, so key behaviour rests on launcher texts and `hoi4.exe` strings and stays [unverified]. The thumbnail size and aspect ratio rules and the case-sensitivity note for Mac and Linux cannot be checked on a Windows install. The kit pages named in the index are written separately; their links resolve once those pages are saved.
+**1.19.4.1 re-check (2026-11-01).** 10 statements depended on files the update changed (`launcher-settings.json`, `hoi4.exe`, `dlc/*/*.dlc` and the script, localisation and `common/` file counts) and all 10 were re-measured. The build is now `1.19.4.1`, the BOM table reads 2,093 `.yml`, 2,224 `common/**/*.txt` and 616 interface files, five `common/` folder file counts moved (`ai_strategy` 51, `decisions` 147, `peace_conference` 37, `scripted_guis` 20, `scripted_triggers` 55), the DLC `path` text is corrected, and `common/` still has 81 folders and 13 loose files. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -20,7 +21,7 @@ Gaps left: no game file defines the descriptor format, so key behaviour rests on
 - [Adding Mod Content](#Adding_Mod_Content)
 - [Tips](#Tips)
 - [See also](#See_also)
-- [Kit: common folder index for 1.19.3](#kit-common-folder-index)
+- [Kit: common folder index for 1.19.4.1](#kit-common-folder-index)
 
 ---
 
@@ -63,7 +64,7 @@ supported_version="1.11.*"
 **Kit correction** The sample descriptor above is not a current HOI4 descriptor.
 
 - `archive="workshop/content/281990/..."` uses Steam app id `281990`. HOI4's app id is `394360`, the id in the folder path at the start of this section, so the sample was taken from another game or an old layout. The page's own note says mods since 1.9.0 are not stored as `.zip`, so a current Workshop descriptor has no `archive`. [vanilla-confirmed 1.19.3] `steam_appid.txt`.
-- `supported_version="1.11.*"` is far behind the installed build `1.19.3.0`. A mod for this build writes `supported_version="1.19.*"`. [vanilla-confirmed 1.19.3] `launcher-settings.json` (`rawVersion`).
+- `supported_version="1.11.*"` is far behind the installed build `1.19.4.1`. A mod for this build writes `supported_version="1.19.*"`. [vanilla-confirmed 1.19.4.1] `launcher-settings.json` (`rawVersion`).
 - The keys are real. `hoi4.exe` contains the messages "Invalid supported_version in %s" and "Could not find archive for mod: %s" and the key names `remote_file_id` and `user_dir`. [unverified] (strings in `hoi4.exe` only)
 - The launcher text "The mod does not have supported_version set." shows that a descriptor without `supported_version` is accepted and only flagged as outdated. [vanilla-confirmed 1.19.3] `pdx_launcher/common/localisation/l_english.yml`.
 <!-- kit:end id="mod-structure-workshop-descriptor" -->
@@ -84,14 +85,14 @@ supported_version="1.11.*"
 
 | Vanilla files | With a byte order mark |
 | --- | --- |
-| `localisation/**/*.yml` | 2,083 of 2,083 |
-| `common/**/*.txt` | 235 of 2,218 |
+| `localisation/**/*.yml` | 2,093 of 2,093 |
+| `common/**/*.txt` | 235 of 2,224 |
 | `events/*.txt` | 87 of 128 |
 | `history/**/*.txt` | 942 of 2,058 |
-| `interface/*.gfx` and `interface/*.gui` | 0 of 615 |
+| `interface/*.gfx` and `interface/*.gui` | 0 of 616 |
 | `map/**/*.txt` | 0 of 317 |
 
-All rows: [vanilla-confirmed 1.19.3] first three bytes of each file.
+All rows: [vanilla-confirmed 1.19.4.1] first three bytes of each file.
 
 Script files that carry a BOM load fine in vanilla, so a BOM in script is tolerated. No BOM stays the safe choice for new script files. Localisation is the strict case: every vanilla `.yml` has the BOM, and `hoi4.exe` contains the message "Localization file '%s' should be in in utf-8-bom encoding". [unverified] (the message is a string in `hoi4.exe`)
 <!-- kit:end id="mod-structure-encoding" -->
@@ -139,7 +140,7 @@ tags={
 }
 ```
 
-Vanilla's own DLC descriptors, such as `dlc/dlc049_no_compromise_no_surrender/dlc049.dlc`, use the same `key = value` syntax. Their `path` is relative to the game folder, uses forward slashes and is written without quotes. [vanilla-confirmed 1.19.3] `dlc/*/dlc*.dlc`.
+Vanilla's own DLC descriptors, such as `dlc/dlc049_no_compromise_no_surrender/dlc049.dlc`, use the same `key = value` syntax. Their `path` is relative to the game folder and uses forward slashes. It is written without quotes in `dlc049.dlc` and in some other descriptors, and with quotes in others (`dlc001.dlc`, `dlc002.dlc`). [vanilla-confirmed 1.19.4.1] `dlc/*/dlc*.dlc`.
 <!-- kit:end id="mod-structure-descriptors" -->
 
 ### Creating a Submod <a id="Creating_a_Submod"></a>
@@ -185,8 +186,8 @@ When the game is loading with this mod active in the English language, the only 
 <!-- kit:begin id="mod-structure-loading-tips" at="section:Adding_Mod_Content" -->
 **Kit correction** The loading tips walkthrough names the wrong file and the wrong place.
 
-- The vanilla file is `localisation/english/loading_tips_l_english.yml`, with a lowercase L in `_l_`. The page writes `loading_tips_I_english.yml` (capital I) and `loading_tips_L_english.yml` (capital L). Use the vanilla spelling: all 2,081 language files in vanilla use lowercase `_l_`. [vanilla-confirmed 1.19.3] `localisation/*/*.yml`.
-- The file sits in the `english` subfolder. The page's tree puts the copy directly in `localisation/`, which is a different path and so, by the same-name-same-place rule on the [Modding](<modding.md#Loading_files>) page, a second file instead of a replacement. [vanilla-confirmed 1.19.3] `localisation/english/` for the folder; the rule is [unverified].
+- The vanilla file is `localisation/english/loading_tips_l_english.yml`, with a lowercase L in `_l_`. The page writes `loading_tips_I_english.yml` (capital I) and `loading_tips_L_english.yml` (capital L). Use the vanilla spelling: all 2,091 language files in vanilla use lowercase `_l_`. [vanilla-confirmed 1.19.4.1] `localisation/*/*.yml`.
+- The file sits in the `english` subfolder. The page's tree puts the copy directly in `localisation/`, which is a different path and so, by the same-name-same-place rule on the [Modding](<modding.md#Loading_files>) page, a second file instead of a replacement. [vanilla-confirmed 1.19.4.1] `localisation/english/` for the folder; the rule is [unverified].
 - Vanilla defines 163 tips, `LOADING_TIP_0` to `LOADING_TIP_162`, written without a version number (`LOADING_TIP_0: "text"`). A mod file that only defines `LOADING_TIP_0` leaves the other 162 tips in place. The page's result "the only quote shown will be Test1 mod" needs a file that replaces the vanilla one at the same relative path (`localisation/english/loading_tips_l_english.yml`) and defines nothing else. [vanilla-confirmed 1.19.3] `localisation/english/loading_tips_l_english.yml`; the replacement rule is [unverified] (per the [Modding](<modding.md#Loading_files>) page).
 <!-- kit:end id="mod-structure-loading-tips" -->
 
@@ -208,11 +209,11 @@ Depending on what your mod is supposed to do, you may want to visit some of thes
 - [Event modding](<event_modding.md>) - How to add/edit an Event
 
 <!-- kit:begin id="common-folder-index" at="bottom" -->
-## Kit: common folder index for 1.19.3 <a id="kit-common-folder-index"></a>
+## Kit: common folder index for 1.19.4.1 <a id="kit-common-folder-index"></a>
 
-**Kit addition** `GAME\common\` holds 81 folders and 13 loose files in 1.19.3. Each folder is read for the entries named in its row; a file's name inside a folder rarely matters (see the exceptions in the [Modding](<modding.md#Notes>) notes). "Files" counts every file under the folder in vanilla, documentation included. "Doc" names the game's own documentation for that folder: 28 of the 81 folders have one, some only in a subfolder. Open it before writing entries. [vanilla-confirmed 1.19.3] `common/`.
+**Kit addition** `GAME\common\` holds 81 folders and 13 loose files in 1.19.4.1. Each folder is read for the entries named in its row; a file's name inside a folder rarely matters (see the exceptions in the [Modding](<modding.md#Notes>) notes). "Files" counts every file under the folder in vanilla, documentation included. "Doc" names the game's own documentation for that folder: 28 of the 81 folders have one, some only in a subfolder. Open it before writing entries. [vanilla-confirmed 1.19.4.1] `common/`.
 
-All rows: file lists and file heads are [vanilla-confirmed 1.19.3] under `common/`; every name in the Doc column is [docs] `common/<folder>/`. The links to Collection modding, Game rule modding, Intelligence operation modding, Map mode modding, Occupation and resistance modding, Peace conference modding, Raid modding, Script constant modding and Special project modding point to kit pages of this snapshot.
+All rows: file lists and file heads are [vanilla-confirmed 1.19.4.1] under `common/`; every name in the Doc column is [docs] `common/<folder>/`. The links to Collection modding, Game rule modding, Intelligence operation modding, Map mode modding, Occupation and resistance modding, Peace conference modding, Raid modding, Script constant modding and Special project modding point to kit pages of this snapshot.
 
 | Folder | Files | Defines | Snapshot page | Doc |
 | --- | --- | --- | --- | --- |
@@ -223,7 +224,7 @@ All rows: file lists and file heads are [vanilla-confirmed 1.19.3] under `common
 | `ai_faction_theaters` | 2 | Theaters (connected strategic region sets) the AI faction leader assigns members to | none | `_documentation.md` |
 | `ai_focuses` | 8 | AI focus presets that weight research per focus name | [AI focuses](<ai_focuses.md>) | none |
 | `ai_navy` | 26 | Goal-based naval AI: fleets, goals and taskforce roles (subfolders `fleet`, `goals`, `taskforce`) | none | `_documentation.md`, `taskforce/_documentation.md` |
-| `ai_strategy` | 50 | AI strategy entries that weight AI behaviour (alliances, wars, unit roles, areas) | [AI modding](<ai_modding.md#AI_strategies>) | `_documentation.md` |
+| `ai_strategy` | 51 | AI strategy entries that weight AI behaviour (alliances, wars, unit roles, areas) | [AI modding](<ai_modding.md#AI_strategies>) | `_documentation.md` |
 | `ai_strategy_plans` | 128 | Per-country AI strategy plans | [AI modding](<ai_modding.md#AI_strategy_plans>) | none |
 | `ai_templates` | 16 | Target division templates the AI upgrades toward, by role | [AI modding](<ai_modding.md#AI_templates>) | `_documentation.md` |
 | `autonomous_states` | 21 | Autonomy states (`autonomy_state`) | [Autonomy state modding](<autonomy_state_modding.md>) | none |
@@ -237,7 +238,7 @@ All rows: file lists and file heads are [vanilla-confirmed 1.19.3] under `common
 | `country_leader` | 4 | Country leader traits (`leader_traits`) | [Character modding](<character_modding.md#Country_leader_traits>) | none |
 | `country_tag_aliases` | 1 | Country tag aliases usable as scopes | [Data structures](<data_structures.md#Country_tag_aliases>) | none |
 | `country_tags` | 2 | The list of country tags and the file each tag points to | [Country creation](<country_creation.md>) | none |
-| `decisions` | 146 | Decisions and missions; categories in `categories/` | [Decision modding](<decision_modding.md>) | `_documentation.md` |
+| `decisions` | 147 | Decisions and missions; categories in `categories/` | [Decision modding](<decision_modding.md>) | `_documentation.md` |
 | `defines` | 3 | Lua defines (`NDefines`) | [Defines](<defines.md>) | none |
 | `difficulty_settings` | 1 | Custom difficulty settings: a modifier with a multiplier for listed countries | [Bookmark modding](<bookmark_modding.md#Difficulty_settings>) | none |
 | `doctrines` | 27 | Doctrine folders, tracks, grand doctrines and subdoctrines (four subfolders) | [Doctrine modding](<doctrine_modding.md>) | `_documentation.md`, `folders/_documentation.md`, `grand_doctrines/_documentation.md`, `subdoctrines/_documentation.md`, `tracks/_documentation.md` |
@@ -267,7 +268,7 @@ All rows: file lists and file heads are [vanilla-confirmed 1.19.3] under `common
 | `operation_tokens` | 2 | Tokens that operations require or grant | [Intelligence operation modding](<intelligence_operation_modding.md>) | `_documentation.md` |
 | `operations` | 7 | Intelligence operations | [Intelligence operation modding](<intelligence_operation_modding.md>) | `_documentation.md` |
 | `opinion_modifiers` | 13 | Opinion modifiers | [Modifiers](<modifiers.md#Opinion_modifiers>) | none |
-| `peace_conference` | 36 | Peace conference actions, categories, cost modifiers and AI desires | [Peace conference modding](<peace_conference_modding.md>) | `ai_peace/_documentation.md`, `cost_modifiers/_documentation.md` |
+| `peace_conference` | 37 | Peace conference actions, categories, cost modifiers and AI desires | [Peace conference modding](<peace_conference_modding.md>) | `ai_peace/_documentation.md`, `cost_modifiers/_documentation.md` |
 | `profile_backgrounds` | 1 | Unlockable career profile backgrounds | none | none |
 | `profile_pictures` | 1 | Unlockable career profile pictures | none | none |
 | `raids` | 10 | Raid types and categories | [Raid modding](<raid_modding.md>) | `_documentation.md` |
@@ -280,9 +281,9 @@ All rows: file lists and file heads are [vanilla-confirmed 1.19.3] under `common
 | `script_constants` | 5 | Script constants (`constant:group.name`) | [Script constant modding](<script_constant_modding.md>) | `documentation.md` |
 | `scripted_diplomatic_actions` | 1 | Scripted diplomatic actions (vanilla ships only a commented template) | [Scripted GUI modding](<scripted_gui_modding.md>) | none |
 | `scripted_effects` | 52 | Scripted effects | [Effects](<effects.md#Scripted_effects>) | none |
-| `scripted_guis` | 18 | Scripted GUI definitions | [Scripted GUI modding](<scripted_gui_modding.md>) | `_documentation.md` |
+| `scripted_guis` | 20 | Scripted GUI definitions | [Scripted GUI modding](<scripted_gui_modding.md>) | `_documentation.md` |
 | `scripted_localisation` | 42 | Scripted localisation (`defined_text`) | [Localisation](<localisation.md#Scripted_localisation>) | none |
-| `scripted_triggers` | 54 | Scripted triggers | [Triggers](<triggers.md#Scripted_triggers>) | none |
+| `scripted_triggers` | 55 | Scripted triggers | [Triggers](<triggers.md#Scripted_triggers>) | none |
 | `special_projects` | 17 | Special projects, project tags, prototype rewards and specialisations (four subfolders) | [Special project modding](<special_project_modding.md>) | `special_projects_documentation.md`, `projects/documentation.md`, `prototype_rewards/documentation.md`, `specialization/documentation.md` |
 | `state_category` | 13 | State categories (building slots per category) | [State modding](<state_modding.md#State_categories>) | none |
 | `strategic_locations` | 2 | Strategic locations: extra province building levels, applied with `strategic_state_location` | none | `documentation.md` |
@@ -298,7 +299,7 @@ All rows: file lists and file heads are [vanilla-confirmed 1.19.3] under `common
 | `units` | 297 | One file per sub-unit; subfolders `equipment`, `critical_parts`, `names*`, `unit_modifiers`, `codenames_operatives` | [Unit modding](<unit_modding.md>), [Equipment modding](<equipment_modding.md>), [Division modding](<division_modding.md>) | `equipment/_documentation.md` |
 | `wargoals` | 1 | Wargoal types (`wargoal_types`) | none | none |
 
-Loose files directly in `common/`, 13 in total. [vanilla-confirmed 1.19.3] `common/*.txt`, `common/msgrdk_achievements.json`.
+Loose files directly in `common/`, 13 in total. [vanilla-confirmed 1.19.4.1] `common/*.txt`, `common/msgrdk_achievements.json`.
 
 | File | Holds |
 | --- | --- |

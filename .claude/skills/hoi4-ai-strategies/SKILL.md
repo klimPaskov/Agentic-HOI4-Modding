@@ -227,6 +227,7 @@ Targeted types accept several of `tag`, `state`, `strategic_region`, `area`, `co
 
 `role_ratio` (division role weights; also ship and tank roles from AI equipment), `template_prio`, `unit_ratio`, `build_army`, `equipment_production_factor`, `equipment_variant_production_factor`, `equipment_production_min_factories`, `equipment_production_min_factories_archetype`, `build_building`, `building_target`, `research_tech`, `research_weight_factor`, `pp_spend_priority`, `pp_spend_amount`, `land_xp_spend_priority`, `air_xp_spend_priority`, `navy_xp_spend_priority`, `build_airplane` (computed by the game from air `unit_ratio`; see the catalog for the formula).
 `research_tech` forces the tech as soon as possible; `research_weight_factor` multiplies the tech's `ai_will_do` (50 means plus 50 percent).
+`stockpile_fuel` (added in 1.19.4.1) has no `value`: optional `start_below` and `stop_above`, percent of wanted max fuel, make the AI stand down new attacks and throttle air and naval fuel until fuel recovers. `stop_above` must be above `start_below`; the catalog has the rest.
 `GAME/common/ai_strategy/default.txt` shows vanilla uses of nearly all of these.
 
 ## AI strategy plans

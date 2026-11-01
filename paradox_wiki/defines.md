@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Defines", revision 104682, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="104682" sources="common/defines/ localisation/english/core_l_english.yml" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="104682" sources="common/defines/ localisation/english/core_l_english.yml" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** The tables on this page date from an older build. Checked against: all three files in `common/defines/` (`00_defines.lua`, `00_graphics.lua`, `01_career_profile.lua`: 4504 defines in 39 categories), parsed with a script and compared name by name and value by value with this page's 37 category tables. They lack 617 defines, list 127 values that changed and carry 58 names that no longer exist.
 The missing defines, the changed values, the removed names and the two new categories `NFactions` and `NDoctrines` are on the kit page [Defines additions](<defines_additions.md>); the wiki text here is left unchanged, so a refresh can replace it without touching kit text. Re-check that page when this page's wiki revision changes.
 Gaps left: meanings come from the Lua comments or, where there is none, from the define name. The "Usage" and "Developer comment" cells of existing rows were not rewritten. Which defines the engine still reads was not tested.
+**1.19.4.1 re-check (2026-11-01).** The same script compared the 1.19.3 define set with the 1.19.4.1 files: 4523 defines in the same 39 categories, 19 new, none removed, and one changed value (`NMarket.REQUEST_AUTOMATION_AUTO_ACCEPT_PURCHASE_DEFAULT` is now `true`, while this page's table shows `false`). They are on [Defines additions](<defines_additions.md#Changes_1_19_4_1>). This page holds no kit statement besides this review, and its wiki text is unchanged.
 <!-- kit:end id="review" -->
 
 ## Table of contents

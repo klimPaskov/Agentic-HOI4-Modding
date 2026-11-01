@@ -190,7 +190,7 @@ technology_folders = {
   Without them the AI can still research it and `set_technology` still works, but a player cannot research there.
   Authoring detail is in `references/technology-tree-gui.md`.
 - Category words in `GAME/common/technology_tags/00_technology.txt` include `mio_cat_*` entries that military industrial organizations use; keep any renamed categories consistent across every reference.
-- Folder ids use the British spelling, as in `armour_folder` and `nsb_armour_folder` in `common/technology_tags/00_technology.txt`. [vanilla-confirmed 1.19.3]
+- Folder ids use the British spelling, as in `armour_folder` and `nsb_armour_folder` in `common/technology_tags/00_technology.txt`. [vanilla-confirmed 1.19.4.1]
 
 ## Technology effects, triggers, and research bonuses
 
@@ -220,7 +220,7 @@ The MIO tech hooks are really spelled `on_mio_tech_reseach_*`, so copy that spel
 Limited bonuses are consumed by the research that uses them; the interface text keys `RESEARCH_BONUS_USED` and `RESEARCH_BONUS` in `core_l_english.yml` describe the behaviour.
 `NDefines.NTechnology.USE_BONUS_REGRET_TIMER` gives three days to reverse a use.
 
-`add_tech_bonus` takes its category from `common/technology_tags/00_technology.txt`, where `construction_tech` is valid and `construction` is not, and `research_bonus` is an idea key rather than an effect. [vanilla-confirmed 1.19.3]
+`add_tech_bonus` takes its category from `common/technology_tags/00_technology.txt`, where `construction_tech` is valid and `construction` is not, and `research_bonus` is an idea key rather than an effect. [vanilla-confirmed 1.19.4.1]
 
 ## Technology sharing groups
 

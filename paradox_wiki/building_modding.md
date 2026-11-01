@@ -2,11 +2,12 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Building modding", revision 104005, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="104005" sources="common/buildings/ interface/countrystateview.gfx gfx/interface/buildings/building_icon_strip.dds gfx/entities/buildings.asset map/buildings.txt common/terrain/00_terrain.txt common/state_category/ common/special_projects/specialization/ common/defines/00_defines.lua localisation/english/ history/states/ documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md documentation/dynamic_variables_documentation.md" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="104005" sources="common/buildings/ interface/countrystateview.gfx gfx/interface/buildings/building_icon_strip.dds gfx/entities/buildings.asset map/buildings.txt common/terrain/00_terrain.txt common/state_category/ common/special_projects/specialization/ common/defines/00_defines.lua localisation/english/ history/states/ documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md documentation/dynamic_variables_documentation.md" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: both files in `common/buildings/` (all 55 buildings parsed), the building defines, the building effects, triggers and modifier families, the icon strip, and the model position file.
 Kit blocks added: every building key vanilla uses that the page lacks or has wrong, the full building list with costs and level caps, corrections (`special_icon` is a sprite name, `enable_for_controllers` needs `=`, `noOfFrames` is 31, the state modifier localisation key, `max_level` in the example), and the script that works with buildings.
 The "need to be updated" marker is an instruction about the icon strip, not a stale section. The five footnoted defines all still have the quoted values.
 Gaps left: what `affects_energy`, `need_detection`, `centered` and `base_cost_conversion` do is not stated in any game file; the blocks say `[unverified]`.
+**1.19.4.1 re-check (2026-11-01).** 10 tagged statements depended on files the update changed (the defines file, `map/buildings.txt`, English localisation, state history, and scripts scanned for effect counts) and all were re-measured. One number moved: `add_offsite_building` is used in 98 files (was 99). Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -63,7 +64,7 @@ Additionally, `infrastructure_construction_effect = yes`, if included, will make
 
 - `per_level_extra_cost` may be negative: `fuel_silo` uses `-500`, so each extra level is cheaper. [vanilla-confirmed 1.19.3] `common/buildings/00_buildings.txt`
 - What `base_cost_conversion` does is not stated in any game file; it appears only on the two factory types, which suggests a factory conversion cost. [unverified]
-- The "4 IC per day" figure is the base speed of an unpowered factory. 1.19.3 has separate defines: `BASE_FACTORY_SPEED = 4`, `BASE_FACTORY_SPEED_MIL = 3.5`, `BASE_FACTORY_SPEED_NAV = 2.0`, and for powered factories (the energy system) `POWERED_FACTORY_SPEED = 5`, `POWERED_FACTORY_SPEED_MIL = 4.5`, `POWERED_FACTORY_SPEED_NAV = 2.5`, all in `NProduction`. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+- The "4 IC per day" figure is the base speed of an unpowered factory. 1.19.4.1 has separate defines: `BASE_FACTORY_SPEED = 4`, `BASE_FACTORY_SPEED_MIL = 3.5`, `BASE_FACTORY_SPEED_NAV = 2.0`, and for powered factories (the energy system) `POWERED_FACTORY_SPEED = 5`, `POWERED_FACTORY_SPEED_MIL = 4.5`, `POWERED_FACTORY_SPEED_NAV = 2.5`, all in `NProduction`. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`
 - Modifiers that act on one building type: `production_cost_<Building>_factor` (cost), `production_speed_<Building>_factor` (speed) and `repair_speed_<Building>_factor` at country level, and `state_production_speed_<Building>_factor` and `state_repair_speed_<Building>_factor` at state level. The documentation lists all 55 buildings for each of these five families. [docs] `documentation/modifiers_documentation.md`
 <!-- kit:end id="building-cost-notes" -->
 
@@ -109,7 +110,7 @@ By default, all levels of the building are unlocked by default. However, if ther
 | `group_by` | 9 | values `special_project_facility` (4 facilities), `reactors` (3 reactors), `infrastructure_keystone` (2 grids) |
 | `exclusive_with` | 2 | `mega_gun_emplacement` and `rocket_site` exclude each other |
 
-`fuel_silo` has `shares_slots = yes` and no `state_max`, so its cap is `MAX_BUILDING_LEVELS = 15`, the default the wiki states. Also in `NBuildings`: `MAX_SHARED_SLOTS = 25` and `OWNER_CHANGE_EXTRA_SHARED_SLOTS_FACTOR = 1`. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+`fuel_silo` has `shares_slots = yes` and no `state_max`, so its cap is `MAX_BUILDING_LEVELS = 15`, the default the wiki states. Also in `NBuildings`: `MAX_SHARED_SLOTS = 25` and `OWNER_CHANGE_EXTRA_SHARED_SLOTS_FACTOR = 1`. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`
 
 Three more places cap levels. Terrain: only `bunker` (3, 4 or 5) and `coastal_bunker` (6) appear in `buildings_max_level` blocks of `common/terrain/00_terrain.txt`. State categories: the island categories carry `buildings_max_level = { naval_base = N air_base = N }` (see the State modding page). Modifiers: `<Building>_max_level_terrain_limit` and `state_<Building>_max_level_terrain_limit`, plus per-terrain forms such as `air_base_desert_max_level_terrain_limit` (building name plus terrain name, 770 combinations). The two plain families list 54 buildings, all but `dam_mountain`. [vanilla-confirmed 1.19.3] `common/terrain/00_terrain.txt`, `common/state_category/`. [docs] `documentation/modifiers_documentation.md`
 
@@ -268,7 +269,7 @@ It is preferable to generate the building models in the building section in the 
 
 Other model keys in vanilla: `show_on_map_meshes = 3` (`naval_base`, `dockyard`; entities `building_dockyard_1` to `building_dockyard_3` exist), `has_destroyed_mesh = yes` (`bunker`, `coastal_bunker`, `stronghold_network`) and `always_shown = yes` (26 buildings). The entities are in `gfx/entities/buildings.asset` (107 entities named `building_*`). [vanilla-confirmed 1.19.3] `common/buildings/00_buildings.txt`, `gfx/entities/buildings.asset`
 
-In `map/buildings.txt` the second column is the building id or, for a building with `spawn_point = X`, the spawn point name `X`. Vanilla has 66664 rows and 22 distinct ids: the spawn names `naval_base_spawn`, `special_project_facility_spawn`, `rocket_site_spawn`, `nuclear_reactor_spawn`, `dam_spawn`, `locks_spawn`, `landmark_spawn`, the building ids `air_base`, `anti_air_building`, `arms_factory`, `bunker`, `coastal_bunker`, `dockyard`, `fuel_silo`, `industrial_complex`, `naval_headquarters`, `naval_supply_hub`, `radar_station`, `stronghold_network`, `supply_node`, `synthetic_refinery`, and `floating_harbor`. There are 10154 `supply_node` rows, the same as the number of land provinces. [vanilla-confirmed 1.19.3] `map/buildings.txt`
+In `map/buildings.txt` the second column is the building id or, for a building with `spawn_point = X`, the spawn point name `X`. Vanilla has 66664 rows and 22 distinct ids: the spawn names `naval_base_spawn`, `special_project_facility_spawn`, `rocket_site_spawn`, `nuclear_reactor_spawn`, `dam_spawn`, `locks_spawn`, `landmark_spawn`, the building ids `air_base`, `anti_air_building`, `arms_factory`, `bunker`, `coastal_bunker`, `dockyard`, `fuel_silo`, `industrial_complex`, `naval_headquarters`, `naval_supply_hub`, `radar_station`, `stronghold_network`, `supply_node`, `synthetic_refinery`, and `floating_harbor`. There are 10154 `supply_node` rows, the same as the number of land provinces. [vanilla-confirmed 1.19.4.1] `map/buildings.txt`
 <!-- kit:end id="building-model-notes" -->
 
 ### Effects <a id="Effects"></a>
@@ -450,9 +451,9 @@ Buildings use the following localization keys, using my_building as an example:
 The first 3 are used for the building itself in various UI elements, while the last 4 are used to localise the modifiers automatically created for each building: `production_speed_<building>_factor` and `state_production_speed_<building>_factor`.
 
 <!-- kit:begin id="building-loc-correction" at="section:Localization" -->
-**Kit correction** The last two keys in the list above are wrong. The state modifier key is `modifier_state_production_speed_<building>_factor` (with `speed`), matching the modifier `state_production_speed_<building>_factor` that the wiki names below it. Vanilla: `modifier_state_production_speed_infrastructure_factor` and its `_desc`. [vanilla-confirmed 1.19.3] `localisation/english/`
+**Kit correction** The last two keys in the list above are wrong. The state modifier key is `modifier_state_production_speed_<building>_factor` (with `speed`), matching the modifier `state_production_speed_<building>_factor` that the wiki names below it. Vanilla: `modifier_state_production_speed_infrastructure_factor` and its `_desc`. [vanilla-confirmed 1.19.4.1] `localisation/english/`
 
-Vanilla also localises the other families, for example `modifier_repair_speed_infrastructure_factor` and `modifier_state_repair_speed_bunker_factor`, and uses `$bunker$` references inside the text. The building names themselves are plain keys: `infrastructure`, `infrastructure_desc`, `infrastructure_plural`. [vanilla-confirmed 1.19.3] `localisation/english/`
+Vanilla also localises the other families, for example `modifier_repair_speed_infrastructure_factor` and `modifier_state_repair_speed_bunker_factor`, and uses `$bunker$` references inside the text. The building names themselves are plain keys: `infrastructure`, `infrastructure_desc`, `infrastructure_plural`. [vanilla-confirmed 1.19.4.1] `localisation/english/`
 <!-- kit:end id="building-loc-correction" -->
 
 ## Types <a id="Types"></a>
@@ -497,7 +498,7 @@ These are the different types of buildings in the game (Can also be found inside
 Note that while railways and supply nodes are buildings, not all traditional building operations apply to them. Their starting level is defined [outside of state history](<map_modding.md>) and [a separate effect](<effects.md>) must be used to construct railways mid-game, with the default [add_building_construction](<effects.md>) or other building-related effects crashing the game.
 
 <!-- kit:begin id="building-types-all" at="section:Types" -->
-**Kit correction** The table above lists 32 of the 55 buildings in 1.19.3 and gives `rail_way` a maximum of 5. `common/buildings/00_buildings.txt` defines 33 buildings (the table lacks `cataract_dam_mountain`) and `01_landmark_buildings.txt` defines 22 more, all `landmark_*`. In the file `rail_way` has `province_max = 1`; the maximum railway level is the define `NSupply.MAX_RAILWAY_LEVEL = 5`, as footnote 5 says. [vanilla-confirmed 1.19.3] `common/buildings/00_buildings.txt`, `common/defines/00_defines.lua`
+**Kit correction** The table above lists 32 of the 55 buildings in 1.19.3 and gives `rail_way` a maximum of 5. `common/buildings/00_buildings.txt` defines 33 buildings (the table lacks `cataract_dam_mountain`) and `01_landmark_buildings.txt` defines 22 more, all `landmark_*`. In the file `rail_way` has `province_max = 1`; the maximum railway level is the define `NSupply.MAX_RAILWAY_LEVEL = 5`, as footnote 5 says. [vanilla-confirmed 1.19.4.1] `common/buildings/00_buildings.txt`, `common/defines/00_defines.lua`
 
 All 33 buildings of `00_buildings.txt` as 1.19.3 defines them. "Kind" follows the page's wording: shared slots, state-level own slots, or provincial. Cost is `base_cost`, with extra cost terms in brackets. All rows: [vanilla-confirmed 1.19.3] `common/buildings/00_buildings.txt`.
 
@@ -537,9 +538,9 @@ All 33 buildings of `00_buildings.txt` as 1.19.3 defines them. "Kind" follows th
 | `energy_infrastructure` | Shared | state 1 | 12000 | group infrastructure_keystone |
 | `industrial_infrastructure` | Shared | state 1 | 12000 | group infrastructure_keystone |
 
-The 22 landmarks (`landmark_big_ben`, `landmark_colosseum`, `landmark_cristo_redentor`, `landmark_eiffel_tower`, `landmark_statue_of_liberty`, `landmark_kremlin`, `landmark_hofburg_palace`, `landmark_berlin_reichstag`, `landmark_berlin_volkshalle`, `landmark_taj_mahal`, `landmark_sadabad_complex`, `landmark_hagia_sophia`, `landmark_forbidden_city`, `landmark_nanjing_presidential_palace`, `landmark_nanjing_presidential_palace_prc`, `landmark_nanjing_presidential_palace_gen`, `landmark_great_wall_section`, `landmark_tokyo_imperial_palace`, `landmark_national_diet`, `landmark_hakko_ichiu`, `landmark_prague_castle`, `landmark_bojnice_castle`) are provincial (`province_max = 1`), cost 20000, are not buildable (`is_buildable = no`), use `landmark_spawn` and `icon_frame = 22`, and each grants a country modifier to the controllers named in its `enable_for_controllers`. 17 of them appear in vanilla state history. [vanilla-confirmed 1.19.3] `common/buildings/01_landmark_buildings.txt`, `history/states/`
+The 22 landmarks (`landmark_big_ben`, `landmark_colosseum`, `landmark_cristo_redentor`, `landmark_eiffel_tower`, `landmark_statue_of_liberty`, `landmark_kremlin`, `landmark_hofburg_palace`, `landmark_berlin_reichstag`, `landmark_berlin_volkshalle`, `landmark_taj_mahal`, `landmark_sadabad_complex`, `landmark_hagia_sophia`, `landmark_forbidden_city`, `landmark_nanjing_presidential_palace`, `landmark_nanjing_presidential_palace_prc`, `landmark_nanjing_presidential_palace_gen`, `landmark_great_wall_section`, `landmark_tokyo_imperial_palace`, `landmark_national_diet`, `landmark_hakko_ichiu`, `landmark_prague_castle`, `landmark_bojnice_castle`) are provincial (`province_max = 1`), cost 20000, are not buildable (`is_buildable = no`), use `landmark_spawn` and `icon_frame = 22`, and each grants a country modifier to the controllers named in its `enable_for_controllers`. 17 of them appear in vanilla state history. [vanilla-confirmed 1.19.4.1] `common/buildings/01_landmark_buildings.txt`, `history/states/`
 
-The closing note is wrong for supply hubs: vanilla builds `supply_node` with `add_building_construction` in 72 blocks across 21 files, and no `rail_way` is built that way (railways use `build_railway`). Starting levels of both still come from `map/supply_nodes.txt` and `map/railways.txt`, not from state history. [vanilla-confirmed 1.19.3] `common/decisions/SIA.txt` and others, `history/states/`
+The closing note is wrong for supply hubs: vanilla builds `supply_node` with `add_building_construction` in 72 blocks across 21 files, and no `rail_way` is built that way (railways use `build_railway`). Starting levels of both still come from `map/supply_nodes.txt` and `map/railways.txt`, not from state history. [vanilla-confirmed 1.19.4.1] `common/decisions/SIA.txt` and others, `history/states/`
 <!-- kit:end id="building-types-all" -->
 
 ## References <a id="References"></a>
@@ -553,7 +554,7 @@ The closing note is wrong for supply hubs: vanilla builds `supply_node` with `ad
 <!-- kit:begin id="building-script-surface" at="bottom" -->
 ## Kit: Script that works with buildings <a id="kit-building-script-surface"></a>
 
-All rows: [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`, `documentation/dynamic_variables_documentation.md`, `documentation/modifiers_documentation.md`. The last column adds vanilla syntax where the documentation is a one-liner ([vanilla-confirmed 1.19.3] `common/`, `events/`).
+All rows: [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`, `documentation/dynamic_variables_documentation.md`, `documentation/modifiers_documentation.md`. The last column adds vanilla syntax where the documentation is a one-liner ([vanilla-confirmed 1.19.4.1] `common/`, `events/`).
 
 | Name | Kind and scope | Syntax or note |
 | --- | --- | --- |
@@ -563,7 +564,7 @@ All rows: [docs] `documentation/effects_documentation.md`, `documentation/trigge
 | `damage_building` | effect, state or country | `type` or `tags`, `damage`, `repair_speed_modifier`, `state` or `province` |
 | `construct_building_in_random_province` | effect, state | `construct_building_in_random_province = { land_facility = 1 }` |
 | `add_extra_state_shared_building_slots` | effect, state | a number (155 files) |
-| `add_offsite_building` | effect, country | `type`, `level` (99 files) |
+| `add_offsite_building` | effect, country | `type`, `level` (98 files) |
 | `modify_building_resources` | effect, country | `building`, `resource`, `amount` |
 | `build_railway` | effect, any | see [Supply areas modding](<supply_areas_modding.md>) |
 | `building_count_trigger` | trigger, state or country | `<building> < N`; the documentation lists all 55 building ids as supported |
@@ -575,7 +576,7 @@ All rows: [docs] `documentation/effects_documentation.md`, `documentation/trigge
 | `building_level@<building>`, `damaged_building_level@<building>`, `non_damaged_building_level@<building>` | dynamic variables, state | for example `building_level@arms_factory` |
 | `production_speed_buildings_factor`, `state_production_speed_buildings_factor`, `global_building_slots` and the `<Building>` families | modifiers | see the notes above |
 
-Defines in `NBuildings` besides the two named above: `AIRBASE_CAPACITY_MULT = 200`, `ROCKETSITE_CAPACITY_MULT = 100`, `NAVALBASE_REPAIR_MULT = 0.05`, `RADAR_RANGE_BASE = 20`, `RADAR_RANGE_MIN = 20`, `RADAR_RANGE_MAX = 200`, `SUPPLY_PORT_LEVEL_THROUGHPUT = 3`, `BASE_FACTORY_REPAIR = 1.0`, `BASE_FACTORY_REPAIR_FACTOR = 2.0`, `DESTRUCTION_COOLDOWN_IN_WAR = 30`, `ANTI_AIR_SUPERIORITY_MULT = 5.0`. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+Defines in `NBuildings` besides the two named above: `AIRBASE_CAPACITY_MULT = 200`, `ROCKETSITE_CAPACITY_MULT = 100`, `NAVALBASE_REPAIR_MULT = 0.05`, `RADAR_RANGE_BASE = 20`, `RADAR_RANGE_MIN = 20`, `RADAR_RANGE_MAX = 200`, `SUPPLY_PORT_LEVEL_THROUGHPUT = 3`, `BASE_FACTORY_REPAIR = 1.0`, `BASE_FACTORY_REPAIR_FACTOR = 2.0`, `DESTRUCTION_COOLDOWN_IN_WAR = 30`, `ANTI_AIR_SUPERIORITY_MULT = 5.0`. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`
 <!-- kit:end id="building-script-surface" -->
 
 ---

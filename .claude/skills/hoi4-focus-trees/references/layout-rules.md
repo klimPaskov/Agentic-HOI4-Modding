@@ -22,8 +22,9 @@ Reward-only changes that deliberately preserve layout use inspect, render, and c
 
 Repeat inspect, render, rewrite, and render until the first-glance branch review passes. One clean render is not completion evidence.
 
-- `relative_position_id` must name a focus defined earlier, and a loop logs "Circular reference detected for relative position." [vanilla-confirmed 1.19.3]
-- `initial_show_position` is set at tree level in 29 of 67 vanilla focus trees. [vanilla-confirmed 1.19.3]
+- `relative_position_id` must name a focus defined earlier, and a loop logs "Circular reference detected for relative position." [vanilla-confirmed 1.19.4.1]
+- `initial_show_position` is set at tree level in 29 of 67 vanilla focus trees. [vanilla-confirmed 1.19.4.1]
+- 1.19.4.1 adds a mini-map panel to the tree view: `mini_map` in `interface/nationalfocusview.gui`, in the lower right, toggled with `ctrl+m`, sized by `NInterface.FOCUS_MINIMAP_SCALE` and `FOCUS_MINIMAP_MIN_SIZE`. It belongs to the window, not to the tree canvas. [vanilla-confirmed 1.19.4.1]
 
 Required layout checks:
 
