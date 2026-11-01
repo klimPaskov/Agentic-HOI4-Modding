@@ -35,7 +35,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Pattern, Sequence, Set, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Pattern, Sequence, Set, Tuple
 
 REGISTRY = Path(".tools") / "sync" / "generators.json"
 DEFAULT_ROOT = Path(__file__).resolve().parents[2]
@@ -341,7 +341,7 @@ def describe_sources(entry: Entry, item: Optional[str]) -> str:
     return " or ".join(f"`{pattern}`" for pattern in canonical)
 
 
-def edited_file(payload: dict) -> Optional[Tuple[Path, str]]:
+def edited_file(payload: Dict[str, Any]) -> Optional[Tuple[Path, str]]:
     """The project root and root-relative path of the file a tool call wrote, or None outside every project."""
     tool_input = payload.get("tool_input") or {}
     edited = tool_input.get("file_path") or tool_input.get("notebook_path")
