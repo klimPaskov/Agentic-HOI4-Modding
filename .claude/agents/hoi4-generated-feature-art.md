@@ -21,10 +21,10 @@ Required inputs:
 
 If the parent prompt does not provide feature slug, asset names, target sizes, final DDS paths or folder, source mode, and handoff path, report the missing inputs instead of exploring the repo.
 
-Use this agent for generated non-icon visual assets that are fictional, symbolic, supernatural, invented, alternate-history, documentary-staged, or UI/decorative. Use the selected image-generation route. If no route is configured, stop and report the blocker. Do not create a substitute pipeline.
+Use this agent for generated non-icon visual assets that are fictional, symbolic, supernatural, invented, alternate-history, documentary-staged, or UI/decorative. Use `hoi4-imagegen` (MCP tools `hoi4.image_*`) and read its skill first. If no provider is configured, stop and report the blocker. Do not create a substitute pipeline.
 
 <!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->
-[The selected image-generation provider details are added by HOI4 Mod Setup.]
+Default route: `hoi4-imagegen`. Look up the family with `hoi4.image_families { family }` (`report_event`, `news_event`, `decision_category_picture`, `operation_picture`, `flag`, `faction_logo`, `gui_texture`, `super_event` and the other non-icon families), then call the group tool with that `family`: `hoi4.image_picture`, `hoi4.image_flag`, `hoi4.image_unit` or `hoi4.image_interface`. Without `approve` it returns a free plan with the cost; with `approve: true` and an `idempotency_key` it generates one asset. The tool applies the report-card shadow, the flag ladder and the frame strips itself. Then `hoi4.image_process`, `hoi4.image_validate`, `hoi4.image_preview`, `hoi4.image_review` and `hoi4.image_install`.
 <!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->
 
 Own this scope:

@@ -10,6 +10,8 @@ Inspect `assets/vanilla_reference/icons/achievements/contact_sheet.png` and matc
 
 ### New achievement creation
 
+`hoi4.image_picture` with `family: achievement` builds the whole triplet itself from the generated color subject: the grey copy, the not-eligible overlay and the template backgrounds below, in the process step. Do not run `tools/process_achievement_icons.py` by hand for an achievement the tool makes; the rest of this section describes the recipe it applies and the route for triplets made outside the tool.
+
 Use the image generator to design one original subject on a genuinely transparent background, guided by the inspected achievement references for framing, density, contrast, and readability. Request no achievement frame, square background, red cross, text, or fake checkerboard. Process the result into one centered 64x64 color subject layer. Retain the native generated source PNG, prompt, processed PNG, and candidate lineage. Do not independently generate three state artworks or borrow another icon type.
 
 Use these exact supplied workflow inputs and do not rename, move, resize, crop, trim, recolor, redraw, filter, or replace them:

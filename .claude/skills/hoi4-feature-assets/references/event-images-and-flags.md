@@ -36,6 +36,8 @@ Report-event images use a finished `210x176` RGBA canvas. The source photograph 
 
 Do not ask the image generator to create the tilted card. Generate or source the documentary photograph first, then apply the card treatment locally. This keeps the tilt, shadow, and margins consistent.
 
+`hoi4.image_picture` with `family: report_event` applies this treatment itself, with the fixed report-card shadow, and `hoi4.image_process` imports a sourced photograph the same way. Do not run the script below by hand for a card the tool makes. A card made by the tool is recorded in the tool's ledger, not in the registry below, so `gfx.py reports` may warn `GFX-REPORT-NO-PROVENANCE` for it; the size and corner checks still apply. The script stays the reference recipe and the route for cards made outside the tool.
+
 ```bash
 python -B .claude/skills/hoi4-feature-assets/tools/process_report_event_image.py source.png processed_report_event.png --runtime gfx/event_pictures/<feature>/<file>.dds
 python -B .claude/skills/hoi4-feature-assets/tools/process_report_event_image.py source_folder processed_folder
@@ -61,7 +63,7 @@ Generated report images must still receive this local report-card treatment.
 
 ## 20. Flags
 
-Flags should use clean symbolic designs that look like intentional flag art, not simple-shape placeholders, palette swaps, ugly filters, or flipped/recolored variants.
+`hoi4.image_flag` (family `flag`) writes the three sizes of one tag and ideology with the vanilla TGA header and origin; do not build the ladder by hand. Flags should use clean symbolic designs that look like intentional flag art, not simple-shape placeholders, palette swaps, ugly filters, or flipped/recolored variants.
 
 They must remain readable at HOI4 sizes.
 

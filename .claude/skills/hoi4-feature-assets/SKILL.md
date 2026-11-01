@@ -123,6 +123,8 @@ Root-only and engine-convention exceptions:
 - `gfx/achievements/` must keep achievement DDS files directly in the root. Do not create `gfx/achievements/<feature_slug>/` subfolders unless a new engine behavior has been verified locally. Achievement filenames must match the full achievement ids from `common/achievements/`, so feature-owned achievement ids and triplet filenames should use `<feature_slug>_<achievement_name>{,_grey,_not_eligible}.dds` or the exact established id if it includes an ordinal.
 - `gfx/flags/`, `gfx/flags/medium/`, and `gfx/flags/small/` must keep HOI4 tag/ideology filenames. Do not put flags into feature folders; use cosmetic tags or route-specific tag filenames when a feature needs transformed flags.
 
+`hoi4-imagegen` installs each family into its own leaf folder under the feature slug and applies these exceptions.
+
 Shared systems may use a clear shared or system folder. Do not force shared assets into a feature folder just to avoid a root directory.
 
 When moving or adding an asset, update every `.gfx`, `.gui`, event, idea, decision, focus, localisation, and documentation reference that names the old path or sprite. Keep sprite names stable unless the engine-facing identifier itself has to change, as with achievement ids.
@@ -191,10 +193,9 @@ Do not create core artwork from simple shapes, placeholders, contact sheets, lay
 
 For custom feature images, this rule is strict: final art must be a real scene, archival image, painted illustration, or generated documentary-style image. Do not use symbolic diagrams, flat icons, abstract geometry, title cards, or UI-like compositions as the final custom feature image unless the user explicitly requests that exact visual approach and the exception is documented.
 
-Use the selected image-generation route for generated artwork. HOI4 Mod Setup fills in the provider details from the manifest section below.
+Use `hoi4-imagegen` for generated artwork (canvas, alpha, margins, naming, DDS or TGA export, sprite handoff); read its skill first.
 
-Generated artwork must be real source art that can be processed into the final game asset. Final assets must be clean: must not have sticking artifacts, an icon is centered in the image, etc. Do not use contact sheets, review boards, or layout drafts as final source art.
-
+Generated artwork must be real source art that can be processed into the final game asset. Final assets must be clean: must not have sticking artifacts, an icon is centered in the image, etc. 
 ## 5.1 Icon creation rules
 
 Small gameplay icons must be readable at their final in-game size.
@@ -205,10 +206,10 @@ Small gameplay icons must be readable at their final in-game size.
 - Avoid tiny interior detail that disappears at 45x45 or 64x64. Favor one clear subject, strong value contrast, and a centered silhouette.
 - Avoid fake checkerboard pixels, white halos, white outlines, oversized medallion fills, and square opaque backdrops.
 
-For every generated icon, follow the selected route's transparent-background instructions. Preserve the original generated image, create a processed PNG preview, convert to DDS, and validate the final appearance over a checker background before treating the icon as complete.
+`hoi4.image_process` proves transparency from the saved pixels and refuses an opaque result instead of keying a guessed background; `hoi4.image_preview` shows the final art at native size over a checker background before review.
 
 <!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->
-[The selected image-generation provider details are added by HOI4 Mod Setup.]
+Default route: `hoi4-imagegen` (MCP server `hoi4_imagegen`, tools `hoi4.image_*`). Read the `hoi4-imagegen` skill, then `hoi4.image_families { family }`, then the group tool with a required `family` (`hoi4.image_icon`, `_picture`, `_portrait`, `_flag`, `_unit` or `_interface`): without `approve` it returns a free plan with the cost, with `approve: true` and an `idempotency_key` it generates one asset. Then `hoi4.image_process`, `_validate`, `_preview`, `_review` and `_install`; `hoi4.image_audit` checks the mod for cross-family reuse. Provider: the ChatGPT login (`hoi4-imagegen login`) or a key in the environment. If none is configured, stop and report the blocker.
 <!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->
 
 The final icon should have transparent unused canvas, no fake checker or matte pixels, no transparent holes inside the painted subject, a slight black outline, a subtle drop shadow, and a centered subject that remains readable at final size.
@@ -219,20 +220,16 @@ Generated icon packages must keep visible image-generation source evidence: save
 
 Focus, idea, national-spirit, officer-corps, decision, mission, decision-category, achievement, technology, special-project, balance-of-power, intelligence-agency, intelligence-operation, commander-trait, medal, military-raid, state-modifier, MIO, faction, building, and modifier icons are separate asset types.
 
-Never treat focus, idea, and decision icons as interchangeable.
-
-Do not create focus icons first and then satisfy idea icons or decision icons by resizing, cropping, shrinking, recoloring, padding, or lightly editing the focus icon. This is not a valid asset workflow.
-
-Each icon type must have its own asset-type-specific brief, reference inspection, source artwork, prompt or source choice, crop, target size, filename prefix, manifest entry, and final DDS output.
+Never treat focus, idea, and decision icons as interchangeable, and never satisfy one by resizing, cropping, shrinking, recoloring, padding, or lightly editing another. Each is its own `hoi4-imagegen` family, and the tool refuses another family's size or pixels (`GFX-FAMILY-MISMATCH`, `GFX-FAMILY-REUSE`). Each icon type needs its own brief, reference inspection, source artwork, target size, filename prefix, manifest entry, and final DDS.
 
 Shared visual themes are allowed only when every icon is still designed for its own in-game use:
 
-- focus icons should read as full HOI4 focus art at 94x86 with focus-tree style detail and composition
-- idea and national spirit icons should read as compact 64x64 symbolic spirit art without borrowing the full focus icon frame
-- decision icons should read clearly at 32x32 with simpler shapes, stronger silhouettes, and less interior detail
+- focus icons should read as full HOI4 focus art at the `focus` profile canvas (vanilla 100x88) with focus-tree style detail and composition
+- idea and national spirit icons should read as compact symbolic spirit art at the `idea_spirit` canvas (vanilla 60x68) without borrowing the full focus icon frame
+- decision icons should read clearly at the `decision` canvas (vanilla 33x32) with simpler shapes, stronger silhouettes, and less interior detail
 - decision category icons should be designed for the category button or scripted GUI surface, not derived from a focus icon
 - officer corps spirit icons should follow the vanilla officer corps spirit look and 45x45 transparent style
-- achievement icons should follow achievement presentation rules and variant rules
+- achievement icons should follow the achievement rules and variants
 - intelligence-agency and intelligence-operation icons must follow their own agency or operation UI precedent rather than a generic decision treatment
 - commander traits, medals, military raids, state modifiers, MIOs, factions, buildings, and modifier icons must follow the matching canonical folder and owning vanilla definition; do not force these families onto a blanket 32x32 or 64x64 canvas
 - frame strips, indexed building sprites, and multi-state modifier art must retain their frame order and frame count rather than being treated as a single standalone icon; `python -B .tools/gfx/gfx.py sprites --paths <the .gfx file>` warns when a strip's width does not divide by its `noOfFrames`
@@ -251,15 +248,15 @@ For every asset package:
 4. Split every icon family named in section 5.2 into its own asset-type work item. Never satisfy one UI surface by resizing, relabeling, or lightly editing art created for another surface.
 5. Assign each asset a stable filename.
 6. Assign each asset a sprite name if it needs one.
-7. Identify the target size.
+7. Identify the target size from the family's profile (`hoi4.image_families`: the mod's `.tools/gfx/profiles.json` row, vanilla by default).
 8. Identify the intended in-game use.
 9. Inspect the matching reference folder from section 4 before generating, sourcing, processing, or wiring the asset.
 10. Decide the source mode for each asset:
-  - the image generator
+  - `hoi4-imagegen`
   - internet source image
   - user-provided source image
 11. If the asset is animated, follow `hoi4-frame-animation` before ordinary static processing. Write the animation brief and frame plan, create or approve the static fallback, generate or source every frame, then normalize the frame sequence.
-12. For image-generator assets, write a specific image generation prompt and create the base artwork by following the image generator's workflow.
+12. For generated assets, follow the `hoi4-imagegen` loop (families, references, free plan, approved generation, process, validate, preview, review, install) with a specific brief.
 13. For internet-sourced assets, find a suitable source image and record its source link, author or archive if available, and license or public domain status if available.
 14. For user-provided assets, record that the image was provided by the user.
 15. Save the original generated, sourced, or provided image as a source PNG.
@@ -271,6 +268,8 @@ For every asset package:
 21. Create or update `gfx_handoff.md` for any asset that needs a sprite definition.
 22. Update feature docs or asset docs when the parent prompt grants that documentation scope.
 23. Report all created files, proposed sprite names, final paths, blocked assets, and any handoff uncertainty.
+
+For a generated asset, `hoi4.image_process` and `hoi4.image_install` do steps 15 to 19 and the handoff of step 21. Sourced and user-provided art of one of the 40 families is imported through `hoi4.image_process` with its `family`. Run `hoi4.image_audit` before the handoff.
 
 Do not mark assets complete until the DDS files exist, the manifest is written, and the main agent has enough handoff information to wire every sprite without guessing.
 
@@ -321,8 +320,8 @@ Each asset entry should include:
 - related event id only when the asset is tied to a real HOI4 event
 - asset type
 - intended in-game use
-- source mode: image generator, internet source image, or user-provided source image
-- image generation prompt if generated with the image generator
+- source mode: `hoi4-imagegen`, internet source image, or user-provided source image
+- brief, family, plan id and ledger entry if generated with `hoi4-imagegen`
 - source link if internet-sourced
 - source author, archive, or collection if available
 - source date or estimated date range if internet-sourced
@@ -368,26 +367,9 @@ After a late user correction or accepted spec, manifest-plan, or animation-plan 
 
 ## 9. Standard HOI4 asset sizes
 
-Use these sizes unless the feature spec or an existing repo pattern gives a better project-specific requirement. The vanilla evidence for the report, news, category-icon and counter canvases is in `.tools/gfx/profiles.json`; `python -B .tools/gfx/gfx.py size --profile <name>` checks a file against it, and `python -B .tools/check.py quick` runs the GFX conformance checks on changed art.
+The canvas of every generated family comes from the mod's profile: its `.tools/gfx/profiles.json` row, vanilla-measured (HOI4 1.19.4.1) by default. `hoi4.image_families` shows it next to the mod's override, `python -B .tools/gfx/gfx.py size --profile <name>` checks a file against a row, and `python -B .tools/check.py quick` runs the GFX conformance checks on changed art. Each row's `source` holds the vanilla evidence, and `assets/vanilla_reference/CATALOG.md` lists the canvas of every family. The ones used most: focus 100x88, idea_spirit 60x68, idea_concern 64x64, advisor_card 65x67, decision 33x32 (missions too), decision_category_icon 52x40, decision_category_picture 114x101, report_event 210x176, news_event 397x153 (black and white), achievement 64x64, leader, commander, operative and scientist portraits 156x210, flags 82x52, 41x26 and 10x7. Counters, building, faction_logo and agency_logo are two-frame strips. `gui_texture` and `super_event` have no vanilla canvas, so the mod defines them in its profile or per request. Custom feature images match the target GUI surface or documented repository pattern.
 
-- report event images: 210x176 (532 of 884 vanilla event pictures)
-- news event images: 397x153 (233 vanilla event pictures), black and white
-- country-leader portraits: 156x210
-- commander portraits: 156x210 full portrait textures
-- operative portraits: 156x210 full portrait textures
-- flags: 82x52 normal, 41x26 medium, 10x7 small (2,202 of 2,203 vanilla files per folder; `gfx.py flags`)
-- tech icons small: 64x64
-- tech icons medium: 132x52
-- achievements: 64x64 (882 of 882 vanilla files)
-- decision category icons: 52x40 (94 vanilla files); category pictures: 114x101 (`assets/vanilla_reference/CATALOG.md`)
-- custom feature images: match the target GUI surface or documented repository pattern
-- decision icons: 32x32
-- idea and national spirit icons: 64x64
-- focus icons: 94x86
-
-The decision, idea and focus canvases are package conventions; vanilla mostly uses 33x32 decision icons, 65x67 or 60x68 idea pictures and 100x88 focus icons. Record the canvases the mod settles in a `profiles.json` row with its source so `gfx.py families` checks them.
-
-Use other sizes when the feature UI or asset type requires it.
+A mod that settled other canvases records them in its own `profiles.json` rows with the source, and the tool reports the difference from vanilla. Use other sizes when the feature UI requires it.
 
 ## 9.1 Unit visual references
 
@@ -402,7 +384,7 @@ Keep names stable once they are wired into `.gfx`.
 Recommended filename prefixes:
 
 - idea icons: `idea_`
-- focus icons: `goal_`
+- focus icons: `focus_` (`goal_` is accepted)
 - decision icons: `decision_`
 - decision category icons: `decision_category_`
 - report event images: `report_event_`
@@ -411,11 +393,13 @@ Recommended filename prefixes:
 - achievement icons: `achievement_`
 - leader portraits: `leader_`
 
+`hoi4-imagegen` names assets from the family prefix, the feature slug and the asset name; keep what it installs.
+
 For feature-specific assets, include the feature slug where useful. For example, all idea assets related to a feature should go into one folder for that feature.
 
 ## 11. Image generation prompt rules
 
-Every image-generation prompt should be specific enough to produce usable game art.
+Every image-generation prompt should be specific enough to produce usable game art. `hoi4-imagegen` adds the family's rules (canvas, transparency, no frame or text) itself, so the brief states the subject, mood and what to avoid.
 
 A good prompt should include:
 
@@ -529,24 +513,12 @@ They should have:
 - clear silhouette
 - aged texture
 - strong contrast
-- readable meaning at 64x64
+- readable meaning at the small canvas
 - no generated text
 
-Target size:
+Canvas: the `idea_spirit` profile (vanilla 60x68). Industrial concerns and manufacturers are `idea_concern` (64x64) and advisor cards are `advisor_card` (65x67). Use `idea_` filename prefix.
 
-```text
-64x64
-```
-
-Use `idea_` filename prefix.
-
-These icons usually do not need the full focus icon frame.
-
-Do not derive idea or national spirit icons from focus icons. They must be designed as 64x64 spirit-style icons from their own prompt or source art, even when they share a theme with a focus.
-
-Use the image generator for the base artwork unless the user provides or requests a specific source image.
-
-Follow the selected provider section for transparent icons: use native alpha when supported or its listed removal fallback, then verify the saved alpha.
+Use `hoi4.image_icon` (`idea_spirit`, `idea_concern` or `officer_corps_spirit`) for the base artwork unless the user provides or requests a specific source image.
 
 Inspect `icons/ideas/` and the matching row in `CATALOG.md` before generating or processing idea icons.
 
@@ -564,23 +536,11 @@ They should have:
 - meaningful relation to the focus
 - no generated text
 
-Target size:
-
-```text
-94x86
-```
-
-Use `goal_` filename prefix.
-
-Do not make focus icons look like generic generated thumbnails.
-
-Do not create a focus icon as the master artwork for idea icons, decision icons, or other smaller icon types. A focus icon can share a theme with those icons, but it must remain a separate focus-specific asset.
+Canvas: the `focus` profile (vanilla 100x88). Use `focus_` filename prefix (`goal_` is accepted); the tool also writes the `_shine` companion sprite.
 
 Every focus icon should support the focus tree's story, ideology, or gameplay purpose.
 
-Use the image generator for the base artwork unless the user provides or requests a specific source image.
-
-Follow the selected provider section for transparent icons: use native alpha when supported or its listed removal fallback, then verify the saved alpha.
+Use `hoi4.image_icon` with `family: focus` for the base artwork unless the user provides or requests a specific source image.
 
 Inspect `icons/national_focus/` and the matching row in `CATALOG.md` before generating or processing focus icons. Do not force every focus source onto an older nominal canvas when the owning sprite and current vanilla precedent use a different native canvas.
 
@@ -596,15 +556,7 @@ Use:
 - limited small detail
 - no generated text
 
-Target size:
-
-```text
-32x32
-```
-
-Use `decision_` filename prefix.
-
-Do not derive decision icons from focus icons or idea icons. They must be composed for 32x32 readability from their own prompt or source art.
+Canvas: the `decision` profile (vanilla 33x32). Use `decision_` filename prefix.
 
 Decision category icons may use:
 
@@ -612,11 +564,9 @@ Decision category icons may use:
 decision_category_
 ```
 
-Use the image generator for the base artwork unless the user provides or requests a specific source image.
+Use `hoi4.image_icon` (`decision` or `decision_category_icon`) for the base artwork unless the user provides or requests a specific source image.
 
-Follow the selected provider section for transparent icons: use native alpha when supported or its listed removal fallback, then verify the saved alpha.
-
-Inspect `icons/decisions/`, `icons/missions/`, or `icons/decision_categories/` as appropriate before generating or processing decision-system icons. Missions use the decision icon pipeline but still need mission-specific semantic readability.
+Inspect `icons/decisions/` or `icons/decision_categories/` as appropriate before generating or processing decision-system icons. Missions use the `decision` family (there is no mission folder) but still need mission-specific semantic readability.
 
 ## 18.1 Decision category pictures
 
@@ -632,7 +582,7 @@ Route additional icon work by the exact UI surface:
 - organizations and map/economy identity: `icons/military_industrial_organizations/`, `icons/factions/`, and `icons/buildings/`
 - generic or text-linked modifier presentation: `icons/modifiers/`
 
-Read the matching canonical catalog entries and inspect the owning `.gfx`, `.gui`, or database definition before choosing canvas, frame layout, transparency, or filename. These families are not reskinned decision or idea icons. When a source is a strip or contains several UI states, preserve its frame semantics and document them in the manifest and handoff.
+Each is its own `hoi4-imagegen` family (`hoi4.image_families` lists them). Read the matching canonical catalog entries and inspect the owning `.gfx`, `.gui`, or database definition before choosing canvas, frame layout, transparency, or filename. These families are not reskinned decision or idea icons. When a source is a strip or contains several UI states, preserve its frame semantics and document them in the manifest and handoff.
 
 ## 19. Achievement icons
 
@@ -658,16 +608,15 @@ source. One-person generated portraits are reserved for wholly fictional,
 impossible, or supernatural identities. Missing or contradictory identity
 classification fails closed.
 
-For a real person, `hoi4_portrait_creator` preserves the unchanged archival master and runs `.claude/skills/hoi4-feature-assets/tools/extract_portrait_source_crop.py`. Automatic mode uses the bundled YuNet detector and fails closed unless exactly one subject is detected; it writes the unchanged source copy, lossless crop, deterministic `156x210` PNG, exact-pixel JSON evidence, and a co-located provenance contract. Use the explicit `--crop` recovery path only for an independently reviewed boundary or detector miss. The detector is a framing aid, never identity approval. Retain the source placeholder and require independent likeness, style, identity, and provenance review before DDS conversion or wiring. The user alone supplies the HOI4-style final; when supplied, `hoi4_portrait_creator` validates, installs, and updates portrait-specific wiring.
+For a real person, `hoi4_portrait_creator` preserves the unchanged archival master and imports it through `hoi4.image_process` with the portrait family, which runs the crop of `tools/extract_portrait_source_crop.py` (never run it by hand for that asset). Automatic mode uses the bundled YuNet detector and fails closed unless exactly one subject is detected; it writes the unchanged source copy, lossless crop, deterministic `156x210` PNG, exact-pixel JSON evidence, and a co-located provenance contract. Use the explicit `--crop` recovery path only for an independently reviewed boundary or detector miss. The detector is a framing aid, never identity approval. Retain the source placeholder and require independent likeness, style, identity, and provenance review before DDS conversion or wiring. The user alone supplies the HOI4-style final; when supplied, `hoi4_portrait_creator` validates, installs, and updates portrait-specific wiring.
 
 Record source URL, author or archive, rights status when available, source and
 candidate hashes, crop coordinates, review evidence, processed PNG, final DDS,
 runtime sprite, and the durable source archive from section 2.4.
 
-For fictional people and impossible or supernatural entities, `hoi4_portrait_creator` uses native
-the image generator after the identity gate permits it.
+For fictional people and impossible or supernatural entities, `hoi4_portrait_creator` uses `hoi4.image_portrait` (`leader_portrait`, `commander_portrait`, `operative_portrait` or `scientist_portrait`) after the identity gate permits it.
 Reject generic, modern, meme, gore, stereotyped, text-bearing, or
-interchangeable output. If the image generator is unavailable, mark the portrait blocked.
+interchangeable output. If `hoi4-imagegen` has no provider, mark the portrait blocked.
 
 Full country-leader, commander, and operative textures are `156x210`. Never
 manufacture a smaller commander source merely because one UI view displays it
@@ -696,7 +645,7 @@ Animated leader portrait packages must include:
 
 For UI panels, investigation windows, ledgers, and similar assets, separate artwork from functional UI.
 
-Use the image generator for:
+Use `hoi4.image_interface` (family `gui_texture` or `super_event`, with the canvas the mod defines) for:
 
 - illustrated background panels
 - thematic decorations
@@ -809,7 +758,7 @@ Final animated assets must be built from planned source frames. Do not create fi
 
 ## 24. DDS conversion
 
-Final PNG assets must be converted to DDS using the repository's standard DDS conversion workflow.
+Assets made or imported through `hoi4-imagegen` get their DDS (TGA for flags) from `hoi4.image_install`; do not convert them by hand. Final PNG art outside the 40 families must be converted to DDS using the repository's standard DDS conversion workflow.
 
 Use the bundled deterministic converter:
 
@@ -837,7 +786,7 @@ Do not leave only PNG files when the game expects DDS.
 
 Asset subagents do not edit `.gfx` files by default.
 
-When an asset needs a sprite definition, the asset package must include a handoff note for the main agent.
+When an asset needs a sprite definition, the asset package must include a handoff note for the main agent. `hoi4.image_install` (default `mode: handoff`) writes it to `docs/assets/<feature_slug>/gfx_handoff.md` with the sprite snippet; add the consumer ids it cannot know.
 
 Recommended path:
 
@@ -920,7 +869,7 @@ Do not invent a substitute asset unless the user explicitly approves it. A "subs
 Before finishing, confirm:
 
 1. Every required asset from the feature spec is accounted for.
-2. Every asset uses the correct source mode: `hoi4_portrait_creator` owns attributed sources and user-supplied styled replacements for grounded portraits and the image generator for fictional or impossible portraits.
+2. Every asset uses the correct source mode: `hoi4_portrait_creator` owns attributed sources and user-supplied styled replacements for grounded portraits and `hoi4-imagegen` for fictional or impossible portraits.
 3. The matching reference folder from section 4 was inspected before generation, sourcing, processing, or wiring.
 4. Every generated, sourced, or provided asset has a source PNG.
 5. Every final asset has a processed PNG preview.
@@ -930,7 +879,7 @@ Before finishing, confirm:
 9. A `gfx_handoff.md` exists for every asset that needs a sprite definition, and the main agent has enough information to wire it.
 10. The asset manifest exists.
 11. Internet-sourced assets record source links, source date or estimated date range, license or public domain status if available, and era-fit notes for Second World War-era assets.
-12. Fictional or non-human portraits produced through the image generator are clearly marked as fictional or generated in the manifest.
+12. Fictional or non-human portraits produced through `hoi4-imagegen` are clearly marked as fictional or generated in the manifest.
 13. Decision category pictures are classified separately from small category icons, scripted GUI backgrounds, and full mechanic-window assets; their canonical reference folder and labeled contact sheet were inspected.
 14. Simple categories were not expanded into full scripted GUI asset packs when a static or animated category picture was sufficient.
 15. Every formable state-puzzle asset uses exact installed-map state geometry, one shared projection, grey and green qualification states with non-colour cues, clean neighbouring edges, and a manifest aligned with the reusable template.

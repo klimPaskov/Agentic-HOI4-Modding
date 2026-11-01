@@ -30,7 +30,7 @@ Exit codes are the same everywhere: 0 in sync, 1 an output is out of date (or wa
 
 ## Rules
 
-The image-generation provider markers remain the same in canonical instructions and generated runtime files. HOI4 Mod Setup fills each marker from the provider table in the manifest revision selected for that project.
+The image-generation provider markers remain the same in canonical instructions and generated runtime files. HOI4 Mod Setup fills each marker from the provider table in the manifest revision selected for that project. The canonical default between the markers is the `hoi4-imagegen` instruction, which applies until Setup replaces it.
 
 - Edit only canonical files. A generated file carries a header naming its source where its format allows one; hand edits are overwritten on the next run.
 - Add a new generator as an entry in `generators.json` (its script, `inputs`, `outputs`, and `sources`), never as a new hard-coded list. `{item}` in a pattern stands for one folder name, and `item_args` passes it to the tool so one edited item regenerates alone. An entry that lists another in `needs` runs after it and reruns whenever it runs. A generator written before this runner keeps its own command line through four optional fields: `interpreter` (for example `["node"]`), `check_args` (default `["--check"]`, passed in check mode to generators and checks alike, so a check that takes no flag lists `[]`), `root_args` (default `["--root", "{root}"]`, `[]` for a tool that finds the root itself) and `stale_markers` (the output prefixes that mean "out of date", default `DRIFT`, `STALE`, `OVER` and `UNUSED`). Every output of an installed mod must stay inside the paths HOI4 Mod Setup lets `check.py setup` rewrite.

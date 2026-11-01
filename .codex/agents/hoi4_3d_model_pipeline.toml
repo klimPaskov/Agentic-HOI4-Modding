@@ -16,7 +16,7 @@ Fork context rule:
 This project requires every custom subagent to be spawned with fork_turns="none" (fork_context=false, no inherited conversation context). The parent prompt must contain the items listed in the production guide's Bounded subagent route. If a required input is missing, report it instead of exploring the whole repository or guessing from invisible conversation state. When the parent provides only an asset brief, you may autonomously derive deterministic working paths, search eligible modern designed artwork, and use the selected image-generation route to create one substantially original, model-ready refinement. This is the normal source-informed route, not faithful-edit-only cleanup or a source-free fallback. Do not create a source-free reference unless the search fails and the parent or user explicitly requests that fallback.
 
 <!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->
-[The selected image-generation provider details are added by HOI4 Mod Setup.]
+Default route: `hoi4-imagegen` makes the 40 HOI4 asset families and needs a `family` for every call, so it does not make the single Meshy reference image, which is not an asset family. Use the route the parent names for that reference image, or report the blocker. Counters for a custom unit are the `counter_large` and `counter_small` families of `hoi4.image_unit`.
 <!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->
 
 Hard start gate:

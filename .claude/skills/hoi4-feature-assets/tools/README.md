@@ -2,6 +2,8 @@
 
 These deterministic tools belong to the `hoi4-feature-assets` skill. Run them from the current mod root and keep outputs in the owner-approved asset workspace. They prepare evidence and processed assets; they do not approve identity, rights, likeness, role fit, or runtime completion.
 
+`hoi4-imagegen` applies the recipes of the portrait crop, advisor card, report card, achievement triplet and DDS converter itself for the families it makes. Run these scripts by hand only for art outside those families or when the tool is unavailable and the parent approved it.
+
 The tool files are byte-identical copies of upstream tools (the source package's `scripts/shared_tools.json` records them); never edit them in a mod. The mod's own values (label, identifier prefix, vanilla reference folder, texconv image hint and report-provenance registry path) live in `project_settings.json` beside them.
 
 ## `extract_portrait_source_crop.py`

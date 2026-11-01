@@ -32,10 +32,10 @@ Maps may still appear as secondary props when useful, but they should rarely be 
 
 ### Use the image generator for generated symbolic or fictional assets
 
-The image generator is the image-generation route selected for this project. HOI4 Mod Setup fills in the provider-specific details below from the manifest table. If no route is configured, stop and report the blocker instead of building a substitute pipeline.
+The image generator is `hoi4-imagegen`, the project's image route. HOI4 Mod Setup may replace the default below with the details of the provider selected for the project. If no route is configured, stop and report the blocker instead of building a substitute pipeline.
 
 <!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->
-[The selected image-generation provider details are added by HOI4 Mod Setup.]
+Default route: `hoi4-imagegen` (MCP server `hoi4_imagegen`, tools `hoi4.image_*`). Pick the asset's family (`hoi4.image_families`), then use the group tool of its group with a required `family` (`hoi4.image_icon`, `hoi4.image_picture`, `hoi4.image_portrait`, `hoi4.image_flag`, `hoi4.image_unit` or `hoi4.image_interface`). The loop and its refusals are in the `hoi4-imagegen` skill and `generation-and-review.md`. A family's asset is never derived from another family's.
 <!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->
 
 Use the image generator by default for:
