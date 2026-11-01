@@ -11,6 +11,12 @@
       "sonnet": { "model_reasoning_effort": "high" },
       "haiku": { "model_reasoning_effort": "medium" }
     },
+    "agent_models": {
+      "hoi4-3d-model-pipeline": "gpt-6.1-terra",
+      "hoi4-event-ui-worker": "gpt-6.1-terra",
+      "hoi4-generated-feature-art": "gpt-6.1-terra",
+      "hoi4-icon-artist": "gpt-6.1-terra"
+    },
     "sandbox": {
       "read-only": "read-only",
       "can edit": "workspace-write"

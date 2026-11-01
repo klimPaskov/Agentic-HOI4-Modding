@@ -195,8 +195,19 @@ def header(agent: Agent) -> str:
     return f"Generated from .claude/agents/{agent.source_name} by .tools/sync/sync_agents.py. Edit the source and rerun it."
 
 
+def check_agent_models(agents: List[Agent], profiles: dict) -> None:
+    """In the source package, a Codex model override must name an existing canonical agent."""
+    names = {agent.name for agent in agents}
+    unknown = sorted(set(profiles["codex"].get("agent_models", {})) - names)
+    if unknown:
+        raise SyncError("codex.agent_models names agents that do not exist: " + ", ".join(unknown))
+
+
 def render_codex(agent: Agent, profiles: dict) -> str:
-    tier = profiles["codex"]["tiers"][agent.model]
+    tier = dict(profiles["codex"]["tiers"][agent.model])
+    override = profiles["codex"].get("agent_models", {}).get(agent.name)
+    if override:
+        tier["model"] = override
     lines = [
         f"# {header(agent)}",
         f"name = {toml_basic(agent.snake_name)}",
@@ -365,6 +376,7 @@ def verify(runtime_keys: List[str]) -> int:
         names = {agent.name for agent in agents}
         if len(declared) != len(set(declared)) or set(declared) - names:
             raise SyncError("tier_policy contains duplicate or absent canonical agents")
+        check_agent_models(agents, profiles)
         failures = []
         for agent in agents:
             tier = next((tier for tier in MODEL_TIERS if agent.name in policy.get(tier, [])), policy["default"])
