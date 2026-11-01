@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Sound modding", revision 79549, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="79549" sources="sound/ integrated_dlc/dlc022_waking_the_tiger/sound/ dlc/dlc021_anniversary_pack/sound/ interface/ documentation/effects_documentation.md gfx/entities/" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="79549" sources="sound/ integrated_dlc/dlc022_waking_the_tiger/sound/ dlc/dlc021_anniversary_pack/sound/ interface/ documentation/effects_documentation.md gfx/entities/" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the 22 `.asset` files in `sound/` and the `sound/` folders of the DLC (3387 `sound`, 796 `soundeffect`, 16 `falloff` and 22 `category` blocks, plus the two global compressors), the 982 `.wav` headers in `sound/`, the `clicksound` and `oversound` keys of `interface/*.gui` and `interface/*.gfx`, and `sound_effect` in `documentation/effects_documentation.md`.
 Kit blocks added: a correction of the audio format advice, vanilla key census for `sound`, `soundeffect`, `falloff` and `category`, the two global compressors, and how GUI, entities and script refer to a sound effect.
 Gaps left: no game file explains `looping_delay_random_offset`, `looping_playbackrate_random_offset`, `polyphony` or the unit of `playbackrate_random_offset`, and the compressor values have no documentation.
+**1.19.4.1 re-check (2026-11-01).** 7 tagged statements depended on files the update changed (`interface/*.gui`, `interface/*.gfx`, `common/`) or on the DLC folder the manifest diff cannot compare (its `sound/` folder), and all of them were re-measured directly on the installed files. The sound, soundeffect, falloff and category counts are unchanged; the interface counts moved to 1,668 `clicksound` and 301 `oversound` lines, and four of those sound names are not in `gui_sound_effects.asset` as the page said. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -52,7 +53,7 @@ sound = {
 **volume** defines the volume of the sound.
 
 <!-- kit:begin id="sound-sound-notes" at="section:Sound" -->
-**Kit note** Over the 3387 vanilla `sound` blocks: all set `name` and `file`; `always_load` is written in 185 (`no` 169, `yes` 16) and `volume` in 161 (0.5 in 111 of them, then 0.6, 0.55, 1.8). [vanilla-confirmed 1.19.3] `sound/sound.asset`
+**Kit note** Over the 3387 vanilla `sound` blocks: all set `name` and `file`; `always_load` is written in 185 (`no` 169, `yes` 16) and `volume` in 161 (0.5 in 111 of them, then 0.6, 0.55, 1.8). [vanilla-confirmed 1.19.4.1] `sound/sound.asset`
 
 A `sound` and a `soundeffect` may share a name. `click_default` is both a `sound` (in `sound/sound.asset`) and a `soundeffect` that plays it (in `sound/gui/gui_sound_effects.asset`). All sound names in `soundeffect` blocks resolve to a `sound`. [vanilla-confirmed 1.19.3] `sound/sound.asset`, `sound/gui/gui_sound_effects.asset`
 
@@ -152,7 +153,7 @@ soundeffect = {
 **prevent_random_repetition** prevents the same sounds from playing right after it was played
 
 <!-- kit:begin id="sound-effect-notes" at="section:Sound_Effect" -->
-**Kit note** Key counts over the 796 vanilla `soundeffect` blocks. All rows: [vanilla-confirmed 1.19.3] `sound/soundeffects.asset`, `sound/gui/gui_sound_effects.asset`, `integrated_dlc/dlc022_waking_the_tiger/sound/wtt_soundeffects.asset`.
+**Kit note** Key counts over the 796 vanilla `soundeffect` blocks. All rows: [vanilla-confirmed 1.19.4.1] `sound/soundeffects.asset`, `sound/gui/gui_sound_effects.asset`, `integrated_dlc/dlc022_waking_the_tiger/sound/wtt_soundeffects.asset`.
 
 | Key | Sets | Values in vanilla |
 | --- | --- | --- |
@@ -174,7 +175,7 @@ soundeffect = {
 | `polyphony` | 10 | 3 (5), 2 (4), 1 (1); not on the page |
 | `looping_playbackrate_random_offset` | 1 | `yes` (the page marks it ???) |
 
-The `sounds` block holds `sound = <name>` lines (5232 in vanilla) and `weighted_sound = { sound = <name> weight = <int> }` lines (62). Vanilla mixes a silent buffer into a weighted list to make a sound rare: ten train horns with `weight = 2` and `silence_buffer_1s` with `weight = 42`. [vanilla-confirmed 1.19.3] `sound/soundeffects.asset`
+The `sounds` block holds `sound = <name>` lines (5232 in vanilla) and `weighted_sound = { sound = <name> weight = <int> }` lines (62). Vanilla mixes a silent buffer into a weighted list to make a sound rare: ten train horns with `weight = 2` and `silence_buffer_1s` with `weight = 42`. [vanilla-confirmed 1.19.4.1] `sound/soundeffects.asset`
 
 ```text
 soundeffect = {
@@ -262,7 +263,7 @@ category = {
 **compressor** is the compressor to use for the category, see below for more information on the attributes.
 
 <!-- kit:begin id="sound-category-notes" at="section:Categories" -->
-**Kit note** Vanilla has 22 `category` blocks. `sound/category.asset` defines `"Effects"`, `"Battle"`, `"UI"`, `"nonControllableEntities"` and `"Atmosphere"`; DLC files add `"Voices"` blocks (for example `POR_infantry_idle`). `soundeffects` is a bare list of sound effect names, one per line, with `#` comment lines allowed. A `compressor` block appears in 6 categories and always sets all of `enabled`, `pregain`, `postgain`, `ratio`, `threshold`, `attacktime`, `releasetime`. [vanilla-confirmed 1.19.3] `sound/category.asset`, `dlc/dlc021_anniversary_pack/sound/`
+**Kit note** Vanilla has 22 `category` blocks. `sound/category.asset` defines `"Effects"`, `"Battle"`, `"UI"`, `"nonControllableEntities"` and `"Atmosphere"`; DLC files add `"Voices"` blocks (for example `POR_infantry_idle`). `soundeffects` is a bare list of sound effect names, one per line, with `#` comment lines allowed. A `compressor` block appears in 6 categories and always sets all of `enabled`, `pregain`, `postgain`, `ratio`, `threshold`, `attacktime`, `releasetime`. [vanilla-confirmed 1.19.4.1] `sound/category.asset`, `dlc/dlc021_anniversary_pack/sound/`
 
 ```text
 category = {
@@ -308,10 +309,10 @@ All rows: [vanilla-confirmed 1.19.3] `sound/compressor.asset`.
 <!-- kit:begin id="sound-usage" at="bottom" -->
 **Kit addition** Where a sound effect name is used.
 
-- Interface elements: `clicksound = <soundeffect>` and `oversound = <soundeffect>` on buttons and similar widgets. Vanilla top-level `interface/*.gui` files have 1704 `clicksound` lines (`click_default` 758, `click_checkbox` 347, `click_close` 227, `click_scroll` 81, `click_ok` 51) and 297 `oversound` lines (`ui_menu_over` 284, `traits_ui_over` 7). All of these names are `soundeffect` blocks in `sound/gui/gui_sound_effects.asset`. [vanilla-confirmed 1.19.3] `interface/*.gui`, `sound/gui/gui_sound_effects.asset`
-- Sprites: 23 `spriteType` blocks set `clicksound` in `.gfx` (see [Graphical asset modding](<graphical_asset_modding.md#spriteType>)). [vanilla-confirmed 1.19.3] `interface/chat.gfx`
+- Interface elements: `clicksound = <soundeffect>` and `oversound = <soundeffect>` on buttons and similar widgets. Vanilla top-level `interface/*.gui` files have 1668 `clicksound` lines (`click_default` 743, `click_checkbox` 352, `click_close` 237, `click_scroll` 81, `click_ok` 50) and 301 `oversound` lines (`ui_menu_over` 289, `traits_ui_over` 7). Almost all of these names are `soundeffect` blocks in `sound/gui/gui_sound_effects.asset`. The exceptions are `air_mission_select` and `select_aircraft` (in `sound/soundeffects.asset`), `command_power_ability_over` (in the Waking the Tiger sound file) and `click_main`, which is a `sound` block in `sound/sound.asset` and not a `soundeffect`. [vanilla-confirmed 1.19.4.1] `interface/*.gui`, `sound/gui/gui_sound_effects.asset`
+- Sprites: 23 `spriteType` blocks set `clicksound` in `.gfx` (see [Graphical asset modding](<graphical_asset_modding.md#spriteType>)). [vanilla-confirmed 1.19.4.1] `interface/chat.gfx`
 - Entities: `event = { sound = { soundeffect = <name> } }` (see [Entity modding](<entity_modding.md#Event>)). [vanilla-confirmed 1.19.3] `gfx/entities/buildings.asset`
-- Script: `sound_effect = <name>` plays a sound effect in any scope and `scoped_sound_effect` plays it only for the player of the scope. Vanilla uses `sound_effect = command_power_ability_offensive` (8 times) and quoted names such as `"Martial_Law_Interface_No_Garrison"`. [docs] `documentation/effects_documentation.md`. The vanilla uses are [vanilla-confirmed 1.19.3] `common/`
+- Script: `sound_effect = <name>` plays a sound effect in any scope and `scoped_sound_effect` plays it only for the player of the scope. Vanilla uses `sound_effect = command_power_ability_offensive` (8 times) and quoted names such as `"Martial_Law_Interface_No_Garrison"`. [docs] `documentation/effects_documentation.md`. The vanilla uses are [vanilla-confirmed 1.19.4.1] `common/`
 - Music uses a separate system; see [Music modding](<music_modding.md>). [vanilla-confirmed 1.19.3] `music/`
 <!-- kit:end id="sound-usage" -->
 

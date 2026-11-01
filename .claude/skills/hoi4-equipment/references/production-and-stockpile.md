@@ -125,7 +125,7 @@ Define names keep the game's own typos, for example `LAND_DEFENSE_FIGHERS_PER_RA
 Equipment designers and manufacturers can be attached through military industrial organizations (`common/military_industrial_organization/`) and the `industrial_manufacturer` and `design_team` parameters above.
 Equipment types usable there are those in `script_enum_equipment_bonus_type`, and stats usable there come from `script_enum_equipment_stat`.
 The enum file notes which stats live on the battalion and cannot be used by these organizations.
-Special project prototypes are covered by the `documentation.md` files in `GAME/common/special_projects/projects/`, `prototype_rewards/` and `specialization/`. The folder's `special_projects_documentation.md` describes keys (`special_project_type`, `threshold_min`) that no vanilla file uses [vanilla-confirmed 1.19.3]. This skill only notes that prototype rewards can place equipment in a stockpile.
+Special project prototypes are covered by the `documentation.md` files in `GAME/common/special_projects/projects/`, `prototype_rewards/` and `specialization/`. The folder's `special_projects_documentation.md` describes keys (`special_project_type`, `threshold_min`) that no vanilla file uses [vanilla-confirmed 1.19.4.1]. This skill only notes that prototype rewards can place equipment in a stockpile.
 
 ## Local checks for this surface
 

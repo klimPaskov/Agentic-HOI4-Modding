@@ -2,11 +2,12 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Modifiers", revision 102188, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="102188" sources="documentation/modifiers_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md documentation/dynamic_variables_documentation.md documentation/console_commands_documentation.md common/dynamic_modifiers/ common/modifier_definitions/ common/modifiers/ common/difficulty_settings/ common/opinion_modifiers/ common/units/unit_modifiers/ common/peace_conference/cost_modifiers/ common/ideas/ common/operations/ localisation/english/modifiers_l_english.yml" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="102188" sources="documentation/modifiers_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md documentation/dynamic_variables_documentation.md documentation/console_commands_documentation.md common/dynamic_modifiers/ common/modifier_definitions/ common/modifiers/ common/difficulty_settings/ common/opinion_modifiers/ common/units/unit_modifiers/ common/peace_conference/cost_modifiers/ common/ideas/ common/operations/ localisation/english/modifiers_l_english.yml" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against the modifier documentation (722 modifiers, 38 template families), the dynamic modifier, modifier definition, static modifier, difficulty, opinion modifier and sub-unit modifier files, and the effect, trigger, variable and console documentation.
 - Kit blocks added: values and variables, tooltip helpers, dynamic modifier scopes, arguments and add/remove, static, relation, province, balance of power, definition and opinion modifier notes, one table per section for the 167 documented modifiers the page never named, `template-families`, and corrections for sub-unit modifiers, `license_purchase_cost_factor` and the annex and puppet cost note.
 - Wiki errors found: sub-unit modifiers exist only when registered, `license_purchase_cost_factor` does not exist, dynamic modifiers also work on special projects, the `scope` claim has no support, annex and puppet cost factors are not removed, several lists are short.
 - Gaps left: meanings starting with `~` are guesses; the effect of `scope`, of `days` at or below 0 and of the annex and puppet factors is untested; the Modifier type, scope and version columns were not re-checked, only the names.
+**1.19.4.1 re-check (2026-11-01).** About 40 statements depended on files the update changed, and all were re-measured on the 1.19.4.1 files. Numbers that moved: modifier assignments in ideas 13,384 to 13,444 and in dynamic modifiers 5,097 to 5,092, `custom_modifier_tooltip` 367 to 371 uses, `add_dynamic_modifier` calls 1,549 to 1,552, opinion modifiers 810 to 811, and `navy_screen_attack_factor_against` is now used in `common/ideas/japan.txt`; the meaning column cannot be diffed against the old text file. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -103,11 +104,11 @@ Note that **modifiers do not support if statements**. The closest replica possib
 **Kit addition** Precision, variables and reading a modifier total.
 
 - Every modifier value accepts up to 3 decimal places. The decimal places shown in the game's modifier documentation (and in the "dp" columns of the kit tables below) are display only. [docs] `documentation/modifiers_documentation.md`
-- A modifier written in an idea, trait or decision never takes a variable. `common/ideas/` holds 13,384 modifier assignments and none of them is a variable name or a constant. [vanilla-confirmed 1.19.3]
-- Outside dynamic modifiers the only non-numeric modifier values in vanilla are `@constant` references: 72 in `common/country_leader/00_traits.txt`, 65 in `common/decisions/` and 5 in `common/military_industrial_organization/`. [vanilla-confirmed 1.19.3]
-- In `common/dynamic_modifiers/` 4,249 of 5,097 modifier assignments (83 percent) are variable names, so variable values are a dynamic modifier feature. [vanilla-confirmed 1.19.3]
+- A modifier written in an idea, trait or decision never takes a variable. `common/ideas/` holds 13,444 modifier assignments (12,547 in `modifier` blocks and 897 in `targeted_modifier` blocks) and none of them is a variable name or a constant. [vanilla-confirmed 1.19.4.1]
+- Outside dynamic modifiers the only non-numeric modifier values in vanilla are `@constant` references: 72 in `common/country_leader/00_traits.txt`, 65 in `common/decisions/` and 5 in `common/military_industrial_organization/`. [vanilla-confirmed 1.19.4.1]
+- In `common/dynamic_modifiers/` 4,249 of 5,092 modifier assignments (83 percent) are variable names, so variable values are a dynamic modifier feature. [vanilla-confirmed 1.19.4.1]
 - `modifier@token` reads a total in country, state and military industrial organization scope (for example `modifier@military_industrial_organization_research_bonus`), and a state can be addressed by id as `123.modifier@local_manpower`. In unit leader scope use `leader_modifier@token`, `unit_modifier@token` or `sum_unit_terrain_modifier@token`. [docs] `documentation/dynamic_variables_documentation.md`
-- `leader_modifier@wounded_chance_factor` is read in `common/on_actions/00_on_actions.txt`. [vanilla-confirmed 1.19.3]
+- `leader_modifier@wounded_chance_factor` is read in `common/on_actions/00_on_actions.txt`. [vanilla-confirmed 1.19.4.1]
 - Console: `list_modifiers <scope>` lists the modifiers of the selected country, state or unit leader, and `loc_check_modifiers` checks modifiers for missing localisation. [docs] `documentation/console_commands_documentation.md`
 <!-- kit:end id="modifier-values" -->
 
@@ -129,8 +130,8 @@ Custom modifiers now support dynamic commands (anything within square brackets).
 <!-- kit:begin id="tooltip-vanilla" at="section:Tooltip_modification" -->
 **Kit addition** Vanilla use of the tooltip helpers.
 
-- `custom_modifier_tooltip` appears 367 times in 53 files (ideas, country leader traits, decisions, dynamic modifiers, continuous focuses, faction rules, occupation laws, unit leader and scientist traits, balance of power). `hidden_modifier` appears 20 times in 5 files (ideas, country leader traits, continuous focuses, ideologies). [vanilla-confirmed 1.19.3] `common/`
-- Dynamic commands in the tooltip text are confirmed: `GER_motor_and_mech_attack_tt: "[GetMotorMechAttack]"` in `localisation/english/wuw_ideas_l_english.yml` is the `custom_modifier_tooltip` of `GER_blitzkrieg_modifier`. [vanilla-confirmed 1.19.3]
+- `custom_modifier_tooltip` appears 371 times in 54 files (ideas, country leader traits, decisions, dynamic modifiers, continuous focuses, faction rules, occupation laws, unit leader and scientist traits, balance of power). `hidden_modifier` appears 20 times in 5 files (ideas, country leader traits, continuous focuses, ideologies). [vanilla-confirmed 1.19.4.1] `common/`
+- Dynamic commands in the tooltip text are confirmed: `GER_motor_and_mech_attack_tt: "[GetMotorMechAttack]"` in `localisation/english/wuw_ideas_l_english.yml` is the `custom_modifier_tooltip` of `GER_blitzkrieg_modifier`. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="tooltip-vanilla" -->
 
 ## Dynamic modifiers <a id="Dynamic_modifiers"></a>
@@ -152,11 +153,11 @@ The dynamic modifiers are evaluated daily for each scope. The process consists o
 **Kit correction** Dynamic modifiers can also be added to special projects, and the refresh effect is documented.
 
 - `add_dynamic_modifier`, `remove_dynamic_modifier` and `force_update_dynamic_modifier` work in state, country, character (unit leader) and special project scope. The text above names only the first three. [docs] `documentation/effects_documentation.md`
-- The header of `common/dynamic_modifiers/0_dynamic_modifiers.txt` says the same ("countries, states, unit leaders or special projects") and says dynamic modifiers are updated daily unless `force_update_dynamic_modifier` forces it. [vanilla-confirmed 1.19.3]
-- `force_update_dynamic_modifier = yes` refreshes the scope's dynamic modifiers at once. Vanilla calls it three times: twice in `common/national_focus/congo_shared.txt` and once in `common/scripted_effects/PHI_scripted_effects.txt`. [docs] [vanilla-confirmed 1.19.3]
+- The header of `common/dynamic_modifiers/0_dynamic_modifiers.txt` says the same ("countries, states, unit leaders or special projects") and says dynamic modifiers are updated daily unless `force_update_dynamic_modifier` forces it. [vanilla-confirmed 1.19.4.1]
+- `force_update_dynamic_modifier = yes` refreshes the scope's dynamic modifiers at once. Vanilla calls it three times: twice in `common/national_focus/congo_shared.txt` and once in `common/scripted_effects/PHI_scripted_effects.txt`. [docs] [vanilla-confirmed 1.19.4.1]
 - Adding a dynamic modifier that is already present refreshes it ("updates the cooldown if exists"), which matters for timed modifiers. [docs] `documentation/effects_documentation.md`
 - `has_dynamic_modifier` tests for one in state, country and character scope. It takes either `has_dynamic_modifier = name` or a block with `modifier` and an optional `scope`. [docs] `documentation/triggers_documentation.md`
-- Vanilla defines 679 dynamic modifiers in 11 files under `common/dynamic_modifiers/`. [vanilla-confirmed 1.19.3]
+- Vanilla defines 679 dynamic modifiers in 11 files under `common/dynamic_modifiers/`. [vanilla-confirmed 1.19.4.1]
 - The console documentation lists no command that reloads dynamic modifier definitions, which fits the restart claim above but does not prove it. [unverified]
 <!-- kit:end id="dynamic-scopes" -->
 
@@ -172,10 +173,10 @@ Modifiers are put directly inside the dynamic modifier as a list. Non-modifier i
 <!-- kit:begin id="dynamic-arguments" at="section:Arguments" -->
 **Kit addition** What vanilla puts inside a dynamic modifier.
 
-- The header of `common/dynamic_modifiers/0_dynamic_modifiers.txt` lists four optional keys and nothing else: `icon` (shown in GUIs only when given), `enable`, `remove_trigger` and `attacker_modifier`. Everything else in the block is a modifier. [vanilla-confirmed 1.19.3]
-- `attacker_modifier = yes` is used once in vanilla, by `unplanned_offensive` in `0_dynamic_modifiers.txt` (with `army_attack_factor = -0.9` and `army_speed_factor = -0.75`). [vanilla-confirmed 1.19.3]
-- A value can be a plain number or a variable name: `max_fuel = var_max_fuel` (header example), a scope-prefixed variable such as `global.HABSBURG_army_war_stability_factor` (`common/dynamic_modifiers/HABSBURG_dynamic_modifiers.txt`), or `temporary_state_resource_oil = sabotaged_oil` (`0_dynamic_modifiers.txt`). 848 of the 5,097 assignments are plain numbers. [vanilla-confirmed 1.19.3]
-- `custom_modifier_tooltip` is used inside dynamic modifiers in 8 files. [vanilla-confirmed 1.19.3]
+- The header of `common/dynamic_modifiers/0_dynamic_modifiers.txt` lists four optional keys and nothing else: `icon` (shown in GUIs only when given), `enable`, `remove_trigger` and `attacker_modifier`. Everything else in the block is a modifier. [vanilla-confirmed 1.19.4.1]
+- `attacker_modifier = yes` is used once in vanilla, by `unplanned_offensive` in `0_dynamic_modifiers.txt` (with `army_attack_factor = -0.9` and `army_speed_factor = -0.75`). [vanilla-confirmed 1.19.4.1]
+- A value can be a plain number or a variable name: `max_fuel = var_max_fuel` (header example), a scope-prefixed variable such as `global.HABSBURG_army_war_stability_factor` (`common/dynamic_modifiers/HABSBURG_dynamic_modifiers.txt`), or `temporary_state_resource_oil = sabotaged_oil` (`0_dynamic_modifiers.txt`). 843 of the 5,092 assignments are plain numbers. [vanilla-confirmed 1.19.4.1]
+- `custom_modifier_tooltip` is used inside dynamic modifiers in 8 files. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="dynamic-arguments" -->
 
 ### Example <a id="Example"></a>
@@ -238,10 +239,10 @@ A dynamic modifier is removed via [remove_dynamic_modifier](<effects.md>), phras
 | `scope` | Optional. A state, a country tag or a variable holding one. | [docs] `documentation/effects_documentation.md` |
 
 - The documentation example adds a modifier to state 12 with `scope = GER` and says it is added to the state "but only applies for country GER". Nothing in the documentation or in the header comment says the variables are read from the `scope` target, which is what the wiki text above claims. [docs] `documentation/effects_documentation.md`
-- Vanilla uses `scope` to restrict who a state modifier applies to. `GER_blitzkrieg_modifier` is added in `every_state` with `scope = GER` in `common/decisions/GER.txt`, and its values are constants. `scope = THIS.owner` is used the same way in `common/decisions/CHL.txt`. [vanilla-confirmed 1.19.3]
+- Vanilla uses `scope` to restrict who a state modifier applies to. `GER_blitzkrieg_modifier` is added in `every_state` with `scope = GER` in `common/decisions/GER.txt`, and its values are constants. `scope = THIS.owner` is used the same way in `common/decisions/CHL.txt`. [vanilla-confirmed 1.19.4.1]
 - Treat "the variables are read off the `scope` country" as unconfirmed until it is tested. [unverified]
 - `remove_dynamic_modifier` and `has_dynamic_modifier` need the same `scope` that `add_dynamic_modifier` used. [docs] `documentation/effects_documentation.md`
-- Vanilla has 1,549 `add_dynamic_modifier` calls (1,217 in `common/`, 147 in `events/`, 185 in `history/`). 172 pass `days` (165 positive numbers and 7 use the variable `duration`) and 142 pass `scope`. No call passes a negative `days`, and `remove_dynamic_modifier` appears 729 times. What a zero or negative `days` does is not shown. [vanilla-confirmed 1.19.3]
+- Vanilla has 1,552 `add_dynamic_modifier` calls (1,217 in `common/`, 147 in `events/`, 188 in `history/`). 175 pass `days` (168 positive numbers and 7 use the variable `duration`) and 142 pass `scope`. No call passes a negative `days`, and `remove_dynamic_modifier` appears 730 times. What a zero or negative `days` does is not shown. [vanilla-confirmed 1.19.4.1]
 - The usual timed form in vanilla:
 
 ```text
@@ -260,7 +261,7 @@ Static modifiers are stored in `/Hearts of Iron IV/common/modifiers/*.txt` files
 <!-- kit:begin id="static-files" at="section:Static_modifiers" -->
 **Kit addition** Where vanilla keeps them.
 
-- `common/modifiers/` holds `00_static_modifiers.txt` (global, weather, resistance and compliance, stability, difficulty, intelligence, relation and country-specific modifiers), `01_event_modifiers.txt` (an empty file) and three balance of power files: `AAT_power_balance_modifiers.txt`, `BBA_power_balance_modifiers.txt` and `MUN_power_balance_modifiers.txt`. [vanilla-confirmed 1.19.3]
+- `common/modifiers/` holds `00_static_modifiers.txt` (global, weather, resistance and compliance, stability, difficulty, intelligence, relation and country-specific modifiers), `01_event_modifiers.txt` (an empty file) and three balance of power files: `AAT_power_balance_modifiers.txt`, `BBA_power_balance_modifiers.txt` and `MUN_power_balance_modifiers.txt`. [vanilla-confirmed 1.19.4.1]
 - The header of `00_static_modifiers.txt` says the names are used by code and cannot be removed or renamed. [vanilla-confirmed 1.19.3]
 - Some global modifiers are targeted. The comments in `00_static_modifiers.txt` say `passive_decryption_modifier` applies once a country's cipher is fully decrypted and `active_decryption_modifier` applies while active decryption bonuses are used against it. [vanilla-confirmed 1.19.3]
 <!-- kit:end id="static-files" -->
@@ -331,8 +332,8 @@ remove_relation_modifier, which works similarly, can remove them.
 <!-- kit:begin id="relation-vanilla" at="section:Relation_modifiers" -->
 **Kit addition** Relation modifiers in vanilla and their trigger.
 
-- 18 relation modifiers are defined in `common/modifiers/00_static_modifiers.txt` (every entry with a `valid_relation_trigger`), for example `ROM_license_german_equipment`, `free_license` and `SOV_soviet_chinese_relations`. `ROM_license_german_equipment` sets `license_purchase_cost`, `ai_license_acceptance`, `license_production_speed` and `license_tech_difference_speed`. [vanilla-confirmed 1.19.3]
-- `add_relation_modifier` is called 55 times in vanilla, `remove_relation_modifier` and `has_relation_modifier` 4 times each. [vanilla-confirmed 1.19.3]
+- 18 relation modifiers are defined in `common/modifiers/00_static_modifiers.txt` (every entry with a `valid_relation_trigger`), for example `ROM_license_german_equipment`, `free_license` and `SOV_soviet_chinese_relations`. `ROM_license_german_equipment` sets `license_purchase_cost`, `ai_license_acceptance`, `license_production_speed` and `license_tech_difference_speed`. [vanilla-confirmed 1.19.4.1]
+- `add_relation_modifier` is called 55 times in vanilla, `remove_relation_modifier` and `has_relation_modifier` 4 times each. [vanilla-confirmed 1.19.4.1]
 - `has_relation_modifier = { target = TAG modifier = name }` is the trigger. Effects and trigger run in country scope. [docs] `documentation/effects_documentation.md` `documentation/triggers_documentation.md`
 <!-- kit:end id="relation-vanilla" -->
 
@@ -373,7 +374,7 @@ spriteType = {
 **Kit addition** Parameters of the effects (scope: state).
 
 - `add_province_modifier` takes `static_modifiers = { mod_1 mod_2 }`, an optional `days` (temporary, may be a variable) and a province selector: `province = 500`, or `province = { ... }` with repeated `id = N`, `all_provinces`, `limit_to_coastal`, `limit_to_border`, `limit_to_naval_base` and `limit_to_victory_point`. `remove_province_modifier` takes the same selectors. [docs] `documentation/effects_documentation.md`
-- Vanilla calls `add_province_modifier` 21 times and `remove_province_modifier` 7 times, for example `static_modifiers = { flooded }` with `province = { id = 9498 id = 391 }` in `common/decisions/HOL.txt`. [vanilla-confirmed 1.19.3]
+- Vanilla calls `add_province_modifier` 21 times and `remove_province_modifier` 7 times, for example `static_modifiers = { flooded }` with `province = { id = 9498 id = 391 }` in `common/decisions/HOL.txt`. [vanilla-confirmed 1.19.4.1]
 - Static modifiers marked `# on Province` in `00_static_modifiers.txt` include `weather_mud`, `weather_extreme_cold`, `flooded` and `unplanned_offensive`. [vanilla-confirmed 1.19.3]
 <!-- kit:end id="province-params" -->
 
@@ -403,7 +404,7 @@ add_power_balance_modifier = {
 
 - `add_power_balance_modifier = { id = ... modifier = ... }` runs in any scope. The modifier "must be defined in the static modifier database". `remove_power_balance_modifier` takes the same keys and `remove_all_power_balance_modifiers = { id = ... }` takes only the id. `has_power_balance_modifier` tests for one. [docs] `documentation/effects_documentation.md` `documentation/triggers_documentation.md`
 - Console: `bop_addmod <ID> <ModID>` and `bop_rmmod <ID> <ModID>`. [docs] `documentation/console_commands_documentation.md`
-- Vanilla calls `add_power_balance_modifier` 38 times and `remove_power_balance_modifier` 61 times. The only definition in `00_static_modifiers.txt` is the test entry `_test_power_balance_mod` (`power_balance_daily = 0.02`). [vanilla-confirmed 1.19.3]
+- Vanilla calls `add_power_balance_modifier` 38 times and `remove_power_balance_modifier` 61 times. The only definition in `00_static_modifiers.txt` is the test entry `_test_power_balance_mod` (`power_balance_daily = 0.02`). [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="bop-modifiers" -->
 
 ## Modifier definitions <a id="Modifier_definitions"></a>
@@ -525,10 +526,10 @@ The [localisation](<localisation.md>) is created in any `/Hearts of Iron IV/loca
 **Kit addition** What vanilla actually uses.
 
 - The header of `common/opinion_modifiers/00_opinion_modifiers.txt` lists `value`, `min_trust`, `max_trust`, `decay`, `months`/`years`/`days` and `trade`, and no other keys. [vanilla-confirmed 1.19.3]
-- 810 opinion modifiers are defined in 13 files, with 793 distinct ids, so 17 ids are defined twice. Key use: `value` 810, `months` 257, `trade` 58, `years` 55, `decay` 40, and `days`, `min_trust` and `max_trust` once each. [vanilla-confirmed 1.19.3]
-- `target = yes` appears once, on the second `guarantee` entry (`value = 35`, in `00_opinion_modifiers.txt`) next to a plain `guarantee` with `value = 0`. It is not in the header. [vanilla-confirmed 1.19.3] What it does is not shown. [unverified]
+- 811 opinion modifiers are defined in 13 files, with 794 distinct ids, so 17 ids are defined twice. Key use: `value` 811, `months` 258, `trade` 58, `years` 55, `decay` 41, and `days`, `min_trust` and `max_trust` once each. [vanilla-confirmed 1.19.4.1]
+- `target = yes` appears once, on the second `guarantee` entry (`value = 35`, in `00_opinion_modifiers.txt`) next to a plain `guarantee` with `value = 0`. It is not in the header. [vanilla-confirmed 1.19.4.1] What it does is not shown. [unverified]
 - Vanilla examples of the bounds: `justifying_war_goal = { value = -10 min_trust = -10 days = 10 decay = 1 }` and `improve_relation = { value = 0 months = 0 decay = 3 max_trust = 100 }`. [vanilla-confirmed 1.19.3]
-- The localisation key is the modifier id, for example `holds_our_cores:` in `localisation/english/diplomacy_l_english.yml`. [vanilla-confirmed 1.19.3]
+- The localisation key is the modifier id, for example `holds_our_cores:` in `localisation/english/diplomacy_l_english.yml`. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="opinion-vanilla" -->
 
 ### Examples <a id="Examples_2"></a>
@@ -610,7 +611,7 @@ ideas = {
 ```
 
 <!-- kit:begin id="opinion-effects" at="section:Implementation" -->
-**Kit addition** Vanilla calls: `add_opinion_modifier` 2,255, `reverse_add_opinion_modifier` 89, `remove_opinion_modifier` 151 and `has_opinion_modifier` 97. All four run in country scope. [vanilla-confirmed 1.19.3] [docs] `documentation/effects_documentation.md` `documentation/triggers_documentation.md`
+**Kit addition** Vanilla calls: `add_opinion_modifier` 2,266, `reverse_add_opinion_modifier` 89, `remove_opinion_modifier` 151 and `has_opinion_modifier` 98. All four run in country scope. [vanilla-confirmed 1.19.4.1] [docs] `documentation/effects_documentation.md` `documentation/triggers_documentation.md`
 <!-- kit:end id="opinion-effects" -->
 
 ## List of modifiers <a id="List_of_modifiers"></a>
@@ -625,11 +626,11 @@ The list of modifiers may be outdated. A complete, but unsorted, list of modifie
 ### Kit: How the added tables read <a id="kit-added-tables-legend"></a>
 
 - Modifier, Categories and Format come from the game documentation. `dp` is the number of decimals the tooltip shows; any value accepts up to 3 decimals. [docs] `documentation/modifiers_documentation.md`
-- Meaning is the in-game wording from `localisation/english/modifiers_l_english.yml` and the MIO and effect strings, paraphrased. [vanilla-confirmed 1.19.3]
+- Meaning is the in-game wording from `localisation/english/modifiers_l_english.yml` and the MIO and effect strings, paraphrased. [vanilla-confirmed 1.19.3] The text file changed in 1.19.4.1 and the old text is gone, so a reworded single row would not show. A word-overlap check of the meaning column against the new file found no row that contradicts it. [unverified]
 - A meaning that starts with `~` is a guess from the name and its vanilla use. [unverified]
 - An empty meaning means the name is self-explanatory. `(not described in the docs)` means there is no in-game text and no clear vanilla use.
-- "Unused in vanilla" means no `key = value` use in `common/`, `events/` or `history/`. [vanilla-confirmed 1.19.3]
-- Sample checks against vanilla use: `army_non_core_attack_factor` is negative in `common/ideas/australia.txt`; `naval_invasion_prep_days` is -5 and -10 in `special_forces_subdoctrines.txt` and `MTG_naval_Support.txt`; `army_intel_to_others` is -15 and -50 in a trait and a decision; `peace_score_ratio_transferred_to_players` is used by the `diff_*_ai` static modifiers; `river_crossing_factor_against` sits inside `targeted_modifier` in `common/ideas/GER.txt`. [vanilla-confirmed 1.19.3]
+- "Unused in vanilla" means no `key = value` use in `common/`, `events/` or `history/`. [vanilla-confirmed 1.19.4.1]
+- Sample checks against vanilla use: `army_non_core_attack_factor` is negative in `common/ideas/australia.txt`; `naval_invasion_prep_days` is -5 and -10 in `special_forces_subdoctrines.txt` and `MTG_naval_Support.txt`; `army_intel_to_others` is -15 and -50 in a trait and a decision; `peace_score_ratio_transferred_to_players` is used by the `diff_*_ai` static modifiers; `river_crossing_factor_against` sits inside `targeted_modifier` in `common/ideas/GER.txt`. [vanilla-confirmed 1.19.4.1]
 <!-- kit:end id="added-tables-legend" -->
 
 <!-- kit:begin id="template-families" at="section:List_of_modifiers" -->
@@ -655,7 +656,7 @@ The documentation lists these as template entries; each pattern stands for one m
 | `<IdeaGroup>_cost_factor` | country | 0 dp | 25 idea groups (for example `economy`, `army_chief`, `hidden_ideas`, `army_spirit`). |
 | `<IdeaCategory>_category_type_cost_factor` | country | 0 dp | `air_spirit`, `army_spirit`, `navy_spirit`. |
 | `<Ideology>_acceptance`<br>`<Ideology>_drift`<br>`<Ideology>_drift_from_guarantees` | politics | 0 dp, 2 dp, 2 dp | `communism`, `democratic`, `fascism`, `neutrality`. |
-| `<Operation>_cost`<br>`<Operation>_outcome`<br>`<Operation>_risk` | intelligence_agency | 0 dp | 41, 39 and 42 slot values: operation ids from `common/operations/` (for example `operation_infiltrate_civilian`, `bruneval_raid`, `FRA_coup_in_indochina`) plus the generic tokens `operation`, `operation_coup`, `operation_infiltrate`, `operation_steal_tech` and `target_sabotage`. The three sets differ slightly: `_cost` has no `operation_steal_tech`, and `_outcome` and `_risk` have no `operation_coup`. An operation only reacts to a modifier it names in its own `cost_modifiers`, `outcome_modifiers` or `risk_modifiers` list [docs `common/operations/_documentation.md`]. Vanilla operations name only `operation_cost`, `operation_infiltrate_cost`, `operation_coup_cost`, `target_sabotage_cost`, `operation_outcome`, `operation_infiltrate_outcome`, `operation_steal_tech_outcome`, `boost_resistance_factor`, `target_sabotage_factor`, `operation_risk`, `operation_infiltrate_risk`, `operation_steal_tech_risk` and `target_sabotage_risk`, so per-operation names such as `bruneval_raid_cost` are valid but no vanilla operation reads them [vanilla-confirmed 1.19.3 `common/operations/`]. |
+| `<Operation>_cost`<br>`<Operation>_outcome`<br>`<Operation>_risk` | intelligence_agency | 0 dp | 41, 39 and 42 slot values: operation ids from `common/operations/` (for example `operation_infiltrate_civilian`, `bruneval_raid`, `FRA_coup_in_indochina`) plus the generic tokens `operation`, `operation_coup`, `operation_infiltrate`, `operation_steal_tech` and `target_sabotage`. The three sets differ slightly: `_cost` has no `operation_steal_tech`, and `_outcome` and `_risk` have no `operation_coup`. An operation only reacts to a modifier it names in its own `cost_modifiers`, `outcome_modifiers` or `risk_modifiers` list [docs `common/operations/_documentation.md`]. Vanilla operations name only `operation_cost`, `operation_infiltrate_cost`, `operation_coup_cost`, `target_sabotage_cost`, `operation_outcome`, `operation_infiltrate_outcome`, `operation_steal_tech_outcome`, `boost_resistance_factor`, `target_sabotage_factor`, `operation_risk`, `operation_infiltrate_risk`, `operation_steal_tech_risk` and `target_sabotage_risk`, so per-operation names such as `bruneval_raid_cost` are valid but no vanilla operation reads them [vanilla-confirmed 1.19.4.1 `common/operations/`]. |
 | `<SpecialProject>_speed_factor` | country, state | 0 dp | 66 tokens: the `sp_*` projects and `specialization_air`, `specialization_land`, `specialization_naval`, `specialization_nuclear`. |
 | `<Trait>_xp_gain_factor` | naval, country, army | 2 dp | For 29 unit leader traits whose token already starts with `trait_` (for example `trait_cautious`, giving `trait_cautious_xp_gain_factor`). |
 | `trait_<Trait>_xp_gain_factor` | naval, country, army | 2 dp | For 165 traits whose token has no `trait_` prefix (for example `BALTIC_anti_bolshevik`). |
@@ -820,11 +821,11 @@ Diplomatic country-scoped modifiers:
 <!-- kit:end id="add-dip" -->
 
 <!-- kit:begin id="annex-puppet-status" at="section:Diplomacy" -->
-**Kit correction** The table says `annex_cost_factor` and `puppet_cost_factor` are "partially deprecated". In 1.19.3 both are still documented (`annex_cost_factor`: categories peace, aggressive; `puppet_cost_factor`: peace, defensive) and the in-game text still reads "Changes the cost of annexing a country" and "Changes the cost of puppeting a country". [docs] `documentation/modifiers_documentation.md` [vanilla-confirmed 1.19.3] `localisation/english/modifiers_l_english.yml`
+**Kit correction** The table says `annex_cost_factor` and `puppet_cost_factor` are "partially deprecated". In 1.19.4.1 both are still documented (`annex_cost_factor`: categories peace, aggressive; `puppet_cost_factor`: peace, defensive) and the in-game text still reads "Changes the cost of annexing a country" and "Changes the cost of puppeting a country". [docs] `documentation/modifiers_documentation.md` [vanilla-confirmed 1.19.4.1] `localisation/english/modifiers_l_english.yml`
 
-- Vanilla still sets them: `annex_cost_factor` 22 times in 12 files and `puppet_cost_factor` 21 times in 6 files (country leader traits, balance of power, dynamic modifiers, ideas). [vanilla-confirmed 1.19.3]
+- Vanilla still sets them: `annex_cost_factor` 22 times in 12 files and `puppet_cost_factor` 21 times in 6 files (country leader traits, balance of power, dynamic modifiers, ideas). [vanilla-confirmed 1.19.4.1]
 - `common/peace_conference/cost_modifiers/` is a separate system. Each entry has a `peace_action_type`, an `enable` trigger and a `cost_multiplier` greater than 0, and all active multipliers are multiplied together. [docs] `common/peace_conference/cost_modifiers/_documentation.md`
-- No file in `common/peace_conference/` mentions either modifier name. Whether the two modifiers still change peace conference costs is not shown by the files. [vanilla-confirmed 1.19.3] [unverified]
+- No file in `common/peace_conference/` mentions either modifier name. Whether the two modifiers still change peace conference costs is not shown by the files. [vanilla-confirmed 1.19.4.1] [unverified]
 <!-- kit:end id="annex-puppet-status" -->
 
 #### Autonomy <a id="Autonomy"></a>
@@ -927,7 +928,7 @@ Equipment-related country-scoped modifiers:
 <!-- kit:end id="add-eqp" -->
 
 <!-- kit:begin id="license-cost-factor-removed" at="section:Equipment" -->
-**Kit correction** The two `license_purchase_cost_factor` rows name a modifier that is not in 1.19.3. The name is absent from the modifier documentation [docs] `documentation/modifiers_documentation.md` and from all vanilla script and localisation [vanilla-confirmed 1.19.3]. A read-only search of `hoi4.exe` finds no string either. [unverified]
+**Kit correction** The two `license_purchase_cost_factor` rows name a modifier that is not in 1.19.4.1. The name is absent from the modifier documentation [docs] `documentation/modifiers_documentation.md` and from all vanilla script and localisation [vanilla-confirmed 1.19.4.1]. A read-only search of `hoi4.exe` finds no string either. [unverified]
 
 The documented names are `license_purchase_cost` (all licences), `license_air_purchase_cost`, `license_armor_purchase_cost`, `license_infantry_purchase_cost` and `license_naval_purchase_cost` (by category), and `license_<archetype>_eq_cost_factor`, `license_<archetype>_eq_production_speed_factor` and `license_<archetype>_eq_tech_difference_speed_factor` for `anti_tank`, `artillery`, `infantry` and `light_tank`. Production speed is `license_production_speed` and `license_tech_difference_speed`. [docs] `documentation/modifiers_documentation.md`
 <!-- kit:end id="license-cost-factor-removed" -->
@@ -1622,11 +1623,11 @@ Targeted modifiers:
 | defense_bonus_against | Gives a defense bonus against the armies of the specified country. | `defense_bonus_against = 0.5` | Percentual. | Due to a bug, this will not apply to units that are attacking. | 1.5 |
 
 <!-- kit:begin id="add-targ" at="section:Targeted_modifiers" -->
-**Kit addition** Twelve more targeted modifiers (the section lists ten). They belong in a `targeted_modifier = { tag = X ... }` block, like `attack_bonus_against`. [vanilla-confirmed 1.19.3]
+**Kit addition** Twelve more targeted modifiers (the section lists ten). They belong in a `targeted_modifier = { tag = X ... }` block, like `attack_bonus_against`. [vanilla-confirmed 1.19.4.1]
 
-- The in-game text of each ends in "against a country" (for example "Capital Ship Attack Against a Country"). [vanilla-confirmed 1.19.3] `localisation/english/modifiers_l_english.yml`
+- The in-game text of eleven of them ends in "against a country" (for example "Capital Ship Attack Against a Country"), and `river_crossing_factor_against` reads "against country". [vanilla-confirmed 1.19.4.1] `localisation/english/modifiers_l_english.yml`
 - All twelve are documented modifiers. [docs] `documentation/modifiers_documentation.md`
-- Vanilla uses `spotting_chance_against` and `navy_capital_ship_attack_factor_against` inside `targeted_modifier` in `common/ideas/australia.txt`, and `river_crossing_factor_against` in `common/ideas/GER.txt`. The other nine are unused in vanilla. [vanilla-confirmed 1.19.3]
+- Vanilla uses `spotting_chance_against`, `navy_capital_ship_attack_factor_against` and `navy_screen_attack_factor_against` inside `targeted_modifier` in `common/ideas/japan.txt` (the first two also in `common/ideas/australia.txt`), and `river_crossing_factor_against` in `common/ideas/GER.txt`. The other eight are unused in vanilla. [vanilla-confirmed 1.19.4.1]
 - `army_attack_against_major_factor` and its siblings are not targeted: they compare against major and minor countries as a class.
 
 | Modifier | Categories | Format | Meaning |

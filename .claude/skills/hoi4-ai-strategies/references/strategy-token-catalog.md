@@ -79,7 +79,7 @@ Vanilla-observed values: `improve_relation`, `military_access`, `docking_rights`
 | `spare_unit_factor` | value | Spare more units to defend allies. |
 | `theatre_distribution_demand_increase` | id = state id, value | Raise unit demand (value 10 means 10 units) in the theatre containing the state. |
 | `scorched_earth_prio` | id = owner country, states = { ... }, value | Use scorched earth in those states. |
-| `force_concentration_factor` | value | Added to the base share of "non-essential" units used for concentrated pushes (`NAI.AIFC_UNIT_RATIO_BASE`, 0.15 in vanilla; the documentation's `FORCE_CONCENTRATION_UNIT_RATIO_BASE` does not exist [vanilla-confirmed 1.19.3]); 20 means plus 20 points. A large negative value disables force concentration. |
+| `force_concentration_factor` | value | Added to the base share of "non-essential" units used for concentrated pushes (`NAI.AIFC_UNIT_RATIO_BASE`, 0.15 in vanilla; the documentation's `FORCE_CONCENTRATION_UNIT_RATIO_BASE` does not exist [vanilla-confirmed 1.19.4.1]); 20 means plus 20 points. A large negative value disables force concentration. |
 | `force_concentration_front_factor` | selectors, ratio, value | Percent factor for concentration priority on matching fronts. |
 | `force_concentration_target_weight` | selectors, value | Percent factor for offensive target score. |
 
@@ -117,6 +117,7 @@ Selector semantics in `country_trigger` and `state_trigger`: country scope is th
 | `build_airplane` | derived | Set by the game from air `unit_ratio`; not authored directly. |
 | `min_wanted_supply_trucks`, `wanted_supply_trucks`, `min_wanted_supply_trains`, `wanted_supply_trains` | value | Override wanted supply vehicles. |
 | `fuel_buffer`, `convoy_efficiency_to_cancel_trades`, `min_convoy_efficiency_factor_for_war_support_hit` | value | In the token list without examples. |
+| `stockpile_fuel` | `start_below`, `stop_above` (both optional, percent of wanted max fuel; no `id`, `target` or `value`) | Fuel saving mode: air and naval mission fuel is throttled and land attack plans stand down (running ones too) until fuel passes `stop_above`; army fuel use is not throttled. `stop_above` must be above `start_below`; an inverted pair, `start_below` alone or neither is a load error. `stop_above` alone only sets the recovery level (default `NAI.FUEL_RATIO_TO_EXIST_FUEL_SAVING_MODE`, 0.6). Wanted max fuel scales with `fuel_buffer` and is capped at fuel capacity. Active blocks do not add up, the strictest threshold wins. `front_control` with `execute_order = yes` and desperate fronts override it, faction attack pings do not. Added in 1.19.4.1; no vanilla use [vanilla-confirmed 1.19.4.1]. |
 
 ### Unit ratio arithmetic
 

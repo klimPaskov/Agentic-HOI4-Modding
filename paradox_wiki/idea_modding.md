@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Idea modding", revision 99295, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="99295" sources="common/ideas/ common/idea_tags/ interface/ dlc/ common/countries/ documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="99295" sources="common/ideas/ common/idea_tags/ interface/ dlc/ common/countries/ documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all 213 files in `common/ideas/` (6,508 ideas, parsed), `common/idea_tags/00_idea.txt`, the sprites in `interface/` and `dlc/*/interface/`, the effects, triggers and modifiers documentation, and `hoi4.exe` strings.
 Kit blocks added: picture counts and `GFX_idea_unknown`, hidden category, effect and trigger syntax, modifier block keys, rule names, category defaults (corrects footnote a and the `removal_cost` default), idea keys the wiki omits, category and slot structure, slot sprites and grid sizes, cost-factor modifiers.
 Gaps left: the load-order claims in "Modifying cost of a slot", the `on_add` timing and the `allowed` check timing are engine behaviour that script cannot show. The "to be added" stub marker is a false positive (ordinary prose). `ZZZ_idea_slot`, `designer_category`, `law_category` are placeholder names in the wiki examples, not vanilla names.
+**1.19.4.1 re-check (2026-11-01).** About 40 statements depended on files the update changed (25 idea files, the interface files and the vanilla-wide use counts), and all were re-measured. Numbers that moved: ideas 6,508 to 6,515, modifier blocks 4,605 to 4,611, the picture and sprite counts, `hidden_ideas` 297 to 291, `removal_cost` 3,764 to 3,767, the `add_ideas`, `swap_ideas`, `has_idea`, `set_rule` and `has_rule` counts, and `navy_spirit_` files 4 to 6; the old `equipment_bonus` and `ai_will_do` counts were blocks, not ideas. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -106,14 +107,14 @@ If the `texturefile` within the sprite is incorrect, the idea will be invisible 
 It is also possible to make the picture depend on the `graphical_culture_2d` of the country, defined in the `/Hearts of Iron IV/common/countries/*.txt` file. This is done by appending the name after the picture's name, separated by an underscore. For example, a sprite with the name of `GFX_idea_my_picture_middle_eastern_2d` in its definition will show up instead of `GFX_idea_my_picture` for countries that have the `middle_eastern_2d` 2D graphical culture.
 
 <!-- kit:begin id="idea-picture-vanilla" at="section:Picture" -->
-**Kit note** How vanilla fills `picture`, counted over the 6,508 ideas in the 213 files of `common/ideas/`.
+**Kit note** How vanilla fills `picture`, counted over the 6,515 ideas in the 213 files of `common/ideas/`.
 
-- 6,102 ideas set `picture`. 6,080 of them give the bare name (`picture = new_economic_policy`), and 6,042 of those match a declared sprite named `GFX_idea_<value>` (here `GFX_idea_new_economic_policy` in `interface/ideas.gfx`). What matters is that a sprite with that full name is declared in some loaded `.gfx` file; vanilla also declares idea sprites in `dlc/*/interface/*.gfx`. [vanilla-confirmed 1.19.3] `common/ideas/`, `interface/`, `dlc/*/interface/`.
+- 6,110 ideas set `picture`. 6,088 of them give the bare name (`picture = new_economic_policy`), and 6,046 of those match a declared sprite named `GFX_idea_<value>` (here `GFX_idea_new_economic_policy` in `interface/ideas.gfx`). What matters is that a sprite with that full name is declared in some loaded `.gfx` file; vanilla also declares idea sprites in `dlc/*/interface/*.gfx`. [vanilla-confirmed 1.19.4.1] `common/ideas/`, `interface/`, `dlc/*/interface/`.
 - 22 vanilla ideas write a full name (`picture = GFX_idea_...`). For 15 of them a sprite called `GFX_idea_<idea id>` also exists, so the name fallback would find a sprite anyway. The other 7 only work if the engine accepts a full sprite name, which script cannot show. Write the bare name. [unverified]
-- 406 ideas set no `picture`. 272 of them have a sprite called `GFX_idea_<idea id>`, and 119 of the rest are in `hidden_ideas`, which never show. [vanilla-confirmed 1.19.3] `common/ideas/`.
-- 385 ideas set `picture` and also have a sprite named after the idea id. The files do not show which of the two the game displays. [vanilla-confirmed 1.19.3] `common/ideas/`, `interface/`.
+- 405 ideas set no `picture`. 272 of them have a sprite called `GFX_idea_<idea id>`, and 119 of the rest are in `hidden_ideas`, which never show. [vanilla-confirmed 1.19.4.1] `common/ideas/`.
+- 385 ideas set a bare `picture` that has its own sprite and also have a sprite named after the idea id. The files do not show which of the two the game displays. [vanilla-confirmed 1.19.4.1] `common/ideas/`, `interface/`.
 - `GFX_idea_unknown` is declared in `interface/countrydiplomacyview.gfx` (texture `gfx/interface/ideas/idea_unknown.dds`) and is the placeholder icon several vanilla GUI files use. The string is also in `hoi4.exe`. That the engine falls back to it for an idea with no usable sprite is plausible but not shown by script. [unverified]
-- Culture variants exist in vanilla: 160 sprites end in `_2d`, all for `generic_*` pictures, 20 for each of `asian_2d`, `commonwealth_2d`, `eastern_european_2d`, `middle_eastern_2d`, `sami_2d`, `southamerican_2d`, `western_european_2d` and 19 for `african_2d`. The same eight values are the `graphical_culture_2d` values in `common/countries/`; one sprite uses `middle_african_2d`, which no country uses. [vanilla-confirmed 1.19.3] `interface/`, `common/countries/`.
+- Culture variants exist in vanilla: 160 sprites end in `_2d`, all for `generic_*` pictures, 20 for each of `asian_2d`, `commonwealth_2d`, `eastern_european_2d`, `middle_eastern_2d`, `sami_2d`, `southamerican_2d`, `western_european_2d` and 19 for `african_2d`. The same eight values are the `graphical_culture_2d` values in `common/countries/`; one sprite uses `middle_african_2d`, which no country uses. [vanilla-confirmed 1.19.4.1] `interface/`, `common/countries/`.
 <!-- kit:end id="idea-picture-vanilla" -->
 
 ### Implementation <a id="Implementation"></a>
@@ -145,17 +146,17 @@ add_timed_idea = {
 In order for a country to start with the idea, the file in `/Hearts of Iron IV/history/countries/` for that country serves as an effect block that decides the starting historical information. Using [add_ideas](<effects.md>), usually in the expanded form to assign multiple ideas at once, in there will enforce it starting with the idea. In order for the idea to show up in country selection, the [bookmark is edited](<bookmark_modding.md>) to include the idea within its `ideas = { ... }` block for the country's entry.
 
 <!-- kit:begin id="idea-implementation-syntax" at="section:Implementation" -->
-**Kit addition** Idea effects and triggers in 1.19.3. All of them run in country scope. All rows: syntax from [docs] `documentation/effects_documentation.md` and `documentation/triggers_documentation.md`; use counts are [vanilla-confirmed 1.19.3] over `common/`, `events/` and `history/`.
+**Kit addition** Idea effects and triggers in 1.19.4.1. All of them run in country scope. All rows: syntax from [docs] `documentation/effects_documentation.md` and `documentation/triggers_documentation.md`; use counts are [vanilla-confirmed 1.19.4.1] over `common/`, `events/` and `history/`.
 
 | Name | Kind | Syntax and notes |
 | --- | --- | --- |
-| `add_ideas`, `remove_ideas` | effect | `add_ideas = id` or `add_ideas = { id_a id_b }`. Vanilla writes `add_ideas` 2,889 times as a single value and 459 times as a block. |
-| `swap_ideas` | effect | `swap_ideas = { remove_idea = a add_idea = b }`. The documentation also lists optional `days` (duration of the new idea) and `add_days` (change to that duration), but all 2,290 vanilla uses have only the two required keys. The documentation's syntax line says `swap_idea`; no vanilla file uses that spelling. |
+| `add_ideas`, `remove_ideas` | effect | `add_ideas = id` or `add_ideas = { id_a id_b }`. Vanilla writes `add_ideas` 2,899 times as a single value and 473 times as a block. |
+| `swap_ideas` | effect | `swap_ideas = { remove_idea = a add_idea = b }`. The documentation also lists optional `days` (duration of the new idea) and `add_days` (change to that duration), but all 2,294 vanilla uses have only the two required keys. The documentation's syntax line says `swap_idea`; no vanilla file uses that spelling. |
 | `add_timed_idea` | effect | `add_timed_idea = { idea = id days = 30 }`. `years`, `months` and `days` can be combined, at least one is required, and each accepts a variable. Vanilla: 1,730 uses with `days`, 4 with `months`. |
 | `modify_timed_idea` | effect | `modify_timed_idea = { idea = id days = 60 }` lengthens the timer; a negative value shortens it. Same `years`, `months`, `days` keys. 16 vanilla uses. |
 | `remove_ideas_with_trait` | effect | `remove_ideas_with_trait = trait_id`. 1 vanilla use (`events/ElectionEvents.txt`). |
-| `show_ideas_tooltip` | effect | `show_ideas_tooltip = id` prints an idea's tooltip inside an effect tooltip; vanilla uses it for advisor ideas in focus rewards. 1,226 vanilla uses. |
-| `has_idea` | trigger | `has_idea = id`. 7,381 vanilla uses. |
+| `show_ideas_tooltip` | effect | `show_ideas_tooltip = id` prints an idea's tooltip inside an effect tooltip; vanilla uses it for advisor ideas in focus rewards. 1,232 vanilla uses. |
+| `has_idea` | trigger | `has_idea = id`. 7,414 vanilla uses. |
 | `has_idea_with_trait` | trigger | `has_idea_with_trait = trait_id`. 326 vanilla uses. |
 | `has_allowed_idea_with_traits` | trigger | `{ idea = trait_id characters = yes }`, with optional `limit` and `ignore`. 15 vanilla uses, all in `common/ideas/zzz_generic.txt` and `history/general/generic_advisors.txt`. `has_available_idea_with_traits` is documented the same way but unused in vanilla. |
 | `amount_taken_ideas` | trigger | `{ amount < 3 slots = { political_advisor } }`, with optional `categories = { military_staff }`. Does not count national spirits, hidden ideas or categories with `law = yes`. 137 vanilla uses. |
@@ -250,20 +251,20 @@ The following game rules exist as possible options:
 | units_deployed_to_overlord | Control over deployed units go to overlord | Only has an effect for subjects. |
 
 <!-- kit:begin id="idea-modifier-block-keys" at="section:Modifiers" -->
-**Kit note** What vanilla puts inside idea blocks, counted over 4,605 `modifier` blocks and 6,508 ideas in `common/ideas/`.
+**Kit note** What vanilla puts inside idea blocks, counted over 4,611 `modifier` blocks and 6,515 ideas in `common/ideas/`.
 
-- Every key in a vanilla `modifier` block is a numeric modifier except two: `custom_modifier_tooltip = LOC_KEY` (180 uses) adds an extra tooltip line from a localisation key, and `hidden_modifier = { ... }` (2 uses, `common/ideas/czechoslovakia.txt` and `italy.txt`) wraps modifiers that apply without being listed. `custom_modifier_tooltip` is the only non-numeric scalar. [vanilla-confirmed 1.19.3] `common/ideas/`.
-- `research_bonus` is never inside `modifier` (0 of 4,605 blocks). It is an idea-level key: 1,086 ideas use it, with 37 different technology category names. `equipment_bonus` is also idea-level (650 ideas); `instant = yes` appears 942 times inside it. [vanilla-confirmed 1.19.3] `common/ideas/`.
-- `targeted_modifier` (481 uses) holds `tag = TAG` (479 blocks) and numeric modifiers; the only other non-numeric key is `custom_modifier_tooltip` (3 blocks). [vanilla-confirmed 1.19.3] `common/ideas/`.
+- Every key in a vanilla `modifier` block is a numeric modifier except two: `custom_modifier_tooltip = LOC_KEY` (183 uses) adds an extra tooltip line from a localisation key, and `hidden_modifier = { ... }` (2 uses, `common/ideas/czechoslovakia.txt` and `italy.txt`) wraps modifiers that apply without being listed. `custom_modifier_tooltip` is the only non-numeric scalar. [vanilla-confirmed 1.19.4.1] `common/ideas/`.
+- `research_bonus` is never inside `modifier` (0 of 4,611 blocks). It is an idea-level key: 1,086 ideas use it, with 37 different technology category names. `equipment_bonus` is also idea-level (653 blocks in 637 ideas); `instant = yes` appears 945 times inside it. [vanilla-confirmed 1.19.4.1] `common/ideas/`.
+- `targeted_modifier` (481 uses) holds `tag = TAG` (479 blocks) and numeric modifiers; the only other non-numeric key is `custom_modifier_tooltip` (3 blocks). [vanilla-confirmed 1.19.4.1] `common/ideas/`.
 <!-- kit:end id="idea-modifier-block-keys" -->
 
 <!-- kit:begin id="idea-rule-notes" at="section:Modifiers" -->
 **Kit note** The `rule` table above, checked against vanilla and the game files.
 
-- 47 vanilla ideas use a `rule` block. They use 8 rule names: `can_send_volunteers` (20 entries), `can_access_market` (8), `can_create_factions` (6), `can_decline_call_to_war` (6), `can_join_factions` (4), `can_join_opposite_factions` (3), `can_boost_other_ideologies` (2), `can_guarantee_other_ideologies` (1). One block also has `desc`, which is a description key, not a rule. [vanilla-confirmed 1.19.3] `common/ideas/`.
+- 47 vanilla ideas use a `rule` block. They use 8 rule names: `can_send_volunteers` (20 entries), `can_access_market` (8), `can_create_factions` (6), `can_decline_call_to_war` (6), `can_join_factions` (4), `can_join_opposite_factions` (3), `can_boost_other_ideologies` (2), `can_guarantee_other_ideologies` (1). One block also has `desc`, which is a description key, not a rule. [vanilla-confirmed 1.19.4.1] `common/ideas/`.
 - 26 of the 27 names in the table are strings in `hoi4.exe`. `can_join_factions_not_allowed_diplomacy` is in neither the executable nor any vanilla script, so do not rely on it. [unverified]
 - `can_declare_war_without_wargoal_when_in_war`, `can_not_build_buildings` and `can_occupy_non_war` are in `hoi4.exe` but not in any vanilla script. [unverified]
-- The same names can be set at runtime. `set_rule = { desc = LOC_KEY can_not_declare_war = yes }` adds a rule to the country in scope and overrides the other sources, `clear_rule = { can_not_declare_war = yes }` removes a rule that `set_rule` added, and `has_rule = can_puppet` tests one. Vanilla: `set_rule` 497 uses, `clear_rule` 2, `has_rule` 67. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
+- The same names can be set at runtime. `set_rule = { desc = LOC_KEY can_not_declare_war = yes }` adds a rule to the country in scope and overrides the other sources, `clear_rule = { can_not_declare_war = yes }` removes a rule that `set_rule` added, and `has_rule = can_puppet` tests one. Vanilla: `set_rule` 502 uses, `clear_rule` 2, `has_rule` 68 [vanilla-confirmed 1.19.4.1]. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
 - `add_relation_rule_override` sets a rule for one target country (`target = TAG`) or for every country a named trigger matches (`trigger = name`), with an optional `usage_desc`. The documentation says only `can_send_volunteer` (sic) and `can_access_market` are supported there. 47 vanilla uses. [docs] `documentation/effects_documentation.md`
 - The table is not the full list of rule names: ideologies use a `rules` block (`can_force_government`, `can_puppet`, `can_lower_tension`, `can_host_government_in_exile`) and one special project uses `set_rule = { can_use_underway_replenishment = yes }`. [vanilla-confirmed 1.19.3] `common/ideologies/00_ideologies.txt`, `common/special_projects/projects/naval_projects.txt`.
 <!-- kit:end id="idea-rule-notes" -->
@@ -372,7 +373,7 @@ Non-spirit ideas can use everything that can be within spirits, however there ar
 Hidden idea are exactly the same as regular spirits in every aspect in regards to creation, except for the fact that they have to be defined within the `hidden_ideas` idea category instead of using `country`. This will ensure that the idea will be hidden and not show up in the spirit container. However, it can still make sense to create localisation for them: If a hidden idea cancels automatically, the pop-up will show up, and hovering over certain elements (Such as the stability counter or research speed) will show each idea that modifies it.
 
 <!-- kit:begin id="idea-hidden-category" at="section:Hidden_ideas" -->
-**Kit note** `hidden_ideas` is a category in `common/idea_tags/00_idea.txt` with `hidden = yes`, `cost = 0`, `removal_cost = -1` and `ledger = hidden`. [vanilla-confirmed 1.19.3] `common/idea_tags/00_idea.txt`. Vanilla has 297 ideas in 28 `hidden_ideas` blocks; 177 of them still set a `picture`, which is never shown. [vanilla-confirmed 1.19.3] `common/ideas/`.
+**Kit note** `hidden_ideas` is a category in `common/idea_tags/00_idea.txt` with `hidden = yes`, `cost = 0`, `removal_cost = -1` and `ledger = hidden`. [vanilla-confirmed 1.19.3] `common/idea_tags/00_idea.txt`. Vanilla has 291 ideas in 28 `hidden_ideas` blocks; 171 of them still set a `picture`, which is never shown. [vanilla-confirmed 1.19.4.1] `common/ideas/`.
 <!-- kit:end id="idea-hidden-category" -->
 
 ### Idea category arguments <a id="Idea_category_arguments"></a>
@@ -399,7 +400,7 @@ ideas = {
 ```
 
 <!-- kit:begin id="idea-category-args-vanilla" at="section:Idea_category_arguments" -->
-**Kit note** In vanilla, `designer = yes` always sits on the category block, never on an idea: 161 category blocks in 51 files, 0 ideas. `law = yes` is on 4 category blocks (`economy` twice, `trade_laws`, `mobilization_laws`) and `use_list_view = yes` on 3. [vanilla-confirmed 1.19.3] `common/ideas/`.
+**Kit note** In vanilla, `designer = yes` always sits on the category block, never on an idea: 161 category blocks in 51 files, 0 ideas. `law = yes` is on 4 category blocks (`economy` twice, `trade_laws`, `mobilization_laws`) and `use_list_view = yes` on 3. [vanilla-confirmed 1.19.4.1] `common/ideas/`.
 <!-- kit:end id="idea-category-args-vanilla" -->
 
 ### Additional arguments <a id="Additional_arguments_2"></a>
@@ -435,18 +436,18 @@ This assumes that the idea is of the type that can be selected in-game, such as 
 | `army_spirit`, `navy_spirit` | 35 | -1 |
 | `division_command_spirit`, `naval_command_spirit`, `air_force_academy_spirit`, `air_force_spirit`, `air_force_command_spirit` | 50 | -1 |
 
-An idea's own `cost` or `removal_cost` replaces the default. 3,727 of the 3,764 vanilla ideas that set `removal_cost` write `-1` (not removable by hand) and the other 37 write `10`, all in the `industrial_concern` and manufacturer slots. [vanilla-confirmed 1.19.3] `common/ideas/`.
+An idea's own `cost` or `removal_cost` replaces the default. 3,730 of the 3,767 vanilla ideas that set `removal_cost` write `-1` (not removable by hand) and the other 37 write `10`, all in the `industrial_concern` and manufacturer slots. [vanilla-confirmed 1.19.4.1] `common/ideas/`.
 
-**Kit addition** Vanilla use of idea keys, including three the page does not list (`ai_will_do`, `default`, `cancel_if_invalid`). All rows: [vanilla-confirmed 1.19.3] `common/ideas/`.
+**Kit addition** Vanilla use of idea keys, including three the page does not list (`ai_will_do`, `default`, `cancel_if_invalid`). All rows: [vanilla-confirmed 1.19.4.1] `common/ideas/`.
 
 | Key | Vanilla use |
 | --- | --- |
-| `ai_will_do` | 1,054 ideas: laws, advisors, designers and officer corps spirits. Body is `factor = n` (856) or `base = n` (63), optionally with `modifier` blocks. |
+| `ai_will_do` | 1,052 ideas with 1,055 blocks (three ideas write it twice): laws, advisors, designers and officer corps spirits. Body is `factor = n` alone (857) or `base = n` alone (63), and the other 135 blocks add `modifier` blocks. |
 | `default = yes` | 5 ideas: `civilian_economy`, `export_focus`, `volunteer_only`, `ETH_chitet_law`, `ETH_chitet_law_peace_time`. What it does is not stated in the files. [unverified] |
 | `cancel_if_invalid = no` | 31 laws in `economy`, `trade_laws` and `mobilization_laws`; the value is always `no`. Its exact effect is not stated in the files. [unverified] |
 | `level` | 11 ideas, all in `mobilization_laws`, with values 1 to 7. |
 | `ledger` | 475 ideas. All 234 `high_command` and all 145 `theorist` ideas set it, because those two slots are `invalid` in `slot_ledgers`; the officer corps spirits set it too. Values used: `army`, `navy`, `air`. |
-| `traits` | 2,012 ideas. 2,008 are in the advisor, chief, theorist, designer and industrial concern slots; 4 are national spirits (`george_v`, `ENG_george_vi`, `HOL_wilhelmina`, `SWE_gustaf_v_idea`). |
+| `traits` | 2,013 ideas. 2,009 are in the advisor, chief, theorist, designer and industrial concern slots; 4 are national spirits (`george_v`, `ENG_george_vi`, `HOL_wilhelmina`, `SWE_gustaf_v_idea`). |
 <!-- kit:end id="idea-cost-defaults" -->
 
 ### Example <a id="Example"></a>
@@ -527,7 +528,7 @@ slot_ledgers = {
 Invalid will require specification in each idea individually.
 
 <!-- kit:begin id="idea-categories-vanilla" at="section:Categories" -->
-**Kit note** What the vanilla file `common/idea_tags/00_idea.txt` shows. All items: [vanilla-confirmed 1.19.3] `common/idea_tags/00_idea.txt`, `common/ideas/`.
+**Kit note** What the vanilla file `common/idea_tags/00_idea.txt` shows. All items: [vanilla-confirmed 1.19.4.1] `common/idea_tags/00_idea.txt`, `common/ideas/`.
 
 - It defines 14 categories. `slot` and `character_slot` lines can repeat, and each repetition is one more slot: `government` has `slot = mobilization_laws`, `trade_laws`, `economy` and three `character_slot = political_advisor` lines; `military_staff` has `army_chief`, `navy_chief`, `air_chief` and three `high_command` lines.
 - The wiki does not mention `type`. Vanilla sets `type = national_spirit` on `country`, `army_spirit` on `academy_spirit`, `army_spirit` and `division_command_spirit`, `navy_spirit` on the three naval spirit categories and `air_spirit` on the three air force ones. The strings are in `hoi4.exe` and the three `*_spirit` types are the targets of the `<IdeaCategory>_category_type_cost_factor` modifier.
@@ -570,7 +571,7 @@ An icon can be defined for idea slots, which will be used for them if there is n
 In other words, the sprite must have the same name as the idea slot but with `GFX_idea_slot_` prepended in the beginning.
 
 <!-- kit:begin id="idea-slot-sprites" at="section:GFX_and_GUI" -->
-**Kit note** Checks against the vanilla interface files. All items: [vanilla-confirmed 1.19.3] `interface/countrypoliticsview.gui`, `interface/countrypoliticsview.gfx`, `interface/`.
+**Kit note** Checks against the vanilla interface files. All items: [vanilla-confirmed 1.19.4.1] `interface/countrypoliticsview.gui`, `interface/countrypoliticsview.gfx`, `interface/`.
 
 - `country_politics_idea_category_entry` has `ideas_grid` with `slotsize = { width = 80 height = 64 }` and `max_slots = { x = 7 y = 1 }`, as the wiki says. `GFX_idea_categories` has `noOfFrames = 6`.
 - Vanilla declares `GFX_idea_slot_<slot>` for 11 slots: `air_chief`, `aircraft_manufacturer`, `army_chief`, `high_command`, `industrial_concern`, `materiel_manufacturer`, `naval_manufacturer`, `navy_chief`, `political_advisor`, `tank_manufacturer`, `theorist`. The three law slots have none. The prefix `GFX_idea_slot_` is also a string in `hoi4.exe`.
@@ -587,10 +588,10 @@ There are two primary ways to fix this. The first one is to simply change the fi
 Additionally, this also means that there have to be ideas defined within character slots for the modifier to work, such as `political_advisor_cost_factor = 0.1`. This is because characters are loaded later than ideas or country leader traits, so they're not loaded yet when evaluating the modifier, causing the error. This can be bypassed by creating ideas for the character slots in `/Hearts of Iron IV/common/ideas/*.txt` files. These will never appear for the countries as these are character slots rather than idea slots, but an idea that was loaded beforehand will correct the error.
 
 <!-- kit:begin id="idea-cost-factor-modifiers" at="section:Modifying_cost_of_a_slot" -->
-**Kit note** The documented modifiers behind this section. All items: [docs] `documentation/modifiers_documentation.md`; use counts are [vanilla-confirmed 1.19.3] `common/`.
+**Kit note** The documented modifiers behind this section. All items: [docs] `documentation/modifiers_documentation.md`; use counts are [vanilla-confirmed 1.19.4.1] `common/`.
 
 - The documentation calls the modifier `<IdeaGroup>_cost_factor` (country category, number). Its 25 valid group names are `academy_spirit`, `air_chief`, `air_force_academy_spirit`, `air_force_command_spirit`, `air_force_spirit`, `aircraft_manufacturer`, `army_chief`, `army_spirit`, `country`, `division_command_spirit`, `economy`, `hidden_ideas`, `high_command`, `industrial_concern`, `materiel_manufacturer`, `mobilization_laws`, `naval_academy_spirit`, `naval_command_spirit`, `naval_manufacturer`, `navy_chief`, `navy_spirit`, `political_advisor`, `tank_manufacturer`, `theorist` and `trade_laws`. Vanilla uses it for the 14 law, advisor, chief, theorist, designer and concern slots, for example `political_advisor_cost_factor` (174 uses), `economy_cost_factor` (158), `mobilization_laws_cost_factor` (146) and `theorist_cost_factor` (10). It never uses the `country_`, `hidden_ideas_` or spirit-category forms.
-- `<IdeaCategory>_category_type_cost_factor` is a separate documented modifier for the three category types `army_spirit`, `navy_spirit` and `air_spirit`. The wiki does not mention it. Vanilla uses `navy_spirit_` in 4 files and `army_spirit_` and `air_spirit_` in 2.
+- `<IdeaCategory>_category_type_cost_factor` is a separate documented modifier for the three category types `army_spirit`, `navy_spirit` and `air_spirit`. The wiki does not mention it. Vanilla uses `navy_spirit_` in 6 files and `army_spirit_` and `air_spirit_` in 2.
 - `disabled_ideas` is a documented boolean country modifier with no description. Vanilla has one use, `disabled_ideas = 1` inside an idea in `common/ideas/spain_republic.txt`. What it disables is not stated. [unverified]
 <!-- kit:end id="idea-cost-factor-modifiers" -->
 

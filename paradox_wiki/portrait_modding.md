@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Portrait modding", revision 97039, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="97039" sources="portraits/ interface/_random_portraits.gfx interface/_leader_portraits.gfx interface/_scientists_portraits.gfx common/characters/ documentation/effects_documentation.md common/countries/cosmetic.txt" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="97039" sources="portraits/ interface/_random_portraits.gfx interface/_leader_portraits.gfx interface/_scientists_portraits.gfx common/characters/ documentation/effects_documentation.md common/countries/cosmetic.txt" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `portraits/00_portraits.txt` and `portraits/998_scientist_portraits.txt`, the five DLC `portraits/` files, the three portrait sprite files in `interface/`, the DDS headers of the portrait images, the `portraits` blocks of 232 files in `common/characters/`, and the portrait effects in `documentation/effects_documentation.md`.
 Kit blocks added: sizes and sprite requirements, the full group and category structure (including the `operative` and `scientist` categories the page lacks), a vanilla tag block, how characters and effects pick a portrait.
 Gaps left: which category the game picks for each leader type and how it chooses among several matching groups is not written in any game file, so the page's rules for that stay as the wiki states them.
+**1.19.4.1 re-check (2026-11-01).** 4 tagged statements depended on files the update changed (`interface/_leader_portraits.gfx`, `gfx/leaders/`, `common/characters/` and `common/countries/cosmetic.txt`), and all of them were re-measured. The character files now use `civilian` 1,505 times, `army` 4,554 and `navy` 42 (earlier 1,217, 3,893 and 38), and the leader portrait size check now covers every sprite whose image is in `gfx/leaders/` (1,124 of 1,126 are 156 by 210). The 496 sprites named in `portraits/` and the 26 without a `spriteType` are unchanged. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -92,11 +93,11 @@ The **navy** paths are used for Naval Commanders.
 The **political** paths are used for country leaders of the specified ideologies.
 
 <!-- kit:begin id="portrait-sizes-sprites" at="section:Portraits" -->
-**Kit note** Sizes and sprites. The page's 156 by 210 is right for the large portrait: all 154 large sprites of `interface/_random_portraits.gfx` and 496 of 498 large sprites checked in `interface/_leader_portraits.gfx` have exactly that size (the other two are 155 by 210 and 156 by 209). The small icon that goes with each is 65 by 67 pixels (154 of 154 in the random file). [vanilla-confirmed 1.19.3] DDS headers of `gfx/leaders/` and `gfx/interface/ideas/`
+**Kit note** Sizes and sprites. The page's 156 by 210 is right for the large portrait: all 154 large sprites of `interface/_random_portraits.gfx` and 1,124 of the 1,126 sprites of `interface/_leader_portraits.gfx` whose image is in `gfx/leaders/` have exactly that size (the other two are 155 by 210 and 156 by 209). The small icon that goes with each is 65 by 67 pixels (154 of 154 in the random file). [vanilla-confirmed 1.19.4.1] DDS headers of `gfx/leaders/` and `gfx/interface/ideas/`
 
 Each name in a `portraits/*.txt` file is a sprite name. The sprite comes from a `spriteType` in an `interface/*.gfx` file: `_random_portraits.gfx` for the generic pools (a large sprite `GFX_Portrait_Europe_Generic_1` and a `..._small` partner; `GFX_Portrait_Africa_Generic_1_small` uses `gfx/interface/ideas/idea_africa_generic_1.dds`), `_leader_portraits.gfx` for named leaders, `_scientists_portraits.gfx` for scientists. [vanilla-confirmed 1.19.3] `interface/_random_portraits.gfx`
 
-Vanilla `portraits/` files name 496 distinct sprites, and 26 of them (for example `GFX_portrait_Britain_generic_navy_4`) have no `spriteType` in any `.gfx` file. The base game ships with these dead entries, so a missing sprite is not fatal, but it can never show an image. [vanilla-confirmed 1.19.3] `portraits/00_portraits.txt`, `interface/`. That the game only logs the problem is a guess. [unverified] `portraits/00_portraits.txt`
+Vanilla `portraits/` files name 496 distinct sprites, and 26 of them (for example `GFX_portrait_Britain_generic_navy_4`) have no `spriteType` in any `.gfx` file. The base game ships with these dead entries, so a missing sprite is not fatal, but it can never show an image. [vanilla-confirmed 1.19.4.1] `portraits/00_portraits.txt`, `interface/`. That the game only logs the problem is a guess. [unverified] `portraits/00_portraits.txt`
 <!-- kit:end id="portrait-sizes-sprites" -->
 
 <!-- kit:begin id="portrait-structure" at="section:Portraits" -->
@@ -116,7 +117,7 @@ All rows: [vanilla-confirmed 1.19.3] `portraits/00_portraits.txt`, `portraits/99
 
 The `operative` and `scientist` categories are missing from the page. A continent block repeats in the DLC files (`01_anniversary_portraits.txt`, `02_tiger_portraits.txt`, `03_mtg_portraits.txt`), so a later file adds to a continent pool; that it appends rather than replaces is an inference. [vanilla-confirmed 1.19.3] `dlc/dlc021_anniversary_pack/portraits/`, `integrated_dlc/dlc022_waking_the_tiger/portraits/`. [unverified] for the append rule.
 
-Vanilla tag blocks also exist for cosmetic tags (`RAJ_UK`, `MAL_UK`, `INS_HOL`, `SAF_COM`, `ETH_african_union`). `RAJ_UK`, `MAL_UK` and `INS_HOL` are defined in `common/countries/cosmetic.txt`. [vanilla-confirmed 1.19.3] `portraits/00_portraits.txt`, `common/countries/cosmetic.txt`. That the game looks up the active cosmetic tag is an inference. [unverified] `portraits/00_portraits.txt`
+Vanilla tag blocks also exist for cosmetic tags (`RAJ_UK`, `MAL_UK`, `INS_HOL`, `SAF_COM`, `ETH_african_union`). `RAJ_UK`, `MAL_UK` and `INS_HOL` are defined in `common/countries/cosmetic.txt`. [vanilla-confirmed 1.19.4.1] `portraits/00_portraits.txt`, `common/countries/cosmetic.txt`. That the game looks up the active cosmetic tag is an inference. [unverified] `portraits/00_portraits.txt`
 
 ```text
 FIN = {
@@ -142,7 +143,7 @@ Shortened from vanilla. [vanilla-confirmed 1.19.3] `portraits/00_portraits.txt`
 <!-- kit:begin id="portrait-references" at="section:Portraits" -->
 **Kit addition** Other ways a portrait is chosen. See [Character modding](<character_modding.md>) for the full character syntax.
 
-- A character in `common/characters/*.txt` names its own sprites: `portraits = { civilian = { large = GFX_portrait_GER_adolf_hitler small = GFX_portrait_GER_eva_braun_small } }`. Over the 232 vanilla character files, `civilian` is used 1217 times, `army` 3893 and `navy` 38, each with `large` and/or `small`. [vanilla-confirmed 1.19.3] `common/characters/GER.txt`, `common/characters/`
+- A character in `common/characters/*.txt` names its own sprites: `portraits = { civilian = { large = GFX_portrait_GER_adolf_hitler small = GFX_portrait_GER_eva_braun_small } }`. Over the 232 vanilla character files, `civilian` is used 1505 times, `army` 4554 and `navy` 42, each with `large` and/or `small`. [vanilla-confirmed 1.19.4.1] `common/characters/GER.txt`, `common/characters/`
 - The effects `set_portraits`, `set_country_leader_portrait` and `set_leader_portrait` change a portrait at runtime. `set_portraits` takes the character file syntax (`army = { small = ... }`, `civilian = { large = ... }`). [docs] `documentation/effects_documentation.md`
 - `generate_scientist_character` takes an optional `portrait = GFX_...` (a random one by default) and `portrait_tag_override = TAG`, which makes the random pick use another country's pool. `create_operative_leader` documents the same `portrait_tag_override`, and a `gfx = GFX_...` key for a chosen sprite. [docs] `documentation/effects_documentation.md`
 - A random pick is the case where no sprite is given. For it the game uses the pools above, matched on country (the tag block, else the capital's continent, else `default`), role (army, navy, political, operative, scientist) and gender. This is the page's account; the lookup order is not written in a game file. [unverified] `portraits/00_portraits.txt`

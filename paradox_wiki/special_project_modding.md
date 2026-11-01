@@ -1,12 +1,13 @@
 # Special project modding
 
-*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files. The wiki has no page for this topic. CC BY-SA 3.0 (see LICENSE.txt).*
+*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files and re-checked against 1.19.4.1. The wiki has no page for this topic. CC BY-SA 3.0 (see LICENSE.txt).*
 <!-- kit:page -->
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" sources="common/special_projects/ common/scientist_traits/ common/characters/_documentation.md common/script_constants/ common/buildings/00_buildings.txt common/defines/00_defines.lua common/ai_strategy/default.txt common/on_actions/12_wuw_on_actions.txt documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md documentation/dynamic_variables_documentation.md documentation/console_commands_documentation.md interface/special_projects/ localisation/english/special_projects_l_english.yml" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" sources="common/special_projects/ common/scientist_traits/ common/characters/_documentation.md common/script_constants/ common/buildings/00_buildings.txt common/defines/00_defines.lua common/ai_strategy/default.txt common/on_actions/12_wuw_on_actions.txt documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md documentation/dynamic_variables_documentation.md documentation/console_commands_documentation.md interface/special_projects/ localisation/english/special_projects_l_english.yml" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Written from: the four documentation files and every vanilla file in `common/special_projects/` (49 projects, 82 generic and 87 unique prototype rewards, 4 specializations, 13 tags), `common/scientist_traits/` (21 traits), the 102 vanilla scientist characters, the facility buildings, the `NProject` defines, script constants, localisation, interface GFX and the effect, trigger, modifier, dynamic-variable and console documentation.
 Also checked: use counts in `common/`, `events/` and `history/`, and (read-only string search) whether `hoi4.exe` contains the keys on which the documentation files disagree.
 Gaps left: reward selection details, the AI's choice between reward options, the scope of `fire_only_once` and the real default skill level of a scientist are not settled by any game file; they are tagged `[unverified]`. No game was run.
+**1.19.4.1 re-check (2026-11-01).** 56 statements depended on files the update changed (`nuclear_projects.txt`, technologies, characters, history, localisation, `unitleaderwindow.gfx`, AI strategies, on actions and the folders behind the use counts), and all 56 were re-measured. Changed or corrected: `ai_will_do` is now set on 2 nuclear projects (29 to 31 projects, `ROOT = { }` uses 22 to 24), `is_special_project_completed` 175 to 179 uses, `sp:` lines 187 to 190, `add_equipment_bonus` 125 to 124, localisation 1448 to 1450 lines, 21 to 22 trait sprites (one unused), a second use of `on_project_completion` (USA), `SP_UNLOCK_RAID` living in the raids localisation, five used speed factors without a `_tt` key, `enable_*` counts restated as blocks, and `pp_spend_priority` being listed in the AI strategy documentation. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -46,9 +47,9 @@ Gaps left: reward selection details, the AI's choice between reward options, the
 
 ---
 
-Special projects are long research programs run by a scientist inside a facility building. Each project is one node of a tree per specialization. Researching it costs breakthrough points, resources and time. While it runs it rolls random prototype rewards, and when it completes it unlocks equipment, modules, sub-units, buildings or plain effects. Raids can damage the facility and its project (see [Raid modding](<raid_modding.md>)). 34 of the 49 vanilla projects are gated by `has_dlc` in `allowed` (28 need Gotterdammerung); 15 are not [vanilla-confirmed 1.19.3] `common/special_projects/projects/*.txt`.
+Special projects are long research programs run by a scientist inside a facility building. Each project is one node of a tree per specialization. Researching it costs breakthrough points, resources and time. While it runs it rolls random prototype rewards, and when it completes it unlocks equipment, modules, sub-units, buildings or plain effects. Raids can damage the facility and its project (see [Raid modding](<raid_modding.md>)). 34 of the 49 vanilla projects are gated by `has_dlc` in `allowed` (28 need Gotterdammerung); 15 are not [vanilla-confirmed 1.19.4.1] `common/special_projects/projects/*.txt`.
 
-Evidence tags used on this page: `[docs]` = the game's own documentation, `[vanilla-confirmed 1.19.3]` = seen in vanilla script, `[unverified]` = plausible but not confirmed. File names in tags are relative to the game folder; `sp/` stands for `common/special_projects/`.
+Evidence tags used on this page: `[docs]` = the game's own documentation, `[vanilla-confirmed 1.19.3]` and `[vanilla-confirmed 1.19.4.1]` = seen in the vanilla script of that build, `[unverified]` = plausible but not confirmed. File names in tags are relative to the game folder; `sp/` stands for `common/special_projects/`.
 
 ## Overview <a id="Overview"></a>
 
@@ -94,17 +95,17 @@ Other engine rules from the `NProject` defines [vanilla-confirmed 1.19.3] `commo
 | `common/buildings/*.txt` | facility buildings | normal building definitions | `00_buildings.txt`, 4 facilities |
 | `common/script_constants/special_project_constants.txt` | constants used by projects | see [Script constants](#Script_constants) | 6 constant groups |
 | `common/scripted_effects/SP_scripted_effects.txt` | variant-creation helper effects | scripted effects | 6 |
-| `localisation/<language>/special_projects_l_english.yml` | text | yml | 1448 lines |
+| `localisation/<language>/special_projects_l_english.yml` | text | yml | 1450 lines |
 | `interface/special_projects.gfx`, `interface/special_projects/project.gfx` | sprites | spriteTypes | see [GFX](#GFX) |
-| `interface/unitleaderwindow.gfx` | scientist trait icons | spriteTypes | 21 trait sprites |
+| `interface/unitleaderwindow.gfx` | scientist trait icons | spriteTypes | 22 sprites (21 for traits, one unused: `GFX_scientist_trait_mentor`) |
 
-All rows: [vanilla-confirmed 1.19.3] for the paths and counts. Folder roles are also stated in [docs] `sp/projects/documentation.md`, `sp/prototype_rewards/documentation.md`, `sp/specialization/documentation.md`, `common/scientist_traits/_documentation.md`.
+All rows: [vanilla-confirmed 1.19.4.1] for the paths and counts. Folder roles are also stated in [docs] `sp/projects/documentation.md`, `sp/prototype_rewards/documentation.md`, `sp/specialization/documentation.md`, `common/scientist_traits/_documentation.md`.
 
-- Vanilla splits projects by area (one file each) and generic rewards by area (one file each); nothing in the documentation requires that split [vanilla-confirmed 1.19.3].
+- Vanilla splits projects by area (one file each) and generic rewards by area (one file each); nothing in the documentation requires that split [vanilla-confirmed 1.19.4.1].
 - `@name = value` script variables at the top of a reward file are file-local: `generic_air_`, `generic_land_` and `generic_naval_prototype_rewards.txt` each define `@base_reward_weight = 2` and `@reward_weight_factor_theme = 0.25` [vanilla-confirmed 1.19.3] `sp/prototype_rewards/generic_*_prototype_rewards.txt`.
 - The documentation says nothing about two files defining the same id. To replace a vanilla project, reward or trait, follow the general override rule on [Mod structure](<mod_structure.md>) and keep the same relative path [unverified].
 
-**Do not use `sp/special_projects_documentation.md` as the schema.** It is an early design draft. It shows `special_project_type`, `prototype_cost`, `threshold_min`, `threshold_max`, an `effects` block inside options, `main_scientist`, `every_scientist_in_facility`, `facility_model` and `special_project_sub_specializations`. None of these appears in any vanilla file, and none of them is a string in `hoi4.exe` (read-only search). The shipped schema is in the three `documentation.md` files, and the vanilla files follow it [vanilla-confirmed 1.19.3] `sp/**/*.txt`; that the engine ignores the draft keys is [unverified].
+**Do not use `sp/special_projects_documentation.md` as the schema.** It is an early design draft. It shows `special_project_type`, `prototype_cost`, `threshold_min`, `threshold_max`, an `effects` block inside options, `main_scientist`, `every_scientist_in_facility`, `facility_model` and `special_project_sub_specializations`. None of these appears in any vanilla file, and none of them is a string in `hoi4.exe` (read-only search). The shipped schema is in the three `documentation.md` files, and the vanilla files follow it [vanilla-confirmed 1.19.4.1] `sp/**/*.txt`; that the engine ignores the draft keys is [unverified].
 
 ## Specializations and facilities <a id="Specializations_and_facilities"></a>
 
@@ -121,7 +122,7 @@ All rows: [docs] `sp/specialization/documentation.md`. Counts: [vanilla-confirme
 
 Vanilla colours are nuclear `{ 255 255 0 }`, naval `{ 0 0 255 }`, air `{ 255 0 0 }`, land `{ 0 255 0 }`, which read as RGB although the documentation labels the order `<b, r, g>` [vanilla-confirmed 1.19.3] `sp/specialization/specializations.txt`.
 
-The specialization id is localised by `<id>` and, in vanilla, `<id>_short` (`specialization_nuclear` is "Nuclear Research", `specialization_nuclear_short` is "Physics") [vanilla-confirmed 1.19.3] `localisation/english/special_projects_l_english.yml`; a `TAG_<id>` key is tried first [docs].
+The specialization id is localised by `<id>` and, in vanilla, `<id>_short` (`specialization_nuclear` is "Nuclear Research", `specialization_nuclear_short` is "Physics") [vanilla-confirmed 1.19.4.1] `localisation/english/special_projects_l_english.yml`; a `TAG_<id>` key is tried first [docs].
 
 ### Facility buildings <a id="Facility_buildings"></a>
 
@@ -150,22 +151,22 @@ air_facility = {
 ```
 
 - `tags = { facility }` is what raids and `damage_building` use to find a facility (`damage_building = { tags = facility ... }`, raid target `building = { tags = facility }`) [vanilla-confirmed 1.19.3] `common/raids/air_raids.txt`, `sp/prototype_rewards/generic_nuclear_prototype_rewards.txt`.
-- `spawn_point = special_project_facility_spawn` is a province spawn point with `max = 1`, and `group_by = special_project_facility` puts the four facility types in one group with a shared slot limit [vanilla-confirmed 1.19.3] `common/buildings/00_buildings.txt`. The positions come from rows named `special_project_facility_spawn` in `map/buildings.txt` (10154 rows in vanilla) [vanilla-confirmed 1.19.3]; see the Spawn point section of [Building modding](<building_modding.md#Spawn_point>).
-- Facilities are placed in `history/states/*.txt` as province buildings (`1939.1.1 = { buildings = { 9448 = { air_facility = 1 } } }`, 16 state files), or built by focuses with `add_building_construction = { type = land_facility level = 1 instant_build = yes province = <id> }` (for example `common/national_focus/belgium.txt`) [vanilla-confirmed 1.19.3].
-- A project unlocks a building through a technology it sets: `nuclear_reactor` carries `hide_if_missing_tech = yes` and `missing_tech_loc = { localization_key = SP_BUILDING_MISSING_PROJECT PROJECT = sp_nuclear_reactor }`, and the project's `country_effects` run `set_technology = { nuclear_reactor = 1 popup = no }` while `facility_state_effects` run `set_building_level = { type = nuclear_reactor level = 1 }` [vanilla-confirmed 1.19.3] `common/buildings/00_buildings.txt`, `sp/projects/nuclear_projects.txt`.
+- `spawn_point = special_project_facility_spawn` is a province spawn point with `max = 1`, and `group_by = special_project_facility` puts the four facility types in one group with a shared slot limit [vanilla-confirmed 1.19.3] `common/buildings/00_buildings.txt`. The positions come from rows named `special_project_facility_spawn` in `map/buildings.txt` (10154 rows in vanilla) [vanilla-confirmed 1.19.4.1]; see the Spawn point section of [Building modding](<building_modding.md#Spawn_point>).
+- Facilities are placed in `history/states/*.txt` as province buildings (`1939.1.1 = { buildings = { 9448 = { air_facility = 1 } } }`, 16 state files), or built by focuses with `add_building_construction = { type = land_facility level = 1 instant_build = yes province = <id> }` (for example `common/national_focus/belgium.txt`) [vanilla-confirmed 1.19.4.1].
+- A project unlocks a building through a technology it sets: `nuclear_reactor` carries `hide_if_missing_tech = yes` and `missing_tech_loc = { localization_key = SP_BUILDING_MISSING_PROJECT PROJECT = sp_nuclear_reactor }`, and the project's `country_effects` run `set_technology = { nuclear_reactor = 1 popup = no }` while `facility_state_effects` run `set_building_level = { type = nuclear_reactor level = 1 }` [vanilla-confirmed 1.19.4.1] `common/buildings/00_buildings.txt`, `sp/projects/nuclear_projects.txt`.
 - Further building keys: [Building modding](<building_modding.md#Additional_arguments>).
 
 ### Technologies and breakthrough points <a id="Technologies_and_breakthrough"></a>
 
-Technologies carry `special_project_specialization = { specialization_x ... }` (338 lines in 10 files under `common/technologies/`; air, land, naval and nuclear are used, and some technologies list two) [vanilla-confirmed 1.19.3]. The `NProject` defines and the program texts describe "basic research" by a scientist in a matching facility: a research bonus on technologies of that specialization (`BASIC_RESEARCH_TECHNOLOGY_BONUS_FACTOR = 0.02` per skill level) and daily breakthrough progress (`BREAKTHROUGH_DAILY_TECHNOLOGY_GAIN = 12` and `BREAKTHROUGH_DAILY_SCIENTIST_SKILL_GAIN = 5` hundredths of a percent) [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`, `localisation/english/special_projects_l_english.yml` (`PROGRAM_BASIC_RESEARCH*`). That basic research is what a facility without a project does is likely but not stated [unverified]. Progress `1.0` is probably one point, since the constants are `sp_breakthrough_progress` low 0.1, medium 0.25, high 0.5 and the UI shows progress as a percentage [unverified].
+Technologies carry `special_project_specialization = { specialization_x ... }` (338 lines in 10 files under `common/technologies/`; air, land, naval and nuclear are used, and some technologies list two) [vanilla-confirmed 1.19.4.1]. The `NProject` defines and the program texts describe "basic research" by a scientist in a matching facility: a research bonus on technologies of that specialization (`BASIC_RESEARCH_TECHNOLOGY_BONUS_FACTOR = 0.02` per skill level) and daily breakthrough progress (`BREAKTHROUGH_DAILY_TECHNOLOGY_GAIN = 12` and `BREAKTHROUGH_DAILY_SCIENTIST_SKILL_GAIN = 5` hundredths of a percent) [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`, `localisation/english/special_projects_l_english.yml` (`PROGRAM_BASIC_RESEARCH*`). That basic research is what a facility without a project does is likely but not stated [unverified]. Progress `1.0` is probably one point, since the constants are `sp_breakthrough_progress` low 0.1, medium 0.25, high 0.5 and the UI shows progress as a percentage [unverified].
 
 ### Project tags <a id="Project_tags"></a>
 
-`sp/project_tags/tags.txt` lists the known tags in one `project_tags = { }` block, and a project joins one or more with `project_tags = sp_tag_tank` or `project_tags = { sp_tag_aircraft sp_tag_jet }`. The file's own comment says tags exist to generate modifiers. Vanilla tags: `sp_tag_tank`, `sp_tag_artillery`, `sp_tag_surface_ship`, `sp_tag_submarine`, `sp_tag_nuclear_warfare`, `sp_tag_nuclear_power`, `sp_tag_aircraft`, `sp_tag_rocket`, `sp_tag_helicopter`, `sp_tag_jet`, `sp_tag_bomb`, `sp_tag_guided_bomb`, `sp_tag_radar` [vanilla-confirmed 1.19.3] `sp/project_tags/tags.txt`. All 49 projects use only these tags [vanilla-confirmed 1.19.3]. Each tag is localised by its own id ("Tank Projects") [vanilla-confirmed 1.19.3] `localisation/english/special_projects_l_english.yml`. A custom tag has to be added to `tags.txt` before a project can use it [unverified]. `project_tags` is not described in `sp/projects/documentation.md`; 49 of 49 vanilla projects use it and the key is a string in `hoi4.exe`. `sp_air_radar` repeats the key twice, which loads fine [vanilla-confirmed 1.19.3] `sp/projects/radar_projects.txt`.
+`sp/project_tags/tags.txt` lists the known tags in one `project_tags = { }` block, and a project joins one or more with `project_tags = sp_tag_tank` or `project_tags = { sp_tag_aircraft sp_tag_jet }`. The file's own comment says tags exist to generate modifiers. Vanilla tags: `sp_tag_tank`, `sp_tag_artillery`, `sp_tag_surface_ship`, `sp_tag_submarine`, `sp_tag_nuclear_warfare`, `sp_tag_nuclear_power`, `sp_tag_aircraft`, `sp_tag_rocket`, `sp_tag_helicopter`, `sp_tag_jet`, `sp_tag_bomb`, `sp_tag_guided_bomb`, `sp_tag_radar` [vanilla-confirmed 1.19.3] `sp/project_tags/tags.txt`. All 49 projects use only these tags [vanilla-confirmed 1.19.4.1]. Each tag is localised by its own id ("Tank Projects") [vanilla-confirmed 1.19.4.1] `localisation/english/special_projects_l_english.yml`. A custom tag has to be added to `tags.txt` before a project can use it [unverified]. `project_tags` is not described in `sp/projects/documentation.md`; 49 of 49 vanilla projects use it and the key is a string in `hoi4.exe`. `sp_air_radar` repeats the key twice, which loads fine [vanilla-confirmed 1.19.3] `sp/projects/radar_projects.txt`.
 
 ## Project definition <a id="Project_definition"></a>
 
-A project is `<project_id> = { ... }` in `sp/projects/`. Evidence for the table: [docs] `sp/projects/documentation.md` for keys, defaults and scopes; the last column is [vanilla-confirmed 1.19.3] `sp/projects/*.txt` (49 projects).
+A project is `<project_id> = { ... }` in `sp/projects/`. Evidence for the table: [docs] `sp/projects/documentation.md` for keys, defaults and scopes; the last column is [vanilla-confirmed 1.19.4.1] `sp/projects/*.txt` (49 projects).
 
 | Key | Value | Default and rules | Vanilla |
 | --- | --- | --- | --- |
@@ -182,7 +183,7 @@ A project is `<project_id> = { ... }` in `sp/projects/`. Evidence for the table:
 | `narrative` | `{ name = key desc = key }` | name key `TAG_<id>` then `<id>`; desc key `TAG_<id>_desc` then `<id>_desc` | 0 |
 | `icon` | GFX name | `GFX_<icon>`, then `GFX_TAG_<id>`, then `GFX_<id>`, then `GFX_PLACEHOLDER_sp_project_icon` | 21 |
 | `blueprint_image` | GFX name, background while researching | overrides the specialization's | 0 |
-| `ai_will_do` | weight block | default 1 | 29 (none in air or nuclear files) |
+| `ai_will_do` | weight block | default 1 | 31 (none in air files) |
 | `empty_reward_weight` | weight block (`base`, `modifier`) | default `DEFAULT_EMPTY_REWARD_WEIGHT = 1.0`; weight of "no reward" after an iteration | 5 (`base = 0.5`) |
 | `project_output` | output block | effects when complete | 49 |
 | `unique_prototype_rewards` | rewards only this project can draw | | 43 |
@@ -204,7 +205,7 @@ The `sp_air_radar` project also shows the explicit-icon case: no sprite `GFX_sp_
 | `scientist_effects` | character (the scientist) | project | skipped when no scientist exists |
 | `limit` inside `enable_*` | n/a | n/a | only `has_dlc` is accepted |
 
-Rows: [docs] `sp/projects/documentation.md`, `sp/prototype_rewards/documentation.md`. Vanilla follows the `available`/`FROM` rule in 41 `FROM = { }` wrappers and the weight rule in `has_project_flag`, `var:scientist` and `FROM = { has_country_flag = ... }` weights [vanilla-confirmed 1.19.3] `sp/projects/*.txt`, `sp/prototype_rewards/*.txt`.
+Rows: [docs] `sp/projects/documentation.md`, `sp/prototype_rewards/documentation.md`. Vanilla follows the `available`/`FROM` rule in 41 `FROM = { }` wrappers and the weight rule in `has_project_flag`, `var:scientist` and `FROM = { has_country_flag = ... }` weights [vanilla-confirmed 1.19.4.1] `sp/projects/*.txt`, `sp/prototype_rewards/*.txt`.
 
 ### Output blocks <a id="Output_blocks"></a>
 
@@ -215,24 +216,24 @@ Rows: [docs] `sp/projects/documentation.md`, `sp/prototype_rewards/documentation
 | `country_effects` | normal country effects | 49 projects (`sp_naval_aip_engine` writes the block twice), 233 reward options |
 | `facility_state_effects` | state-scope effects, `var:facility_province_id` | 8 projects, 11 reward options |
 | `scientist_effects` | character-scope effects | 6 projects, 57 reward options |
-| `enable_equipments` | list of equipment variant ids; optional `limit = { has_dlc = ... }` | 45 projects |
-| `enable_equipment_modules` | list of module ids; optional `limit` | 27 projects, 2 reward options |
+| `enable_equipments` | list of equipment variant ids; optional `limit = { has_dlc = ... }` | 45 blocks in 31 projects |
+| `enable_equipment_modules` | list of module ids; optional `limit` | 27 blocks in 24 projects, 2 reward options |
 | `enable_subunits` | list of sub-unit ids; optional `limit` | 17 projects |
 | `equipment_bonus` | `{ <equipment type> = { stat = value } }` like ideas, optional `name`, `instant = yes` | 48 reward options, 0 projects |
 | `sub_unit_bonus` | same shape as a technology's sub-unit bonus | 0 (documented only) |
 
-Rows: documented content [docs] `sp/projects/documentation.md`; counts [vanilla-confirmed 1.19.3] `sp/projects/*.txt`, `sp/prototype_rewards/*.txt`. `limit` in the three `enable_*` lists accepts only `has_dlc` [docs].
+Rows: documented content [docs] `sp/projects/documentation.md`; counts [vanilla-confirmed 1.19.4.1] `sp/projects/*.txt`, `sp/prototype_rewards/*.txt`. `limit` in the three `enable_*` lists accepts only `has_dlc` [docs].
 
-Two patterns recur in vanilla output blocks [vanilla-confirmed 1.19.3] `sp/projects/*.txt`:
+Two patterns recur in vanilla output blocks [vanilla-confirmed 1.19.4.1] `sp/projects/*.txt`:
 
 - Unlocking a technology: `set_technology = { <tech> = 1 popup = no }` inside `country_effects`, wrapped in `custom_override_tooltip` or followed by `custom_effect_tooltip = { localization_key = SP_UNLOCK_TECH TECH = <tech> }`.
-- Equipment bonuses in two forms: the documented `equipment_bonus = { armor = { armor_value = 0.02 } }` block next to `country_effects`, and the effect `add_equipment_bonus = { name = <loc key> bonus = { <type> = { stat = value instant = yes } } }` inside `country_effects` (125 uses). `add_equipment_bonus` also accepts `project = FROM` to take its name from the project [docs] `documentation/effects_documentation.md`.
+- Equipment bonuses in two forms: the documented `equipment_bonus = { armor = { armor_value = 0.02 } }` block next to `country_effects`, and the effect `add_equipment_bonus = { name = <loc key> bonus = { <type> = { stat = value instant = yes } } }` inside `country_effects` (124 uses). `add_equipment_bonus` also accepts `project = FROM` to take its name from the project [docs] `documentation/effects_documentation.md`.
 
 ## Prototype rewards <a id="Prototype_rewards"></a>
 
-A reward is `<reward_id> = { ... }`. Generic rewards live in `sp/prototype_rewards/` and a project lists them in `generic_prototype_rewards`. Unique rewards sit inline in the project's `unique_prototype_rewards`, with the same format. A nameless inline block is documented as an "anonymous" reward that only effects can reach; vanilla has none [docs] `sp/projects/documentation.md`, [vanilla-confirmed 1.19.3].
+A reward is `<reward_id> = { ... }`. Generic rewards live in `sp/prototype_rewards/` and a project lists them in `generic_prototype_rewards`. Unique rewards sit inline in the project's `unique_prototype_rewards`, with the same format. A nameless inline block is documented as an "anonymous" reward that only effects can reach; vanilla has none [docs] `sp/projects/documentation.md`, [vanilla-confirmed 1.19.4.1].
 
-Evidence for the table: [docs] `sp/prototype_rewards/documentation.md`; counts [vanilla-confirmed 1.19.3] over 82 generic and 87 unique rewards.
+Evidence for the table: [docs] `sp/prototype_rewards/documentation.md`; counts [vanilla-confirmed 1.19.4.1] over 82 generic and 87 unique rewards.
 
 | Key | Value | Default and rules | Vanilla |
 | --- | --- | --- | --- |
@@ -254,7 +255,7 @@ Notes:
 - **Window.** The doc text says the minimum is inside the window and the maximum is not ("from 0 up to and not including 60"), although its interval notation `(Min, Max]` says the opposite. Write windows so that neither reading matters, for example by not relying on the exact edge value [docs] `sp/prototype_rewards/documentation.md`.
 - **Needs a game run** [unverified] Which edge is inside the window is settled only by a run: with `threshold = { min = 25 max = 45 }`, see whether the reward can fire at exactly 25 and at exactly 45 progress.
 - **Once per what.** `fire_only_once = yes` limits a reward to one firing, but the documentation does not say whether that is per project, per country or per facility [unverified]. **Needs a game run:** let a `fire_only_once` reward fire once, then see whether another facility, project or country can still draw it.
-- **Progress scale.** The old draft describes 0 to 1 thresholds; vanilla uses 0 to 100 (for example `min = 25 max = 45`) [vanilla-confirmed 1.19.3] `sp/projects/nuclear_projects.txt`.
+- **Progress scale.** The old draft describes 0 to 1 thresholds; vanilla uses 0 to 100 (for example `min = 25 max = 45`) [vanilla-confirmed 1.19.4.1] `sp/projects/nuclear_projects.txt`.
 - **Drawing a reward.** After each iteration the game weighs the eligible rewards of the project together with the empty outcome (`empty_reward_weight`) and draws one. Eligible means the progress is inside `threshold`, `allowed` is true and a `fire_only_once` reward has not fired yet. This reading comes from the weight and threshold descriptions; no document spells out the algorithm [unverified].
 - **Themes.** Vanilla generic rewards reduce repeats of one theme by setting a project flag in the output (`FROM = { set_project_flag = <flag> }`) and multiplying the weight when `has_project_flag = <flag>` is true (`factor = @reward_weight_factor_theme`) [vanilla-confirmed 1.19.3] `sp/prototype_rewards/generic_land_prototype_rewards.txt`.
 - **Weights.** Three nuclear generic rewards write `weight = { factor = 1.0 }` instead of `base`. It equals the default weight, but `base` is the documented key [vanilla-confirmed 1.19.3] `sp/prototype_rewards/generic_nuclear_prototype_rewards.txt`.
@@ -264,7 +265,7 @@ Notes:
 
 ### Scientist role <a id="Scientist_role"></a>
 
-A scientist is a character with a `scientist = { }` role. Keys [docs] `common/characters/_documentation.md`; counts over the 102 vanilla scientist characters [vanilla-confirmed 1.19.3] `common/characters/*.txt`:
+A scientist is a character with a `scientist = { }` role. Keys [docs] `common/characters/_documentation.md`; counts over the 102 vanilla scientist characters [vanilla-confirmed 1.19.4.1] `common/characters/*.txt`:
 
 | Key | Value | Default | Vanilla |
 | --- | --- | --- | --- |
@@ -273,9 +274,9 @@ A scientist is a character with a `scientist = { }` role. Keys [docs] `common/ch
 | `skills` | `{ specialization_x = level ... }` | the docs say every specialization starts at level 1 | 102: level 2 in 83 entries, 1 in 11, 3 in 9 |
 | `visible` | trigger, `ROOT` = the character; use `owner = { ... }` for the country | yes | 23 (`owner = { has_completed_focus = ... }`) |
 
-- Vanilla scientists carry a `large` portrait, almost always in the `army` block (`army` 101 blocks, 19 of them also with `small`; `civilian` 3; `navy` 1), and are put into a country with `recruit_character = <id>` in `history/countries/*.txt` (102 of 102; none in `common/` or `events/`) [vanilla-confirmed 1.19.3].
-- Exactly one vanilla scientist lists two specializations (`SOV_igor_kurchatov`: nuclear 2 and naval 2) [vanilla-confirmed 1.19.3] `common/characters/SOV.txt`.
-- `common/characters/_documentation.md` still says the traits come from the country-leader trait database until a scientist trait database exists. That database now exists (`common/scientist_traits/`), and vanilla scientists use only `scientist_trait_*` ids [docs], [vanilla-confirmed 1.19.3].
+- Vanilla scientists carry a `large` portrait, almost always in the `army` block (`army` 101 blocks, 19 of them also with `small`; `civilian` 3; `navy` 1), and are put into a country with `recruit_character = <id>` in `history/countries/*.txt` (102 of 102; none in `common/` or `events/`) [vanilla-confirmed 1.19.4.1].
+- Exactly one vanilla scientist lists two specializations (`SOV_igor_kurchatov`: nuclear 2 and naval 2) [vanilla-confirmed 1.19.4.1] `common/characters/SOV.txt`.
+- `common/characters/_documentation.md` still says the traits come from the country-leader trait database until a scientist trait database exists. That database now exists (`common/scientist_traits/`), and vanilla scientists use only `scientist_trait_*` ids [docs], [vanilla-confirmed 1.19.4.1].
 - Default skill level: the character documentation says every specialization starts at 1. Vanilla focus code, however, filters scientists with `has_scientist_level = { level > 0 ... }`, which would be pointless if everyone had level 1 [unverified].
 - Wiki page: [Character modding](<character_modding.md#Scientists>).
 
@@ -283,7 +284,7 @@ An effect can also create or strip the role (`add_scientist_role`, `remove_scien
 
 ### Levels and experience <a id="Levels_and_experience"></a>
 
-Levels run 0 to 5 per specialization. Values come from `NProject` in `common/defines/00_defines.lua`, names from `localisation/english/special_projects_l_english.yml` [vanilla-confirmed 1.19.3].
+Levels run 0 to 5 per specialization. Values come from `NProject` in `common/defines/00_defines.lua`, names from `localisation/english/special_projects_l_english.yml` [vanilla-confirmed 1.19.4.1].
 
 | Level | Name | Speed modifier on the project | XP needed to reach it from the level below |
 | --- | --- | --- | --- |
@@ -296,7 +297,7 @@ Levels run 0 to 5 per specialization. Values come from `NProject` in `common/def
 
 - Experience constants for rewards: `sp_scientist_xp_gain` low 70, medium 100, high 150, very_high 200 [vanilla-confirmed 1.19.3] `common/script_constants/special_project_constants.txt`.
 - Daily XP for basic research is `SCIENTIST_BASIC_RESEARCH_DAILY_XP_GAIN = 0.28`; recruiting a scientist costs 25, 50, 75 or 100 political power depending on how many are already available; a randomly generated recruit has a 35% chance of one trait; removing a scientist takes 10 days [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
-- Supportive scientists: a facility takes up to 3 (`AMOUNT_OF_SUPPORTIVE_SCIENTISTS`) at 25% effectiveness, assigning a supportive scientist from the faction costs `FACTION_ASSIGN_SCIENTIST_COST = 25` political power, and `can_assign_supportive_scientist_to_faction = specialization_x` tests for a free slot [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`, `common/ai_strategy/default.txt`.
+- Supportive scientists: a facility takes up to 3 (`AMOUNT_OF_SUPPORTIVE_SCIENTISTS`) at 25% effectiveness, assigning a supportive scientist from the faction costs `FACTION_ASSIGN_SCIENTIST_COST = 25` political power, and `can_assign_supportive_scientist_to_faction = specialization_x` tests for a free slot [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`, `common/ai_strategy/default.txt`.
 - An injured scientist (`injure_scientist_for_days`) applies `SCIENTIST_INJURED_FACTOR = 0.0` to progress [vanilla-confirmed 1.19.3]; what factor 0.0 means in practice is not stated [unverified].
 
 ### Scientist traits <a id="Scientist_traits"></a>
@@ -321,13 +322,13 @@ Vanilla traits [vanilla-confirmed 1.19.3] `common/scientist_traits/00_traits.txt
 - Naval: `submarine_specialist`, `surface_ship_specialist`.
 - Nuclear: `nuclear_specialist` (`specialization_nuclear_speed_factor`), `nuclear_warfare_expert`, `nuclear_power_expert`.
 
-**Doc example trap.** The example in `common/scientist_traits/_documentation.md` uses `special_project_prototype_speed_factor = 0.5`. That modifier is not in `documentation/modifiers_documentation.md`, vanilla never uses it, and the string is not in `hoi4.exe`. The modifier that exists is `special_project_speed_factor` [docs], [vanilla-confirmed 1.19.3]; that the unknown name is silently ignored is [unverified].
+**Doc example trap.** The example in `common/scientist_traits/_documentation.md` uses `special_project_prototype_speed_factor = 0.5`. That modifier is not in `documentation/modifiers_documentation.md`, vanilla never uses it, and the string is not in `hoi4.exe`. The modifier that exists is `special_project_speed_factor` [docs], [vanilla-confirmed 1.19.4.1]; that the unknown name is silently ignored is [unverified].
 
 ## Script interface <a id="Script_interface"></a>
 
 ### Effects <a id="Effects"></a>
 
-Parameters and scopes: [docs] `documentation/effects_documentation.md`. Use counts are lines outside comments in `common/`, `events/` and `history/` [vanilla-confirmed 1.19.3]. Wiki pages: [Effects](<effects.md#Special_Projects>), [Effects (scientists)](<effects.md#Scientists>), [Effects (project scope)](<effects.md#Special_Project_scope>).
+Parameters and scopes: [docs] `documentation/effects_documentation.md`. Use counts are lines outside comments in `common/`, `events/` and `history/` [vanilla-confirmed 1.19.4.1]. Wiki pages: [Effects](<effects.md#Special_Projects>), [Effects (scientists)](<effects.md#Scientists>), [Effects (project scope)](<effects.md#Special_Project_scope>).
 
 | Effect | Scope | Form | Vanilla |
 | --- | --- | --- | --- |
@@ -349,15 +350,15 @@ Parameters and scopes: [docs] `documentation/effects_documentation.md`. Use coun
 | `add_dynamic_modifier`, `remove_dynamic_modifier`, `force_update_dynamic_modifier` | project (among others) | as in other scopes | no use inside a project scope found |
 | `raid_reduce_project_progress_ratio` | state, inside a raid outcome | `= 0 to 1` | 3, all in `common/raids/air_raids.txt` |
 
-`complete_special_project` ignores unfinished parent projects, and because no facility or scientist takes part, `facility_state_effects` and `scientist_effects` of the project are not applied; the documentation names only those two as skipped [docs]. Vanilla uses it to give countries projects already finished in 1936 and 1939, with `scientist` and `state` (for example `project = sp:sp_naval_midget_submarine scientist = GER_hellmuth_walter state = 56`) [vanilla-confirmed 1.19.3] `history/countries/GER - Germany.txt`.
+`complete_special_project` ignores unfinished parent projects, and because no facility or scientist takes part, `facility_state_effects` and `scientist_effects` of the project are not applied; the documentation names only those two as skipped [docs]. Vanilla uses it to give countries projects already finished in 1936 and 1939, with `scientist` and `state` (for example `project = sp:sp_naval_midget_submarine scientist = GER_hellmuth_walter state = 56`) [vanilla-confirmed 1.19.4.1] `history/countries/GER - Germany.txt`.
 
 ### Triggers <a id="Triggers"></a>
 
-Parameters and scopes: [docs] `documentation/triggers_documentation.md`. Counts: [vanilla-confirmed 1.19.3]. Wiki pages: [Triggers (scientists)](<triggers.md#Scientists>), [Triggers (special projects)](<triggers.md#Special_projects>).
+Parameters and scopes: [docs] `documentation/triggers_documentation.md`. Counts: [vanilla-confirmed 1.19.4.1]. Wiki pages: [Triggers (scientists)](<triggers.md#Scientists>), [Triggers (special projects)](<triggers.md#Special_projects>).
 
 | Trigger | Scope | Form | Vanilla |
 | --- | --- | --- | --- |
-| `is_special_project_completed` | country | `= sp:id`, `var:x` or `PREV` | 175 |
+| `is_special_project_completed` | country | `= sp:id`, `var:x` or `PREV` | 179 |
 | `is_special_project_being_researched` | country | same | 2 |
 | `has_breakthrough_points` | country | `{ specialization = <id> value = N }` | 0 |
 | `has_facility_specialization` | country | `= specialization_x` | 11 |
@@ -375,7 +376,7 @@ The documentation entries disagree with themselves in places: the heading `all_a
 
 ### Scopes and variables <a id="Scopes_and_variables"></a>
 
-- The scope is called `SPECIAL_PROJECT`. A project is reached from country scope with the prefix `sp:`, for example `sp:sp_nuclear_bomb = { add_project_progress_ratio = 0.1 }` (187 lines in `common/` and `events/`) [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.3] `events/Special_Project_Events.txt`. Wiki: [Scopes](<scopes.md>).
+- The scope is called `SPECIAL_PROJECT`. A project is reached from country scope with the prefix `sp:`, for example `sp:sp_nuclear_bomb = { add_project_progress_ratio = 0.1 }` (190 lines in `common/` and `events/`) [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1] `events/Special_Project_Events.txt`. Wiki: [Scopes](<scopes.md>).
 - Dynamic variables on the project scope: `facility_state` (State), `facility_province_id` (province id), `scientist` (Character) [docs] `documentation/dynamic_variables_documentation.md`. Vanilla uses `var:scientist = { ... }` 9 times in weights and `province = var:facility_province_id` 7 times in `damage_building`; `var:facility_state` is documented but never used [vanilla-confirmed 1.19.3] `sp/prototype_rewards/*.txt`.
 - Localisation scope objects: `[SpecialProject.GetName]`, `[SpecialProject.Owner]`, `[Character.GetName]`, `[State.GetName]` [docs] `documentation/loc_objects_documentation.md`.
 - The building damage helper used by reward outputs: `damage_building = { tags = facility damage = 0.15 province = var:facility_province_id }` (also `repair_speed_modifier`) [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.3] `sp/prototype_rewards/generic_rocket_prototype_rewards.txt`.
@@ -386,17 +387,17 @@ Categories and formats: [docs] `documentation/modifiers_documentation.md`. Wiki:
 
 | Modifier | Categories | Notes |
 | --- | --- | --- |
-| `special_project_speed_factor` | country | all project speed; vanilla uses it in scientist traits, country-leader traits, 5 idea files, 5 dynamic-modifier files and one decision file [vanilla-confirmed 1.19.3] |
+| `special_project_speed_factor` | country | all project speed; vanilla uses it in scientist traits, country-leader traits, 5 idea files, 5 dynamic-modifier files and one decision file [vanilla-confirmed 1.19.4.1] |
 | `<project_id>_speed_factor` | country, state | per project, for example `sp_nuclear_bomb_speed_factor`; the docs list all 49 ids |
 | `<sp_tag>_speed_factor` | country, state | per tag, for example `sp_tag_rocket_speed_factor` |
 | `<specialization_id>_speed_factor` | country, state | for example `specialization_nuclear_speed_factor` |
-| `special_project_facility_supply_consumption_factor` | country | used by `scientist_trait_resourceful`, a country-leader trait and a Czechoslovak idea [vanilla-confirmed 1.19.3] |
+| `special_project_facility_supply_consumption_factor` | country | used by `scientist_trait_resourceful`, a country-leader trait and a Czechoslovak idea [vanilla-confirmed 1.19.4.1] |
 | `scientist_xp_gain_factor` | character | traits only in vanilla |
 | `scientist_research_bonus_factor` | character | technology research bonus from basic research; traits only |
 | `scientist_breakthrough_bonus_factor` | character | breakthrough progress from basic research; traits only |
 | `female_random_scientist_chance` | country, scientist | unused in vanilla |
 
-The `<...>_speed_factor` family: the documentation lists project ids, the 13 tags and the 4 specialization ids as the types that generate it (66 entries) [docs]. Vanilla localises each used name with `<name>` and `<name>_tt` in `modifiers_l_english.yml` [vanilla-confirmed 1.19.3]; a modifier you add needs both keys for a clean tooltip [unverified].
+The `<...>_speed_factor` family: the documentation lists project ids, the 13 tags and the 4 specialization ids as the types that generate it (66 entries) [docs]. Vanilla localises each used name with `<name>` in `modifiers_l_english.yml`, and all but five of the 37 used names also have `<name>_tt` (the exceptions are `specialization_air_speed_factor`, `specialization_land_speed_factor`, `specialization_naval_speed_factor`, `sp_land_large_caliber_kinetic_energy_sabot_speed_factor` and `sp_naval_super_heavy_battleship_speed_factor`) [vanilla-confirmed 1.19.4.1]; a modifier you add needs both keys for a clean tooltip [unverified].
 
 ### Script constants <a id="Script_constants"></a>
 
@@ -411,13 +412,13 @@ The `<...>_speed_factor` family: the documentation lists project ids, the 13 tag
 | `sp_military_xp_gain` | low 15, medium 30, high 50 |
 | `sp_breakthrough_progress` | low 0.1, medium 0.25, high 0.5 |
 
-- The UI shows "gains X to Y each iteration" and "requires A to B iterations" for range constants, so a range constant gives a different gain each iteration; a plain number gives a fixed one [vanilla-confirmed 1.19.3] `localisation/english/special_projects_l_english.yml` (`SPECIAL_PROJECT_RESEARCH_TIME_MIN_MAX_TOOLTIP_*`). The draw method is [unverified].
-- Prefix rule. `prototype_time`, `complexity` and the `value` of `add_breakthrough_progress` take the constant bare (`sp_time.prototype.long`), while scoped-variable positions such as `experience = constant:sp_scientist_xp_gain.low` and `add_project_progress_ratio = constant:sp_progress.gain.low` need `constant:` [docs] `common/script_constants/documentation.md`, [vanilla-confirmed 1.19.3] `sp/projects/*.txt`.
+- The UI shows "gains X to Y each iteration" and "requires A to B iterations" for range constants, so a range constant gives a different gain each iteration; a plain number gives a fixed one [vanilla-confirmed 1.19.4.1] `localisation/english/special_projects_l_english.yml` (`SPECIAL_PROJECT_RESEARCH_TIME_MIN_MAX_TOOLTIP_*`). The draw method is [unverified].
+- Prefix rule. `prototype_time`, `complexity` and the `value` of `add_breakthrough_progress` take the constant bare (`sp_time.prototype.long`), while scoped-variable positions such as `experience = constant:sp_scientist_xp_gain.low` and `add_project_progress_ratio = constant:sp_progress.gain.low` need `constant:` [docs] `common/script_constants/documentation.md`, [vanilla-confirmed 1.19.4.1] `sp/projects/*.txt`.
 - The constants documentation example shows `sp_basic_research_time`, which does not exist in vanilla [docs] `common/script_constants/documentation.md`.
 
 ### On action and event <a id="On_action_and_event"></a>
 
-- `on_project_completion` runs when a project completes, `ROOT` = the country, `FROM` = the project. Vanilla uses it to count Belgian projects [vanilla-confirmed 1.19.3] `common/on_actions/12_wuw_on_actions.txt`. Wiki: [On actions](<on_actions.md#Special_Projects>).
+- `on_project_completion` runs when a project completes, `ROOT` = the country, `FROM` = the project. Vanilla uses it to count Belgian projects and to set `USA_nuclear_reactor_done_flag` once the USA has completed `sp:sp_nuclear_reactor` [vanilla-confirmed 1.19.4.1] `common/on_actions/12_wuw_on_actions.txt`. Wiki: [On actions](<on_actions.md#Special_Projects>).
 - `events/Special_Project_Events.txt` has one event, `sp_nuclear_project_events.1`, whose option adds 10% progress to `sp:sp_nuclear_bomb` [vanilla-confirmed 1.19.3].
 
 ### Defines <a id="Defines"></a>
@@ -426,15 +427,15 @@ The `<...>_speed_factor` family: the documentation lists project ids, the 13 tag
 
 ## AI <a id="AI"></a>
 
-- **Project choice.** `ai_will_do` on a project; default weight 1 [docs] `sp/projects/documentation.md`. 29 projects set it: all 19 naval, all 6 rocket, 3 of 9 land and the radar project; none of the 8 air and 6 nuclear projects. Vanilla writes country triggers as `ROOT = { tag = GER }` (22 uses) and `date > 1940.1.1`, and never uses `FROM` outside comments [vanilla-confirmed 1.19.3] `sp/projects/*.txt`. The documentation says the project is `THIS` and `FROM` is the country. The two statements do not agree, so copy the vanilla `ROOT = { }` form for country checks [docs], [vanilla-confirmed 1.19.3].
+- **Project choice.** `ai_will_do` on a project; default weight 1 [docs] `sp/projects/documentation.md`. 31 projects set it: all 19 naval, all 6 rocket, 3 of 9 land, 2 of 6 nuclear (`sp_commercial_nuclear_reactor` and `sp_nuclear_bomb`) and the radar project; none of the 8 air projects. Vanilla writes country triggers as `ROOT = { tag = GER }` (24 `ROOT = { }` uses, two of them `ROOT = { original_tag = USA }` in nuclear projects) and `date > 1940.1.1`, and never uses `FROM` outside comments [vanilla-confirmed 1.19.4.1] `sp/projects/*.txt`. The documentation says the project is `THIS` and `FROM` is the country. The two statements do not agree, so copy the vanilla `ROOT = { }` form for country checks [docs], [vanilla-confirmed 1.19.4.1].
 - **Rewards.** The documentation describes `weight` and `empty_reward_weight` as the probability of a reward being chosen, so neither the player nor the AI picks which reward comes up; they only pick among its options [docs] `sp/prototype_rewards/documentation.md`, `sp/projects/documentation.md`.
-- **Reward options.** `option.default = yes` is the option used on time-out [docs]; how the AI chooses between options is not documented. Vanilla gives no option an `ai_chance`, and the draft's per-option `ai_chance` is not used [vanilla-confirmed 1.19.3], [unverified].
-- **Scientists.** Vanilla AI strategies use `type = recruit_scientist` with `id = specialization_x` and `value = 100` (4 strategies, enabled when the country has a matching facility or a free supportive slot), and `type = pp_spend_priority`, `id = supportive_scientist`, `value = 25` [vanilla-confirmed 1.19.3] `common/ai_strategy/default.txt`. These strategy types are not in `common/ai_strategy/_documentation.md`.
+- **Reward options.** `option.default = yes` is the option used on time-out [docs]; how the AI chooses between options is not documented. Vanilla gives no option an `ai_chance`, and the draft's per-option `ai_chance` is not used [vanilla-confirmed 1.19.4.1], [unverified].
+- **Scientists.** Vanilla AI strategies use `type = recruit_scientist` with `id = specialization_x` and `value = 100` (4 strategies, enabled when the country has a matching facility or a free supportive slot), and `type = pp_spend_priority`, `id = supportive_scientist`, `value = 25` [vanilla-confirmed 1.19.4.1] `common/ai_strategy/default.txt`. `recruit_scientist` is not in `common/ai_strategy/_documentation.md`; `pp_spend_priority` is listed there, but `supportive_scientist` is not mentioned.
 - The character-level `ai_will_do` of the draft is not part of the shipped scientist role [vanilla-confirmed 1.19.3] (`common/characters/_documentation.md` lists only `desc`, `traits`, `skills`, `visible`).
 
 ## Localisation <a id="Localisation"></a>
 
-Keys from `localisation/english/special_projects_l_english.yml` [vanilla-confirmed 1.19.3]; the fallback order is from [docs] in the three `documentation.md` files. A `TAG_` prefix gives a country-specific text (vanilla: `GER_sp_nuclear_reactor` is "Uranmaschine").
+Keys from `localisation/english/special_projects_l_english.yml` [vanilla-confirmed 1.19.4.1]; the fallback order is from [docs] in the three `documentation.md` files. A `TAG_` prefix gives a country-specific text (vanilla: `GER_sp_nuclear_reactor` is "Uranmaschine").
 
 | Text | Key | Notes |
 | --- | --- | --- |
@@ -447,12 +448,12 @@ Keys from `localisation/english/special_projects_l_english.yml` [vanilla-confirm
 | Scientist trait | `<trait id>`, `<trait id>_desc` | |
 | Project speed modifier | `<id>_speed_factor`, `<id>_speed_factor_tt` | in `modifiers_l_english.yml` |
 | Unlock tooltips for buildings | `SP_UNLOCK_BUILDING` (`$BUILDING$`), `SP_UNLOCK_BUILDING_ICON_DESC` (`$BUILDING$`, `$BUILDING_DESCRIPTION$`, `$ICON_FRAME$`), `SP_BUILDING_MISSING_PROJECT` (`$PROJECT$`) | the last one is the building's `missing_tech_loc` text |
-| Unlock tooltips for other things | `SP_UNLOCK_PROJECT` (`$PROJECT$`), `SP_UNLOCK_TECH` (`$TECH$`), `SP_UNLOCK_TECH_WITH_EXTRA_PROJECT`, `SP_UNLOCK_RAID` (`$RAID_TYPE$`) | used as `custom_effect_tooltip = { localization_key = SP_UNLOCK_TECH TECH = <tech> }` |
+| Unlock tooltips for other things | `SP_UNLOCK_PROJECT` (`$PROJECT$`), `SP_UNLOCK_TECH` (`$TECH$`), `SP_UNLOCK_TECH_WITH_EXTRA_PROJECT`, `SP_UNLOCK_TECH_WITH_EXTRA_TECH`, `SP_UNLOCK_RAID` (`$RAID_TYPE$`, defined in `military_raids_l_english.yml`) | used as `custom_effect_tooltip = { localization_key = SP_UNLOCK_TECH TECH = <tech> }` |
 | Skill level names | `SCIENTIST_SKILL_LEVEL_NAME_0` to `_5` | engine strings, not per mod |
 
 ## GFX <a id="GFX"></a>
 
-Sprite names and fallbacks: [docs] in the three `documentation.md` files; vanilla file locations [vanilla-confirmed 1.19.3] `interface/special_projects.gfx`, `interface/special_projects/project.gfx`, `interface/unitleaderwindow.gfx`.
+Sprite names and fallbacks: [docs] in the three `documentation.md` files; vanilla file locations [vanilla-confirmed 1.19.4.1] `interface/special_projects.gfx`, `interface/special_projects/project.gfx`, `interface/unitleaderwindow.gfx`.
 
 | Asset | Sprite | Vanilla location | Fallback |
 | --- | --- | --- | --- |
@@ -468,7 +469,7 @@ Project sprites are plain `spriteType` entries. Graphic basics: [Graphical asset
 
 ## DLC gating in vanilla <a id="DLC_gating"></a>
 
-[vanilla-confirmed 1.19.3] `sp/projects/*.txt`, `common/scientist_traits/00_traits.txt`:
+[vanilla-confirmed 1.19.4.1] `sp/projects/*.txt`, `common/scientist_traits/00_traits.txt`:
 
 - Project `allowed` blocks name: Gotterdammerung 28 (one project, `sp_naval_nuclear_torpedo`, needs Gotterdammerung and Man the Guns), No Compromise No Surrender 3, No Step Back 2, Peace For Our Time 1; 15 projects have no DLC gate (`sp_nuclear_reactor`, `sp_nuclear_bomb`, `sp_air_jet_engine`, `sp_air_radar`, the early submarine projects and others).
 - Pieces of a project are gated separately with `limit = { has_dlc = "Gotterdammerung" }` inside `enable_equipments`, `enable_equipment_modules` and `enable_subunits`, and with `if = { limit = { has_dlc = ... } }` inside effects and `available`. Example: `enable_equipment_modules = { limit = { has_dlc = "Gotterdammerung" has_dlc = "No Step Back" } lc_radar }` in `sp_air_radar`.
@@ -493,7 +494,7 @@ For testing. [docs] `documentation/console_commands_documentation.md`; see also 
 
 ## Minimal example <a id="Minimal_example"></a>
 
-A land project with one unique reward, in vanilla style. The ids use a `mod_` prefix; `has_tech = railway_gun`, `specialization_land` and the generic reward ids are vanilla. Vanilla patterns are copied from `sp/projects/land_projects.txt`, `sp/prototype_rewards/generic_land_prototype_rewards.txt` and `sp/projects/nuclear_projects.txt` [vanilla-confirmed 1.19.3].
+A land project with one unique reward, in vanilla style. The ids use a `mod_` prefix; `has_tech = railway_gun`, `specialization_land` and the generic reward ids are vanilla. Vanilla patterns are copied from `sp/projects/land_projects.txt`, `sp/prototype_rewards/generic_land_prototype_rewards.txt` and `sp/projects/nuclear_projects.txt` [vanilla-confirmed 1.19.4.1].
 
 `common/special_projects/projects/mod_land_projects.txt`:
 
@@ -599,21 +600,21 @@ spriteTypes = {
 
 | Trap | What happens | Evidence |
 | --- | --- | --- |
-| Writing keys from `sp/special_projects_documentation.md` | the keys are not used by any vanilla file and are absent from `hoi4.exe`; the project does not behave as written | 0 vanilla uses, string search [vanilla-confirmed 1.19.3], effect [unverified] |
-| Threshold on a 0 to 1 scale | vanilla thresholds run 0 to 100; a 0 to 1 window would cover almost no progress | [vanilla-confirmed 1.19.3] `sp/projects/nuclear_projects.txt` |
-| Country trigger directly inside `available` | the scope is the project, so country triggers need `FROM = { }` | [docs], 41 vanilla `FROM` wrappers [vanilla-confirmed 1.19.3] |
+| Writing keys from `sp/special_projects_documentation.md` | the keys are not used by any vanilla file and are absent from `hoi4.exe`; the project does not behave as written | 0 vanilla uses, string search [vanilla-confirmed 1.19.4.1], effect [unverified] |
+| Threshold on a 0 to 1 scale | vanilla thresholds run 0 to 100; a 0 to 1 window would cover almost no progress | [vanilla-confirmed 1.19.4.1] `sp/projects/nuclear_projects.txt` |
+| Country trigger directly inside `available` | the scope is the project, so country triggers need `FROM = { }` | [docs], 41 vanilla `FROM` wrappers [vanilla-confirmed 1.19.4.1] |
 | Dynamic condition in `allowed` | `allowed` is evaluated once at startup and only accepts `tag`, `original_tag`, `has_dlc`; use `available` or `visible` for anything that changes | [docs] `sp/projects/documentation.md` |
-| `FROM` in project `ai_will_do` | the docs and vanilla disagree; vanilla only uses `ROOT = { }` | [docs], [vanilla-confirmed 1.19.3] |
+| `FROM` in project `ai_will_do` | the docs and vanilla disagree; vanilla only uses `ROOT = { }` | [docs], [vanilla-confirmed 1.19.4.1] |
 | `complete_special_project` for a project with facility effects | the facility state and scientist effects are skipped, so a reactor project completed this way builds no reactor | [docs] `documentation/effects_documentation.md` |
 | `complete_special_project` for a child project | parents are not checked or completed | [docs] |
 | `special_project_prototype_speed_factor` in a trait | not a modifier; use `special_project_speed_factor` | [docs] `documentation/modifiers_documentation.md` |
 | Spelling the option key of `complete_prototype_reward_option` correctly | the documented key is `prototyp_reward_option` (missing `e`); copy the documentation exactly | [docs] `documentation/effects_documentation.md` |
-| `constant:` prefix on `complexity` or `prototype_time` | those keys take the bare constant; effect values need the prefix | [docs] `common/script_constants/documentation.md`, [vanilla-confirmed 1.19.3] |
+| `constant:` prefix on `complexity` or `prototype_time` | those keys take the bare constant; effect values need the prefix | [docs] `common/script_constants/documentation.md`, [vanilla-confirmed 1.19.4.1] |
 | `oil` in `resource_cost` | not allowed | [docs] `sp/projects/documentation.md` |
 | New specialization without a facility | the docs require a building that carries the same `specialization`; without one the projects cannot be researched | [docs] `sp/specialization/documentation.md`; effect [unverified] |
 | `complexity = 0` | logged as an error and replaced by the default 100 | [docs] |
 | `weight = { factor = ... }` | three vanilla rewards write it with the value 1.0 (the default weight); the documented key is `base`, and what `factor` does at that level is not stated | [vanilla-confirmed 1.19.3] `generic_nuclear_prototype_rewards.txt`; effect [unverified] |
-| Reading `var:facility_state` in weights | documented, never used by vanilla; `var:facility_province_id` is the province id | [docs], [vanilla-confirmed 1.19.3] |
+| Reading `var:facility_state` in weights | documented, never used by vanilla; `var:facility_province_id` is the province id | [docs], [vanilla-confirmed 1.19.4.1] |
 | Missing `<id>_speed_factor_tt` text for a new project's speed modifier | tooltip shows a raw key | [unverified] |
 
 ## See also <a id="See_also"></a>

@@ -382,7 +382,7 @@ Both belong to the parent. The worker never launches HOI4.
 
 **Static registration audit.** After the parent wires the mesh, animations, entity, unit sprite and `meshsettings`, run `py -3 -B .tools/audits/audit_asset_wiring_static.py --paths gfx interface common/units`. It reports `GFX-3D-*` errors for the mesh, animation, entity, unit sprite `<sprite>_entity`, `meshsettings` against the exported mesh, and textures. The handoff needs a run with no `GFX-3D-*` error.
 
-**Entity names the audit does not check.** [vanilla-confirmed 1.19.3] An entity's `propagate_state` keys are `attach` names, not mesh `node` names. An entity `event` `particle` takes the `pdxparticle` name defined in a `.gfx` file, not a particle name from an `.asset` file.
+**Entity names the audit does not check.** [vanilla-confirmed 1.19.4.1] An entity's `propagate_state` keys are `attach` names, not mesh `node` names. An entity `event` `particle` takes the `pdxparticle` name defined in a `.gfx` file, not a particle name from an `.asset` file.
 
 **In-game check.** Unconfirmed: whether the console `moveunit` takes the `create_unit` script `id`, and the exact `hoi4_orders` arguments. The recipe has not been run; adjust those two commands when they differ and record what was used. Models load only at game launch.
 

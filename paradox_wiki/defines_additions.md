@@ -1,17 +1,19 @@
 # Defines additions
 
-*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files. It supplements the wiki's Defines page, which it leaves unchanged. CC BY-SA 3.0 (see LICENSE.txt).*
+*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files and re-checked against 1.19.4.1. It supplements the wiki's Defines page, which it leaves unchanged. CC BY-SA 3.0 (see LICENSE.txt).*
 <!-- kit:page -->
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" sources="common/defines/ localisation/english/core_l_english.yml" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" sources="common/defines/ localisation/english/core_l_english.yml" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Written from the three files in `common/defines/` (`00_defines.lua`, `00_graphics.lua`, `01_career_profile.lua`: 4504 defines in 39 categories), parsed with a script and compared name by name and value by value with the 37 category tables of the wiki's [Defines](<defines.md>) page at wiki revision 104682. This text used to sit in kit blocks on that page; it moved here so the wiki page stays an unchanged snapshot.
 Contents: an Overrides note, then per category the 617 defines the wiki tables lack (value and meaning, 22 categories), 127 changed values and 58 removed names with likely successors, plus the new categories `NFactions` and `NDoctrines`. The naval "supremacy" to "dominance" rename and the new energy defines are called out.
 Gaps left: meanings come from the Lua comments or, where there is none, from the define name. Which defines the engine still reads was not tested. The comparison is with the wiki page as captured at revision 104682; when that page changes, check these tables against it again.
+**1.19.4.1 re-check (2026-11-01).** The 1.19.3 define set was rebuilt from the wiki tables plus this page's tables and compared with the 1.19.4.1 files name by name and value by value, by script. 1.19.4.1 has 4523 defines in the same 39 categories: 19 are new, none was removed, and one value changed (`NMarket.REQUEST_AUTOMATION_AUTO_ACCEPT_PURCHASE_DEFAULT`, `false` to `true`). The section [1.19.4.1 changes](#Changes_1_19_4_1) lists them. Every other value in the tables below is the same in 1.19.4.1, but the two arrays the tables quote only in part (`BORDER_COLOR_CUSTOM_HIGHLIGHTS`, `FACTION_INTELLIGENCE_ALLOWED_ADVISOR_TRAIT`) were compared only as far as they are quoted.
 <!-- kit:end id="review" -->
 
 ## Table of contents
 
 - [Overrides](#Overrides)
+- [1.19.4.1 changes](#Changes_1_19_4_1)
 - [NGame](#NGame)
 - [NDiplomacy](#NDiplomacy)
 - [NCountry](#NCountry)
@@ -40,29 +42,61 @@ Gaps left: meanings come from the Lua comments or, where there is none, from the
 
 ---
 
-The wiki's [Defines](<defines.md>) page lists the engine defines in one table per category, and its tables date from an older build. This page holds what the installed game's define files add to them: how the files combine, and for each category the defines the wiki table lacks, the values that differ from it, and the names 1.19.3 no longer has. A category with no section here showed no difference in names or values in that comparison.
+The wiki's [Defines](<defines.md>) page lists the engine defines in one table per category, and its tables date from an older build. This page holds what the installed game's define files add to them: how the files combine, and for each category the defines the wiki table lacks, the values that differ from it, and the names 1.19.3 no longer has. A category with no section here showed no difference in names or values in that comparison. The tables were written for 1.19.3 and still hold for 1.19.4.1; what 1.19.4.1 changed is in its own section after Overrides.
 
 ## Overrides <a id="Overrides"></a>
 
-**Kit note** The three vanilla define files in 1.19.3 and how they combine. [vanilla-confirmed 1.19.3] `common/defines/`
+**Kit note** The three vanilla define files in 1.19.4.1 and how they combine. [vanilla-confirmed 1.19.4.1] `common/defines/`
 
 | File | Table it defines | Categories | Defines |
 | --- | --- | --- | --- |
-| `00_defines.lua` | `NDefines` | 28, from `NGame` to `NDoctrines` | 3231 |
-| `00_graphics.lua` | `NDefines_Graphics` | 9: `NWiki`, `NMapMode`, `NMapIcons`, `NAirGfx`, `NGraphics`, `NInterface`, `NFrontend`, `NSound`, `NFriendGUI` | 1252 |
+| `00_defines.lua` | `NDefines` | 28, from `NGame` to `NDoctrines` | 3244 |
+| `00_graphics.lua` | `NDefines_Graphics` | 9: `NWiki`, `NMapMode`, `NMapIcons`, `NAirGfx`, `NGraphics`, `NInterface`, `NFrontend`, `NSound`, `NFriendGUI` | 1258 |
 | `01_career_profile.lua` | `NDefines_CareerProfile` | 2: `NCareerProfile`, `NCareerProfileGUI` | 21 |
 
-The last line of `00_graphics.lua` is `for k,v in pairs( NDefines_Graphics ) do NDefines[k] = v end`, and `01_career_profile.lua` ends with the same loop for `NDefines_CareerProfile`. So all 39 categories end up inside `NDefines`, and a mod can write `NDefines.NGraphics.X = ...` or `NDefines_Graphics.NGraphics.X = ...` for graphics defines, and `NDefines.NCareerProfile.X = ...` for the career profile ones. [vanilla-confirmed 1.19.3] The counts are from a script that reads the three files and counts `NAME = value` lines per category.
+The last line of `00_graphics.lua` is `for k,v in pairs( NDefines_Graphics ) do NDefines[k] = v end`, and `01_career_profile.lua` ends with the same loop for `NDefines_CareerProfile`. So all 39 categories end up inside `NDefines`, and a mod can write `NDefines.NGraphics.X = ...` or `NDefines_Graphics.NGraphics.X = ...` for graphics defines, and `NDefines.NCareerProfile.X = ...` for the career profile ones. [vanilla-confirmed 1.19.4.1] The counts are from a script that reads the three files and counts `NAME = value` lines per category.
 
-The wiki page covers 37 of these 39 categories. `NFactions` and `NDoctrines` are new; they have sections of their own below. [vanilla-confirmed 1.19.3]
+The wiki page covers 37 of these 39 categories. `NFactions` and `NDoctrines` are new; they have sections of their own below. [vanilla-confirmed 1.19.4.1]
 
-Advice that holds for 1.19.3: override single values in a small file of your own and never ship a copy of a vanilla define file. The vanilla files add many defines between builds (the wiki page's tables lack 617 of the 4504 defines in 1.19.3, and 58 of its names are gone), so a copied file would pin old values and miss new ones. [vanilla-confirmed 1.19.3] `common/defines/` against the wiki page for the counts; [unverified] for the consequence.
+Advice that holds for 1.19.3: override single values in a small file of your own and never ship a copy of a vanilla define file. The vanilla files add many defines between builds (the wiki page's tables lack 617 of the 4504 defines in 1.19.3, and 58 of its names are gone; 1.19.4.1 adds 19 more), so a copied file would pin old values and miss new ones. [vanilla-confirmed 1.19.3] `common/defines/` against the wiki page for the counts; [unverified] for the consequence.
 
 Name the override file so that it sorts after the vanilla files. The vanilla names are `00_defines.lua`, `00_graphics.lua` and `01_career_profile.lua`; a name such as `zz_my_mod_defines.lua` sorts after all of them. The wiki's remark that "almost any filename can work" would let a name like `00_a.lua` sort before `00_defines.lua`. [unverified]
 
-Syntax traps seen in the vanilla files: values may be expressions (`7 * 24`, `25 * 10`, `90.0/360.0`), strings (`"oil"`), booleans (`true`), arrays (`{ 0.1, 0.2 }`) and nested arrays. Some vanilla lines end in `;` instead of `,`, and one has a decimal comma (`0,4`, see `NCountry` below). [vanilla-confirmed 1.19.3]
+Syntax traps seen in the vanilla files: values may be expressions (`7 * 24`, `25 * 10`, `90.0/360.0`), strings (`"oil"`), booleans (`true`), arrays (`{ 0.1, 0.2 }`) and nested arrays. Some vanilla lines end in `;` instead of `,`, and one has a decimal comma (`0,4`, see `NCountry` below). [vanilla-confirmed 1.19.4.1]
 
 hoi4.exe contains the message `defines reloaded!`, so a defines edit can probably be reloaded from the console without restarting the game. [unverified]
+
+## 1.19.4.1 changes <a id="Changes_1_19_4_1"></a>
+
+**Kit addition** What 1.19.4.1 changed in the define files, from a name-by-name and value-by-value comparison with the 1.19.3 set. 19 defines are new and none was removed. Counts in 1.19.4.1: `00_defines.lua` 3244, `00_graphics.lua` 1258, `01_career_profile.lua` 21. All rows: [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua` or `00_graphics.lua`. The meaning is in my words, taken from the Lua comment.
+
+| Category | Define | 1.19.4.1 value | Meaning |
+| --- | --- | --- | --- |
+| `NDiplomacy` | `VOLUNTEERS_RECALL_DAYS_PER_UNIT` | `2` | Days to recall volunteers, per army unit in the recall order. |
+| `NDiplomacy` | `SEND_VOLUNTEERS_AGAIN_COOLDOWN` | `180` | Days after recalling volunteers before you can send volunteers to the same country again. |
+| `NDiplomacy` | `RECALL_VOLUNTEERS_AFTER_ARRIVAL_COOLDOWN` | `180` | Days after volunteers arrive before they can be recalled. |
+| `NMilitary` | `MAX_CASUALTY_TRICKLEBACK` | `0.95` | Upper cap on casualty trickleback, so it cannot return more troops than died. |
+| `NTrade` | `AUTO_IMPORT_DEFICIT_TOLERANCE` | `0` | Player auto-import accepts a resource balance down to minus this before it imports. |
+| `NTrade` | `AUTO_IMPORT_TARGET_MARGIN` | `0` | Balance the player auto-import aims for. It shrinks or cancels trades only above this surplus. |
+| `NTrade` | `AUTO_IMPORT_DEFAULT_BUDGET_FRACTION` | `0.25` | Share of usable civilian factories the auto-import budget starts with when first enabled. |
+| `NTrade` | `AUTO_IMPORT_MIN_CONVOY_EFFICIENCY` | `0.4` | Auto-import starts no sea trade with a convoy efficiency below this. |
+| `NTrade` | `AUTO_IMPORT_FUEL_TOPPING_START_RATIO` | `0.5` | Auto-import spends leftover budget on extra oil once the fuel stockpile falls below this share. |
+| `NTrade` | `AUTO_IMPORT_FUEL_TOPPING_STOP_RATIO` | `0.9` | It stops buying extra oil once the fuel stockpile reaches this share. |
+| `NTrade` | `AUTO_IMPORT_MAX_ACCEPTED_SHORTAGE` | `99` | Highest shortage a player can accept per resource in the auto-import priority window. |
+| `NAI` | `MOBILIZATION_RATIO_REQUIRED_TO_RAISE_MOBILIZATION_LAW` | `0.95` | Share of its target conscription an AI must already have mobilised before a higher conscription law counts as urgent. |
+| `NAI` | `LENDLEASE_TO_CAPITULATED_DESIRE_PENALTY` | `500` | Flat lend-lease desire penalty toward a capitulated country the AI does not host. |
+| `NInterface` | `AUTO_DIPLOMACY_RESPONSE_ITEM_ALPHA` | `0.3` | Display alpha of diplomatic actions in the automatic response list. |
+| `NInterface` | `FOCUS_MINIMAP_SCALE` | `0.035` | Focus tree mini-map panel pixels per canvas pixel. |
+| `NInterface` | `FOCUS_MINIMAP_MIN_SIZE` | `48` | Smallest size of the focus tree mini-map panel. |
+| `NInterface` | `INFO_WINDOW_GAP_X` | `20` | Gap between a clicked focus or technology and the details window it opens. |
+| `NInterface` | `INFO_WINDOW_OFFSET_Y` | `60` | How far above the clicked item a details window starts. |
+| `NInterface` | `INFO_WINDOW_CASCADE_OFFSET` | `40` | Diagonal step used when a details window would open on top of another. |
+
+One value changed. The wiki's `NMarket` table shows the 1.19.3 value. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`
+
+| Define | 1.19.3 value | 1.19.4.1 value | Meaning |
+| --- | --- | --- | --- |
+| `NMarket.REQUEST_AUTOMATION_AUTO_ACCEPT_PURCHASE_DEFAULT` | `false` | `true` | Whether purchase requests from other countries are accepted by default. |
 
 ## NGame <a id="NGame"></a>
 
@@ -89,7 +123,7 @@ Values that differ from the wiki's table (2). The wiki page shows an older value
 
 ## NDiplomacy <a id="NDiplomacy"></a>
 
-**Kit addition** NDiplomacy in 1.19.3: 217 defines in `common/defines/00_defines.lua`; the wiki's table lists 203. [vanilla-confirmed 1.19.3]
+**Kit addition** NDiplomacy in 1.19.3: 217 defines in `common/defines/00_defines.lua`; the wiki's table lists 203. [vanilla-confirmed 1.19.3] 1.19.4.1 adds three volunteer defines (220 in all); see [1.19.4.1 changes](#Changes_1_19_4_1). [vanilla-confirmed 1.19.4.1]
 
 Many `TENSION_*` values on the wiki page are older numbers; the changed ones are in the table below. `TENSION_DECAY_DAILY` is present, which agrees with the wiki page's note that it replaced `TENSION_DECAY`; there is no `TENSION_DECAY` define in 1.19.3. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
 
@@ -199,7 +233,7 @@ Values that differ from the wiki's table (1). The wiki page shows an older value
 
 ## NMilitary <a id="NMilitary"></a>
 
-**Kit addition** NMilitary in 1.19.3: 382 defines in `common/defines/00_defines.lua`; the wiki's table lists 331, 7 of them removed in 1.19.3. [vanilla-confirmed 1.19.3]
+**Kit addition** NMilitary in 1.19.3: 382 defines in `common/defines/00_defines.lua`; the wiki's table lists 331, 7 of them removed in 1.19.3. [vanilla-confirmed 1.19.3] 1.19.4.1 adds `MAX_CASUALTY_TRICKLEBACK` (383 in all); see [1.19.4.1 changes](#Changes_1_19_4_1). [vanilla-confirmed 1.19.4.1]
 
 `SUPPLY_USE_FACTOR_MOVING` and `SUPPLY_USE_FACTOR_INACTIVE` still carry the Lua comment "Deprecated/Unused", and `PLAN_COHESION_DISTANCE_MAX_WHEN_LEFT_BEHIND` still says it is unused, deprecated and "will be removed in next major version". All three are still in 1.19.3, so the removal the comment announced has not happened. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
 
@@ -522,7 +556,7 @@ Values that differ from the wiki's table (37). The wiki page shows an older valu
 
 ## NAI <a id="NAI"></a>
 
-**Kit addition** NAI in 1.19.3: 946 defines in `common/defines/00_defines.lua`; the wiki's table lists 825, 14 of them removed in 1.19.3. [vanilla-confirmed 1.19.3]
+**Kit addition** NAI in 1.19.3: 946 defines in `common/defines/00_defines.lua`; the wiki's table lists 825, 14 of them removed in 1.19.3. [vanilla-confirmed 1.19.3] 1.19.4.1 adds two (948 in all); see [1.19.4.1 changes](#Changes_1_19_4_1). [vanilla-confirmed 1.19.4.1]
 
 `TRANSPORTS_PER_PARATROOPER` still has the Lua comment "Currently unused". [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` `AIFC` is the AI force concentration logic. [vanilla-confirmed 1.19.3] (the Lua comments for `AIFC_UPDATE_FREQUENCY_DAYS` and its neighbours say so)
 
@@ -1070,7 +1104,7 @@ Values that differ from the wiki's table (5). The wiki page shows an older value
 
 ## NInterface <a id="NInterface"></a>
 
-**Kit addition** NInterface in 1.19.3: 86 defines in `common/defines/00_graphics.lua`; the wiki's table lists 83. [vanilla-confirmed 1.19.3]
+**Kit addition** NInterface in 1.19.3: 86 defines in `common/defines/00_graphics.lua`; the wiki's table lists 83. [vanilla-confirmed 1.19.3] 1.19.4.1 adds six (92 in all); see [1.19.4.1 changes](#Changes_1_19_4_1). [vanilla-confirmed 1.19.4.1]
 
 Defines the wiki's table lacks (3). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 

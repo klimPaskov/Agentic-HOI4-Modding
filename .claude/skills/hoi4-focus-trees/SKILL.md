@@ -88,10 +88,10 @@ prerequisite = { focus = b }
 
 Use vanilla examples before changing complex prerequisite and mutual-exclusion structures.
 
-- Declare `mutually_exclusive` on both focuses, since all 2,612 vanilla pairs are symmetric. [vanilla-confirmed 1.19.3]
-- Focus ids are unique across the project, as the 10,668 vanilla focus nodes carry 10,668 distinct ids. [vanilla-confirmed 1.19.3]
-- `allow_branch` hides a branch of the tree (543 vanilla uses). [vanilla-confirmed 1.19.3]
-- Continuous focuses live in the palette files under `common/continuous_focus/`, and no vanilla focus node declares itself continuous. [vanilla-confirmed 1.19.3]
+- Declare `mutually_exclusive` on both focuses, since all 2,614 vanilla pairs are symmetric. [vanilla-confirmed 1.19.4.1]
+- Focus ids are unique across the project, as the 10,676 vanilla focus nodes carry 10,676 distinct ids. [vanilla-confirmed 1.19.4.1]
+- `allow_branch` hides a branch of the tree (543 vanilla uses). [vanilla-confirmed 1.19.4.1]
+- Continuous focuses live in the palette files under `common/continuous_focus/`, and no vanilla focus node declares itself continuous. [vanilla-confirmed 1.19.4.1]
 
 ## 3. Focus tree design purpose
 

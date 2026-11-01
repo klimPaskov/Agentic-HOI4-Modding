@@ -178,7 +178,7 @@ Facts:
 - `default = yes` makes the state a candidate for the `puppet` effect and for puppeting in peace deals, filtered by `allowed`.
 - The `puppet` effect picks a state with `default = yes` whose `allowed` is true. The wiki states it crashes to desktop if none qualifies, so keep at least one default state whose `allowed` can always be satisfied, and test any `allowed` that depends on DLC or overlord.
 - `allowed` supports the `OVERLORD` scope. `use_for_peace_conference_weight` has ROOT as the subject and FROM as the potential overlord.
-- `is_puppet = yes` makes `is_puppet` and `is_puppet_of` true. A subject state with `is_puppet = no` (for example `autonomy_dominion`) is still a subject for `is_subject` and `is_subject_of`.
+- `is_puppet = yes` makes `is_puppet` and `is_puppet_of` true. A subject state without `is_puppet = yes` (for example `autonomy_dominion`) is still a subject for `is_subject` and `is_subject_of`.
 - A state that must only be reachable by `set_autonomy` can use `allowed = { OR = { is_subject = no has_autonomy_state = autonomy_my_state } }`; the wiki notes this keeps `set_autonomy` working only while the target is independent and prevents it being cleared by level changes.
 - To replace the default autonomy ladder (as unique mod autonomy systems do), disable vanilla states through `allowed` or `allowed_levels_filter`, and also disable them so they do not appear during puppeting.
 - `rule = { ... }` entries are the game rules in the autonomy reference table (in the reference file). `has_rule = <rule>` tests them in a trigger, `set_rule` adds an override on a country.
@@ -192,7 +192,7 @@ Facts:
 - `release`, `release_on_controlled`, `release_puppet`, `release_puppet_on_controlled` create a free nation or a puppet from owned or controlled states; all states cored by the target move to it and the releaser loses its own core on a transferred state.
 - `end_puppet = X` (overlord scope), `annex_country`, `add_autonomy_score = { value localization }`, `add_autonomy_ratio = { value localization }` (subject scope; the localisation key names the modifier line in the UI).
 - Triggers: `is_subject`, `is_subject_of`, `is_puppet`, `is_puppet_of`, `has_autonomy_state`, `compare_autonomy_state > state`, `compare_autonomy_progress_ratio > 0.5`, `has_rule`, iterators `any_subject_country`, `every_subject_country`, `random_subject_country`, `all_subject_countries`.
-- `has_autonomy_state` and `compare_autonomy_state` take the full id such as `autonomy_puppet`, although documentation examples drop the prefix. [vanilla-confirmed 1.19.3]
+- `has_autonomy_state` and `compare_autonomy_state` take the full id such as `autonomy_puppet`, although documentation examples drop the prefix. [vanilla-confirmed 1.19.4.1]
 - History setup: the wiki says autonomy effects overwrite the subject's political setup (leaders, ruling party, popularities), so run `set_autonomy` before recruiting characters and defining politics. A vanilla history file does it in the overlord's file, inside the DLC gate (`history/countries/DEN - Denmark.txt` uses `IF = { limit = { has_dlc ... } set_autonomy ... ELSE = { puppet = ICE } }`). Setting it only in the overlord's file is called a source of ideology mistakes in the wiki; do not change country load order to compensate.
 - Setup details for collaboration governments and autonomy defines are in `references/syntax-reference.md`.
 
@@ -230,7 +230,7 @@ opinion_modifiers = {
 
 Localise the modifier id (it is the line shown in the opinion tooltip). Triggers: `has_opinion = { target = X value > 20 }` (form used in vanilla `events/Germany.txt`), `has_opinion_modifier`.
 
-17 opinion modifier ids are defined twice in vanilla (810 entries, 793 ids), so give every new id a unique name. [vanilla-confirmed 1.19.3]
+17 opinion modifier ids are defined twice in vanilla (811 entries, 794 ids), so give every new id a unique name. [vanilla-confirmed 1.19.4.1]
 
 ## Wargoals, declaring war, and joining wars
 
@@ -289,8 +289,8 @@ wargoal_types = {
 - Peace cost modifiers: `common/peace_conference/cost_modifiers/*.txt` (`peace_action_modifiers`, `peace_action_type`, `enable`, `cost_multiplier` greater than 0, `category`). Faction peace rules attach them with `peace_action_modifiers`. Action types: `take_states`, `puppet`, `force_government`, `liberate`.
 - Peace action scopes inside those blocks: `ROOT` negotiator, `FROM` taker, `FROM.FROM` giver, `FROM.FROM.FROM` state.
 - Inside a nested scope such as `ROOT = { }` in a peace block, `FROM` no longer means the taker, so write `ROOT.FROM`. [docs] `cost_modifiers/_documentation.md`
-- The peace action type is `take_states`, and vanilla spells it `take_state` in two places (`cost_modifiers/00_generic_peace.txt`, `ai_peace/00_misc.txt`), which is a typo not to copy. [vanilla-confirmed 1.19.3]
-- Vanilla repeats entry names inside a single peace file (`DEN_take_former_overlords_state`, `unlikely_countries`, `ETH_agreed_expansion`, `SOV_wants_memel`), so give every entry a unique name. [vanilla-confirmed 1.19.3]
+- The peace action type is `take_states`. Vanilla 1.19.3 spelled it `take_state` in two entries (`cost_modifiers/00_generic_peace.txt`, `ai_peace/00_misc.txt`), a typo not to copy, and 1.19.4.1 no longer does. [vanilla-confirmed 1.19.4.1]
+- Vanilla repeats entry names inside a single peace file (`DEN_take_former_overlords_state`, `unlikely_countries`, `ETH_agreed_expansion`, `SOV_wants_memel`), so give every entry a unique name. [vanilla-confirmed 1.19.4.1]
 - Exactly one peace action category may carry `default = yes`. [vanilla-confirmed 1.19.3] comment in the category file
 - AI desire for those actions lives in `peace_conference/ai_peace`; see `hoi4-ai-strategies`.
 - Peace conference hooks: `on_before_peace_conference_start`, `on_peaceconference_started`, `on_peaceconference_ended` (ROOT winner, FROM loser, called for every winner against every loser), `on_puppet`, `on_liberate`, `on_force_government`, `on_annex`.
@@ -301,7 +301,7 @@ wargoal_types = {
 - `transfer_state = STATE_ID` in the receiving country's scope, or `transfer_state = PREV` from a state-iterating scope while the receiver is the outer country (vanilla `instantiate_collaboration_government`). It sets owner and controller. Cores and claims are separate effects.
 - `set_state_owner_to` (state scope) sets only the owner; `transfer_state_to` (state scope) sets owner and controller.
 - `set_state_owner` and `set_state_controller` are country-scope effects that take a state, while `set_state_owner_to` and `set_state_controller_to` are state-scope effects that take a tag. [docs]
-- Vanilla never uses `set_state_owner` and uses `transfer_state` 2,278 times. [vanilla-confirmed 1.19.3]
+- Vanilla never uses `set_state_owner` and uses `transfer_state` 2,279 times. [vanilla-confirmed 1.19.4.1]
 - `annex_country` with `transfer_troops = yes` keeps the annexed divisions. Fires `on_annex` with ROOT the annexer and FROM the annexed country.
 - Release family: states cored by the released tag move to it; own cores on moved states are lost. States owned but not controlled go to the released country without control, which can create occupation anomalies.
 - After a subject is freed or annexed, `on_subject_free` (ROOT the subject, FROM the previous overlord) and `on_subject_annexed` fire.
@@ -313,8 +313,8 @@ wargoal_types = {
 The full list is in `GAME/common/on_actions/_documentation.md` and the scope notes in `WIKI/on_actions.md`; the scope table is in `references/syntax-reference.md`.
 Groups: diplomacy and war (`on_declare_war`, `on_war_relation_added`, `on_war`, `on_peace`, `on_capitulation`, `on_annex`, `on_puppet`, `on_liberate`, `on_release_as_free`, `on_release_as_puppet`), factions (`on_create_faction`, `on_faction_formed`, `on_offer_join_faction`, `on_join_faction`, `on_assume_faction_leadership`, `on_leave_faction`), autonomy (`on_subject_annexed`, `on_subject_free`, `on_subject_autonomy_level_change`), peace (`on_before_peace_conference_start`, `on_peaceconference_started`, `on_peaceconference_ended`), and wargoals (`on_justifying_wargoal_pulse`, `on_wargoal_expire`).
 ROOT and FROM differ per action (for example `on_declare_war` has ROOT as the aggressor and FROM as the target, `on_capitulation` has ROOT as the loser and FROM as the winner), so read the table before using FROM.
-`on_join_faction` does not fire when `add_to_faction` adds the member, and vanilla comments in 7 files point to `on_offer_join_faction` for that case. [vanilla-confirmed 1.19.3]
-A misspelled hook name fails silently: vanilla ships `on_subject_annex` in its `16_taog` file where the engine hook is `on_subject_annexed`, so that handler never runs. [docs] [vanilla-confirmed 1.19.3]
+`on_join_faction` does not fire when `add_to_faction` adds the member, and vanilla comments in 8 files point to `on_offer_join_faction` for that case. [vanilla-confirmed 1.19.4.1]
+A misspelled hook name fails silently: vanilla ships `on_subject_annex` in its `16_taog` file where the engine hook is `on_subject_annexed`, so that handler never runs. [docs] [vanilla-confirmed 1.19.4.1]
 14 hooks listed on the wiki, among them `on_guarantee`, `on_military_access` and `on_generate_wargoal`, appear in neither the documentation nor vanilla script, so treat them as unverified. [docs]
 Repository rule: `on_daily`, `on_weekly`, and `on_monthly` iterate all countries and need explicit permission; prefer these event-style on actions, which fire only on the relevant change.
 
@@ -322,7 +322,7 @@ Repository rule: `on_daily`, `on_weekly`, and `on_monthly` iterate all countries
 
 `common/scripted_diplomatic_actions/*.txt` lets a mod add a custom offer with sender and receiver scopes, optional scripted GUIs, and AI acceptance and desire blocks.
 The only installed file is a commented template, so the skeleton in `references/syntax-reference.md` is unconfirmed against a working vanilla definition.
-The trigger `is_diplomatic_action_valid_<token>` has the target as its scope and `FROM` as the initiator, the reverse of the `DIPLOMACY_*_ENABLE_TRIGGER` direction. [vanilla-confirmed 1.19.3]
+The trigger `is_diplomatic_action_valid_<token>` has the target as its scope and `FROM` as the initiator, the reverse of the `DIPLOMACY_*_ENABLE_TRIGGER` direction. [vanilla-confirmed 1.19.4.1]
 
 ## AI hooks
 

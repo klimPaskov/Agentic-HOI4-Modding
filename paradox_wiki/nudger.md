@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Nudger", revision 97432, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="97432" sources="interface/nudge.gui interface/nudge.gfx interface/frontendmainview.gui map/buildings.txt map/unitstacks.txt map/supply_nodes.txt map/railways.txt map/weatherpositions.txt map/definition.csv map/strategicregions/ history/states/ buildings_nudger_markers.txt unit_nudger_markers.txt common/defines/00_graphics.lua documentation/console_commands_documentation.md" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="97432" sources="interface/nudge.gui interface/nudge.gfx interface/frontendmainview.gui map/buildings.txt map/unitstacks.txt map/supply_nodes.txt map/railways.txt map/weatherpositions.txt map/definition.csv map/strategicregions/ history/states/ buildings_nudger_markers.txt unit_nudger_markers.txt common/defines/00_graphics.lua documentation/console_commands_documentation.md" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the nudger's own interface file `interface/nudge.gui` (every window and button label), `interface/frontendmainview.gui`, the map files the nudger reads and writes (row counts and column layout of `map/buildings.txt` and `map/unitstacks.txt`, sizes of the others), the two marker files in the game folder, the nudger define, the `nudge` console command, and class names in `hoi4.exe`.
 Kit blocks added: the nudger menu in 1.19.3, the filled "Strategic regions", "Buildings", "Units" and "References and notes" sections, a folder name correction in "Weather".
 Gaps left: the wiki's long behaviour descriptions (shift-click rules, save and update semantics, crash causes) cannot be checked from game files and are left as written. What the "Mark/Unmark", "Random" and "Validate" buttons do exactly, and what the marker files hold, is not documented, so those statements are marked `[unverified]`.
+**1.19.4.1 re-check (2026-11-01).** 9 kit statements depended on files the update changed (`map/buildings.txt`, `history/states/`, the core localisation, the graphics defines and the strings and class names of `hoi4.exe`) and all were re-measured. One fact changed: the last column of the 2334 `floating_harbor` rows in `map/buildings.txt` is a land province, not a sea province (only the 2362 `naval_base_spawn` rows name a sea province). Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -50,7 +51,7 @@ The console command `nudge` is documented as "Go to the nudge tool". [docs] `doc
 
 "Supply Areas" is still in the menu and `nudge_window_supplyarea` is still in the interface file (fields "Supply area name" and "Base value", buttons "Apply value", "Generate", "Regenerate All", "Open File", "Delete region", "Create region", "Update", "Save"). `hoi4.exe` has nudger classes for states, strategic regions, ambient objects, the database, weather, buildings, units and supply hubs, and none for supply areas, which fits the page's remark that the button does nothing. [vanilla-confirmed 1.19.3] `interface/nudge.gui`. The class list is [unverified] `hoi4.exe`
 
-The game's own map error text tells the player: "You can still access the Nudger to attempt to fix the issues", and after coming back from it, restart the game so everything reloads. [vanilla-confirmed 1.19.3] `localisation/english/core_l_english.yml` (`MAP_LOADING_ERROR_INGAME_MITIGATION`)
+The game's own map error text tells the player: "You can still access the Nudger to attempt to fix the issues", and after coming back from it, restart the game so everything reloads. [vanilla-confirmed 1.19.4.1] `localisation/english/core_l_english.yml` (`MAP_LOADING_ERROR_INGAME_MITIGATION`)
 <!-- kit:end id="nudger-menu" -->
 
 ## States <a id="States"></a>
@@ -92,14 +93,14 @@ Among the buttons that can always be selected, there are "Delete all empty" and 
 \*Please help improve this article or section by expanding it .\*
 
 <!-- kit:begin id="nudger-buildings" at="section:Buildings" -->
-**Kit addition** The Buildings section writes `map/buildings.txt` (to the user directory, like the other sections). The row layout is `state id;building id;x;y;z;rotation;sea province` and is explained on [Map modding](<map_modding.md#Buildings>) and [Building modding](<building_modding.md#Models>). The output path is inferred from the file names in the exe. [unverified] `hoi4.exe`
+**Kit addition** The Buildings section writes `map/buildings.txt` (to the user directory, like the other sections). The row layout is `state id;building id;x;y;z;rotation;province` (see the last column below) and is explained on [Map modding](<map_modding.md#Buildings>) and [Building modding](<building_modding.md#Models>). The output path is inferred from the file names in the exe. [unverified] `hoi4.exe`
 
-What a correct vanilla file looks like, to check a nudged file against. All rows: [vanilla-confirmed 1.19.3] `map/buildings.txt`.
+What a correct vanilla file looks like, to check a nudged file against. All rows: [vanilla-confirmed 1.19.4.1] `map/buildings.txt`.
 
 - 66664 rows, each with exactly 7 `;` separated columns, LF line ends, no final newline, coordinates with 2 decimals.
 - State ids run from 1 to 1081 and every one of the 1081 files in `history/states/` has rows.
 - Every state has exactly 1 `air_base`, 1 `rocket_site_spawn`, 1 `nuclear_reactor_spawn`, 1 `synthetic_refinery`, 1 `fuel_silo`, 1 `radar_station` and 1 `stronghold_network` row, 3 `anti_air_building` rows, 6 `arms_factory` rows and 6 `industrial_complex` rows.
-- The last column is non-zero in all 4696 `naval_base_spawn` and `floating_harbor` rows and 0 in all other rows.
+- The last column is non-zero in all 4696 `naval_base_spawn` and `floating_harbor` rows and 0 in all other rows. It is a sea province in the 2362 `naval_base_spawn` rows and a land province in the 2334 `floating_harbor` rows.
 - The page's overview says each state needs one province for the air base and the rocket site. The 1081 single `air_base` and `rocket_site_spawn` rows are the data behind that.
 - The page warns that a new state without these rows crashes the game. Why it crashes is not stated in any game file. [unverified] `map/buildings.txt`
 
@@ -118,9 +119,9 @@ The window `nudge_window_buildings` has these controls. All rows: [vanilla-confi
 
 What the buttons do is read from their labels; no game file describes them. In particular "Random" probably places models and "Validate" probably checks the rows against rules like the list above. [unverified] `interface/nudge.gui`
 
-The define `DEFAULT_NUDGE_FLOATING_HARBOR_DIST = 7.0` is the default distance of a floating harbor from the coast in pixels, "for nudger". [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`
+The define `DEFAULT_NUDGE_FLOATING_HARBOR_DIST = 7.0` is the default distance of a floating harbor from the coast in pixels, "for nudger". [vanilla-confirmed 1.19.4.1] `common/defines/00_graphics.lua`
 
-The game folder holds `buildings_nudger_markers.txt` (874 bytes). Every byte is NUL (0x00), so it is not a readable text file; its name is also a string in `hoi4.exe`. It probably stores the marks set with "Mark/Unmark", but no game file says so. [vanilla-confirmed 1.19.3] `buildings_nudger_markers.txt`. The purpose is [unverified] `hoi4.exe`
+The game folder holds `buildings_nudger_markers.txt` (874 bytes). Every byte is NUL (0x00), so it is not a readable text file; its name is also a string in `hoi4.exe`. It probably stores the marks set with "Mark/Unmark", but no game file says so. [vanilla-confirmed 1.19.4.1] `buildings_nudger_markers.txt`. The purpose is [unverified] `hoi4.exe`
 <!-- kit:end id="nudger-buildings" -->
 
 ## Strategic regions <a id="Strategic_regions"></a>
@@ -223,7 +224,7 @@ Vanilla `map/unitstacks.txt`, as a reference for a nudged file. All rows: [vanil
 
 The window `nudge_window_units` has: "Save", "Cancel", "Mark/Unmark" (key `m`), "Auto in Prov" (key `a`), "Auto in All", a list `stacks_list` and a `hints` text box. All rows: [vanilla-confirmed 1.19.3] `interface/nudge.gui`. "Auto" probably generates positions for the selected province or for all provinces; that is read from the label only. [unverified] `interface/nudge.gui`
 
-The game folder holds `unit_nudger_markers.txt` (13208 bytes), also all NUL bytes and named in `hoi4.exe`, probably the unit counterpart of the buildings marker file. [vanilla-confirmed 1.19.3] `unit_nudger_markers.txt`. The purpose is [unverified] `hoi4.exe`
+The game folder holds `unit_nudger_markers.txt` (13208 bytes), also all NUL bytes and named in `hoi4.exe`, probably the unit counterpart of the buildings marker file. [vanilla-confirmed 1.19.4.1] `unit_nudger_markers.txt`. The purpose is [unverified] `hoi4.exe`
 <!-- kit:end id="nudger-units" -->
 
 ## Supply <a id="Supply"></a>
@@ -262,7 +263,7 @@ While `^Ctrl`, the edit mode is enabled. Letting go of `^Ctrl` will immediately 
 ## References and notes <a id="References_and_notes"></a>
 
 <!-- kit:begin id="nudger-references" at="section:References_and_notes" -->
-**Kit addition** Which file each nudger section works on, with the size of the vanilla file. The file names come from the page text; the sizes were counted in the installed game. All rows: [vanilla-confirmed 1.19.3] the files named in the table.
+**Kit addition** Which file each nudger section works on, with the size of the vanilla file. The file names come from the page text; the sizes were counted in the installed game. All rows: [vanilla-confirmed 1.19.4.1] the files named in the table.
 
 | Section | File | Vanilla size |
 | --- | --- | --- |

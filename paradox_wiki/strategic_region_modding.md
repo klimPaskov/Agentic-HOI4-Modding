@@ -2,11 +2,12 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Strategic region modding", revision 54730, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="54730" sources="map/strategicregions/ map/definition.csv map/weatherpositions.txt common/weather.txt common/terrain/ common/modifiers/00_static_modifiers.txt history/states/ localisation/english/strategic_region_names_l_english.yml documentation/effects_documentation.md documentation/triggers_documentation.md hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="54730" sources="map/strategicregions/ map/definition.csv map/weatherpositions.txt common/weather.txt common/terrain/ common/modifiers/00_static_modifiers.txt history/states/ localisation/english/strategic_region_names_l_english.yml documentation/effects_documentation.md documentation/triggers_documentation.md hoi4.exe" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all 304 vanilla files in `map/strategicregions/` (parsed, not sampled), `common/weather.txt`, the terrain categories and the state files.
 Kit blocks added: the keys vanilla uses that the wiki omits (`naval_terrain`, `static_modifiers`, `arctic_water`), vanilla counts, script that takes a region id, and the map errors the exe prints.
 Gaps left: map errors that exist only as strings in `hoi4.exe` are tagged `[unverified]`. The page's statement that skipped ids crash the game was not tested.
 The "no longer used" marker is the struck-through `temperature_day_night` line; vanilla agrees (no region file uses it).
+**1.19.4.1 re-check (2026-11-01).** 4 kit statements depended on files the update changed (the state history files, the strings of `hoi4.exe` and the script folders scanned for `add_region_efficiency`) and all were re-measured. Nothing changed: none of the 1081 state files has provinces in two regions, the three exe error texts are still there and no vanilla file uses `add_region_efficiency`. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -92,7 +93,7 @@ Each of the weather states are given a weight, determining how likely the state 
 <!-- kit:begin id="region-tips-checks" at="section:Tips" -->
 **Kit note** `hoi4.exe` contains the map error text "Strategic region ... is fractioned! The following provinces are separated from the rest", which suggests that a region made of disconnected provinces is reported as a MAP_ERROR. [unverified] Exe string only (`hoi4.exe`), not run.
 
-Vanilla also satisfies the other rules around regions: each of the 13413 provinces in `map/definition.csv` (every id except 0) is listed in exactly one region, sea and lake provinces included, and none of the 1081 state files has provinces in two different regions. [vanilla-confirmed 1.19.3] `map/strategicregions/`, `map/definition.csv`, `history/states/`
+Vanilla also satisfies the other rules around regions: each of the 13413 provinces in `map/definition.csv` (every id except 0) is listed in exactly one region, sea and lake provinces included, and none of the 1081 state files has provinces in two different regions. [vanilla-confirmed 1.19.4.1] `map/strategicregions/`, `map/definition.csv`, `history/states/`
 
 The exe also has the error texts "The land province ... has no strategic region assigned" and a state definition "belonging to different strategic areas". [unverified] Exe strings only.
 <!-- kit:end id="region-tips-checks" -->

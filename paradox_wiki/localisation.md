@@ -2,11 +2,12 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Localisation", revision 105503, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="105503" sources="documentation/loc_objects_documentation.md documentation/loc_formatter_documentation.md documentation/script_concept_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md documentation/console_commands_documentation.md localisation/ interface/core.gfx interface/texticons.gfx common/scripted_localisation/ launcher-settings.json hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105503" sources="documentation/loc_objects_documentation.md documentation/loc_formatter_documentation.md documentation/script_concept_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md documentation/console_commands_documentation.md localisation/ interface/core.gfx interface/texticons.gfx common/scripted_localisation/ launcher-settings.json hoi4.exe" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the localisation object, formatter and script-concept documentation, the 2,083 vanilla `.yml` files (encoding, file names, key lines, colour, format and icon use), `interface/core.gfx` and `interface/texticons.gfx`, all 42 files of `common/scripted_localisation/`, `launcher-settings.json` and strings in `hoi4.exe`.
 Kit blocks added: vanilla file facts, colour codes with real use and the dynamic `§[Name]` colour, variable format letters (`U`, `H`, `^`, `*`), text icons, bindable tooltip rules, the missing `country_leader_desc` formatter, the object and promotion table with the three missing properties, the scripted localisation scope rule and `seed`, war names, division ranks and the `loc_check` commands.
 Errors found in the wiki text: the language setting file name (`pdx_settings.txt` versus `pdx_settings.json`), `GetCallsign` listed for operatives (the documentation puts it on aces), pronoun functions listed for characters only, and the formatter list lacks `country_leader_desc`.
 Gaps left: the stub markers "to be added" and "incomplete" are false positives (an `INDENT` description and the page's own caveat that its list of places where `[...]` works may be incomplete, which was not extended). `DATA`, `NAME`, `USRNAME` and `temp_display_B`, `_M`, `_T` are placeholder names in examples. The `0xC0000005` crash, the `replace` folder priority and the meaning of the `U` format letter cannot be shown from files and stay [unverified].
+**1.19.4.1 re-check (2026-11-01).** 27 statements depended on files the update changed (the localisation folder, `interface/core.gfx`, `interface/texticons.gfx`, `hoi4.exe`, `launcher-settings.json`, `common/scripted_localisation/` and the console command documentation) and all 27 were re-measured. Numbers that moved: 2,093 `.yml` files (the 10 new ones are `keybinds_l_<language>.yml`), 1,336,123 key lines, 346 English lines with a trailing comment, the colour letter and format letter counts, 473 text icon sprite blocks, the `£` style counts and 1,546 `defined_text` entries in 41 files (the removed `debug_types` console command is not mentioned on this page). Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -79,15 +80,15 @@ In order for a file to work, it must have the following:
   - The localisation value must be surrounded by a U+022 quotation mark on both sides and must lie strictly on one line. Failing to meet this will break the rest of the file.
 
 <!-- kit:begin id="loc-vanilla-file-facts" at="section:Quick_checklist" -->
-**Kit addition** What the 1.19.3 localisation folder looks like. All items: [vanilla-confirmed 1.19.3] `localisation/`, unless tagged otherwise.
+**Kit addition** What the 1.19.4.1 localisation folder looks like. All items: [vanilla-confirmed 1.19.4.1] `localisation/`, unless tagged otherwise.
 
-- There are 2,083 `.yml` files and every one starts with the UTF-8 byte order mark. 2,082 sit in the ten language folders (`english`, `braz_por`, `french`, `german`, `japanese`, `korean`, `polish`, `russian`, `simp_chinese`, `spanish`), and 2,081 of those are named `<name>_l_<language>.yml` for their folder's language. The exception is `french/career_profile_zelosissimo.yml`, a leftover that holds only comments. The 2,083rd file is `localisation/languages.yml`, the table of language names.
+- There are 2,093 `.yml` files and every one starts with the UTF-8 byte order mark. 2,092 sit in the ten language folders (`english`, `braz_por`, `french`, `german`, `japanese`, `korean`, `polish`, `russian`, `simp_chinese`, `spanish`), and 2,091 of those are named `<name>_l_<language>.yml` for their folder's language. The exception is `french/career_profile_zelosissimo.yml`, a leftover that holds only comments. The 2,093rd file is `localisation/languages.yml`, the table of language names.
 - `languages.yml` has one block per language with the same ten entries as the page's list. `l_braz_por` is "Português do Brasil", Brazilian Portuguese.
-- 2,073 files start with the matching `l_<language>:` header on line 1; the other 9 begin with a `# === [LocEditor:...]` comment. No file in a language folder holds two language headers, although the page says one is allowed; `languages.yml` holds ten.
-- There are 1,309,915 key lines. 1,307,569 have no version number (`key: "text"`), 2,067 use `key:0` and 279 use `key:1` to `key:4`. New files can drop the number, as the page says.
-- A key line can end with a `# comment` after the closing quote; 319 English lines do.
+- 2,083 files start with the matching `l_<language>:` header on line 1; the other 9 begin with a `# === [LocEditor:...]` comment. No file in a language folder holds two language headers, although the page says one is allowed; `languages.yml` holds ten.
+- There are 1,336,123 key lines. 1,333,745 have no version number (`key: "text"`), 2,099 use `key:0` and 279 use `key:1` to `key:4`. New files can drop the number, as the page says.
+- A key line can end with a `# comment` after the closing quote; 346 English lines do.
 - No vanilla language folder has a `replace` subfolder. `hoi4.exe` contains the strings `/replace/`, "Duplicate localization found", "The game has loc key collisions. Check logs/text.log" and "should be in in utf-8-bom encoding", which fit the page's `replace` and `text.log` text. [unverified] (strings in `hoi4.exe`)
-- The page says the language is set in `pdx_settings.txt`. `launcher-settings.json` names `pdx_settings.json` as `ingameSettingsPath`, and `hoi4.exe` still contains the string `pdx_settings.txt`. Which file holds the language is [unverified]. [vanilla-confirmed 1.19.3] `launcher-settings.json` for the first part.
+- The page says the language is set in `pdx_settings.txt`. `launcher-settings.json` names `pdx_settings.json` as `ingameSettingsPath`, and `hoi4.exe` still contains the string `pdx_settings.txt`. Which file holds the language is [unverified]. [vanilla-confirmed 1.19.4.1] `launcher-settings.json` for the first part.
 <!-- kit:end id="loc-vanilla-file-facts" -->
 
 ## Basics <a id="Basics"></a>
@@ -186,10 +187,10 @@ New text colours can be added by expanding the `textcolors = { ... }` array in `
 <!-- kit:begin id="loc-colour-codes" at="section:Colouring_characters" -->
 **Kit addition** The colour table checked against the game.
 
-- The global `textcolors` table in `interface/core.gfx` has exactly the 23 one-character keys of the table above: `C L W B G R b g Y H T O`, `0` to `9` and `t`. [vanilla-confirmed 1.19.3] `interface/core.gfx`.
-- Fonts can change single letters. 30 `textcolors` blocks exist in three files (`core.gfx` 27, `core_bare_minimum.gfx` 1, `load_screen_font.gfx` 2): the global table plus per-font tables. The `vic_18_black` font redefines `G`, `R`, `Y`, `H` and `T`; there `Y` is black (`0 0 0`). [vanilla-confirmed 1.19.3] `interface/core.gfx`.
-- Use in the 207 English files: `§!` 19,949 times, `Y` 12,131, `G` 2,819, `R` 2,249, `H` 1,837, `L` 391, `T` 213, `W` 184, `g` 88, `O` 11, `b` 4, `B` 2, and `0`, `7` and `8` seven times in total. `C`, `t` and the digits `1` to `6` and `9` are never used. `B` is pure blue (`0 0 255`) and nearly unused; vanilla highlights with `Y`, good and bad values with `G` and `R`, headings with `H`. [vanilla-confirmed 1.19.3] `localisation/english/*.yml`.
-- A colour letter can come from scripted localisation: `§[GetColorX]text§!`. In `WUW_GER_scripted_loc.txt` the entries are `localization_key = R` and `localization_key = G`; no localisation key named `R` or `G` exists, so the game prints the key text itself, which is the colour letter. Vanilla uses this form 13 times in 5 English files, for example `§[GetColorForCurrentIntegratedPuppetEconomiesValue][?GER_puppet_economies_integrated]§!`. [vanilla-confirmed 1.19.3] `common/scripted_localisation/WUW_GER_scripted_loc.txt`, `localisation/english/WUW_decisions_l_english.yml`.
+- The global `textcolors` table in `interface/core.gfx` has exactly the 23 one-character keys of the table above: `C L W B G R b g Y H T O`, `0` to `9` and `t`. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`.
+- Fonts can change single letters. 30 `textcolors` blocks exist in three files (`core.gfx` 27, `core_bare_minimum.gfx` 1, `load_screen_font.gfx` 2): the global table plus per-font tables. The `vic_18_black` font redefines `G`, `R`, `Y`, `H` and `T`; there `Y` is black (`0 0 0`). [vanilla-confirmed 1.19.4.1] `interface/core.gfx`.
+- Use in the 208 English files: `§!` 20,262 times, `Y` 12,297, `G` 2,893, `R` 2,298, `H` 1,860, `L` 391, `T` 213, `W` 185, `g` 89, `O` 10, `b` 4, `B` 2, and `0`, `7` and `8` seven times in total. `C`, `t` and the digits `1` to `6` and `9` are never used. `B` is pure blue (`0 0 255`) and nearly unused; vanilla highlights with `Y`, good and bad values with `G` and `R`, headings with `H`. [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
+- A colour letter can come from scripted localisation: `§[GetColorX]text§!`. In `WUW_GER_scripted_loc.txt` the entries are `localization_key = R` and `localization_key = G`; no localisation key named `R` or `G` exists, so the game prints the key text itself, which is the colour letter. Vanilla uses this form 13 times in 5 English files, for example `§[GetColorForCurrentIntegratedPuppetEconomiesValue][?GER_puppet_economies_integrated]§!`. [vanilla-confirmed 1.19.4.1] `common/scripted_localisation/WUW_GER_scripted_loc.txt`, `localisation/english/WUW_decisions_l_english.yml`.
 - Both error messages in the Errors section below exist in `hoi4.exe`: "Could not find coloring for character '%c'" and "Could not find coloring for character id '%u'". [unverified] (strings in `hoi4.exe`)
 <!-- kit:end id="loc-colour-codes" -->
 
@@ -244,11 +245,11 @@ l_english:
 Within these examples, the first string depicts the current scope's democratic popularity as a percentage multiplied by 100 (%), in green (G), rounded to a whole number with 0 decimals (0). The second string displays the `my_modifier` [modifier token](<modifiers.md>)'s value as a 'good' number (+ making it green if positive, red if negative), with a percentage sign appended in the end (%%) and rounded to a number with one decimal (.1). The third string displays the variable in yellow colouring (as is common in the base game's tooltips), leaving it unchanged otherwise.
 
 <!-- kit:begin id="loc-variable-formats" at="section:Formatting_variables" -->
-**Kit addition** Format letters as vanilla uses them. All items: [vanilla-confirmed 1.19.3] `localisation/english/*.yml`.
+**Kit addition** Format letters as vanilla uses them. All items: [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
 
-- The same letters work on `$KEY|fmt$` placeholders as on `[?var|fmt]`. English vanilla has 352 distinct `$KEY|fmt$` strings and 40 distinct `[?var|fmt]` strings. The commonest `$KEY|fmt$` forms are `|H` (2,880 uses), `|Y` (1,313), `|+=%1` (288) and `|UY` (191). The commonest `[?var|fmt]` forms are `|+0` (145), `|Y0` (82) and `|%` (60).
+- The same letters work on `$KEY|fmt$` placeholders as on `[?var|fmt]`. English vanilla has 353 distinct `$KEY|fmt$` strings and 41 distinct `[?var|fmt]` strings. The commonest `$KEY|fmt$` forms are `|H` (2,896 uses), `|Y` (1,323), `|+=%1` (288) and `|UY` (191). The commonest `[?var|fmt]` forms are `|+0` (145), `|Y0` (82) and `|%` (50).
 - Any colour letter from the colour table can be a format letter: `H`, `Y`, `R`, `G`, `g`, `W`, `L`, `T` and `O` all occur after the pipe. `H` leads in placeholders, `Y` in `[?var|...]`.
-- A dot in the format string, as in `|.1`, occurs 308 times, `*` 115 times and `^` 67 times, and `%%` occurs as in `$LIMIT|R.0%%$`, so these forms from the table are all in real use.
+- A dot in the format string, as in `|.1`, occurs 309 times, `*` 115 times and `^` 69 times, and `%%` occurs as in `$LIMIT|R.0%%$`, so these forms from the table are all in real use.
 - The letter `U`, not in the table above, occurs 352 times, mostly as `$COUNTRY|U$` or `$COUNTRY|UY$` at the start of a sentence. It presumably upper-cases the first letter. [unverified] (meaning inferred from the sentence position)
 <!-- kit:end id="loc-variable-formats" -->
 
@@ -281,10 +282,10 @@ The text icon's name is equal to the text icon with the GFX_ part in the beginni
 If the sprite of the text icon is made out of multiple frames, then the specified frame can be used in localisation as `£icon_name|1`, this example being the first frame. Note that `legacy_lazy_load = no` is necessary for multi-framed text icons to work properly. It is also required to make the icon appear on game start without reloading/modifying interface files, so you should include it.
 
 <!-- kit:begin id="loc-text-icons" at="section:Text_icons" -->
-**Kit addition** Text icons in 1.19.3. All items: [vanilla-confirmed 1.19.3] `interface/texticons.gfx`, `localisation/english/*.yml`.
+**Kit addition** Text icons in 1.19.4.1. All items: [vanilla-confirmed 1.19.4.1] `interface/texticons.gfx`, `localisation/english/*.yml`.
 
-- Vanilla defines its text icons in `interface/texticons.gfx`: 472 sprite blocks with textures in `gfx/texticons/` (427 written `spriteType`, 45 written `SpriteType`). 471 set `legacy_lazy_load = no` and 259 set `noOfFrames`, the frame count that `£name|N` indexes.
-- Both ways to write the icon occur. English vanilla uses `£army_experience` style 1,760 times and `£GFX_army_experience` style 284 times, and `£name|N` with a frame 150 times. Prefer the short form, as the page's own paragraph describes.
+- Vanilla defines its text icons in `interface/texticons.gfx`: 473 sprite blocks, most with textures in `gfx/texticons/` (428 written `spriteType`, 45 written `SpriteType`). 472 set `legacy_lazy_load = no` and 260 set `noOfFrames`, the frame count that `£name|N` indexes.
+- Both ways to write the icon occur. English vanilla uses `£army_experience` style 1,580 times and `£GFX_army_experience` style 351 times, and `£name|N` with a frame 150 times. All counts are a `£` followed by letters, digits and underscores. Prefer the short form, as the page's own paragraph describes.
 <!-- kit:end id="loc-text-icons" -->
 
 ## Nesting strings <a id="Nesting_strings"></a>
@@ -306,9 +307,9 @@ One notable usage of strictly internal variables is in country names, as these o
 <!-- kit:begin id="loc-nesting-dollar" at="section:Nesting_strings" -->
 **Kit note** The doubled dollar sign has no vanilla precedent.
 
-- In vanilla, `$$` appears where two placeholders touch, as in `$TAG$$CONTROL|H$` or `$VAL_HIGH|G%$$VAL_MID|H%$` (130 English values). No English vanilla value uses `$$` as a literal dollar sign before a digit, bracket or space. [vanilla-confirmed 1.19.3] `localisation/english/*.yml`.
+- In vanilla, `$$` appears where two placeholders touch, as in `$TAG$$CONTROL|H$` or `$VAL_HIGH|G%$$VAL_MID|H%$` (130 English values). No English vanilla value uses `$$` as a literal dollar sign before a digit, bracket or space. [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
 - The page's `$$100` and `$$[?temp_display_T|2]T` examples rest on the wiki alone. If a literal dollar must appear, test the exact string in game with `reload loc` first. [unverified]
-- Three examples on this page are real vanilla lines: `confirm_cancel_national_focus_desc` (`$FOCUS_NAME$`), `SCIENTIST_ROSTER_SORT_BUTTON_TOOLTIP` (`$REASON|Y$`) and `COUNTRY_autonomy_collaboration_government` (`$OVERLORDADJ$ $NONIDEOLOGY$`). [vanilla-confirmed 1.19.3] `localisation/english/*.yml`.
+- Three examples on this page are real vanilla lines: `confirm_cancel_national_focus_desc` (`$FOCUS_NAME$`), `SCIENTIST_ROSTER_SORT_BUTTON_TOOLTIP` (`$REASON|Y$`) and `COUNTRY_autonomy_collaboration_government` (`$OVERLORDADJ$ $NONIDEOLOGY$`). [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
 <!-- kit:end id="loc-nesting-dollar" -->
 
 ## Bindable localisation <a id="Bindable_localisation"></a>
@@ -550,7 +551,7 @@ custom_effect_tooltip = {
 }
 ```
 
-Vanilla uses `idea_desc|` 263 times (249 in `common/`, 14 in `events/`), `building_state_modifier|` 27 times and `tech_effect|` 24 times; the other five formatters have no vanilla use. Vanilla passes `INDENT = "    "` as literal spaces; the documentation's `2_SPACES` is not a localisation key in vanilla. [vanilla-confirmed 1.19.3] `common/`, `events/`, `localisation/english/`.
+Vanilla uses `idea_desc|` 263 times (249 in `common/`, 14 in `events/`), `building_state_modifier|` 27 times and `tech_effect|` 24 times; the other five formatters have no vanilla use. Vanilla passes `INDENT = "    "` as literal spaces; the documentation's `2_SPACES` is not a localisation key in vanilla. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `localisation/english/`.
 <!-- kit:end id="loc-formatters-complete" -->
 
 ## Contextual Localization <a id="Contextual_Localization"></a>
@@ -638,10 +639,10 @@ for which localization objects that are defined for that context.
 | `IndustrialOrg` | `Owner` | none |
 
 - The list "Some of the localization objects are" above omits `Faction`, `LocalizationEnvironment` and `Scope`. [docs] `documentation/loc_objects_documentation.md`.
-- The ten pronoun functions (`GetSheHe`, `GetSheHeCap`, `GetHerHim`, `GetHerHimCap`, `GetHerHis`, `GetHerHisCap`, `GetHersHis`, `GetHersHisCap`, `GetHerselfHimself`, `GetHerselfHimselfCap`) exist on `Country` (for the country's leader), `UnitLeader`, `Ace` and `Character`. The page lists them under characters only. Vanilla usually chains through the leader, as in `[FROM.GetLeader.GetHerHis]`. [docs] `documentation/loc_objects_documentation.md`, [vanilla-confirmed 1.19.3] `localisation/english/*.yml`.
-- `GetCallsign` belongs to `Ace` and `GetCodeName` to `UnitLeader` (the operative leader). The "Other scopes" table above gives `GetCallsign` as an operative function. Vanilla uses `[From.GetCallsign]` and `[Prev.GetCallsign]` in ace texts. [docs] `documentation/loc_objects_documentation.md`, [vanilla-confirmed 1.19.3] `localisation/english/*.yml`.
-- Promotions work inside ordinary bracket chains. Vanilla uses `[ROOT.Capital.GetName]` and `[ROOT.Capital.GetCapitalVictoryPointName]`, `[From.Owner.GetAdjective]` (14 uses) and `[FROM.Controller.GetNameDef]`. Vanilla GUI text roots a chain at an object: `[Character.GetName]` (35 uses), `[SpecialProject.GetName]` (22), `[State.GetName]` (10), `[Country.GetNameWithFlag]` (6), and the condition form `[(Character?.GetName:'KEY)]` twice. [vanilla-confirmed 1.19.3] `localisation/english/*.yml`.
-- `GetDateString`, `GetDateStringShortMonth`, `GetDateStringNoHour`, `GetDateStringNoHourLong`, `GetTokenKey` and `GetTokenLocalizedKey` in the tables above are not in the objects documentation. They are strings in `hoi4.exe`. Vanilla localisation uses two of them: `[?global.date.GetDateStringShortMonth]` and `[?BUL.BUL_date_of_tsars_death.GetDateStringNoHourLong]`. [unverified] (strings in `hoi4.exe`), [vanilla-confirmed 1.19.3] for the two uses.
+- The ten pronoun functions (`GetSheHe`, `GetSheHeCap`, `GetHerHim`, `GetHerHimCap`, `GetHerHis`, `GetHerHisCap`, `GetHersHis`, `GetHersHisCap`, `GetHerselfHimself`, `GetHerselfHimselfCap`) exist on `Country` (for the country's leader), `UnitLeader`, `Ace` and `Character`. The page lists them under characters only. Vanilla usually chains through the leader, as in `[FROM.GetLeader.GetHerHis]`. [docs] `documentation/loc_objects_documentation.md`, [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
+- `GetCallsign` belongs to `Ace` and `GetCodeName` to `UnitLeader` (the operative leader). The "Other scopes" table above gives `GetCallsign` as an operative function. Vanilla uses `[From.GetCallsign]` and `[Prev.GetCallsign]` in ace texts. [docs] `documentation/loc_objects_documentation.md`, [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
+- Promotions work inside ordinary bracket chains. Vanilla uses `[ROOT.Capital.GetName]` and `[ROOT.Capital.GetCapitalVictoryPointName]`, `[From.Owner.GetAdjective]` (14 uses) and `[FROM.Controller.GetNameDef]`. Vanilla GUI text roots a chain at an object: `[Character.GetName]` (35 uses), `[SpecialProject.GetName]` (22), `[State.GetName]` (10), `[Country.GetNameWithFlag]` (6), and the condition form `[(Character?.GetName:'KEY)]` twice. [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
+- `GetDateString`, `GetDateStringShortMonth`, `GetDateStringNoHour`, `GetDateStringNoHourLong`, `GetTokenKey` and `GetTokenLocalizedKey` in the tables above are not in the objects documentation. They are strings in `hoi4.exe`. Vanilla localisation uses two of them: `[?global.date.GetDateStringShortMonth]` and `[?BUL.BUL_date_of_tsars_death.GetDateStringNoHourLong]`. [unverified] (strings in `hoi4.exe`), [vanilla-confirmed 1.19.4.1] for the two uses.
 <!-- kit:end id="loc-objects-promotions" -->
 
 ## Namespaces <a id="Namespaces"></a>
@@ -820,10 +821,10 @@ defined_text = {
 ```
 
 <!-- kit:begin id="loc-scripted-scope-and-seed" at="section:Scripted_localisation" -->
-**Kit addition** Scripted localisation as vanilla writes it. All items: [vanilla-confirmed 1.19.3] `common/scripted_localisation/`.
+**Kit addition** Scripted localisation as vanilla writes it. All items: [vanilla-confirmed 1.19.4.1] `common/scripted_localisation/`.
 
 - The header comment of `00_scripted_localisation.txt` says the `trigger` blocks must be valid for the scope the key is called in, giving Root or From.From as examples. Vanilla calls the entry as `[ROOT.GetImportOrDomesticFilmIndustry]` and also as a bare `[GetReichsWerkeName]`, so write the call with the scope your triggers expect.
-- Vanilla has 1,537 `defined_text` entries in 42 files. Entries commented `# Country` expect a country scope.
+- Vanilla has 1,546 `defined_text` entries in 41 of the 42 files (`WUW_BEL_scripted_loc.txt` holds only the comment template). Entries commented `# Country` expect a country scope.
 - `random_list` takes `seed = <scoped variable>` before its weights. The vanilla comment: without a seed the roll is drawn from the country and gives the same result each time. `00_war_propaganda_scripted_loc.txt` uses `seed = num_of_controlled_factories` in its 12 `random_list` blocks.
 - A quoted `localization_key` that is not a key is printed as written, with `[?var]` references resolved: `localization_key = "[?PRC_initialize_five_year_plan_current_civ_factories] / [?PRC_initialize_five_year_plan_goal_civ_factories]"`. No yml entry is needed. `SEA_PRC_scripted_loc.txt` has several.
 
@@ -968,7 +969,7 @@ DIVISION_EXPERIENCE_TITLE_ARMY_EXPERIENCE_4:""
 The base game default goes from Brigadier (0) to Lieutenant-General (4)
 
 <!-- kit:begin id="loc-division-rank-overrides" at="section:Division_Commander_Ranks" -->
-**Kit addition** Each key can be prefixed with a tag: `GER_DIVISION_EXPERIENCE_TITLE_ARMY_EXPERIENCE_0` overrides the generic key for Germany. Vanilla English defines the override for 25 tags (`CHI`, `ETH`, `FIN`, `FRA`, `GDC`, `GER`, `GSM`, `GXC`, `HBC`, `ITA`, `JAP`, `KHM`, `KUM`, `NOR`, `NXM`, `PRC`, `SHX`, `SIC`, `SIK`, `SND`, `SOV`, `USA`, `XIC`, `XSM`, `YUN`); `USA` defines only levels 0 and 1. The generic values are `Brigadier` for 0 and 1, `Major-General` for 2 and 3, and `Lt-General` for 4. [vanilla-confirmed 1.19.3] `localisation/english/unit_medals_l_english.yml`.
+**Kit addition** Each key can be prefixed with a tag: `GER_DIVISION_EXPERIENCE_TITLE_ARMY_EXPERIENCE_0` overrides the generic key for Germany. Vanilla English defines the override for 25 tags (`CHI`, `ETH`, `FIN`, `FRA`, `GDC`, `GER`, `GSM`, `GXC`, `HBC`, `ITA`, `JAP`, `KHM`, `KUM`, `NOR`, `NXM`, `PRC`, `SHX`, `SIC`, `SIK`, `SND`, `SOV`, `USA`, `XIC`, `XSM`, `YUN`); `USA` defines only levels 0 and 1. The generic values are `Brigadier` for 0 and 1, `Major-General` for 2 and 3, and `Lt-General` for 4. [vanilla-confirmed 1.19.4.1] `localisation/english/unit_medals_l_english.yml`.
 <!-- kit:end id="loc-division-rank-overrides" -->
 
 ## References <a id="References"></a>

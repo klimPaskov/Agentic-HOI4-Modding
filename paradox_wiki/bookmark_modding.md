@@ -2,11 +2,12 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Bookmark modding", revision 81580, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="81580" sources="common/bookmarks/ common/game_rules/00_game_rules.txt common/difficulty_settings/00_difficulty.txt common/modifiers/00_static_modifiers.txt common/defines/00_defines.lua interface/frontendgamesetupview.gui interface/frontendgamesetupview.gfx documentation/effects_documentation.md" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="81580" sources="common/bookmarks/ common/game_rules/00_game_rules.txt common/difficulty_settings/00_difficulty.txt common/modifiers/00_static_modifiers.txt common/defines/00_defines.lua interface/frontendgamesetupview.gui interface/frontendgamesetupview.gfx documentation/effects_documentation.md" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: both vanilla bookmark files, the game rule and difficulty setting files, the setup screen GUI and the START_DATE defines.
 - Kit blocks added: `bookmark-1193-keys` (bookmark and country-entry keys the wiki lacks: `filters`, `version`, `required_dlc`, `assume_not_played_if_missing_data`, `override_leader_portrait`, six commented layout switches), `bookmark-effect-weather`, `bookmark-date-defines`, `bookmark-ui-limits`, `bookmark-difficulty-vanilla`, `bookmark-game-rules-1193`.
 - Errors found: the focus card limit is 4, not 3, in the 1.19.3 GUI; the stated default date `2.1.1.1` is not confirmed; the example rule group names are examples only.
 - Gaps left: what `version`, `assume_not_played_if_missing_data` and the `new_content` filter do at runtime is not documented anywhere in the game files.
+**1.19.4.1 re-check (2026-11-01).** 8 tagged statements depended on files the update changed (`common/bookmarks/blitzkrieg.txt`, `common/defines/00_defines.lua` and the setup screen localisation), and all of them were re-measured. Nothing moved: still 152 country entries, the same `version` values, 3 focuses on every entry, the seeds 12345 and 22345, and the START_DATE defines. The statement that vanilla entries list 3 ideas is corrected to 114 of 152, since some entries list fewer or more. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -61,7 +62,7 @@ These attributes go into a `bookmark = { ... }` block. Each of the arguments of 
 <!-- kit:begin id="bookmark-1193-keys" at="section:Attributes" -->
 **Kit addition** Keys of the 1.19.3 bookmark format that the list above does not name.
 
-Bookmark-level keys. Row 1: [vanilla-confirmed 1.19.3] `common/bookmarks/the_gathering_storm.txt` and `blitzkrieg.txt` (both set `filters = { new_content continent }`). Rows 2 to 8 exist only in comments of `the_gathering_storm.txt`; each token is also a string in `hoi4.exe`. Defaults are the comment's and untested [unverified].
+Bookmark-level keys. Row 1: [vanilla-confirmed 1.19.4.1] `common/bookmarks/the_gathering_storm.txt` and `blitzkrieg.txt` (both set `filters = { new_content continent }`). Rows 2 to 8 exist only in comments of `the_gathering_storm.txt`; each token is also a string in `hoi4.exe`. Defaults are the comment's and untested [unverified].
 
 | Key | Value | Meaning |
 | --- | --- | --- |
@@ -74,7 +75,7 @@ Bookmark-level keys. Row 1: [vanilla-confirmed 1.19.3] `common/bookmarks/the_gat
 | `apply_filter_to_other_country` | yes/no, default no | By default the `"---"` entry is always shown; when yes it obeys the filter |
 | `scrollable_country_list` | yes/no, default no | Scrolls the small-flag list with a vertical scrollbar instead of the overflow dropdown |
 
-Country-entry keys beyond the wiki list. Counts are from both vanilla files together. [vanilla-confirmed 1.19.3] `common/bookmarks/` for the keys and counts; what the engine does with `version` and `assume_not_played_if_missing_data` is [unverified].
+Country-entry keys beyond the wiki list. Counts are from both vanilla files together. [vanilla-confirmed 1.19.4.1] `common/bookmarks/` for the keys and counts; what the engine does with `version` and `assume_not_played_if_missing_data` is [unverified].
 
 | Key | Seen | Meaning |
 | --- | --- | --- |
@@ -104,13 +105,13 @@ Base-plus-DLC pair, the vanilla pattern for a country that changes with a DLC:
 }
 ```
 
-Example: [vanilla-confirmed 1.19.3] `common/bookmarks/the_gathering_storm.txt` (FRA entries, ideas and focuses shortened to one line). Vanilla `ideology` values: `neutrality` (76), `democratic` (45), `fascism` (21), `communism` (10). [vanilla-confirmed 1.19.3] `common/bookmarks/`.
+Example: [vanilla-confirmed 1.19.3] `common/bookmarks/the_gathering_storm.txt` (FRA entries, ideas and focuses shortened to one line). Vanilla `ideology` values: `neutrality` (76), `democratic` (45), `fascism` (21), `communism` (10). [vanilla-confirmed 1.19.4.1] `common/bookmarks/`.
 <!-- kit:end id="bookmark-1193-keys" -->
 
 <!-- kit:begin id="bookmark-effect-weather" at="section:Attributes" -->
-**Kit note** Both vanilla bookmarks end with an `effect` block whose only live line is `randomize_weather = <seed>`, followed by the vanilla comment "Obligatory in every bookmark". Seeds are 12345 in `blitzkrieg.txt` and 22345 in `the_gathering_storm.txt`; give each bookmark of a mod its own seed. [vanilla-confirmed 1.19.3] `common/bookmarks/blitzkrieg.txt`, `the_gathering_storm.txt`.
+**Kit note** Both vanilla bookmarks end with an `effect` block whose only live line is `randomize_weather = <seed>`, followed by the vanilla comment "Obligatory in every bookmark". Seeds are 12345 in `blitzkrieg.txt` and 22345 in `the_gathering_storm.txt`; give each bookmark of a mod its own seed. [vanilla-confirmed 1.19.4.1] `common/bookmarks/blitzkrieg.txt`, `the_gathering_storm.txt`.
 
-`randomize_weather` is documented as a one-line effect usable in any scope and takes no documented parameters. [docs] `documentation/effects_documentation.md`. The commented line `#123 = { rain_light = yes }` in both files is not a documented effect (`rain_light` is a weather type defined in `common/weather.txt`), so do not copy it as a working example. [vanilla-confirmed 1.19.3] `common/weather.txt`; no `rain_light` effect in `documentation/effects_documentation.md`.
+`randomize_weather` is documented as a one-line effect usable in any scope and takes no documented parameters. [docs] `documentation/effects_documentation.md`. The commented line `#123 = { rain_light = yes }` in both files is not a documented effect (`rain_light` is a weather type defined in `common/weather.txt`), so do not copy it as a working example. [vanilla-confirmed 1.19.4.1] `common/weather.txt`; no `rain_light` effect in `documentation/effects_documentation.md`.
 <!-- kit:end id="bookmark-effect-weather" -->
 
 ## File example <a id="File_example"></a>
@@ -219,7 +220,7 @@ By default, the selection of bookmarks and interesting countries within bookmark
   - There is no way to make either gridbox not follow a grid pattern. However, it is instead possible to create dummy country entries and hide them from the final product by placing [iconTypes](<interface_modding.md#iconType>) inside of the `gamesetup_interesting_countries_window` container window after the gridbox, set to use an image that covers up the minor interesting country with the background.
 
 <!-- kit:begin id="bookmark-ui-limits" at="section:User_interface" -->
-**Kit correction** The card limits in `interface/frontendgamesetupview.gui` of 1.19.3: `ideas_grid` has `max_slots = { x = 3 y = 1 }` and `focus_grid` has `max_slots = { x = 4 y = 1 }`, so a country card shows up to 3 ideas and up to 4 focuses (the wiki says 3 for both). Vanilla entries list 3 of each. [vanilla-confirmed 1.19.3] `interface/frontendgamesetupview.gui`, `common/bookmarks/`.
+**Kit correction** The card limits in `interface/frontendgamesetupview.gui` of 1.19.3: `ideas_grid` has `max_slots = { x = 3 y = 1 }` and `focus_grid` has `max_slots = { x = 4 y = 1 }`, so a country card shows up to 3 ideas and up to 4 focuses (the wiki says 3 for both). Vanilla entries list 3 focuses each (all 152) and usually 3 ideas (114 of 152, the rest list 0 to 2, 4 or 5). [vanilla-confirmed 1.19.4.1] `interface/frontendgamesetupview.gui`, `common/bookmarks/`.
 
 Other grids: `bookmarks_grid` has `slotsize` 260 wide and `max_slots_vertical = 1`; `countries_medium` holds 8 slots per row; `countries_mini` holds 23 per row and 2 rows; a new `filters` element (`OverlappingElementsBoxType`) holds the filter buttons, and the `country_filter` window defines one such button. [vanilla-confirmed 1.19.3] `interface/frontendgamesetupview.gui`.
 
@@ -245,7 +246,7 @@ history = {
 - The bookmarks are positioned in the order of their start dates. If two bookmarks have the same date, then they are positioned in the order [in which they are evaluated](<modding.md#Loading_files>). The interesting countries are positioned in the order in which they are written in the bookmark.
 
 <!-- kit:begin id="bookmark-date-defines" at="section:Notes" -->
-**Kit correction** The wiki's "defaults to 2.1.1.1" for `date` is not confirmed. What 1.19.3 shows: `NDefines.NGame.START_DATE = "1936.1.1.12"`, `END_DATE = "1949.1.1.1"` and `NDefines.NDiplomacy.TENSION_TIME_SCALE_START_DATE = "1936.1.1.12"`. The bookmark dates are `1936.1.1.12` (`the_gathering_storm.txt`) and `1939.8.14.12` (`blitzkrieg.txt`). [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`, `common/bookmarks/`. A mod that starts earlier than 1936.1.1.12 should override all three defines, as the wiki says; whether an earlier date also needs other defines is [unverified].
+**Kit correction** The wiki's "defaults to 2.1.1.1" for `date` is not confirmed. What 1.19.4.1 shows: `NDefines.NGame.START_DATE = "1936.1.1.12"`, `END_DATE = "1949.1.1.1"` and `NDefines.NDiplomacy.TENSION_TIME_SCALE_START_DATE = "1936.1.1.12"`. The bookmark dates are `1936.1.1.12` (`the_gathering_storm.txt`) and `1939.8.14.12` (`blitzkrieg.txt`). [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`, `common/bookmarks/`. A mod that starts earlier than 1936.1.1.12 should override all three defines, as the wiki says; whether an earlier date also needs other defines is [unverified].
 
 The history-date rule above (a block in `history/` applies when the start date is later than the block's date) is the wiki's statement and is not re-checked here. [unverified]
 <!-- kit:end id="bookmark-date-defines" -->
@@ -292,7 +293,7 @@ difficulty_settings = {
 ```
 
 <!-- kit:begin id="bookmark-difficulty-vanilla" at="section:Difficulty_settings" -->
-**Kit note** Vanilla `common/difficulty_settings/00_difficulty.txt` holds 8 settings, all with `multiplier = 2.0` and the static modifier `diff_strong_ai_generic`: GER, ITA, SOV, FRA, ENG, USA, JAP (`{ JAP MEN MAN }`) and CHI (`{ CHI PRC }`). Keys are `custom_diff_strong_<tag>` and the loc key `custom_diff_strong_ger` exists in `localisation/english/frontend_l_english.yml`. [vanilla-confirmed 1.19.3] `common/difficulty_settings/00_difficulty.txt`, `localisation/english/frontend_l_english.yml`.
+**Kit note** Vanilla `common/difficulty_settings/00_difficulty.txt` holds 8 settings, all with `multiplier = 2.0` and the static modifier `diff_strong_ai_generic`: GER, ITA, SOV, FRA, ENG, USA, JAP (`{ JAP MEN MAN }`) and CHI (`{ CHI PRC }`). Keys are `custom_diff_strong_<tag>` and the loc key `custom_diff_strong_ger` exists in `localisation/english/frontend_l_english.yml`. [vanilla-confirmed 1.19.4.1] `common/difficulty_settings/00_difficulty.txt`, `localisation/english/frontend_l_english.yml`.
 
 `diff_weak_ai_generic` in the wiki example does not exist; `diff_strong_ai_generic` is the only generic modifier. The per-difficulty modifiers are `diff_very_easy_player` to `diff_very_hard_player` and `diff_very_easy_ai` to `diff_very_hard_ai`, as footnote a says. [vanilla-confirmed 1.19.3] `common/modifiers/00_static_modifiers.txt` (11 `diff_*` blocks).
 <!-- kit:end id="bookmark-difficulty-vanilla" -->

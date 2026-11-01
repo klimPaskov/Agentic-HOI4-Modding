@@ -54,7 +54,7 @@ If a route fails once, retry once with narrower input, then read the local file 
 2. A staged progression (levels 1 to 3 of the same theme): one idea per stage and `swap_ideas`; give the stages the same display name via `name =` so it reads as one upgraded idea.
 3. A country modifier whose value depends on a variable, or any modifier on a state, unit leader, or special project: a dynamic modifier. Ideas cannot hold variables.
 4. A bonus that is not a modifier (`research_bonus`, `equipment_bonus`, `rule`, `targeted_modifier`): an idea, advisor, or country leader trait; dynamic modifiers reject these.
-5. An invisible bonus or marker: a `hidden_ideas` idea (it is a tokenised idea; no vanilla precedent in this install tests it with `has_idea`, so verify before relying on that), or a `hidden_modifier` block inside a visible idea. Prefer a country flag when you only need a boolean and no database token.
+5. An invisible bonus or marker: a `hidden_ideas` idea (it is a tokenised idea, and vanilla tests at least 161 of its 291 hidden ideas with `has_idea`), or a `hidden_modifier` block inside a visible idea. Prefer a country flag when you only need a boolean and no database token.
 6. A modifier on one province: a static modifier from `common/modifiers` applied with `add_province_modifier`.
 7. A modifier of one country towards another: `targeted_modifier = { tag = XXX ... }` in an idea, or a relation modifier with `add_relation_modifier`.
 8. A numeric accumulator that other script reads (summed across ideas, traits, dynamic modifiers): a modifier definition in `common/modifier_definitions`, read as `modifier@name`.
@@ -119,7 +119,7 @@ ideas = {
 - `equipment_bonus = { <archetype or type> = { instant = yes <stat> = <number> } }`: without `instant = yes` the bonus applies only to equipment researched after the idea was added. Archetypes and types come from `common/units/equipment/*.txt`.
 - `rule = { <game rule> = yes|no }`: tooltip lists only rules that differ from the default. The wiki's table of rules includes `can_join_factions`, `can_create_factions`, `can_send_volunteers`, `can_not_declare_war`, `can_puppet`, `can_boost_own_ideology`.
 - `on_add` and `on_remove` are country-scope effects. They do not run when the idea is added by a country history file or bookmark; copy the effect into that block. `cancel` triggers `on_remove` too.
-- `allowed_civil_war` defaults to false: the spirit disappears when a civil war starts unless the trigger passes for a side. Vanilla sets `allowed_civil_war = { always = yes }` on ideas that must survive (3,638 uses).
+- `allowed_civil_war` defaults to false: the spirit disappears when a civil war starts unless the trigger passes for a side. Vanilla sets `allowed_civil_war` on ideas that must survive (3,669 uses, 2,270 of them `{ always = yes }`).
 - `do_effect` gates the modifiers, equipment bonus, and research bonus without removing the idea (181 vanilla uses).
 - `allowed` is checked once at game start or load, and manual `add_ideas` bypasses it. It restricts selectable ideas (tag, DLC) and by convention `allowed = { always = no }` marks event-granted ideas.
 - `visible` and `available` are checked continuously for selectable ideas (laws, designers, advisors); `visible` hides, `available` greys out. Put tag and DLC checks in `allowed`, not `visible`.
@@ -166,7 +166,7 @@ show_ideas_tooltip = my_idea             # tooltip only, does not add
 - `swap_ideas` shows a tooltip of the modifier difference; if both ideas share one display name it reads as a modification. The add happens before the removal. There is no way to edit an idea in place.
 - Timed ideas: at least one of `days`, `months`, `years` is mandatory, values may be variables, and the tooltip echoes the unit you wrote. For a duration field that rejects `constant:`, assign the constant to a variable first.
 - Starting ideas: `add_ideas` in `history/countries/*.txt`, and `ideas = { }` in the bookmark entry so they appear on the selection screen. `on_add` does not run there.
-- A bookmark card shows three ideas and four focuses, and every bookmark `effect` block ends with `randomize_weather`, which a vanilla comment calls obligatory. [vanilla-confirmed 1.19.3]
+- A bookmark card shows three ideas and four focuses, and every bookmark `effect` block ends with `randomize_weather`, which a vanilla comment calls obligatory. [vanilla-confirmed 1.19.4.1]
 - Reading: `has_idea = my_idea` (country scope; for advisors the argument is the `idea_token`), `has_idea_with_trait = my_trait`, `amount_taken_ideas = { amount > 2 slots = { political_advisor } }` (excludes spirits, hidden ideas, and laws), `has_available_idea_with_traits` and `has_allowed_idea_with_traits` (`idea`, `limit`, `characters`, `ignore`).
 
 ## Dynamic modifiers
@@ -199,7 +199,7 @@ has_dynamic_modifier = my_dynamic_modifier                                      
 ```
 
 - Allowed scopes: country, state, character (unit leader), special project. The same definition can be added anywhere; the scope of the `add_dynamic_modifier` call decides where it applies and where variables are read.
-- `days` is optional on `add_dynamic_modifier` (172 of 1,549 vanilla calls pass it, none with a negative value), so omit it for a permanent attach. [vanilla-confirmed 1.19.3] [docs]
+- `days` is optional on `add_dynamic_modifier` (175 of 1,552 vanilla calls pass it, none with a negative value), so omit it for a permanent attach. [vanilla-confirmed 1.19.4.1] [docs]
 - Variables come from the scope the modifier is attached to: for a state modifier, the state's variable, not the owner's. Use `scope =` to read another scope's variable.
 - Daily refresh: at the start of each day every variable-valued modifier resets to 0, then dynamic modifiers evaluate in the order they were added, each treated as 0 until its variables resolve. Changes take effect at most one day later unless you call `force_update_dynamic_modifier = yes` in the same scope. Re-adding an existing modifier updates its timer instead of stacking a second copy.
 - Inside `enable` and `remove_trigger` for state modifiers, `ROOT` is the state and `OWNER` reaches the owner (vanilla `sabotaged_resources` and `autonomous_state` in `0_dynamic_modifiers.txt`).
@@ -219,7 +219,7 @@ has_dynamic_modifier = my_dynamic_modifier                                      
 ## Static, province, relation, and custom modifiers
 
 - Static modifiers (`common/modifiers/*.txt`, one block per id) cover hard-coded global modifiers (`stability_good_modifier`, `non_core`, `resistance_effect`, and so on in `00_static_modifiers.txt`), province modifiers, relation modifiers, difficulty modifiers, and balance-of-power modifiers.
-- Province modifiers: `add_province_modifier = { static_modifiers = { m1 m2 } province = N days = N }` and `remove_province_modifier`, state scope; `province = { id = N all_provinces = yes limit_to_coastal = yes ... }` selects several. Vanilla: `flooded` in `01_event_modifiers.txt`. Many state modifiers work in province scope. A visible icon needs a sprite `GFX_modifiers_<name>_icon` and an `iconType` in `countrystateview.gui`.
+- Province modifiers: `add_province_modifier = { static_modifiers = { m1 m2 } province = N days = N }` and `remove_province_modifier`, state scope; `province = { id = N all_provinces = yes limit_to_coastal = yes ... }` selects several. Vanilla: `flooded` in `00_static_modifiers.txt`. Many state modifiers work in province scope. A visible icon needs a sprite `GFX_modifiers_<name>_icon` and an `iconType` in `countrystateview.gui`.
 - Relation modifiers: a block with `valid_relation_trigger = { FROM = { ... } }` plus targeted modifiers; `add_relation_modifier = { target = TAG modifier = name }` in country scope; `ROOT` is the holder and `FROM` the target.
 - Custom modifier definitions (`common/modifier_definitions/*.txt`): `name = { color_type = good|bad|neutral value_type = number|percentage|percentage_in_hundred|yes_no precision = 0..3 postfix = none|days|hours|daily category = <scope categories> }`. They have no engine effect; they exist so ideas, traits, buildings, and dynamic modifiers can add to a value that script reads with `modifier@name`. Header comments are in `GAME/common/modifier_definitions/modifier_definitions.txt`.
 - Opinion modifiers (`common/opinion_modifiers`, fields `value`, `trade`, `decay`, `days|months|years`, `min_trust`, `max_trust`) are a separate system added with `add_opinion_modifier` and cannot be placed in a modifier block; to simulate one, pair it with the idea's `on_add`/`on_remove` and a `custom_modifier_tooltip`. Diplomatic use belongs to `hoi4-diplomacy-war`.
@@ -286,7 +286,7 @@ has_dynamic_modifier = my_dynamic_modifier                                      
 18. Adding a timed idea with no unit field; one of `days`, `months`, `years` is mandatory.
 19. Player text that mentions removed or reworked ideas.
 20. Correcting the spelling of `foreign_subversive_activites`, because the game token is the misspelled form (72 vanilla uses). [docs]
-21. Placing naval `*_against` modifiers or `river_crossing_factor_against` directly in `modifier`, when they belong inside `targeted_modifier = { tag = ... }`. [vanilla-confirmed 1.19.3]
+21. Placing naval `*_against` modifiers or `river_crossing_factor_against` directly in `modifier`, when they belong inside `targeted_modifier = { tag = ... }`. [vanilla-confirmed 1.19.4.1]
 
 ## Unverified or conflicting points
 

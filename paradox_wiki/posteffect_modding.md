@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Posteffect modding", revision 23212, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="23212" sources="gfx/posteffect_volumes.txt gfx/world/ documentation/console_commands_documentation.md hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="23212" sources="gfx/posteffect_volumes.txt gfx/world/ documentation/console_commands_documentation.md hoi4.exe" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all of `gfx/posteffect_volumes.txt` (22 `posteffect_values`, 27 `posteffect_volume`, 3 `posteffect_height_volume`), the 17 colour lookup textures it names in `gfx/world/`, the `PostEffectVolumes.*` entries of `documentation/console_commands_documentation.md`, and token strings in `hoi4.exe`.
 Kit blocks added: key usage and an example for `posteffect_values`, the texture format of `lut`, position and height volume facts, three vanilla references to undefined value names, the third console command.
 Gaps left: no game file explains the HDR and bloom keys; what happens when two volumes overlap, or when a referenced values name does not exist, is not documented.
+**1.19.4.1 re-check (2026-11-01).** One statement (the `PostEffectVolumes.*` console commands) cited the changed console commands documentation, and it was re-checked: the three commands are still listed and only `debug_types` was removed, so nothing on this page changes. The `hoi4.exe` message about `posteffect_values_day` is still in the 1.19.4.1 executable. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents

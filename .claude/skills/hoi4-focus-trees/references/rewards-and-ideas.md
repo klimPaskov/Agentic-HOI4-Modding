@@ -63,9 +63,9 @@ Good rewards include:
 
 When a focus grants, unlocks, removes, or redirects a technology, doctrine, or research bonus, use `hoi4.tech_inspect` in `impact`, `unlocks`, or `bonus_coverage` mode to verify the linked graph and references. Render the affected folder or branch with `hoi4.tech_render`, then use `hoi4.tech_inspect` with `mode: "compare"` after source edits. Treat missing assets, disconnected prerequisites, misplaced items, exclusivity errors, and unresolved dynamic behavior as implementation findings instead of guessing.
 
-- `research_bonus` is an idea key and not a focus reward effect, so a one-shot research reward uses `add_tech_bonus` with a category from `common/technology_tags/00_technology.txt`, where `construction_tech` is valid and `construction` is not. [vanilla-confirmed 1.19.3]
-- `load_focus_tree` takes either the short form or a block with `tree`, `keep_completed` and `copy_completed_from` (25 and 56 vanilla uses). [docs] [vanilla-confirmed 1.19.3]
-- `add_to_variable` accepts a `tooltip` argument, which 3,973 of 6,056 vanilla block-form uses pass. [vanilla-confirmed 1.19.3]
+- `research_bonus` is an idea key and not a focus reward effect, so a one-shot research reward uses `add_tech_bonus` with a category from `common/technology_tags/00_technology.txt`, where `construction_tech` is valid and `construction` is not. [vanilla-confirmed 1.19.4.1]
+- `load_focus_tree` takes either the short form or a block with `tree`, `keep_completed` and `copy_completed_from` (25 and 55 vanilla uses). [docs] [vanilla-confirmed 1.19.4.1]
+- `add_to_variable` accepts a `tooltip` argument, which 3,973 of 6,058 vanilla block-form uses pass. [vanilla-confirmed 1.19.4.1]
 
 Small numeric modifiers can support a focus, but they should not be the main point of most focuses.
 

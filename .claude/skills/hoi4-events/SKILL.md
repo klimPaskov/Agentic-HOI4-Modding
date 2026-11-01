@@ -349,9 +349,9 @@ Common event pieces:
 
 Keep ids stable when updating existing chains. If an event already exists in a namespace, do not renumber it for cosmetic tidiness.
 
-- Leader events (`unit_leader_event`, `operative_leader_event`) must set `is_triggered_only = yes`, as the engine message and 40 of 40 vanilla leader events show. [vanilla-confirmed 1.19.3]
-- A non-integer event id suffix is dead in vanilla, since `BBA_italy_missiolinis.02_north` and 3 more never fire. [vanilla-confirmed 1.19.3]
-- Public news events normally set `major = yes`, as 596 of 677 vanilla news events do. [vanilla-confirmed 1.19.3]
+- Leader events (`unit_leader_event`, `operative_leader_event`) must set `is_triggered_only = yes`, as the engine message and 40 of 40 vanilla leader events show. [vanilla-confirmed 1.19.4.1]
+- A non-integer event id suffix is not dead in vanilla, since `common/decisions/ITA.txt` fires `BBA_italy_missiolinis.02_north` and 3 more. Prefer integer suffixes anyway. [vanilla-confirmed 1.19.4.1]
+- Public news events normally set `major = yes`, as 596 of 677 vanilla news events do. [vanilla-confirmed 1.19.4.1]
 - The delay arguments of `country_event` include `days`, `hours`, `months`, `random_days` and `random_hours`, and the upper bounds of the `random_*` ones are exclusive. [docs]
 - No script effect disables or cancels an event. [docs]
 
@@ -567,7 +567,7 @@ Do not use a news event for every ordinary result. Use it for public shifts, war
 
 Use `on_actions` when an event should react to engine events such as war, capitulation, annexation, peace, state control changes, focus completion, monthly pulses, or other supported hooks.
 
-An `on_actions` block holds only `effect` and `random_events`. [vanilla-confirmed 1.19.3]
+An `on_actions` block holds only `effect` and `random_events`. [vanilla-confirmed 1.19.4.1]
 
 Do not use whole-world daily or weekly scans unless the repository rules allow that and the feature truly needs it. Prefer narrower hooks, targeted pulses, country flags, scripted triggers, and cleanup events.
 
@@ -643,7 +643,7 @@ Temporary variables assigned in the same `text.trigger` remain visible to the se
 Retain constant-backed temporary getters where the installed documentation supports the assignment, and do not introduce persistent globals solely for formatting.
 A scripted localisation `random_list` needs `seed = <scoped variable>`, or it repeats the same result. [vanilla-confirmed 1.19.3]
 The triggers of a scripted localisation entry must be valid for the scope the key is called in. [vanilla-confirmed 1.19.3]
-`§[ScriptedLocName]` yields a computed colour letter. [vanilla-confirmed 1.19.3]
+`§[ScriptedLocName]` yields a computed colour letter. [vanilla-confirmed 1.19.4.1]
 The checksum covers only `common`, `events`, `history` and `map`, so a localisation-only mod keeps the checksum. [vanilla-confirmed 1.19.3] `checksum_manifest.txt`
 
 Report and event descriptions drawn on a light parchment or paper background must use plain text for names and values, without `§` colour formatting, including strings returned by scripted localisation.

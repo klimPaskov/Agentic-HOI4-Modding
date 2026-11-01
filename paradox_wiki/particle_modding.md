@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Particle modding", revision 71496, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="71496" sources="gfx/particles/ gfx/entities/particles.gfx gfx/entities/map_lights.asset gfx/entities/buildings.asset previewer_assets/ hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="71496" sources="gfx/particles/ gfx/entities/particles.gfx gfx/entities/map_lights.asset gfx/entities/buildings.asset previewer_assets/ hoi4.exe" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the 141 `.asset` files in `gfx/particles/` and its `environment/`, `infantry/` and `vehicles/` folders plus one in the Man the Guns DLC (142 `particle` blocks, 486 subsystems), the `pdxparticle` entries of `gfx/entities/particles.gfx` and `gfx/particles/WW_particles.gfx`, the 9 `light` blocks of `gfx/entities/map_lights.asset`, and token strings in `hoi4.exe`.
 Kit blocks added: the filled "Adding a Particle" section (link chain, key tables, a trimmed example), a warning on the particle editor text, corrections for the light section.
 Gaps left: no game file explains `{ a b }` pairs, `texture` `x`/`y`, `slave_particles`, `sort` or the force types, so the key tables list only what vanilla sets. The particle editor could not be tried.
+**1.19.4.1 re-check (2026-11-01).** 3 tagged statements depended on files the update changed (the subsystem, animation and force tables over `gfx/particles/**/*.asset`, where `mg_muzzle_tommy.asset` changed), and all of them were re-measured. Every count is unchanged (142 particles, 486 subsystems, 509 animations, 314 forces), and the 16 `particle_editor` command strings are still in the 1.19.4.1 `hoi4.exe`. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -66,7 +67,7 @@ Both files are copies of `gfx/particles/lamp_red.asset` and `gfx/entities/partic
 <!-- kit:end id="particle-add-chain" -->
 
 <!-- kit:begin id="particle-subsystem-keys" at="section:Adding_a_Particle" -->
-**Kit addition** Keys of a `subsystem`, with the number of vanilla subsystems (of 486) that set each. All rows: [vanilla-confirmed 1.19.3] `gfx/particles/**/*.asset`.
+**Kit addition** Keys of a `subsystem`, with the number of vanilla subsystems (of 486) that set each. All rows: [vanilla-confirmed 1.19.4.1] `gfx/particles/**/*.asset`.
 
 | Keys | Sets | Values in vanilla |
 | --- | --- | --- |
@@ -83,13 +84,13 @@ Both files are copies of `gfx/particles/lamp_red.asset` and `gfx/entities/partic
 | `box_emitter_x`, `box_emitter_y`, `box_emitter_z` | about 22 | with `emitter_type = "box"` |
 | `emission_pulse_duration`, `emission_pulse_silence` | 6 and 11 | a number or a pair |
 
-`texture` holds `file`, `x`, `y` and `shader`. Shader values: `"ParticleAdditive"` 267, `"ParticleAlphaBlend"` 218, `"ParticlePreAlphaBlend"` 1. `color` holds `x y z` (470) or `r g b` (12) on the 0 to 255 scale, plus `alpha`. [vanilla-confirmed 1.19.3] `gfx/particles/**/*.asset`
+`texture` holds `file`, `x`, `y` and `shader`. Shader values: `"ParticleAdditive"` 267, `"ParticleAlphaBlend"` 218, `"ParticlePreAlphaBlend"` 1. `color` holds `x y z` (470) or `r g b` (12) on the 0 to 255 scale, plus `alpha`. [vanilla-confirmed 1.19.4.1] `gfx/particles/**/*.asset`
 
 A value can be a single number or a pair `{ a b }`, and `size`, `alpha` and similar keys can name an animation after a comma: `alpha = 255.000,smoke_fade`, `size = { 1.000,glow_scale 1.000 }`. What a pair means is not stated in a game file. [vanilla-confirmed 1.19.3] `gfx/particles/flamethrower.asset`. The reading as a range or a start and end value is a guess. [unverified] `gfx/particles/flamethrower.asset`
 <!-- kit:end id="particle-subsystem-keys" -->
 
 <!-- kit:begin id="particle-animation-force" at="section:Adding_a_Particle" -->
-**Kit addition** Besides subsystems, a `particle` block holds `animation` and `force` blocks that subsystems refer to by name. All rows: [vanilla-confirmed 1.19.3] `gfx/particles/**/*.asset`.
+**Kit addition** Besides subsystems, a `particle` block holds `animation` and `force` blocks that subsystems refer to by name. All rows: [vanilla-confirmed 1.19.4.1] `gfx/particles/**/*.asset`.
 
 - `animation = { name start duration repeat minValue maxValue curve op time }`: all 509 vanilla animations set all nine keys. `op` is always `"MUL"`. `time` is `"life"` (462), `"life_abs"` (28), `"spawn"` (10) or `"system"` (9). `repeat = yes` in 16. `curve` is a flat list of `x y` pairs, for example `0.000 0.000 0.235 0.375 0.424 0.891 1.000 0.000`.
 - `force = { type name amount direction position local_force yaw division }`: 314 forces. `type` is `"planar"` (150), `"friction"` (94), `"turbulence"` (50), `"point"` (17) or `"vortex"` (3). `direction`, `position`, `local_force`, `yaw` and `division` are set in about 280 of them.
@@ -113,7 +114,7 @@ Vanilla force, whitespace changed. [vanilla-confirmed 1.19.3] `gfx/particles/fla
 ## Particle Editor <a id="Particle_Editor"></a>
 
 <!-- kit:begin id="particle-editor-warning" at="heading:Particle_Editor" -->
-**Kit note** The version limits in the text below (editor works only on 1.11) cannot be checked from game files. What 1.19.3 ships: `hoi4.exe` contains the commands `particle_editor create`, `add_subsystem`, `clone_subsystem`, `remove_subsystem`, `add_animation`, `remove_animation`, `add_force`, `remove_force`, `add_childsystem`, `back_subsystem`, `forward_subsystem`, `save`, `undo`, `redo`, `restart` and `exit`, and the folder `previewer_assets/assetviewer_interface/previewer_interface.gui` has a button labelled "Particle Editor". [unverified] `hoi4.exe`, `previewer_assets/assetviewer_interface/previewer_interface.gui`
+**Kit note** The version limits in the text below (editor works only on 1.11) cannot be checked from game files. What 1.19.4.1 ships: `hoi4.exe` contains the commands `particle_editor create`, `add_subsystem`, `clone_subsystem`, `remove_subsystem`, `add_animation`, `remove_animation`, `add_force`, `remove_force`, `add_childsystem`, `back_subsystem`, `forward_subsystem`, `save`, `undo`, `redo`, `restart` and `exit`, and the folder `previewer_assets/assetviewer_interface/previewer_interface.gui` has a button labelled "Particle Editor". [unverified] `hoi4.exe`, `previewer_assets/assetviewer_interface/previewer_interface.gui`
 
 Particles are plain text, so a mod can also write them by hand from the key tables above. [vanilla-confirmed 1.19.3] `gfx/particles/lamp_red.asset`
 <!-- kit:end id="particle-editor-warning" -->

@@ -2,10 +2,11 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Doctrine modding", revision 96850, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" revision="96850" sources="common/doctrines/ documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md common/defines/00_defines.lua common/ai_strategy/doctrines.txt common/script_enums.txt interface/doctrines/ localisation/english/doctrines_l_english.yml" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="96850" sources="common/doctrines/ documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md common/defines/00_defines.lua common/ai_strategy/doctrines.txt common/script_enums.txt interface/doctrines/ localisation/english/doctrines_l_english.yml" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against `common/doctrines/_documentation.md` and the four sub-folder documentation files, every vanilla file in `common/doctrines/` (4 folders, 12 grand doctrines, 14 tracks, 95 subdoctrines), the effect, trigger and modifier documentation, the `NDoctrines` and AI defines, and the doctrine GUI and localisation files.
 Kit blocks added: `doctrine-lists-swapped` (the wiki's two lists carry each other's headings), `doctrine-overview`, `doctrine-effects-triggers`, `doctrine-folders`, `doctrine-grand-doctrines`, `doctrine-tracks`, `doctrine-subdoctrines`, `doctrine-mastery`, `doctrine-modifiers-ai`, `doctrine-example`, `doctrine-traps`.
 Gaps left: the exact mastery formula (diminishing returns, reserve mechanics) is known only from defines and localisation; fewer than four rewards per subdoctrine and a `modifiers = { }` block were not observed in vanilla.
+**1.19.4.1 re-check (2026-11-01).** 21 statements depended on files the update changed (five files in `common/doctrines/`, the technologies, the decision, idea and history files behind the use counts, and `research_l_english.yml`), and all 21 were re-measured: the folder, grand doctrine, track, subdoctrine and reward counts are unchanged. Changed or corrected: `add_doctrine_cost_reduction` files 79 to 80, `category = naval_doctrine` lines 111 to 113, `add_mastery_bonus` files 41 to 44, and the AI weight statement, which now names the grand doctrines that carry `factor = 0` (only `new_mobile_warfare` and `superior_firepower`). Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
 ## Table of contents
@@ -57,11 +58,11 @@ The files are structured as follows:
 
 The track file is deliberately tiny: the subdoctrine names the track it fits, and the grand doctrine names the tracks it contains. [docs] `common/doctrines/tracks/_documentation.md`
 
-Vanilla size in 1.19.3: 4 folders (`folders/doctrine_folders.txt`), 12 grand doctrines in 4 files, 14 tracks in 4 files, 95 subdoctrines in 13 files under `subdoctrines/air/`, `land/`, `sea/` and `special_forces/`. The wiki says subdoctrine files may sit in any subfolder; the other three kinds are flat in vanilla. [vanilla-confirmed 1.19.3] `common/doctrines/`
+Vanilla size in 1.19.4.1: 4 folders (`folders/doctrine_folders.txt`), 12 grand doctrines in 4 files, 14 tracks in 4 files, 95 subdoctrines in 13 files under `subdoctrines/air/`, `land/`, `sea/` and `special_forces/`. The wiki says subdoctrine files may sit in any subfolder; the other three kinds are flat in vanilla. [vanilla-confirmed 1.19.4.1] `common/doctrines/`
 
-The doctrine window is built from this data. `interface/doctrines/doctrines_view.gui` has an empty `folders_grid` that the game fills with one `doctrine_folder_tab` per folder, and a `tracks_grid` sized by code from the number of tracks, so a new folder, track, grand doctrine or subdoctrine needs sprites and localisation but no new container window. The `countrydoctrinetreeview.gui` containers that the Technology modding page describes belong to the old tech-based doctrine screen: none of the 552 vanilla technologies uses `doctrine = yes`. [vanilla-confirmed 1.19.3] `interface/doctrines/doctrines_view.gui`, `common/technologies/`
+The doctrine window is built from this data. `interface/doctrines/doctrines_view.gui` has an empty `folders_grid` that the game fills with one `doctrine_folder_tab` per folder, and a `tracks_grid` sized by code from the number of tracks, so a new folder, track, grand doctrine or subdoctrine needs sprites and localisation but no new container window. The `countrydoctrinetreeview.gui` containers that the Technology modding page describes belong to the old tech-based doctrine screen: none of the 552 vanilla technologies uses `doctrine = yes`. [vanilla-confirmed 1.19.4.1] `interface/doctrines/doctrines_view.gui`, `common/technologies/`
 
-The grand doctrine ids the game uses are `new_mobile_warfare`, `superior_firepower`, `grand_battleplan`, `mass_assault`, `new_fleet_in_being`, `new_convoy_raiding`, `new_base_strike`, `new_strategic_destruction`, `new_battlefield_support`, `new_operational_integrity`, `special_forces_quantity` and `special_forces_quality`. The id `mobile_warfare`, which the effect and trigger documentation use in their examples, is not a vanilla grand doctrine id. [vanilla-confirmed 1.19.3] `common/doctrines/grand_doctrines/` (12 ids)
+The grand doctrine ids the game uses are `new_mobile_warfare`, `superior_firepower`, `grand_battleplan`, `mass_assault`, `new_fleet_in_being`, `new_convoy_raiding`, `new_base_strike`, `new_strategic_destruction`, `new_battlefield_support`, `new_operational_integrity`, `special_forces_quantity` and `special_forces_quality`. The id `mobile_warfare`, which the effect and trigger documentation use in their examples, is not a vanilla grand doctrine id. [vanilla-confirmed 1.19.4.1] `common/doctrines/grand_doctrines/` (12 ids)
 <!-- kit:end id="doctrine-overview" -->
 
 ## Triggers and Effects <a id="Triggers_and_Effects"></a>
@@ -119,7 +120,7 @@ add_doctrine_cost_reduction = {
 }
 ```
 
-`add_doctrine_cost_reduction` appears in 79 vanilla files; `category` is `land_doctrine` in 183 blocks, `air_doctrine` in 121, `naval_doctrine` in 111, `special_forces_doctrine` in 83 and `cat_marines_doctrine` in 3, all names from `technology_categories`. `add_mastery_bonus` appears in 41 files, `add_mastery` in 22, `add_daily_mastery` in 2, `set_sub_doctrine` in 10 and `set_grand_doctrine` in 319 (318 of them under `history/`). The two snippets come from `common/decisions/JAP.txt` and `common/decisions/CZE.txt`. [vanilla-confirmed 1.19.3]
+`add_doctrine_cost_reduction` appears in 80 vanilla files; `category` is `land_doctrine` in 183 blocks, `air_doctrine` in 121, `naval_doctrine` in 113, `special_forces_doctrine` in 83 and `cat_marines_doctrine` in 3, all names from `technology_categories`. `add_mastery_bonus` appears in 44 files, `add_mastery` in 22, `add_daily_mastery` in 2, `set_sub_doctrine` in 10 and `set_grand_doctrine` in 319 (318 of them under `history/`). The two snippets come from `common/decisions/JAP.txt` and `common/decisions/CZE.txt`. [vanilla-confirmed 1.19.4.1]
 
 Triggers, all in country scope. [docs] `documentation/triggers_documentation.md`
 
@@ -133,7 +134,7 @@ Triggers, all in country scope. [docs] `documentation/triggers_documentation.md`
 | `has_mastery` | `{ amount = 200 track = infantry }` | any track of that type has at least that mastery |
 | `has_mastery_level` | `{ amount = 2 sub_doctrine = mobile_infantry }` | that many rewards of the subdoctrine are reached |
 
-Vanilla uses `has_doctrine` in 16 files, `has_mastery_level` in 3, `has_completed_track` in 2 (including `common/achievements.txt`), `has_completed_subdoctrine` and `has_subdoctrine_in_track` in 1 each, and `has_any_grand_doctrine` and `has_mastery` in none. [vanilla-confirmed 1.19.3] `common/`, `events/`, `history/`
+Vanilla uses `has_doctrine` in 16 files, `has_mastery_level` in 3, `has_completed_track` in 2 (including `common/achievements.txt`), `has_completed_subdoctrine` and `has_subdoctrine_in_track` in 1 each, and `has_any_grand_doctrine` and `has_mastery` in none. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
 
 The documentation also lists the trigger `land_doctrine_level` ("checks researched land doctrine level"). No vanilla file uses it, and whether it still returns anything now that doctrines are not technologies is not confirmed. [docs] `documentation/triggers_documentation.md` [unverified]
 <!-- kit:end id="doctrine-effects-triggers" -->
@@ -172,7 +173,7 @@ my_folder = {
 }
 ```
 
-Vanilla defines `<name>` and `<name>_desc` for the three base folders (`land_doctrine_folder` and `land_doctrine_folder_desc` in `localisation/english/research_l_english.yml`), and the sprites `GFX_landdoctrine_tab_large` and `GFX_land_doctrine_folder_icon` in `interface/countrytechtreeview.gfx`. [vanilla-confirmed 1.19.3] Whether the doctrine window reads the `_desc` key is [unverified].
+Vanilla defines `<name>` and `<name>_desc` for the three base folders (`land_doctrine_folder` and `land_doctrine_folder_desc` in `localisation/english/research_l_english.yml`), and the sprites `GFX_landdoctrine_tab_large` and `GFX_land_doctrine_folder_icon` in `interface/countrytechtreeview.gfx`. [vanilla-confirmed 1.19.4.1] Whether the doctrine window reads the `_desc` key is [unverified].
 <!-- kit:end id="doctrine-folders" -->
 
 ## Grand Doctrines <a id="Grand_Doctrines"></a>
@@ -199,7 +200,7 @@ Vanilla defines `<name>` and `<name>_desc` for the three base folders (`land_doc
 | `milestones` | list of anonymous blocks | One block per track, in the same order as `tracks`. Each holds activation effects. |
 | activation effects | modifiers, `enable_tactic`, unit stats, `equipment_bonus`, `effect` | Applied on activation; see below. |
 
-Table: [docs] `common/doctrines/grand_doctrines/_documentation.md`. Every vanilla grand doctrine sets all of these except `visible`, `max_track_rows` and `max_track_columns`, which no vanilla grand doctrine uses. [vanilla-confirmed 1.19.3] `common/doctrines/grand_doctrines/*.txt` (12 of 12)
+Table: [docs] `common/doctrines/grand_doctrines/_documentation.md`. Every vanilla grand doctrine sets all of these except `visible`, `max_track_rows` and `max_track_columns`, which no vanilla grand doctrine uses. [vanilla-confirmed 1.19.4.1] `common/doctrines/grand_doctrines/*.txt` (12 of 12)
 
 Activation effects are shared by grand doctrines, milestones, subdoctrines and rewards. [docs] `common/doctrines/grand_doctrines/_documentation.md`
 
@@ -213,7 +214,7 @@ Activation effects are shared by grand doctrines, milestones, subdoctrines and r
 
 The forms and the equipment bonus remark: [docs] `common/doctrines/grand_doctrines/_documentation.md`. Vanilla confirms `snow` inside a unit block and `effect = { unlock_subunit = rangers_support }` in `common/doctrines/subdoctrines/special_forces/special_forces_subdoctrines.txt`, and tactic ids in `common/combat_tactics.txt`. [vanilla-confirmed 1.19.3] Equipment groups are defined as the [Equipment modding](<equipment_modding.md>) page and `common/equipment_groups/_documentation.md` describe. [docs]
 
-Vanilla grand doctrines. [vanilla-confirmed 1.19.3] `common/doctrines/grand_doctrines/`
+Vanilla grand doctrines. [vanilla-confirmed 1.19.4.1] `common/doctrines/grand_doctrines/`
 
 | Folder | `xp_type` | `xp_cost` | Ids | Tracks (in order) |
 | --- | --- | --- | --- | --- |
@@ -222,7 +223,7 @@ Vanilla grand doctrines. [vanilla-confirmed 1.19.3] `common/doctrines/grand_doct
 | air | air | 100 | `new_strategic_destruction`, `new_battlefield_support`, `new_operational_integrity` | `fighter_aircraft`, `strike_aircraft`, `medium_aircraft`, `heavy_aircraft` |
 | special_forces | army | 60 | `special_forces_quantity`, `special_forces_quality` | `special_forces_first`, `special_forces_second` |
 
-The vanilla AI weight for the base folders is `base = 1` with `modifier = { factor = 0 is_major = no }`. Names are plain localisation keys: id `new_mobile_warfare` uses `name = GRAND_DOCTRINE_MOBILE_WARFARE` and `description = GRAND_DOCTRINE_MOBILE_WARFARE_DESC`. Icons are `GFX_doctrine_<x>_medium` sprites in `interface/doctrines/doctrines.gfx`. [vanilla-confirmed 1.19.3] `localisation/english/doctrines_l_english.yml`, `interface/doctrines/doctrines.gfx`
+The vanilla AI weight of a grand doctrine is mostly `base = 1`: `new_mobile_warfare` and `superior_firepower` add `modifier = { factor = 0 is_major = no }`, `new_battlefield_support` and `new_convoy_raiding` add `modifier = { factor = 10 is_major = no }`, and `grand_battleplan` has `base = 2`. Names are plain localisation keys: id `new_mobile_warfare` uses `name = GRAND_DOCTRINE_MOBILE_WARFARE` and `description = GRAND_DOCTRINE_MOBILE_WARFARE_DESC`. Icons are `GFX_doctrine_<x>_medium` sprites in `interface/doctrines/doctrines.gfx`. [vanilla-confirmed 1.19.4.1] `localisation/english/doctrines_l_english.yml`, `interface/doctrines/doctrines.gfx`
 <!-- kit:end id="doctrine-grand-doctrines" -->
 
 ## Tracks <a id="Tracks"></a>
@@ -244,9 +245,9 @@ The vanilla AI weight for the base folders is `base = 1` with `modifier = { fact
 | `active` | trigger block | While false, subdoctrines of the track cannot be selected and mastery gain, including banked mastery, is off. |
 | `mastery` | block | What counts towards mastery: `multiplier`, `sub_units`, `categories`, `equipment` (see the mastery block below). |
 
-Table: [docs] `common/doctrines/tracks/_documentation.md`. Vanilla tracks set only `name`, `background`, `icon`, `icon_frame` and `mastery`. `active` appears once, on `special_forces_second` (`can_unlock_second_track_of_sf_doctrine = yes`, a scripted trigger that checks the variable `sf_trees`); `frame` and `background_offset` are never used. [vanilla-confirmed 1.19.3] `common/doctrines/tracks/*.txt`, `common/scripted_triggers/00_scripted_triggers.txt`
+Table: [docs] `common/doctrines/tracks/_documentation.md`. Vanilla tracks set only `name`, `background`, `icon`, `icon_frame` and `mastery`. `active` appears once, on `special_forces_second` (`can_unlock_second_track_of_sf_doctrine = yes`, a scripted trigger that checks the variable `sf_trees`); `frame` and `background_offset` are never used. [vanilla-confirmed 1.19.4.1] `common/doctrines/tracks/*.txt`, `common/scripted_triggers/00_scripted_triggers.txt`
 
-Vanilla track ids. [vanilla-confirmed 1.19.3] `common/doctrines/tracks/`
+Vanilla track ids. [vanilla-confirmed 1.19.4.1] `common/doctrines/tracks/`
 
 | File | Track ids | Mastery source |
 | --- | --- | --- |
@@ -284,9 +285,9 @@ Sprites: the track backgrounds (`GFX_grand_battleplan_bg`, `GFX_mob_warfare_bg` 
 
 Table: [docs] `common/doctrines/subdoctrines/_documentation.md`.
 
-Reward blocks. Each reward is a block with an optional `mastery = <number>` (mastery needed for this reward; the default is `NDefines.NDoctrines.DEFAULT_REWARD_MASTERY`, 100) and then the same activation effects as a grand doctrine. The documentation draws rewards as anonymous blocks, but all 474 vanilla rewards are named blocks (`cavalry_charge = { ... }`, or `reward_1`, `reward_2` and so on in special forces). The reward's localisation key is the subdoctrine id, an underscore and the reward id: `mobile_infantry_cavalry_charge`. [docs] `common/doctrines/subdoctrines/_documentation.md`; [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`, `localisation/english/doctrines_l_english.yml` (`mobile_infantry_cavalry_charge`, `mountaineers_1_reward_1`)
+Reward blocks. Each reward is a block with an optional `mastery = <number>` (mastery needed for this reward; the default is `NDefines.NDoctrines.DEFAULT_REWARD_MASTERY`, 100) and then the same activation effects as a grand doctrine. The documentation draws rewards as anonymous blocks, but all 474 vanilla rewards are named blocks (`cavalry_charge = { ... }`, or `reward_1`, `reward_2` and so on in special forces). The reward's localisation key is the subdoctrine id, an underscore and the reward id: `mobile_infantry_cavalry_charge`. [docs] `common/doctrines/subdoctrines/_documentation.md`; [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`, `localisation/english/doctrines_l_english.yml` (`mobile_infantry_cavalry_charge`, `mountaineers_1_reward_1`)
 
-What vanilla does. [vanilla-confirmed 1.19.3] `common/doctrines/subdoctrines/`
+What vanilla does. [vanilla-confirmed 1.19.4.1] `common/doctrines/subdoctrines/`
 
 - 95 subdoctrines; 94 have 5 rewards and `peoples_war` has 4.
 - 44 rewards set `mastery`: 40 use 60 and 4 use 50. The rest use the default 100.
@@ -308,7 +309,7 @@ Localisation: `SUBDOCTRINE_<NAME>` and `SUBDOCTRINE_<NAME>_DESC` for the subdoct
 **Kit addition** Mastery rules that decide how fast rewards unlock.
 
 - A track's `mastery` block says which units feed it. `multiplier` scales how much manpower contributes (the documentation example: 2.0 means half the manpower is needed for the same mastery). `sub_units` lists sub-unit ids, `categories` lists unit categories from `common/unit_tags/00_categories.txt`, and `equipment` lists equipment types (`capital_ship`, `carrier`, `screen_ship`, `submarine`, `fighter` and so on). The subdoctrine's own `mastery` block overrides the track's. [docs] `common/doctrines/tracks/_documentation.md`, `common/doctrines/subdoctrines/_documentation.md`
-- Every `equipment` value that vanilla tracks use appears in `script_enum_equipment_category`. [vanilla-confirmed 1.19.3] `common/script_enums.txt`
+- Every `equipment` value that vanilla tracks use appears in `script_enum_equipment_category`. [vanilla-confirmed 1.19.4.1] `common/script_enums.txt`
 - The tuning values live in `NDefines.NDoctrines`: `DEFAULT_REWARD_MASTERY` 100, `BASE_MASTERY_GAIN_TARGET_MANPOWER` 100000 (gain has diminishing returns beyond it), `TRAINING_MASTERY_GAIN_FACTOR` 0.1 (training counts a tenth of combat), `MAX_MONTHLY_MASTERY_GAIN` 40, `MIN_MASTERY_GAIN_PER_DAY` 0, `MASTERY_BANK_CONVERSION_RATE` 0.25, `MASTERY_BANK_MAX` 200, `MILITARY_ATTACHE_MASTERY_TRANSFER_FACTOR` 0.1, `THEATER_COMMANDER_UNITS_MASTERY_GAIN_FACTOR_PER_SKILL` 0.01, and `NAVAL_MISSION_MASTERY_GAIN_FACTORS` per naval mission. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` (`NDoctrines`)
 - Banking: while a track is completed, or has no subdoctrine yet, a share of the mastery it gains is reserved instead (rate and cap from the two bank defines) and becomes initial mastery when a subdoctrine is assigned. Switching the grand doctrine resets all mastery. [vanilla-confirmed 1.19.3] `localisation/english/doctrines_l_english.yml` (`MASTERY_BANK_EXPLANATION_EMPTY`, `MASTERY_BANK_EXPLANATION_FULL`, `MASTERY_INITIAL_FROM_RESERVE`, `SWITCH_GRAND_DOCTRINE_MASTERY_RESET`)
 - Other mastery sources shown in the interface: faction doctrine sharing (`DOCTRINE_SHARING_BASE_MASTERY_GAIN_MONTHLY` 10 and `DOCTRINE_SHARING_MONTHLY_MASTERY_GAIN_PER_COMMANDER` 2), theater commanders, military attaches and Theorist advisors. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`, `localisation/english/doctrines_l_english.yml`
@@ -328,13 +329,13 @@ Localisation: `SUBDOCTRINE_<NAME>` and `SUBDOCTRINE_<NAME>_DESC` for the subdoct
 | `<subdoctrine id>_mastery_gain_factor` | mastery gain of the tracks that hold that subdoctrine | `guerilla_war_mastery_gain_factor`, `peoples_war_mastery_gain_factor` |
 | `<track id>_track_mastery_gain_factor` | mastery gain of that track | `fighter_aircraft_track_mastery_gain_factor = 0.05`, `operations_track_mastery_gain_factor` |
 
-`common/doctrines/_documentation.md` writes the first mastery form as `[folder_name]_track_mastery_gain_factor` with the example `land_track_mastery_gain_factor`. The modifier documentation and vanilla script disagree with it: the folder form has no `_track` (`land_mastery_gain_factor`, 13 vanilla uses; `land_track_mastery_gain_factor` has none), and `_track_` belongs to track ids. Use the forms in the table. [vanilla-confirmed 1.19.3] `common/ideas/*.txt`, `common/country_leader/00_traits.txt`. `documentation/modifiers_documentation.md` lists `air land naval special_forces` under `<Doctrine>_mastery_gain_factor` next to every grand doctrine and subdoctrine id, and the 14 track ids under `<Doctrine>_track_mastery_gain_factor`. [docs]
+`common/doctrines/_documentation.md` writes the first mastery form as `[folder_name]_track_mastery_gain_factor` with the example `land_track_mastery_gain_factor`. The modifier documentation and vanilla script disagree with it: the folder form has no `_track` (`land_mastery_gain_factor`, 13 vanilla uses; `land_track_mastery_gain_factor` has none), and `_track_` belongs to track ids. Use the forms in the table. [vanilla-confirmed 1.19.4.1] `common/ideas/*.txt`, `common/country_leader/00_traits.txt`. `documentation/modifiers_documentation.md` lists `air land naval special_forces` under `<Doctrine>_mastery_gain_factor` next to every grand doctrine and subdoctrine id, and the 14 track ids under `<Doctrine>_track_mastery_gain_factor`. [docs]
 
 The documentation says the localisation of the mastery gain modifiers is mapped automatically, so they need no keys of their own. [docs] `common/doctrines/_documentation.md`
 
-AI. `ai_will_do` on a grand doctrine or subdoctrine is a country-scope weight block (`base`, `modifier = { factor = N <triggers> }`); vanilla steers it with `original_tag` (factor 95 for countries that historically used the doctrine) and `is_major`. The AI also reads `NDefines.NAI.DESIRE_USE_XP_TO_UNLOCK_LAND_DOCTRINE`, `_NAVAL_DOCTRINE` and `_AIR_DOCTRINE` (0.5 each) and re-evaluates its best doctrine every `DAYS_BETWEEN_CHECK_BEST_DOCTRINE` (30) days. `common/ai_strategy/doctrines.txt` uses `has_doctrine = new_mobile_warfare` and the other ids as `enable` conditions for `role_ratio` and `force_concentration_factor` strategies. [vanilla-confirmed 1.19.3] `common/doctrines/`, `common/defines/00_defines.lua`, `common/ai_strategy/doctrines.txt`
+AI. `ai_will_do` on a grand doctrine or subdoctrine is a country-scope weight block (`base`, `modifier = { factor = N <triggers> }`); vanilla steers it with `original_tag` (factor 95 for countries that historically used the doctrine) and `is_major`. The AI also reads `NDefines.NAI.DESIRE_USE_XP_TO_UNLOCK_LAND_DOCTRINE`, `_NAVAL_DOCTRINE` and `_AIR_DOCTRINE` (0.5 each) and re-evaluates its best doctrine every `DAYS_BETWEEN_CHECK_BEST_DOCTRINE` (30) days. `common/ai_strategy/doctrines.txt` uses `has_doctrine = new_mobile_warfare` and the other ids as `enable` conditions for `role_ratio` and `force_concentration_factor` strategies. [vanilla-confirmed 1.19.4.1] `common/doctrines/`, `common/defines/00_defines.lua`, `common/ai_strategy/doctrines.txt`
 
-Localisation and sprites at a glance. [vanilla-confirmed 1.19.3] `localisation/english/doctrines_l_english.yml`, `localisation/english/research_l_english.yml`, `interface/doctrines/doctrines.gfx`
+Localisation and sprites at a glance. [vanilla-confirmed 1.19.4.1] `localisation/english/doctrines_l_english.yml`, `localisation/english/research_l_english.yml`, `interface/doctrines/doctrines.gfx`
 
 | Object | Keys to define |
 | --- | --- |
@@ -347,7 +348,7 @@ Localisation and sprites at a glance. [vanilla-confirmed 1.19.3] `localisation/e
 <!-- kit:begin id="doctrine-example" at="bottom" -->
 ## Kit: Minimal grand doctrine with one track and one subdoctrine <a id="kit-doctrine-example"></a>
 
-**Kit addition** A working shape for a new land grand doctrine, built from vanilla ids and sprites so it needs no new art. Structure and keys follow the vanilla files and the documentation. The three rewards are fewer than any vanilla subdoctrine has (4 or 5), so whether the game accepts them was not observed; add rewards up to 5 to match vanilla. [vanilla-confirmed 1.19.3] `common/doctrines/`; [docs] the five `_documentation.md` files under `common/doctrines/`; the reward count [unverified]
+**Kit addition** A working shape for a new land grand doctrine, built from vanilla ids and sprites so it needs no new art. Structure and keys follow the vanilla files and the documentation. The three rewards are fewer than any vanilla subdoctrine has (4 or 5), so whether the game accepts them was not observed; add rewards up to 5 to match vanilla. [vanilla-confirmed 1.19.4.1] `common/doctrines/`; [docs] the five `_documentation.md` files under `common/doctrines/`; the reward count [unverified]
 
 ```text
 # common/doctrines/grand_doctrines/my_doctrines.txt
@@ -416,12 +417,12 @@ Give a country the doctrines from script with `set_grand_doctrine = my_grand_doc
 
 **Kit note** Mistakes to avoid when writing doctrine script.
 
-- Milestones pair with tracks by position, so `milestones` needs exactly as many blocks as `tracks` has entries. All 12 vanilla grand doctrines match: the 10 land, naval and air ones list 4 tracks and 4 milestones, the 2 special forces ones list 2 and 2. [vanilla-confirmed 1.19.3] `common/doctrines/grand_doctrines/*.txt`
-- Use the vanilla ids in triggers and effects: `has_doctrine = mobile_warfare` (the documentation's example) matches nothing because the id is `new_mobile_warfare`. [vanilla-confirmed 1.19.3] `common/doctrines/grand_doctrines/land_grand_doctrines.txt`
+- Milestones pair with tracks by position, so `milestones` needs exactly as many blocks as `tracks` has entries. All 12 vanilla grand doctrines match: the 10 land, naval and air ones list 4 tracks and 4 milestones, the 2 special forces ones list 2 and 2. [vanilla-confirmed 1.19.4.1] `common/doctrines/grand_doctrines/*.txt`
+- Use the vanilla ids in triggers and effects: `has_doctrine = mobile_warfare` (the documentation's example) matches nothing because the id is `new_mobile_warfare`. [vanilla-confirmed 1.19.4.1] `common/doctrines/grand_doctrines/land_grand_doctrines.txt`
 - Write `xor` on both sides. Vanilla lists the partner on both subdoctrines (`mountaineers_1` has `xor = { mountaineers_2 }` and `mountaineers_2` has `xor = { mountaineers_1 }`). [vanilla-confirmed 1.19.3] `common/doctrines/subdoctrines/special_forces/special_forces_subdoctrines.txt`
 - Put doctrine equipment bonuses in an `equipment_bonus` block, not the `add_equipment_bonus` effect, so the bonus goes away when the doctrine is replaced. [docs] `common/doctrines/grand_doctrines/_documentation.md`
 - The navy folder id is `naval` but its `xp_type` is `navy`, and its cost modifier is `naval_doctrine_cost_factor`. [vanilla-confirmed 1.19.3] `common/doctrines/grand_doctrines/sea_grand_doctrines.txt`
-- A grand doctrine's `visible`, `max_track_rows` and `max_track_columns`, a subdoctrine's `allow_in_multiple_tracks` and `reward_gfx`, a track's `frame` and `background_offset`, and an explicit `modifiers = { }` block are documented but never used by vanilla, so treat them as untested. [vanilla-confirmed 1.19.3] absence in `common/doctrines/`
+- A grand doctrine's `visible`, `max_track_rows` and `max_track_columns`, a subdoctrine's `allow_in_multiple_tracks` and `reward_gfx`, a track's `frame` and `background_offset`, and an explicit `modifiers = { }` block are documented but never used by vanilla, so treat them as untested. [vanilla-confirmed 1.19.4.1] absence in `common/doctrines/`
 <!-- kit:end id="doctrine-traps" -->
 
 ---
