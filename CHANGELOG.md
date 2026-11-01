@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Report a Meshy refusal (an MCP error result, such as HTTP 402 when the account's plan cannot create API tasks) with Meshy's own message instead of "Meshy response did not contain a task id".
 - Move the Meshy MCP pin from 0.6.2 to 0.6.7 (runtime lock, bootstrap identities and the tool schema lock re-captured from a live `tools/list`). The Text-to-Motion tools the contract named did not exist; it now names `meshy_text_to_motion`, `meshy_list_animations` and the generic task tools, and the deprecated `meshy_rig` `texture_image_url` is never sent.
 - Make the Meshy generation model a per-profile `generation` block in `asset_profiles.json`. The shipped values keep today's request (`meshy-7`, standard, `should_remesh` false). Retired models (`meshy-t1`, `meshy-5`, `meshy-4`, `lowpoly`), unpinned aliases, Smart Topology face caps and a standard-model target that Meshy would ignore are refused before any paid call.
 - Read every credit estimate from `config/meshy_pricing.json` (docs.meshy.ai pricing page, retrieved 2026-10-31) instead of hard-coded 30/5/3 constants and a 44-credit fallback.
