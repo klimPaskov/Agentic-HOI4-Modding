@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "b8ac577db3a0260aed8caadc6ec13d0fdd226e31",
+  "generated_for_revision": "b89502d015e1b39688103bde2d7c81b5c9454ce0",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1829,8 +1829,8 @@
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
-          "sha256": "732e496b7825c0ee6ba5e5eaf70adfedb70dc9631502547f6fbbba1dbfcb96a6",
-          "size": 56264
+          "sha256": "3f0819e4986f376c786daad23b8c20d4d78c28c57760f8f18536a654dd80d07a",
+          "size": 56280
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/references/formable-nation-decisions.md",
@@ -1934,8 +1934,8 @@
         },
         {
           "path": ".claude/skills/hoi4-equipment/references/mios-and-special-projects.md",
-          "sha256": "f3912c6a76422429cec294dbc071c83731751dda4bc28e72f68e5b6f47cc8acc",
-          "size": 2457
+          "sha256": "ddb2ade1e5e53efbe79c10aad945e382285baa35f4ed8f25a068b0269554dd63",
+          "size": 2455
         },
         {
           "path": ".claude/skills/hoi4-equipment/references/modular-equipment-and-designer.md",
@@ -5253,8 +5253,8 @@
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/SKILL.md",
-          "sha256": "732e496b7825c0ee6ba5e5eaf70adfedb70dc9631502547f6fbbba1dbfcb96a6",
-          "size": 56264
+          "sha256": "3f0819e4986f376c786daad23b8c20d4d78c28c57760f8f18536a654dd80d07a",
+          "size": 56280
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/references/formable-nation-decisions.md",
@@ -5358,8 +5358,8 @@
         },
         {
           "path": ".claude/skills/hoi4-equipment/references/mios-and-special-projects.md",
-          "sha256": "f3912c6a76422429cec294dbc071c83731751dda4bc28e72f68e5b6f47cc8acc",
-          "size": 2457
+          "sha256": "ddb2ade1e5e53efbe79c10aad945e382285baa35f4ed8f25a068b0269554dd63",
+          "size": 2455
         },
         {
           "path": ".claude/skills/hoi4-equipment/references/modular-equipment-and-designer.md",
@@ -9180,73 +9180,73 @@
         },
         {
           "path": "paradox_wiki/achievement_modding.md",
-          "sha256": "408879d1c4e2569a82d82f238f1a98cdd580c9da0a5375fc342be4c54994829b",
-          "size": 19252
+          "sha256": "8e996e65102a4a66c99f0ae4c00ff1f9d072733ad7213718a90d64dfde41600d",
+          "size": 20002
         },
         {
           "path": "paradox_wiki/ai_focuses.md",
-          "sha256": "d249e17bcfe4191111bc857ebcfb2271d48cb65760da818bbc111d8d9b7398fb",
-          "size": 14913
+          "sha256": "56f9d2a3a54f6c69f33cf4a9c998739202eab9ff6c0bf10aaae44895644c436f",
+          "size": 14958
         },
         {
           "path": "paradox_wiki/ai_modding.md",
-          "sha256": "67bfe0f842499d757775f1bb457e50cc1f9810e3d234f2684b13b30f3785764f",
-          "size": 119538
+          "sha256": "d7dd8eb876c9db29c31bb4dc34cc6a40bb357627bc4d76b9134e41b0c957e395",
+          "size": 120186
         },
         {
           "path": "paradox_wiki/autonomy_state_modding.md",
-          "sha256": "eb13a007156bafbb4900e8514b97f6a35e6cec3dfe92405e6059fd457873a2b1",
-          "size": 31930
+          "sha256": "0909855c98146e7e04adf28b6f7f5881886f958d23aaec6e1e85cddc570aff71",
+          "size": 32262
         },
         {
           "path": "paradox_wiki/balance_of_power_modding.md",
-          "sha256": "a8ffa220259cad8e45a9463837d692a6c01ee55b4692bef64ef940cbb6b21168",
-          "size": 34504
+          "sha256": "45fbd47a936fe7a525c46474be8c7d0d88adfe7da693a4cdf6851947d32298b0",
+          "size": 34791
         },
         {
           "path": "paradox_wiki/bookmark_modding.md",
-          "sha256": "525fd8e8ed28bc9996e1bcea8fe6e5ad89e4bb454492658befd0b35716cb5ab8",
-          "size": 38741
+          "sha256": "7e0697b1aa2137bdfaea0c04fd59cff8a93548e94b627953c9701f6d05233c7b",
+          "size": 39157
         },
         {
           "path": "paradox_wiki/building_modding.md",
-          "sha256": "1a456bd47bd5a26d0b27ce68308e466d95425b3aca054be038d5fceb4a838fd6",
-          "size": 51930
+          "sha256": "fa577124154324e4478cd31fca68f34e64dcffa47c277095e1f3591e4a45b6bb",
+          "size": 51982
         },
         {
           "path": "paradox_wiki/character_modding.md",
-          "sha256": "34c4744949e0b246389b3ff2d5899769aedcc63caa884c7f57303caea50bb6c7",
-          "size": 93354
+          "sha256": "0dfff0e4db25efd111f27440650c6a29b2b2ac4db7a014e09b003d0f279abf25",
+          "size": 93682
         },
         {
           "path": "paradox_wiki/collection_modding.md",
-          "sha256": "2ec803623af5e18f5e6df8316bd0445e094a119d38b8149957e1b5552845f0ec",
-          "size": 34195
+          "sha256": "be15ca723fff5d02dd9be8ce141bb943579e06126164c67de0e6ad13510b676b",
+          "size": 34504
         },
         {
           "path": "paradox_wiki/console_commands.md",
-          "sha256": "eb56db6884281e37d5bfc5e4efee0401b7bfd47a9eccb72c7917e6507752c79f",
-          "size": 77903
+          "sha256": "df0d67772d86234d94962ee8e1aebc5120ea638cc05cd9aefa5724bc715c63fe",
+          "size": 79141
         },
         {
           "path": "paradox_wiki/cosmetic_tag_modding.md",
-          "sha256": "6811343c7ebcb0d795bbc32f7902e0ec31a4997c224d98e72fbc44e5c1e533ee",
-          "size": 21292
+          "sha256": "5af743f981bdb4f38292b15b525515908bae3c9035815fd7e0223acec1a453a1",
+          "size": 21838
         },
         {
           "path": "paradox_wiki/country_creation.md",
-          "sha256": "d8b71de59214b179d56d70a95579dc6e3cf8127d01e854707927595776903a40",
-          "size": 75931
+          "sha256": "fb4e068ceb20906de5894536c3870a4ce4930a0aa9229e208d1cc5bbb4685817",
+          "size": 76205
         },
         {
           "path": "paradox_wiki/data_structures.md",
-          "sha256": "0c9d811c4a82476e4f854644b47f22168762e148d8947b09ce644392eff16fd9",
-          "size": 183519
+          "sha256": "c2f0dd5509b534188cd28cc8b553f8da28e04a0dd5b2efa7548f0a1c1b633a69",
+          "size": 183830
         },
         {
           "path": "paradox_wiki/decision_modding.md",
-          "sha256": "42802b939b14a26665eaeda05a65cb31b98d42b2a153fa4b709e50bbfa57b4aa",
-          "size": 58123
+          "sha256": "b8f494282e5e0322b0ec192620bed51ff370dfac15d02cc1524e9bd48fbe0658",
+          "size": 58537
         },
         {
           "path": "paradox_wiki/defines.md",
@@ -9260,98 +9260,98 @@
         },
         {
           "path": "paradox_wiki/division_modding.md",
-          "sha256": "623ea08c3fe5ce9ad51b8465c29be2e7ff270409cc747bf501a268e3f21c8ea7",
-          "size": 44858
+          "sha256": "b0902d1b43d58582ecc46466bcb2c85f64c2b044e1d4e8b33056e78d1b115c2e",
+          "size": 45501
         },
         {
           "path": "paradox_wiki/doctrine_modding.md",
-          "sha256": "89966792967476ccfb085ff12c9cb44a68ef6eec20dbbf58a86d368310460563",
-          "size": 42370
+          "sha256": "082cadf95d9ea1b9c1dbea0be435c6b309f8929a88e17f679dca001fd3faecab",
+          "size": 42953
         },
         {
           "path": "paradox_wiki/effects.md",
-          "sha256": "3ec6ca15a285326660996cbd591151bf29ddd19f30734f2a344a7849b51b3378",
-          "size": 338143
+          "sha256": "617f015bb3f10263419dba890f3ceb309d66b6671ddc923c740981f550c09a7d",
+          "size": 341057
         },
         {
           "path": "paradox_wiki/entity_modding.md",
-          "sha256": "4b7d6d1fa3640e55adf00a4aef05fce9d4068e8d97f1daf69cae6ca4bd0eaff0",
-          "size": 21508
+          "sha256": "b0e5795d325776eb664ca0fb8045ba84344f9e410224c2dd059ce6d1a744c338",
+          "size": 21656
         },
         {
           "path": "paradox_wiki/equipment_modding.md",
-          "sha256": "be46fa8fa7ca5c8f64b4fa3694a873a0453150a6cec2ec0a6115e4bb40a437dc",
-          "size": 41047
+          "sha256": "73b1ff66147279a0f96690ebbf7526e4b1aa281dcf912d83f5e47a1eeaa8974b",
+          "size": 41331
         },
         {
           "path": "paradox_wiki/event_modding.md",
-          "sha256": "16637e327e21e8cd98b134fc0a5323b46fd784d4c04efda381ee41801d4a3010",
-          "size": 64113
+          "sha256": "2fafb077c3c3f860d6e47615ebba89bfe8b2e430253a8e3e62d0e5486e639150",
+          "size": 64514
         },
         {
           "path": "paradox_wiki/faction_modding.md",
-          "sha256": "9614f6d38d5169bcbd01644b289cfae50fc7d8a1b83444e87f238ae515dd397d",
-          "size": 62205
+          "sha256": "c0cf2c174e36f61becc0037225db4fb84badfc53a99834dfd93e1ffc48936bfc",
+          "size": 62495
         },
         {
           "path": "paradox_wiki/font_modding.md",
-          "sha256": "82d074e207721d6d98f3614794dced8453fef2af3d390ce4c734a3890c89e456",
-          "size": 22620
+          "sha256": "dc9106b7ca514a8ad426459c7f9b97931bfd5908f6371744a6c7c8c2db2c714a",
+          "size": 22678
         },
         {
           "path": "paradox_wiki/game_rule_modding.md",
-          "sha256": "71b13ac0fdbb6fa09ae6bdb9d53c7f10fc67c136e7fc9259983364289b242cb2",
-          "size": 19762
+          "sha256": "ce30c44a79a8600c39f540d053d750b942905d940f73fb66dc96ca478e65680d",
+          "size": 20122
         },
         {
           "path": "paradox_wiki/graphical_asset_modding.md",
-          "sha256": "36d58757273571ffaca43f3672d8f5e50dfe85cb2d53efc5002eb033164be3da",
-          "size": 32894
+          "sha256": "4731c7a031808e62cc65940d38c2efb8b7bc93fba5567f947fb64835ef8560ce",
+          "size": 33313
         },
         {
           "path": "paradox_wiki/idea_modding.md",
-          "sha256": "74697c3caa2127affd3af14068f6ddbd54a5e18d490525c0986e41eb5aa01e38",
-          "size": 53021
+          "sha256": "511d1d660975926806e7b9523519a657a20b6c6959bee6b0f7c9d6c1539d525f",
+          "size": 53438
         },
         {
           "path": "paradox_wiki/ideology_modding.md",
-          "sha256": "da07b99dce8f7f9fb7657d9fc8c4eebd0504cb1177bf409e9b6d9214a3a78dff",
-          "size": 32742
+          "sha256": "b688f8543e4487a8edc0b2d5552fdab94a11925f5d955d04776001b226f95928",
+          "size": 32936
         },
         {
           "path": "paradox_wiki/intelligence_agency_modding.md",
-          "sha256": "b0e03b3266db77e2628f078baf8b66c4836db35f63b7fe4c3af56d304e4c9e09",
-          "size": 27336
+          "sha256": "f603bf9c84bfb6e926c254d2801fa21a5d84b8eac8516130225dc4569ea1b241",
+          "size": 27930
         },
         {
           "path": "paradox_wiki/intelligence_operation_modding.md",
-          "sha256": "df2b7f4996c49948f7c9e36184eeee551b5362bb990b21033f4f412f7b4a2fad",
-          "size": 40469
+          "sha256": "08bb22456ceae654bb73c47038508cb3d334069139df78f46b0f01dec830b50e",
+          "size": 41198
         },
         {
           "path": "paradox_wiki/interface_modding.md",
-          "sha256": "64ebc00bba2d50230d5e3a6aefd7cca4b8c65a1187869c473a7b9c925b985573",
-          "size": 51834
+          "sha256": "66ff0f6c2d6f7a47741c910911428a81efaf5d760df211286310a3b6e3c8e7f0",
+          "size": 52394
         },
         {
           "path": "paradox_wiki/list_of_modifiers.md",
-          "sha256": "dde77b119159b1c5149c1ff99aa7d5f8a1d6907a01a586867912f427f737cb91",
-          "size": 101456
+          "sha256": "f2d858be92cfedb69f7f976d6db71228a96074f31d45377156aec30c21d8303f",
+          "size": 101825
         },
         {
           "path": "paradox_wiki/localisation.md",
-          "sha256": "3095c80a538ae626fbe7fb6a3f3822d487e79b105ec7416606a953b4786318f7",
-          "size": 87755
+          "sha256": "1d691223eb3714f1d270e139a0e97b9bd9a54fc90faafa96ee7900e265f3365b",
+          "size": 88025
         },
         {
           "path": "paradox_wiki/map_modding.md",
-          "sha256": "d6580d93e8b44618ed7326f291103df4743342c1a0dde5806e3aa7857c06647c",
-          "size": 104408
+          "sha256": "ab1ab82613c2f8962bb52faf00309854a213057a3aeeb2865fb62594e0af330f",
+          "size": 104638
         },
         {
           "path": "paradox_wiki/map_mode_modding.md",
-          "sha256": "44193b3835f8134b59d92d9f5b65e535bcf3e440100f255558a924e4a4405638",
-          "size": 16845
+          "sha256": "e59100c623eb9b857cdffa98acf2589359e89a2de35e2ba1a8f10bc04c9d15e0",
+          "size": 17304
         },
         {
           "path": "paradox_wiki/media/ai_modding_04cfcba22e__img12.png",
@@ -10025,23 +10025,23 @@
         },
         {
           "path": "paradox_wiki/military_industrial_organization_modding.md",
-          "sha256": "33b412f27eae12dbfe2792aaaaa1be3d8db493dbf3daa8747a589c41dc81ec0c",
-          "size": 68562
+          "sha256": "796390826b91594b323b77f975bdd95d249b153e6b7c9b8b347d1c39993bc47e",
+          "size": 69207
         },
         {
           "path": "paradox_wiki/mod_structure.md",
-          "sha256": "afcbfd9a07fa7f26df443d503eb9df42fb2e4f73247b7781574b4cd6c23d3db4",
-          "size": 32490
+          "sha256": "41ca05ba6eab36349e85321c1d319b0abdfab2413e1e985d866ef11363fe4b04",
+          "size": 32637
         },
         {
           "path": "paradox_wiki/modding.md",
-          "sha256": "fd2a3b46484eb34a1b4296a3e797769454d8ea3a5edc6a15e6840b2b12e59b4a",
-          "size": 94694
+          "sha256": "49643733fbed00675ad225baab6f92df7180654e00fb6165ed7d88c1b912f352",
+          "size": 94861
         },
         {
           "path": "paradox_wiki/modifiers.md",
-          "sha256": "eb1d8ec95d453af0942366c6e2c9905efa7d57d6fe564161ec9aabdd1d89921f",
-          "size": 189982
+          "sha256": "a73a5a8167229321bcf2cec1f2edd4e35d413ee1ee823cab0e6fee8d0947f281",
+          "size": 191490
         },
         {
           "path": "paradox_wiki/mods.md",
@@ -10050,58 +10050,58 @@
         },
         {
           "path": "paradox_wiki/music_modding.md",
-          "sha256": "6eef9cce7edeedefdb5bd8260c7d682abdaaa9374c0ff2b8a9c36b79c1f15d77",
-          "size": 16335
+          "sha256": "41641110e2b4161c5a23c9ee0b8595ba97c0f0f3926f8f75a873a5b00983fac4",
+          "size": 16659
         },
         {
           "path": "paradox_wiki/namelist_modding.md",
-          "sha256": "3c79684223632c9e44f281b20473d5b333a8d1c89d75df70143fdb506aaa5f02",
-          "size": 20072
+          "sha256": "0ffa4f23f01f997b91833c0e3b38fc9eb31af5234eb6317a30a5a26801833909",
+          "size": 20142
         },
         {
           "path": "paradox_wiki/national_focus_modding.md",
-          "sha256": "2a23853bf2df0530cbaa4b42c3b2baa48167af54b2d5e5a507eb6b733f789ab2",
-          "size": 109661
+          "sha256": "7f887d7971a962dc949e0f3b3b656424c6678c95571ee8847e0f72237ed5c628",
+          "size": 109953
         },
         {
           "path": "paradox_wiki/nudger.md",
-          "sha256": "71160973319527f779c235d53eb1767d9853a632af109f0142cd95b2847ff805",
-          "size": 38653
+          "sha256": "81ecabdef443c275b6c42b616ad154549217840a505fc39f41677f5bb2960f58",
+          "size": 38863
         },
         {
           "path": "paradox_wiki/occupation_and_resistance_modding.md",
-          "sha256": "19bf2b353185ed63bd80191c398259e0370d9da5c93f036b623e6c8402881261",
-          "size": 38245
+          "sha256": "8e0fac21aacd281de668e832c9fefadb685ac84bc17577bdec06ae5ac831eac5",
+          "size": 38380
         },
         {
           "path": "paradox_wiki/on_actions.md",
-          "sha256": "11f704690ef754cca7eced8035f0c756a2ed61236d851f08d3d42380f410ade8",
-          "size": 57063
+          "sha256": "2956ac90cea50b303f646893e401e2fe9fd6eeeb579a98f3c103b3a460c3fd76",
+          "size": 57773
         },
         {
           "path": "paradox_wiki/particle_modding.md",
-          "sha256": "2c19aa591cdb5c3b011a229fa9b3967579abc0601eea672866141ea1d6ea7db2",
-          "size": 17101
+          "sha256": "ac55cfe9a39b99dee4509d770076cfaada31ad9fe09cf28c44a83c3261530613",
+          "size": 17368
         },
         {
           "path": "paradox_wiki/peace_conference_modding.md",
-          "sha256": "1a66d819297deff8db231e1614a97319c26487d2df5ac1e92d8fb472503397f9",
-          "size": 48861
+          "sha256": "dfe2f3ceaab0da75ec9eb5cace192890d5356b5e03ae24137726b14b505c6898",
+          "size": 49005
         },
         {
           "path": "paradox_wiki/portrait_modding.md",
-          "sha256": "996581d918e3ad4d7d83dc585f5fb1692e0d480849c8ba875b5fd6f0fdbf5f08",
-          "size": 12719
+          "sha256": "6773ae5bc8b3c35199e65b716009816cadb6aebb0d7f5447934cb6842937c036",
+          "size": 13205
         },
         {
           "path": "paradox_wiki/posteffect_modding.md",
-          "sha256": "60d0b30df1477f3ddc22cbf66a2982576c0eaee4cd8f8f201bc32460cc0738d0",
-          "size": 14090
+          "sha256": "bac64dd663ade145c40f914aa80825f070110b02877df5211d6d62b7d104875e",
+          "size": 14467
         },
         {
           "path": "paradox_wiki/raid_modding.md",
-          "sha256": "44ad09a098b6f69b64a810167397b952ada67c06f3cd02657483dfca60d14485",
-          "size": 53823
+          "sha256": "cea86cf397479c844dbde36b2dc33c5669259aa9e9839298430487f16f0e0671",
+          "size": 54389
         },
         {
           "path": "paradox_wiki/resources_modding.md",
@@ -10110,28 +10110,28 @@
         },
         {
           "path": "paradox_wiki/scopes.md",
-          "sha256": "058d1f4a944917c4990f359339c4d48e81b0e26ad42cffe9f7cb1c8bf8424a70",
-          "size": 89422
+          "sha256": "3381a3dc464c917d5598168b14a37dd814de3d6ba44c037c4afdef10a6dc9f26",
+          "size": 89943
         },
         {
           "path": "paradox_wiki/script_constant_modding.md",
-          "sha256": "3ce71ab2b4a3d4b8a780ac2bc8528ed3f12a152095b1b69f101a3b66fc77c3b5",
-          "size": 25089
+          "sha256": "5e8e3dfbeb8a055c9a6c672986d582e8bfb64f40e8c63cad8bfd73f9480edd17",
+          "size": 25749
         },
         {
           "path": "paradox_wiki/scripted_gui_modding.md",
-          "sha256": "46f0ac0af0633007a4d0bb1b1eab0b286cad8b3be7670fcaf2710906a1e27be0",
-          "size": 48306
+          "sha256": "b767de4ce99c59914a5e873502798c02887c99cf0c2b35472f3c81bbdeb9bb83",
+          "size": 49070
         },
         {
           "path": "paradox_wiki/sound_modding.md",
-          "sha256": "a761f5f96863e1db10d441e86e3dfae3abfd148577748c97227f2cad382fe2a6",
-          "size": 18851
+          "sha256": "3dd4ac9d1cfbe7e47d5a533c4a164ddf8d3be29d697d737b60ed520e10d91841",
+          "size": 19102
         },
         {
           "path": "paradox_wiki/special_project_modding.md",
-          "sha256": "497fb69c1d8428274967f5a85f6da6375751f4cfd560e9bf98ff325f964c2949",
-          "size": 63426
+          "sha256": "6b5ba4082dce484aff911252b9b542dd084d88240c1997a026ae42d96c8f40e3",
+          "size": 63871
         },
         {
           "path": "paradox_wiki/state_modding.md",
@@ -10150,23 +10150,23 @@
         },
         {
           "path": "paradox_wiki/technology_modding.md",
-          "sha256": "94b57ae51e4556357bb06d2fa87b3e2871f4b4be989509251fdfbc79dc954342",
-          "size": 76480
+          "sha256": "f07f8f551689c7b115137b57cd2727d567d75e8a6c6d90ae6cbc8e9ffd6e8fb8",
+          "size": 76682
         },
         {
           "path": "paradox_wiki/triggers.md",
-          "sha256": "ddb67b65c1aef8c70628e25aa4abaf69f2d93ca4c160ba73101627eb0040fd97",
-          "size": 240212
+          "sha256": "bc5fda5f3c3d3a5c8822431752bc745f93dcfde6539a32e1519fdf596aea125b",
+          "size": 242088
         },
         {
           "path": "paradox_wiki/troubleshooting.md",
-          "sha256": "63c2094da07bb7c4aa2d48581840e581860d6453f6aa0d75e47e7c98901132ef",
-          "size": 42594
+          "sha256": "7ae12a25a2e9ba84092c4cee80d2e110623940f97f7e3c55133aeedea64f22f7",
+          "size": 42987
         },
         {
           "path": "paradox_wiki/unit_modding.md",
-          "sha256": "4baef3a61adb0b7e233d6f642f7f09efd80a215f875dc2cb2815044dcd526117",
-          "size": 35587
+          "sha256": "2ca2c39faf9e63f376ede025e31f4d0da1033ab54d4d8a8d6a1c46545d602b53",
+          "size": 35901
         }
       ]
     },
