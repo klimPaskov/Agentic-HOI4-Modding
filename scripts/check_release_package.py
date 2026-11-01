@@ -49,8 +49,11 @@ def main() -> None:
             assert all(value in examples for value in usernames), f"Personal path: {name}"
         if name.startswith(".claude/skills/"):
             assert not re.search(r"Chaos Redux|chaos_redux|chaosx", text, re.I), f"Mod-specific skill: {name}"
+    # Agent worktrees under .claude/worktrees/ are other checkouts, not this package's documentation.
+    claude_docs = [page for page in sorted((ROOT / ".claude").rglob("*.md"))
+                   if "worktrees" not in page.relative_to(ROOT / ".claude").parts[:1]]
     docs = [ROOT / "README.md", ROOT / "RELEASING.md", *sorted((ROOT / "docs").rglob("*.md")),
-            ROOT / ".tools/sync/README.md", *sorted((ROOT / ".claude").rglob("*.md"))]
+            ROOT / ".tools/sync/README.md", *claude_docs]
     checked = 0
     for page in docs:
         text = page.read_text(encoding="utf-8")
