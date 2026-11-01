@@ -106,7 +106,7 @@
    "upstream": ".tools/tests/test_game_dir.py"
   },
   ".tools/tests/test_gfx_conformance.py": {
-   "sha256": "f9beeaa322bf729c174de6af2bbaaeeb2b2c4a5e781489a3032b6ea5fcd27b5b",
+   "sha256": "f8197f26ef235de0c64de0155b881d45b378f24e0764b3e45df95d5ecfd88faf",
    "upstream": ".tools/tests/test_gfx_conformance.py"
   },
   ".tools/tests/test_report_provenance.py": {

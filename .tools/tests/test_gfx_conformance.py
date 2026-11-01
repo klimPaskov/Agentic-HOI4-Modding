@@ -116,34 +116,47 @@ class FamilyChecks(unittest.TestCase):
 	"""Family checks on a tiny mod: consumers come from focus, decision and idea script, textures from the .gfx file."""
 
 	def test_family_levels(self):
+		# Sizes come from the profile rows, so the test holds for the package's vanilla rows and for a mod's own.
+		def row(name):
+			return tuple(gfx.PROFILE_DATA[name]["canvas"]), {tuple(a) for a in gfx.PROFILE_DATA[name]["accepted"]}
+		focus, focus_accepted = row("focus")
+		alternatives = sorted(focus_accepted - {focus})
+		self.assertTrue(alternatives, "the focus row needs an accepted size besides its canvas")
+		alternative = alternatives[0]
+		odd = (focus[0] - 10, focus[1] - 8)
+		decision, decision_accepted = row("decision")
+		big = (decision[0] + 30, decision[1] + 30)
+		idea, _ = row("idea")
+		self.assertNotIn(odd, focus_accepted)
+		self.assertNotIn(big, decision_accepted)
 		tree = Tree(self)
 		tree.add("common/national_focus/tree.txt", """focus_tree = {
 	focus = { id = good icon = GFX_focus_good }
-	focus = { id = vanilla_size icon = GFX_focus_vanilla_size }
+	focus = { id = alternative icon = GFX_focus_alternative }
 	focus = { id = odd icon = GFX_focus_odd }
 }
 """)
 		tree.add("common/decisions/test.txt", "category = {\n\tbig_decision = { icon = big }\n\tempty_decision = { icon = empty }\n}\n")
 		tree.add("common/ideas/test.txt", "ideas = {\n\tcountry = {\n\t\tboxed_idea = { picture = boxed }\n\t}\n}\n")
-		sprites = {"GFX_focus_good": "goals/good", "GFX_focus_vanilla_size": "goals/vanilla_size", "GFX_focus_odd": "goals/odd",
+		sprites = {"GFX_focus_good": "goals/good", "GFX_focus_alternative": "goals/alternative", "GFX_focus_odd": "goals/odd",
 			"GFX_decision_big": "decisions/big", "GFX_decision_empty": "decisions/empty", "GFX_idea_boxed": "ideas/boxed"}
 		tree.add("interface/test.gfx", "spriteTypes = {\n" + "".join(
 			f'\tspriteType = {{ name = "{name}" texturefile = "gfx/interface/{path}.png" }}\n' for name, path in sprites.items()) + "}\n")
-		tree.add("gfx/interface/goals/good.png", png(94, 86))
-		tree.add("gfx/interface/goals/vanilla_size.png", png(100, 88))
-		tree.add("gfx/interface/goals/odd.png", png(90, 80))
-		tree.add("gfx/interface/decisions/big.png", png(40, 40))
-		tree.add("gfx/interface/decisions/empty.png", png(32, 32, empty=True))
-		tree.add("gfx/interface/ideas/boxed.png", png(64, 64, background=(30, 30, 30, 255)))
+		tree.add("gfx/interface/goals/good.png", png(*focus))
+		tree.add("gfx/interface/goals/alternative.png", png(*alternative))
+		tree.add("gfx/interface/goals/odd.png", png(*odd))
+		tree.add("gfx/interface/decisions/big.png", png(*big))
+		tree.add("gfx/interface/decisions/empty.png", png(*decision, empty=True))
+		tree.add("gfx/interface/ideas/boxed.png", png(*idea, background=(30, 30, 30, 255)))
 		found = gfx.check_families(tree.root, None, tree.root / "no_vanilla")
 		self.assertEqual(sorted((f.rule, f.level, f.path.split("/")[-1]) for f in found), [
 			("GFX-DECISION-SIZE", "warning", "big.png"),
 			("GFX-EMPTY-SUBJECT", "error", "empty.png"),
-			("GFX-FOCUS-ALTERNATIVE", "review", "vanilla_size.png"),
+			("GFX-FOCUS-ALTERNATIVE", "review", "alternative.png"),
 			("GFX-FOCUS-SIZE", "error", "odd.png"),
 			("GFX-OPAQUE-CANVAS", "error", "boxed.png"),
 		])
-		changed = gfx.check_families(tree.root, ["gfx/interface/goals/vanilla_size.png"], tree.root / "no_vanilla")
+		changed = gfx.check_families(tree.root, ["gfx/interface/goals/alternative.png"], tree.root / "no_vanilla")
 		self.assertEqual([(f.rule, f.level) for f in changed], [("GFX-FOCUS-ALTERNATIVE", "warning")])
 
 
