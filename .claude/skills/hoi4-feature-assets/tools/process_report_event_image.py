@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import random
 from pathlib import Path
 from typing import Any, Dict, Iterable, Tuple
@@ -32,6 +33,10 @@ PROVENANCE_ABOUT = (
     "`python -B .tools/gfx/gfx.py reports`. pixels_sha256 is the SHA-256 of the processed image's RGBA bytes, "
     "which the uncompressed BGRA DDS conversion preserves."
 )
+# Version of the card and shadow recipe (2: padded full-canvas shadow, defaults fitted to vanilla's report cards). Records written before it existed have no `recipe_version` and count as
+# version 1 (hard-clipped bottom-right shadow). Raise it whenever a change alters the pixels for the same arguments, so
+# `gfx.py reports` lists older cards for review instead of failing their recipe rerun.
+RECIPE_VERSION = 2
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff"}
 
 
@@ -144,16 +149,23 @@ def apply_shadow(
     blur: float,
     opacity: float,
 ) -> None:
-    alpha = rotated_card.getchannel("A")
-    shadow_alpha = alpha.filter(ImageFilter.GaussianBlur(blur))
+    """Composite a black Gaussian contact shadow of the card's alpha under the card position.
+
+    The blur runs on a layer as large as the canvas plus a margin of three sigma, so the halo is neither
+    clipped at the card's bounding box nor at the canvas edge; whatever falls outside the canvas is cropped
+    after blurring, as the engine would.
+    """
+    pad = int(math.ceil(3 * blur)) + 1
+    layer = Image.new("L", (canvas.size[0] + 2 * pad, canvas.size[1] + 2 * pad), 0)
+    layer.paste(rotated_card.getchannel("A"), (card_xy[0] + offset[0] + pad, card_xy[1] + offset[1] + pad))
+    if blur > 0:
+        layer = layer.filter(ImageFilter.GaussianBlur(blur))
+    shadow_alpha = layer.crop((pad, pad, pad + canvas.size[0], pad + canvas.size[1]))
     shadow_alpha = shadow_alpha.point(lambda p: int(p * opacity))
 
-    shadow = Image.new("RGBA", rotated_card.size, (0, 0, 0, 0))
+    shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     shadow.putalpha(shadow_alpha)
-
-    x, y = card_xy
-    ox, oy = offset
-    canvas.alpha_composite(shadow, (x + ox, y + oy))
+    canvas.alpha_composite(shadow)
 
 
 def process_report_event_image(
@@ -230,6 +242,7 @@ def record_provenance(registry: Path, runtime: str, source: Path, output: Path, 
     records[runtime] = {
         "source": {"path": source_name, "sha256": sha256_file(source)},
         "processor_sha256": sha256_file(Path(__file__)),
+        "recipe_version": RECIPE_VERSION,
         "arguments": arguments,
         "pixels_sha256": pixels,
     }
@@ -265,18 +278,19 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             f"Process {project_setting('project_label')} report event images into black-and-white sepia tilted "
-            "transparent 210x176 cards with a soft drop shadow."
+            "transparent 210x176 cards with vanilla's tight contact shadow (defaults fitted to the installed game's report-card "
+            "alpha masks; see tools/tests)."
         )
     )
     parser.add_argument("input", type=Path, help="Input image file or folder")
     parser.add_argument("output", type=Path, help="Output PNG file or output folder")
     parser.add_argument("--canvas-size", type=parse_size, default=(210, 176))
-    parser.add_argument("--card-size", type=parse_size, default=(192, 153))
+    parser.add_argument("--card-size", type=parse_size, default=(192, 154), help="Card size before the tilt; vanilla cards measure about 192x154")
     parser.add_argument("--border", type=int, default=0)
-    parser.add_argument("--angle", type=float, default=4.0, help="Degrees. Positive tilts like one of the reference images")
-    parser.add_argument("--shadow-offset", type=int, nargs=2, default=(4, 5), metavar=("X", "Y"))
-    parser.add_argument("--shadow-blur", type=float, default=4.5)
-    parser.add_argument("--shadow-opacity", type=float, default=0.50)
+    parser.add_argument("--angle", type=float, default=4.0, help="Degrees. Positive tilts counter-clockwise like vanilla report cards")
+    parser.add_argument("--shadow-offset", type=int, nargs=2, default=(0, 1), metavar=("X", "Y"), help="Pixels; vanilla's shadow is almost centred under the card")
+    parser.add_argument("--shadow-blur", type=float, default=2.5, help="Gaussian sigma in pixels")
+    parser.add_argument("--shadow-opacity", type=float, default=0.96)
     parser.add_argument("--grain", type=int, default=7)
     parser.add_argument("--paper-grain", type=int, default=0)
     parser.add_argument("--seed", type=int, default=1337)

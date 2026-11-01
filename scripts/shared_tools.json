@@ -18,7 +18,7 @@
    "upstream": ".claude/skills/chaos-redux-event-assets/tools/process_achievement_icons.py"
   },
   ".claude/skills/hoi4-feature-assets/tools/process_report_event_image.py": {
-   "sha256": "d7a8eef5f4ffd2f698af8b84f357942f2e7575942de73760c8e1dfd464886ee6",
+   "sha256": "70ff3ccbee0aee3e04d41490bacd0f31ba9b08dc33e02c3b0911a8edff922950",
    "upstream": ".claude/skills/chaos-redux-event-assets/tools/process_report_event_image.py"
   },
   ".claude/skills/hoi4-save-inspection/scripts/save_inspect.py": {
@@ -34,7 +34,7 @@
    "upstream": ".tools/audits/validate_scripts_mcp.py"
   },
   ".tools/gfx/gfx.py": {
-   "sha256": "ad7cc13ab9af41d3039fef266b5b2c2d56be5a39bead2dcb82658ee81f7bbb76",
+   "sha256": "b3ae3f400293d2a463220a4fb7fa1f53b8277034571cf8aab367e70080c5ffd7",
    "upstream": ".tools/gfx/gfx.py"
   },
   ".tools/gfx/requirements.txt": {
@@ -42,7 +42,7 @@
    "upstream": ".tools/gfx/requirements.txt"
   },
   ".tools/gfx/test_gfx.py": {
-   "sha256": "bd7adc3802668811fb974840aba812e2f99c8309423f985448362b47c7b938a4",
+   "sha256": "2b009909cf5c91a2909428fd2e6b2a7618801e919db11e43a2b4074398f07b5a",
    "upstream": ".tools/gfx/test_gfx.py"
   },
   ".tools/lib/__init__.py": {
