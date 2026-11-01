@@ -89,6 +89,7 @@ Use repo skills as required implementation guidance, not as optional notes.
 - Use `hoi4-scripted-gui` for scripted GUI composition, reference-image mapping, content and interaction budgets, layout, iterative MCP live previews, click-region review, state and resolution coverage, and visual acceptance. `hoi4-decisions-missions` retains gameplay-changing control integrity, costs, effects, AI, cleanup, and balance.
 - Use `hoi4-native-raids` for native raid scopes, outcome dispatch, native costs, and final target validation when editing `common/raids/`.
 - Use `hoi4-mtth` when MTTH logic or weighted timing would reduce clutter or make AI and release logic clearer.
+- Use `hoi4-investigate` for any bug, regression, or described crash before writing a fix, and to check a "done" report.
 - Use the HOI4 system skills for engine systems: `hoi4-equipment` (equipment, modules, designers, production), `hoi4-technology-doctrines` (technologies, folders, doctrines), `hoi4-units-divisions` (sub-units, templates, orders of battle), `hoi4-characters-leaders` (characters, leaders, advisors, traits), `hoi4-ideas-modifiers` (ideas, spirits, laws, dynamic modifiers), `hoi4-map-states` (map and state data, buildings, supply), `hoi4-diplomacy-war` (diplomacy, factions, subjects, wars, peace), and `hoi4-ai-strategies` (AI strategies and weights).
 - Use `hoi4-subagents` when coordinating project subagents, routing bounded work, or defining parent/subagent ownership boundaries.
 - Use `hoi4-improvement-loop` when an implemented or planned mechanic needs recursive depth expansion, spec addenda, improvement handoffs, or checks for shallow, duplicated, generic, disconnected, or low-impact content.
@@ -130,7 +131,7 @@ Tool exposure does not prove service health or the availability of a standalone 
 - Weighted logic: prefer `hoi4.probability_inspect` and representative named scenarios. If an analyzer cannot handle the script, calculate a few relevant cases from the actual code and explain what remains uncertain.
 - Diagnostics and IDs: use `hoi4.error_log` only for user-supplied or explicitly requested logs, and `hoi4.mod_index` for a bounded overview or `mode: "next_id"` before allocating IDs. Run `hoi4.script_validate` with each changed file's `path`; inspect `checksPerformed` and `known_mistakes`. Read the surface's `knownMistakes` from `hoi4.reference_context` and retain rule IDs and cited fixes; a listed rule does not establish a current defect.
 
-MCP supports implementation and review; successful MCP output is not a universal completion gate. Source review and local checks can support completion when a tool is unavailable, but never describe them as MCP proof or live engine validation.
+MCP supports implementation and review; successful MCP output is not a universal completion gate. When a skill calls an MCP route mandatory and it is unavailable, record the exact blocker and report that evidence as missing: source review and local checks can then support completion, but never describe them as MCP proof or live engine validation, and an auditor marks the missing evidence unresolved, never passed.
 
 The detailed capability, artifact, probability-scenario, rewrite-recovery, and troubleshooting notes are in `docs/systems/hoi4_agent_tools_mcp_integration.md`.
 
@@ -151,15 +152,13 @@ HOI4 Mod Setup lets you choose any supported coding client. This package keeps c
 - `.claude/agents/<name>.md`: specialist subagents, with the Claude model tier in the `model` field. The Codex, Cursor, Qoder, and OpenCode agents are generated from them.
 - `.claude/settings.json` and the root `.mcp.json`: shared Claude Code settings and project MCP servers.
 
-After editing a canonical file, regenerate its projections and run the same commands with `--check` during validation:
+In Claude Code a hook regenerates the projections of each canonical file you edit; commit them with it. Elsewhere, regenerate after editing a canonical file and run it with `--check` during validation (`.tools/sync/generators.json` lists every generator):
 
 ```powershell
-python .tools/sync/sync_instructions.py
-python .tools/sync/sync_agents.py
-python .tools/sync/sync_skills.py
+python .tools/sync/generators.py
 ```
 
-Never hand-edit a generated file; edit the canonical file and rerun the synchronizer. Agents working in another runtime edit the same canonical files and run the same synchronizers, or report that they could not. Runtime settings that are not part of a prompt, such as the Codex reasoning effort for each Claude tier, live in `.tools/sync/agent_profiles.json`.
+Never hand-edit a generated file; edit the canonical file and regenerate. Agents working in another runtime edit the same canonical files and run the same command, or report that they could not. Runtime settings that are not part of a prompt, such as the Codex reasoning effort for each Claude tier, live in `.tools/sync/agent_profiles.json`.
 
 - Each runtime owns its MCP registration. Do not copy one runtime's approval, sandbox, absolute-path, environment, or tool-allowlist settings into another without a verified equivalent.
 
@@ -201,7 +200,7 @@ Use these high-level routing rules:
 
 - Use `hoi4_repo_explorer` only when file locations, existing patterns, vanilla references, likely touchpoints, missing-file recovery, or implementation order are unclear. Do not use it for small known-file edits, provided-file edits, direct skill or prompt updates, localisation-only cleanup, asset-only production, or tasks already bounded to exact files. The parent should inspect the known files directly for those cases.
 - Use asset subagents for non-portrait visual production: `hoi4_asset_source_researcher`, `hoi4_generated_feature_art`, and `hoi4_icon_artist`. All character portrait work belongs to `hoi4_portrait_creator`.
-- Use `hoi4_event_ui_worker` only for a dedicated scripted GUI introduced and owned by one named event or event-owned mechanic. The parent prompt must prove event ownership and name exact GUI identifiers, files, entry point, states, resolutions, assets, and handoff path. The worker owns bounded layout implementation and the iterative MCP live-preview and comparison evidence required by `hoi4-scripted-gui`, while the parent and decision owner retain gameplay, costs, effects, AI, balance, final integration, and in-game validation. It must not audit event logs, event-detail frameworks, settings, super-event frameworks, shared registries, or unrelated existing UIs.
+- Use `hoi4_event_ui_worker` only for a dedicated scripted GUI introduced and owned by one named event or event-owned mechanic, under the Event UI worker gate in `hoi4-subagents` (ownership proof, prompt contents, what the worker and the parent own, and what stays out of scope).
 - Use `hoi4_portrait_creator` for complete portrait production: grounded source research and wired source placeholders, fictional portraits through the selected image-generation route, user-supplied grounded-final validation, processing, DDS conversion, portrait-specific wiring, manifests, and handoffs. The user owns the configured grounded-subject provider run; the agent never operates RunPod.
 - When an asset subagent is asked to produce animation or a 3D model, the parent prompt must require `hoi4-frame-animation` for 2D frame sheets and `hoi4-3d-model-pipeline` for skeletal `.anim` actions, and must carry the complete 3D prompt contract in the `3D model-production agents` section of `hoi4-subagents` (source and refinement evidence, the profile's generation model and one image per geometry task, the route chosen under the production guide's Route selection, the job's credit budget, sourced unit audio with selection audio, bespoke vanilla-green counters, scale crosswalk, and reimport proof). The parent owns `.asset`, entity, counter GFX, sound definitions, runtime wiring, and live proof.
 - Use quote and audio research subagents only for specialised sourced text or audio work: `hoi4_quote_remark_researcher` and `hoi4_audio_researcher`.
@@ -211,11 +210,11 @@ Use these high-level routing rules:
 - Use audit subagents before completion claims: `hoi4_focus_tree_auditor`, `hoi4_decision_mission_auditor`, `hoi4_country_package_auditor`, `hoi4_localisation_auditor`, `hoi4_ai_probability_auditor`, and `hoi4_feature_completion_auditor`.
 - Use `hoi4_ai_probability_auditor` for read-only scenario-based audits of AI weights, MTTH, event `ai_chance`, random lists, focus and research selection, decision and mission scores, AI strategy factors, and declared custom weighted pools. It uses the available HOI4 MCP probability routes or calculations from the actual script, returns scenario-specific findings, and does not patch source or choose the intended balance target.
 - Use `hoi4_scripted_system_architect` for reusable scripted effects, triggers, script constants, event targets, meta effects, variable patterns, and dynamic helper design.
-- Use `hoi4_documentation_curator` during long implementation when specs, plans, docs, manifests, prompts, reports, or subagent handoffs may be stale, duplicated, contradictory, or too numerous. It patches documentation surfaces only, writes source-of-truth maps and resume packets, and does not edit gameplay files or spreadsheets.
+- Use `hoi4_documentation_curator` during long implementation when specs, plans, docs, manifests, prompts, reports, or subagent handoffs may be stale, duplicated, contradictory, or too numerous; `hoi4-subagents` defines its documentation-only authority.
 - Use `hoi4_spreadsheet_doc_worker` only when this repository actually has a maintained workbook or planning spreadsheet and implementation facts are available. Spreadsheet fields that mirror in-game wording must match the in-game localisation wording.
 - When a maintained workbook generates CSV or other tabular exports, declare the workbook as the sole editable source, name the repository exporter command and generated outputs, run the exporter after every successful workbook update, and never edit or treat a stale export as source of truth.
 - Use `hoi4_skill_maintainer` for non-trivial skill creation, cleanup, routing updates, or multi-skill consistency work.
-- Use `hoi4_improvement_loop_planner` during large feature implementation when a mechanic, focus tree, country package, decision system, text or audio research need, visual progression, lore package, or audit finding needs deeper design. It creates concrete feature expansion addenda with research, historical connections, playable mechanics, and implementation surfaces for the main agent. It does not patch gameplay files. Do not spawn it again for the same feature until the previous addendum has been implemented, folded into specs, queued with a reason, or rejected. Use it after meaningful implementation tranches of major feature work, when several new mechanics need deeper connections.
+- Use `hoi4_improvement_loop_planner` after meaningful implementation tranches of major feature work, when a mechanic, focus tree, country package, decision system, text or audio research need, visual progression, lore package, or audit finding needs deeper design. It does not patch gameplay files. Do not spawn it again for the same feature until the previous addendum has been implemented, folded into specs, queued with a reason, or rejected; Improvement routing in `hoi4-subagents` defines its addenda.
 
 Patch-capable subagents are allowed to make small, local improvements by default when the change is inside the current task surface and directly improves the feature. They may vary costs, add clearer dynamic localisation, improve tooltips, adjust safe AI weights, add narrow helper calls, fix route locks, add cleanup hooks, or correct existing formable checks. `hoi4_event_ui_worker` may implement the accepted bounded GUI introduced by a named event, but no subagent may invent an unplanned or shared scripted GUI system, expand a whole mechanic, redesign a route family, add a new country package, or change the requested design on its own. Broad gaps become a plan under `docs/plans/<feature_slug>/`. Every subagent edit needs a handoff that lists changed files, identifiers, meaningful validation when it affects confidence, and remaining risks. Documentation cleanup work should also record which specs, plans, handoffs, manifests, or reports were promoted, queued, rejected, superseded, or left unresolved.
 
@@ -236,6 +235,10 @@ Give every plan or addendum one disposition: implemented with evidence, promoted
 If an accepted plan changes the feature design, the main agent should merge it into the relevant spec or report that it remains queued.
 
 Keep feature-scoped `docs/assets/<feature_slug>/` workspaces while work is active, blocked, awaiting review, or undergoing acceptance scenarios. Before declaring the feature complete, promote durable provenance, licensing, checksums, review, QA, and runtime-handoff facts into permanent specs, plans, or feature documentation, verify that no runtime reference points into `docs/assets/`, then remove only that completed feature workspace. Never remove a skill-local reference library or another feature's workspace.
+
+### Upfront consultation
+
+For a new or reshaped feature, system, country, route set or asset set, inspect the project first, then ask the genuine open questions once, grouped, each with a suggested answer. Record the answers in `docs/specs/<feature_slug>/decisions.md` and continue without avoidable interruptions; never ask routine implementation questions. Follow `hoi4-feature-planning/references/consultation-questions.md`.
 
 
 ## 1. Coding Style
@@ -349,7 +352,7 @@ When implementing any new mechanic, follow this checklist:
 22. Markdown prose must not be hard-wrapped in the middle of a sentence or clause. Keep each prose sentence on one physical line and preserve deliberate Markdown structure such as paragraphs, lists, tables, block quotes, and code blocks.
 
 Follow these rules and your changes will be easier to review, safer to merge and more consistent with the rest of the project.
-If an indispensable design choice or input is missing, finish independent work and ask a focused question. An unavailable check alone calls for source review and useful local checks, not another design request.
+If an indispensable input is still missing, finish independent work and ask once as Upfront consultation allows. An unavailable check alone calls for source review and useful local checks, not another design request.
 
 ## 4a. Deterministic Tools and Checks
 
@@ -457,7 +460,7 @@ Rules:
 2. Use `hoi4_skill_maintainer` for non-trivial skill creation, skill cleanup, routing updates, or multi-skill consistency work.
 3. Prefer updating an existing skill when the workflow belongs there.
 4. Create a new skill when the workflow is reusable, distinct, and not covered by an existing skill.
-5. Add concise, specific rules based on actual task experience, not speculation.
+5. Add concise, specific rules based on actual task experience, not speculation. Tag each engine fact `[game-tested <version>]`, `[vanilla-confirmed <version>]`, `[docs]` or `[unverified]`.
 6. Record repo paths, commands, examples, gotchas, source folders, validation steps, and handoff rules when they prevent rediscovery.
 7. Keep each skill focused on one reusable workflow.
 8. Do not bloat skills with one-off details that will not help future tasks.

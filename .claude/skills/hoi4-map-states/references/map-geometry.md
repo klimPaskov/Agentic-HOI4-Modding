@@ -22,7 +22,7 @@ All paths are under `GAME/map/` for vanilla and the mod's `map/` folder for over
 | `adjacencies.csv` | Strait, canal, and impassable links | `From;To;Type;Through;start_x;start_y;stop_x;stop_y;adjacency_rule_name;Comment` |
 | `adjacency_rules.txt` | Who may pass an adjacency | `adjacency_rule = { name required_provinces is_disabled icon offset contested enemy friend neutral }`; file must be UTF-8 without BOM |
 | `strategicregions/*.txt` | Region membership and weather | one or more `strategic_region = { id name provinces weather }` per file |
-| `weatherpositions.txt` | Where weather objects appear | `region;x;y;z;small\|large`; at least one small and one large object overall |
+| `weatherpositions.txt` | Where weather objects appear | `region;x;y;z;small\|big` (vanilla has 452 `big` and 136 `small` rows, no `large`) [vanilla-confirmed 1.19.3]; at least one small and one big object overall |
 | `ambient_object.txt`, `cities.txt`, `seasons.txt`, `positions.txt`, `colors.txt` | Cosmetic objects, city models, season colours | rarely touched in script-level work |
 | `terrain/` | Atlases, border textures, colour maps | DDS with mipmaps; terrain atlas needs DXT5 |
 | `supplyareas/` | Pre-1.11 supply areas | Present in the install; the wiki says supply areas were replaced by `supply_nodes.txt` and `railways.txt`; do not extend it |

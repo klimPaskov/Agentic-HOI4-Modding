@@ -7,6 +7,7 @@
 	python -B .tools/check.py full --json .tmp/checks/full.json
 	python -B .tools/check.py doctor                     # what the checks need on this machine, and how to fix it
 	python -B .tools/check.py setup                      # install what is missing, run the synchronizers, then doctor
+	python -B .tools/check.py setup --git-hook           # also add an optional pre-commit check of generated files
 
 `quick` runs only the checks whose inputs the changed paths can affect and reports only
 findings located in those paths. `full` runs every check over the whole repository. Both print
@@ -26,7 +27,7 @@ Checks (rule ids and levels are defined by each tool; see `.tools/lib/report.py`
 - gfx              `gfx/gfx.py audit`                      frame strips, flag ladder, achievement size, runtime binaries,
                    profiled icon families and report-image provenance
 - guidance         `sync/check_guidance_size.py`           single-read ceiling for instructions, skills and agents
-- generators       `--check` modes of the synchronizers    AGENTS.md, agent definitions and skill copies
+- generators       `sync/generators.py --check`            every generated file listed in `sync/generators.json`
 - tests            maintained tests in `.tools/`, the 3D pipeline suite in `.tools/3d_pipeline/tests/` and in skill
                    `tools/tests/` folders (full, or quick when they change)
 - quality          `quality.py`                            ruff defects, complexity ratchet and mypy --strict for the
@@ -42,6 +43,7 @@ The localisation, asset-wiring and gfx checks read the installed game, found thr
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -50,6 +52,7 @@ import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from types import ModuleType
 from typing import Callable, List, NamedTuple, Optional, Sequence, Set, Tuple
 
 from lib import doctor, setup
@@ -129,44 +132,108 @@ def run_guidance(paths: Optional[List[str]]) -> Tuple[List[Finding], Optional[st
 	return findings, None
 
 
-class Generator(NamedTuple):
-	name: str
-	command: Tuple[str, ...]
-	inputs: Tuple[str, ...]  # sources and generated outputs; the first is the finding location when the check fails
-	sources: Tuple[str, ...]  # canonical sources; a mod that has none of them has nothing to project
+def load_runner() -> ModuleType:
+	"""Load `.tools/sync/generators.py`, the one runner for every generator listed in `generators.json`."""
+	script = TOOLS / "sync" / "generators.py"
+	spec = importlib.util.spec_from_file_location("hoi4_generators", script)
+	if spec is None or spec.loader is None or not script.is_file():
+		raise FileNotFoundError(".tools/sync/generators.py is missing")
+	module = importlib.util.module_from_spec(spec)
+	sys.modules[spec.name] = module
+	spec.loader.exec_module(module)
+	return module
 
 
-# Generated files must equal what their generator writes from the current sources.
-GENERATORS = (
-	Generator("AGENTS.md instruction", (".tools/sync/sync_instructions.py", "--check"),
-		("CLAUDE.md", "AGENTS.md", "CLAUDE_template.md", "AGENTS_template.md", ".tools/sync/"), ("CLAUDE.md", "CLAUDE_template.md")),
-	Generator("agent definitions", (".tools/sync/sync_agents.py", "--check"),
-		(".claude/agents/", ".tools/sync/", ".codex/", ".cursor/", ".qoder/", ".opencode/"), (".claude/agents",)),
-	Generator("skill copies", (".tools/sync/sync_skills.py", "--check"),
-		(".claude/skills/", ".tools/sync/", ".agents/", ".qoder/"), (".claude/skills",)),
-)
-
-
-def run_one_generator(generator: Generator) -> List[Finding]:
-	completed = subprocess.run([sys.executable, "-B", *generator.command], cwd=REPO_ROOT, capture_output=True, text=True,
-		encoding="utf-8", errors="replace", timeout=AUDIT_TIMEOUT_SECONDS)
-	if completed.returncode == 0:
-		return []
-	lines = [line.strip() for line in (completed.stdout + completed.stderr).splitlines() if line.strip()]
-	drift = [line for line in lines if line.startswith(("DRIFT", "Would update", "STALE"))] or lines[-1:] or ["no output"]
-	return [Finding("generators", "GEN-STALE", "error", generator.inputs[0], 0,
-		f"the {generator.name} projection is out of date ({detail}); rerun `python {generator.command[0]}`") for detail in drift]
+def generator_prefixes() -> Tuple[str, ...]:
+	"""Path prefixes of every generator input and output, so `quick` knows when to run the generators check."""
+	try:
+		data = json.loads((TOOLS / "sync" / "generators.json").read_text(encoding="utf-8"))
+		patterns = [pattern for row in data["generators"] if row.get("kind", "generate") == "generate"
+			for key in ("inputs", "outputs") for pattern in row.get(key, ())]
+	except (OSError, ValueError, KeyError, TypeError, AttributeError):
+		patterns = []  # the check itself then reports the broken registry
+	return tuple(sorted({re.split(r"[*?{]", pattern, maxsplit=1)[0] for pattern in patterns} | {".tools/"}))
 
 
 def run_generators(paths: Optional[List[str]]) -> Tuple[List[Finding], Optional[str]]:
-	# A changed tool can change any generator's output, so `.tools/` changes rerun them all.
-	everything = not paths or any(p.startswith(".tools/") for p in paths)
-	chosen = [g for g in GENERATORS if (TOOLS / Path(g.command[0]).relative_to(".tools")).is_file()
-		and any((REPO_ROOT / source).exists() for source in g.sources)
-		and (everything or any(p.startswith(i) for p in paths or () for i in g.inputs))]
-	with ThreadPoolExecutor(max_workers=max(1, len(chosen))) as pool:
-		results = list(pool.map(run_one_generator, chosen))
-	return [finding for found in results for finding in found], None
+	"""Check that every generated file equals what its generator writes from the current sources."""
+	runner = load_runner()
+	entries = [entry for entry in runner.load_registry(REPO_ROOT) if entry.kind == "generate"]
+	outcomes = runner.run(REPO_ROOT, paths or None, check=True, entries=entries)
+	findings: List[Finding] = []
+	failures: List[str] = []
+	for outcome in outcomes:
+		entry = outcome.entry
+		if outcome.status == 1:
+			findings += [Finding("generators", "GEN-STALE", "error", (entry.sources or (entry.script,))[0], 0,
+				f"{entry.label}: out of date ({detail}); rerun `python .tools/sync/generators.py`") for detail in outcome.problems]
+		elif outcome.status != 0:
+			failures.append(f"{entry.script} exited {outcome.code}: {' | '.join(outcome.problems)}")
+	if not paths and not outcomes:
+		failures.append("no generator in .tools/sync/generators.json has its canonical sources in this folder")
+	return findings, "; ".join(failures) or None
+
+
+GIT_HOOK_MARKER = "check.py setup --git-hook"
+GIT_HOOK = f"""#!/bin/sh
+# Written by `python .tools/{GIT_HOOK_MARKER}`. It stops a commit whose staged canonical files
+# have stale generated copies. Delete this file to turn the check off.
+sh .tools/py.sh -B .tools/sync/generators.py --check --staged
+status=$?
+if [ "$status" -eq 127 ]; then
+	echo "pre-commit: Python was not found, so generated files were not checked." >&2
+	exit 0
+fi
+if [ "$status" -ne 0 ]; then
+	echo "pre-commit: regenerate with 'python .tools/sync/generators.py', stage the result and commit again." >&2
+fi
+exit "$status"
+"""
+
+
+def finish_setup() -> int:
+	"""After the shared setup steps: run every registered generator, then confirm nothing is stale."""
+	try:
+		runner = load_runner()
+		entries = runner.load_registry(REPO_ROOT)
+		written = runner.run(REPO_ROOT, None, check=False, entries=entries)
+		checked = runner.run(REPO_ROOT, None, check=True, entries=entries)
+	except Exception as error:  # noqa: BLE001 - every failure is reported on the setup line and in the exit status
+		print(f"setup: generators: could not run: {type(error).__name__}: {error}")
+		return 2
+	for outcome in written + checked:
+		if outcome.status != 0:
+			print(f"setup: generators: {outcome.entry.id} {outcome.state}: {' | '.join(outcome.problems)}")
+	worst = max((outcome.status for outcome in written + checked), default=2)
+	if worst == 0:
+		print(f"setup: generators: {len(checked)} entries in sync")
+		return 0
+	if not checked:
+		print("setup: generators: no generator in .tools/sync/generators.json has its canonical sources in this folder")
+	return 1 if worst == 1 else 2
+
+
+def install_git_hook() -> int:
+	"""Write the optional pre-commit check (never through `core.hooksPath`, which HOI4 Mod Setup refuses)."""
+	hooks_path = subprocess.run(["git", "config", "core.hooksPath"], cwd=REPO_ROOT, capture_output=True, text=True)
+	if hooks_path.stdout.strip():
+		print("setup: git hook: core.hooksPath is set, so nothing was written; HOI4 Mod Setup does not support it")
+		return 1
+	found = subprocess.run(["git", "rev-parse", "--git-path", "hooks/pre-commit"], cwd=REPO_ROOT, capture_output=True, text=True)
+	if found.returncode != 0:
+		print("setup: git hook: this folder is not a Git repository; nothing was written")
+		return 1
+	path = (REPO_ROOT / found.stdout.strip()).resolve()
+	if path.is_file() and GIT_HOOK_MARKER not in path.read_text(encoding="utf-8", errors="replace"):
+		print(f"setup: git hook: {path} exists and was not written by this command, so it was left alone; "
+			"add `sh .tools/py.sh -B .tools/sync/generators.py --check --staged` to it yourself")
+		return 1
+	path.parent.mkdir(parents=True, exist_ok=True)
+	with path.open("w", encoding="utf-8", newline="\n") as handle:
+		handle.write(GIT_HOOK)
+	path.chmod(0o755)
+	print(f"setup: git hook: pre-commit check of generated files written to {path}")
+	return 0
 
 
 def discover_tests() -> List[str]:
@@ -208,7 +275,7 @@ CHECKS = (
 		run_report_tool("gfx", "gfx/gfx.py", ("audit",))),
 	Check("guidance", ("CLAUDE.md", "AGENTS.md", "CLAUDE_template.md", "AGENTS_template.md", ".claude/", ".tools/sync/"), True,
 		run_guidance),
-	Check("generators", tuple(sorted({i for g in GENERATORS for i in g.inputs} | {".tools/"})), True, run_generators),
+	Check("generators", generator_prefixes(), True, run_generators),
 	Check("tests", (".tools/", ".claude/skills/"), True, run_tests),
 	# Ruff and mypy through uvx; skipped with a notice when uv is not installed.
 	Check("quality", (".tools/", ".claude/skills/"), True,
@@ -286,12 +353,16 @@ def main() -> int:
 	parser.add_argument("--verbose", action="store_true", help="also print warnings in full mode")
 	parser.add_argument("--save-game-dir", type=Path, metavar="FOLDER", help="doctor, setup: record this machine's game folder")
 	parser.add_argument("--no-install", action="store_true", help="setup: report missing Python packages instead of installing them")
+	parser.add_argument("--git-hook", action="store_true", help="setup: also write an optional pre-commit check of generated files")
 	arguments = parser.parse_args()
 
 	if arguments.mode == "doctor":
 		return doctor.run(REPO_ROOT, (), arguments.save_game_dir)
 	if arguments.mode == "setup":
-		return setup.run(REPO_ROOT, arguments.save_game_dir, not arguments.no_install)
+		status = setup.run(REPO_ROOT, arguments.save_game_dir, not arguments.no_install)
+		synced = finish_setup()
+		hooked = install_git_hook() if arguments.git_hook else 0
+		return status or synced or hooked
 
 	if arguments.mode == "full" and arguments.paths:
 		parser.error("--paths applies to quick mode only")

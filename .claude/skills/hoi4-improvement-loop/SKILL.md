@@ -289,7 +289,7 @@ Patch-capable subagents are active by default for small, file-specific improveme
 
 ## Parent agent responsibility
 
-The main agent decides what to do with the addendum. It can implement it now, queue it, reject it with a reason, or ask for a narrower pass.
+The main agent decides what to do with the addendum. It can implement it now, queue it, reject it with a reason, or ask for a narrower pass. When the user takes part, present the proposals as one round answered with Adopt, Adapt, Defer or Reject, and record each answer in the feature's `decisions.md` with the mapping in `hoi4-feature-planning/references/consultation-questions.md`.
 
 Do not claim a major feature is complete while an accepted expansion addendum is unimplemented and unreported. If the addendum is queued, say where it is queued and why it was not included in the current implementation.
 

@@ -16,6 +16,9 @@ for each Claude model tier, lives in `agent_profiles.json` next to this file.
 The synchronizer discovers agents from the canonical folder, so adding or
 removing an agent never requires editing this script.
 
+Exit codes: 0 in sync, 1 drift or a tier or effort policy mismatch, 2 the
+canonical definitions or the profiles cannot be read.
+
 Standard library only; runs on Python 3.9 or newer.
 """
 
@@ -90,13 +93,28 @@ class Runtime:
     extension: str
 
 
-RUNTIMES: Dict[str, Runtime] = {
-    "codex": Runtime("codex", "Codex", MOD_ROOT / ".codex" / "agents", None, ".toml"),
-    "cursor": Runtime("cursor", "Cursor", MOD_ROOT / ".cursor" / "agents", MOD_ROOT / ".cursor" / "agent-map.md", ".md"),
-    "qoder": Runtime("qoder", "Qoder", MOD_ROOT / ".qoder" / "agents", MOD_ROOT / ".qoder" / "agent-map.md", ".md"),
-    "opencode": Runtime("opencode", "OpenCode", MOD_ROOT / ".opencode" / "agent", MOD_ROOT / ".opencode" / "agent-map.md", ".md"),
-    "claude": Runtime("claude", "Claude Code", CANONICAL_DIR, MOD_ROOT / ".claude" / "agent-map.md", ".md"),
-}
+def runtimes_for(root: Path) -> Dict[str, Runtime]:
+    return {
+        "codex": Runtime("codex", "Codex", root / ".codex" / "agents", None, ".toml"),
+        "cursor": Runtime("cursor", "Cursor", root / ".cursor" / "agents", root / ".cursor" / "agent-map.md", ".md"),
+        "qoder": Runtime("qoder", "Qoder", root / ".qoder" / "agents", root / ".qoder" / "agent-map.md", ".md"),
+        "opencode": Runtime("opencode", "OpenCode", root / ".opencode" / "agent", root / ".opencode" / "agent-map.md", ".md"),
+        "claude": Runtime("claude", "Claude Code", root / ".claude" / "agents", root / ".claude" / "agent-map.md", ".md"),
+    }
+
+
+RUNTIMES: Dict[str, Runtime] = runtimes_for(MOD_ROOT)
+
+
+def use_root(root: Path) -> None:
+    """Point every path at another project, for `--root` (a fixture, or a workspace checked by a pinned copy)."""
+    global MOD_ROOT, CANONICAL_DIR, PROFILES_PATH, CODEX_CONFIG, RUNTIMES
+    MOD_ROOT = root
+    CANONICAL_DIR = root / ".claude" / "agents"
+    project_profiles = root / ".tools" / "sync" / "agent_profiles.json"
+    PROFILES_PATH = project_profiles if project_profiles.is_file() else TOOLS_DIR / "agent_profiles.json"
+    CODEX_CONFIG = root / ".codex" / "config.toml"
+    RUNTIMES = runtimes_for(root)
 
 
 class SyncError(RuntimeError):
@@ -195,8 +213,19 @@ def header(agent: Agent) -> str:
     return f"Generated from .claude/agents/{agent.source_name} by .tools/sync/sync_agents.py. Edit the source and rerun it."
 
 
+def check_agent_models(agents: List[Agent], profiles: dict) -> None:
+    """In the source package, a Codex model override must name an existing canonical agent."""
+    names = {agent.name for agent in agents}
+    unknown = sorted(set(profiles["codex"].get("agent_models", {})) - names)
+    if unknown:
+        raise SyncError("codex.agent_models names agents that do not exist: " + ", ".join(unknown))
+
+
 def render_codex(agent: Agent, profiles: dict) -> str:
-    tier = profiles["codex"]["tiers"][agent.model]
+    tier = dict(profiles["codex"]["tiers"][agent.model])
+    override = profiles["codex"].get("agent_models", {}).get(agent.name)
+    if override:
+        tier["model"] = override
     lines = [
         f"# {header(agent)}",
         f"name = {toml_basic(agent.snake_name)}",
@@ -328,7 +357,7 @@ def synchronize(runtime_keys: List[str], check: bool) -> int:
         agents = load_agents()
     except SyncError as error:
         print(f"ERROR: {error}", file=sys.stderr)
-        return 1
+        return 2
     failures = 0
     for runtime_key in runtime_keys:
         outputs = expected_outputs(runtime_key, agents, profiles)
@@ -365,6 +394,7 @@ def verify(runtime_keys: List[str]) -> int:
         names = {agent.name for agent in agents}
         if len(declared) != len(set(declared)) or set(declared) - names:
             raise SyncError("tier_policy contains duplicate or absent canonical agents")
+        check_agent_models(agents, profiles)
         failures = []
         for agent in agents:
             tier = next((tier for tier in MODEL_TIERS if agent.name in policy.get(tier, [])), policy["default"])
@@ -392,6 +422,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--check", action="store_true", help="report drift without writing; exit 1 when out of sync")
     parser.add_argument("--verify", action="store_true", help="verify canonical tier/effort policy and generated definitions without writing")
     parser.add_argument("--runtime", action="append", choices=sorted(RUNTIMES), help="limit to one runtime (repeatable); default: every runtime present in this project")
+    parser.add_argument("--root", type=Path, help="project root (default: the project holding this tool)")
     args = parser.parse_args(argv)
+    if args.root is not None:
+        use_root(args.root.resolve())
     keys = args.runtime or [key for key in RUNTIMES if runtime_present(key)]
     return verify(keys) if args.verify else synchronize(keys, args.check)

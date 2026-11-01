@@ -629,7 +629,7 @@ For each super-event audio package, document:
 - uncertainties, if any
 - why the track fits the super-event tone, role, and pacing
 
-If metadata cannot identify the author, title, source, license, or duration, and the user did not provide it, reject the track or ask the user for the missing information instead of guessing.
+If metadata cannot identify the author, title, source, license, or duration, and the user did not provide it, reject the track or add the missing information to the next batch of questions (Upfront consultation in `CLAUDE.md`) instead of guessing. Ask about track reuse and longer tracks in the upfront consultation, not mid-task.
 
 ## 18. Audio validation checklist
 

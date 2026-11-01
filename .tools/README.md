@@ -27,7 +27,7 @@ python -B .tools/check.py doctor                                  # report only;
 - **Packages:** installs the packages in `.tools/requirements.txt`. If the system Python refuses packages (PEP 668 "externally managed", as on Debian and Ubuntu), it installs them into a project virtual environment at `.tools/.venv`, and `check.py` relaunches itself inside it.
 - **Game folder:** records it in the machine-local `.tools/local_settings.json` when one is given.
 - **`.gitignore`:** adds the machine-local paths.
-- **Synchronizers:** runs the installed ones, so the generated projections match the installed canonical files.
+- **Synchronizers:** runs every generator in `sync/generators.json`, so the generated projections match the installed canonical files, then checks them. A generator that fails or leaves a stale output makes `setup` exit non-zero. `--git-hook` also writes an optional pre-commit check (off by default).
 - **Quality baseline:** runs `quality.py --adopt`, so a mod's pre-existing Python tools start from a passing run. This needs `uv`.
 
 HOI4 Mod Setup runs it after an install, update or repair. The game folder comes from `HOI4_GAME_DIR`, `.tools/local_settings.json` (never committed), or the Steam libraries on the machine, in that order.
@@ -47,7 +47,7 @@ Every check follows `lib/report.py`: an `error` is an exact rule and fails the r
 | `script-rules` | `audits/audit_script_rules.py` | Does script use `<=` or `>=`, unary minus on a variable token, or `§`/`£` written into scripted localisation? Lexical only; fixtures in `tests/fixtures/script_rules/`. | no |
 | `gfx` | `gfx/gfx.py audit` | Frame-strip widths, the flag size ladder and TGA origin, achievement art size, LFS pointers and truncated runtime binaries, profiled icon families and report-image provenance (`gfx/README.md`). | for vanilla textures |
 | `guidance` | `sync/check_guidance_size.py` | Are instructions, skills and agent prompts within the single-read ceiling? | no |
-| `generators` | `sync/sync_*.py --check` | Do `AGENTS.md`, the generated agents and the skill copies match their canonical sources? | no |
+| `generators` | `sync/generators.py --check` | Does every generated file in `sync/generators.json` (`AGENTS.md`, the generated agents, the skill copies) match its canonical source? A generator that is missing or crashes cannot run, which is never a pass. | no |
 | `tests` | `unittest` over `tests/`, `gfx/` and skill `tools/tests/` folders | Do the maintained tests pass? | no |
 | `quality` | `quality.py` | Ruff defect rules, the complexity ratchet in `quality_baseline.json` and `mypy --strict` for the strict tooling files; skipped with a notice without `uv`. | no |
 | `script-validate` | `audits/validate_scripts_mcp.py` | Does `hoi4.script_validate` accept each changed script file? Quick only; skipped with a notice when the HOI4 Agent Tools server cannot start. Unresolved commands are warnings and unchecked argument blocks review items, never passes. | no |
@@ -106,16 +106,14 @@ Its package version, integrity, runtime-entry evidence, manifest declaration, an
 
 ### Runtime synchronization
 
-Claude Code files are canonical. The tools under `sync/` regenerate `AGENTS.md` from `CLAUDE.md`, the Codex, Cursor, Qoder, and OpenCode agents from `.claude/agents/`, and the `.agents/skills/` and `.qoder/skills/` copies from `.claude/skills/`. `check_guidance_size.py` keeps instruction files, skills, and agent prompts within the single-read ceiling. Run them after a canonical change and again with `--check`:
+Claude Code files are canonical. The tools under `sync/` regenerate `AGENTS.md` from `CLAUDE.md`, the Codex, Cursor, Qoder, and OpenCode agents from `.claude/agents/`, and the `.agents/skills/` and `.qoder/skills/` copies from `.claude/skills/`. `check_guidance_size.py` keeps instruction files, skills, and agent prompts within the single-read ceiling. `sync/generators.json` lists them all, and `sync/generators.py` runs the ones a change affects. In Claude Code the hook in `.claude/settings.json` runs it after every edit. Elsewhere, run it after a canonical change and again with `--check`:
 
 ```powershell
-python -B .tools/sync/sync_instructions.py
-python -B .tools/sync/sync_agents.py
-python -B .tools/sync/sync_skills.py
-python -B .tools/sync/check_guidance_size.py
+python -B .tools/sync/generators.py
+python -B .tools/sync/generators.py --check
 ```
 
-Generated files are tracked so a checkout works immediately. Never hand-edit them or copy project-specific MCP paths between runtimes. `sync/README.md` documents each tool and its configuration file, and `docs/runtimes.md` documents what every runtime reads, including DeepSeek Harness, which has no agent registry.
+`py.sh` starts the first working Python 3.9 or newer for the hooks. Generated instructions and agents are tracked so a checkout works immediately. The skill copies are built at install, because the source package tracks only `.claude/skills/`. Never hand-edit generated files or copy project-specific MCP paths between runtimes. `sync/README.md` documents each tool and its configuration file, and `docs/runtimes.md` documents what every runtime reads, including DeepSeek Harness, which has no agent registry.
 
 ### HOI4 Live Tools
 

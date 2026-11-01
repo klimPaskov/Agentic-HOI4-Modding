@@ -913,7 +913,7 @@ Record:
 - what is needed from the user
 - whether implementation can continue without it
 
-Do not invent a substitute asset unless the user explicitly approves it.
+Do not invent a substitute asset unless the user explicitly approves it. A "substitute and report" answer to the fallback question of the upfront consultation is that approval.
 
 ## 29. Final checklist
 
