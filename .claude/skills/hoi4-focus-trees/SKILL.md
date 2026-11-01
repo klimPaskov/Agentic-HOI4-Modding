@@ -88,6 +88,11 @@ prerequisite = { focus = b }
 
 Use vanilla examples before changing complex prerequisite and mutual-exclusion structures.
 
+- Declare `mutually_exclusive` on both focuses, since all 2,612 vanilla pairs are symmetric. [vanilla-confirmed 1.19.3]
+- Focus ids are unique across the project, as the 10,668 vanilla focus nodes carry 10,668 distinct ids. [vanilla-confirmed 1.19.3]
+- `allow_branch` hides a branch of the tree (543 vanilla uses). [vanilla-confirmed 1.19.3]
+- Continuous focuses live in the palette files under `common/continuous_focus/`, and no vanilla focus node declares itself continuous. [vanilla-confirmed 1.19.3]
+
 ## 3. Focus tree design purpose
 
 A focus tree defines the playable identity of a country. Rewards should express that identity and change how the country plays.
@@ -236,6 +241,8 @@ Useful duration roles include:
 - longer durations for sustained national commitments whose value and risk justify the wait
 
 These are guidance bands. Follow vanilla and project precedent when a system needs another duration.
+
+Focus `cost` counts weeks, because `FOCUS_POINT_DAYS = 7`, so `cost = 10` takes 70 days. [vanilla-confirmed 1.19.3]
 
 Do not split one 70-day reward into two 35-day focuses when the player gains no new choice, requirement, event, or mechanic between them. More clicks do not create more depth.
 

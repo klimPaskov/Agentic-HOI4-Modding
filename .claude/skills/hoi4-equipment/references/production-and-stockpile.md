@@ -107,6 +107,9 @@ Names read from `GAME/documentation/modifiers_documentation.md`.
 
 From `GAME/common/defines/00_defines.lua`: `MAX_EQUIPMENT_RESOURCES_NEED`, `NUM_DAYS_TO_FULLY_DELETE_STOCKPILED_EQUIPMENT`, `EQUIPMENT_BASE_LEND_LEASE_WEIGHT`, `LEND_LEASE_DELIVERY_TOTAL_DAYS`, `ANNEX_STOCKPILES_RATIO`, `CAPITULATE_STOCKPILES_RATIO`, the `LICENSE_*` values, `CONVERSION_SPEED_BONUS`, and the `EQUIPMENT_MODULE_*_XP_COST` values.
 Override defines with a small file that lists only the changed keys, never a copy of the vanilla file (wiki Technology modding, References).
+A define written with commas as decimal separators is cut at the first comma, so vanilla's `MAX_INTELLIGENCE_INDUSTRY_DATA_DEVIATION = 0,4,` reads as 0, not 0.4. [vanilla-confirmed 1.19.3]
+`BASE_FACTORY_SPEED` is 4 in 1.19.3 with `BASE_FACTORY_SPEED_MIL` 3.5 and `BASE_FACTORY_SPEED_NAV` 2.0, and the older values 5, 4.5 and 2.5 now sit in the `POWERED_FACTORY_SPEED*` defines of the energy system. [vanilla-confirmed 1.19.3]
+Define names keep the game's own typos, for example `LAND_DEFENSE_FIGHERS_PER_RAID`, `SUPPORTIVE_SCIENITST_PROGRESS_BONUS` and the `*_RECIEVER_*` names, so copy them exactly. [vanilla-confirmed 1.19.3]
 
 ## Production conversion, lend-lease, and licences
 
@@ -122,7 +125,7 @@ Override defines with a small file that lists only the changed keys, never a cop
 Equipment designers and manufacturers can be attached through military industrial organizations (`common/military_industrial_organization/`) and the `industrial_manufacturer` and `design_team` parameters above.
 Equipment types usable there are those in `script_enum_equipment_bonus_type`, and stats usable there come from `script_enum_equipment_stat`.
 The enum file notes which stats live on the battalion and cannot be used by these organizations.
-Special project prototypes are covered by `GAME/common/special_projects/special_projects_documentation.md`; this skill only notes that prototype rewards can place equipment in a stockpile.
+Special project prototypes are covered by the `documentation.md` files in `GAME/common/special_projects/projects/`, `prototype_rewards/` and `specialization/`. The folder's `special_projects_documentation.md` describes keys (`special_project_type`, `threshold_min`) that no vanilla file uses [vanilla-confirmed 1.19.3]. This skill only notes that prototype rewards can place equipment in a stockpile.
 
 ## Local checks for this surface
 

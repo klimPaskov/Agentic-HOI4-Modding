@@ -3,7 +3,33 @@
   "permissions": {
     "deny": [
       "Read(./.env)",
-      "Read(./.env.*)"
+      "Read(./.env.*)",
+      "Edit(/AGENTS.md)",
+      "Edit(/AGENTS_template.md)",
+      "Edit(/.claude/agent-map.md)",
+      "Edit(/.agents/skills/**)",
+      "Edit(/.qoder/skills/**)",
+      "Edit(/.codex/agents/**)",
+      "Edit(/.cursor/agents/**)",
+      "Edit(/.cursor/agent-map.md)",
+      "Edit(/.qoder/agents/**)",
+      "Edit(/.qoder/agent-map.md)",
+      "Edit(/.opencode/agent/**)",
+      "Edit(/.opencode/agent-map.md)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/.tools/py.sh\" -B \"${CLAUDE_PROJECT_DIR}/.tools/sync/generators.py\" --hook",
+            "timeout": 120
+          }
+        ]
+      }
     ]
   }
 }

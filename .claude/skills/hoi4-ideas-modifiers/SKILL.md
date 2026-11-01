@@ -71,6 +71,7 @@ Source: `WIKI/modifiers.md`, intro and section Applying a modifier.
 - Template modifiers expand over database keys: `production_speed_<Building>_factor`, `production_cost_<Building>_factor`, `state_production_speed_<Building>_factor`, `<Building>_max_level_terrain_limit`, `local_resources_<Resource>_factor`, `state_resource_<Resource>`, `temporary_state_resource_<Resource>`, `country_resource_<Resource>`, `<IdeaGroup>_cost_factor` (for example `economy_cost_factor`), `<Technology>_cost_factor`, `<Ideology>_drift`, `experience_gain_<Unit>_combat_factor`, `unit_<Unit>_design_cost_factor`. Confirm the exact expanded name against the "Modified types" list in the documentation entry.
 - Not modifiers: `research_bonus`, `equipment_bonus`, opinion modifiers (`common/opinion_modifiers`, applied with `add_opinion_modifier`).
 - Modifier blocks accept `hidden_modifier = { ... }` (applies but is not shown) and `custom_modifier_tooltip = <loc key>` (shows your text as a line). Vanilla precedent: `GAME/common/ideas/italy.txt` and `czechoslovakia.txt`.
+- Modifier values support up to three decimal places. [docs] `modifiers_documentation.md`
 - Look up a modifier name by searching `modifiers_documentation.md` for the exact heading. A misspelled or nonexistent modifier name produces a log error and no effect; there is no autocorrect.
 
 ## Ideas: files, categories, slots
@@ -165,6 +166,7 @@ show_ideas_tooltip = my_idea             # tooltip only, does not add
 - `swap_ideas` shows a tooltip of the modifier difference; if both ideas share one display name it reads as a modification. The add happens before the removal. There is no way to edit an idea in place.
 - Timed ideas: at least one of `days`, `months`, `years` is mandatory, values may be variables, and the tooltip echoes the unit you wrote. For a duration field that rejects `constant:`, assign the constant to a variable first.
 - Starting ideas: `add_ideas` in `history/countries/*.txt`, and `ideas = { }` in the bookmark entry so they appear on the selection screen. `on_add` does not run there.
+- A bookmark card shows three ideas and four focuses, and every bookmark `effect` block ends with `randomize_weather`, which a vanilla comment calls obligatory. [vanilla-confirmed 1.19.3]
 - Reading: `has_idea = my_idea` (country scope; for advisors the argument is the `idea_token`), `has_idea_with_trait = my_trait`, `amount_taken_ideas = { amount > 2 slots = { political_advisor } }` (excludes spirits, hidden ideas, and laws), `has_available_idea_with_traits` and `has_allowed_idea_with_traits` (`idea`, `limit`, `characters`, `ignore`).
 
 ## Dynamic modifiers
@@ -197,6 +199,7 @@ has_dynamic_modifier = my_dynamic_modifier                                      
 ```
 
 - Allowed scopes: country, state, character (unit leader), special project. The same definition can be added anywhere; the scope of the `add_dynamic_modifier` call decides where it applies and where variables are read.
+- `days` is optional on `add_dynamic_modifier` (172 of 1,549 vanilla calls pass it, none with a negative value), so omit it for a permanent attach. [vanilla-confirmed 1.19.3] [docs]
 - Variables come from the scope the modifier is attached to: for a state modifier, the state's variable, not the owner's. Use `scope =` to read another scope's variable.
 - Daily refresh: at the start of each day every variable-valued modifier resets to 0, then dynamic modifiers evaluate in the order they were added, each treated as 0 until its variables resolve. Changes take effect at most one day later unless you call `force_update_dynamic_modifier = yes` in the same scope. Re-adding an existing modifier updates its timer instead of stacking a second copy.
 - Inside `enable` and `remove_trigger` for state modifiers, `ROOT` is the state and `OWNER` reaches the owner (vanilla `sabotaged_resources` and `autonomous_state` in `0_dynamic_modifiers.txt`).
@@ -222,6 +225,7 @@ has_dynamic_modifier = my_dynamic_modifier                                      
 - `custom_modifier_tooltip = my_key_tt` adds a line; the key may use `[...]` commands, `§` colour codes, and `$KEY$` references.
 - Idea picture: sprite `GFX_idea_<picture>` where `picture` defaults to the idea id. The game always adds the `GFX_idea_` prefix, so `picture = GFX_x` looks for `GFX_idea_GFX_x`. The name is looked up first as `GFX_idea_<idea id>` even if `picture` is set. A `_<graphical_culture_2d>` suffix variant is preferred for matching countries. Declare sprites in `interface/*.gfx` (vanilla: `GAME/interface/ideas.gfx`). Vanilla idea icons are 60 x 68 pixels (`GAME/gfx/interface/ideas/idea_generic_agrarian_society.dds`); the trait strip `idea_traits_strip.dds` is 504 x 28 with 18 frames. A wrong `texturefile` makes the idea invisible in the politics view while still applying its modifiers.
 - Dynamic modifier icon: any sprite; vanilla uses `GFX_idea_*` and `GFX_modifiers_*` names (`GAME/interface/_dynamic_modifiers.gfx`, `countrystateview.gfx`).
+- `GFX_idea_unknown` is a base-game placeholder sprite, declared in `interface/countrydiplomacyview.gfx`. [vanilla-confirmed 1.19.3]
 - Idea description in another tooltip: `custom_effect_tooltip = idea_desc|my_idea` (formatter `idea_desc`, scope country; `idea_name` for the name). `show_ideas_tooltip = my_idea` prints the idea's effects.
 - Flag triggers inside player-visible `available` or `allow` blocks use the flag name as the tooltip key; give such flags a key or wrap them in `hidden_trigger` with a `custom_trigger_tooltip`.
 
@@ -246,6 +250,8 @@ has_dynamic_modifier = my_dynamic_modifier                                      
 
 - Tabs for indentation, lowercase snake_case, no `<=` or `>=` (use `check_variable` with `compare = ...` or `<`, `>`), localisation UTF-8 with BOM, localisation keys written without `:0`.
 - No magic numbers: put tuning in `common/script_constants/` and read it as `constant:category.key` where the field supports it. Idea `modifier` blocks accept literal numbers only (not variables), so a tunable value either uses a dynamic modifier fed by a variable set from a constant, or repeats a literal that is documented once in the idea file header. Timed `days =` fields may need a variable assigned from a constant first.
+- Declare `fixed_point` in a script constant group that holds non-integers, since vanilla's `propaganda_campaigns.txt` declares `int` yet stores 1.35. [vanilla-confirmed 1.19.3]
+- Reloading only the constant database leaves stale values, because the database that consumes the constant must reload too. [docs]
 - Reuse the project's dynamic scripted effects library (`common/scripted_effects/<prefix>_dynamic_effects.txt`, named in `CLAUDE.md`) before writing new helpers; document new dynamic effects in its documentation file as `CLAUDE.md` requires.
 - On-action fan-out (`on_daily`, `on_weekly`, `on_monthly`) over all countries to refresh ideas or dynamic modifiers needs explicit permission; refresh from the effect that changes the underlying variable instead.
 - Player-facing idea text describes the world and the player's options, not tuning history or "newly added" wording.
@@ -272,6 +278,8 @@ has_dynamic_modifier = my_dynamic_modifier                                      
 17. A zero-valued modifier left in a block (no effect) or a boolean modifier set to something other than 1.
 18. Adding a timed idea with no unit field; one of `days`, `months`, `years` is mandatory.
 19. Player text that mentions removed or reworked ideas.
+20. Correcting the spelling of `foreign_subversive_activites`, because the game token is the misspelled form (72 vanilla uses). [docs]
+21. Placing naval `*_against` modifiers or `river_crossing_factor_against` directly in `modifier`, when they belong inside `targeted_modifier = { tag = ... }`. [vanilla-confirmed 1.19.3]
 
 ## Unverified or conflicting points
 

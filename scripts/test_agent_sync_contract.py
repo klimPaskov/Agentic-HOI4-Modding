@@ -79,7 +79,8 @@ def main():
     module = load_module()
     agents = module.load_agents()
     names = {agent.name for agent in agents}
-    assert len(agents) == 23, len(agents)
+    # The agent count comes from the folder: adding a haiku agent that can edit needs no script change.
+    assert agents and names == {path.stem for path in (ROOT / ".claude" / "agents").glob("*.md")}, names
     for agent in agents:
         assert agent.model == EXPECTED_TIERS.get(agent.name, "haiku"), (agent.name, agent.model)
         assert agent.effort == {"opus": "xhigh", "sonnet": "high", "haiku": "medium"}[agent.model], agent.name
@@ -147,10 +148,17 @@ def main():
         assert result.returncode == 0, (tool, result.stdout, result.stderr)
     result = run_tool("sync_skills.py", "--check")
     assert result.returncode == 0, result.stdout
+    result = run_tool("generators.py", "--check")
+    assert result.returncode == 0, result.stdout + result.stderr
 
     settings = json.loads((ROOT / ".claude" / "settings.json").read_text(encoding="utf-8"))
     mcp = json.loads((ROOT / ".mcp.json").read_text(encoding="utf-8"))
     assert settings["$schema"] == "https://json.schemastore.org/claude-code-settings.json"
+    # The shipped Claude Code settings regenerate projections after an edit and refuse edits to generated files.
+    hooks = [hook["command"] for group in settings["hooks"]["PostToolUse"] for hook in group["hooks"]]
+    assert any(".tools/py.sh" in command and ".tools/sync/generators.py\" --hook" in command for command in hooks), hooks
+    for denied in ("Edit(/AGENTS.md)", "Edit(/.agents/skills/**)", "Edit(/.codex/agents/**)", "Edit(/.claude/agent-map.md)"):
+        assert denied in settings["permissions"]["deny"], denied
     assert mcp["mcpServers"]["hoi4_agent_tools"]["command"] == "hoi4-agent-tools.cmd"
     for runtime in ("cursor", "qoder", "opencode"):
         runtime_settings = json.loads((ROOT / f".{runtime}" / "settings.json").read_text(encoding="utf-8"))

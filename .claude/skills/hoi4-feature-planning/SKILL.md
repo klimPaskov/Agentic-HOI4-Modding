@@ -41,6 +41,8 @@ The user will provide either:
 - an existing feature that needs deeper rework
 - a detailed spec that needs cleanup before implementation
 
+Before drafting, hold the upfront consultation from `CLAUDE.md` with the standard questions in `references/consultation-questions.md`. Its answers in `decisions.md` are fixed inputs.
+
 Treat the user idea as the starting point. Do not assume it is final.
 
 When the idea is rough, expand it into a deeper design.
@@ -549,6 +551,10 @@ Possible generic links include:
 - existing or planned features in the same mod
 
 Leave out connections that feel artificial. Optional registry hooks, debug menus, parent-provided tracking records, and custom UI surfaces should be used only when the target repository actually has them.
+
+### Feasibility check
+
+Before the spec commits to a mechanic, confirm with the reference tools, the game's documentation and vanilla precedent that each hook, effect, trigger and scope it relies on exists in the installed game and fires where the design needs it, and trace the real setters of every flag or variable the design reads. Record the result beside the spec item with its evidence tag: `[game-tested <version>]`, `[vanilla-confirmed <version>]`, `[docs]` or `[unverified]`. A mechanic that cannot be confirmed stays `[unverified]` and becomes a consultation question with a fallback, not a silent assumption.
 
 
 ## 6. Escalation and uncertainty
