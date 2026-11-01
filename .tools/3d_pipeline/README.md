@@ -10,6 +10,9 @@ dependencies are generated on demand and are not starter files.
 Provider-dependent work requires a non-blank `MESHY_API_KEY` before provider
 preparation, balance checks, or provider calls; the exact command that sets it
 is in the [3D agent's hard start gate](../../.claude/agents/hoi4-3d-model-pipeline.md).
+The account must be on a paid Meshy plan: on the free plan every task create
+returns HTTP 402 and charges nothing, so the free monthly credits shown by the
+balance cannot be spent through the API.
 An explicitly requested existing non-firearm Blender-only repair may inspect its
 approved job, source, dependency lock, adapter schema, bridge, and export stack
 without this key and must not invoke Meshy. Restart the shell or the agent
@@ -236,7 +239,10 @@ bones so tails, weapons, and similar appendages do not define the floor.
   gates fail closed: `candidate_gate` blocks on a missing measurement, the
   texture cap is read from the PNG header, and an uncaptured io_pdx_mesh
   export report is refused. Limits and per-profile `exceptions` are in
-  `config/asset_profiles.json` (see the guide's Fail-closed gates).
+  `config/asset_profiles.json` (see the guide's Fail-closed gates). The
+  topology checks count position-welded geometry, so UV seams are not holes or
+  loose parts, and each profile's `validation_calibration` records the
+  measurements behind its limits.
 - Preserve provider textures and derive PDX diffuse, packed specular, and
   normal maps deterministically. For `PdxMeshAdvanced`, packed specular alpha
   is glossiness (`255 - roughness`), not raw roughness.
