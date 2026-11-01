@@ -1,0 +1,7 @@
+objectTypes = {
+	pdxmesh = {
+		name = "vanilla_fixture_mesh"
+		file = "gfx/models/vanilla_fixture.mesh"
+		animation = { id = "idle" type = "vanilla_fixture_idle_animation" }
+	}
+}
