@@ -56,7 +56,7 @@ All rows: [docs] `documentation/script_concept_documentation.md`. Vanilla sets `
 - How it is built: each item of the input goes through the first operator, each result goes through the second, and so on. With input `game:scope` (a country) and operators `faction_members owned_states`, the first step gives every faction member and the second gives each member's owned states. [docs] `documentation/script_concept_documentation.md`.
 - Shorthand: a collection that only has an input can be written as the input alone, so `my_collection = game:all_states` equals `my_collection = { input = game:all_states }`. [docs] `documentation/script_concept_documentation.md`.
 - No uniqueness guarantee. If an operator reaches the same object through several items, the collection holds it several times, for example a state that is a core of several faction members. Counts include the repeats. [docs] `documentation/script_concept_documentation.md`.
-- Operator order matters. In vanilla, `limit` is the last entry in every chain that has one (for example `faction_members controlled_states limit`). [vanilla-confirmed 1.19.4.1] counted over all 348 `operators` blocks; [unverified] that another order fails.
+- Operator order matters. In vanilla, `limit` is the last entry in every chain that has one (194 of 348, for example `faction_members controlled_states limit`). [vanilla-confirmed 1.19.4.1] counted over all 348 `operators` blocks; [unverified] that another order fails.
 
 ## Named collections <a id="Named_collections"></a>
 
@@ -77,7 +77,7 @@ Use it with the `collection:` prefix: `input = collection:mymod_owned_coastal_st
 
 - A named collection can use another named collection as its input, as vanilla does with `world_uncapitulated_democratic_countries` (input `collection:world_democratic_countries`). [vanilla-confirmed 1.19.3] `common/collections/collections.txt`.
 - A named collection may use a script constant as input: `input = constant:state_groups.balkans`. [vanilla-confirmed 1.19.3] `common/collections/collections.txt` (11 uses).
-- Names in vanilla are unique across the two files (74 of 74). Prefix your own names with the mod tag; what happens when a mod reuses a vanilla name is [unverified]. [vanilla-confirmed 1.19.3] `common/collections/`.
+- Names in vanilla are unique across the two files (74 of 74). Prefix your own names with the mod tag; what happens when a mod reuses a vanilla name is [unverified]. [vanilla-confirmed 1.19.4.1] `common/collections/`.
 - Vanilla has two collections whose names equal the operator they wrap, `faction_members` and `country_and_all_subjects`, defined at the end of `generic_collections.txt`. The math iterator `every_collection` uses the first one by bare name. [vanilla-confirmed 1.19.3] `common/collections/generic_collections.txt`, `common/factions/goals/faction_goals_short_term.txt`.
 - The `name` value is a localisation key; vanilla keys are `COLLECTION_*` entries in `localisation/english/collections_l_english.yml`. See [Tooltips and localisation](#Collection_tooltips). [vanilla-confirmed 1.19.4.1]
 
@@ -210,7 +210,7 @@ set_temp_variable = {
 
 - Faction goal `ratio_progress` and manifest progress use `total_amount_collection` and `completed_amount_collection`. The progress is the size of the completed collection divided by the size of the total one, and each key excludes its fixed-value twin (`total_amount`, `completed_amount`). The scope is the faction leader. [docs] `common/factions/_documentation.md`.
 - Vanilla values are written as `collection:NAME`, `game:all_states` or `game:all_countries`, or as a block. [vanilla-confirmed 1.19.3] `common/factions/goals/faction_manifests.txt` (36 and 39 uses), `faction_goals_medium_term.txt`.
-- The wiki's [Faction modding](<faction_modding.md#Progression_based_goal>) page shows the same keys with nested blocks. [unverified]
+- The wiki's [Faction modding](<faction_modding.md#Progression_based_goal>) page shows the same keys with nested blocks, and vanilla writes them that way too (4 blocks in 2 files). [vanilla-confirmed 1.19.4.1] `common/factions/goals/faction_goals_medium_term.txt`, `faction_manifests.txt`
 
 ## Scopes inside a collection <a id="Collection_scopes"></a>
 
@@ -338,7 +338,7 @@ Collections and [arrays with loops](<data_structures.md#Arrays>) solve overlappi
 | Keep a list between triggers | Not possible; rebuild it each time | Arrays live in variables and can be changed |
 | Tooltip | Built in, titled by `name` | Supply `tooltip` yourself |
 
-- Collections only describe sets that the game already knows (countries, states) through the listed inputs and operators. Anything else, such as a custom list of states built by an event, belongs in an array or a script constant. [docs] `documentation/script_collection_input.md`; [unverified] that no other input exists.
+- Collections only describe sets that the game already knows (countries, states) through the listed inputs and operators. Anything else, such as a custom list of states built by an event, belongs in an array or a script constant. [docs] `documentation/script_collection_input.md` lists the inputs. The list is not complete, because vanilla also uses the undocumented `game:all_majors` (see Inputs). [vanilla-confirmed 1.19.4.1] `common/national_focus/chile.txt`
 - Scope iterators such as `any_owned_state` or `every_neighbor_state` remain the shortest choice for a single hop. [unverified]
 
 ## Confirmed traps <a id="Confirmed_traps"></a>

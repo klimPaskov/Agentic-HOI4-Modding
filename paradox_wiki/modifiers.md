@@ -6,7 +6,7 @@
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against the modifier documentation (722 modifiers, 38 template families), the dynamic modifier, modifier definition, static modifier, difficulty, opinion modifier and sub-unit modifier files, and the effect, trigger, variable and console documentation.
 - Kit blocks added: values and variables, tooltip helpers, dynamic modifier scopes, arguments and add/remove, static, relation, province, balance of power, definition and opinion modifier notes, one table per section for the 167 documented modifiers the page never named, `template-families`, and corrections for sub-unit modifiers, `license_purchase_cost_factor` and the annex and puppet cost note.
 - Wiki errors found: sub-unit modifiers exist only when registered, `license_purchase_cost_factor` does not exist, dynamic modifiers also work on special projects, the `scope` claim has no support, annex and puppet cost factors are not removed, several lists are short.
-- Gaps left: meanings starting with `~` are guesses; the effect of `scope`, of `days` at or below 0 and of the annex and puppet factors is untested; the Modifier type, scope and version columns were not re-checked, only the names.
+- Gaps left: meanings starting with `~` are guesses; the effect of `scope`, of `days` at or below 0 and of the annex and puppet factors is untested; the Modifier type and scope columns were not re-checked, only the names. The version column was checked on 2026-11-01 as far as the installed files allow (see the note under List of modifiers).
 **1.19.4.1 re-check (2026-11-01).** About 40 statements depended on files the update changed, and all were re-measured on the 1.19.4.1 files. Numbers that moved: modifier assignments in ideas 13,384 to 13,444 and in dynamic modifiers 5,097 to 5,092, `custom_modifier_tooltip` 367 to 371 uses, `add_dynamic_modifier` calls 1,549 to 1,552, opinion modifiers 810 to 811, and `navy_screen_attack_factor_against` is now used in `common/ideas/japan.txt`; the meaning column cannot be diffed against the old text file. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
@@ -158,7 +158,7 @@ The dynamic modifiers are evaluated daily for each scope. The process consists o
 - Adding a dynamic modifier that is already present refreshes it ("updates the cooldown if exists"), which matters for timed modifiers. [docs] `documentation/effects_documentation.md`
 - `has_dynamic_modifier` tests for one in state, country and character scope. It takes either `has_dynamic_modifier = name` or a block with `modifier` and an optional `scope`. [docs] `documentation/triggers_documentation.md`
 - Vanilla defines 679 dynamic modifiers in 11 files under `common/dynamic_modifiers/`. [vanilla-confirmed 1.19.4.1]
-- The console documentation lists no command that reloads dynamic modifier definitions, which fits the restart claim above but does not prove it. [unverified]
+- The console documentation lists no command that reloads dynamic modifier definitions. [docs] `documentation/console_commands_documentation.md` That fits the restart claim above but does not prove it. [unverified]
 <!-- kit:end id="dynamic-scopes" -->
 
 ### Arguments <a id="Arguments"></a>
@@ -656,12 +656,16 @@ The documentation lists these as template entries; each pattern stands for one m
 | `<IdeaGroup>_cost_factor` | country | 0 dp | 25 idea groups (for example `economy`, `army_chief`, `hidden_ideas`, `army_spirit`). |
 | `<IdeaCategory>_category_type_cost_factor` | country | 0 dp | `air_spirit`, `army_spirit`, `navy_spirit`. |
 | `<Ideology>_acceptance`<br>`<Ideology>_drift`<br>`<Ideology>_drift_from_guarantees` | politics | 0 dp, 2 dp, 2 dp | `communism`, `democratic`, `fascism`, `neutrality`. |
-| `<Operation>_cost`<br>`<Operation>_outcome`<br>`<Operation>_risk` | intelligence_agency | 0 dp | 41, 39 and 42 slot values: operation ids from `common/operations/` (for example `operation_infiltrate_civilian`, `bruneval_raid`, `FRA_coup_in_indochina`) plus the generic tokens `operation`, `operation_coup`, `operation_infiltrate`, `operation_steal_tech` and `target_sabotage`. The three sets differ slightly: `_cost` has no `operation_steal_tech`, and `_outcome` and `_risk` have no `operation_coup`. An operation only reacts to a modifier it names in its own `cost_modifiers`, `outcome_modifiers` or `risk_modifiers` list [docs `common/operations/_documentation.md`]. Vanilla operations name only `operation_cost`, `operation_infiltrate_cost`, `operation_coup_cost`, `target_sabotage_cost`, `operation_outcome`, `operation_infiltrate_outcome`, `operation_steal_tech_outcome`, `boost_resistance_factor`, `target_sabotage_factor`, `operation_risk`, `operation_infiltrate_risk`, `operation_steal_tech_risk` and `target_sabotage_risk`, so per-operation names such as `bruneval_raid_cost` are valid but no vanilla operation reads them [vanilla-confirmed 1.19.4.1 `common/operations/`]. |
+| `<Operation>_cost`<br>`<Operation>_outcome`<br>`<Operation>_risk` | intelligence_agency | 0 dp | 41, 39 and 42 slot values: operation ids from `common/operations/` (for example `operation_infiltrate_civilian`, `bruneval_raid`, `FRA_coup_in_indochina`) plus the generic tokens `operation`, `operation_coup`, `operation_infiltrate`, `operation_steal_tech` and `target_sabotage`. The three sets differ slightly: `_cost` has no `operation_steal_tech`, and `_outcome` and `_risk` have no `operation_coup`. Which of them vanilla operations read is in the note below the table. |
 | `<SpecialProject>_speed_factor` | country, state | 0 dp | 66 tokens: the `sp_*` projects and `specialization_air`, `specialization_land`, `specialization_naval`, `specialization_nuclear`. |
 | `<Trait>_xp_gain_factor` | naval, country, army | 2 dp | For 29 unit leader traits whose token already starts with `trait_` (for example `trait_cautious`, giving `trait_cautious_xp_gain_factor`). |
 | `trait_<Trait>_xp_gain_factor` | naval, country, army | 2 dp | For 165 traits whose token has no `trait_` prefix (for example `BALTIC_anti_bolshevik`). |
 | `<CombatTactic>_preferred_weight_factor` | country | 2 dp | 56 tokens: `nullCombatTactic` and the `tactic_*` combat tactics. The documentation text calls it a naval weight. |
 | `<ModifierStat>_factor`<br>`<ModifierStatValue>_value_factor` | country, state | 0 dp | Only `naval_general_support` and `naval_repair_support`, the support-ratio static modifiers in `common/modifiers/00_static_modifiers.txt`. (not described in the docs) |
+
+Notes on rows of the table above:
+
+- `<Operation>_cost`, `<Operation>_outcome`, `<Operation>_risk`: An operation only reacts to a modifier it names in its own `cost_modifiers`, `outcome_modifiers` or `risk_modifiers` list (`common/operations/_documentation.md`) [docs]. Vanilla operations name only `operation_cost`, `operation_infiltrate_cost`, `operation_coup_cost`, `target_sabotage_cost`, `operation_outcome`, `operation_infiltrate_outcome`, `operation_steal_tech_outcome`, `boost_resistance_factor`, `target_sabotage_factor`, `operation_risk`, `operation_infiltrate_risk`, `operation_steal_tech_risk` and `target_sabotage_risk`, so per-operation names such as `bruneval_raid_cost` are valid but no vanilla operation reads them in `common/operations/` [vanilla-confirmed 1.19.4.1].
 
 The 55 building tokens:
 
@@ -690,6 +694,14 @@ Corrections to the rows below. [docs] `documentation/modifiers_documentation.md`
 - Mastery: `<land/air/naval>_mastery_gain_factor` also accepts `special_forces`, every grand doctrine and every sub-doctrine.
 - Technology cost: `<doctrine category>_cost_factor` is the `<Technology>_cost_factor` family and takes any of the 39 `cat_*` technology categories, not only doctrines.
 <!-- kit:end id="template-families" -->
+
+<!-- kit:begin id="version-added-column" at="section:List_of_modifiers" -->
+**Kit note: the "Version added" column.** Re-checked on 2026-11-01 as far as the installed game allows.
+
+- The modifier documentation has the same 764 entries in 1.19.3.0 and 1.19.4.1, compared heading by heading through the kit's recorded documentation index of both builds. No modifier was added or removed by 1.19.4, so no row should say 1.19.4, and none does. The newest value in the column is 1.17.2. [docs] `documentation/modifiers_documentation.md`
+- No installed file says when a modifier was added. `changelog.txt` only links to the forum, and the documentation names no versions. Every other value in the column is the wiki's claim and was not checked. [vanilla-confirmed 1.19.4.1] `changelog.txt`, `documentation/`
+- Rows with no usable version: the cell is blank for `land`, `state_bunker_max_level_terrain_limit` and `state_coastal_bunker_max_level_terrain_limit`, says `Unknown` for the `production_cost_` row and `???` for the three `modifier_army_sub_unit_` rows. In the `idea` row, other wiki text has slipped into the column.
+<!-- kit:end id="version-added-column" -->
 
 ### Country scope <a id="Country_scope"></a>
 

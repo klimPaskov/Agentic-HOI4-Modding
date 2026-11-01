@@ -200,7 +200,7 @@ bitmapfonts = {
 
 Vanilla entry, unchanged apart from layout. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`
 
-The map font is `tahoma_60` (`path = "gfx/fonts/hoi_mapfont4"`). No vanilla `.gui` or `.gfx` file refers to it with `font =`, so the engine must look it up by name; that is consistent with the page. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`. The name also exists as a token string in `hoi4.exe`. [unverified] `hoi4.exe`
+The map font is `tahoma_60` (`path = "gfx/fonts/hoi_mapfont4"`). No vanilla `.gui` or `.gfx` file refers to it with `font =`, so the engine must look it up by name; that is consistent with the page. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`. The name also exists as a token string in `hoi4.exe` (executable string, so the lookup by name is not settled). [unverified] `hoi4.exe`
 <!-- kit:end id="font-define-notes" -->
 
 ### Overriding bitmaps <a id="Overriding_bitmaps"></a>

@@ -2,7 +2,7 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Troubleshooting", revision 105132, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105132" sources="launcher-settings.json documentation/console_commands_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md localisation/ignored_loc_keys.txt common/script_enums.txt map/" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105132" sources="launcher-settings.json documentation/console_commands_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md localisation/ignored_loc_keys.txt common/script_enums.txt map/ localisation/english/core_l_english.yml" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `launcher-settings.json`, the console, effect and trigger documentation, the `common/` and `map/` folder listings, and string searches of `hoi4.exe`. Log file names and contents also come from the log folder of an earlier 1.19.3 session, which is a user file and not part of the game.
 Kit blocks added: corrections for the fatal-error file (`exceptions.log` is not in this build), the console command table and the log file names; a log file table; debug launch and start-up arguments; what a crash folder holds; a warning that `map/rocketsites.txt` no longer exists; a table of 26 engine messages with their log and likely meaning; and a short debugging loop.
 Gaps left: most of the page's crash causes could not be re-created without running the game, so they stay as the wiki states them. The words "incomplete", "outdated" and "unknown what" on this page are ordinary prose, not placeholders. Nothing was run in the game.
@@ -38,7 +38,7 @@ Non-fatal errors occur when the game encountered invalid data or broken syntax. 
 <!-- kit:begin id="ts-fatal-errors" at="section:Overview" -->
 **Kit correction** The wiki says fatal errors print an exception to `exceptions.log`. hoi4.exe 1.19.4.1 has no `exceptions.log` string. It has the strings `crashes/`, `exceptions/`, `meta.yml` and `LastRead: %s (%d)`, which fits a per-crash folder under the user folder, `crashes/hoi4_<yyyymmdd>_<hhmmss>/` (see the crash data section below). [unverified]
 
-Non-fatal errors are still written to `logs/error.log`; the file name is a string in hoi4.exe. [unverified]
+The game's own interface text says map-definition errors "have been logged to error.log" (`localisation/english/core_l_english.yml`, key `MAP_LOADING_ERROR_INTRO`). [vanilla-confirmed 1.19.4.1] That other non-fatal errors still go to `logs/error.log` is untested. [unverified]
 
 Two debug-only behaviours matter when an error "does nothing" in a normal run. Some effects show their tooltips only in debug mode (`activate_shine_on_focus`, `deactivate_shine_on_focus`, `has_shine_effect_on_focus`), and `clamp_variable` logs an error for `max < min` only in debug mode. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
 <!-- kit:end id="ts-fatal-errors" -->
@@ -82,10 +82,10 @@ These are useful console commands for modders:
 | --- | --- |
 | `reload texture` | The documented command is `reload_textures` (aliases `rt`, `reload_texture`) with optional file-name filters. [docs] `documentation/console_commands_documentation.md` |
 | `reload localization` | The documented command is `update_loc <localization tag>`. There is no `reload` entry in the documentation. [docs] `documentation/console_commands_documentation.md` |
-| `reload defines`, `reload focus`, `reload decision` | `reload` is not documented. hoi4.exe contains the message `defines reloaded!` and keeps the short names `focus`, `cfocus`, `ideas`, `ability`, `scriptedgui` and `scripted_effects` next to `common/` folder paths, so `reload <name>` probably exists. [unverified] |
+| `reload defines`, `reload focus`, `reload decision` | `reload` is not documented. [docs] hoi4.exe contains the message `defines reloaded!` and keeps the short names `focus`, `cfocus`, `ideas`, `ability`, `scriptedgui` and `scripted_effects` next to `common/` folder paths, so `reload <name>` probably exists (executable strings). [unverified] |
 | `reload focus` ("`common/national_focuses/`") | The folder is `common/national_focus/`. There is no `national_focuses` folder in the installed game. [vanilla-confirmed 1.19.4.1] folder listing of `common/` |
-| `reloadfx all` | `reloadfx` is documented with `map`, `mapname`, `postfx` or a `*.fx` file name. hoi4.exe also prints `reloadfx all` in its usage message. [docs] `documentation/console_commands_documentation.md` and [unverified] for `all` |
-| `reloadtechnologies` ("will cause a crash if an error is encountered") | Documented only as "Reloads the technology database". The crash remark is not in any game file. [unverified] |
+| `reloadfx all` | `reloadfx` is documented with `map`, `mapname`, `postfx` or a `*.fx` file name. [docs] `documentation/console_commands_documentation.md` hoi4.exe also prints `reloadfx all` in its usage message (executable string). Whether `all` works is untested. [unverified] |
+| `reloadtechnologies` ("will cause a crash if an error is encountered") | Documented only as "Reloads the technology database". [docs] `documentation/console_commands_documentation.md` The crash remark is not in the documentation, and whether a faulty file crashes the game is untested. [unverified] |
 | `tdebug` | Alias of `provtooltipdebug`, which toggles the debug info in the province tooltip. [docs] `documentation/console_commands_documentation.md` |
 | `reloadoob`, `reloadinterface`, `updateequipments`, `updatesubunits` | Exist with the documented effect "reload orders of battle" (argument `<Target Country Tag>`), "reload the entire interface", "update the equipment database" and "update the sub-unit database". [docs] `documentation/console_commands_documentation.md` |
 

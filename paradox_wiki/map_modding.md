@@ -83,7 +83,7 @@ These files in the map folder are common to edit:
 | `buildings.txt`, `unitstacks.txt`, `cities.txt`, `weatherpositions.txt`, `ambient_object.txt`, `supply_nodes.txt`, `railways.txt` | placement and start data; the exe holds these as fixed paths (`map/buildings.txt`, `map/unitstacks.txt`, `map/cities.txt`, `map/weatherpositions.txt`, `map/supply_nodes.txt`, `map/railways.txt`) |
 | `seasons.txt` | 4 season blocks: `winter`, `spring`, `summer`, `autumn`, each with `start_date` and `end_date` written `00.<month>.<day>` (for example `00.12.01`) and `hsv_north` / `hsv_center` / `hsv_south` and `colorbalance_north` / `_center` / `_south` |
 | `positions.txt` | listed in `default.map`, but the file is empty (0 bytes) |
-| `colors.txt` | 200 lines of `color = { r g b }`; no game file explains the use [unverified] |
+| `colors.txt` | 200 lines of `color = { r g b }` [vanilla-confirmed 1.19.4.1] `map/colors.txt` (200 of 200 lines match). No game file explains the use [unverified] |
 | `strategicregions/` | 304 region files (see Strategic region modding) |
 | `supplyareas/` | one leftover file (see Supply areas modding) |
 | `terrain/` | 64 DDS and BMP files: the atlases, colour maps, borders, river surface, mud, snow, fog of war and underwater textures |
@@ -1186,7 +1186,7 @@ type = {
 The nudge can edit existing ambient objects, but it is unable to create new ones: they have to be created manually first.
 
 <!-- kit:begin id="map-ambient-facts" at="section:Ambient_objects" -->
-**Kit correction** Vanilla `ambient_object.txt` has 6 `type = { }` blocks: `ambient_wind_entity`, `ambient_water_entity`, `frame_border_entity`, `frame_border_bottom_entity`, `frame_border_logo_entity` and `chinese_wall_entity`. The `frame_border_*` entities are most likely the map frame the page mentions; which one is the northern or southern border is not stated in the files. [unverified] The `type` value is quoted (`type="ambient_wind_entity"`), and all six entities are defined in `gfx/entities/mapitems.asset`. [vanilla-confirmed 1.19.3] `map/ambient_object.txt`, `gfx/entities/mapitems.asset`
+**Kit correction** Vanilla `ambient_object.txt` has 6 `type = { }` blocks: `ambient_wind_entity`, `ambient_water_entity`, `frame_border_entity`, `frame_border_bottom_entity`, `frame_border_logo_entity` and `chinese_wall_entity`. The `frame_border_*` entities are most likely the map frame the page mentions. [unverified] The object names and positions show the sides: `frame_border_entity_top` sits at z 2190 (north of the 2048-pixel map) and `frame_border_bottom_entity_bottom` at z -140 (south). [vanilla-confirmed 1.19.4.1] `map/ambient_object.txt`. The `type` value is quoted (`type="ambient_wind_entity"`), and all six entities are defined in `gfx/entities/mapitems.asset`. [vanilla-confirmed 1.19.3] `map/ambient_object.txt`, `gfx/entities/mapitems.asset`
 
 Keys in use: `type`, `use_animation` (always `no`), `always_visible` (5 blocks), `scale` (values 0.2, 10, 100, 100, 300) and `object = { name position rotation }` (position and rotation are three numbers). `time_duration` from the list above does not appear in the vanilla file, but the exe knows the key. [vanilla-confirmed 1.19.3] `map/ambient_object.txt`. [unverified] for the exe.
 <!-- kit:end id="map-ambient-facts" -->

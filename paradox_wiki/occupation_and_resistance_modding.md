@@ -328,7 +328,7 @@ Localisation: `my_mod_garrison_tax`, `sabotage_my_mod_radio` and `my_mod_resista
 - Do not mark a second law `default_law = yes` or `starting_law = yes`; vanilla has exactly one of each, and `main_fallback_law` from the header is unused. [vanilla-confirmed 1.19.4.1] `occupation_laws.txt`; the effect of a second marker is [unverified].
 - `visible` of a law is also read with `FROM` set, although the header says otherwise. Test `FROM` there only when you accept this. [vanilla-confirmed 1.19.4.1] 10 of 15 vanilla `visible` blocks.
 - Use `small_icon` and `core_compliance_modifier`, the vanilla spellings, not the header's `icon_small` and `core_compliancemodifier`. [vanilla-confirmed 1.19.4.1] all 9 vanilla modifiers.
-- Modifier thresholds are percentages (0 to 100). A threshold of 0.5 means half a percent. [unverified] inferred from the vanilla values 15 to 90.
+- Modifier thresholds are percentages (0 to 100): the header calls the key "percentage threshold to enable" and the vanilla values run from 15 to 90. [vanilla-confirmed 1.19.4.1] `resistance_modifiers.txt`, `compliance_modifiers.txt`. That 0.5 means half a percent is [unverified].
 - `is_dynamic = yes` modifiers are never active unless a script adds them with `add_state_resistance_compliance_modifier`. [docs] header of `resistance_modifiers.txt`.
 - The operations that feed sabotage change variables on the selected state (`FROM.FROM` in operation scope). Vanilla activities that read these variables spend them with `subtract_from_variable`; a custom activity that reads one should do the same. [vanilla-confirmed 1.19.3] `common/operations/00_operations.txt`, `resistance_activity.txt`.
 

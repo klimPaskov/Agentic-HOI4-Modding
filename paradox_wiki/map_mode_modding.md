@@ -88,7 +88,7 @@ The `color` block sets these temp variables. [docs] `common/map_modes/documentat
 | `thickness` | Border width. The doc example uses `10.0`. Only read when the layer has `thickness = yes`. |
 | `highlighted` | If set, the border pulsates. The doc example sets `1.0`. |
 
-- A colour range of 0.0 to 1.0 per channel is implied by the examples and by the vanilla define tables, which also use 0 to 1. [unverified]
+- The documentation example uses 0.0 to 1.0 per channel. [docs] `common/map_modes/documentation.md`. The three map mode colour tables in `common/defines/00_graphics.lua` also keep every colour column between 0 and 1. [vanilla-confirmed 1.19.4.1] Whether `color` accepts values outside that range is [unverified].
 - The doc says the colour trigger "returns true" for a border it wants drawn, and that the game then expects the temp variables. Whether an `if` with a `limit` inside `color` hides a border is not stated; limit the drawn scopes with `targets` instead. [unverified]
 - There is no gradient key. A gradient is a number you compute from game data and write into the channels, for example a value between 0 and 1 copied into `green` with `red` set to one minus that value (see the example). [unverified] design advice built on the documented temp variables.
 - The built-in resistance, compliance and temperature modes use fixed gradient tables in `common/defines/00_graphics.lua`. Each row is a value followed by red, green, blue, alpha, and the colour is interpolated between the two nearest rows. The names are `OCCUPATION_RESISTANCE_MAP_MODE_COLORS`, `OCCUPATION_COMPLIANCE_MAP_MODE_COLORS` and `TEMPERATURE_MAP_MODE_COLORS`. [vanilla-confirmed 1.19.4.1] `common/defines/00_graphics.lua`. Scripted modes cannot read these tables. [unverified]
@@ -123,15 +123,15 @@ For a map mode with id `my_mod_map_mode` the game looks for these keys and sprit
 - The loc keys are the upper-case id; the two tooltip keys use the id as written. [docs]
 - Vanilla modes follow the same pattern: `MAPMODE_FACTIONS`, `MAPMODE_FACTIONS_NAME` and `MAPMODE_FACTIONS_DESCRIPTION` exist. [vanilla-confirmed 1.19.4.1] `localisation/english/mapmode_l_english.yml`.
 - The vanilla small icons are one strip per state: `GFX_mapmode_buttons_selected_small` and `GFX_mapmode_buttons_deselected_small` have 18 frames in a 360 by 18 texture, so one frame is 20 by 18 pixels. [vanilla-confirmed 1.19.3] `interface/mapmodes_interface.gfx`, DDS header of `gfx/interface/mapmode/mapmode_buttons_selected_small.dds`.
-- Whether a scripted mode's own sprite must use the same 20 by 18 size is not stated. Define the two sprites as plain `spriteType` entries in a `.gfx` file ([Graphical asset modding](<graphical_asset_modding.md#spriteType>)). [unverified]
+- The documentation does not state whether a scripted mode's own sprite must use the same 20 by 18 size. [docs] `common/map_modes/documentation.md`. Define the two sprites as plain `spriteType` entries in a `.gfx` file ([Graphical asset modding](<graphical_asset_modding.md#spriteType>)). Whether the engine needs the vanilla size is [unverified].
 
 ## Activating a map mode <a id="Activating_a_map_mode"></a>
 
 - There is no effect, trigger or on action that switches the player to a map mode. The only map mode effect in the documentation is `force_update_map_mode`, which rebuilds one. [vanilla-confirmed 1.19.3] the effect names in `documentation/effects_documentation.md` were searched for "map" and "mode"; only `force_update_map_mode` matches.
 - The player selects a scripted mode in the map mode bar. How the bar and the "all map modes" window list scripted modes is not stated in the files. The bar has configurable slots 4 to 10 (`UI_CONFIGURABLE_SLOT_FROM` and `UI_CONFIGURABLE_SLOT_TO`, 0-based). [vanilla-confirmed 1.19.4.1] `common/defines/00_graphics.lua`, `interface/mapmodes_interface.gui`.
-- Console: `mapmode <int>` changes the map mode by number, and `rebuildlayers` reloads the map modes. [docs] `documentation/console_commands_documentation.md`. Use `rebuildlayers` after editing a map mode file during a test. The number for a scripted mode is not documented. [unverified]
+- Console: `mapmode <int>` changes the map mode by number, and `rebuildlayers` reloads the map modes. [docs] `documentation/console_commands_documentation.md`. Use `rebuildlayers` after editing a map mode file during a test. The documentation gives only "Mapmode type (int)" and no number for a scripted mode. [docs] Which number a scripted mode gets is [unverified].
 - `on_map_mode` in decisions is a different feature. Its three values `map_only`, `map_and_decisions_view` and `decision_view_only` choose where a decision is shown. [vanilla-confirmed 1.19.4.1] 569 uncommented uses in `common/decisions/`, no other value.
-- A scripted GUI can be limited to a map mode with `map_mode = map_mode_name`. No vanilla scripted GUI sets it. [docs] `common/scripted_guis/_documentation.md`. See [Scripted GUI modding](<scripted_gui_modding.md>). The valid names are not listed. [unverified]
+- A scripted GUI can be limited to a map mode with `map_mode = map_mode_name`. No vanilla scripted GUI sets it. [docs] `common/scripted_guis/_documentation.md`. See [Scripted GUI modding](<scripted_gui_modding.md>). The documentation shows only the placeholder `map_mode_name` and lists no valid names. [docs] Which names the engine accepts is [unverified].
 
 ## Minimal example <a id="Minimal_example"></a>
 

@@ -87,7 +87,7 @@ In order for a file to work, it must have the following:
 - 2,083 files start with the matching `l_<language>:` header on line 1; the other 9 begin with a `# === [LocEditor:...]` comment. No file in a language folder holds two language headers, although the page says one is allowed; `languages.yml` holds ten.
 - There are 1,336,123 key lines. 1,333,745 have no version number (`key: "text"`), 2,099 use `key:0` and 279 use `key:1` to `key:4`. New files can drop the number, as the page says.
 - A key line can end with a `# comment` after the closing quote; 346 English lines do.
-- No vanilla language folder has a `replace` subfolder. `hoi4.exe` contains the strings `/replace/`, "Duplicate localization found", "The game has loc key collisions. Check logs/text.log" and "should be in in utf-8-bom encoding", which fit the page's `replace` and `text.log` text. [unverified] (strings in `hoi4.exe`)
+- No vanilla language folder has a `replace` subfolder (0 of 10 folders). [vanilla-confirmed 1.19.4.1] `localisation/`. `hoi4.exe` contains the strings `/replace/`, "Duplicate localization found", "The game has loc key collisions. Check logs/text.log" and "should be in in utf-8-bom encoding", which fit the page's `replace` and `text.log` text. [unverified] (strings in `hoi4.exe`)
 - The page says the language is set in `pdx_settings.txt`. `launcher-settings.json` names `pdx_settings.json` as `ingameSettingsPath`, and `hoi4.exe` still contains the string `pdx_settings.txt`. Which file holds the language is [unverified]. [vanilla-confirmed 1.19.4.1] `launcher-settings.json` for the first part.
 <!-- kit:end id="loc-vanilla-file-facts" -->
 
@@ -250,7 +250,7 @@ Within these examples, the first string depicts the current scope's democratic p
 - The same letters work on `$KEY|fmt$` placeholders as on `[?var|fmt]`. English vanilla has 353 distinct `$KEY|fmt$` strings and 41 distinct `[?var|fmt]` strings. The commonest `$KEY|fmt$` forms are `|H` (2,896 uses), `|Y` (1,323), `|+=%1` (288) and `|UY` (191). The commonest `[?var|fmt]` forms are `|+0` (145), `|Y0` (82) and `|%` (50).
 - Any colour letter from the colour table can be a format letter: `H`, `Y`, `R`, `G`, `g`, `W`, `L`, `T` and `O` all occur after the pipe. `H` leads in placeholders, `Y` in `[?var|...]`.
 - A dot in the format string, as in `|.1`, occurs 309 times, `*` 115 times and `^` 69 times, and `%%` occurs as in `$LIMIT|R.0%%$`, so these forms from the table are all in real use.
-- The letter `U`, not in the table above, occurs 352 times, mostly as `$COUNTRY|U$` or `$COUNTRY|UY$` at the start of a sentence. It presumably upper-cases the first letter. [unverified] (meaning inferred from the sentence position)
+- The letter `U`, not in the table above, occurs 352 times in format codes, mostly as `$COUNTRY|U$` or `$COUNTRY|UY$` at the start of a sentence. [vanilla-confirmed 1.19.4.1] `localisation/english/`. It presumably upper-cases the first letter. [unverified] (meaning inferred from the sentence position)
 <!-- kit:end id="loc-variable-formats" -->
 
 ### Country's flags <a id="Country.27s_flags"></a><a id="Country's_flags"></a>
@@ -642,7 +642,7 @@ for which localization objects that are defined for that context.
 - The ten pronoun functions (`GetSheHe`, `GetSheHeCap`, `GetHerHim`, `GetHerHimCap`, `GetHerHis`, `GetHerHisCap`, `GetHersHis`, `GetHersHisCap`, `GetHerselfHimself`, `GetHerselfHimselfCap`) exist on `Country` (for the country's leader), `UnitLeader`, `Ace` and `Character`. The page lists them under characters only. Vanilla usually chains through the leader, as in `[FROM.GetLeader.GetHerHis]`. [docs] `documentation/loc_objects_documentation.md`, [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
 - `GetCallsign` belongs to `Ace` and `GetCodeName` to `UnitLeader` (the operative leader). The "Other scopes" table above gives `GetCallsign` as an operative function. Vanilla uses `[From.GetCallsign]` and `[Prev.GetCallsign]` in ace texts. [docs] `documentation/loc_objects_documentation.md`, [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
 - Promotions work inside ordinary bracket chains. Vanilla uses `[ROOT.Capital.GetName]` and `[ROOT.Capital.GetCapitalVictoryPointName]`, `[From.Owner.GetAdjective]` (14 uses) and `[FROM.Controller.GetNameDef]`. Vanilla GUI text roots a chain at an object: `[Character.GetName]` (35 uses), `[SpecialProject.GetName]` (22), `[State.GetName]` (10), `[Country.GetNameWithFlag]` (6), and the condition form `[(Character?.GetName:'KEY)]` twice. [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
-- `GetDateString`, `GetDateStringShortMonth`, `GetDateStringNoHour`, `GetDateStringNoHourLong`, `GetTokenKey` and `GetTokenLocalizedKey` in the tables above are not in the objects documentation. They are strings in `hoi4.exe`. Vanilla localisation uses two of them: `[?global.date.GetDateStringShortMonth]` and `[?BUL.BUL_date_of_tsars_death.GetDateStringNoHourLong]`. [unverified] (strings in `hoi4.exe`), [vanilla-confirmed 1.19.4.1] for the two uses.
+- `GetDateString`, `GetDateStringShortMonth`, `GetDateStringNoHour`, `GetDateStringNoHourLong`, `GetTokenKey` and `GetTokenLocalizedKey` in the tables above are not in the objects documentation (0 matches). [docs] `documentation/loc_objects_documentation.md`. They are strings in `hoi4.exe`. Vanilla localisation uses two of them: `[?global.date.GetDateStringShortMonth]` and `[?BUL.BUL_date_of_tsars_death.GetDateStringNoHourLong]`. [unverified] (strings in `hoi4.exe`), [vanilla-confirmed 1.19.4.1] for the two uses.
 <!-- kit:end id="loc-objects-promotions" -->
 
 ## Namespaces <a id="Namespaces"></a>
@@ -953,7 +953,7 @@ TAG1 is the attacker, TAG2 is the defender. The naming supports using $FIRST$ an
 | `WAR_TAKE_CLAIM_NAME` | `$ORDER$$FIRST$ Aggression for $STATE$` | `$ORDER$`, `$FIRST$`, `$STATE$` |
 | `WAR_NAME_ITA_ETH` | `Italian War on Ethiopia` | none; the only vanilla key of the form `WAR_NAME_TAG1_TAG2` |
 
-The keys `ST`, `ND`, `RD` and `TH` next to them hold the ordinal suffixes, so `$ORDER$` is presumably the war's ordinal. [unverified] (inferred from the neighbouring keys)
+The keys `ST`, `ND`, `RD` and `TH` next to them hold the ordinal suffixes. [vanilla-confirmed 1.19.4.1] `localisation/english/war_l_english.yml`. So `$ORDER$` is presumably the war's ordinal. [unverified] (inferred from the neighbouring keys)
 <!-- kit:end id="loc-war-name-keys" -->
 
 ### Division Commander Ranks <a id="Division_Commander_Ranks"></a>

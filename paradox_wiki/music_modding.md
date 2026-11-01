@@ -43,7 +43,7 @@ music = {
 - Every block sets exactly `name`, `file` and `volume`.
 - `volume` runs from 0.4 to 1.5. The most common values are 0.8 (32 songs) and 0.65 (28). Eight songs are above 1.0 (1.1 three times, 1.2, 1.4 twice, 1.45, 1.5), so `volume` is not capped at 1.
 - `file` is relative to the folder of the `.asset` file and may name a subfolder: `file = "China/stillness_over_the_north.ogg"` in the No Compromise, No Surrender DLC.
-- The longest song name in vanilla has 34 characters, so the page's limit of 63 is never reached. The limit itself is not shown by any game file. [unverified] `music/`
+- The longest song name in vanilla has 34 characters, so the page's limit of 63 is never reached (`sanctuary_of_hope_acoustic_version`). [vanilla-confirmed 1.19.4.1] `music/`, DLC `music/` folders. The limit itself is not shown by any game file. [unverified]
 - The name doubles as the localisation key, written without a version number: ` general_peace_1: "Hearts of Men"` in `localisation/english/music_l_english.yml`.
 - Vanilla `.asset` file names vary (`music.asset`, `music_ncns.asset`, `hoi2_music.asset`); no name is required.
 <!-- kit:end id="music-song-notes" -->
@@ -81,7 +81,7 @@ music = {
 - Two stations have songs: `"base_music"` (11 files: the base game and 10 DLC folders) and `"classic"` (the Hearts of Iron 2 and 3 soundtracks). `music_station = "..."` is the first line of the file.
 - Of 120 `music` assignments, 35 have no `chance` block at all, so `chance` is optional.
 - When present, `chance` holds only `modifier` blocks (22 assignments), `factor` and `modifier` together (35), `base` and `modifier` together (18), `factor` alone (7) or `base` alone (3). `add`, which the page lists, is not used by vanilla.
-- A `modifier` with no trigger and only `factor = 0.5` is valid and applies to every case: this is how `maintheme` is written. Triggers seen inside `modifier` include `has_war`, `has_government`, `original_tag`, `is_in_faction_with`, `has_war_with`, `any_enemy_country`, `has_idea_with_trait`, `has_completed_focus`, `NOT` and `OR`; they run in country scope. The scope is an inference from the triggers used. [unverified] `music/_songs.txt`
+- A `modifier` with no trigger and only `factor = 0.5` is valid and applies to every case: this is how `maintheme` is written. Triggers seen inside `modifier` include `has_war`, `has_government`, `original_tag`, `is_in_faction_with`, `has_war_with`, `any_enemy_country`, `has_idea_with_trait`, `has_completed_focus`, `NOT` and `OR`; they run in country scope. [vanilla-confirmed 1.19.4.1] `music/_songs.txt`, DLC `music/*_songs.txt` for the trigger names and the bare `maintheme` modifier. The scope is an inference from the triggers used and is untested. [unverified]
 - 4 songs are defined but assigned to no station: `resistance_spanish`, `resistance_french`, `resistance_fascist`, `resistance_spying`. [vanilla-confirmed 1.19.4.1] `dlc/dlc028_la_resistance/music/`
 
 ```text
@@ -260,7 +260,7 @@ The define `MUSIC_PLAYER_RECENTLY_PLAYED_SIZE = 10` is the size of the list of r
 
 Vanilla uses `play_song = "comintern_war_1"` in `common/national_focus/soviet.txt` and `play_song = "peace_in_our_time"` in `common/scripted_effects/zzz_play_speech_effects.txt`. [vanilla-confirmed 1.19.4.1] `common/national_focus/soviet.txt`
 
-`play_song = "bella_ciao"` in `common/national_focus/italy.txt` names a song that no `music` block in the game files defines. [vanilla-confirmed 1.19.4.1] `common/national_focus/italy.txt`, `music/`. What the game does with an undefined song name is not shown; define every name you use. [unverified] `common/national_focus/italy.txt`
+`play_song = "bella_ciao"` in `common/national_focus/italy.txt` names a song that no `music` block in the game files defines. [vanilla-confirmed 1.19.4.1] `common/national_focus/italy.txt`, `music/`, and no `.asset` file anywhere in the install defines it (`localisation/english/bba_music_l_english.yml` does have the key). What the game does with an undefined song name is not shown and is untested; define every name you use. [unverified]
 <!-- kit:end id="music-script-effects" -->
 
 ---

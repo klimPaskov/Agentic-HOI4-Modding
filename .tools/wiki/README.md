@@ -85,7 +85,11 @@ Every factual statement in a kit block carries one evidence tag:
 | `[docs]` | the game's own documentation states it (`documentation/*.md` or a `_documentation.md` under `common/`) for the build in the review block |
 | `[unverified]` | it is plausible but neither the game files nor a test confirm it |
 
-When only a game run can settle an `[unverified]` claim, put a short note that starts with **Needs a game run** at the claim, saying what to try and what each result would mean. There is no separate test list: `grep -rn "Needs a game run" paradox_wiki/` finds the notes, and a note is removed (and the claim retagged `[game-tested ...]`) when someone runs it.
+Write a tag exactly as shown, with only the build inside the brackets, and name files outside them: the verify check reports any other `[vanilla-confirmed ...]` or `[game-tested ...]` form.
+
+When only a game run can settle an `[unverified]` claim, put a short note that starts with **Needs a game run** at the claim, saying what to try and what each result would mean. `grep -rn "Needs a game run" paradox_wiki/` finds the notes, and a note is removed (and the claim retagged `[game-tested ...]`) when someone runs it.
+
+Every remaining `[unverified]` claim that a game run could settle is also listed in the "In-game checks" section of the current coverage record (`coverage-1.19.3.md`), with its setup, exact steps and expected result, for HOI4 Live Tools or the maintainer. Agents never start the game themselves. When a check is run, retag the claim, correct it if the result differs, and remove its entry from the list.
 
 Write in your own words. Quote only identifiers, values and short examples from the game files or vanilla script, and never write game data from memory: look up every token, scope, default and number. Name the game file a statement comes from. Keep examples short and in vanilla style.
 

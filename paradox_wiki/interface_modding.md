@@ -164,7 +164,7 @@ Animation can be assigned to containers with these attributes:
 | `scroll_wheel_factor`, `smooth_scrolling` | 138 and 128; `smooth_scrolling = yes` in all 128 and a factor of 40 in 73 of the 138 |
 | `autohide_scrollbars` | 1 (`no`) |
 
-Attributes that vanilla containers use and the page does not mention: `click_to_front = yes` (120), `vertical_scroll_step` (15), `background_margin` (11, for example `{ bottom = 15 }`), `scale` (8) and, once each in a sliding window, `closed_position`, `open_position`, `peek_position`, `peek_check_top_left` and `peek_check_size`. [vanilla-confirmed 1.19.4.1] `interface/*.gui`. Their effects are read from the names only. [unverified]
+Attributes that vanilla containers use and the page does not mention: `click_to_front = yes` (120), `vertical_scroll_step` (15), `background_margin` (11, for example `{ bottom = 15 }`), `scale` (8) and, once each in a sliding window, `closed_position`, `open_position`, `peek_position`, `peek_check_top_left` and `peek_check_size`. [vanilla-confirmed 1.19.4.1] `interface/*.gui`. Their effects are read from the names only and are untested. [unverified]
 <!-- kit:end id="if-container-attrs" -->
 
 ### Scrolling <a id="Scrolling"></a>
@@ -245,7 +245,7 @@ The following elements are legacy:
 **Kit note** Checks of the lists above.
 
 - `shieldtype` and `eu3dialogtype` are not used by any of the 132 vanilla `.gui` files. Country flags in vanilla come from `maskedShieldType` sprites in `.gfx` files (`interface/core.gfx`, `interface/general_stuff.gfx`, `interface/countryconstructionsview.gfx`), not from a `.gui` element. [vanilla-confirmed 1.19.4.1] `interface/*.gui`, `interface/*.gfx`.
-- The "legacy" types are still used widely: `guiButtonType` 340 blocks, `windowType` 83 and `textBoxType` 23. `guiButtonType` has the attributes of `buttonType` plus `parent` (28 blocks); `windowType` groups children and writes `moveable` as 0 or 1, `fullScreen`, `horizontalBorder` and `verticalBorder`, `dontRender` and `background`. [vanilla-confirmed 1.19.4.1] `interface/*.gui`. For new windows prefer `containerWindowType` and `buttonType`, the types the page names as current. [unverified]
+- The "legacy" types are still used widely: `guiButtonType` 340 blocks, `windowType` 83 and `textBoxType` 23. `guiButtonType` has the attributes of `buttonType` plus `parent` (28 blocks); `windowType` groups children and writes `moveable` as 0 or 1, `fullScreen`, `horizontalBorder` and `verticalBorder`, `dontRender` and `background`. [vanilla-confirmed 1.19.4.1] `interface/*.gui`. For new windows prefer `containerWindowType` and `buttonType`, the types the page names as current. That is advice, and no defined test shows it. [unverified]
 - Element types in vanilla that the page does not describe are covered in the section "Kit: Element types the page does not describe" at the bottom of the page.
 <!-- kit:end id="if-element-types" -->
 
@@ -271,8 +271,8 @@ The following attributes are used:
 **Kit note** The attribute list against the 3,054 vanilla `iconType` blocks. All numbers: [vanilla-confirmed 1.19.4.1] `interface/*.gui`.
 
 - Used: `name` (3,054), `position` (2,979), `spriteType` (2,525), `alwaystransparent` (1,175), `orientation` (547), `quadTextureSprite` (498), `frame` (392), `centerposition` (321, always `yes`), `pdx_tooltip` (117), `pdx_tooltip_delayed` (2), `hint_tag` (1).
-- Used but missing from the page: `scale` (395, values such as 0.6, 0.7, 0.8, 0.9), `hide` (57, `hide = yes`), `rotation` (52, mostly 1.5708, which looks like a quarter turn in radians), `context_aware_tooltip` (40, a scripted localisation call such as `[GetNavalFactionDesc]`), `tooltip` (10, a localisation key) and `buttonMesh` (1). The meanings of `scale`, `rotation` and `hide` are inferred from the values. [unverified]
-- No `iconType` writes `size`. The icon is drawn at the size of its sprite, scaled by `scale`. [vanilla-confirmed 1.19.4.1] 0 of 3,054. [unverified]
+- Used but missing from the page: `scale` (395, values such as 0.6, 0.7, 0.8, 0.9), `hide` (57, `hide = yes`), `rotation` (52, mostly 1.5708, which looks like a quarter turn in radians), `context_aware_tooltip` (40, a scripted localisation call such as `[GetNavalFactionDesc]`), `tooltip` (10, a localisation key) and `buttonMesh` (1). All counts: [vanilla-confirmed 1.19.4.1] `interface/*.gui`, 3,054 `iconType` blocks. The meanings of `scale`, `rotation` and `hide` are inferred from the values. [unverified]
+- No `iconType` writes `size`. [vanilla-confirmed 1.19.4.1] 0 of 3,054 `interface/*.gui`. The icon is drawn at the size of its sprite, scaled by `scale`. [unverified]
 - `spriteType` is the common choice (2,525) over `quadTextureSprite` (498).
 <!-- kit:end id="if-icon-notes" -->
 
@@ -314,7 +314,7 @@ Valid *format* values:
 - `format` takes `left` (1,037), `center` (988), `centre` (252) and `right` (181). The page lists three values; `centre` is a fourth spelling in common use.
 - `pdx_tooltip_delayed` is listed on the page but no `instantTextBoxType` writes it.
 - `textureFile` is written in 607 blocks, almost always as an empty string (`textureFile = ""` in 630 of 657 uses across all types), which fits "never used for anything".
-- Used but missing from the page: `vertical_alignment` (117: `center` for nearly all, `top` for 4), `multiline` (72), `context_aware_text` (39, a localisation key or a scripted localisation call), `truncate` (33, `yes` in 32), `context_aware_tooltip` (2), `text_color_code` (29, a one-letter colour code such as `b`, `g` or `L`), `tooltip` (14) and `hide` (4). Their meanings are read from the names. [unverified]
+- Used but missing from the page: `vertical_alignment` (117: `center` for nearly all, `top` for 4), `multiline` (72), `context_aware_text` (39, a localisation key or a scripted localisation call), `truncate` (33, `yes` in 32), `context_aware_tooltip` (2), `text_color_code` (29, a one-letter colour code such as `b`, `g` or `L`), `tooltip` (14) and `hide` (4). Their meanings are read from the names and are untested. [unverified]
 <!-- kit:end id="if-text-notes" -->
 
 ## buttonType <a id="buttonType"></a>
@@ -457,7 +457,7 @@ The following attributes are used:
 - **ignore_tab_navigation** - Makes the element ignore tab navigation.
 
 <!-- kit:begin id="if-editbox-notes" at="section:editBoxType" -->
-**Kit correction** The list above copies the text box attributes, and the vanilla edit boxes do not use most of them. All 85 vanilla `editBoxType` blocks write `size` (always `{ x = .. y = .. }`), `name`, `position` and `font`, and the page does not list `size`. They also use `text` (69), `bordersize` (52), `orientation` (45), `textureFile` (27), `ignore_enter` (6), `cursor` (5), `only_numbers` (3, `yes`), `is_multiline` (2), `pdx_tooltip` (1) and `tooltip` (1). None writes `maxWidth`, `maxHeight`, `format`, `fixedsize` or `alwaystransparent`, and no `.gui` file writes `ignore_tab_navigation`, although the string exists once in `hoi4.exe`. [vanilla-confirmed 1.19.4.1] `interface/*.gui`. [unverified]
+**Kit correction** The list above copies the text box attributes, and the vanilla edit boxes do not use most of them. All 85 vanilla `editBoxType` blocks write `size` (always `{ x = .. y = .. }`), `name`, `position` and `font`, and the page does not list `size`. They also use `text` (69), `bordersize` (52), `orientation` (45), `textureFile` (27), `ignore_enter` (6), `cursor` (5), `only_numbers` (3, `yes`), `is_multiline` (2), `pdx_tooltip` (1) and `tooltip` (1). None writes `maxWidth`, `maxHeight`, `format`, `fixedsize` or `alwaystransparent`, and no `.gui` file writes `ignore_tab_navigation`, although the string exists once in `hoi4.exe`. [vanilla-confirmed 1.19.4.1] `interface/*.gui`, 0 uses of that key. The executable string says nothing about whether the key works. [unverified] `hoi4.exe`
 <!-- kit:end id="if-editbox-notes" -->
 
 ## OverlappingElementsBoxType <a id="OverlappingElementsBoxType"></a>
@@ -510,8 +510,8 @@ Valid `orientation` values (case-insensitive):
 <!-- kit:begin id="if-orientation-notes" at="section:Position_and_orientation" -->
 **Kit note** Orientation and position as vanilla writes them. All bullets: [vanilla-confirmed 1.19.4.1] `interface/*.gui`.
 
-- The values in use are `upper_left`, `upper_right`, `lower_left`, `lower_right`, `center`, `center_up`, `center_down`, `center_left`, `center_right` and `center_lower` (7 uses). `center_upper` is never written. `center_up` has 75 uses and `center_down` 37, so the alias `center_lower` for `center_down` is plausible and rare. [unverified]
-- Values are written quoted (`orientation = "upper_left"`) or bare (`orientation = upper_left`), in any case, and vanilla also writes `orientation = left` in eight blocks (two edit boxes, two buttons, a checkbox, an overlapping box and two text boxes), a value the page does not list. [unverified]
+- The values in use are `upper_left`, `upper_right`, `lower_left`, `lower_right`, `center`, `center_up`, `center_down`, `center_left`, `center_right` and `center_lower` (7 uses). `center_upper` is never written. `center_up` has 75 uses and `center_down` 37. [vanilla-confirmed 1.19.4.1] `interface/*.gui`. That `center_lower` is an alias for `center_down` is a guess. [unverified]
+- Values are written quoted (`orientation = "upper_left"`) or bare (`orientation = upper_left`), in any case, and vanilla also writes `orientation = left` in eight blocks (two edit boxes, two buttons, a checkbox, an overlapping box and two text boxes), a value the page does not list. [vanilla-confirmed 1.19.4.1] `interface/*.gui`: 2,435 `orientation` lines are quoted or bare, in upper, lower or mixed case.
 - `position` is always `{ x = .. y = .. }` and the values can be negative (`position = { x=0 y=-22 }` in `interface/AST_cabinet_trust_scripted_gui.gui`). 547 of the 2,024 containers write an `orientation`.
 <!-- kit:end id="if-orientation-notes" -->
 
@@ -564,9 +564,9 @@ The following fonts are usable in Hearts of Iron IV (note that some do not suppo
 - vic_36s
 
 <!-- kit:begin id="if-fonts-notes" at="section:Fonts" -->
-**Kit note** Fonts are registered with `bitmapfont = { name = ".." ... }` blocks in `interface/*.gfx`, mostly `interface/core.gfx`, with 44 names across `interface/*.gfx` in 1.19.4.1, `interface/core.gfx` among them. In 1.19.4.1 every `font` and `buttonFont` value in `interface/*.gui` is written in the same case as its registration (for example `Main_14_black`), so vanilla shows no case mismatch. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`, `interface/*.gui`. Whether the game matches font names without regard to case is not shown. [unverified] See [Font modding](<font_modding.md>).
+**Kit note** Fonts are registered with `bitmapfont = { name = ".." ... }` blocks in `interface/*.gfx`, mostly `interface/core.gfx`, with 44 names across `interface/*.gfx` in 1.19.4.1, `interface/core.gfx` among them. In 1.19.4.1 every `font` and `buttonFont` value in `interface/*.gui` is written in the same case as its registration (for example `Main_14_black`), so vanilla shows no case mismatch. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`, `interface/*.gui`. Whether the game matches font names without regard to case is not shown and is untested. [unverified] See [Font modding](<font_modding.md>).
 
-- 15 of the 33 names in the list above have no `bitmapfont` entry in any `interface/*.gfx` file: `Arial12_bold`, `cg_18b`, `garamond_14_bold`, `garamond_16`, `garamond_16_bold`, `garamond_24`, `hoi_16tooltip3`, `hoi_26mbs`, `hoi_mapfont4`, `newsfeed_body`, `newsfeed_title`, `standard`, `standard_18`, `standard_22` and `tahoma_20_bold`. Some have font files in `gfx/fonts/`, but whether a font can be used by name without a registration is not shown. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`, `gfx/fonts/`. [unverified]
+- 15 of the 33 names in the list above have no `bitmapfont` entry in any `interface/*.gfx` file: `Arial12_bold`, `cg_18b`, `garamond_14_bold`, `garamond_16`, `garamond_16_bold`, `garamond_24`, `hoi_16tooltip3`, `hoi_26mbs`, `hoi_mapfont4`, `newsfeed_body`, `newsfeed_title`, `standard`, `standard_18`, `standard_22` and `tahoma_20_bold`. Some have font files in `gfx/fonts/`, but whether a font can be used by name without a registration is not shown. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`, `gfx/fonts/`, and no `.gui` file uses any of the 15. Whether a font works without a registration is untested. [unverified]
 - Registered fonts that the list omits include `Main_14`, `Main_14_black`, `Main_14_bold`, `Main_14_eu`, `Main_14_grey`, `Main_16`, `ToolTip_Font`, `hoi_22chat`, `hoi_30`, `vic_22`, `vic_36`, `standard_font`, `chat_input_font`, `hoi4_typewriter16_inverted` and `hoi4_typewriter22_inverted`. [vanilla-confirmed 1.19.4.1] `interface/core.gfx` and related `.gfx` files.
 - The workhorses of the vanilla windows, counting `font` and `buttonFont` uses in `.gui` files: `hoi_18mbs` (1,470), `hoi_16mbs` (1,072), `vic_18` (231), `hoi_36header` (190), `hoi_24header` (160), `hoi_20b` (152), `hoi_20bs` (93), `hoi4_typewriter16` (92), `hoi_18b` (77). [vanilla-confirmed 1.19.4.1] `interface/*.gui`.
 <!-- kit:end id="if-fonts-notes" -->
@@ -574,7 +574,7 @@ The following fonts are usable in Hearts of Iron IV (note that some do not suppo
 <!-- kit:begin id="if-other-types" at="bottom" -->
 ## Kit: Element types the page does not describe <a id="kit-interface-other-types"></a>
 
-**Kit addition** Types that appear in vanilla `.gui` files but have no section above. Counts are blocks in the 132 files and attributes are the keys they write. All rows: [vanilla-confirmed 1.19.4.1] `interface/*.gui`. The meanings are read from names and usage. [unverified]
+**Kit addition** Types that appear in vanilla `.gui` files but have no section above. Counts are blocks in the 132 files and attributes are the keys they write. All rows: [vanilla-confirmed 1.19.4.1] `interface/*.gui`. The meanings are read from names and usage and are untested. [unverified]
 
 | Type | Blocks | Attributes and notes |
 | --- | --- | --- |

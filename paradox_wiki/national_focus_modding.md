@@ -6,7 +6,7 @@
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all 81 files in `common/national_focus/` (67 trees, 10,333 focuses, 335 shared and 280 joint focuses), `common/continuous_focus/`, the 7 inlay windows and their `documentation.md`, `common/ai_strategy_plans/`, the focus effects and triggers in `documentation/`, the focus defines, and error strings in `hoi4.exe`.
 - Kit blocks added: tree and shortcut keys, a corrected inlay window format and declaration, prerequisite, exclusivity and relative position rules, cost units, icon extras, search filters missing from the table, trigger and bypass keys, focus effects (`load_focus_tree`, `add_tech_bonus`), shared and joint focus facts, continuous focus palettes, AI strategy plan keys.
 - Errors found in the wiki text: the inlay window example is missing a closing brace and the average tree example has `tag = 25` where `add = 25` is meant; the search filter table lacks three real filters; the wiki's `advisor_portrait`, `gfx_name_fallback`, `inlay_window_id`, `BHR_*` names are placeholders.
-- Gaps left: the `on_uncomplete` focus key, the `allowed_is_joint` key and `copy_completed_from` are named by the game but not documented or used in a way that shows their effect; the wiki sentence under `joint_trigger` is cut off in the captured text.
+- Gaps left: the `on_uncomplete` focus key (mentioned by the `uncomplete_national_focus` entry, used by no focus), the `allowed_is_joint` key and `copy_completed_from` are named by the game but not used in a way that shows their effect; the wiki sentence under `joint_trigger` is cut off in the captured text.
 **1.19.4.1 re-check (2026-11-01).** About 55 statements depended on files the update changed (the 59 changed focus files, the AI strategy plans, the technology categories, two English loc files and the vanilla-wide effect counts), and all were re-measured. Numbers that moved: tree focuses 10,333 to 10,341, `prerequisite` blocks 10,901 to 10,912, `mutually_exclusive` entries 2,612 to 2,614, the cost, search filter and availability key counts, `complete_national_focus` 3,152 to 3,150 and `add_tech_bonus` 1,948 to 1,946 (the `technology` count is now 78). Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
@@ -506,7 +506,7 @@ focus = {
 **Kit addition** Dynamic icons in vanilla 1.19.4.1. All counts: [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
 
 - 254 focuses set `dynamic = yes` (127 in trees, 26 shared, 101 joint). 60 focuses write `icon` as a block; 24 of them set `dynamic = yes` and 36 do not, which is the case the wiki describes where the icon is chosen once at game start.
-- Every one of the 60 icon blocks contains a default entry written `GFX_name = yes`. `hoi4.exe` has "Focus %s (%s) does not have a default icon case." and "Focus %s (%s) has alternate icons but does not have a default case.", so always add the default. [unverified] (strings in `hoi4.exe`).
+- Every one of the 60 icon blocks contains a default entry written `GFX_name = yes`. [vanilla-confirmed 1.19.4.1] `common/national_focus/`. `hoi4.exe` has "Focus %s (%s) does not have a default icon case." and "Focus %s (%s) has alternate icons but does not have a default case.", so always add the default. [unverified] (strings in `hoi4.exe`).
 <!-- kit:end id="focus-dynamic-vanilla" -->
 
 ### Triggers <a id="Triggers"></a>
@@ -596,7 +596,7 @@ Additionally, `bypass_effect = { ... }` is used to execute an effect when focus 
 | `focus_progress = { focus = <id> progress > 0.5 }` | trigger on the progress of a focus | 194 |
 | `has_shine_effect_on_focus = <id>` | trigger: the focus has a shine, by hand or by being worked on | 71 |
 
-- `on_uncomplete` is named in the documentation and exists as a token in `hoi4.exe`, but no vanilla focus uses it; whether it is a focus-level effect block is unknown. [unverified]
+- The `uncomplete_national_focus` entry says an `on_uncomplete` effect runs on each uncompleted focus. [docs] `documentation/effects_documentation.md`. No vanilla focus uses it. [vanilla-confirmed 1.19.4.1] `common/national_focus/`. Where exactly it sits in the focus block is [unverified].
 - Console commands: `Focus.IgnorePrerequisites`, `Focus.NoChecks`, `Focus.AutoComplete`, `freefocuses`, `show_focuses`, `list_hidden_focuses`, `loc_check_focuses` and `focus_count`. [docs] `documentation/console_commands_documentation.md`.
 
 **`load_focus_tree`.** The documentation names `tree`, `keep_completed` (default `no`: keep the completed focuses of the old tree that also exist in the new one) and `copy_completed_from = <country>` (mark everything that country has completed as completed in the new tree); the effect retains finished shared focuses. [docs] `documentation/effects_documentation.md`.
@@ -1045,7 +1045,7 @@ However, editing the generic tree to have joint focuses will cause the error log
 
 - 335 shared focuses sit in 7 files (largest: `toa_shared_military_branch.txt` 76, `china_shared_TSR.txt` 69, `china_shared.txt` 65, `baltic_shared.txt` 60, `paraguay_uruguay_shared_branch.txt` 49).
 - 280 joint focuses sit in 8 files: `indonesia_joint.txt` 96, `congo_shared.txt` 57, `nordic_shared.txt` 51, `habsburg_joint.txt` 35, `goe_shared_saadabad_branch.txt` 18, `abdacom_shared_branch.txt` 11, `TSR_lingguang_incident_joint_branch.txt` 7 and `ncns_ma_clique_joint_branch.txt` 5.
-- Joint focus keys: `completion_reward_joint_originator` in 263, `completion_reward_joint_member` in 221, `completion_reward` in 168, `joint_trigger` in 135, and `allowed_is_joint = yes` in 12 (for example in `TSR_lingguang_incident_joint_branch.txt`). The wiki does not mention `allowed_is_joint`, and what it does is unknown. [unverified]
+- Joint focus keys: `completion_reward_joint_originator` in 263, `completion_reward_joint_member` in 221, `completion_reward` in 168, `joint_trigger` in 135, and `allowed_is_joint = yes` in 12 (7 in `TSR_lingguang_incident_joint_branch.txt`, 5 in `ncns_ma_clique_joint_branch.txt`). [vanilla-confirmed 1.19.4.1] The wiki and `documentation/` do not mention `allowed_is_joint`, and what it does is [unverified].
 - All 280 joint focuses set `text_icon`, and 273 set `search_filters`.
 <!-- kit:end id="focus-joint-shared-vanilla" -->
 
