@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "b89502d015e1b39688103bde2d7c81b5c9454ce0",
+  "generated_for_revision": "c647be0dbf441e7b468ae08841a3c5f70fdd1a6c",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1784,8 +1784,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "9e1d780c642ce8a313c51489a5e059564399fcfa52009cfb5048fdbde4baa5c2",
-          "size": 68094
+          "sha256": "decb2947508d33bb7aa1be75288ca71dbdec9428eb70a2f290e862fe0d4c97fd",
+          "size": 68480
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -5208,8 +5208,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "9e1d780c642ce8a313c51489a5e059564399fcfa52009cfb5048fdbde4baa5c2",
-          "size": 68094
+          "sha256": "decb2947508d33bb7aa1be75288ca71dbdec9428eb70a2f290e862fe0d4c97fd",
+          "size": 68480
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -10671,8 +10671,8 @@
       "expected_files": [
         {
           "path": ".tools/3d_pipeline/README.md",
-          "sha256": "9e50f9e705a41a6478e7b942f8002884285507f279ef7cc40a5ac8c085df0b62",
-          "size": 15579
+          "sha256": "c295918570b6f8f8b255bb7f88bf2aae25c8f299bd04fa10170c18f350495057",
+          "size": 15776
         },
         {
           "path": ".tools/3d_pipeline/adapter/animation_root_export.py",
