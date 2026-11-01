@@ -10,7 +10,8 @@ These tools maintain it. None of them launches Hearts of Iron IV.
 | `verify_wiki_snapshot.py` | read-only acceptance check for the whole snapshot |
 | `wiki_status.py` | says which pages are current for the installed game build and which to re-check after an update |
 | `kit_blocks.py` | the page format the three tools share (no command line) |
-| `game_docs_index.json` | the game documentation index for the build the snapshot was last checked against |
+| `steam_depots.py` | lists the game files that changed between two Steam builds, for `wiki_status.py` (no command line) |
+| `game_docs_index.json` | the game documentation index and Steam depot manifest ids for the build the snapshot was last checked against |
 
 ## Page format
 
@@ -110,7 +111,8 @@ python -B .tools/wiki/wiki_status.py
 `game_docs_index.json` records, for the build the snapshot was last checked against, every heading of the game's documentation (`documentation/*.md`, the `_documentation.md` files under `common/`, and the equipment designer's `_documentation.info`) with a short hash of its text. After the game updates:
 
 1. Run `python -B .tools/wiki/wiki_status.py`. It prints the entries added, removed or changed in each documentation file since the recorded build, and the pages to re-check: pages that name a changed file in `sources`, and pages that mention a removed or changed effect, trigger, modifier or other entry.
-2. Re-check those pages as above, adding new effects, triggers and modifiers to the pages that list them, and record each review with `--mark-reviewed`.
+   The index also records the Steam depot manifest ids of its build (`depots`). When the old manifests are still in Steam's `depotcache/` folder, the tool also counts the game files added, removed or changed by folder and flags every page whose `sources` cover a changed script, define or interface file. Most of an update is in those files, not in the documentation: 1.19.4.1 changed two documentation files but 1,511 game files, including both define files. Steam keeps an old manifest only for a while, so run the status soon after an update; a depot without both manifests is reported as not compared.
+2. Re-check those pages as above, adding new effects, triggers and modifiers to the pages that list them, and record each review with `--mark-reviewed`. For each tagged statement, find the game files it depends on (the files it names, or for a count every folder it scans). A statement whose files did not change keeps its tag; re-measure the others on the new build and retag them `[vanilla-confirmed <new build>]`. Re-check skills' tagged statements the same way. For defines, rebuild the old define set from the Defines page tables plus the `defines_additions.md` tables and compare it with the new files name by name and value by value.
 3. `python -B .tools/wiki/wiki_status.py --carry-forward` moves every page that was current on the previous build, and that the diff did not flag, to the new build with `via="docs-diff"`. That records a mechanical check, not a re-read; a later full review removes `via`.
 4. `python -B .tools/wiki/wiki_status.py --record` stores the new build's index. Commit it with the pages.
 
@@ -186,7 +188,7 @@ The sync needs Python 3.9 or newer with `requests`, `beautifulsoup4` and `markdo
 python -m pip install requests beautifulsoup4 markdownify
 ```
 
-The verify and status tools use only the standard library. The status tool finds the game through `HOI4_GAME_DIR`, `.tools/local_settings.json` or the Steam libraries (`.tools/lib/game.py`) and exits 2 when it cannot. `scripts/test_wiki_validation.py` holds the regression tests for the verify check and the kit-block format.
+The verify and status tools use only the standard library. The status tool reads `steamapps/appmanifest_394360.acf` next to the game folder and the manifests in `depotcache/` of the game's Steam library or Steam installation, and works without them. It finds the game through `HOI4_GAME_DIR`, `.tools/local_settings.json` or the Steam libraries (`.tools/lib/game.py`) and exits 2 when it cannot. `scripts/test_wiki_validation.py` holds the regression tests for the verify check and the kit-block format.
 
 ## Caches and generated files
 
@@ -199,4 +201,4 @@ The wiki's text is CC BY-SA 3.0 (see `paradox_wiki/LICENSE.txt`), and the kit's 
 ## Copies in other repositories
 
 - **HOI4 Mod Setup** installs the snapshot as the `wiki.snapshot` component of `hoi4-mod-setup.manifest.json`. The manifest workflow on `main` regenerates its file evidence after a merge; for a local release, run `scripts/generate_manifest_evidence.py --revision <commit>` as `RELEASING.md` describes.
-- **Mods with their own copy**, such as Chaos Redux, should replace their `paradox_wiki/` with this one rather than editing it. Replace the whole folder: every file name changed with the move to snake_case names, so copying over an old snapshot would leave both sets of files. Generic corrections belong in kit blocks here; mod-specific notes belong in the mod's own docs. Copy `kit_blocks.py`, `wiki_status.py` and `game_docs_index.json` with the updated sync and verify tools when the mod refreshes the snapshot itself.
+- **Mods with their own copy**, such as Chaos Redux, should replace their `paradox_wiki/` with this one rather than editing it. Replace the whole folder: every file name changed with the move to snake_case names, so copying over an old snapshot would leave both sets of files. Generic corrections belong in kit blocks here; mod-specific notes belong in the mod's own docs. Copy `kit_blocks.py`, `steam_depots.py`, `wiki_status.py` and `game_docs_index.json` with the updated sync and verify tools when the mod refreshes the snapshot itself.

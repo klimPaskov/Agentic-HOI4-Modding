@@ -256,6 +256,93 @@ class SyncNameTests(unittest.TestCase):
                 SYNC.WIKI_DIR, SYNC.sys.argv = saved, argv
 
 
+def _protobuf_field(number, value):
+    def varint(n):
+        out = bytearray()
+        while True:
+            byte, n = n & 0x7F, n >> 7
+            out.append(byte | (0x80 if n else 0))
+            if not n:
+                return bytes(out)
+    if isinstance(value, int):
+        return varint(number << 3) + varint(value)
+    return varint(number << 3 | 2) + varint(len(value)) + value
+
+
+def _depot_manifest(files):
+    """A minimal Steam depot manifest: (name, sha1 hex or None for a directory) per entry."""
+    import struct
+    payload = b""
+    for name, digest in files:
+        entry = _protobuf_field(1, name.encode("utf-8")) + _protobuf_field(2, 10)
+        entry += _protobuf_field(3, 64 if digest is None else 0)
+        if digest is not None:
+            entry += _protobuf_field(5, bytes.fromhex(digest))
+        payload += _protobuf_field(1, entry)
+    metadata = _protobuf_field(1, 394361)
+    return (struct.pack("<II", 0x71F617D0, len(payload)) + payload
+            + struct.pack("<II", 0x1F4812BE, len(metadata)) + metadata)
+
+
+class SteamDepotTests(unittest.TestCase):
+    """The game-file diff that flags pages whose script or define sources changed in a game update."""
+
+    def setUp(self):
+        self.depots = _load("steam_depots")
+        self.status = _load("wiki_status")
+        self.temp = tempfile.TemporaryDirectory()
+        root = Path(self.temp.name)
+        self.game = root / "steamapps" / "common" / "Hearts of Iron IV"
+        self.game.mkdir(parents=True)
+        (root / "depotcache").mkdir()
+        self.cache = root / "depotcache"
+        (root / "steamapps" / "appmanifest_394360.acf").write_text(
+            '"AppState"\n{\n\t"InstalledDepots"\n\t{\n\t\t"394361"\n\t\t{\n\t\t\t"manifest"\t\t"200"\n'
+            '\t\t\t"size"\t\t"5"\n\t\t}\n\t\t"394362"\n\t\t{\n\t\t\t"manifest"\t\t"7"\n\t\t}\n\t}\n'
+            '\t"UserConfig"\n\t{\n\t\t"language"\t\t"english"\n\t}\n}\n', encoding="utf-8")
+        old = [("common", None), ("common\\raids\\a.txt", "aa" * 20), ("common/raids/b.txt", "bb" * 20),
+               ("documentation/effects_documentation.md", "cc" * 20), ("tbb.dll", "dd" * 20)]
+        new = [("common", None), ("common\\raids\\a.txt", "aa" * 20), ("common/raids/b.txt", "b0" * 20),
+               ("documentation/effects_documentation.md", "c0" * 20), ("common/ideas/new.txt", "ee" * 20)]
+        (self.cache / "394361_100.manifest").write_bytes(_depot_manifest(old))
+        (self.cache / "394361_200.manifest").write_bytes(_depot_manifest(new))
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def test_installed_depots_come_from_the_app_manifest(self):
+        self.assertEqual(self.depots.installed_depots(self.game), {"394361": "200", "394362": "7"})
+        self.assertEqual(self.depots.installed_depots(self.game / "missing"), {})
+
+    def test_manifest_files_skip_directories_and_use_forward_slashes(self):
+        files = self.depots.read_manifest(self.cache / "394361_100.manifest")
+        self.assertEqual(sorted(files), ["common/raids/a.txt", "common/raids/b.txt",
+                                         "documentation/effects_documentation.md", "tbb.dll"])
+        self.assertEqual(files["common/raids/a.txt"], "aa" * 20)
+
+    def test_changed_files_and_unavailable_depots(self):
+        caches = self.depots.depot_caches(self.game)
+        changes, notes = self.depots.changed_files({"394361": "100", "394362": "6"},
+                                                   {"394361": "200", "394362": "7"}, caches)
+        self.assertEqual(changes, {"common/raids/b.txt": "changed", "documentation/effects_documentation.md": "changed",
+                                   "common/ideas/new.txt": "added", "tbb.dll": "removed"})
+        self.assertEqual(notes, ["depot 394362: manifest 6, 7 is not in the Steam depot cache"])
+        self.assertEqual(self.depots.changed_files({"394361": "200"}, {"394361": "200"}, caches), ({}, []))
+
+    def test_pages_are_flagged_by_changed_script_sources_not_documentation(self):
+        def page(sources):
+            return (f'# T\n\n<!-- kit:begin id="review" at="top" build="1.19.3.0" checked="2026-10-31" '
+                    f'sources="{sources}" -->\n**Kit review**\n<!-- kit:end id="review" -->\n')
+        pages = {"Raid modding": page("common/raids/ documentation/effects_documentation.md"),
+                 "Effects": page("documentation/effects_documentation.md"),
+                 "Idea modding": page("common/ideas/new.txt")}
+        changes = {"common/raids/b.txt": "changed", "documentation/effects_documentation.md": "changed",
+                   "common/ideas/new.txt": "added"}
+        self.assertEqual(self.status.file_reasons(changes, pages), {
+            "Raid modding": ["source common/raids/: 1 game file(s) changed"],
+            "Idea modding": ["source common/ideas/new.txt: 1 game file(s) changed"]})
+
+
 class StatusNameTests(unittest.TestCase):
     def test_pages_are_found_by_title_stem_or_file_name(self):
         status = _load("wiki_status")
