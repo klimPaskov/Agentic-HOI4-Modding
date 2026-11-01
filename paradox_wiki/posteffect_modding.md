@@ -69,7 +69,7 @@ posteffect_values = {
 
 `standard` sets `lut = "gfx/world/colorcorrection.tga"`, `BLOOM_WIDTH = 1.5`, `BLOOM_SCALE = 0.9`, `BRIGHT_THRESHOLD = 0.9` and `tonemap_middlegrey = 0.55`; the other entries inherit these and change what they list. The bloom keys are written in capitals, the others in lower case. [vanilla-confirmed 1.19.3] `gfx/posteffect_volumes.txt`
 
-All 17 distinct `lut` files in vanilla are uncompressed 24-bit `.tga` images of 1024 by 32 pixels (a 32 step colour cube laid out in one strip). The 32 step reading is an inference from the size. [vanilla-confirmed 1.19.3] `gfx/world/colorcorrection*.tga`. [unverified] for the layout.
+All 17 distinct `lut` files in vanilla are uncompressed 24-bit `.tga` images of 1024 by 32 pixels (a 32 step colour cube laid out in one strip). The 32 step reading is an inference from the size. [vanilla-confirmed 1.19.4.1] `gfx/world/colorcorrection*.tga`, 17 of 17 (TGA header type 2, 24 bits per pixel). [unverified] for the layout.
 
 ```text
 posteffect_values = {
@@ -140,7 +140,7 @@ posteffect_volumes = {
 **Kit note** Facts about the 27 vanilla `posteffect_volume` blocks. All rows: [vanilla-confirmed 1.19.3] `gfx/posteffect_volumes.txt`.
 
 - All 27 set `name`, `posteffect_values_day`, `posteffect_values_night`, `position`, `size` and `fade_distance`. The two winter keys are optional: `posteffect_values_day_winter` is set in 14, `posteffect_values_night_winter` in 13.
-- `position` and `size` are written on one line with three numbers: `position = { 1900.0 300.0 800.0 }`, `size = { 500.0 800.0 400.0 }`. The numbers are map coordinates; see [Map modding](<map_modding.md#Coordinate_system>) for the axes. The middle number is the height axis in vanilla (300 centre, 800 size). [unverified] `gfx/posteffect_volumes.txt`
+- `position` and `size` are written on one line with three numbers: `position = { 1900.0 300.0 800.0 }`, `size = { 500.0 800.0 400.0 }`. The numbers are map coordinates; see [Map modding](<map_modding.md#Coordinate_system>) for the axes. [vanilla-confirmed 1.19.4.1] `gfx/posteffect_volumes.txt`, 27 of 27 with three numbers each. The middle number is the height axis in vanilla (300 centre, 800 size). [unverified] `gfx/posteffect_volumes.txt`
 - `fade_distance` ranges from 30.0 to 300.0 in the position volumes; the most common values are 75.0 (5 volumes) and 200.0 (4 volumes).
 - `name` is written bare (`Brazil`) or quoted (`"Base Highest"`).
 
@@ -159,7 +159,7 @@ posteffect_volume = {
 
 Vanilla volume. [vanilla-confirmed 1.19.3] `gfx/posteffect_volumes.txt`
 
-Three vanilla volumes name values that no `posteffect_values` block defines: `south_Asia` uses `posteffect_values_night_winter = blue`, and `japan` and `australia` use `posteffect_values_day_winter = winter_values`. Vanilla ships these dangling references. [vanilla-confirmed 1.19.3] `gfx/posteffect_volumes.txt`. That suggests an unknown name is tolerated, but what it falls back to is not stated, so use only names you have defined. The exe has the message "No posteffect_values_day scripted for %s". [unverified] `hoi4.exe`
+Three vanilla volumes name values that no `posteffect_values` block defines: `south_Asia` uses `posteffect_values_night_winter = blue`, and `japan` and `australia` use `posteffect_values_day_winter = winter_values`. Vanilla ships these dangling references. [vanilla-confirmed 1.19.4.1] `gfx/posteffect_volumes.txt`, still 3 volumes. That suggests an unknown name is tolerated, but what it falls back to is not stated, so use only names you have defined. The exe has the message "No posteffect_values_day scripted for %s". [unverified] `hoi4.exe`
 <!-- kit:end id="posteffect-position-notes" -->
 
 ### Height Volume <a id="Height_Volume"></a>
@@ -200,7 +200,7 @@ posteffect_volumes = {
 
 All rows: [vanilla-confirmed 1.19.3] `gfx/posteffect_volumes.txt`.
 
-The `height` values match the camera zoom, as the names `max_distance` and `mid_distance` suggest. [unverified] `gfx/posteffect_volumes.txt`
+The `height` values match the camera zoom, as the names `max_distance` and `mid_distance` suggest. No game file states this and it is untested. [unverified] `gfx/posteffect_volumes.txt`
 <!-- kit:end id="posteffect-height-notes" -->
 
 ## Tips <a id="Tips"></a>
@@ -212,7 +212,7 @@ You can reload posteffects by using `reload posteffectvolumes` in the console.
 <!-- kit:begin id="posteffect-console" at="section:Tips" -->
 **Kit note** The console commands named above are booleans that the documentation marks as unavailable in a release build: `PostEffectVolumes.Enabled` and `PostEffectVolumes.Draw`. A third command, `PostEffectVolumes.Default <posteffect_values name>`, "toggles default posteffect values" and is not mentioned by the page. [docs] `documentation/console_commands_documentation.md`
 
-The first lines of `gfx/posteffect_volumes.txt` are comments that list `##reload posteffectvolumes`, `#PostEffectVolumes.Enabled` and `#PostEffectVolumes.Draw`. A `reload posteffectvolumes` command is not in the console documentation. [vanilla-confirmed 1.19.3] `gfx/posteffect_volumes.txt`. [unverified] that the reload command exists.
+The first lines of `gfx/posteffect_volumes.txt` are comments that list `##reload posteffectvolumes`, `#PostEffectVolumes.Enabled` and `#PostEffectVolumes.Draw`. A `reload posteffectvolumes` command is not in the console documentation, which lists only `PostEffectVolumes.Default`, `.Draw` and `.Enabled` (all "not available in release build"). [vanilla-confirmed 1.19.4.1] `gfx/posteffect_volumes.txt`. [docs] `documentation/console_commands_documentation.md`. [unverified] that the reload command exists.
 <!-- kit:end id="posteffect-console" -->
 
 ---

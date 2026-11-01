@@ -136,7 +136,7 @@ Triggers, all in country scope. [docs] `documentation/triggers_documentation.md`
 
 Vanilla uses `has_doctrine` in 16 files, `has_mastery_level` in 3, `has_completed_track` in 2 (including `common/achievements.txt`), `has_completed_subdoctrine` and `has_subdoctrine_in_track` in 1 each, and `has_any_grand_doctrine` and `has_mastery` in none. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
 
-The documentation also lists the trigger `land_doctrine_level` ("checks researched land doctrine level"). No vanilla file uses it, and whether it still returns anything now that doctrines are not technologies is not confirmed. [docs] `documentation/triggers_documentation.md` [unverified]
+The documentation also lists the trigger `land_doctrine_level` ("checks researched land doctrine level"). No vanilla file uses it. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`, `interface/`, `localisation/`. Whether it still returns anything now that doctrines are not technologies is not confirmed. [docs] `documentation/triggers_documentation.md` for the trigger entry, [unverified] for the return value
 <!-- kit:end id="doctrine-effects-triggers" -->
 
 ## Folders <a id="Folders"></a>
@@ -298,7 +298,7 @@ What vanilla does. [vanilla-confirmed 1.19.4.1] `common/doctrines/subdoctrines/`
 - `mastery` overrides exist in 10 subdoctrines: the 8 special forces ones (`multiplier = 6`, `categories`), `light_task_forces` (`multiplier = 2`, `sub_units`) and `mounted_infantry` (`categories` only).
 - Subdoctrine `effect` blocks hold `add_tech_bonus` (`category` such as `motorized_equipment`, `rocketry`, `helicopter_tech`, `support_tech`, `cat_heavy_armor`) and `unlock_subunit`.
 
-The sprite `GFX_mastery_reward_icons` has 10 frames in `interface/doctrines/doctrines.gfx`. If that is the default reward strip, it covers 5 rewards and a sixth reward would need `reward_gfx`. [vanilla-confirmed 1.19.3] for the frame count, [unverified] for the inference.
+The sprite `GFX_mastery_reward_icons` has 10 frames in `interface/doctrines/doctrines.gfx`. The documentation says a `reward_gfx` strip holds frames 1 to X for rewards 1 to X and X+1 to 2X as the grayed copies. [docs] `common/doctrines/subdoctrines/_documentation.md`. Vanilla has 94 subdoctrines with 5 rewards and 1 with 4, none sets `reward_gfx`, and the doctrine window's `reward_level_icon` uses `GFX_mastery_reward_icons`. [vanilla-confirmed 1.19.4.1] `common/doctrines/subdoctrines/`, `interface/doctrines/doctrines.gfx`, `interface/doctrines/doctrines_view.gui`. That the engine reads this strip as 5 rewards plus 5 grayed copies is [unverified].
 
 Localisation: `SUBDOCTRINE_<NAME>` and `SUBDOCTRINE_<NAME>_DESC` for the subdoctrine, then one key per reward. The documentation's TODO note mentions a `_desc` suffix for rewards; the reward keys checked in vanilla have only the name key. [vanilla-confirmed 1.19.3] `localisation/english/doctrines_l_english.yml`
 <!-- kit:end id="doctrine-subdoctrines" -->
@@ -348,7 +348,7 @@ Localisation and sprites at a glance. [vanilla-confirmed 1.19.4.1] `localisation
 <!-- kit:begin id="doctrine-example" at="bottom" -->
 ## Kit: Minimal grand doctrine with one track and one subdoctrine <a id="kit-doctrine-example"></a>
 
-**Kit addition** A working shape for a new land grand doctrine, built from vanilla ids and sprites so it needs no new art. Structure and keys follow the vanilla files and the documentation. The three rewards are fewer than any vanilla subdoctrine has (4 or 5), so whether the game accepts them was not observed; add rewards up to 5 to match vanilla. [vanilla-confirmed 1.19.4.1] `common/doctrines/`; [docs] the five `_documentation.md` files under `common/doctrines/`; the reward count [unverified]
+**Kit addition** A working shape for a new land grand doctrine, built from vanilla ids and sprites so it needs no new art. Structure and keys follow the vanilla files and the documentation. The three rewards are fewer than any vanilla subdoctrine has (4 or 5), so whether the game accepts them was not observed; add rewards up to 5 to match vanilla. [vanilla-confirmed 1.19.4.1] `common/doctrines/` (94 of 95 vanilla subdoctrines have 5 rewards, 1 has 4); [docs] the five `_documentation.md` files under `common/doctrines/`; that 3 rewards are accepted [unverified]
 
 ```text
 # common/doctrines/grand_doctrines/my_doctrines.txt

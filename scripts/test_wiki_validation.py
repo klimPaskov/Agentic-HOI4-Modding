@@ -115,6 +115,21 @@ class KitBlockTests(unittest.TestCase):
             self.assertIn("kit_label", output.getvalue())
             self.assertIn("kit_block", output.getvalue())
 
+    def test_verify_rejects_malformed_evidence_tags(self):
+        page, _ = self.merged()
+        with tempfile.TemporaryDirectory() as directory:
+            for tag, problems in (("[vanilla-confirmed 1.19.4.1]", 0),
+                                  ("[game-tested 1.19.4.1] in a 1936 GER start", 0),
+                                  ("[vanilla-confirmed 1.19.4.1 `common/operations/`]", 1),
+                                  ("[vanilla-confirmed]", 1)):
+                Path(directory, "example.md").write_text(
+                    page.replace("**Kit note** about First.", f"**Kit note** about First. {tag}"),
+                    encoding="utf-8")
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    MODULE.verify(directory)
+                self.assertEqual(output.getvalue().count("[evidence_tag]"), problems, tag)
+
 
 REVIEW = (
     '<!-- kit:begin id="review" at="top" build="none" checked="never" -->\n'

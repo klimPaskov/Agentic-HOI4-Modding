@@ -165,7 +165,7 @@ entity = {
 
 [vanilla-confirmed 1.19.3] `gfx/entities/buildings.asset`
 
-What the engine copies on `clone`, and what `version` selects, is not stated in any game file. [unverified] `gfx/entities/units_vehicles.asset`
+No game documentation file and no comment in `gfx/entities/` explains `clone` or `version`. [vanilla-confirmed 1.19.4.1] `documentation/*.md`, `gfx/entities/*.asset`. What the engine copies on `clone`, and what `version` selects, is untested. [unverified] `gfx/entities/units_vehicles.asset`
 
 A larger vanilla entity with attached sub-entities and a propagated state:
 

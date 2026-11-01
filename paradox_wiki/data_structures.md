@@ -2,7 +2,7 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Data structures", revision 103616, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="103616" sources="documentation/dynamic_variables_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md documentation/script_concept_documentation.md documentation/script_math_functions.md documentation/script_collection_input.md documentation/script_collection_operator.md documentation/loc_formatter_documentation.md common/script_constants/ common/country_tag_aliases/ common/scorers/ common/mtth/ common/modifier_definitions/ common/defines/ common/factions/goals/ common/unit_leader/ localisation/english/" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="103616" sources="documentation/dynamic_variables_documentation.md interface/core.gfx documentation/effects_documentation.md documentation/triggers_documentation.md documentation/script_concept_documentation.md documentation/script_math_functions.md documentation/script_collection_input.md documentation/script_collection_operator.md documentation/loc_formatter_documentation.md common/script_constants/ common/country_tag_aliases/ common/scorers/ common/mtth/ common/modifier_definitions/ common/defines/ common/factions/goals/ common/unit_leader/ localisation/english/" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the effect, trigger, dynamic variable, script concept, math function, collection and formatter documentation, plus vanilla script and English localisation for usage counts.
 Kit blocks added: script constants, define files, flag types (corrects the five-scope list), event-target commands, tag alias rules, `hidden_trigger` evaluation, variable tooltips (corrects "check_variable has no tooltip"), variable format codes, bindable localisation, operator additions (`randomize_variable`), math expression rules, modifier token defaults, a collections pointer, loop and array defaults, scorer notes (corrects an example), and the 41 dynamic variables the page never named.
 Gaps left: the lifetime rule for regular event targets, `clear_global_event_targets`, `days_left`, the `id` rows and the conscription rows cannot be confirmed from the docs and stay `[unverified]`. The 1.12 list of tokenizable types and the variable range text were not re-checked. Inventory code keys such as `fascom_pop`, `CAN_beavers` and `flag_counter` are page-local example names; `pow`, `sin`, `print_global`, `var_list` and `scores` are real keys of the math functions, `print_variables` and `get_sorted_scored_countries`; `majors_owned_states` is corrected below.
@@ -660,7 +660,7 @@ This is the effect itself. Within localisation, this would be done:
 | `modulo_variable` | 3 | 0 | 0 |
 | `clamp_variable` | 272 | 0 | 0 |
 
-- The operator table above lists `tooltip` for `multiply_variable`, `divide_variable` and `modulo_variable`. The docs do not list it there and no vanilla block uses it, so it is [unverified] for those three.
+- The operator table above lists `tooltip` for `multiply_variable`, `divide_variable` and `modulo_variable`. The docs do not list it there [docs] `documentation/effects_documentation.md`, and no vanilla block uses it (0 of 492, 161 and 3 blocks, temp forms included) [vanilla-confirmed 1.19.4.1] `common/`. Whether the engine accepts it there is [unverified].
 - The example on this page uses `tooltip = add_cats_to_dogs_tt` but defines the key `add_cat_to_dogs_tt`. The two spellings differ, so copy one spelling into both places. [unverified]
 - `$LEFT$` and `$RIGHT$` take the same pipe codes as `[?var|code]`. Vanilla writes `$RIGHT|+=%1$` 288 times, `$RIGHT|-=%1$` 81 times and `$RIGHT|0Y$` 5 times. `$LEFT` appears on only 8 lines in 6 files, `$RIGHT` on 525 lines in 16 files. [vanilla-confirmed 1.19.4.1] `localisation/english/`
 <!-- kit:end id="variable-tooltip-correction" -->
@@ -686,7 +686,7 @@ This is the effect itself. Within localisation, this would be done:
 | `+%0` | 3 | 1 |
 
 - The digit, the colour letter and the sign or percent symbol can come in either order (`%G0` and `%0G`, `H0` and `0H`). [vanilla-confirmed 1.19.4.1] `localisation/english/`
-- The colour letter `H` is common in vanilla but the table above does not explain it, so its meaning is [unverified]. The exact code `%+0` does not occur in 1.19.4.1 vanilla `[?variable|code]` references; `+0`, `%+` and `+%0` do.
+- The colour letter `H` is common in vanilla (19 references) but the table above does not explain it. It is the header colour: `interface/core.gfx` gives `H` the same yellow as `Y` and comments it "Header". [vanilla-confirmed 1.19.4.1] `interface/core.gfx`. The exact code `%+0` does not occur in 1.19.4.1 vanilla `[?variable|code]` references; `+0`, `%+` and `+%0` do.
 <!-- kit:end id="variable-format-codes" -->
 
 <!-- kit:begin id="bindable-localisation" at="section:Localisation" -->

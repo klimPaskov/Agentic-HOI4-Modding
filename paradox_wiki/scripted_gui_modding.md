@@ -176,9 +176,9 @@ guiTypes = {
 
 - The `parent_window_token` list above is complete and exact: the documentation lists the same 30 tokens, from `top_bar` to `tech_industry_folder`. [docs] `common/scripted_guis/_documentation.md`.
 - Without a parent, the GUI is attached to the main window, unless the context type overrides that. [docs] `common/scripted_guis/_documentation.md`.
-- The documentation spells the container-name key `parent_window_window = "container_name"` and adds "may not work". The string `parent_window_window` does not occur in `hoi4.exe`, while `parent_window_name` does, so the wiki's `parent_window_name` is the key to write and the documentation spelling is probably a slip. [docs] `common/scripted_guis/_documentation.md`. [unverified]
+- The documentation spells the container-name key `parent_window_window = "container_name"` and adds "may not work". The string `parent_window_window` does not occur in `hoi4.exe`, while `parent_window_name` does, so the wiki's `parent_window_name` is the key to write and the documentation spelling is probably a slip. [docs] `common/scripted_guis/_documentation.md`. The executable strings do not show which key the engine reads. [unverified] `hoi4.exe`
 - Two keys are missing from the wiki: `parent_scripted_gui = "<scripted gui name>"` attaches a scripted GUI to another scripted GUI (the documentation comment says "container_name" but describes the scripted GUI case), and `map_mode = <map mode>` makes the GUI show only in that map mode. [docs] `common/scripted_guis/_documentation.md`.
-- No vanilla scripted GUI sets a parent key, so the `_instance` suffix rule for nested containers is a claim of the wiki that cannot be checked in the game files. [vanilla-confirmed 1.19.4.1] 0 of 19 scripted GUIs use `parent_window_token` or `parent_window_name`. [unverified]
+- No vanilla scripted GUI sets a parent key, so the `_instance` suffix rule for nested containers is a claim of the wiki that cannot be checked in the game files. [vanilla-confirmed 1.19.4.1] 0 of 19 scripted GUIs use `parent_window_token` or `parent_window_name`, and none uses `parent_window_window` or `parent_scripted_gui` either. The `_instance` rule is untested. [unverified]
 <!-- kit:end id="sg-parent-keys" -->
 
 ## Context <a id="Context"></a>
@@ -553,7 +553,7 @@ These attributes determine when the AI checks the scripted GUI.
 As such, an interval of 100 with a variance of 0.2 will make the AI check every 90 to 110 hours (100±`[10% of 100, which is 10]`).
 
 <!-- kit:begin id="sg-ai-attribute-notes" at="section:AI_Test_Attributes" -->
-**Kit note** The two sources disagree on `ai_test_variance`. The documentation example sets `ai_test_interval = 24` and `ai_test_variance = 24` under the comment "ai test interval & variance in hours", while this page describes the variance as a fraction with default 0.2. [docs] `common/scripted_guis/_documentation.md`. No vanilla scripted GUI sets either attribute, so the unit cannot be settled from the game files; write both `ai_test_interval` and `ai_test_variance` explicitly and check the result in `scripted_ai.log`. [unverified]
+**Kit note** The two sources disagree on `ai_test_variance`. The documentation example sets `ai_test_interval = 24` and `ai_test_variance = 24` under the comment "ai test interval & variance in hours", while this page describes the variance as a fraction with default 0.2. [docs] `common/scripted_guis/_documentation.md`. No vanilla scripted GUI sets either attribute (0 of 19), so the unit cannot be settled from the game files. [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`. Write both `ai_test_interval` and `ai_test_variance` explicitly and check the result in `scripted_ai.log`. Which unit the variance uses is untested. [unverified]
 <!-- kit:end id="sg-ai-attribute-notes" -->
 
 ### AI Check <a id="AI_Check"></a>
@@ -653,7 +653,7 @@ ai_weights = {
 ai_max_weight_taken_per_test = 100
 ```
 
-`weight` is the weight of the option, `ignore_lower_weights = yes` makes the AI skip options of lower weight, and `ai_max_weight_taken_per_test` stops the AI from clicking more buttons once that weight is reached. The block form `ignore_lower_weights = { factor = <float> }` in the template below, and the sentences above that attach `weight` and `ignore_lower_weights` to `ai_will_do`, have no counterpart in the documentation. [docs] `common/scripted_guis/_documentation.md`. Whether the engine also accepts the wiki forms is unknown. [unverified]
+`weight` is the weight of the option, `ignore_lower_weights = yes` makes the AI skip options of lower weight, and `ai_max_weight_taken_per_test` stops the AI from clicking more buttons once that weight is reached. The block form `ignore_lower_weights = { factor = <float> }` in the template below, and the sentences above that attach `weight` and `ignore_lower_weights` to `ai_will_do`, have no counterpart in the documentation. [docs] `common/scripted_guis/_documentation.md`. Whether the engine also accepts the wiki forms is untested. [unverified]
 
 **Kit note** The `ai_will_do` inside an entry is a normal AI value block: the documentation example uses `base` with a `modifier` that carries `add`. No vanilla scripted GUI has an `ai_weights` block. [docs] `common/scripted_guis/_documentation.md`. [vanilla-confirmed 1.19.4.1] 0 of 19.
 <!-- kit:end id="sg-ai-weights-notes" -->
@@ -663,7 +663,7 @@ ai_max_weight_taken_per_test = 100
 You can define an AI parent that means the AI for different scripted GUIs is processed together. This is useful if different GUIs may use resources that another would deplete, and so by processing the AI together, the actions can be properly limited.
 
 <!-- kit:begin id="sg-ai-parent-notes" at="section:AI_Parents" -->
-**Kit note** The key that sets an AI parent is `ai_test_parent` in the wiki template. The documentation does not list it; the string is present in `hoi4.exe`. [unverified] The documented key for attaching one scripted GUI to another is `parent_scripted_gui`, which concerns the window, not the AI. [docs] `common/scripted_guis/_documentation.md`.
+**Kit note** The key that sets an AI parent is `ai_test_parent` in the wiki template. The documentation does not list it and no vanilla scripted GUI uses it. [vanilla-confirmed 1.19.4.1] `common/scripted_guis/_documentation.md`, `common/scripted_guis/*.txt`. The string is present in `hoi4.exe`, and the key is untested. [unverified] The documented key for attaching one scripted GUI to another is `parent_scripted_gui`, which concerns the window, not the AI. [docs] `common/scripted_guis/_documentation.md`.
 <!-- kit:end id="sg-ai-parent-notes" -->
 
 ## Template <a id="Template"></a>
@@ -772,7 +772,7 @@ scripted_gui = {
 | `ai_weights`, `ai_max_weight_taken_per_test` | docs, wiki | 0 |
 | `ai_test_parent` | wiki, `hoi4.exe` | 0 |
 
-The "Source" column: [docs] `common/scripted_guis/_documentation.md`, [unverified] where `hoi4.exe` is named. The "Vanilla" column: [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`.
+The "Source" column: [docs] `common/scripted_guis/_documentation.md`, [unverified] where `hoi4.exe` is named (an executable string, so the row is not settled). The "Vanilla" column: [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`.
 <!-- kit:end id="sg-template-keys" -->
 
 ## Scripted Localization <a id="Scripted_Localization"></a>
@@ -804,11 +804,11 @@ Scripted effects and triggers can be used in scripted GUIs, and can be useful to
 <!-- kit:begin id="sg-tips-notes" at="section:Tips" -->
 **Kit note** Console commands for working on scripted GUIs. All bullets: [docs] `documentation/console_commands_documentation.md`.
 
-- `human_ai` toggles AI for human countries. The page says it writes the AI checks to `scripted_ai.log`; that file name appears in `hoi4.exe` but not in the documentation. [unverified]
+- `human_ai` toggles AI for human countries. The page says it writes the AI checks to `scripted_ai.log`; that file name appears in `hoi4.exe` but not in the documentation. [docs] `documentation/console_commands_documentation.md` says only "Toggles AI for Human countries". The log write is untested. [unverified]
 - `reloadinterface` reloads the entire interface, which picks up edits to `interface/*.gui` without a restart. See [Console commands](<console_commands.md>).
 - `dbg_enable_scripted_gui <scope>` enables scripted GUIs and is not available in the release build. `guibounds` (alias `gui`) toggles GUI bounds debugging and `debug_nogui` toggles the whole GUI.
 
-The statement that event targets cannot be used in scripted GUIs is not in the documentation, and vanilla scripted GUIs contain no script that would test it. [unverified]
+The statement that event targets cannot be used in scripted GUIs is not in the documentation, and vanilla scripted GUIs contain no script that would test it (0 of 19 use `event_target`). [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`. Whether event targets work there is untested. [unverified]
 <!-- kit:end id="sg-tips-notes" -->
 
 ## See also <a id="See_also"></a>

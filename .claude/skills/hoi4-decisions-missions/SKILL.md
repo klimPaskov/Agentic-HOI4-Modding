@@ -286,7 +286,7 @@ The installed vanilla `common/decisions/_documentation.md` defines how often eac
 - The `highlight_color_*` values index the 15-entry define `BORDER_COLOR_CUSTOM_HIGHLIGHTS`, not 0 to 3. [vanilla-confirmed 1.19.4.1]
 - `visible_when_empty` is used in 45 vanilla files but is undocumented. [vanilla-confirmed 1.19.4.1]
 - The wiki example name `has_command_power` does not exist, because the trigger is `command_power`. [docs] [vanilla-confirmed 1.19.4.1]
-- A `cost` on a mission that is not selectable logs "Cost for normal missions not implemented", and all 3 vanilla costed missions are selectable. [unverified]
+- All 3 vanilla costed missions are selectable. [vanilla-confirmed 1.19.4.1] A `cost` on an unselectable mission logs "Cost for normal missions not implemented". [unverified]
 
 ## 8. Mission quality
 

@@ -57,7 +57,7 @@ sound = {
 
 A `sound` and a `soundeffect` may share a name. `click_default` is both a `sound` (in `sound/sound.asset`) and a `soundeffect` that plays it (in `sound/gui/gui_sound_effects.asset`). All sound names in `soundeffect` blocks resolve to a `sound`. [vanilla-confirmed 1.19.3] `sound/sound.asset`, `sound/gui/gui_sound_effects.asset`
 
-Nine vanilla `sound` entries name `.wav` files that are not in the folder, for example `audiofiles/building_large_fall_slow_01.wav` (the folder has `building_large_fall_slow_01_01.wav`). The game ships with them, so a wrong path does not stop the game; keep paths exact anyway. [vanilla-confirmed 1.19.3] `sound/sound.asset`, `sound/audiofiles/`. That a wrong path is harmless in general is an inference. [unverified] `sound/sound.asset`
+Nine vanilla `sound` entries name `.wav` files that are not in the folder, for example `audiofiles/building_large_fall_slow_01.wav` (the folder has `building_large_fall_slow_01_01.wav`). The game ships with them, so a wrong path does not stop the game; keep paths exact anyway. [vanilla-confirmed 1.19.4.1] 9 `file` lines point at missing files: 5 in `sound/sound.asset` (under `animations/` and `nsb_wavs/`) and 4 in `sound/building_destroyed.asset` (the `building_large_fall_slow_01` to `_04` ones), checked against the `sound/` folder. No DLC `sound/` folder has a missing file. That a wrong path is harmless in general is an inference and is untested. [unverified] `sound/sound.asset`
 
 ```text
 sound = {

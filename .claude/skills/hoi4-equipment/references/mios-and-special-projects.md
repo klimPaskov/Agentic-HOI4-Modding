@@ -8,7 +8,7 @@ Engine facts for the two production systems that sit next to equipment. Read the
 - Negative values of `production_cost_factor`, `production_resource_need_factor` and `production_resource_penalty_factor` are savings (83 of 93 vanilla uses). [vanilla-confirmed 1.19.4.1]
 - Every bonus a MIO trait uses needs an entry in the `default` block of `ai_bonus_weights.txt`, or the game logs an error. [docs]
 - `naval_supremacy_factor` does not exist; the stat is `naval_dominance_factor`, and `organization_bonus` is `organization_modifier`. [docs]
-- `ENABLE_TASK_CAPACITY` is false in the vanilla defines, so MIO task capacity likely has no effect by default. [unverified]
+- `ENABLE_TASK_CAPACITY` is false in vanilla [vanilla-confirmed 1.19.4.1]; task capacity may then do nothing. [unverified]
 - `set_mio_funds` does not exist in 1.19.3. [docs]
 
 ## Special projects

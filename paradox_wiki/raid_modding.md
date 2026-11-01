@@ -6,7 +6,7 @@
 <!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" sources="common/raids/ common/defines/00_defines.lua common/ai_strategy/ common/on_actions/ documentation/effects_documentation.md documentation/triggers_documentation.md documentation/console_commands_documentation.md interface/military_raids/ interface/buildings/landmarks.gfx localisation/english/military_raids_l_english.yml gfx/entities/" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Written from: `common/raids/_documentation.md` (read in full), all 8 vanilla raid files (37 raid types) and the category file (5 categories), the `NRaids` and `NAI` defines, the RAID_INSTANCE effect and trigger documentation, raid localisation, raid GFX and entities. Every rule taken from the kit's `hoi4-native-raids` skill was re-checked against these files and is tagged where it appears.
 Also checked: whether `hoi4.exe` contains the keys on which the documentation and vanilla disagree (read-only string search).
-Gaps left: how the three success factors become four outcomes, the meaning of `range_factor` and `cancel_trigger` (undocumented), and the scope a `target_type` state filter runs in are not settled by any game file; they are tagged `[unverified]`. No game was run.
+Gaps left: how an unsuccessful roll splits between `failure` and `limited_success`, the meaning of `range_factor` and `cancel_trigger` (undocumented), and the scope a `target_type` state filter runs in are not settled by any game file; they are tagged `[unverified]`. No game was run.
 **1.19.4.1 re-check (2026-11-01).** 59 tagged lines depended on files the update changed (five raid files, defines, raid localisation, a few other script files, `hoi4.exe` strings) and all were re-measured. Changed: the nuclear raid gate uses the flag `early_nuclear_raid_unlock` instead of `num_of_nukes > 0`, `ai_min_success_chance` 2 -> 4 types, `unit_animations` 5 -> 9 types, custom modifiers with `formula` 13 -> 14, the unlock tooltips now sit in `military_raids_l_english.yml`, and `raid_land_launchable_sound` joins the launch sounds. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
@@ -98,7 +98,7 @@ A category is `<category_id> = { ... }` in `raids/categories/`. Keys: [docs] `ra
 | `visible` | country trigger | whether the category is shown | 4 of 5 |
 | `available` | country trigger | whether the category is active | 4 of 5 |
 | `free_targeting` | yes | the UI lets the player aim any province; raid types in the category still need `province = any` | 1 (`nuclear_raids`) |
-| `faction_influence_score_on_success` | number | not documented; the key is a string in `hoi4.exe`; by its name it feeds faction influence on success [unverified] | 5 of 5: air 200, paratrooper 100, nuclear -100, land 50, naval 50 |
+| `faction_influence_score_on_success` | number | not documented; set in 5 of 5 categories [vanilla-confirmed 1.19.4.1] `raids/categories/raid_categories.txt`; the key is a string in `hoi4.exe`; by its name it feeds faction influence on success [unverified] | 5 of 5: air 200, paratrooper 100, nuclear -100, land 50, naval 50 |
 
 | Category | `intel_source` | Gate in vanilla |
 | --- | --- | --- |
@@ -127,8 +127,8 @@ A raid type is `<raid_type_id> = { ... }` inside `types = { }`. Meanings: [docs]
 | `available` | trigger | being able to prepare the raid | 36 |
 | `launchable` | trigger | being able to start a prepared raid | 27 |
 | `launchable_from` | trigger, scope = country controlling the starting point (base, fleet) | optional | 0 |
-| `cancel_trigger` | trigger | not documented; the string is in `hoi4.exe`; vanilla uses `NOT = { has_country_flag = ... }`, so the raid is probably canceled while it is true [unverified] | 2 |
-| `fire_only_once` | yes or no | the raid can be executed once; default no [unverified] | 23 (16 yes, 7 no) |
+| `cancel_trigger` | trigger | not documented; the string is in `hoi4.exe`; vanilla uses `NOT = { has_country_flag = ... }` in 2 of 2 [vanilla-confirmed 1.19.4.1] `raids/naval_commando_raids.txt`; whether the raid is canceled while the trigger is true or while it is false is [unverified] | 2 |
+| `fire_only_once` | yes or no | the raid can be executed once [docs]; that the default is no is [unverified] | 23 (16 yes, 7 no) |
 | `days_re_enable` | days | wait before the same target can be raided again; 0 means no cooldown; default `RAID_DEFAULT_TARGET_COOLDOWN_DAYS = 365` | 5 (0, 0, 0, 60, 120) |
 
 Scopes [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.4.1] `raids/*.txt`:
@@ -142,7 +142,7 @@ Scopes [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.4.1] `raids/*.t
 
 | Key | Value | Rule | Vanilla |
 | --- | --- | --- | --- |
-| `days_to_prepare` | days | preparation length; the define `NRaids.BASE_DAYS_TO_PREPARE = 7` is described as the base number of days, and whether it is the default for an omitted key is [unverified] | 37 (30 in 17 types, 90 in 9, 14 and 15 in 7, others 35 to 120) |
+| `days_to_prepare` | days | preparation length; the define `NRaids.BASE_DAYS_TO_PREPARE = 7` is described as the base number of days [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`, and whether it is the default for an omitted key is [unverified] | 37 (30 in 17 types, 90 in 9, 14 and 15 in 7, others 35 to 120) |
 | `command_power` | number | command power allocation cost | 37 (5 to 40; 20 in 12 types) |
 | `speed_multiplier` | number | unit speed factor, default 1, on top of the global `RAID_UNIT_SPEED_MULTIPLIER = 0.1` | 12 (0.08 to 20) |
 | `essential_equipment` | `{ archetype = amount }` | must be in the stockpile to create the raid; collected after creation | 13 |
@@ -151,7 +151,7 @@ Scopes [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.4.1] `raids/*.t
 | `unit_requirements` | repeatable block | a unit that matches any one block may take part | 51 blocks |
 | `starting_point` | block | where the raid starts | 37 |
 | `max_distance` | distance units | hard cap on source-to-target path length; the AI ignores it with `unlimited_ai_range = yes` | 1 (`rescue_captured_general`, 20) |
-| `range_factor` | number | not documented; used with `unlimited_ai_range`; meaning [unverified] | 3 (14 and 20) |
+| `range_factor` | number | not documented; written together with `unlimited_ai_range` in 3 of 3 types [vanilla-confirmed 1.19.4.1]; meaning [unverified] | 3 (14 and 20) |
 
 - `unit_requirements` takes `equipment = { type = { <equipment type> } amount = { min = N max = M } modules = { <module> } }` or `battalion_types = { <sub-unit> = { min = N } }`. Vanilla equipment types: `strategic_bomber` 18, `tactical_bomber` 4, `nuclear_missile_equipment` 4, `strat_bomber_intercontinental_equipment` 2, and one each of `heavy_fighter`, `cas`, `naval_bomber`, `transport_plane_equipment`. Battalion types: `infantry`, `militia`, `paratrooper`, `mountaineers`, `marine`.
 - `essential_equipment` and `additional_equipment` keys are equipment archetypes, the pseudo-entries `nukes` and `convoy` (vanilla `convoy = 40` for marine raids), and the docs add that ship hulls (`ship_hull_light = 5`) are allowed and are taken from existing fleets. Vanilla: `nukes = 1` 6, `convoy = 40` 3, `transport_plane_equipment` 5 or 10 in 4, and `support_equipment` and `infantry_equipment` as additional equipment.
@@ -175,7 +175,7 @@ Scopes [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.4.1] `raids/*.t
 - The documentation also lists `level = { min = X max = Y }` and `is_coastal = yes` inside `building` and `type = <type/tag>`; vanilla never uses `level` or `is_coastal` there, and spells the tag form `tags` [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.4.1].
 - **Needs a game run** [unverified] No game file states the scope a `state = { }` filter runs in, so reading `ROOT` as the acting country is unconfirmed. A run settles it: put `ROOT = { original_tag = <your tag> }` in the filter of a test raid and see whether the list of targets changes with the acting country.
 - A raid hitting a facility with `building = { tags = facility }` ties raids to special projects (see [Raids and special projects](#Raids_and_special_projects)).
-- The scope a `state = { }` filter runs in is not documented. Vanilla writes `is_owned_by = FROM` there in two types, which only makes sense if `FROM` is bound in the filter. A claim that the state is `ROOT` there is [unverified]; do not read the acting country through `ROOT` in a target filter.
+- The scope a `state = { }` filter runs in is not documented. Vanilla writes `is_owned_by = FROM` there in two types [vanilla-confirmed 1.19.4.1] `raids/naval_commando_raids.txt`, `raids/land_infiltration_custom.txt`, which only makes sense if `FROM` is bound in the filter. A claim that the state is `ROOT` there is [unverified]; do not read the acting country through `ROOT` in a target filter.
 - The target name in the UI is `RAID_TARGET_NAME` ("$WHAT in $LOCATION"), or your own key set with `target_loc_key`, which can use `$LOCATION$` [docs] `raids/_documentation.md`, [vanilla-confirmed 1.19.4.1] `localisation/english/military_raids_l_english.yml`.
 
 ### Presentation keys <a id="Presentation_keys"></a>
@@ -238,7 +238,7 @@ Meanings and reference ranges: [docs] `raids/_documentation.md`. Use counts in `
 | `strength` | land unit's strength, 0 to 1 | 12 |
 | `radar` | enemy radar in the region; not in the documentation | 2 (nuclear strike types) |
 
-`radar` has loc keys `success_modifier_radar*`, so it is a real predefined modifier that the documentation omits [vanilla-confirmed 1.19.4.1] `raids/nuclear_raids.txt`, `localisation/english/military_raids_l_english.yml`. The documentation's own example writes `agility`; the predefined name is `air_agility` (a string in `hoi4.exe`, used by 21 vanilla types). What an unknown name does is [unverified].
+`radar` has loc keys `success_modifier_radar*`, so it is a real predefined modifier that the documentation omits [vanilla-confirmed 1.19.4.1] `raids/nuclear_raids.txt`, `localisation/english/military_raids_l_english.yml`. The documentation's own example writes `agility`; the predefined name is `air_agility` [docs] `raids/_documentation.md`, used by 21 of 37 vanilla types [vanilla-confirmed 1.19.4.1]. What an unknown name does is [unverified].
 
 ### Custom modifiers <a id="Custom_modifiers"></a>
 
@@ -529,7 +529,7 @@ Sprites named `GFX_raid_category_small_mod_sabotage_raids` and `GFX_raid_unit_ic
 
 | Trap | What the files show | Evidence |
 | --- | --- | --- |
-| `target_types` (plural) from the documentation template | vanilla uses `target_type` in 37 of 37 types; the plural is not a string in `hoi4.exe` | [vanilla-confirmed 1.19.4.1], string search; that the plural is ignored is [unverified] |
+| `target_types` (plural) from the documentation template | vanilla uses `target_type` in 37 of 37 types; the plural is not a string in `hoi4.exe` | [docs] `raids/_documentation.md` writes the plural, [vanilla-confirmed 1.19.4.1] (0 uses of it, string search); that the plural is ignored is [unverified] |
 | `preparation_time` and `cost` from the template | vanilla uses `days_to_prepare` and `command_power`; `preparation_time` is not a standalone string in `hoi4.exe` | [vanilla-confirmed 1.19.4.1], string search |
 | Writing a type or category without its root block | all vanilla files use `types = { }` or `categories = { }` | [vanilla-confirmed 1.19.4.1]; effect of omitting [unverified] |
 | `agility` from the documentation's success example | the predefined modifier is `air_agility` | [vanilla-confirmed 1.19.4.1] |

@@ -140,7 +140,7 @@ phases = { #infiltration
 - Each `phases = { ... }` block is one slot. It lists candidate phase ids with a `base` weight and any number of `modifier` blocks (`add` or `factor` plus triggers). The game picks one phase per slot. The slots share the duration of the operation evenly. [docs] `common/operations/_documentation.md`.
 - All 39 vanilla operations use exactly three slots, usually infiltration, a middle step and exfiltration. Other counts are allowed by the documentation. [vanilla-confirmed 1.19.4.1] 117 `phases` blocks; [docs].
 - A slot with one candidate and `base = 100` fixes that phase, as the historical operations do (`heavy_water_infiltration`, `heavy_water_attack`, `heavy_water_exfiltration`). [vanilla-confirmed 1.19.3] `LaR_historical_operations.txt`.
-- Candidates whose phase `requirements` fail are invalid; this is checked weekly, and operations whose phases were chosen in advance are re-seeded when one becomes invalid. Keep at least one candidate without requirements in every slot (`infiltration_diplomatic`, `exfiltration_go_to_ground` in vanilla). [docs] `common/operation_phases/_documentation.md`; the advice is [unverified].
+- Candidates whose phase `requirements` fail are invalid; this is checked weekly, and operations whose phases were chosen in advance are re-seeded when one becomes invalid. Keep at least one candidate without requirements in every slot (`infiltration_diplomatic`, `exfiltration_go_to_ground` in vanilla). [docs] `common/operation_phases/_documentation.md`. Neither of those two vanilla phases has a `requirements` block. [vanilla-confirmed 1.19.4.1] `lar_infiltration.txt`, `lar_exfiltration.txt`. Whether a slot with no valid candidate breaks the operation is [unverified].
 - Weights in `modifier` blocks use `factor = 0` to remove a candidate and `factor = 20` to favour it (`infiltration_diplomatic` when nobody is at war). [vanilla-confirmed 1.19.3] `00_operations.txt`.
 - The entries `phase_1`, `phase_2` and `phase_3` of `00_operation_phases.txt` are test placeholders that no operation uses. [vanilla-confirmed 1.19.3] `common/operation_phases/00_operation_phases.txt`.
 
@@ -163,7 +163,7 @@ Root block per phase in `common/operation_phases/*.txt`; the block name is the p
 
 The first nine rows: [docs] `common/operation_phases/_documentation.md`. Counts and `risk_extra`: [vanilla-confirmed 1.19.3] over the 82 phases.
 
-- The seven `risk_extra` users are exfiltration-type phases (four in `lar_exfiltration.txt`, plus `launch_coup_exfiltration`, `heavy_water_exfiltration`, `bruneval_exfiltration`); the values end in `_outcome_fail`. Vanilla never sets `outcome_extra`. Copy the vanilla pattern: `outcome` on every phase, `risk_extra` on exfiltration-style phases. [vanilla-confirmed 1.19.3] `common/operation_phases/lar_exfiltration.txt`; which key the engine shows when is [unverified].
+- The seven `risk_extra` users are exfiltration-type phases (four in `lar_exfiltration.txt`, plus `launch_coup_exfiltration`, `heavy_water_exfiltration`, `bruneval_exfiltration`); the values end in `_outcome_fail`. Vanilla never sets `outcome_extra`. Copy the vanilla pattern: `outcome` on every phase, `risk_extra` on exfiltration-style phases. [vanilla-confirmed 1.19.3] `common/operation_phases/lar_exfiltration.txt`. The docs say `outcome_extra` text is used when a `risk_extra` happened and falls back to `outcome`. [docs] `common/operation_phases/_documentation.md`. How the engine uses `risk_extra`, which vanilla sets in place of `outcome_extra`, is [unverified].
 - A phase is only used when an operation's `phases` blocks name it. Vanilla splits the phases over 16 files by theme (`lar_infiltration.txt`, `lar_exfiltration.txt`, `lar_targeted_sabotage.txt`, ...). [vanilla-confirmed 1.19.3] `common/operation_phases/`.
 
 ## Costs and equipment <a id="Costs_and_equipment"></a>
@@ -186,7 +186,7 @@ Root block per token in `common/operation_tokens/*.txt`. A country can hold only
 | `intel_source`, `intel_gain` | The token raises one intel source (`navy`, `army`, `civilian`, `airforce`) by this amount; one gain per token. | 5, gain 10 (5 for `token_resistance_contacts`) |
 | `targeted_modifier` | Id of a targeted modifier applied to the relation while the token is held. Repeatable. | 0 |
 
-Rows 1 to 2, 4 and 5: [docs]; counts [vanilla-confirmed 1.19.3] `00_OperationTokens.txt`. The shape of a `targeted_modifier` id is not described anywhere. [unverified]
+Rows 1 to 2, 4 and 5: [docs]; counts [vanilla-confirmed 1.19.3] `00_OperationTokens.txt`. The docs only show the placeholder `targeted_modifier_id1` and no vanilla token uses the key. [docs] `common/operation_tokens/_documentation.md`. What a valid `targeted_modifier` id looks like is [unverified].
 
 Vanilla ids: `token_army`, `token_navy`, `token_airforce`, `token_civilian`, `token_resistance_contacts`. [vanilla-confirmed 1.19.3] `00_OperationTokens.txt`.
 
@@ -301,7 +301,7 @@ All rows: [vanilla-confirmed 1.19.3] sizes from the DDS headers of one file per 
 [docs] `documentation/console_commands_documentation.md`. Also in [Console commands](<console_commands.md>).
 
 - `operation_start <operation id> <target tag>` starts an operation; `operation_debug` takes the same arguments; `allowoperations` allows every operation; `operation_test_phase_selection <operation id> <target tag>` tests phase selection; `prevent_operative_detection` stops a country from detecting and harming foreign operatives; `emulate_ai_operative_assignment <tag>` logs what the operative AI would assign this tick. [docs] `documentation/console_commands_documentation.md`.
-- `force_operative_detection` (alias `snitch`), `Operation.Instant` and `print_operation_tokens` have no usable description in the documentation; their effect is read from the name only. [unverified]
+- `force_operative_detection` (alias `snitch`), `Operation.Instant` and `print_operation_tokens` have no usable description in the documentation. [docs] `documentation/console_commands_documentation.md`. Their effect is read from the name only and is [unverified].
 
 ## Minimal example <a id="Minimal_example"></a>
 
@@ -376,7 +376,7 @@ l_english:
 - `outcome_extra_chance` is 0 to 1 in vanilla. A value of 50 as in the doc example is not confirmed to work. [vanilla-confirmed 1.19.4.1] values in `common/operations/`.
 - `outcome_potential` must match what `outcome_execute` does, or the tooltip lies. Effects run only from `outcome_execute`. [docs]
 - Open a country scope before country effects. Vanilla outcomes use `ROOT = {}`, `FROM = {}`, `FROM.FROM = {}` (the state) or a tag such as `GER = {}`; `every_state` and `random_list` also appear directly. [vanilla-confirmed 1.19.4.1] top-level entries of the outcome blocks in `common/operations/`.
-- A slot whose candidates all have failing requirements has no valid phase. Give each slot a candidate without requirements. [unverified] from the phase documentation.
+- A slot whose candidates all have failing requirements has no valid phase. Give each slot a candidate without requirements. The docs say a phase whose `requirements` fail is invalid. [docs] `common/operation_phases/_documentation.md`. What happens when every candidate of a slot is invalid is [unverified].
 - The two `operation_targeted_sabotage_industry` and `_infrastructure` blocks with swapped risk and outcome modifier lists look like a vanilla slip; do not copy them. [vanilla-confirmed 1.19.3] `00_operations.txt` lines 2136 to 2138 and 2267 to 2269.
 - `FROM.FROM` is only set when the operation has a `selection_target`. [docs] `common/operations/_documentation.md`
 

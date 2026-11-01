@@ -51,7 +51,7 @@ Note that for many assets, such as technology and equipment asset definitions, t
 
 All rows: [vanilla-confirmed 1.19.4.1] `interface/countrypoliticsview.gfx`, `interface/mapicons.gfx`, `interface/countryintelledger.gfx`, `interface/countrydiplomacyview.gfx`.
 
-`progressBarType` with a capital B appears in 4 blocks of `interface/powerbalanceview.gfx` with the same keys as `progressbartype` minus the colours; it is probably the same keyword. [unverified] `interface/powerbalanceview.gfx`
+`progressBarType` with a capital B appears in 4 blocks of `interface/powerbalanceview.gfx` with the same keys as `progressbartype` minus the colours; it is probably the same keyword. [vanilla-confirmed 1.19.4.1] 4 of 4 blocks, and no other `.gfx` or `.gui` file writes this spelling, `interface/powerbalanceview.gfx`. That it is the same keyword is untested. [unverified]
 
 Sprite files are not only `interface/*.gfx`. Vanilla also uses `interface/building_roster/`, `interface/buildings/`, `interface/career_profile/`, `interface/doctrines/`, `interface/factions/`, `interface/international_market/`, `interface/military_industrial_organization/`, `interface/military_raids/`, `interface/pdx_online/`, `interface/special_projects/` and the `interface/` folder of 12 of the 16 DLC folders (`dlc/*/` and `integrated_dlc/*/`). [vanilla-confirmed 1.19.4.1] `interface/`
 <!-- kit:end id="gfx-sprite-census" -->
@@ -131,15 +131,15 @@ Be wary that the maximum file size for a sprite .dds files is around 16MB
 **Kit correction** Notes on the keys above, checked against all vanilla `spriteTypes` blocks.
 
 - The page spells the transparency key `allwaystransparent`. Vanilla writes `alwaystransparent` (also `alwaysTransparent`) about 3292 times in `.gfx` and `.gui` files, and the extra-`l` spelling only 8 times in `interface/popupwindow.gfx` and `interface/traittree.gfx`. Write `alwaystransparent = yes`. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`, `interface/*.gui`
-- Both spellings exist as token strings in `hoi4.exe`, so the typo is probably also accepted. [unverified] `hoi4.exe`
+- Both spellings exist as token strings in `hoi4.exe`, so the typo is probably also accepted (executable strings only). [unverified] `hoi4.exe`
 - `legacy_lazy_load` is only ever written as `no` in vanilla (4865 uses, no `yes`). [vanilla-confirmed 1.19.4.1] `interface/*.gfx`
 - Keys vanilla puts on `spriteType` that the page lacks: `clicksound` (23 sprites, the name of a sound effect such as `click_chat`, see [Sound modding](<sound_modding.md>)), `loadType` (`"INGAME"` 77 times and `"FRONTEND"` 6 times over all sprite kinds), `generate_mip_maps = yes` (4), `framedirectiony = yes` (4), `dx_offset = { x = -0.5 y = -0.5 }` (7) and `masking_texture` (1). [vanilla-confirmed 1.19.4.1] `interface/chat.gfx`, `interface/core.gfx`, `interface/*.gfx`
-- No game file states what `loadType`, `generate_mip_maps`, `framedirectiony` or `dx_offset` do. [unverified] `interface/*.gfx`
+- No game file states what `loadType`, `generate_mip_maps`, `framedirectiony` or `dx_offset` do: no file under `documentation/` names them and no `.gfx` comment explains them. [vanilla-confirmed 1.19.4.1] `documentation/*.md`, `interface/*.gfx`
 - Animation block: vanilla has 6372 `animation` blocks, and each sets the ten keys `animationmaskfile`, `animationtexturefile`, `animationrotation`, `animationlooping`, `animationtime`, `animationdelay`, `animationblendmode`, `animationtype`, `animationrotationoffset` and `animationtexturescale`. [vanilla-confirmed 1.19.4.1] `interface/abilitylist.gfx`
 - `animationblendmode` values in vanilla: `"add"` 6365 times, `"normal"` 4 times, `"overlay"` 3 times. `"multiply"`, which the page lists, is never used. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`
 - `animationtype` values in vanilla: `"scrolling"` 6318 times, `"rotating"` 25, `"rotating_ccw"` 24, `"pulsing"` 5. `rotating_ccw` is missing from the page. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`
 - `animationframes` appears in only 3 blocks and holds a list of frame numbers (`animationframes = { 1 2 3 }`), not a frame count as the page says. [vanilla-confirmed 1.19.4.1] `interface/crypto.gfx`, `interface/social_view.gfx`
-- `effectFile` is written once per sprite in vanilla (no sprite has two). The page says several can be given; that is not shown by any game file. [unverified] `interface/*.gfx`
+- `effectFile` is written at most once per sprite in vanilla (0 of 14,948 `spriteType` blocks have two). The page says several can be given; that is not shown by any game file. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`
 <!-- kit:end id="gfx-sprite-key-corrections" -->
 
 ## frameAnimatedSpriteType <a id="frameAnimatedSpriteType"></a>
@@ -521,7 +521,7 @@ bitmapfonts = {
 - The global `textcolors` block in `interface/core.gfx` defines 23 symbols: `C L W B G R b g Y H T O`, the digits `0` to `9` and `t`. Colours are integer `{ r g b }`. A `textcolors` block inside one `bitmapfont` overrides only the symbols it lists, for that font. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`
 - `color` is `0xAARRGGBB`; vanilla uses values like `0xffffffff` and `0xff7799ff`. `border_color` is set in one font (`Main_14`, `0x00000000`). [vanilla-confirmed 1.19.4.1] `interface/core.gfx`
 - `cursor_offset = { 0 4 }` is written as two numbers on one line and set on 3 header fonts. The page shows it as two lines. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`, `interface/load_screen_font.gfx`
-- `path` is used in 20 fonts, `fontfiles` in 24. The exe has the message "Font '%s' has both path and fontfiles scripted? Will only use fontfiles", so `fontfiles` wins when both are present. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`. The exe message is [unverified] `hoi4.exe`
+- `path` is used in 20 fonts, `fontfiles` in 24. The exe has the message "Font '%s' has both path and fontfiles scripted? Will only use fontfiles", so `fontfiles` wins when both are present. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`. No vanilla font block writes both (0 of 44). The exe message, and so the claim that `fontfiles` wins, is [unverified] `hoi4.exe`
 <!-- kit:end id="gfx-font-key-notes" -->
 
 ## bitmapfont_override <a id="bitmapfont_override"></a>

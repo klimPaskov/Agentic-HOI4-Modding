@@ -460,7 +460,7 @@ on_release_as_puppet = {
 - `_documentation.md` also lists `on_recall_volunteers` and `on_force_government`, which the table above lacks. No vanilla file uses either and the documentation gives no scopes, so their ROOT and FROM are unknown. `on_force_government` is also a string in `hoi4.exe`. [docs] `common/on_actions/_documentation.md`; scopes [unverified].
 - `on_call_allies` and `on_join_allies` are defined in vanilla (`12_wuw_on_actions.txt`, `16_taog_on_actions.txt`) with the scopes in the table, but are missing from the documentation list. [vanilla-confirmed 1.19.4.1]
 - Order: a vanilla comment says `on_war_relation_added` "fires in 2nd place (1st is on_declare_war)" and "is triggered ALWAYS". `on_war` fires when a country goes from peace to war and not again for later enemies. [vanilla-confirmed 1.19.4.1] `common/on_actions/05_lar_on_actions.txt`, `00_on_actions.txt`.
-- Thirteen hooks in this and the Politics table have no vanilla block and no documentation entry: `on_guarantee`, `on_military_access`, `on_offer_military_access`, `on_lend_lease`, `on_incoming_lend_lease`, `on_send_expeditionary_force`, `on_return_expeditionary_forces`, `on_request_expeditionary_forces`, `on_ask_for_state_control`, `on_give_state_control`, `on_peace_proposal`, `on_send_attache` (here) and `on_stage_coup` (Politics). Their scopes in the table cannot be checked. `hoi4.exe` has the bare names of several (for example `send_attache`, `peace_proposal`) but not the full `on_` strings, and it also lacks the full string for vanilla hooks such as `on_declare_war`, so that proves nothing. Test a hook with a `log` effect before relying on it. [unverified]
+- Thirteen hooks in this and the Politics table have no vanilla block and no documentation entry: `on_guarantee`, `on_military_access`, `on_offer_military_access`, `on_lend_lease`, `on_incoming_lend_lease`, `on_send_expeditionary_force`, `on_return_expeditionary_forces`, `on_request_expeditionary_forces`, `on_ask_for_state_control`, `on_give_state_control`, `on_peace_proposal`, `on_send_attache` (here) and `on_stage_coup` (Politics). Their scopes in the table cannot be checked. `hoi4.exe` has the bare names of several (for example `send_attache`, `peace_proposal`) but not the full `on_` strings, and it also lacks the full string for vanilla hooks such as `on_declare_war`, so that proves nothing. Test a hook with a `log` effect before relying on it. The missing block and entry are [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/` and `interface/`, and [docs] `common/on_actions/_documentation.md`; whether the engine knows these hooks is [unverified].
 <!-- kit:end id="onaction-diplomacy" -->
 
 ## Faction <a id="Faction"></a>
@@ -542,7 +542,7 @@ on_state_control_changed = {
 <!-- kit:begin id="onaction-states" at="section:States" -->
 **Kit note** `on_state_control_changed` is defined in 15 vanilla files, 13 of them with a comment such as "ROOT is new controller #FROM is old controller #FROM.FROM is state ID". FROM.FROM is a state scope: vanilla runs `FROM.FROM = { state = 36 }` and `FROM.FROM = { is_core_of = FRA }` inside it. [vanilla-confirmed 1.19.4.1] `common/on_actions/00_on_actions.txt`.
 
-`hoi4.exe` also contains `on_state_owner_changed` (next to the strings " NewOwner:" and " NewController:") but neither the documentation nor any vanilla file uses it. Do not rely on it. [unverified]
+`hoi4.exe` also contains `on_state_owner_changed` (next to the strings " NewOwner:" and " NewController:") but neither the documentation nor any vanilla file uses it. [docs] `common/on_actions/_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`. Do not rely on it. The exe string is [unverified].
 <!-- kit:end id="onaction-states" -->
 
 ## Wargoals <a id="Wargoals"></a>
@@ -554,7 +554,7 @@ on_state_control_changed = {
 | on_wargoal_expire | Trigger the following commands whenever a wargoal expire. | `on_wargoal_expire = { random_events = { 100 = war_justification.301 } }` | FROM is the wargoal owner. | 1.0 |
 
 <!-- kit:begin id="onaction-wargoals" at="section:Wargoals" -->
-**Kit note** `on_generate_wargoal` has no vanilla block and no line in `_documentation.md`; `hoi4.exe` does contain that name as a string. The scopes in the row above are [unverified].
+**Kit note** `on_generate_wargoal` has no vanilla block and no line in `_documentation.md`; `hoi4.exe` does contain that name as a string. [docs] `common/on_actions/_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/on_actions/` for the missing block and line. The exe string and the scopes in the row above are [unverified].
 
 `on_justifying_wargoal_pulse` is commented "during justifying wargoals; triggered daily, so make sure there is a sink somewhere not firing events; country, FROM = target nation". Vanilla fires `war_justification.1` to `war_justification.19` from it with a `17000 = 0` sink. `on_wargoal_expire` fires `war_justification.301`. [vanilla-confirmed 1.19.4.1] `common/on_actions/00_on_actions.txt`.
 <!-- kit:end id="onaction-wargoals" -->
@@ -738,10 +738,10 @@ Each of these hooks also exists at MIO level without the `mio_` part (`on_design
 | Documented, no vanilla block | `on_force_government`, `on_mio_tech_reseach_cancelled`, `on_mio_tech_reseach_completed`, `on_operative_created`, `on_operative_recruited`, `on_recall_volunteers`, `on_ruling_party_change_immediate` (deprecated) | [docs] |
 | Vanilla block, not documented | `on_add_history`, `on_call_allies`, `on_join_allies`, `on_project_completion`, `on_unit_leader_promote_from_ranks_green`, `on_unit_leader_promote_from_ranks_veteran`, `on_units_paradropped_in_state` | [vanilla-confirmed 1.19.4.1] |
 | Vanilla names that look like typos | `on_subject_annex`, `on_mio_tech_research_cancelled`, `on_mio_tech_research_completed` | [vanilla-confirmed 1.19.4.1] |
-| Wiki tables only | `on_stage_coup`, `on_guarantee`, `on_military_access`, `on_offer_military_access`, `on_lend_lease`, `on_incoming_lend_lease`, `on_send_expeditionary_force`, `on_return_expeditionary_forces`, `on_request_expeditionary_forces`, `on_ask_for_state_control`, `on_give_state_control`, `on_peace_proposal`, `on_send_attache`, `on_generate_wargoal` | [unverified] |
-| Strings in `hoi4.exe` only | `on_state_owner_changed`, `on_become_faction_member` | [unverified] |
+| Wiki tables only | `on_stage_coup`, `on_guarantee`, `on_military_access`, `on_offer_military_access`, `on_lend_lease`, `on_incoming_lend_lease`, `on_send_expeditionary_force`, `on_return_expeditionary_forces`, `on_request_expeditionary_forces`, `on_ask_for_state_control`, `on_give_state_control`, `on_peace_proposal`, `on_send_attache`, `on_generate_wargoal` | [docs] and [vanilla-confirmed 1.19.4.1] show none of them (0 files); existence in the engine [unverified] |
+| Strings in `hoi4.exe` only | `on_state_owner_changed`, `on_become_faction_member` | [docs] and [vanilla-confirmed 1.19.4.1] show neither (0 files); the exe strings [unverified] |
 
-`13_goe_on_actions.txt` writes the hook `ON_OFFER_JOIN_FACTION` and the effect `IF` in capitals, and vanilla works with that, so name matching is probably case-insensitive. [unverified]
+`13_goe_on_actions.txt` writes the hook `ON_OFFER_JOIN_FACTION` and the effect `IF` in capitals, so vanilla uses both spellings. [vanilla-confirmed 1.19.4.1] `common/on_actions/13_goe_on_actions.txt`. Name matching is therefore probably case-insensitive. [unverified]
 
 Use the documented and vanilla names. Treat the last two groups as unconfirmed until a test run shows the hook firing with a `log` effect.
 <!-- kit:end id="onaction-inventory" -->
