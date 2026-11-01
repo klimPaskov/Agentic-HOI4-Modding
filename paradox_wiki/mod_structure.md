@@ -94,7 +94,7 @@ supported_version="1.11.*"
 
 All rows: [vanilla-confirmed 1.19.4.1] first three bytes of each file.
 
-Script files that carry a BOM load fine in vanilla, so a BOM in script is tolerated. No BOM stays the safe choice for new script files. Localisation is the strict case: every vanilla `.yml` has the BOM, and `hoi4.exe` contains the message "Localization file '%s' should be in in utf-8-bom encoding". [unverified] (the message is a string in `hoi4.exe`)
+Script files that carry a BOM load fine in vanilla (1,264 of 4,410 `.txt` files in `common/`, `events/` and `history/` start with one), so a BOM in script is tolerated. [vanilla-confirmed 1.19.4.1] those folders. No BOM stays the safe choice for new script files. Localisation is the strict case: every vanilla `.yml` has the BOM (2,093 of 2,093), and `hoi4.exe` contains the message "Localization file '%s' should be in in utf-8-bom encoding". [unverified] (the message is a string in `hoi4.exe`)
 <!-- kit:end id="mod-structure-encoding" -->
 
 ### Creating a simple local mod <a id="Creating_a_simple_local_mod"></a>
@@ -188,7 +188,7 @@ When the game is loading with this mod active in the English language, the only 
 
 - The vanilla file is `localisation/english/loading_tips_l_english.yml`, with a lowercase L in `_l_`. The page writes `loading_tips_I_english.yml` (capital I) and `loading_tips_L_english.yml` (capital L). Use the vanilla spelling: all 2,091 language files in vanilla use lowercase `_l_`. [vanilla-confirmed 1.19.4.1] `localisation/*/*.yml`.
 - The file sits in the `english` subfolder. The page's tree puts the copy directly in `localisation/`, which is a different path and so, by the same-name-same-place rule on the [Modding](<modding.md#Loading_files>) page, a second file instead of a replacement. [vanilla-confirmed 1.19.4.1] `localisation/english/` for the folder; the rule is [unverified].
-- Vanilla defines 163 tips, `LOADING_TIP_0` to `LOADING_TIP_162`, written without a version number (`LOADING_TIP_0: "text"`). A mod file that only defines `LOADING_TIP_0` leaves the other 162 tips in place. The page's result "the only quote shown will be Test1 mod" needs a file that replaces the vanilla one at the same relative path (`localisation/english/loading_tips_l_english.yml`) and defines nothing else. [vanilla-confirmed 1.19.3] `localisation/english/loading_tips_l_english.yml`; the replacement rule is [unverified] (per the [Modding](<modding.md#Loading_files>) page).
+- Vanilla defines 163 tips, `LOADING_TIP_0` to `LOADING_TIP_162`, written without a version number (`LOADING_TIP_0: "text"`). A mod file that only defines `LOADING_TIP_0` leaves the other 162 tips in place. The page's result "the only quote shown will be Test1 mod" needs a file that replaces the vanilla one at the same relative path (`localisation/english/loading_tips_l_english.yml`) and defines nothing else. [vanilla-confirmed 1.19.4.1] `localisation/english/loading_tips_l_english.yml`; the replacement rule is [unverified] (per the [Modding](<modding.md#Loading_files>) page).
 <!-- kit:end id="mod-structure-loading-tips" -->
 
 ## Tips <a id="Tips"></a>

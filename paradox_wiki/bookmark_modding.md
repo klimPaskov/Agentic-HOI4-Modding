@@ -62,7 +62,7 @@ These attributes go into a `bookmark = { ... }` block. Each of the arguments of 
 <!-- kit:begin id="bookmark-1193-keys" at="section:Attributes" -->
 **Kit addition** Keys of the 1.19.3 bookmark format that the list above does not name.
 
-Bookmark-level keys. Row 1: [vanilla-confirmed 1.19.4.1] `common/bookmarks/the_gathering_storm.txt` and `blitzkrieg.txt` (both set `filters = { new_content continent }`). Rows 2 to 8 exist only in comments of `the_gathering_storm.txt`; each token is also a string in `hoi4.exe`. Defaults are the comment's and untested [unverified].
+Bookmark-level keys. Row 1: [vanilla-confirmed 1.19.4.1] `common/bookmarks/the_gathering_storm.txt` and `blitzkrieg.txt` (both set `filters = { new_content continent }`). Rows 2 to 8 exist only in comments of `the_gathering_storm.txt`: no uncommented use of any of the seven tokens in `common/`, `events/`, `history/` or `interface/`. [vanilla-confirmed 1.19.4.1] Each token is also a string in `hoi4.exe`, and the defaults are the comment's and untested [unverified].
 
 | Key | Value | Meaning |
 | --- | --- | --- |
@@ -75,14 +75,18 @@ Bookmark-level keys. Row 1: [vanilla-confirmed 1.19.4.1] `common/bookmarks/the_g
 | `apply_filter_to_other_country` | yes/no, default no | By default the `"---"` entry is always shown; when yes it obeys the filter |
 | `scrollable_country_list` | yes/no, default no | Scrolls the small-flag list with a vertical scrollbar instead of the overflow dropdown |
 
-Country-entry keys beyond the wiki list. Counts are from both vanilla files together. [vanilla-confirmed 1.19.4.1] `common/bookmarks/` for the keys and counts; what the engine does with `version` and `assume_not_played_if_missing_data` is [unverified].
+Country-entry keys beyond the wiki list. Counts are from both vanilla files together. [vanilla-confirmed 1.19.4.1] `common/bookmarks/` for the keys and counts (152 entries: 85 and 67 uncommented `version` lines); what the engine does with `version` and `assume_not_played_if_missing_data` is [unverified].
 
 | Key | Seen | Meaning |
 | --- | --- | --- |
-| `version = base_game` | on every one of the 152 entries | Name of the content version of this entry. Values seen: `base_game`, `no_compromise_no_surrender`, `trial_of_allegiance`, `graveyard_of_empires`, `gotterdammerung`, `thunder_at_our_gates`, `arms_against_tyranny`, `by_blood_alone`, `la_resistance`, `man_the_guns`, `no_step_back`, `peace_for_our_time`. Probably what the `new_content` filter and the unplayed sorting key on [unverified] |
+| `version = base_game` | on every one of the 152 entries | Name of the content version of this entry. The 12 values seen are in the note below the table. Probably what the `new_content` filter and the unplayed sorting key on [unverified] |
 | `required_dlc = { "Name" }` | 46 and 31 entries | Entry exists only with every listed DLC. The block takes several names (`{ "Gotterdammerung" "No Compromise, No Surrender" }`, 2 entries). The value is a block here, unlike `required_dlc = "Name"` in game rules |
-| `assume_not_played_if_missing_data = yes` | 6 and 5 entries | Set only on entries of newer DLC (`thunder_at_our_gates`, `peace_for_our_time`). Name suggests the entry counts as unplayed when the profile has no data for it [unverified] |
+| `assume_not_played_if_missing_data = yes` | 6 and 5 entries | Set mostly on entries of newer DLC: 8 `thunder_at_our_gates` and 1 `peace_for_our_time`, plus 2 `base_game` entries (the Australia fallbacks shown without Thunder at Our Gates) [vanilla-confirmed 1.19.4.1]. Name suggests the entry counts as unplayed when the profile has no data for it [unverified] |
 | `override_leader_portrait = JAP_emperor_hirohito` | 3 entries, all Japan | Character id from `common/characters/JAP.txt` whose portrait is shown instead of the leader's |
+
+Notes on rows of the table above:
+
+- `version`: Values seen: `base_game`, `no_compromise_no_surrender`, `trial_of_allegiance`, `graveyard_of_empires`, `gotterdammerung`, `thunder_at_our_gates`, `arms_against_tyranny`, `by_blood_alone`, `la_resistance`, `man_the_guns`, `no_step_back`, `peace_for_our_time`.
 
 Base-plus-DLC pair, the vanilla pattern for a country that changes with a DLC:
 

@@ -89,7 +89,7 @@ Counts over the 512 `option` and `default` blocks (434 plus 78). [vanilla-confir
 
 - Rule-level `required_dlc` appears on 61 rules, with 15 different DLC names. The names are written the way the game spells them, with no accents: `"La Resistance"`, `"Gotterdammerung"`. [vanilla-confirmed 1.19.3] `00_game_rules.txt`.
 - Option-level `required_dlc` and `exclude_dlc` let one option id exist in two versions. `AST_ai_behavior` has two `RANDOM` options, one with `exclude_dlc = "Thunder at Our Gates"` and one with `required_dlc = "Thunder at Our Gates"`. [vanilla-confirmed 1.19.3] `00_game_rules.txt`.
-- Base-game script reads rules that need a DLC. `allow_release_nations` has `required_dlc = "Death or Dishonor"` and `common/scripted_triggers/diplomacy_scripted_triggers.txt` reads it 49 times without a DLC check on that name. What a missing rule evaluates to is not documented; the wiki says error.log entries may follow. [vanilla-confirmed 1.19.4.1] for the reads, [unverified] for the result.
+- Base-game script reads rules that need a DLC. `allow_release_nations` has `required_dlc = "Death or Dishonor"` and `common/scripted_triggers/diplomacy_scripted_triggers.txt` reads it 49 times without a DLC check on that name. What a missing rule evaluates to is not documented; the wiki says error.log entries may follow. [vanilla-confirmed 1.19.4.1] for the reads (49 in that file), [unverified] for the result. The documentation says nothing about it. [docs] `documentation/triggers_documentation.md`.
 
 ## Localisation and GFX <a id="Localisation_and_GFX"></a>
 
@@ -142,7 +142,7 @@ Counts are `has_game_rule` calls in `.txt` files. [vanilla-confirmed 1.19.4.1] w
 
 ### Hard-coded rules <a id="Hard-coded_rules"></a>
 
-- Six rules are never read by vanilla script: `allow_paratroopers`, `maximum_fort_level`, `allow_scorched_earth`, `peace_score_to_overlord`, `peace_score_to_faction_leader`, `peace_score_reset_low_scores`. Their effect must come from the engine; script can still test them with `has_game_rule`. [vanilla-confirmed 1.19.4.1] search of every `.txt` file for `has_game_rule`; engine reading is [unverified].
+- Six rules are never read by vanilla script: `allow_paratroopers`, `maximum_fort_level`, `allow_scorched_earth`, `peace_score_to_overlord`, `peace_score_to_faction_leader`, `peace_score_reset_low_scores`. Their effect must come from the engine; script can still test them with `has_game_rule`. [vanilla-confirmed 1.19.4.1] search of every `.txt`, `.gui`, `.gfx`, `.yml`, `.lua` and `.md` file of the game folder (only `00_game_rules.txt` and, for two, `interface/game_rules.gfx` name them); that the engine reads them is [unverified].
 - The peace score rules go with defines such as `PEACE_SCORE_TRANSFERRED_TO_FACTION_LEADER = 0.1` and `PEACE_SCORE_RESET_LOW_SCORE_THRESHOLD = 0.05`. The comment above them says to update the matching loc keys when the values change. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
 
 ## Related systems <a id="Related_systems"></a>
@@ -199,8 +199,8 @@ available = {
 
 ## Traps <a id="Traps"></a>
 
-- Rule and option names in vanilla script do not always match the case of the definition: 17 rule ids differ only by case (script `SWE_AI_BEHAVIOR`, definition `SWE_ai_behavior`) and 4 option names do (`default` against `DEFAULT`). No vanilla call names a rule that does not exist, so the engine very likely ignores case. Copy the spelling of the definition anyway. [vanilla-confirmed 1.19.4.1] cross-check of all calls against `00_game_rules.txt`; case-insensitivity is [unverified].
-- The same option token may appear in two option blocks of one rule when `required_dlc` or `exclude_dlc` separates them. Do not reuse a token otherwise. [vanilla-confirmed 1.19.3] `AST_ai_behavior`. Behaviour for plain duplicates is [unverified].
+- Rule and option names in vanilla script do not always match the case of the definition: 17 rule ids differ only by case (script `SWE_AI_BEHAVIOR`, definition `SWE_ai_behavior`) and 4 option names do (`default` against `DEFAULT`). No vanilla call names a rule that does not exist, so the engine very likely ignores case. Copy the spelling of the definition anyway. [vanilla-confirmed 1.19.4.1] cross-check of all calls against `00_game_rules.txt` (still 17 and 4); case-insensitivity is [unverified].
+- The same option token may appear in two option blocks of one rule when `required_dlc` or `exclude_dlc` separates them. Do not reuse a token otherwise. [vanilla-confirmed 1.19.4.1] `AST_ai_behavior` (`RANDOM`) and `PRC_ai_behavior` (`HISTORICAL`, `RANDOM`), and no other rule repeats an option token. Behaviour for plain duplicates is [unverified].
 - `has_game_rule` with a rule or option that is spelled wrongly is not caught by the file format. Search your script for every `rule =` after you rename a rule. [unverified]
 - A new rule changes script only: giving it a hard-coded effect is not possible. For a visible behaviour, add `has_game_rule` to the triggers, `allow_branch` blocks or on actions that should change. [unverified] inferred from the six vanilla rules that script never reads.
 

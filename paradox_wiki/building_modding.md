@@ -303,7 +303,7 @@ Aside from state-scoped modifiers, there are several other arguments to make the
 | Key | Used by | Value |
 | --- | --- | --- |
 | `anti_air` | `anti_air_building` | `yes` |
-| `air_defence` | `anti_air_building` | `1`; the modifier documentation has `air_defence_factor` but no plain `air_defence`, so the wiki sentence above that groups it with state modifiers is doubtful [unverified] |
+| `air_defence` | `anti_air_building` | `1`; the modifier documentation has `air_defence_factor` but no plain `air_defence` [docs] `documentation/modifiers_documentation.md`. Whether the wiki sentence above is right to group it with state modifiers is [unverified] |
 | `local_resources_<resource>` | `synthetic_refinery` (`local_resources_rubber = 1`, a commented `local_resources_oil`) | the comment in the file says any resource name may follow |
 | `naval_supply_hub` | `naval_supply_hub` | `yes` |
 | `naval_headquarter` | `naval_headquarters` | `yes` (singular key) |

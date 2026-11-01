@@ -319,7 +319,7 @@ The **checksum**, the 4-character alphanumeric code that can be seen next to the
 
 - `dlc/` holds 12 DLC folders and `integrated_dlc/` four more (`dlc018`, `dlc020`, `dlc022`, `dlc023`). They hold `gfx/`, `interface/`, `music/`, `portraits/` and `sound/` content (`dlc014` holds wallpapers), a `dlcNNN.dlc` descriptor and `thumbnail.png`. None has `common/`, `events/` or `history/`; `dlc003` ships a zip that was not opened. This supports the page's statement that DLC code lives in the base game behind `has_dlc`. [vanilla-confirmed 1.19.4.1] `dlc/*/`, `integrated_dlc/*/`.
 - `checksum_manifest.txt` lists the checksummed folders, each with its sub-folders: `common` (`.txt`, `.lua`), `events` (`.txt`), `history` (`.txt`) and `map` (`.txt`, `.map`, `.bmp`, `.csv`). `localisation`, `interface`, `gfx`, `music`, `sound` and `portraits` are not listed, so a mod that only changes those leaves the checksum alone. [vanilla-confirmed 1.19.3] `checksum_manifest.txt`.
-- The manifest has no exclusion lines, and `map/terrain/` holds two `.bmp` files (`Tree_season.bmp`, `Tree_tint.bmp`) that match the `map` plus `.bmp` entry. The page's "other than `map/terrain/`" is therefore not what the manifest says; its 62 `.dds` files are the part that no entry matches. Whether the engine counts the two `.bmp` files is [unverified]. [vanilla-confirmed 1.19.3] `checksum_manifest.txt`, `map/terrain/`.
+- The manifest has no exclusion lines, and `map/terrain/` holds two `.bmp` files (`Tree_season.bmp`, `Tree_tint.bmp`) that match the `map` plus `.bmp` entry. The page's "other than `map/terrain/`" is therefore not what the manifest says; its 62 `.dds` files are the part that no entry matches. Whether the engine counts the two `.bmp` files is [unverified]. [vanilla-confirmed 1.19.4.1] `checksum_manifest.txt`, `map/terrain/`.
 <!-- kit:end id="modding-load-facts" -->
 
 ### Folder structure <a id="Folder_structure"></a>
@@ -560,7 +560,7 @@ These arguments aren't possible to set within the launcher and can only be added
 | `replace_path` | The key name is a string in `hoi4.exe`. Behaviour as described in the section below. | [unverified] |
 | `user_dir` | The key name is a string in `hoi4.exe`. The page says it moves the save folder. | [unverified] |
 | `dependencies` | The word is a string in `hoi4.exe`. The page says it forces this mod to load after the listed names. | [unverified] |
-| `archive` | `hoi4.exe` has "Could not find archive for mod: %s". Only zipped mods use it; mods since 1.9.0 do not. | [unverified] |
+| `archive` | Vanilla `dlc003.dlc` is the only one of 14 `.dlc` files that sets it, to its `.zip`. [vanilla-confirmed 1.19.4.1] `dlc/dlc003_rocket_launcher_unit_pack/dlc003.dlc`. `hoi4.exe` has "Could not find archive for mod: %s". Only zipped mods use it; mods since 1.9.0 do not. | [unverified] |
 | `path` | Vanilla DLC descriptors (`dlc/*/dlc*.dlc`) use the same syntax with a game-folder-relative path and forward slashes, with or without quotes (`path = "dlc/dlc001_german_historical_portraits"` and `path = dlc/dlc034_no_step_back/` both occur). `dlc003.dlc` has no `path`. For a mod, `path` belongs only in the user-specific file, as the page says. | [vanilla-confirmed 1.19.4.1] `dlc/*/dlc*.dlc` |
 
 The user-specific file name for a Workshop item follows the pattern `ugc_<id>.mod`: `hoi4.exe` has the format string `%s/ugc_%llu.mod`. `editor_postfix` in the page's `settings.txt` example is also a string in `hoi4.exe`. [unverified] (strings in `hoi4.exe`)

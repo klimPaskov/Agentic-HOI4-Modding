@@ -162,7 +162,7 @@ Weather can only be modified with a strategic region selected. When a region is 
 <!-- kit:begin id="nudger-weather-correction" at="section:Weather" -->
 **Kit correction** The text above names `/Hearts of Iron IV/map/strategic_regions/`. The vanilla folder is `map/strategicregions/` without an underscore, as the States section writes it. [vanilla-confirmed 1.19.3] `map/strategicregions/`
 
-`map/weatherpositions.txt` has one row per weather position: `region id;x;y;z;size`, with `size` either `small` or `big`. Vanilla has 588 rows over 287 regions (452 `big`, 136 `small`), for example `1;2781.24;9.90;1571.49;small`. [vanilla-confirmed 1.19.3] `map/weatherpositions.txt`. The first column is probably the strategic region id, the number at the start of the region's file name. [unverified] `map/weatherpositions.txt`
+`map/weatherpositions.txt` has one row per weather position: `region id;x;y;z;size`, with `size` either `small` or `big`. Vanilla has 588 rows over 287 regions (452 `big`, 136 `small`), for example `1;2781.24;9.90;1571.49;small`. [vanilla-confirmed 1.19.3] `map/weatherpositions.txt`. The first column is the strategic region id, the number at the start of the region's file name: all 287 distinct values match a region file, and 552 of 588 positions fall on a province that belongs to that region (checked with `map/provinces.bmp`, `map/definition.csv` and `map/strategicregions/`). [vanilla-confirmed 1.19.4.1] `map/weatherpositions.txt`
 <!-- kit:end id="nudger-weather-correction" -->
 
 #### Weather positions <a id="Weather_positions"></a>

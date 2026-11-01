@@ -2,7 +2,7 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Unit modding", revision 71837, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="71837" sources="common/units/ common/unit_tags/00_categories.txt common/terrain/00_terrain.txt common/script_enums.txt interface/subuniticons.gfx localisation/english/deployment_l_english.yml hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="71837" sources="common/units/ common/unit_tags/00_categories.txt common/terrain/00_terrain.txt common/script_enums.txt interface/subuniticons.gfx localisation/english/deployment_l_english.yml localisation/english/unit_l_english.yml documentation/ hoi4.exe" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against all 45 vanilla files in `common/units/` (158 sub-units), `common/unit_tags/00_categories.txt`, the terrain file, `script_enum_equipment_category`, the unit icon and group localisation, and a token search of `hoi4.exe`.
 Kit blocks added: `unit-keys` (what every sub-unit sets and the keys the template omits), `unit-terrain-keys`, `unit-internal-types` (33 real values), `unit-group-types` (7 groups), `unit-map-icon-types`, `unit-stat-values` (the page's "vanilla uses" numbers are wrong), `unit-boolean-note`, `unit-navy-air-note` (equipment stats are not sub-unit keys; `fire_range`, `shore_bombardment`, `evasion` and `port_capacity_usage` do not exist), `unit-icons-note`.
 Gaps left: the in-game meaning of `priority`, `ai_priority`, `map_icon_category` and `abbreviation` is inferred from usage, and the Models section was not re-checked against `gfx/entities/`.
@@ -122,7 +122,7 @@ You cannot add new internal or map icon types, but you can add new groups.
 
 `type` takes two forms. Land and naval sub-units use a block (`type = { infantry support }`, 133 sub-units); the 25 air sub-units use a single value (`type = fighter`). The first entry is the main type. `need` is a block of equipment ids with amounts (`need = { infantry_equipment = 100 }`) and is set by 156 sub-units; the two that omit it, `battle_cruiser` and `battleship`, use `need_equipment` and `need_equipment_modules` instead (the modules form takes an `any = { module = 1 }` list). [vanilla-confirmed 1.19.4.1] `common/units/battleship.txt`, `common/units/air.txt`
 
-Keys vanilla sub-units use, with the number of sub-units (of 158) that set each. Counts are [vanilla-confirmed 1.19.4.1] `common/units/*.txt`. Meanings are read from usage and from comments in the vanilla files, not from documentation (none exists for these keys) [unverified].
+Keys vanilla sub-units use, with the number of sub-units (of 158) that set each. Counts are [vanilla-confirmed 1.19.4.1] `common/units/*.txt`. Meanings are read from usage and from comments in the vanilla files. No documentation file describes the sub-unit format. [vanilla-confirmed 1.19.4.1] `documentation/*.md`, `common/units/`. The meanings are [unverified].
 
 | Key | Count | Notes |
 | --- | --- | --- |
@@ -159,7 +159,7 @@ Keys vanilla sub-units use, with the number of sub-units (of 158) that set each.
 <!-- kit:begin id="unit-terrain-keys" at="section:Units" -->
 **Kit addition** Terrain blocks. 73 of the 158 sub-units contain at least one terrain block. The keys vanilla uses are `forest` (67), `jungle` (66), `marsh` (63), `river` (63), `mountain` (60), `amphibious` (56), `hills` (48), `urban` (45), `fort` (21), `plains` (17), `desert` (14) and `snow` (2). Inside a terrain block vanilla uses only three keys: `attack` (420 times), `movement` (308) and `defence` (81, spelled with a `c`). [vanilla-confirmed 1.19.4.1] `common/units/*.txt`
 
-`forest`, `jungle`, `marsh`, `hills`, `mountain`, `plains`, `urban` and `desert` are terrain ids from `common/terrain/00_terrain.txt`. `river`, `amphibious`, `fort` and `snow` are not terrain ids in that file. The wiki's Technology modding page says `amphibious` applies to naval invasions and `river` to river crossings; the meaning of `fort` is not documented [unverified]. The two sub-units that use `snow`, in `recon.txt`, carry the comment "This can end up stacking with terrain benefits". [vanilla-confirmed 1.19.4.1] `common/terrain/00_terrain.txt`, `common/units/recon.txt`
+`forest`, `jungle`, `marsh`, `hills`, `mountain`, `plains`, `urban` and `desert` are terrain ids from `common/terrain/00_terrain.txt`. `river`, `amphibious`, `fort` and `snow` are not terrain ids in that file. The wiki's Technology modding page says `amphibious` applies to naval invasions and `river` to river crossings; the meaning of `fort` is not documented, but `localisation/english/unit_l_english.yml` defines the labels `fort`, `river`, `amphibious` and `snow`. [vanilla-confirmed 1.19.4.1] What the engine does with `fort` is [unverified]. The two sub-units that use `snow`, in `recon.txt`, carry the comment "This can end up stacking with terrain benefits". [vanilla-confirmed 1.19.4.1] `common/terrain/00_terrain.txt`, `common/units/recon.txt`
 
 ```text
 bicycle_battalion = {

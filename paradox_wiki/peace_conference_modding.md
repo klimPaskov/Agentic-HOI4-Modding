@@ -73,9 +73,9 @@ All rows: [docs] `common/peace_conference/ai_peace/_documentation.md` and `commo
 - Inside another scope such as `ROOT = { ... }`, `FROM` no longer means the taker. Write `ROOT.FROM`, `ROOT.FROM.FROM` or `ROOT.FROM.FROM.FROM` there. [docs] both `_documentation.md` files.
 - Vanilla does this: `ROOT = { has_defensive_war_with = ROOT.FROM.FROM }` and `any_country = { ROOT.FROM.FROM.FROM = { is_core_of = PREV } }`. [vanilla-confirmed 1.19.4.1] `cost_modifiers/00_generic_peace.txt`.
 - At the top level of `enable`, vanilla writes both `FROM.FROM.FROM = { ... }` (`cost_modifiers/00_generic_peace.txt`) and `ROOT.FROM.FROM.FROM = { ... }` (`ai_peace/00_misc.txt`) for the same state. [vanilla-confirmed 1.19.4.1]
-- Bare country triggers sit directly in `enable` in vanilla, for example `is_major = no` and `has_government = democratic` in `ai_peace/00_misc.txt`. The top-level scope is therefore a country. The wiki's AI modding page names it `ROOT`, the negotiator. [vanilla-confirmed 1.19.4.1] for the usage; [unverified] that it is always the negotiator.
+- Bare country triggers sit directly in `enable` in vanilla, for example `is_major = no` and `has_government = democratic` in `ai_peace/00_misc.txt`. The top-level scope is therefore a country. The docs call `ROOT` the negotiator. [docs] `ai_peace/_documentation.md`. [vanilla-confirmed 1.19.4.1] for the usage; that the top-level scope of `enable` is always that negotiator is [unverified].
 - "Negotiating for ourselves" is written `ROOT = { tag = ROOT.FROM }` or `ROOT.FROM = { tag = ROOT }`. The taker can be another winner, so the two are not always equal. [vanilla-confirmed 1.19.4.1] `ai_peace/00_misc.txt` (comment "We are negotiating for ourselves") and `ai_peace/ENG.txt`.
-- Which country `FROM` is for each action type, read from how vanilla uses it. [unverified] inference from vanilla usage, not stated in the docs:
+- The docs define `FROM` as the taker for every action. [docs] `ai_peace/_documentation.md`. Which country that is for each action type below is read from how vanilla uses it, not stated in the docs. [unverified] inference from vanilla usage:
 
 | Action | `FROM` (taker) | `FROM.FROM` (giver) | Vanilla evidence |
 | --- | --- | --- | --- |

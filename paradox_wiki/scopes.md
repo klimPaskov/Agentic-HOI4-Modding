@@ -95,8 +95,8 @@ Only [effects](<effects.md>) or [triggers](<triggers.md>) of the same target typ
 - `hidden_trigger` and `meta_trigger` are listed for all twelve trigger scope types. [docs] `documentation/triggers_documentation.md`
 - There is no DIVISION section. Division commands are listed under `any` and are reached through `every_country_division`, `every_state_division`, `any_country_division` and `any_state_division`. [docs] `documentation/effects_documentation.md`
 - Where vanilla enters these scopes: COMBATANT in the `trigger` block of a combat tactic, whose comment calls it a "combined scope for both country and combatant"; FACTION as `scope:faction = { ... }` in faction goal effects (4 uses in one file); RAID_INSTANCE in the `actor_effects` and `victim_effects` blocks of a raid outcome; SPECIAL_PROJECT through `sp:<id>`; INDUSTRIAL_ORG through `mio:<id>`. [vanilla-confirmed 1.19.3] `common/combat_tactics.txt`, `common/factions/goals/faction_goals_short_term.txt`, `common/raids/_documentation.md`
-- How a script enters ACE or STRATEGIC_REGION scope is not shown in the docs or vanilla script I checked. [unverified]
-- The pattern table says every `any_<object>` has an optional `count`. The docs describe `count` only for `any_collection_element`, and no vanilla `any_` block sets it directly, so the option is [unverified] for the ordinary iterators. [docs] `documentation/triggers_documentation.md`
+- How a script enters ACE or STRATEGIC_REGION scope is not shown in the docs, which name no iterator or scope switch for either, or in vanilla script, which has none. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`. Whether the engine offers a way in is [unverified].
+- The pattern table says every `any_<object>` has an optional `count`. The docs describe `count` only for `any_collection_element`, and no vanilla `any_` block sets it directly, so the option is [unverified] for the ordinary iterators. [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/` (0 blocks).
 <!-- kit:end id="scope-types-1-19-3" -->
 
 ## Examples <a id="Examples"></a>
@@ -388,7 +388,7 @@ controller = {
 <!-- kit:begin id="scope-keywords" at="section:Dual_scopes" -->
 **Kit addition** Scope keywords and prefixes the table above does not cover.
 
-- The docs name eight keywords that can stand as a scope target: THIS, ROOT, PREV, FROM, OWNER, CONTROLLER, OCCUPIED and CAPITAL. They do not describe `OCCUPIED` or `CAPITAL`, and vanilla never opens a scope with either, so what they select is [unverified]. [docs] `documentation/effects_documentation.md` (Supported Targets lines)
+- The docs name eight keywords that can stand as a scope target: THIS, ROOT, PREV, FROM, OWNER, CONTROLLER, OCCUPIED and CAPITAL. They do not describe `OCCUPIED` or `CAPITAL`, and vanilla never opens a scope with either (0 uses) [vanilla-confirmed 1.19.4.1], so what they select is [unverified]. [docs] `documentation/effects_documentation.md` (Supported Targets lines)
 - Vanilla spells several scope words in both cases. Counts are scope blocks opened with the word at the start of a line (lines / files). [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
 
 | Word | Lower case | Upper case |
@@ -594,7 +594,7 @@ any_state_of = {
 | `scope_exists` | any | true if the current scope exists, which differs from `exists` (does the country exist); variable scopes always exist | 0 |
 
 - `target` takes either a list (`target = { SWE NOR FIN DEN ICE }`) or `constant:<category>.<entry>`. Collection triggers are covered on [Collection modding](<collection_modding.md#Collection_triggers>). [docs] `documentation/triggers_documentation.md`
-- `any_claim` is documented in one line, so its exact meaning is [unverified].
+- `any_claim` is documented in one line, as a check for a claim between the country in scope and all others. [docs] `documentation/triggers_documentation.md` Its exact meaning is [unverified].
 
 **Kit correction** Errors in the table and examples above:
 
@@ -762,7 +762,7 @@ every_collection_element = {
 **Kit note** The effect side of the table is complete for 1.19.3: all 53 `every_`, `random_` and `global_every_` iterator effects in the documentation (not counting `random_list` and `random_scope_in_array`) are listed above. [docs] `documentation/effects_documentation.md` (compared by name)
 
 - The docs list `every_other_country` and `every_country_with_original_tag` for country scope only, and `random_other_country` and `random_country_with_original_tag` for any scope; the table above says otherwise for some of them. Call all four from country scope, which both readings allow. [docs] `documentation/effects_documentation.md`
-- `global_every_army_leader` is listed under COUNTRY scope in the docs and has no vanilla use, so the table's "Always usable" is [unverified]. [docs] `documentation/effects_documentation.md`
+- `global_every_army_leader` is listed under COUNTRY scope in the docs and has no vanilla use (0 files) [vanilla-confirmed 1.19.4.1], so the table's "Always usable" is [unverified]. [docs] `documentation/effects_documentation.md`
 - Vanilla use (lines / files): `every_faction_member` 128 / 7, `every_allied_country` 24 / 16, `every_collection_element` 26 / 4. `random_allied_country` 1 / 1, and `party_leader` has none. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
 - For `every_collection_element` see [Collection modding](<collection_modding.md#Collection_effects>).
 <!-- kit:end id="effect-scope-notes" -->

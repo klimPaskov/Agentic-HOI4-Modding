@@ -61,7 +61,7 @@ objectTypes = {
 }
 ```
 
-Both files are copies of `gfx/particles/lamp_red.asset` and `gfx/entities/particles.gfx` with names changed and some keys dropped. Every key kept in the subsystem is set by all or nearly all of the 486 vanilla subsystems, but the trimmed form was not run in the game. [unverified] `gfx/particles/lamp_red.asset`
+Both files are copies of `gfx/particles/lamp_red.asset` and `gfx/entities/particles.gfx` with names changed and some keys dropped. Every key kept in the subsystem is set by at least 474 of the 486 vanilla subsystems. [vanilla-confirmed 1.19.4.1] `gfx/particles/**/*.asset`. The trimmed form was not run in the game. [unverified] `gfx/particles/lamp_red.asset`
 
 `scale` is set in all 175 vanilla `pdxparticle` entries (values such as 1, 1.5 and 2). [vanilla-confirmed 1.19.3] `gfx/entities/particles.gfx`, `gfx/particles/WW_particles.gfx`
 <!-- kit:end id="particle-add-chain" -->
@@ -86,7 +86,7 @@ Both files are copies of `gfx/particles/lamp_red.asset` and `gfx/entities/partic
 
 `texture` holds `file`, `x`, `y` and `shader`. Shader values: `"ParticleAdditive"` 267, `"ParticleAlphaBlend"` 218, `"ParticlePreAlphaBlend"` 1. `color` holds `x y z` (470) or `r g b` (12) on the 0 to 255 scale, plus `alpha`. [vanilla-confirmed 1.19.4.1] `gfx/particles/**/*.asset`
 
-A value can be a single number or a pair `{ a b }`, and `size`, `alpha` and similar keys can name an animation after a comma: `alpha = 255.000,smoke_fade`, `size = { 1.000,glow_scale 1.000 }`. What a pair means is not stated in a game file. [vanilla-confirmed 1.19.3] `gfx/particles/flamethrower.asset`. The reading as a range or a start and end value is a guess. [unverified] `gfx/particles/flamethrower.asset`
+A value can be a single number or a pair `{ a b }`, and `size`, `alpha` and similar keys can name an animation after a comma: `alpha = 255.000,smoke_fade`, `size = { 1.000,glow_scale 1.000 }`. What a pair means is not stated in a game file. [vanilla-confirmed 1.19.4.1] `gfx/particles/flamethrower.asset`, `documentation/*.md`. The reading as a range or a start and end value is a guess and is untested. [unverified] `gfx/particles/flamethrower.asset`
 <!-- kit:end id="particle-subsystem-keys" -->
 
 <!-- kit:begin id="particle-animation-force" at="section:Adding_a_Particle" -->
@@ -114,7 +114,7 @@ Vanilla force, whitespace changed. [vanilla-confirmed 1.19.3] `gfx/particles/fla
 ## Particle Editor <a id="Particle_Editor"></a>
 
 <!-- kit:begin id="particle-editor-warning" at="heading:Particle_Editor" -->
-**Kit note** The version limits in the text below (editor works only on 1.11) cannot be checked from game files. What 1.19.4.1 ships: `hoi4.exe` contains the commands `particle_editor create`, `add_subsystem`, `clone_subsystem`, `remove_subsystem`, `add_animation`, `remove_animation`, `add_force`, `remove_force`, `add_childsystem`, `back_subsystem`, `forward_subsystem`, `save`, `undo`, `redo`, `restart` and `exit`, and the folder `previewer_assets/assetviewer_interface/previewer_interface.gui` has a button labelled "Particle Editor". [unverified] `hoi4.exe`, `previewer_assets/assetviewer_interface/previewer_interface.gui`
+**Kit note** The version limits in the text below (editor works only on 1.11) cannot be checked from game files. What 1.19.4.1 ships: `hoi4.exe` contains the commands `particle_editor create`, `add_subsystem`, `clone_subsystem`, `remove_subsystem`, `add_animation`, `remove_animation`, `add_force`, `remove_force`, `add_childsystem`, `back_subsystem`, `forward_subsystem`, `save`, `undo`, `redo`, `restart` and `exit`, and the folder `previewer_assets/assetviewer_interface/previewer_interface.gui` has a button labelled "Particle Editor". The button label is [vanilla-confirmed 1.19.4.1] `previewer_assets/assetviewer_interface/previewer_interface.gui`. The command names are executable strings and whether the editor works is untested. [unverified] `hoi4.exe`
 
 Particles are plain text, so a mod can also write them by hand from the key tables above. [vanilla-confirmed 1.19.3] `gfx/particles/lamp_red.asset`
 <!-- kit:end id="particle-editor-warning" -->
@@ -174,7 +174,7 @@ light = {
 <!-- kit:begin id="particle-light-corrections" at="section:Adding_a_Light" -->
 **Kit correction** Lights are not in `gfx/particles/`. All 9 vanilla `light` blocks are in `gfx/entities/map_lights.asset`: `playerlight`, `muzzle_flash`, `cigarette_light`, `nuke_light`, `rifle_muzzle_flash`, `mg_muzzle_flash`, `citylight`, `nuke_big_light`, `alarm_flash`. An entity event uses one with `light = "<name>"`. [vanilla-confirmed 1.19.3] `gfx/entities/map_lights.asset`, `gfx/entities/buildings.asset`
 
-- `intensity = 1.5, fade` is not "a value plus whether it fades". In all 9 lights the `animation` is named `fade`, and 7 lights write `intensity = <number>, fade` (also `intensity = 30,fade`); `playerlight` and `citylight` write a plain number. The word after the comma matches the animation name, the same pattern as `alpha = 255,smoke_fade` in particles. [vanilla-confirmed 1.19.3] `gfx/entities/map_lights.asset`. The reading as "apply this animation to the intensity" is an inference. [unverified] `gfx/entities/map_lights.asset`
+- `intensity = 1.5, fade` is not "a value plus whether it fades". In all 9 lights the `animation` is named `fade`, and 7 lights write `intensity = <number>, fade` (also `intensity = 30,fade`); `playerlight` and `citylight` write a plain number. The word after the comma matches the animation name, the same pattern as `alpha = 255,smoke_fade` in particles. [vanilla-confirmed 1.19.4.1] `gfx/entities/map_lights.asset`, recounted: 9 of 9 lights, 7 with the suffix. The reading as "apply this animation to the intensity" is an inference. [unverified] `gfx/entities/map_lights.asset`
 - `op` is `"MUL"` in all 9 lights; the vanilla comment lists `"MUL"/"ADD"/"ABS"`. [vanilla-confirmed 1.19.3] `gfx/entities/map_lights.asset`
 - `curve` is a flat list of `time value` pairs, one pair per line in vanilla (4 pairs in `muzzle_flash`). The page's template shows 6 numbers, and its example 10, so the count is free. [vanilla-confirmed 1.19.3] `gfx/entities/map_lights.asset`
 - `color` writes each channel as `r = { 1.0 }`, with values 0 to 1. [vanilla-confirmed 1.19.3] `gfx/entities/map_lights.asset`

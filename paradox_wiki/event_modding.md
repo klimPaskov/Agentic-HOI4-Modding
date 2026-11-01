@@ -2,7 +2,7 @@
 
 *Offline snapshot of the Hearts of Iron IV Wiki page "Event modding", revision 102070, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
 
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="102070" sources="events/ history/ common/defines/00_defines.lua documentation/effects_documentation.md hoi4.exe" -->
+<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="102070" sources="events/ history/ common/defines/00_defines.lua documentation/effects_documentation.md hoi4.exe common/ documentation/" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: all 128 files in `events/` (6,974 events), the event effects in `documentation/effects_documentation.md`, the event defines in `common/defines/00_defines.lua`, vanilla effect calls in `history/` and `common/`, and message strings in `hoi4.exe`.
 - Kit blocks added: event types and how rare state events are, id rules and exceptions, title, desc and picture usage, triggered-only events with `mean_time_to_happen`, major news events, option `ai_chance`, optional keys (`immediate`, `after`, `timeout_days`, `hidden`), arguments of the fire effects, engine log messages.
 - Errors found in the wiki text: `major = yes` is not set in every news event (596 of 677 have it); `random_hours` and `random_days` exclude their upper bound.
@@ -60,7 +60,7 @@ Each event is contained within a code block corresponding to the event type, suc
 - State events are rare: 6 of 6,990 definitions, fired by 10 effects, and every one of those effects is written `state_event = { id = <id> trigger_for = controller }`. [vanilla-confirmed 1.19.4.1] `events/`, `common/on_actions/00_on_actions.txt`, `common/on_actions/07_nsb_on_actions.txt`.
 - 6,579 events (94%) set `is_triggered_only = yes`, 9 set it to `no`, and 402 leave it out and are therefore automatic events. [vanilla-confirmed 1.19.4.1] `events/`.
 - Effect scopes: `country_event` and `news_event` run in country scope, `state_event` in state or country scope, `unit_leader_event` and `operative_leader_event` in character scope (the event goes to the owner country of the character). [docs] `documentation/effects_documentation.md`.
-- `hoi4.exe` contains the message "Event is a leader event and has to be triggered only."; all 40 vanilla leader events are triggered only, so always write `is_triggered_only = yes` on them. [unverified] (string in `hoi4.exe`, condition not tested).
+- `hoi4.exe` contains the message "Event is a leader event and has to be triggered only."; all 40 vanilla leader events (33 `unit_leader_event`, 7 `operative_leader_event`) are triggered only. [vanilla-confirmed 1.19.4.1] `events/`. Always write `is_triggered_only = yes` on them. [unverified] (string in `hoi4.exe`, condition not tested).
 <!-- kit:end id="event-types-in-use" -->
 
 ### ID rules <a id="ID_rules"></a>
@@ -249,7 +249,7 @@ ai_chance = {
 <!-- kit:begin id="event-option-ai-chance" at="section:Options" -->
 **Kit addition** Options and `ai_chance` in vanilla 1.19.4.1 (11,572 options in `events/`). All counts: [vanilla-confirmed 1.19.4.1] `events/`.
 
-- 6,268 options (54%) set `ai_chance` and 3,276 set a `trigger`. No vanilla option uses `original_recipient_only`; the token exists in `hoi4.exe`, so the wiki's description stands but is untested. [unverified]
+- 6,268 options (54%) set `ai_chance` and 3,276 set a `trigger`. No vanilla option uses `original_recipient_only`, and the name is in no file under `events/`, `common/`, `history/` or `documentation/`. [vanilla-confirmed 1.19.4.1] The wiki's description stands but is untested. [unverified]
 - The 6,270 `ai_chance` blocks have these top-level keys:
 
 | Top-level keys | Blocks |
@@ -262,7 +262,7 @@ ai_chance = {
 | empty block | 4 |
 
 - No block mixes a top-level `base` with a top-level `factor`, and `base` is never used inside a `modifier`: modifiers inside `ai_chance` use `factor` (4,836 times) and `add` (1,265 times). The most common `base` values are 10 (1,678 blocks), 1 (784) and 0 (607).
-- Prefer `base = N` (81% of vanilla blocks) and put `factor` and `add` inside `modifier` blocks. No game document defines how a top-level `factor` behaves when `base` is absent, and the wiki example that sets `base` and a top-level `factor` together has no vanilla precedent. [unverified]
+- Prefer `base = N` (81% of vanilla blocks) and put `factor` and `add` inside `modifier` blocks. No file in `documentation/` mentions `ai_chance` at all, and the wiki example that sets `base` and a top-level `factor` together has no vanilla precedent. [vanilla-confirmed 1.19.4.1] How a top-level `factor` behaves when `base` is absent is [unverified].
 <!-- kit:end id="event-option-ai-chance" -->
 
 ### Additional arguments <a id="Additional_arguments"></a>
@@ -292,7 +292,7 @@ ai_chance = {
 - Of the 187 hidden events, 116 have no `option` and 71 have one or more (2 of those have several). [vanilla-confirmed 1.19.4.1] `events/`.
 - `timeout_days` is rare and no game documentation file describes it. The define `NDefines.NGame.EVENT_TIMEOUT_DEFAULT = 13` is commented as the default number of days before an event times out if not scripted. What the game does when the timeout expires is not documented; the wiki says the first option is picked. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua` for the define; [unverified] for the behaviour.
 - `NDefines.NCountry.EVENT_PROCESS_OFFSET = 20` is commented "Events are checked every X day per country or state", which matches the 20 day trigger check described above. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`.
-- No game documentation file explains `after` or `minor_flavor`; both tokens exist in `hoi4.exe`. [unverified]
+- No game documentation file explains `after` or `minor_flavor`. Vanilla writes `minor_flavor = yes` in 6 events (all in `events/AcePilots.txt`) and `after = { ... }` 8 times in 4 files. [vanilla-confirmed 1.19.4.1] What either key does is [unverified].
 <!-- kit:end id="event-optional-keys" -->
 
 ## Effect <a id="Effect"></a>

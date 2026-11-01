@@ -40,6 +40,8 @@ import kit_blocks  # the page format, next to this script
 
 FENCE = "`" * 3
 PIPE = re.compile(r"(?<!\\)\|")
+VERSIONED_TAG = re.compile(r"\[(?:vanilla-confirmed|game-tested)\b[^\]\n]*\]")
+WELL_FORMED_TAG = re.compile(r"^\[(?:vanilla-confirmed|game-tested) \d+(?:\.\d+){1,3}\]$")
 
 
 def find_repo_root(start):
@@ -92,6 +94,13 @@ def check_kit(name, text, report):
         if not body or "Kit" not in body[0]:
             report("kit_label", name,
                    f"kit block {block.id!r}: first line must say it is kit text")
+    # Tag counts and the re-check after a game update read the build from the tag itself.
+    kit_text = [text] if kit_blocks.is_kit_page(text) else [block.text for block in blocks]
+    for chunk in kit_text:
+        for tag in VERSIONED_TAG.findall(chunk):
+            if not WELL_FORMED_TAG.match(tag):
+                report("evidence_tag", name, f"{tag} must be [vanilla-confirmed <build>] "
+                       "or [game-tested <build>], with sources outside the brackets")
     review = kit_blocks.review(text)
     if review and not re.match(r"^(none|\d+(\.\d+){1,3})$", review.get("build", "")):
         report("kit_block", name, f"review build {review.get('build')!r} is not a "

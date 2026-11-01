@@ -71,7 +71,7 @@ File names in `history/units/` (609 files). The file name is free; the string in
 | `_naval_mtg` / `_naval_legacy` | 57 / 62 | fleets | `has_dlc = "Man the Guns"` or not |
 | `_naval`, `_Naval`, `_Naval_Legacy` | 7, 2, 2 | fleets in countries without the MTG split | plain `set_naval_oob` |
 | `_sea` | 15 | a main OOB with division templates (`CHI_1936_sea.txt`); used by `oob` (8) and `set_oob` (7) | plain `oob` or `set_oob` |
-| other suffixes (`_ncns`, `_lar`, `_LaR`, `_mun`, `_GOE`, `_BBA`, `_nsb_LaR`, ...) | a few | DLC or mod-pack variants chosen with `set_oob` | their own `has_dlc` gates [unverified] |
+| other suffixes (`_ncns`, `_lar`, `_LaR`, `_mun`, `_GOE`, `_BBA`, `_nsb_LaR`, ...) | 11 | DLC variants chosen with `set_oob` | their own `has_dlc` gates; `_mun` files only a No Step Back check [vanilla-confirmed 1.19.4.1] `history/countries/` |
 | event and decision files | the rest | `load_oob` targets such as `unlock_tanks`, `cossack_host`, `Civil_War` | `load_oob = "..."` |
 
 In country history files vanilla uses these lines: top-level `oob = "TAG_1936"` (192 uses across 110 files), `set_oob` (56 plain, 25 with `_nsb`), `set_naval_oob` (62 `_naval_legacy`, 57 `_naval_mtg`, 7 `_naval`) and `set_air_oob` (95 `_air_legacy`, 95 `_air_bba`). The air and naval pair is chosen like this: [vanilla-confirmed 1.19.4.1] `history/countries/ARG - Argentina.txt`
@@ -155,7 +155,7 @@ Usage of the documented keys across the 804 vanilla templates, and keys the page
 | `regimental_support` | 4 | Block of regimental support sub-units, for example `field_guns = { x = 1 y = 0 }`. |
 | `ingame_set_template_counter` | 2 | `yes` next to `template_counter` (`INS_1936.txt`). |
 
-The meaning of `role` and `obsolete` is read from usage and file comments, not from documentation. [unverified]
+No game documentation file describes `role` or `obsolete` in a division template. [vanilla-confirmed 1.19.4.1] `documentation/*.md`. Their meaning is read from usage, so it stays [unverified].
 <!-- kit:end id="division-template-keys" -->
 
 <!-- kit:begin id="division-unit-effects" at="section:Division_template" -->
@@ -250,8 +250,8 @@ There are also optional arguments:
 | `start_equipment_factor` | 3744 | |
 | `force_equipment_variants` | 753 | 754 entries: `owner` (754), `version_name` (90), `creator` (38), `amount` (20). |
 | `officer` | 115 | Only `name` (115) and `portraits` (2) seen. |
-| `bonus` | 3 | Integer in the Azad Hind file `CA1.txt`; meaning not documented. [unverified] |
-| `start_manpower_factor` | 0 | Documented by the wiki and a token in `hoi4.exe`, but no vanilla division uses it. [unverified] |
+| `bonus` | 3 | Integer in the Azad Hind file `CA1.txt` (all 3 uses; no vanilla script loads `CA1`). [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`. No documentation describes it, and its meaning is [unverified]. |
+| `start_manpower_factor` | 0 | No `history/units` division uses it, but 38 files in `common/` and `events/` write it in `create_unit` division strings (213 lines, for example `common/decisions/AFG.txt`). [vanilla-confirmed 1.19.4.1] Whether an OOB division accepts it is [unverified]. |
 
 The page's reference [2] holds: `UNIT_EXP_LEVELS = { 0.1, 0.3, 0.75, 0.9 }` in `NDefines.NMilitary`. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
 <!-- kit:end id="division-placement-keys" -->
@@ -507,7 +507,7 @@ modern_tank_destroyer_brigade
 ### Support Companies <a id="Support_Companies"></a>
 
 <!-- kit:begin id="division-support-correction" at="heading:Support_Companies" -->
-**Kit correction** This list names 14 of the 68 sub-units with `group = support`. The other 54 are listed here, including the four super-heavy ids that the Regiments list wrongly holds. Regimental support sub-units (`field_guns`, `fire_support`, `mot_fire_support`, `rocket_battery`, `anti_air_battery`, `anti_tank_battery`) go in a `regimental_support` block, which 4 vanilla templates use; the placement of the other ids is not documented [unverified]. Vanilla OOB files use only 12 support ids: `anti_air`, `anti_tank`, `armored_car_recon`, `artillery`, `engineer`, `light_tank_recon`, `logistics_company`, `maintenance_company`, `military_police`, `mot_recon`, `recon` and `signal_company`. [vanilla-confirmed 1.19.4.1] `common/units/*.txt`, `history/units/*.txt`
+**Kit correction** This list names 14 of the 68 sub-units with `group = support`. The other 54 are listed here, including the four super-heavy ids that the Regiments list wrongly holds. Regimental support sub-units (`field_guns`, `fire_support`, `mot_fire_support`, `rocket_battery`, `anti_air_battery`, `anti_tank_battery`) go in a `regimental_support` block, which 4 vanilla templates use (in `history/units`, all with only `field_guns`); the documentation's `add_units_to_division_template` example also puts `military_police` there [docs] `documentation/effects_documentation.md`. Whether the game accepts the other support ids in that block is [unverified]. Vanilla OOB files use only 12 support ids: `anti_air`, `anti_tank`, `armored_car_recon`, `artillery`, `engineer`, `light_tank_recon`, `logistics_company`, `maintenance_company`, `military_police`, `mot_recon`, `recon` and `signal_company`. [vanilla-confirmed 1.19.4.1] `common/units/*.txt`, `history/units/*.txt`
 
 ```text
 super_heavy_artillery self_propelled_super_heavy_artillery blackshirt_assault_battalion

@@ -7,7 +7,7 @@
 - Kit blocks added: 34, from `coverage` (scope check, the 21 effects the wiki never named, non-effects) to `scripted-effect-corrections`. Each is named after what it fixes or adds.
 - Wrong or stale wiki text found: `add_temporary_buff_to_units` (not in 1.19.3); the examples for `modify_project_flag` and `set_mio_funds_gain_factor`; the first `raid_damage_units` parameter row; the `end_wars` default of `set_autonomy`; the "inclusive" bounds of `random_hours` and `random_days`; `tag` for `remove_building`; the notes "Only works on missions" (`activate_targeted_decision`) and "Deprecated" (`create_corps_commander`); the set_rule list; and the paths `commmon/autonomous_states`, `common/decisions/catergories` and `common/resistance_modifiers.txt`.
 - Deprecated or obsolete notes: `create_faction` and the three unit leader flag effects match the documentation; "extremely buggy" for `replace_unit_leader_trait` is unverified. Example keys flagged as unknown are documented (`controller_priority`, `mapmode`, `copy_completed_from`, `base_bonus`, `scores`, `set_root`, `ignore_death_chance`, and `prototyp_reward_option` in the documentation's own spelling) or are placeholders (`EQ_TYPE`, `EQ_LEVEL`, `eq_amount`, `NESTEDLOC`, `specialization_token`, `d_transfer_states`).
-- Gaps left: values and defaults were compared only where the documentation states them; effects with a one-line documentation stub (`boost_planning`, `ai_message`, `set_leader_name`, `add_scaled_political_power`) stay `[unverified]`. The "Version Added" column was not re-checked.
+- Gaps left: values and defaults were compared only where the documentation states them; effects with a one-line documentation stub (`boost_planning`, `ai_message`, `set_leader_name`, `add_scaled_political_power`) stay `[unverified]`. The "Version Added" column was checked on 2026-11-01 as far as the installed files allow (see the note under Effect scopes).
 **1.19.4.1 re-check (2026-11-01).** 51 statements depended on vanilla scans or files that the update changed, and all 51 were re-measured on the installed files. Numbers moved: `while_loop_effect` in 21 files (was 20), `random_hours` in 92 (91), `leader_score` in 7 (8), `destroy_unit` 10 uses (8), `activate_targeted_decision` 63 distinct decisions (62), `add_to_war` with `single_target_only` in 3 files (2), `create_field_marshal` 4 blocks (5), 23 of the 27 `set_rule` names occur in vanilla (24), and vanilla now passes `version_name` to `create_production_license` in 3 blocks, while four older notes (the ribbons use of `career_profile_set_temp_variable`, `legacy_id`, the 13 character files with `navy`, and the `seed` and `log` counts) were corrected against the installed files. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
@@ -28,7 +28,7 @@
 
 - Names in the tables that are not engine effects: `overlord`, `owner`, `controller`, `faction_leader` and `capital_scope` are scopes, and the rows under "Useful scripted effects" are scripted effects written in vanilla script. [vanilla-confirmed 1.19.4.1] `common/scripted_effects/00_scripted_effects.txt`
 - `career_profile_set_temp_variable` and `career_profile_set_temp_playthrough_variable` are listed in `documentation/triggers_documentation.md`, not in the effects documentation. [docs]
-- `add_temporary_buff_to_units` does not exist in 1.19.4.1 (see the correction under "Combat"). [unverified]
+- `add_temporary_buff_to_units` is not in the effects documentation and no vanilla script uses it (see the correction under "Combat"). [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`. That the engine rejects it is [unverified].
 <!-- kit:end id="coverage" -->
 
 ## Table of contents
@@ -292,6 +292,14 @@ every_other_country = {
 
 `every_country_with_original_tag` and `random_country_with_original_tag` need `original_tag_to_check`. `random_state` and the other `random_*state` scopes take `prioritize = { <state id> ... }`. [docs]
 <!-- kit:end id="iterator-options" -->
+
+<!-- kit:begin id="version-added-column" at="section:Effect_scopes" -->
+**Kit note: the "Version Added" column.** Re-checked on 2026-11-01 as far as the installed game allows.
+
+- The effect documentation has the same 553 entries in 1.19.3.0 and 1.19.4.1, compared heading by heading through the kit's recorded documentation index of both builds. No effect was added or removed by 1.19.4, so no row should say 1.19.4, and none does. The newest value in the column is 1.19, on `unlock_subunit`. [docs] `documentation/effects_documentation.md`
+- No installed file says when a effect was added. `changelog.txt` only links to the forum, and the documentation names no versions. Every other value in the column is the wiki's claim and was not checked. [vanilla-confirmed 1.19.4.1] `changelog.txt`, `documentation/`
+- Rows with no usable version: the cell is blank for `random_country_with_original_tag`, `add_state_resistance_compliance_modifier`, `remove_state_resistance_compliance_modifier`, `effect_tooltip` and `promote_officer_to_general`. It says `???` for `add_unit_bonus`, `career_profile_step_missiolini`, `get_highest_scored_country_temp`, `get_sorted_scored_countries_temp`, `get_supply_vehicles` and `get_supply_vehicles_temp`. In the `set_technology` and `create_operative_leader` rows, other wiki text has slipped into the column.
+<!-- kit:end id="version-added-column" -->
 
 ### Effects with scopes <a id="Effects_with_scopes"></a>
 
@@ -683,7 +691,7 @@ create_purchase_contract = {
 - The dynamic modifier effects also run in special project scope. `days` may be a variable, and `remove_dynamic_modifier` takes the same optional `scope` key as `add_dynamic_modifier`; it must match the value used when the modifier was added. [docs] `documentation/effects_documentation.md`
 - The folder named in the notes of `add_state_resistance_compliance_modifier` and `remove_state_resistance_compliance_modifier` is wrong. The files are `common/resistance_compliance_modifiers/resistance_modifiers.txt` and `common/resistance_compliance_modifiers/compliance_modifiers.txt`. A modifier must carry `is_dynamic = yes` to be added or removed by these effects, and this works only for state resistance and state compliance modifiers. [vanilla-confirmed 1.19.4.1] `common/resistance_compliance_modifiers/resistance_modifiers.txt`
 - `custom_override_tooltip` accepts a plain localisation key or a block for `tooltip`; the block holds `localization_key` plus named replacements, as for `custom_effect_tooltip`. [docs]
-- `not_tooltip` (in the `custom_override_tooltip` row) is not in the effects documentation and no vanilla script uses it. The string exists once in `hoi4.exe`. [unverified]
+- `not_tooltip` (in the `custom_override_tooltip` row) is not in the effects documentation, which lists only `tooltip`. The trigger documentation does describe it for the trigger `custom_override_tooltip`. [docs] `documentation/triggers_documentation.md`. No vanilla script uses it. [vanilla-confirmed 1.19.4.1] The string exists once in `hoi4.exe`. Whether the effect form accepts it is [unverified].
 <!-- kit:end id="general-corrections" -->
 
 ### Border wars <a id="Border_wars"></a>
@@ -940,7 +948,7 @@ randomize_temp_variable = {
 }
 ```
 
-Vanilla uses the binomial form above in `common/scripted_effects/BUL_scripted_effects.txt`, and `randomize_variable` with `distribution = uniform`, `min = 3000`, `max = 6500` in `common/on_actions/13_goe_on_actions.txt`. [vanilla-confirmed 1.19.4.1] The documentation's comment on the binomial form ("with N=2") is garbled, so the exact meaning of `min` and `max` for `binomial` and `poisson` is not stated. [unverified]
+Vanilla uses the binomial form above in `common/scripted_effects/BUL_scripted_effects.txt`, and `randomize_variable` with `distribution = uniform`, `min = 3000`, `max = 6500` in `common/on_actions/13_goe_on_actions.txt`. [vanilla-confirmed 1.19.4.1] The documentation's comment on the binomial form ("with N=2") is garbled, so the exact meaning of `min` and `max` for `binomial` and `poisson` is not stated. The docs only say that `binomial` needs `max` when `min` is given and that `poisson` needs `lambda`. [docs] `documentation/effects_documentation.md` What the numbers do to the result is [unverified].
 
 `career_profile_set_temp_playthrough_variable` and `career_profile_set_temp_variable` in the table above are documented as triggers, not effects. Vanilla uses `career_profile_set_temp_variable` inside the `bronze`, `silver` and `gold` trigger blocks of `common/medals/00_medals.txt` (24 uses) and in the condition blocks of `common/ribbons/00_ribbons.txt` (5 uses). [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/medals/00_medals.txt`
 <!-- kit:end id="variables-corrections" -->
@@ -1210,15 +1218,15 @@ country_event = { id = AAT_Sweden.9 months = 26 random_days = 70 }
 - `clear_rule = { <rule> = yes }` clears a rule that `set_rule` added; the documentation's example clears `can_not_declare_war = yes`. `set_rule` overrides all other rules on the country and takes a `desc`. [docs]
 - Vanilla uses `clear_rule` twice, in `common/ideas/bulgaria.txt`, inside idea blocks next to `country_lock_all_division_template = no`. [vanilla-confirmed 1.19.4.1]
 - `set_relation_rule` is marked deprecated in the documentation; use `add_relation_rule_override` and `remove_relation_rule_override` above. No vanilla script uses it. [docs], [vanilla-confirmed 1.19.4.1]
-- `ai_message`: the documentation entry is only the text "ai message... ?". No vanilla script uses it and its keys are unknown. [unverified]
+- `ai_message`: the documentation entry is only the text "ai message... ?". No vanilla script uses it and the documentation lists no keys. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
 
 Corrections to the "Game rule list" in the `set_rule` row:
 
 - `can_use_underway_replenishment` is a valid rule that the list lacks. Vanilla sets it with `set_rule` in `common/special_projects/projects/naval_projects.txt`. [vanilla-confirmed 1.19.4.1]
-- `can_join_factions_not_allowed_diplomacy` is only a localisation key (`CAN_JOIN_FACTIONS_NOT_ALLOWED_DIPLOMACY` in `localisation/english/rules_l_english.yml`). The lowercase name is in neither vanilla script nor `hoi4.exe`, so it is probably not a rule you can set. [unverified]
-- Of the 27 listed names, 23 occur in vanilla script. The four that do not are `can_declare_war_without_wargoal_when_in_war`, `can_join_factions_not_allowed_diplomacy`, `can_not_build_buildings` and `can_occupy_non_war`; all but `can_join_factions_not_allowed_diplomacy` occur once each as strings in `hoi4.exe`. [vanilla-confirmed 1.19.4.1], [unverified]
+- `can_join_factions_not_allowed_diplomacy` is only a localisation key (`CAN_JOIN_FACTIONS_NOT_ALLOWED_DIPLOMACY` in `localisation/english/rules_l_english.yml`). The lowercase name is in neither vanilla script nor `hoi4.exe`, so it is probably not a rule you can set. [vanilla-confirmed 1.19.4.1] for the localisation key and the script search, [unverified] for the rest.
+- Of the 27 listed names, 23 occur in vanilla script. The four that do not are `can_declare_war_without_wargoal_when_in_war`, `can_join_factions_not_allowed_diplomacy`, `can_not_build_buildings` and `can_occupy_non_war`; all but `can_join_factions_not_allowed_diplomacy` occur once each as strings in `hoi4.exe`. [vanilla-confirmed 1.19.4.1] for the counts (scan of `common/`, `events/`, `history/`), [unverified] for the `hoi4.exe` strings and whether the four names work.
 - The documentation for `add_relation_rule_override` spells a supported rule `can_send_volunteer`; vanilla uses `can_send_volunteers`, as the row above says. [vanilla-confirmed 1.19.4.1] `common/decisions/AUS.txt`
-- The documentation example for `set_party_rule` spells the party selector `ideologly`, while the row above says `ideology`. No vanilla script uses `set_party_rule`, so neither spelling is confirmed. [unverified]
+- The documentation example for `set_party_rule` spells the party selector `ideologly`, while the row above says `ideology`. No vanilla script uses `set_party_rule`, so neither spelling is confirmed. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`. Which spelling the engine accepts is [unverified].
 <!-- kit:end id="country-rule-effects" -->
 
 ### States <a id="States"></a>
@@ -1271,7 +1279,7 @@ Mana-related country-scoped effects:
 | air_experience | `<float> / <variable>`<br>The amount to add. | `air_experience = 10` | Adds the specified amount of air experience to the current scope. |  | 1.0 |
 
 <!-- kit:begin id="mana-scaled-political-power" at="section:Mana" -->
-**Kit addition** `add_scaled_political_power` (scope: country). The documentation says it adds political power scaled by the difference in industrial capacity between the receiver and another country. It lists no keys, no vanilla script uses it, and the string exists once in `hoi4.exe`, so the argument layout is unknown. [docs] `documentation/effects_documentation.md`, [unverified]
+**Kit addition** `add_scaled_political_power` (scope: country). The documentation says it adds political power scaled by the difference in industrial capacity between the receiver and another country. It lists no keys, no vanilla script uses it, and the string exists once in `hoi4.exe`, so the argument layout is unknown. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1] no vanilla use, [unverified] for the argument layout.
 <!-- kit:end id="mana-scaled-political-power" -->
 
 ### Politics <a id="Politics"></a>
@@ -4323,7 +4331,7 @@ set_can_be_fired_in_advisor_role = {
 <!-- kit:begin id="character-portrait-groups" at="section:General_4" -->
 **Kit correction** The `set_portraits` row labels its keys "Army scope" and "Character scope". The keys are portrait groups, each holding `small` and `large`, in the same shape as `portraits = { }` in a character file; the documentation's example uses `army` and `civilian`. `character = <token>` is only needed outside character scope. [docs] `documentation/effects_documentation.md`
 
-Of 53 vanilla `set_portraits` blocks in 23 files, 36 use `civilian`, 27 use `army` and none uses `navy`, although vanilla character files use `navy` in 13 files. Whether `set_portraits` accepts `navy` is not documented. [vanilla-confirmed 1.19.4.1] `common/decisions/JAP.txt`, [unverified]
+Of 53 vanilla `set_portraits` blocks in 23 files, 36 use `civilian`, 27 use `army` and none uses `navy`, although vanilla character files use `navy` in 13 files. Whether `set_portraits` accepts `navy` is not documented. [vanilla-confirmed 1.19.4.1] `common/decisions/JAP.txt`, [unverified] for whether `navy` is accepted.
 
 ```text
 JAP_kozo_sasaki = {
@@ -4490,9 +4498,9 @@ add_temporary_buff_to_units = {
 ```
 
 <!-- kit:begin id="combat-corrections" at="section:Combat" -->
-**Kit correction** `add_temporary_buff_to_units` is not an effect in 1.19.4.1. It is absent from `documentation/effects_documentation.md`, from all vanilla script and from the strings of `hoi4.exe`; so are its keys `combat_offense` and `combat_breakthrough`. Several other keys in its row (`org_damage_multiplier`, `str_damage_multiplier`, `war_support_reduction_on_damage`) are modifier names. Do not use the row or its example; `add_timed_unit_leader_trait` above is the documented way to give a leader a time-limited bonus. [unverified], [docs] `documentation/modifiers_documentation.md`
+**Kit correction** `add_temporary_buff_to_units` is not an effect in 1.19.4.1. It is absent from `documentation/effects_documentation.md`, from all vanilla script and from the strings of `hoi4.exe`; so are its keys `combat_offense` and `combat_breakthrough`. Several other keys in its row (`org_damage_multiplier`, `str_damage_multiplier`, `war_support_reduction_on_damage`) are modifier names. Do not use the row or its example; `add_timed_unit_leader_trait` above is the documented way to give a leader a time-limited bonus. [docs] `documentation/effects_documentation.md`, `documentation/modifiers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`. That the engine rejects the effect is [unverified].
 
-**Kit addition** `boost_planning` (scope: CHARACTER). The documentation says it boosts the planning of the units that belong to the army group or navy of the unit leader. It lists no keys, and no vanilla script uses it. [docs] `documentation/effects_documentation.md`, [unverified]
+**Kit addition** `boost_planning` (scope: CHARACTER). The documentation says it boosts the planning of the units that belong to the army group or navy of the unit leader. It lists no keys, and no vanilla script uses it. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1] no vanilla use, [unverified] for the argument layout.
 <!-- kit:end id="combat-corrections" -->
 
 ### Operatives <a id="Operatives"></a>
@@ -4817,7 +4825,7 @@ execute_operation_coordinated_strike = {
 ```
 
 <!-- kit:begin id="region-efficiency" at="section:Other_scopes" -->
-**Kit addition** `add_region_efficiency` is the only effect the documentation lists for strategic region scope. The text reads "add efficiency factor to strategic region for from country". It gives no keys, no vanilla script uses it, and the documentation does not say how to enter strategic region scope. [docs] `documentation/effects_documentation.md`, [unverified]
+**Kit addition** `add_region_efficiency` is the only effect the documentation lists for strategic region scope. The text reads "add efficiency factor to strategic region for from country". It gives no keys, no vanilla script uses it, and the documentation does not say how to enter strategic region scope. [docs] `documentation/effects_documentation.md`, [vanilla-confirmed 1.19.4.1] no vanilla use, [unverified] for the argument layout.
 <!-- kit:end id="region-efficiency" -->
 
 ## Flow control <a id="Flow_control"></a>

@@ -170,7 +170,7 @@ Keys vanilla uses that the templates do not show. Counts are blocks in `common/u
 | `derived_variant_name` | 35 | Localisation key such as `light_tank_equipment_0`. A string in `hoi4.exe` says it names derived designs. [unverified] |
 | `can_convert_from` | 37 | List of equipment ids; hull and chassis upgrades use it (carrier hulls list cruiser and heavy hulls). |
 | `allow_mission_type`, `forbid_mission_type` | 29, 3 | Lists of air mission names (`barrage_mission`, `training`). |
-| `picture` | 35 | Archetype picture name such as `archetype_light_tank_equipment`. A sprite `GFX_archetype_light_tank_equipment_medium` exists in `interface/Technologies.gfx`, so the mapping is probably picture name with `GFX_` before and `_medium` after. [unverified] |
+| `picture` | 41 | Archetype picture name such as `archetype_light_tank_equipment`. For 37 of the 41 values a sprite `GFX_<picture>_medium` exists in `interface/` (for example `GFX_archetype_light_tank_equipment_medium`). The three values without one are in the note below the table. That the game builds the sprite name this way is [unverified]. |
 | `sprite`, `model` | 28, 22 | `sprite` names a map sprite (`missile_default`, `convoy`); `model` names a ship model (`repair_ship`, `ship_hull_super_carrier`). |
 | `visual_level` | 144 | Integer 0 to 3 on regular equipment. The wiki calls it the image priority in the production screen. [unverified] |
 | `visual_tech_level_addition` | 2 | Integer on carrier and heavy hulls. |
@@ -184,6 +184,10 @@ Keys vanilla uses that the templates do not show. Counts are blocks in `common/u
 | `alias`, `substitute`, `family`, `supply_truck`, `upgrade_window_override` | 2, 1, 9, 2, 1 | Single-purpose keys: hull aliases (`alias = destroyer`), a plane that replaces another on carriers, a tank family label, a truck flag on motorised equipment, an upgrade window override on one cruiser hull. |
 | `naval_dominance_factor`, `naval_weather_penalty_factor` | 50, 7 | Ship hull stats, for example `naval_dominance_factor = 20` on `ship_hull_light`. |
 | `fuel_consumption` | 156 | Land and air stat, for example `fuel_consumption = 2.4` on `mechanized.txt`. |
+
+Notes on rows of the table above:
+
+- `picture`: The three values without one are `archetype_specialist_armored_vehicles`, `archetype_amphibious_tank_equipment` and `archetype_rocket_interceptor_equipment`.
 <!-- kit:end id="equipment-keys" -->
 
 ### Internal Types <a id="Internal_Types"></a>

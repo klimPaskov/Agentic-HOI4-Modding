@@ -133,7 +133,7 @@ Here is a generic example:
 - 8 files: `generic.txt` (block ids `ai_focus_<name>`) and one per country with its own weights (`ENG`, `FRA`, `GER`, `ITA`, `JAP`, `SOV`, `USA`; block ids `ai_focus_<name>_<TAG>`, for example `ai_focus_naval_USA`). Each block holds only `research = { <key> = <weight> }`. No block holds national focuses.
 - A country file replaces the whole generic block for that country, so a country block should list every research key it still wants. Not confirmed by a test [unverified].
 - Research keys in vanilla are technology categories from `common/technology_tags/00_technology.txt`, such as `armor`, `artillery`, `industry`, `electronics`, `infantry_weapons`, `radar_tech`, `naval_doctrine`, `land_doctrine`, `air_doctrine`, `jet_technology`, `nuclear`, `para_tech`, `dd_tech` to `ss_tech`. Two keys are not categories: `defensive` (weight 5.0 in the defense block) and `offensive` (5.0 in the aggressive block). What they do is not documented.
-- Weights are plain numbers; doctrine keys use large ones (`land_doctrine = 100.0`, `naval_doctrine = 100.0`, `air_doctrine = 50.0` generic, 75.0 for the USA). Weights are multipliers for the research score of every technology in that category. The multiplier reading is the wiki's statement [unverified].
+- Weights are plain numbers; doctrine keys use large ones (`land_doctrine = 100.0`, `naval_doctrine = 100.0`, `air_doctrine = 50.0` generic, 75.0 for the USA). The wiki says only that these files control how much each focus affects research. Reading a weight as a multiplier on the research score of every technology in that category is [unverified].
 <!-- kit:end id="ai-focus-research-format" -->
 
 ### Historical focuses <a id="Historical_focuses_2"></a>
