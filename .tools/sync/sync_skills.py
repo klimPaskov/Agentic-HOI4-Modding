@@ -47,7 +47,8 @@ REQUIRED_BY: Dict[str, str] = {
     "agents": ".codex",
     "qoder": ".qoder",
 }
-IGNORED = {"__pycache__", ".DS_Store"}
+# Tool caches written next to skill tools (check.py full runs mypy there) are not skill content.
+IGNORED = {"__pycache__", ".DS_Store", ".mypy_cache", ".ruff_cache", ".pytest_cache"}
 
 
 def canonical_skills(canonical: Path, names: Optional[List[str]]) -> List[Path]:

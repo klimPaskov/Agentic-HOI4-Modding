@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Leave tool caches (`.mypy_cache`, `.ruff_cache`, `.pytest_cache`) out of the skill copies. `check.py full` runs mypy on skill tools, and the cache it wrote next to them was reported as skill-copy drift by the next generator check.
 - Review the offline wiki snapshot and the skills against HOI4 1.19.4.1 (Operation Postern v1.19.4.1.99a5). The game's documentation changed in two places: the AI strategy token `stockpile_fuel` is new (now in AI modding and the `hoi4-ai-strategies` token catalog), and the console command `debug_types` is gone (Console commands). Steam's depot manifests show 1,511 changed game files, so every tagged statement whose files changed was re-measured on 1.19.4.1 and retagged, and statements on unchanged files keep their 1.19.3 tags. `defines_additions.md` gains a 1.19.4.1 section: 19 new defines (volunteer recall, player auto-import, focus tree mini-map, casualty trickleback) and one changed value.
 - Record the installed Steam depot manifest ids in `game_docs_index.json`. After a game update, `wiki_status.py` lists the game files that changed (read from the depot cache by the new `steam_depots.py`) and flags pages whose `sources` cover them, not only pages that cite documentation.
 - Check out the Meshy runtime `package.json` and `package-lock.json` with LF endings on every platform. On a Windows checkout with `core.autocrlf=true` their hashes no longer matched the bootstrap pins, so the runtime lock test failed and the 3D bootstrap would refuse the runtime.
