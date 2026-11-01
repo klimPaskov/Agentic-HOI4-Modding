@@ -231,7 +231,7 @@ def has_sources(root: Path, entry: Entry) -> bool:
 def command(root: Path, entry: Entry, selection: Selection, check: bool) -> List[str]:
     line = [*(entry.interpreter or (sys.executable, "-B")), str(root / entry.script)]
     line += [argument.replace("{root}", str(root)) for argument in entry.root_args]
-    if check and entry.kind == "generate":
+    if check:
         line += list(entry.check_args)
     if not selection.whole and entry.item_args:
         for item in sorted(selection.items):
