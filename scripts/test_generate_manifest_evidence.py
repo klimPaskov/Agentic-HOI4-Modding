@@ -69,6 +69,11 @@ class ManifestGeneratorTests(unittest.TestCase):
                 {"present.txt": b"present"},
             )
 
+    def test_removed_generated_components_leave_the_manifest(self) -> None:
+        components = [{"id": "core.agents"}, {"id": "imagegen.runtime", "old": True}, {"id": "imagegen.gptimage"}, {"id": "live.tools"}]
+        merged = GENERATOR.merge_generated_components(components, {"imagegen.runtime": {"id": "imagegen.runtime"}, "imagegen.new": {"id": "imagegen.new"}, "live.tools": {"id": "live.tools", "new": True}})
+        self.assertEqual(merged, [{"id": "core.agents"}, {"id": "imagegen.runtime"}, {"id": "live.tools", "new": True}, {"id": "imagegen.new"}])
+
     def test_canonical_manifest_uses_schema_five_and_declares_image_providers(self) -> None:
         manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
