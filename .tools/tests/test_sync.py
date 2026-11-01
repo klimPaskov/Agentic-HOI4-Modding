@@ -183,6 +183,14 @@ class SkillCopies(SyncCase):
 		self.assertEqual(result.returncode, 1)
 		self.assertIn(".agents/skills is missing", result.stdout)
 
+	def test_tool_caches_are_not_skill_content(self):
+		# check.py full runs mypy on skill tools, which writes .mypy_cache next to them.
+		for cache in (".mypy_cache", ".ruff_cache", ".pytest_cache"):
+			self.mod.write(f".claude/skills/skill-a/tools/{cache}/3.9/x.json", "{}\n")
+		self.assertEqual(self.mod.run("--check").returncode, 0)
+		self.assertEqual(self.mod.run().returncode, 0)
+		self.assertFalse(self.mod.path(".agents/skills/skill-a/tools").exists())
+
 	def test_hand_edit_of_a_copy_is_refused(self):
 		self.mod.write(".agents/skills/skill-a/SKILL.md", "edited copy\n")
 		result = self.mod.hook(".agents/skills/skill-a/SKILL.md")

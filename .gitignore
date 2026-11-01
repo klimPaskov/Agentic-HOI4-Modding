@@ -16,6 +16,7 @@
 
 # Generated Python bytecode from reusable skill tools.
 /.claude/skills/**/__pycache__/
+/.claude/skills/**/.mypy_cache/
 /.tools/image_generation/**/__pycache__/
 /.tools/image_generation/**/node_modules/
 /.tools/image_generation/**/.venv/
