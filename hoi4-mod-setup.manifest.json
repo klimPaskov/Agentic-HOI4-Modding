@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "d290b607b81f921584d9244b287dd6b3bfacb989",
+  "generated_for_revision": "007de3e8620b0590f27499f7eb7b96c314f5ac66",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -389,8 +389,8 @@
         },
         {
           "path": ".tools/sync/sync_skills.py",
-          "sha256": "fdaa1c8b1b5de42292e508ae39dcf37f34adff3298a6b25e7c17513318cd5d16",
-          "size": 8536
+          "sha256": "efb8494eab15bf5c05b104f962fa303854abf36fef891f028563ac743239bd6a",
+          "size": 8680
         },
         {
           "path": ".tools/tests/fixtures/audits/README.md",
@@ -524,8 +524,8 @@
         },
         {
           "path": ".tools/tests/test_sync.py",
-          "sha256": "3e68e66d93065beabf60f4c9356d19d4f72905f702bbe6e55fb7893d947d6cb0",
-          "size": 22739
+          "sha256": "19123fd6ff264c4cf7fa05097d7d577d3f3f86b77cf64fdd3d1e2556bba53283",
+          "size": 23198
         },
         {
           "path": ".tools/tests/test_validate_scripts_mcp.py",
