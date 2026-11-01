@@ -108,10 +108,13 @@ The contact sheet shows the first frame plus the declared frame count; inspect e
 
 ## Profiles and counter conventions
 
-Profiles live in `profiles.json`, one row per family with its canvas for new art, its accepted sizes, its minimum margin, its frame count and the vanilla evidence for each number:
+Profiles live in `profiles.json`, one row per hoi4-imagegen family (40 rows, `family_ids.json` is the list) with its canvas for new art, its accepted sizes, its minimum margin, its frame count and the vanilla evidence for each number. The values are the sizes measured on HOI4 1.19.4.1. `gfx.py` reads `canvas`, `accepted`, `margin`, `frames` and `off_size_level`; hoi4-imagegen reads the same file and its optional `imagegen` object. `gfx.py` keeps its row names `focus`, `decision`, `idea`, `category`, `report`, `news`, `counter-large` and `counter-small`; every other row is named by its family id. Some rows:
 
 | Profile | Canvas for new art | Minimum margin |
 |---|---|---|
+| focus | 100x88 | 2 px |
+| idea (spirits 60x68, concerns 64x64, advisor cards 65x67) | 60x68 | 1 px |
+| decision | 33x32 | 1 px |
 | category (small icon) | 52x40 | 3 px |
 | report | 210x176 | none |
 | news | 397x153 | none |
@@ -119,7 +122,7 @@ Profiles live in `profiles.json`, one row per family with its canvas for new art
 | counter-small | 30x12 per frame, 2 frames | none (vanilla fills the top/bottom) |
 
 Margins are review defaults, not vanilla measurements.
-When a mod settles its focus, decision or idea canvases, add a row with `canvas`, `accepted`, `margin`, `frames`, `off_size_level` (`error` or `warning`), `alternative_level` and a `source` naming the decision; `gfx.py families` then checks that family.
+A mod that settled other canvases (for example 94x86 focus, 64x64 idea and 32x32 decision icons) overrides those rows in its own copy of `profiles.json` with `canvas`, `accepted`, `margin`, `frames`, `off_size_level` (`error` or `warning`) and a `source` naming the decision; the focus, decision and idea checks of `gfx.py` and the sizes hoi4-imagegen plans then follow the mod, and hoi4-imagegen reports the difference from vanilla. The `idea` row accepts every idea-picture size because `gfx.py` applies it to spirits, concerns and advisor cards alike. `gui_texture` and `super_event` have no vanilla canvas, so a mod defines them.
 `size --profile` accepts any listed size unless `--canvas` overrides it.
 `category` means the small category icon, not the separate 114x101 category illustration.
 Always inspect the actual consumer; use `--canvas W H` and `--margin N` for a verified exception.
