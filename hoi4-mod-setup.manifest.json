@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "c647be0dbf441e7b468ae08841a3c5f70fdd1a6c",
+  "generated_for_revision": "d290b607b81f921584d9244b287dd6b3bfacb989",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1784,8 +1784,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "decb2947508d33bb7aa1be75288ca71dbdec9428eb70a2f290e862fe0d4c97fd",
-          "size": 68480
+          "sha256": "4ca88bc7b3ed9d4f822efe0513111ac77c5e9fe3c70c4b57e383618aa2760229",
+          "size": 68916
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -5208,8 +5208,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "decb2947508d33bb7aa1be75288ca71dbdec9428eb70a2f290e862fe0d4c97fd",
-          "size": 68480
+          "sha256": "4ca88bc7b3ed9d4f822efe0513111ac77c5e9fe3c70c4b57e383618aa2760229",
+          "size": 68916
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -10671,8 +10671,8 @@
       "expected_files": [
         {
           "path": ".tools/3d_pipeline/README.md",
-          "sha256": "c295918570b6f8f8b255bb7f88bf2aae25c8f299bd04fa10170c18f350495057",
-          "size": 15776
+          "sha256": "0c8b9af4318490180f4b694372d01bb05402b180a9fd5110b49c911c28481e73",
+          "size": 15964
         },
         {
           "path": ".tools/3d_pipeline/adapter/animation_root_export.py",
@@ -10686,8 +10686,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/blender_worker.py",
-          "sha256": "255da843db01545f1deee89bed1716127d1a1fe709f7b4b525c5d0613ccb92c8",
-          "size": 539606
+          "sha256": "88a83d2a5a44fdd0e06cca41baae7e64de6c04f5d85674af86e26fc205b2bfa1",
+          "size": 540375
         },
         {
           "path": ".tools/3d_pipeline/adapter/explicit_batch_repair.py",
@@ -10811,8 +10811,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
-          "sha256": "4776def5c894533fa8001a11b80d855acb55233c7338a4f4441de59087835d6f",
-          "size": 12736
+          "sha256": "3aeaec7d061be5a1ac493f04a3567be7235b1b6897b45a8fdaf9eaeabd0306ba",
+          "size": 15503
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_pricing.json",
@@ -10861,8 +10861,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/profile_gates.py",
-          "sha256": "ff5bc750ac38be4724722c53bc02e8695bfba54765c1b287dc444119b4bd8e8e",
-          "size": 12661
+          "sha256": "bd4da02d226e5e7638e45c0cfd650d74fcc3ecc0e2a1e52fb6002f2d694886ec",
+          "size": 14405
         },
         {
           "path": ".tools/3d_pipeline/lib/reuse.py",
@@ -11551,8 +11551,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_mesh_components.py",
-          "sha256": "b8587df9bb7d17ff86c4a3d7ce2050e82310753f0bcda9cdd75e61598112e0e0",
-          "size": 7120
+          "sha256": "1956e38d47425788866434f091e9b8af812d0de4791c0048170de1aeaeea6edd",
+          "size": 8897
         },
         {
           "path": ".tools/3d_pipeline/tests/test_mesh_region_inspection.py",
@@ -11601,8 +11601,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_profile_gates.py",
-          "sha256": "0409f133e97ca494863a9e501fcdf507760f7cda691c16373b35d6b41a8bf7ee",
-          "size": 23497
+          "sha256": "0fbaf158def75d6c2f4552ada5acb9b5e071ec6b29b741bca66710856006f909",
+          "size": 30116
         },
         {
           "path": ".tools/3d_pipeline/tests/test_reimport_promotion_contract.py",
