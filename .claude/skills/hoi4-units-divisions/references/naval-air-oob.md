@@ -1,7 +1,7 @@
 # Naval and Air Orders of Battle
 
 Read this when writing or auditing fleets, task forces, ships, air wings, carrier wings, aces, ship name lists, or the DLC splits for navy and air.
-Primary sources: `paradox_wiki/division_modding.md` (Adding Air Wings, Adding Navies, List of Units), `paradox_wiki/country_creation.md` (Order of battle, Variants), `paradox_wiki/namelist_modding.md` (Naval Names), installed `documentation/effects_documentation.md` (`create_ship`, `create_equipment_variant`, `set_naval_oob`, `set_air_oob`, `transfer_ship`, `transfer_navy`, `destroy_ships`, `add_equipment_production`), and the vanilla files named below under the installed game's ``.
+Primary sources: `hoi4_wiki/division_modding.md` (Adding Air Wings, Adding Navies, List of Units), `hoi4_wiki/country_creation.md` (Order of battle, Variants), `hoi4_wiki/namelist_modding.md` (Naval Names), installed `documentation/effects_documentation.md` (`create_ship`, `create_equipment_variant`, `set_naval_oob`, `set_air_oob`, `transfer_ship`, `transfer_navy`, `destroy_ships`, `add_equipment_production`), and the vanilla files named below under the installed game's ``.
 
 ## The DLC split
 

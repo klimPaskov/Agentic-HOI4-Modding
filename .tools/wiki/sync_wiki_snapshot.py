@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-"""Regenerate the offline Paradox wiki snapshot from the live Hearts of Iron IV wiki.
+"""Regenerate the kit's HOI4 wiki from the live Hearts of Iron IV Wiki.
 
-``paradox_wiki/`` holds one markdown file per wiki modding page, named after its
+``hoi4_wiki/`` holds one markdown file per wiki modding page, named after its
 title in lowercase snake_case (``Scripted GUI modding`` is ``scripted_gui_modding.md``),
 plus ``media/`` with every image those pages reference. ``AGENTS.md`` treats that
 snapshot as the required wiki reference, so it has to stay current and self-contained.
@@ -27,7 +27,7 @@ without a review block gets a placeholder one. ``.tools/wiki/kit_blocks.py``
 defines the format. The run ends with the pages whose wiki revision changed, so
 their kit blocks and reviews can be re-read against the new wiki text.
 
-The tool writes to ``paradox_wiki/`` in place. Run
+The tool writes to ``hoi4_wiki/`` in place. Run
 ``.tools/wiki/verify_wiki_snapshot.py`` afterwards; it is the acceptance check
 for the result.
 
@@ -66,12 +66,13 @@ def find_repo_root(start):
     """Walk up from this file until the snapshot directory is found."""
     current = os.path.abspath(start)
     while True:
-        if os.path.isdir(os.path.join(current, "paradox_wiki")):
+        if os.path.isdir(os.path.join(current, "hoi4_wiki")):
             return current
         parent = os.path.dirname(current)
         if parent == current:
-            raise SystemExit("cannot locate the repository root: no paradox_wiki/ "
-                             "directory above this script")
+            raise SystemExit("cannot locate the repository root: no hoi4_wiki/ "
+                             "directory above this script (a mod that still has the "
+                             "old paradox_wiki/ name: git mv paradox_wiki hoi4_wiki)")
         current = parent
 
 
@@ -80,7 +81,7 @@ sys.path.insert(0, HERE)
 import kit_blocks  # the page format, next to this script
 
 REPO = find_repo_root(HERE)
-WIKI_DIR = os.path.join(REPO, "paradox_wiki")
+WIKI_DIR = os.path.join(REPO, "hoi4_wiki")
 MEDIA_DIR = os.path.join(WIKI_DIR, "media")
 DEFAULT_CACHE = os.path.join(REPO, ".tmp", "wiki_cache")
 # Set by --cache. Unset means every run fetches the live wiki, which is the
@@ -1236,7 +1237,7 @@ def legacy_files():
 
 
 def snapshot_pages():
-    """Return (wiki page titles, kit page titles) present in paradox_wiki/.
+    """Return (wiki page titles, kit page titles) present in hoi4_wiki/.
 
     A page's title is its level-1 heading; the file name is only derived from it.
     """
@@ -1351,7 +1352,7 @@ def parse_args():
     ap.add_argument("--new-only", action="store_true",
                     help="build only the pages listed in NEW_PAGES")
     ap.add_argument("--dry-run", action="store_true",
-                    help="convert without writing to paradox_wiki/")
+                    help="convert without writing to hoi4_wiki/")
     ap.add_argument("--out", default=None, metavar="DIR",
                     help="directory that --dry-run writes to")
     ap.add_argument("--cache", nargs="?", const=DEFAULT_CACHE, default=None,
@@ -1383,10 +1384,10 @@ def main():
     legacy = legacy_files()
     if legacy:
         # Writing the new names beside the old files would double every page.
-        sys.exit(f"paradox_wiki/ still has {len(legacy)} page file(s) whose names do not "
+        sys.exit(f"hoi4_wiki/ still has {len(legacy)} page file(s) whose names do not "
                  f"follow the snapshot's scheme, for example {legacy[0]!r} (the old names were "
                  f"'<Page Title>{LEGACY_NAME}'). The snapshot now uses lowercase snake_case "
-                 "names (scripted_gui_modding.md); replace paradox_wiki/ with the kit's "
+                 "names (scripted_gui_modding.md); replace hoi4_wiki/ with the kit's "
                  "current snapshot before refreshing.")
     existing, kit_pages = snapshot_pages()
     full_set = sorted(set(existing) | set(NEW_PAGES))

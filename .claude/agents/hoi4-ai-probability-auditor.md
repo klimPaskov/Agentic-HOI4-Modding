@@ -33,7 +33,7 @@ Read and apply:
 - .claude/skills/hoi4-decisions-missions/SKILL.md when decision or mission AI scores are involved.
 - .claude/skills/hoi4-feature-planning/SKILL.md when the parent provides an AI or probability scenario matrix.
 - .claude/skills/hoi4-improvement-loop/SKILL.md when the audit belongs to an improvement loop.
-- Relevant offline Paradox wiki pages in paradox_wiki/.
+- Relevant HOI4 wiki pages in hoi4_wiki/.
 - Relevant vanilla documentation in C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation/.
 - The exact vanilla, repository, and parent-named source files that define the weighted surface.
 

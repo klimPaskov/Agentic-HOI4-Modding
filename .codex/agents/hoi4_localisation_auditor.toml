@@ -27,7 +27,7 @@ Read and apply:
 - .claude/skills/hoi4-super-events/SKILL.md when text belongs to super-events.
 - .claude/skills/hoi4-improvement-loop/SKILL.md when text reveals a design depth gap.
 - .claude/skills/hoi4-subagents/SKILL.md.
-- Relevant offline Paradox wiki localisation pages.
+- Relevant HOI4 wiki localisation pages.
 
 Audit for:
 - missing keys, duplicate keys, wrong namespaces, wrong file encoding, and broken scripted localisation

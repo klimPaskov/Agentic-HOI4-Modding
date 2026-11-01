@@ -1,7 +1,7 @@
 # Technology tree interface authoring
 
 Read this file when a technology folder, branch, tile, or tab must be added or changed.
-`GAME` is the installed Hearts of Iron IV folder named in `CLAUDE.md` and `WIKI` is the repository folder `paradox_wiki`.
+`GAME` is the installed Hearts of Iron IV folder named in `CLAUDE.md` and `WIKI` is the repository folder `hoi4_wiki`.
 Source: `WIKI/technology_modding.md` (Brief user interface, Position, Folders, Graphical user interface), checked against `GAME/interface/countrytechtreeview.gui` and `.gfx`.
 Also read `WIKI/interface_modding.md` for the control types.
 

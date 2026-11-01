@@ -1,6 +1,6 @@
 # Wiki snapshot coverage review for HOI4 1.19.3.0
 
-Plan and record of the 2026-10-31 review of `paradox_wiki/` against Hearts of Iron IV 1.19.3.0 (`Operation Postern v1.19.3.0.c01a (5632)`). Each page's own review block holds its detailed record; this file is the overview. The workflow for later builds is in `README.md`.
+Plan and record of the 2026-10-31 review of `hoi4_wiki/` against Hearts of Iron IV 1.19.3.0 (`Operation Postern v1.19.3.0.c01a (5632)`). Each page's own review block holds its detailed record; this file is the overview. The workflow for later builds is in `README.md`.
 
 ## Starting point
 

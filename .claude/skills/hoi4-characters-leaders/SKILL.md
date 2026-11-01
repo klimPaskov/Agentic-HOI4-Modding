@@ -49,7 +49,7 @@ Installed documentation is more authoritative than the wiki. Root: the installed
 | Idea categories and character slots | `common/idea_tags/00_idea.txt` |
 | Ideology types | `common/ideologies/00_ideologies.txt` |
 
-Offline wiki (`paradox_wiki/`): `character_modding.md` (primary), `country_creation.md` (Starting characters, Character names, Character portraits), `ideology_modding.md`, `idea_modding.md` (advisor-as-idea arguments, categories), `portrait_modding.md`, `scopes.md` (character iterators, `owner`, `party_leader`), `effects.md` and `triggers.md`.
+Offline wiki (`hoi4_wiki/`): `character_modding.md` (primary), `country_creation.md` (Starting characters, Character names, Character portraits), `ideology_modding.md`, `idea_modding.md` (advisor-as-idea arguments, categories), `portrait_modding.md`, `scopes.md` (character iterators, `owner`, `party_leader`), `effects.md` and `triggers.md`.
 
 Vanilla precedents to mirror:
 
