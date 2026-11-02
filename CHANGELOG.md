@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Move the `hoi4-imagegen` release route to v0.2.2. 0.2.2 registers every family under the sprite name HOI4 1.19.4.1 looks up; v0.2.1 named eleven families wrongly, so the game never drew them: the battalion icon is `GFX_unit_<sub-unit key>_icon_medium`, the on-map counter `GFX_unit_<key>_icon_medium_white` (file `onmap_unit_<key>_icon.dds`) with a derived text icon, division symbols are numbered `GFX_div_templ_<n>_large` with a derived small symbol, and the decision category picture, raid, operation phase, medal, landmark, faction logo and modifier icon follow their vanilla patterns. `.tools/gfx/profiles.json` gets the new `medal` row (56x84 large medal, derived 28x42) and the vanilla names in the counter, division emblem and faction logo rows.
 - Publish setup manifest format 6. Each coding client declares whether HOI4 Mod Setup manages a project MCP file, the client keeps MCP servers in its own settings, or it has no MCP support, so an app that cannot register a client never offers it.
 - Add packages for GitHub Copilot (VS Code), Gemini CLI, Antigravity, Grok Build, Kilo Code, Kiro, and Qwen Code with project MCP registration, and for Cline, Devin Desktop, Augment, Continue, and Aider with project guidance only.
 - Share one `.agents/skills/` copy between Codex, Gemini CLI, Antigravity, Kilo Code, and Devin Desktop; generate native subagents for seven more clients from the canonical Claude agents.

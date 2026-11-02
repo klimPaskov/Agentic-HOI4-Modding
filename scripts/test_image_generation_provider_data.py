@@ -119,7 +119,7 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
     def test_hoi4_imagegen_release_binary_route_declares_the_five_verified_targets(self) -> None:
         providers = {item["id"]: item for item in build_image_generation_table(ROOT)["providers"]}
         route = providers["hoi4_imagegen"]["route"]
-        self.assertEqual(route["package_version"], "0.2.1")
+        self.assertEqual(route["package_version"], "0.2.2")
         self.assertEqual(
             [(field["id"], field["environment_name"]) for field in route["credential_fields"]],
             [("openai_api_key", "OPENAI_API_KEY"), ("gemini_api_key", "GEMINI_API_KEY"),
@@ -133,11 +133,11 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
         for triple, target in binary["targets"].items():
             with self.subTest(target=triple):
                 archive = "zip" if "windows" in triple else "tar.gz"
-                folder = f"hoi4-imagegen-v0.2.1-{triple}"
+                folder = f"hoi4-imagegen-v0.2.2-{triple}"
                 self.assertEqual(target["archive"], archive)
                 self.assertEqual(
                     target["url"],
-                    f"https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.2.1/{folder}.{archive}")
+                    f"https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.2.2/{folder}.{archive}")
                 self.assertRegex(target["sha256"], r"^[0-9a-f]{64}$")
                 self.assertGreater(target["size"], 0)
                 suffix = ".exe" if "windows" in triple else ""
@@ -145,8 +145,8 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
                     "mcp": f"{folder}/hoi4-imagegen-mcp{suffix}", "cli": f"{folder}/hoi4-imagegen{suffix}"})
         windows = binary["targets"]["x86_64-pc-windows-msvc"]
         self.assertEqual((windows["size"], windows["sha256"]),
-                         (17368464, "6d3cb51928654cb7b4ecd8004b1f91265ddfab9c76f6ef191ed86f29e47302b6"))
-        self.assertEqual(providers["hoi4_imagegen"]["reference_mcp"]["version"], "0.2.1")
+                         (17393812, "98c2ed836e8e2c38ba44b0244ca128ba72be03a224bbca01e9bc31ad489d3837"))
+        self.assertEqual(providers["hoi4_imagegen"]["reference_mcp"]["version"], "0.2.2")
         self.assertNotIn("release_binary", providers["openai_api"]["route"], "only the hoi4-imagegen route installs a release binary")
 
     def test_hoi4_imagegen_component_is_a_generated_managed_mcp_component(self) -> None:
