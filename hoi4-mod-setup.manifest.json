@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "21a7f74b032de314f1e6be64dc7cc82ae0792f76",
+  "generated_for_revision": "597fb8212e91bad80ffd0227f65b4df3bc4f4695",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1784,8 +1784,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "fd67fdd4bae511efd4e02ac4b766063d8b81852f5d4f9291f1cf40a14179065d",
-          "size": 68899
+          "sha256": "8c6aa341a289e748195af23cf54c0096693889a7a045c9b89838daccb98f9a5a",
+          "size": 70178
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -5208,8 +5208,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "fd67fdd4bae511efd4e02ac4b766063d8b81852f5d4f9291f1cf40a14179065d",
-          "size": 68899
+          "sha256": "8c6aa341a289e748195af23cf54c0096693889a7a045c9b89838daccb98f9a5a",
+          "size": 70178
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -10870,6 +10870,11 @@
           "size": 9769
         },
         {
+          "path": ".tools/3d_pipeline/lib/texture_lineage.py",
+          "sha256": "c10a5229ca2d0fddf8c8ad32224150c59eae7805fe53dc6c2a8c831a36a2da3e",
+          "size": 11401
+        },
+        {
           "path": ".tools/3d_pipeline/meshy_client.py",
           "sha256": "06fadbcef4156ac6c02c7f62e01d2b1fce0cd1223321657e275881caaf2e56d7",
           "size": 30089
@@ -10891,8 +10896,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "5480a9e62539e16125331ef5c73fe5704f6276537467fcb48bc05e30f2dfa988",
-          "size": 118009
+          "sha256": "2cc7fae7062f122ca971b8a8978a2c30e7de67de2c4566143e65dd7c078101dd",
+          "size": 125570
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_rigid_weapon_attachment_integration.py",
@@ -11633,6 +11638,11 @@
           "path": ".tools/3d_pipeline/tests/test_skeletal_export_streams.py",
           "sha256": "b3e5a421aa6ff01e684c4c8910a42fb13089bff7ee7cf38fafda0b99131d8caa",
           "size": 9012
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_texture_lineage.py",
+          "sha256": "49745d3de1350ca5fa8be14540cf69be8ca199f00c175d50974943397853e8f4",
+          "size": 18074
         },
         {
           "path": ".tools/3d_pipeline/tests/test_texture_size_gate.py",
