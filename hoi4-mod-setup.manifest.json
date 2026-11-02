@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "273b4ce0d692a3406e0a2afd7a88952405c83f09",
+  "generated_for_revision": "21a7f74b032de314f1e6be64dc7cc82ae0792f76",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -9180,28 +9180,28 @@
         },
         {
           "path": "hoi4_wiki/achievement_modding.md",
-          "sha256": "8e996e65102a4a66c99f0ae4c00ff1f9d072733ad7213718a90d64dfde41600d",
-          "size": 20002
+          "sha256": "f83943e4dc034fb3e9e270320a740203a2d5c2a95a22c1f005b1d65c980121f3",
+          "size": 20599
         },
         {
           "path": "hoi4_wiki/ai_focuses.md",
-          "sha256": "56f9d2a3a54f6c69f33cf4a9c998739202eab9ff6c0bf10aaae44895644c436f",
-          "size": 14958
+          "sha256": "79433f4da0530d6c52123504e91f569ebb7e7b7f5359891869bdd5f707f3f3ce",
+          "size": 15619
         },
         {
           "path": "hoi4_wiki/ai_modding.md",
-          "sha256": "d7dd8eb876c9db29c31bb4dc34cc6a40bb357627bc4d76b9134e41b0c957e395",
-          "size": 120186
+          "sha256": "0dee6be2a9c356cf7ae551ff9b12f0df58ea13102499b6b353bd53c5d41063f1",
+          "size": 121204
         },
         {
           "path": "hoi4_wiki/autonomy_state_modding.md",
-          "sha256": "0909855c98146e7e04adf28b6f7f5881886f958d23aaec6e1e85cddc570aff71",
-          "size": 32262
+          "sha256": "aae8d4db8d17ec9c1576271d6d80ddc26aae7625475204c0d4c7e7f3b76c35d3",
+          "size": 33297
         },
         {
           "path": "hoi4_wiki/balance_of_power_modding.md",
-          "sha256": "2ce26dcf7e7f767c82488828a3d33a60edf2c209e04a6e4a0521238d82bb41ee",
-          "size": 35383
+          "sha256": "8ef43743a6675a12d11bceb01a5ed77585f215ea3cf6ccc955505a7efb101c54",
+          "size": 37025
         },
         {
           "path": "hoi4_wiki/bookmark_modding.md",
@@ -9215,18 +9215,18 @@
         },
         {
           "path": "hoi4_wiki/character_modding.md",
-          "sha256": "0dfff0e4db25efd111f27440650c6a29b2b2ac4db7a014e09b003d0f279abf25",
-          "size": 93682
+          "sha256": "3c8e48a06dc30a8b8140bd953630e7ba9ab34b747595bf247df770e6255d9e83",
+          "size": 96631
         },
         {
           "path": "hoi4_wiki/collection_modding.md",
-          "sha256": "7956d59158d4950f5d0c8790065b3d56636c6cbf69ad49e7fb80e06b3b863cb0",
-          "size": 38793
+          "sha256": "8af1f30baf1c763e1be17538a726b2eff1cde9f607ba1715271bb6a92df4dda9",
+          "size": 39955
         },
         {
           "path": "hoi4_wiki/console_commands.md",
-          "sha256": "85bbcdaa9a252497e3d5eafe49067eceb6a3f4e296997fded767ba9caf3ace1d",
-          "size": 83404
+          "sha256": "58b36d6affe5fe3bf066a6e00467cd8a5a1213a468a9cebbcc285238eccc0b69",
+          "size": 85104
         },
         {
           "path": "hoi4_wiki/cosmetic_tag_modding.md",
@@ -9240,13 +9240,13 @@
         },
         {
           "path": "hoi4_wiki/data_structures.md",
-          "sha256": "ab10c35c72c855fa224a715b984790b6326d487a63e9284ebf4935630879133f",
-          "size": 185583
+          "sha256": "c0ce1dd0af44fa6b9604da6e5ca951b5deae709845ce9edbe4febd2844829588",
+          "size": 186265
         },
         {
           "path": "hoi4_wiki/decision_modding.md",
-          "sha256": "b8f494282e5e0322b0ec192620bed51ff370dfac15d02cc1524e9bd48fbe0658",
-          "size": 58537
+          "sha256": "03edb0a1577b9320606e91961a866abc6a5fcec75962f8a0b60c1d90fe6461e1",
+          "size": 60620
         },
         {
           "path": "hoi4_wiki/defines.md",
@@ -9260,18 +9260,18 @@
         },
         {
           "path": "hoi4_wiki/division_modding.md",
-          "sha256": "82601c574be0629f063b5d35d533c93191c82fe56f8b3e5135efddb01bffaa05",
-          "size": 45944
+          "sha256": "e8a821aa4ba405c88df26876021985d0594d32bbbba17d638cb7f87165dc8cc3",
+          "size": 46297
         },
         {
           "path": "hoi4_wiki/doctrine_modding.md",
-          "sha256": "082cadf95d9ea1b9c1dbea0be435c6b309f8929a88e17f679dca001fd3faecab",
-          "size": 42953
+          "sha256": "5e88b05212a4d953aea43bc78a7055fda11f0e5966a1d1171436d881fdef0ece",
+          "size": 43757
         },
         {
           "path": "hoi4_wiki/effects.md",
-          "sha256": "520cc2d631f6a75583e19b52a41a721f924ace639c94ba48a182e76b7a7f073d",
-          "size": 344797
+          "sha256": "55987dda50d56b6fbc1db2065fbe0384ef0d071d905f6716e5353982a475e93e",
+          "size": 346164
         },
         {
           "path": "hoi4_wiki/entity_modding.md",
@@ -9285,8 +9285,8 @@
         },
         {
           "path": "hoi4_wiki/event_modding.md",
-          "sha256": "4cb741b9a7cdc958bbf102718ab46debcfab1e290d2ed5b3ea1f676af4cce226",
-          "size": 67500
+          "sha256": "07a498906578e20c743b821829dde4647fbd3327e7e9283284f42df25cb4ede4",
+          "size": 67871
         },
         {
           "path": "hoi4_wiki/faction_modding.md",
@@ -9300,18 +9300,18 @@
         },
         {
           "path": "hoi4_wiki/game_rule_modding.md",
-          "sha256": "ce30c44a79a8600c39f540d053d750b942905d940f73fb66dc96ca478e65680d",
-          "size": 20122
+          "sha256": "a8a4028244dcbdaac05fbbc39900526a828409a2e78e3d7e6cbb8eb073bcc0ec",
+          "size": 20821
         },
         {
           "path": "hoi4_wiki/graphical_asset_modding.md",
-          "sha256": "4731c7a031808e62cc65940d38c2efb8b7bc93fba5567f947fb64835ef8560ce",
-          "size": 33313
+          "sha256": "3223e92db246bfa79240374a43a3c359403c14dfaf2429df08ff6a4539c3304c",
+          "size": 34345
         },
         {
           "path": "hoi4_wiki/idea_modding.md",
-          "sha256": "d32f765e6e0ef5c7ef29ebadc8ec25fe776d0da6b53c85eb934207ccfcb09959",
-          "size": 54080
+          "sha256": "4ef3935bb7daa86764b2513ac10a9cdd62b1805b048fb783100caa60520656d3",
+          "size": 55541
         },
         {
           "path": "hoi4_wiki/ideology_modding.md",
@@ -9320,13 +9320,13 @@
         },
         {
           "path": "hoi4_wiki/intelligence_agency_modding.md",
-          "sha256": "f603bf9c84bfb6e926c254d2801fa21a5d84b8eac8516130225dc4569ea1b241",
-          "size": 27930
+          "sha256": "2c9e9f25a83f9cbd0d244bcc8dc372caabf400849259364d9fbd689d1488e3dc",
+          "size": 28915
         },
         {
           "path": "hoi4_wiki/intelligence_operation_modding.md",
-          "sha256": "08bb22456ceae654bb73c47038508cb3d334069139df78f46b0f01dec830b50e",
-          "size": 41198
+          "sha256": "e3c384f2a7966666887cadac6e67c7ddf5e7d856ab9c34e892ef3070e4e320c6",
+          "size": 41608
         },
         {
           "path": "hoi4_wiki/interface_modding.md",
@@ -9335,13 +9335,13 @@
         },
         {
           "path": "hoi4_wiki/list_of_modifiers.md",
-          "sha256": "f2d858be92cfedb69f7f976d6db71228a96074f31d45377156aec30c21d8303f",
-          "size": 101825
+          "sha256": "166bc0bc9f7ec835cff56032b511726c4de263e18094671fa0368ebc9af173f9",
+          "size": 102744
         },
         {
           "path": "hoi4_wiki/localisation.md",
-          "sha256": "b26d30635f047c23004594726cc939345691b7392add406ac8e30ad3eabf10ad",
-          "size": 89008
+          "sha256": "f0e7825feb5da75194bb4cf41e62187936b1707792ce5c5d4592b45717464f1c",
+          "size": 90771
         },
         {
           "path": "hoi4_wiki/map_modding.md",
@@ -9350,8 +9350,8 @@
         },
         {
           "path": "hoi4_wiki/map_mode_modding.md",
-          "sha256": "e59100c623eb9b857cdffa98acf2589359e89a2de35e2ba1a8f10bc04c9d15e0",
-          "size": 17304
+          "sha256": "1b4a39c8cfd922cc3d09c1980b7c198384400f5f0b0ad8be71cc7c1a23205b31",
+          "size": 18151
         },
         {
           "path": "hoi4_wiki/media/ai_modding_04cfcba22e__img12.png",
@@ -10025,8 +10025,8 @@
         },
         {
           "path": "hoi4_wiki/military_industrial_organization_modding.md",
-          "sha256": "f282a24bf8606674cceced6b0f2f3b2725d239d4a38bf21c9d8f21b32204bb29",
-          "size": 69664
+          "sha256": "841721cd3c995e8418e0660a3a3430a74540b27b8b4e51ac182ea25a59cd708a",
+          "size": 71052
         },
         {
           "path": "hoi4_wiki/mod_structure.md",
@@ -10040,8 +10040,8 @@
         },
         {
           "path": "hoi4_wiki/modifiers.md",
-          "sha256": "14e26c7585caf3eca654157cf041af4c6bf99ff964570166592c59d77fa1de57",
-          "size": 192093
+          "sha256": "0dcd5ca7b8e2cad4ef0d903fc65890c03c3ad3e8efb6f79c0dd5df475101f33b",
+          "size": 193270
         },
         {
           "path": "hoi4_wiki/mods.md",
@@ -10050,8 +10050,8 @@
         },
         {
           "path": "hoi4_wiki/music_modding.md",
-          "sha256": "41641110e2b4161c5a23c9ee0b8595ba97c0f0f3926f8f75a873a5b00983fac4",
-          "size": 16659
+          "sha256": "ad67ffc7b61e5cb6df512dcae62522bb7ca03df158557ef44659c3417ea638af",
+          "size": 16934
         },
         {
           "path": "hoi4_wiki/namelist_modding.md",
@@ -10060,8 +10060,8 @@
         },
         {
           "path": "hoi4_wiki/national_focus_modding.md",
-          "sha256": "98a9533be9b75c0d9c10e4b1e7c12c963f7028d93ecafcbd2f13e60b0211c256",
-          "size": 112150
+          "sha256": "89ad0cf24f36e56d90b8eeee3b483d8e2a6e138aa4824f9d488414fed02ebfef",
+          "size": 112345
         },
         {
           "path": "hoi4_wiki/nudger.md",
@@ -10070,8 +10070,8 @@
         },
         {
           "path": "hoi4_wiki/occupation_and_resistance_modding.md",
-          "sha256": "8e0fac21aacd281de668e832c9fefadb685ac84bc17577bdec06ae5ac831eac5",
-          "size": 38380
+          "sha256": "6ac1b92b6686a50daea03ad16c9dd2b06037ff5a832722657a3ab9df58c70c51",
+          "size": 40089
         },
         {
           "path": "hoi4_wiki/on_actions.md",
@@ -10085,13 +10085,13 @@
         },
         {
           "path": "hoi4_wiki/peace_conference_modding.md",
-          "sha256": "0a6ea4222f374d566902a6e853828e93b0897cec6a5e740a2acc977da5e59fdb",
-          "size": 49721
+          "sha256": "914e354920b991d84f985eb4702404788cd6e8c7e027a8661223504ebf0d68fd",
+          "size": 50569
         },
         {
           "path": "hoi4_wiki/portrait_modding.md",
-          "sha256": "6773ae5bc8b3c35199e65b716009816cadb6aebb0d7f5447934cb6842937c036",
-          "size": 13205
+          "sha256": "62399ac743a53b5f170bb4c00ff05dba4e866f9f2169fd972cbf80fdfb3b04e9",
+          "size": 13722
         },
         {
           "path": "hoi4_wiki/posteffect_modding.md",
@@ -10100,8 +10100,8 @@
         },
         {
           "path": "hoi4_wiki/raid_modding.md",
-          "sha256": "b84dde2500455e6cf7d8910ac47e788ec091a49eb46dfc558bb47d3d16bee67b",
-          "size": 54903
+          "sha256": "bbf39389d33ac44f9eb7de5e30dc3f64825accde52404dd2750fb2b312116a53",
+          "size": 55852
         },
         {
           "path": "hoi4_wiki/resources_modding.md",
@@ -10120,8 +10120,8 @@
         },
         {
           "path": "hoi4_wiki/scripted_gui_modding.md",
-          "sha256": "b767de4ce99c59914a5e873502798c02887c99cf0c2b35472f3c81bbdeb9bb83",
-          "size": 49070
+          "sha256": "f4988742ddcc695043d835aeed5f241bd967a994de13cbdfd113142c1e2f5760",
+          "size": 50981
         },
         {
           "path": "hoi4_wiki/sound_modding.md",
@@ -10130,8 +10130,8 @@
         },
         {
           "path": "hoi4_wiki/special_project_modding.md",
-          "sha256": "de3d1a915bbce88f79c45ec4830412c0cff65e98cd2abb3715fbac2c90e2a772",
-          "size": 65764
+          "sha256": "8b87fd8ad4ea2cf19fb1f6a8bd6f92be1d87a64018d11e102d537c77a80a3d3f",
+          "size": 69422
         },
         {
           "path": "hoi4_wiki/state_modding.md",
@@ -10150,8 +10150,8 @@
         },
         {
           "path": "hoi4_wiki/technology_modding.md",
-          "sha256": "f07f8f551689c7b115137b57cd2727d567d75e8a6c6d90ae6cbc8e9ffd6e8fb8",
-          "size": 76682
+          "sha256": "d5641879b7472cfd753ff15d910f9c25fad908dfd0375d5def2c0d71a313778e",
+          "size": 77680
         },
         {
           "path": "hoi4_wiki/triggers.md",
@@ -10160,8 +10160,8 @@
         },
         {
           "path": "hoi4_wiki/troubleshooting.md",
-          "sha256": "73ffe3c3783c53e5eb44adb9a171b427e57850595bb1eb1003d14e30c377e899",
-          "size": 46402
+          "sha256": "20f5eb2d4c7c4015b160b5810b8edff1f1cbe9791ad47adb6d1bf0c847a98112",
+          "size": 50233
         },
         {
           "path": "hoi4_wiki/unit_modding.md",
