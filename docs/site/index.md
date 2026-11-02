@@ -29,7 +29,7 @@ Copy `CLAUDE_template.md` as `CLAUDE.md`, replace all mod and game-path placehol
 python .tools/mcp/bootstrap_hoi4_agent_tools.py
 ```
 
-For another runtime, copy its `.codex/`, `.cursor/`, `.qoder/`, or `.opencode/` folder (plus root `opencode.json` for OpenCode), then generate its project files:
+For another runtime, copy its generated folder (for example `.codex/`, `.cursor/`, `.qoder/`, `.opencode/`, `.gemini/`, `.kilo/`, `.kiro/`, `.qwen/`, `.devin/`, or `.augment/`) and its MCP file (plus root `opencode.json` for OpenCode), then generate its project files:
 
 ```powershell
 python .tools/sync/sync_instructions.py
@@ -37,7 +37,7 @@ python .tools/sync/sync_agents.py --runtime codex
 python .tools/sync/sync_skills.py --target agents
 ```
 
-Replace `codex` with `cursor`, `qoder`, or `opencode` as appropriate. Qoder needs `--target qoder`; Cursor and OpenCode read the canonical skill root directly. On Windows, use `py -3.13` if `python` selects an older installation.
+Replace `codex` with the runtime's key (`cursor`, `qoder`, `opencode`, `gemini`, `antigravity`, `kilo`, `kiro`, `qwen`, `devin`, or `augment`) as appropriate. Qoder, Grok Build, Kiro, and Qwen Code need `--target qoder`, `grok`, `kiro`, or `qwen`; Gemini CLI, Antigravity, Kilo Code, and Devin Desktop read the `.agents/skills` copy that `--target agents` creates; Cursor, OpenCode, GitHub Copilot, Cline, and Augment read the canonical skill root directly. On Windows, use `py -3.13` if `python` selects an older installation.
 
 For optional workflows, copy the complete tools, references, and runtime assets declared in the manifest. Follow the [full installation guide](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/README.md) and [runtime reference](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/runtimes.md).
 

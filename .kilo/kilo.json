@@ -1,0 +1,11 @@
+{
+  "mcp": {
+    "hoi4_agent_tools": {
+      "type": "local",
+      "command": [
+        "hoi4-agent-tools.cmd"
+      ],
+      "enabled": true
+    }
+  }
+}

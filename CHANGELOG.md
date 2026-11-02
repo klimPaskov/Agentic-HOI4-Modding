@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Publish setup manifest format 6. Each coding client declares whether HOI4 Mod Setup manages a project MCP file, the client keeps MCP servers in its own settings, or it has no MCP support, so an app that cannot register a client never offers it.
+- Add packages for GitHub Copilot (VS Code), Gemini CLI, Antigravity, Grok Build, Kilo Code, Kiro, and Qwen Code with project MCP registration, and for Cline, Devin Desktop, Augment, Continue, and Aider with project guidance only.
+- Share one `.agents/skills/` copy between Codex, Gemini CLI, Antigravity, Kilo Code, and Devin Desktop; generate native subagents for seven more clients from the canonical Claude agents.
+- Move the OpenCode MCP registration into `opencode.json`, the only file OpenCode reads, and retire `.opencode/mcp.json`.
+- HOI4 Mod Setup 0.7.0 and later read this format. Earlier releases reject it during schema validation, and the app's startup updater replaces them.
 - Pin HOI4 Live Tools 1.2.0 (from 1.1.0): `hoi4-live-tools-1.2.0.zip`, 1,996,182 bytes, SHA-256 `c543ee54d5f730946f97a1a848dc52add9d4da167a26d340fa75e7241d942dff`, with a GitHub build provenance attestation. 1.2.0 carries the Windows fixes for HOI4 1.19.4.1, refuses to launch the game while Steam or steamcmd runs, and passes no Steam variables to the game. The bootstrap stays Windows-only; the experimental native macOS and Linux builds of the same release are not pinned.
 - Pin HOI4 Agent Tools 4.7.0 (from 4.0.3), the first release that reads the wiki from `hoi4_wiki/` and falls back to `paradox_wiki/`. The 28-tool contract is unchanged. The Windows and Linux package trees, file counts and integrity are measured in clean installs with the private npm (11.19.0 on Windows, 10.9.9 on Linux, Node 22 and 24). The reviewed Linux links gain the `opencollective-postinstall` shim.
 - Move the `hoi4-imagegen` release route to v0.2.1 (the five archives' new URLs, sizes and SHA-256 from the release's `SHA256SUMS`). 0.2.1 fits faction and agency logo emblems at the vanilla size: frame 1 keeps the vanilla margin of 10 and 14 pixels, where 0.2.0 used the profile's 2-pixel minimum and an agency emblem drew about 25 percent wider than vanilla ones in game.

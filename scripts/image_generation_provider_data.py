@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
-ALL_CLIENTS = ["claude_code", "codex", "cursor", "qoder", "opencode"]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from coding_environment_data import MCP_ROUTE_CLIENTS  # noqa: E402
+
+ALL_CLIENTS = list(MCP_ROUTE_CLIENTS)
 
 IMAGEGEN_REPOSITORY = "klimPaskov/hoi4-imagegen-mcp"
 IMAGEGEN_VERSION = "0.2.1"

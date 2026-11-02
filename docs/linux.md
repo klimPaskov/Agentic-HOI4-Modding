@@ -33,6 +33,15 @@ The source archive's raw MCP examples use `hoi4-agent-tools.cmd`. The app adapts
 | Cursor | `.cursor/mcp.json` | `mcpServers.hoi4_agent_tools` has `command: "/usr/bin/node"` and `args: ["<absolute entry>"]`. |
 | Qoder | `.qoder/mcp.json` | `mcpServers.hoi4_agent_tools` has `command: "/usr/bin/node"` and `args: ["<absolute entry>"]`. |
 | OpenCode | `opencode.json` | `mcp.hoi4_agent_tools` has `type: "local"`, `command: ["/usr/bin/node", "<absolute entry>"]` and `enabled: true`. |
+| GitHub Copilot (VS Code) | `.vscode/mcp.json` | `servers.hoi4_agent_tools` has `type: "stdio"`, `command: "/usr/bin/node"` and `args: ["<absolute entry>"]`. |
+| Gemini CLI | `.gemini/settings.json` | `mcpServers.hoi4_agent_tools` has `command: "/usr/bin/node"` and `args: ["<absolute entry>"]`. |
+| Antigravity | `.agents/mcp_config.json` | `mcpServers.hoi4_agent_tools` has `command: "/usr/bin/node"` and `args: ["<absolute entry>"]`. |
+| Grok Build | `.grok/config.toml` | `[mcp_servers.hoi4_agent_tools]` has `command = "/usr/bin/node"` and `args = ["<absolute entry>"]`. |
+| Kilo Code | `.kilo/kilo.json` | `mcp.hoi4_agent_tools` has `type: "local"`, `command: ["/usr/bin/node", "<absolute entry>"]` and `enabled: true`. |
+| Kiro | `.kiro/settings/mcp.json` | `mcpServers.hoi4_agent_tools` has `command: "/usr/bin/node"` and `args: ["<absolute entry>"]`. |
+| Qwen Code | `.qwen/settings.json` | `mcpServers.hoi4_agent_tools` has `command: "/usr/bin/node"` and `args: ["<absolute entry>"]`. |
+
+Cline, Devin Desktop, Augment, and Continue keep MCP servers in settings they own, and Aider has no MCP support. Register the same command and argument list there by hand.
 
 Here `/usr/bin/node` is the tested native system location; use the verified absolute executable on the actual host. Preserve unrelated servers and local client settings. DSH has no project MCP registry; adapt the active profile's command and argument list using [its runtime contract](runtimes.md#mcp-registration).
 
@@ -45,7 +54,7 @@ python3 .tools/sync/sync_skills.py --target agents
 python3 .tools/sync/sync_agents.py --verify
 ```
 
-Use `--target qoder` for Qoder's skill copy and `--check` to detect projection drift. Approve each selected client's project server and inspect its advertised tool list. An offline tool handshake does not establish running-game behavior.
+Use `--target qoder`, `grok`, `kiro`, or `qwen` for those clients' skill copies and `--check` to detect projection drift. Approve each selected client's project server and inspect its advertised tool list. An offline tool handshake does not establish running-game behavior.
 
 ## Images and credentials
 

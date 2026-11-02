@@ -22,10 +22,14 @@
 # hoi4-imagegen release binaries, installed per machine the way HOI4 Mod Setup installs them.
 /.tools/image_generation/hoi4-imagegen/
 
-# Skill copies for Codex, DSH, and Qoder are generated from .claude/skills by
-# .tools/sync/sync_skills.py; the source package tracks only the canonical library.
+# Skill copies are generated from .claude/skills by .tools/sync/sync_skills.py
+# or installed by HOI4 Mod Setup; the source package tracks only the canonical
+# library.
 /.agents/skills/
 /.qoder/skills/
+/.grok/skills/
+/.kiro/skills/
+/.qwen/skills/
 *.pyc
 
 # Claude Code project definitions are tracked; personal overrides are not.
