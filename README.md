@@ -10,7 +10,7 @@
 <!-- TODO-VIDEO-LINK: replace with the HOI4 Mod Setup video URL -->
 [![Watch the HOI4 Mod Setup video](https://raw.githubusercontent.com/klimPaskov/HOI4-Mod-Setup/main/docs/images/setup-app-demo-thumbnail.png)](https://www.youtube.com/@ChaosRedux)
 
-Build Hearts of Iron IV mods with your coding agent. Make focus trees, events, decisions and maps, fix broken script and balance the AI. The kit gives your agent project instructions, modding skills, specialist helpers, an offline wiki and HOI4 tools. Add portraits, 3D models, Super Events or live game testing when your mod needs them.
+Build Hearts of Iron IV mods with your coding agent. Make focus trees, events, decisions and maps, fix broken script and balance the AI. The kit gives your agent project instructions, modding skills, specialist helpers, a HOI4 wiki for agents and HOI4 tools. Add portraits, 3D models, Super Events or live game testing when your mod needs them.
 
 Choose any supported coding client, including Claude Code, Codex, Cursor, Qoder, or OpenCode. HOI4 Mod Setup installs the project files and tools for the clients you select. The package keeps one canonical set of guidance and creates matching files for other clients.
 
@@ -26,7 +26,7 @@ For a manual setup:
 
 1. Put your mod in a Git repository and open that repository as the agent's workspace.
 2. Copy [CLAUDE_template.md](CLAUDE_template.md) to your mod as `CLAUDE.md` and replace its placeholders (`[MOD_NAME]`, `[MOD_PREFIX]`, `[HOI4_GAME_DIR]`, `[STEAM_WORKSHOP_DIR]`). Delete the blocks for optional workflows you do not install.
-3. Copy `.claude/skills/`, `.claude/agents/`, `.claude/settings.json`, `.mcp.json`, and `.tools/sync/` into the mod. Copy the source-packaging Python script, Windows launcher, and README from `.tools/` as well. Make the installed game files and the included `paradox_wiki/` snapshot readable to the agent.
+3. Copy `.claude/skills/`, `.claude/agents/`, `.claude/settings.json`, `.mcp.json`, and `.tools/sync/` into the mod. Copy the source-packaging Python script, Windows launcher, and README from `.tools/` as well. Make the installed game files and the included `hoi4_wiki/` folder readable to the agent.
 4. If you also use another runtime, copy its `.codex/`, `.cursor/`, `.qoder/`, or `.opencode/` folder into the mod (plus root `opencode.json` for OpenCode), then generate its files from the Claude sources:
 
    ```powershell
@@ -110,7 +110,7 @@ Every skill, agent prompt, and instruction file must be readable in one pass. [`
 | `.claude/skills/` | Reusable HOI4 workflows and their references |
 | `.claude/agents/` | Specialist subagent definitions |
 | `.codex/`, `.cursor/`, `.qoder/`, `.opencode/` | Generated runtime packages |
-| `paradox_wiki/` | Offline wiki reference |
+| `hoi4_wiki/` | The kit's HOI4 wiki: an offline reference built from the Hearts of Iron IV Wiki's modding pages, plus the kit's own pages and corrections |
 | `.tools/` | Runtime synchronizers, wiki, MCP bootstrap, and optional 3D tooling |
 | `docs/` | Runtime reference, MCP integration contract, and the Super Events guide |
 | `hoi4-mod-setup.manifest.json` | File selection and verification for HOI4 Mod Setup |
@@ -120,6 +120,10 @@ Describe what you want to build. The agent chooses the tools and skills and conn
 ## License
 
 Original package code and guidance are licensed under the [Apache License 2.0](LICENSE), the same license as HOI4 Mod Setup. Third-party material retains its own terms; see [NOTICE](NOTICE), the [Super Events asset lineage](docs/super_events/README.md), and the manifest's separate wiki license and provenance evidence.
+
+### The HOI4 wiki
+
+`hoi4_wiki/` is the kit's own HOI4 wiki. Most pages derive from the [Hearts of Iron IV Wiki](https://hoi4.paradoxwikis.com/Category:Modding) modding pages and are licensed CC BY-SA 3.0 (see `hoi4_wiki/LICENSE.txt`); the kit adds its own pages and corrections against the installed game. Every page keeps a capture line that names the source page and revision, so the attribution travels with each file. The folder was named `paradox_wiki/` in earlier kit versions; HOI4 Mod Setup moves installed projects to the new name, and HOI4 Agent Tools reads both.
 
 ## Live-testing provider choice
 

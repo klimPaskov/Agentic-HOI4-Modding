@@ -47,14 +47,29 @@ def profile(**overrides) -> dict:
 
 
 def prep(**geometry) -> dict:
+    """A report shaped like the worker's.
+
+    The topology keywords (`non_manifold_edges`, `loose_boundary_edges`,
+    `loose_component_count`) set the position-welded counts the gate judges. The
+    as-imported counts default to seam-inflated values that would fail every check,
+    so a test that passes proves the gate ignores them. `raw_*` keywords override
+    the as-imported counts.
+    """
+
+    welded = {
+        "non_manifold_edges": geometry.pop("non_manifold_edges", 0),
+        "loose_boundary_edges": geometry.pop("loose_boundary_edges", 0),
+        "loose_component_count": geometry.pop("loose_component_count", 1),
+    }
     base = {
         "triangles": 8000,
-        "non_manifold_edges": 0,
-        "loose_boundary_edges": 0,
-        "loose_component_count": 1,
+        "non_manifold_edges": geometry.pop("raw_non_manifold_edges", 7),
+        "loose_boundary_edges": geometry.pop("raw_loose_boundary_edges", 9000),
+        "loose_component_count": geometry.pop("raw_loose_component_count", 800),
         "degenerate_faces": 0,
         "negative_scale_objects": [],
         "dimensions": [1.0, 1.0, 1.5],
+        "position_welded_topology": {"weld_distance": 1e-6, **welded},
     }
     base.update(geometry)
     return {"geometry": base, "materials": {"materials": ["body", "gear"], "shader": "PdxMeshAdvanced"}}
@@ -73,9 +88,9 @@ def weights(deforming_zero: int = 0, static_zero: int = 0) -> list[dict]:
 
 # check id -> (geometry or prep override that violates it, text expected in the failure)
 VIOLATIONS = {
-    "non_manifold_edges": ({"non_manifold_edges": 12}, "non-manifold edges 12 exceed profile allowance 0"),
-    "boundary_edges": ({"loose_boundary_edges": 40}, "boundary edges 40 exceed profile allowance 0"),
-    "loose_components": ({"loose_component_count": 5}, "loose components 5 exceed profile allowance 1"),
+    "non_manifold_edges": ({"non_manifold_edges": 12}, "welded non-manifold edges 12 exceed profile allowance 0"),
+    "boundary_edges": ({"loose_boundary_edges": 40}, "welded boundary edges 40 exceed profile allowance 0"),
+    "loose_components": ({"loose_component_count": 5}, "welded loose components 5 exceed profile allowance 1"),
     "triangle_range": ({"triangles": 3000}, "triangles 3000 are outside the profile's preferred range 5000-30000"),
 }
 
@@ -122,7 +137,16 @@ class EvaluateCandidateTests(unittest.TestCase):
         self.assertEqual(gates.evaluate_candidate(profile(), candidate)["failures"], [])
 
     def test_a_measurement_missing_from_the_report_blocks_instead_of_passing(self) -> None:
-        for key in ("non_manifold_edges", "loose_boundary_edges", "loose_component_count", "triangles"):
+        for key in ("non_manifold_edges", "loose_boundary_edges", "loose_component_count"):
+            candidate = prep()
+            del candidate["geometry"]["position_welded_topology"][key]
+            with self.subTest(missing_welded=key):
+                failures = gates.evaluate_candidate(profile(), candidate)["failures"]
+                self.assertTrue(failures and "not measured" in failures[0], failures)
+        candidate = prep()
+        del candidate["geometry"]["position_welded_topology"]  # raw counts alone are never judged
+        self.assertEqual(len(gates.evaluate_candidate(profile(), candidate)["failures"]), 3)
+        for key in ("triangles",):
             candidate = prep()
             del candidate["geometry"][key]
             with self.subTest(missing=key):
@@ -131,7 +155,7 @@ class EvaluateCandidateTests(unittest.TestCase):
         candidate = prep()
         del candidate["materials"]
         self.assertIn("material slots were not listed", gates.evaluate_candidate(profile(), candidate)["failures"][0])
-        candidate = prep(non_manifold_edges="0")
+        candidate = prep(non_manifold_edges="0")  # a string is not a measurement
         self.assertIn("not measured", gates.evaluate_candidate(profile(), candidate)["failures"][0])
 
     def test_a_profile_missing_a_range_or_slot_limit_blocks(self) -> None:
@@ -153,6 +177,100 @@ class EvaluateCandidateTests(unittest.TestCase):
                 gates.evaluate_candidate(profile(validation={"max_loose_components": bad}), prep())
         with self.assertRaises(gates.ProfileGateError):
             gates.evaluate_candidate(profile(validation=[]), prep())
+
+
+def measured(raw: tuple, welded: tuple, triangles: int, slots: int = 1) -> dict:
+    """A report built from real Blender 5.1 counts: (boundary, non-manifold, loose) as imported and welded."""
+
+    result = prep(
+        triangles=triangles,
+        raw_loose_boundary_edges=raw[0],
+        raw_non_manifold_edges=raw[1],
+        raw_loose_component_count=raw[2],
+        loose_boundary_edges=welded[0],
+        non_manifold_edges=welded[1],
+        loose_component_count=welded[2],
+    )
+    result["materials"]["materials"] = [f"slot{i}" for i in range(slots)]
+    return result
+
+
+class WeldedTopologyTests(unittest.TestCase):
+    """The topology checks judge welded geometry. The numbers below were measured on real files."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        registry = json.loads((PIPELINE_ROOT / "config/asset_profiles.json").read_text(encoding="utf-8"))["profiles"]
+        cls.registry = registry
+        cls.humanoid = registry["humanoid_unit"]
+        cls.strict = profile()
+
+    def failures(self, candidate: dict, which: dict | None = None) -> list:
+        return gates.evaluate_candidate(which or self.humanoid, candidate)["failures"]
+
+    def test_seams_alone_no_longer_fail(self) -> None:
+        # zin_men_infantry generation GLB: 76,298 seam boundary edges and 737 UV islands as imported,
+        # a closed single shell once welded.
+        candidate = measured((76298, 0, 737), (0, 0, 1), triangles=21000)
+        self.assertEqual(self.failures(candidate), [])
+        self.assertEqual(self.failures(measured((76298, 0, 737), (0, 0, 1), triangles=8000), self.strict), [])
+        result = gates.evaluate_candidate(self.humanoid, candidate)
+        self.assertEqual(result["checks"]["boundary_edges"]["measured"], 0)
+        self.assertEqual(result["checks"]["boundary_edges"]["raw_as_imported"], 76298)
+        self.assertEqual(result["checks"]["loose_components"]["raw_as_imported"], 737)
+
+    def test_the_raw_counts_alone_are_not_a_measurement(self) -> None:
+        candidate = measured((0, 0, 1), (0, 0, 1), triangles=21000)
+        del candidate["geometry"]["position_welded_topology"]
+        self.assertEqual(len(self.failures(candidate)), 3)
+
+    def test_shipped_units_pass_the_humanoid_profile(self) -> None:
+        shipped = {
+            # name: (raw boundary, non-manifold, loose), (welded boundary, non-manifold, loose), triangles, slots
+            "zin_men_infantry": ((12794, 0, 1202), (90, 0, 1), 21000, 1),
+            "zin_elves_warden": ((17951, 0, 2050), (563, 0, 1), 20999, 1),
+            "chaos_parasitic_zombies": ((34518, 0, 6660), (0, 0, 7), 30330, 4),
+            "chaos_demonic_zombies": ((92704, 0, 30900), (0, 0, 1), 30988, 4),
+        }
+        for name, (raw, welded, triangles, slots) in shipped.items():
+            with self.subTest(unit=name):
+                self.assertEqual(self.failures(measured(raw, welded, triangles, slots)), [])
+
+    def test_real_holes_still_fail(self) -> None:
+        # Measured zin_men_infantry provider remesh: 81 boundary and 56 non-manifold edges once welded.
+        remesh = measured((54388, 0, 6463), (81, 56, 1), triangles=21000)
+        self.assertEqual(self.failures(remesh), ["welded non-manifold edges 56 exceed profile allowance 0"])
+        # A large open area exceeds the measured shipped maximum of 563 boundary edges.
+        holed = measured((90000, 0, 1500), (900, 0, 1), triangles=21000)
+        self.assertEqual(self.failures(holed), ["welded boundary edges 900 exceed profile allowance 600"])
+        # A profile with no calibration allows no open edge at all.
+        self.assertEqual(
+            self.failures(measured((40, 0, 1), (40, 0, 1), triangles=8000), self.strict),
+            ["welded boundary edges 40 exceed profile allowance 0"],
+        )
+
+    def test_fused_non_manifold_geometry_still_fails(self) -> None:
+        expected = ["welded non-manifold edges 1 exceed profile allowance 0"]
+        self.assertEqual(self.failures(measured((0, 1, 1), (0, 1, 1), triangles=21000)), expected)
+        self.assertEqual(self.failures(measured((0, 1, 1), (0, 1, 1), triangles=8000), self.strict), expected)
+
+    def test_a_detached_part_still_fails(self) -> None:
+        stray = measured((0, 0, 2), (0, 0, 2), triangles=8000)
+        self.assertEqual(self.failures(stray, self.strict), ["welded loose components 2 exceed profile allowance 1"])
+        # The humanoid profile allows the accessory parts measured on shipped units (up to 7), not 9.
+        many = measured((0, 0, 9), (0, 0, 9), triangles=21000)
+        self.assertEqual(self.failures(many), ["welded loose components 9 exceed profile allowance 8"])
+
+    def test_profiles_without_measured_models_keep_the_strict_defaults(self) -> None:
+        for name, value in self.registry.items():
+            if name != "humanoid_unit":
+                with self.subTest(profile=name):
+                    self.assertEqual(value["validation"], gates.DEFAULT_LIMITS)
+
+    def test_every_profile_documents_its_calibration(self) -> None:
+        for name, value in self.registry.items():
+            with self.subTest(profile=name):
+                self.assertIn("validation_calibration", value)
 
 
 class RecordedExceptionTests(unittest.TestCase):
@@ -182,7 +300,7 @@ class RecordedExceptionTests(unittest.TestCase):
         result = gates.evaluate_candidate(
             waive("boundary_edges"), prep(loose_boundary_edges=9, non_manifold_edges=2)
         )
-        self.assertEqual(result["failures"], ["non-manifold edges 2 exceed profile allowance 0"])
+        self.assertEqual(result["failures"], ["welded non-manifold edges 2 exceed profile allowance 0"])
         self.assertEqual(len(result["exceptions_applied"]), 1)
 
     def test_a_passing_check_records_no_exception_even_when_one_exists(self) -> None:
@@ -370,8 +488,7 @@ class CandidateGateTests(unittest.TestCase):
     def test_each_new_check_blocks_the_gate_and_writes_a_blocked_record(self) -> None:
         for check, (override, expected) in VIOLATIONS.items():
             with self.subTest(check=check):
-                candidate = prep(triangles=5000)
-                candidate["geometry"].update(override)
+                candidate = prep(**{"triangles": 5000, **override})
                 with self.assertRaisesRegex(RuntimeError, "Geometry gate failed for provider_candidate"):
                     self.gate(candidate)
                 record = self.record()

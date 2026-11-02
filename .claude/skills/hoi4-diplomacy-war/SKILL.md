@@ -35,7 +35,7 @@ Read it when you need exact parameters of an effect or trigger, the list of auto
 ## Source map
 
 `GAME` means the installed Hearts of Iron IV folder named in `CLAUDE.md`.
-`WIKI` means the offline snapshot in `paradox_wiki/` at the mod root.
+`WIKI` means the offline snapshot in `hoi4_wiki/` at the mod root.
 Installed documentation outranks the wiki; record any disagreement.
 
 | Topic | Authoritative text | Vanilla precedent |

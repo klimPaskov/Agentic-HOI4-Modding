@@ -30,7 +30,7 @@ Prefer local Blender work for anything that needs no new geometry (scale, positi
 
 ## Hard start gates
 
-For provider-dependent work, the first process check is `MESHY_API_KEY`, which must be a non-blank process environment variable before provider preparation, balance checks, or provider calls. If it is missing or blank, stop that work, print the exact PowerShell command from the [3D agent's hard start gate](../../../agents/hoi4-3d-model-pipeline.md), and tell the user to restart the shell or the agent runtime. Never record credentials. Existing-model Blender-only repair may inspect the approved model, job, dependency lock, and Blender routes without this key and must not start a provider call.
+For provider-dependent work, the first process check is `MESHY_API_KEY`, which must be a non-blank process environment variable before provider preparation, balance checks, or provider calls. If it is missing or blank, stop that work, print the exact PowerShell command from the [3D agent's hard start gate](../../../agents/hoi4-3d-model-pipeline.md), and tell the user to restart the shell or the agent runtime. Never record credentials. A key alone is not enough: Meshy creates API tasks only for accounts on a paid plan. On the free plan every create returns HTTP 402 ("Task creation on the free plan is no longer supported") and charges nothing, although the balance still shows the free monthly credits. Treat that refusal as a blocker for the user, who must upgrade the plan; never retry it or switch to another route. Existing-model Blender-only repair may inspect the approved model, job, dependency lock, and Blender routes without this key and must not start a provider call.
 
 For an explicitly requested existing non-firearm repair, verify the Blender/adapter/io_pdx_mesh lock, live callable schemas, bridge health, approved source/checkpoint paths, and export support before repair. A missing Meshy key or unavailable Meshy service does not block that Blender-only route; a missing required Blender capability remains `required installation/verification` or `blocked`.
 
@@ -58,7 +58,7 @@ Before 3D work, read:
 - `.claude/skills/hoi4-feature-assets/SKILL.md`.
 - `.claude/skills/hoi4-subagents/SKILL.md` when a subagent is used.
 - The parent brief, accepted spec, plan, manifest, job, dependency lock, and handoff.
-- The offline Paradox wiki pages relevant to the target surface, especially `paradox_wiki/graphical_asset_modding.md` and `paradox_wiki/entity_modding.md`.
+- The HOI4 wiki pages relevant to the target surface, especially `hoi4_wiki/graphical_asset_modding.md` and `hoi4_wiki/entity_modding.md`.
 - Relevant character or interface pages when the target consumes those systems.
 - Relevant documentation under `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/documentation`.
 - Local vanilla `.mesh`, `.anim`, `.asset`, entity, material, texture, and model precedents for the exact domain, plus existing repository model precedents.
@@ -240,7 +240,7 @@ Inspect source normals and engine material packing rather than trusting a plausi
 
 **Fail-closed gates.** The code blocks on a missing measurement instead of assuming it passed:
 
-- `candidate_gate` blocks on non-manifold edges, boundary edges, loose components, a triangle count outside the profile's preferred range, material slots above `max_slots`, residual zero-weight deforming vertices (when measured), and any measurement missing from the report. The limits are the profile's `validation` block.
+- `candidate_gate` blocks on non-manifold edges, boundary edges, loose components, a triangle count outside the profile's preferred range, material slots above `max_slots`, residual zero-weight deforming vertices (when measured), and any measurement missing from the report. The limits are the profile's `validation` block. The three topology checks count welded geometry (the adapter's 1e-6 position weld, reported as `position_welded_topology`), because a glTF or PDX file stores a vertex once per UV seam and the as-imported counts would report every seam as a boundary edge and every UV island as a loose part. The as-imported counts stay in each check's `raw_as_imported`. Each profile's `validation_calibration` records what the limits were measured on.
 - The texture size cap is read from the PNG header. An unreadable image, or a profile without a cap, blocks the conversion.
 - io_pdx_mesh export output is captured into the result: a `warnings` list, or `null` with an `exporter_report` that says why it could not be captured. An uncaptured export, or any exporter ERROR, is refused. The reports are `blender/reports/export_mesh.json` and `export_anim_*.json`.
 - A profile waives one check only by listing it in its `exceptions` with a reason (`exporter_report` for the export check). The gate record lists every exception applied; report each one in the handoff.

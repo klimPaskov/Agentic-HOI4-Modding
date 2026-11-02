@@ -27,7 +27,7 @@ Read and apply:
 - .claude/skills/hoi4-feature-assets/SKILL.md when flags, portraits, idea icons, focus icons, or other country assets are involved.
 - .claude/skills/hoi4-portrait-production/SKILL.md whenever character portraits are involved; complete grounded and fictional portrait production belongs to `hoi4_portrait_creator`.
 - .claude/skills/hoi4-improvement-loop/SKILL.md when the package needs broader identity design.
-- Relevant offline Paradox wiki pages in paradox_wiki/ when syntax or engine behavior must be checked.
+- Relevant HOI4 wiki pages in hoi4_wiki/ when syntax or engine behavior must be checked.
 - Vanilla country, state, history, character, focus, idea, flag, and AI files in <HOI4_INSTALL_DIR>/ when precedent matters.
 
 Audit for:

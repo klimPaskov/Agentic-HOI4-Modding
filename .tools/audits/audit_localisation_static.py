@@ -84,7 +84,7 @@ EXCLUDED_TOP_LEVEL = {
 	".qoder",
 	"docs",
 	"history",
-	"paradox_wiki",
+	"hoi4_wiki",
 	"localisation",
 }
 

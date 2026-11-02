@@ -58,8 +58,8 @@ class ManifestGeneratorTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(SystemExit, "unresolved Git LFS pointer"):
             GENERATOR.git_evidence_for(
-                {"source": {"kind": "tree", "path": "paradox_wiki", "include": ["**"]}},
-                {"paradox_wiki/media/image.jpg": pointer, "paradox_wiki/page.md": b"page"},
+                {"source": {"kind": "tree", "path": "hoi4_wiki", "include": ["**"]}},
+                {"hoi4_wiki/media/image.jpg": pointer, "hoi4_wiki/page.md": b"page"},
             )
 
     def test_empty_declared_tree_fails_closed(self) -> None:

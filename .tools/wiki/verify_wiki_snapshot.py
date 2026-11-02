@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Validate the offline Paradox wiki snapshot. Read-only; never writes.
+"""Validate the kit's HOI4 wiki. Read-only; never writes.
 
 This is the acceptance check for ``.tools/wiki/sync_wiki_snapshot.py``. It exits
 non-zero when the snapshot is not self-contained and readable, and reports:
@@ -40,13 +40,15 @@ import kit_blocks  # the page format, next to this script
 
 FENCE = "`" * 3
 PIPE = re.compile(r"(?<!\\)\|")
+VERSIONED_TAG = re.compile(r"\[(?:vanilla-confirmed|game-tested)\b[^\]\n]*\]")
+WELL_FORMED_TAG = re.compile(r"^\[(?:vanilla-confirmed|game-tested) \d+(?:\.\d+){1,3}\]$")
 
 
 def find_repo_root(start):
     """Walk up from this file until the snapshot directory is found."""
     current = os.path.abspath(start)
     while True:
-        if os.path.isdir(os.path.join(current, "paradox_wiki")):
+        if os.path.isdir(os.path.join(current, "hoi4_wiki")):
             return current
         parent = os.path.dirname(current)
         if parent == current:
@@ -92,6 +94,13 @@ def check_kit(name, text, report):
         if not body or "Kit" not in body[0]:
             report("kit_label", name,
                    f"kit block {block.id!r}: first line must say it is kit text")
+    # Tag counts and the re-check after a game update read the build from the tag itself.
+    kit_text = [text] if kit_blocks.is_kit_page(text) else [block.text for block in blocks]
+    for chunk in kit_text:
+        for tag in VERSIONED_TAG.findall(chunk):
+            if not WELL_FORMED_TAG.match(tag):
+                report("evidence_tag", name, f"{tag} must be [vanilla-confirmed <build>] "
+                       "or [game-tested <build>], with sources outside the brackets")
     review = kit_blocks.review(text)
     if review and not re.match(r"^(none|\d+(\.\d+){1,3})$", review.get("build", "")):
         report("kit_block", name, f"review build {review.get('build')!r} is not a "
@@ -307,9 +316,9 @@ def verify(directory, show_details=True):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Validate the offline Paradox wiki snapshot.")
+        description="Validate the kit's HOI4 wiki.")
     parser.add_argument("directory", nargs="?", default=None,
-                        help="snapshot directory (default paradox_wiki/)")
+                        help="snapshot directory (default hoi4_wiki/)")
     parser.add_argument("--quiet", action="store_true",
                         help="print only the problem summary")
     args = parser.parse_args()
@@ -318,7 +327,7 @@ def main():
         directory = args.directory
     else:
         root = find_repo_root(os.path.dirname(os.path.abspath(__file__)))
-        directory = os.path.join(root, "paradox_wiki")
+        directory = os.path.join(root, "hoi4_wiki")
     if not os.path.isdir(directory):
         print(f"not a directory: {directory}")
         return 1

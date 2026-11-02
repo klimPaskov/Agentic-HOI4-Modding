@@ -126,9 +126,9 @@ HOI4 Live Tools is a separate, optional MCP server that drives a running game. `
 Follow `3d_pipeline/README.md` and `hoi4-3d-model-pipeline` for dependency gates, job containment, provider evidence, test commands, and runtime ownership boundaries.
 Do not commit secrets, provider outputs, job artifacts, virtual environments, vendor caches, generated environment reports, or transient process state.
 
-### Offline Paradox wiki snapshot
+### HOI4 wiki
 
-`wiki/sync_wiki_snapshot.py` regenerates `paradox_wiki/` from the live Hearts of Iron IV wiki and keeps the kit's local additions (kit blocks and kit pages), `wiki/verify_wiki_snapshot.py` is the read-only acceptance check for the result, and `wiki/wiki_status.py` reports which pages are current for the installed game build and which to re-check after a game update.
+`wiki/sync_wiki_snapshot.py` regenerates `hoi4_wiki/` from the live Hearts of Iron IV wiki and keeps the kit's local additions (kit blocks and kit pages), `wiki/verify_wiki_snapshot.py` is the read-only acceptance check for the result, and `wiki/wiki_status.py` reports which pages are current for the installed game build and which to re-check after a game update.
 The snapshot ships as the `wiki.snapshot` manifest component and is named by the project instructions as the required modding reference, so the commands run together whenever the wiki or the game moves:
 
 ```powershell

@@ -8,7 +8,7 @@ description: Use when creating, changing, or scripting Hearts of Iron IV technol
 Use this skill for `common/technologies/`, `common/technology_tags/`, `common/technology_sharing/`, `common/doctrines/`, the technology tree and doctrine interface files, and the effects, triggers, and modifiers that grant, test, or speed up research and doctrines.
 Equipment definitions that a technology unlocks belong to `hoi4-equipment`, sub-units and templates to `hoi4-units-divisions`, ideas that carry `research_bonus` to `hoi4-ideas-modifiers`, and AI weighting strategies to `hoi4-ai-strategies`.
 
-In this skill `GAME` means the installed Hearts of Iron IV folder named in `CLAUDE.md` and `WIKI` means the repository folder `paradox_wiki`.
+In this skill `GAME` means the installed Hearts of Iron IV folder named in `CLAUDE.md` and `WIKI` means the repository folder `hoi4_wiki`.
 Installed documentation is more authoritative than the wiki; where they disagree this skill says so.
 
 ## Read the engine contract first

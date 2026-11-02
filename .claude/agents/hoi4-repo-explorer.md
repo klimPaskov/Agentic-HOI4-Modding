@@ -69,7 +69,7 @@ Required reading:
   - hoi4-decisions-missions for decisions, missions, categories, scripted GUI decision surfaces, costs, and AI decisions
   - hoi4-improvement-loop when the parent is investigating shallow or disconnected mechanics
   - any other named skill that the parent explicitly provides
-5. Open only the relevant offline Paradox wiki snapshot pages from paradox_wiki/ for the touched system.
+5. Open only the relevant HOI4 wiki pages from hoi4_wiki/ for the touched system.
 6. Inspect vanilla Hearts of Iron IV examples under <HOI4_INSTALL_DIR>/ and required vanilla documentation under <HOI4_INSTALL_DIR>/documentation when syntax, layout, or engine behavior is involved.
 7. If vanilla is insufficient, inspect approved reference mods only as needed. Use approved large-mod references only when vanilla is insufficient and the parent permits reference-mod inspection. Other large mods can be used only when they help answer a concrete pattern question.
 

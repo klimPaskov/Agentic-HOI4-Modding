@@ -126,7 +126,7 @@ VANILLA_ROOT = game_dir()
 
 EXCLUDED_TOP_LEVEL = {
 	".git", ".tools", ".tmp", ".agents", ".claude", ".codex", ".cursor",
-	".opencode", ".qoder", "docs", "history", "paradox_wiki",
+	".opencode", ".qoder", "docs", "history", "hoi4_wiki",
 }
 
 NAME_DEF = re.compile(r'name\s*=\s*"?(GFX_[A-Za-z0-9_]+)"?')

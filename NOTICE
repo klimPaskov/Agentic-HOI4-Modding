@@ -7,14 +7,14 @@ Third-party material is excluded from that grant and retains its own terms.
 Hearts of Iron IV, game artwork, and Paradox wiki material belong to their
 respective owners. This project is not affiliated with Paradox Interactive.
 
-The offline wiki snapshot in paradox_wiki/ is adapted from the Hearts of Iron 4
+The kit's HOI4 wiki in hoi4_wiki/ is adapted from the Hearts of Iron 4
 Wiki (hoi4.paradoxwikis.com). Its editors publish their contributions under the
 Creative Commons Attribution-ShareAlike 3.0 license (CC BY-SA 3.0), as the wiki's
 own copyright policy states: https://central.paradoxwikis.com/Central:Copyrights.
 The snapshot, including the additions this package makes to it, is distributed
 under CC BY-SA 3.0 and not under Apache-2.0. The license covers the article text;
 images and game material in the snapshot keep their own terms. The source, the
-license and the changes are recorded in paradox_wiki/LICENSE.txt, and the license
+license and the changes are recorded in hoi4_wiki/LICENSE.txt, and the license
 evidence is recorded in hoi4-mod-setup.manifest.json.
 
 Super Events visual asset lineage is recorded in docs/super_events/README.md.
