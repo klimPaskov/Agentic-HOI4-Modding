@@ -9,6 +9,7 @@ the network.
 
 from __future__ import annotations
 
+import inspect
 import io
 import json
 import struct
@@ -335,6 +336,16 @@ class RebuildTests(unittest.TestCase):
     def test_rebuild_refuses_maps_that_do_not_match_the_exported_model(self) -> None:
         with self.assertRaises(TextureLineageError):
             self.rebuild(GEN_RGB)
+
+    def test_rebuild_needs_no_credit_budget(self) -> None:
+        with mock.patch.object(run_pilot, "require_credit_budget", side_effect=AssertionError("budget gate ran")):
+            with mock.patch.object(run_pilot, "planned_stages", return_value=[]):
+                spec = {"asset_id": "hoi4.model.job.unit", "profile": "humanoid_unit"}
+                run_pilot.prepare_spec(spec, require_budget=False)
+        self.assertNotIn("credit_budget", spec)
+        self.assertFalse(spec.get("_credits_prepared"))
+        source = inspect.getsource(run_pilot.rebuild_runtime_textures)
+        self.assertIn("prepare_spec(spec, require_budget=False)", source)
 
 
 class FallbackRemovedTests(unittest.TestCase):

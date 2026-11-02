@@ -231,10 +231,11 @@ def require_credit_budget(spec: Dict[str, Any]) -> int:
     return budget
 
 
-def prepare_spec(spec: Dict[str, Any]) -> Dict[str, Any]:
+def prepare_spec(spec: Dict[str, Any], *, require_budget: bool = True) -> Dict[str, Any]:
     """Fill in generation settings, price-table estimates and the job budget before any provider call.
 
     Idempotent. Estimates always come from config/meshy_pricing.json, never from the job.
+    A path that makes no provider call passes `require_budget=False` and gets estimates only.
     """
 
     if spec.get("_credits_prepared"):
@@ -248,8 +249,10 @@ def prepare_spec(spec: Dict[str, Any]) -> Dict[str, Any]:
     for operation in ("remesh", "rig", "animation"):
         spec[f"{operation}_estimate_credits"] = operation_credits(operation, pricing=pricing)
     spec["planned_total_credits"] = sum(item["estimate_credits"] for item in planned_stages(spec))
-    spec["credit_budget"] = require_credit_budget(spec)
     spec["pricing_source"] = {key: pricing[key] for key in ("source_url", "retrieved")}
+    if not require_budget:
+        return spec
+    spec["credit_budget"] = require_credit_budget(spec)
     spec["_credits_prepared"] = True
     return spec
 
@@ -2368,7 +2371,7 @@ def rebuild_runtime_textures(spec: Dict[str, Any]) -> Dict[str, Any]:
     animations do not embed textures, so they stay as they are.
     """
 
-    prepare_spec(spec)
+    prepare_spec(spec, require_budget=False)
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
     if spec["asset_kind"] != "humanoid":
