@@ -443,11 +443,13 @@ An idea's own `cost` or `removal_cost` replaces the default. 3,730 of the 3,767 
 | Key | Vanilla use |
 | --- | --- |
 | `ai_will_do` | 1,052 ideas with 1,055 blocks (three ideas write it twice): laws, advisors, designers and officer corps spirits. Body is `factor = n` alone (857) or `base = n` alone (63), and the other 135 blocks add `modifier` blocks. |
-| `default = yes` | 5 ideas: `civilian_economy`, `export_focus`, `volunteer_only`, `ETH_chitet_law`, `ETH_chitet_law_peace_time`. What it does is not stated in the files. [vanilla-confirmed 1.19.4.1] The engine effect is [unverified]. |
+| `default = yes` | 5 ideas: `civilian_economy`, `export_focus`, `volunteer_only`, `ETH_chitet_law`, `ETH_chitet_law_peace_time`. What it does is not stated in the files. [vanilla-confirmed 1.19.4.1] It does not refill an empty slot, see the note below the table. Any other engine effect of `default = yes` is [unverified]. |
 | `cancel_if_invalid = no` | 31 laws in `economy`, `trade_laws` and `mobilization_laws`; the value is always `no`. [vanilla-confirmed 1.19.4.1] Its exact effect is not stated in the files and stays [unverified]. |
 | `level` | 11 ideas, all in `mobilization_laws`, with values 1 to 7. |
 | `ledger` | 475 ideas. All 234 `high_command` and all 145 `theorist` ideas set it, because those two slots are `invalid` in `slot_ledgers`; the officer corps spirits set it too. Values used: `army`, `navy`, `air`. |
 | `traits` | 2,013 ideas. 2,009 are in the advisor, chief, theorist, designer and industrial concern slots; 4 are national spirits (`george_v`, `ENG_george_vi`, `HOL_wilhelmina`, `SWE_gustaf_v_idea`). |
+
+`default = yes` does not refill an empty slot. GER started with the economy law `partial_economic_mobilisation`, the console `add_ideas war_economy` replaced it ("Added 1 ideas"), and the effect `remove_ideas = war_economy` then removed it and left no economy law, so the politics view showed "Click to add Economy Law" even though `civilian_economy` has `default = yes`. The console `remove_ideas war_economy` printed "Removed 0 ideas" and the law stayed. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console replies and the politics view.
 <!-- kit:end id="idea-cost-defaults" -->
 
 ### Example <a id="Example"></a>

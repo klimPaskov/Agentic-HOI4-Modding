@@ -5,7 +5,7 @@
 <!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105778" sources="documentation/console_commands_documentation.md localisation/ignored_loc_keys.txt launcher-settings.json documentation/triggers_documentation.md documentation/effects_documentation.md" -->
 **Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `documentation/console_commands_documentation.md` (386 commands and 44 tweakable variables), `localisation/ignored_loc_keys.txt`, `launcher-settings.json`, and a string search of `hoi4.exe` for commands the documentation does not list.
 Kit blocks added: an intro and a glossary, three correction blocks (rows that differ from the documentation, commands that are gone or undocumented, and the "no longer exists" and "unknown what" notes), a table of the commands that matter most for modding (`loc_check` family, `debug_checkportraitssanity`, reload commands, `event`, `effect`, `eval_effect`, `trigger`, `error`, `list_*`), eight tables for the 180 documented commands the page never named, and the 33 tweakable variables it never named.
-Gaps left: the documentation gives one line per command, so what `loc_check` counts as a bad key, which `reload <target>` names work, and how `setowner` and `annex all` take arguments are [unverified]. Commands were not run in the game.
+Gaps left: the documentation gives one line per command, so what `loc_check` counts as a bad key is [unverified]. Commands were not run in the game before 2026-11-02. Since then only the statements tagged `[game-tested 1.19.4.1]` have been run.
 **1.19.4.1 re-check (2026-11-01).** The documentation index diff shows one change: `debug_types` is gone, so the file now lists 385 commands (70 of them not in release builds) and the same 44 tweakable variables, and `hoi4.exe` 1.19.4.1 no longer contains the string. The correction block at the end of the page now lists it as removed, and the build named in the [docs] blocks is 1.19.4.1. The two other statements that cite changed files were re-measured: the debug launch arguments in `launcher-settings.json` and the `FUNDS_FOR_SIZE_UP` default of 700. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
 <!-- kit:end id="review" -->
 
@@ -203,16 +203,16 @@ MIOs is an acronym for Military Industrial Organizations
 
 | Page row | What 1.19.4.1 documents |
 | --- | --- |
-| `acclimization` | The command is spelled `acclimatization`, alias `acc`, arguments `<climate_name>, <value 0-100>`. The spelling `acclimization` appears nowhere in the documentation. [docs] hoi4.exe has no such string either (executable string), so the console probably rejects the page's spelling. [unverified] |
+| `acclimization` | The command is spelled `acclimatization`, alias `acc`, arguments `<climate_name>, <value 0-100>`. The spelling `acclimization` appears nowhere in the documentation. [docs] hoi4.exe has no such string either (executable string). The console rejects the page's spelling with "Unknown command" in red. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. See the notes below the table. |
 | `add_core <state_id>` | Takes a `<Province ID>`, not a state id. |
-| `remove_core [<State ID>] [<Country Tag>]` | Takes a single `<Province ID>`. The documentation lists the command and does not say it is broken. [docs] Whether it works is untested. [unverified] |
-| `puppet [<Puppeteer>] [<Target>]` | One argument, `<Target Country Tag>`. The two-tag form is not documented. [docs] Whether the engine accepts a second tag is untested. [unverified] |
+| `remove_core [<State ID>] [<Country Tag>]` | Takes a single `<Province ID>`. The documentation lists the command and does not say it is broken. [docs] `remove_core 375` (a province id of state 64), `remove_core 64 GER` and `remove_core 64` each printed only the command in red, and state 64 was still a GER core after each, so none of the three removed the core. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
+| `puppet [<Puppeteer>] [<Target>]` | One argument, `<Target Country Tag>`. The two-tag form is not documented. [docs] The engine accepts it: `puppet GER CZE` made CZE a GER puppet. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
 | `teleport(tp)` | Takes `<province_id>` and teleports the selected armies or ships there. |
-| `setowner [<country tag>]` | The argument list is `country tag, state id`. The page's claim that a state id no longer works is not in the documentation. [docs] Whether a state id works is untested. [unverified] |
-| `annex [<tag>] or "all"` | One `<Target Country Tag>` is documented. The `all` form is not. [docs] Whether `annex all` runs is untested. [unverified] |
+| `setowner [<country tag>]` | The argument list is `country tag, state id`. The page's claim that a state id no longer works is not in the documentation. [docs] A state id works: `setowner FRA 64` printed "France now owns State Brandenburg". `setowner 64` printed "Specify a tag and a state id or specify a tag select a state". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
+| `annex [<tag>] or "all"` | One `<Target Country Tag>` is documented. The `all` form is not. [docs] `annex all` runs: the game had 89 countries before it and 2 after. `annex HUN` removed HUN. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
 | `debug_crash(crash)` | Labelled "Not available in release build". |
 | `tdebug` (first row, "Toggles Debug info") | `tdebug` is the alias of `provtooltipdebug`, which toggles the debug info in the province tooltip (the page lists that command again further down). The command that toggles generic Debug info is `debug_info`, and it is not in release builds. |
-| `pp(fuhrer_mana,political_power)` | Only `political_power` is a documented alias. `fuhrer_mana` is not in the documentation. [docs] It is not in hoi4.exe either (executable string), so it probably does not run. [unverified] |
+| `pp(fuhrer_mana,political_power)` | Only `political_power` is a documented alias. `fuhrer_mana` is not in the documentation. [docs] It is not in hoi4.exe either (executable string). `fuhrer_mana 10` printed "Unknown command" in red, and `political_power 10` printed "Granted 10 political power to German Reich". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
 | `FI [amount}` | The command is `faction_initiative`, alias `fi`, arguments `amount, countrytag` (tag optional, default the player). |
 | `st`, `ws` | Aliases of `add_stability` and `add_war_support`. Both document the argument as "unity amount". |
 | `nuke [number]` | Alias of `nukes`, argument `<count>`. |
@@ -220,7 +220,7 @@ MIOs is an acronym for Military Industrial Organizations
 | `add_ideas`, `remove_ideas` | Accept `all` or several idea ids separated by spaces. |
 | `add_mines` | Alias `mines`, argument `<Amount of naval mines>`, applied to the selected region(s). The page's "maximises" is not stated. [docs] What the command does to the mine count is untested. [unverified] |
 | `add_autonomy` | Listed with no description and no arguments. |
-| `set_country_flag` | The documentation says it sets the flag on a given tag for a duration and defaults to the current country, value 1 and no expiry, but its argument list shows only the flag name. The page's note that another tag does not work is not in the documentation. [docs] Whether another tag works is untested. [unverified] |
+| `set_country_flag` | The documentation says it sets the flag on a given tag for a duration and defaults to the current country, value 1 and no expiry, but its argument list shows only the flag name. The page's note that another tag does not work is not in the documentation. [docs] Another tag does not work in the game. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. See the notes below the table. |
 | `Focus.AutoComplete (fa)` | `fa` is documented as its own Boolean tweakable variable next to `Focus.AutoComplete`. |
 | `addfunds` ("adds 1000 funds") | The command is `AddFunds` with aliases `mio.AddFunds` and `IndustrialOrganisation.AddFunds`. The first argument is an optional MIO token, the second an optional amount. With no amount it adds `NDefines::NIndustrialOrganisation::FUNDS_FOR_SIZE_UP`, which is 700 in 1.19.4.1 (`common/defines/00_defines.lua`, [vanilla-confirmed 1.19.4.1]), not 1000. |
 | `addTaskCapacity`, `addSize` | Real names `AddTaskCapacity` and `AddSize`, with the same `mio.` and `IndustrialOrganisation.` aliases. A negative task capacity is allowed but the result is capped at 0. |
@@ -228,6 +228,11 @@ MIOs is an acronym for Military Industrial Organizations
 | `force_operative_detection` | Alias `snitch`. The documentation text is a copy of `print_intel_network`'s, so its description is unreliable. |
 | `list_hidden_focuses` | Alias `list_hd`; the argument is a country tag. |
 | `release` | Alias `rls`. |
+
+Notes on rows of the table above:
+
+- `acclimization`: the documented `acclimatization arctic 50` is accepted and answered "Unknown climate definition: arctic. Valid options are: cold_climate, hot_climate". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply.
+- `set_country_flag`: `set_country_flag b1_flag_b POL` printed "set to 1 for Poland", but the flag landed on the player's country (GER) and `list_flags POL` answered "No flags set". `set_country_flag b1_flag_c 5` printed "set to 5", which shows the number as the flag value. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. Whether a number also acts as a duration is untested. [unverified]
 <!-- kit:end id="cc-fix-useful" -->
 
 ### Modding-useful commands <a id="Modding-useful_commands"></a>
@@ -271,12 +276,12 @@ Several other commands previously mentioned, such as event, are useful in moddin
 
 | Page row | What 1.19.4.1 documents |
 | --- | --- |
-| `reload [<type>]` | There is no `reload` entry in the documentation. [docs] The page's examples (`reload loc`, `reload focus`, `reload landcombat.gui`) are therefore not confirmed. [unverified] The documented reload commands and the hoi4.exe strings are in the note below the table. |
+| `reload [<type>]` | There is no `reload` entry in the documentation. [docs] The page's examples work all the same: ten targets each printed "<name> reloaded!", and bare `reload` printed "Please specify the file name:target". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. The targets run and the documented reload commands are in the notes below the table. |
 | `effect (e) [<scripted_effect_name>]` | Arguments are `<tag> scripted_effect_name`. It runs a scripted effect on the selected scope. Inline effect code goes through `eval_effect`. |
 | `trigger [<scripted_trigger_name>]` | Alias `t`, arguments `<tag> scripted_trigger_name`. It runs a scripted trigger on the selected scope. Inline trigger code goes through `eval_trigger`. |
 | `event [<event id>] [Target country tag]` | The documented arguments are `event id, <Target Country Tag>`. |
 | `error` | Documented as "Show errors in log". Whether it opens a file is not stated. [docs] What it does when run is untested. [unverified] |
-| `set_var`, `get_var` | The documentation lists only `<var name>` for both. The page's `[<value>]` for `set_var` is not documented. [docs] Whether `set_var` takes a value is untested. [unverified] |
+| `set_var`, `get_var` | The documentation lists only `<var name>` for both. The page's `[<value>]` for `set_var` is not documented. [docs] `set_var` takes a value: after `set_var b1_v 5`, `get_var b1_v` printed "b1_v = Ermland-Masuren (5)", the value 5 shown with the name of the state that has id 5. `set_var b1_w` with no value printed "Incorrect number of arguments". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
 | `list_flags`, `list_vars` | Optional `<scope>` argument. They list the flags or variables of that scope, or of the selected country, state or unit leader. |
 | `trigger_docs` | Aliases `effect_docs`, `scripting_docs`, `docs`. Documented as printing the trigger, effect and variable docs; where it prints is not stated. [docs] Where the output goes is untested. [unverified] |
 | `human_ai` | Documented as "Toggles AI for Human countries". |
@@ -284,6 +289,7 @@ Several other commands previously mentioned, such as event, are useful in moddin
 
 Notes on rows of the table above:
 
+- `reload` targets that printed "<name> reloaded!": `loc`, `focus`, `defines`, `decision`, `landcombat.gui`, `ideas`, `ability`, `scriptedgui`, `scripted_effects` and `cfocus`. `reload ideas` also wrote 239 parse errors for vanilla idea files to error.log. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply and error.log read.
 - `reload`: The documented reload commands are `reloadoob`, `reloadinterface`, `reloadtechnologies`, `reload_textures` (aliases `rt`, `reload_texture`), `reloadfx`, `reloadweather`, `cityreload`, `rebuildlayers`, `update_loc`, `updateequipments` and `updatesubunits`. [docs] hoi4.exe contains the string `reload %s` and the messages `' reloaded!`, `No such reload target that takes arguments: '`, `Please specify the file name/target` and `defines reloaded!` (executable strings).
 <!-- kit:end id="cc-fix-modding" -->
 
@@ -316,7 +322,7 @@ All rows: [docs] `documentation/console_commands_documentation.md`, except the c
 | `updateequipments`, `updatesubunits` | | | Update the equipment database and the sub-unit database. |
 | `update_loc` |  | `localization tag` | Updates the localisation file for one localisation tag. |
 | `reload_textures` | `rt`, `reload_texture` | `<optional file name filters...>` | Reloads all textures, or only files whose name contains the given text. |
-| `reloadfx` |  | `map/mapname/postfx or *.fx filename` | Reloads shaders. hoi4.exe also prints `all` in its usage message (executable string). [unverified] |
+| `reloadfx` |  | `map/mapname/postfx or *.fx filename` | Reloads shaders. hoi4.exe also prints `all` in its usage message (executable string). `reloadfx all` is accepted and printed "all reloaded!". `reloadfx postfx` printed "Map reloaded". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
 | `instantevents` |  |  | Ignores event MTTH values. |
 | `easy_decisions` | `ezd` |  | Toggle: decisions with `days_remove` last 1 day, and decisions lose their cost and cost trigger. |
 | `dump_equipment_loc` | | `desc`, country tags, equipment types, `path=<filepath>` (all optional) | Writes equipment localisation strings to a CSV, by default `logs/equipment_loc.csv`. `desc` dumps descriptions instead of names; type words such as `armor anti_tank` narrow the list. |
@@ -472,13 +478,13 @@ Duplicate localisation keys are not a console check. The game reports them at st
 
 | Page row | Status in 1.19.4.1 |
 | --- | --- |
-| `winwars`, `debug_nuking` | Absent from the documentation. [docs] No such string is in hoi4.exe either (executable string), so the console probably rejects them. [unverified] That agrees with the page's "no longer exists" notes (1.9.1 and 1.15.1). The documented replacement for nuking is `launch_nuke` (alias `ln`): it launches a nuke at given provinces without checking conditions. |
-| `nextsong`, `poll`, `reloadsupply (relsup)`, `add_interest`, `remove_interest`, `requestgamestate`, `debug_commands`, `debug_volume`, `debug_ai_budget`, `profilelog`, `filewatcher`, `browser_base_url` | Not in the documentation, under any name or alias. [docs] No matching command string is in hoi4.exe either. Treat them as removed. [unverified] See the note below the table. |
-| `normals` | Not documented. The only mention of the word is in the description of `collision` ("Toggles debug display of normals/bounding boxes/collision"). [docs] Whether a `normals` command still runs is untested. [unverified] |
-| `rendertype`, `tweakergui`, `particle_editor` | Not documented. [docs] hoi4.exe contains the strings `rendertype`, `tweakergui` and `particle_editor save/restart/undo/redo/exit` (executable strings). Whether they work as console commands in the shipped game is unknown. [unverified] |
+| `winwars`, `debug_nuking` | Absent from the documentation. [docs] No such string is in hoi4.exe either (executable string). The console rejects them: both printed "Unknown command" in red, followed by the command. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. That agrees with the page's "no longer exists" notes (1.9.1 and 1.15.1). The documented replacement for nuking is `launch_nuke` (alias `ln`): it launches a nuke at given provinces without checking conditions. |
+| `nextsong`, `poll`, `reloadsupply (relsup)`, `add_interest`, `remove_interest`, `requestgamestate`, `debug_commands`, `debug_volume`, `debug_ai_budget`, `profilelog`, `filewatcher`, `browser_base_url` | Not in the documentation, under any name or alias. [docs] No matching command string is in hoi4.exe either. All of them, including the alias `relsup`, printed "Unknown command" in red, like the nonsense word `zzzz`. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. Treat them as removed. See the note below the table. |
+| `normals` | Not documented. The only mention of the word is in the description of `collision` ("Toggles debug display of normals/bounding boxes/collision"). [docs] `normals` is still a command: it printed "Command available only for developers." [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
+| `rendertype`, `tweakergui`, `particle_editor` | Not documented. [docs] hoi4.exe contains the strings `rendertype`, `tweakergui` and `particle_editor save/restart/undo/redo/exit` (executable strings). All three are console commands in the game. `rendertype` printed "DirectX 11.1", `particle_editor` printed "Load a particle effect before running the editor", and `tweakergui` printed "You need to provide at least one tweakable variable!". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
 | `ShowTechBonus` ("unknown what it does") | A Boolean tweakable variable, labelled "Not available in release build", with no description in the documentation. |
 | `night`, `massconquer`, `aircombat`, `debug_achievements_clear`, `gbreload`, `oos`, `toggle_silhouette_portraits` | The page calls these developer-only or not working. The documentation confirms it: all are labelled "Not available in release build". |
-| `remove_core` ("Command does not work") | Documented with a `<Province ID>` argument. Whether it works is not stated. [docs] Whether it works is untested. [unverified] |
+| `remove_core` ("Command does not work") | Documented with a `<Province ID>` argument. Whether it works is not stated. [docs] It did not work in the test: `remove_core 375`, `remove_core 64 GER` and `remove_core 64` each printed only the command in red, and state 64 stayed a GER core after each. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
 | `debug_types` | Removed in 1.19.4.1. 1.19.3 documented it as not available in release builds; the 1.19.4.1 documentation no longer lists it and hoi4.exe 1.19.4.1 contains no `debug_types` string. [docs] |
 
 Notes on rows of the table above:
@@ -648,14 +654,14 @@ All rows: [docs] `documentation/console_commands_documentation.md`. No row in th
 <!-- kit:begin id="cc-map-view" at="section:Other_in-game_commands" -->
 #### Kit: Map, weather and display <a id="kit-cc-map-view"></a>
 
-All rows: [docs] `documentation/console_commands_documentation.md`. Only the `set_weather` cell quotes hoi4.exe and is [unverified]. Commands not on the wiki page.
+All rows: [docs] `documentation/console_commands_documentation.md`. Only the `set_weather` cell quotes hoi4.exe, and a game run checked it. Commands not on the wiki page.
 
 | Command | Aliases | Arguments (as documented) | What it does |
 | --- | --- | --- | --- |
 | `add_rain` |  | `<rain_amount>` | Adds rain to the selected province. |
 | `add_snow` |  | `<snow_amount>` | Adds snow to the selected province. |
 | `set_mud` |  |  | Makes the selected province muddy. |
-| `set_weather` |  | `<weather_type>` | Sets the weather of the selected province and its region. A hoi4.exe message lists the types `clear`, `rain`, `storm`, `snow`, `blizzard`, `sandstorm` (executable string). [unverified] |
+| `set_weather` |  | `<weather_type>` | Sets the weather of the selected province and its region. A hoi4.exe message lists the types `clear`, `rain`, `storm`, `snow`, `blizzard`, `sandstorm` (executable string). All six types are accepted, and an unknown type lists the valid ones. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply and province tooltip. See the note below the table. |
 | `enable_weather` |  |  | Turns weather simulation on. |
 | `disable_weather` |  |  | Turns weather simulation off. |
 | `goto_region` |  | `region id` | Centres the camera on a strategic region. |
@@ -673,6 +679,8 @@ All rows: [docs] `documentation/console_commands_documentation.md`. Only the `se
 | `ListIncorrectCenterOfRegions` |  |  | Lists regions whose centre point lies inside another region. Not in release build. |
 | `map_icon_reload_type` |  | `<NUM> or <help>` | Picks one map icon type to reload; `help` lists the numbers. Not in release build. |
 | `rebuildlayers` |  |  | Reloads the map modes. |
+
+- `set_weather`: with a Brandenburg province selected, `set_weather clear`, `rain`, `storm`, `snow`, `blizzard` and `sandstorm` each replied "Weather was set to '<type>' in the selected province (and its corresponding region)". After `sandstorm` the province tooltip read "Weather: Sandstorm (0C)" and the Eastern Germany region showed the haze. `set_weather zzz` replied "You must specify weather type (one of <clear, rain, storm, snow, blizzard, sandstorm>)". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply and province tooltip.
 <!-- kit:end id="cc-map-view" -->
 
 <!-- kit:begin id="cc-session" at="section:Other_in-game_commands" -->
@@ -732,7 +740,7 @@ Labelled "Not available in release build":
 
 `Audio.Compressor`, `Audio.Debug`, `Audio.Debug.ExtendedRange`, `BattleSound.Debug`, `BattleSound.PlayBackground`, `BorderLOD.Threaded`, `Debug.DeleteUnitEachTick`, `Draw.Borders`, `Draw.Objects`, `Draw.Postfx`, `Draw.Refractions`, `Draw.Rivers`, `Draw.ShadowBlur`, `Draw.Shadows`, `Draw.Terrain`, `Draw.Transparent`, `Draw.Tree`, `Draw.Water`, `PostEffectVolumes.Draw`, `PostEffectVolumes.Enabled`, `ShowBorderTypes`, `Terrain.MipLevels`, `Tree.MipLevels`, `Update.Animations`, `Update.Particles`, `supply_debug.show_debug_lines_rail`, `supply_debug.show_debug_lines_supply`, `supply_debug.show_debug_lines_train`, `supply_debug.show_debug_rivers`
 
-The page already covers `Agency.AutoComplete`, `Agency.InstantSlotUnlock`, `Agency.KeepExcessOperatives`, `Decision.FastRemove`, `Decision.NoChecks`, `Focus.AutoComplete`, `Focus.IgnorePrerequisites`, `Focus.NoChecks`, `Operation.Instant`, `fa` and `ShowTechBonus`.  The documentation gives each of them only a type and a release-build flag, with no description. [docs] The variable names suggest draw toggles (`Draw.*`), audio and debug lines, but what they do is untested. [unverified]
+The page already covers `Agency.AutoComplete`, `Agency.InstantSlotUnlock`, `Agency.KeepExcessOperatives`, `Decision.FastRemove`, `Decision.NoChecks`, `Focus.AutoComplete`, `Focus.IgnorePrerequisites`, `Focus.NoChecks`, `Operation.Instant`, `fa` and `ShowTechBonus`.  The documentation gives each of them only a type and a release-build flag, with no description. [docs] The variable names suggest draw toggles (`Draw.*`), audio and debug lines, but what they do is untested. [unverified] Typing `Draw.Water`, `Draw.Rivers`, `Draw.Terrain` or `Audio.Debug` printed "Command available only for developers.", so the console refused those four. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply.
 <!-- kit:end id="cc-tweakables" -->
 
 ## See also <a id="See_also"></a>
