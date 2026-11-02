@@ -14587,10 +14587,10 @@
               "--register",
               "none"
             ],
-            "release_version": "1.1.0",
-            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.1.0/hoi4-live-tools-1.1.0.zip",
-            "release_sha256": "15d6d86b3d7d6d6795bd2a9598d56d312831ff8b4f9c518a38eec522c8c623e4",
-            "release_size": 1155994,
+            "release_version": "1.2.0",
+            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.2.0/hoi4-live-tools-1.2.0.zip",
+            "release_sha256": "c543ee54d5f730946f97a1a848dc52add9d4da167a26d340fa75e7241d942dff",
+            "release_size": 1996182,
             "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless) from https://pypi.org.",
             "expected_writes": [
               "%LOCALAPPDATA%/hoi4-live-tools/**"
@@ -18033,7 +18033,7 @@
           "server_id": "hoi4-live",
           "component_id": "workflow.live_tools",
           "source_repository": "klimPaskov/HOI4-Live-Tools",
-          "source_revision": "v1.1.0"
+          "source_revision": "v1.2.0"
         },
         "guidance": [
           "Use the connected hoi4-live server and its advertised tools with qualified tool names.",
@@ -18046,7 +18046,7 @@
           "author": "klimPaskov",
           "url": "https://github.com/klimPaskov/HOI4-Live-Tools",
           "license": "Apache-2.0",
-          "license_url": "https://github.com/klimPaskov/HOI4-Live-Tools/blob/v1.1.0/LICENSE"
+          "license_url": "https://github.com/klimPaskov/HOI4-Live-Tools/blob/v1.2.0/LICENSE"
         }
       },
       {
