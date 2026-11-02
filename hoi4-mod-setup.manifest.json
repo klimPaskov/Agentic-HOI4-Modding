@@ -11743,12 +11743,13 @@
                 "package_symlinks": {}
               },
               "linux": {
-                "package_tree_sha256": "c2f7344ff1ee5ab4ba1c99299cdab2fbf01c1b56bf87d866810dfdafc9d30d41",
-                "package_file_count": 5253,
+                "package_tree_sha256": "afbd464a6552820256382cd30d91e1759539214578eaceaf790cb484c99c4d3a",
+                "package_file_count": 5718,
                 "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
                 "runtime_entry_size": 4205,
                 "package_symlinks": {
                   "node_modules/.bin/node-which": "../which/bin/node-which",
+                  "node_modules/.bin/opencollective-postinstall": "../opencollective-postinstall/index.js",
                   "node_modules/.bin/semver": "../semver/bin/semver.js"
                 }
               }
