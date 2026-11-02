@@ -9,6 +9,13 @@ Generated outputs, all one-way and overwritten on every run:
 - Cursor: `.cursor/agents/*.md` and `.cursor/agent-map.md`
 - Qoder: `.qoder/agents/*.md` and `.qoder/agent-map.md`
 - OpenCode: `.opencode/agent/*.md` and `.opencode/agent-map.md`
+- Gemini CLI: `.gemini/agents/*.md` and `.gemini/agent-map.md`
+- Antigravity: `.agents/agents/*.md` and `.agents/agent-map.md`
+- Kilo Code: `.kilo/agents/*.md` and `.kilo/agent-map.md`
+- Kiro: `.kiro/agents/*.md` and `.kiro/agent-map.md`
+- Qwen Code: `.qwen/agents/*.md` and `.qwen/agent-map.md`
+- Devin Desktop: `.devin/agents/*.md` and `.devin/agent-map.md`
+- Augment: `.augment/agents/*.md` and `.augment/agent-map.md`
 - Claude Code: `.claude/agent-map.md` (the agent files themselves are the source)
 
 Runtime tuning that is not part of a prompt, such as the Codex reasoning effort
@@ -99,6 +106,13 @@ def runtimes_for(root: Path) -> Dict[str, Runtime]:
         "cursor": Runtime("cursor", "Cursor", root / ".cursor" / "agents", root / ".cursor" / "agent-map.md", ".md"),
         "qoder": Runtime("qoder", "Qoder", root / ".qoder" / "agents", root / ".qoder" / "agent-map.md", ".md"),
         "opencode": Runtime("opencode", "OpenCode", root / ".opencode" / "agent", root / ".opencode" / "agent-map.md", ".md"),
+        "gemini": Runtime("gemini", "Gemini CLI", root / ".gemini" / "agents", root / ".gemini" / "agent-map.md", ".md"),
+        "antigravity": Runtime("antigravity", "Antigravity", root / ".agents" / "agents", root / ".agents" / "agent-map.md", ".md"),
+        "kilo": Runtime("kilo", "Kilo Code", root / ".kilo" / "agents", root / ".kilo" / "agent-map.md", ".md"),
+        "kiro": Runtime("kiro", "Kiro", root / ".kiro" / "agents", root / ".kiro" / "agent-map.md", ".md"),
+        "qwen": Runtime("qwen", "Qwen Code", root / ".qwen" / "agents", root / ".qwen" / "agent-map.md", ".md"),
+        "devin": Runtime("devin", "Devin Desktop", root / ".devin" / "agents", root / ".devin" / "agent-map.md", ".md"),
+        "augment": Runtime("augment", "Augment", root / ".augment" / "agents", root / ".augment" / "agent-map.md", ".md"),
         "claude": Runtime("claude", "Claude Code", root / ".claude" / "agents", root / ".claude" / "agent-map.md", ".md"),
     }
 
@@ -242,9 +256,20 @@ def render_codex(agent: Agent, profiles: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+# Frontmatter for runtimes whose subagent files take a name and description
+# and otherwise inherit the session model and tools. The documented required
+# fields are emitted; tool restrictions stay in the prompt body because each
+# runtime names its tools differently.
+NAMED_MARKDOWN_RUNTIMES = ("gemini", "antigravity", "kiro", "qwen", "devin", "augment")
+
+
 def render_markdown(runtime: Runtime, agent: Agent, profiles: dict) -> str:
     body = runtime_body(runtime.key, agent.body)
-    if runtime.key == "qoder":
+    if runtime.key in NAMED_MARKDOWN_RUNTIMES:
+        lines = ["---", f"# {header(agent)}", f"name: {agent.name}", f"description: {yaml_quote(agent.description)}", "---"]
+    elif runtime.key == "kilo":
+        lines = ["---", f"# {header(agent)}", f"description: {yaml_quote(agent.description)}", "mode: subagent", "---"]
+    elif runtime.key == "qoder":
         tools = profiles["qoder"]["tools"][agent.authority]
         lines = ["---", f"name: {agent.name}", f"description: {yaml_quote(agent.description)}", f"tools: {tools}", "---", f"<!-- {header(agent)} -->"]
     elif runtime.key == "cursor":
@@ -257,7 +282,7 @@ def render_markdown(runtime: Runtime, agent: Agent, profiles: dict) -> str:
 def render_map(runtime: Runtime, agents: List[Agent]) -> str:
     folder = runtime.agent_dir.relative_to(MOD_ROOT).as_posix()
     if runtime.key == "claude":
-        intro = f"These are the canonical subagent definitions in `{folder}/`. Edit them directly, then run `python .tools/sync/sync_agents.py` to regenerate the Codex, Cursor, Qoder, and OpenCode projections."
+        intro = f"These are the canonical subagent definitions in `{folder}/`. Edit them directly, then run `python .tools/sync/sync_agents.py` to regenerate the projections for the other runtimes."
         rows = [f"| `{a.name}` | `{a.model}` | `{a.effort}` | {a.authority} |" for a in agents]
         table = "| Agent | Model | Effort | Authority |\n| --- | --- | --- | --- |"
     else:

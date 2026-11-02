@@ -20,9 +20,13 @@ class PackagingTests(unittest.TestCase):
         self.mod = self.base / "tiny-mod"
         self.mod.mkdir()
         manifest = json.loads((ROOT / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
-        component = next(item for item in manifest["components"] if item["id"] == "runtime.agent_sync")
+        component = next(item for item in manifest["components"] if item["id"] == "runtime.chatgpt_sources")
+        # Optional and unchecked by default: no profile installs the packager.
+        self.assertTrue(component["optional"])
         for profile in manifest["profiles"]:
-            self.assertIn(component["id"], profile["components"])
+            self.assertNotIn(component["id"], profile["components"])
+        shared = next(item for item in manifest["components"] if item["id"] == "runtime.agent_sync")
+        self.assertFalse(any("package_chatgpt" in entry["path"] for entry in shared["expected_files"]))
         # Same selected-source rules used to publish the install inventory.
         snapshot = {entry["path"]: (ROOT / entry["path"]).read_bytes() for entry in component["expected_files"]}
         for entry in generator.git_evidence_for(component, snapshot):

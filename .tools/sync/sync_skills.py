@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 """Mirror the canonical `.claude/skills/` library for runtimes that read another folder.
 
-Claude Code, Cursor, and OpenCode read `.claude/skills/` directly. Codex and
-DeepSeek Harness read `.agents/skills/`, and Qoder reads `.qoder/skills/`.
-This tool keeps those folders identical to the canonical library.
+Claude Code, Cursor, OpenCode, GitHub Copilot, Cline, and Augment read
+`.claude/skills/` directly. Codex, DeepSeek Harness, Gemini CLI, Antigravity,
+Kilo Code, and Devin read `.agents/skills/`; Qoder, Grok Build, Kiro, and Qwen
+Code read `.qoder/skills/`, `.grok/skills/`, `.kiro/skills/`, and
+`.qwen/skills/`. This tool keeps those folders identical to the canonical
+library.
 
     python .tools/sync/sync_skills.py                 # refresh every mirror this project needs
     python .tools/sync/sync_skills.py --target agents # create or refresh .agents/skills
     python .tools/sync/sync_skills.py --skill hoi4-mtth   # refresh one skill's copies
     python .tools/sync/sync_skills.py --check         # report drift, write nothing
 
-An installed mod needs `.agents/skills` when it has a `.codex/` folder and
-`.qoder/skills` when it has a `.qoder/` folder, and `--check` reports a missing
-required mirror. The source package (`CLAUDE_template.md` without `CLAUDE.md`)
-tracks only the canonical library, because HOI4 Mod Setup builds the mirrors at
-install, so there only mirrors that already exist are refreshed.
+An installed mod needs `.agents/skills` when it has a `.codex/`, `.gemini/`,
+`.kilo/`, `.devin/`, or `.agents/agents/` folder, and each client-specific mirror
+(`.qoder/skills`, `.grok/skills`, `.kiro/skills`, `.qwen/skills`) when it has
+that client's folder; `--check` reports a missing required mirror. The source
+package (`CLAUDE_template.md` without `CLAUDE.md`) tracks only the canonical
+library, because HOI4 Mod Setup builds the mirrors at install, so there only
+mirrors that already exist are refreshed.
 
 Copies are the default because HOI4 Mod Setup tracks the mirrored files it
 installs. `--mode link` replaces a mirror folder with a directory junction
@@ -35,17 +40,24 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 MOD_ROOT = Path(__file__).resolve().parents[2]
 TARGETS: Dict[str, str] = {
     "agents": ".agents/skills",
     "qoder": ".qoder/skills",
+    "grok": ".grok/skills",
+    "kiro": ".kiro/skills",
+    "qwen": ".qwen/skills",
 }
-# A mirror is required in an installed mod when the runtime that reads it is installed.
-REQUIRED_BY: Dict[str, str] = {
-    "agents": ".codex",
-    "qoder": ".qoder",
+# A mirror is required in an installed mod when a runtime that reads it is installed.
+# `.agents/skills` serves Codex, Gemini CLI, Antigravity, Kilo Code, and Devin Desktop.
+REQUIRED_BY: Dict[str, Tuple[str, ...]] = {
+    "agents": (".codex", ".gemini", ".agents/agents", ".kilo", ".devin"),
+    "qoder": (".qoder",),
+    "grok": (".grok",),
+    "kiro": (".kiro",),
+    "qwen": (".qwen",),
 }
 # Tool caches written next to skill tools (check.py full runs mypy there) are not skill content.
 IGNORED = {"__pycache__", ".DS_Store", ".mypy_cache", ".ruff_cache", ".pytest_cache"}
@@ -66,7 +78,7 @@ def is_source_package(root: Path) -> bool:
 def required_targets(root: Path) -> List[str]:
     if is_source_package(root):
         return []
-    return [key for key, marker in REQUIRED_BY.items() if (root / marker).is_dir()]
+    return [key for key, markers in REQUIRED_BY.items() if any((root / marker).is_dir() for marker in markers)]
 
 
 def is_link(path: Path) -> bool:
@@ -144,7 +156,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     targets = args.target or [key for key, folder in TARGETS.items() if (root / folder).exists() or key in required]
     if not targets:
         reason = "the source package keeps only the canonical library" if is_source_package(root) else "no installed runtime needs one"
-        print(f"No skill mirrors exist and {reason}. Claude Code, Cursor, and OpenCode read .claude/skills directly; pass --target agents for Codex or DSH, or --target qoder for Qoder.")
+        print(f"No skill mirrors exist and {reason}. Clients that read .claude/skills need none; pass --target agents, qoder, grok, kiro, or qwen to create a mirror.")
         return 0
     skills = canonical_skills(canonical, args.skill)
     for name in sorted(set(args.skill or ()) - {skill.name for skill in skills}):
@@ -162,7 +174,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"{label}: now linked to .claude/skills.")
             continue
         if args.check and not mirror_root.is_dir():
-            print(f"DRIFT: {label} is missing; {REQUIRED_BY[key]}/ needs it. Run python .tools/sync/sync_skills.py to create it.")
+            needed_by = " or ".join(marker + "/" for marker in REQUIRED_BY[key])
+            print(f"DRIFT: {label} is missing; {needed_by} needs it. Run python .tools/sync/sync_skills.py to create it.")
             failures += 1
             continue
         if not args.skill:

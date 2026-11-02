@@ -14,6 +14,11 @@ from manifest_schema import load_manifest_schema
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from live_testing_provider_data import build_live_testing_components, build_live_testing_table
 from image_generation_provider_data import build_image_generation_components, build_image_generation_table
+from coding_environment_data import (
+    REMOVED_COMPONENTS,
+    build_coding_environment_components,
+    build_coding_environment_table,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,7 +29,7 @@ def main() -> None:
     schema = load_manifest_schema(manifest.get("schema_version"), ROOT)
     Draft202012Validator.check_schema(schema)
     Draft202012Validator(schema).validate(manifest)
-    if not str(manifest.get("schema_version", "")).startswith("5."):
+    if not str(manifest.get("schema_version", "")).startswith("6."):
         raise SystemExit("published manifest has the wrong schema major")
     if manifest.get("image_generation") != build_image_generation_table(ROOT):
         raise SystemExit("published image-generation provider table is stale")
@@ -62,6 +67,24 @@ def main() -> None:
         actual.pop("expected_files", None)
         if actual != expected:
             raise SystemExit("stale live-testing component: " + expected["id"])
+    if manifest["coding_environments"] != build_coding_environment_table():
+        raise SystemExit("published coding-environment table is stale")
+    published = {component["id"]: component for component in manifest["components"]}
+    for removed in REMOVED_COMPONENTS:
+        if removed in published:
+            raise SystemExit(f"retired coding-environment component is still published: {removed}")
+    for expected in build_coding_environment_components(manifest["components"]):
+        actual = dict(published.get(expected["id"]) or {})
+        actual.pop("expected_files", None)
+        expected.pop("expected_files", None)
+        if actual != expected:
+            raise SystemExit("stale coding-environment component: " + expected["id"])
+    for definition in manifest["coding_environments"]:
+        registration = definition.get("mcp_registration")
+        if registration:
+            owner = published.get(registration["component_id"])
+            if owner is None or owner.get("coding_environment") != definition["id"] or owner["destination"]["path"] != registration["path"]:
+                raise SystemExit("coding-environment MCP registration does not match its component: " + definition["id"])
     revision = manifest["generated_for_revision"]
     snapshot = generator.git_snapshot(ROOT, revision)
     for component in manifest["components"]:

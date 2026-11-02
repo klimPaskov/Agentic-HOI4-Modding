@@ -1,0 +1,3 @@
+# Load the project instructions as read-only context in every Aider session.
+read:
+  - AGENTS.md

@@ -25,7 +25,21 @@
         ".qoder/agents/*.md",
         ".qoder/agent-map.md",
         ".opencode/agent/*.md",
-        ".opencode/agent-map.md"
+        ".opencode/agent-map.md",
+        ".gemini/agents/*.md",
+        ".gemini/agent-map.md",
+        ".agents/agents/*.md",
+        ".agents/agent-map.md",
+        ".kilo/agents/*.md",
+        ".kilo/agent-map.md",
+        ".kiro/agents/*.md",
+        ".kiro/agent-map.md",
+        ".qwen/agents/*.md",
+        ".qwen/agent-map.md",
+        ".devin/agents/*.md",
+        ".devin/agent-map.md",
+        ".augment/agents/*.md",
+        ".augment/agent-map.md"
       ]
     },
     {
@@ -34,7 +48,7 @@
       "script": ".tools/sync/sync_skills.py",
       "sources": [".claude/skills"],
       "inputs": [".claude/skills/{item}/**", ".tools/sync/sync_skills.py"],
-      "outputs": [".agents/skills/{item}/**", ".qoder/skills/{item}/**"],
+      "outputs": [".agents/skills/{item}/**", ".qoder/skills/{item}/**", ".grok/skills/{item}/**", ".kiro/skills/{item}/**", ".qwen/skills/{item}/**"],
       "item_args": ["--skill", "{item}"]
     },
     {

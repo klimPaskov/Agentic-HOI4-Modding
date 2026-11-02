@@ -29,7 +29,10 @@ import generators
 # HOI4 Mod Setup lets `check.py setup` rewrite only these tracked paths (src-tauri/src/agent_setup.rs in
 # HOI4-Mod-Setup). Every generated output of an installed mod must stay inside them.
 SETUP_REWRITABLE_EXACT = (".gitignore", "AGENTS.md", ".claude/agent-map.md", ".tools/quality_baseline.json")
-SETUP_REWRITABLE_PREFIXES = (".codex/", ".cursor/", ".opencode/", ".qoder/", ".agents/")
+SETUP_REWRITABLE_PREFIXES = (
+	".codex/", ".cursor/", ".opencode/", ".qoder/", ".agents/",
+	".gemini/", ".kilo/", ".kiro/", ".qwen/", ".devin/", ".augment/", ".grok/",
+)
 
 AGENT = """---
 name: {name}

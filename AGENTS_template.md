@@ -149,8 +149,8 @@ HOI4 Mod Setup installs the runtime per user with `--register none` and writes p
 HOI4 Mod Setup lets you choose any supported coding client. This package keeps canonical instructions, skills, and agent definitions together under `.claude`, then creates the matching files for the clients you select. Do not assume the selected client is Claude Code.
 
 - `CLAUDE.md`: project instructions. `AGENTS.md` is generated from it.
-- `.claude/skills/<name>/SKILL.md`: the skill library. `.agents/skills/` and `.qoder/skills/` are generated copies.
-- `.claude/agents/<name>.md`: specialist subagents, with the Claude model tier in the `model` field. The Codex, Cursor, Qoder, and OpenCode agents are generated from them.
+- `.claude/skills/<name>/SKILL.md`: the skill library. `.agents/skills/` and each client's own skill folder (`.qoder/`, `.grok/`, `.kiro/`, `.qwen/`) are generated copies.
+- `.claude/agents/<name>.md`: specialist subagents, with the Claude model tier in the `model` field. Every other client's agents are generated from them.
 - `.claude/settings.json` and the root `.mcp.json`: shared Claude Code settings and project MCP servers.
 
 In Claude Code a hook regenerates the projections of each canonical file you edit; commit them with it. Elsewhere, regenerate after editing a canonical file and run it with `--check` during validation (`.tools/sync/generators.json` lists every generator):
