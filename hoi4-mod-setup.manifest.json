@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "68989a6515cf2d846ee4f4015f0b8c6dce24b706",
+  "generated_for_revision": "c537a45ccffb17e86bf86a2d257e00c1f09729a7",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1784,8 +1784,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "8c6aa341a289e748195af23cf54c0096693889a7a045c9b89838daccb98f9a5a",
-          "size": 70178
+          "sha256": "1f1c301dcaafed7ec3bd03ae2a7d98b015c13ec484c76c1b808cfae0539a152c",
+          "size": 70321
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -5208,8 +5208,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "8c6aa341a289e748195af23cf54c0096693889a7a045c9b89838daccb98f9a5a",
-          "size": 70178
+          "sha256": "1f1c301dcaafed7ec3bd03ae2a7d98b015c13ec484c76c1b808cfae0539a152c",
+          "size": 70321
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -10896,8 +10896,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "2cc7fae7062f122ca971b8a8978a2c30e7de67de2c4566143e65dd7c078101dd",
-          "size": 125570
+          "sha256": "1856ec8c2608899647e8bf02a6f0c0506b2d82c203d7ec43abaa06fcd4fc25a6",
+          "size": 125765
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_rigid_weapon_attachment_integration.py",
@@ -11641,8 +11641,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_texture_lineage.py",
-          "sha256": "49745d3de1350ca5fa8be14540cf69be8ca199f00c175d50974943397853e8f4",
-          "size": 18074
+          "sha256": "2fa9efaa444ab5d068b7647338c975b7c390b86a419a6abcd218888bcce65324",
+          "size": 18749
         },
         {
           "path": ".tools/3d_pipeline/tests/test_texture_size_gate.py",
