@@ -11,7 +11,7 @@ Gaps left: whether the engine still parses `map/supplyareas/` could not be teste
 <!-- kit:end id="review" -->
 
 <!-- kit:begin id="supply-areas-vestigial" at="top" -->
-**Kit correction** The format on this page is not used by 1.19.3, and a new map does not need it. [unverified] Inference from the evidence below; the game was not run.
+**Kit correction** The format on this page is not used by 1.19.3, and a new map does not need it. The evidence below points that way, and in 1.19.4.1 the game does not parse the folder: a valid `map/supplyareas/2-SupplyArea.txt` (`id=2`, `name="SUPPLYAREA_2"`, `value=999`, `states={ 5 }`) and a garbage file (`this is garbage { text ] = =`) both logged no new line in error.log and no mention of the file in any log, and the game did not crash and started a new game. This rests on the absence of a parse error. The supply map mode and the supply of state 5 were not read, and a map built without the folder was not tried. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launches, error.log read.
 
 - `map/supplyareas/` still exists in 1.19.3 but holds one file, `1-SupplyArea.txt`, with a single area: `id=1`, `name="SUPPLYAREA_1"`, `value=12`, `states = { 5 85 763 807 }`. [vanilla-confirmed 1.19.3] `map/supplyareas/1-SupplyArea.txt`
 - `localisation/english/supply_area_names_l_english.yml` still defines `SUPPLYAREA_1` to `SUPPLYAREA_357`, all with the text "SupplyArea". [vanilla-confirmed 1.19.3] `localisation/english/supply_area_names_l_english.yml`
