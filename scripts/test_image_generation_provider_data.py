@@ -64,8 +64,10 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
     def test_hoi4_imagegen_is_the_default_route_and_midjourney_is_manual_only(self) -> None:
         providers = {item["id"]: item for item in build_image_generation_table(ROOT)["providers"]}
         route = providers["hoi4_imagegen"]["route"]
-        self.assertEqual(route["kind"], "local_package")
+        self.assertEqual(route["kind"], "release_binary")
+        self.assertEqual(route["auth_method"], "chatgpt_login")
         self.assertEqual(route["server_id"], "hoi4_imagegen")
+        self.assertEqual(route["component_id"], "imagegen.hoi4_imagegen")
         self.assertEqual(route["source_repository"], "https://github.com/klimPaskov/hoi4-imagegen-mcp")
         for group in ("icon", "picture", "portrait", "flag", "unit", "interface"):
             self.assertEqual(route["tool_names"][group], f"hoi4.image_{group}")
@@ -114,9 +116,54 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
                 self.assertEqual(text.count(marker_end), 1)
                 self.assertLess(text.index(marker_start), text.index(marker_end))
 
-    def test_the_runtime_component_is_the_only_project_local_image_component(self) -> None:
+    def test_hoi4_imagegen_release_binary_route_declares_the_five_verified_targets(self) -> None:
+        providers = {item["id"]: item for item in build_image_generation_table(ROOT)["providers"]}
+        route = providers["hoi4_imagegen"]["route"]
+        self.assertEqual(route["package_version"], "0.2.0")
+        self.assertEqual(
+            [(field["id"], field["environment_name"]) for field in route["credential_fields"]],
+            [("openai_api_key", "OPENAI_API_KEY"), ("gemini_api_key", "GEMINI_API_KEY"),
+             ("fal_key", "FAL_KEY"), ("comfyui_api_key", "COMFYUI_API_KEY")])
+        binary = route["release_binary"]
+        self.assertEqual(binary["version"], route["package_version"])
+        self.assertEqual(binary["install_root"], ".tools/image_generation/hoi4-imagegen")
+        self.assertEqual(sorted(binary["targets"]), sorted([
+            "x86_64-pc-windows-msvc", "aarch64-apple-darwin", "x86_64-apple-darwin",
+            "x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"]))
+        for triple, target in binary["targets"].items():
+            with self.subTest(target=triple):
+                archive = "zip" if "windows" in triple else "tar.gz"
+                folder = f"hoi4-imagegen-v0.2.0-{triple}"
+                self.assertEqual(target["archive"], archive)
+                self.assertEqual(
+                    target["url"],
+                    f"https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.2.0/{folder}.{archive}")
+                self.assertRegex(target["sha256"], r"^[0-9a-f]{64}$")
+                self.assertGreater(target["size"], 0)
+                suffix = ".exe" if "windows" in triple else ""
+                self.assertEqual(target["entries"], {
+                    "mcp": f"{folder}/hoi4-imagegen-mcp{suffix}", "cli": f"{folder}/hoi4-imagegen{suffix}"})
+        windows = binary["targets"]["x86_64-pc-windows-msvc"]
+        self.assertEqual((windows["size"], windows["sha256"]),
+                         (17366134, "5338293f155d5679fc1c5e0b883150275b25f04ce78631ad6437c0ccd99912fc"))
+        self.assertEqual(providers["hoi4_imagegen"]["reference_mcp"]["version"], "0.2.0")
+        self.assertNotIn("release_binary", providers["openai_api"]["route"], "only the hoi4-imagegen route installs a release binary")
+
+    def test_hoi4_imagegen_component_is_a_generated_managed_mcp_component(self) -> None:
         components = {item["id"]: item for item in build_image_generation_components(ROOT)}
-        self.assertEqual(list(components), ["imagegen.runtime"])
+        component = components["imagegen.hoi4_imagegen"]
+        self.assertEqual(component["category"], "mcp")
+        self.assertTrue(component["optional"])
+        self.assertEqual(component["source"], {"kind": "generated", "path": ".tools/image_generation/hoi4-imagegen"})
+        self.assertNotIn("template_engine", component)
+        self.assertEqual(component["destination"],
+                         {"path": ".tools/image_generation/hoi4-imagegen/", "ownership": "managed", "outside_project": False})
+        self.assertEqual(component["expected_files"], [])
+        self.assertEqual(component["validation"], [])
+
+    def test_the_runtime_component_is_the_only_project_local_image_component_besides_the_release_binary(self) -> None:
+        components = {item["id"]: item for item in build_image_generation_components(ROOT)}
+        self.assertEqual(list(components), ["imagegen.runtime", "imagegen.hoi4_imagegen"])
         self.assertEqual(components["imagegen.runtime"]["source"]["path"], ".tools/image_generation/runtime")
         self.assertFalse((ROOT / ".tools/image_generation/providers").exists(), "the vendored GPTImage provider was removed")
         for provider_component in components.values():

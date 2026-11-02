@@ -7,6 +7,42 @@ from pathlib import Path
 
 ALL_CLIENTS = ["claude_code", "codex", "cursor", "qoder", "opencode"]
 
+IMAGEGEN_REPOSITORY = "klimPaskov/hoi4-imagegen-mcp"
+IMAGEGEN_VERSION = "0.2.0"
+IMAGEGEN_INSTALL_ROOT = ".tools/image_generation/hoi4-imagegen"
+IMAGEGEN_COMPONENT_ID = "imagegen.hoi4_imagegen"
+# Published v0.2.0 release assets (SHA256SUMS of the release, sizes from the GitHub release).
+# HOI4 Mod Setup downloads only the URL it derives from the version and target, and checks size and hash first.
+IMAGEGEN_RELEASE_ASSETS = {
+    "x86_64-pc-windows-msvc": ("zip", 17366134, "5338293f155d5679fc1c5e0b883150275b25f04ce78631ad6437c0ccd99912fc"),
+    "aarch64-apple-darwin": ("tar.gz", 17474246, "a36dca6defb7b5ef67fc350ace9b10928aa43af105df936106b3aaa24decf386"),
+    "x86_64-apple-darwin": ("tar.gz", 19286014, "d0f9dad88425c38f695379cd5eeb2149ad758b3e84715522bee326a6e72cec8f"),
+    "x86_64-unknown-linux-gnu": ("tar.gz", 21507082, "76827380ca7744f0329915e977e1b1a5f1de7ba5962a909f69172762e377aac9"),
+    "aarch64-unknown-linux-gnu": ("tar.gz", 20645990, "2d7e86bf719fe88f97e5abb0aa5d8f61fa33cffd2bf58bee15b33ec7a85608b3"),
+}
+IMAGEGEN_CREDENTIAL_FIELDS = [
+    {"id": "openai_api_key", "display_name": "OpenAI API key", "environment_name": "OPENAI_API_KEY"},
+    {"id": "gemini_api_key", "display_name": "Gemini API key", "environment_name": "GEMINI_API_KEY"},
+    {"id": "fal_key", "display_name": "fal key", "environment_name": "FAL_KEY"},
+    {"id": "comfyui_api_key", "display_name": "ComfyUI API key", "environment_name": "COMFYUI_API_KEY"},
+]
+
+
+def build_imagegen_release_binary(version: str = IMAGEGEN_VERSION) -> dict:
+    """The `route.release_binary` declaration: one verified archive per platform target."""
+    targets = {}
+    for triple, (archive, size, sha256) in IMAGEGEN_RELEASE_ASSETS.items():
+        folder = f"hoi4-imagegen-v{version}-{triple}"
+        suffix = ".exe" if "windows" in triple else ""
+        targets[triple] = {
+            "url": f"https://github.com/{IMAGEGEN_REPOSITORY}/releases/download/v{version}/{folder}.{archive}",
+            "sha256": sha256,
+            "size": size,
+            "archive": archive,
+            "entries": {"mcp": f"{folder}/hoi4-imagegen-mcp{suffix}", "cli": f"{folder}/hoi4-imagegen{suffix}"},
+        }
+    return {"version": version, "install_root": IMAGEGEN_INSTALL_ROOT, "targets": targets}
+
 
 def _route(provider_id: str, auth: str, *, kind: str = "stdio_adapter", component: str | None = None,
            source_repository: str | None = None, source_revision: str | None = None,
@@ -15,8 +51,9 @@ def _route(provider_id: str, auth: str, *, kind: str = "stdio_adapter", componen
            tools: dict[str, str] | None = None, tool_arguments: dict | None = None,
            supported_models: list[str] | None = None,
            result_format: str | None = None, primary_environment: str | None = None,
-           server_id: str | None = None) -> dict:
-    return {
+           server_id: str | None = None, credential_fields: list[dict] | None = None,
+           release_binary: dict | None = None) -> dict:
+    value = {
         "kind": kind,
         "auth_method": auth,
         "server_id": server_id or (f"hoi4_image_{provider_id}" if kind not in {"native", "manual"} else None),
@@ -52,9 +89,12 @@ def _route(provider_id: str, auth: str, *, kind: str = "stdio_adapter", componen
         "api_base_url": None,
         "default_model": None,
         "result_format": result_format or ("manual" if kind == "manual" else "png"),
-        "credential_fields": [],
+        "credential_fields": credential_fields or [],
         "requires_primary_coding_environment": primary_environment,
     }
+    if release_binary is not None:
+        value["release_binary"] = release_binary
+    return value
 
 
 def _capabilities(*, references: bool, edits: bool, alpha: bool,
@@ -212,14 +252,15 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
              "A ChatGPT login (`hoi4-imagegen login`) or an API key in the environment (OPENAI_API_KEY, GEMINI_API_KEY, FAL_KEY) or a ComfyUI endpoint."],
             ["Every HOI4 graphical asset family", "Style references from the mod first, vanilla second", "Plans with a cost estimate before any paid call"],
             "ChatGPT login: plan usage limits apply. API keys: pay per image, shown in the plan before generation.",
-            ["ChatGPT image generation (gpt-6-luna at high effort)", "OpenAI Images API", "Gemini", "fal.ai", "ComfyUI"], "chatgpt_subscription",
+            ["ChatGPT image generation (gpt-6-luna at high effort)", "OpenAI Images API", "Gemini", "fal.ai", "ComfyUI"], "chatgpt_login",
             _capabilities(references=True, edits=True, alpha=True, width=3840, height=3840,
                 reference_notes="Add references with hoi4.image_references (role and rights note). Style references come from the mod's own art first and from the kit's vanilla shelf second.",
                 alpha_notes="The tool proves transparency from the saved pixels and refuses an opaque result for a transparent family.",
                 edit_fallback="Use hoi4.image_edit with a precise instruction, then process, validate and review again."),
-            route=_route("hoi4_imagegen", "chatgpt_subscription", kind="local_package", component=None, server_id="hoi4_imagegen",
+            route=_route("hoi4_imagegen", "chatgpt_login", kind="release_binary", component=IMAGEGEN_COMPONENT_ID, server_id="hoi4_imagegen",
                 source_repository="https://github.com/klimPaskov/hoi4-imagegen-mcp",
-                package_name="hoi4-imagegen", package_version="0.2.0",
+                package_name="hoi4-imagegen", package_version=IMAGEGEN_VERSION,
+                credential_fields=IMAGEGEN_CREDENTIAL_FIELDS, release_binary=build_imagegen_release_binary(),
                 tools={"status": "hoi4.image_status", "families": "hoi4.image_families", "references": "hoi4.image_references",
                        "icon": "hoi4.image_icon", "picture": "hoi4.image_picture", "portrait": "hoi4.image_portrait",
                        "flag": "hoi4.image_flag", "unit": "hoi4.image_unit", "interface": "hoi4.image_interface",
@@ -230,7 +271,7 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
                                 "quality": "quality", "size": None, "transparent_background": None}),
             reference_mcp=_reference("hoi4-imagegen", "https://github.com/klimPaskov/hoi4-imagegen-mcp", "official", "ChatGPT login or API keys read from the environment",
                 ["hoi4.image_icon", "hoi4.image_picture", "hoi4.image_portrait", "hoi4.image_flag", "hoi4.image_unit", "hoi4.image_interface"],
-                "Installed by HOI4 Mod Setup; the binary release and its hashes are declared in the manifest component.")),
+                "Release binary installed by HOI4 Mod Setup; the archives, sizes and hashes are declared in the provider route.", version=IMAGEGEN_VERSION)),
         _provider("openai_api", "OpenAI Images API", "Use OpenAI image models with a key saved on this computer.",
             ["An OpenAI API key saved in the operating-system credential store."], ["General image work", "Reference edits", "Transparent PNG output"],
             "Pay per image; price changes with model and quality.", ["GPT Image 2.5 Sunburst", "GPT Image 2.5 Flare", "GPT Image 2"], "api_key_vault",
@@ -561,4 +602,24 @@ def build_image_generation_components(source_root: Path | None = None) -> list[d
         "capabilities": ["image generation", "image editing", "OS credential access", "local image servers"],
         "notes": ["API keys are read from the operating-system credential store at tool-call time and are never written to project files."],
     }
-    return [runtime_component]
+    imagegen_component = {
+        "id": IMAGEGEN_COMPONENT_ID,
+        "display_name": "hoi4-imagegen image server",
+        "description": "Installs the verified hoi4-imagegen release binary for this platform into the project's tools folder.",
+        "category": "mcp",
+        "optional": True,
+        "platforms": ["windows", "macos", "linux"],
+        "source": {"kind": "generated", "path": IMAGEGEN_INSTALL_ROOT},
+        "destination": {"path": IMAGEGEN_INSTALL_ROOT + "/", "ownership": "managed", "outside_project": False},
+        "dependencies": [],
+        "expected_files": [],
+        "required_tools": [],
+        "environment": [],
+        "conflicts": [],
+        "conflict_policy": "replace_if_unmodified",
+        "validation": [],
+        "update": {"strategy": "replace_if_unmodified", "remove_obsolete": True, "preserve_local_additions": True},
+        "capabilities": ["image generation", "image editing"],
+        "notes": ["The binary is downloaded from the manifest-declared release URL and verified before it is installed."],
+    }
+    return [runtime_component, imagegen_component]

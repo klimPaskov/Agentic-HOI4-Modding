@@ -84,6 +84,13 @@ class ManifestGeneratorTests(unittest.TestCase):
         self.assertIn("imagegen.runtime", components)
         self.assertNotIn("imagegen.gptimage", components)
         self.assertTrue(components["imagegen.runtime"]["optional"])
+        self.assertEqual(components["imagegen.hoi4_imagegen"]["source"]["kind"], "generated")
+        self.assertEqual(components["imagegen.hoi4_imagegen"]["expected_files"], [])
+        route = next(item for item in manifest["image_generation"]["providers"] if item["id"] == "hoi4_imagegen")["route"]
+        self.assertEqual(route["kind"], "release_binary")
+        self.assertEqual(sorted(route["release_binary"]["targets"]), [
+            "aarch64-apple-darwin", "aarch64-unknown-linux-gnu", "x86_64-apple-darwin",
+            "x86_64-pc-windows-msvc", "x86_64-unknown-linux-gnu"])
         provider_ids = {provider["id"] for provider in manifest["image_generation"]["providers"]}
         self.assertTrue({"hoi4_imagegen", "openai_api", "gemini_api", "fal_ai", "replicate", "black_forest_labs", "stability_ai", "ideogram", "recraft", "leonardo", "adobe_firefly", "xai_grok", "together_ai", "openrouter", "comfyui_local", "automatic1111_local", "forge_local", "codex_native", "microsoft_foundry", "aws_bedrock", "huggingface_inference", "midjourney_manual", "none"}.issubset(provider_ids))
         declared = [environment["id"] for environment in manifest["coding_environments"]]
