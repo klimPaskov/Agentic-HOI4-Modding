@@ -34,10 +34,10 @@ import urllib.request
 import zipfile
 
 
-RELEASE_VERSION = "1.1.0"
-RELEASE_URL = "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.1.0/hoi4-live-tools-1.1.0.zip"
-RELEASE_SHA256 = "15d6d86b3d7d6d6795bd2a9598d56d312831ff8b4f9c518a38eec522c8c623e4"
-RELEASE_SIZE = 1155994
+RELEASE_VERSION = "1.2.0"
+RELEASE_URL = "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.2.0/hoi4-live-tools-1.2.0.zip"
+RELEASE_SHA256 = "c543ee54d5f730946f97a1a848dc52add9d4da167a26d340fa75e7241d942dff"
+RELEASE_SIZE = 1996182
 ARCHIVE_TOP = f"hoi4-live-tools-{RELEASE_VERSION}"
 ALLOWED_HOSTS = ("github.com",)
 ALLOWED_HOST_SUFFIXES = (".githubusercontent.com",)

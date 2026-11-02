@@ -27,7 +27,7 @@ def build_live_testing_table(source_root=None):
             "1.19.2", "smerss", "MIT"),
         row("hoi4_live_tools", "HOI4 Live Tools (experimental)", "Windows game interface, console, log and save tools; slower and not thoroughly tested.",
             ["Windows", "Python 3.9 or newer", "Installed Hearts of Iron IV"], ["windows"], True,
-            "local_install", "hoi4-live", "workflow.live_tools", "klimPaskov/HOI4-Live-Tools", "v1.1.0",
+            "local_install", "hoi4-live", "workflow.live_tools", "klimPaskov/HOI4-Live-Tools", "v1.2.0",
             ["Use the connected hoi4-live server and its advertised tools with qualified tool names.",
              "Windows is the verified platform; upstream macOS support is incomplete.",
              "This provider is experimental, slower and not thoroughly tested.",
