@@ -1,0 +1,26 @@
+name: Temporary Linux pin measurement
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/tmp-measure-linux.yml"
+permissions:
+  contents: read
+jobs:
+  measure:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "24"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - run: python -I .github/tmp_measure_clean_install.py "$PWD/.tools/mcp/bootstrap_hoi4_agent_tools.py" "$RUNNER_TEMP/clean" 4.7.0
+      - run: python -I scripts/refresh_mcp_package_pin.py --prefix "$RUNNER_TEMP/clean" --integrity "sha512-mdaisWOBEVKOO/o4aOpbFAxU/ATvyYT8v3DcTDOl7KkAj6hhNJXVG2JnTmbFIna/PmRLSl1YD7NqWMCauRC50g==" --version 4.7.0 --platform linux

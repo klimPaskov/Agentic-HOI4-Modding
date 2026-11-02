@@ -11670,7 +11670,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "4.0.3",
+          "version": "4.7.0",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -11689,8 +11689,8 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "4.0.3",
-            "package_integrity": "sha512-pgiQYcQiWsba78IOK1DzOb7feEl0ktpiZg3LdyxSMcklA7HV+Zofo3hdR5BOp9YWlWHubrTkl6AMtBgDhqnUmQ==",
+            "package_version": "4.7.0",
+            "package_integrity": "sha512-mdaisWOBEVKOO/o4aOpbFAxU/ATvyYT8v3DcTDOl7KkAj6hhNJXVG2JnTmbFIna/PmRLSl1YD7NqWMCauRC50g==",
             "runtime_entry": "dist/bin/stdio.js",
             "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
             "runtime_entry_size": 4205,
@@ -11728,16 +11728,16 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "b93b47b341e6bc33a0822d631e187af7e3c29eec48196ccd10c89f957729dc35",
-            "package_file_count": 5387,
+            "package_tree_sha256": "cfe5176a6dfe3cf23f79b4c2b9054ea2b954a3a0c5497911f9707c84f449d6d5",
+            "package_file_count": 5854,
             "platform_targets": {
               "windows": "hoi4-agent-tools.cmd",
               "linux": "hoi4-agent-tools"
             },
             "platform_pins": {
               "windows": {
-                "package_tree_sha256": "b93b47b341e6bc33a0822d631e187af7e3c29eec48196ccd10c89f957729dc35",
-                "package_file_count": 5387,
+                "package_tree_sha256": "cfe5176a6dfe3cf23f79b4c2b9054ea2b954a3a0c5497911f9707c84f449d6d5",
+                "package_file_count": 5854,
                 "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
                 "runtime_entry_size": 4205,
                 "package_symlinks": {}
