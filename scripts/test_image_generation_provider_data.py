@@ -145,7 +145,7 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
                     "mcp": f"{folder}/hoi4-imagegen-mcp{suffix}", "cli": f"{folder}/hoi4-imagegen{suffix}"})
         windows = binary["targets"]["x86_64-pc-windows-msvc"]
         self.assertEqual((windows["size"], windows["sha256"]),
-                         (17366134, "5338293f155d5679fc1c5e0b883150275b25f04ce78631ad6437c0ccd99912fc"))
+                         (17368464, "6d3cb51928654cb7b4ecd8004b1f91265ddfab9c76f6ef191ed86f29e47302b6"))
         self.assertEqual(providers["hoi4_imagegen"]["reference_mcp"]["version"], "0.2.1")
         self.assertNotIn("release_binary", providers["openai_api"]["route"], "only the hoi4-imagegen route installs a release binary")
 
