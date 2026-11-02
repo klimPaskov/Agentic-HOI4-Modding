@@ -34,6 +34,7 @@ LINUX_PACKAGE_TREE_SHA256 = "c2f7344ff1ee5ab4ba1c99299cdab2fbf01c1b56bf87d866810
 LINUX_PACKAGE_FILE_COUNT = 5253
 LINUX_PACKAGE_SYMLINKS = {
     "node_modules/.bin/node-which": "../which/bin/node-which",
+    "node_modules/.bin/opencollective-postinstall": "../opencollective-postinstall/index.js",
     "node_modules/.bin/semver": "../semver/bin/semver.js",
 }
 RUNTIME_ENTRY = "dist/bin/stdio.js"

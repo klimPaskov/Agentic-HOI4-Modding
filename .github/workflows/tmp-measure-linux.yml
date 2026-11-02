@@ -28,3 +28,5 @@ jobs:
           cd "$RUNNER_TEMP/clean/lib/node_modules/hoi4-agent-tools"
           find . -type l | sort | while read -r l; do echo "LINK ${l#./} -> $(readlink "$l")"; done
           echo "files: $(find . -type f | wc -l)"
+      - run: python -I scripts/refresh_mcp_package_pin.py --prefix "$RUNNER_TEMP/clean" --integrity "sha512-mdaisWOBEVKOO/o4aOpbFAxU/ATvyYT8v3DcTDOl7KkAj6hhNJXVG2JnTmbFIna/PmRLSl1YD7NqWMCauRC50g==" --version 4.7.0 --platform linux
+      - run: git diff -U0 -- .tools/mcp/bootstrap_hoi4_agent_tools.py
