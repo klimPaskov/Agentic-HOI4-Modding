@@ -113,10 +113,10 @@ initial_show_position = {
 
 - Tree keys: `id`, `country` and `default` appear in all 67 trees; `continuous_focus_position` in 57; `initial_show_position` in 29; `shared_focus` lines (71 of them) in 37; `shortcut` blocks (52) in 7 trees; `inlay_window` in 5 trees (6 declarations); `reset_on_civilwar` in 1; `alternate_icon_set` in 1 (`germany.txt`).
 - `country` blocks: 64 trees use `factor` with `modifier` blocks, 2 use only `factor` and 1 uses `base` with `modifier`.
-- `default`: 66 trees write `default = no` and one writes `default = yes`, the generic tree `generic_focus` in `generic.txt`. `hoi4.exe` has the message "Only one national focus tree should be default, switching from %s to %s". [vanilla-confirmed 1.19.4.1] for the values, [unverified] for the message.
-- `initial_show_position` forms: `x` with `y` (22 trees, one with an `offset`), `focus` (6 trees, one with an `offset`) and one tree with only `x`. `hoi4.exe` reports "Both focus and the pair x, y cannot be specified at the same time" and "initial_show_position references invalid focus". [vanilla-confirmed 1.19.4.1] for the forms, [unverified] for the messages.
+- `default`: 66 trees write `default = no` and one writes `default = yes`, the generic tree `generic_focus` in `generic.txt`. `hoi4.exe` has the message "Only one national focus tree should be default, switching from %s to %s". [vanilla-confirmed 1.19.4.1] for the values. A second tree with `default = yes` wrote "Only one national focus tree should be default, switching from generic_focus to <tree>" to `error.log`, 443 times in one session, so the later default replaces the generic default. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read after load. Whether countries used the replaced default tree was not checked.
+- `initial_show_position` forms: `x` with `y` (22 trees, one with an `offset`), `focus` (6 trees, one with an `offset`) and one tree with only `x`. `hoi4.exe` reports "Both focus and the pair x, y cannot be specified at the same time" and "initial_show_position references invalid focus". [vanilla-confirmed 1.19.4.1] for the forms. Giving `focus` together with `x` and `y` wrote "Both focus and the pair x, y cannot be specified at the same time" once, without naming the tree. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read after load. The message "initial_show_position references invalid focus" was not tested. [unverified]
 - `shortcut` always has `name` and `target`; `scroll_wheel_factor` is set in 28 of the 52 shortcut blocks and `trigger` in 31. [vanilla-confirmed 1.19.4.1]
-- `hoi4.exe` also has "Duplicate focus name will cause database problems" and "Focus %s has a hash collision in tree %s, this must be fixed for correct behaviour", which fits the wiki's warning about duplicate focus ids. [unverified]
+- A duplicate focus id wrote "Duplicate focus name will cause database problems: <id>" and "Focus <id> has a hash collision in tree <tree>, this must be fixed for correct behaviour", as the wiki warns. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read after load.
 <!-- kit:end id="focus-tree-vanilla" -->
 
 ### Examples <a id="Examples"></a>
@@ -374,8 +374,8 @@ Additionally, the game intends for a focus' prerequisite to be placed above the 
 
 - Prerequisite logic matches the wiki: one `prerequisite` block with several `focus` lines means one of them, several blocks mean all blocks, and mixing both means every block must be met, each by one of its focuses. The vanilla tooltips say so: "Requires one of the following" (`FOCUS_SINGLE_OR_PREREQ_HEADER`) and "Requires all of the following" (`FOCUS_AND_PREREQ_HEADER`, `FOCUS_MIX_PREREQ_HEADER`) in `localisation/english/core_l_english.yml`. [vanilla-confirmed 1.19.4.1]
 - Vanilla uses 10,912 `prerequisite` blocks: 1,786 list more than one focus, 828 focuses have more than one block and 61 focuses mix both forms. [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
-- `mutually_exclusive` is written on both focuses: all 2,614 vanilla entries in tree focuses have the reverse entry on the target focus, and none is one-way. `hoi4.exe` contains the log text "Has mutual exclusivity with ... but the other focus does not." [vanilla-confirmed 1.19.4.1] for the counts, [unverified] for the message.
-- `relative_position_id` is used by 10,145 focuses and always points at a focus defined earlier in the same tree (none later, none in another tree). `hoi4.exe` contains "Error in focus: ... does not exist. Relative focus must be scripted before this." and "Circular reference detected for relative position.", so define the anchor focus first and never close a loop. [vanilla-confirmed 1.19.4.1] for the counts, [unverified] for the messages.
+- `mutually_exclusive` is written on both focuses: all 2,614 vanilla entries in tree focuses have the reverse entry on the target focus, and none is one-way. [vanilla-confirmed 1.19.4.1] for the counts. A one-way `mutually_exclusive` wrote "Error in focus: <id> (<file>:<line>) Has mutual exclusivity with <other> but the other focus does not." [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read after load.
+- `relative_position_id` is used by 10,145 focuses and always points at a focus defined earlier in the same tree (none later, none in another tree). `hoi4.exe` contains "Error in focus: ... does not exist. Relative focus must be scripted before this." and "Circular reference detected for relative position.", so define the anchor focus first and never close a loop. [vanilla-confirmed 1.19.4.1] for the counts. A `relative_position_id` that points at a focus defined later wrote "Error in focus: <id> relative_focus_id: <other> does not exist. Relative focus must be scripted before this." A circular pair of two focuses wrote only that forward-reference message and no circular-reference line, so the "Circular reference detected" message did not show. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read after load. The test tree held both a forward and a circular reference, so a circular-only case was not isolated.
 <!-- kit:end id="focus-prerequisites-vanilla" -->
 
 ### Cost <a id="Cost"></a>
@@ -475,7 +475,7 @@ When copying from the template, note to change the `animationmaskfile` in each a
 <!-- kit:begin id="focus-icon-extras" at="section:Icon" -->
 **Kit addition** Icon keys and messages in vanilla 1.19.4.1.
 
-- `hoi4.exe` has "Missing icon for focus: " and "Missing icon shine for focus: ", which fits the wiki's rule that both `GFX_name` and `GFX_name_shine` must exist. [unverified]
+- `hoi4.exe` has "Missing icon for focus: " and "Missing icon shine for focus: ", which fits the wiki's rule that both `GFX_name` and `GFX_name_shine` must exist. [unverified] A focus whose icon sprite does not exist wrote both "Missing icon for focus: <id>" and "Missing icon shine for focus: <id>" at load. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read after load. The overlay image needs the interface and was not checked.
 - `overlay = GFX_...` is set in 94 focuses (`czechoslovakia_mu.txt` 44, `australia_taog.txt` 21, `philippines.txt` 17, `indonesia_joint.txt` 4, `japan.txt` 4, `china_communist_sea.txt` 3, `indonesia.txt` 1). The wiki does not mention it; the name suggests an image drawn over the icon. [vanilla-confirmed 1.19.4.1] `common/national_focus/` for the usage, [unverified] for the effect.
 - `alternate_icon = GFX_...` is set in 22 focuses, all in `germany.txt`, and the tree sets `alternate_icon_set = FOCUS_ICON_SET_HISTORICAL_KEY_FOCUS` (sprite `GFX_FOCUS_ICON_SET_HISTORICAL_KEY_FOCUS` in `interface/nationalfocusview.gfx`, name in `localisation/english/wuw_focus_l_english.yml`). A commented line in `germany.txt` shows the other set name `FOCUS_ALTERNATE_ICONS`, whose toggle button needs a localisation key and a `GFX_` sprite of the same name. [vanilla-confirmed 1.19.4.1]
 - `hoi4.exe` also has "Missing alternate icon for focus: " and "Missing alternate icon shine for focus: ", so an alternate icon needs its own `_shine` sprite as well. [unverified]
@@ -506,7 +506,7 @@ focus = {
 **Kit addition** Dynamic icons in vanilla 1.19.4.1. All counts: [vanilla-confirmed 1.19.4.1] `common/national_focus/`.
 
 - 254 focuses set `dynamic = yes` (127 in trees, 26 shared, 101 joint). 60 focuses write `icon` as a block; 24 of them set `dynamic = yes` and 36 do not, which is the case the wiki describes where the icon is chosen once at game start.
-- Every one of the 60 icon blocks contains a default entry written `GFX_name = yes`. [vanilla-confirmed 1.19.4.1] `common/national_focus/`. `hoi4.exe` has "Focus %s (%s) does not have a default icon case." and "Focus %s (%s) has alternate icons but does not have a default case.", so always add the default. [unverified] (strings in `hoi4.exe`).
+- Every one of the 60 icon blocks contains a default entry written `GFX_name = yes`. [vanilla-confirmed 1.19.4.1] `common/national_focus/`. `hoi4.exe` has "Focus %s (%s) does not have a default icon case." and "Focus %s (%s) has alternate icons but does not have a default case.", so always add the default. [unverified] (strings in `hoi4.exe`). An icon block without a default entry wrote "Focus <id> does not have a default icon case." at load. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read after load.
 <!-- kit:end id="focus-dynamic-vanilla" -->
 
 ### Triggers <a id="Triggers"></a>
@@ -602,7 +602,7 @@ Additionally, `bypass_effect = { ... }` is used to execute an effect when focus 
 **`load_focus_tree`.** The documentation names `tree`, `keep_completed` (default `no`: keep the completed focuses of the old tree that also exist in the new one) and `copy_completed_from = <country>` (mark everything that country has completed as completed in the new tree); the effect retains finished shared focuses. [docs] `documentation/effects_documentation.md`.
 
 - Vanilla has 80 uses: 25 short (`load_focus_tree = <tree id>`) and 55 block form, every block with `tree` and `keep_completed`; none uses `copy_completed_from`. [vanilla-confirmed 1.19.4.1]
-- `hoi4.exe` logs "Unable to find focus tree with ID: %s" for a wrong tree id. [unverified]
+- `load_focus_tree` with an unknown tree id writes "Unable to find focus tree with ID: <id>" when the script loads, in the short and the block form, and running the effect does not stop the rest of the event. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read after load and the event run. The message came at load, so the two lines cannot be matched to the two forms.
 
 **`add_tech_bonus`.** The documentation only says "adds a limited use tech bonus". [docs] `documentation/effects_documentation.md`.
 
@@ -692,7 +692,7 @@ Real filters that the table above lacks. All rows: [vanilla-confirmed 1.19.4.1] 
 | `FOCUS_FILTER_COMPLETED_BY_EVENT` | 13 | Completed Through Events |
 
 - `FOCUS_FILTER_INDUSTRIAL` (one use, in `paraguay_uruguay_shared_branch.txt`) has no sprite and no localisation key anywhere in the game files: it is a typo for `FOCUS_FILTER_INDUSTRY`. [vanilla-confirmed 1.19.4.1]
-- `search_filter_prios` in `generic.txt` holds 10 entries. Its entry `FOCUS_FILTER_MISSIOLINI = 110` does not match the name focuses use (`FOCUS_FILTER_ITA_MISSIOLINI`), so it probably never applies. `hoi4.exe` has "Prio is already set for focus tree filter" for a repeated entry. [vanilla-confirmed 1.19.4.1] for the entries, [unverified] for the effect and the message.
+- `search_filter_prios` in `generic.txt` holds 10 entries. Its entry `FOCUS_FILTER_MISSIOLINI = 110` does not match the name focuses use (`FOCUS_FILTER_ITA_MISSIOLINI`), so it probably never applies. [vanilla-confirmed 1.19.4.1] for the entries. A repeated `search_filter_prios` entry wrote "Prio is already set for focus tree filter <name>", also when vanilla already sets the name (`FOCUS_FILTER_POLITICAL`). [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read after load. Whether the entry applies is [unverified].
 <!-- kit:end id="focus-search-filters-vanilla" -->
 
 ### Titlebar styles <a id="Titlebar_styles"></a>

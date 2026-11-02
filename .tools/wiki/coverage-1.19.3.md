@@ -158,7 +158,7 @@ All 16 batches were merged on 2026-10-31. `wiki_status.py` reports 63 of 63 page
 
 ### Gaps left for later work
 
-- Nothing is `[game-tested 1.19.3]`. The `[unverified]` statements are the candidates for in-game checks, above all the documentation conflicts listed on the kit pages (the `collection_size` comparison rule, the peace `ai_desire` scale, special project reward thresholds, the scope inside raid `target_type` state filters). These four, and MIO `task_capacity` with its switch off, now carry a **Needs a game run** note on the page that makes the claim.
+- Nothing is `[game-tested 1.19.3]`. The `[unverified]` statements are the candidates for in-game checks, above all the documentation conflicts listed on the kit pages (the `collection_size` comparison rule, the peace `ai_desire` scale, special project reward thresholds, the scope inside raid `target_type` state filters). These four, and MIO `task_capacity` with its switch off, now carry a **Needs a game run** note on the page that makes the claim. The run of 2026-11-02 answered all five, and the notes are gone.
 - Version-added columns in the wiki's effect, trigger and modifier tables were not re-checked.
 - Engine behaviour that no game file states, such as defines the engine still reads and the order of on_action effects, stays `[unverified]`.
 
@@ -179,7 +179,7 @@ This section was added after the 1.19.3 review. The record above stays as it was
 - A split keeps an `[unverified]` tag for the part a game run must settle, so the tag total falls less than the outcomes suggest: 576 `[unverified]` tags before, 551 after. The settled parts added 121 `[vanilla-confirmed 1.19.4.1]` and 85 `[docs]` tags on these files.
 - The 294 engine-only tags are covered by the 302 in-game checks below, together with the unverified parts of the splits. Some checks cover several claims.
 - The 43 not-checkable tags are mostly the tag legend and gap summaries that only name the tag, successor columns of removed defines (inferred from names and values), meanings read from names, advice, and claims that only a string in hoi4.exe supports.
-- No tag was retagged `[game-tested ...]`.
+- No tag was retagged `[game-tested ...]` in this review. The run of 2026-11-02 retagged claims `[game-tested 1.19.4.1]` afterwards: 38 of the 302 checks were settled and removed from the list below, and 20 more carry a note on what was settled and what remains.
 
 Corrections, where the files contradicted the old text:
 
@@ -303,6 +303,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   6. Remove the b7_ach_NAME and b7_ach_DESC lines, restart and look at the entry text.
   7. Wrap the ribbon in a normal block by moving frames and colors out of `ribbon = { }` to directly under b7_rib, restart and compare the logs.
 - Expected: If the claims hold: with unique_id the entry shows 'B7 Name' and 'B7 Desc' although `possible` has no is_ironman (so a mod needs no ironman check), condition text appears with 'Will be earned when:', renaming the grey icon makes the grey state show a missing texture (path = token + suffix), the missing unique_id line writes an 'unique_id is mandatory' style error and hides the entry, and the ribbon works only in the wrapper form. Any other result names which claim is wrong (for example an entry with no loc keys showing the raw token means the keys are not what the engine reads).
+- Requirement: Career Profile and Awards say "not available when the Steam client is not running", so this check needs the Steam client running (seen 2026-11-02 in a launch without it).
 
 **G002.** Whether the engine loads mod files from common/ribbons/ (kit block `ach-format-notes`)
 
@@ -448,16 +449,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   1. Type `effect GER t_fx` (activates the range).
   2. Read Documents/Paradox Interactive/Hearts of Iron IV/logs/error.log.
 - Expected: No error line for can_create_faction means an unknown rule name is ignored silently. An error line naming it means it is rejected.
-
-**G016.** A BoP is tracked globally (wiki) or per country (documentation). (kit block `bop-triggers-1193`)
-
-- Setup: No mod. Vanilla DEN starts with DEN_balance_of_power from history. New game, 1936 start, play as GER.
-- Steps:
-  1. Type `tag DEN` and `bop_show`. Note the DEN_balance_of_power value.
-  2. Type `tag GER` and `bop_show`.
-  3. Type `bop_set DEN_balance_of_power` as GER, then `bop_show`, then `bop_add DEN_balance_of_power 0.3`.
-  4. Type `tag DEN` and `bop_show` again.
-- Expected: Per country: GER shows nothing at step 2, GER's copy starts at its own initial value and DEN's value is unchanged at step 4. Global: GER's `bop_show` already lists the DEN value at step 2, or the change at step 3 appears for DEN.
 
 #### Bookmark modding
 
@@ -613,42 +604,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 `paradox_wiki/collection_modding.md`
 
-**G032.** Inclusive or strict reading of value > X and value < X for collection_size, count_in_collection and has_resources_in_collection (kit block `(kit page)`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt: b4_cmp = { if = { limit = { collection_size = { input = game:scope operators = { country_and_all_subjects } value > 1 } } log = "B4 gt1" } if = { limit = { collection_size = { input = game:scope operators = { country_and_all_subjects } value < 1 } } log = "B4 lt1" } if = { limit = { collection_size = { input = game:scope operators = { country_and_all_subjects } value = 1 } } log = "B4 eq1" } if = { limit = { count_in_collection = { collection = game:empty buildings = { arms_factory } size > 0 } } log = "B4 cnt_gt0" } if = { limit = { has_resources_in_collection = { collection = game:empty resource = steel amount > 0 } } log = "B4 res_gt0" } }
-- Steps:
-  1. Start the game with the mod and unpause
-  2. Open the console and run: effect GER b4_cmp (console command effect, arguments <tag> scripted_effect_name)
-  3. Read game.log for lines that start with B4, and error.log for new errors (both in Documents/Paradox Interactive/Hearts of Iron IV/logs/)
-- Expected: The GER collection has exactly 1 member (docs: a country without subjects gives only itself) and game:empty has 0. Inclusive reading: B4 gt1, B4 lt1, B4 eq1, B4 cnt_gt0 and B4 res_gt0 all appear. Strict reading: only B4 eq1 appears. Mixed output means collection_size and the other two triggers differ. An error.log line for game:empty or the keys means that input form is not valid there.
-
-**G033.** A collection cannot be stored in a variable (kit block `(kit page)`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt: b4_store = { set_temp_variable = { b4_v = game:all_states } log = "B4 stored [?b4_v]" }
-- Steps:
-  1. Start with the mod
-  2. Console: effect GER b4_store
-  3. Read game.log and error.log
-- Expected: The read-only claim holds if error.log reports a bad value for game:all_states and the log shows B4 stored 0. If the log shows a large number or a list, collections can be read into a variable and the page is wrong.
-
-**G034.** game:scope in a non-country scope with faction_members, and an operator that does not fit the input type (kit block `(kit page)`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt: b4_scope = { random_owned_state = { if = { limit = { collection_size = { input = game:scope operators = { faction_members } value > 0 } } log = "B4 state_scope_ok" } } if = { limit = { collection_size = { input = game:all_states operators = { faction_members } value > 0 } } log = "B4 type_ok" } }
-- Steps:
-  1. Start with the mod
-  2. Console: effect GER b4_scope
-  3. Read game.log and error.log
-- Expected: If error.log reports an invalid scope or operator for both blocks and no B4 line appears, both type rules hold. If B4 state_scope_ok or B4 type_ok appears, the engine accepts that mismatch and the statement is wrong. Note any error text, it names the rule.
-
-**G035.** Operator order: limit before an operator versus after (kit block `(kit page)`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt: b4_order = { if = { limit = { collection_size = { input = game:all_countries operators = { limit = { tag = GER } owned_states } value > 2 } } log = "B4 limit_first" } if = { limit = { collection_size = { input = game:all_countries operators = { owned_states limit = { is_coastal = yes } } value > 2 } } log = "B4 limit_last" } }
-- Steps:
-  1. Start with the mod
-  2. Console: effect GER b4_order
-  3. Read game.log and error.log
-- Expected: Both lines appear if any order works. If only B4 limit_last appears, or error.log rejects the first block, an operator chain must keep limit last.
-
 **G036.** A mod reusing a vanilla named collection (kit block `(kit page)`)
 
 - Setup: New game, 1936 start, play as GER, only the test mod. Mod files: common/collections/b4.txt: world_democratic_countries = { input = game:empty } and common/scripted_effects/b4.txt: b4_dup = { if = { limit = { collection_size = { input = collection:world_democratic_countries value > 3 } } log = "B4 vanilla_def" } }
@@ -657,25 +612,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Console: effect GER b4_dup
   3. Read game.log and error.log
 - Expected: B4 vanilla_def means the vanilla definition (more than 3 democracies) still wins, so the mod copy was ignored. No B4 line means the mod copy replaced it (game:empty has 0 members). A duplicate or override message in error.log means the engine warns about the reuse.
-
-**G037.** Which countries game:all_majors holds (kit block `(kit page)`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt: b4_majors = { every_collection_element = { input = game:all_majors log = "B4 major [THIS.GetTag]" } }
-- Steps:
-  1. Start with the mod
-  2. Console: effect GER b4_majors
-  3. Read game.log
-- Expected: One B4 major line per country in the collection. Compare the tags with the major powers of the 1936 start. Lines for minor countries, or an error.log message, mean the page's inference from the name is wrong.
-
-**G038.** Meaning of PREV and ROOT inside a collection block and in a named collection (kit block `(kit page)`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod files: common/collections/b4.txt: b4_root_states = { input = game:all_states operators = { limit = { is_owned_by = ROOT } } } and common/scripted_effects/b4.txt: b4_prev = { GER = { ENG = { if = { limit = { any_collection_element = { collection = game:all_countries PREV = { tag = ENG } } } } log = "B4 prev_is_holder" } } } b4_root = { GER = { if = { limit = { collection_size = { input = collection:b4_root_states value > 5 } } log = "B4 root_outer_big" } } }
-- Steps:
-  1. Start with the mod
-  2. Console: effect LUX b4_root (ROOT is LUX, the effect then enters GER)
-  3. Console: effect GER b4_prev (nests GER then ENG)
-  4. Read game.log
-- Expected: B4 prev_is_holder appearing means PREV inside the block is the scope that holds the trigger (ENG). Absent means PREV is something else, for example GER. In b4_root, LUX owns few states: no B4 root_outer_big means ROOT in the named collection is the outer ROOT (LUX), the use-site reading. B4 root_outer_big means ROOT was re-bound to GER, the scope holding the trigger.
 
 **G039.** A missing localisation key for a collection name and for a check_variable tooltip shows as the raw key (kit block `(kit page)`)
 
@@ -699,39 +635,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 `paradox_wiki/console_commands.md`
 
-**G041.** Undocumented or removed commands are rejected: acclimization, fuhrer_mana, winwars, debug_nuking, nextsong, poll, reloadsupply, relsup, add_interest, remove_interest, requestgamestate, debug_commands, debug_volume, debug_ai_budget, profilelog, filewatcher, browser_base_url, normals, rendertype, tweakergui, particle_editor (kit block `cc-fix-other`)
-
-- Setup: New game, 1936, GER, no mods, started with the debug launcher entry.
-- Steps:
-  1. Open the console and enter each name on its own line with no argument, except 'acclimization arctic 50' and 'fuhrer_mana 10'.
-  2. Write down the console reply for each name, and for the nonsense word 'zzzz'.
-  3. Enter the documented 'acclimatization arctic 50' and 'political_power 10' for comparison.
-  4. Enter particle_editor and tweakergui last, since they may open a window.
-- Expected: A removed command gets the same unknown-command style reply as 'zzzz'. A name that does something or prints usage is a working command, and its row must be corrected. The documented comparison commands run.
-
-**G042.** remove_core with a Province ID works or is broken (kit block `cc-fix-useful`)
-
-- Setup: New game, 1936, GER, no mods. State 64 (province 375 among its provinces) has add_core_of = GER in history/states/64-*.txt.
-- Steps:
-  1. Open the console. Enter: eval_effect 64 = { if = { limit = { is_core_of = GER } log = "B1_CORE_BEFORE" } }
-  2. Enter: remove_core 375
-  3. Enter: eval_effect 64 = { if = { limit = { is_core_of = GER } log = "B1_CORE_AFTER" } }
-  4. Also try 'remove_core 64 GER' and rerun the check line.
-  5. Read Documents/Paradox Interactive/Hearts of Iron IV/logs/game.log for the markers.
-- Expected: If remove_core works, B1_CORE_BEFORE is present and B1_CORE_AFTER is missing after the first command. If both are present, the command does nothing for a province id, which matches the page's 'does not work'. Note any console error text.
-
-**G043.** puppet with two tags, setowner with a state id, annex all, and the argument handling of these commands (kit block `cc-fix-useful`)
-
-- Setup: New game, 1936, GER, no mods, debug launcher entry. Reload the start between steps.
-- Steps:
-  1. Console: puppet POL. Check with eval_effect POL = { if = { limit = { is_puppet = yes } log = "B1_POL_PUPPET" } } and read game.log.
-  2. Reload. Console: puppet GER POL. Check the same way.
-  3. Reload. Console: setowner FRA 64. Open state 64 and read its owner.
-  4. Console: setowner 64 and note the reply.
-  5. Reload. Console: annex all. Count the countries left.
-  6. Reload. Console: annex POL.
-- Expected: Each command either does the documented single-target action or prints an error. If 'puppet GER POL' makes POL a puppet of GER, the two-tag form works. If 'setowner FRA 64' changes the owner of state 64, a state id works. Record what 'annex all' does.
-
 **G044.** add_mines effect on the mine count of the selected region (kit block `cc-fix-useful`)
 
 - Setup: New game, 1936, GER, no mods, naval map mode.
@@ -751,15 +654,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   3. Console: set_country_flag b1_flag_b POL, then list_flags POL.
   4. Console: set_country_flag b1_flag_c 5, run 6 in-game days, then list_flags.
 - Expected: b1_flag_a is listed. If b1_flag_b appears under POL, another tag works. If it lands on GER or errors, the page's note holds. If b1_flag_c is gone after 5 days, the second argument is a duration.
-
-**G046.** reload <target> exists and which names work (loc, focus, defines, decision, landcombat.gui, ideas, ability, scriptedgui, scripted_effects, cfocus), and bare reload (kit block `cc-fix-modding`)
-
-- Setup: New game, 1936, GER, no mods, debug launcher entry.
-- Steps:
-  1. Console: reload (no argument). Write the reply.
-  2. For each of loc, focus, defines, decision, landcombat.gui, ideas, ability, scriptedgui, scripted_effects, cfocus enter 'reload <name>' and write the reply.
-  3. Compare with 'update_loc english', which is documented.
-- Expected: A working target prints a '<name> reloaded!' style message. 'No such reload target...' means the name is not valid. An unknown-command reply to bare 'reload' means the wiki's reload commands do not exist in this build.
+- Run 2026-11-02: settled that another tag does not work (`set_country_flag b1_flag_b POL` set the flag on GER). Remains: whether the number is a duration (`set_country_flag b1_flag_c 5` printed "set to 5" and the 6-day check was not run).
 
 **G047.** What the error command does and where trigger_docs writes (kit block `cc-fix-modding`)
 
@@ -769,24 +664,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Console: error. Note what appears (console text, a window, an opened file).
   3. Console: trigger_docs. Note the console output, then list which files in Documents/Paradox Interactive/Hearts of Iron IV/ (including a docs/ folder and logs/) are new or changed.
 - Expected: error prints or opens error-log content; record exactly which. trigger_docs prints to the console, to a file or to both. Record the path of any new file.
-
-**G048.** set_var takes a value argument (kit block `cc-fix-modding`)
-
-- Setup: New game, 1936, GER, no mods.
-- Steps:
-  1. Console: set_var b1_v 5
-  2. Console: get_var b1_v
-  3. Console: list_vars
-  4. Console: set_var b1_w, then list_vars.
-- Expected: If get_var prints 5 and list_vars shows b1_v with 5, set_var takes a value. If b1_v has another value or an error appears, the page is wrong.
-
-**G049.** reloadfx all is accepted (also troubleshooting ts-testing-check row) (kit block `cc-modding-highlights`)
-
-- Setup: New game, 1936, GER, no mods, debug launcher entry.
-- Steps:
-  1. Console: reloadfx all and note the reply.
-  2. Console: reloadfx postfx and note the reply for comparison.
-- Expected: If both reply with a reload message, 'all' is valid. An error or usage text means it is not.
 
 **G050.** Where loc_check results and details appear, and whether a mod's ignored_loc_keys.txt applies (kit block `cc-modding-highlights`)
 
@@ -807,15 +684,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   3. Check whether the main menu showed a loc collision message.
 - Expected: text.log has 'Duplicate localization found, key: B1_DUP' lines naming both files. If it appears only in error.log, correct the page.
 
-**G052.** set_weather accepts clear, rain, storm, snow, blizzard, sandstorm (kit block `cc-map-view`)
-
-- Setup: New game, 1936, GER, no mods, debug launcher entry.
-- Steps:
-  1. Left-click a land province (for example province 375).
-  2. For each type enter 'set_weather <type>' (clear, rain, storm, snow, blizzard, sandstorm) and read the weather in the province tooltip.
-  3. Enter 'set_weather zzz' and note the reply.
-- Expected: Each listed type changes the tooltip weather. 'zzz' prints a message that lists the valid types, which would match the exe message.
-
 **G053.** What the undocumented tweakable variables do (Draw.*, Audio.*, Debug.*) (kit block `cc-tweakables`)
 
 - Setup: New game, 1936, GER, no mods, debug launcher entry.
@@ -824,19 +692,11 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Enter each again to toggle it back.
   3. Console: Audio.Debug and note any new text or overlay.
 - Expected: Each Draw.* name toggles drawing of that map layer and prints Enabled or Disabled. No visible change means the variable does nothing in this build.
+- Run 2026-11-02: `Draw.Water`, `Draw.Rivers`, `Draw.Terrain` and `Audio.Debug` printed "Command available only for developers." Remains: the other Draw.*, Audio.* and Debug.* variables.
 
 #### Cosmetic tag modding
 
 `paradox_wiki/cosmetic_tag_modding.md`
-
-**G054.** Lower-case _def/_adj cosmetic localisation keys are read by the game. (kit block `cosmetic-localisation-vanilla`)
-
-- Setup: No mod. Vanilla has SPR_anarchist_spain_neutrality_def (lower case) with no upper-case twin in localisation/english/countries_cosmetic_l_english.yml. Start a new game as SPR in 1936.
-- Steps:
-  1. Type `set_cosmetic_tag SPR SPR_anarchist_spain`.
-  2. Open the country screen and read the country name, then look at tooltips that use the definite name.
-  3. Read Documents/Paradox Interactive/Hearts of Iron IV/logs/error.log.
-- Expected: If the name for the cosmetic tag shows (an Anarchist Spain style name), the lower-case key is read. If the name shown is the plain Spain name or the raw key, lower-case keys are not read.
 
 **G055.** A cosmetic tag can select its own unit entity through a COSMETICTAG_<name>_entity asset. (kit block `cosmetic-other-vanilla`)
 
@@ -867,15 +727,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Screenshot the flags, then read error.log.
 - Expected: Missing or blank flags, or a log line about texture size, means the define limits the packed flag texture. Normal flags and a clean log means the define does not limit what is shown here.
 
-**G058.** recruit_character with a character that does not exist fails. (kit block `country-character-placeholders`)
-
-- Setup: No mod. Start a new 1936 game as GER.
-- Steps:
-  1. Open the console, run: tag GER
-  2. Run: eval_effect recruit_character = B8_missing
-  3. Run: error, then read Documents/Paradox Interactive/Hearts of Iron IV/logs/error.log.
-- Expected: An error line naming B8_missing means the effect fails visibly. No log line means it fails silently or does nothing.
-
 #### Data structures
 
 `paradox_wiki/data_structures.md`
@@ -889,15 +740,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   3. Read game.log
 - Expected: No errors and B4 v 3 (2 times 2, divided by 2, modulo 3, plus 1) mean tooltip is accepted on all three and the block form is accepted on add_to_variable. An error on a key names the operator that rejects tooltip.
 
-**G060.** Sort order of get_sorted_scored_countries (kit block `scorer-notes`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt: b4_sort = { get_sorted_scored_countries = { scorer = fascist_major_scorer array = b4_l scores = b4_s } for_each_loop = { array = b4_s log = "B4 score [?i] [?v]" } }
-- Steps:
-  1. Start with the mod
-  2. Console: effect GER b4_sort
-  3. Read game.log
-- Expected: If the first B4 score lines are the largest, the sort is descending. If the smallest, ascending. fascist_major_scorer is in common/scorers/country/generic_platonic_scorers.txt and gives fascist majors the highest scores.
-
 **G061.** days_left and the three conscription names as variables (kit block `dynamic-variables-1-19-3`)
 
 - Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt: b4_vars = { set_temp_variable = { b4_a = days_left } set_temp_variable = { b4_b = conscription_ratio } set_temp_variable = { b4_c = target_conscription_amount } set_temp_variable = { b4_d = current_conscription_amount } log = "B4 [?b4_a] [?b4_b] [?b4_c] [?b4_d]" }
@@ -906,15 +748,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Console: effect GER b4_vars
   3. Read game.log and error.log
 - Expected: Numbers in the B4 line (non-zero conscription values) mean the names work as variables. A zero for a name together with an unknown variable error in error.log means it does not.
-
-**G062.** Lifetime of a regular event target (kit block `event-target-commands`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt: b4_et1 = { save_event_target_as = b4_reg save_global_event_target_as = b4_glob } b4_et2 = { if = { limit = { has_event_target = b4_reg } log = "B4 reg alive" } if = { limit = { has_event_target = b4_glob } log = "B4 glob alive" } }
-- Steps:
-  1. Start with the mod
-  2. Console: effect GER b4_et1, then effect GER b4_et2
-  3. Read game.log
-- Expected: The wiki rule holds if only B4 glob alive appears (the regular target is gone after its block). B4 reg alive as well means a regular target survives separate runs. For the event-chain part, repeat with an event that saves the target and fires a second event (console command event <id> <tag>), and test there.
+- Run 2026-11-02: settled for the three conscription names (they are triggers, not variables: variable reads gave 0, trigger reads gave real values). Remains: `days_left`.
 
 **G063.** Whether a mod copy of 01_career_profile.lua without every define is unsafe (kit block `defines-files`)
 
@@ -948,6 +782,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Screenshot the category header and hover each icon.
   3. Run in the console: tag GER and then tag BUL again, and screenshot the header after each.
 - Expected: If one icon per tag is shown, each with the value text and the desc tooltip, and the icon shows only while the tag country exists (the visible block), the reading in the wiki holds. Anything else shows a different meaning.
+- Unavailable 2026-11-02: the BUL industrial agreements category needs the Battle for the Bosporus DLC, which was not among the 10 owned DLCs. Run it with that DLC.
 
 **G066.** Missions: visible ignored, cost message, war_with_* keys, cosmetic_tag and cosmetic_ideology (kit block `decision-missions-vanilla`)
 
@@ -1003,6 +838,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Look at the template list for the two templates with `obsolete = yes` (open the file to read their names). Take a screenshot.
   3. Create a new template and compare how it is listed.
 - Expected: Obsolete templates are marked or sorted differently in the list: obsolete has an effect. Identical listing means no visible effect. `role` has no visible UI; it needs AI observation, so only `obsolete` is settled here.
+- Run 2026-11-02: settled `obsolete` (the three `obsolete = yes` Ascari templates are hidden behind an unticked "Show decommissioned templates" box). Remains: `role`, which needs AI observation, and the ticked view.
 
 **G071.** bonus (CA1.txt) and start_manpower_factor in a history/units division block have an effect. (kit block `division-placement-keys`)
 
@@ -1084,12 +920,13 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 **G079.** Undocumented or stub effects, the effect form of not_tooltip, add_temporary_buff_to_units (kit block `combat-corrections`)
 
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt, one effect per entry: b4_s1 = { ai_message = yes } b4_s2 = { add_scaled_political_power = yes } b4_s3 = { add_temporary_buff_to_units = { combat_offense = 0.1 } } b4_s4 = { every_army_leader = { boost_planning = yes } } b4_s5 = { every_army_leader = { set_leader_name = "B4" } } b4_s6 = { every_army_leader = { replace_unit_leader_trait = { trait = brilliant_strategist replace = yes } } } b4_s7 = { custom_override_tooltip = { tooltip = B4_TT not_tooltip = B4_TT_NOT add_stability = 0 } } b4_s8 = { add_region_efficiency = 1 }
+- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt, one effect per entry: b4_s1 = { ai_message = yes } b4_s2 = { add_scaled_political_power = yes } b4_s3 = { add_temporary_buff_to_units = { combat_offense = 0.1 } } b4_s4 = { every_army_leader = { boost_planning = yes } } b4_s5 = { every_army_leader = { set_leader_name = "B4" } } b4_s6 = { every_army_leader = { replace_unit_leader_trait = { trait = brilliant_strategist replace = <another unit leader trait id from common/unit_leader/> } } } (`replace = yes` crashed the game on 2026-11-02, do not use it) b4_s7 = { custom_override_tooltip = { tooltip = B4_TT not_tooltip = B4_TT_NOT add_stability = 0 } } b4_s8 = { add_region_efficiency = 1 }
 - Steps:
   1. Start with the mod and read error.log at the main menu
   2. Console: effect GER b4_s1 up to b4_s8, one at a time
   3. Read error.log after each
 - Expected: For each effect: an unknown-effect or bad-key error means it is not accepted in that form (expected for add_temporary_buff_to_units). Silence means the form is accepted. Error text for the stubs often names the keys they expect, copy it into the page. b4_s8 probably errors because GER is not a strategic region scope.
+- Run 2026-11-02: settled s1 to s5, s7 and s8 (see the effects page). s6 as first written (`replace = yes`) logged "Invalid trait: yes" at load and crashed the game (EXCEPTION_ACCESS_VIOLATION), so it is not settled. Run s6 alone in its own session with a real trait id for `replace`.
 
 **G080.** Rule names that never occur in vanilla and the party rule selector spelling (kit block `country-rule-effects`)
 
@@ -1108,33 +945,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Console: effect GER b4_nav
   3. Read game.log and error.log, then open the list of GER navy leaders and take a screenshot
 - Expected: No error and a changed portrait mean navy is accepted. An error in error.log naming navy, or no change, means only civilian and army work.
-
-**G082.** Meaning of min and max for binomial and poisson (kit block `variables-corrections`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt: b4_bin = { for_loop_effect = { end = 200 randomize_temp_variable = { var = b4_x distribution = binomial min = 0 max = 100 } log = "B4 bin [?b4_x]" } for_loop_effect = { end = 200 randomize_temp_variable = { var = b4_p distribution = poisson lambda = 10 min = 10 } log = "B4 poi [?b4_p]" } }
-- Steps:
-  1. Start with the mod
-  2. Console: effect GER b4_bin
-  3. Read game.log and look at the 200 B4 bin and 200 B4 poi values
-- Expected: For binomial, all values lie in 0 to 100 and cluster near 50 if N is the max-min range. For poisson, no value is below 10 and the mean is above 10 if min is a floor. Values outside the range mean min or max mean something else.
-
-**G083.** seed = random gives a fresh result on repeated runs (kit block `random-list-options`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt: b4_seed = { random_list = { seed = random 50 = { log = "B4 A" } 50 = { log = "B4 B" } } }
-- Steps:
-  1. Start with the mod
-  2. Run in the console ten times: effect GER b4_seed
-  3. Read game.log
-- Expected: A mix of B4 A and B4 B across the ten runs means seed = random gives fresh results. Ten identical lines suggest the seed is fixed. Then rerun with the seed line removed to compare.
-
-**G084.** The |.0 suffix is the safe choice for decimal variables in meta_effect (kit block `meta-effect-notes`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_effects/b4.txt: b4_meta = { set_temp_variable = { b4_x = 2.5 } set_temp_variable = { b4_y = 2 } meta_effect = { text = { log = B4_plain_[A] } A = "[?b4_x]" debug = yes } meta_effect = { text = { log = B4_int_[A] } A = "[?b4_x|.0]" debug = yes } meta_effect = { text = { log = B4_plainint_[A] } A = "[?b4_y]" debug = yes } }
-- Steps:
-  1. Start with the mod
-  2. Console: effect GER b4_meta
-  3. Read game.log (debug = yes prints the built effect)
-- Expected: Compare the three built effects. If the plain form gives 2.50 or 2.500 while the |.0 form gives a whole number, then |.0 is needed for decimals. If plain [?b4_y] gives 2 and not 2.000, the bare form is already safe for whole numbers (as vanilla uses it).
 
 #### Entity modding
 
@@ -1221,16 +1031,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   3. Run: event b5.12 and note whether it fires.
   4. Fast forward a few days (console: fast_forward 5) and note whether b5.13 repeats every day.
 - Expected: Each id line next to the quoted messages (leader event has to be triggered only, missing title, desc and options, triggered only without a 1 base-factor, set to trigger every day) confirms the matching row. A message missing for b5.12 means the 1 base-factor message needs another condition. b5.12 firing from the console shows the leftover timer does not block a called event.
-
-**G093.** Namespace match is case-insensitive; non-integer ids share the internal id of namespace.00 (kit block `event-id-vanilla`)
-
-- Setup: Mod folder b5_test with descriptor.mod. File events/b5_ev.txt: add_namespace = B5_Case country_event = { id = b5_case.1 title = b5_case.1 desc = b5_case.1 is_triggered_only = yes option = { name = b5_case.1 set_country_flag = b5_case_ok } } add_namespace = b5_col country_event = { id = b5_col.00 title = t desc = t is_triggered_only = yes option = { name = t set_country_flag = b5_col_00 } } country_event = { id = b5_col.x title = t desc = t is_triggered_only = yes option = { name = t set_country_flag = b5_col_x } }
-- Steps:
-  1. Start a new game, 1936 start, play as GER, with only b5_test enabled.
-  2. Read error.log and search for b5_case, b5_col, Malformed token and Failed to create id.
-  3. Run: event b5_case.1 and pick the option, then run: get_country_flag b5_case_ok
-  4. Run: event b5_col.00 and pick the option, then event b5_col.x and pick the option, then get_country_flag b5_col_00 and get_country_flag b5_col_x.
-- Expected: The flag b5_case_ok set and no Malformed token line means the namespace match ignores case, an error line means it does not. A Failed to create id line for b5_col.x (and which flag each event sets) shows whether the non-integer id collides with b5_col.00.
+- Run 2026-11-02: settled the load messages and that a triggered-only event with a timer can still be called. Remains: whether an event with a timer and a trigger repeats every day (the flag-clearing effect in the run was invalid, so no firing was seen either way).
 
 **G094.** original_recipient_only on an option (kit block `event-option-ai-chance`)
 
@@ -1250,16 +1051,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   3. Run: list_vars country and read b5_a and b5_b (switch with tag ITA first if the list is empty).
 - Expected: b5_a = 0 and b5_b = 10 means a lone factor = 0 acts as a multiplier on a default base. b5_a above 0 means the lone factor is ignored or used as a base.
 
-**G096.** What happens when a timeout_days event times out (kit block `event-optional-keys`)
-
-- Setup: Mod folder b5_test with descriptor.mod. File events/b5_ev.txt: add_namespace = b5 country_event = { id = b5.40 title = b5.40 desc = b5.40 is_triggered_only = yes timeout_days = 2 option = { name = b5.40 set_country_flag = b5_first } option = { name = b5.40 set_country_flag = b5_second } }
-- Steps:
-  1. Start a new game, 1936 start, play as GER, with only b5_test enabled.
-  2. Run: event b5.40 and do not click an option.
-  3. Run: fast_forward 4
-  4. Run: get_country_flag b5_first and get_country_flag b5_second. Note whether the popup is gone.
-- Expected: b5_first set means the first option is picked on timeout, as the wiki says. b5_second set or neither flag means another rule applies. The popup still open means the timeout does not close it.
-
 **G097.** What after and minor_flavor do in an event (kit block `event-optional-keys`)
 
 - Setup: Mod folder b5_test with descriptor.mod. File events/b5_ev.txt: add_namespace = b5 country_event = { id = b5.50 title = b5.50 desc = b5.50 is_triggered_only = yes minor_flavor = yes option = { name = b5.50 set_country_flag = b5_opt } after = { set_country_flag = b5_after } }
@@ -1269,16 +1060,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   3. Run: get_country_flag b5_opt and get_country_flag b5_after.
   4. Repeat with minor_flavor = yes removed and compare the popup.
 - Expected: b5_after set only after the option means after runs once the option effects finish. A different popup layout with minor_flavor shows its UI effect. If nothing differs, the key has no visible effect.
-
-**G098.** A delayed event's trigger is checked when it is about to fire (kit block `event-fire-effects`)
-
-- Setup: Mod folder b5_test with descriptor.mod. File events/b5_ev.txt: add_namespace = b5 country_event = { id = b5.60 title = b5.60 desc = b5.60 is_triggered_only = yes option = { name = b5.60 country_event = { id = b5.61 days = 2 } } } country_event = { id = b5.61 title = b5.61 desc = b5.61 is_triggered_only = yes trigger = { has_country_flag = b5_ok } option = { name = b5.61 set_country_flag = b5_fired } }
-- Steps:
-  1. Start a new game, 1936 start, play as GER, with only b5_test enabled.
-  2. Run: event b5.60, pick the option, then run fast_forward 3. Note whether b5.61 appears.
-  3. Run: set_country_flag b5_ok then event b5.60, pick the option, then fast_forward 3. Note whether b5.61 appears.
-  4. Run: event b5.60, pick the option, then set_country_flag b5_ok, then fast_forward 3.
-- Expected: No b5.61 in the first run, a popup in the second and third runs means the trigger is checked when the delayed event fires. A popup in the first run means the trigger is only checked when the call is made.
+- Run 2026-11-02: settled that `after` runs once, after the option effects. Remains: what `minor_flavor` changes in the popup.
 
 #### Faction modding
 
@@ -1377,15 +1159,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Read error.log and search for b5_r and rule.
   3. Run: add_ideas b5_r1 b5_r2 b5_r3 b5_r4 b5_r5 and read error.log again.
 - Expected: An error line only for b5_r1 and b5_r5 means the name b5_r1 uses is unknown to the game like the made-up name, and the other three are known. Error lines for all of b5_r1 to b5_r5 mean none of the four is accepted. No lines at all mean the game does not validate rule names.
-
-**G108.** What default = yes does on an idea (kit block `idea-cost-defaults`)
-
-- Setup: New game, 1936 start, play as GER, no mods. Vanilla civilian_economy has default = yes in common/ideas/_economic.txt.
-- Steps:
-  1. Open the Politics tab and note the economy law slot.
-  2. Run: add_ideas war_economy then screenshot the slot.
-  3. Run: remove_ideas war_economy and screenshot the economy slot again.
-- Expected: If the slot returns to civilian_economy after removing the other law, default = yes marks the fallback law. An empty slot means the key is not a fallback.
 
 **G109.** What cancel_if_invalid = no does on a law (kit block `idea-cost-defaults`)
 
@@ -1758,6 +1531,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Run console command `event b6.1 GER`.
   3. Take a screenshot of the event window and read logs/error.log.
 - Expected: 'Ok' at the start means U upper-cases. '$100' with one dollar sign means $$ escapes. Four date strings mean the getters work. Literal `[?...]` text or an error line for a getter means it is not valid. Record each result separately.
+- Run 2026-11-02: settled `$$100` (prints `$100`) and the four date getters. Remains: `|U`. `$key|U$` gave an empty string, the same reference without `|U` was not tested, and the result is from the log, not from an event window.
 
 **G149.** $ORDER$ in WAR_NAME is the war's ordinal built from ST, ND, RD, TH. (kit block `loc-war-name-keys`)
 
@@ -1892,6 +1666,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Assign a design team of b2_task_mio to an infantry_weapons technology, then try to assign the same MIO to a second task (a production line manufacturer or an equipment variant design). Record whether the second assignment is allowed. Read error.log.
   3. Run B: restart with the defines file and repeat the same two assignments.
 - Expected: If run A allows the second task and run B refuses it, ENABLE_TASK_CAPACITY = false makes task_capacity inert, as the wiki says. If run A also refuses the second task, task_capacity applies with the switch off and the wiki sentence is wrong. If no run shows a capacity, compare only the assignment results.
+- Run 2026-11-02: settled `task_capacity` itself (inert with the switch off, enforced with it on). Remains: the modifier `military_industrial_organization_task_capacity` and `add_mio_task_capacity`.
 
 **G163.** A trait block that repeats an inherited token with only limit_to_equipment_type replaces the inherited trait or adds a second one. (kit block `mio-trait-notes`)
 
@@ -2042,15 +1817,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   3. Check the tooltip, then load a save made before the edit.
 - Expected: If the tooltip shows 50 percent after a reload command, no restart is needed. If it shows 10 percent until a full restart, the restart claim holds.
 
-**G179.** The variables of a dynamic modifier are read off the scope country. (kit block `dynamic-add-remove`)
-
-- Setup: descriptor.mod: name="b8test", version="1.0", supported_version="1.19.*" (path in mod folder). common/dynamic_modifiers/b8.txt: b8_var = { stability_factor = b8v }
-- Steps:
-  1. Start 1936 as GER, run: tag GER; eval_effect set_variable = { b8v = 0.1 }; eval_effect ENG = { set_variable = { b8v = 0.3 } }
-  2. Run: eval_effect 64 = { add_dynamic_modifier = { modifier = b8_var scope = ENG } }
-  3. Read the state 64 tooltip for the stability line.
-- Expected: A value of 0.3 means the variable is read from the scope country, 0.1 means from the owner or other context, no value means variables are not read there.
-
 **G180.** A modifier definition accepts the categories faction, character and scientist. (kit block `definitions-defaults`)
 
 - Setup: descriptor.mod: name="b8test", version="1.0", supported_version="1.19.*" (path in mod folder). common/modifier_definitions/b8.txt: b8_cat = { value_type = number category = faction category = character category = scientist }
@@ -2127,14 +1893,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 `paradox_wiki/national_focus_modding.md`
 
-**G188.** Messages for a second default tree, focus with x and y, and duplicate focus ids (kit block `focus-tree-vanilla`)
-
-- Setup: Mod folder b5_test with descriptor.mod. File common/national_focus/b5_f1.txt: focus_tree = { id = b5_t1 default = yes country = { factor = 0 } initial_show_position = { focus = b5_f1a x = 1 y = 1 } focus = { id = b5_f1a x = 0 y = 0 cost = 1 icon = GFX_goal_unknown } focus = { id = b5_f1a x = 2 y = 0 cost = 1 icon = GFX_goal_unknown } }
-- Steps:
-  1. Start a new game, 1936 start, play as GER, with only b5_test enabled.
-  2. Read error.log and search for b5_t1 and b5_f1a.
-- Expected: Lines with Only one national focus tree should be default, Both focus and the pair x, y cannot be specified at the same time, and Duplicate focus name will cause database problems (or the hash collision text) confirm the three messages. A missing line shows its condition differs.
-
 **G189.** Messages and effects for one-way exclusive focuses, relative position errors, missing icons, no default icon case, and overlay (kit block `focus-icon-extras`)
 
 - Setup: Mod folder b5_test with descriptor.mod. File common/national_focus/b5_f2.txt: focus_tree = { id = b5_t2 country = { factor = 0 modifier = { add = 1000 tag = LUX } } focus = { id = b5_a x = 0 y = 0 cost = 1 icon = GFX_b5_no_icon mutually_exclusive = { focus = b5_b } relative_position_id = b5_late overlay = GFX_goal_unknown } focus = { id = b5_b x = 2 y = 0 cost = 1 icon = { GFX_goal_unknown = { always = no } } } focus = { id = b5_late x = 4 y = 0 cost = 1 icon = GFX_goal_unknown relative_position_id = b5_a } }
@@ -2143,15 +1901,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Read error.log and search for b5_a, b5_b, b5_late and Missing icon.
   3. Open the focus tree and screenshot b5_a (look for the overlay image on its icon).
 - Expected: Lines for the one-way exclusive link, the missing icon and icon shine of b5_a, the relative focus defined later and the circular reference, and the missing default icon case of b5_b confirm the messages. An image drawn on top of the b5_a icon confirms overlay. A line missing means its condition differs.
-
-**G190.** Message for an unknown tree id in load_focus_tree and for a repeated search_filter_prios entry (kit block `focus-effects-vanilla`)
-
-- Setup: Mod folder b5_test with descriptor.mod. File common/national_focus/b5_f3.txt: search_filter_prios = { FOCUS_FILTER_POLITICAL = 1 FOCUS_FILTER_POLITICAL = 2 } File events/b5_ev.txt: add_namespace = b5 country_event = { id = b5.70 title = b5.70 desc = b5.70 is_triggered_only = yes option = { name = b5.70 load_focus_tree = b5_no_such_tree } }
-- Steps:
-  1. Start a new game, 1936 start, play as GER, with only b5_test enabled.
-  2. Read error.log and search for Prio is already set.
-  3. Run: event b5.70, pick the option, then read error.log and search for Unable to find focus tree.
-- Expected: Prio is already set for focus tree filter after loading and Unable to find focus tree with ID after the event confirm both messages. This check does not test whether the FOCUS_FILTER_MISSIOLINI entry ever applies.
+- Run 2026-11-02: settled the load messages. Remains: the `overlay` image (needs the interface) and a circular-only `relative_position_id` case, because the test tree held both a forward and a circular reference.
 
 **G191.** Messages for a duplicate inlay window id and an undefined inlay window (kit block `focus-inlay-declaration`)
 
@@ -2267,22 +2017,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
 #### On actions
 
 `paradox_wiki/on_actions.md`
-
-**G203.** Blocks of one hook from different files are additive, their firing order, and hook names are case-insensitive. (kit block `onaction-file-shape`)
-
-- Setup: Test mod b6oa. common/on_actions/zz_a.txt: `on_actions = { on_startup = { effect = { log = "B6 a" } } }`. zz_b.txt: the same with "B6 b". zz_c.txt: `on_actions = { ON_STARTUP = { effect = { IF = { limit = { always = yes } log = "B6 c" } } } }`.
-- Steps:
-  1. Start a new game with the mod, play GER.
-  2. Read logs/game.log for the B6 lines and their order.
-- Expected: All three lines: blocks add up and capital names work, and the line order is the firing order. A missing 'B6 c' means names are case-sensitive.
-
-**G204.** A wrong tag in an on_daily_TAG hook name is reported ('%s is not a valid tag of on_daily'). (kit block `onaction-general-corrections`)
-
-- Setup: Test mod b6tag. common/on_actions/zz_t.txt: `on_actions = { on_daily_ZZZ = { effect = { log = "B6 zzz" } } }`.
-- Steps:
-  1. Start a new game with the mod and run a few game days.
-  2. Read logs/error.log and logs/game.log.
-- Expected: The quoted message in error.log confirms it. No message means the wrong tag is ignored silently.
 
 **G205.** Which wiki-only and exe-only hook names the engine knows, and whether a misspelled hook name is reported. (kit block `onaction-inventory`)
 
@@ -2406,6 +2140,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Let the AI negotiate (observer mode `observe`).
   3. Record what the AI takes for each variant.
 - Expected: With 0 and no taking, reading A (additive) is right. With 0 and the AI still taking, reading B (percent) is right. Compare 100 and -200 to see the combination.
+- Run 2026-11-02: settled that a single `ai_desire = 0` entry does not stop the action (reading B fits). Remains: the -1000 and 1000 variants.
 
 **G219.** pc_current_score vs pc_total_score, and use outside a conference (kit block `(kit page)`)
 
@@ -2510,15 +2245,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
 #### Raid modding
 
 `paradox_wiki/raid_modding.md`
-
-**G230.** ROOT inside a target_type state filter is the acting country. (kit block `(kit page)`)
-
-- Setup: Raid test mod, used by B2-08 to B2-20. New game, 1936, play as GER, Gotterdammerung enabled. In the mod copy vanilla common/raids/paratrooper_raids.txt to the same path and edit only the first type mine_sabotage_raid: (E1) days_to_prepare = 90 becomes days_to_prepare = 1. (E2) in its launchable block replace has_war_with = FROM with always = yes. (E3) as the first line inside each actor_effects of its four success_levels blocks insert log = 'B2 failure', 'B2 limited_success', 'B2 success' and 'B2 critical_success' in that order. GER starts with the tech paratroopers. Console for supplies: ae 20 transport_plane_equipment and cp 200. This check: Run C is the mod above. Run A also inserts ROOT = { original_tag = GER } as the first line inside state = { of the target_type block of mine_sabotage_raid. Run B inserts the same line with FRA
-- Steps:
-  1. Run C: start the game, open the raids screen (interface/military_raids/country_raids_view.gui), choose Mine Sabotage and count the listed target states (N).
-  2. Run A: restart, repeat, count the targets.
-  3. Run B: restart, repeat, count the targets. Read error.log after each run.
-- Expected: ROOT is the acting country if run A lists N targets and run B lists 0. If both list 0, ROOT is another scope (state or target country) and original_tag fails. A scope error in error.log means ROOT is not a country there. If run B lists N, the line is ignored.
 
 **G231.** A raid file without the types root is ignored; duplicate ids across files; a mod file with a vanilla file name overrides the vanilla file. (kit block `(kit page)`)
 
@@ -2635,6 +2361,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Console: effect GER b4_cnt, then effect GER b4_gl
   3. Read game.log and error.log
 - Expected: count is accepted if error.log is quiet: B4 count2 appears and B4 count100 does not (GER has more than 2 and fewer than 100 coastal states). An error on count means ordinary any_ iterators do not take it. B4 claim shows whether any_claim is true for a country with claims in 1936. B4 gl state shows whether the effect also works in state scope.
+- Run 2026-11-02: settled `count` on `any_` triggers and `global_every_army_leader` outside a country scope. Remains: what `any_claim = yes` matches (false for six countries in 1936, so find one with claims).
 
 **G244.** What CAPITAL and OCCUPIED select, what owner and controller select in state scope, what the clear_global_event_targets keywords select (kit block `scope-keywords`)
 
@@ -2645,44 +2372,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   3. Console: effect GER b4_cl, then effect GER b4_cl2
   4. Read game.log and error.log
 - Expected: B4 CAPITAL is capital state means CAPITAL in country scope is the capital state. The OCCUPIED line prints which country it selects. B4 owner is state owner means the lowercase keyword is the owner of the state in scope. After b4_cl2, if neither g1 nor g2 is alive then ROOT clears all global targets, if only one is alive the keyword picks targets saved from that scope. Errors in error.log mean the keyword is rejected.
-
-#### Script constant modding
-
-`paradox_wiki/script_constant_modding.md`
-
-**G245.** Which positions accept bare or prefixed constants, pipe formatting after a constant, the short example, and rounding of a non-integer under data = int (kit block `(kit page)`)
-
-- Setup: Mod folder b7sc. common/script_constants/b7.txt: the page's short example (`MYM_costs`, `MYM_groups`) plus `b7_odd = { schema = { any_key = yes data = int } v = 1.35 }` and `b7_fp = { schema = { any_key = yes data = fixed_point } half = 0.5 }`. common/scripted_effects/b7.txt: `b7_run = { set_variable = { b7_a = constant:MYM_costs.large } set_variable = { b7_b = MYM_costs.large } set_variable = { b7_c = constant:b7_odd.v } set_variable = { b7_d = constant:b7_fp.half } log = "B7_LOG" }`. localisation/english/b7_l_english.yml (UTF-8 with BOM): `l_english:` and ` B7_LOG:0 "B7 a=[?b7_a] b=[?b7_b] c=[?b7_c|2] d=[?b7_d|2] e=[?constant:b7_fp.half|1] f=[?constant:MYM_costs.large|0]"`. Delete error.log and game.log first.
-- Steps:
-  1. Start 1936.1.1 as GER with the mod.
-  2. Run `effect GER b7_run`.
-  3. Read Documents/Paradox Interactive/Hearts of Iron IV/logs/game.log for the line starting 'B7' and error.log for 'constant', 'MYM' and 'b7'.
-- Expected: Expected if everything works: a=40, b=40 only if the bare form is accepted in a variable position (otherwise an error line), c=1.35 if the int schema does not round (1 means it rounds), d=0.50, e=0.5, f=40. Each missing value names the form that is not accepted.
-
-**G246.** What happens when two files define the same constant category, or a mod reuses a vanilla category (kit block `(kit page)`)
-
-- Setup: Mod folder b7sc2. common/script_constants/b7_a.txt: `b7_dup = { schema = { any_key = yes data = int } one = 1 }`. common/script_constants/b7_b.txt: `b7_dup = { schema = { any_key = yes data = int } one = 2 two = 3 }`. common/script_constants/b7_vanilla.txt: `sp_scientist_xp_gain = { schema = { any_key = yes data = int } low = 7 b7key = 8 }`. common/scripted_effects/b7.txt: `b7_run = { set_variable = { b7_one = constant:b7_dup.one } set_variable = { b7_two = constant:b7_dup.two } set_variable = { b7_low = constant:sp_scientist_xp_gain.low } set_variable = { b7_high = constant:sp_scientist_xp_gain.high } log = "B7_LOG" }` with loc ` B7_LOG:0 "B7 one=[?b7_one] two=[?b7_two] low=[?b7_low] high=[?b7_high]"`.
-- Steps:
-  1. Start 1936.1.1 as GER with the mod, run `effect GER b7_run`.
-  2. Read Documents/Paradox Interactive/Hearts of Iron IV/logs/game.log for the line starting 'B7' and error.log for 'b7_dup' and 'sp_scientist_xp_gain'.
-  3. Swap the file names b7_a.txt and b7_b.txt and repeat.
-- Expected: one=2 and two=3 means the later file replaces the earlier one (or the whole category), one=1 with two=3 means entries merge, an error line means duplicates are rejected. The vanilla category test shows whether `low` becomes 7 (replaced), stays 70 with a missing `high` error (replaced whole category), or stays 70 and `high` is 150 (mod entry ignored or merged). The file swap shows whether load order decides it.
-
-**G247.** Whether @NAME = constant:... or an @ constant inside a script constants file works (kit block `(kit page)`)
-
-- Setup: Mod folder b7sc3. common/script_constants/b7.txt: `@B7C = 5` on line 1, then `b7_at = { schema = { any_key = yes data = int } v = @B7C }` and `b7_costs = { schema = { any_key = yes data = int } small = 10 }`. common/scripted_effects/b7.txt: `@B7 = constant:b7_costs.small` on line 1, then `b7_run = { set_variable = { b7_x = @B7 } set_variable = { b7_y = constant:b7_at.v } log = "B7_LOG" }` with loc ` B7_LOG:0 "B7 x=[?b7_x] y=[?b7_y]"`.
-- Steps:
-  1. Start 1936.1.1 as GER with the mod, run `effect GER b7_run`.
-  2. Read Documents/Paradox Interactive/Hearts of Iron IV/logs/game.log for the line starting 'B7' and error.log for '@B7', 'B7C' and 'b7'.
-- Expected: x=10 means an @ constant can hold a constant reference. y=5 means @ works inside a script constants file. An error line or missing value means that combination is not supported.
-
-**G248.** A country list constant used in any_state_of fails (kit block `(kit page)`)
-
-- Setup: Mod folder b7sc4. common/scripted_effects/b7.txt: `b7_run = { if = { limit = { any_state_of = { target = constant:country_groups.nordics always = yes } } log = "B7 state list yes" } if = { limit = { any_state_of = { target = constant:state_groups.balkans always = yes } } log = "B7 state list ok" } }`. Delete error.log and game.log first.
-- Steps:
-  1. Start 1936.1.1 as GER with the mod and run `effect GER b7_run`.
-  2. Read Documents/Paradox Interactive/Hearts of Iron IV/logs/game.log for lines starting 'B7' and error.log for 'country_groups' and 'any_state_of'.
-- Expected: 'B7 state list ok' must appear (state list works). If 'B7 state list yes' also appears, a country list is accepted and read as states or ids. If error.log names the country list, it fails in a state iterator as the page says.
+- Run 2026-11-02: settled that `CAPITAL` and `OCCUPIED` are not scope switches, that lower-case `owner` works, and that `clear_global_event_targets = ROOT` and `= THIS` cleared nothing. Remains: `OCCUPIED` in an occupied state, `clear_global_event_targets = yes`, and whether the keywords are valid as effect targets.
 
 #### Scripted GUI modding
 
@@ -2744,26 +2434,20 @@ Each check below settles one or more `[unverified]` claims that only a running g
   1. Assign the scientist to the facility without starting a project. Open the facility window and hover the scientist's program.
   2. Advance 30 days and note the air breakthrough progress and the scientist experience.
 - Expected: Tooltip text from PROGRAM_BASIC_RESEARCH with a daily breakthrough gain (about 0.12 percent plus 0.05 percent per skill level) confirms basic research is the idle state. No gain means it needs something else.
+- Run 2026-11-02: the tooltip shows basic research for an idle scientist ("Providing 0.15% breakthrough progress and 6.0% technology research bonus for Aerodynamics and Avionics"). Remains: the 30-day gain.
 
 **G255.** A custom project tag has to be listed in tags.txt before a project can use it. (kit block `(kit page)`)
 
-- Setup: SP base mod: common/special_projects/projects/b2_projects.txt = b2_project_1 = { specialization = specialization_air prototype_time = 1 complexity = 5 project_tags = b2_custom_tag empty_reward_weight = { base = 0 } generic_prototype_rewards = { b2_reward } }, and common/special_projects/prototype_rewards/b2_rewards.txt = b2_reward = { threshold = { min = 0 max = 100 } weight = { base = 1000000 } option = { token = b2_opt default = yes iteration_output = { country_effects = { log = 'B2 reward fired' } } } }. Run 2 adds common/special_projects/project_tags/b2_tags.txt with project_tags = { b2_custom_tag }
+- Setup: SP base mod: common/special_projects/projects/b2_projects.txt = b2_project_1 = { specialization = specialization_air prototype_time = 1 complexity = b2_complexity.five project_tags = b2_custom_tag empty_reward_weight = { base = 0 } generic_prototype_rewards = { b2_reward } }, and common/special_projects/prototype_rewards/b2_rewards.txt = b2_reward = { threshold = { min = 0 max = 100 } weight = { base = 1000000 } option = { token = b2_opt default = yes iteration_output = { country_effects = { log = 'B2 reward fired' } } } }, and common/script_constants/b2_constants.txt = b2_complexity = { schema = { any_key = yes data = { { key = min data = int } { key = max data = int } } } five = { min = 5 max = 5 } } (the schema of vanilla sp_complexity, a fixed progress of 5 per iteration). Do not write a plain number for complexity, and use `--` for comments in any Lua defines file, because `#` there is a Lua error. Run 2 adds common/special_projects/project_tags/b2_tags.txt with project_tags = { b2_custom_tag }
 - Steps:
   1. Run 1: start the game and read error.log. Open the Special Projects screen and look for b2_project_1.
   2. Run 2: repeat.
 - Expected: Run 1 with an error or a missing project and run 2 working confirms the tag must be registered. Both working means the tag list is not required.
-
-**G256.** Which threshold edge is inside the window (min 25, max 45). (kit block `(kit page)`)
-
-- Setup: SP base mod from B2-23 with project_tags = sp_tag_aircraft and the reward threshold changed to min = 25 max = 45. Console: instantconstruction, sp_add_scientist 3 air, sp_fast. Build an air_facility, assign the scientist and start b2_project_1
-- Steps:
-  1. Advance day by day. After each day record the project progress shown in the facility window and whether game.log gained a line 'B2 reward fired'.
-  2. Stop when the project completes (complexity 5 needs 20 iterations).
-- Expected: The progress values at which the line appears show the window. A line at 25 but not at 45 means min is inside and max is outside, as the doc text says. A line at 45 but not at 25 means the notation (Min, Max] is right. Compare the progress before and after each iteration to see which value is tested.
+- Run 2026-11-02: the tag question was not run. Seen instead: a project with no `breakthrough_cost` still asked for 1 breakthrough point of its specialization. The old setup used `complexity = 5`, which crashed the game at load (the same launch also had a `#` comment in a defines file), so the setup below uses a constant reference.
 
 **G257.** fire_only_once on a reward is per project, per country or per facility. (kit block `(kit page)`)
 
-- Setup: SP base mod from B2-23 with project_tags = sp_tag_aircraft, plus fire_only_once = yes on b2_reward and copies b2_project_2 and b2_project_3 of b2_project_1 that list the same reward. Console: instantconstruction, sp_add_scientist 3 air, sp_fast. Build two air_facility buildings, A and B
+- Setup: SP base mod from G255 (with its `b2_complexity.five` constant for complexity) with project_tags = sp_tag_aircraft, plus fire_only_once = yes on b2_reward and copies b2_project_2 and b2_project_3 of b2_project_1 that list the same reward. Console: instantconstruction, sp_add_scientist 3 air, sp_fast. Build two air_facility buildings, A and B
 - Steps:
   1. Run b2_project_1 in facility A to the end and count 'B2 reward fired' lines (expected 1).
   2. Run b2_project_2 in facility B and count the new lines.
@@ -2772,7 +2456,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 **G258.** The reward draw weighs eligible rewards and the empty outcome and respects allowed, threshold and fire_only_once. (kit block `(kit page)`)
 
-- Setup: SP base mod from B2-23 with project_tags = sp_tag_aircraft and three rewards listed by the project: b2_a (weight base 1000, logs 'B2 A'), b2_b (allowed = { always = no }, weight base 1000000, logs 'B2 B') and b2_c (threshold = { min = 50 max = 100 }, weight base 1000000, logs 'B2 C'). Run 1: empty_reward_weight = { base = 1000000 }. Run 2: empty_reward_weight = { base = 0 }. Console: instantconstruction, sp_add_scientist 3 air, sp_fast
+- Setup: SP base mod from G255 (with its `b2_complexity.five` constant for complexity) with project_tags = sp_tag_aircraft and three rewards listed by the project: b2_a (weight base 1000, logs 'B2 A'), b2_b (allowed = { always = no }, weight base 1000000, logs 'B2 B') and b2_c (threshold = { min = 50 max = 100 }, weight base 1000000, logs 'B2 C'). Run 1: empty_reward_weight = { base = 1000000 }. Run 2: empty_reward_weight = { base = 0 }. Console: instantconstruction, sp_add_scientist 3 air, sp_fast
 - Steps:
   1. Run the project to completion in each run and read game.log.
   2. Count the lines A, B and C and the iterations with no line.
@@ -2992,15 +2676,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 `paradox_wiki/triggers.md`
 
-**G283.** Trigger names and keys that the documentation or wiki gives but vanilla never uses (kit block `scope-row-corrections`)
-
-- Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_triggers/b4.txt: b4_t1 = { all_active_scientists = { always = yes } } b4_t2 = { is_scientist_active = yes } b4_t3 = { pc_is_untouched_loser = yes } b4_t4 = { pc_is_liberated_by = GER } b4_t5 = { career_profile_check_medal = { medal = raining_debris_medal } } b4_t6 = { num_of_career_profile_points > 1 } b4_t7 = { has_mio_trait = { token = x } } b4_t8 = { is_operation_type = x }
-- Steps:
-  1. Start with the mod and read error.log at the main menu
-  2. Console: trigger GER b4_t1 up to b4_t8 (console command trigger, arguments <tag> scripted_trigger_name)
-  3. Read error.log after each
-- Expected: A trigger or key error at load or run means that name or key is not valid (expected for pc_is_untouched_loser and pc_is_liberated_by if they are invalid). No error means it is accepted. t6 shows whether > is valid. t7 and t8 may error on the scope or the token value, note which.
-
 **G284.** Whether the engine reads DIPLOMACY triggers that vanilla does not define (kit block `diplomacy-scripted-trigger-notes`)
 
 - Setup: New game, 1936 start, play as GER, only the test mod. Mod file common/scripted_triggers/b4.txt: DIPLOMACY_SEND_ATTACHE_ENABLE_TRIGGER = { always = no } DIPLOMACY_LEND_LEASE_CANCEL_ENABLE_TRIGGER = { always = no } DIPLOMACY_EMBARGO_ENABLE_TRIGGER = { always = no }
@@ -3037,6 +2712,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   7. Search Documents/Paradox Interactive/Hearts of Iron IV/logs/ for a file named exceptions.log.
   8. Repeat all steps for session B.
 - Expected: If the wiki notes hold: a folder crashes/hoi4_<yyyymmdd>_<hhmmss>/ with exception.txt, meta.yml, minidump.dmp, settings copies and a logs/ folder; no exceptions.log anywhere; meta.yml has LastRead (and maybe LastScript) only in session B; exception.txt shows only hoi4.exe frames; the copied error.log names b1.txt. Any difference corrects the matching sentence.
+- Run 2026-11-02: three real crashes (no `SimulateCrash`, no `-crash_data_log`) settled the folder name and contents, the missing LastRead and LastScript lines, the missing exceptions.log and the hoi4.exe-only stack trace. Remains: session B with `-crash_data_log`, `SimulateCrash`, and whether the copied error.log names the mod file.
 
 **G287.** reloadtechnologies crashes the game when a technology file has an error (kit block `ts-testing-check`)
 
@@ -3046,14 +2722,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Console: reloadtechnologies.
   3. Note whether the game stays up, then read Documents/Paradox Interactive/Hearts of Iron IV/logs/error.log.
 - Expected: A crash (the game exits and a crashes/ folder appears) supports the page. An error line in error.log with the game still running contradicts it.
-
-**G288.** Non-fatal script errors are written to logs/error.log (kit block `ts-fatal-errors`)
-
-- Setup: Test mod b1: Documents/Paradox Interactive/Hearts of Iron IV/mod/b1.mod holds the lines name="b1", path="mod/b1" and supported_version="*". Its content folder is Documents/Paradox Interactive/Hearts of Iron IV/mod/b1/. Add Documents/Paradox Interactive/Hearts of Iron IV/mod/b1/common/scripted_effects/b1.txt with the line 'b1_bad_effect = { b1_unknown_token = yes }'. Delete logs/error.log first.
-- Steps:
-  1. Start the game with mod b1 to the main menu, then quit.
-  2. Check that Documents/Paradox Interactive/Hearts of Iron IV/logs/error.log exists and search it for b1_unknown_token or b1.txt.
-- Expected: A line naming the mod file shows non-fatal errors land in logs/error.log. No file means the location is different.
 
 **G289.** The user folder can be moved (userdir=, userdir.txt) and what the exe arguments crash_data_log, nofilewatcher, noai, logprefix=, logpostfix=, userdir= do (kit block `ts-log-files`)
 
@@ -3075,6 +2743,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   3. List every file in logs/ and compare with the table in the Log files section: size, empty or not, one-line summary of each.
   4. Host a multiplayer lobby with no clients and check whether executed_commands.log, posted_commands.log, received_commands.log and sent_commands.log get content.
 - Expected: Lines read [hh:mm:ss][no_game_date][file.cpp:line] before a game starts and carry a game date afterwards. File names match the underscore forms. Mark each table row whose content differs.
+- Run 2026-11-02: settled the log file names and the line format. Remains: what each log holds (the Holds column) and the multiplayer part.
 
 **G291.** The game ignores map/rocketsites.txt, and the career profile file naming (kit block `ts-menu-loading-fix`)
 
@@ -3104,6 +2773,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   4. Add mod/b1/map/definition.csv with one garbage line and start with -crash_data_log.
   5. Read the tail of logs/setup.log and the error.log copy in the new crashes/ folder.
 - Expected: Logs are new after each start. The first error names b1.txt with a line, and later errors cite b1_a or b2.txt. The tail of setup.log names the last database entry loaded before the crash.
+- Run 2026-11-02: settled that every launch rewrites the logs and that error.log names file and line, and saw that the setup.log tail did not name the faulty file after a start-up crash (integer divide by zero). Remains: the unclosed brace test, whether later errors follow the first, and the `-crash_data_log` crash with a bad definition.csv.
 
 #### Unit modding
 

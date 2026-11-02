@@ -79,8 +79,8 @@ Internal IDs are defined for events by assigning an ID to each namespace (IDs ar
 - Non-integer suffix (4 events): `BBA_italy_missiolinis.02_north`, `.03_north`, `.04_south` and `.05_south` in `events/BBA_Italy.txt`. Only `common/decisions/ITA.txt` fires them (8 calls such as `country_event = { id = BBA_italy_missiolinis.03_north hours = 1 }`), and no script in `events/` or `history/` does.
 - Letter case differs from the namespace line in 34 events: 31 events in `events/BBA_Switzerland.txt` use `BBA_switzerland.N` while the file declares `BBA_Switzerland`; 2 events use `taog_news.N` where `TAOG_news` is declared; `NSB_news.200` is declared as `nsb_news`.
 
-Vanilla ships those 34 events, so the namespace match looks case-insensitive, but that is only an inference from the files; keep the case identical anyway. [unverified]
-The wiki's collision rule for non-integer ids would give the four `BBA_italy_missiolinis` events above the same internal id as `BBA_italy_missiolinis.00`; this was not tested. [unverified]
+Vanilla ships those 34 events. The namespace match ignores case: `add_namespace = IGC_B_G093_Case` matched the event id `igc_b_g093_case.1`, which loaded and fired. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, events fired from the console, game.log read.
+The wiki's collision rule for non-integer ids would give the four `BBA_italy_missiolinis` events above the same internal id as `BBA_italy_missiolinis.00`. In a test, an id with a non-integer suffix (`col.x`) beside `col.00` and `col.01` loaded without a message and fired its own effects when called by its own id, so no collision showed, and no "Malformed token" or "Failed to create id" line was written. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, events fired from the console, error.log and game.log read. The test events were hidden with their effects in `immediate`, so options were not tested, and a collision could still exist for something other than console calls.
 <!-- kit:end id="event-id-vanilla" -->
 
 ### Localisation <a id="Localisation"></a>
@@ -290,9 +290,9 @@ ai_chance = {
 | `minor_flavor = yes` | 6 | all in `events/AcePilots.txt` |
 
 - Of the 187 hidden events, 116 have no `option` and 71 have one or more (2 of those have several). [vanilla-confirmed 1.19.4.1] `events/`.
-- `timeout_days` is rare and no game documentation file describes it. The define `NDefines.NGame.EVENT_TIMEOUT_DEFAULT = 13` is commented as the default number of days before an event times out if not scripted. What the game does when the timeout expires is not documented; the wiki says the first option is picked. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua` for the define; [unverified] for the behaviour.
+- `timeout_days` is rare and no game documentation file describes it. The define `NDefines.NGame.EVENT_TIMEOUT_DEFAULT = 13` is commented as the default number of days before an event times out if not scripted. What the game does when the timeout expires is not documented. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua` for the define. The wiki says the first option is picked, and that held: when a `timeout_days = 2` event ran out unanswered for the player, the first option in the file ran two game days after the event fired. `ai_chance` did not change which option ran, because the first option ran in an event whose second option had `ai_chance = 1000`. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, events fired and left unanswered, game.log read. The log does not show whether the popup closed.
 - `NDefines.NCountry.EVENT_PROCESS_OFFSET = 20` is commented "Events are checked every X day per country or state", which matches the 20 day trigger check described above. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`.
-- No game documentation file explains `after` or `minor_flavor`. Vanilla writes `minor_flavor = yes` in 6 events (all in `events/AcePilots.txt`) and `after = { ... }` 8 times in 4 files. [vanilla-confirmed 1.19.4.1] What either key does is [unverified].
+- No game documentation file explains `after` or `minor_flavor`. Vanilla writes `minor_flavor = yes` in 6 events (all in `events/AcePilots.txt`) and `after = { ... }` 8 times in 4 files. [vanilla-confirmed 1.19.4.1] What `minor_flavor` does is [unverified]. The `after` block runs once, after the chosen option's effects, and can see the flags the option set: in the test the option's effect ran, then `after` ran once and read the option's flag as set. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, popups answered with the first option, game.log read.
 <!-- kit:end id="event-optional-keys" -->
 
 ## Effect <a id="Effect"></a>
@@ -353,7 +353,7 @@ All rows: [docs] `documentation/effects_documentation.md`.
 
 - Vanilla calls across `events/`, `common/` and `history/`: `country_event` is written in block form 7,473 times and as `country_event = <id>` 1,505 times; `news_event` 712 block and 13 short; `unit_leader_event` 32 block and 6 short; `state_event` 10; `operative_leader_event` 7, all with `set_from_from`. Inside `country_event` blocks: `hours` 3,724, `days` 2,636, `random_hours` 799, `random_days` 782, `random` 118, `months` 28. [vanilla-confirmed 1.19.4.1]
 - There is no effect that cancels, disables or lists a pending delayed event: no effect or trigger in `documentation/effects_documentation.md` or `documentation/triggers_documentation.md` has such a name. [docs]
-- To make a pending call harmless, give the target event a `trigger` that tests a flag and clear the flag when the call should lapse. The wiki says an event's `trigger` is checked when the delayed event is about to fire. [unverified]
+- To make a pending call harmless, give the target event a `trigger` that tests a flag and clear the flag when the call should lapse. [unverified] The wiki says an event's `trigger` is checked when the delayed event is about to fire, and that held: a delayed triggered-only event was checked against its trigger when it fired, not when it was called. A flag set after the call let the event fire, and an event whose flag was never set did not fire. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, delayed events, game.log read. The case of a flag removed before the event fires was not run.
 <!-- kit:end id="event-fire-effects" -->
 
 ## Common mistakes <a id="Common_mistakes"></a>
@@ -698,7 +698,7 @@ country_event = {
 ```
 
 <!-- kit:begin id="event-engine-messages" at="section:Unintuitive_logged_errors" -->
-**Kit addition** Event log messages found as strings in `hoi4.exe`. All rows: [unverified] (strings read from `hoi4.exe`; the exact trigger conditions were not tested).
+**Kit addition** Event log messages found as strings in `hoi4.exe`. All rows: [unverified] (strings read from `hoi4.exe`). A load run tested several of them, and its results are listed under the table.
 
 | Message | Likely cause |
 | --- | --- |
@@ -711,6 +711,13 @@ country_event = {
 | "Malformed token" and "Failed to create id" | namespace problems and duplicate internal ids, as described above |
 
 The first three do not occur in vanilla: every non-hidden vanilla event has a title, a desc and an option. [vanilla-confirmed 1.19.4.1] `events/`.
+
+What a test mod's events logged at load in 1.19.4.1:
+
+- An event with no title, no desc and no option logged "Event is missing a title.", "Event is missing a desc.", "Event has no options." and "Event is set to trigger every day.", plus "non-hidden event with no options defined". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read.
+- "Event is set to trigger every day." appeared on non-triggered-only events, including one with no timer whose trigger is never true. It did not appear on a hidden `fire_only_once` event that has no trigger. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read.
+- A triggered-only event with a `mean_time_to_happen` timer logged no message, so "Event is triggered only, but does not have a 1 base-factor." did not show. The event could still be called: `event <id> ITA` from the console opened it. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read and console run.
+- A `unit_leader_event` that is not triggered only logged only "Event is set to trigger every day.", with nothing about leader events, and a triggered-only leader event logged nothing. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read. Whether an event with a timer repeats every day was not seen.
 <!-- kit:end id="event-engine-messages" -->
 
 ## Event file example <a id="Event_file_example"></a>

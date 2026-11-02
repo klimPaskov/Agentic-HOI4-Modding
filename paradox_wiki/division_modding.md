@@ -155,7 +155,7 @@ Usage of the documented keys across the 804 vanilla templates, and keys the page
 | `regimental_support` | 4 | Block of regimental support sub-units, for example `field_guns = { x = 1 y = 0 }`. |
 | `ingame_set_template_counter` | 2 | `yes` next to `template_counter` (`INS_1936.txt`). |
 
-No game documentation file describes `role` or `obsolete` in a division template. [vanilla-confirmed 1.19.4.1] `documentation/*.md`. Their meaning is read from usage, so it stays [unverified].
+No game documentation file describes `role` or `obsolete` in a division template. [vanilla-confirmed 1.19.4.1] `documentation/*.md`. The meaning of `role` is read from usage, so it stays [unverified]. `obsolete = yes` hides the template from the list used to recruit and deploy: as ITA, `has_template = "Divisione Ascari Libica"` was true, yet the Recruit and Deploy template list showed 8 templates without the three `obsolete = yes` Ascari templates, with an unticked "Show decommissioned templates" box above it. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, template list and screenshot. The ticked view was not captured.
 <!-- kit:end id="division-template-keys" -->
 
 <!-- kit:begin id="division-unit-effects" at="section:Division_template" -->
