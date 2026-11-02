@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from PIL import Image
 
@@ -60,6 +60,11 @@ from lib.generation import (
     load_pricing,
     operation_credits,
     validate_generation,
+)
+from lib.texture_lineage import (
+    dds_header,
+    provider_texture_rels,
+    verify_texture_lineage,
 )
 from lib.reuse import (
     block_message,
@@ -1033,15 +1038,82 @@ def exported_animation_path(report: Dict[str, Any]) -> str:
     raise ValueError(f"Animation export response did not contain an output path: {export!r}")
 
 
-def prepare_pilot_texture_sources(job: Path, spec: Dict[str, Any]) -> Dict[str, str]:
-    """Create and select the engine-compatible material source maps."""
+def prepare_pilot_texture_sources(
+    job: Path,
+    spec: Dict[str, Any],
+    *,
+    exported_rels: Sequence[str] = (),
+    geometry_source_rel: Optional[str] = None,
+) -> Dict[str, str]:
+    """Create and select the engine-compatible material source maps.
 
-    provider_sources = dict(spec.get("texture_source_rels", {}))
+    Each GLB in `exported_rels` is a model whose geometry reaches the export (or
+    `geometry_source_rel` when that supplies the geometry). The provider maps must
+    pass the texture lineage gate against it before anything is prepared for Blender.
+    """
+
+    # The provider sources are chosen once (the spec default or
+    # `select_geometry_textures`). A second call must not mistake the prepared
+    # bindings (roughness.png) for the provider maps.
+    provider_sources = dict(
+        spec.get("_provider_texture_source_rels") or spec.get("texture_source_rels", {})
+    )
     spec["_provider_texture_source_rels"] = provider_sources
+    for exported_rel in exported_rels:
+        gate_texture_lineage(
+            job, spec, source_rel=exported_rel, geometry_source_rel=geometry_source_rel
+        )
     sources = prepare_texture_source_rels(job, provider_sources)
     if sources:
         spec["texture_source_rels"] = sources
     return sources
+
+
+def select_geometry_textures(job: Path, spec: Dict[str, Any], model_rel: str) -> Dict[str, str]:
+    """Bind the provider maps downloaded with `model_rel`, the model whose UV layout is exported.
+
+    Meshy stages have different UV layouts. Remesh, rig and animation output
+    keeps the remesh layout, so its maps are `remesh_model_textures/*`, never the
+    earlier generation model's.
+    """
+
+    rels = provider_texture_rels(model_rel)
+    missing = [rel for rel in rels.values() if not (job / rel).is_file()]
+    if missing:
+        raise FileNotFoundError(
+            f"The textures downloaded with {model_rel} are missing: {missing}. "
+            "Do not substitute another stage's maps; they use a different UV layout."
+        )
+    spec["texture_source_rels"] = rels
+    spec.pop("_provider_texture_source_rels", None)
+    spec["texture_lineage_model_rel"] = model_rel
+    return rels
+
+
+def gate_texture_lineage(
+    job: Path,
+    spec: Dict[str, Any],
+    *,
+    source_rel: str,
+    geometry_source_rel: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Fail before export unless the bound maps belong to the exported geometry's model."""
+
+    provider_sources = dict(
+        spec.get("_provider_texture_source_rels") or spec.get("texture_source_rels") or {}
+    )
+    if not provider_sources:
+        return {}
+    geometry_rel = geometry_source_rel or source_rel
+    stem = Path(geometry_rel).stem
+    report = verify_texture_lineage(
+        job,
+        geometry_rel,
+        provider_sources,
+        report_rel=f"blender/reports/texture_lineage_{stem}.json",
+    )
+    spec.setdefault("_texture_lineage", {})[stem] = report
+    return report
 
 
 def _finalize_pdx_runtime_texture(
@@ -1216,6 +1288,23 @@ def _apply_runtime_diffuse_grade(
     return textures
 
 
+def _dds_header_report(job: Path, textures: Dict[str, Any]) -> Dict[str, Any]:
+    """Report each shipped DDS's size and mip count.
+
+    The repository converter writes one mip level (`convert_to_dds.py` fixes
+    `-m 1` and offers no option), so this reports `mip_chain_present: false`
+    instead of failing every export. The game then samples the full-size map at
+    every distance, which shows as shimmer on the zoomed-out map.
+    """
+
+    report: Dict[str, Any] = {}
+    for item in textures.get("conversions") or []:
+        path = job / item["dds"]
+        if path.is_file():
+            report[item["dds"]] = dds_header(path)
+    return report
+
+
 def finalize_pdx_runtime_textures(
     job: Path,
     spec: Dict[str, Any],
@@ -1234,11 +1323,15 @@ def finalize_pdx_runtime_textures(
         # binding must always go back to the provider metallic/roughness source
         # so the PDX packed channels cannot silently be replaced by gray RGB.
         specular_source = provider_sources.get("specular")
-        if not specular_source or Path(specular_source).name.casefold() == "roughness.png":
-            candidate = job / "provider" / "downloads" / "generation_model_textures" / "metallic_roughness.png"
+        if not specular_source:
+            raise RuntimeError("Humanoid runtime material finalization requires a specular source.")
+        if Path(specular_source).name.casefold() == "roughness.png":
+            # Stay in the bound model's own folder; never assume the generation stage.
+            candidate = job / Path(specular_source).with_name("metallic_roughness.png")
             if not candidate.is_file():
                 raise FileNotFoundError(
-                    "Humanoid runtime material finalization requires the provider metallic_roughness.png map."
+                    "Humanoid runtime material finalization requires the provider metallic_roughness.png"
+                    f" map next to {specular_source}."
                 )
             provider_sources["specular"] = str(candidate.relative_to(job)).replace("\\", "/")
     image_names = {
@@ -1282,6 +1375,25 @@ def finalize_pdx_runtime_textures(
         )
     report = job / "blender" / "reports" / "textures_dds.json"
     textures["runtime_texture_sources"] = provider_sources
+    if spec.get("_texture_lineage"):
+        textures["texture_lineage"] = {
+            stem: {
+                "status": item["status"],
+                "geometry_source_rel": item["geometry_source_rel"],
+                "geometry_source_sha256": item["geometry_source_sha256"],
+                "roles": {
+                    role: {
+                        "bound_sha256": entry["bound_sha256"],
+                        "matched_via": entry["matched_via"],
+                        "geometry_embedded_sha256": entry["geometry_embedded_sha256"],
+                        "geometry_downloaded_sha256": entry["geometry_downloaded_sha256"],
+                    }
+                    for role, entry in item["roles"].items()
+                },
+            }
+            for stem, item in spec["_texture_lineage"].items()
+        }
+    textures["dds_headers"] = _dds_header_report(job, textures)
     report.write_text(json.dumps(textures, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return textures
 
@@ -1349,7 +1461,9 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
     max_runtime_footprint_m = footprint_config.get("max_runtime_footprint_m")
     runtime_footprint_policy = spec.get("runtime_footprint_policy", "reject")
     texture_sources = (
-        prepare_pilot_texture_sources(job, spec)
+        prepare_pilot_texture_sources(
+            job, spec, exported_rels=[generation_glb["file"]["relative_path"]]
+        )
         if spec["asset_kind"] in STATIC_ASSET_KINDS | {"humanoid", "creature"}
         else {}
     )
@@ -1729,8 +1843,18 @@ def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
             format_name="fbx",
             filename=continuation_download_name(spec, "remesh_model.fbx"),
         )
-        prepare_pilot_texture_sources(job, spec)
         rig_input_id = remesh_id
+
+    # Rig and animation output keeps the UV layout of the model it was built
+    # from: the remesh when there is one, else the generation model. Bind that
+    # model's maps (fixes the generation maps being paired with remesh UVs).
+    select_geometry_textures(
+        job,
+        spec,
+        remesh_glb["file"]["relative_path"]
+        if remesh_id
+        else f"provider/downloads/{generation_download_name(spec, 'glb')}",
+    )
 
     rig_input_mode = str(spec.get("rig_input_mode") or "input_task_id").casefold()
     if rig_input_mode not in {"input_task_id", "model_url"}:
@@ -1844,7 +1968,12 @@ def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     profile = read_json(PIPELINE_ROOT / "config" / "asset_profiles.json")["profiles"][spec["profile"]]
 
     final_source = animation_downloads["attack"]["file"]["relative_path"]
-    texture_sources = prepare_pilot_texture_sources(job, spec)
+    texture_sources = prepare_pilot_texture_sources(
+        job,
+        spec,
+        exported_rels=[item["file"]["relative_path"] for item in animation_downloads.values()],
+        geometry_source_rel=spec.get("geometry_source_rel"),
+    )
     prep = blender.prepare_candidate(
         slug,
         source_rel=final_source,
@@ -2228,6 +2357,42 @@ def prepare_shared_humanoid_lineage(
     return {"owner": owner_slug, "recipients": recipients, "owner_artifacts": owner_artifacts}
 
 
+def rebuild_runtime_textures(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Rebuild a finished humanoid job's three runtime DDS from files already on disk.
+
+    Repairs jobs exported before the texture lineage gate existed, whose maps came
+    from the generation model while the exported mesh used the remesh UV layout.
+    Makes no Meshy call and starts no Blender: the DDS are derived from the
+    provider maps (graded diffuse, packed specular and normal) at the sizes the
+    earlier export recorded in `blender/reports/textures_dds.json`. The mesh and
+    animations do not embed textures, so they stay as they are.
+    """
+
+    prepare_spec(spec)
+    slug = spec["asset_id"].rsplit(".", 1)[-1]
+    job = ensure_job_layout(resolve_job_root(slug))
+    if spec["asset_kind"] != "humanoid":
+        raise RuntimeError("Runtime texture rebuild covers the humanoid continuation route only.")
+    report = job / "blender" / "reports" / "textures_dds.json"
+    if not report.is_file():
+        raise FileNotFoundError(f"No earlier texture export to rebuild (missing {report}).")
+    remesh = existing_task(job, continuation_stage_for(spec, "rig_remesh"))
+    model_name = (
+        continuation_download_name(spec, "remesh_model.glb")
+        if remesh and remesh.get("status") in SUCCEEDED_STATUSES
+        else generation_download_name(spec, "glb")
+    )
+    select_geometry_textures(job, spec, f"provider/downloads/{model_name}")
+    exported = f"provider/downloads/{animation_download_name(spec, 'attack', 'glb')}"
+    prepare_pilot_texture_sources(
+        job,
+        spec,
+        exported_rels=[exported],
+        geometry_source_rel=spec.get("geometry_source_rel"),
+    )
+    return finalize_pdx_runtime_textures(job, spec, read_json(report))
+
+
 def continue_humanoid_shared(
     spec: Dict[str, Any],
     lineage: Dict[str, Any],
@@ -2245,7 +2410,9 @@ def continue_humanoid_shared(
         raise FileNotFoundError(f"Recipient generation geometry is missing: {job / generation_rel}")
     vanilla_reference = stage_vanilla_reference(job, spec)
     profile = read_json(PIPELINE_ROOT / "config" / "asset_profiles.json")["profiles"][spec["profile"]]
-    texture_sources = prepare_pilot_texture_sources(job, spec)
+    texture_sources = prepare_pilot_texture_sources(
+        job, spec, exported_rels=[shared_rig_rel], geometry_source_rel=generation_rel
+    )
     prep = blender.prepare_candidate(
         slug,
         source_rel=shared_rig_rel,
@@ -3032,6 +3199,12 @@ def main() -> int:
         help="print the credits report for one job folder or every job under a root (default: this repository's "
         "jobs root); needs no API key and makes no provider call",
     )
+    parser.add_argument(
+        "--rebuild-runtime-textures",
+        action="store_true",
+        help="rebuild the finished humanoid job's runtime DDS from the remesh maps on disk; "
+        "needs no API key and makes no provider call or Blender run",
+    )
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--phase", choices=("full", "candidate"), default="full")
     parser.add_argument("--shared-humanoid-batch")
@@ -3041,6 +3214,15 @@ def main() -> int:
         return print_credits_report(args.credits_report)
     if args.jobs_config is None:
         parser.error("--jobs-config is required unless --credits-report is given")
+    if args.rebuild_runtime_textures:
+        configs = load_job_configs(args.jobs_config)
+        assets = list(configs) if args.all or not args.assets else args.assets
+        missing = sorted(set(assets) - set(configs))
+        if missing:
+            raise KeyError(f"Unknown configured 3D jobs: {missing}")
+        rebuilt = {asset: rebuild_runtime_textures(configs[asset]) for asset in assets}
+        print(json.dumps(rebuilt, indent=2, sort_keys=True))
+        return 0
     require_api_key()
     configs = load_job_configs(args.jobs_config)
     if args.shared_humanoid_batch:
