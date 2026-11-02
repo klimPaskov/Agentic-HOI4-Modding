@@ -50,11 +50,11 @@ MYPY = "mypy==1.14.1"
 RATCHET_CODES = {"C901", "PLR0915"}
 STRICT_FILES = (
 	".tools/lib/", ".tools/check.py", ".tools/quality.py", ".tools/audits/audit_script_rules.py", ".tools/audits/validate_scripts_mcp.py",
-	".tools/gfx/gfx.py", ".claude/skills/hoi4-feature-assets/tools/", ".claude/skills/hoi4-save-inspection/scripts/",
+	".tools/audits/audit_shelf.py", ".tools/gfx/gfx.py", ".claude/skills/hoi4-feature-assets/tools/", ".claude/skills/hoi4-save-inspection/scripts/",
 )
 # mypy runs from each folder so that local imports (such as `.tools/lib`) resolve.
 MYPY_GROUPS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
-	(".tools", ("lib", "check.py", "quality.py", "audits/audit_script_rules.py", "audits/validate_scripts_mcp.py", "gfx/gfx.py")),
+	(".tools", ("lib", "check.py", "quality.py", "audits/audit_script_rules.py", "audits/validate_scripts_mcp.py", "audits/audit_shelf.py", "gfx/gfx.py")),
 	(".claude/skills/hoi4-feature-assets/tools", ("convert_to_dds.py", "create_advisor_icon.py",
 		"extract_portrait_source_crop.py", "process_achievement_icons.py", "process_report_event_image.py")),
 	(".claude/skills/hoi4-save-inspection/scripts", ("save_inspect.py",)),

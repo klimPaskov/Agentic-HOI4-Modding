@@ -4,7 +4,7 @@ This reference belongs to the `hoi4-feature-assets` skill and holds complete sec
 
 ## 18.1 Decision category pictures
 
-A decision category picture is a larger visual surface used inside or beside a decision category. It is not a `32x32` decision icon, a small category icon, a custom-window background, or a substitute for an interactive scripted GUI.
+A decision category picture is a larger visual surface used inside or beside a decision category. It is not a decision icon, a small category icon, a custom-window background, or a substitute for an interactive scripted GUI.
 
 Use a category picture when the normal decision list already carries the actions but the category benefits from identity, historical context, propaganda, territorial orientation, or a readable theme. Suitable subjects include propaganda and public campaigns; civil-war mobilization, insurgency, and preparedness; elections, ideology, monarchy, party control, and trade-union politics; faction management, treaties, naval agreements, and intervention; formable territory maps; and documentary or symbolic scenes.
 
@@ -34,19 +34,9 @@ allowed fictional subject needs its own full-resolution generated master; do
 not reuse a leader crop. Institutional or collective briefs must state whether
 the card is people-free or depicts a governing group.
 
-Use the bundled compositor:
+Make the card with `hoi4.image_portrait { family: "advisor_card" }`, importing the approved full portrait as the source (see `hoi4-imagegen`). The tool composites the card from the kit's `advisor_template.png` with the same compositor as `.claude/skills/hoi4-feature-assets/tools/create_advisor_icon.py`; do not run that script by hand for a card the tool makes, and do not call it without the arguments it requires (`--source`, `--portrait-size`, `--rotation`, `--portrait-offset`, `--preview`, `--output`).
 
-```powershell
-python -B .claude/skills/hoi4-feature-assets/tools/create_advisor_icon.py `
-  --source <approved_portrait> `
-  --portrait-size <width> <height> `
-  --rotation <degrees> `
-  --portrait-offset <right> <down> `
-  --preview <review.png> `
-  --output <runtime.dds>
-```
-
-The tool loads the complete approved source without a pre-crop or warp, measures the template opening, and uses one uniform aspect-preserving cover scale. It expands the opening with the centralized under-frame bleed and portrait-edge guard, masks the covering portrait to that safe region, and composites the exact `advisor_template.png` once as the untouched top layer. Never clip to the exact visible opening: translucent antialiased inner-edge pixels need portrait coverage beneath the frame. Do not anisotropically stretch, redraw, recolour, or replace the frame, paper, seal, bevel, patina, or shadows.
+The compositor loads the complete approved source without a pre-crop or warp, measures the template opening, and uses one uniform aspect-preserving cover scale. It expands the opening with the centralized under-frame bleed and portrait-edge guard, masks the covering portrait to that safe region, and composites the exact `advisor_template.png` once as the untouched top layer. Never clip to the exact visible opening: translucent antialiased inner-edge pixels need portrait coverage beneath the frame. Do not anisotropically stretch, redraw, recolour, or replace the frame, paper, seal, bevel, patina, or shadows.
 
 Require a per-person placement study, native preview, nearest-neighbour `4x` review preview, alignment overlay, metadata, and staged DDS. Record source/template hashes, measured opening center/size/angle, uniform cover geometry, bleed/guard constants, transformed dimensions, center, offset, rotation, alpha coverage (`opening_alpha_gap_pixels`, `inner_edge_alpha_gap_pixels`, `exterior_alpha_leak_pixels`), preview and DDS hashes, runtime path, and independent reviewer. Review against solid and checker backgrounds at native and `4x` size. Automated dimension and alpha checks are evidence, not visual approval. Reject gaps, matte pixels, exterior leakage, padded strips, visible stretching, or a neutral transform that recreates a frame-only card.
 

@@ -49,7 +49,7 @@ Use `--target qoder` for Qoder's skill copy and `--check` to detect projection d
 
 ## Images and credentials
 
-GPTImage installs its locked dependencies through native Node and npm's resolved JavaScript entry, including the usual `/usr/bin/npm` symlink layout. Its source-tree and lock hashes are independent of line endings; a fresh Linux CLI installation and three-tool handshake were verified without signing in. Actual image generation still needs the selected provider's normal sign-in or API authorization.
+`hoi4-imagegen` is a native Rust binary and needs no Node runtime. Its ChatGPT login keeps the tokens in the Linux Secret Service and falls back to a private file (mode 0600) in `~/.local/share/hoi4-imagegen/chatgpt-login/` only when no keyring is running. Actual image generation still needs the selected provider's sign-in or API authorization.
 
 API-backed image routes use the same package-owned Python adapter. Saved keys stay in the Linux desktop Secret Service, matching the app's keyring service and opaque credential references. Install `libsecret-tools` and use a desktop session with a working D-Bus session bus and unlocked Secret Service. The adapter invokes `/usr/bin/secret-tool` with exact entry attributes and returns unavailable when the helper or vault cannot answer. It does not save a fallback plaintext key or put keys in project configuration. Hosted OAuth, local and manual routes retain their own prerequisites.
 

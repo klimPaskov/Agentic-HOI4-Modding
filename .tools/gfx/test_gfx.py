@@ -321,5 +321,48 @@ class InstalledVanillaCounterTests(unittest.TestCase):
         self.assertTrue(any("coherent rectangular NATO field" in finding for finding in findings))
 
 
+class ReportRecipeVersionTests(unittest.TestCase):
+    """Cards made by an older report recipe are listed for review, not failed, and the pixel check still applies."""
+
+    def run_reports(self, record_extra, pixels_match=True):
+        processor = gfx.load_module("report_processor_under_test", gfx.REPORT_PROCESSOR)
+        card = Image.new("RGBA", (210, 176), (0, 0, 0, 0))
+        card.paste(Image.new("RGBA", (100, 80), (90, 80, 60, 255)), (50, 40))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "gfx" / "event_pictures").mkdir(parents=True)
+            card.save(root / "gfx" / "event_pictures" / "report_event_x.png")
+            source = root / "source.png"
+            Image.new("RGB", (40, 30), (10, 20, 30)).save(source)
+            record = {
+                "source": {"path": "source.png", "sha256": gfx.digest(source)},
+                "arguments": {"canvas_size": [210, 176], "card_size": [192, 154], "border": 0, "angle": 4.2,
+                              "shadow_offset": [0, 1], "shadow_blur": 2.3, "shadow_opacity": 0.93, "grain": 7,
+                              "paper_grain": 0, "seed": 1337, "rotate_supersample": 4, "edge_soften": 0.35},
+                "pixels_sha256": gfx.pixels_sha256(card) if pixels_match else "0" * 64,
+            }
+            record.update(record_extra(processor))
+            registry = root / "registry.json"
+            registry.write_text(json.dumps({"records": {"gfx/event_pictures/report_event_x.png": record}}), encoding="utf-8")
+            with patch.object(gfx, "REPORT_PROVENANCE", registry):
+                return {finding.rule: finding for finding in gfx.check_reports(root)}
+
+    def test_record_without_recipe_version_is_old_recipe_review_not_error(self):
+        findings = self.run_reports(lambda processor: {})
+        self.assertEqual(findings["GFX-REPORT-OLD-RECIPE"].level, "review")
+        self.assertNotIn("GFX-REPORT-RECIPE-MISMATCH", findings)
+        self.assertNotIn("GFX-REPORT-PROVENANCE-MISMATCH", findings)
+
+    def test_old_recipe_record_still_fails_when_the_runtime_pixels_changed(self):
+        findings = self.run_reports(lambda processor: {}, pixels_match=False)
+        self.assertEqual(findings["GFX-REPORT-PROVENANCE-MISMATCH"].level, "error")
+        self.assertIn("GFX-REPORT-OLD-RECIPE", findings)
+
+    def test_current_recipe_record_is_rerun_and_mismatch_is_an_error(self):
+        findings = self.run_reports(lambda processor: {"recipe_version": processor.RECIPE_VERSION})
+        self.assertNotIn("GFX-REPORT-OLD-RECIPE", findings)
+        self.assertEqual(findings["GFX-REPORT-RECIPE-MISMATCH"].level, "error")
+
+
 if __name__ == "__main__":
     unittest.main()

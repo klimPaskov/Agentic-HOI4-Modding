@@ -2,12 +2,46 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 
 ALL_CLIENTS = ["claude_code", "codex", "cursor", "qoder", "opencode"]
-TEXT_SOURCE_SUFFIXES = {".js", ".json", ".md", ".py", ".txt"}
+
+IMAGEGEN_REPOSITORY = "klimPaskov/hoi4-imagegen-mcp"
+IMAGEGEN_VERSION = "0.2.0"
+IMAGEGEN_INSTALL_ROOT = ".tools/image_generation/hoi4-imagegen"
+IMAGEGEN_COMPONENT_ID = "imagegen.hoi4_imagegen"
+# Published v0.2.0 release assets (SHA256SUMS of the release, sizes from the GitHub release).
+# HOI4 Mod Setup downloads only the URL it derives from the version and target, and checks size and hash first.
+IMAGEGEN_RELEASE_ASSETS = {
+    "x86_64-pc-windows-msvc": ("zip", 17366134, "5338293f155d5679fc1c5e0b883150275b25f04ce78631ad6437c0ccd99912fc"),
+    "aarch64-apple-darwin": ("tar.gz", 17474246, "a36dca6defb7b5ef67fc350ace9b10928aa43af105df936106b3aaa24decf386"),
+    "x86_64-apple-darwin": ("tar.gz", 19286014, "d0f9dad88425c38f695379cd5eeb2149ad758b3e84715522bee326a6e72cec8f"),
+    "x86_64-unknown-linux-gnu": ("tar.gz", 21507082, "76827380ca7744f0329915e977e1b1a5f1de7ba5962a909f69172762e377aac9"),
+    "aarch64-unknown-linux-gnu": ("tar.gz", 20645990, "2d7e86bf719fe88f97e5abb0aa5d8f61fa33cffd2bf58bee15b33ec7a85608b3"),
+}
+IMAGEGEN_CREDENTIAL_FIELDS = [
+    {"id": "openai_api_key", "display_name": "OpenAI API key", "environment_name": "OPENAI_API_KEY"},
+    {"id": "gemini_api_key", "display_name": "Gemini API key", "environment_name": "GEMINI_API_KEY"},
+    {"id": "fal_key", "display_name": "fal key", "environment_name": "FAL_KEY"},
+    {"id": "comfyui_api_key", "display_name": "ComfyUI API key", "environment_name": "COMFYUI_API_KEY"},
+]
+
+
+def build_imagegen_release_binary(version: str = IMAGEGEN_VERSION) -> dict:
+    """The `route.release_binary` declaration: one verified archive per platform target."""
+    targets = {}
+    for triple, (archive, size, sha256) in IMAGEGEN_RELEASE_ASSETS.items():
+        folder = f"hoi4-imagegen-v{version}-{triple}"
+        suffix = ".exe" if "windows" in triple else ""
+        targets[triple] = {
+            "url": f"https://github.com/{IMAGEGEN_REPOSITORY}/releases/download/v{version}/{folder}.{archive}",
+            "sha256": sha256,
+            "size": size,
+            "archive": archive,
+            "entries": {"mcp": f"{folder}/hoi4-imagegen-mcp{suffix}", "cli": f"{folder}/hoi4-imagegen{suffix}"},
+        }
+    return {"version": version, "install_root": IMAGEGEN_INSTALL_ROOT, "targets": targets}
 
 
 def _route(provider_id: str, auth: str, *, kind: str = "stdio_adapter", component: str | None = None,
@@ -16,11 +50,13 @@ def _route(provider_id: str, auth: str, *, kind: str = "stdio_adapter", componen
            package_tree_sha256: str | None = None, runtime_entry: str | None = None,
            tools: dict[str, str] | None = None, tool_arguments: dict | None = None,
            supported_models: list[str] | None = None,
-           result_format: str | None = None, primary_environment: str | None = None) -> dict:
-    return {
+           result_format: str | None = None, primary_environment: str | None = None,
+           server_id: str | None = None, credential_fields: list[dict] | None = None,
+           release_binary: dict | None = None) -> dict:
+    value = {
         "kind": kind,
         "auth_method": auth,
-        "server_id": f"hoi4_image_{provider_id}" if kind not in {"native", "manual"} else None,
+        "server_id": server_id or (f"hoi4_image_{provider_id}" if kind not in {"native", "manual"} else None),
         "url": None,
         "component_id": component if component is not None else ("imagegen.runtime" if kind == "stdio_adapter" else None),
         "source_repository": source_repository,
@@ -53,9 +89,12 @@ def _route(provider_id: str, auth: str, *, kind: str = "stdio_adapter", componen
         "api_base_url": None,
         "default_model": None,
         "result_format": result_format or ("manual" if kind == "manual" else "png"),
-        "credential_fields": [],
+        "credential_fields": credential_fields or [],
         "requires_primary_coding_environment": primary_environment,
     }
+    if release_binary is not None:
+        value["release_binary"] = release_binary
+    return value
 
 
 def _capabilities(*, references: bool, edits: bool, alpha: bool,
@@ -203,50 +242,36 @@ def _provider(provider_id: str, display_name: str, description: str, requirement
     return value
 
 
-def _tree_sha256(root: Path) -> str:
-    digest = hashlib.sha256()
-    for path in sorted(
-        (
-            item
-            for item in root.rglob("*")
-            if item.is_file() and not {"node_modules", "__pycache__"}.intersection(item.parts)
-        ),
-        key=lambda item: item.relative_to(root).as_posix(),
-    ):
-        relative = path.relative_to(root).as_posix()
-        data = path.read_bytes()
-        if path.name == "LICENSE" or path.suffix.lower() in TEXT_SOURCE_SUFFIXES:
-            data = data.replace(b"\r\n", b"\n")
-        digest.update(relative.encode("utf-8"))
-        digest.update(b"\0")
-        digest.update(str(len(data)).encode("ascii"))
-        digest.update(b"\0")
-        digest.update(data)
-    return digest.hexdigest()
-
-
 def build_image_generation_table(source_root: Path | None = None) -> dict:
     """Return the single provider catalog used by app setup and asset guidance."""
     providers = [
         _provider(
-            "gptimage", "ChatGPT subscription (GPTImage)",
-            "Use the gptimage MCP server with a ChatGPT subscription.",
-            ["A ChatGPT plan and browser sign-in to gptimage.", "This community server calls an undocumented ChatGPT service, not the public Images API."],
-            ["Concept art", "Images guided by reference files"],
-            "No separate image API bill; plan usage limits apply.",
-            ["ChatGPT image generation through the server's configured route"], "chatgpt_subscription",
-            _capabilities(references=True, edits=False, alpha=False, width=3840, height=3840,
-                reference_notes="Use list_references to discover project references, then pass relevant image paths and describe each one's role. Reference count is not documented; output sizes have a maximum edge and aspect-ratio rule.",
-                alpha_notes="PNG output does not guarantee a transparent background.",
-                edit_fallback="Use reference_images to make a new version; choose another configured provider for precise image edits."),
-            route=_route("gptimage", "chatgpt_subscription", kind="local_package", component="imagegen.gptimage",
-                source_repository="https://github.com/Connected-Mate/gptimage",
-                source_revision="dfb4948b6877b5b7febf73e1342fcfacd862a1ed",
-                package_name="gptimage", package_version="0.1.0",
-                runtime_entry=".tools/image_generation/providers/gptimage/src/server.js",
-                tools={"generate": "generate_image", "auth_status": "image_auth_status", "list_references": "list_references"},
-                tool_arguments={"prompt": "prompt", "output_path": "out", "reference_images": "reference_images", "quality": "quality", "size": "size"}),
-            reference_mcp=_reference("GPTImage MCP", "https://github.com/Connected-Mate/gptimage", "community", "ChatGPT subscription sign-in", ["generate_image", "image_auth_status", "list_references"], "Pinned source; account data stays in the server's local auth store. The configured route does not establish the underlying image model.")),
+            "hoi4_imagegen", "HOI4 image generation (hoi4-imagegen)",
+            "Use the hoi4-imagegen MCP server: one grouped tool per asset group, each with a required family, and a ChatGPT login or your own API key.",
+            ["HOI4 Mod Setup installs the hoi4-imagegen binary and the project MCP entry.",
+             "A ChatGPT login (`hoi4-imagegen login`) or an API key in the environment (OPENAI_API_KEY, GEMINI_API_KEY, FAL_KEY) or a ComfyUI endpoint."],
+            ["Every HOI4 graphical asset family", "Style references from the mod first, vanilla second", "Plans with a cost estimate before any paid call"],
+            "ChatGPT login: plan usage limits apply. API keys: pay per image, shown in the plan before generation.",
+            ["ChatGPT image generation (gpt-6-luna at high effort)", "OpenAI Images API", "Gemini", "fal.ai", "ComfyUI"], "chatgpt_login",
+            _capabilities(references=True, edits=True, alpha=True, width=3840, height=3840,
+                reference_notes="Add references with hoi4.image_references (role and rights note). Style references come from the mod's own art first and from the kit's vanilla shelf second.",
+                alpha_notes="The tool proves transparency from the saved pixels and refuses an opaque result for a transparent family.",
+                edit_fallback="Use hoi4.image_edit with a precise instruction, then process, validate and review again."),
+            route=_route("hoi4_imagegen", "chatgpt_login", kind="release_binary", component=IMAGEGEN_COMPONENT_ID, server_id="hoi4_imagegen",
+                source_repository="https://github.com/klimPaskov/hoi4-imagegen-mcp",
+                package_name="hoi4-imagegen", package_version=IMAGEGEN_VERSION,
+                credential_fields=IMAGEGEN_CREDENTIAL_FIELDS, release_binary=build_imagegen_release_binary(),
+                tools={"status": "hoi4.image_status", "families": "hoi4.image_families", "references": "hoi4.image_references",
+                       "icon": "hoi4.image_icon", "picture": "hoi4.image_picture", "portrait": "hoi4.image_portrait",
+                       "flag": "hoi4.image_flag", "unit": "hoi4.image_unit", "interface": "hoi4.image_interface",
+                       "generate": "hoi4.image_generate", "edit": "hoi4.image_edit", "process": "hoi4.image_process",
+                       "validate": "hoi4.image_validate", "preview": "hoi4.image_preview", "review": "hoi4.image_review",
+                       "install": "hoi4.image_install", "audit": "hoi4.image_audit", "ledger": "hoi4.image_ledger", "cancel": "hoi4.image_cancel"},
+                tool_arguments={"family": "family", "prompt": "brief", "output_path": None, "reference_images": "refs",
+                                "quality": "quality", "size": None, "transparent_background": None}),
+            reference_mcp=_reference("hoi4-imagegen", "https://github.com/klimPaskov/hoi4-imagegen-mcp", "official", "ChatGPT login or API keys read from the environment",
+                ["hoi4.image_icon", "hoi4.image_picture", "hoi4.image_portrait", "hoi4.image_flag", "hoi4.image_unit", "hoi4.image_interface"],
+                "Release binary installed by HOI4 Mod Setup; the archives, sizes and hashes are declared in the provider route.", version=IMAGEGEN_VERSION)),
         _provider("openai_api", "OpenAI Images API", "Use OpenAI image models with a key saved on this computer.",
             ["An OpenAI API key saved in the operating-system credential store."], ["General image work", "Reference edits", "Transparent PNG output"],
             "Pay per image; price changes with model and quality.", ["GPT Image 2.5 Sunburst", "GPT Image 2.5 Flare", "GPT Image 2"], "api_key_vault",
@@ -362,12 +387,6 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
             route=_route("codex_native", "chatgpt_subscription", kind="native", tools={"generate": "image_gen"},
                 tool_arguments={"prompt": "prompt", "output_path": None, "reference_images": "referenced_image_paths", "quality": None, "size": None, "transparent_background": "transparent_background"}, primary_environment="codex"),
             clients=["codex"]),
-        _provider("vertex_imagen", "Google Vertex AI Imagen", "Use Google Cloud Imagen models.",
-            ["A Google Cloud project and credentials stored in the operating-system credential store."], ["Fast concept images", "High-quality final images"],
-            "Pay per image; price depends on the Imagen tier.", ["Imagen 4 Fast", "Imagen 4 Standard", "Imagen 4 Ultra"], "cloud_credentials",
-            _capabilities(references=False, edits=False, alpha=False, width=2048, height=2048,
-                reference_notes="Imagen 4 generation is text-only; use Gemini for image edits.", alpha_notes="Native transparent output is not documented."),
-            availability="conditional"),
         _provider("microsoft_foundry", "Microsoft Foundry MAI Image", "Use Microsoft Foundry image models in a configured Azure resource.",
             ["A deployed MAI image model, its resource endpoint, deployment name, and API key saved on this computer."], ["Text-to-image", "Reference-guided edits"],
             "Pay per image; preview model prices may change.", ["MAI-Image-2.6", "MAI-Image-2.6-Flash"], "enterprise_credentials",
@@ -416,7 +435,6 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
         "comfyui_local": ("comfyui", None, None, []),
         "automatic1111_local": ("automatic1111", "http://127.0.0.1:7860", None, []),
         "forge_local": ("automatic1111", "http://127.0.0.1:7860", None, []),
-        "vertex_imagen": ("vertex_ai", "https://us-central1-aiplatform.googleapis.com/v1", "imagen-4.0-generate-001", [("service_account", "Google Cloud service-account key", "GOOGLE_APPLICATION_CREDENTIALS")]),
         "microsoft_foundry": ("microsoft_foundry", None, None, [("resource_url", "Microsoft Foundry resource endpoint", "AZURE_ENDPOINT"), ("api_key", "Microsoft Foundry API key", "AZURE_API_KEY")]),
         "aws_bedrock": ("aws_bedrock", None, "stability.stable-image-ultra-v1:1", [("access_key", "AWS access key ID", "AWS_ACCESS_KEY_ID"), ("secret_key", "AWS secret access key", "AWS_SECRET_ACCESS_KEY")]),
         "huggingface_inference": ("huggingface_inference", "https://router.huggingface.co/hf-inference/models", "black-forest-labs/FLUX.1-Krea-dev", [("api_key", "Hugging Face token", "HF_TOKEN")]),
@@ -431,7 +449,6 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
         "leonardo": ["7b592283-e8a7-4c5a-9ba6-d18c31f258b9"],
         "xai_grok": ["grok-imagine-image-2.0"],
         "openrouter": ["openai/gpt-image-2.5-sunburst"],
-        "vertex_imagen": ["imagen-4.0-fast-generate-001", "imagen-4.0-generate-001", "imagen-4.0-ultra-generate-001"],
         "aws_bedrock": ["stability.stable-image-core-v1:1", "stability.stable-image-ultra-v1:1"],
         "huggingface_inference": ["black-forest-labs/FLUX.1-Krea-dev"],
     }
@@ -487,12 +504,6 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
             route["default_model"] = None
             route["credential_fields"] = []
             route["tool_names"] = tool_names
-    root = source_root or Path(__file__).resolve().parents[1]
-    package = root / ".tools" / "image_generation" / "providers" / "gptimage"
-    gptimage = next(item for item in providers if item["id"] == "gptimage")
-    gptimage["route"]["source_tree_sha256"] = _tree_sha256(package)
-    lock_bytes = (package / "package-lock.json").read_bytes().replace(b"\r\n", b"\n")
-    gptimage["route"]["package_lock_sha256"] = hashlib.sha256(lock_bytes).hexdigest()
     documentation = {
         "openai_api": "https://developers.openai.com/api/docs/guides/image-generation/",
         "gemini_api": "https://ai.google.dev/gemini-api/docs/image-generation",
@@ -511,20 +522,19 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
         "automatic1111_local": "https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API",
         "forge_local": "https://github.com/lllyasviel/stable-diffusion-webui-forge",
         "codex_native": "https://github.com/openai/codex/blob/main/codex-rs/skills/src/assets/samples/imagegen/SKILL.md",
-        "vertex_imagen": "https://cloud.google.com/vertex-ai/generative-ai/docs/models/imagen/4-0-generate-001",
         "microsoft_foundry": "https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/use-foundry-models-mai-image",
         "aws_bedrock": "https://docs.aws.amazon.com/bedrock/latest/userguide/stable-image-services.html",
         "huggingface_inference": "https://huggingface.co/docs/inference-providers/index",
         "midjourney_manual": "https://github.com/midjourney/docs/blob/main/data/faq.txt",
     }
-    api_only = {"openai_api", "together_ai", "vertex_imagen", "microsoft_foundry", "huggingface_inference"}
+    api_only = {"openai_api", "together_ai", "microsoft_foundry", "huggingface_inference"}
     for item in providers:
         item["documentation_url"] = documentation.get(item["id"])
         if item["id"] in api_only:
             item.pop("reference_mcp", None)
         if item["id"] == "aws_bedrock" and item.get("reference_mcp"):
             item["reference_mcp"]["url"] = "https://github.com/awslabs/bedrock-image-mcp-server"
-    return {"default_provider": "gptimage", "providers": providers}
+    return {"default_provider": "hoi4_imagegen", "providers": providers}
 
 
 def write_runtime_provider_catalog(source_root: Path | None = None) -> Path:
@@ -553,72 +563,6 @@ def write_runtime_provider_catalog(source_root: Path | None = None) -> Path:
 
 def build_image_generation_components(source_root: Path | None = None) -> list[dict]:
     """Return provider runtime components that the app installs on selection."""
-    root = source_root or Path(__file__).resolve().parents[1]
-    table = build_image_generation_table(root)
-    gptimage = next(item for item in table["providers"] if item["id"] == "gptimage")["route"]
-    gptimage_component = {
-        "id": "imagegen.gptimage",
-        "display_name": "GPTImage MCP source",
-        "description": "Project-local GPTImage server source for the ChatGPT subscription route.",
-        "category": "mcp",
-        "optional": True,
-        "platforms": ["windows", "macos", "linux"],
-        "source": {
-            "kind": "tree",
-            "path": ".tools/image_generation/providers/gptimage",
-            "include": ["**"],
-            "exclude": ["**/node_modules/**"],
-        },
-        "destination": {
-            "path": ".tools/image_generation/providers/gptimage/",
-            "ownership": "managed",
-            "outside_project": False,
-        },
-        "dependencies": [],
-        "required_tools": [
-            {"id": "node", "required": True, "version_policy": "any", "version": ">=20", "commands": ["node"], "health_checks": ["node --version"]},
-            {"id": "npm", "required": True, "version_policy": "any", "version": "Node LTS", "commands": ["npm"], "health_checks": ["npm --version"]},
-        ],
-        "environment": [],
-        "expected_files": [],
-        "conflicts": [],
-        "conflict_policy": "replace_if_unmodified",
-        "validation": [{
-            "id": "imagegen.gptimage.bootstrap",
-            "severity": "block",
-            "kind": "command",
-            "target": "python",
-            "parameters": {
-                "script_path": ".tools/image_generation/providers/gptimage/bootstrap.py",
-                "package_root": ".tools/image_generation/providers/gptimage",
-                "arguments": [
-                    "--package-root", "<project_root>/.tools/image_generation/providers/gptimage",
-                    "--expected-tree-sha256", gptimage["source_tree_sha256"],
-                    "--expected-lock-sha256", gptimage["package_lock_sha256"],
-                ],
-                "package_name": gptimage["package_name"],
-                "package_version": gptimage["package_version"],
-                "source_revision": gptimage["source_revision"],
-                "source_tree_sha256": gptimage["source_tree_sha256"],
-                "package_lock_sha256": gptimage["package_lock_sha256"],
-                "required_tools": ["generate_image", "image_auth_status"],
-                "network_access": "Downloads only the exact dependencies in the checked-in npm lockfile from the npm registry during install or repair. The installer disables lifecycle scripts, uses a temporary cache, and removes that cache when complete.",
-                "expected_writes": [
-                    ".tools/image_generation/providers/gptimage/node_modules/**",
-                    "the current user's temporary npm cache directory (removed when bootstrap finishes)",
-                ],
-                "privilege": "current_user",
-                "rollback_boundary": "Managed project files roll back transactionally. Setup repair removes the managed node_modules tree; the temporary npm cache is removed by bootstrap and other user files are not changed.",
-            },
-        }],
-        "update": {
-            "strategy": "replace_if_unmodified",
-            "remove_obsolete": True,
-            "preserve_local_additions": True,
-        },
-        "capabilities": ["image generation", "reference images", "ChatGPT subscription"],
-        "notes": ["Source revision is pinned to Connected-Mate/gptimage; dependency versions and integrity are in the included npm lockfile."],
-    }
     runtime_component = {
         "id": "imagegen.runtime",
         "display_name": "Image provider MCP adapter",
@@ -658,4 +602,24 @@ def build_image_generation_components(source_root: Path | None = None) -> list[d
         "capabilities": ["image generation", "image editing", "OS credential access", "local image servers"],
         "notes": ["API keys are read from the operating-system credential store at tool-call time and are never written to project files."],
     }
-    return [runtime_component, gptimage_component]
+    imagegen_component = {
+        "id": IMAGEGEN_COMPONENT_ID,
+        "display_name": "hoi4-imagegen image server",
+        "description": "Installs the verified hoi4-imagegen release binary for this platform into the project's tools folder.",
+        "category": "mcp",
+        "optional": True,
+        "platforms": ["windows", "macos", "linux"],
+        "source": {"kind": "generated", "path": IMAGEGEN_INSTALL_ROOT},
+        "destination": {"path": IMAGEGEN_INSTALL_ROOT + "/", "ownership": "managed", "outside_project": False},
+        "dependencies": [],
+        "expected_files": [],
+        "required_tools": [],
+        "environment": [],
+        "conflicts": [],
+        "conflict_policy": "replace_if_unmodified",
+        "validation": [],
+        "update": {"strategy": "replace_if_unmodified", "remove_obsolete": True, "preserve_local_additions": True},
+        "capabilities": ["image generation", "image editing"],
+        "notes": ["The binary is downloaded from the manifest-declared release URL and verified before it is installed."],
+    }
+    return [runtime_component, imagegen_component]

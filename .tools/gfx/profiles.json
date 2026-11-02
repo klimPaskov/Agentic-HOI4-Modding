@@ -1,6 +1,124 @@
 {
- "_about": "Per-frame canvas profiles for gfx.py `size --profile`. Every row cites vanilla evidence. `accepted` lists every size treated as valid; `canvas` is the size for new art; `margin` is the minimum transparent margin in pixels for `size`. Focus, decision and idea rows are project decisions: add them here with their source when your mod settles those canvases, and `gfx.py families` starts checking that family.",
+ "_about": "Per-frame canvas profiles for gfx.py `size --profile` and for hoi4-imagegen, which reads this file. One row per hoi4-imagegen family (40). The values are the vanilla sizes measured on HOI4 1.19.4.1 and every row cites its evidence. `accepted` lists every size treated as valid; `canvas` is the size for new art; `margin` is the minimum transparent margin in pixels for `size`; `frames` is the number of frames in a horizontal strip. A mod that settled other canvases overrides the rows in its own copy of this file (Chaos Redux keeps 94x86 focus, 64x64 idea and 32x32 decision icons) and hoi4-imagegen then reports the difference from vanilla. Rows named `focus`, `decision`, `idea`, `category`, `report`, `news`, `counter-large` and `counter-small` keep the names gfx.py reads (they map to the families focus, decision, idea_spirit, decision_category_icon, report_event, news_event, counter_large and counter_small); the other rows are named by family id. `off_size_level` is the gfx.py finding level for a focus, decision or idea frame outside `accepted`. gui_texture and super_event have no vanilla canvas, so a mod defines theirs. The family list is `.tools/gfx/family_ids.json`.",
  "profiles": {
+  "focus": {
+   "canvas": [
+    100,
+    88
+   ],
+   "accepted": [
+    [
+     100,
+     88
+    ],
+    [
+     102,
+     90
+    ],
+    [
+     99,
+     88
+    ],
+    [
+     98,
+     88
+    ]
+   ],
+   "margin": 2,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (focus_icon): 2884 textures in gfx/interface/goals::^(goal|focus|untitl); 100x88 is 2615 files (90.7 percent); next: 102x90: 28, 89x79: 20, 192x128: 17. GFX_focus_ is the majority sprite prefix and GFX_goal_ the original. Every vanilla focus has a _shine companion sprite. gfx.py reports a wrong size as an error and an accepted non-canvas size as a review item.",
+   "off_size_level": "error"
+  },
+  "idea": {
+   "canvas": [
+    60,
+    68
+   ],
+   "accepted": [
+    [
+     60,
+     68
+    ],
+    [
+     62,
+     70
+    ],
+    [
+     64,
+     64
+    ],
+    [
+     65,
+     67
+    ]
+   ],
+   "margin": 1,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (idea_spirit_and_advisor): 2748 textures in gfx/interface/ideas::^idea_; 60x68 is 1102 files (40.1 percent); next: 65x67: 998, 64x64: 544, 62x70: 17. gfx.py applies this row to every idea picture, and spirits, industrial concerns and advisor cards share one folder, so it accepts all of their sizes: 60x68 and 62x70 spirits, 64x64 concerns and 65x67 advisor cards. hoi4-imagegen reads this row as idea_spirit; its idea_concern and advisor_card rows are exact.",
+   "off_size_level": "warning"
+  },
+  "idea_concern": {
+   "canvas": [
+    64,
+    64
+   ],
+   "accepted": [
+    [
+     64,
+     64
+    ]
+   ],
+   "margin": 1,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (idea_spirit_and_advisor): 2748 textures in gfx/interface/ideas::^idea_; 60x68 is 1102 files (40.1 percent); next: 65x67: 998, 64x64: 544, 62x70: 17. Industrial concerns and the four manufacturer categories in common/ideas are 64x64 (about 80 percent of their ideas); the dominant size of the shared idea folder is the spirit size."
+  },
+  "officer_corps_spirit": {
+   "canvas": [
+    45,
+    45
+   ],
+   "accepted": [
+    [
+     45,
+     45
+    ]
+   ],
+   "margin": 1,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (officer_corps_spirit): 149 textures in gfx/interface/officer_corp/spirits; 45x45 is 149 files (100.0 percent). Officer corps spirits are registered as GFX_idea_* sprites, like ideas, but are a different surface."
+  },
+  "decision": {
+   "canvas": [
+    33,
+    32
+   ],
+   "accepted": [
+    [
+     33,
+     32
+    ],
+    [
+     38,
+     35
+    ],
+    [
+     38,
+     37
+    ],
+    [
+     38,
+     38
+    ],
+    [
+     33,
+     31
+    ]
+   ],
+   "margin": 1,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (decision_icon): 346 textures in gfx/interface/decisions::^decision_(?!cat); 33x32 is 223 files (64.5 percent); next: 38x35: 69, 38x37: 12, 38x38: 11. Missions use this family too. A bare icon = x in decision script resolves to GFX_decision_x.",
+   "off_size_level": "warning"
+  },
   "category": {
    "canvas": [
     52,
@@ -15,6 +133,209 @@
    "margin": 3,
    "frames": 1,
    "source": "Small decision-category icon: 94 vanilla files in gfx/interface/decisions are 52x40. The margin is a review default, not a vanilla measurement. Not the 114x101 category picture."
+  },
+  "state_modifier": {
+   "canvas": [
+    32,
+    32
+   ],
+   "accepted": [
+    [
+     32,
+     32
+    ]
+   ],
+   "margin": 1,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (dynamic_and_state_modifier_icon): 98 textures in gfx/interface/state_modifiers; 32x32 is 97 files (99.0 percent); next: 32x34: 1. Dynamic modifiers use this family (GFX_modifiers_*)."
+  },
+  "special_project_icon": {
+   "canvas": [
+    161,
+    98
+   ],
+   "accepted": [
+    [
+     161,
+     98
+    ]
+   ],
+   "margin": 3,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (special_project_icon): 54 textures in gfx/interface/special_project/project_icons; 161x98 is 54 files (100.0 percent). Special project icons are grayscale on transparent."
+  },
+  "raid": {
+   "canvas": [
+    32,
+    32
+   ],
+   "accepted": [
+    [
+     32,
+     32
+    ]
+   ],
+   "margin": 1,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (raid_icons): 63 textures in gfx/interface/military_raids; 32x32 is 30 files (47.6 percent); next: 608x77: 9, 48x48: 4, 30x30: 3. Only the 32x32 raid icons; the wide banner strips in the same folder are interface pieces."
+  },
+  "mio_department": {
+   "canvas": [
+    48,
+    48
+   ],
+   "accepted": [
+    [
+     48,
+     48
+    ]
+   ],
+   "margin": 2,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (mio_department_icon): 65 textures in gfx/interface/military_industrial_organization/department_icons; 48x48 is 65 files (100.0 percent). Military industrial organization department icons."
+  },
+  "mio_trait": {
+   "canvas": [
+    48,
+    48
+   ],
+   "accepted": [
+    [
+     48,
+     48
+    ]
+   ],
+   "margin": 2,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (mio_trait_policy_icon): 63 textures in gfx/interface/military_industrial_organization/trait_icons, gfx/interface/military_industrial_organization/policy_icons; 48x48 is 43 files (68.3 percent); next: 60x60: 20. Trait icons are 48x48; the trait and policy folders are measured together."
+  },
+  "mio_policy": {
+   "canvas": [
+    60,
+    60
+   ],
+   "accepted": [
+    [
+     60,
+     60
+    ]
+   ],
+   "margin": 2,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (mio_trait_policy_icon): 63 textures in gfx/interface/military_industrial_organization/trait_icons, gfx/interface/military_industrial_organization/policy_icons; 48x48 is 43 files (68.3 percent); next: 60x60: 20. Policy icons are the 60x60 files of the combined trait and policy measurement."
+  },
+  "bop_side": {
+   "canvas": [
+    72,
+    88
+   ],
+   "accepted": [
+    [
+     72,
+     88
+    ]
+   ],
+   "margin": 2,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (bop_side_icon): 101 textures in gfx/interface/bop; 72x88 is 86 files (85.1 percent); next: 360x16: 7, 120x48: 1, 144x56: 1. Only the 72x88 side icons; the multi-frame strips in the folder need separate frame art."
+  },
+  "medal": {
+   "canvas": [
+    16,
+    28
+   ],
+   "accepted": [
+    [
+     16,
+     28
+    ]
+   ],
+   "margin": 1,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (medal_icon): 88 textures in gfx/interface/medals; 16x28 is 41 files (46.6 percent); next: 112x42: 11, 224x84: 11, 16x29: 4. Single-frame 16x28 medal; the 4, 7 and 2-frame medal strips selected by frame = N are not covered."
+  },
+  "agency_upgrade": {
+   "canvas": [
+    68,
+    68
+   ],
+   "accepted": [
+    [
+     68,
+     68
+    ]
+   ],
+   "margin": 2,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (intel_agency_upgrade_icon): 15 textures in gfx/interface/operatives/icons; 68x68 is 15 files (100.0 percent). Intelligence agency upgrade icons (GFX_agency_*)."
+  },
+  "operation_icon": {
+   "canvas": [
+    59,
+    58
+   ],
+   "accepted": [
+    [
+     59,
+     58
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     85,
+     85
+    ]
+   ],
+   "margin": 2,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (operation_icon): 183 textures in gfx/interface/operations; 210x176 is 71 files (38.8 percent); next: 59x58: 71, 48x48: 21, 85x85: 20. LOW CONFIDENCE. The operation folder mixes 210x176 pictures, 59x58 phase icons, 48x48 and 85x85 art; confirm the intended surface in game before relying on it."
+  },
+  "commander_trait": {
+   "canvas": [
+    23,
+    33
+   ],
+   "accepted": [
+    [
+     23,
+     33
+    ]
+   ],
+   "margin": 1,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (commander_trait_icon): 68 textures in gfx/interface/traits::^trait_; 23x33 is 68 files (100.0 percent). Commander and personal traits are both 23x33 and both named GFX_trait_*; the script slot tells them apart."
+  },
+  "personal_trait": {
+   "canvas": [
+    23,
+    33
+   ],
+   "accepted": [
+    [
+     23,
+     33
+    ]
+   ],
+   "margin": 1,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (personal_trait_icon): 95 textures in gfx/interface/traits/personal; 23x33 is 95 files (100.0 percent). Same size and naming as commander_trait, different script slot."
+  },
+  "doctrine": {
+   "canvas": [
+    64,
+    64
+   ],
+   "accepted": [
+    [
+     64,
+     64
+    ]
+   ],
+   "margin": 2,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (doctrine_icon): 115 textures in gfx/interface/doctrines; 64x64 is 97 files (84.3 percent); next: 212x83: 13, 764x82: 4, 1800x130: 1. Only the 64x64 doctrine icons; the wide 212x83 and banner art in the folder are interface pieces."
   },
   "report": {
    "canvas": [
@@ -46,6 +367,160 @@
    "frames": 1,
    "source": "News event picture: 233 vanilla event_pictures are 397x153; `hoi4-feature-assets` skill."
   },
+  "decision_category_picture": {
+   "canvas": [
+    114,
+    101
+   ],
+   "accepted": [
+    [
+     114,
+     101
+    ]
+   ],
+   "margin": 0,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (decision_category_picture): 133 textures in gfx/interface/decisions::^decision_cat_; 114x101 is 130 files (97.7 percent); next: 54x40: 2, 52x40: 1. Larger category picture, not the 52x40 category icon. Two vanilla animated strips use noOfFrames = 21 and are not covered."
+  },
+  "operation_picture": {
+   "canvas": [
+    210,
+    176
+   ],
+   "accepted": [
+    [
+     210,
+     176
+    ]
+   ],
+   "margin": 0,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (operation_icon): 183 textures in gfx/interface/operations; 210x176 is 71 files (38.8 percent); next: 59x58: 71, 48x48: 21, 85x85: 20. LOW CONFIDENCE. 210x176 ties 59x58 as the most common size of the operation folder; the pixel class of this size alone was not measured."
+  },
+  "technology": {
+   "canvas": [
+    146,
+    54
+   ],
+   "accepted": [
+    [
+     146,
+     54
+    ],
+    [
+     131,
+     52
+    ]
+   ],
+   "margin": 2,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (technology_picture): 2268 textures in gfx/interface/technologies; 146x54 is 832 files (36.7 percent); next: 131x52: 341, 64x64: 274, 173x77: 91. The engine binds technology art by name (GFX_<technology key>_medium)."
+  },
+  "achievement": {
+   "canvas": [
+    64,
+    64
+   ],
+   "accepted": [
+    [
+     64,
+     64
+    ]
+   ],
+   "margin": 2,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (achievement_icon): 882 textures in gfx/achievements; 64x64 is 882 files (100.0 percent). Achievements are not registered in any .gfx: the engine loads gfx/achievements/<key>.dds plus the _grey and _not_eligible variants by name."
+  },
+  "leader_portrait": {
+   "canvas": [
+    156,
+    210
+   ],
+   "accepted": [
+    [
+     156,
+     210
+    ]
+   ],
+   "margin": 0,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (leader_portrait): 1922 textures in gfx/leaders; 156x210 is 1920 files (99.9 percent); next: 155x210: 1, 156x209: 1. Leader portraits are 156x210; some have a _small companion."
+  },
+  "commander_portrait": {
+   "canvas": [
+    156,
+    210
+   ],
+   "accepted": [
+    [
+     156,
+     210
+    ]
+   ],
+   "margin": 0,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (leader_portrait): 1922 textures in gfx/leaders; 156x210 is 1920 files (99.9 percent); next: 155x210: 1, 156x209: 1. Commanders share the leader measurement (one gfx/leaders folder) and the 156x210 portrait; the script slot is the difference."
+  },
+  "operative_portrait": {
+   "canvas": [
+    156,
+    210
+   ],
+   "accepted": [
+    [
+     156,
+     210
+    ]
+   ],
+   "margin": 0,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (operative_portrait): 245 textures in dlc/dlc028_la_resistance/gfx/leaders::operative; 156x210 is 245 files (100.0 percent). Operative portraits are 156x210 with a _small companion for some files."
+  },
+  "scientist_portrait": {
+   "canvas": [
+    156,
+    210
+   ],
+   "accepted": [
+    [
+     156,
+     210
+    ]
+   ],
+   "margin": 0,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (scientist_portrait): 217 textures in gfx/leaders/scientists, gfx/leaders/scientists/generic_scientists; 156x210 is 217 files (100.0 percent). Scientist portraits are 156x210."
+  },
+  "advisor_card": {
+   "canvas": [
+    65,
+    67
+   ],
+   "accepted": [
+    [
+     65,
+     67
+    ]
+   ],
+   "margin": 0,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (advisor_character_small): 1109 textures in gfx/interface/ideas::^portrait; 65x67 is 1097 files (98.9 percent); next: 64x64: 10, 59x68: 1, 60x68: 1. 65x67 with rounded transparent corners; named GFX_idea_<token> like ideas. hoi4-imagegen builds the card from an approved portrait and the kit template."
+  },
+  "flag": {
+   "canvas": [
+    82,
+    52
+   ],
+   "accepted": [
+    [
+     82,
+     52
+    ]
+   ],
+   "margin": 0,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (flag_large): 2207 textures in =gfx/flags; 82x52 is 2206 files (100.0 percent); next: 82x55: 1. Measured on HOI4 1.19.4.1 (flag_medium): 2222 textures in gfx/flags/medium; 41x26 is 2221 files (100.0 percent); next: 41x28: 1. Measured on HOI4 1.19.4.1 (flag_small): 2318 textures in gfx/flags/small; 10x7 is 2317 files (100.0 percent); next: 10x6: 1. One flag is three files: 82x52, 41x26 and 10x7, as 32-bit TGA with a bottom-left origin (gfx/flags/<TAG>[_ideology].tga)."
+  },
   "counter-large": {
    "canvas": [
     76,
@@ -75,6 +550,105 @@
    "margin": 0,
    "frames": 2,
    "source": "Division counter, small: all 83 vanilla divisions_small strips are 60x12 (two 30x12 frames); vanilla fills the top and bottom rows."
+  },
+  "division_emblem": {
+   "canvas": [
+    76,
+    42
+   ],
+   "accepted": [
+    [
+     76,
+     42
+    ]
+   ],
+   "margin": 1,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (division_template_emblem): 202 textures in gfx/interface/counters/division_templates_large, gfx/interface/counters/division_templates_small; 76x42 is 101 files (50.0 percent); next: 30x12: 100, 31x12: 1. Single frame, 76x42 (the large template emblem); the small 30x12 emblems of the sibling folder are separate assets."
+  },
+  "building": {
+   "canvas": [
+    64,
+    64
+   ],
+   "accepted": [
+    [
+     64,
+     64
+    ],
+    [
+     32,
+     32
+    ]
+   ],
+   "margin": 2,
+   "frames": 2,
+   "source": "Measured on HOI4 1.19.4.1 (building_icon): 52 textures in gfx/interface/buildings; 128x64 is 27 files (51.9 percent); next: 64x32: 25. Landmark buildings are two frames: a 64x64 frame (128x64 strip) or a 32x32 frame (64x32 strip)."
+  },
+  "faction_logo": {
+   "canvas": [
+    100,
+    100
+   ],
+   "accepted": [
+    [
+     100,
+     100
+    ]
+   ],
+   "margin": 2,
+   "frames": 2,
+   "source": "Measured on HOI4 1.19.4.1 (faction_icon): 62 textures in gfx/interface/factions/faction_logos; 200x100 is 31 files (50.0 percent); next: 32x32: 31. Two 100x100 frames (200x100 strip). The 32x32 single-frame small logo of the same folder is a separate sprite."
+  },
+  "agency_logo": {
+   "canvas": [
+    117,
+    119
+   ],
+   "accepted": [
+    [
+     117,
+     119
+    ]
+   ],
+   "margin": 2,
+   "frames": 2,
+   "source": "Measured on HOI4 1.19.4.1 (intel_agency_logo): 72 textures in gfx/interface/operatives/agencies; 234x119 is 37 files (51.4 percent); next: 233x119: 34, 90x93: 1. Two 117x119 frames (234x119 strip). 34 files are 233x119, which does not divide into two whole frames and is not accepted."
+  },
+  "modifier_stat_icon": {
+   "canvas": [
+    30,
+    20
+   ],
+   "accepted": [
+    [
+     30,
+     20
+    ]
+   ],
+   "margin": 0,
+   "frames": 1,
+   "source": "Measured on HOI4 1.19.4.1 (stat_modifier_tooltip_icon): 47 textures in gfx/interface/modifiers; 30x20 is 32 files (68.1 percent); next: 26x21: 2, 26x18: 1, 26x23: 1. Tooltip icons for modifiers (GFX_MODIFIER_* in vanilla)."
+  },
+  "gui_texture": {
+   "canvas": [
+    0,
+    0
+   ],
+   "accepted": [],
+   "margin": 0,
+   "frames": 1,
+   "source": "Not measured in vanilla. General GUI textures have 856 distinct sizes in vanilla: the size comes from the consuming GUI element and the mod defines it here (canvas and accepted) or per request."
+  },
+  "super_event": {
+   "canvas": [
+    0,
+    0
+   ],
+   "accepted": [],
+   "margin": 0,
+   "frames": 1,
+   "source": "Not measured in vanilla. Super events have no vanilla texture: they are a mod pattern (GUI windows), so the mod defines the canvas here."
   }
  }
 }

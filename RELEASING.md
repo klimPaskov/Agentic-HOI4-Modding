@@ -18,7 +18,7 @@ Release from the Claude-first source repository. Keep package code, generated ru
    python -m unittest discover -s .tools/tests -p "test_*.py"
    python -m unittest discover -s .tools/gfx -p "test_*.py"
    python scripts/check_shared_tools.py
-   python .tools/check.py full --only script-rules gfx guidance generators quality
+   python .tools/check.py full --only script-rules gfx shelf guidance generators quality
    python .tools/sync/generators.py --check
    python .tools/sync/sync_agents.py --verify
    python .tools/wiki/verify_wiki_snapshot.py

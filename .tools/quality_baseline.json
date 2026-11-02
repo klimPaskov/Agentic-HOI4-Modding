@@ -274,9 +274,11 @@
    "C901 main": 29,
    "PLR0915 main": 102
   },
-  ".tools/image_generation/providers/gptimage/bootstrap.py": {
-   "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 1,
-   "BLE001 Do not catch blind exception: `Exception`": 1
+  ".tools/gfx/shelf/build_shelf.py": {
+   "C901 character_textures": 19,
+   "C901 choose": 16,
+   "C901 process_family": 39,
+   "PLR0915 process_family": 152
   },
   ".tools/image_generation/runtime/server.py": {
    "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 1,

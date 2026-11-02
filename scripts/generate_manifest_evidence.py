@@ -167,6 +167,25 @@ def validate_offline_wiki_links(snapshot: dict[str, bytes]) -> None:
                 raise SystemExit(f"offline wiki link is missing: {page} -> {target}")
 
 
+def merge_generated_components(components: list[dict], updates: dict[str, dict], owned_prefix: str = "imagegen.") -> list[dict]:
+    """Replace generated components, append new ones and drop owned components that are no longer generated.
+
+    The image-generation components are generated from `image_generation_provider_data.py`, so a component
+    with the owned prefix that the generator no longer returns (a removed provider) must leave the manifest.
+    """
+    pending = dict(updates)
+    merged = []
+    for component in components:
+        if component["id"] in pending:
+            merged.append(pending.pop(component["id"]))
+        elif component["id"].startswith(owned_prefix) and component["id"] not in updates:
+            continue
+        else:
+            merged.append(component)
+    merged.extend(pending.values())
+    return merged
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, required=True)
@@ -183,14 +202,11 @@ def main() -> None:
     live_updates = build_live_testing_components(manifest["components"])
     component_updates = {component["id"]: component for component in build_image_generation_components(args.source_root.resolve())}
     component_updates.update({component["id"]: component for component in live_updates})
-    for index, component in enumerate(manifest["components"]):
-        if component["id"] in component_updates:
-            manifest["components"][index] = component_updates.pop(component["id"])
-    manifest["components"].extend(component_updates.values())
+    manifest["components"] = merge_generated_components(manifest["components"], component_updates)
     for component in manifest["components"]:
         component["expected_files"] = git_evidence_for(component, snapshot)
     args.manifest.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
     )
 
 

@@ -558,7 +558,11 @@ def check_achievements(root: Union[str, Path] = ROOT, paths: Optional[Sequence[s
 # Report images (210x176 files under gfx/event_pictures):
 # - GFX-REPORT-PROVENANCE-MISMATCH (error): the runtime pixels differ from the recorded processed output.
 # - GFX-REPORT-RECIPE-MISMATCH (error): rerunning the recorded recipe on the recorded source, which still
-#   exists with its recorded hash, gives different pixels.
+#   exists with its recorded hash, gives different pixels. Only records of the current processor RECIPE_VERSION
+#   are rerun.
+# - GFX-REPORT-OLD-RECIPE (review): the record was made by an older recipe version (records without
+#   `recipe_version` are version 1), so the current processor cannot reproduce it and the rerun is skipped.
+#   The pixel hash check still applies. `--json` lists every such card for a later reprocessing decision.
 # - GFX-REPORT-NO-PROVENANCE (warning): no record in the provenance registry, so only size and corners
 #   can be checked.
 # - GFX-REPORT-OPAQUE-CORNERS (warning): a corner is opaque, so the report-card treatment (tilt and
@@ -575,7 +579,7 @@ GFX_LEVELS.update({
     'GFX-GHOSTED': 'warning', 'GFX-CHROMA-FRINGE': 'warning',
     'GFX-REPORT-PROVENANCE-MISMATCH': 'error', 'GFX-REPORT-RECIPE-MISMATCH': 'error',
     'GFX-REPORT-NO-PROVENANCE': 'warning', 'GFX-REPORT-OPAQUE-CORNERS': 'warning',
-    'GFX-REPORT-STALE-PROVENANCE': 'warning',
+    'GFX-REPORT-STALE-PROVENANCE': 'warning', 'GFX-REPORT-OLD-RECIPE': 'review',
 })
 
 
@@ -737,9 +741,15 @@ def check_reports(root: Path = ROOT, paths: Optional[List[str]] = None) -> List[
         if pixels_sha256(image) != record['pixels_sha256']:
             findings.append(gfx_finding('GFX-REPORT-PROVENANCE-MISMATCH', rel, 0,
                                         'runtime pixels differ from the recorded processed output'))
+        processor = load_module('report_processor', REPORT_PROCESSOR)
+        recorded, current = int(record.get('recipe_version', 1)), int(getattr(processor, 'RECIPE_VERSION', 1))
+        if recorded != current:
+            findings.append(gfx_finding('GFX-REPORT-OLD-RECIPE', rel, 0,
+                                        f'made by report recipe version {recorded}; the processor is at version {current}, '
+                                        'so the recipe rerun is skipped'))
+            continue
         source = Path(root) / str(record['source']['path'])
         if source.is_file() and digest(source) == record['source']['sha256']:
-            processor = load_module('report_processor', REPORT_PROCESSOR)
             with tempfile.TemporaryDirectory() as folder:
                 rerun = Path(folder) / 'rerun.png'
                 processor.process_report_event_image(input_path=source, output_path=rerun, **record_arguments(record))

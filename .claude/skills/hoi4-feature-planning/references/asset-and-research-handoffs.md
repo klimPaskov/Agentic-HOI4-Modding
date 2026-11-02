@@ -57,8 +57,8 @@ Reference mapping:
 - large presentation art: use the report, news, or custom feature reference set that matches the owning UI surface
 - technology and special-project icons: `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/technologies/` and `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/special_projects/`
 - achievement icons: `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/`; the reusable not-eligible overlay is `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/achievements/template/overlay.png`
-- decisions, missions, and decision-category icons: their separate folders under `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/`
-- flags: complete normal, medium, and small sets under `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/flags/`
+- decisions (and missions) and decision-category icons: their separate folders under `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/`
+- flags: one set of tags at the three sizes under `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/flags/normal/`, `medium/` and `small/`
 - focus icons: `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus/`
 - officer-corps, balance-of-power, faction, and other system icons: their matching folders under `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/`
 - country-leader, commander, operative, advisor, and high-command portraits: their matching folders under `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/`
@@ -98,23 +98,19 @@ Do not make the asset prompt vague. If a country has multiple cosmetic identitie
 
 ## 15. HOI4 asset size reference
 
-Use these sizes when planning assets:
+Plan asset sizes from the mod's profile (`.tools/gfx/profiles.json`, vanilla-measured by default; `hoi4.image_families { family }` shows each family's canvas and the mod's override). The vanilla sizes (HOI4 1.19.4.1):
 
 - report event images: 210x176
 - news event images: 397x153, black and white
-- leader portraits: 156x210
-- commander portraits: 156x210
-- operative portraits: 156x210
-- flags small: 10x7
-- flags medium: 41x26
-- flags normal: 82x52
-- tech icons small: 64x64
-- tech icons medium: 132x52
+- leader, commander, operative and scientist portraits: 156x210; advisor cards: 65x67
+- flags: 82x52 normal, 41x26 medium, 10x7 small
+- technology icons: 146x54
 - achievements: 64x64
 - custom feature images: match the target GUI surface or documented repository pattern
-- decision icons: 32x32
-- idea and national spirit icons: 64x64
-- focus icons: 94x86
+- decision icons: 33x32
+- idea and national spirit icons: 60x68 (industrial concerns: 64x64)
+- focus icons: 100x88
+- every other family: the row in `.claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md`
 
 Use other sizes when the feature UI or asset type requires it.
 
@@ -128,7 +124,7 @@ Large feature presentation images should have a strong central composition, clea
 
 Focus icons should look like HOI4 focus icons, with a central symbol, readable silhouette, aged texture, painterly detail, and strong contrast.
 
-Idea and national spirit icons should look like compact HOI4 icon art. They need strong symbolic shapes and clear readability at 64x64. They are similar to focus icons, but they are missing the main frame.
+Idea and national spirit icons should look like compact HOI4 icon art. They need strong symbolic shapes and clear readability at their small canvas. They are similar to focus icons, but they are missing the main frame.
 
 Achievement icons should be readable at 64x64 and have a clear completion theme. The completed version is generated first. Grey and not-eligible variants can be produced later.
 

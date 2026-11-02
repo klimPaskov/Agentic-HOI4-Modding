@@ -49,7 +49,7 @@ Specialist roles use model tiers matched to the work. The package maps those tie
 
 ## Image generation and modding tools
 
-HOI4 Mod Setup selects ChatGPT through the GPTImage MCP by default. You can choose another hosted or local provider, use Codex image generation, or make art yourself. The app keeps API keys in the operating-system credential store and updates the asset guidance for your choice. See the [provider research](../image-generation-providers.md) for models, access needs, costs, and size limits.
+Images come from `hoi4-imagegen`, which HOI4 Mod Setup installs. It makes the 40 HOI4 asset families at the mod's canvas sizes (vanilla by default). Sign in once with your ChatGPT account, use an OpenAI, Gemini or fal key from the environment or a ComfyUI endpoint, or make art yourself. See the [provider research](../image-generation-providers.md) for models, access needs, costs, and size limits.
 
 ## Modding and live testing
 

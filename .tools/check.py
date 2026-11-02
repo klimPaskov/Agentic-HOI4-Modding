@@ -26,6 +26,8 @@ Checks (rule ids and levels are defined by each tool; see `.tools/lib/report.py`
 - script-rules     `audits/audit_script_rules.py`          `<=`/`>=`, unary minus, scripted-localisation format codes
 - gfx              `gfx/gfx.py audit`                      frame strips, flag ladder, achievement size, runtime binaries,
                    profiled icon families and report-image provenance
+- shelf            `audits/audit_shelf.py`                 vanilla reference shelf, its catalog and documents, and the 40
+                   hoi4-imagegen family ids in `gfx/profiles.json` (needs no game)
 - guidance         `sync/check_guidance_size.py`           single-read ceiling for instructions, skills and agents
 - generators       `sync/generators.py --check`            every generated file listed in `sync/generators.json`
 - tests            maintained tests in `.tools/`, the 3D pipeline suite in `.tools/3d_pipeline/tests/` and in skill
@@ -273,6 +275,8 @@ CHECKS = (
 		run_report_tool("script-rules", "audits/audit_script_rules.py")),
 	Check("gfx", ("gfx/", "interface/", "sound/", "music/"), True,
 		run_report_tool("gfx", "gfx/gfx.py", ("audit",))),
+	Check("shelf", (".claude/skills/hoi4-feature-assets/assets/", ".tools/gfx/", ".tools/audits/audit_shelf.py"), True,
+		run_report_tool("shelf", "audits/audit_shelf.py")),
 	Check("guidance", ("CLAUDE.md", "AGENTS.md", "CLAUDE_template.md", "AGENTS_template.md", ".claude/", ".tools/sync/"), True,
 		run_guidance),
 	Check("generators", generator_prefixes(), True, run_generators),

@@ -73,7 +73,7 @@ Other runtimes translate the tier through [`.tools/sync/agent_profiles.json`](.t
 
 ## Skills and agents
 
-The [catalog](docs/catalog.md) covers building focus trees, events, decisions, country content, interfaces and assets, with links to each skill and specialist agent. HOI4 Mod Setup also lets you choose an image-generation provider. ChatGPT through the GPTImage MCP is selected by default; you can choose an API, a local model, Codex image generation, or make art yourself. The app installs the tools and writes guidance for your choice. See the [provider research](docs/image-generation-providers.md) for models, costs, and limits.
+The [catalog](docs/catalog.md) covers building focus trees, events, decisions, country content, interfaces and assets, with links to each skill and specialist agent. Images come from `hoi4-imagegen`, which makes the 40 HOI4 asset families (focus, ideas, decisions, technologies, event pictures, flags, portraits, counters and more) at the mod's canvas sizes, vanilla by default. HOI4 Mod Setup installs it. Sign in once with your ChatGPT account (`hoi4-imagegen login`) or use an OpenAI, Gemini or fal key or a ComfyUI endpoint, or make art yourself. See the [provider research](docs/image-generation-providers.md) for models, costs, and limits.
 
 ## Screenshots and videos
 
@@ -98,7 +98,7 @@ Every skill, agent prompt, and instruction file must be readable in one pass. [`
 
 ## MCP servers
 
-- **Image generation**: HOI4 Mod Setup defaults to ChatGPT through the GPTImage MCP. You can choose another hosted or local provider, use Codex's native image tool, or make art yourself. The selected route updates asset guidance and client registrations; API keys stay in the operating-system credential store. See the [provider research](docs/image-generation-providers.md) for models, costs, limits, and available MCP routes.
+- **Image generation**: `hoi4-imagegen` (installed by HOI4 Mod Setup) plans, generates, processes, validates and installs each asset family, and shows a cost estimate before any paid call. It signs in with your ChatGPT account or reads an OpenAI, Gemini or fal key from the environment, or uses a ComfyUI endpoint. You can also make art yourself. See the [provider research](docs/image-generation-providers.md) for models, costs, limits, and available MCP routes.
 - **[HOI4 Agent Tools](https://github.com/klimPaskov/hoi4-agent-tools)** (`hoi4_agent_tools`): helps your agent build focus trees, events, decisions and maps, preview windows and trees, find modding rules, repair script and balance AI choices. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` and registers it for the coding environments you choose. Agents use whatever routes the connected server advertises.
 - **[HOI4 Live Tools](https://github.com/klimPaskov/HOI4-Live-Tools)** (`hoi4-live`, optional, Windows): drives a running game for live feature tests and campaign play. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` for your user and manages project registrations for the selected coding clients (manual bootstrap defaults to user-client registration). The `hoi4-live-playtest` skill and its [setup guide](.claude/skills/hoi4-live-playtest/references/setup.md) explain how agents use it; `hoi4-debug-playtest` plays through it.
 - **Meshy and Blender** (optional 3D workflow): registered by `.tools/3d_pipeline/bootstrap_3d_workflow.py` when a feature needs a model.

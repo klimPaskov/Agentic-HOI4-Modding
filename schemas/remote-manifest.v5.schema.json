@@ -1136,6 +1136,7 @@
         "kind": {
           "enum": [
             "local_package",
+            "release_binary",
             "stdio_adapter",
             "remote_http",
             "native",
@@ -1145,6 +1146,7 @@
         "auth_method": {
           "enum": [
             "chatgpt_subscription",
+            "chatgpt_login",
             "api_key_vault",
             "oauth",
             "cloud_credentials",
@@ -1332,6 +1334,94 @@
             "null"
           ],
           "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "release_binary": {
+          "$ref": "#/$defs/imageGenerationReleaseBinary"
+        }
+      }
+    },
+    "imageGenerationReleaseBinary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "install_root",
+        "targets"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,5})\\.(0|[1-9][0-9]{0,5})\\.(0|[1-9][0-9]{0,5})$"
+        },
+        "install_root": {
+          "const": ".tools/image_generation/hoi4-imagegen"
+        },
+        "targets": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": [
+              "x86_64-pc-windows-msvc",
+              "aarch64-apple-darwin",
+              "x86_64-apple-darwin",
+              "x86_64-unknown-linux-gnu",
+              "aarch64-unknown-linux-gnu"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/imageGenerationReleaseTarget"
+          }
+        }
+      }
+    },
+    "imageGenerationReleaseTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "sha256",
+        "size",
+        "archive",
+        "entries"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "maxLength": 300,
+          "pattern": "^https://github\\.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v[0-9]+\\.[0-9]+\\.[0-9]+/hoi4-imagegen-v[0-9]+\\.[0-9]+\\.[0-9]+-[a-z0-9_-]+\\.(zip|tar\\.gz)$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 268435456
+        },
+        "archive": {
+          "enum": [
+            "zip",
+            "tar.gz"
+          ]
+        },
+        "entries": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mcp",
+            "cli"
+          ],
+          "properties": {
+            "mcp": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "cli": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
         }
       }
     },

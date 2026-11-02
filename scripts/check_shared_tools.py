@@ -57,7 +57,7 @@ def main(argv: list[str] | None = None) -> int:
         if normalised_sha256(target) != entry["sha256"]:
             problems.append(f"DRIFT: {local} differs from its recorded upstream copy")
     if args.write:
-        LOCK.write_text(json.dumps(lock, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+        LOCK.write_text(json.dumps(lock, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
         print(f"Recorded {len(lock['files'])} shared files from {args.upstream}.")
         return 0
     for problem in problems:
