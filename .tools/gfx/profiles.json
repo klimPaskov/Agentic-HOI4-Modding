@@ -241,18 +241,18 @@
   },
   "medal": {
    "canvas": [
-    16,
-    28
+    56,
+    84
    ],
    "accepted": [
     [
-     16,
-     28
+     56,
+     84
     ]
    ],
-   "margin": 1,
+   "margin": 2,
    "frames": 1,
-   "source": "Measured on HOI4 1.19.4.1 (medal_icon): 88 textures in gfx/interface/medals; 16x28 is 41 files (46.6 percent); next: 112x42: 11, 224x84: 11, 16x29: 4. Single-frame 16x28 medal; the 4, 7 and 2-frame medal strips selected by frame = N are not covered."
+   "source": "Unit medal: script names GFX_medal_icon_<x> with frame = N. Vanilla strips have 28x42 frames with a GFX_medal_icon_<x>_large twin of 56x84 frames (eleven 224x84 strips). One 56x84 frame is registered as the _large sprite and the 28x42 small sprite is derived. The 16x28 files are older sprites no script or GUI names."
   },
   "agency_upgrade": {
    "canvas": [
@@ -534,7 +534,7 @@
    ],
    "margin": 1,
    "frames": 2,
-   "source": "Division counter, large: 111 of 115 vanilla divisions_large strips are 152x42 (two 76x42 frames). The margin is a review default, not a vanilla measurement."
+   "source": "Division counter, large: 111 of 115 vanilla divisions_large strips are 152x42 (two 76x42 frames). The margin is a review default, not a vanilla measurement. Registered as GFX_unit_<sub-unit key>_icon_medium."
   },
   "counter-small": {
    "canvas": [
@@ -549,7 +549,7 @@
    ],
    "margin": 0,
    "frames": 2,
-   "source": "Division counter, small: all 83 vanilla divisions_small strips are 60x12 (two 30x12 frames); vanilla fills the top and bottom rows."
+   "source": "Division counter, on map: all 83 vanilla divisions_small strips are 60x12 (two 30x12 frames); vanilla fills the top and bottom rows. Registered as GFX_unit_<sub-unit key>_icon_medium_white from onmap_unit_<key>_icon.dds. The text icon GFX_unit_<sub-unit key>_icon_small (60x12, gfx/texticons) is derived."
   },
   "division_emblem": {
    "canvas": [
@@ -564,7 +564,7 @@
    ],
    "margin": 1,
    "frames": 1,
-   "source": "Measured on HOI4 1.19.4.1 (division_template_emblem): 202 textures in gfx/interface/counters/division_templates_large, gfx/interface/counters/division_templates_small; 76x42 is 101 files (50.0 percent); next: 30x12: 100, 31x12: 1. Single frame, 76x42 (the large template emblem); the small 30x12 emblems of the sibling folder are separate assets."
+   "source": "Measured on HOI4 1.19.4.1 (division_template_emblem): 202 textures in gfx/interface/counters/division_templates_large, gfx/interface/counters/division_templates_small; 76x42 is 101 files (50.0 percent); next: 30x12: 100, 31x12: 1. Single frame, 76x42 (the large template emblem); registered as GFX_div_templ_<n>_large with a derived 30x12 GFX_div_templ_<n>_small."
   },
   "building": {
    "canvas": [
@@ -598,7 +598,7 @@
    ],
    "margin": 2,
    "frames": 2,
-   "source": "Measured on HOI4 1.19.4.1 (faction_icon): 62 textures in gfx/interface/factions/faction_logos; 200x100 is 31 files (50.0 percent); next: 32x32: 31. Two 100x100 frames (200x100 strip). The 32x32 single-frame small logo of the same folder is a separate sprite."
+   "source": "Measured on HOI4 1.19.4.1 (faction_icon): 62 textures in gfx/interface/factions/faction_logos; 200x100 is 31 files (50.0 percent); next: 32x32: 31. Two 100x100 frames (200x100 strip). The game also loads <logo>_miniature (32x32), derived from frame 1."
   },
   "agency_logo": {
    "canvas": [
