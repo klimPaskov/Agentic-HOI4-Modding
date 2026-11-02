@@ -179,7 +179,7 @@ This section was added after the 1.19.3 review. The record above stays as it was
 - A split keeps an `[unverified]` tag for the part a game run must settle, so the tag total falls less than the outcomes suggest: 576 `[unverified]` tags before, 551 after. The settled parts added 121 `[vanilla-confirmed 1.19.4.1]` and 85 `[docs]` tags on these files.
 - The 294 engine-only tags are covered by the 302 in-game checks below, together with the unverified parts of the splits. Some checks cover several claims.
 - The 43 not-checkable tags are mostly the tag legend and gap summaries that only name the tag, successor columns of removed defines (inferred from names and values), meanings read from names, advice, and claims that only a string in hoi4.exe supports.
-- No tag was retagged `[game-tested ...]` in this review. The run of 2026-11-02 retagged claims `[game-tested 1.19.4.1]` afterwards: 111 of the 302 checks were settled and removed from the list below, and 94 more carry a note on what was settled and what remains, or on why a try was inconclusive.
+- No tag was retagged `[game-tested ...]` in this review. The run of 2026-11-02 retagged claims `[game-tested 1.19.4.1]` afterwards: 119 of the 302 checks were settled and removed from the list below, and 100 more carry a note on what was settled and what remains, or on why a try was inconclusive.
 
 Corrections, where the files contradicted the old text:
 
@@ -424,14 +424,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 `hoi4_wiki/character_modding.md`
 
-**G025.** Sprite lookup is or is not case-insensitive (kit block `char-portraits-vanilla`)
-
-- Setup: New game, 1936 start, play as DEN, no mods. In the launcher, turn off the DLC Arms Against Tyranny so that DEN_knud_bach_2 (portrait GFX_portrait_Europe_Generic_1, declared only as GFX_Portrait_Europe_Generic_1) applies. If the DLC cannot be turned off, mark this check unavailable.
-- Steps:
-  1. Open the Politics tab and look at the portrait of the country leader Knud Bach (screenshot).
-  2. Read error.log and search for GFX_portrait_Europe_Generic_1.
-- Expected: A generic European portrait and no error line means the lookup ignores case. An empty or placeholder portrait or a missing-sprite error line means it is case-sensitive.
-
 **G026.** Effect of always_show_on_actions_tooltip = yes on an advisor block (kit block `char-advisor-vanilla`)
 
 - Setup: New game, 1936 start, play as AST, no mods. AST_billy_hughes (common/characters/AST.txt line 101) has the key in his political_advisor block.
@@ -663,27 +655,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
 - Expected: T RS shows with the anti_air company in the regimental slot and the log is clean: accepted. A missing template or an error line naming anti_air means it is rejected or dropped.
 - Run 2026-11-02: tried, inconclusive because the template was created without an error, but `has_template_containing_unit` returned FALSE even for valid companies, so it says nothing about the slot.
 
-#### Doctrine modding
-
-`hoi4_wiki/doctrine_modding.md`
-
-**G076.** The doctrine window reads the _desc key of a doctrine folder. (kit block `doctrine-folders`)
-
-- Setup: Mod with localisation/replace/t_l_english.yml (the replace folder overrides vanilla keys): `l_english:` and ` land_doctrine_folder_desc: "T_FOLDER_DESC_TEST"`. New game, 1936 start, play as GER.
-- Steps:
-  1. Open the technology and doctrine screen, switch to the land doctrine tab.
-  2. Hover the folder tab and the folder header. Take a screenshot.
-- Expected: The text T_FOLDER_DESC_TEST appears in a tooltip: the _desc key is read. The vanilla text 'Land doctrine, the ways in which your ground forces fight.' or nothing means the mod key is not read by the window (check that the mod overrides the vanilla key).
-
-**G077.** GFX_mastery_reward_icons is the default reward strip: 10 frames are 5 rewards plus 5 grayed copies. (kit block `doctrine-subdoctrines`)
-
-- Setup: Mod with interface/t_doctrines.gfx declaring `spriteType = { name = "GFX_mastery_reward_icons" texturefile = "gfx/interface/ideologies/unknown.dds" noOfFrames = 1 }` (the vanilla sprite name overridden by a one-frame texture). New game, 1936 start, play as GER.
-- Steps:
-  1. Open the land doctrine tab and open a subdoctrine with rewards.
-  2. Take a screenshot of the reward icons.
-  3. Run again without the mod and compare.
-- Expected: With the mod the reward icons change to the ideology texture: the sprite is the default strip. Unchanged icons mean another sprite supplies them. The 5-plus-5 frame reading needs a texture with 10 distinct frames (replace the texture with a labelled 10-frame strip and read which frame each reward shows).
-
 #### Effects
 
 `hoi4_wiki/effects.md`
@@ -744,6 +715,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Search the screenshots for the strings `lt1` or `afs0`, and for the localised name 'IW Light Tank'.
   3. In the production screen compare the image order of equipment with visual_level 0 and 3 (see common/units/equipment/*.txt).
 - Expected: If the strings or the name appear in a UI element, that key is used there. If nothing appears anywhere, the key has no visible use in these screens. The image order shows the visual_level effect, if any.
+- Run 2026-11-02: tried, inconclusive because the production line, the land production picker and the Tank Designer (GER 1936) showed the chassis name and the design name, not the abbreviation (`lt1`) or the `derived_variant_name` text (Light Tank I). The stockpile screen, the division designer equipment and tooltips were not checked, and the `visual_level` effect on the model was not compared.
 
 **G088.** The game builds the equipment picture sprite name as GFX_<picture>_medium. (kit block `equipment-keys`)
 
@@ -771,6 +743,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Take a screenshot.
   3. Run again without the mod and compare the grouping.
 - Expected: A different grouping of tank variants in the list shows the key's effect. The same grouping means no visible effect for tanks. An error line names a rejected value.
+- Run 2026-11-02: tried, inconclusive because `group_by = type` on `light_tank_chassis` changed nothing in the GER 1936 land production picker and drew no error line, but GER has only one light tank chassis and one design then, so the picker had nothing to group differently. Needs a later date with several chassis and designs.
 
 **G091.** The extra interface_category_* names found in hoi4.exe (resources, stockpiling, reinforcing, upgrading, outdated) are usable. (kit block `equipment-interface-categories`)
 
@@ -931,14 +904,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   1. Open the diplomacy window of FRA and look for a boost-ideology action toward fascism.
   2. Run again without the mod and compare the available actions.
 - Expected: The boost action is missing or disabled with the mod: the key controls boosting. The same actions as vanilla mean the key has no visible effect.
-
-**G114.** Country-specific ideology sprites named GFX_ideology_<TAG>_<name>_group are picked for that country. (kit block `ideology-gfx-vanilla`)
-
-- Setup: Mod with interface/t_ideo.gfx declaring `spriteType = { name = "GFX_ideology_GER_fascism_group" texturefile = "gfx/interface/ideologies/communism_group.dds" }`. New game, 1936 start, play as GER.
-- Steps:
-  1. Open the politics screen as GER and take a screenshot of the ruling ideology icon.
-  2. Type `tag FRA` and take a screenshot.
-- Expected: GER shows the communism icon for fascism while FRA shows normal icons: the country pattern works. Unchanged icons mean the pattern is not used.
 
 **G115.** set_politics accepts ruling_party = ROOT and ruling_party = var:<var> forms. (kit block `ideology-country-history-vanilla`)
 
@@ -1220,14 +1185,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   3. Read the war name in the war panel or the declaration notification.
 - Expected: A name with an ordinal prefix only for a repeat war between the same pair supports the claim. Any other use of $ORDER$ means the guess is wrong.
 
-**G150.** Which file holds the language setting: pdx_settings.json or pdx_settings.txt. (kit block `loc-vanilla-file-facts`)
-
-- Setup: No mod. With the game closed, note the modified times and contents of pdx_settings.json and pdx_settings.txt in Documents/Paradox Interactive/Hearts of Iron IV/.
-- Steps:
-  1. Start the game, open Settings, change the language, then quit.
-  2. Compare both files: which one changed time and contains the language.
-- Expected: The file that changed holds the language. If only .json changed, the page's .txt statement is stale. If neither changed, the language is stored elsewhere.
-
 #### Map modding
 
 `hoi4_wiki/map_modding.md`
@@ -1368,7 +1325,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. List the folder again and open dlc_load.json and mods_registry.json.
   3. Check which names from the claim exist.
 - Expected: Names present are used. Absent ones are unused or created on demand (record which). dlc_load.json with enabled_mods and disabled_dlcs confirms the mods.md text.
-- Run 2026-11-02: tried, inconclusive because the scratch user folder is a long-lived copy with no before listing, so the listing cannot show which names the game created. A `disabled_dlcs` entry written as the DLC display name did not disable the DLC, and the accepted form (probably a path) was not tried.
+- Run 2026-11-02: tried, inconclusive because the scratch user folder is a long-lived copy with no before listing, so the listing cannot show which names the game created. A `disabled_dlcs` entry written as the DLC display name or as the path form `dlc/dlc038_arms_against_tyranny/dlc038.dlc` did not disable the DLC (system.log still listed it active), so the accepted form was not found. The game was started without the launcher and may take DLC state from the launcher or Steam instead of `dlc_load.json`.
 
 **G174.** A Workshop item gets a user file named ugc_<id>.mod and editor_postfix is a real setting. (kit block `modding-descriptor-keys`)
 
@@ -1497,15 +1454,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 `hoi4_wiki/nudger.md`
 
-**G193.** The Supply Areas nudger button does nothing and the exe has no supply area nudger class. (kit block `nudger-menu`)
-
-- Setup: No mod. New 1936 game as GER.
-- Steps:
-  1. Run: nudge
-  2. Open the Supply Areas section, press Generate and Save, then read error.log.
-  3. Look for map/supplyareas/ files changed in the game folder and the user folder.
-- Expected: No window effect and no file written confirms the page remark. A new file or error shows the section is live.
-
 **G194.** The Buildings section writes map/buildings.txt in the user directory; Mark/Unmark, Random and Validate behave as their labels say; the marker file holds the marks. (kit block `nudger-buildings`)
 
 - Setup: No mod. Note the modified time of the file buildings_nudger_markers.txt in the game folder.
@@ -1514,6 +1462,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. List files changed in the user folder Documents/Paradox Interactive/Hearts of Iron IV and in the game folder map/.
   3. Open the marker file and the written buildings.txt.
 - Expected: The location of the written buildings.txt confirms the inferred path. Changed marker file bytes confirm the marker purpose. Random moving models and Validate reporting issues confirm the label reading.
+- Run 2026-11-02: not run, because `buildings_nudger_markers.txt` is in the game install folder, so marking and saving would write there. Needs a disposable game install or the maintainer's go-ahead.
 
 **G195.** A new state without building rows in buildings.txt crashes the game. (kit block `nudger-buildings`)
 
@@ -1530,6 +1479,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   1. Run: nudge, open the strategic regions panel.
   2. Press each button once on a copy region, screenshot after each press, do not save.
 - Expected: The screenshots show what each button does. If the result differs from its label, the label reading is wrong.
+- Run 2026-11-02: tried, inconclusive because only the panel layout was observed. Clicking Eastern Germany opened a panel with the name field, Open File (it showed nothing), Delete region, Update, Save, a Naval Terrains list (Default, Ocean, Fjords and Archipelagos, Shallow Sea, Deep Oceans) and a Modifiers block (Name, Trigger, Update, Delete). Update, Save, Delete region and the terrain and modifier buttons were not pressed, because debug tools can write into the game install at once.
 
 **G197.** The Units section writes map/unitstacks.txt; Auto in Prov and Auto in All generate positions; unit_nudger_markers.txt holds the marks. (kit block `nudger-units`)
 
@@ -1538,6 +1488,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   1. Run: nudge, open Units, select a province, press Auto in Prov, then Mark/Unmark, then Save.
   2. List files changed in the user folder and in the game folder map/.
 - Expected: The written unitstacks.txt location confirms the path. New positions confirm Auto. Changed bytes in the marker file confirm its purpose.
+- Run 2026-11-02: not run, for the same reason as G194. `unit_nudger_markers.txt` is in the game install folder. Needs a disposable game install or the maintainer's go-ahead.
 
 #### Occupation and resistance modding
 
@@ -1621,6 +1572,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. If it is accepted, type `add_subsystem`, `save`, then `exit`.
   3. Look for a new .asset file in the Hearts of Iron IV user folder and read error.log.
 - Expected: Each command is accepted or answered as unknown. Accepted commands and a written file show that the editor exists in the release build. A refused `particle_editor` means the exe strings are not live.
+- Run 2026-11-02: settled that `particle_editor` exists and that `particle_editor create <name>` writes an invalid `gfx/particles/<name>.asset` into the install folder at once (see the warning on the page). Remains: `add_subsystem`, `save`, `exit` and the editor window, not run to avoid more writes into the install.
 
 **G210.** `intensity = <n>, fade` applies the animation to the intensity (kit block `particle-light-corrections`)
 
@@ -1980,14 +1932,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
 - Expected: Tooltip text from PROGRAM_BASIC_RESEARCH with a daily breakthrough gain (about 0.12 percent plus 0.05 percent per skill level) confirms basic research is the idle state. No gain means it needs something else.
 - Run 2026-11-02: the tooltip shows basic research for an idle scientist ("Providing 0.15% breakthrough progress and 6.0% technology research bonus for Aerodynamics and Avionics"). Remains: the 30-day gain.
 
-**G259.** The scientist desc key is shown in the UI. (kit block `(kit page)`)
-
-- Setup: New game, 1936, GER, one mod: common/characters/b2_char.txt with b2_scientist = { name = b2_scientist scientist = { desc = B2_DESC skills = { specialization_air = 1 } } }, localisation/english/b2_l_english.yml with B2_DESC: 'B2 desc visible' (UTF-8 with BOM), and common/scripted_effects/b2_effects.txt b2_recruit = { recruit_character = b2_scientist }
-- Steps:
-  1. Console: effect GER b2_recruit.
-  2. Open the scientist in the facility or scientist list and search the tooltip and window for the text 'B2 desc visible'.
-- Expected: The text appearing means desc is displayed and the bug note is stale. The text missing confirms the bug note.
-
 **G261.** What SCIENTIST_INJURED_FACTOR = 0.0 means for progress. (kit block `(kit page)`)
 
 - Setup: SP base mod from B2-23 with project_tags = sp_tag_aircraft and complexity = 2, plus common/scripted_effects/b2_effects.txt b2_injure = { random_scientist = { injure_scientist_for_days = 5 } }. Console: instantconstruction, sp_add_scientist 3 air
@@ -2216,14 +2160,6 @@ Each check below settles one or more `[unverified]` claims that only a running g
   2. Hover the engineer company and read the terrain/modifier lines in its tooltip.
 - Expected: A 'Fort' line with attack +10% and defence +25% shows the block is read and labelled with the localisation key `fort`. No such line means the tooltip does not show it. Whether the bonus applies in a fort battle needs a combat test.
 - Run 2026-11-02: settled the tooltip and the "Fort" label (Attack +10.0%, Defense +25.0% in the Engineer Company tooltip). Remains: whether the bonus applies in a fort battle, which needs a combat test.
-
-**G297.** map_icon_category picks the counter icon of a division on the map. (kit block `unit-map-icon-types`)
-
-- Setup: No mod. Vanilla: infantry has `map_icon_category = infantry`, medium_armor `armored`, cavalry `other`. New game, 1936 start, play as GER.
-- Steps:
-  1. Find a German infantry division, a tank division and a cavalry division on the map.
-  2. Take a screenshot of the three counters, zoomed in.
-- Expected: Three different counter icons (infantry, armor, other) match the categories. Identical icons mean the counter is not chosen by this key.
 
 **G298.** A sub-unit accepts equipment stats such as naval_speed or air_agility. (kit block `unit-navy-air-note`)
 
