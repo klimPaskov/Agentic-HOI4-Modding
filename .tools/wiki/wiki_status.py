@@ -48,7 +48,7 @@ import steam_depots  # the game files that changed between two Steam builds
 from lib import game  # .tools/lib: locates the installed game
 
 REPO = HERE.parents[1]
-WIKI_DIR = REPO / "paradox_wiki"
+WIKI_DIR = REPO / "hoi4_wiki"
 INDEX = HERE / "game_docs_index.json"
 DOC_GLOBS = ("documentation/*.md", "common/**/*documentation*.md",
              "interface/**/_documentation.info", "gfx/**/_documentation.info")

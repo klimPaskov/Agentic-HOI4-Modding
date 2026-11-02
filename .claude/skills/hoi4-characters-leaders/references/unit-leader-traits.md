@@ -1,7 +1,7 @@
 # Unit Leader Traits, Skills and Abilities
 
 Read this when defining or auditing traits in `common/unit_leader/`, trait assignment trees, experience rules, unit-leader skill levels, abilities, or officer-corps advisor conversions.
-Primary sources: the header comment of installed `common/unit_leader/00_traits.txt` (the schema), `paradox_wiki/character_modding.md` > Unit leader traits, `documentation/modifiers_documentation.md` (`unit_leader`, `army`, `naval` scopes), `documentation/triggers_documentation.md` (COMBATANT and CHARACTER sections), and `common/defines/00_defines.lua`.
+Primary sources: the header comment of installed `common/unit_leader/00_traits.txt` (the schema), `hoi4_wiki/character_modding.md` > Unit leader traits, `documentation/modifiers_documentation.md` (`unit_leader`, `army`, `naval` scopes), `documentation/triggers_documentation.md` (COMBATANT and CHARACTER sections), and `common/defines/00_defines.lua`.
 Root is the installed Hearts of Iron IV folder named in `CLAUDE.md`.
 
 ## File and keys

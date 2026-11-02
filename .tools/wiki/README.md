@@ -1,6 +1,6 @@
-# Offline Paradox wiki snapshot tooling
+# HOI4 wiki tooling
 
-`paradox_wiki/` is the kit's offline Hearts of Iron IV modding reference. It holds one Markdown file per page, named after the page title in lowercase snake_case (`scripted_gui_modding.md`), `media/` with every image those pages show, and `LICENSE.txt`. Most pages are captured from the wiki's modding pages. The kit corrects and extends them against the installed game in kit blocks, and adds kit pages for systems the wiki does not cover. The project instructions point every implementation task at it, so it has to stay current and self-contained, and read cleanly as plain Markdown.
+`hoi4_wiki/` is the kit's own HOI4 wiki, an offline Hearts of Iron IV modding reference for agents. Earlier kit versions named it `paradox_wiki/`. It holds one Markdown file per page, named after the page title in lowercase snake_case (`scripted_gui_modding.md`), `media/` with every image those pages show, and `LICENSE.txt`. Most pages are captured from the Hearts of Iron IV Wiki's modding pages (Category:Modding). The kit corrects and extends them against the installed game in kit blocks, and adds kit pages for systems the wiki does not cover. The project instructions point every implementation task at it, so it has to stay current and self-contained, and read cleanly as plain Markdown.
 
 These tools maintain it. None of them launches Hearts of Iron IV.
 
@@ -87,7 +87,7 @@ Every factual statement in a kit block carries one evidence tag:
 
 Write a tag exactly as shown, with only the build inside the brackets, and name files outside them: the verify check reports any other `[vanilla-confirmed ...]` or `[game-tested ...]` form.
 
-When only a game run can settle an `[unverified]` claim, put a short note that starts with **Needs a game run** at the claim, saying what to try and what each result would mean. `grep -rn "Needs a game run" paradox_wiki/` finds the notes, and a note is removed (and the claim retagged `[game-tested ...]`) when someone runs it.
+When only a game run can settle an `[unverified]` claim, put a short note that starts with **Needs a game run** at the claim, saying what to try and what each result would mean. `grep -rn "Needs a game run" hoi4_wiki/` finds the notes, and a note is removed (and the claim retagged `[game-tested ...]`) when someone runs it.
 
 Every remaining `[unverified]` claim that a game run could settle is also listed in the "In-game checks" section of the current coverage record (`coverage-1.19.3.md`), with its setup, exact steps and expected result, for HOI4 Live Tools or the maintainer. Agents never start the game themselves. When a check is run, retag the claim, correct it if the result differs, and remove its entry from the list.
 
@@ -140,7 +140,7 @@ Existing `media/` files are reused by matching image alt text, so a refresh down
 | --- | --- |
 | `--only PAGE [PAGE ...]` | refresh only the named wiki pages |
 | `--new-only` | build only the pages listed in `NEW_PAGES` that have no file yet |
-| `--dry-run --out DIR` | convert into `DIR` without touching `paradox_wiki/` (kit blocks are still merged) |
+| `--dry-run --out DIR` | convert into `DIR` without touching `hoi4_wiki/` (kit blocks are still merged) |
 | `--cache [DIR]` | reuse cached API responses (default `.tmp/wiki_cache`); omit to always fetch live |
 | `--prune-media` | after writing, delete media files no page references |
 
@@ -170,7 +170,7 @@ A page's file is its title in lowercase snake_case plus `.md`: lowercase every l
 - Links between pages are written `[text](<file-name.md#anchor>)` and must match the file name letter for letter, so they also resolve on case-sensitive file systems.
 - `Effects` keeps its historical title, `Effects`, although the wiki page is `Effect`, so its file is `effects.md`. `FILENAME_OVERRIDES` holds the mapping.
 - Keep file names and heading anchors stable; skills and instructions link to them.
-- Earlier copies of the snapshot named files `<Page Title> - Hearts of Iron 4 Wiki.md`. The sync refuses to run while any such file is present, because it would write the new files beside them. Replace the whole `paradox_wiki/` folder with the kit's current one instead.
+- Earlier copies of the snapshot named files `<Page Title> - Hearts of Iron 4 Wiki.md`. The sync refuses to run while any such file is present, because it would write the new files beside them. Replace the whole `hoi4_wiki/` folder with the kit's current one instead.
 
 ## Verify details
 
@@ -196,13 +196,13 @@ The verify and status tools use only the standard library. The status tool reads
 
 ## Caches and generated files
 
-`--cache` writes under `.tmp/wiki_cache/`, which the repository `.gitignore` excludes. The sync writes nothing else outside `paradox_wiki/`. The status tool writes only with `--mark-reviewed`, `--carry-forward` (review markers) and `--record` (`game_docs_index.json`).
+`--cache` writes under `.tmp/wiki_cache/`, which the repository `.gitignore` excludes. The sync writes nothing else outside `hoi4_wiki/`. The status tool writes only with `--mark-reviewed`, `--carry-forward` (review markers) and `--record` (`game_docs_index.json`).
 
 ## License
 
-The wiki's text is CC BY-SA 3.0 (see `paradox_wiki/LICENSE.txt`), and the kit's additions to it are distributed under the same license. Every capture line carries the attribution. The package's Apache-2.0 license does not apply to the snapshot.
+The wiki's text is CC BY-SA 3.0 (see `hoi4_wiki/LICENSE.txt`), and the kit's additions to it are distributed under the same license. Every capture line carries the attribution. The package's Apache-2.0 license does not apply to the snapshot.
 
 ## Copies in other repositories
 
 - **HOI4 Mod Setup** installs the snapshot as the `wiki.snapshot` component of `hoi4-mod-setup.manifest.json`. The manifest workflow on `main` regenerates its file evidence after a merge; for a local release, run `scripts/generate_manifest_evidence.py --revision <commit>` as `RELEASING.md` describes.
-- **Mods with their own copy**, such as Chaos Redux, should replace their `paradox_wiki/` with this one rather than editing it. Replace the whole folder: every file name changed with the move to snake_case names, so copying over an old snapshot would leave both sets of files. Generic corrections belong in kit blocks here; mod-specific notes belong in the mod's own docs. Copy `kit_blocks.py`, `steam_depots.py`, `wiki_status.py` and `game_docs_index.json` with the updated sync and verify tools when the mod refreshes the snapshot itself.
+- **Mods with their own copy**, such as Chaos Redux, should replace their `hoi4_wiki/` (or the older `paradox_wiki/`) with this one rather than editing it. Replace the whole folder: `git mv paradox_wiki hoi4_wiki` first when the mod still has the old name, so Git keeps the history, then copy this folder over it. Copying over an old snapshot would leave both sets of files. Generic corrections belong in kit blocks here; mod-specific notes belong in the mod's own docs. Copy `kit_blocks.py`, `steam_depots.py`, `wiki_status.py` and `game_docs_index.json` with the updated sync and verify tools when the mod refreshes the snapshot itself.

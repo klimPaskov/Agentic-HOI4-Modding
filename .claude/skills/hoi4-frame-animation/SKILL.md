@@ -44,7 +44,7 @@ The usual HOI4 animation pattern is a texture sheet plus sprite metadata:
 
 For the common horizontal-sheet pattern, `noOfFrames` divides the texture into equal-width frame columns from left to right. A 64x64 asset with 8 frames should produce a sheet that is 512x64. A 156x210 animated portrait with 10 frames should produce a sheet that is 1560x210.
 
-Do not assume every HOI4 surface accepts animated sprites in the same way. Before wiring, inspect the offline Paradox wiki snapshot, vanilla examples, local documentation, and existing repository examples for the exact target surface.
+Do not assume every HOI4 surface accepts animated sprites in the same way. Before wiring, inspect the HOI4 wiki, vanilla examples, local documentation, and existing repository examples for the exact target surface.
 
 ## 3. Relationship with other skills
 
@@ -72,10 +72,10 @@ Before wiring an animated asset into the game, inspect the local sources that ap
 
 Required references:
 
-- `paradox_wiki/graphical_asset_modding.md`
-- `paradox_wiki/interface_modding.md` when the animation appears in GUI
-- `paradox_wiki/scripted_gui_modding.md` when the animation appears in scripted GUI
-- `paradox_wiki/character_modding.md` when the animation is a portrait
+- `hoi4_wiki/graphical_asset_modding.md`
+- `hoi4_wiki/interface_modding.md` when the animation appears in GUI
+- `hoi4_wiki/scripted_gui_modding.md` when the animation appears in scripted GUI
+- `hoi4_wiki/character_modding.md` when the animation is a portrait
 - relevant vanilla `.gfx` and `.gui` files under `<HOI4_INSTALL_DIR>/`
 - existing repository `.gfx`, `.gui`, portrait, focus, decision, and scripted GUI examples when available
 

@@ -205,7 +205,7 @@ Keep bearer tokens and other credentials in environment variables rather than tr
 
 ## Relationship to the rest of a modding workflow
 
-The offline Paradox wiki and installed vanilla documentation define engine syntax and behavior; source files and accepted design documents define the mod's intended implementation; tests and specialist audits check correctness and balance; parent review owns final integration and completion claims.
+The kit's HOI4 wiki and installed vanilla documentation define engine syntax and behavior; source files and accepted design documents define the mod's intended implementation; tests and specialist audits check correctness and balance; parent review owns final integration and completion claims.
 
 MCP adds deterministic structural, visual, map, and probability evidence to that workflow, but it does not authorize an implementation, replace a source-of-truth file, or prove live consumer behavior.
 

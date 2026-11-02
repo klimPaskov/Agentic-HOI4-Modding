@@ -11,7 +11,7 @@ Technology that unlocks equipment, and doctrine rewards, belong to `hoi4-technol
 The idea or national spirit that carries an `equipment_bonus` belongs to `hoi4-ideas-modifiers`.
 AI strategy tokens, `ai_will_do`, and role ratios belong to `hoi4-ai-strategies`.
 
-In this skill `GAME` means the installed Hearts of Iron IV folder named in `CLAUDE.md` and `WIKI` means the repository folder `paradox_wiki`.
+In this skill `GAME` means the installed Hearts of Iron IV folder named in `CLAUDE.md` and `WIKI` means the repository folder `hoi4_wiki`.
 Installed documentation is more authoritative than the wiki.
 Where they differ, this skill says so.
 

@@ -861,7 +861,7 @@
           "type": "string"
         },
         "destination": {
-          "const": "paradox_wiki/"
+          "enum": ["hoi4_wiki/", "paradox_wiki/"]
         },
         "snapshot_marker": {
           "type": [
