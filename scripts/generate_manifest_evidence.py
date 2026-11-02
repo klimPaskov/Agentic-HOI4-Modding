@@ -206,7 +206,7 @@ def main() -> None:
     for component in manifest["components"]:
         component["expected_files"] = git_evidence_for(component, snapshot)
     args.manifest.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
     )
 
 
