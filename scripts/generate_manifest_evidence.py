@@ -158,7 +158,7 @@ def normalize_wiki_target(page: str, raw_target: str) -> str | None:
 
 
 def validate_offline_wiki_links(snapshot: dict[str, bytes]) -> None:
-    wiki_files = {name for name in snapshot if name.startswith("paradox_wiki/")}
+    wiki_files = {name for name in snapshot if name.startswith("hoi4_wiki/")}
     for page in sorted(name for name in wiki_files if name.lower().endswith(".md")):
         text = snapshot[page].decode("utf-8")
         for raw_target in markdown_targets(text):

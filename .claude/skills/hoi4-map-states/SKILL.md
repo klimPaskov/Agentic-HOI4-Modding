@@ -32,7 +32,7 @@ Dynamic modifiers on states are covered in `hoi4-ideas-modifiers`, state transfe
 ## Source map
 
 `GAME` means the installed Hearts of Iron IV folder named in `CLAUDE.md`.
-`WIKI` means the offline snapshot in `paradox_wiki/` at the mod root.
+`WIKI` means the offline snapshot in `hoi4_wiki/` at the mod root.
 Installed documentation is more authoritative than the wiki; where they disagree, follow the installed file and record the conflict.
 
 | Topic | Authoritative text | Vanilla precedent |

@@ -124,7 +124,7 @@ The template author owns the schema, examples, placeholder syntax, and validatio
 
 ## Reference evidence used for this package
 
-- Offline wiki: `paradox_wiki/decision_modding.md`, `scripted_gui_modding.md`, `interface_modding.md`, `data_structures.md`, `triggers.md`, `effects.md`, `modifiers.md`, `localisation.md`, `scopes.md`, `on_actions.md`, `event_modding.md`, `idea_modding.md`, `ai_modding.md`, `map_modding.md`, and `state_modding.md`.
+- Offline wiki: `hoi4_wiki/decision_modding.md`, `scripted_gui_modding.md`, `interface_modding.md`, `data_structures.md`, `triggers.md`, `effects.md`, `modifiers.md`, `localisation.md`, `scopes.md`, `on_actions.md`, `event_modding.md`, `idea_modding.md`, `ai_modding.md`, `map_modding.md`, and `state_modding.md`.
 - Vanilla documentation: `documentation/script_concept_documentation.md`, `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`, `documentation/dynamic_variables_documentation.md`, `documentation/loc_objects_documentation.md`, and `documentation/loc_formatter_documentation.md`.
 - Vanilla precedent: `common/decisions/categories/AUS_decision_categories.txt`, `common/scripted_guis/AUS_antischluss_measures_scripted_gui.txt`, and `interface/aus_antischluss_measures_scripted_gui.gui`. It confirms a compact `decision_category` scripted GUI attached below category text and presentation-only scripted-GUI properties.
 - HOI4 MCP read-only evidence: record the current repository's `hoi4.gui_inspect`, matching `hoi4.gui_render` artifact family, and `hoi4.map_inspect` or province-geometry artifact identifiers in the owner handoff. Do not copy artifact URIs from another repository or revision.

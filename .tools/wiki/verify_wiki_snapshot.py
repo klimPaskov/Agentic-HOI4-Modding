@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Validate the offline Paradox wiki snapshot. Read-only; never writes.
+"""Validate the kit's HOI4 wiki. Read-only; never writes.
 
 This is the acceptance check for ``.tools/wiki/sync_wiki_snapshot.py``. It exits
 non-zero when the snapshot is not self-contained and readable, and reports:
@@ -48,7 +48,7 @@ def find_repo_root(start):
     """Walk up from this file until the snapshot directory is found."""
     current = os.path.abspath(start)
     while True:
-        if os.path.isdir(os.path.join(current, "paradox_wiki")):
+        if os.path.isdir(os.path.join(current, "hoi4_wiki")):
             return current
         parent = os.path.dirname(current)
         if parent == current:
@@ -316,9 +316,9 @@ def verify(directory, show_details=True):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Validate the offline Paradox wiki snapshot.")
+        description="Validate the kit's HOI4 wiki.")
     parser.add_argument("directory", nargs="?", default=None,
-                        help="snapshot directory (default paradox_wiki/)")
+                        help="snapshot directory (default hoi4_wiki/)")
     parser.add_argument("--quiet", action="store_true",
                         help="print only the problem summary")
     args = parser.parse_args()
@@ -327,7 +327,7 @@ def main():
         directory = args.directory
     else:
         root = find_repo_root(os.path.dirname(os.path.abspath(__file__)))
-        directory = os.path.join(root, "paradox_wiki")
+        directory = os.path.join(root, "hoi4_wiki")
     if not os.path.isdir(directory):
         print(f"not a directory: {directory}")
         return 1

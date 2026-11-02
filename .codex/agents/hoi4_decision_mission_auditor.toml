@@ -28,7 +28,7 @@ Read and apply:
 - .claude/skills/hoi4-focus-trees/SKILL.md when focuses unlock or modify decisions.
 - .claude/skills/hoi4-improvement-loop/SKILL.md when design depth gaps appear.
 - .claude/skills/hoi4-subagents/SKILL.md.
-- Relevant offline Paradox wiki pages in paradox_wiki/ when syntax or UI behavior must be checked.
+- Relevant HOI4 wiki pages in hoi4_wiki/ when syntax or UI behavior must be checked.
 - Vanilla decision files and documentation in <HOI4_INSTALL_DIR>/ when precedent matters.
 
 Audit for:

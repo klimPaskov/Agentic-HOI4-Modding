@@ -51,7 +51,7 @@ Root: the installed Hearts of Iron IV folder named in `CLAUDE.md`.
 | AI division templates and role ratios | `common/ai_templates/_documentation.md`, `common/ai_strategy/_documentation.md` |
 | Unit and division defines (grid sizes, experience levels, leader deploy cooldowns) | `common/defines/00_defines.lua` (`NDefines.NMilitary`) |
 
-Offline wiki (`paradox_wiki/`): `unit_modding.md` (sub-units, categories, groups, stats, icons), `division_modding.md` (templates, placement, navy and air OOB, unit name lists), `country_creation.md` (Order of battle, Variants), `namelist_modding.md` (division, ship and generic name lists), `technology_modding.md` (`enable_subunits`, sub-unit bonuses), `equipment_modding.md`, `entity_modding.md`, `scopes.md` (division and combatant scopes).
+Offline wiki (`hoi4_wiki/`): `unit_modding.md` (sub-units, categories, groups, stats, icons), `division_modding.md` (templates, placement, navy and air OOB, unit name lists), `country_creation.md` (Order of battle, Variants), `namelist_modding.md` (division, ship and generic name lists), `technology_modding.md` (`enable_subunits`, sub-unit bonuses), `equipment_modding.md`, `entity_modding.md`, `scopes.md` (division and combatant scopes).
 
 Vanilla precedents to mirror:
 

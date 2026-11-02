@@ -1,6 +1,6 @@
 # Wiki snapshot coverage review for HOI4 1.19.3.0
 
-Plan and record of the 2026-10-31 review of `paradox_wiki/` against Hearts of Iron IV 1.19.3.0 (`Operation Postern v1.19.3.0.c01a (5632)`). Each page's own review block holds its detailed record; this file is the overview. The workflow for later builds is in `README.md`.
+Plan and record of the 2026-10-31 review of `hoi4_wiki/` against Hearts of Iron IV 1.19.3.0 (`Operation Postern v1.19.3.0.c01a (5632)`). Each page's own review block holds its detailed record; this file is the overview. The workflow for later builds is in `README.md`.
 
 ## Starting point
 
@@ -289,7 +289,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Achievement modding
 
-`paradox_wiki/achievement_modding.md`
+`hoi4_wiki/achievement_modding.md`
 
 **G001.** Mod achievement format: unique_id mandatory, ribbon wrapper read, _NAME/_DESC keys, icon path from token plus suffix, condition text built from possible and happened, is_ironman not needed in a mod (kit block `ach-format-notes`)
 
@@ -317,7 +317,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### AI focuses
 
-`paradox_wiki/ai_focuses.md`
+`hoi4_wiki/ai_focuses.md`
 
 **G003.** A country ai_focuses block replaces the whole generic block of that focus for the country (kit block `ai-focus-research-format`)
 
@@ -341,7 +341,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### AI modding
 
-`paradox_wiki/ai_modding.md`
+`hoi4_wiki/ai_modding.md`
 
 **G005.** A common/ai_areas file without the areas = { } wrapper is not read (kit block `ai-areas-wrapper`)
 
@@ -381,7 +381,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Autonomy state modding
 
-`paradox_wiki/autonomy_state_modding.md`
+`hoi4_wiki/autonomy_state_modding.md`
 
 **G009.** peace_conference_initial_freedom unset gives 0.5 initial freedom for a puppet made in a peace conference (autonomy 'initial freedom' claim). (kit block `autonomy-vanilla-values`)
 
@@ -414,7 +414,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Balance of power modding
 
-`paradox_wiki/balance_of_power_modding.md`
+`hoi4_wiki/balance_of_power_modding.md`
 
 **G012.** A misspelled intial_value in a BoP block is ignored and the start value is 0. (kit block `bop-initial-value-typo`)
 
@@ -452,7 +452,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Bookmark modding
 
-`paradox_wiki/bookmark_modding.md`
+`hoi4_wiki/bookmark_modding.md`
 
 **G017.** Defaults and effects of the bookmark filter keys, and what version and assume_not_played_if_missing_data do (kit block `bookmark-1193-keys`)
 
@@ -475,7 +475,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Building modding
 
-`paradox_wiki/building_modding.md`
+`hoi4_wiki/building_modding.md`
 
 **G019.** base_cost_conversion on arms_factory and industrial_complex sets a factory conversion cost. (kit block `building-cost-notes`)
 
@@ -521,7 +521,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Character modding
 
-`paradox_wiki/character_modding.md`
+`hoi4_wiki/character_modding.md`
 
 **G024.** allowed_civil_war on a character decides which side of a civil war keeps it (kit block `char-vanilla-roles`)
 
@@ -602,7 +602,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Collection modding
 
-`paradox_wiki/collection_modding.md`
+`hoi4_wiki/collection_modding.md`
 
 **G036.** A mod reusing a vanilla named collection (kit block `(kit page)`)
 
@@ -633,7 +633,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Console commands
 
-`paradox_wiki/console_commands.md`
+`hoi4_wiki/console_commands.md`
 
 **G044.** add_mines effect on the mine count of the selected region (kit block `cc-fix-useful`)
 
@@ -696,7 +696,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Cosmetic tag modding
 
-`paradox_wiki/cosmetic_tag_modding.md`
+`hoi4_wiki/cosmetic_tag_modding.md`
 
 **G055.** A cosmetic tag can select its own unit entity through a COSMETICTAG_<name>_entity asset. (kit block `cosmetic-other-vanilla`)
 
@@ -709,7 +709,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Country creation
 
-`paradox_wiki/country_creation.md`
+`hoi4_wiki/country_creation.md`
 
 **G056.** A new flag file that breaks the rules (24 bit, RLE, flipped) triggers a slow-down warning or flipped image. (kit block `country-flag-facts`)
 
@@ -729,7 +729,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Data structures
 
-`paradox_wiki/data_structures.md`
+`hoi4_wiki/data_structures.md`
 
 **G059.** tooltip on multiply_variable, divide_variable and modulo_variable, and the bound-object form on variable operators (kit block `variable-tooltip-correction`)
 
@@ -761,7 +761,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Decision modding
 
-`paradox_wiki/decision_modding.md`
+`hoi4_wiki/decision_modding.md`
 
 **G064.** Unset highlight colour, highlight_only_provinces, name/desc keys, targets with capital, modifier without timer, state_trigger name (kit block `decision-highlight-colours`)
 
@@ -797,7 +797,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Defines additions
 
-`paradox_wiki/defines_additions.md`
+`hoi4_wiki/defines_additions.md`
 
 **G067.** A define file named 00_a.lua sorts before 00_defines.lua and loses to it, while zz_b.lua wins. (kit block `(kit page)`)
 
@@ -828,7 +828,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Division modding
 
-`paradox_wiki/division_modding.md`
+`hoi4_wiki/division_modding.md`
 
 **G070.** role and obsolete in a division template change something in the game. (kit block `division-template-keys`)
 
@@ -878,7 +878,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Doctrine modding
 
-`paradox_wiki/doctrine_modding.md`
+`hoi4_wiki/doctrine_modding.md`
 
 **G075.** land_doctrine_level still returns a value now that doctrines are not technologies. (kit block `doctrine-effects-triggers`)
 
@@ -907,7 +907,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 **G078.** A subdoctrine with 3 rewards is accepted by the game. (kit block `doctrine-example`)
 
-- Setup: Mod containing the four example files of the kit block 'doctrine-example' in paradox_wiki/doctrine_modding.md (grand doctrine, track, subdoctrine with 3 rewards, localisation) with their paths, unchanged. New game, 1936 start, play as GER.
+- Setup: Mod containing the four example files of the kit block 'doctrine-example' in hoi4_wiki/doctrine_modding.md (grand doctrine, track, subdoctrine with 3 rewards, localisation) with their paths, unchanged. New game, 1936 start, play as GER.
 - Steps:
   1. Type `effect GER t_fx` where `t_fx = { set_grand_doctrine = my_grand_doctrine set_sub_doctrine = my_subdoctrine }` is in common/scripted_effects/t_fx.txt.
   2. Open the land doctrine tab and open My Subdoctrine.
@@ -916,7 +916,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Effects
 
-`paradox_wiki/effects.md`
+`hoi4_wiki/effects.md`
 
 **G079.** Undocumented or stub effects, the effect form of not_tooltip, add_temporary_buff_to_units (kit block `combat-corrections`)
 
@@ -948,7 +948,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Entity modding
 
-`paradox_wiki/entity_modding.md`
+`hoi4_wiki/entity_modding.md`
 
 **G085.** What the engine copies on `clone`, and what `version` selects (kit block `entity-keys-extra`)
 
@@ -972,7 +972,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Equipment modding
 
-`paradox_wiki/equipment_modding.md`
+`hoi4_wiki/equipment_modding.md`
 
 **G087.** abbreviation, derived_variant_name and visual_level on equipment have a visible use (wiki: visual_level is the image priority in the production screen). (kit block `equipment-keys`)
 
@@ -1020,7 +1020,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Event modding
 
-`paradox_wiki/event_modding.md`
+`hoi4_wiki/event_modding.md`
 
 **G092.** hoi4.exe event messages: leader event not triggered only, missing title/desc/option, triggered-only with timer, every-day event (kit block `event-engine-messages`)
 
@@ -1064,7 +1064,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Faction modding
 
-`paradox_wiki/faction_modding.md`
+`hoi4_wiki/faction_modding.md`
 
 **G099.** A player without the No Compromise, No Surrender DLC still gets faction templates, goals and rules. (kit block `faction-dlc-and-create`)
 
@@ -1086,7 +1086,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Game rule modding
 
-`paradox_wiki/game_rule_modding.md`
+`hoi4_wiki/game_rule_modding.md`
 
 **G101.** Game rule script lookups: case handling, missing rule or option, new group string needs only loc, tooltip placeholders, duplicate option tokens, allow_achievements in a mod (kit block `(kit page)`)
 
@@ -1110,7 +1110,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Graphical asset modding
 
-`paradox_wiki/graphical_asset_modding.md`
+`hoi4_wiki/graphical_asset_modding.md`
 
 **G103.** `progressBarType` and `progressbartype` are the same keyword (kit block `gfx-sprite-census`)
 
@@ -1139,7 +1139,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Idea modding
 
-`paradox_wiki/idea_modding.md`
+`hoi4_wiki/idea_modding.md`
 
 **G106.** Full GFX_ names in picture and the GFX_idea_unknown fallback (kit block `idea-picture-vanilla`)
 
@@ -1181,7 +1181,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Ideology modding
 
-`paradox_wiki/ideology_modding.md`
+`hoi4_wiki/ideology_modding.md`
 
 **G111.** No ideology AI key other than ai_democratic, ai_communist, ai_fascist, ai_neutral exists. (kit block `ideology-example-corrections`)
 
@@ -1226,7 +1226,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Intelligence agency modding
 
-`paradox_wiki/intelligence_agency_modding.md`
+`hoi4_wiki/intelligence_agency_modding.md`
 
 **G116.** Which of two available blocks counts, and that default picks the historical entry (kit block `ia-agency-file-checks`)
 
@@ -1287,7 +1287,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Intelligence operation modding
 
-`paradox_wiki/intelligence_operation_modding.md`
+`hoi4_wiki/intelligence_operation_modding.md`
 
 **G122.** Operations need the La Resistance DLC (kit block `(kit page)`)
 
@@ -1435,7 +1435,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Interface modding
 
-`paradox_wiki/interface_modding.md`
+`hoi4_wiki/interface_modding.md`
 
 **G139.** iconType `scale`, `rotation`, `hide` meanings and drawn size without `size` (kit block `if-icon-notes`)
 
@@ -1488,7 +1488,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### List of modifiers
 
-`paradox_wiki/list_of_modifiers.md`
+`hoi4_wiki/list_of_modifiers.md`
 
 **G145.** Modifier names absent from the data (occupation_cost, max_commander_army_group_size, max_marshal_army_size, operation_steal_tech_cost, license_purchase_cost_factor) are rejected or ignored; the old name operation_steal_tech_cost may still be accepted. (kit block `list-corrections`)
 
@@ -1503,7 +1503,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Localisation
 
-`paradox_wiki/localisation.md`
+`hoi4_wiki/localisation.md`
 
 **G146.** Both 'Could not find coloring for character' messages are written to a log for an unknown colour letter. (kit block `loc-colour-codes`)
 
@@ -1552,7 +1552,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Map modding
 
-`paradox_wiki/map_modding.md`
+`hoi4_wiki/map_modding.md`
 
 **G151.** What map/colors.txt is used for. (kit block `map-folder-1193`)
 
@@ -1615,7 +1615,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Map mode modding
 
-`paradox_wiki/map_mode_modding.md`
+`hoi4_wiki/map_mode_modding.md`
 
 **G158.** Scripted map modes: folder is read by the engine, six hard-coded layer names, 0..1 colour channels, gradient from a computed value, console mapmode number, the minimal example works (kit block `(kit page)`)
 
@@ -1656,7 +1656,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Military industrial organization modding
 
-`paradox_wiki/military_industrial_organization_modding.md`
+`hoi4_wiki/military_industrial_organization_modding.md`
 
 **G162.** With ENABLE_TASK_CAPACITY false, task_capacity (and its modifier and effect) limit nothing. (kit block `mio-key-checks`)
 
@@ -1722,7 +1722,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Mod structure
 
-`paradox_wiki/mod_structure.md`
+`hoi4_wiki/mod_structure.md`
 
 **G169.** The messages 'Invalid supported_version in %s' and 'Could not find archive for mod: %s' are written for a bad value. (kit block `mod-structure-workshop-descriptor`)
 
@@ -1750,7 +1750,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Modding
 
-`paradox_wiki/modding.md`
+`hoi4_wiki/modding.md`
 
 **G172.** A userdir.txt in the game folder is the old way to move the user directory and gameDataPath wins. (kit block `modding-user-directory-files`)
 
@@ -1806,7 +1806,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Modifiers
 
-`paradox_wiki/modifiers.md`
+`hoi4_wiki/modifiers.md`
 
 **G178.** Dynamic modifier definitions need a game restart to be re-read. (kit block `dynamic-scopes`)
 
@@ -1843,7 +1843,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Music modding
 
-`paradox_wiki/music_modding.md`
+`hoi4_wiki/music_modding.md`
 
 **G183.** limit of 63 characters on a song name (kit block `music-song-notes`)
 
@@ -1871,7 +1871,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Namelist modding
 
-`paradox_wiki/namelist_modding.md`
+`hoi4_wiki/namelist_modding.md`
 
 **G186.** the engine also accepts `fallback_Name` (kit block `namelist-ship-notes`)
 
@@ -1891,7 +1891,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### National focus modding
 
-`paradox_wiki/national_focus_modding.md`
+`hoi4_wiki/national_focus_modding.md`
 
 **G189.** Messages and effects for one-way exclusive focuses, relative position errors, missing icons, no default icon case, and overlay (kit block `focus-icon-extras`)
 
@@ -1922,7 +1922,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Nudger
 
-`paradox_wiki/nudger.md`
+`hoi4_wiki/nudger.md`
 
 **G193.** The Supply Areas nudger button does nothing and the exe has no supply area nudger class. (kit block `nudger-menu`)
 
@@ -1968,7 +1968,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Occupation and resistance modding
 
-`paradox_wiki/occupation_and_resistance_modding.md`
+`hoi4_wiki/occupation_and_resistance_modding.md`
 
 **G198.** Resistance target formula and unit mix (kit block `(kit page)`)
 
@@ -2016,7 +2016,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### On actions
 
-`paradox_wiki/on_actions.md`
+`hoi4_wiki/on_actions.md`
 
 **G205.** Which wiki-only and exe-only hook names the engine knows, and whether a misspelled hook name is reported. (kit block `onaction-inventory`)
 
@@ -2036,7 +2036,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Particle modding
 
-`paradox_wiki/particle_modding.md`
+`hoi4_wiki/particle_modding.md`
 
 **G207.** the trimmed lamp particle and its `particles.gfx` entry run (kit block `particle-add-chain`)
 
@@ -2073,7 +2073,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Peace conference modding
 
-`paradox_wiki/peace_conference_modding.md`
+`hoi4_wiki/peace_conference_modding.md`
 
 **G211.** ROOT is the top-level negotiator; FROM per action type (kit block `(kit page)`)
 
@@ -2185,7 +2185,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Portrait modding
 
-`paradox_wiki/portrait_modding.md`
+`hoi4_wiki/portrait_modding.md`
 
 **G224.** the game only logs a missing portrait sprite (kit block `portrait-sizes-sprites`)
 
@@ -2214,7 +2214,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Posteffect modding
 
-`paradox_wiki/posteffect_modding.md`
+`hoi4_wiki/posteffect_modding.md`
 
 **G227.** The 1024 by 32 `lut` strip is a 32 step colour cube (kit block `posteffect-values-notes`)
 
@@ -2244,7 +2244,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Raid modding
 
-`paradox_wiki/raid_modding.md`
+`hoi4_wiki/raid_modding.md`
 
 **G231.** A raid file without the types root is ignored; duplicate ids across files; a mod file with a vanilla file name overrides the vanilla file. (kit block `(kit page)`)
 
@@ -2351,7 +2351,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Scopes
 
-`paradox_wiki/scopes.md`
+`hoi4_wiki/scopes.md`
 
 **G243.** count on any_ triggers, the meaning of any_claim and whether global_every_army_leader works outside a country scope (kit block `scope-types-1-19-3`)
 
@@ -2376,7 +2376,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Scripted GUI modding
 
-`paradox_wiki/scripted_gui_modding.md`
+`hoi4_wiki/scripted_gui_modding.md`
 
 **G249.** `parent_window_name` versus `parent_window_window`; the `_instance` rule (kit block `sg-parent-keys`)
 
@@ -2405,7 +2405,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Sound modding
 
-`paradox_wiki/sound_modding.md`
+`hoi4_wiki/sound_modding.md`
 
 **G252.** a wrong `.wav` path is harmless (kit block `sound-sound-notes`)
 
@@ -2417,7 +2417,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Special project modding
 
-`paradox_wiki/special_project_modding.md`
+`hoi4_wiki/special_project_modding.md`
 
 **G253.** Replacing a vanilla project by path; duplicate ids; draft keys of special_projects_documentation.md are ignored. (kit block `(kit page)`)
 
@@ -2535,7 +2535,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### State modding
 
-`paradox_wiki/state_modding.md`
+`hoi4_wiki/state_modding.md`
 
 **G268.** Dated history blocks run only for start dates strictly after the block date; an inconsistent start date has defined behaviour. (kit block `review`)
 
@@ -2587,7 +2587,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Strategic region modding
 
-`paradox_wiki/strategic_region_modding.md`
+`hoi4_wiki/strategic_region_modding.md`
 
 **G274.** Skipped strategic region ids crash the game. (kit block `region-tips-checks`)
 
@@ -2615,7 +2615,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Supply areas modding
 
-`paradox_wiki/supply_areas_modding.md`
+`hoi4_wiki/supply_areas_modding.md`
 
 **G277.** The engine reads map/supplyareas/ (the format is dead or live) and a new map needs it or not. (kit block `supply-areas-vestigial`)
 
@@ -2627,7 +2627,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Technology modding
 
-`paradox_wiki/technology_modding.md`
+`hoi4_wiki/technology_modding.md`
 
 **G278.** A technology whose allow_branch is met cannot be chosen by the AI. (kit block `tech-triggers-note`)
 
@@ -2674,7 +2674,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Triggers
 
-`paradox_wiki/triggers.md`
+`hoi4_wiki/triggers.md`
 
 **G284.** Whether the engine reads DIPLOMACY triggers that vanilla does not define (kit block `diplomacy-scripted-trigger-notes`)
 
@@ -2687,7 +2687,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Troubleshooting
 
-`paradox_wiki/troubleshooting.md`
+`hoi4_wiki/troubleshooting.md`
 
 **G285.** How -debug and -debug_mode relate, and whether a Steam launch option reaches hoi4.exe through the launcher (also console_commands cc-intro line 54) (kit block `ts-debug-launch`)
 
@@ -2777,7 +2777,7 @@ Each check below settles one or more `[unverified]` claims that only a running g
 
 #### Unit modding
 
-`paradox_wiki/unit_modding.md`
+`hoi4_wiki/unit_modding.md`
 
 **G294.** The sub-unit keys of the table (abbreviation, group, priority, stats, ...) have the meaning the page gives. (kit block `unit-keys`)
 

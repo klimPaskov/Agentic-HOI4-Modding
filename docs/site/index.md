@@ -4,7 +4,7 @@ title: Agentic HOI4 Modding
 ---
 # Agentic HOI4 Modding
 
-Build Hearts of Iron IV mods with your coding agent. Make focus trees, events, decisions and maps, fix broken script and balance the AI. Modding skills, specialist helpers, an offline wiki and HOI4 tools help your agent do the work.
+Build Hearts of Iron IV mods with your coding agent. Make focus trees, events, decisions and maps, fix broken script and balance the AI. Modding skills, specialist helpers, a HOI4 wiki for agents and HOI4 tools help your agent do the work.
 
 Choose any supported coding client, including Claude Code, Codex, Cursor, Qoder, or OpenCode. HOI4 Mod Setup creates project files and registers tools for the clients you select.
 
@@ -23,7 +23,7 @@ The app installs the MCP releases pinned in the package manifest. Its update and
 
 Use Python 3.13, Node.js LTS with npm, Git, and an installed copy of HOI4. Start from the [package source](https://github.com/klimPaskov/Agentic-HOI4-Modding) or [release ZIP](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/Agentic-HOI4-Modding.zip).
 
-Copy `CLAUDE_template.md` as `CLAUDE.md`, replace all mod and game-path placeholders, and remove optional workflow blocks you do not install. Copy `.claude/`, `.mcp.json`, `.tools/sync/`, `.tools/mcp/`, `paradox_wiki/`, and the runtime and MCP integration guides into the mod. Run:
+Copy `CLAUDE_template.md` as `CLAUDE.md`, replace all mod and game-path placeholders, and remove optional workflow blocks you do not install. Copy `.claude/`, `.mcp.json`, `.tools/sync/`, `.tools/mcp/`, `hoi4_wiki/`, and the runtime and MCP integration guides into the mod. Run:
 
 ```powershell
 python .tools/mcp/bootstrap_hoi4_agent_tools.py

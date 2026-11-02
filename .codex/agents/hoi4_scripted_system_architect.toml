@@ -23,7 +23,7 @@ Read and apply:
 - .claude/skills/hoi4-decisions-missions/SKILL.md when decisions or scripted GUI buttons are involved.
 - .claude/skills/hoi4-focus-trees/SKILL.md when focus call sites are involved.
 - .claude/skills/hoi4-subagents/SKILL.md.
-- Relevant offline Paradox wiki pages for data structures, triggers, effects, scopes, scripted GUI, and localisation.
+- Relevant HOI4 wiki pages for data structures, triggers, effects, scopes, scripted GUI, and localisation.
 - Vanilla documentation in <HOI4_INSTALL_DIR>/documentation, especially script constants, effects, triggers, and scripted localisation.
 - Existing helper files before creating anything new, especially common/scripted_effects/<mod_namespace>_dynamic_effects.txt and its markdown docs.
 

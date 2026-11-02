@@ -491,7 +491,7 @@ Native callbacks keep their own ROOT and FROM contracts, and participant iterato
 
 ### Helper output lifetime
 
-Temporary variables first created inside a scripted effect or trigger may disappear after return, while caller-preinitialized storage retains the helper's modifications (offline `paradox_wiki/data_structures.md`, Variable types section).
+Temporary variables first created inside a scripted effect or trigger may disappear after return, while caller-preinitialized storage retains the helper's modifications (offline `hoi4_wiki/data_structures.md`, Variable types section).
 
 - Before each helper call, ensure every temporary scalar and temporary-array output consumed afterwards has caller-owned storage, including calls inside `if.limit` and scripted-localisation `text.trigger`. Initialize new output storage to zero or its documented invalid sentinel without resetting existing input or cursor values.
 - Apply this at every nested call boundary: each caller initializes the outputs it consumes, and outer callers also initialize forwarded outputs needed after return.

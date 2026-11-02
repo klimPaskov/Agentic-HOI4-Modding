@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "007de3e8620b0590f27499f7eb7b96c314f5ac66",
+  "generated_for_revision": "65ae5b023115e01f7ba188cf90bf35b8bce0e2e2",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "0c6e3dbc87eb34258d1c3914839a793ecebf3c66a6b31cde75e4f401ff548288",
-          "size": 59819
+          "sha256": "7c767bdd5ab2b25eabf0782b3cebb8aa13e075f3d481dc52b43665ce4d4231b6",
+          "size": 59793
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "57e663a6eafce7fff3473a72a7f73bd687903c36ab623f6f35d952f46a7058ce",
-          "size": 59819
+          "sha256": "373e44007c09ee816303f60a91dea74ef615f6bc8b179bf20006fd70f3ef8d4c",
+          "size": 59793
         }
       ]
     },
@@ -199,18 +199,18 @@
       "expected_files": [
         {
           "path": ".tools/README.md",
-          "sha256": "12f8e8b6c4b540fe656a914d60e6f423990cec6f1735049dbc5e6c53a7b9d2be",
-          "size": 14729
+          "sha256": "d67b18629e36c3671db82c917c29d6798bdae2d7c879252fda9b2d9351a07a84",
+          "size": 14706
         },
         {
           "path": ".tools/audits/audit_asset_wiring_static.py",
-          "sha256": "585e80700f6425bf92ed025d3d17f56084790e1d76021e1585e9477f718bf507",
-          "size": 57276
+          "sha256": "7c4443ff9067ac49b7f686814fe9e068efa6fd47b57f43bf8ee3f8e21890118b",
+          "size": 57273
         },
         {
           "path": ".tools/audits/audit_localisation_static.py",
-          "sha256": "908d48b460566767d83d776a9393fd7fa7e1b739b7cd7b22fd55dad261bcc650",
-          "size": 72383
+          "sha256": "1ac456a4b91f017dcfb066993fccc47100293fe5cb525fdc4365c5e2b4039780",
+          "size": 72380
         },
         {
           "path": ".tools/audits/audit_script_rules.py",
@@ -722,13 +722,13 @@
         },
         {
           "path": ".cursor/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "117fb2f8619d7d199ddd3c720c13d2b478b15b3d20db18d1345896ddd4361e22",
-          "size": 10560
+          "sha256": "2ff778c129796a861b25022ca817f9c5660dbf13f94d629beca8b47d430d5ba3",
+          "size": 10549
         },
         {
           "path": ".cursor/agents/hoi4-ai-probability-auditor.md",
-          "sha256": "92bd2130b7db9bc48ba6fde99a1eaec765eb0aa75599d8cbc17249661118e7cf",
-          "size": 9421
+          "sha256": "b3f4476e3f2cdba367143ca577f6a82a96a1a04d6d2f0e5bb61d1491ed2d0117",
+          "size": 9407
         },
         {
           "path": ".cursor/agents/hoi4-asset-source-researcher.md",
@@ -742,13 +742,13 @@
         },
         {
           "path": ".cursor/agents/hoi4-country-package-auditor.md",
-          "sha256": "c789d6eed225e8af91babcd817a34b161ea53f403cb304f844df915061f65eac",
-          "size": 8580
+          "sha256": "39fd40a91ff6fb3ecc00157cc6d44c6b5f8643d93d344f958dd0fb9d9e55eb76",
+          "size": 8566
         },
         {
           "path": ".cursor/agents/hoi4-decision-mission-auditor.md",
-          "sha256": "5b01a2e0ed672bd42a9f4cdba3aaa95edd83b084facf7daa329082c99da0609a",
-          "size": 6974
+          "sha256": "5d13a8dff41707e33e720a6807a9722d5dc6c70e161ae052d60f0adc57baa16b",
+          "size": 6960
         },
         {
           "path": ".cursor/agents/hoi4-documentation-curator.md",
@@ -787,8 +787,8 @@
         },
         {
           "path": ".cursor/agents/hoi4-localisation-auditor.md",
-          "sha256": "a630c5613b32dc68620f05e805d1d845cbf1931e8b792044bdb34ca8ac56c1ff",
-          "size": 9602
+          "sha256": "64d772285e095a1ad8c57783c32564048aed7d232f13c162cb3e4d7179023cbe",
+          "size": 9591
         },
         {
           "path": ".cursor/agents/hoi4-quote-remark-researcher.md",
@@ -797,13 +797,13 @@
         },
         {
           "path": ".cursor/agents/hoi4-repo-explorer.md",
-          "sha256": "a3e501d4c1f4855475d40ecdd75d86af9ef31bd8f7c2cef965ba066ae2f2efdd",
-          "size": 12657
+          "sha256": "b15472296df01c0e03fdd12ac0b7476f17fc9d7353eebca2d0ccaa2af63b9ab3",
+          "size": 12634
         },
         {
           "path": ".cursor/agents/hoi4-scripted-system-architect.md",
-          "sha256": "3cc7da442ec36d09c262f70ffd6d8e93edf507ee4554ecb80507ce853b51f18a",
-          "size": 5739
+          "sha256": "11f4c03ded3f4f5485f69a7d6d57132b3075654366d110ca8d6817d88c4178c7",
+          "size": 5728
         },
         {
           "path": ".cursor/agents/hoi4-skill-maintainer.md",
@@ -889,13 +889,13 @@
         },
         {
           "path": ".qoder/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "f208a2e0df77788c74396fd2f9aa38bc6bd51f5ac8c5cccede6dbc4a260b1c48",
-          "size": 10616
+          "sha256": "0f60b1629a893786fea8d16e26cae3bb609ce74ec5280e00803750f5c43f04f3",
+          "size": 10605
         },
         {
           "path": ".qoder/agents/hoi4-ai-probability-auditor.md",
-          "sha256": "9c3e40c27e2596df775630c5a610b278adf0da9efcf3f81dde5dc81ed8a3d535",
-          "size": 9464
+          "sha256": "6a1a98c5eabfe568dcfe88fd4e35e5e349627e9e1cd7bf9d652ef3ec6a99c03e",
+          "size": 9450
         },
         {
           "path": ".qoder/agents/hoi4-asset-source-researcher.md",
@@ -909,13 +909,13 @@
         },
         {
           "path": ".qoder/agents/hoi4-country-package-auditor.md",
-          "sha256": "cfd9365128f421e4e7110572993366d4569ccb22b275f865702068b4eef71c97",
-          "size": 8636
+          "sha256": "68473c20b7510ed80ad25c493097874fdd31db53cbecbfdd5e374d79673f4672",
+          "size": 8622
         },
         {
           "path": ".qoder/agents/hoi4-decision-mission-auditor.md",
-          "sha256": "e0c017b7d9a9079cbe3a1a65bed0670f536576d297916af830e4eb88712bf9bd",
-          "size": 7030
+          "sha256": "3cc77b9993ffc2b88ac098f2074391203a8d234fe80e2a9577bdd68254021aa1",
+          "size": 7016
         },
         {
           "path": ".qoder/agents/hoi4-documentation-curator.md",
@@ -954,8 +954,8 @@
         },
         {
           "path": ".qoder/agents/hoi4-localisation-auditor.md",
-          "sha256": "b3ef7e7dea5a1745060c5401ad7f55beb5f76865ed2eddd5d1ece315ec3f528d",
-          "size": 9658
+          "sha256": "93769af5d67c4b8a44e0e832dac5792c1ce2feb7670f83ad38a6a2a8879e44b0",
+          "size": 9647
         },
         {
           "path": ".qoder/agents/hoi4-quote-remark-researcher.md",
@@ -964,13 +964,13 @@
         },
         {
           "path": ".qoder/agents/hoi4-repo-explorer.md",
-          "sha256": "61832eeb7a27db5bf6105a789c86a1ffc0a4d661e3e0710ba5e30bea5d76e5f6",
-          "size": 12700
+          "sha256": "f29fbc70d8b68cc7aea4af048cc0a5d289f06cec0a57ada6bbc45ffe7e24039e",
+          "size": 12677
         },
         {
           "path": ".qoder/agents/hoi4-scripted-system-architect.md",
-          "sha256": "6e77fc9a8669cd73158dd7fbc65a70cc7e12af199b74cbf9e6066b17afa87813",
-          "size": 5795
+          "sha256": "c50d04b262280db0195b6d3d7a6fbd4b8f90001ee39d4fbcf53c57c22a4ae707",
+          "size": 5784
         },
         {
           "path": ".qoder/agents/hoi4-skill-maintainer.md",
@@ -1056,13 +1056,13 @@
         },
         {
           "path": ".opencode/agent/hoi4-3d-model-pipeline.md",
-          "sha256": "7ad9d633b541c08fbb186b4257eb0b4fb75ff0de69c87ffa175c62c2c7b26d6f",
-          "size": 10546
+          "sha256": "87cefbea79da26f4c5766c6f573a964b91851788bf3dc16228525188fbdcbe6c",
+          "size": 10535
         },
         {
           "path": ".opencode/agent/hoi4-ai-probability-auditor.md",
-          "sha256": "2efa77fac82749ff120df539cd6ec56c894bf9a020a57fa675063b023aebdf5c",
-          "size": 9402
+          "sha256": "100bf8bf1a4427d340278d70718860d1635fdbfc58850d40aeeeebb3a15f4db3",
+          "size": 9388
         },
         {
           "path": ".opencode/agent/hoi4-asset-source-researcher.md",
@@ -1076,13 +1076,13 @@
         },
         {
           "path": ".opencode/agent/hoi4-country-package-auditor.md",
-          "sha256": "96687b9b7962dac0f1f63e598cbf83187f764b79b6a254d28bcd57d01970188f",
-          "size": 8560
+          "sha256": "5efbab18b0fcfbb81e3354abb5c9754901c37bb516d1048d1baec47c9f9567ec",
+          "size": 8546
         },
         {
           "path": ".opencode/agent/hoi4-decision-mission-auditor.md",
-          "sha256": "5d26bc7e246d0c03771666e08d5ac1e796cc7c034dad6e64931e78e06e78be59",
-          "size": 6953
+          "sha256": "c3b0fe90fa716e037a18bc7fa8902555acbfde6148efdf6e89f13df1befff558",
+          "size": 6939
         },
         {
           "path": ".opencode/agent/hoi4-documentation-curator.md",
@@ -1121,8 +1121,8 @@
         },
         {
           "path": ".opencode/agent/hoi4-localisation-auditor.md",
-          "sha256": "6dd2358076d6fe19ed41b1d832db6321f095b13565c7dd56ccc9c7efc40e4302",
-          "size": 9585
+          "sha256": "ab1e640a2f155b38d64cd05ee072c95a225d3a70a9c7a137d50dc879631c794e",
+          "size": 9574
         },
         {
           "path": ".opencode/agent/hoi4-quote-remark-researcher.md",
@@ -1131,13 +1131,13 @@
         },
         {
           "path": ".opencode/agent/hoi4-repo-explorer.md",
-          "sha256": "afb6f604874018dad26c3d7b3672b3a6d37cea6445d42c285ac72ce9f7f1b09e",
-          "size": 12647
+          "sha256": "3321a59c9f536dd519f1f4a7f14bd2be4fe04d8c04134329c82129101c65c9e9",
+          "size": 12624
         },
         {
           "path": ".opencode/agent/hoi4-scripted-system-architect.md",
-          "sha256": "32f0504f554872f24f34e4b90047aba5d02ae92a31b2daabb25854bde4a3ca58",
-          "size": 5717
+          "sha256": "f58c2cae26b691b83d8f8c38662fb1670c5cdec32097195d87276e62cfb2acbc",
+          "size": 5706
         },
         {
           "path": ".opencode/agent/hoi4-skill-maintainer.md",
@@ -1784,8 +1784,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "4ca88bc7b3ed9d4f822efe0513111ac77c5e9fe3c70c4b57e383618aa2760229",
-          "size": 68916
+          "sha256": "fd67fdd4bae511efd4e02ac4b766063d8b81852f5d4f9291f1cf40a14179065d",
+          "size": 68899
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -1794,8 +1794,8 @@
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/SKILL.md",
-          "sha256": "c7b87d4ac99644fe4b5dee69e6d757ba71a8780324c5957c0035017d822ff5ce",
-          "size": 33338
+          "sha256": "517d3f771169efb3310bc1f97bb80b246cd3b2e1776a39cd196b070a4d339211",
+          "size": 33335
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/references/other-ai-systems.md",
@@ -1804,13 +1804,13 @@
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/references/strategy-token-catalog.md",
-          "sha256": "b1b74b4c95aa922bb3c6d30a3ffc84ecff4e4f258bafa80f21f7865336daaf78",
-          "size": 18200
+          "sha256": "aea4fddab48b563dac75dd50f205e4601359c2648c4adf56b12e5ef51ae1c9e9",
+          "size": 18197
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/SKILL.md",
-          "sha256": "0872507775db5bf721e5fd73a5aefaf822f0f2634e7e207f5faa417333124dfa",
-          "size": 35597
+          "sha256": "77b382684ed4ee06f46ba64ece58a6b5fbfc4cda9480781e2e3ea3edf03dd55e",
+          "size": 35594
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/references/effects-triggers.md",
@@ -1819,8 +1819,8 @@
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/references/unit-leader-traits.md",
-          "sha256": "b0535c8710ac5303b59c5029f7fc14054112e3624d6fbf9a7956844dadc6038e",
-          "size": 9817
+          "sha256": "2e4b3e168ef58b2284747d564a590a26db85ea3bd0b0382af37c24683447bf5c",
+          "size": 9814
         },
         {
           "path": ".claude/skills/hoi4-debug-playtest/SKILL.md",
@@ -1844,8 +1844,8 @@
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/templates/formable_state_puzzle/README.md",
-          "sha256": "8a0e586f429ca8ffc073edeeb80846bfd419fa6a7ae6956f0b2fd4d4f8303b0c",
-          "size": 19040
+          "sha256": "052df144cae70059e01edf78dbbe7cd607df87c9acda8ae210d90f444b903836",
+          "size": 19037
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/templates/formable_state_puzzle/category_attachment_audit.md",
@@ -1914,8 +1914,8 @@
         },
         {
           "path": ".claude/skills/hoi4-diplomacy-war/SKILL.md",
-          "sha256": "efacf2bdc8decdb087beaa280e54a8f87e70aa4cd429f4bb29d6dbf0bb1122a9",
-          "size": 39281
+          "sha256": "018abefa34229ccc7c65a7fb3b7135ca12f79220a92b32827967e0371e621827",
+          "size": 39278
         },
         {
           "path": ".claude/skills/hoi4-diplomacy-war/references/intelligence-operations.md",
@@ -1924,13 +1924,13 @@
         },
         {
           "path": ".claude/skills/hoi4-diplomacy-war/references/syntax-reference.md",
-          "sha256": "a6a488f57ef1f4152c7d1afe3b6ad4abc84116a1f412a41eaac2a5fef050fcf2",
-          "size": 12205
+          "sha256": "197c3755bedf470e73aa326e3006c969a522fa693529cb46d47584f50e59045f",
+          "size": 12202
         },
         {
           "path": ".claude/skills/hoi4-equipment/SKILL.md",
-          "sha256": "cb963192491da3ec023194c2b4cf6f52036ac580e9b005eadcbcef2e4f4d0317",
-          "size": 22771
+          "sha256": "eab9acb327cbf25d047029a38ee66140c8ce7763031a46c08a2f61da70cc4678",
+          "size": 22768
         },
         {
           "path": ".claude/skills/hoi4-equipment/references/mios-and-special-projects.md",
@@ -1949,8 +1949,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "3c1c4040dc905d3f1c343758e780738fda49bf598945710ae986362b20c99327",
-          "size": 57028
+          "sha256": "9f77b2d16bb101e923a16ca05725137d3ac80245ab6f610e3feaeaef98a0e974",
+          "size": 57025
         },
         {
           "path": ".claude/skills/hoi4-events/references/country-activation.md",
@@ -1964,8 +1964,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/references/major-event-aftermath.md",
-          "sha256": "3678a36af85a57842e46f7f4dbb08c7a3b5a1bc4436ebecf8f638ecf3a7a94e4",
-          "size": 3813
+          "sha256": "f6288a6722bb3bb4efeca78ef44042fae0bcc63ce36b3b1d2e667f516aa2d4b0",
+          "size": 3810
         },
         {
           "path": ".claude/skills/hoi4-events/references/meta-effects.md",
@@ -4674,13 +4674,13 @@
         },
         {
           "path": ".claude/skills/hoi4-frame-animation/SKILL.md",
-          "sha256": "2bb20d6a869d1aba6c2c6138d0df318c0f4e874ed0e2cadfacfc4e2d7024a011",
-          "size": 28450
+          "sha256": "ba7d3727b0e350d686818c9fb68c60e15dd1a204fd0a962eb5238a2545b4f5e3",
+          "size": 28418
         },
         {
           "path": ".claude/skills/hoi4-ideas-modifiers/SKILL.md",
-          "sha256": "97ee1c1fc67b326865f169a59fc26b20f09e22aae621bb5da31fdab6d09934e6",
-          "size": 35350
+          "sha256": "1b51f8d42dde01ed8cf081c5a37249b2dd43cf2be9677bb0e2f0580240012044",
+          "size": 35347
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -4694,8 +4694,8 @@
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
-          "sha256": "2565814c744ab10abcf08a822aca62d2a7272dc1dd46d7aee2e674782adc2126",
-          "size": 39321
+          "sha256": "5ebc9785f6aaa55b961ebff1558869711a462ace93e92381a64a5f6419ec283f",
+          "size": 39318
         },
         {
           "path": ".claude/skills/hoi4-map-states/references/map-geometry.md",
@@ -4744,8 +4744,8 @@
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
-          "sha256": "325a48af9648ee66a85afd02bda61e8470c747e0a0beb8e1d9c25f76fc5792d6",
-          "size": 25922
+          "sha256": "3f7ca6ed5b0f335d07239bf74a63ff3a73d29aa3584671f58a121a80dc95c72d",
+          "size": 25919
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/references/doctrine-authoring.md",
@@ -4754,8 +4754,8 @@
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/references/technology-tree-gui.md",
-          "sha256": "c35bccfedbec1f0a00245c523f027aec1b0bb62f799ad32b96e8412cc5f7e825",
-          "size": 8805
+          "sha256": "ffae64616535a95f107300126c57b4b8f04546e78233e86e17e44e0d34220272",
+          "size": 8802
         },
         {
           "path": ".claude/skills/hoi4-text-audio-research/SKILL.md",
@@ -4764,8 +4764,8 @@
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/SKILL.md",
-          "sha256": "a49fdf31f8e8ab35f63e92903bd91bffed57b2a6953ee167a2585c9b7a24a4d8",
-          "size": 35941
+          "sha256": "c2856ca69944df0be12503be8e69b4146fa7f937955665e476f969ac9c6c4451",
+          "size": 35938
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/references/names-stats-visuals.md",
@@ -4774,8 +4774,8 @@
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/references/naval-air-oob.md",
-          "sha256": "5a27263927dae1d3256a3cbd6d5a01dab1503e5a8903f3b15e57ec5f0734773c",
-          "size": 8834
+          "sha256": "ae9a6adaa6e06c99962fd23a5cb92cb8725e3cdf6c755f50df0729ebbe5dfa96",
+          "size": 8825
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/references/runtime-effects-triggers.md",
@@ -4855,13 +4855,13 @@
       "expected_files": [
         {
           "path": ".claude/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "0e67889fa87794a604e43fff3afd49798636f96f575822edaea2b883a4673f2b",
-          "size": 10453
+          "sha256": "b6458e214d5c0759610ec5ce27d05b4a8f55af0761dc85b5c05990429a61dd2d",
+          "size": 10442
         },
         {
           "path": ".claude/agents/hoi4-ai-probability-auditor.md",
-          "sha256": "889264c5fee4c11faf48d5097c8b1b937ef1cf63f351f19e6cfda3fc7a51cab8",
-          "size": 9353
+          "sha256": "bbe4726106a30219146dfd83870333c8d53ba01e32df0cbc8d6d7d7f0170440c",
+          "size": 9339
         },
         {
           "path": ".claude/agents/hoi4-asset-source-researcher.md",
@@ -4875,13 +4875,13 @@
         },
         {
           "path": ".claude/agents/hoi4-country-package-auditor.md",
-          "sha256": "ba3ec323996951e6df559f8c18fc75b65251d78bf060dd6fb8e6725df9db0c23",
-          "size": 8468
+          "sha256": "759580cdb720ebbae8b754d1c6c3be08677f8746dd90254506586f6d4d4cc5f9",
+          "size": 8454
         },
         {
           "path": ".claude/agents/hoi4-decision-mission-auditor.md",
-          "sha256": "95f19b7208bc1e1609b4574f0d220a64125ab3c6b1a9dd5526eaa69fc055a60c",
-          "size": 6861
+          "sha256": "4853336b9a4749abd166722c5e6678b479328d793c923fbc04e03bc5f6f5ff5f",
+          "size": 6847
         },
         {
           "path": ".claude/agents/hoi4-documentation-curator.md",
@@ -4920,8 +4920,8 @@
         },
         {
           "path": ".claude/agents/hoi4-localisation-auditor.md",
-          "sha256": "5b10b41df2802bab738309cff5e3848d05b31e8693deaa7a84abc6833efe4498",
-          "size": 9492
+          "sha256": "7c4f288ee1f9f9efce78977cfec6ad5ac804ec8dfdd7b196a42e93bd97ef5fb0",
+          "size": 9481
         },
         {
           "path": ".claude/agents/hoi4-quote-remark-researcher.md",
@@ -4930,13 +4930,13 @@
         },
         {
           "path": ".claude/agents/hoi4-repo-explorer.md",
-          "sha256": "b7fb8834c53cafc77f827a817759649d090d5496a2f45dd62c97e129a8ea3dc4",
-          "size": 12598
+          "sha256": "bac7859e46838f00041ea681e2401bfb4463ab37a333e6d1207bb78c4be156c0",
+          "size": 12575
         },
         {
           "path": ".claude/agents/hoi4-scripted-system-architect.md",
-          "sha256": "2b3721d13aae5f87f9b375e97c63e0fa6be264b5b9c34ebc1b0277aab3f9064c",
-          "size": 5624
+          "sha256": "9105112c2ca06ce5287ac79cd10fe6f9449852fbca10f136fd983c852e6a3d73",
+          "size": 5613
         },
         {
           "path": ".claude/agents/hoi4-skill-maintainer.md",
@@ -5055,13 +5055,13 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_3d_model_pipeline.toml",
-          "sha256": "d450f4f9c2e083c56cde89a5daafefd41744a0c800dbed8cd7b09d38cb88501f",
-          "size": 10747
+          "sha256": "f9606ab2c60099be75b116808ad99a4799665d2328c8a0f3da3fb502aa5fe950",
+          "size": 10736
         },
         {
           "path": ".codex/agents/hoi4_ai_probability_auditor.toml",
-          "sha256": "1e13e539fdade06bfade6d3272838fc764c95d964568094657907bde0ccf878c",
-          "size": 9585
+          "sha256": "101d52e375f6ba7b6fdbc29d3a8d0360036a3f0c54c2a4be8ccc13c07c7fa347",
+          "size": 9571
         },
         {
           "path": ".codex/agents/hoi4_asset_source_researcher.toml",
@@ -5075,13 +5075,13 @@
         },
         {
           "path": ".codex/agents/hoi4_country_package_auditor.toml",
-          "sha256": "1ecc1632e2a9dc9ada1dbdafd4ff129ba64269eaa432eb3a72d48fd7eeb88bb5",
-          "size": 8751
+          "sha256": "6d75300bab6250f2183bdbc507004bf76d14a4e90f3e2a9722e4ebcbb4d68d75",
+          "size": 8737
         },
         {
           "path": ".codex/agents/hoi4_decision_mission_auditor.toml",
-          "sha256": "1a7dcd6737eb8891637cc3de190f2885b84c1923353503962dd50ceefcd91609",
-          "size": 7146
+          "sha256": "3c17b0f27a4c67bff13135a24a64e7a29d29da3789f014b1ffe4eea2741ef443",
+          "size": 7132
         },
         {
           "path": ".codex/agents/hoi4_documentation_curator.toml",
@@ -5120,8 +5120,8 @@
         },
         {
           "path": ".codex/agents/hoi4_localisation_auditor.toml",
-          "sha256": "c306e939ec02b5f23a7ef9dad75a6c3a63ac90abe5d956dfed62d77c03f1d0f5",
-          "size": 9768
+          "sha256": "2b81e8c663feb778ab5185cc3108dd9ce034bbc26bdcf13ceb402d8845af8528",
+          "size": 9757
         },
         {
           "path": ".codex/agents/hoi4_quote_remark_researcher.toml",
@@ -5130,13 +5130,13 @@
         },
         {
           "path": ".codex/agents/hoi4_repo_explorer.toml",
-          "sha256": "6d8e1e4cbfb45ed0fae4e17ec25e4aea4a2ff1a45667af42174a2d1ce8521ff2",
-          "size": 12812
+          "sha256": "640ac5caab89088452df5bed93ee0c40a3904556f030e5679f9bd0fd157fdffa",
+          "size": 12789
         },
         {
           "path": ".codex/agents/hoi4_scripted_system_architect.toml",
-          "sha256": "c5d686f05d9afab3e081a0f498ea4cf931729ebea4c1741cf7de2dce73dd98f7",
-          "size": 5910
+          "sha256": "5c29c41ee26f34d15018c7c32c086b47c278a80ca3e99c6f23ce4e0ae434510d",
+          "size": 5899
         },
         {
           "path": ".codex/agents/hoi4_skill_maintainer.toml",
@@ -5208,8 +5208,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "4ca88bc7b3ed9d4f822efe0513111ac77c5e9fe3c70c4b57e383618aa2760229",
-          "size": 68916
+          "sha256": "fd67fdd4bae511efd4e02ac4b766063d8b81852f5d4f9291f1cf40a14179065d",
+          "size": 68899
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -5218,8 +5218,8 @@
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/SKILL.md",
-          "sha256": "c7b87d4ac99644fe4b5dee69e6d757ba71a8780324c5957c0035017d822ff5ce",
-          "size": 33338
+          "sha256": "517d3f771169efb3310bc1f97bb80b246cd3b2e1776a39cd196b070a4d339211",
+          "size": 33335
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/references/other-ai-systems.md",
@@ -5228,13 +5228,13 @@
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/references/strategy-token-catalog.md",
-          "sha256": "b1b74b4c95aa922bb3c6d30a3ffc84ecff4e4f258bafa80f21f7865336daaf78",
-          "size": 18200
+          "sha256": "aea4fddab48b563dac75dd50f205e4601359c2648c4adf56b12e5ef51ae1c9e9",
+          "size": 18197
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/SKILL.md",
-          "sha256": "0872507775db5bf721e5fd73a5aefaf822f0f2634e7e207f5faa417333124dfa",
-          "size": 35597
+          "sha256": "77b382684ed4ee06f46ba64ece58a6b5fbfc4cda9480781e2e3ea3edf03dd55e",
+          "size": 35594
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/references/effects-triggers.md",
@@ -5243,8 +5243,8 @@
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/references/unit-leader-traits.md",
-          "sha256": "b0535c8710ac5303b59c5029f7fc14054112e3624d6fbf9a7956844dadc6038e",
-          "size": 9817
+          "sha256": "2e4b3e168ef58b2284747d564a590a26db85ea3bd0b0382af37c24683447bf5c",
+          "size": 9814
         },
         {
           "path": ".claude/skills/hoi4-debug-playtest/SKILL.md",
@@ -5268,8 +5268,8 @@
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/templates/formable_state_puzzle/README.md",
-          "sha256": "8a0e586f429ca8ffc073edeeb80846bfd419fa6a7ae6956f0b2fd4d4f8303b0c",
-          "size": 19040
+          "sha256": "052df144cae70059e01edf78dbbe7cd607df87c9acda8ae210d90f444b903836",
+          "size": 19037
         },
         {
           "path": ".claude/skills/hoi4-decisions-missions/templates/formable_state_puzzle/category_attachment_audit.md",
@@ -5338,8 +5338,8 @@
         },
         {
           "path": ".claude/skills/hoi4-diplomacy-war/SKILL.md",
-          "sha256": "efacf2bdc8decdb087beaa280e54a8f87e70aa4cd429f4bb29d6dbf0bb1122a9",
-          "size": 39281
+          "sha256": "018abefa34229ccc7c65a7fb3b7135ca12f79220a92b32827967e0371e621827",
+          "size": 39278
         },
         {
           "path": ".claude/skills/hoi4-diplomacy-war/references/intelligence-operations.md",
@@ -5348,13 +5348,13 @@
         },
         {
           "path": ".claude/skills/hoi4-diplomacy-war/references/syntax-reference.md",
-          "sha256": "a6a488f57ef1f4152c7d1afe3b6ad4abc84116a1f412a41eaac2a5fef050fcf2",
-          "size": 12205
+          "sha256": "197c3755bedf470e73aa326e3006c969a522fa693529cb46d47584f50e59045f",
+          "size": 12202
         },
         {
           "path": ".claude/skills/hoi4-equipment/SKILL.md",
-          "sha256": "cb963192491da3ec023194c2b4cf6f52036ac580e9b005eadcbcef2e4f4d0317",
-          "size": 22771
+          "sha256": "eab9acb327cbf25d047029a38ee66140c8ce7763031a46c08a2f61da70cc4678",
+          "size": 22768
         },
         {
           "path": ".claude/skills/hoi4-equipment/references/mios-and-special-projects.md",
@@ -5373,8 +5373,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "3c1c4040dc905d3f1c343758e780738fda49bf598945710ae986362b20c99327",
-          "size": 57028
+          "sha256": "9f77b2d16bb101e923a16ca05725137d3ac80245ab6f610e3feaeaef98a0e974",
+          "size": 57025
         },
         {
           "path": ".claude/skills/hoi4-events/references/country-activation.md",
@@ -5388,8 +5388,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/references/major-event-aftermath.md",
-          "sha256": "3678a36af85a57842e46f7f4dbb08c7a3b5a1bc4436ebecf8f638ecf3a7a94e4",
-          "size": 3813
+          "sha256": "f6288a6722bb3bb4efeca78ef44042fae0bcc63ce36b3b1d2e667f516aa2d4b0",
+          "size": 3810
         },
         {
           "path": ".claude/skills/hoi4-events/references/meta-effects.md",
@@ -8098,13 +8098,13 @@
         },
         {
           "path": ".claude/skills/hoi4-frame-animation/SKILL.md",
-          "sha256": "2bb20d6a869d1aba6c2c6138d0df318c0f4e874ed0e2cadfacfc4e2d7024a011",
-          "size": 28450
+          "sha256": "ba7d3727b0e350d686818c9fb68c60e15dd1a204fd0a962eb5238a2545b4f5e3",
+          "size": 28418
         },
         {
           "path": ".claude/skills/hoi4-ideas-modifiers/SKILL.md",
-          "sha256": "97ee1c1fc67b326865f169a59fc26b20f09e22aae621bb5da31fdab6d09934e6",
-          "size": 35350
+          "sha256": "1b51f8d42dde01ed8cf081c5a37249b2dd43cf2be9677bb0e2f0580240012044",
+          "size": 35347
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -8118,8 +8118,8 @@
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
-          "sha256": "2565814c744ab10abcf08a822aca62d2a7272dc1dd46d7aee2e674782adc2126",
-          "size": 39321
+          "sha256": "5ebc9785f6aaa55b961ebff1558869711a462ace93e92381a64a5f6419ec283f",
+          "size": 39318
         },
         {
           "path": ".claude/skills/hoi4-map-states/references/map-geometry.md",
@@ -8168,8 +8168,8 @@
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
-          "sha256": "325a48af9648ee66a85afd02bda61e8470c747e0a0beb8e1d9c25f76fc5792d6",
-          "size": 25922
+          "sha256": "3f7ca6ed5b0f335d07239bf74a63ff3a73d29aa3584671f58a121a80dc95c72d",
+          "size": 25919
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/references/doctrine-authoring.md",
@@ -8178,8 +8178,8 @@
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/references/technology-tree-gui.md",
-          "sha256": "c35bccfedbec1f0a00245c523f027aec1b0bb62f799ad32b96e8412cc5f7e825",
-          "size": 8805
+          "sha256": "ffae64616535a95f107300126c57b4b8f04546e78233e86e17e44e0d34220272",
+          "size": 8802
         },
         {
           "path": ".claude/skills/hoi4-text-audio-research/SKILL.md",
@@ -8188,8 +8188,8 @@
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/SKILL.md",
-          "sha256": "a49fdf31f8e8ab35f63e92903bd91bffed57b2a6953ee167a2585c9b7a24a4d8",
-          "size": 35941
+          "sha256": "c2856ca69944df0be12503be8e69b4146fa7f937955665e476f969ac9c6c4451",
+          "size": 35938
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/references/names-stats-visuals.md",
@@ -8198,8 +8198,8 @@
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/references/naval-air-oob.md",
-          "sha256": "5a27263927dae1d3256a3cbd6d5a01dab1503e5a8903f3b15e57ec5f0734773c",
-          "size": 8834
+          "sha256": "ae9a6adaa6e06c99962fd23a5cb92cb8725e3cdf6c755f50df0729ebbe5dfa96",
+          "size": 8825
         },
         {
           "path": ".claude/skills/hoi4-units-divisions/references/runtime-effects-triggers.md",
@@ -9017,8 +9017,8 @@
       "expected_files": [
         {
           "path": "docs/systems/hoi4_agent_tools_mcp_integration.md",
-          "sha256": "9aedcbb55a0f7c7f97769ea8767f0e9c998e53d539c8f32ec8c21461158672af",
-          "size": 28745
+          "sha256": "cb076af2ec56616dd45c89189a8a0f6d6301bb0db9388510704a97c0b89e58d6",
+          "size": 28740
         }
       ]
     },
@@ -9066,8 +9066,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "f5159e178e945125a8ec2fec9c86dbddeb50f769e97bc4eddf4d9060f8994f3b",
-          "size": 12633
+          "sha256": "1b2ce803895d535b2852936db607d84044eadec6485c5f553813871513a571cb",
+          "size": 13322
         }
       ]
     },
@@ -9125,8 +9125,8 @@
     },
     {
       "id": "wiki.snapshot",
-      "display_name": "Offline Hearts of Iron IV Paradox wiki",
-      "description": "Install the repository snapshot under paradox_wiki/.",
+      "display_name": "HOI4 wiki (kit)",
+      "description": "Install the kit's HOI4 wiki under hoi4_wiki/. An older paradox_wiki/ folder is replaced by it.",
       "category": "wiki",
       "optional": false,
       "platforms": [
@@ -9134,20 +9134,20 @@
       ],
       "source": {
         "kind": "tree",
-        "path": "paradox_wiki",
+        "path": "hoi4_wiki",
         "include": [
           "**"
         ],
         "exclude": []
       },
       "destination": {
-        "path": "paradox_wiki/",
+        "path": "hoi4_wiki/",
         "ownership": "managed",
         "outside_project": false
       },
       "dependencies": [],
       "conflicts": [
-        "existing paradox_wiki files"
+        "existing hoi4_wiki files"
       ],
       "conflict_policy": "replace_if_unmodified",
       "validation": [
@@ -9155,7 +9155,7 @@
           "id": "wiki.required_pages",
           "severity": "block",
           "kind": "directory_coverage",
-          "target": "paradox_wiki"
+          "target": "hoi4_wiki"
         }
       ],
       "update": {
@@ -9168,1003 +9168,1003 @@
         "engine behavior reference"
       ],
       "notes": [
-        "Pages are adapted from the Hearts of Iron 4 Wiki (hoi4.paradoxwikis.com) and licensed CC BY-SA 3.0; the kit's additions to them are distributed under the same license. paradox_wiki/LICENSE.txt records the source, the license and the changes.",
+        "Pages are adapted from the Hearts of Iron 4 Wiki (hoi4.paradoxwikis.com) and licensed CC BY-SA 3.0; the kit's additions to them are distributed under the same license. hoi4_wiki/LICENSE.txt records the source, the license and the changes.",
         "Evidence: the Hearts of Iron 4 Wiki reports its license as \"Attribution-ShareAlike 3.0\" in its site rights information and points to the Paradox Wikis copyright policy, https://central.paradoxwikis.com/Central:Copyrights, which says all editors publish their contributions under the Creative Commons Attribution-Share Alike 3.0 license.",
-        "The license covers the article text. Images and game material in the snapshot keep their own terms (see paradox_wiki/LICENSE.txt), and the package's Apache-2.0 license does not apply to the snapshot."
+        "The license covers the article text. Images and game material in the snapshot keep their own terms (see hoi4_wiki/LICENSE.txt), and the package's Apache-2.0 license does not apply to the snapshot."
       ],
       "expected_files": [
         {
-          "path": "paradox_wiki/LICENSE.txt",
+          "path": "hoi4_wiki/LICENSE.txt",
           "sha256": "32aa2e67e3768152f4e23a0836240b00419c74908c8e3f773b349dd42ca5c4e5",
           "size": 2556
         },
         {
-          "path": "paradox_wiki/achievement_modding.md",
+          "path": "hoi4_wiki/achievement_modding.md",
           "sha256": "8e996e65102a4a66c99f0ae4c00ff1f9d072733ad7213718a90d64dfde41600d",
           "size": 20002
         },
         {
-          "path": "paradox_wiki/ai_focuses.md",
+          "path": "hoi4_wiki/ai_focuses.md",
           "sha256": "56f9d2a3a54f6c69f33cf4a9c998739202eab9ff6c0bf10aaae44895644c436f",
           "size": 14958
         },
         {
-          "path": "paradox_wiki/ai_modding.md",
+          "path": "hoi4_wiki/ai_modding.md",
           "sha256": "d7dd8eb876c9db29c31bb4dc34cc6a40bb357627bc4d76b9134e41b0c957e395",
           "size": 120186
         },
         {
-          "path": "paradox_wiki/autonomy_state_modding.md",
+          "path": "hoi4_wiki/autonomy_state_modding.md",
           "sha256": "0909855c98146e7e04adf28b6f7f5881886f958d23aaec6e1e85cddc570aff71",
           "size": 32262
         },
         {
-          "path": "paradox_wiki/balance_of_power_modding.md",
+          "path": "hoi4_wiki/balance_of_power_modding.md",
           "sha256": "45fbd47a936fe7a525c46474be8c7d0d88adfe7da693a4cdf6851947d32298b0",
           "size": 34791
         },
         {
-          "path": "paradox_wiki/bookmark_modding.md",
+          "path": "hoi4_wiki/bookmark_modding.md",
           "sha256": "7e0697b1aa2137bdfaea0c04fd59cff8a93548e94b627953c9701f6d05233c7b",
           "size": 39157
         },
         {
-          "path": "paradox_wiki/building_modding.md",
+          "path": "hoi4_wiki/building_modding.md",
           "sha256": "fa577124154324e4478cd31fca68f34e64dcffa47c277095e1f3591e4a45b6bb",
           "size": 51982
         },
         {
-          "path": "paradox_wiki/character_modding.md",
+          "path": "hoi4_wiki/character_modding.md",
           "sha256": "0dfff0e4db25efd111f27440650c6a29b2b2ac4db7a014e09b003d0f279abf25",
           "size": 93682
         },
         {
-          "path": "paradox_wiki/collection_modding.md",
+          "path": "hoi4_wiki/collection_modding.md",
           "sha256": "be15ca723fff5d02dd9be8ce141bb943579e06126164c67de0e6ad13510b676b",
           "size": 34504
         },
         {
-          "path": "paradox_wiki/console_commands.md",
+          "path": "hoi4_wiki/console_commands.md",
           "sha256": "df0d67772d86234d94962ee8e1aebc5120ea638cc05cd9aefa5724bc715c63fe",
           "size": 79141
         },
         {
-          "path": "paradox_wiki/cosmetic_tag_modding.md",
+          "path": "hoi4_wiki/cosmetic_tag_modding.md",
           "sha256": "5af743f981bdb4f38292b15b525515908bae3c9035815fd7e0223acec1a453a1",
           "size": 21838
         },
         {
-          "path": "paradox_wiki/country_creation.md",
+          "path": "hoi4_wiki/country_creation.md",
           "sha256": "fb4e068ceb20906de5894536c3870a4ce4930a0aa9229e208d1cc5bbb4685817",
           "size": 76205
         },
         {
-          "path": "paradox_wiki/data_structures.md",
+          "path": "hoi4_wiki/data_structures.md",
           "sha256": "c2f0dd5509b534188cd28cc8b553f8da28e04a0dd5b2efa7548f0a1c1b633a69",
           "size": 183830
         },
         {
-          "path": "paradox_wiki/decision_modding.md",
+          "path": "hoi4_wiki/decision_modding.md",
           "sha256": "b8f494282e5e0322b0ec192620bed51ff370dfac15d02cc1524e9bd48fbe0658",
           "size": 58537
         },
         {
-          "path": "paradox_wiki/defines.md",
+          "path": "hoi4_wiki/defines.md",
           "sha256": "bac5f2781a3ad7d4ae6c5d56de4b2b3161f86b1f0d7c00f42ebf100aa7ed0e28",
           "size": 449537
         },
         {
-          "path": "paradox_wiki/defines_additions.md",
+          "path": "hoi4_wiki/defines_additions.md",
           "sha256": "6229e83ea3dad1c1162eb89dd29198a8b82b87ced97b74bc5a44f9f7c9479d20",
           "size": 110203
         },
         {
-          "path": "paradox_wiki/division_modding.md",
+          "path": "hoi4_wiki/division_modding.md",
           "sha256": "b0902d1b43d58582ecc46466bcb2c85f64c2b044e1d4e8b33056e78d1b115c2e",
           "size": 45501
         },
         {
-          "path": "paradox_wiki/doctrine_modding.md",
+          "path": "hoi4_wiki/doctrine_modding.md",
           "sha256": "082cadf95d9ea1b9c1dbea0be435c6b309f8929a88e17f679dca001fd3faecab",
           "size": 42953
         },
         {
-          "path": "paradox_wiki/effects.md",
+          "path": "hoi4_wiki/effects.md",
           "sha256": "617f015bb3f10263419dba890f3ceb309d66b6671ddc923c740981f550c09a7d",
           "size": 341057
         },
         {
-          "path": "paradox_wiki/entity_modding.md",
+          "path": "hoi4_wiki/entity_modding.md",
           "sha256": "b0e5795d325776eb664ca0fb8045ba84344f9e410224c2dd059ce6d1a744c338",
           "size": 21656
         },
         {
-          "path": "paradox_wiki/equipment_modding.md",
+          "path": "hoi4_wiki/equipment_modding.md",
           "sha256": "73b1ff66147279a0f96690ebbf7526e4b1aa281dcf912d83f5e47a1eeaa8974b",
           "size": 41331
         },
         {
-          "path": "paradox_wiki/event_modding.md",
+          "path": "hoi4_wiki/event_modding.md",
           "sha256": "2fafb077c3c3f860d6e47615ebba89bfe8b2e430253a8e3e62d0e5486e639150",
           "size": 64514
         },
         {
-          "path": "paradox_wiki/faction_modding.md",
+          "path": "hoi4_wiki/faction_modding.md",
           "sha256": "c0cf2c174e36f61becc0037225db4fb84badfc53a99834dfd93e1ffc48936bfc",
           "size": 62495
         },
         {
-          "path": "paradox_wiki/font_modding.md",
+          "path": "hoi4_wiki/font_modding.md",
           "sha256": "dc9106b7ca514a8ad426459c7f9b97931bfd5908f6371744a6c7c8c2db2c714a",
           "size": 22678
         },
         {
-          "path": "paradox_wiki/game_rule_modding.md",
+          "path": "hoi4_wiki/game_rule_modding.md",
           "sha256": "ce30c44a79a8600c39f540d053d750b942905d940f73fb66dc96ca478e65680d",
           "size": 20122
         },
         {
-          "path": "paradox_wiki/graphical_asset_modding.md",
+          "path": "hoi4_wiki/graphical_asset_modding.md",
           "sha256": "4731c7a031808e62cc65940d38c2efb8b7bc93fba5567f947fb64835ef8560ce",
           "size": 33313
         },
         {
-          "path": "paradox_wiki/idea_modding.md",
+          "path": "hoi4_wiki/idea_modding.md",
           "sha256": "511d1d660975926806e7b9523519a657a20b6c6959bee6b0f7c9d6c1539d525f",
           "size": 53438
         },
         {
-          "path": "paradox_wiki/ideology_modding.md",
+          "path": "hoi4_wiki/ideology_modding.md",
           "sha256": "b688f8543e4487a8edc0b2d5552fdab94a11925f5d955d04776001b226f95928",
           "size": 32936
         },
         {
-          "path": "paradox_wiki/intelligence_agency_modding.md",
+          "path": "hoi4_wiki/intelligence_agency_modding.md",
           "sha256": "f603bf9c84bfb6e926c254d2801fa21a5d84b8eac8516130225dc4569ea1b241",
           "size": 27930
         },
         {
-          "path": "paradox_wiki/intelligence_operation_modding.md",
+          "path": "hoi4_wiki/intelligence_operation_modding.md",
           "sha256": "08bb22456ceae654bb73c47038508cb3d334069139df78f46b0f01dec830b50e",
           "size": 41198
         },
         {
-          "path": "paradox_wiki/interface_modding.md",
+          "path": "hoi4_wiki/interface_modding.md",
           "sha256": "66ff0f6c2d6f7a47741c910911428a81efaf5d760df211286310a3b6e3c8e7f0",
           "size": 52394
         },
         {
-          "path": "paradox_wiki/list_of_modifiers.md",
+          "path": "hoi4_wiki/list_of_modifiers.md",
           "sha256": "f2d858be92cfedb69f7f976d6db71228a96074f31d45377156aec30c21d8303f",
           "size": 101825
         },
         {
-          "path": "paradox_wiki/localisation.md",
+          "path": "hoi4_wiki/localisation.md",
           "sha256": "1d691223eb3714f1d270e139a0e97b9bd9a54fc90faafa96ee7900e265f3365b",
           "size": 88025
         },
         {
-          "path": "paradox_wiki/map_modding.md",
+          "path": "hoi4_wiki/map_modding.md",
           "sha256": "ab1ab82613c2f8962bb52faf00309854a213057a3aeeb2865fb62594e0af330f",
           "size": 104638
         },
         {
-          "path": "paradox_wiki/map_mode_modding.md",
+          "path": "hoi4_wiki/map_mode_modding.md",
           "sha256": "e59100c623eb9b857cdffa98acf2589359e89a2de35e2ba1a8f10bc04c9d15e0",
           "size": 17304
         },
         {
-          "path": "paradox_wiki/media/ai_modding_04cfcba22e__img12.png",
+          "path": "hoi4_wiki/media/ai_modding_04cfcba22e__img12.png",
           "sha256": "6abe5367ee3dddcb3b6f45641234ab3267015f59753b588f89b66f2ff8675136",
           "size": 1767
         },
         {
-          "path": "paradox_wiki/media/ai_modding_04cfcba22e__img6.png",
+          "path": "hoi4_wiki/media/ai_modding_04cfcba22e__img6.png",
           "sha256": "ff4cafbf939c8a197c9031bccc212d3712072926aad5c12050271b48e458330a",
           "size": 1784
         },
         {
-          "path": "paradox_wiki/media/ai_modding_25696e0a81__img2.png",
+          "path": "hoi4_wiki/media/ai_modding_25696e0a81__img2.png",
           "sha256": "d207012fa230682c9d779c72fce329a917f257fae8a4b5ec0fc94baaf122664c",
           "size": 1849
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img1.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img1.png",
           "sha256": "920e6c1f74f82c4cabb62d216c89b192a05e1454e4b9680f79e92f1af8245eed",
           "size": 4285
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img10.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img10.png",
           "sha256": "a14bb2380e5772ae83214d09fff0fdf0d2359857d8a3fd5a80acac8e8d45155c",
           "size": 3703
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img11.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img11.png",
           "sha256": "a68d6e472fb5dbc77c4aa7bea907cec1d8a4fc74b9caa8bf782ffa327314053f",
           "size": 2650
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img12.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img12.png",
           "sha256": "bd4d26ade78573975cbf09cba0e00289490c9e1241b834ec4c7df0f70a12e986",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img13.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img13.png",
           "sha256": "7e78f137eae3cdb2f9fa189d62e90959965a0958b4a89dfb92fd8ea3841baf01",
           "size": 3274
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img14.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img14.png",
           "sha256": "79384e71807ec6688ef83e6f9f8d8333fc032ff2244b55eafc587b83c8c9f49b",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img15.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img15.png",
           "sha256": "355c8985a5f283f46a73bc4977253b95800efaf16f190e0e3167fdbb59c5977e",
           "size": 2789
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img16.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img16.png",
           "sha256": "536cb522d128474913ebccd717051873be85612d3166e491d03c370d13db9201",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img17.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img17.png",
           "sha256": "74d5b4d4be6c8706760abf63a4120356c6e71f6fa98f95c91eeadef24829cc10",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img18.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img18.png",
           "sha256": "15e5383f3151a38504a63784ef589833c6b59888c544abeecbe26f48fccd2be4",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img19.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img19.png",
           "sha256": "dc5b10db07deaacbd56f8dc688f309f0842e63772d5670e1b01181a9f6ac7763",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img20.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img20.png",
           "sha256": "e43c95761467097b6876d0fa9fed07433827ec330c9baf22b8e82a35d035c456",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img21.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img21.png",
           "sha256": "d112927d1ce438028900937b87f39b9373d79b3548d56242e42d1a29e9b18d3c",
           "size": 2565
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img22.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img22.png",
           "sha256": "79818b98857febcc58cb535a6680e0b8253b995ac40f6117ec362974c2a47229",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img23.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img23.png",
           "sha256": "8ce5746f4c478fd4a5b038ed1f1b753ebae2ad72722364b6e6bd174a18f1b51c",
           "size": 3731
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img24.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img24.png",
           "sha256": "413a76f2099c7e3ac5b331685ea6cdc2aa0c511aab9cf3244f447bdbc53e8e96",
           "size": 3319
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img25.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img25.png",
           "sha256": "1299cf08f826705292a0217e1d057fba2928f3dbfe7bddce35fa9d01ee499fc8",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img27.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img27.png",
           "sha256": "02f50bd1937d58dbd0d1f3031e670fdfcd5b685c665b7340447fd1d719f0002f",
           "size": 2512
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img28.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img28.png",
           "sha256": "cedf3270123ad309d5c3ff823a4d70d45cbf75ce4239a19a61344c2bcf185b7b",
           "size": 2957
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img29.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img29.png",
           "sha256": "c9a2341759546889a03e76a1ffd4bc54b0d5e271950865ae88c038f7bd1b5311",
           "size": 2697
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img30.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img30.png",
           "sha256": "03facbe7e207c7bff8ce27eec3126ae0845d9afeb6f172759d84240346d17120",
           "size": 2339
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img31.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img31.png",
           "sha256": "afbda2b41402ff07b3dbf12e77d5d93a4233c4a52d3e00d655b73475d7db8d82",
           "size": 2979
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img33.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img33.png",
           "sha256": "3b831c17be8fd99c32d7ababedf9ff76deeb55ee12c14f63dc46d6b160ba4f72",
           "size": 2763
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img35.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img35.png",
           "sha256": "50fe469ec0f4dd031435a350af080582b159daf9282516a0883bc0a9db569ebb",
           "size": 4665
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img36.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img36.png",
           "sha256": "476e13f1e3b22529ea672683b1c2258e06240d8ece6cf2bb5c7a2250a8d1c5d5",
           "size": 4393
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img5.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img5.png",
           "sha256": "74afa6f3754025b65e9d7ebcf51183c02330a15a9dd3bd821d96182b89f6ee3a",
           "size": 2774
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img6.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img6.png",
           "sha256": "3cef6edc0789ccb5e76b4088174c0be9eecfcc370dbd6e7f26600f1e67d94ba2",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img7.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img7.png",
           "sha256": "a231e8b78cf5de6e69139a3623dc413ff9683d21dc07c6c9df8f0d80537e7c06",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img8.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img8.png",
           "sha256": "0069c38314143f35b5164166272568741b0c0e969afc9c9d0bf2d30149d230f6",
           "size": 8627
         },
         {
-          "path": "paradox_wiki/media/building_modding_811161eae8__img9.png",
+          "path": "hoi4_wiki/media/building_modding_811161eae8__img9.png",
           "sha256": "f1ea9c883a1b2c3a04e00044589411b3c34d2b79f2682266c0fc351fc3615f80",
           "size": 3042
         },
         {
-          "path": "paradox_wiki/media/character_modding_04e3359449__img22.png",
+          "path": "hoi4_wiki/media/character_modding_04e3359449__img22.png",
           "sha256": "7bb221936b4982c202dd75a9467b15c0abf557484c239d3360e9ba4833060702",
           "size": 1752
         },
         {
-          "path": "paradox_wiki/media/character_modding_41494a4f46__img8.png",
+          "path": "hoi4_wiki/media/character_modding_41494a4f46__img8.png",
           "sha256": "ae9b8880598131a97ba9afb7e200f5cad7c73489fe8262e793db03740371e696",
           "size": 2019
         },
         {
-          "path": "paradox_wiki/media/character_modding_58ea48332f__img14.png",
+          "path": "hoi4_wiki/media/character_modding_58ea48332f__img14.png",
           "sha256": "f2193e347f5a61f7860959d52376e940a463d5a2dcd8324c7c5ea0b0d3d957ea",
           "size": 1903
         },
         {
-          "path": "paradox_wiki/media/character_modding_8d43751dba__img2.png",
+          "path": "hoi4_wiki/media/character_modding_8d43751dba__img2.png",
           "sha256": "cde24b1ba0c3f363918175909448ef46c1bdc192ac73f35af1ac7830ab7e2fd8",
           "size": 1500
         },
         {
-          "path": "paradox_wiki/media/character_modding_cee5ae9645__img1.png",
+          "path": "hoi4_wiki/media/character_modding_cee5ae9645__img1.png",
           "sha256": "1124f74a85b0c728d79b542326509730d55a2a07cc6ef9b7cef7f17bf4efa1a9",
           "size": 4520
         },
         {
-          "path": "paradox_wiki/media/cosmetic_tag_modding_8daa0f4184__img3.png",
+          "path": "hoi4_wiki/media/cosmetic_tag_modding_8daa0f4184__img3.png",
           "sha256": "0d5dd564da78e610a9f11afb28136b55c8a243501ad6dff33bc3693825747d63",
           "size": 641
         },
         {
-          "path": "paradox_wiki/media/country_creation_1d4220f262__img10.png",
+          "path": "hoi4_wiki/media/country_creation_1d4220f262__img10.png",
           "sha256": "b4dcd508c1718e7943b741d4637c064efa5626686c7f61412dbcb128611ef73a",
           "size": 1738
         },
         {
-          "path": "paradox_wiki/media/country_creation_1d4220f262__img11.png",
+          "path": "hoi4_wiki/media/country_creation_1d4220f262__img11.png",
           "sha256": "db0aece24b5728311c411368d75892639e30dce574a5c732b15d2005b97bf8c2",
           "size": 1804
         },
         {
-          "path": "paradox_wiki/media/country_creation_1d4220f262__img12.png",
+          "path": "hoi4_wiki/media/country_creation_1d4220f262__img12.png",
           "sha256": "52d0fed9cf1ce26ad26bca62805394d3e36d80bc454d2e7ac97cfb54138cd243",
           "size": 1843
         },
         {
-          "path": "paradox_wiki/media/country_creation_1d4220f262__img13.png",
+          "path": "hoi4_wiki/media/country_creation_1d4220f262__img13.png",
           "sha256": "69ad49449a7b00be231755bb03ee0cf886c31faaf62871fc78cc86c360bb1ae5",
           "size": 1936
         },
         {
-          "path": "paradox_wiki/media/country_creation_1d4220f262__img14.png",
+          "path": "hoi4_wiki/media/country_creation_1d4220f262__img14.png",
           "sha256": "fdb5e1f0ab01398f8c51bfe568d0eb96dd553a057de6e00dcf04316e2d33638f",
           "size": 1812
         },
         {
-          "path": "paradox_wiki/media/country_creation_1d4220f262__img16.png",
+          "path": "hoi4_wiki/media/country_creation_1d4220f262__img16.png",
           "sha256": "41fee98f10905facf3f81c5b9701019481da41234100d1a53da5ca19d3c996dd",
           "size": 1770
         },
         {
-          "path": "paradox_wiki/media/country_creation_1d4220f262__img17.png",
+          "path": "hoi4_wiki/media/country_creation_1d4220f262__img17.png",
           "sha256": "d2dbe63c23e894db83a6c778890468712ab3c1359da57e036e1579b952135934",
           "size": 2018
         },
         {
-          "path": "paradox_wiki/media/country_creation_1d4220f262__img19.png",
+          "path": "hoi4_wiki/media/country_creation_1d4220f262__img19.png",
           "sha256": "e25b724469422d7ab30b95af371985462c041a3b9d242bb73ae5863d56fe492c",
           "size": 480
         },
         {
-          "path": "paradox_wiki/media/country_creation_1d4220f262__img8.png",
+          "path": "hoi4_wiki/media/country_creation_1d4220f262__img8.png",
           "sha256": "cda8f159793fb087f5abe0d2f4fffcb6f5434d4a1be124bc127d23bae4b55715",
           "size": 1847
         },
         {
-          "path": "paradox_wiki/media/data_structures_6e1fd6f20a__img1.png",
+          "path": "hoi4_wiki/media/data_structures_6e1fd6f20a__img1.png",
           "sha256": "f535c9d8eef5d7724446d1083711b95142bda81547434b36076ad1e2fa196765",
           "size": 1759
         },
         {
-          "path": "paradox_wiki/media/data_structures_6e1fd6f20a__img2.png",
+          "path": "hoi4_wiki/media/data_structures_6e1fd6f20a__img2.png",
           "sha256": "c9218a1bc1518431072109a54f0c424feadf710dc47534d47de73f64db40845f",
           "size": 1815
         },
         {
-          "path": "paradox_wiki/media/effect_ec2e2a02fa__img1.png",
+          "path": "hoi4_wiki/media/effect_ec2e2a02fa__img1.png",
           "sha256": "e9c49791ba6ec63df37091d040744ba46ae97083a05902f1e7af7d50a1003bbd",
           "size": 1161
         },
         {
-          "path": "paradox_wiki/media/idea_modding_e610dc0262__img1.png",
+          "path": "hoi4_wiki/media/idea_modding_e610dc0262__img1.png",
           "sha256": "2b4368ad088ed3411360acd3328c7950290ca0cc8a19de5cc6310a385e5d7bea",
           "size": 2302
         },
         {
-          "path": "paradox_wiki/media/idea_modding_e610dc0262__img2.png",
+          "path": "hoi4_wiki/media/idea_modding_e610dc0262__img2.png",
           "sha256": "59d1764e4a1c7de76347b50517bd729e2d1274794b530925955e7c11ea207c08",
           "size": 1409
         },
         {
-          "path": "paradox_wiki/media/localisation_0824ba8845__img2.png",
+          "path": "hoi4_wiki/media/localisation_0824ba8845__img2.png",
           "sha256": "c8ddea4643c205c6e53213af4fb845f2c948339105224275448ef736437d8618",
           "size": 803
         },
         {
-          "path": "paradox_wiki/media/map_modding_52a03661c6__img1.png",
+          "path": "hoi4_wiki/media/map_modding_52a03661c6__img1.png",
           "sha256": "79c40d49ba6735d1ca13eaff1bc36331e876ceb47c0a59cb10fe8c6b44822b88",
           "size": 24882
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img10.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img10.png",
           "sha256": "e635b3b177f8af52b853d15b1ed08edb1af6de61de84fd8fa707293fc9e6640b",
           "size": 39430
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img11.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img11.png",
           "sha256": "abf895deddded67ad7de99a07ee85721ee81d7c30bb7cea5fd8ed51dcb93162a",
           "size": 41247
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img12.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img12.png",
           "sha256": "2cc7f5ae00bcd5b4c331fb57fd03ce520f96984ebb00a1e7a0e7837f2c50bd4f",
           "size": 37224
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img13.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img13.png",
           "sha256": "1711a84efaf541b52bff738501c4e228748b98b159c1b8ea26919999e23ea28b",
           "size": 40348
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img14.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img14.png",
           "sha256": "859d13ae3b51949ac5eee42d522c1049974a80a5a41380bbff85a5ec0df3c76d",
           "size": 25320
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img15.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img15.png",
           "sha256": "f9b5d83d3e270cec84accbb274b895ca827ba83764f1f6161da69fda4eab1bed",
           "size": 41002
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img16.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img16.png",
           "sha256": "ffa062b583c15446027da9b372db264ec08392273b30cb3c39a37c45eb1360cd",
           "size": 41232
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img17.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img17.png",
           "sha256": "0afda50d5ed8318f862b80e9646a29935ef6cca3e4b33a0c5fea4978cae89a3e",
           "size": 43594
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img19.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img19.png",
           "sha256": "44915fb4cbb9da0e351fae0333084bb217182102553390ee90cfeaf8e9284cd4",
           "size": 32337
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img20.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img20.png",
           "sha256": "85e08ce861f98eb68deab25fbc4fe78c041df750efc810a60e050360995692e3",
           "size": 23955
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img23.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img23.png",
           "sha256": "61d318f6bdca156e1e5c58b35ed46b1cf643db5cd639bdb8be90ea9125ca5361",
           "size": 35539
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img24.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img24.png",
           "sha256": "83659f18e9e596c6695a58e128557a39cbb7dba7f7f8b471b21bd2e3ba6ceaf4",
           "size": 37672
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img30.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img30.png",
           "sha256": "d0901c874e230cc6781992329ed6a4cc68b0fac353518a67997da3500c886add",
           "size": 41491
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img31.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img31.png",
           "sha256": "c0359ff3ad38356ace2ab05b0b9d4499b87589abb45d60a6a4152eda3746e7e6",
           "size": 3401
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img6.jpg",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img6.jpg",
           "sha256": "0c87ae522997ef55ebb907eee55a25391e8e5dcdc52a75dec09ad52e73abbe66",
           "size": 11604
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img7.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img7.png",
           "sha256": "f39593cb0c2b95b6cc39383030c6abbc12777f601797d0f406e6252dd7b9f6fe",
           "size": 24331
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img8.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img8.png",
           "sha256": "b6e20292d289504bdc0c901d566c9b6fd556b3f2b53bb5228a7b45d5aaef0f06",
           "size": 44698
         },
         {
-          "path": "paradox_wiki/media/map_modding_67296116c0__img9.png",
+          "path": "hoi4_wiki/media/map_modding_67296116c0__img9.png",
           "sha256": "f99fbc65079cb62b3f286cc50ca4d7264a9ebce9c2ab8f2d1f1e1a461672b1f4",
           "size": 36005
         },
         {
-          "path": "paradox_wiki/media/map_modding_7c98f708b3__img28.png",
+          "path": "hoi4_wiki/media/map_modding_7c98f708b3__img28.png",
           "sha256": "c4d6fdb91bbb465663bfa1b2e52f9e97a775ac5f827b106d0e95c9afc33abddd",
           "size": 4657
         },
         {
-          "path": "paradox_wiki/media/modding_8bf815c264__img3.png",
+          "path": "hoi4_wiki/media/modding_8bf815c264__img3.png",
           "sha256": "42b0d6f0267238da3db4cadf06a92db01a49a3b824ab5b7869ec382776c45830",
           "size": 18973
         },
         {
-          "path": "paradox_wiki/media/modding_e0cb4ef0a6__img1.jpg",
+          "path": "hoi4_wiki/media/modding_e0cb4ef0a6__img1.jpg",
           "sha256": "ed6ed13af5850c081c6dbf7cadcf7bc713e4f2c3c82dae05673635308c4d980f",
           "size": 12449
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img11.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img11.png",
           "sha256": "a0bdcbfdaecddf4b61d6f125c15b29c47b26b5c4479cde1de2995f4ea60061cf",
           "size": 842
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img14.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img14.png",
           "sha256": "4004f486ef0693f539fe66efa3304a4d28658302c0fbfd884d1927a59719dbaa",
           "size": 564
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img144.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img144.png",
           "sha256": "94df014b3d98083c150cad93766406d82819cb428b7cebdcbac991e3922ba7c9",
           "size": 225
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img145.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img145.png",
           "sha256": "e01dd027f7285fb53e9a09469a2fdd14e46ac6053f8dbecb4d8c69cb8b19a1ee",
           "size": 1125
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img146.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img146.png",
           "sha256": "6f4a3e1da2ef529481add31554aeabd2ba27138c06af67352d3927d087e10f91",
           "size": 818
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img147.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img147.png",
           "sha256": "aca7b441ea6731a0bc82ccc7a4a50eae53029f45af40e8b0597186f3a8105fb2",
           "size": 134
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img148.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img148.png",
           "sha256": "92abac6e5783ed186addfd19bcd6fb294011e4fe9d8936d1127429a992a63e02",
           "size": 132
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img149.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img149.png",
           "sha256": "5732c3b8c7a9b8e98e2999e4d92baef7fdc5b0fffe63a0deb284dc5c3589daee",
           "size": 415
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img15.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img15.png",
           "sha256": "425ea4cbabd9f41793f452d9d82eb6e132bdacf39769b54697462ff54300008a",
           "size": 1411
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img153.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img153.png",
           "sha256": "02d3292b182116c0f4247c6726891ee53a631543861259815704f73a2f143f86",
           "size": 481
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img16.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img16.png",
           "sha256": "fcd13aed3a8de5a53f4783c629a5677372aed9d2f739d77f3889958ad9bfd605",
           "size": 1713
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img17.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img17.png",
           "sha256": "7db5c6f056c9b4f89688fbeac5cc8f049e64ab24b3a005dd2304c2674df51678",
           "size": 1219
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img18.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img18.png",
           "sha256": "f8067630997887a254caa22cba8591584cfc02304c8702fb247bb620e0ba2839",
           "size": 1922
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img19.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img19.png",
           "sha256": "744d42e70149dec2d567edf983d612cfda4869e001c187903976cd6809f74d56",
           "size": 1872
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img2.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img2.png",
           "sha256": "22dfeb5c5387e3d2e2f5af74656966a0d201a95627276201f209872be6aba34f",
           "size": 675
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img20.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img20.png",
           "sha256": "20570aff238cd1f019ea1280fbf3a588264eea3a810194c4ead5df833685c1da",
           "size": 1518
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img21.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img21.png",
           "sha256": "d72caf3af5ebd3bd4d2f1c6fc34d580f04f0cbc389a80168a18771e50c70fae4",
           "size": 1890
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img22.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img22.png",
           "sha256": "a2f49986a3428e4228334709fb5f5ae0cc54b873532720270d5e45030ae6925a",
           "size": 1574
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img23.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img23.png",
           "sha256": "ebbd852b75124e750103af6e5d9235c29020c685c920cdb244a11560ffa963e6",
           "size": 1096
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img24.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img24.png",
           "sha256": "042c022735458ae24d62050e0ccd0777f69320ab5191ccc2dbfe9d2677085b79",
           "size": 1870
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img25.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img25.png",
           "sha256": "f92d84a1325b2a90cb34655066b830c108455314e4a7b3bc56f36d16ff6bd9d3",
           "size": 1617
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img26.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img26.png",
           "sha256": "7aa6d55874d50864e568a6915fada8601147101950a1c280dff75c660a8b6fa0",
           "size": 1680
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img27.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img27.png",
           "sha256": "6a1f6d7bbd670b115f74518d3030bca3f1b43867ef612302acdf19a7c3ba0f2e",
           "size": 1651
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img28.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img28.png",
           "sha256": "cbbf6956dd7cb075581f19d94a7167f5410a1eb5764892e372f44fca49ec934b",
           "size": 1931
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img29.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img29.png",
           "sha256": "e9e39a70a94c055a9ab6fe214ac0951530f6fcdc4e569d38a2e127daf5a2b88a",
           "size": 1386
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img30.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img30.png",
           "sha256": "6b083884e7d769ae5c38c03e6be1a5f6022a0068b9b8a3fe8dbeaa8db938f4b3",
           "size": 1281
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img32.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img32.png",
           "sha256": "1536235ea750e7a79e4bd705661e9fe33bc65127411cc65706d32c0c25a47dee",
           "size": 1054
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img33.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img33.png",
           "sha256": "0a88bde7645487ca83310789ab06c8dcf3329a609ed7334f0df340a0bab961c5",
           "size": 855
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img34.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img34.png",
           "sha256": "f2c9132ed7b70442dce00a57e00ff7b0b3e556c97dc8d2f7f78c6564c7ba69ac",
           "size": 1971
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img36.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img36.png",
           "sha256": "1fed671d8f92f8028f36acf7188738a945b53b93e536b6ef501b6c6c869649a5",
           "size": 1798
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img37.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img37.png",
           "sha256": "a92d9f589578dcd4b397c755cd267970f704e4936e401756cadc91f4ffa8764e",
           "size": 854
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img38.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img38.png",
           "sha256": "dedd02edfefcbd2635fd7dd8d9009ba2c25c82983c374b804e571e9b96b6c349",
           "size": 1920
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img39.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img39.png",
           "sha256": "33b49d14b44dcfd3386b445c42757cf57934e82780d7ed8aecbfeee08583a91c",
           "size": 969
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img41.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img41.png",
           "sha256": "d4ab66f43f3b7692e7c53ab3236c8090d229625bb0d6ef7f76b012112db9e625",
           "size": 1472
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img42.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img42.png",
           "sha256": "9fdd996bf61ad93aef682592e5cfb89ce067e957d57996f5628f65852363b5c5",
           "size": 1447
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img43.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img43.png",
           "sha256": "167d458e56bdae41d4f62f435ee61635d5e661b7f30c6865aa1274e21dfec5ba",
           "size": 1451
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img44.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img44.png",
           "sha256": "98ed0406925c663c233a96b41b57bc5678ddf9622bfba260e6b42c7e534cb85a",
           "size": 2090
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img45.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img45.png",
           "sha256": "51e865523b5c53ff3d2d8346159135bb632bfdadefa2f691334e5a1733e04b47",
           "size": 465
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img46.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img46.png",
           "sha256": "4a22d1998a04e5c7a3c9a261fa8c557e15f5c3091824bcdcb354591db96a3820",
           "size": 2144
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img47.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img47.png",
           "sha256": "6aabdcb38ec6652878ffabce82c16a5d924db6a17946b415c25fcb47808ffa7f",
           "size": 2345
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img48.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img48.png",
           "sha256": "73fa002692c668b317560b165c5fa7154d1661648a3ba26fc637e6604d6b77a2",
           "size": 1949
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img49.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img49.png",
           "sha256": "6b903013f68ed2e74f1a45c4cda46dbed19c512bc665d0d4d683428634ebe907",
           "size": 1606
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img50.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img50.png",
           "sha256": "c8abddc1fc0aea7364bf22eee1f4fb4f31dd7f4d7f0479283bcfe8362820ff67",
           "size": 2052
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img52.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img52.png",
           "sha256": "4ecc63e5634f32bd463eaf2659423bc5ce918cc7ef06fd9e4835d10c3ba23205",
           "size": 1862
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img53.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img53.png",
           "sha256": "70140dd59cabfe3158b4fd6b9f2c4ee55800821ac23f56d3a21920db6d0b2b25",
           "size": 1752
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img54.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img54.png",
           "sha256": "e5cca5d634ab14e0c915eedd9b37ff2a065fdbde7d67449443e52a3fabecd93a",
           "size": 957
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img55.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img55.png",
           "sha256": "98931c008ee6499648867c5acf13d641b838aad0fc4aa2381a77f25ef244c0bf",
           "size": 1662
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img56.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img56.png",
           "sha256": "74c4e058b52ba17d1d3090e3d3e029424f2f400b670ccb6546d3f519ed78dbd8",
           "size": 1229
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img57.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img57.png",
           "sha256": "4fd9958385be0bc921acae8ceda4ed03fadbc502dc213e540579c76806dfd50a",
           "size": 1563
         },
         {
-          "path": "paradox_wiki/media/national_focus_modding_b6347a9782__img9.png",
+          "path": "hoi4_wiki/media/national_focus_modding_b6347a9782__img9.png",
           "sha256": "5d6d81ee6bde0668f6fed01b6c43da820c841700f96d9f310acf83e82d29af2a",
           "size": 2510
         },
         {
-          "path": "paradox_wiki/media/nudger_14dc29a6a3__img2.png",
+          "path": "hoi4_wiki/media/nudger_14dc29a6a3__img2.png",
           "sha256": "6a876535041b99d5014425dab0b77555788c685144cf4790c068ddd4ad7f0813",
           "size": 57758
         },
         {
-          "path": "paradox_wiki/media/scopes_eff9c6f993__img15.png",
+          "path": "hoi4_wiki/media/scopes_eff9c6f993__img15.png",
           "sha256": "47306d288f1db9bbeea387a60756184ce1ecacf40348437cfc566b67bef9f9a3",
           "size": 22328
         },
         {
-          "path": "paradox_wiki/media/scopes_eff9c6f993__img16.png",
+          "path": "hoi4_wiki/media/scopes_eff9c6f993__img16.png",
           "sha256": "cb133fe8658ae1cd4184d37f11900ffeb1ef0ec7555736dbbdb03560f1df8866",
           "size": 668
         },
         {
-          "path": "paradox_wiki/media/scopes_eff9c6f993__img5.png",
+          "path": "hoi4_wiki/media/scopes_eff9c6f993__img5.png",
           "sha256": "53722f5dd5bf2c5290da14e3aafacc0681d88168ec566d572d8c18671d31ee03",
           "size": 124
         },
         {
-          "path": "paradox_wiki/media/scopes_eff9c6f993__img8.png",
+          "path": "hoi4_wiki/media/scopes_eff9c6f993__img8.png",
           "sha256": "2e383385102047a48a5c6450cfb63bad781d7b1872ffcc56d63aa142920c27f7",
           "size": 1152
         },
         {
-          "path": "paradox_wiki/media/technology_modding_21e8ff155d__img3.png",
+          "path": "hoi4_wiki/media/technology_modding_21e8ff155d__img3.png",
           "sha256": "ef3fbd461644fd48da1ca95a8ef71c334bcf92b737eb5e69ac40d3d322cbfb98",
           "size": 665
         },
         {
-          "path": "paradox_wiki/media/technology_modding_21e8ff155d__img4.png",
+          "path": "hoi4_wiki/media/technology_modding_21e8ff155d__img4.png",
           "sha256": "771cdb3d20febe75bd8da85928718d3d1b1f4e291737ab9f39e834bb8d0cd080",
           "size": 789
         },
         {
-          "path": "paradox_wiki/media/technology_modding_21e8ff155d__img5.png",
+          "path": "hoi4_wiki/media/technology_modding_21e8ff155d__img5.png",
           "sha256": "a8f0e6a33af0ae86f6443d3ac641e02b61794a9e79dac112c4cd62fe5975d572",
           "size": 756
         },
         {
-          "path": "paradox_wiki/military_industrial_organization_modding.md",
+          "path": "hoi4_wiki/military_industrial_organization_modding.md",
           "sha256": "796390826b91594b323b77f975bdd95d249b153e6b7c9b8b347d1c39993bc47e",
           "size": 69207
         },
         {
-          "path": "paradox_wiki/mod_structure.md",
+          "path": "hoi4_wiki/mod_structure.md",
           "sha256": "41ca05ba6eab36349e85321c1d319b0abdfab2413e1e985d866ef11363fe4b04",
           "size": 32637
         },
         {
-          "path": "paradox_wiki/modding.md",
+          "path": "hoi4_wiki/modding.md",
           "sha256": "49643733fbed00675ad225baab6f92df7180654e00fb6165ed7d88c1b912f352",
           "size": 94861
         },
         {
-          "path": "paradox_wiki/modifiers.md",
+          "path": "hoi4_wiki/modifiers.md",
           "sha256": "a73a5a8167229321bcf2cec1f2edd4e35d413ee1ee823cab0e6fee8d0947f281",
           "size": 191490
         },
         {
-          "path": "paradox_wiki/mods.md",
+          "path": "hoi4_wiki/mods.md",
           "sha256": "8276224994f4cfbae25c08149af3946000a69f870bd6ac3a4de137359f9eeca6",
           "size": 4493
         },
         {
-          "path": "paradox_wiki/music_modding.md",
+          "path": "hoi4_wiki/music_modding.md",
           "sha256": "41641110e2b4161c5a23c9ee0b8595ba97c0f0f3926f8f75a873a5b00983fac4",
           "size": 16659
         },
         {
-          "path": "paradox_wiki/namelist_modding.md",
+          "path": "hoi4_wiki/namelist_modding.md",
           "sha256": "0ffa4f23f01f997b91833c0e3b38fc9eb31af5234eb6317a30a5a26801833909",
           "size": 20142
         },
         {
-          "path": "paradox_wiki/national_focus_modding.md",
+          "path": "hoi4_wiki/national_focus_modding.md",
           "sha256": "7f887d7971a962dc949e0f3b3b656424c6678c95571ee8847e0f72237ed5c628",
           "size": 109953
         },
         {
-          "path": "paradox_wiki/nudger.md",
+          "path": "hoi4_wiki/nudger.md",
           "sha256": "81ecabdef443c275b6c42b616ad154549217840a505fc39f41677f5bb2960f58",
           "size": 38863
         },
         {
-          "path": "paradox_wiki/occupation_and_resistance_modding.md",
+          "path": "hoi4_wiki/occupation_and_resistance_modding.md",
           "sha256": "8e0fac21aacd281de668e832c9fefadb685ac84bc17577bdec06ae5ac831eac5",
           "size": 38380
         },
         {
-          "path": "paradox_wiki/on_actions.md",
+          "path": "hoi4_wiki/on_actions.md",
           "sha256": "2956ac90cea50b303f646893e401e2fe9fd6eeeb579a98f3c103b3a460c3fd76",
           "size": 57773
         },
         {
-          "path": "paradox_wiki/particle_modding.md",
+          "path": "hoi4_wiki/particle_modding.md",
           "sha256": "ac55cfe9a39b99dee4509d770076cfaada31ad9fe09cf28c44a83c3261530613",
           "size": 17368
         },
         {
-          "path": "paradox_wiki/peace_conference_modding.md",
+          "path": "hoi4_wiki/peace_conference_modding.md",
           "sha256": "dfe2f3ceaab0da75ec9eb5cace192890d5356b5e03ae24137726b14b505c6898",
           "size": 49005
         },
         {
-          "path": "paradox_wiki/portrait_modding.md",
+          "path": "hoi4_wiki/portrait_modding.md",
           "sha256": "6773ae5bc8b3c35199e65b716009816cadb6aebb0d7f5447934cb6842937c036",
           "size": 13205
         },
         {
-          "path": "paradox_wiki/posteffect_modding.md",
+          "path": "hoi4_wiki/posteffect_modding.md",
           "sha256": "bac64dd663ade145c40f914aa80825f070110b02877df5211d6d62b7d104875e",
           "size": 14467
         },
         {
-          "path": "paradox_wiki/raid_modding.md",
+          "path": "hoi4_wiki/raid_modding.md",
           "sha256": "cea86cf397479c844dbde36b2dc33c5669259aa9e9839298430487f16f0e0671",
           "size": 54389
         },
         {
-          "path": "paradox_wiki/resources_modding.md",
+          "path": "hoi4_wiki/resources_modding.md",
           "sha256": "7d517b36afa37e12e0ac8c0e120994ae414860ea629601c314926ca564e41c41",
           "size": 15992
         },
         {
-          "path": "paradox_wiki/scopes.md",
+          "path": "hoi4_wiki/scopes.md",
           "sha256": "3381a3dc464c917d5598168b14a37dd814de3d6ba44c037c4afdef10a6dc9f26",
           "size": 89943
         },
         {
-          "path": "paradox_wiki/script_constant_modding.md",
+          "path": "hoi4_wiki/script_constant_modding.md",
           "sha256": "5e8e3dfbeb8a055c9a6c672986d582e8bfb64f40e8c63cad8bfd73f9480edd17",
           "size": 25749
         },
         {
-          "path": "paradox_wiki/scripted_gui_modding.md",
+          "path": "hoi4_wiki/scripted_gui_modding.md",
           "sha256": "b767de4ce99c59914a5e873502798c02887c99cf0c2b35472f3c81bbdeb9bb83",
           "size": 49070
         },
         {
-          "path": "paradox_wiki/sound_modding.md",
+          "path": "hoi4_wiki/sound_modding.md",
           "sha256": "3dd4ac9d1cfbe7e47d5a533c4a164ddf8d3be29d697d737b60ed520e10d91841",
           "size": 19102
         },
         {
-          "path": "paradox_wiki/special_project_modding.md",
+          "path": "hoi4_wiki/special_project_modding.md",
           "sha256": "6b5ba4082dce484aff911252b9b542dd084d88240c1997a026ae42d96c8f40e3",
           "size": 63871
         },
         {
-          "path": "paradox_wiki/state_modding.md",
+          "path": "hoi4_wiki/state_modding.md",
           "sha256": "0edaf5378ccea6426577927652d0f17cffc3bfb50c6066129803eea03596937d",
           "size": 44063
         },
         {
-          "path": "paradox_wiki/strategic_region_modding.md",
+          "path": "hoi4_wiki/strategic_region_modding.md",
           "sha256": "096cca64d6236a6c764a4f78482c7db159520b1a81e49840030c6008dba40c7a",
           "size": 12725
         },
         {
-          "path": "paradox_wiki/supply_areas_modding.md",
+          "path": "hoi4_wiki/supply_areas_modding.md",
           "sha256": "9e490b34efa08178aaa69f1ddecc10d0c8fee4e147bbb18b4b686fa64f6e5b43",
           "size": 10676
         },
         {
-          "path": "paradox_wiki/technology_modding.md",
+          "path": "hoi4_wiki/technology_modding.md",
           "sha256": "f07f8f551689c7b115137b57cd2727d567d75e8a6c6d90ae6cbc8e9ffd6e8fb8",
           "size": 76682
         },
         {
-          "path": "paradox_wiki/triggers.md",
+          "path": "hoi4_wiki/triggers.md",
           "sha256": "bc5fda5f3c3d3a5c8822431752bc745f93dcfde6539a32e1519fdf596aea125b",
           "size": 242088
         },
         {
-          "path": "paradox_wiki/troubleshooting.md",
+          "path": "hoi4_wiki/troubleshooting.md",
           "sha256": "7ae12a25a2e9ba84092c4cee80d2e110623940f97f7e3c55133aeedea64f22f7",
           "size": 42987
         },
         {
-          "path": "paradox_wiki/unit_modding.md",
+          "path": "hoi4_wiki/unit_modding.md",
           "sha256": "2ca2c39faf9e63f376ede025e31f4d0da1033ab54d4d8a8d6a1c46545d602b53",
           "size": 35901
         }
@@ -12662,7 +12662,7 @@
   ],
   "wiki": {
     "component_id": "wiki.snapshot",
-    "destination": "paradox_wiki/",
+    "destination": "hoi4_wiki/",
     "snapshot_marker": null,
     "required_pages": [
       "data_structures.md",

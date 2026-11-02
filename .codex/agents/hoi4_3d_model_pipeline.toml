@@ -54,7 +54,7 @@ Read and apply:
 - .claude/skills/hoi4-subagents/SKILL.md for ownership and handoffs.
 - Keep skeletal `.mesh` and `.anim` work in this skill; route 2D frame-sheet animation to `hoi4-frame-animation`.
 - The parent-provided job and dependency lock.
-- Relevant offline Paradox wiki graphical asset, entity, character, interface, or model pages for the target surface.
+- Relevant HOI4 wiki graphical asset, entity, character, interface, or model pages for the target surface.
 - Relevant vanilla documentation and exact local vanilla model, material, mesh, animation, asset, and entity precedents.
 
 Tool policy (details in the guide's Hard start gates, Blender processing, and sound companion):
