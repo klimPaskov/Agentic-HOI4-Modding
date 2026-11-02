@@ -1,7 +1,7 @@
 {
   "schema_version": "5.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "ddc4c140cef5053a012aaf52f78d7dc43ecc8762",
+  "generated_for_revision": "e9fdda919d2f177c2c3db66a17e791b80f522824",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -11624,8 +11624,8 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "4c1a968d2f5603ac52035ba2d7b13e90c452bb96f738cf5f98b6fc3f4fef0639",
-          "size": 26671
+          "sha256": "243a0a2b709cca1c11967c6eee07e05eede0830d2294e81ff3d13329c0c5ee6b",
+          "size": 26765
         }
       ]
     },
@@ -11670,7 +11670,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "4.0.3",
+          "version": "4.7.0",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -11689,8 +11689,8 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "4.0.3",
-            "package_integrity": "sha512-pgiQYcQiWsba78IOK1DzOb7feEl0ktpiZg3LdyxSMcklA7HV+Zofo3hdR5BOp9YWlWHubrTkl6AMtBgDhqnUmQ==",
+            "package_version": "4.7.0",
+            "package_integrity": "sha512-mdaisWOBEVKOO/o4aOpbFAxU/ATvyYT8v3DcTDOl7KkAj6hhNJXVG2JnTmbFIna/PmRLSl1YD7NqWMCauRC50g==",
             "runtime_entry": "dist/bin/stdio.js",
             "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
             "runtime_entry_size": 4205,
@@ -11728,27 +11728,28 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "b93b47b341e6bc33a0822d631e187af7e3c29eec48196ccd10c89f957729dc35",
-            "package_file_count": 5387,
+            "package_tree_sha256": "cfe5176a6dfe3cf23f79b4c2b9054ea2b954a3a0c5497911f9707c84f449d6d5",
+            "package_file_count": 5854,
             "platform_targets": {
               "windows": "hoi4-agent-tools.cmd",
               "linux": "hoi4-agent-tools"
             },
             "platform_pins": {
               "windows": {
-                "package_tree_sha256": "b93b47b341e6bc33a0822d631e187af7e3c29eec48196ccd10c89f957729dc35",
-                "package_file_count": 5387,
+                "package_tree_sha256": "cfe5176a6dfe3cf23f79b4c2b9054ea2b954a3a0c5497911f9707c84f449d6d5",
+                "package_file_count": 5854,
                 "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
                 "runtime_entry_size": 4205,
                 "package_symlinks": {}
               },
               "linux": {
-                "package_tree_sha256": "c2f7344ff1ee5ab4ba1c99299cdab2fbf01c1b56bf87d866810dfdafc9d30d41",
-                "package_file_count": 5253,
+                "package_tree_sha256": "afbd464a6552820256382cd30d91e1759539214578eaceaf790cb484c99c4d3a",
+                "package_file_count": 5718,
                 "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
                 "runtime_entry_size": 4205,
                 "package_symlinks": {
                   "node_modules/.bin/node-which": "../which/bin/node-which",
+                  "node_modules/.bin/opencollective-postinstall": "../opencollective-postinstall/index.js",
                   "node_modules/.bin/semver": "../semver/bin/semver.js"
                 }
               }
@@ -11882,7 +11883,7 @@
       "expected_files": [
         {
           "path": "docs/systems/hoi4_agent_tools_mcp_integration.md",
-          "sha256": "cb076af2ec56616dd45c89189a8a0f6d6301bb0db9388510704a97c0b89e58d6",
+          "sha256": "9e562846af40d472975c41d1783d0bc081b5cccd84eb1ab9d769dd43c77dcf26",
           "size": 28740
         }
       ]

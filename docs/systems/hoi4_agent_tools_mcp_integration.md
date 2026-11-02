@@ -34,7 +34,7 @@ Renders are deterministic offline previews, not game screenshots, and they do no
 
 ## Capability matrix
 
-This package pins HOI4 Agent Tools 4.0.3 and its 28-tool contract. The table lists those routes; use the names the connected server advertises in its live tool list, and read each live schema before relying on optional parameters.
+This package pins HOI4 Agent Tools 4.7.0 and its 28-tool contract. The table lists those routes; use the names the connected server advertises in its live tool list, and read each live schema before relying on optional parameters.
 
 | Surface | Read-only MCP evidence | Write route | Required evidence sequence | Limits |
 | --- | --- | --- | --- | --- |
@@ -173,9 +173,9 @@ different npm realization.
 When measuring a new release, use the same pinned npm version for each platform
 and verify both supported Node majors in clean Windows/Linux x64 runners.
 
-For an explicitly reviewed development archive, use `python -I .tools/mcp/bootstrap_hoi4_agent_tools.py --local-tarball C:/path/to/hoi4-agent-tools-4.0.3.tgz`. This opt-in verifies exact SHA-512 and retains full installed-tree, count, runtime-entry, and wrapper checks. Dependencies and the private npm toolchain still use the fixed registry. There is no automatic fallback or downgrade; the default route verifies the published registry pin.
+For an explicitly reviewed development archive, use `python -I .tools/mcp/bootstrap_hoi4_agent_tools.py --local-tarball C:/path/to/hoi4-agent-tools-4.7.0.tgz`. This opt-in verifies exact SHA-512 and retains full installed-tree, count, runtime-entry, and wrapper checks. Dependencies and the private npm toolchain still use the fixed registry. There is no automatic fallback or downgrade; the default route verifies the published registry pin.
 
-To refresh a published pin, obtain `npm view hoi4-agent-tools@4.0.3 dist.integrity --json --registry=https://registry.npmjs.org`, install that exact version into a new empty prefix with `npm install --global --prefix C:/path/to/new-clean-prefix --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org hoi4-agent-tools@4.0.3`, then run `python scripts/refresh_mcp_package_pin.py --prefix C:/path/to/new-clean-prefix --integrity <reviewed-sha512-value>`. The helper measures the bounded full tree and runtime entry, verifies version and any present npm lock integrity, and synchronizes the bootstrap and manifest contract. Run the contract tests and projection checks, commit source changes, then regenerate manifest evidence from that exact source commit. The generator reads immutable Git blobs, never working-tree bytes.
+To refresh a published pin, obtain `npm view hoi4-agent-tools@4.7.0 dist.integrity --json --registry=https://registry.npmjs.org`, install that exact version into a new empty prefix with `npm install --global --prefix C:/path/to/new-clean-prefix --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org hoi4-agent-tools@4.7.0`, then run `python scripts/refresh_mcp_package_pin.py --prefix C:/path/to/new-clean-prefix --integrity <reviewed-sha512-value>`. The helper measures the bounded full tree and runtime entry, verifies version and any present npm lock integrity, and synchronizes the bootstrap and manifest contract. Run the contract tests and projection checks, commit source changes, then regenerate manifest evidence from that exact source commit. The generator reads immutable Git blobs, never working-tree bytes.
 
 If the recorded version is unavailable or fails verification, record the package/version blocker instead of silently substituting an unpinned clone.
 

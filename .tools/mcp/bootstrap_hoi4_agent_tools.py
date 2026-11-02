@@ -24,16 +24,17 @@ import urllib.request
 
 
 PACKAGE_NAME = "hoi4-agent-tools"
-PACKAGE_VERSION = "4.0.3"
+PACKAGE_VERSION = "4.7.0"
 PACKAGE_SPEC = f"{PACKAGE_NAME}@{PACKAGE_VERSION}"
 # Reviewed npm registry integrity and clean published installation evidence.
-PACKAGE_INTEGRITY = "sha512-pgiQYcQiWsba78IOK1DzOb7feEl0ktpiZg3LdyxSMcklA7HV+Zofo3hdR5BOp9YWlWHubrTkl6AMtBgDhqnUmQ=="
-PACKAGE_TREE_SHA256 = "b93b47b341e6bc33a0822d631e187af7e3c29eec48196ccd10c89f957729dc35"
-PACKAGE_FILE_COUNT = 5387
-LINUX_PACKAGE_TREE_SHA256 = "c2f7344ff1ee5ab4ba1c99299cdab2fbf01c1b56bf87d866810dfdafc9d30d41"
-LINUX_PACKAGE_FILE_COUNT = 5253
+PACKAGE_INTEGRITY = "sha512-mdaisWOBEVKOO/o4aOpbFAxU/ATvyYT8v3DcTDOl7KkAj6hhNJXVG2JnTmbFIna/PmRLSl1YD7NqWMCauRC50g=="
+PACKAGE_TREE_SHA256 = "cfe5176a6dfe3cf23f79b4c2b9054ea2b954a3a0c5497911f9707c84f449d6d5"
+PACKAGE_FILE_COUNT = 5854
+LINUX_PACKAGE_TREE_SHA256 = "afbd464a6552820256382cd30d91e1759539214578eaceaf790cb484c99c4d3a"
+LINUX_PACKAGE_FILE_COUNT = 5718
 LINUX_PACKAGE_SYMLINKS = {
     "node_modules/.bin/node-which": "../which/bin/node-which",
+    "node_modules/.bin/opencollective-postinstall": "../opencollective-postinstall/index.js",
     "node_modules/.bin/semver": "../semver/bin/semver.js",
 }
 RUNTIME_ENTRY = "dist/bin/stdio.js"
