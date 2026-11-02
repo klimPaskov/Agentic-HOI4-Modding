@@ -8,17 +8,17 @@ from pathlib import Path
 ALL_CLIENTS = ["claude_code", "codex", "cursor", "qoder", "opencode"]
 
 IMAGEGEN_REPOSITORY = "klimPaskov/hoi4-imagegen-mcp"
-IMAGEGEN_VERSION = "0.2.0"
+IMAGEGEN_VERSION = "0.2.1"
 IMAGEGEN_INSTALL_ROOT = ".tools/image_generation/hoi4-imagegen"
 IMAGEGEN_COMPONENT_ID = "imagegen.hoi4_imagegen"
-# Published v0.2.0 release assets (SHA256SUMS of the release, sizes from the GitHub release).
+# Published v0.2.1 release assets (SHA256SUMS of the release, sizes from the GitHub release).
 # HOI4 Mod Setup downloads only the URL it derives from the version and target, and checks size and hash first.
 IMAGEGEN_RELEASE_ASSETS = {
-    "x86_64-pc-windows-msvc": ("zip", 17366134, "5338293f155d5679fc1c5e0b883150275b25f04ce78631ad6437c0ccd99912fc"),
-    "aarch64-apple-darwin": ("tar.gz", 17474246, "a36dca6defb7b5ef67fc350ace9b10928aa43af105df936106b3aaa24decf386"),
-    "x86_64-apple-darwin": ("tar.gz", 19286014, "d0f9dad88425c38f695379cd5eeb2149ad758b3e84715522bee326a6e72cec8f"),
-    "x86_64-unknown-linux-gnu": ("tar.gz", 21507082, "76827380ca7744f0329915e977e1b1a5f1de7ba5962a909f69172762e377aac9"),
-    "aarch64-unknown-linux-gnu": ("tar.gz", 20645990, "2d7e86bf719fe88f97e5abb0aa5d8f61fa33cffd2bf58bee15b33ec7a85608b3"),
+    "x86_64-pc-windows-msvc": ("zip", 17368464, "6d3cb51928654cb7b4ecd8004b1f91265ddfab9c76f6ef191ed86f29e47302b6"),
+    "aarch64-apple-darwin": ("tar.gz", 17476264, "45db3e2cc00b35fea7e9b2e4fd0cabbf34740e7881be440b56706269efe49e9e"),
+    "x86_64-apple-darwin": ("tar.gz", 19288025, "f28c02b0de6a0750a0b4b06c4051d945198b16830de4e3065e9c8478e1901770"),
+    "x86_64-unknown-linux-gnu": ("tar.gz", 21509106, "bfcaf7990faa81c7f9a61e66543ec795df039652075bac763f200c37178850f8"),
+    "aarch64-unknown-linux-gnu": ("tar.gz", 20650680, "947193303d078b4914d838591dcf7a2dae26e050ac4a8cab56ecce5d01fcf38d"),
 }
 IMAGEGEN_CREDENTIAL_FIELDS = [
     {"id": "openai_api_key", "display_name": "OpenAI API key", "environment_name": "OPENAI_API_KEY"},
@@ -557,7 +557,7 @@ def write_runtime_provider_catalog(source_root: Path | None = None) -> Path:
     }
     output = root / ".tools" / "image_generation" / "runtime" / "provider_catalog.json"
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    output.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     return output
 
 
