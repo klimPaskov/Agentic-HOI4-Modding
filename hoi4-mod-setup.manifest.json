@@ -116,7 +116,7 @@
     {
       "id": "runtime.agent_sync",
       "display_name": "Runtime synchronizers, repository checks and project tools",
-      "description": "Install shared runtime synchronizers, the read-only repository checks (check.py, its audits, GFX conformance and tooling quality), and the optional, user-invoked ChatGPT source packaging tool.",
+      "description": "Install shared runtime synchronizers and the read-only repository checks (check.py, its audits, GFX conformance and tooling quality).",
       "category": "script",
       "optional": false,
       "platforms": [
@@ -131,8 +131,6 @@
           "sync/*.json",
           "py.sh",
           "README.md",
-          "package_chatgpt_project_sources.py",
-          "package_chatgpt_project_sources.bat",
           "check.py",
           "quality.py",
           "quality_baseline.json",
@@ -548,6 +546,55 @@
           "size": 1985
         }
       ]
+    },
+    {
+      "id": "runtime.chatgpt_sources",
+      "display_name": "ChatGPT project-sources packager",
+      "description": "Add an optional script in .tools that packages selected project files into a folder you can upload to a ChatGPT project. You run it yourself; setup never runs it.",
+      "category": "script",
+      "optional": true,
+      "platforms": [
+        "all"
+      ],
+      "source": {
+        "kind": "tree",
+        "path": ".tools",
+        "include": [
+          "package_chatgpt_project_sources.py",
+          "package_chatgpt_project_sources.bat"
+        ],
+        "exclude": [
+          "**/__pycache__/**",
+          "**/*.pyc"
+        ]
+      },
+      "destination": {
+        "path": ".tools/",
+        "ownership": "managed",
+        "outside_project": false
+      },
+      "dependencies": [],
+      "conflicts": [
+        "existing ChatGPT packaging script with the same path"
+      ],
+      "conflict_policy": "replace_if_unmodified",
+      "validation": [
+        {
+          "id": "runtime.chatgpt_sources.exists",
+          "severity": "warn",
+          "kind": "exists",
+          "target": ".tools/package_chatgpt_project_sources.py"
+        }
+      ],
+      "update": {
+        "strategy": "replace_if_unmodified",
+        "remove_obsolete": true,
+        "preserve_local_additions": true
+      },
+      "capabilities": [
+        "ChatGPT project-source packaging"
+      ],
+      "expected_files": []
     },
     {
       "id": "runtime.claude",
