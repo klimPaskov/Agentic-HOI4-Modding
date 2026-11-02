@@ -186,7 +186,7 @@ Root block per token in `common/operation_tokens/*.txt`. A country can hold only
 | `intel_source`, `intel_gain` | The token raises one intel source (`navy`, `army`, `civilian`, `airforce`) by this amount; one gain per token. | 5, gain 10 (5 for `token_resistance_contacts`) |
 | `targeted_modifier` | Id of a targeted modifier applied to the relation while the token is held. Repeatable. | 0 |
 
-Rows 1 to 2, 4 and 5: [docs]; counts [vanilla-confirmed 1.19.3] `00_OperationTokens.txt`. The docs only show the placeholder `targeted_modifier_id1` and no vanilla token uses the key. [docs] `common/operation_tokens/_documentation.md`. What a valid `targeted_modifier` id looks like is [unverified].
+Rows 1 to 2, 4 and 5: [docs]; counts [vanilla-confirmed 1.19.3] `00_OperationTokens.txt`. The docs only show the placeholder `targeted_modifier_id1` and no vanilla token uses the key. [docs] `common/operation_tokens/_documentation.md`. What a valid `targeted_modifier` id looks like is [unverified]. An id that does not exist is reported at load as `missing static modifier definition: <id>`, so the id names a static modifier definition. The token could still be granted and held: `has_operation_token` was TRUE and `print_operation_tokens` listed it. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read at load, effect and console run. The effect of the token on relations was not tested.
 
 Vanilla ids: `token_army`, `token_navy`, `token_airforce`, `token_civilian`, `token_resistance_contacts`. [vanilla-confirmed 1.19.3] `00_OperationTokens.txt`.
 

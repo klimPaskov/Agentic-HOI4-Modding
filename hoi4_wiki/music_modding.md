@@ -260,7 +260,7 @@ The define `MUSIC_PLAYER_RECENTLY_PLAYED_SIZE = 10` is the size of the list of r
 
 Vanilla uses `play_song = "comintern_war_1"` in `common/national_focus/soviet.txt` and `play_song = "peace_in_our_time"` in `common/scripted_effects/zzz_play_speech_effects.txt`. [vanilla-confirmed 1.19.4.1] `common/national_focus/soviet.txt`
 
-`play_song = "bella_ciao"` in `common/national_focus/italy.txt` names a song that no `music` block in the game files defines. [vanilla-confirmed 1.19.4.1] `common/national_focus/italy.txt`, `music/`, and no `.asset` file anywhere in the install defines it (`localisation/english/bba_music_l_english.yml` does have the key). What the game does with an undefined song name is not shown and is untested; define every name you use. [unverified]
+`play_song = "bella_ciao"` in `common/national_focus/italy.txt` names a song that no `music` block in the game files defines. [vanilla-confirmed 1.19.4.1] `common/national_focus/italy.txt`, `music/`, and no `.asset` file anywhere in the install defines it (`localisation/english/bba_music_l_english.yml` does have the key). Define every name you use. An undefined song name is logged and nothing worse: `play_song` with a name no `music` block defines wrote `Song doesnt exist: <name>` to `error.log`, the rest of the effect block ran, and the game ran 48 more hours with no crash. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, effect run from the console, error.log and game.log read. One call was tried.
 <!-- kit:end id="music-script-effects" -->
 
 ---

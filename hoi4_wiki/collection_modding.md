@@ -78,7 +78,7 @@ Use it with the `collection:` prefix: `input = collection:mymod_owned_coastal_st
 
 - A named collection can use another named collection as its input, as vanilla does with `world_uncapitulated_democratic_countries` (input `collection:world_democratic_countries`). [vanilla-confirmed 1.19.3] `common/collections/collections.txt`.
 - A named collection may use a script constant as input: `input = constant:state_groups.balkans`. [vanilla-confirmed 1.19.3] `common/collections/collections.txt` (11 uses).
-- Names in vanilla are unique across the two files (74 of 74). Prefix your own names with the mod tag; what happens when a mod reuses a vanilla name is [unverified]. [vanilla-confirmed 1.19.4.1] `common/collections/`.
+- Names in vanilla are unique across the two files (74 of 74). Prefix your own names with the mod tag. [vanilla-confirmed 1.19.4.1] `common/collections/`. A mod collection that reused the vanilla name `world_democratic_countries` took the place of the vanilla one: the vanilla result (more than 3 democracies) did not appear, and the engine printed no duplicate or override warning. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, game.log and error.log read. The replacing definition was itself rejected at load ("Collection input type is empty", for `input = game:empty`), so the run cannot tell a clean replacement from an invalid collection read as empty. The vanilla `world_uncapitulated_democratic_countries`, which is built on the reused name, also read 0 elements.
 - Vanilla has two collections whose names equal the operator they wrap, `faction_members` and `country_and_all_subjects`, defined at the end of `generic_collections.txt`. The math iterator `every_collection` uses the first one by bare name. [vanilla-confirmed 1.19.3] `common/collections/generic_collections.txt`, `common/factions/goals/faction_goals_short_term.txt`.
 - The `name` value is a localisation key; vanilla keys are `COLLECTION_*` entries in `localisation/english/collections_l_english.yml`. See [Tooltips and localisation](#Collection_tooltips). [vanilla-confirmed 1.19.4.1]
 
@@ -252,7 +252,7 @@ For the `limit` of an operator or of a named collection: [docs] `common/collecti
 
 ## Examples <a id="Collection_examples"></a>
 
-All examples follow shapes in the docs or in vanilla. They were not run in the game. [docs] shapes; [unverified] runtime.
+All examples follow shapes in the docs or in vanilla. [docs] shapes. In a test run all five Examples-section shapes and the two effect-section examples parsed and ran in a country scope with no error.log line, and every example printed its finish line. A math `every_collection` over the named collection `faction_members` returned 55, the same as over `country_and_all_subjects`. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, examples run from the console, error.log and game.log read. One example had no elements, so it shows parsing only. The test country's faction membership was not logged, so the equal totals do not show whether `faction_members` is empty without a faction (see the note on that below).
 
 Count faction members of one government (inline, country scope):
 

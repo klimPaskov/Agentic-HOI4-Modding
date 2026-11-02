@@ -262,7 +262,7 @@ ai_chance = {
 | empty block | 4 |
 
 - No block mixes a top-level `base` with a top-level `factor`, and `base` is never used inside a `modifier`: modifiers inside `ai_chance` use `factor` (4,836 times) and `add` (1,265 times). The most common `base` values are 10 (1,678 blocks), 1 (784) and 0 (607).
-- Prefer `base = N` (81% of vanilla blocks) and put `factor` and `add` inside `modifier` blocks. No file in `documentation/` mentions `ai_chance` at all, and the wiki example that sets `base` and a top-level `factor` together has no vanilla precedent. [vanilla-confirmed 1.19.4.1] How a top-level `factor` behaves when `base` is absent is [unverified].
+- Prefer `base = N` (81% of vanilla blocks) and put `factor` and `add` inside `modifier` blocks. No file in `documentation/` mentions `ai_chance` at all, and the wiki example that sets `base` and a top-level `factor` together has no vanilla precedent. [vanilla-confirmed 1.19.4.1] A lone top-level `factor` without `base` acts as a weight equal to its value. `factor = 0` was never chosen against `base = 1` (0 of 48, like `base = 0`), and `factor = 10` against `base = 1` was chosen 42 of 48 times (like `base = 10`). [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, eight AI countries answering an event for six rounds, game.log read. The 42 of 48 is within chance of the 91 percent that weight 10 against 1 gives.
 <!-- kit:end id="event-option-ai-chance" -->
 
 ### Additional arguments <a id="Additional_arguments"></a>

@@ -83,7 +83,7 @@ Counts over the 512 `option` and `default` blocks (434 plus 78). [vanilla-confir
 
 - A group is only a string. No block defines it; the string is the loc key of the group name. [vanilla-confirmed 1.19.4.1] no `common/` file defines a group; `localisation/english/game_rules_l_english.yml` holds the names.
 - Vanilla uses seven groups: `RULE_GROUP_AI_BEHAVIOR` (51 rules), `RULE_GROUP_GAME_SETUP` (15), `RULE_GROUP_GENERAL_FOREIGN_POLICY` (11), `RULE_GROUP_GAMEPLAY` (3), `RULE_GROUP_PEACE_SCORE` (3), `RULE_GROUP_COVERT_ACTIONS` (2), `RULE_GROUP_GENERAL_UI` (1). [vanilla-confirmed 1.19.3] `00_game_rules.txt`.
-- A mod that uses a new group string only needs a loc entry for it. [unverified] inferred from the vanilla pattern.
+- A mod that uses a new group string only needs a loc entry for it. [unverified] inferred from the vanilla pattern. A test rule with a new group string and a loc entry loaded with no error.log line. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read. The group label in the interface was not looked at.
 
 ### DLC filters <a id="DLC_filters"></a>
 
@@ -199,9 +199,9 @@ available = {
 
 ## Traps <a id="Traps"></a>
 
-- Rule and option names in vanilla script do not always match the case of the definition: 17 rule ids differ only by case (script `SWE_AI_BEHAVIOR`, definition `SWE_ai_behavior`) and 4 option names do (`default` against `DEFAULT`). No vanilla call names a rule that does not exist, so the engine very likely ignores case. Copy the spelling of the definition anyway. [vanilla-confirmed 1.19.4.1] cross-check of all calls against `00_game_rules.txt` (still 17 and 4); case-insensitivity is [unverified].
+- Rule and option names in vanilla script do not always match the case of the definition: 17 rule ids differ only by case (script `SWE_AI_BEHAVIOR`, definition `SWE_ai_behavior`) and 4 option names do (`default` against `DEFAULT`). No vanilla call names a rule that does not exist, so the engine very likely ignores case. Copy the spelling of the definition anyway. [vanilla-confirmed 1.19.4.1] cross-check of all calls against `00_game_rules.txt` (still 17 and 4). The engine does ignore case: `has_game_rule` matched the rule name in upper case and the option name in lower case, and both read TRUE. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, scripted effect and game.log read.
 - The same option token may appear in two option blocks of one rule when `required_dlc` or `exclude_dlc` separates them. Do not reuse a token otherwise. [vanilla-confirmed 1.19.4.1] `AST_ai_behavior` (`RANDOM`) and `PRC_ai_behavior` (`HISTORICAL`, `RANDOM`), and no other rule repeats an option token. Behaviour for plain duplicates is [unverified].
-- `has_game_rule` with a rule or option that is spelled wrongly is not caught by the file format. Search your script for every `rule =` after you rename a rule. [unverified]
+- `has_game_rule` with a rule or option that is spelled wrongly is not caught by the file format. Search your script for every `rule =` after you rename a rule. The game does report it when the script loads: a missing rule drew "has_game_rule: game rule <name> does not exist", a wrong option drew "game rule option <name> is not valid for the rule <rule>", and both tests evaluated FALSE. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log and game.log read.
 - A new rule changes script only: giving it a hard-coded effect is not possible. For a visible behaviour, add `has_game_rule` to the triggers, `allow_branch` blocks or on actions that should change. [unverified] inferred from the six vanilla rules that script never reads.
 
 ---

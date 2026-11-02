@@ -251,7 +251,7 @@ There are also optional arguments:
 | `force_equipment_variants` | 753 | 754 entries: `owner` (754), `version_name` (90), `creator` (38), `amount` (20). |
 | `officer` | 115 | Only `name` (115) and `portraits` (2) seen. |
 | `bonus` | 3 | Integer in the Azad Hind file `CA1.txt` (all 3 uses; no vanilla script loads `CA1`). [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`. No documentation describes it, and its meaning is [unverified]. |
-| `start_manpower_factor` | 0 | No `history/units` division uses it, but 38 files in `common/` and `events/` write it in `create_unit` division strings (213 lines, for example `common/decisions/AFG.txt`). [vanilla-confirmed 1.19.4.1] Whether an OOB division accepts it is [unverified]. |
+| `start_manpower_factor` | 0 | No `history/units` division uses it, but 38 files in `common/` and `events/` write it in `create_unit` division strings (213 lines, for example `common/decisions/AFG.txt`). [vanilla-confirmed 1.19.4.1] An OOB division accepts it: `start_manpower_factor = 0.5` in a `history/units` division block was accepted with no error.log line and halved the starting manpower. The deployed army manpower of the test country rose by 0.5 thousand for that division, against 1 thousand for a plain division of the same template. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, deployed manpower read in game.log. |
 
 The page's reference [2] holds: `UNIT_EXP_LEVELS = { 0.1, 0.3, 0.75, 0.9 }` in `NDefines.NMilitary`. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
 <!-- kit:end id="division-placement-keys" -->

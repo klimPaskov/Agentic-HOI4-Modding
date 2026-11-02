@@ -225,7 +225,7 @@ highlight_states = {
 With `highlight_provinces = { ... }` being the effect that stores the individual provinces to be highlighted.
 
 <!-- kit:begin id="decision-highlight-provinces" at="section:Province_Highlighting" -->
-**Kit addition** `highlight_provinces` is used 13 times in vanilla. Two decisions (`common/decisions/HOL.txt`, `common/decisions/IRQ.txt`) add `highlight_only_provinces = yes` next to it, which the wiki does not mention; the token exists in `hoi4.exe`, and the likely meaning is that only the listed provinces are outlined and not the whole state. [vanilla-confirmed 1.19.4.1] for the usage, [unverified] for the meaning.
+**Kit addition** `highlight_provinces` is used 13 times in vanilla. Two decisions (`common/decisions/HOL.txt`, `common/decisions/IRQ.txt`) add `highlight_only_provinces = yes` next to it, which the wiki does not mention; the token exists in `hoi4.exe`, and the likely meaning is that only the listed provinces are outlined and not the whole state. [vanilla-confirmed 1.19.4.1] for the usage, [unverified] for the meaning. A test decision with `highlight_only_provinces = yes` beside `highlight_provinces` loaded with no error.log line. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read. The outline on the map was not looked at.
 
 ```text
 highlight_states = {
@@ -342,7 +342,7 @@ my_map_category = {
 
 - `visibility_type` and `custom_icon` are not described on this page or in `common/decisions/_documentation.md`. All 24 `custom_icon` blocks (7 files in `common/decisions/categories/`) set `tag`, `value` and `desc`. `tag` holds a country tag such as `GER`, `ENG` or `SB1`, not a flag, and `value` and `desc` hold localisation keys that exist in `localisation/english/`. [vanilla-confirmed 1.19.4.1] What the interface does with them is [unverified].
 - 18 vanilla categories contain no decision, for example `BRA_propaganda_campaigns` and `USA_war_measures`. [vanilla-confirmed 1.19.4.1] `common/decisions/`.
-- The `targets = { capital }` line in the wiki's map category example has no vanilla precedent: in all 4,186 decisions `targets` holds only country tags, `state = <id>` entries and the word `host`. [vanilla-confirmed 1.19.4.1] What the engine does with `capital` is [unverified], so use `state`, `target_array` or `target_trigger` for a dynamic map area.
+- The `targets = { capital }` line in the wiki's map category example has no vanilla precedent: in all 4,186 decisions `targets` holds only country tags, `state = <id>` entries and the word `host`. [vanilla-confirmed 1.19.4.1] What the engine does with `capital` is [unverified], so use `state`, `target_array` or `target_trigger` for a dynamic map area. A test decision with `targets = { capital }` loaded with no error.log line, and the decision list was not read. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read.
 <!-- kit:end id="decision-category-vanilla" -->
 
 ## Arguments for decisions <a id="Arguments_for_decisions"></a>
@@ -372,7 +372,7 @@ These can only be used within decisions and cannot be used in categories.
 | `desc` | 21 | 1 | a localisation key |
 | `cosmetic_tag` and `cosmetic_ideology` | 21 each | 2 | missions in `ITA.txt` and `SOV.txt` |
 
-- `name` and `desc` replace the localisation key a decision would otherwise take from its id, and `cosmetic_tag` with `cosmetic_ideology` pick the flag shown on a mission. That reading comes from the usage (for example `ENG_trade_unions_demand_minister_appointment_1` through `_5` all use one `name`) and was not tested. [unverified]
+- `name` and `desc` replace the localisation key a decision would otherwise take from its id, and `cosmetic_tag` with `cosmetic_ideology` pick the flag shown on a mission. That reading comes from the usage (for example `ENG_trade_unions_demand_minister_appointment_1` through `_5` all use one `name`) and was not tested in the interface. [unverified] A test decision with `name` and `desc` keys loaded with no error.log line. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read.
 <!-- kit:end id="decision-keys-vanilla" -->
 
 ### Effects on selection <a id="Effects_on_selection"></a>
@@ -477,7 +477,7 @@ Upon the decision being cancelled, `cancel_effect = { ... }` is an effect block 
 **Kit addition** Timer keys in vanilla 1.19.4.1 (4,186 decisions). All counts: [vanilla-confirmed 1.19.4.1] `common/decisions/`.
 
 - `days_remove` is set in 2,152 decisions: 1,799 integers (19 of them `-1`), 20 script constants such as `@DAYS_REMOVE_INFILTRATE_STATE`, and 333 variable names (89 written `name?default`). 17 of the 19 `-1` decisions also have a `remove_trigger` or `cancel_trigger`, so the decision ends on a condition and not on time.
-- Every one of the 930 decisions with a non-empty `modifier` block also has `days_remove` or `days_mission_timeout`. The 109 decisions that have neither carry an empty `modifier = {}`. `hoi4.exe` has the message "Decision scripted with modifier, but no days_remove duration. ID: %s", so give every decision that has a `modifier` a timer. [unverified] (string in `hoi4.exe`).
+- Every one of the 930 decisions with a non-empty `modifier` block also has `days_remove` or `days_mission_timeout`. The 109 decisions that have neither carry an empty `modifier = {}`. `hoi4.exe` has the message "Decision scripted with modifier, but no days_remove duration. ID: %s", so give every decision that has a `modifier` a timer. [unverified] (string in `hoi4.exe`). The message is logged: a test decision with a `modifier` and no `days_remove` drew "Decision scripted with modifier, but no days_remove duration" at load, and it could still be taken by effect (`activate_decision`, then `has_decision` TRUE). [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log and game.log read.
 - `cancel_if_not_visible` is set in 392 decisions (375 `yes`, 17 `no`). `cancel_trigger` is in 647, `cancel_effect` in 403, `remove_effect` in 2,091 and `remove_trigger` in 25.
 - `days_re_enable` is set in 407 decisions; 123 write `0`. It also takes a variable, for example `SOV_default_propaganda_campaign_cooldown`.
 <!-- kit:end id="decision-timer-notes" -->
@@ -520,7 +520,7 @@ These arguments do not work for targeted decisions; see [Targeted Decisions: War
 | `war_with_target_on_remove` | `yes` | 5 decisions in `JAP.txt`, `USA.txt` and `WTT_border_conflicts.txt` |
 | `war_with_target_on_timeout` | `yes` | 6 missions in `JAP.txt` and `WTT_border_conflicts.txt` |
 
-- The two names with no vanilla use (`war_with_on_timeout`, `war_with_target_on_complete`) appear in the wiki examples on this page. They are real tokens, but untested, so check the tooltip in game before relying on them. [unverified]
+- The two names with no vanilla use (`war_with_on_timeout`, `war_with_target_on_complete`) appear in the wiki examples on this page. They are real tokens, but untested, so check the tooltip in game before relying on them. [unverified] In one test setup a mission with a 1-day timeout, `war_with_on_timeout`, `war_with_target_on_complete = yes`, a `cosmetic_tag` and a `cosmetic_ideology` ran its `timeout_effect` after the timeout, but at day 3 the country was not at war with the target and had no cosmetic tag, so those keys did nothing there. All three test missions were gone by day 3, including two with a 30-day timeout, and why those two ended is not shown. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, missions activated by effect, game.log read. The tooltip was not read, and another rule could have blocked the war.
 - Vanilla missions that warn a target of a coming war use `war_with_target_on_timeout = yes` together with `allowed = { always = no }` and activation by effect, for example `JAP_border_conflict_warning_SOV` in `JAP.txt`. [vanilla-confirmed 1.19.4.1] `common/decisions/JAP.txt`.
 <!-- kit:end id="decision-war-with-keys" -->
 
@@ -639,7 +639,7 @@ Other attributes, such as `cancel_trigger` or `cancel_effect` generally may be u
 
 - 441 have `available`, 435 have `timeout_effect`, 402 set `is_good`, 371 have `activation`, 258 have `allowed`, 163 have `complete_effect` and 65 set `selectable_mission`.
 - The wiki says `visible` does nothing in missions. Vanilla still writes a `visible` block in 315 of the 443 missions (36 of them empty). `common/decisions/_documentation.md` never mentions missions, so it does not say that `visible` is ignored for them. [docs] Whether the engine ignores it is [unverified].
-- Only 3 missions carry a `cost`: `TSR_pay_for_support_from_warlord_PP`, `_manpower` and `_equipment` in `CHI_warlord_decisions.txt`, all with `selectable_mission = yes`. `hoi4.exe` has the message "Cost for normal missions not implemented. ID: %s", so do not put `cost` on a mission that is not selectable. [unverified] (string in `hoi4.exe`).
+- Only 3 missions carry a `cost`: `TSR_pay_for_support_from_warlord_PP`, `_manpower` and `_equipment` in `CHI_warlord_decisions.txt`, all with `selectable_mission = yes`. `hoi4.exe` has the message "Cost for normal missions not implemented. ID: %s", so do not put `cost` on a mission that is not selectable. [unverified] (string in `hoi4.exe`). The message is logged: a test mission with `cost = 10` and no `selectable_mission` drew "Cost for normal missions not implemented. ID: ..." at load. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read.
 
 Documented effects, triggers and dynamic variables for decisions and missions. All rows: [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`, `documentation/dynamic_variables_documentation.md`. Uses are counted over `events/`, `common/` and `history/` ([vanilla-confirmed 1.19.4.1]).
 
@@ -786,7 +786,7 @@ Additionally, The argument `on_map_mode` will determine where the targeted decis
 - `state_target` values in vanilla: `yes` 209, `any_controlled_state` 34, `any_owned_state` 20, and continent keys 15 (`asia`, `middle_east` and `africa` 3 each, `south_america` and `europe` 2 each, `north_america` and `australia` 1 each). `any` is never written. [vanilla-confirmed 1.19.4.1] `common/decisions/`.
 - The 138 vanilla decisions that combine `state_target` with `targets` or `target_array` all use `state_target = yes`. The 140 that use `yes`, `any_owned_state`, `any_controlled_state` or a continent key without explicit targets all have a `target_trigger`. This matches the documentation: the selector only matters without explicit targets, and with them it must be `any` or `yes`. [vanilla-confirmed 1.19.4.1] and [docs] `common/decisions/_documentation.md`.
 - The documentation says `any_owned_state` is the faster equal of `owner = ROOT` in the `target_trigger`, `any_controlled_state` of `is_controlled_by = ROOT`, and a continent key of `is_on_continent = <key>`. [docs] `common/decisions/_documentation.md`.
-- Both `state_trigger` and `state_target` exist as tokens in `hoi4.exe`, so whether the documented name is accepted as an alias is unknown. [unverified]
+- Both `state_trigger` and `state_target` exist as tokens in `hoi4.exe`, so whether the documented name is accepted as an alias was unknown. It is not accepted in a decision: `state_trigger = any` was rejected at load as "Unexpected token: state_trigger", and the `target_trigger` that went with it was then run against the country and logged "state: Invalid Scope, supported: State, provided: Country" over and over. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read. Use `state_target`.
 - `on_map_mode` is set in 569 decisions; the values are listed in the key table in the "Arguments for decisions" section. [vanilla-confirmed 1.19.4.1] `common/decisions/`.
 <!-- kit:end id="decision-state-target-key" -->
 
