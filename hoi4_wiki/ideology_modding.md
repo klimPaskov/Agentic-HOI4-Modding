@@ -234,7 +234,7 @@ spriteTypes = {
 ```
 
 <!-- kit:begin id="ideology-gfx-vanilla" at="section:GFX" -->
-**Kit note** Vanilla declares only six ideology sprites, all in `interface/countrypoliticsview.gfx`: `GFX_ideology_neutrality_group`, `GFX_ideology_communism_group`, `GFX_ideology_fascism_group`, `GFX_ideology_democratic_group`, `GFX_ideology_anarchism` (the one type with its own icon) and `GFX_ideology_unknown`. Textures are in `gfx/interface/ideologies/`. No vanilla sprite uses the `GFX_ideology_<TAG>_...` country pattern, so that pattern comes from the wiki alone. [vanilla-confirmed 1.19.4.1] `interface/countrypoliticsview.gfx`; country-specific sprites [unverified].
+**Kit note** Vanilla declares only six ideology sprites, all in `interface/countrypoliticsview.gfx`: `GFX_ideology_neutrality_group`, `GFX_ideology_communism_group`, `GFX_ideology_fascism_group`, `GFX_ideology_democratic_group`, `GFX_ideology_anarchism` (the one type with its own icon) and `GFX_ideology_unknown`. Textures are in `gfx/interface/ideologies/`. No vanilla sprite uses the `GFX_ideology_<TAG>_...` country pattern, so that pattern comes from the wiki alone. [vanilla-confirmed 1.19.4.1] `interface/countrypoliticsview.gfx`. The game honours the pattern. A mod sprite `GFX_ideology_GER_fascism_group` with the `communism_group.dds` texture made the politics view show the communist star next to "Fascist" as GER, while after `tag ITA` (also fascist) the politics view showed the normal fascist icon. Only the ruling ideology icon in the politics view was checked. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launch, politics view screenshots.
 <!-- kit:end id="ideology-gfx-vanilla" -->
 
 ### Country history <a id="Country_history"></a>
