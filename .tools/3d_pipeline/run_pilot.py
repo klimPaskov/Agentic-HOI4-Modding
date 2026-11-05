@@ -3448,7 +3448,10 @@ def write_animation_receipt(
     """Write the provenance receipt animation import requires, once per role, and return its job path."""
 
     receipt_rel = f"provider/animation_receipts/{role}.json"
-    if not (job / receipt_rel).exists():
+    existing = read_json(job / receipt_rel) if (job / receipt_rel).is_file() else {}
+    current = (scene_name, source_sha, task.get("task_id"))
+    if (existing.get("source_action_name"), existing.get("source_sha256"), existing.get("source_reference_id")) != current:
+        # A receipt from a failed attempt that named another clip is replaced, never reused.
         write_json(job / receipt_rel, {
             "verification_status": "verified",
             "source_kind": "meshy_animate",
@@ -3547,16 +3550,22 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     mesh_rel = f"export/mesh/{stem}.mesh"
     mesh_export = blender.export_mesh(slug, chain, mesh_rel)
     armature = _prepared_armature(prep)
-    imported_count: Dict[str, int] = {glb_animation_name(job / base_source): 1}
+    # The prepared base checkpoint keeps the base clip's own action, so Blender names that clip's
+    # imported copy "<name>.001". Every other import removes its source action after the retarget,
+    # so a clip that several roles reuse keeps its plain name each time.
+    base_clip = glb_animation_name(job / base_source)
+    # A rerun after a failure starts the roles again from the base: the role checkpoints of the
+    # earlier attempt are derived from files on disk, hold no paid data, and block a new import.
+    for stale in (job / "blender" / "checkpoints").glob("unit_*.blend"):
+        if stale.name != "unit_base_pre_export.blend":
+            stale.unlink()
     roles: Dict[str, Dict[str, Any]] = {}
     for action in spec["required_actions"]:
         role = action["role"]
         clip_role = action.get("reuse_role") or role
         source_rel = downloads[clip_role]["file"]["relative_path"]
         provider_name = glb_animation_name(job / source_rel)
-        count = imported_count.get(provider_name, 0)
-        scene_name = provider_name + (f".{count:03d}" if count else "")
-        imported_count[provider_name] = count + 1
+        scene_name = provider_name + (".001" if provider_name == base_clip else "")
         task = existing_task(job, animation_stage_for(spec, clip_role)) or {}
         source_sha = sha256_file(job / source_rel)
         receipt_rel = write_animation_receipt(job, role, task, scene_name, provider_name, source_rel, source_sha, library.get(clip_role))
