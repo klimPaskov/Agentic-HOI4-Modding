@@ -650,6 +650,7 @@ class BlenderAdapterClient:
         action_role: str,
         action_name: str,
         creature_rig_family: str = "elephant",
+        action_style: str = "",
     ) -> Dict[str, Any]:
         return self.call(
             "hoi4_blender_author_creature_action",
@@ -660,6 +661,7 @@ class BlenderAdapterClient:
                 "action_role": action_role,
                 "action_name": action_name,
                 "creature_rig_family": creature_rig_family,
+                "action_style": action_style,
             },
         )
 

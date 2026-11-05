@@ -1108,6 +1108,7 @@ def hoi4_blender_author_creature_action(
     action_role: str,
     action_name: str,
     creature_rig_family: str = "elephant",
+    action_style: str = "",
 ) -> Dict[str, Any]:
     """Author one real skeletal creature action and checkpoint its contact-checked result."""
 
@@ -1120,6 +1121,7 @@ def hoi4_blender_author_creature_action(
             "action_role": action_role,
             "action_name": action_name,
             "creature_rig_family": creature_rig_family,
+            "action_style": action_style,
         },
     )
 

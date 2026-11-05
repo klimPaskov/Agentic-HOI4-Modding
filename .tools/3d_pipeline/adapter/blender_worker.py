@@ -9168,6 +9168,9 @@ def author_creature_rig(req: Dict[str, Any]) -> Dict[str, Any]:
 
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
+    if str(payload.get("creature_rig_family") or "elephant").casefold() == "quadruped":
+        import quadruped_rig
+        return quadruped_rig.author_rig(req, globals())
     if str(payload.get("creature_rig_family") or "elephant").casefold() == "winged_biped":
         return author_winged_biped_rig(req)
     if str(payload.get("creature_rig_family") or "elephant").casefold() != "elephant":
@@ -9550,6 +9553,9 @@ def author_creature_action(req: Dict[str, Any]) -> Dict[str, Any]:
 
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
+    if str(payload.get("creature_rig_family") or "elephant").casefold() == "quadruped":
+        import quadruped_rig
+        return quadruped_rig.author_action(req, globals())
     if str(payload.get("creature_rig_family") or "elephant").casefold() == "winged_biped":
         return author_winged_biped_action(req)
     if str(payload.get("creature_rig_family") or "elephant").casefold() != "elephant":
