@@ -1,5 +1,7 @@
 # Reusable HOI4 3D model pipeline
 
+Modders start with [3D units with Meshy and Blender](../../docs/3d-units.md). This page is the technical reference.
+
 This package provides the bounded source-to-handoff route for custom HOI4
 models. It is dormant until a 3D task is accepted and the bootstrap is run.
 Runtime caches, provider outputs, reports, job registries, and vendored

@@ -419,7 +419,34 @@ def find_blender(pipeline_root: Path = PIPELINE_ROOT) -> tuple[Path, Path | None
                     f"BLENDER_EXE points to Blender {version}, which is not a supported minor "
                     f"(supported: {', '.join(supported)})."
                 )
+    if not any(blender_minor_of(version) in supported for version, _executable, _shortcut in found) and not explicit:
+        install_pinned_blender(pipeline_root)
+        found = discover_blender_installs()
     return select_supported_blender(found, supported)
+
+
+def install_pinned_blender(pipeline_root: Path = PIPELINE_ROOT) -> None:
+    """Install the lock's pinned Blender with winget when no supported build is present, as Node is installed."""
+    lock = json.loads((pipeline_root / "config" / "dependencies.lock.json").read_text(encoding="utf-8"))
+    pinned = lock.get("compatibility", {}).get("blender", {}).get("winget_version")
+    winget = shutil.which("winget")
+    if not pinned or not winget:
+        return
+    run(
+        [
+            winget,
+            "install",
+            "--id",
+            "BlenderFoundation.Blender",
+            "--exact",
+            "--version",
+            str(pinned),
+            "--silent",
+            "--disable-interactivity",
+            "--accept-source-agreements",
+            "--accept-package-agreements",
+        ]
+    )
 
 
 def ensure_npx() -> Path:
