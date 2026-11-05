@@ -1,135 +1,70 @@
-# Agentic HOI4 Modding
+<p align="center">
+  <img src="docs/images/logo.svg" width="96" height="96" alt="Agentic HOI4 Modding">
+</p>
 
-[![Discord](https://img.shields.io/badge/Discord-Join%20Community-7289da?logo=discord&logoColor=white)](https://discord.gg/rAXesGcT2t)
-[![YouTube](https://img.shields.io/badge/YouTube-Chaos%20Redux-ff0000?logo=youtube&logoColor=white)](https://www.youtube.com/@ChaosRedux)
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20the%20Project-ff5e5b?logo=kofi&logoColor=white)](https://ko-fi.com/klimpaskov)
-[![Download](https://img.shields.io/github/v/release/klimPaskov/Agentic-HOI4-Modding?label=Download&logo=github&color=2ea44f)](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest)
-[![Guide](https://img.shields.io/badge/Guide-GitHub%20Pages-555555?logo=readthedocs&logoColor=white)](https://klimpaskov.github.io/Agentic-HOI4-Modding/)
-[![Issues](https://img.shields.io/badge/Bugs%20%26%20Ideas-Issues-24292f?logo=github&logoColor=white)](https://github.com/klimPaskov/Agentic-HOI4-Modding/issues)
+<h1 align="center">Agentic HOI4 Modding</h1>
 
-<!-- TODO-VIDEO-LINK: replace with the HOI4 Mod Setup video URL -->
-[![Watch the HOI4 Mod Setup video](https://raw.githubusercontent.com/klimPaskov/HOI4-Mod-Setup/main/docs/images/setup-app-demo-thumbnail.png)](https://www.youtube.com/@ChaosRedux)
+<p align="center">
+  Skills, specialist agents, an offline wiki and HOI4 tools that let your coding agent build <em>Hearts of Iron IV</em> mods.
+</p>
 
-Build Hearts of Iron IV mods with your coding agent. Make focus trees, events, decisions and maps, fix broken script and balance the AI. The kit gives your agent project instructions, modding skills, specialist helpers, a HOI4 wiki for agents and HOI4 tools. Add portraits, 3D models, Super Events or live game testing when your mod needs them.
+<p align="center">
+  <a href="https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest"><img alt="Download" src="https://img.shields.io/github/v/release/klimPaskov/Agentic-HOI4-Modding?label=Download&logo=github&color=2ea44f"></a>
+  <a href="https://discord.gg/rAXesGcT2t"><img alt="Discord" src="https://img.shields.io/badge/Discord-Join%20Community-7289da?logo=discord&logoColor=white"></a>
+  <a href="https://www.youtube.com/@ChaosRedux"><img alt="YouTube" src="https://img.shields.io/badge/YouTube-Chaos%20Redux-ff0000?logo=youtube&logoColor=white"></a>
+  <a href="https://ko-fi.com/klimpaskov"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-Support%20the%20Project-ff5e5b?logo=kofi&logoColor=white"></a>
+  <a href="https://github.com/klimPaskov/Agentic-HOI4-Modding/issues"><img alt="Issues" src="https://img.shields.io/badge/Bugs%20%26%20Ideas-Issues-24292f?logo=github&logoColor=white"></a>
+</p>
 
-Choose any supported coding client, including Claude Code, Codex, Cursor, Qoder, OpenCode, GitHub Copilot (VS Code), Gemini CLI, Antigravity, Grok Build, Kilo Code, Kiro, Qwen Code, Cline, Devin Desktop, Augment, Continue, or Aider. HOI4 Mod Setup installs the project files and tools for the clients you select; Cline, Devin Desktop, Augment, and Continue keep MCP servers in their own settings, and Aider has no MCP support. The package keeps one canonical set of guidance and creates matching files for other clients.
+<p align="center">
+  <a href="#get-started">Get started</a> ·
+  <a href="docs/catalog.md">Skills and agents</a> ·
+  <a href="docs/manual-setup.md">Manual setup</a> ·
+  <a href="docs/runtimes.md">Coding clients</a> ·
+  <a href="https://klimpaskov.github.io/Agentic-HOI4-Modding/">Guide</a>
+</p>
 
-[Download the complete package](https://github.com/klimPaskov/Agentic-HOI4-Modding/releases/latest/download/Agentic-HOI4-Modding.zip) | [Video tutorials](https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3)
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=qdFbLO92dQI"><img src="https://raw.githubusercontent.com/klimPaskov/HOI4-Mod-Setup/main/docs/images/setup-app-demo-thumbnail.png" alt="Watch the HOI4 Mod Setup video: One App, All HOI4 Tools"></a>
+</p>
+
+Make focus trees, events, decisions and maps, fix broken script and balance the AI. Works with Claude Code, Codex, Cursor, GitHub Copilot and [many more coding clients](docs/runtimes.md).
 
 ## Get started
 
-Use [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest) to create a mod or prepare an existing one. The app selects and adapts the files for your mod, fills in your mod name, prefix, and game folder, connects HOI4 Agent Tools, and can update, repair or remove the setup later.
+1. Download **[HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest)** and create a mod or import an existing one.
+2. Pick your coding client and the workflows you want. The app installs the kit, the HOI4 tools and the MCP registrations, and can update, repair or remove them later.
+3. Open the mod in your coding client and describe what you want to build or fix.
 
-Open the mod in your coding client and describe what you want to build or fix. The agent picks the tools and skills it needs.
+Prefer to do it by hand? Follow the [manual setup](docs/manual-setup.md).
 
-For a manual setup:
+## What you get
 
-1. Put your mod in a Git repository and open that repository as the agent's workspace.
-2. Copy [CLAUDE_template.md](CLAUDE_template.md) to your mod as `CLAUDE.md` and replace its placeholders (`[MOD_NAME]`, `[MOD_PREFIX]`, `[HOI4_GAME_DIR]`, `[STEAM_WORKSHOP_DIR]`). Delete the blocks for optional workflows you do not install.
-3. Copy `.claude/skills/`, `.claude/agents/`, `.claude/settings.json`, `.mcp.json`, and `.tools/sync/` into the mod. Copy the source-packaging Python script, Windows launcher, and README from `.tools/` as well. Make the installed game files and the included `hoi4_wiki/` folder readable to the agent.
-4. If you also use another runtime, copy its generated folder (for example `.codex/`, `.cursor/`, `.qoder/`, `.opencode/`, `.gemini/`, `.kilo/`, `.kiro/`, `.qwen/`, `.devin/`, or `.augment/`) and its MCP file into the mod (plus root `opencode.json` for OpenCode), then generate its files from the Claude sources:
+- **Project instructions** (`CLAUDE.md`, or `AGENTS.md` for other clients) with your mod name, prefix and game folder.
+- **Skills and specialist agents** for focus trees, events, decisions, country content, interfaces and assets. See the [catalog](docs/catalog.md).
+- **An offline HOI4 wiki** (`hoi4_wiki/`) the agent can read and search.
+- **HOI4 tools** that build, preview and check the mod (below).
 
-   ```powershell
-   python .tools/sync/sync_instructions.py   # AGENTS.md
-   python .tools/sync/sync_agents.py --runtime codex   # or cursor, qoder, opencode, gemini, antigravity, kilo, kiro, qwen, devin, augment
-   python .tools/sync/sync_skills.py --target agents   # .agents/skills; or qoder, grok, kiro, qwen
-   ```
+## Tools
 
-5. Copy `.tools/mcp/` and `docs/runtimes.md` plus `docs/systems/hoi4_agent_tools_mcp_integration.md` into the mod. Install Python 3.13 and native x64 Node.js 22.19+ within major 22, or Node.js 24 LTS, with npm available on PATH. On Windows, `py -3.13` can replace `python` in these commands.
-6. Install HOI4 Agent Tools with `python -I .tools/mcp/bootstrap_hoi4_agent_tools.py`, then approve the project server in your coding client and check that it connects. The bootstrap uses its own verified npm toolchain without replacing your existing npm executable or configuration.
+- **[HOI4 Agent Tools](https://github.com/klimPaskov/hoi4-agent-tools)** builds focus trees, events, decisions and maps, previews them, finds modding rules and fixes script.
+- **[hoi4-imagegen](https://github.com/klimPaskov/hoi4-imagegen-mcp)** makes focus icons, event pictures, portraits, flags and the rest at the game's sizes. Sign in with ChatGPT or use an API key.
+- **Live testing** (optional) drives the running game through Clausewitz MCP or HOI4 Live Tools. See the [live-testing setup](.claude/skills/hoi4-live-playtest/references/setup.md).
+- **3D models** (optional) through Meshy and Blender.
 
-   Native Linux users can follow the [Linux setup guide](docs/linux.md) for supported Node.js/Python prerequisites, the current-user install prefix and all client registration shapes. The package records separate Windows and Linux installed-tree evidence.
+## Repository layout
 
-7. For live game testing, choose a provider and follow the [live-testing setup guide](.claude/skills/hoi4-live-playtest/references/setup.md). Clausewitz MCP needs manual Linux game/server setup and can connect directly on Linux; HOI4 Live Tools uses the Windows bootstrap. For portraits, 3D, or Super Events, copy the selected workflow's references, tools, and runtime assets together; use the [manifest](hoi4-mod-setup.manifest.json) as the file inventory. The setup app handles this selection automatically.
-
-The templates are starting points. Keep only the workflows your mod uses and add project rules as the mod develops.
-
-To package project files for a ChatGPT project, add the optional
-`runtime.chatgpt_sources` component (the setup app lists it on Components) and run
-`python .tools/package_chatgpt_project_sources.py` yourself, or its Windows `.bat`
-launcher. See the [packaging tool guide](.tools/README.md#chatgpt-source-packaging)
-for default file selections and output options.
-
-## How the files fit together
-
-| Canonical source | Purpose | Generated for other runtimes |
-| --- | --- | --- |
-| `CLAUDE.md` (`CLAUDE_template.md` here) | Project instructions | `AGENTS.md` |
-| `.claude/skills/<name>/SKILL.md` | Reusable HOI4 workflows and their references | `.agents/skills/` (Codex, DSH, Gemini CLI, Antigravity, Kilo Code, Devin), `.qoder/skills/`, `.grok/skills/`, `.kiro/skills/`, `.qwen/skills/` |
-| `.claude/agents/<name>.md` | Specialist roles and model tiers | `.codex/agents/*.toml`, `.cursor/agents/`, `.qoder/agents/`, `.opencode/agent/`, `.gemini/agents/`, `.agents/agents/`, `.kilo/agents/`, `.kiro/agents/`, `.qwen/agents/`, `.devin/agents/`, `.augment/agents/` |
-| `.mcp.json`, `.claude/settings.json` | Claude Code MCP registration and settings | Each runtime's own MCP file |
-
-Edit only the canonical files and rerun the synchronizers in [`.tools/sync/`](.tools/sync/README.md); add `--check` to find stale projections. [Runtime details](docs/runtimes.md) cover what each runtime reads.
-
-## Specialist model tiers
-
-Specialist roles use model tiers to match the work:
-
-- **Opus**: improvement loop planner.
-- **Sonnet**: 3D model pipeline, feature completion auditor, localisation auditor, scripted system architect, skill maintainer.
-- **Haiku**: every other specialist (repo explorer, focus tree, decision, country package, and AI probability auditors, event UI worker, documentation curator, asset, icon, portrait, quote, and audio workers, spreadsheet worker, Super Events researchers).
-
-The package maps each tier to settings supported by the selected coding client. See the [runtime reference](docs/runtimes.md) for details.
-
-Other runtimes translate the tier through [`.tools/sync/agent_profiles.json`](.tools/sync/agent_profiles.json), for example into a Codex reasoning effort.
-
-## Skills and agents
-
-The [catalog](docs/catalog.md) covers building focus trees, events, decisions, country content, interfaces and assets, with links to each skill and specialist agent. Images come from `hoi4-imagegen`, which makes the 40 HOI4 asset families (focus, ideas, decisions, technologies, event pictures, flags, portraits, counters and more) at the mod's canvas sizes, vanilla by default. HOI4 Mod Setup installs it. Sign in once with your ChatGPT account (`hoi4-imagegen login`) or use an OpenAI, Gemini or fal key or a ComfyUI endpoint, or make art yourself. See the [provider research](docs/image-generation-providers.md) for models, costs, and limits.
-
-## Screenshots and videos
-
-![Choose coding environments in HOI4 Mod Setup](docs/site/images/setup-coding-environments.png)
-
-![Choose an image-generation provider in HOI4 Mod Setup](docs/site/images/setup-image-generation.png)
-
-![Choose a live-testing provider in HOI4 Mod Setup](docs/site/images/setup-live-testing.png)
-
-- [Setup app screenshots](https://github.com/klimPaskov/HOI4-Mod-Setup/tree/main/docs/screenshots): project creation, component selection, MCP configuration, review, and maintenance.
-- Updated video guides will be shared on [Chaos Redux on YouTube](https://www.youtube.com/@ChaosRedux).
-- [Video tutorial playlist](https://www.youtube.com/playlist?list=PLh6JmuEabQioc4V8IYGEsMtqiw-xemeX3).
-- [GitHub Pages guide](https://klimpaskov.github.io/Agentic-HOI4-Modding/).
-
-## Updating an older installation
-
-Back up and commit local mod work first. Use HOI4 Mod Setup's update or repair flow to review changes to managed files and keep local additions. Choose the coding client, image-generation provider and live-testing provider you want to use; the app updates their project files and MCP registrations while preserving custom instructions.
-
-## Skill size
-
-Every skill, agent prompt, and instruction file must be readable in one pass. [`.tools/sync/read_limits.json`](.tools/sync/read_limits.json) sets a 20,000-token ceiling, and `python .tools/sync/check_guidance_size.py` reports any file above it. The ceiling is a limit, not a target: large skills keep their full rules and move complete topics into linked `references/` files.
-
-## MCP servers
-
-- **Image generation**: `hoi4-imagegen` (installed by HOI4 Mod Setup) plans, generates, processes, validates and installs each asset family, and shows a cost estimate before any paid call. It signs in with your ChatGPT account or reads an OpenAI, Gemini or fal key from the environment, or uses a ComfyUI endpoint. You can also make art yourself. See the [provider research](docs/image-generation-providers.md) for models, costs, limits, and available MCP routes.
-- **[HOI4 Agent Tools](https://github.com/klimPaskov/hoi4-agent-tools)** (`hoi4_agent_tools`): helps your agent build focus trees, events, decisions and maps, preview windows and trees, find modding rules, repair script and balance AI choices. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` and registers it for the coding environments you choose. Agents use whatever routes the connected server advertises.
-- **[HOI4 Live Tools](https://github.com/klimPaskov/HOI4-Live-Tools)** (`hoi4-live`, optional, Windows): drives a running game for live feature tests and campaign play. HOI4 Mod Setup installs the release recorded in `hoi4-mod-setup.manifest.json` for your user and manages project registrations for the selected coding clients (manual bootstrap defaults to user-client registration). The `hoi4-live-playtest` skill and its [setup guide](.claude/skills/hoi4-live-playtest/references/setup.md) explain how agents use it; `hoi4-debug-playtest` plays through it.
-- **Meshy and Blender** (optional 3D workflow): registered by `.tools/3d_pipeline/bootstrap_3d_workflow.py` when a feature needs a model.
-
-## What's inside
-
-| Folder | Purpose |
+| Path | Contents |
 | --- | --- |
-| `.claude/skills/` | Reusable HOI4 workflows and their references |
-| `.claude/agents/` | Specialist subagent definitions |
-| `.codex/`, `.cursor/`, `.qoder/`, `.opencode/`, `.gemini/`, `.agents/agents/`, `.kilo/`, `.kiro/`, `.qwen/`, `.devin/`, `.augment/` | Generated runtime packages |
-| `GEMINI_template.md`, `.github/instructions/`, `.clinerules/`, `.continue/rules/`, `.aider.conf.yml`, `.grok/`, `.vscode/mcp.json` | Instruction pointers and MCP registrations for the other clients |
-| `hoi4_wiki/` | The kit's HOI4 wiki: an offline reference built from the Hearts of Iron IV Wiki's modding pages, plus the kit's own pages and corrections |
-| `.tools/` | Runtime synchronizers, wiki, MCP bootstrap, and optional 3D tooling |
-| `docs/` | Runtime reference, MCP integration contract, and the Super Events guide |
-| `hoi4-mod-setup.manifest.json` | File selection and verification for HOI4 Mod Setup |
+| `.claude/` | The canonical skills, agents and settings (Claude Code) |
+| `.codex/`, `AGENTS_template.md` | Codex |
+| `.tools/clients/` | The files of every other client, which HOI4 Mod Setup installs at their real place |
+| `.tools/` | Synchronizers, repository checks, the MCP bootstrap and the 3D pipeline |
+| `hoi4_wiki/` | The offline HOI4 wiki |
+| `docs/` | Guides and references |
 
-Describe what you want to build. The agent chooses the tools and skills and connects the content to your mod.
+Skills, agents and instructions are written once, for Claude Code. `python .tools/sync/generators.py` regenerates every other client's copy ([details](.tools/sync/README.md)).
 
 ## License
 
-Original package code and guidance are licensed under the [Apache License 2.0](LICENSE), the same license as HOI4 Mod Setup. Third-party material retains its own terms; see [NOTICE](NOTICE), the [Super Events asset lineage](docs/super_events/README.md), and the manifest's separate wiki license and provenance evidence.
-
-### The HOI4 wiki
-
-`hoi4_wiki/` is the kit's own HOI4 wiki. Most pages derive from the [Hearts of Iron IV Wiki](https://hoi4.paradoxwikis.com/Category:Modding) modding pages and are licensed CC BY-SA 3.0 (see `hoi4_wiki/LICENSE.txt`); the kit adds its own pages and corrections against the installed game. Every page keeps a capture line that names the source page and revision, so the attribution travels with each file. The folder was named `paradox_wiki/` in earlier kit versions; HOI4 Mod Setup moves installed projects to the new name, and HOI4 Agent Tools reads both.
-
-## Live-testing provider choice
-
-HOI4 Mod Setup offers Clausewitz MCP (default), experimental HOI4 Live Tools, and manual testing. [Clausewitz MCP](https://github.com/smerss/Clausewitz-MCP) by smerss is MIT licensed and reads state directly from native Linux HOI4 **1.19.2 only**, without OCR or saves for those reads. Linux connects directly; Windows uses WSL; macOS uses SSH to Linux. Complete manual Linux/game/server setup and confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
-
-HOI4 Live Tools is Windows verified only; upstream macOS support is incomplete. It is experimental, slower and not thoroughly tested. The app installs its pinned runtime without global registration and manages project registrations for selected coding clients. Manual testing registers no server. Use update or repair to reselect the provider and clients, review changed guidance and registrations, and preserve custom instructions. Follow the selected server tool list; providers do not promise identical operations.
+[Apache License 2.0](LICENSE), the same as HOI4 Mod Setup. Third-party material keeps its own terms (see [NOTICE](NOTICE) and the [Super Events asset lineage](docs/super_events/README.md)). Most `hoi4_wiki/` pages come from the [Hearts of Iron IV Wiki](https://hoi4.paradoxwikis.com/Category:Modding) under CC BY-SA 3.0 (see `hoi4_wiki/LICENSE.txt`), and each page names its source page and revision.

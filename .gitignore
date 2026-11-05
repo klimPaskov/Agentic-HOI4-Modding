@@ -22,14 +22,28 @@
 # hoi4-imagegen release binaries, installed per machine the way HOI4 Mod Setup installs them.
 /.tools/image_generation/hoi4-imagegen/
 
-# Skill copies are generated from .claude/skills by .tools/sync/sync_skills.py
-# or installed by HOI4 Mod Setup; the source package tracks only the canonical
-# library.
-/.agents/skills/
-/.qoder/skills/
-/.grok/skills/
-/.kiro/skills/
-/.qwen/skills/
+# Only Claude Code and Codex live at the root of the source package. Skill
+# copies are generated from .claude/skills by .tools/sync/sync_skills.py, and
+# the other clients' files are kept in .tools/clients/. HOI4 Mod Setup installs
+# each at its real place in a mod, so a copy generated here stays local.
+/.agents/
+/.augment/
+/.clinerules/
+/.continue/
+/.cursor/
+/.devin/
+/.gemini/
+/.github/instructions/
+/.grok/
+/.kilo/
+/.kiro/
+/.opencode/
+/.qoder/
+/.qwen/
+/.vscode/
+/.aider.conf.yml
+/GEMINI.md
+/opencode.json
 *.pyc
 
 # Claude Code project definitions are tracked; personal overrides are not.

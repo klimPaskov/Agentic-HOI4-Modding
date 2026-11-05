@@ -18,6 +18,8 @@ except ModuleNotFoundError:  # Python 3.10 and older
 
 ROOT = Path(__file__).resolve().parents[1]
 SYNC = ROOT / ".tools" / "sync"
+# The source package keeps Claude Code and Codex at the root and every other client here.
+CLIENTS = ROOT / ".tools" / "clients"
 
 EXPECTED_TIERS = {
     "hoi4-improvement-loop-planner": "opus",
@@ -75,6 +77,37 @@ def run_tool(name, *args):
     return subprocess.run([sys.executable, "-B", str(SYNC / name), *args], cwd=ROOT, capture_output=True, text=True)
 
 
+def check_projections(module, agents, profiles, runtime_keys):
+    """Each runtime's committed projection is in sync and carries its runtime's wording and settings."""
+    for runtime_key in runtime_keys:
+        assert module.synchronize([runtime_key], check=True) == 0, runtime_key
+        outputs = module.expected_outputs(runtime_key, agents, profiles)
+        for agent in agents:
+            if runtime_key == "codex":
+                path = ROOT / ".codex" / "agents" / f"{agent.snake_name}.toml"
+                content = outputs[path]
+                assert 'fork_turns="none"' in content and "fork_context=false" in content, agent.name
+                assert "CLAUDE.md" not in content, agent.name
+                if tomllib is not None:
+                    data = tomllib.loads(content)
+                    assert data["name"] == agent.snake_name
+                    assert data["sandbox_mode"] == ("read-only" if agent.read_only else "workspace-write")
+                    assert data["model_reasoning_effort"] == profiles["codex"]["tiers"][agent.model]["model_reasoning_effort"]
+            elif runtime_key == "claude":
+                continue
+            else:
+                content = outputs[module.RUNTIMES[runtime_key].agent_dir / f"{agent.name}.md"]
+                assert agent.description in content
+                assert "by .tools/sync/sync_agents.py" in content
+                assert "image-generation MCP workflow" not in content
+                frontmatter = content.split("\n---\n", 1)[0].splitlines()
+                if runtime_key in module.NAMED_MARKDOWN_RUNTIMES:
+                    assert f"name: {agent.name}" in frontmatter, (runtime_key, agent.name)
+                    assert not any(line.startswith(("model:", "tools:")) for line in frontmatter), runtime_key
+                if runtime_key == "kilo":
+                    assert "mode: subagent" in frontmatter, agent.name
+
+
 def main():
     module = load_module()
     agents = module.load_agents()
@@ -111,40 +144,20 @@ def main():
     profiles = module.load_profiles()
     projected = ["codex", "cursor", "qoder", "opencode", "gemini", "antigravity", "kilo", "kiro", "qwen", "devin", "augment"]
     assert sorted(module.RUNTIMES) == sorted(projected + ["claude"])
-    assert module.verify(projected + ["claude"]) == 0
+    at_root = ["codex", "claude"]
+    assert module.verify(at_root) == 0
     altered = [replace(agents[0], model="opus" if agents[0].model != "opus" else "haiku"), *agents[1:]]
     with patch.object(module, "load_agents", return_value=altered):
         assert module.verify(["claude"]) == 1, "role tier drift must fail verification"
     altered = [replace(agents[0], effort="low"), *agents[1:]]
     with patch.object(module, "load_agents", return_value=altered):
         assert module.verify(["claude"]) == 1, "role effort drift must fail verification"
-    for runtime_key in projected + ["claude"]:
-        assert module.synchronize([runtime_key], check=True) == 0, runtime_key
-        outputs = module.expected_outputs(runtime_key, agents, profiles)
-        for agent in agents:
-            if runtime_key == "codex":
-                path = ROOT / ".codex" / "agents" / f"{agent.snake_name}.toml"
-                content = outputs[path]
-                assert 'fork_turns="none"' in content and "fork_context=false" in content, agent.name
-                assert "CLAUDE.md" not in content, agent.name
-                if tomllib is not None:
-                    data = tomllib.loads(content)
-                    assert data["name"] == agent.snake_name
-                    assert data["sandbox_mode"] == ("read-only" if agent.read_only else "workspace-write")
-                    assert data["model_reasoning_effort"] == profiles["codex"]["tiers"][agent.model]["model_reasoning_effort"]
-            elif runtime_key == "claude":
-                continue
-            else:
-                content = outputs[module.RUNTIMES[runtime_key].agent_dir / f"{agent.name}.md"]
-                assert agent.description in content
-                assert "by .tools/sync/sync_agents.py" in content
-                assert "image-generation MCP workflow" not in content
-                frontmatter = content.split("\n---\n", 1)[0].splitlines()
-                if runtime_key in module.NAMED_MARKDOWN_RUNTIMES:
-                    assert f"name: {agent.name}" in frontmatter, (runtime_key, agent.name)
-                    assert not any(line.startswith(("model:", "tools:")) for line in frontmatter), runtime_key
-                if runtime_key == "kilo":
-                    assert "mode: subagent" in frontmatter, agent.name
+    check_projections(module, agents, profiles, at_root)
+    module.use_into(CLIENTS)
+    in_clients = [key for key in projected if key not in at_root]
+    assert sorted(module.RUNTIMES) == sorted(in_clients)
+    assert module.verify(in_clients) == 0
+    check_projections(module, agents, profiles, in_clients)
     if tomllib is not None:
         config = tomllib.loads((ROOT / ".codex" / "config.toml").read_text(encoding="utf-8"))
         registered = {name for name in config["agents"] if isinstance(config["agents"][name], dict)}
@@ -168,7 +181,7 @@ def main():
         assert denied in settings["permissions"]["deny"], denied
     assert mcp["mcpServers"]["hoi4_agent_tools"]["command"] == "hoi4-agent-tools.cmd"
     for runtime in ("cursor", "qoder", "opencode"):
-        runtime_settings = json.loads((ROOT / f".{runtime}" / "settings.json").read_text(encoding="utf-8"))
+        runtime_settings = json.loads((CLIENTS / f".{runtime}" / "settings.json").read_text(encoding="utf-8"))
         assert runtime_settings["agents"]["source"] == ".claude/agents"
 
     template = (ROOT / "CLAUDE_template.md").read_text(encoding="utf-8")

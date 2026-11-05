@@ -16,6 +16,8 @@ Edit the canonical file, then regenerate the projections with `python .tools/syn
 Run `python .tools/sync/generators.py --check` during validation; it exits with status 1 when a projection is out of date and 2 when a synchronizer could not run. `.tools/sync/generators.json` lists every synchronizer with its inputs and outputs.
 Never hand-edit a projection.
 
+The paths in this reference are the paths in an installed mod. This source repository keeps only Claude Code and Codex at its root. Every other client's files are in `.tools/clients/` at the path they are installed to, for example `.tools/clients/.cursor/agents/`, and `python .tools/sync/sync_agents.py --into .tools/clients` regenerates their agents. HOI4 Mod Setup installs each file at its real place, and the [manual setup](manual-setup.md) lists what to copy for each client.
+
 ## Instruction files
 
 Each runtime loads its project instructions from a different file name.

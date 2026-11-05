@@ -219,6 +219,42 @@ class SourcePackageMirror(unittest.TestCase):
 			self.assertIn("changed references/notes.md", drift.stdout)
 
 
+class SourcePackageClients(unittest.TestCase):
+	"""The source package keeps the other clients in .tools/clients; the root holds only Claude Code and Codex."""
+
+	def test_agent_edit_refreshes_the_client_folder_and_never_the_root(self):
+		with tempfile.TemporaryDirectory() as folder:
+			mod = Mod(folder, source_package=True)
+			(mod.root / ".tools" / "clients" / ".cursor" / "agents").mkdir(parents=True)
+			(mod.root / ".tools" / "clients" / ".opencode" / "agent").mkdir(parents=True)
+			self.assertEqual(mod.run().returncode, 0)
+			self.assertIn("# Cursor Subagent Map", mod.read(".tools/clients/.cursor/agent-map.md"))
+			# The map names the folder as installed in a mod, so Setup's copy matches a regenerated one.
+			self.assertIn("never edit `.cursor/agents/` by hand", mod.read(".tools/clients/.cursor/agent-map.md"))
+			self.assertTrue(mod.path(".tools/clients/.opencode/agent/hoi4-alpha.md").is_file())
+			self.assertTrue(mod.path(".codex/agents/hoi4_alpha.toml").is_file())
+			self.assertFalse(mod.path(".cursor").exists())
+			self.assertFalse(mod.path(".tools/clients/.codex").exists())
+
+			mod.write(".claude/agents/hoi4-alpha.md", agent_text("hoi4-alpha", "Does a changed job."))
+			stale = mod.run("--check")
+			self.assertEqual(stale.returncode, 1)
+			self.assertIn("DRIFT: .tools/clients/.cursor/agents/hoi4-alpha.md", stale.stdout)
+			self.assertEqual(mod.hook(".claude/agents/hoi4-alpha.md").returncode, 0)
+			self.assertIn("Does a changed job.", mod.read(".tools/clients/.cursor/agents/hoi4-alpha.md"))
+			self.assertEqual(mod.run("--check").returncode, 0)
+			self.assertFalse(mod.path(".cursor").exists())
+
+	def test_into_refuses_the_root_runtimes(self):
+		with tempfile.TemporaryDirectory() as folder:
+			mod = Mod(folder, source_package=True)
+			agents = [sys.executable, "-B", str(mod.path(".tools/sync/sync_agents.py")), "--root", str(mod.root),
+				"--into", str(mod.path(".tools/clients")), "--runtime", "codex"]
+			result = subprocess.run(agents, capture_output=True, text=True)
+			self.assertEqual(result.returncode, 2)
+			self.assertIn("stay at the project root", result.stderr)
+
+
 class AgentProjections(SyncCase):
 	"""Criterion 3: adding, modifying or removing an agent updates or flags its projections."""
 
@@ -340,7 +376,7 @@ class SetupCompatibility(SyncCase):
 	def test_outputs_stay_inside_setups_allowlist(self):
 		for entry in generators.load_registry(SYNC.parents[1]):
 			for pattern in entry.outputs:
-				if pattern.endswith("_template.md"):
+				if pattern.endswith("_template.md") or pattern.startswith(".tools/clients/"):
 					continue  # exists only in the source package
 				allowed = pattern in SETUP_REWRITABLE_EXACT or pattern.startswith(SETUP_REWRITABLE_PREFIXES)
 				self.assertTrue(allowed, f"{entry.id} writes {pattern}, which HOI4 Mod Setup refuses after check.py setup")

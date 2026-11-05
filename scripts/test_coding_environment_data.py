@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -17,6 +18,10 @@ ROOT = SCRIPT.parents[1]
 sys.path.insert(0, str(SCRIPT.parent))
 
 import coding_environment_data as data  # noqa: E402
+
+# Claude Code and Codex live at the repository root; every other client is packaged in .tools/clients.
+CLIENTS = ROOT / data.CLIENTS
+ROOT_CLIENTS = {"claude_code", "codex"}
 
 
 def published() -> dict:
@@ -55,7 +60,8 @@ class CodingEnvironmentTableTests(unittest.TestCase):
                 owner = components[registration["component_id"]]
                 self.assertEqual(owner["coding_environment"], entry["id"])
                 self.assertEqual(owner["destination"]["path"], registration["path"])
-                self.assertEqual(owner["source"]["path"], registration["path"])
+                packaged = registration["path"] if entry["id"] in ROOT_CLIENTS else f"{data.CLIENTS}/{registration['path']}"
+                self.assertEqual(owner["source"]["path"], packaged)
         for component_id in data.REMOVED_COMPONENTS:
             self.assertNotIn(component_id, components)
         self.assertEqual(components["runtime.augment"]["platforms"], ["macos", "linux"])
@@ -120,10 +126,10 @@ class ClientFileTests(unittest.TestCase):
     def test_agent_projections_cover_every_canonical_agent(self) -> None:
         names = sorted(path.name for path in (ROOT / ".claude" / "agents").glob("*.md"))
         for _environment, _prefix, folder, label, _platforms in data.AGENT_PROJECTIONS:
-            projected = sorted(path.name for path in (ROOT / folder / "agents").glob("*.md"))
+            projected = sorted(path.name for path in (CLIENTS / folder / "agents").glob("*.md"))
             self.assertEqual(projected, names, label)
-            self.assertTrue((ROOT / folder / "agent-map.md").is_file(), label)
-            sample = (ROOT / folder / "agents" / "hoi4-repo-explorer.md").read_text(encoding="utf-8")
+            self.assertTrue((CLIENTS / folder / "agent-map.md").is_file(), label)
+            sample = (CLIENTS / folder / "agents" / "hoi4-repo-explorer.md").read_text(encoding="utf-8")
             self.assertTrue(sample.startswith("---\n"), label)
             self.assertIn("by .tools/sync/sync_agents.py", sample)
             self.assertNotIn("CLAUDE.md", sample.split("\n---\n", 1)[1])
@@ -133,7 +139,7 @@ class ClientFileTests(unittest.TestCase):
             registration = entry.get("mcp_registration")
             if not registration:
                 continue
-            path = ROOT / registration["path"]
+            path = (ROOT if entry["id"] in ROOT_CLIENTS else CLIENTS) / registration["path"]
             text = path.read_text(encoding="utf-8")
             self.assertNotRegex(text, r"(?i)api[_-]?key|token|secret|[A-Za-z]:[\\/]Users")
             fmt = registration["format"]
@@ -158,14 +164,27 @@ class ClientFileTests(unittest.TestCase):
                 self.assertEqual(route["type"], "stdio")
 
     def test_instruction_pointers_lead_to_the_shared_project_instructions(self) -> None:
-        self.assertIn("@./AGENTS.md", (ROOT / "GEMINI_template.md").read_text(encoding="utf-8"))
+        self.assertIn("@./AGENTS.md", (CLIENTS / "GEMINI_template.md").read_text(encoding="utf-8"))
         for path in (".github/instructions/hoi4-mod-setup.instructions.md", ".clinerules/hoi4-mod-setup.md", ".continue/rules/hoi4-mod-setup.md"):
-            text = (ROOT / path).read_text(encoding="utf-8")
+            text = (CLIENTS / path).read_text(encoding="utf-8")
             self.assertIn("AGENTS.md", text, path)
             self.assertIn(".claude/skills/", text, path)
-        self.assertIn('applyTo: "**"', (ROOT / ".github/instructions/hoi4-mod-setup.instructions.md").read_text(encoding="utf-8"))
-        self.assertIn("alwaysApply: true", (ROOT / ".continue/rules/hoi4-mod-setup.md").read_text(encoding="utf-8"))
-        self.assertIn("- AGENTS.md", (ROOT / ".aider.conf.yml").read_text(encoding="utf-8"))
+        self.assertIn('applyTo: "**"', (CLIENTS / ".github/instructions/hoi4-mod-setup.instructions.md").read_text(encoding="utf-8"))
+        self.assertIn("alwaysApply: true", (CLIENTS / ".continue/rules/hoi4-mod-setup.md").read_text(encoding="utf-8"))
+        self.assertIn("- AGENTS.md", (CLIENTS / ".aider.conf.yml").read_text(encoding="utf-8"))
+
+    def test_only_the_main_clients_are_tracked_at_the_root(self) -> None:
+        tracked = subprocess.run(["git", "-c", "core.autocrlf=false", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=True).stdout.decode("utf-8")
+        names = [name for name in tracked.split("\0") if name]
+        moved = {".agents", ".augment", ".clinerules", ".continue", ".cursor", ".devin", ".gemini", ".grok", ".kilo", ".kiro", ".opencode", ".qoder", ".qwen", ".vscode", ".aider.conf.yml", "opencode.json", "GEMINI_template.md"}
+        at_root = sorted({name.split("/", 1)[0] for name in names} & moved)
+        self.assertEqual(at_root, [], "keep other clients in .tools/clients")
+        self.assertFalse([name for name in names if name.startswith(".github/instructions/")])
+        sources = [component["source"]["path"] for component in published()["components"]
+                   if component.get("coding_environment") not in ROOT_CLIENTS | {None} and component["source"]["kind"] != "generated"]
+        self.assertTrue(sources)
+        for source in sources:
+            self.assertTrue(source.startswith((data.CLIENTS + "/", ".claude/")), source)
 
 
 if __name__ == "__main__":

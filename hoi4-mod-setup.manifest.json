@@ -730,7 +730,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".cursor",
+        "path": ".tools/clients/.cursor",
         "include": [
           "settings.json",
           "agent-map.md",
@@ -897,7 +897,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".qoder",
+        "path": ".tools/clients/.qoder",
         "include": [
           "settings.json",
           "agent-map.md",
@@ -1064,7 +1064,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".opencode",
+        "path": ".tools/clients/.opencode",
         "include": [
           "settings.json",
           "agent-map.md",
@@ -1231,7 +1231,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": "opencode.json"
+        "path": ".tools/clients/opencode.json"
       },
       "destination": {
         "path": "opencode.json",
@@ -1282,7 +1282,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".cursor/mcp.json"
+        "path": ".tools/clients/.cursor/mcp.json"
       },
       "destination": {
         "path": ".cursor/mcp.json",
@@ -1335,7 +1335,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".qoder/mcp.json"
+        "path": ".tools/clients/.qoder/mcp.json"
       },
       "destination": {
         "path": ".qoder/mcp.json",
@@ -1387,7 +1387,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".cursor/agents/hoi4-portrait-creator.md"
+        "path": ".tools/clients/.cursor/agents/hoi4-portrait-creator.md"
       },
       "destination": {
         "path": ".cursor/agents/hoi4-portrait-creator.md",
@@ -1438,7 +1438,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".cursor/agents",
+        "path": ".tools/clients/.cursor/agents",
         "include": [
           "hoi4-super-event-*.md"
         ]
@@ -1502,7 +1502,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".qoder/agents/hoi4-portrait-creator.md"
+        "path": ".tools/clients/.qoder/agents/hoi4-portrait-creator.md"
       },
       "destination": {
         "path": ".qoder/agents/hoi4-portrait-creator.md",
@@ -1553,7 +1553,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".qoder/agents",
+        "path": ".tools/clients/.qoder/agents",
         "include": [
           "hoi4-super-event-*.md"
         ]
@@ -1617,7 +1617,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".opencode/agent/hoi4-portrait-creator.md"
+        "path": ".tools/clients/.opencode/agent/hoi4-portrait-creator.md"
       },
       "destination": {
         "path": ".opencode/agent/hoi4-portrait-creator.md",
@@ -1668,7 +1668,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".opencode/agent",
+        "path": ".tools/clients/.opencode/agent",
         "include": [
           "hoi4-super-event-*.md"
         ]
@@ -15422,7 +15422,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".gemini",
+        "path": ".tools/clients/.gemini",
         "include": [
           "agent-map.md",
           "agents/*.md"
@@ -15577,7 +15577,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".gemini/agents/hoi4-portrait-creator.md"
+        "path": ".tools/clients/.gemini/agents/hoi4-portrait-creator.md"
       },
       "destination": {
         "path": ".gemini/agents/hoi4-portrait-creator.md",
@@ -15628,7 +15628,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".gemini/agents",
+        "path": ".tools/clients/.gemini/agents",
         "include": [
           "hoi4-super-event-*.md"
         ]
@@ -15692,7 +15692,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".agents",
+        "path": ".tools/clients/.agents",
         "include": [
           "agent-map.md",
           "agents/*.md"
@@ -15847,7 +15847,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".agents/agents/hoi4-portrait-creator.md"
+        "path": ".tools/clients/.agents/agents/hoi4-portrait-creator.md"
       },
       "destination": {
         "path": ".agents/agents/hoi4-portrait-creator.md",
@@ -15898,7 +15898,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".agents/agents",
+        "path": ".tools/clients/.agents/agents",
         "include": [
           "hoi4-super-event-*.md"
         ]
@@ -15962,7 +15962,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".kilo",
+        "path": ".tools/clients/.kilo",
         "include": [
           "agent-map.md",
           "agents/*.md"
@@ -16117,7 +16117,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".kilo/agents/hoi4-portrait-creator.md"
+        "path": ".tools/clients/.kilo/agents/hoi4-portrait-creator.md"
       },
       "destination": {
         "path": ".kilo/agents/hoi4-portrait-creator.md",
@@ -16168,7 +16168,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".kilo/agents",
+        "path": ".tools/clients/.kilo/agents",
         "include": [
           "hoi4-super-event-*.md"
         ]
@@ -16232,7 +16232,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".kiro",
+        "path": ".tools/clients/.kiro",
         "include": [
           "agent-map.md",
           "agents/*.md"
@@ -16386,7 +16386,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".kiro/agents/hoi4-portrait-creator.md"
+        "path": ".tools/clients/.kiro/agents/hoi4-portrait-creator.md"
       },
       "destination": {
         "path": ".kiro/agents/hoi4-portrait-creator.md",
@@ -16437,7 +16437,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".kiro/agents",
+        "path": ".tools/clients/.kiro/agents",
         "include": [
           "hoi4-super-event-*.md"
         ]
@@ -16501,7 +16501,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".qwen",
+        "path": ".tools/clients/.qwen",
         "include": [
           "agent-map.md",
           "agents/*.md"
@@ -16655,7 +16655,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".qwen/agents/hoi4-portrait-creator.md"
+        "path": ".tools/clients/.qwen/agents/hoi4-portrait-creator.md"
       },
       "destination": {
         "path": ".qwen/agents/hoi4-portrait-creator.md",
@@ -16706,7 +16706,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".qwen/agents",
+        "path": ".tools/clients/.qwen/agents",
         "include": [
           "hoi4-super-event-*.md"
         ]
@@ -16770,7 +16770,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".devin",
+        "path": ".tools/clients/.devin",
         "include": [
           "agent-map.md",
           "agents/*.md"
@@ -16925,7 +16925,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".devin/agents/hoi4-portrait-creator.md"
+        "path": ".tools/clients/.devin/agents/hoi4-portrait-creator.md"
       },
       "destination": {
         "path": ".devin/agents/hoi4-portrait-creator.md",
@@ -16976,7 +16976,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".devin/agents",
+        "path": ".tools/clients/.devin/agents",
         "include": [
           "hoi4-super-event-*.md"
         ]
@@ -17041,7 +17041,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".augment",
+        "path": ".tools/clients/.augment",
         "include": [
           "agent-map.md",
           "agents/*.md"
@@ -17196,7 +17196,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".augment/agents/hoi4-portrait-creator.md"
+        "path": ".tools/clients/.augment/agents/hoi4-portrait-creator.md"
       },
       "destination": {
         "path": ".augment/agents/hoi4-portrait-creator.md",
@@ -17248,7 +17248,7 @@
       ],
       "source": {
         "kind": "tree",
-        "path": ".augment/agents",
+        "path": ".tools/clients/.augment/agents",
         "include": [
           "hoi4-super-event-*.md"
         ]
@@ -17312,7 +17312,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": "GEMINI_template.md"
+        "path": ".tools/clients/GEMINI_template.md"
       },
       "destination": {
         "path": "GEMINI.md",
@@ -17363,7 +17363,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".github/instructions/hoi4-mod-setup.instructions.md"
+        "path": ".tools/clients/.github/instructions/hoi4-mod-setup.instructions.md"
       },
       "destination": {
         "path": ".github/instructions/hoi4-mod-setup.instructions.md",
@@ -17413,7 +17413,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".clinerules/hoi4-mod-setup.md"
+        "path": ".tools/clients/.clinerules/hoi4-mod-setup.md"
       },
       "destination": {
         "path": ".clinerules/hoi4-mod-setup.md",
@@ -17463,7 +17463,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".continue/rules/hoi4-mod-setup.md"
+        "path": ".tools/clients/.continue/rules/hoi4-mod-setup.md"
       },
       "destination": {
         "path": ".continue/rules/hoi4-mod-setup.md",
@@ -17513,7 +17513,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".aider.conf.yml"
+        "path": ".tools/clients/.aider.conf.yml"
       },
       "destination": {
         "path": ".aider.conf.yml",
@@ -32120,7 +32120,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".vscode/mcp.json"
+        "path": ".tools/clients/.vscode/mcp.json"
       },
       "destination": {
         "path": ".vscode/mcp.json",
@@ -32173,7 +32173,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".gemini/settings.json"
+        "path": ".tools/clients/.gemini/settings.json"
       },
       "destination": {
         "path": ".gemini/settings.json",
@@ -32226,7 +32226,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".agents/mcp_config.json"
+        "path": ".tools/clients/.agents/mcp_config.json"
       },
       "destination": {
         "path": ".agents/mcp_config.json",
@@ -32279,7 +32279,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".grok/config.toml"
+        "path": ".tools/clients/.grok/config.toml"
       },
       "destination": {
         "path": ".grok/config.toml",
@@ -32338,7 +32338,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".kilo/kilo.json"
+        "path": ".tools/clients/.kilo/kilo.json"
       },
       "destination": {
         "path": ".kilo/kilo.json",
@@ -32391,7 +32391,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".kiro/settings/mcp.json"
+        "path": ".tools/clients/.kiro/settings/mcp.json"
       },
       "destination": {
         "path": ".kiro/settings/mcp.json",
@@ -32444,7 +32444,7 @@
       ],
       "source": {
         "kind": "file",
-        "path": ".qwen/settings.json"
+        "path": ".tools/clients/.qwen/settings.json"
       },
       "destination": {
         "path": ".qwen/settings.json",
