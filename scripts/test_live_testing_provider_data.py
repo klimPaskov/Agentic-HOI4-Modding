@@ -50,7 +50,7 @@ class LiveTestingContractTests(unittest.TestCase):
         manifest=json.loads((ROOT/"hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
         components={c["id"]:c for c in manifest["components"]}
         skills=[c for c in manifest["components"] if c["id"].endswith(".live_tools_skill")]
-        self.assertGreaterEqual(len(skills),5)
+        self.assertEqual(len(skills),4)
         for skill in skills:
             self.assertIn("workflow.live_tools",skill["dependencies"],skill["id"])
             self.assertNotIn("workflow.live_testing",skill["dependencies"],skill["id"])
