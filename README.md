@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/klimPaskov/Agentic-HOI4-Modding/main/docs/images/logo.svg" width="96" height="96" alt="Agentic HOI4 Modding">
+  <img src="https://raw.githubusercontent.com/klimPaskov/Agentic-HOI4-Modding/main/docs/images/logo.png" width="96" height="96" alt="Agentic HOI4 Modding">
 </p>
 
 <h1 align="center">Agentic HOI4 Modding</h1>
