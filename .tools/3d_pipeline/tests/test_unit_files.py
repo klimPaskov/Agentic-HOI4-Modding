@@ -196,6 +196,16 @@ class UnitTypeActions(unittest.TestCase):
         self.assertEqual({row["action_style"] for row in spec["required_actions"]} - {None}, {
             "quadruped_idle", "quadruped_trot", "quadruped_charge", "quadruped_rear", "quadruped_gallop", "quadruped_collapse"})
 
+    def test_mounts_plan_a_paid_remesh_and_humanoids_defer_raw_topology(self) -> None:
+        import run_pilot
+
+        mount = run_pilot.prepare_spec({"unit_type": "mount", "asset_id": "x.mount", "runtime_stem": "mount"}, require_budget=False)
+        self.assertEqual([row["operation"] for row in run_pilot.planned_stages(mount)], ["image_to_3d", "remesh"])
+        self.assertTrue(run_pilot.route_remeshes(mount))
+        rider = run_pilot.prepare_spec({"unit_type": "rider", "asset_id": "x.rider", "runtime_stem": "rider"}, require_budget=False)
+        self.assertTrue(run_pilot.route_remeshes(rider))
+        self.assertEqual([row["role"] for row in run_pilot.planned_stages(rider) if row["operation"] == "animation"], ["idle", "attack", "defend"])
+
     def test_job_actions_win_and_unknown_types_fail(self) -> None:
         import run_pilot
 

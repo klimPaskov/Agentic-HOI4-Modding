@@ -203,6 +203,20 @@ def provider_animated_roles(spec: Dict[str, Any]) -> List[str]:
     ]
 
 
+def route_remeshes(spec: Dict[str, Any]) -> bool:
+    """True when the route replaces the generation with a Meshy remesh before anything is exported."""
+
+    generation = spec.get("generation") or {}
+    if spec.get("asset_kind") == "creature":
+        return bool(spec.get("creature_remesh"))
+    return (
+        spec.get("asset_kind") == "humanoid"
+        and not uses_local_humanoid_route(spec)
+        and generation.get("model_type") == "standard"
+        and not generation.get("should_remesh")
+    )
+
+
 def planned_stages(spec: Dict[str, Any]) -> List[Dict[str, Any]]:
     """The paid stages a job plans, in order, each with its price-table estimate."""
 
@@ -210,6 +224,8 @@ def planned_stages(spec: Dict[str, Any]) -> List[Dict[str, Any]]:
         return {"stage": name, "operation": operation, "role": role, "estimate_credits": int(estimate)}
 
     stages = [stage(generation_stage_for(spec), "image_to_3d", None, spec["image_to_3d_estimate_credits"])]
+    if spec.get("asset_kind") == "creature" and spec.get("creature_remesh"):
+        stages.append(stage(continuation_stage_for(spec, "creature_remesh"), "remesh", None, spec["remesh_estimate_credits"]))
     if spec.get("asset_kind") != "humanoid" or uses_local_humanoid_route(spec):
         return stages
     generation = spec["generation"]
@@ -926,6 +942,9 @@ def download_once(
     return result
 
 
+DEFERRABLE_TOPOLOGY = ("welded boundary edges", "welded loose components")
+
+
 def candidate_gate(
     job: Path,
     prep: Dict[str, Any],
@@ -936,8 +955,13 @@ def candidate_gate(
     runtime_entity_scale: float = 1.0,
     profile: Optional[Dict[str, Any]] = None,
     weights_after: Any = None,
+    defer_topology_reason: str = "",
 ) -> None:
     """Block a candidate that fails a measured check.
+
+    `defer_topology_reason` is for a raw provider candidate that the route replaces with
+    a Meshy remesh before anything is exported: its welded boundary-edge and loose-part
+    counts are recorded as deferred, and the same limits block the remeshed geometry.
 
     The profile checks (non-manifold and boundary edges, loose parts, preferred
     triangle range, material slots, residual zero-weight vertices) come from the
@@ -975,6 +999,8 @@ def candidate_gate(
         failures.extend(evaluation["failures"])
     except ProfileGateError as exc:
         failures.append(f"asset profile checks could not run: {exc}")
+    deferred = [item for item in failures if defer_topology_reason and item.startswith(DEFERRABLE_TOPOLOGY)]
+    failures = [item for item in failures if item not in deferred]
     record = {
         "failures": failures,
         "geometry": geometry,
@@ -982,6 +1008,7 @@ def candidate_gate(
         "profile": profile_name,
         "checks": evaluation["checks"],
         "exceptions_applied": evaluation["exceptions_applied"],
+        "deferred": {"checks": deferred, "reason": defer_topology_reason} if deferred else None,
     }
     if failures:
         write_json(job / "validation" / f"{stage}_gate.json", {"status": "blocked", **record})
@@ -1528,6 +1555,11 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
         stage="provider_candidate",
         max_runtime_footprint_m=max_runtime_footprint_m,
         runtime_entity_scale=float(spec.get("runtime_entity_scale", 1.0)),
+        defer_topology_reason=(
+            "the route exports Meshy's remesh of this generation, never the generation itself"
+            if route_remeshes(spec)
+            else ""
+        ),
     )
     update_job(job, status="candidate_qa", selected_provider_task=generation_id)
     append_history(
@@ -1576,6 +1608,61 @@ def continue_static(spec: Dict[str, Any]) -> Dict[str, Any]:
     return {"textures": textures, "export": exported, "reimport": reimport}
 
 
+def remeshed_creature_checkpoint(spec: Dict[str, Any], job: Path, blender: BlenderAdapterClient) -> str:
+    """Remesh the creature's generation once with Meshy, prepare that model and gate it with the profile's limits.
+
+    The raw generation is a high-detail mesh of many loose pieces; the rig and the export
+    need one closed surface. The remesh keeps its own UV layout, so its own maps are bound.
+    """
+
+    prepare_spec(spec)
+    slug = spec["asset_id"].rsplit(".", 1)[-1]
+    client = MeshyClient(REPO_ROOT, job)
+    generation_stage = generation_stage_for(spec)
+    generation = existing_task(job, generation_stage)
+    if not generation:
+        raise RuntimeError("Creature generation must be completed before the remesh.")
+    generation_id = str(generation["task_id"])
+    polycount = int(spec.get("creature_remesh_polycount", 30000))
+    estimate = int(spec["remesh_estimate_credits"])
+    remesh_id = provider_task(
+        client,
+        job,
+        continuation_stage_for(spec, "creature_remesh"),
+        task_type="remesh",
+        estimate=estimate,
+        input_stage=generation_stage,
+        create=lambda: client.remesh(input_task_id=generation_id, target_polycount=polycount, estimate_credits=estimate),
+        request=paid_request(spec, "remesh", "meshy_remesh", remesh_arguments(generation_id, polycount)),
+    )
+    remesh_glb = download_once(
+        client,
+        job,
+        stage=continuation_stage_for(spec, "creature_remesh_glb"),
+        task_id=remesh_id,
+        task_type="remesh",
+        format_name="glb",
+        filename=continuation_download_name(spec, "remesh_model.glb"),
+    )
+    source_rel = remesh_glb["file"]["relative_path"]
+    select_geometry_textures(job, spec, source_rel)
+    texture_sources = prepare_pilot_texture_sources(job, spec, exported_rels=[source_rel])
+    profile = load_profile(spec["profile"])
+    prep = blender.prepare_candidate(
+        slug,
+        source_rel=source_rel,
+        asset_kind="creature",
+        target_height_m=spec.get("blender_target_height_m", spec["target_height_m"]),
+        runtime_entity_scale=float(spec.get("runtime_entity_scale", 1.0)),
+        runtime_stem=f"{spec['runtime_stem']}_remeshed",
+        target_triangles=profile["triangle_range"]["working_triangle_target"],
+        vanilla_reference=stage_vanilla_reference(job, spec),
+        texture_source_rels=texture_sources,
+    )
+    candidate_gate(job, prep, hard_max=profile["triangle_range"]["hard_max"], stage="remeshed_candidate")
+    return str(prep["checkpoints"]["pre_export"])
+
+
 def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
     """Build, rig, animate, export, and reimport a custom nonhumanoid unit."""
 
@@ -1585,7 +1672,11 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
     candidate_report = read_json(
         job / "blender" / "reports" / f"{spec['runtime_stem']}_candidate_prepare.json"
     )
-    source_checkpoint = candidate_report["checkpoints"]["pre_export"]
+    source_checkpoint = (
+        remeshed_creature_checkpoint(spec, job, blender)
+        if spec.get("creature_remesh")
+        else candidate_report["checkpoints"]["pre_export"]
+    )
     component_checkpoint = "blender/checkpoints/creature_components.blend"
     components = blender.segment_creature_components(
         slug,
@@ -3267,6 +3358,9 @@ def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:
     if unit["rig"] == "blender_quadruped":
         spec.setdefault("asset_kind", "creature")
         spec.setdefault("creature_rig_family", "quadruped")
+        # The raw generation is hundreds of loose pieces; the rig needs one closed surface.
+        spec.setdefault("creature_remesh", True)
+        spec.setdefault("creature_remesh_polycount", 30000)
     else:
         spec.setdefault("asset_kind", "humanoid")
     if not spec.get("required_actions"):
