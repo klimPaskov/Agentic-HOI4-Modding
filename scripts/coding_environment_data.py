@@ -9,9 +9,12 @@ client registers MCP servers:
   settings. The installer never writes them; the app shows a to-do.
 - ``none``: the client has no native MCP support.
 
-Generated agent projections come from ``.tools/sync/sync_agents.py``; skill
-copies are re-rooted views of the canonical ``.claude/skills`` tree. File
-evidence is added by ``generate_manifest_evidence.py`` at one exact revision.
+Every client other than Claude Code and Codex keeps its files in
+``.tools/clients/`` at the path it is installed to, so the repository root
+holds only the main clients. Generated agent projections come from
+``.tools/sync/sync_agents.py --into .tools/clients``; skill copies are
+re-rooted views of the canonical ``.claude/skills`` tree. File evidence is
+added by ``generate_manifest_evidence.py`` at one exact revision.
 """
 
 from __future__ import annotations
@@ -19,6 +22,8 @@ from __future__ import annotations
 import copy
 from typing import Dict, List, Optional
 
+# The source folder of every client package other than Claude Code and Codex.
+CLIENTS = ".tools/clients"
 PORTRAIT_AGENT = "hoi4-portrait-creator.md"
 SUPER_EVENT_AGENTS = "hoi4-super-event-*.md"
 SHARED_SKILLS_CLIENTS = ["gemini_cli", "antigravity", "kilo_code", "devin_desktop"]
@@ -74,13 +79,13 @@ SKILL_COPIES = [
 ]
 
 # Single-file packages: environment, component id, source, destination,
-# ownership, label.
+# label.
 FILE_PACKAGES = [
-    ("gemini_cli", "runtime.gemini.context", "GEMINI_template.md", "GEMINI.md", "Gemini CLI project context"),
-    ("github_copilot", "runtime.copilot", ".github/instructions/hoi4-mod-setup.instructions.md", ".github/instructions/hoi4-mod-setup.instructions.md", "GitHub Copilot instructions"),
-    ("cline", "runtime.cline", ".clinerules/hoi4-mod-setup.md", ".clinerules/hoi4-mod-setup.md", "Cline project rule"),
-    ("continue", "runtime.continue", ".continue/rules/hoi4-mod-setup.md", ".continue/rules/hoi4-mod-setup.md", "Continue project rule"),
-    ("aider", "runtime.aider", ".aider.conf.yml", ".aider.conf.yml", "Aider project configuration"),
+    ("gemini_cli", "runtime.gemini.context", f"{CLIENTS}/GEMINI_template.md", "GEMINI.md", "Gemini CLI project context"),
+    ("github_copilot", "runtime.copilot", f"{CLIENTS}/.github/instructions/hoi4-mod-setup.instructions.md", ".github/instructions/hoi4-mod-setup.instructions.md", "GitHub Copilot instructions"),
+    ("cline", "runtime.cline", f"{CLIENTS}/.clinerules/hoi4-mod-setup.md", ".clinerules/hoi4-mod-setup.md", "Cline project rule"),
+    ("continue", "runtime.continue", f"{CLIENTS}/.continue/rules/hoi4-mod-setup.md", ".continue/rules/hoi4-mod-setup.md", "Continue project rule"),
+    ("aider", "runtime.aider", f"{CLIENTS}/.aider.conf.yml", ".aider.conf.yml", "Aider project configuration"),
 ]
 
 # Project MCP registrations other than the original five clients.
@@ -156,7 +161,7 @@ def build_coding_environment_components(components: List[dict]) -> List[dict]:
             f"runtime.{prefix}", f"{label} coding environment",
             f"Install the {label} subagents and map generated from the canonical Claude Code agents.",
             environment, False, platforms,
-            {"kind": "tree", "path": folder, "include": ["agent-map.md", "agents/*.md"], "exclude": [f"agents/{PORTRAIT_AGENT}", f"agents/{SUPER_EVENT_AGENTS}"]},
+            {"kind": "tree", "path": f"{CLIENTS}/{folder}", "include": ["agent-map.md", "agents/*.md"], "exclude": [f"agents/{PORTRAIT_AGENT}", f"agents/{SUPER_EVENT_AGENTS}"]},
             f"{folder}/", "managed", dependencies,
             f"existing {label} agent or map with the same path", "replace_if_unmodified",
             [_exists(f"{prefix}.agents.exists", agent_folder)],
@@ -166,7 +171,7 @@ def build_coding_environment_components(components: List[dict]) -> List[dict]:
             f"runtime.{prefix}.portrait_agent", f"{label} portrait subagent",
             f"Install the {label} projection only when Portrait Production is selected.",
             environment, True, platforms,
-            {"kind": "file", "path": f"{agent_folder}/{PORTRAIT_AGENT}"},
+            {"kind": "file", "path": f"{CLIENTS}/{agent_folder}/{PORTRAIT_AGENT}"},
             f"{agent_folder}/{PORTRAIT_AGENT}", "managed", [f"runtime.{prefix}", "workflow.portraits.subagent"],
             f"existing {label} portrait subagent", "replace_if_unmodified",
             [_exists(f"{prefix}.portrait_agent.exists", f"{agent_folder}/{PORTRAIT_AGENT}")],
@@ -176,7 +181,7 @@ def build_coding_environment_components(components: List[dict]) -> List[dict]:
             f"runtime.{prefix}.super_event_agents", f"{label} Super Events subagents",
             f"Install the {label} projections only when Super Events is selected.",
             environment, True, platforms,
-            {"kind": "tree", "path": agent_folder, "include": [SUPER_EVENT_AGENTS]},
+            {"kind": "tree", "path": f"{CLIENTS}/{agent_folder}", "include": [SUPER_EVENT_AGENTS]},
             f"{agent_folder}/", "managed", [f"runtime.{prefix}", "workflow.super_events.subagents"],
             f"existing {label} Super Events subagent", "replace_if_unmodified",
             [_exists(f"{prefix}.super_event_agents.exists", agent_folder)],
@@ -233,7 +238,7 @@ def build_coding_environment_components(components: List[dict]) -> List[dict]:
             component_id, f"{label} HOI4 MCP configuration",
             "Install the project registration for the verified HOI4 Agent Tools server.",
             environment, True, ["windows", "linux"],
-            {"kind": "file", "path": path}, path, "merged", [base, "mcp.hoi4_agent_tools"],
+            {"kind": "file", "path": f"{CLIENTS}/{path}"}, path, "merged", [base, "mcp.hoi4_agent_tools"],
             f"existing {label} project MCP server id", policy, validation,
             [f"{label} MCP registration", "HOI4 Agent Tools"],
         )

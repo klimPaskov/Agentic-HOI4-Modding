@@ -168,7 +168,7 @@ class ManifestGeneratorTests(unittest.TestCase):
             # `.agents/skills` is only ever a copy of the canonical library;
             # Antigravity's native agents and MCP file are its own projections.
             self.assertFalse(source.startswith(".agents/skills"), component["id"])
-            if source.startswith(".agents/"):
+            if source.startswith(".tools/clients/.agents/"):
                 self.assertEqual(component.get("coding_environment"), "antigravity", component["id"])
             if component["destination"]["path"].startswith(".agents/skills"):
                 self.assertEqual(component.get("coding_environment"), "codex", component["id"])
@@ -192,13 +192,14 @@ class ManifestGeneratorTests(unittest.TestCase):
         # OpenCode reads MCP servers only from opencode.json(c); the retired
         # `.opencode/mcp.json` route is no longer published.
         self.assertNotIn("runtime.opencode.mcp", components)
-        self.assertFalse((root / ".opencode/mcp.json").exists())
-        opencode = json.loads((root / "opencode.json").read_text(encoding="utf-8"))
+        clients = root / ".tools" / "clients"
+        self.assertFalse((clients / ".opencode/mcp.json").exists())
+        opencode = json.loads((clients / "opencode.json").read_text(encoding="utf-8"))
         route = opencode["mcp"]["hoi4_agent_tools"]
         self.assertEqual(route["type"], "local")
         self.assertEqual(route["command"], ["hoi4-agent-tools.cmd"])
         self.assertFalse(components["runtime.opencode.config"]["optional"])
-        qoder = json.loads((root / ".qoder/settings.json").read_text(encoding="utf-8"))
+        qoder = json.loads((clients / ".qoder/settings.json").read_text(encoding="utf-8"))
         self.assertNotIn("mcpServers", qoder)
 
 

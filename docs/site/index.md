@@ -6,7 +6,7 @@ title: Agentic HOI4 Modding
 
 Build Hearts of Iron IV mods with your coding agent. Make focus trees, events, decisions and maps, fix broken script and balance the AI. Modding skills, specialist helpers, a HOI4 wiki for agents and HOI4 tools help your agent do the work.
 
-Choose any supported coding client, including Claude Code, Codex, Cursor, Qoder, or OpenCode. HOI4 Mod Setup creates project files and registers tools for the clients you select.
+Use Claude Code, Codex, Cursor, GitHub Copilot or one of many more coding clients. HOI4 Mod Setup creates project files and registers tools for the clients you select.
 
 ## Install with HOI4 Mod Setup
 
@@ -29,7 +29,7 @@ Copy `CLAUDE_template.md` as `CLAUDE.md`, replace all mod and game-path placehol
 python .tools/mcp/bootstrap_hoi4_agent_tools.py
 ```
 
-For another runtime, copy its generated folder (for example `.codex/`, `.cursor/`, `.qoder/`, `.opencode/`, `.gemini/`, `.kilo/`, `.kiro/`, `.qwen/`, `.devin/`, or `.augment/`) and its MCP file (plus root `opencode.json` for OpenCode), then generate its project files:
+For Codex, copy `.codex/`. For any other client, copy its files from `.tools/clients/` to the same paths in the mod (for example `.tools/clients/.cursor/` becomes `.cursor/`). Then generate its project files:
 
 ```powershell
 python .tools/sync/sync_instructions.py
@@ -39,7 +39,7 @@ python .tools/sync/sync_skills.py --target agents
 
 Replace `codex` with the runtime's key (`cursor`, `qoder`, `opencode`, `gemini`, `antigravity`, `kilo`, `kiro`, `qwen`, `devin`, or `augment`) as appropriate. Qoder, Grok Build, Kiro, and Qwen Code need `--target qoder`, `grok`, `kiro`, or `qwen`; Gemini CLI, Antigravity, Kilo Code, and Devin Desktop read the `.agents/skills` copy that `--target agents` creates; Cursor, OpenCode, GitHub Copilot, Cline, and Augment read the canonical skill root directly. On Windows, use `py -3.13` if `python` selects an older installation.
 
-For optional workflows, copy the complete tools, references, and runtime assets declared in the manifest. Follow the [full installation guide](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/README.md) and [runtime reference](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/runtimes.md).
+For optional workflows, copy the complete tools, references, and runtime assets declared in the manifest. Follow the [manual setup guide](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/manual-setup.md) and [runtime reference](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/runtimes.md).
 
 ## Skills and specialist agents
 

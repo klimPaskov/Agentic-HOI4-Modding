@@ -18,6 +18,11 @@ Generated outputs, all one-way and overwritten on every run:
 - Augment: `.augment/agents/*.md` and `.augment/agent-map.md`
 - Claude Code: `.claude/agent-map.md` (the agent files themselves are the source)
 
+`--into <folder>` writes the projections for the runtimes present under that
+folder instead of the project root. The source package keeps every client
+other than Claude Code and Codex in `.tools/clients/`, and HOI4 Mod Setup
+installs each one at its real place in the mod.
+
 Runtime tuning that is not part of a prompt, such as the Codex reasoning effort
 for each Claude model tier, lives in `agent_profiles.json` next to this file.
 The synchronizer discovers agents from the canonical folder, so adding or
@@ -118,17 +123,37 @@ def runtimes_for(root: Path) -> Dict[str, Runtime]:
 
 
 RUNTIMES: Dict[str, Runtime] = runtimes_for(MOD_ROOT)
+# The folder the projection folders sit in: the project root, or the `--into` folder.
+OUTPUT_ROOT = MOD_ROOT
+# Runtimes that always stay at the project root, so `--into` never moves them.
+ROOT_RUNTIMES = ("claude", "codex")
 
 
 def use_root(root: Path) -> None:
     """Point every path at another project, for `--root` (a fixture, or a workspace checked by a pinned copy)."""
-    global MOD_ROOT, CANONICAL_DIR, PROFILES_PATH, CODEX_CONFIG, RUNTIMES
+    global MOD_ROOT, CANONICAL_DIR, PROFILES_PATH, CODEX_CONFIG, RUNTIMES, OUTPUT_ROOT
     MOD_ROOT = root
+    OUTPUT_ROOT = root
     CANONICAL_DIR = root / ".claude" / "agents"
     project_profiles = root / ".tools" / "sync" / "agent_profiles.json"
     PROFILES_PATH = project_profiles if project_profiles.is_file() else TOOLS_DIR / "agent_profiles.json"
     CODEX_CONFIG = root / ".codex" / "config.toml"
     RUNTIMES = runtimes_for(root)
+
+
+def use_into(folder: Path) -> None:
+    """Project into the client folders under `folder` (`--into`), keeping the canonical agents at the root."""
+    global OUTPUT_ROOT, RUNTIMES
+    OUTPUT_ROOT = folder
+    RUNTIMES = {key: runtime for key, runtime in runtimes_for(folder).items() if key not in ROOT_RUNTIMES}
+
+
+def shown(path: Path) -> str:
+    """A path as the reports print it: relative to the project when it is inside it."""
+    try:
+        return path.relative_to(MOD_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
 
 
 class SyncError(RuntimeError):
@@ -280,7 +305,7 @@ def render_markdown(runtime: Runtime, agent: Agent, profiles: dict) -> str:
 
 
 def render_map(runtime: Runtime, agents: List[Agent]) -> str:
-    folder = runtime.agent_dir.relative_to(MOD_ROOT).as_posix()
+    folder = runtime.agent_dir.relative_to(OUTPUT_ROOT).as_posix()
     if runtime.key == "claude":
         intro = f"These are the canonical subagent definitions in `{folder}/`. Edit them directly, then run `python .tools/sync/sync_agents.py` to regenerate the projections for the other runtimes."
         rows = [f"| `{a.name}` | `{a.model}` | `{a.effort}` | {a.authority} |" for a in agents]
@@ -390,9 +415,9 @@ def synchronize(runtime_keys: List[str], check: bool) -> int:
         stale = sorted(set(generated_files(runtime_key)) - set(outputs))
         if check:
             for path in drift:
-                print(f"DRIFT: {path.relative_to(MOD_ROOT).as_posix()}")
+                print(f"DRIFT: {shown(path)}")
             for path in stale:
-                print(f"STALE: {path.relative_to(MOD_ROOT).as_posix()}")
+                print(f"STALE: {shown(path)}")
             if drift or stale:
                 failures += 1
             else:
@@ -448,8 +473,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--verify", action="store_true", help="verify canonical tier/effort policy and generated definitions without writing")
     parser.add_argument("--runtime", action="append", choices=sorted(RUNTIMES), help="limit to one runtime (repeatable); default: every runtime present in this project")
     parser.add_argument("--root", type=Path, help="project root (default: the project holding this tool)")
+    parser.add_argument("--into", type=Path, help="write the projections for the runtimes present under this folder instead of the project root (not Claude Code or Codex)")
     args = parser.parse_args(argv)
     if args.root is not None:
         use_root(args.root.resolve())
+    if args.into is not None:
+        use_into(args.into.resolve())
+        unknown = sorted(set(args.runtime or ()) - set(RUNTIMES))
+        if unknown:
+            print(f"ERROR: --into does not take {', '.join(unknown)}; those runtimes stay at the project root", file=sys.stderr)
+            return 2
     keys = args.runtime or [key for key in RUNTIMES if runtime_present(key)]
     return verify(keys) if args.verify else synchronize(keys, args.check)

@@ -107,7 +107,7 @@ Its package version, integrity, runtime-entry evidence, manifest declaration, an
 
 ### Runtime synchronization
 
-Claude Code files are canonical. The tools under `sync/` regenerate `AGENTS.md` from `CLAUDE.md`, the Codex, Cursor, Qoder, and OpenCode agents from `.claude/agents/`, and the `.agents/skills/` and `.qoder/skills/` copies from `.claude/skills/`. `check_guidance_size.py` keeps instruction files, skills, and agent prompts within the single-read ceiling. `sync/generators.json` lists them all, and `sync/generators.py` runs the ones a change affects. In Claude Code the hook in `.claude/settings.json` runs it after every edit. Elsewhere, run it after a canonical change and again with `--check`:
+Claude Code files are canonical. The tools under `sync/` regenerate `AGENTS.md` from `CLAUDE.md`, every other client's agents from `.claude/agents/`, and the skill copies from `.claude/skills/`. In this source repository the other clients' files live in `clients/`, at the paths HOI4 Mod Setup installs them to. `check_guidance_size.py` keeps instruction files, skills, and agent prompts within the single-read ceiling. `sync/generators.json` lists them all, and `sync/generators.py` runs the ones a change affects. In Claude Code the hook in `.claude/settings.json` runs it after every edit. Elsewhere, run it after a canonical change and again with `--check`:
 
 ```powershell
 python -B .tools/sync/generators.py

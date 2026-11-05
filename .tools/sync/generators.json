@@ -43,6 +43,36 @@
       ]
     },
     {
+      "id": "client-packages",
+      "label": "agent definitions for the other clients in the source package",
+      "script": ".tools/sync/sync_agents.py",
+      "sources": [".tools/clients"],
+      "inputs": [".claude/agents/*.md", ".tools/sync/agent_profiles.json", ".tools/sync/sync_agents.py", ".tools/sync/agent_sync_common.py"],
+      "outputs": [
+        ".tools/clients/.cursor/agents/*.md",
+        ".tools/clients/.cursor/agent-map.md",
+        ".tools/clients/.qoder/agents/*.md",
+        ".tools/clients/.qoder/agent-map.md",
+        ".tools/clients/.opencode/agent/*.md",
+        ".tools/clients/.opencode/agent-map.md",
+        ".tools/clients/.gemini/agents/*.md",
+        ".tools/clients/.gemini/agent-map.md",
+        ".tools/clients/.agents/agents/*.md",
+        ".tools/clients/.agents/agent-map.md",
+        ".tools/clients/.kilo/agents/*.md",
+        ".tools/clients/.kilo/agent-map.md",
+        ".tools/clients/.kiro/agents/*.md",
+        ".tools/clients/.kiro/agent-map.md",
+        ".tools/clients/.qwen/agents/*.md",
+        ".tools/clients/.qwen/agent-map.md",
+        ".tools/clients/.devin/agents/*.md",
+        ".tools/clients/.devin/agent-map.md",
+        ".tools/clients/.augment/agents/*.md",
+        ".tools/clients/.augment/agent-map.md"
+      ],
+      "root_args": ["--root", "{root}", "--into", "{root}/.tools/clients"]
+    },
+    {
       "id": "skills",
       "label": "skill copies",
       "script": ".tools/sync/sync_skills.py",
