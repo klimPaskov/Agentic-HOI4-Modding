@@ -12,17 +12,17 @@ from coding_environment_data import MCP_ROUTE_CLIENTS  # noqa: E402
 ALL_CLIENTS = list(MCP_ROUTE_CLIENTS)
 
 IMAGEGEN_REPOSITORY = "klimPaskov/hoi4-imagegen-mcp"
-IMAGEGEN_VERSION = "0.3.0"
+IMAGEGEN_VERSION = "0.3.1"
 IMAGEGEN_INSTALL_ROOT = ".tools/image_generation/hoi4-imagegen"
 IMAGEGEN_COMPONENT_ID = "imagegen.hoi4_imagegen"
-# Published v0.3.0 release assets (SHA256SUMS of the release, sizes from the GitHub release).
+# Published v0.3.1 release assets (SHA256SUMS of the release, sizes from the GitHub release).
 # HOI4 Mod Setup downloads only the URL it derives from the version and target, and checks size and hash first.
 IMAGEGEN_RELEASE_ASSETS = {
-    "x86_64-pc-windows-msvc": ("zip", 17824753, "a40796b89c67312a70175698b24357bfe4657db10a85ba80049f7fa7a4f134e3"),
-    "aarch64-apple-darwin": ("tar.gz", 17921214, "edf41153a049cb3332b85ba965fc0f760c48f5a558859b6122340fa51d2e4239"),
-    "x86_64-apple-darwin": ("tar.gz", 19749055, "5cab13f2f4abc949e128c7f9b7cc07422b3d97cae9e5992c46475774e2e8712a"),
-    "x86_64-unknown-linux-gnu": ("tar.gz", 21979460, "8a475fec4d51522d42fdc8258fadc238c7b2d5d0f918410e3b6f69dae2424ccf"),
-    "aarch64-unknown-linux-gnu": ("tar.gz", 21126327, "5a96cb1f84769e0d636ffbad5e37ef38adb9a8349d237b415824fc76b309e401"),
+    "x86_64-pc-windows-msvc": ("zip", 18069495, "1ca468c244aae93c41ad66110fcdf7d2b47c1edae9b6fbb00bc0ea5c1df55ba4"),
+    "aarch64-apple-darwin": ("tar.gz", 18169518, "1713f8c6d838c481fd7397d9ff002563fffabb7fe88a91ba9f577b215c2e6d97"),
+    "x86_64-apple-darwin": ("tar.gz", 20007842, "364a855b053ad83a52e06387465e83cc5dd79cb6ec0fdd94a236e3e04f1447a7"),
+    "x86_64-unknown-linux-gnu": ("tar.gz", 22254337, "b544f472c14643a8ec6f062108daf495b52be3aa1ed85336d2cf5b8b38fa5f87"),
+    "aarch64-unknown-linux-gnu": ("tar.gz", 21400931, "838c716ab3ad3d90b5fba4b66082c21045c308b5cdadedd2100bc0b4a9e74cde"),
 }
 IMAGEGEN_CREDENTIAL_FIELDS = [
     {"id": "openai_api_key", "display_name": "OpenAI API key", "environment_name": "OPENAI_API_KEY"},
