@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/klimPaskov/Agentic-HOI4-Modding/main/docs/images/logo.svg" width="96" height="96" alt="Agentic HOI4 Modding">
+  <img src="https://raw.githubusercontent.com/klimPaskov/Agentic-HOI4-Modding/main/docs/images/logo.png" width="96" height="96" alt="Agentic HOI4 Modding">
 </p>
 
 <h1 align="center">Agentic HOI4 Modding</h1>
@@ -22,10 +22,6 @@
   <a href="https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/manual-setup.md">Manual setup</a> ·
   <a href="https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/runtimes.md">Coding clients</a> ·
   <a href="https://klimpaskov.github.io/Agentic-HOI4-Modding/">Guide</a>
-</p>
-
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=qdFbLO92dQI"><img src="https://raw.githubusercontent.com/klimPaskov/HOI4-Mod-Setup/main/docs/images/setup-app-demo-thumbnail.png" alt="Watch the HOI4 Mod Setup video: One App, All HOI4 Tools"></a>
 </p>
 
 Make focus trees, events, decisions and maps, fix broken script and balance the AI. Works with Claude Code, Codex, Cursor, GitHub Copilot and [many more coding clients](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/runtimes.md).

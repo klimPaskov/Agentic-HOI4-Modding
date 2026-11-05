@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "f7ce00a6d8b5990c3bd9cde5198b650c6d5ebbe0",
+  "generated_for_revision": "dc655c30af431f087b4d379b75d9900187662b9e",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -11640,7 +11640,7 @@
             "arguments": [
               "--quiet"
             ],
-            "network_access": "Downloads the SHA-512-pinned private npm 11.19.0 (Windows) or npm 10.9.9 (Linux) archive, then the exact hoi4-agent-tools@4.0.3 package from https://registry.npmjs.org. Requires native x64 Node.js 22.19+ in major 22 or major 24; Windows may install current-user Node.js LTS when missing.",
+            "network_access": "Downloads the SHA-512-pinned private npm 11.19.0 (Windows) or npm 10.9.9 (Linux) archive, then the exact hoi4-agent-tools@4.8.0 package from https://registry.npmjs.org. Requires native x64 Node.js 22.19+ in major 22 or major 24; Windows may install current-user Node.js LTS when missing.",
             "expected_writes": [
               "%APPDATA%/npm/** on Windows",
               "Current-user winget-managed Node.js LTS distribution, including bundled npm, when a compatible runtime is missing on Windows",
@@ -11665,7 +11665,7 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "243a0a2b709cca1c11967c6eee07e05eede0830d2294e81ff3d13329c0c5ee6b",
+          "sha256": "25a8d3ff7e491e36cc7754ec1adcfb4a7b4b1ee75176e346385f7f7ee6270d30",
           "size": 26765
         }
       ]
@@ -11711,7 +11711,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "4.7.0",
+          "version": "4.8.0",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -11730,8 +11730,8 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "4.7.0",
-            "package_integrity": "sha512-mdaisWOBEVKOO/o4aOpbFAxU/ATvyYT8v3DcTDOl7KkAj6hhNJXVG2JnTmbFIna/PmRLSl1YD7NqWMCauRC50g==",
+            "package_version": "4.8.0",
+            "package_integrity": "sha512-evI+RnKm5ZmnP1UPgowZh7cssnY6SMSLCuiAfMhX61xJPjYWrWIFUeNs0eRDGoFfOW7dziRJqDogIXbotJJAEg==",
             "runtime_entry": "dist/bin/stdio.js",
             "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
             "runtime_entry_size": 4205,
@@ -11746,9 +11746,11 @@
               "hoi4.gui_inspect",
               "hoi4.gui_render",
               "hoi4.gui_rewrite",
+              "hoi4.idea_inspect",
               "hoi4.impact_inspect",
               "hoi4.job_cancel",
               "hoi4.job_inspect",
+              "hoi4.localisation_inspect",
               "hoi4.map_inspect",
               "hoi4.map_rewrite",
               "hoi4.mechanic_test",
@@ -11769,23 +11771,23 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "cfe5176a6dfe3cf23f79b4c2b9054ea2b954a3a0c5497911f9707c84f449d6d5",
-            "package_file_count": 5854,
+            "package_tree_sha256": "e52a349fe14fbc7d254527b9cca8e0ff0b9a68eca7e89ea19f8d612f6a7309ab",
+            "package_file_count": 5869,
             "platform_targets": {
               "windows": "hoi4-agent-tools.cmd",
               "linux": "hoi4-agent-tools"
             },
             "platform_pins": {
               "windows": {
-                "package_tree_sha256": "cfe5176a6dfe3cf23f79b4c2b9054ea2b954a3a0c5497911f9707c84f449d6d5",
-                "package_file_count": 5854,
+                "package_tree_sha256": "e52a349fe14fbc7d254527b9cca8e0ff0b9a68eca7e89ea19f8d612f6a7309ab",
+                "package_file_count": 5869,
                 "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
                 "runtime_entry_size": 4205,
                 "package_symlinks": {}
               },
               "linux": {
-                "package_tree_sha256": "afbd464a6552820256382cd30d91e1759539214578eaceaf790cb484c99c4d3a",
-                "package_file_count": 5718,
+                "package_tree_sha256": "65a9bda0090c04842f8a4d6c6c3249b15a3c9172a0b21ab6dff6977197fcfd9f",
+                "package_file_count": 5733,
                 "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
                 "runtime_entry_size": 4205,
                 "package_symlinks": {
@@ -11873,7 +11875,7 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_live_tools.py",
-          "sha256": "f6bbb7929e668fea28eab8c820ad7cf3288bcc63f6f4826d9f0e36032f3019fe",
+          "sha256": "c00b4032b9cb46ad860d886d99f389fc42880af05af2f21253ee4f37864bc4f7",
           "size": 9982
         }
       ]
@@ -11924,8 +11926,8 @@
       "expected_files": [
         {
           "path": "docs/systems/hoi4_agent_tools_mcp_integration.md",
-          "sha256": "9e562846af40d472975c41d1783d0bc081b5cccd84eb1ab9d769dd43c77dcf26",
-          "size": 28740
+          "sha256": "76e88322c08f33bbb22a3cdda2edef6c8b558bd3c954ad7e0ba60dce4dfd15ea",
+          "size": 29288
         }
       ]
     },
@@ -11973,8 +11975,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "16379a31b658b8a85c689e44895fc61c91dbfa7f231cd58f8c48f354abf371cd",
-          "size": 5283
+          "sha256": "474add6fa37438463e05632e2a208f712050da7c47666ac1ee29406da8ccfd56",
+          "size": 5018
         }
       ]
     },
@@ -14628,10 +14630,10 @@
               "--register",
               "none"
             ],
-            "release_version": "1.2.0",
-            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.2.0/hoi4-live-tools-1.2.0.zip",
-            "release_sha256": "c543ee54d5f730946f97a1a848dc52add9d4da167a26d340fa75e7241d942dff",
-            "release_size": 1996182,
+            "release_version": "1.3.0",
+            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.3.0/hoi4-live-tools-1.3.0.zip",
+            "release_sha256": "f5a105efdbd449947c8b048b46f48f53c795e2c21e6836efe3b64f37ac89fa28",
+            "release_size": 1998927,
             "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless) from https://pypi.org.",
             "expected_writes": [
               "%LOCALAPPDATA%/hoi4-live-tools/**"
@@ -35714,7 +35716,7 @@
           "server_id": "hoi4-live",
           "component_id": "workflow.live_tools",
           "source_repository": "klimPaskov/HOI4-Live-Tools",
-          "source_revision": "v1.2.0"
+          "source_revision": "v1.3.0"
         },
         "guidance": [
           "Use the connected hoi4-live server and its advertised tools with qualified tool names.",
@@ -35727,7 +35729,7 @@
           "author": "klimPaskov",
           "url": "https://github.com/klimPaskov/HOI4-Live-Tools",
           "license": "Apache-2.0",
-          "license_url": "https://github.com/klimPaskov/HOI4-Live-Tools/blob/v1.2.0/LICENSE"
+          "license_url": "https://github.com/klimPaskov/HOI4-Live-Tools/blob/v1.3.0/LICENSE"
         }
       },
       {
