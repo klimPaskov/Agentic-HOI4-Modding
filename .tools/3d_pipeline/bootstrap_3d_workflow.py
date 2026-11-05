@@ -338,6 +338,14 @@ def select_supported_blender(
     return executable, shortcut, version
 
 
+def portable_blender_executables(programs: Path) -> list[Path]:
+    """Portable builds unpacked by hand, such as %LOCALAPPDATA%/Programs/Blender 5.2.2/blender-5.2.2-windows-x64."""
+    if not programs.exists():
+        return []
+    folders = [folder for folder in programs.glob("Blender*") if folder.is_dir() and folder.name != "Blender Foundation"]
+    return [path for folder in folders for path in folder.glob("**/blender.exe") if len(path.relative_to(folder).parts) <= 3]
+
+
 def discover_blender_installs() -> list[tuple[str, Path, Path | None]]:
     """Return every runnable Blender build found as (version, executable, shortcut)."""
     user_profile = Path(os.environ.get("USERPROFILE", str(Path.home())))
@@ -373,12 +381,7 @@ def discover_blender_installs() -> list[tuple[str, Path, Path | None]]:
     for root in install_roots:
         if root.exists():
             candidates.extend((path, None) for path in root.rglob("blender.exe"))
-    # Portable builds unpacked by hand, such as %LOCALAPPDATA%/Programs/Blender 5.2.2/blender-5.2.2-windows-x64.
-    portable_root = local_appdata / "Programs"
-    if portable_root.exists():
-        for folder in portable_root.glob("Blender*"):
-            if folder.is_dir() and folder.name != "Blender Foundation":
-                candidates.extend((path, None) for path in folder.glob("**/blender.exe") if len(path.relative_to(folder).parts) <= 3)
+    candidates.extend((path, None) for path in portable_blender_executables(local_appdata / "Programs"))
 
     found: list[tuple[str, Path, Path | None]] = []
     seen: set[Path] = set()

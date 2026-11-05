@@ -3341,6 +3341,70 @@ def _prepared_armature(prep: Dict[str, Any]) -> str:
         return "Armature"
 
 
+def write_animation_receipt(
+    job: Path,
+    role: str,
+    task: Dict[str, Any],
+    scene_name: str,
+    provider_name: str,
+    source_rel: str,
+    source_sha: str,
+    library_clip: Optional[Dict[str, Any]],
+) -> str:
+    """Write the provenance receipt animation import requires, once per role, and return its job path."""
+
+    receipt_rel = f"provider/animation_receipts/{role}.json"
+    if not (job / receipt_rel).exists():
+        write_json(job / receipt_rel, {
+            "verification_status": "verified",
+            "source_kind": "meshy_animate",
+            "source_reference_id": task.get("task_id"),
+            "source_action_name": scene_name,
+            "provider_file_action_name": provider_name,
+            "source_sha256": source_sha,
+            "source_rel": source_rel,
+            "library_clip": library_clip,
+            "verified_by": "hoi4_3d_model_pipeline",
+            "verified_at": utc_now(),
+            "basis": "Completed Meshy animate task from this job's own rig task, downloaded with a checksum manifest.",
+        })
+    return receipt_rel
+
+
+def export_unit_roles(
+    job: Path,
+    spec: Dict[str, Any],
+    blender: BlenderAdapterClient,
+    roles: Dict[str, Dict[str, Any]],
+    mesh_rel: str,
+    chain: str,
+    library: Dict[str, Any],
+    mesh_export: Dict[str, Any],
+    textures: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Export and re-import every finished role, record the job and stage the runtime files."""
+
+    slug = spec["asset_id"].rsplit(".", 1)[-1]
+    stem = spec["runtime_stem"]
+    exports: Dict[str, str] = {}
+    for role, report in roles.items():
+        anim_rel = f"export/anim/{stem}_{role}.anim"
+        report["export"] = blender.export_animation(slug, chain, report["action"], anim_rel)
+        report["reimport"] = blender.reimport_export(slug, mesh_rel, anim_rel, proof_name=f"{stem}_{role}")
+        exports[role] = anim_rel
+    update_job(job, status="pdx_exported", exports={"mesh": mesh_rel, "animations": exports}, unit_type=spec["unit_type"])
+    append_history(
+        job,
+        state="pdx_exported",
+        event="unit_exported",
+        actor="hoi4_3d_model_pipeline",
+        details={"unit_type": spec["unit_type"], "library": library, "final_checkpoint": chain, "mesh": file_record(job / mesh_rel, relative_to=job)},
+    )
+    write_json(job / "blender" / "reports" / "unit_roles.json", {"unit_type": spec["unit_type"], "final_checkpoint": chain, "roles": roles})
+    staged = stage_runtime_files(job, spec, {"mesh": mesh_rel, "animations": exports})
+    return {"unit_type": spec["unit_type"], "mesh_export": mesh_export, "textures": textures, "roles": roles, "final_checkpoint": chain, "runtime": staged["check"]}
+
+
 def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     """Finish a Meshy-rigged unit of any humanoid type: one prepared body, every role retargeted onto it.
 
@@ -3401,21 +3465,7 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         imported_count[provider_name] = count + 1
         task = existing_task(job, animation_stage_for(spec, clip_role)) or {}
         source_sha = sha256_file(job / source_rel)
-        receipt_rel = f"provider/animation_receipts/{role}.json"
-        if not (job / receipt_rel).exists():
-            write_json(job / receipt_rel, {
-                "verification_status": "verified",
-                "source_kind": "meshy_animate",
-                "source_reference_id": task.get("task_id"),
-                "source_action_name": scene_name,
-                "provider_file_action_name": provider_name,
-                "source_sha256": source_sha,
-                "source_rel": source_rel,
-                "library_clip": library.get(clip_role),
-                "verified_by": "hoi4_3d_model_pipeline",
-                "verified_at": utc_now(),
-                "basis": "Completed Meshy animate task from this job's own rig task, downloaded with a checksum manifest.",
-            })
+        receipt_rel = write_animation_receipt(job, role, task, scene_name, provider_name, source_rel, source_sha, library.get(clip_role))
         target = f"{stem}_{role}"
         imported_rel = f"blender/checkpoints/unit_{role}.blend"
         imported = blender.import_animation_action(
@@ -3431,23 +3481,7 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
             finishing = blender.correct_action_grounding(slug, chain, finished_rel, target, target_armature_name=armature)
         chain = finished_rel
         roles[role] = {"action": target, "clip_role": clip_role, "receipt": receipt_rel, "import": imported, "finishing": finishing}
-    exports: Dict[str, str] = {}
-    for role, report in roles.items():
-        anim_rel = f"export/anim/{stem}_{role}.anim"
-        report["export"] = blender.export_animation(slug, chain, report["action"], anim_rel)
-        report["reimport"] = blender.reimport_export(slug, mesh_rel, anim_rel, proof_name=f"{stem}_{role}")
-        exports[role] = anim_rel
-    update_job(job, status="pdx_exported", exports={"mesh": mesh_rel, "animations": exports}, unit_type=spec["unit_type"])
-    append_history(
-        job,
-        state="pdx_exported",
-        event="unit_exported",
-        actor="hoi4_3d_model_pipeline",
-        details={"unit_type": spec["unit_type"], "library": library, "final_checkpoint": chain, "mesh": file_record(job / mesh_rel, relative_to=job)},
-    )
-    write_json(job / "blender" / "reports" / "unit_roles.json", {"unit_type": spec["unit_type"], "final_checkpoint": chain, "roles": roles})
-    staged = stage_runtime_files(job, spec, {"mesh": mesh_rel, "animations": exports})
-    return {"unit_type": spec["unit_type"], "mesh_export": mesh_export, "textures": textures, "roles": roles, "final_checkpoint": chain, "runtime": staged["check"]}
+    return export_unit_roles(job, spec, blender, roles, mesh_rel, chain, library, mesh_export, textures)
 
 
 def job_status(slug: str, spec: Dict[str, Any], jobs_config: Path) -> Dict[str, Any]:
@@ -3563,6 +3597,27 @@ def print_credits_report(location: str) -> int:
     return 0
 
 
+def run_file_only_command(args: argparse.Namespace, parser: argparse.ArgumentParser) -> Optional[int]:
+    """Run --credits-report, --status or --rebuild-runtime-textures; none needs a key or makes a provider call."""
+
+    if args.credits_report is not None:
+        return print_credits_report(args.credits_report)
+    if args.jobs_config is None:
+        parser.error("--jobs-config is required unless --credits-report is given")
+    if not (args.status or args.rebuild_runtime_textures):
+        return None
+    configs = load_job_configs(args.jobs_config)
+    assets = list(configs) if args.all or not args.assets else args.assets
+    missing = sorted(set(assets) - set(configs))
+    if missing:
+        raise KeyError(f"Unknown configured 3D jobs: {missing}")
+    if args.status:
+        print(json.dumps([job_status(asset, configs[asset], args.jobs_config) for asset in assets], indent=2))
+    else:
+        print(json.dumps({asset: rebuild_runtime_textures(configs[asset]) for asset in assets}, indent=2, sort_keys=True))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--jobs-config", type=Path, help="repository-owned job registry (required for provider work)")
@@ -3590,24 +3645,9 @@ def main() -> int:
     parser.add_argument("--shared-humanoid-batch")
     parser.add_argument("assets", nargs="*")
     args = parser.parse_args()
-    if args.credits_report is not None:
-        return print_credits_report(args.credits_report)
-    if args.jobs_config is None:
-        parser.error("--jobs-config is required unless --credits-report is given")
-    if args.status:
-        configs = load_job_configs(args.jobs_config)
-        assets = list(configs) if args.all or not args.assets else args.assets
-        print(json.dumps([job_status(asset, configs[asset], args.jobs_config) for asset in assets], indent=2))
-        return 0
-    if args.rebuild_runtime_textures:
-        configs = load_job_configs(args.jobs_config)
-        assets = list(configs) if args.all or not args.assets else args.assets
-        missing = sorted(set(assets) - set(configs))
-        if missing:
-            raise KeyError(f"Unknown configured 3D jobs: {missing}")
-        rebuilt = {asset: rebuild_runtime_textures(configs[asset]) for asset in assets}
-        print(json.dumps(rebuilt, indent=2, sort_keys=True))
-        return 0
+    handled = run_file_only_command(args, parser)
+    if handled is not None:
+        return handled
     require_api_key()
     configs = load_job_configs(args.jobs_config)
     if args.shared_humanoid_batch:

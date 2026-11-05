@@ -494,8 +494,14 @@ def main() -> int:
         raise KeyError(f"Unknown configured 3D jobs: {missing}")
     outputs = []
     for slug in slugs:
+        spec = jobs[slug]
+        if spec.get("unit_type"):
+            # A unit-type job gets its profile, kind, actions, model and price estimates the way the runner fills them.
+            from run_pilot import prepare_spec
+
+            prepare_spec(spec, require_budget=False)
         # Creating the job is how its reference gets reviewed, so do not demand the review here.
-        outputs.append(initialize_one(jobs[slug], require_review=False))
+        outputs.append(initialize_one(spec, require_review=False))
     print(json.dumps(outputs, indent=2))
     return 0
 
