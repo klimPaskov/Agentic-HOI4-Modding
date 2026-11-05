@@ -568,3 +568,12 @@ class CandidateGateTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class WeldedMeasurementReachesTheReport(unittest.TestCase):
+    """The prepare report's geometry is the reopened checkpoint's measurement; the gate needs its welded counts."""
+
+    def test_reopened_measurements_include_welded_topology(self) -> None:
+        source = (Path(__file__).resolve().parents[1] / "adapter" / "blender_worker.py").read_text(encoding="utf-8")
+        self.assertNotIn("persisted_geometry = geometry_metrics()\n", source)
+        self.assertEqual(source.count("persisted_geometry = geometry_metrics(position_weld_distance=GATE_POSITION_WELD_DISTANCE)"), 2)

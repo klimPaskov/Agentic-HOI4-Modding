@@ -1629,7 +1629,7 @@ def verify_saved_normalization(checkpoint: Path, target_height: float) -> Dict[s
     """Reopen a checkpoint and fail if its measured height differs from its report."""
 
     bpy.ops.wm.open_mainfile(filepath=str(checkpoint))
-    persisted_geometry = geometry_metrics()
+    persisted_geometry = geometry_metrics(position_weld_distance=GATE_POSITION_WELD_DISTANCE)
     persisted_height = float(persisted_geometry["dimensions"][2])
     tolerance = max(1e-5, abs(target_height) * 1e-5)
     height_delta = persisted_height - target_height
@@ -1667,7 +1667,7 @@ def stabilize_saved_normalization(
     max_corrections = 8
     for corrections_applied in range(max_corrections + 1):
         bpy.ops.wm.open_mainfile(filepath=str(checkpoint))
-        persisted_geometry = geometry_metrics()
+        persisted_geometry = geometry_metrics(position_weld_distance=GATE_POSITION_WELD_DISTANCE)
         persisted_height = float(persisted_geometry["dimensions"][2])
         tolerance = max(1e-5, abs(target_height) * 1e-5)
         step = evaluate_convergence_step(
