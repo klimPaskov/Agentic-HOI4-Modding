@@ -938,7 +938,8 @@ def adapter_source_hashes(adapter_root: Path) -> dict[str, str]:
     """Bind the complete flat adapter source closure, rejecting missing local imports."""
     sources = sorted(adapter_root.glob("*.py"), key=lambda path: path.name)
     local_modules = {path.stem for path in sources}
-    external_modules = {"bpy", "bmesh", "mathutils", "mcp", "io_pdx_mesh", "io_anim_bvh"}
+    # numpy is bundled with every Blender build; only the Blender-side worker modules import it.
+    external_modules = {"bpy", "bmesh", "mathutils", "numpy", "mcp", "io_pdx_mesh", "io_anim_bvh"}
     stdlib_modules = getattr(sys, "stdlib_module_names", None)
     if stdlib_modules is None:  # Python 3.9 has no stdlib_module_names.
         stdlib_root = sysconfig.get_path("stdlib")

@@ -1821,7 +1821,9 @@ def continue_humanoid_local(spec: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
+def humanoid_provider_stages(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Run (or reuse) the paid humanoid stages: remesh when needed, one rig, one clip per provider role."""
+
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
     client = MeshyClient(REPO_ROOT, job)
@@ -2003,6 +2005,21 @@ def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
             fetch_provider_url=True,
         )
 
+    return {
+        "slug": slug,
+        "job": job,
+        "blender": blender,
+        "vanilla_reference": vanilla_reference,
+        "rig_id": rig_id,
+        "animation_downloads": animation_downloads,
+    }
+
+
+def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
+    stages = humanoid_provider_stages(spec)
+    slug, job, blender = stages["slug"], stages["job"], stages["blender"]
+    vanilla_reference = stages["vanilla_reference"]
+    rig_id, animation_downloads = stages["rig_id"], stages["animation_downloads"]
     profile = read_json(PIPELINE_ROOT / "config" / "asset_profiles.json")["profiles"][spec["profile"]]
 
     final_source = animation_downloads["attack"]["file"]["relative_path"]

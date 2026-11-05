@@ -10375,6 +10375,9 @@ def run(req: Dict[str, Any]) -> Dict[str, Any]:
     if operation in {"inspect_mesh_landmarks", "author_measured_creature_rig", "attach_rigid_component", "author_measured_creature_action", "repair_explicit_mesh_winding", "ground_existing_action"}:
         import manual_creature_rig
         return getattr(manual_creature_rig, operation)(req, globals())
+    if operation == "seat_rider_action":
+        import rider_seat
+        return rider_seat.seat_rider_action(req, globals())
     if operation == "isolate_humanoid_weapon":
         return isolate_humanoid_weapon(req)
     if operation == "attach_rigid_weapon_from_checkpoint":

@@ -1127,6 +1127,32 @@ def hoi4_blender_author_creature_action(
 
 
 @mcp.tool()
+def hoi4_blender_seat_rider_action(
+    job_id: str,
+    blend_rel: str,
+    checkpoint_rel: str,
+    action_name: str,
+    target_armature_name: str,
+    seat_lift: float = 0.06,
+    slump: bool = False,
+) -> Dict[str, Any]:
+    """Seat an imported humanoid action on horseback: pelvis on the attach origin, legs astride, upper body from the clip."""
+
+    return _run(
+        job_id,
+        "seat_rider_action",
+        {
+            "blend_rel": blend_rel,
+            "checkpoint_rel": checkpoint_rel,
+            "action_name": action_name,
+            "target_armature_name": target_armature_name,
+            "seat_lift": seat_lift,
+            "slump": slump,
+        },
+    )
+
+
+@mcp.tool()
 def hoi4_blender_correct_action_grounding(
     job_id: str,
     blend_rel: str,

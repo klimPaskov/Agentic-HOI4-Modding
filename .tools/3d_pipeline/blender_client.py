@@ -665,6 +665,29 @@ class BlenderAdapterClient:
             },
         )
 
+    def seat_rider_action(
+        self,
+        job_id: str,
+        blend_rel: str,
+        checkpoint_rel: str,
+        action_name: str,
+        target_armature_name: str,
+        seat_lift: float = 0.06,
+        slump: bool = False,
+    ) -> Dict[str, Any]:
+        return self.call(
+            "hoi4_blender_seat_rider_action",
+            {
+                "job_id": job_id,
+                "blend_rel": blend_rel,
+                "checkpoint_rel": checkpoint_rel,
+                "action_name": action_name,
+                "target_armature_name": target_armature_name,
+                "seat_lift": seat_lift,
+                "slump": slump,
+            },
+        )
+
     def correct_action_grounding(
         self,
         job_id: str,
