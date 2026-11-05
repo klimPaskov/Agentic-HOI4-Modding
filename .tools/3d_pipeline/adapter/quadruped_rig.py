@@ -95,6 +95,44 @@ def _turn_half(meshes: List[bpy.types.Object], points: np.ndarray) -> None:
         obj.data.update()
 
 
+def _bind(
+    owners: List[Tuple[bpy.types.Object, int]],
+    layout: ql.Layout,
+    indices: np.ndarray,
+    weights: np.ndarray,
+    rig: bpy.types.Object,
+) -> Tuple[Dict[str, int], int]:
+    """Write the weights as vertex groups, add the armature modifier and parent each mesh to the rig."""
+
+    names = layout.names()
+    offset = 0
+    per_bone = {name: 0 for name in names}
+    unweighted = 0
+    for obj, count in owners:
+        for group in list(obj.vertex_groups):
+            obj.vertex_groups.remove(group)
+        groups = {bone.name: obj.vertex_groups.new(name=bone.name) for bone in layout.bones if bone.deform}
+        for vertex in range(count):
+            row_weights = weights[offset + vertex]
+            if row_weights.sum() <= 0:
+                unweighted += 1
+            for slot in range(indices.shape[1]):
+                weight = float(row_weights[slot])
+                if weight <= 0:
+                    continue
+                name = names[int(indices[offset + vertex, slot])]
+                groups[name].add([vertex], weight, "REPLACE")
+                per_bone[name] += 1
+        modifier = next((item for item in obj.modifiers if item.type == "ARMATURE"), None) or obj.modifiers.new("HOI4_QUADRUPED_ARMATURE", "ARMATURE")
+        modifier.object = rig
+        world = obj.matrix_world.copy()
+        obj.parent = rig
+        obj.parent_type = "OBJECT"
+        obj.matrix_world = world
+        offset += count
+    return per_bone, unweighted
+
+
 def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
@@ -144,32 +182,7 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     rig.show_in_front = True
 
     indices, weights = ql.skin_weights(points, layout)
-    names = layout.names()
-    offset = 0
-    per_bone = {name: 0 for name in names}
-    unweighted = 0
-    for obj, count in owners:
-        for group in list(obj.vertex_groups):
-            obj.vertex_groups.remove(group)
-        groups = {bone.name: obj.vertex_groups.new(name=bone.name) for bone in layout.bones if bone.deform}
-        for vertex in range(count):
-            row_weights = weights[offset + vertex]
-            if row_weights.sum() <= 0:
-                unweighted += 1
-            for slot in range(indices.shape[1]):
-                weight = float(row_weights[slot])
-                if weight <= 0:
-                    continue
-                name = names[int(indices[offset + vertex, slot])]
-                groups[name].add([vertex], weight, "REPLACE")
-                per_bone[name] += 1
-        modifier = next((item for item in obj.modifiers if item.type == "ARMATURE"), None) or obj.modifiers.new("HOI4_QUADRUPED_ARMATURE", "ARMATURE")
-        modifier.object = rig
-        world = obj.matrix_world.copy()
-        obj.parent = rig
-        obj.parent_type = "OBJECT"
-        obj.matrix_world = world
-        offset += count
+    per_bone, unweighted = _bind(owners, layout, indices, weights, rig)
     if unweighted:
         raise RuntimeError(f"{unweighted} vertices received no bone weight.")
     h["save_blend"](checkpoint)
