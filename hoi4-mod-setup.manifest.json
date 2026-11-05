@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "dbf12bc5f249066d76a5ed40e7707d2ebba38324",
+  "generated_for_revision": "5354981606819045d426d7a54bc0a7bd354d99b2",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -11523,9 +11523,7 @@
       "coding_environment": "codex",
       "optional": true,
       "platforms": [
-        "windows",
-        "macos",
-        "linux"
+        "windows"
       ],
       "source": {
         "kind": "tree",
@@ -11544,7 +11542,7 @@
       },
       "dependencies": [
         "runtime.codex.skills",
-        "workflow.live_testing"
+        "workflow.live_tools"
       ],
       "conflicts": [
         "existing codex copy of the live-playtest skill"
@@ -22351,9 +22349,7 @@
       "coding_environment": "grok_build",
       "optional": true,
       "platforms": [
-        "windows",
-        "macos",
-        "linux"
+        "windows"
       ],
       "source": {
         "kind": "tree",
@@ -22372,7 +22368,7 @@
       },
       "dependencies": [
         "runtime.grok.skills",
-        "workflow.live_testing"
+        "workflow.live_tools"
       ],
       "conflicts": [
         "existing Grok Build copy of the live-playtest skill"
@@ -27205,9 +27201,7 @@
       "coding_environment": "kiro",
       "optional": true,
       "platforms": [
-        "windows",
-        "macos",
-        "linux"
+        "windows"
       ],
       "source": {
         "kind": "tree",
@@ -27226,7 +27220,7 @@
       },
       "dependencies": [
         "runtime.kiro.skills",
-        "workflow.live_testing"
+        "workflow.live_tools"
       ],
       "conflicts": [
         "existing Kiro copy of the live-playtest skill"
@@ -32059,9 +32053,7 @@
       "coding_environment": "qwen_code",
       "optional": true,
       "platforms": [
-        "windows",
-        "macos",
-        "linux"
+        "windows"
       ],
       "source": {
         "kind": "tree",
@@ -32080,7 +32072,7 @@
       },
       "dependencies": [
         "runtime.qwen.skills",
-        "workflow.live_testing"
+        "workflow.live_tools"
       ],
       "conflicts": [
         "existing Qwen Code copy of the live-playtest skill"
