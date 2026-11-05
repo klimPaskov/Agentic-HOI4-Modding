@@ -176,5 +176,34 @@ class UnitTypeCatalog(unittest.TestCase):
         self.assertIn("Saddle_Node", types["mount"]["required_nodes"])
 
 
+class UnitTypeActions(unittest.TestCase):
+    def test_rider_pays_once_per_clip_and_seats_its_death(self) -> None:
+        import run_pilot
+
+        spec = run_pilot.apply_unit_type({"unit_type": "rider"})
+        by_role = {row["role"]: row for row in spec["required_actions"]}
+        self.assertEqual(spec["asset_kind"], "humanoid")
+        self.assertEqual(run_pilot.provider_animated_roles(spec), ["idle", "attack", "defend"])
+        self.assertEqual((by_role["move"]["task_type"], by_role["move"]["reuse_role"]), ("reused_clip", "idle"))
+        self.assertTrue(by_role["death"]["slump"])
+
+    def test_mount_is_a_blender_quadruped(self) -> None:
+        import run_pilot
+
+        spec = run_pilot.apply_unit_type({"unit_type": "mount"})
+        self.assertEqual((spec["asset_kind"], spec["creature_rig_family"]), ("creature", "quadruped"))
+        self.assertEqual(run_pilot.provider_animated_roles(spec), [])
+        self.assertEqual({row["action_style"] for row in spec["required_actions"]} - {None}, {
+            "quadruped_idle", "quadruped_trot", "quadruped_charge", "quadruped_rear", "quadruped_gallop", "quadruped_collapse"})
+
+    def test_job_actions_win_and_unknown_types_fail(self) -> None:
+        import run_pilot
+
+        own = [{"role": "idle", "provider_action_id": 0}]
+        self.assertEqual(run_pilot.apply_unit_type({"unit_type": "archer", "required_actions": own})["required_actions"], own)
+        with self.assertRaises(ValueError):
+            run_pilot.apply_unit_type({"unit_type": "dragon_knight"})
+
+
 if __name__ == "__main__":
     unittest.main()

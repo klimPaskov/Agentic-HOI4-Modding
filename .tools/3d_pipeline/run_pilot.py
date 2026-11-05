@@ -27,6 +27,7 @@ from lib.paths import (  # noqa: E402
     read_job_document,
     read_json,
     resolve_job_root,
+    sha256_file,
     utc_now,
     write_json,
 )
@@ -240,6 +241,7 @@ def prepare_spec(spec: Dict[str, Any], *, require_budget: bool = True) -> Dict[s
 
     if spec.get("_credits_prepared"):
         return spec
+    apply_unit_type(spec)
     generation = resolve_generation(spec, load_profile(spec["profile"]))
     pricing = load_pricing()
     spec["generation"] = generation
@@ -1613,6 +1615,7 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
             role,
             action_name,
             creature_rig_family=str(spec["creature_rig_family"]),
+            action_style=str(action.get("action_style") or ""),
         )
         if authored.get("status") != "pass":
             raise RuntimeError(
@@ -1953,7 +1956,7 @@ def humanoid_provider_stages(spec: Dict[str, Any]) -> Dict[str, Any]:
     animation_downloads: Dict[str, Dict[str, Any]] = {}
     for action in spec["required_actions"]:
         role = action["role"]
-        if action.get("task_type") == "blender_authored_skeletal":
+        if action.get("task_type") in {"blender_authored_skeletal", "reused_clip"}:
             continue
         if action.get("provider_action_id") is None:
             raise RuntimeError(
@@ -3231,6 +3234,214 @@ def run_shared_humanoid_batch(
     return results
 
 
+UNIT_SCALE_REFERENCE = {"source_head_bones": ["LeftFoot", "Head"], "target_head_bones": ["LeftFoot", "Head"]}
+
+
+def load_unit_types() -> Dict[str, Any]:
+    return read_json(PIPELINE_ROOT / "config" / "unit_types.json")["types"]
+
+
+def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Fill a job's profile, kind and actions from its `unit_type` (config/unit_types.json).
+
+    A role whose first library clip another role already uses reuses that clip instead of
+    paying for it again; a Blender role (a quadruped gait, the seated slump) costs nothing.
+    Actions a job lists itself win.
+    """
+
+    name = spec.get("unit_type")
+    if not name or spec.get("_unit_type_applied"):
+        return spec
+    types = load_unit_types()
+    if name not in types:
+        raise ValueError(f"Unknown unit_type {name!r}; known: {', '.join(sorted(types))}.")
+    unit = types[name]
+    spec.setdefault("profile", unit["profile"])
+    if unit["rig"] == "blender_quadruped":
+        spec.setdefault("asset_kind", "creature")
+        spec.setdefault("creature_rig_family", "quadruped")
+    else:
+        spec.setdefault("asset_kind", "humanoid")
+    if not spec.get("required_actions"):
+        actions: List[Dict[str, Any]] = []
+        first_role_for_clip: Dict[int, str] = {}
+        for role, config in unit["roles"].items():
+            row: Dict[str, Any] = {"role": role, "fps": 24, "loop": bool(config.get("loop")), "root_policy": "in_place"}
+            if config.get("meshy"):
+                clip_id, clip_key = config["meshy"][0]
+                row["library_candidates"] = [list(item) for item in config["meshy"]]
+                if clip_id in first_role_for_clip:
+                    row.update(provider_action_id=None, task_type="reused_clip", reuse_role=first_role_for_clip[clip_id])
+                else:
+                    first_role_for_clip[clip_id] = role
+                    row.update(provider_action_id=clip_id, library_key=clip_key)
+            elif config.get("blender") == "seated_slump":
+                row.update(provider_action_id=None, task_type="reused_clip", reuse_role="idle", slump=True)
+            else:
+                row.update(provider_action_id=None, task_type="blender_authored_skeletal", action_style=config["blender"])
+            actions.append(row)
+        spec["required_actions"] = actions
+    spec["_unit_type_applied"] = True
+    return spec
+
+
+def verify_library_clips(spec: Dict[str, Any], client: "MeshyClient") -> Dict[str, Any]:
+    """Look the paid clips up (free) and switch to the next candidate when an id no longer names its clip."""
+
+    wanted = [action for action in spec["required_actions"] if action.get("provider_action_id") is not None]
+    if not wanted:
+        return {}
+    ids = sorted({int(item[0]) for action in wanted for item in action.get("library_candidates", [[action["provider_action_id"], ""]])})
+    listed = client.list_animations(action_ids=ids)
+    keys: Dict[int, str] = {}
+    for content in listed.get("content", []):
+        if isinstance(content, dict) and content.get("type") == "text":
+            try:
+                for row in json.loads(content["text"]):
+                    keys[int(row["action_id"])] = str(row.get("key"))
+            except (ValueError, TypeError, KeyError):
+                continue
+    report = {}
+    for action in wanted:
+        candidates = action.get("library_candidates") or [[action["provider_action_id"], action.get("library_key", "")]]
+        chosen = next((item for item in candidates if keys.get(int(item[0])) == item[1] or (not item[1] and int(item[0]) in keys)), None)
+        if chosen is None:
+            raise RuntimeError(
+                f"No Meshy library clip for the {action['role']} role still matches its key: "
+                f"{[(item[0], item[1], keys.get(int(item[0]))) for item in candidates]}. Update config/unit_types.json."
+            )
+        action["provider_action_id"], action["library_key"] = int(chosen[0]), chosen[1]
+        report[action["role"]] = {"action_id": int(chosen[0]), "key": chosen[1]}
+    return report
+
+
+def glb_animation_name(path: Path) -> str:
+    """The first animation name stored in a GLB; Blender's glTF importer gives the action this name."""
+
+    data = path.read_bytes()
+    length = int.from_bytes(data[12:16], "little")
+    document = json.loads(data[20 : 20 + length])
+    animations = document.get("animations") or []
+    if not animations or not animations[0].get("name"):
+        raise RuntimeError(f"{path.name} holds no named animation.")
+    return str(animations[0]["name"])
+
+
+def _prepared_armature(prep: Dict[str, Any]) -> str:
+    try:
+        return str(prep["rig_and_actions"]["root_translation_sanitization"]["actions"][0]["armature"])
+    except (KeyError, IndexError, TypeError):
+        return "Armature"
+
+
+def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Finish a Meshy-rigged unit of any humanoid type: one prepared body, every role retargeted onto it.
+
+    Each role's library clip is imported onto the single prepared rig with a provenance
+    receipt, then grounded per frame (standing types) or seated on the attach origin
+    (riders), exported and re-imported against the one exported mesh.
+    """
+
+    apply_unit_type(spec)
+    unit = load_unit_types()[spec["unit_type"]]
+    slug = spec["asset_id"].rsplit(".", 1)[-1]
+    job = ensure_job_layout(resolve_job_root(slug))
+    library = verify_library_clips(spec, MeshyClient(REPO_ROOT, job))
+    stages = humanoid_provider_stages(spec)
+    blender = stages["blender"]
+    downloads = stages["animation_downloads"]
+    profile = load_profile(spec["profile"])
+    stem = spec["runtime_stem"]
+    base_role = "attack" if "attack" in downloads else next(iter(downloads))
+    base_source = downloads[base_role]["file"]["relative_path"]
+    texture_sources = prepare_pilot_texture_sources(
+        job,
+        spec,
+        exported_rels=[item["file"]["relative_path"] for item in downloads.values()],
+        geometry_source_rel=spec.get("geometry_source_rel"),
+    )
+    prep = blender.prepare_candidate(
+        slug,
+        source_rel=base_source,
+        asset_kind="humanoid",
+        target_height_m=spec.get("blender_target_height_m", spec["target_height_m"]),
+        runtime_entity_scale=float(spec.get("runtime_entity_scale", 1.0)),
+        runtime_stem=f"{stem}_base",
+        target_triangles=profile["triangle_range"]["working_triangle_target"],
+        excluded_provider_objects=spec.get("excluded_provider_objects"),
+        vanilla_reference=stages["vanilla_reference"],
+        texture_source_rels=texture_sources,
+        geometry_source_rel=spec.get("geometry_source_rel"),
+        repair_before_reduction=True,
+        topology_weld_distance=0.0,
+    )
+    candidate_gate(job, prep, hard_max=profile["triangle_range"]["hard_max"], stage="animated_candidate_base")
+    textures = finalize_pdx_runtime_textures(job, spec, blender.process_textures(slug, prep["checkpoints"]["pre_export"]))
+    blender.save_checkpoint(slug, prep["checkpoints"]["pre_export"], "unit_base_pre_export")
+    chain = "blender/checkpoints/unit_base_pre_export.blend"
+    mesh_rel = f"export/mesh/{stem}.mesh"
+    mesh_export = blender.export_mesh(slug, chain, mesh_rel)
+    armature = _prepared_armature(prep)
+    imported_count: Dict[str, int] = {glb_animation_name(job / base_source): 1}
+    roles: Dict[str, Dict[str, Any]] = {}
+    for action in spec["required_actions"]:
+        role = action["role"]
+        clip_role = action.get("reuse_role") or role
+        source_rel = downloads[clip_role]["file"]["relative_path"]
+        provider_name = glb_animation_name(job / source_rel)
+        count = imported_count.get(provider_name, 0)
+        scene_name = provider_name + (f".{count:03d}" if count else "")
+        imported_count[provider_name] = count + 1
+        task = existing_task(job, animation_stage_for(spec, clip_role)) or {}
+        source_sha = sha256_file(job / source_rel)
+        receipt_rel = f"provider/animation_receipts/{role}.json"
+        if not (job / receipt_rel).exists():
+            write_json(job / receipt_rel, {
+                "verification_status": "verified",
+                "source_kind": "meshy_animate",
+                "source_reference_id": task.get("task_id"),
+                "source_action_name": scene_name,
+                "provider_file_action_name": provider_name,
+                "source_sha256": source_sha,
+                "source_rel": source_rel,
+                "library_clip": library.get(clip_role),
+                "verified_by": "hoi4_3d_model_pipeline",
+                "verified_at": utc_now(),
+                "basis": "Completed Meshy animate task from this job's own rig task, downloaded with a checksum manifest.",
+            })
+        target = f"{stem}_{role}"
+        imported_rel = f"blender/checkpoints/unit_{role}.blend"
+        imported = blender.import_animation_action(
+            slug, chain, source_rel, receipt_rel, imported_rel, scene_name, armature, target,
+            "meshy_animate", str(task.get("task_id")), source_sha, root_scale_reference=UNIT_SCALE_REFERENCE,
+        )
+        chain = imported_rel
+        if unit.get("seated"):
+            finished_rel = f"blender/checkpoints/unit_{role}_seated.blend"
+            finishing = blender.seat_rider_action(slug, chain, finished_rel, target, armature, slump=bool(action.get("slump")))
+        else:
+            finished_rel = f"blender/checkpoints/unit_{role}_grounded.blend"
+            finishing = blender.correct_action_grounding(slug, chain, finished_rel, target, target_armature_name=armature)
+        chain = finished_rel
+        roles[role] = {"action": target, "clip_role": clip_role, "receipt": receipt_rel, "import": imported, "finishing": finishing}
+    exports: Dict[str, str] = {}
+    for role, report in roles.items():
+        anim_rel = f"export/anim/{stem}_{role}.anim"
+        report["export"] = blender.export_animation(slug, chain, report["action"], anim_rel)
+        report["reimport"] = blender.reimport_export(slug, mesh_rel, anim_rel, proof_name=f"{stem}_{role}")
+        exports[role] = anim_rel
+    update_job(job, status="pdx_exported", exports={"mesh": mesh_rel, "animations": exports}, unit_type=spec["unit_type"])
+    append_history(
+        job,
+        state="pdx_exported",
+        event="unit_exported",
+        actor="hoi4_3d_model_pipeline",
+        details={"unit_type": spec["unit_type"], "library": library, "final_checkpoint": chain, "mesh": file_record(job / mesh_rel, relative_to=job)},
+    )
+    write_json(job / "blender" / "reports" / "unit_roles.json", {"unit_type": spec["unit_type"], "final_checkpoint": chain, "roles": roles})
+    return {"unit_type": spec["unit_type"], "mesh_export": mesh_export, "textures": textures, "roles": roles, "final_checkpoint": chain}
+
+
 def print_credits_report(location: str) -> int:
     """Print credits per model and stage, failed and wasted credits, and credits avoided, for one job or a root."""
 
@@ -3307,6 +3518,8 @@ def main() -> int:
             results.append({"asset": asset, "continuation": continue_static(spec)})
         elif spec["asset_kind"] in CREATURE_ASSET_KINDS:
             results.append({"asset": asset, "continuation": continue_creature(spec)})
+        elif spec.get("unit_type"):
+            results.append({"asset": asset, "continuation": continue_unit_humanoid(spec)})
         else:
             continuation = (
                 continue_humanoid_local(spec)
