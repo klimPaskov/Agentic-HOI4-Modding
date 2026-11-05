@@ -1291,6 +1291,40 @@ def _apply_runtime_diffuse_grade(
     return textures
 
 
+def compress_runtime_textures(job: Path, spec: Dict[str, Any], textures: Dict[str, Any]) -> Dict[str, Any]:
+    """Rewrite each runtime DDS as DXT5 with a full mip chain, the format vanilla units ship.
+
+    The source is the processed PNG each conversion recorded (graded diffuse,
+    packed specular, packed RRxG normal), resized to the recorded size. A profile
+    that lists `runtime_texture_format` as `bgra_single` keeps the single-level
+    BGRA files the converter wrote.
+    """
+
+    from lib.model_dds import write_dxt5
+
+    profile = load_profile(spec["profile"])
+    if profile.get("runtime_texture_format", "dxt5_mipped") != "dxt5_mipped":
+        return textures
+    written = {}
+    for item in textures.get("conversions") or []:
+        png_rel, dds_rel = item.get("png"), item.get("dds")
+        if not png_rel or not dds_rel:
+            continue
+        source = job / png_rel
+        if not source.is_file():
+            raise FileNotFoundError(f"Runtime texture source is missing: {source}")
+        width = int(item.get("width") or 0)
+        height = int(item.get("height") or 0)
+        sized = source
+        with Image.open(source) as image:
+            if width and height and image.size != (width, height):
+                sized = job / "textures" / "processed" / f"{Path(png_rel).stem}_runtime.png"
+                image.convert("RGBA").resize((width, height), Image.Resampling.LANCZOS).save(sized, format="PNG")
+        written[dds_rel] = write_dxt5(sized, job / dds_rel)
+    textures["runtime_texture_format"] = {"format": "DXT5", "mips": "full chain", "files": written}
+    return textures
+
+
 def _dds_header_report(job: Path, textures: Dict[str, Any]) -> Dict[str, Any]:
     """Report each shipped DDS's size and mip count.
 
@@ -1376,6 +1410,7 @@ def finalize_pdx_runtime_textures(
                 "alpha": "source_normal_green_tangent_y",
             },
         )
+    textures = compress_runtime_textures(job, spec, textures)
     report = job / "blender" / "reports" / "textures_dds.json"
     textures["runtime_texture_sources"] = provider_sources
     if spec.get("_texture_lineage"):

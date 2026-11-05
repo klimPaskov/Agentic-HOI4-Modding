@@ -1,0 +1,178 @@
+{
+  "schema_version": "1.0.0",
+  "note": "What each kind of land unit needs: its profile, rig route, HOI4 animation roles, the Meshy library clips for each role, the entity states that play them, and the bones an entity attaches to. A job names one type with `unit_type`. Library clips are [action_id, key] pairs read from meshy_list_animations on 2026-11-05; the runner looks the ids up again (free) and refuses a clip whose key changed. `_inplace` clips have no root motion, so the unit does not slide.",
+  "engine_limits": {
+    "max_bones_per_skinned_mesh": 50,
+    "max_influences_per_vertex": 4,
+    "source": "gfx/FX/pdxmesh.shader of the installed game: `float4x4 matBones[50]` and `PDXMESH_MAX_INFLUENCE = 4` [vanilla-confirmed 1.19.4.1]"
+  },
+  "land_entity_states": {
+    "idle": "idle",
+    "move": "move",
+    "attack": "attack",
+    "defend": "defend",
+    "support_attack": "attack",
+    "retreat": "retreat",
+    "training": "idle",
+    "death": "death"
+  },
+  "types": {
+    "infantry_melee": {
+      "description": "Foot soldier with a sword, axe or mace",
+      "profile": "humanoid_unit",
+      "rig": "meshy_humanoid",
+      "entity_template": "infantry",
+      "roles": {
+        "idle": {"meshy": [[0, "Idle"], [11, "Idle_02"]], "loop": true},
+        "move": {"meshy": [[613, "Casual_Walk_inplace"], [689, "Walk_Fight_Forward_inplace"]], "loop": true},
+        "attack": {"meshy": [[219, "Right_Hand_Sword_Slash"], [4, "Attack"]], "loop": false},
+        "defend": {"meshy": [[147, "Sword_Parry"], [138, "Block1"]], "loop": true},
+        "retreat": {"meshy": [[637, "Injured_Walk_inplace"], [658, "run_fast_2_inplace"]], "loop": true},
+        "death": {"meshy": [[187, "Knock_Down"], [8, "Dead"]], "loop": false}
+      }
+    },
+    "spearman": {
+      "description": "Foot soldier with a spear or pike",
+      "profile": "humanoid_unit",
+      "rig": "meshy_humanoid",
+      "entity_template": "infantry",
+      "roles": {
+        "idle": {"meshy": [[0, "Idle"], [2, "Alert"]], "loop": true},
+        "move": {"meshy": [[672, "Spear_Walk_inplace"], [613, "Casual_Walk_inplace"]], "loop": true},
+        "attack": {"meshy": [[240, "Thrust_Slash"], [242, "Charged_Slash"]], "loop": false},
+        "defend": {"meshy": [[149, "Two_Handed_Parry"], [147, "Sword_Parry"]], "loop": true},
+        "retreat": {"meshy": [[687, "Walk_Backward_with_Sword_inplace"], [637, "Injured_Walk_inplace"]], "loop": true},
+        "death": {"meshy": [[184, "Shot_and_Fall_Forward"], [8, "Dead"]], "loop": false}
+      }
+    },
+    "archer": {
+      "description": "Foot archer or bowman; the bow is part of the body or a separate attachment",
+      "profile": "humanoid_unit",
+      "rig": "meshy_humanoid",
+      "entity_template": "infantry",
+      "roles": {
+        "idle": {"meshy": [[0, "Idle"], [11, "Idle_02"]], "loop": true},
+        "move": {"meshy": [[613, "Casual_Walk_inplace"], [691, "Walk_Forward_with_Bow_Aimed_inplace"]], "loop": true},
+        "attack": {"meshy": [[224, "Archery_Shot"], [225, "Archery_Shot_1"]], "loop": false},
+        "defend": {"meshy": [[231, "Archery_Aim_with_Lateral_Scan"], [226, "Archery_Shot_2"]], "loop": true},
+        "retreat": {"meshy": [[681, "Walk_Backward_with_Bow_inplace"], [637, "Injured_Walk_inplace"]], "loop": true},
+        "death": {"meshy": [[183, "Shot_and_Fall_Backward"], [8, "Dead"]], "loop": false}
+      }
+    },
+    "heavy_brute": {
+      "description": "Large humanoid with a club, hammer or great axe: giants, trolls, ogres",
+      "profile": "humanoid_unit",
+      "rig": "meshy_humanoid",
+      "entity_template": "infantry",
+      "roles": {
+        "idle": {"meshy": [[336, "Long_Breathe_and_Look_Around"], [0, "Idle"]], "loop": true},
+        "move": {"meshy": [[669, "Slow_Orc_Walk_inplace"], [613, "Casual_Walk_inplace"]], "loop": true},
+        "attack": {"meshy": [[128, "Heavy_Hammer_Swing"], [237, "Charged_Axe_Chop"]], "loop": false},
+        "defend": {"meshy": [[255, "Angry_Ground_Stomp"], [149, "Two_Handed_Parry"]], "loop": true},
+        "retreat": {"meshy": [[674, "Stumble_Walk_inplace"], [637, "Injured_Walk_inplace"]], "loop": true},
+        "death": {"meshy": [[187, "Knock_Down"], [190, "Knock_Down_1"]], "loop": false}
+      }
+    },
+    "beast_biped": {
+      "description": "Unarmed beast that walks upright and fights with its fists or claws: yeti, ghouls",
+      "profile": "humanoid_unit",
+      "rig": "meshy_humanoid",
+      "entity_template": "infantry",
+      "roles": {
+        "idle": {"meshy": [[338, "Short_Breathe_and_Look_Around"], [0, "Idle"]], "loop": true},
+        "move": {"meshy": [[669, "Slow_Orc_Walk_inplace"], [650, "Mummy_Stagger_inplace"]], "loop": true},
+        "attack": {"meshy": [[214, "Punch_Forward_with_Both_Fists"], [198, "Punch_Combo"]], "loop": false},
+        "defend": {"meshy": [[386, "Zombie_Scream"], [255, "Angry_Ground_Stomp"]], "loop": true},
+        "retreat": {"meshy": [[674, "Stumble_Walk_inplace"], [637, "Injured_Walk_inplace"]], "loop": true},
+        "death": {"meshy": [[190, "Knock_Down_1"], [8, "Dead"]], "loop": false}
+      }
+    },
+    "tree_creature": {
+      "description": "Slow walking tree or wood spirit with branch arms: ents",
+      "profile": "humanoid_unit",
+      "rig": "meshy_humanoid",
+      "entity_template": "infantry",
+      "roles": {
+        "idle": {"meshy": [[336, "Long_Breathe_and_Look_Around"], [0, "Idle"]], "loop": true},
+        "move": {"meshy": [[678, "Unsteady_Walk_inplace"], [669, "Slow_Orc_Walk_inplace"]], "loop": true},
+        "attack": {"meshy": [[127, "Charged_Ground_Slam"], [128, "Heavy_Hammer_Swing"]], "loop": false},
+        "defend": {"meshy": [[255, "Angry_Ground_Stomp"], [149, "Two_Handed_Parry"]], "loop": true},
+        "retreat": {"meshy": [[626, "Elderly_Shaky_Walk_inplace"], [674, "Stumble_Walk_inplace"]], "loop": true},
+        "death": {"meshy": [[366, "falling_down"], [187, "Knock_Down"]], "loop": false}
+      }
+    },
+    "rider": {
+      "description": "The rider of a mounted unit. Meshy rigs the standing body; Blender seats it: the legs take a riding pose and the upper body plays the clip, so the attack is a swing from the saddle",
+      "profile": "humanoid_unit",
+      "rig": "meshy_humanoid",
+      "entity_template": "rider",
+      "seated": true,
+      "roles": {
+        "idle": {"meshy": [[0, "Idle"], [11, "Idle_02"]], "loop": true, "upper_body_only": true},
+        "move": {"meshy": [[0, "Idle"]], "loop": true, "upper_body_only": true, "note": "same clip as idle; the mount's gait carries the rider"},
+        "attack": {"meshy": [[219, "Right_Hand_Sword_Slash"], [242, "Charged_Slash"]], "loop": false, "upper_body_only": true},
+        "defend": {"meshy": [[147, "Sword_Parry"], [138, "Block1"]], "loop": true, "upper_body_only": true},
+        "retreat": {"meshy": [[0, "Idle"]], "loop": true, "upper_body_only": true},
+        "death": {"blender": "seated_slump", "loop": false}
+      }
+    },
+    "mounted_archer": {
+      "description": "The rider of a horse archer unit",
+      "profile": "humanoid_unit",
+      "rig": "meshy_humanoid",
+      "entity_template": "rider",
+      "seated": true,
+      "roles": {
+        "idle": {"meshy": [[0, "Idle"]], "loop": true, "upper_body_only": true},
+        "move": {"meshy": [[0, "Idle"]], "loop": true, "upper_body_only": true},
+        "attack": {"meshy": [[224, "Archery_Shot"], [225, "Archery_Shot_1"]], "loop": false, "upper_body_only": true},
+        "defend": {"meshy": [[231, "Archery_Aim_with_Lateral_Scan"]], "loop": true, "upper_body_only": true},
+        "retreat": {"meshy": [[0, "Idle"]], "loop": true, "upper_body_only": true},
+        "death": {"blender": "seated_slump", "loop": false}
+      }
+    },
+    "mount": {
+      "description": "Four-legged riding animal: horse, warhorse, camel, dead horse. Blender rigs it (Meshy rigs bipeds only) with a Saddle_Node bone the rider attaches to",
+      "profile": "nonhumanoid_creature",
+      "rig": "blender_quadruped",
+      "entity_template": "mount",
+      "required_nodes": ["Saddle_Node"],
+      "roles": {
+        "idle": {"blender": "quadruped_idle", "loop": true},
+        "move": {"blender": "quadruped_trot", "loop": true},
+        "attack": {"blender": "quadruped_charge", "loop": false},
+        "defend": {"blender": "quadruped_rear", "loop": false},
+        "retreat": {"blender": "quadruped_gallop", "loop": true},
+        "death": {"blender": "quadruped_collapse", "loop": false}
+      }
+    },
+    "quadruped_beast": {
+      "description": "Four-legged creature without a rider: wolves, war beasts, elephants",
+      "profile": "nonhumanoid_creature",
+      "rig": "blender_quadruped",
+      "entity_template": "infantry",
+      "roles": {
+        "idle": {"blender": "quadruped_idle", "loop": true},
+        "move": {"blender": "quadruped_walk", "loop": true},
+        "attack": {"blender": "quadruped_charge", "loop": false},
+        "defend": {"blender": "quadruped_rear", "loop": false},
+        "retreat": {"blender": "quadruped_gallop", "loop": true},
+        "death": {"blender": "quadruped_collapse", "loop": false}
+      }
+    },
+    "winged_creature": {
+      "description": "Four-legged creature with two wings: dragons, griffins, wyverns",
+      "profile": "nonhumanoid_creature",
+      "rig": "blender_winged_quadruped",
+      "entity_template": "infantry",
+      "roles": {
+        "idle": {"blender": "winged_idle", "loop": true},
+        "move": {"blender": "winged_walk", "loop": true},
+        "attack": {"blender": "winged_strike", "loop": false},
+        "defend": {"blender": "winged_threat", "loop": true},
+        "retreat": {"blender": "winged_hover", "loop": true},
+        "death": {"blender": "winged_collapse", "loop": false}
+      }
+    }
+  }
+}
