@@ -71,13 +71,33 @@ class RepositoryState(unittest.TestCase):
 
 	def test_vanilla_values(self):
 		data = gfx.PROFILE_DATA
-		self.assertEqual(data["focus"]["canvas"], [100, 88])
-		self.assertEqual(data["idea"]["canvas"], [60, 68])
-		self.assertEqual(data["idea_concern"]["canvas"], [64, 64])
-		self.assertEqual(data["advisor_card"]["canvas"], [65, 67])
-		self.assertEqual(data["decision"]["canvas"], [33, 32])
+		for name, vanilla in (("focus", [100, 88]), ("idea", [60, 68]), ("idea_concern", [64, 64]), ("advisor_card", [65, 67]), ("decision", [33, 32])):
+			assert_vanilla_or_documented_override(self, name, data[name], vanilla)
 		self.assertEqual(data["agency_logo"]["frames"], 2)
 		self.assertEqual(data["gui_texture"]["canvas"], [0, 0])
+
+
+def assert_vanilla_or_documented_override(case, name, row, vanilla):
+	"""A row keeps the vanilla canvas, or a mod overrides it on purpose: the row's source says "override" and the
+	vanilla size is still accepted, so vanilla art keeps passing. A mod's own copy of profiles.json may do that."""
+	if row["canvas"] == vanilla:
+		return
+	case.assertIn("override", row.get("source", "").lower(), f"{name}: canvas {row['canvas']} is not vanilla {vanilla} and the source does not document an override")
+	case.assertIn(vanilla, row.get("accepted", []), f"{name}: an override must keep the vanilla size {vanilla} in accepted")
+
+
+class DocumentedOverrides(unittest.TestCase):
+	"""A mod's own profiles.json may override a pinned row (ZIN keeps 32x32 decisions, Chaos Redux 94x86 focuses)."""
+
+	def test_a_documented_override_that_keeps_vanilla_accepted_passes(self):
+		row = {"canvas": [32, 32], "accepted": [[32, 32], [33, 32]], "source": "Mod override: ZIN draws 32x32 decision icons."}
+		assert_vanilla_or_documented_override(self, "decision", row, [33, 32])
+
+	def test_an_undocumented_change_or_one_that_drops_vanilla_fails(self):
+		for row in ({"canvas": [32, 32], "accepted": [[32, 32], [33, 32]], "source": "Measured on HOI4 1.19.4.1."},
+				{"canvas": [32, 32], "accepted": [[32, 32]], "source": "Mod override."}):
+			with self.assertRaises(AssertionError):
+				assert_vanilla_or_documented_override(self, "decision", row, [33, 32])
 
 
 class KitModFamilyChecks(unittest.TestCase):
@@ -102,7 +122,8 @@ class KitModFamilyChecks(unittest.TestCase):
 		add("interface/test.gfx", "spriteTypes = {\n" + "".join(
 			f'\tspriteType = {{ name = "{name}" texturefile = "gfx/interface/{path}.png" }}\n' for name, path in sprites.items()) + "}\n")
 		add("gfx/interface/goals/good.png", png(*focus))
-		add("gfx/interface/goals/odd.png", png(94, 86))
+		# off the row's own canvas, so a mod that overrides the focus canvas still has an odd focus here
+		add("gfx/interface/goals/odd.png", png(focus[0] - 6, focus[1] - 2))
 		add("gfx/interface/decisions/big.png", png(60, 60))
 		add("gfx/interface/ideas/spirit.png", png(*idea))
 		add("gfx/interface/ideas/concern.png", png(64, 64))
@@ -111,7 +132,7 @@ class KitModFamilyChecks(unittest.TestCase):
 			("GFX-DECISION-SIZE", "warning", "big.png"),
 			("GFX-FOCUS-SIZE", "error", "odd.png"),
 		])
-		self.assertEqual(decision, (33, 32))
+		assert_vanilla_or_documented_override(self, "decision", gfx.PROFILE_DATA["decision"], [33, 32])
 
 
 class ShelfDrift(unittest.TestCase):
