@@ -66,6 +66,7 @@ def main() -> None:
         expect(rig["status"] == "pass", f"rig status {rig['status']}")
         expect(rig["bone_count"] == 27, f"27 bones expected, got {rig['bone_count']}")
         expect(rig["unweighted_vertices"] == 0, "every vertex must be weighted")
+        expect(rig["turned_to_face_minus_y"] is False, "the test horse already faces -Y")
         landmarks = rig["landmarks"]
         expect(abs(landmarks["front_y"] + 0.75) < 0.05 and abs(landmarks["rear_y"] - 0.75) < 0.05, f"hooves at {landmarks['front_y']}, {landmarks['rear_y']}")
         expect(landmarks["tail"] is not None, "the tail was not found")
@@ -87,6 +88,16 @@ def main() -> None:
             expect(result["style"] == style, f"{role} used {result['style']}")
             expect(result["loop"] == (style in quadruped_layout.LOOPING), f"{role} loop flag")
             source = f"{role}.blend"
+        make_horse(job / "backwards.blend")
+        horse = bpy.data.objects["test_horse"]
+        horse.data.transform(Matrix.Rotation(3.141592653589793, 4, "Z"))
+        bpy.ops.wm.save_as_mainfile(filepath=str(job / "backwards.blend"))
+        turned = blender_worker.author_creature_rig({
+            "job_root": str(job),
+            "payload": {"blend_rel": "backwards.blend", "checkpoint_rel": "backwards_rigged.blend", "creature_rig_family": "quadruped"},
+        })
+        expect(turned["turned_to_face_minus_y"] is True, "a horse facing +Y must be turned")
+        expect(turned["landmarks"]["muzzle"][1] < turned["landmarks"]["front_y"], "after the turn the head is toward -Y")
         bpy.ops.wm.open_mainfile(filepath=str(job / source))
         expect(len([action for action in bpy.data.actions if action.name.startswith("test_horse_")]) == 6, "six actions must survive the saves")
     print("quadruped integration: pass")

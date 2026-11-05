@@ -64,6 +64,27 @@ def _largest_gap_split(values: np.ndarray) -> float:
     return float((ordered[index] + ordered[index + 1]) / 2)
 
 
+def faces_plus_y(points: np.ndarray) -> bool:
+    """True when the animal faces +Y: its neck end rises higher than its tail end.
+
+    The ends are the vertices beyond the outermost hooves. HOI4 units face -Y, so the
+    rig turns such a model half a turn about the vertical before measuring it.
+    """
+
+    ground = float(points[:, 2].min())
+    height = float(points[:, 2].max()) - ground
+    hooves = points[points[:, 2] < ground + 0.07 * height]
+    if len(hooves) < 8:
+        raise LandmarkError("fewer than 8 vertices near the ground; the legs may not reach it")
+    low, high = float(hooves[:, 1].min()), float(hooves[:, 1].max())
+    length = float(np.ptp(points[:, 1]))
+    minus_end = points[points[:, 1] < low - 0.02 * length]
+    plus_end = points[points[:, 1] > high + 0.02 * length]
+    top_minus = float(minus_end[:, 2].max()) if len(minus_end) else ground
+    top_plus = float(plus_end[:, 2].max()) if len(plus_end) else ground
+    return top_plus > top_minus
+
+
 def detect_landmarks(points: np.ndarray) -> Dict[str, object]:
     """Find the hooves, belly, back, head, tail and saddle of a standing quadruped."""
 

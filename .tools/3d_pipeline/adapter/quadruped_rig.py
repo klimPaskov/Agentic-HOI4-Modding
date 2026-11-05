@@ -85,6 +85,16 @@ def _jsonable(value: Any) -> Any:
     return value
 
 
+def _turn_half(meshes: List[bpy.types.Object], points: np.ndarray) -> None:
+    """Turn the meshes half a turn about the vertical through their centre and apply it, so they face -Y."""
+
+    centre = Vector(((points[:, 0].min() + points[:, 0].max()) / 2, (points[:, 1].min() + points[:, 1].max()) / 2, 0.0))
+    turn = Matrix.Translation(centre) @ Matrix.Rotation(math.pi, 4, "Z") @ Matrix.Translation(-centre)
+    for obj in meshes:
+        obj.data.transform(obj.matrix_world.inverted() @ turn @ obj.matrix_world)
+        obj.data.update()
+
+
 def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
@@ -98,6 +108,11 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     for existing in h["armatures"]():
         bpy.data.objects.remove(existing, do_unlink=True)
     points, owners = _mesh_points(meshes)
+    turned = False
+    if not payload.get("landmarks") and ql.faces_plus_y(points):
+        _turn_half(meshes, points)
+        points, owners = _mesh_points(meshes)
+        turned = True
     landmarks = _landmarks_from_payload(points, payload)
     layout = ql.build_layout(landmarks)
     if len(layout.bones) > 50:
@@ -170,6 +185,7 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         "vertices_per_bone": per_bone,
         "max_influences": int(indices.shape[1]),
         "unweighted_vertices": unweighted,
+        "turned_to_face_minus_y": turned,
         "weighting": "region-limited inverse fourth power of the distance to each bone segment",
     }
 
