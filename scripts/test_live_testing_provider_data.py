@@ -38,7 +38,23 @@ class LiveTestingContractTests(unittest.TestCase):
         self.assertIn(provider_file,common["source"]["exclude"])
         self.assertEqual(specific["source"]["include"],[provider_file])
         self.assertIn("workflow.live_testing",specific["dependencies"])
-        self.assertIn("workflow.live_testing",by_id["runtime.codex.live_tools_skill"]["dependencies"])
+        skill=by_id["runtime.codex.live_tools_skill"]
+        self.assertIn("workflow.live_tools",skill["dependencies"])
+        self.assertNotIn("workflow.live_testing",skill["dependencies"])
+        self.assertEqual(skill["platforms"],specific["platforms"])
+
+    def test_every_client_live_tools_skill_depends_on_the_provider_component(self):
+        # The per-client copies install hoi4-live-tools.md, which only the HOI4 Live Tools provider owns.
+        # Depending on the provider-neutral workflow.live_testing would ship the file for Clausewitz MCP too,
+        # and the setup sync step then deletes it.
+        manifest=json.loads((ROOT/"hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
+        components={c["id"]:c for c in manifest["components"]}
+        skills=[c for c in manifest["components"] if c["id"].endswith(".live_tools_skill")]
+        self.assertEqual(len(skills),4)
+        for skill in skills:
+            self.assertIn("workflow.live_tools",skill["dependencies"],skill["id"])
+            self.assertNotIn("workflow.live_testing",skill["dependencies"],skill["id"])
+            self.assertEqual(skill["platforms"],components["workflow.live_tools"]["platforms"],skill["id"])
 
     def test_markers_and_neutral_guidance(self):
         for name in ["CLAUDE_template.md","AGENTS_template.md",".claude/skills/hoi4-live-playtest/SKILL.md",".claude/skills/hoi4-debug-playtest/SKILL.md"]:

@@ -62,6 +62,6 @@ def build_live_testing_components(components):
     parameters["expected_writes"]=["%LOCALAPPDATA%/hoi4-live-tools/**"]
     parameters["rollback_boundary"]="Managed project registrations roll back transactionally. The per-user runtime and Python environment are external state; the bootstrap does not register global clients with --register none."
     codex=by_id["runtime.codex.live_tools_skill"]
-    codex["platforms"]=["windows", "macos", "linux"]
-    codex["dependencies"]=["runtime.codex.skills", "workflow.live_testing"]
+    codex["platforms"]=["windows"]
+    codex["dependencies"]=["runtime.codex.skills", "workflow.live_tools"]
     return [common, live, codex]
