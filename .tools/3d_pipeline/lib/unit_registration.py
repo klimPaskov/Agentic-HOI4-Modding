@@ -16,6 +16,8 @@ from typing import Dict, List, Optional
 STATE_TO_ROLE = {
     "idle": "idle",
     "move": "move",
+    "move_snow": "move",
+    "move_mud": "move",
     "attack": "attack",
     "defend": "defend",
     "support_attack": "attack",
@@ -23,10 +25,17 @@ STATE_TO_ROLE = {
     "training": "idle",
     "death": "death",
 }
+# The states each vanilla entity family declares [vanilla-confirmed 1.19.4.1]: units_infantry.asset,
+# units_cavalry.asset (no death state) and units_tanks.asset (move_snow and move_mud, no death state).
+STATE_SETS = {
+    "infantry": ["idle", "move", "attack", "defend", "support_attack", "retreat", "training", "death"],
+    "cavalry": ["idle", "move", "attack", "support_attack", "defend", "retreat", "training"],
+    "armor": ["idle", "move", "move_snow", "move_mud", "retreat", "attack", "defend", "support_attack", "training"],
+}
 NON_LOOPING = {"attack", "death"}
 
 
-def pdxmesh_block(stem: str, model_folder: str, shape_names: List[str], roles: List[str]) -> str:
+def pdxmesh_block(stem: str, model_folder: str, shape_names: List[str], roles: List[str], states: Optional[List[str]] = None) -> str:
     lines = ["\tpdxmesh = {", f'\t\tname = "{stem}_mesh"', f'\t\tfile = "{model_folder}/{stem}.mesh"']
     for index, shape in enumerate(shape_names):
         lines += [
@@ -52,9 +61,18 @@ def animation_blocks(stem: str, roles: List[str]) -> str:
     )
 
 
-def entity_block(name: str, stem: str, roles: List[str], scale: float, attach: Optional[Dict[str, str]] = None, move_sound: str = "") -> str:
+def entity_block(
+    name: str,
+    stem: str,
+    roles: List[str],
+    scale: float,
+    attach: Optional[Dict[str, str]] = None,
+    move_sound: str = "",
+    states: Optional[List[str]] = None,
+) -> str:
     lines = ["entity = {", f'\tname = "{name}"', f'\tpdxmesh = "{stem}_mesh"', '\tdefault_state = "idle"']
-    for state, role in STATE_TO_ROLE.items():
+    for state in states or STATE_SETS["infantry"]:
+        role = STATE_TO_ROLE[state]
         if role not in roles:
             continue
         extra = " looping = no" if role in NON_LOOPING else ""
@@ -83,6 +101,7 @@ def registration_text(
     template: str,
     rider: Optional[Dict[str, object]] = None,
     move_sound: str = "",
+    state_set: str = "infantry",
 ) -> str:
     """Markdown with the three blocks to wire one unit; a mount also wires its rider."""
 
@@ -94,21 +113,21 @@ def registration_text(
         f"## `.gfx` (for example `gfx/entities/<mod>_units.gfx`, inside `objectTypes = {{ }}`)",
         "",
         "```",
-        pdxmesh_block(stem, model_folder, shapes, roles),
+        pdxmesh_block(stem, model_folder, shapes, roles, STATE_SETS[state_set]),
     ]
     if rider:
-        parts.append(pdxmesh_block(str(rider["stem"]), str(rider["model_folder"]), list(rider["shapes"]), list(rider["roles"])))  # type: ignore[arg-type]
+        parts.append(pdxmesh_block(str(rider["stem"]), str(rider["model_folder"]), list(rider["shapes"]), list(rider["roles"]), STATE_SETS[state_set]))  # type: ignore[arg-type]
     parts += ["```", "", f"## `{model_folder}/{stem}.asset`", "", "```", animation_blocks(stem, roles), "```"]
     if rider:
         parts += ["", f"## `{rider['model_folder']}/{rider['stem']}.asset`", "", "```", animation_blocks(str(rider["stem"]), list(rider["roles"])), "```"]  # type: ignore[arg-type]
     parts += ["", "## Entities (`gfx/entities/<mod>_units.asset`)", "", "```"]
     if template == "mount" and rider:
         rider_entity = f"{rider['stem']}_entity"
-        parts.append(entity_block(unit_entity, stem, roles, scale, attach={"Saddle_Node": rider_entity}, move_sound=move_sound))
+        parts.append(entity_block(unit_entity, stem, roles, scale, attach={"Saddle_Node": rider_entity}, move_sound=move_sound, states=STATE_SETS[state_set]))
         parts.append("")
-        parts.append(entity_block(rider_entity, str(rider["stem"]), list(rider["roles"]), float(rider.get("scale", 1.0))))  # type: ignore[arg-type]
+        parts.append(entity_block(rider_entity, str(rider["stem"]), list(rider["roles"]), float(rider.get("scale", 1.0)), states=STATE_SETS[state_set]))  # type: ignore[arg-type]
     else:
-        parts.append(entity_block(unit_entity, stem, roles, scale, move_sound=move_sound))
+        parts.append(entity_block(unit_entity, stem, roles, scale, move_sound=move_sound, states=STATE_SETS[state_set]))
     parts += [
         "```",
         "",

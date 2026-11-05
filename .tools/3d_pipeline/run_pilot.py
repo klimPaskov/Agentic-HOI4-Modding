@@ -3541,6 +3541,7 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         roles=roles,
         scale=float(spec.get("runtime_entity_scale", 1.0)),
         template=(unit or {}).get("entity_template", "infantry"),
+        state_set=str(spec.get("entity_state_set") or {"mount": "cavalry", "rider": "cavalry"}.get((unit or {}).get("entity_template", ""), "infantry")),
     )
     (job / "runtime" / "registration.md").write_text(text, encoding="utf-8")
     report = {"files": records, "check": {"errors": errors, "warnings": [item.__dict__ for item in findings if item.severity != "error"]}, "facts": facts}
