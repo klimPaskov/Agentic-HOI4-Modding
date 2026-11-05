@@ -334,7 +334,7 @@
       "generation": {
         "ai_model": "meshy-7",
         "model_type": "standard",
-        "target_polycount": 30000,
+        "target_polycount": 21000,
         "target_polycount_applies": false,
         "should_remesh": false,
         "texture_resolution": "2k",
@@ -365,7 +365,7 @@
         "preferred_min": 10000,
         "preferred_max": 45000,
         "hard_max": 90000,
-        "working_triangle_target": 30000
+        "working_triangle_target": 21000
       },
       "controlled_reduction_allowed": true,
       "materials": {
@@ -397,7 +397,8 @@
         "max_boundary_edges": "measured 2489 in 451 small loops of at most 19 edges, the open edges of barding plates, straps and saddle flaps; the bounded hole fill capped 367 of them and rolled every cap back because capping made the shells non-manifold. Limit 2700 is the measurement plus about 8 percent",
         "max_loose_components": "measured 4 (separate strap and stirrup parts); limit 8 matches the humanoid profile",
         "max_residual_zero_weight_vertices": "limit 0, unchanged",
-        "review": "the remeshed previews show an intact horse with no visible hole; recalibrate when more creatures are measured"
+        "review": "the remeshed previews show an intact horse with no visible hole; recalibrate when more creatures are measured",
+        "working_triangle_target": "21,000 like humanoid_unit: the exporter keeps one stream under 65,535 triangle-index entries (63,000 at 21,000 triangles); the knights' warhorse at 29,833 triangles needed 89,499"
       },
       "exceptions": [],
       "rig_route": "blender_custom_creature_rig",
