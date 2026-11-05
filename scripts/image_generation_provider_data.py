@@ -29,7 +29,77 @@ IMAGEGEN_CREDENTIAL_FIELDS = [
     {"id": "gemini_api_key", "display_name": "Gemini API key", "environment_name": "GEMINI_API_KEY"},
     {"id": "fal_key", "display_name": "fal key", "environment_name": "FAL_KEY"},
     {"id": "comfyui_api_key", "display_name": "ComfyUI API key", "environment_name": "COMFYUI_API_KEY"},
+    {"id": "replicate_api_token", "display_name": "Replicate API token", "environment_name": "REPLICATE_API_TOKEN"},
+    {"id": "bfl_api_key", "display_name": "Black Forest Labs API key", "environment_name": "BFL_API_KEY"},
+    {"id": "leonardo_api_key", "display_name": "Leonardo API key", "environment_name": "LEONARDO_API_KEY"},
+    {"id": "stability_api_key", "display_name": "Stability API key", "environment_name": "STABILITY_API_KEY"},
+    {"id": "ideogram_api_key", "display_name": "Ideogram API key", "environment_name": "IDEOGRAM_API_KEY"},
+    {"id": "recraft_api_key", "display_name": "Recraft API key", "environment_name": "RECRAFT_API_KEY"},
+    {"id": "xai_api_key", "display_name": "xAI API key", "environment_name": "XAI_API_KEY"},
+    {"id": "together_api_key", "display_name": "Together API key", "environment_name": "TOGETHER_API_KEY"},
+    {"id": "openrouter_api_key", "display_name": "OpenRouter API key", "environment_name": "OPENROUTER_API_KEY"},
+    {"id": "huggingface_token", "display_name": "Hugging Face token", "environment_name": "HF_TOKEN"},
+    {"id": "openai_compatible_api_key", "display_name": "OpenAI-compatible server API key", "environment_name": "OPENAI_COMPATIBLE_API_KEY"},
 ]
+
+COMFYUI_DEFAULT_ENDPOINT = "http://127.0.0.1:8188"
+COMFYUI_DEFAULT_WORKFLOW = ".hoi4-imagegen/comfyui/text_to_image.json"
+SDWEBUI_DEFAULT_ENDPOINT = "http://127.0.0.1:7860"
+
+
+def _endpoint(provider: str) -> dict:
+    default = COMFYUI_DEFAULT_ENDPOINT if provider == "comfyui" else SDWEBUI_DEFAULT_ENDPOINT
+    return {"key": f"providers.{provider}.endpoint", "kind": "url", "required": True, "default": default}
+
+
+# The backends HOI4 Mod Setup offers for the hoi4-imagegen route, in display order. The keys are the
+# environment variables hoi4-imagegen reads (`key_env_names`), the settings are the values it reads from
+# `.hoi4-imagegen/config.toml`, and `replaces_providers` names the older stand-alone rows each one supersedes.
+# Only the ChatGPT sign-in has been verified against the real service.
+IMAGEGEN_BACKENDS = [
+    {"id": "chatgpt_login", "display_name": "ChatGPT sign-in", "default": True, "credential_field": None,
+     "live_verified": True},
+    {"id": "openai", "display_name": "OpenAI Images API", "credential_field": "openai_api_key", "replaces_providers": ["openai_api"]},
+    {"id": "gemini", "display_name": "Google Gemini", "credential_field": "gemini_api_key", "replaces_providers": ["gemini_api"]},
+    {"id": "fal", "display_name": "fal.ai", "credential_field": "fal_key", "replaces_providers": ["fal_ai"]},
+    {"id": "comfyui", "display_name": "ComfyUI (local server)", "credential_field": "comfyui_api_key",
+     "settings": [_endpoint("comfyui"),
+                  {"key": "providers.comfyui.workflow", "kind": "project_path", "required": True, "default": COMFYUI_DEFAULT_WORKFLOW}],
+     "replaces_providers": ["comfyui_local"]},
+    {"id": "replicate", "display_name": "Replicate", "credential_field": "replicate_api_token", "replaces_providers": ["replicate"]},
+    {"id": "bfl", "display_name": "Black Forest Labs", "credential_field": "bfl_api_key", "replaces_providers": ["black_forest_labs"]},
+    {"id": "leonardo", "display_name": "Leonardo", "credential_field": "leonardo_api_key", "replaces_providers": ["leonardo"]},
+    {"id": "stability", "display_name": "Stability AI", "credential_field": "stability_api_key", "replaces_providers": ["stability_ai"]},
+    {"id": "ideogram", "display_name": "Ideogram", "credential_field": "ideogram_api_key", "replaces_providers": ["ideogram"]},
+    {"id": "recraft", "display_name": "Recraft", "credential_field": "recraft_api_key", "replaces_providers": ["recraft"]},
+    {"id": "xai", "display_name": "xAI Grok", "credential_field": "xai_api_key", "replaces_providers": ["xai_grok"]},
+    {"id": "together", "display_name": "Together AI", "credential_field": "together_api_key", "replaces_providers": ["together_ai"]},
+    {"id": "openrouter", "display_name": "OpenRouter", "credential_field": "openrouter_api_key", "replaces_providers": ["openrouter"]},
+    {"id": "huggingface", "display_name": "Hugging Face", "credential_field": "huggingface_token", "replaces_providers": ["huggingface_inference"]},
+    {"id": "openai_compatible", "display_name": "OpenAI-compatible server", "credential_field": "openai_compatible_api_key",
+     "settings": [{"key": "providers.openai_compatible.base_url", "kind": "url", "required": True},
+                  {"key": "providers.openai_compatible.model", "kind": "text", "required": True}]},
+    {"id": "automatic1111", "display_name": "Automatic1111 WebUI (local server)", "credential_field": None,
+     "settings": [_endpoint("automatic1111")], "replaces_providers": ["automatic1111_local"]},
+    {"id": "forge", "display_name": "Stable Diffusion WebUI Forge (local server)", "credential_field": None,
+     "settings": [_endpoint("forge")], "replaces_providers": ["forge_local"]},
+]
+
+
+def build_imagegen_backends() -> list[dict]:
+    """The `route.backends` declaration, every entry complete."""
+    backends = []
+    for entry in IMAGEGEN_BACKENDS:
+        backends.append({
+            "id": entry["id"],
+            "display_name": entry["display_name"],
+            "default": entry.get("default", False),
+            "credential_field": entry["credential_field"],
+            "replaces_providers": list(entry.get("replaces_providers", [])),
+            "settings": [dict(setting) for setting in entry.get("settings", [])],
+            "live_verified": entry.get("live_verified", False),
+        })
+    return backends
 
 
 def build_imagegen_release_binary(version: str = IMAGEGEN_VERSION) -> dict:
@@ -56,7 +126,7 @@ def _route(provider_id: str, auth: str, *, kind: str = "stdio_adapter", componen
            supported_models: list[str] | None = None,
            result_format: str | None = None, primary_environment: str | None = None,
            server_id: str | None = None, credential_fields: list[dict] | None = None,
-           release_binary: dict | None = None) -> dict:
+           release_binary: dict | None = None, backends: list[dict] | None = None) -> dict:
     value = {
         "kind": kind,
         "auth_method": auth,
@@ -98,6 +168,8 @@ def _route(provider_id: str, auth: str, *, kind: str = "stdio_adapter", componen
     }
     if release_binary is not None:
         value["release_binary"] = release_binary
+    if backends is not None:
+        value["backends"] = backends
     return value
 
 
@@ -265,6 +337,7 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
                 source_repository="https://github.com/klimPaskov/hoi4-imagegen-mcp",
                 package_name="hoi4-imagegen", package_version=IMAGEGEN_VERSION,
                 credential_fields=IMAGEGEN_CREDENTIAL_FIELDS, release_binary=build_imagegen_release_binary(),
+                backends=build_imagegen_backends(),
                 tools={"status": "hoi4.image_status", "families": "hoi4.image_families", "references": "hoi4.image_references",
                        "icon": "hoi4.image_icon", "picture": "hoi4.image_picture", "portrait": "hoi4.image_portrait",
                        "flag": "hoi4.image_flag", "unit": "hoi4.image_unit", "interface": "hoi4.image_interface",

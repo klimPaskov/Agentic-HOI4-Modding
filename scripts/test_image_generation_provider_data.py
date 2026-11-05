@@ -123,7 +123,13 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
         self.assertEqual(
             [(field["id"], field["environment_name"]) for field in route["credential_fields"]],
             [("openai_api_key", "OPENAI_API_KEY"), ("gemini_api_key", "GEMINI_API_KEY"),
-             ("fal_key", "FAL_KEY"), ("comfyui_api_key", "COMFYUI_API_KEY")])
+             ("fal_key", "FAL_KEY"), ("comfyui_api_key", "COMFYUI_API_KEY"),
+             ("replicate_api_token", "REPLICATE_API_TOKEN"), ("bfl_api_key", "BFL_API_KEY"),
+             ("leonardo_api_key", "LEONARDO_API_KEY"), ("stability_api_key", "STABILITY_API_KEY"),
+             ("ideogram_api_key", "IDEOGRAM_API_KEY"), ("recraft_api_key", "RECRAFT_API_KEY"),
+             ("xai_api_key", "XAI_API_KEY"), ("together_api_key", "TOGETHER_API_KEY"),
+             ("openrouter_api_key", "OPENROUTER_API_KEY"), ("huggingface_token", "HF_TOKEN"),
+             ("openai_compatible_api_key", "OPENAI_COMPATIBLE_API_KEY")])
         binary = route["release_binary"]
         self.assertEqual(binary["version"], route["package_version"])
         self.assertEqual(binary["install_root"], ".tools/image_generation/hoi4-imagegen")
@@ -148,6 +154,74 @@ class ImageGenerationProviderDataTests(unittest.TestCase):
                          (18495432, "c17958f15474601d50d5eed6a5edf5c177814d2be80571fc6d4d498e4b881eb9"))
         self.assertEqual(providers["hoi4_imagegen"]["reference_mcp"]["version"], "0.3.2")
         self.assertNotIn("release_binary", providers["openai_api"]["route"], "only the hoi4-imagegen route installs a release binary")
+
+    # The key variable hoi4-imagegen v0.3.2 reads per backend (`key_env_names` in imagegen-providers/src/registry.rs).
+    IMAGEGEN_KEY_VARIABLES = {
+        "chatgpt_login": None, "openai": "OPENAI_API_KEY", "gemini": "GEMINI_API_KEY", "fal": "FAL_KEY",
+        "comfyui": "COMFYUI_API_KEY", "replicate": "REPLICATE_API_TOKEN", "bfl": "BFL_API_KEY",
+        "leonardo": "LEONARDO_API_KEY", "stability": "STABILITY_API_KEY", "ideogram": "IDEOGRAM_API_KEY",
+        "recraft": "RECRAFT_API_KEY", "xai": "XAI_API_KEY", "together": "TOGETHER_API_KEY",
+        "openrouter": "OPENROUTER_API_KEY", "huggingface": "HF_TOKEN",
+        "openai_compatible": "OPENAI_COMPATIBLE_API_KEY", "automatic1111": None, "forge": None,
+    }
+
+    def _imagegen_route(self) -> dict:
+        providers = {item["id"]: item for item in build_image_generation_table(ROOT)["providers"]}
+        return providers["hoi4_imagegen"]["route"]
+
+    def test_hoi4_imagegen_backends_come_in_the_published_order_and_only_the_chatgpt_login_is_verified(self) -> None:
+        backends = self._imagegen_route()["backends"]
+        self.assertEqual([item["id"] for item in backends], list(self.IMAGEGEN_KEY_VARIABLES))
+        self.assertEqual([item["id"] for item in backends if item["default"]], ["chatgpt_login"])
+        self.assertEqual([item["id"] for item in backends if item["live_verified"]], ["chatgpt_login"])
+        self.assertTrue(all(item["display_name"].strip() for item in backends))
+
+    def test_hoi4_imagegen_backend_keys_match_the_names_hoi4_imagegen_reads(self) -> None:
+        route = self._imagegen_route()
+        fields = {field["id"]: field["environment_name"] for field in route["credential_fields"]}
+        for backend in route["backends"]:
+            with self.subTest(backend=backend["id"]):
+                field = backend["credential_field"]
+                expected = self.IMAGEGEN_KEY_VARIABLES[backend["id"]]
+                if expected is None:
+                    self.assertIsNone(field)
+                else:
+                    self.assertEqual(fields[field], expected)
+        used = {item["credential_field"] for item in route["backends"] if item["credential_field"]}
+        self.assertEqual(used, set(fields), "every credential field belongs to a backend")
+
+    def test_hoi4_imagegen_backend_settings_are_typed_and_inside_the_provider_section(self) -> None:
+        settings = {}
+        for backend in self._imagegen_route()["backends"]:
+            for setting in backend["settings"]:
+                self.assertIn(setting["kind"], {"url", "project_path", "text"})
+                self.assertTrue(setting["key"].startswith(f"providers.{backend['id']}."), setting["key"])
+                settings[setting["key"]] = setting["kind"]
+        self.assertEqual(settings, {
+            "providers.comfyui.endpoint": "url", "providers.comfyui.workflow": "project_path",
+            "providers.openai_compatible.base_url": "url", "providers.openai_compatible.model": "text",
+            "providers.automatic1111.endpoint": "url", "providers.forge.endpoint": "url"})
+
+    def test_hoi4_imagegen_backends_replace_only_existing_provider_rows_once(self) -> None:
+        table = build_image_generation_table(ROOT)
+        rows = {item["id"] for item in table["providers"]}
+        claimed: list[str] = []
+        for backend in self._imagegen_route()["backends"]:
+            for legacy in backend["replaces_providers"]:
+                self.assertIn(legacy, rows)
+                self.assertNotEqual(legacy, "hoi4_imagegen")
+                claimed.append(legacy)
+        self.assertEqual(len(claimed), len(set(claimed)))
+        self.assertFalse({"adobe_firefly", "microsoft_foundry", "aws_bedrock", "codex_native", "midjourney_manual", "none"} & set(claimed))
+
+    def test_the_vendored_schema_rejects_a_malformed_backend(self) -> None:
+        table = build_image_generation_table(ROOT)
+        instance = json.loads((ROOT / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
+        instance["schema_version"] = "6.0.0"
+        route = next(item for item in table["providers"] if item["id"] == "hoi4_imagegen")["route"]
+        route["backends"][4]["settings"][0]["kind"] = "file"
+        instance["image_generation"] = table
+        self.assertNotEqual(list(Draft202012Validator(self.schema).iter_errors(instance)), [])
 
     def test_hoi4_imagegen_component_is_a_generated_managed_mcp_component(self) -> None:
         components = {item["id"]: item for item in build_image_generation_components(ROOT)}

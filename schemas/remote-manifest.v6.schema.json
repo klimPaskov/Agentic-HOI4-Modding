@@ -1415,6 +1415,86 @@
         },
         "release_binary": {
           "$ref": "#/$defs/imageGenerationReleaseBinary"
+        },
+        "backends": {
+          "type": "array",
+          "maxItems": 32,
+          "description": "The backends a release_binary route can generate with (hoi4-imagegen), the default marked. Each credential_field names an entry of credential_fields. Setup derives the list from credential_fields when absent.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "display_name"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9_]{1,64}$"
+              },
+              "display_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "default": {
+                "type": "boolean"
+              },
+              "credential_field": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "replaces_providers": {
+                "type": "array",
+                "maxItems": 32,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9_]{1,64}$"
+                }
+              },
+              "settings": {
+                "type": "array",
+                "maxItems": 8,
+                "description": "Values the backend reads from .hoi4-imagegen/config.toml, written under the dotted key. The key starts with providers. and the kind is url (https, or http on this computer) or project_path (a .json path inside the project).",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "key",
+                    "kind"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "pattern": "^providers(\\.[a-z][a-z0-9_]*){2,3}$"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "url",
+                        "project_path",
+                        "text"
+                      ]
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "default": {
+                      "type": "string",
+                      "maxLength": 300
+                    }
+                  }
+                }
+              },
+              "live_verified": {
+                "type": "boolean",
+                "description": "False when the backend has not been verified against the real service; Setup shows an untested hint."
+              }
+            }
+          }
         }
       }
     },

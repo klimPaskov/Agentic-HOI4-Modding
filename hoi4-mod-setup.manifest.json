@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "aaacb982940c1a581db3cf94db82cc9fc674c833",
+  "generated_for_revision": "ee3c12b88a4d3e399d19db61f3bbdabf32d67cf2",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -32858,6 +32858,61 @@
               "id": "comfyui_api_key",
               "display_name": "ComfyUI API key",
               "environment_name": "COMFYUI_API_KEY"
+            },
+            {
+              "id": "replicate_api_token",
+              "display_name": "Replicate API token",
+              "environment_name": "REPLICATE_API_TOKEN"
+            },
+            {
+              "id": "bfl_api_key",
+              "display_name": "Black Forest Labs API key",
+              "environment_name": "BFL_API_KEY"
+            },
+            {
+              "id": "leonardo_api_key",
+              "display_name": "Leonardo API key",
+              "environment_name": "LEONARDO_API_KEY"
+            },
+            {
+              "id": "stability_api_key",
+              "display_name": "Stability API key",
+              "environment_name": "STABILITY_API_KEY"
+            },
+            {
+              "id": "ideogram_api_key",
+              "display_name": "Ideogram API key",
+              "environment_name": "IDEOGRAM_API_KEY"
+            },
+            {
+              "id": "recraft_api_key",
+              "display_name": "Recraft API key",
+              "environment_name": "RECRAFT_API_KEY"
+            },
+            {
+              "id": "xai_api_key",
+              "display_name": "xAI API key",
+              "environment_name": "XAI_API_KEY"
+            },
+            {
+              "id": "together_api_key",
+              "display_name": "Together API key",
+              "environment_name": "TOGETHER_API_KEY"
+            },
+            {
+              "id": "openrouter_api_key",
+              "display_name": "OpenRouter API key",
+              "environment_name": "OPENROUTER_API_KEY"
+            },
+            {
+              "id": "huggingface_token",
+              "display_name": "Hugging Face token",
+              "environment_name": "HF_TOKEN"
+            },
+            {
+              "id": "openai_compatible_api_key",
+              "display_name": "OpenAI-compatible server API key",
+              "environment_name": "OPENAI_COMPATIBLE_API_KEY"
             }
           ],
           "requires_primary_coding_environment": null,
@@ -32916,7 +32971,241 @@
                 }
               }
             }
-          }
+          },
+          "backends": [
+            {
+              "id": "chatgpt_login",
+              "display_name": "ChatGPT sign-in",
+              "default": true,
+              "credential_field": null,
+              "replaces_providers": [],
+              "settings": [],
+              "live_verified": true
+            },
+            {
+              "id": "openai",
+              "display_name": "OpenAI Images API",
+              "default": false,
+              "credential_field": "openai_api_key",
+              "replaces_providers": [
+                "openai_api"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "gemini",
+              "display_name": "Google Gemini",
+              "default": false,
+              "credential_field": "gemini_api_key",
+              "replaces_providers": [
+                "gemini_api"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "fal",
+              "display_name": "fal.ai",
+              "default": false,
+              "credential_field": "fal_key",
+              "replaces_providers": [
+                "fal_ai"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "comfyui",
+              "display_name": "ComfyUI (local server)",
+              "default": false,
+              "credential_field": "comfyui_api_key",
+              "replaces_providers": [
+                "comfyui_local"
+              ],
+              "settings": [
+                {
+                  "key": "providers.comfyui.endpoint",
+                  "kind": "url",
+                  "required": true,
+                  "default": "http://127.0.0.1:8188"
+                },
+                {
+                  "key": "providers.comfyui.workflow",
+                  "kind": "project_path",
+                  "required": true,
+                  "default": ".hoi4-imagegen/comfyui/text_to_image.json"
+                }
+              ],
+              "live_verified": false
+            },
+            {
+              "id": "replicate",
+              "display_name": "Replicate",
+              "default": false,
+              "credential_field": "replicate_api_token",
+              "replaces_providers": [
+                "replicate"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "bfl",
+              "display_name": "Black Forest Labs",
+              "default": false,
+              "credential_field": "bfl_api_key",
+              "replaces_providers": [
+                "black_forest_labs"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "leonardo",
+              "display_name": "Leonardo",
+              "default": false,
+              "credential_field": "leonardo_api_key",
+              "replaces_providers": [
+                "leonardo"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "stability",
+              "display_name": "Stability AI",
+              "default": false,
+              "credential_field": "stability_api_key",
+              "replaces_providers": [
+                "stability_ai"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "ideogram",
+              "display_name": "Ideogram",
+              "default": false,
+              "credential_field": "ideogram_api_key",
+              "replaces_providers": [
+                "ideogram"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "recraft",
+              "display_name": "Recraft",
+              "default": false,
+              "credential_field": "recraft_api_key",
+              "replaces_providers": [
+                "recraft"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "xai",
+              "display_name": "xAI Grok",
+              "default": false,
+              "credential_field": "xai_api_key",
+              "replaces_providers": [
+                "xai_grok"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "together",
+              "display_name": "Together AI",
+              "default": false,
+              "credential_field": "together_api_key",
+              "replaces_providers": [
+                "together_ai"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "openrouter",
+              "display_name": "OpenRouter",
+              "default": false,
+              "credential_field": "openrouter_api_key",
+              "replaces_providers": [
+                "openrouter"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "huggingface",
+              "display_name": "Hugging Face",
+              "default": false,
+              "credential_field": "huggingface_token",
+              "replaces_providers": [
+                "huggingface_inference"
+              ],
+              "settings": [],
+              "live_verified": false
+            },
+            {
+              "id": "openai_compatible",
+              "display_name": "OpenAI-compatible server",
+              "default": false,
+              "credential_field": "openai_compatible_api_key",
+              "replaces_providers": [],
+              "settings": [
+                {
+                  "key": "providers.openai_compatible.base_url",
+                  "kind": "url",
+                  "required": true
+                },
+                {
+                  "key": "providers.openai_compatible.model",
+                  "kind": "text",
+                  "required": true
+                }
+              ],
+              "live_verified": false
+            },
+            {
+              "id": "automatic1111",
+              "display_name": "Automatic1111 WebUI (local server)",
+              "default": false,
+              "credential_field": null,
+              "replaces_providers": [
+                "automatic1111_local"
+              ],
+              "settings": [
+                {
+                  "key": "providers.automatic1111.endpoint",
+                  "kind": "url",
+                  "required": true,
+                  "default": "http://127.0.0.1:7860"
+                }
+              ],
+              "live_verified": false
+            },
+            {
+              "id": "forge",
+              "display_name": "Stable Diffusion WebUI Forge (local server)",
+              "default": false,
+              "credential_field": null,
+              "replaces_providers": [
+                "forge_local"
+              ],
+              "settings": [
+                {
+                  "key": "providers.forge.endpoint",
+                  "kind": "url",
+                  "required": true,
+                  "default": "http://127.0.0.1:7860"
+                }
+              ],
+              "live_verified": false
+            }
+          ]
         },
         "capabilities": {
           "reference_images": {
