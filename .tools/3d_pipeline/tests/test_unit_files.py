@@ -205,5 +205,29 @@ class UnitTypeActions(unittest.TestCase):
             run_pilot.apply_unit_type({"unit_type": "dragon_knight"})
 
 
+class JobStatus(unittest.TestCase):
+    def test_status_names_the_next_command(self) -> None:
+        import run_pilot
+
+        with tempfile.TemporaryDirectory() as name:
+            root = Path(name)
+            original = run_pilot.resolve_job_root
+            run_pilot.resolve_job_root = lambda slug: root / slug
+            try:
+                fresh = run_pilot.job_status("unit_a", {"unit_type": "archer"}, Path("docs/plans/x/3d_jobs.json"))
+                self.assertEqual(fresh["state"], "not_initialized")
+                self.assertIn("init_pilot_jobs.py", fresh["next"])
+                job = root / "unit_b"
+                (job / "provider" / "submissions").mkdir(parents=True)
+                (job / "validation").mkdir()
+                (job / "job.yaml").write_text(json.dumps({"status": "provider_running"}), encoding="utf-8")
+                (job / "validation" / "reference_preflight.json").write_text(json.dumps({"status": "passed"}), encoding="utf-8")
+                (job / "provider" / "submissions" / "rig.json").write_text(json.dumps({"state": "uncertain"}), encoding="utf-8")
+                stuck = run_pilot.job_status("unit_b", {}, Path("jobs.json"))
+                self.assertIn("Reconcile", stuck["next"])
+            finally:
+                run_pilot.resolve_job_root = original
+
+
 if __name__ == "__main__":
     unittest.main()

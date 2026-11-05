@@ -70,6 +70,7 @@ from lib.texture_lineage import (
 from lib.reuse import (
     block_message,
     copy_artifacts,
+    BLOCKING_STATES,
     find_other_job_result,
     sibling_jobs,
     unreconciled_submissions,
@@ -1682,6 +1683,11 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
             "reimport": reimports,
         },
     )
+    staged = (
+        stage_runtime_files(job, spec, {"mesh": mesh_rel, "animations": {role: report["output_rel"] for role, report in action_reports.items()}})
+        if spec.get("unit_type")
+        else None
+    )
     return {
         "components": components,
         "rig": rig,
@@ -1690,6 +1696,7 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
         "animation_exports": animation_exports,
         "action_reports": action_reports,
         "reimport": reimports,
+        "runtime": staged["check"] if staged else None,
     }
 
 
@@ -3439,7 +3446,108 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         details={"unit_type": spec["unit_type"], "library": library, "final_checkpoint": chain, "mesh": file_record(job / mesh_rel, relative_to=job)},
     )
     write_json(job / "blender" / "reports" / "unit_roles.json", {"unit_type": spec["unit_type"], "final_checkpoint": chain, "roles": roles})
-    return {"unit_type": spec["unit_type"], "mesh_export": mesh_export, "textures": textures, "roles": roles, "final_checkpoint": chain}
+    staged = stage_runtime_files(job, spec, {"mesh": mesh_rel, "animations": exports})
+    return {"unit_type": spec["unit_type"], "mesh_export": mesh_export, "textures": textures, "roles": roles, "final_checkpoint": chain, "runtime": staged["check"]}
+
+
+def job_status(slug: str, spec: Dict[str, Any], jobs_config: Path) -> Dict[str, Any]:
+    """Where one job stands and the next command to run. Reads files only; no key, no provider call."""
+
+    job = resolve_job_root(slug)
+    config = jobs_config.as_posix()
+    run = f"py -3.13 -B .tools/3d_pipeline/run_pilot.py --jobs-config {config} {slug}"
+    result: Dict[str, Any] = {"asset": slug, "job_root": job.as_posix(), "unit_type": spec.get("unit_type")}
+    if not (job / "job.yaml").is_file():
+        result.update(state="not_initialized", next=f"py -3.13 -B .tools/3d_pipeline/init_pilot_jobs.py --jobs-config {config} {slug}")
+        return result
+    document = read_job_document(job / "job.yaml")
+    result["state"] = document.get("status")
+    history = job / "history.jsonl"
+    if history.is_file():
+        lines = [line for line in history.read_text(encoding="utf-8").splitlines() if line.strip()]
+        result["last_events"] = [
+            {key: entry.get(key) for key in ("timestamp", "state", "event")}
+            for entry in (json.loads(line) for line in lines[-3:])
+        ]
+    preflight = job / "validation" / "reference_preflight.json"
+    pending = sorted(
+        path.name
+        for path in (job / "provider" / "submissions").glob("*.json")
+        if read_json(path).get("state") in BLOCKING_STATES
+    )
+    ledger = read_ledger(job)
+    result["credits_consumed"] = sum(int(row.get("consumed_credits") or 0) for row in ledger)
+    result["credit_budget"] = spec.get("credit_budget")
+    exports = document.get("exports") or {}
+    if not preflight.is_file() or read_json(preflight).get("status") != "passed":
+        result["next"] = (
+            "Look at refs/original/meshy_input.png, answer the six visual checks in a JSON file, then: "
+            f"py -3.13 -B .tools/3d_pipeline/init_pilot_jobs.py --jobs-config {config} --record-visual-review {slug} "
+            "--reviewer <name> --review-file <answers.json>"
+        )
+    elif pending:
+        result["next"] = (
+            f"Reconcile the uncertain paid submissions first ({', '.join(pending)}): read each task in the Meshy "
+            "task list and record it with lib.reuse.reconcile_submission. Never submit the stage again."
+        )
+    elif not exports.get("mesh"):
+        candidate = job / "blender" / "reports" / f"{spec.get('runtime_stem', slug)}_candidate_prepare.json"
+        result["next"] = (
+            f"{run} --phase candidate   (then review the previews in blender/previews before the full run)"
+            if not candidate.is_file()
+            else f"{run}   (paid stages that already succeeded are reused, never paid twice)"
+        )
+    else:
+        result["exports"] = exports
+        result["next"] = (
+            f"Copy {(job / 'runtime' / 'files').as_posix()} into the mod's model folder, paste runtime/registration.md, "
+            "then run check_unit_files.py on that folder with --mod-root ."
+        )
+    return result
+
+
+def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]) -> Dict[str, Any]:
+    """Copy the selected exports into runtime/files under their final names, check them and write the registration."""
+
+    import check_unit_files
+    from lib.unit_registration import registration_text
+
+    stem = spec["runtime_stem"]
+    staged = job / "runtime" / "files"
+    staged.mkdir(parents=True, exist_ok=True)
+    copies = {f"{stem}.mesh": job / exports["mesh"]}
+    for role, rel in exports["animations"].items():
+        copies[f"{stem}_{role}.anim"] = job / rel
+    for image, suffix in (("texture_0", "diffuse"), ("texture_normal", "normal"), ("texture_specular", "specular")):
+        source = job / "textures" / "dds" / f"{image}.dds"
+        if source.is_file():
+            copies[f"{stem}_{suffix}.dds"] = source
+    records = {}
+    for name, source in copies.items():
+        shutil.copy2(source, staged / name)
+        records[name] = {"source": file_record(source, relative_to=job), "staged": file_record(staged / name, relative_to=job)}
+    unit = load_unit_types().get(spec.get("unit_type") or "")
+    profile = load_profile(spec["profile"])
+    findings, facts = check_unit_files.check_files(staged, unit, profile)
+    errors = [item.__dict__ for item in findings if item.severity == "error"]
+    shapes = next(iter(facts["meshes"].values()), {}).get("shapes", []) if facts["meshes"] else []
+    roles = sorted(exports["animations"])
+    folder = spec.get("runtime_model_folder") or f"gfx/models/units/{stem}"
+    text = registration_text(
+        unit_entity=f"{stem}_entity",
+        model_folder=folder,
+        stem=stem,
+        shapes=shapes,
+        roles=roles,
+        scale=float(spec.get("runtime_entity_scale", 1.0)),
+        template=(unit or {}).get("entity_template", "infantry"),
+    )
+    (job / "runtime" / "registration.md").write_text(text, encoding="utf-8")
+    report = {"files": records, "check": {"errors": errors, "warnings": [item.__dict__ for item in findings if item.severity != "error"]}, "facts": facts}
+    write_json(job / "runtime" / "files.json", report)
+    if errors:
+        raise RuntimeError(f"The staged runtime files fail {len(errors)} check(s); see runtime/files.json: {errors[:3]}")
+    return report
 
 
 def print_credits_report(location: str) -> int:
@@ -3471,6 +3579,11 @@ def main() -> int:
         help="rebuild the finished humanoid job's runtime DDS from the remesh maps on disk; "
         "needs no API key and makes no provider call or Blender run",
     )
+    parser.add_argument(
+        "--status",
+        action="store_true",
+        help="print where each job stands and the next command to run; reads files only",
+    )
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--phase", choices=("full", "candidate"), default="full")
     parser.add_argument("--shared-humanoid-batch")
@@ -3480,6 +3593,11 @@ def main() -> int:
         return print_credits_report(args.credits_report)
     if args.jobs_config is None:
         parser.error("--jobs-config is required unless --credits-report is given")
+    if args.status:
+        configs = load_job_configs(args.jobs_config)
+        assets = list(configs) if args.all or not args.assets else args.assets
+        print(json.dumps([job_status(asset, configs[asset], args.jobs_config) for asset in assets], indent=2))
+        return 0
     if args.rebuild_runtime_textures:
         configs = load_job_configs(args.jobs_config)
         assets = list(configs) if args.all or not args.assets else args.assets

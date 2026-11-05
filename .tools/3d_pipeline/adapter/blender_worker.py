@@ -128,7 +128,13 @@ def save_blend(path: Path) -> None:
     for action in bpy.data.actions:
         action.use_fake_user = True
     path.parent.mkdir(parents=True, exist_ok=True)
-    bpy.ops.wm.save_as_mainfile(filepath=str(path))
+    # Compressed saves and no .blend1 backup: a job keeps dozens of checkpoints, and the
+    # uncompressed copies with backups filled about 1.2 GB per unit. The backup is deleted
+    # rather than switched off, so the user's Blender preferences stay untouched.
+    bpy.ops.wm.save_as_mainfile(filepath=str(path), compress=True)
+    backup = path.with_name(path.name + "1")
+    if backup.is_file():
+        backup.unlink()
 
 
 def new_collection(name: str) -> bpy.types.Collection:
