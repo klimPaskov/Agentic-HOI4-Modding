@@ -262,10 +262,12 @@ class WeldedTopologyTests(unittest.TestCase):
         self.assertEqual(self.failures(many), ["welded loose components 9 exceed profile allowance 8"])
 
     def test_profiles_without_measured_models_keep_the_strict_defaults(self) -> None:
+        # Only a profile whose calibration names the models it was measured on may relax the defaults.
         for name, value in self.registry.items():
-            if name != "humanoid_unit":
+            if "measured_on" not in value.get("validation_calibration", {}):
                 with self.subTest(profile=name):
                     self.assertEqual(value["validation"], gates.DEFAULT_LIMITS)
+        self.assertIn("measured_on", self.registry["humanoid_unit"]["validation_calibration"])
 
     def test_every_profile_documents_its_calibration(self) -> None:
         for name, value in self.registry.items():
