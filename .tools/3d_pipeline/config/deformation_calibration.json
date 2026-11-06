@@ -5,6 +5,7 @@
   "stretch_ratio": 1.5,
   "significant_share": 0.005,
   "bridge_hops": 3,
+  "knee_tolerance": 0.05,
   "organic_pattern": "(^|_)(infantry|marine|mountain|paratroop|cavalry|horse|camel|deer|elephant|soldier|rider|officer|commando|ranger|militia|guard)",
   "clips_per_mesh": 6,
   "seed": 1936,
@@ -80,6 +81,26 @@
     "value": 0.049281,
     "mesh": "cavalry_horse.mesh",
     "clip": "gfx/models/units/cavalry_horse_charge.anim"
+   },
+   "seam_edges": {
+    "value": 1.0,
+    "mesh": "cavalry_horse.mesh",
+    "clip": ""
+   },
+   "knee_backward": {
+    "value": 0.006056,
+    "mesh": "FIN_infantry_desert.mesh",
+    "clip": "gfx/models/units/GER_infantry_pushup.anim"
+   },
+   "still_motion": {
+    "value": 0.003261,
+    "mesh": "FIN_infantry_alt_2_snow.mesh",
+    "clip": "gfx/models/units/bicycle_infantry_idle.anim"
+   },
+   "loose_gap": {
+    "value": 0.019719,
+    "mesh": "cavalry_horse.mesh",
+    "clip": "gfx/models/units/cavalry_horse_idle_forward.anim"
    }
   },
   "vehicle": {
@@ -137,6 +158,21 @@
     "value": 0.251437,
     "mesh": "howitzers/generic_super_heavy_artillery.mesh",
     "clip": "gfx/models/units/howitzers/generic_super_heavy_artillery_moving.anim"
+   },
+   "seam_edges": {
+    "value": 0.0,
+    "mesh": "",
+    "clip": ""
+   },
+   "knee_backward": {
+    "value": 0.076809,
+    "mesh": "howitzers/generic_super_heavy_sp_howitzer.mesh",
+    "clip": "gfx/models/units/howitzers/generic_super_heavy_sp_howitzer_attack.anim"
+   },
+   "still_motion": {
+    "value": 0.0,
+    "mesh": "armored_engineering_vehicles/generic_medium_armored_towing_vehicle.mesh",
+    "clip": "gfx/models/units/armored_engineering_vehicles/generic_medium_armored_towing_vehicle_attack.anim"
    }
   },
   "air_naval": {
@@ -194,6 +230,21 @@
     "value": 14.283371,
     "mesh": "planes/generic_sam_missile.mesh",
     "clip": "gfx/models/units/planes/generic_sam_missile_attack.anim"
+   },
+   "seam_edges": {
+    "value": 0.0,
+    "mesh": "",
+    "clip": ""
+   },
+   "knee_backward": {
+    "value": 0.0,
+    "mesh": "",
+    "clip": ""
+   },
+   "still_motion": {
+    "value": 0.0,
+    "mesh": "planes/ENG_plane_heavy.mesh",
+    "clip": "gfx/models/units/planes/bomber_default_idle.anim"
    }
   }
  }

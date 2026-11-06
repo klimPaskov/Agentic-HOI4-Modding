@@ -7,7 +7,10 @@ Usage (from the repository root):
 
 It reads the `.mesh`, `.anim` and `.dds` bytes in the folder without Blender
 and reports each problem as a rule id, the file and a sentence. Errors make it
-exit 1, warnings do not. `--json` prints the findings as JSON.
+exit 1, warnings do not. `--json` prints the findings as JSON. `--verdict <file>`
+writes the route's short stage verdict there (lib/stage_verdict.py) and prints it as
+one line: the failed rules, the exact repair commands to run next, or an escalation
+when no script fixes them.
 
 File rules (always):
 
@@ -23,7 +26,10 @@ File rules (always):
   missing, or is rotated (vanilla's has an identity rotation) [vanilla-confirmed 1.19.4.1].
 - UNIT-ANIM-UNREADABLE, UNIT-ANIM-JOINTS, UNIT-ANIM-STATIC: an `.anim` that does not parse,
   animates bones the mesh does not have, or moves nothing.
-- UNIT-ANIM-FPS (warning): a frame rate outside 10 to 60.
+- UNIT-ANIM-FPS: a soldier's, rider's or creature's clip that does not play at 30 frames a second, as
+  vanilla's do (30.0 to 30.9). A Blender scene from factory settings runs at 24, and io_pdx_mesh writes
+  the scene's rate. For a vehicle, plane or ship type (`calibration_group`), a warning outside 10 to 60
+  (vanilla's run at 15, 30 or 60).
 - UNIT-ROLE-MISSING: a role the unit type needs has no `<stem>_<role>.anim`.
 - UNIT-DDS-UNREADABLE, UNIT-DDS-SIZE: a texture that does not parse, or is not a power of two or
   is larger than 2048.
@@ -50,6 +56,29 @@ Surface and deformation rules (always; limits are the largest values measured on
   frame from the bytes, as the game does.
 - UNIT-ANIM-GROUND: the lowest point sinks below, or (outside death) lifts above, the rest pose's
   ground further than in any vanilla clip. Riders are skipped: they sit on the mount's `Saddle_Node`.
+- UNIT-SEAM: more rest-pose edges than any vanilla unit between two legs' regions with no blend
+  across them (a crotch whose vertices follow one thigh each). Parting the legs tears the seam.
+- UNIT-ANIM-KNEE: in some frame a knee of a two-legged unit bends backward, against the way the
+  pelvis faces, by more than 5 % of the leg's length. No vanilla soldier's knee ever does.
+- UNIT-ANIM-STILL: a clip moves its joints less than the stillest vanilla clip of the group. It
+  reads as a frozen pose on the map.
+- UNIT-ANIM-SAME: two roles of the unit play nearly the same motion (their distance is under 12 %
+  of the larger clip's motion). Each role must read as itself. A seated rider is exempt for idle,
+  move, retreat and training: the mount's gait carries it, so those roles reuse idle by design.
+- UNIT-LOOSE-PART: a part not joined to the body's surface (a strap, a plate, a quiver, a separate
+  weapon) has vertices with no skin weight, or sits or drifts farther from the rest of the unit, at
+  rest or in any frame, than any loose part of vanilla GER_infantry or cavalry_horse. Selection boxes
+  (`Collision` shapes) are skipped. Any number of parts is fine while each stays attached. A held prop,
+  a separate shape that follows one bone wholly (the weapon `fit_prop.py` binds to the hand), is one
+  part however many pieces it has, judged against the body vertices that follow the same bone (the
+  hand that holds it): it must touch them at rest and stay on them in every frame. A polearm's head
+  may reach as far from the body as its shaft carries it.
+
+Mod rule (with `--mod-root`, or `--compare-units <folder>`):
+
+- UNIT-ANIM-SHARED: a clip of this unit is the same clip as one of another unit's (every joint turns
+  the same way over time). Units share clips only when one is a reskin of the other, declared with
+  `--reskin-of <unit folder or mesh stem>` (decision 3D-6).
 - UNIT-CALIBRATION-MISSING (warning): no calibration file, so these rules were skipped.
 
 Registration rules (with `--mod-root`):
@@ -89,6 +118,8 @@ EMISSIVE_TOLERANCE = 8
 SHINY_METALLIC = 120
 SHINY_GLOSS = 140
 CALIBRATION = PIPELINE_ROOT / "config" / "deformation_calibration.json"
+# Open loops up to this size are closed by `repair_unit.py --repairs holes` with no visible seam.
+SMALL_HOLE_EDGES = 32
 
 
 @dataclass
@@ -162,6 +193,11 @@ def _check_meshes(meshes, unit_type, profile, needs_animation, add, facts, skele
 
 
 
+# Vanilla soldiers, riders, horses, camels and deer play at 30.0 to 30.9 (their exporter rounds the length).
+ORGANIC_FPS = 30.0
+ORGANIC_FPS_TOLERANCE = 1.0
+
+
 def _check_animations(folder, stem, unit_type, skeleton, add, facts, stems=None):
     """The animation and role rules. With `stems`, only the animations `stem` owns are read."""
 
@@ -191,7 +227,11 @@ def _check_animations(folder, stem, unit_type, skeleton, add, facts, stems=None)
                 add("UNIT-ANIM-JOINTS", "error", anim_path, f"animates {len(unknown)} bones the mesh does not have: {', '.join(unknown[:6])}")
         if not anim.animated_joints or anim.samples < 2:
             add("UNIT-ANIM-STATIC", "error", anim_path, f"moves nothing ({len(anim.animated_joints)} animated joints, {anim.samples} samples)")
-        if not 10 <= anim.fps <= 60:
+        if (unit_type or {}).get("calibration_group", "organic") == "organic":
+            if abs(anim.fps - ORGANIC_FPS) > ORGANIC_FPS_TOLERANCE:
+                add("UNIT-ANIM-FPS", "error", anim_path,
+                    f"plays at {anim.fps:g} frames a second; soldiers, riders and creatures play at 30. Export it again with the kit (it keeps the clip's length in seconds)")
+        elif not 10 <= anim.fps <= 60:
             add("UNIT-ANIM-FPS", "warning", anim_path, f"frame rate {anim.fps:.2f} is outside 10 to 60")
     for role in (unit_type or {}).get("roles", {}):
         if role not in roles_found:
@@ -237,13 +277,16 @@ def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seate
     if bridges.edges > limits["bridge_edges"]:
         pairs = ", ".join(f"{pair} {count}" for pair, count in list(bridges.pairs.items())[:4])
         add("UNIT-BRIDGE", "error", mesh_path, f"{bridges.edges} edges join body parts that move apart ({pairs}); cut the join before rigging or the clips tear it")
+    loaded = {}
     for anim_path in sorted(folder.glob("*.anim")):
         if stems and _owner_of(anim_path, stems) != stem:
             continue
         try:
-            report = pdx_deform.deformation_report(mesh, pdx_deform.load_anim(anim_path))
+            anim = pdx_deform.load_anim(anim_path)
+            report = pdx_deform.deformation_report(mesh, anim)
         except (OSError, ValueError, IndexError, pdx_binary.PdxFormatError):
             continue  # UNIT-ANIM-UNREADABLE already reports it
+        loaded[anim_path] = anim
         facts["deformation"][anim_path.name] = asdict(report)
         stretched, squashed = report.stretched_edges / edges, report.squashed_edges / edges
         if stretched > limits["stretched_share"] or squashed > limits["squashed_share"] or report.worst_stretch_share > limits["worst_stretch_share"]:
@@ -254,6 +297,58 @@ def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seate
         hover = 0.0 if death else report.highest_lowest
         if not seated and (sink > sink_limit or hover > limits["hover"]):
             add("UNIT-ANIM-GROUND", "error", anim_path, f"the lowest point goes {sink:.1%} of the unit's height below the ground and up to {report.highest_lowest:.1%} above it; vanilla {'deaths sink' if death else 'units sink'} at most {sink_limit:.1%} and lift at most {limits['hover']:.1%}")
+    _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated)
+
+
+# A seated rider's idle, move, retreat and training are one clip by design: the mount's gait carries it.
+SEATED_REUSE = {"idle", "move", "retreat", "training"}
+
+
+def _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated=False):
+    """The seam, knee, still and same-role rules (lib/pdx_motion.py)."""
+
+    from lib import pdx_motion
+
+    legs = pdx_motion.find_legs(mesh)
+    seam = pdx_motion.seam_edges(mesh, legs)
+    facts["motion"][mesh_path.name] = {
+        "legs": [mesh.bones[leg.knee] for leg in legs.legs],
+        "seam_edges": seam.edges,
+        "seam_pairs": dict(list(seam.pairs.items())[:4]),
+        "clips": {},
+    }
+    if "seam_edges" in limits and seam.edges > limits["seam_edges"]:
+        pairs = ", ".join(f"{pair} {count}" for pair, count in list(seam.pairs.items())[:3])
+        add("UNIT-SEAM", "error", mesh_path, f"{seam.edges} edges join two legs with no blend across them ({pairs}); vanilla units have at most {limits['seam_edges']:.0f}. Blend the seam's weights across the pelvis and both legs, or the clips tear it")
+    # Knees: anatomy allows a little hyperextension; a group whose vanilla units reach more keeps that.
+    knee_limit = max(pdx_motion.KNEE_TOLERANCE, limits.get("knee_backward", 0.0))
+    motions = {}
+    for anim_path, anim in loaded.items():
+        knee = pdx_motion.knee_report(mesh, anim, legs, knee_limit)
+        motion = pdx_motion.motion_amount(mesh, anim)
+        motions[anim_path] = motion
+        facts["motion"][mesh_path.name]["clips"][anim_path.name] = {
+            "motion": round(motion, 4),
+            "worst_knee_bend": round(knee.worst_bend, 4),
+            "backward_knee_frames": knee.backward_frames,
+        }
+        if knee.worst_bend < -knee_limit:
+            add("UNIT-ANIM-KNEE", "error", anim_path, f"frame {knee.worst_frame}: knee {knee.worst_leg} bends backward by {-knee.worst_bend:.0%} of the leg's length ({knee.backward_frames} frame(s) past {knee_limit:.0%}); vanilla soldiers' knees bend back at most {limits.get('knee_backward', 0.0):.1%}. Solve the leg again with the knee toward the toes")
+        if "still_motion" in limits and motion < limits["still_motion"]:
+            add("UNIT-ANIM-STILL", "error", anim_path, f"the joints move {motion:.2%} of the unit's height on average; the stillest vanilla clip moves {limits['still_motion']:.2%}. It reads as a frozen pose")
+    _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits)
+    paths = sorted(loaded)
+    for index, first in enumerate(paths):
+        for second in paths[index + 1 :]:
+            roles = {path.stem[len(mesh_path.stem) + 1 :] for path in (first, second)}
+            if seated and roles <= SEATED_REUSE:
+                continue
+            larger = max(motions[first], motions[second])
+            if larger <= 0 or ("still_motion" in limits and larger < limits["still_motion"]):
+                continue  # UNIT-ANIM-STATIC or UNIT-ANIM-STILL already names both
+            distance = pdx_motion.clip_distance(mesh, loaded[first], loaded[second])
+            if distance < pdx_motion.SAME_RATIO * larger:
+                add("UNIT-ANIM-SAME", "error", second, f"plays nearly the same motion as {first.name} (distance {distance / larger:.0%} of the clip's motion, under {pdx_motion.SAME_RATIO:.0%}); each role needs its own motion")
 
 
 def _check_textures(folder, add, facts):
@@ -307,7 +402,7 @@ def check_files(
     """Check a unit folder. `stem` checks one mesh and its animations in a folder shared with another unit (a mount and its rider)."""
 
     findings: List[Finding] = []
-    facts: dict = {"meshes": {}, "animations": {}, "textures": {}, "surface": {}, "deformation": {}}
+    facts: dict = {"meshes": {}, "animations": {}, "textures": {}, "surface": {}, "deformation": {}, "motion": {}}
 
     def add(rule: str, severity: str, path: Path, message: str) -> None:
         findings.append(Finding(rule, severity, path.as_posix(), message))
@@ -330,6 +425,110 @@ def check_files(
         _check_deformation(meshes[0], folder, stem, stems if only_stem else None, add, facts, load_calibration(group) if limits is None else limits, seated)
     _check_textures(folder, add, facts)
     return findings, facts
+
+
+def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):
+    """UNIT-LOOSE-PART: every loose part is skinned and stays within vanilla's contact distance in every frame."""
+
+    from lib import pdx_motion
+
+    parts = pdx_motion.loose_parts(mesh, {path.name: anim for path, anim in loaded.items()})
+    facts["motion"][mesh_path.name]["loose_parts"] = [
+        {"triangles": part.triangles, "unweighted": part.unweighted, "rest_gap": round(part.rest_gap, 4),
+         "worst_gap": round(part.worst_gap, 4), "worst_clip": part.worst_clip, "worst_frame": part.worst_frame,
+         "prop_bone": part.prop_bone, "held_by": part.held_by, "pieces": part.pieces}
+        for part in parts[:10]
+    ]
+    unweighted = [part for part in parts if part.unweighted and mesh.skinned]
+    if unweighted:
+        add("UNIT-LOOSE-PART", "error", mesh_path, f"{len(unweighted)} loose part(s) have vertices with no skin weight ({sum(p.unweighted for p in unweighted)} vertices, the largest part {max(p.triangles for p in unweighted)} triangles); they stay where the bind pose put them while the body moves. Bind each to the bone it rests on (the job's loose_part_edits) or drop it")
+    limit = limits.get("loose_gap")
+    if limit is None:
+        return
+    for prop in (part for part in parts if part.prop_bone and part.held_by):
+        where = f"the body vertices that follow {prop.held_by}"
+        if prop.rest_gap > limit:
+            add("UNIT-LOOSE-PART", "error", mesh_path, f"the prop bound to {prop.prop_bone} ({prop.pieces} piece(s), {prop.triangles} triangles) is {prop.rest_gap:.1%} of the unit's height from {where} at rest: nothing holds it. Fit it to the hand again (fit_prop.py) or bind it to the bone that holds it")
+        elif prop.worst_gap > limit:
+            add("UNIT-LOOSE-PART", "error", mesh_path, f"the prop bound to {prop.prop_bone} slides {prop.worst_gap:.1%} of the unit's height off {where} in {prop.worst_clip} frame {prop.worst_frame}; vanilla loose parts stay within {limit:.1%}")
+    parts = [part for part in parts if not (part.prop_bone and part.held_by)]
+    floating = [part for part in parts if part.rest_gap > limit]
+    drifting = [part for part in parts if part.rest_gap <= limit < part.worst_gap]
+    if floating:
+        worst = max(floating, key=lambda part: part.rest_gap)
+        add("UNIT-LOOSE-PART", "error", mesh_path, f"{len(floating)} loose part(s) float apart from the body at rest, the farthest {worst.rest_gap:.1%} of the unit's height away ({worst.triangles} triangles); vanilla loose parts stay within {limit:.1%}. Move the part onto the body or drop it")
+    if drifting:
+        worst = drifting[0]
+        add("UNIT-LOOSE-PART", "error", mesh_path, f"{len(drifting)} loose part(s) drift off the body in a clip, the worst {worst.worst_gap:.1%} of the unit's height in {worst.worst_clip} frame {worst.worst_frame} ({worst.triangles} triangles); vanilla loose parts stay within {limit:.1%}. Weight the part to the bone it rests on (the job's loose_part_edits bind rule)")
+
+
+def _unit_clips(folder: Path):
+    """(mesh stem, mesh path, {anim path: Animation}) for every mesh in a unit folder."""
+
+    from lib import pdx_deform
+
+    meshes = sorted(folder.glob("*.mesh"))
+    stems = [mesh.stem for mesh in meshes]
+    for mesh_path in meshes:
+        clips = {}
+        for anim_path in sorted(folder.glob("*.anim")):
+            if _owner_of(anim_path, stems) != mesh_path.stem:
+                continue
+            try:
+                clips[anim_path] = pdx_deform.load_anim(anim_path)
+            except (OSError, ValueError, IndexError, pdx_binary.PdxFormatError):
+                continue
+        yield mesh_path.stem, mesh_path, clips
+
+
+def check_shared_clips(
+    folder: Path, units_root: Path, stem: Optional[str] = None, reskins: Sequence[str] = ()
+) -> List[Finding]:
+    """UNIT-ANIM-SHARED: a clip of the unit in `folder` that another unit under `units_root` also plays.
+
+    Units are compared on the bone names they share (at least 8). `reskins` names unit folders or mesh
+    stems whose clips this unit may share (decision 3D-6: reskins of one base unit only).
+    """
+
+    from lib import pdx_deform, pdx_motion
+
+    def bones_of(mesh_path: Path) -> List[str]:
+        try:
+            return pdx_deform.load_mesh(mesh_path).bones
+        except (OSError, ValueError, IndexError, pdx_binary.PdxFormatError):
+            return []
+
+    allowed = {name.lower() for name in reskins}
+    folder = folder.resolve()
+    ours = [(s, path, clips) for s, path, clips in _unit_clips(folder) if not stem or s == stem]
+    own_paths = {path.resolve() for _s, path, _c in ours}
+    others = []
+    for other_folder in sorted({mesh.parent.resolve() for mesh in units_root.rglob("*.mesh")}):
+        for other_stem, other_path, other_clips in _unit_clips(other_folder):
+            if other_path.resolve() in own_paths or other_folder.name.lower() in allowed or other_stem.lower() in allowed:
+                continue
+            if other_clips:
+                others.append((other_path, other_clips, bones_of(other_path)))
+    findings: List[Finding] = []
+    for _own_stem, own_path, own_clips in ours:
+        own_bones = bones_of(own_path)
+        for _other_path, other_clips, other_bones in others:
+            common = [bone for bone in own_bones if bone in set(other_bones)]
+            if len(common) < 8:
+                continue
+            theirs = {path: pdx_motion.rotation_profile(anim, common) for path, anim in other_clips.items()}
+            for anim_path, anim in own_clips.items():
+                profile = pdx_motion.rotation_profile(anim, common)
+                for other_anim, other_profile in theirs.items():
+                    distance = pdx_motion.same_clip(profile, other_profile)
+                    if distance is not None:
+                        findings.append(Finding(
+                            "UNIT-ANIM-SHARED", "error", anim_path.as_posix(),
+                            f"is the same clip as {other_anim.parent.name}/{other_anim.name} ({distance:.2f} degrees apart per joint); "
+                            "every unit needs its own animations unless it is a reskin of the other (--reskin-of)",
+                        ))
+                        break
+    return findings
 
 
 def _import_registration_audit():
@@ -476,14 +675,50 @@ def repair_textures(folder: Path) -> List[str]:
     return rewritten
 
 
+def _write_verdict(args, folder: Path, findings: List[Finding], errors: List[Finding], facts: dict) -> None:
+    from lib import stage_verdict
+
+    shown = args.folder.as_posix()
+    out = args.verdict.parent.as_posix()
+    stem = args.stem or (next(iter(facts["meshes"]), folder.name).rsplit(".", 1)[0])
+    steps, escalate = stage_verdict.next_for_findings(
+        {item.rule for item in errors}, shown, out, args.stem, args.unit_type, repaired=folder.name == "files" and folder.parent.name == "repair"
+    )
+    if not errors:
+        mod = f" --mod-root {stage_verdict.quote(args.mod_root.as_posix())}" if args.mod_root else ""
+        steps = []
+        # Open loops within vanilla's limits still show magenta where a reviewer looks: close the small ones first.
+        small = [size for surface in facts["surface"].values() for size in surface.get("open_loops", []) if size <= SMALL_HOLE_EDGES]
+        if small and not (folder.name == "files" and folder.parent.name == "repair"):
+            steps.append(
+                f"{stage_verdict.PY} {stage_verdict.PIPELINE}/repair_unit.py {stage_verdict.quote(shown)}{' --stem ' + args.stem if args.stem else ''}"
+                f" --out {stage_verdict.quote(out + '/repair')} --repairs holes --max-hole-edges {SMALL_HOLE_EDGES}"
+                f"  (optional: closes {len(small)} small open loop(s) a reviewer can see, then check the copy)"
+            )
+        steps.append(f"{stage_verdict.PY} {stage_verdict.PIPELINE}/review_unit.py {stage_verdict.quote(shown)}{' --stem ' + args.stem if args.stem else ''}{mod} --out {stage_verdict.quote(out + '/review')}")
+    stage_verdict.write(
+        stage_verdict.verdict(
+            "check", not errors, stem,
+            outputs={"folder": shown, "errors": len(errors), "warnings": len(findings) - len(errors)},
+            findings=[{"rule": item.rule, "file": Path(item.file).name, "message": stage_verdict.short(item.message)} for item in errors],
+            escalate=escalate,
+            next_steps=steps,
+        ),
+        args.verdict,
+    )
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("folder", type=Path, help="the folder that holds the unit's .mesh, .anim and .dds files")
     parser.add_argument("--unit-type", help="a type from config/unit_types.json; sets the roles, nodes and profile")
     parser.add_argument("--stem", help="check only <stem>.mesh and its animations, in a folder shared with another unit")
     parser.add_argument("--profile", help="an asset profile for the triangle budget (default: the unit type's)")
-    parser.add_argument("--mod-root", type=Path, help="also check the mod's registration of the unit")
+    parser.add_argument("--mod-root", type=Path, help="also check the mod's registration of the unit, and compare its clips with the mod's other units")
+    parser.add_argument("--compare-units", type=Path, help="compare the unit's clips with every unit under this folder (default with --mod-root: <mod-root>/gfx/models/units)")
+    parser.add_argument("--reskin-of", action="append", default=[], metavar="UNIT", help="a unit folder or mesh stem this unit reskins; it may share that unit's clips (repeatable)")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--verdict", type=Path, help="write the stage verdict (pass, fail with repair commands, or escalate) to this file and print it")
     parser.add_argument(
         "--repair-textures",
         action="store_true",
@@ -508,7 +743,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     findings, facts = check_files(folder, unit_type, profile, args.stem)
     if args.mod_root:
         findings.extend(check_unit_registration(folder, args.mod_root, unit_type))
+    units_root = args.compare_units or (args.mod_root / "gfx" / "models" / "units" if args.mod_root else None)
+    if units_root and units_root.is_dir():
+        findings.extend(check_shared_clips(folder, units_root, args.stem, args.reskin_of))
     errors = [item for item in findings if item.severity == "error"]
+    if args.verdict:
+        _write_verdict(args, folder, findings, errors, facts)
+        return 1 if errors else 0
     if args.json:
         print(json.dumps({"findings": [asdict(item) for item in findings], "facts": facts}, indent=2))
     else:

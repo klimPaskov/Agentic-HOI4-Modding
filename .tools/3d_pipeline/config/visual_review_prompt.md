@@ -14,6 +14,7 @@ How the renders are made:
 - Back faces are hidden, as in the game. A part of the surface that is missing, or faces the wrong way, shows the **magenta background** through the model. Magenta anywhere inside the outline of the body, a limb, clothing or equipment is a hole.
 - The dark green disc is the ground at height zero. Feet should rest on it. The `below` view looks up through the ground, so the disc is not drawn there.
 - Lighting is flat studio light with the unit's own colour texture. Ignore lighting quality, render resolution and texture blur.
+- Each clip may also have a **diagnostics** sheet at its worst frames, in flat colours: grey is fine, yellow to red is surface stretched or squashed (red is 1.5 times or more), cyan marks the rim of a hole, blue is below the ground, magenta is a hole or a back face. Use it to find defects, then judge them on the normal sheets. Colour alone is not a defect: report what the shape does.
 
 ## The quality bar
 

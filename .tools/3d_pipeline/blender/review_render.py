@@ -11,6 +11,11 @@ The renders show what the game shows and nothing kinder:
   a one-sided face seen from behind or an inside-out part shows magenta;
 - a dark disc at the rest pose's ground shows floating and sinking;
 - the camera frames the rest pose, so a unit that drifts away from its spot leaves the frame.
+
+With `diagnostic_views`, each clip's `diagnostic_frames` (its worst-stretch, lowest and highest frames)
+are rendered again in flat colours that show what the checks measure: grey is fine, yellow to red is
+surface stretched or squashed by 1.3 to 1.5 times or more, cyan is an open edge, blue is below the
+ground. Back faces stay culled on magenta. Those tiles end in `_diag.png`.
 """
 
 import json
@@ -20,6 +25,7 @@ from pathlib import Path
 
 import addon_utils
 import bpy
+import numpy as np
 from mathutils import Vector
 
 request = json.loads(Path(sys.argv[sys.argv.index("--") + 1]).read_text(encoding="utf-8"))
@@ -134,9 +140,103 @@ def render(clip, frames):
     index["clips"].append({"name": clip, "rows": rows})
 
 
+# ---- diagnostics: colour what the checks measure, so a reviewer sees where it is ----
+# Grey is fine. Yellow to red: an edge around the vertex is stretched or squashed by 1.3 to 1.5 times
+# or more. Cyan: an open edge (a hole's rim). Blue: below the ground. Back faces stay culled on magenta.
+# The same edges UNIT-ANIM-STRETCH counts: a change of more than 0.5 % of the unit's height.
+DIAG_START, DIAG_FULL, SIGNIFICANT = 1.3, 1.5, 0.005
+height = max(rest_high.z - rest_low.z, 1e-6)
+rest_data = {}
+for o in meshes:
+    data = o.data
+    count = len(data.vertices)
+    co = np.empty(count * 3, dtype=np.float64)
+    data.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    edges = np.empty(len(data.edges) * 2, dtype=np.int64)
+    data.edges.foreach_get("vertices", edges)
+    edges = edges.reshape(-1, 2)
+    # Weld split seams by position, then an edge with one face is open.
+    keys = np.round(co / (height * 1e-5)).astype(np.int64)
+    _unique, canon = np.unique(keys, axis=0, return_inverse=True)
+    canon = canon.ravel()
+    loops = np.empty(len(data.loops), dtype=np.int64)
+    data.loops.foreach_get("vertex_index", loops)
+    starts = np.empty(len(data.polygons), dtype=np.int64)
+    data.polygons.foreach_get("loop_start", starts)
+    totals = np.empty(len(data.polygons), dtype=np.int64)
+    data.polygons.foreach_get("loop_total", totals)
+    face_edges = []
+    for start, total in zip(starts, totals):
+        ring = canon[loops[start : start + total]]
+        face_edges.extend(zip(ring, np.roll(ring, -1)))
+    face_edges = np.sort(np.asarray(face_edges, dtype=np.int64).reshape(-1, 2), axis=1) if face_edges else np.zeros((0, 2), dtype=np.int64)
+    pairs, counts = np.unique(face_edges, axis=0, return_counts=True) if len(face_edges) else (np.zeros((0, 2), dtype=np.int64), np.zeros(0))
+    open_canon = set(pairs[counts == 1].ravel().tolist())
+    rest_data[o.name] = {
+        "edges": edges,
+        "rest": np.linalg.norm(co[edges[:, 0]] - co[edges[:, 1]], axis=1),
+        "open": np.isin(canon, list(open_canon)) if open_canon else np.zeros(count, dtype=bool),
+    }
+    attribute = data.color_attributes.get("review_diag") or data.color_attributes.new("review_diag", "FLOAT_COLOR", "POINT")
+    data.color_attributes.active_color = attribute
+
+
+def paint_diagnostics():
+    graph = bpy.context.evaluated_depsgraph_get()
+    worst = 0.0
+    for o in meshes:
+        info = rest_data[o.name]
+        evaluated = o.evaluated_get(graph)
+        mesh = evaluated.to_mesh()
+        co = np.empty(len(mesh.vertices) * 3, dtype=np.float64)
+        mesh.vertices.foreach_get("co", co)
+        evaluated.to_mesh_clear()
+        co = co.reshape(-1, 3) @ np.array(o.matrix_world)[:3, :3].T + np.array(o.matrix_world)[:3, 3]
+        length = np.linalg.norm(co[info["edges"][:, 0]] - co[info["edges"][:, 1]], axis=1)
+        usable = info["rest"] > height * 1e-6
+        ratio = np.where(usable, length / np.where(usable, info["rest"], 1.0), 1.0)
+        factor = np.maximum(ratio, 1.0 / np.maximum(ratio, 1e-6))
+        factor[np.abs(length - info["rest"]) < SIGNIFICANT * height] = 1.0
+        per_vertex = np.ones(len(co))
+        np.maximum.at(per_vertex, info["edges"][:, 0], factor)
+        np.maximum.at(per_vertex, info["edges"][:, 1], factor)
+        growth = np.where(factor > 1.0, np.abs(length - info["rest"]) / height, 0.0)
+        worst = max(worst, float(growth.max()) if len(growth) else 0.0)
+        t = np.clip((per_vertex - DIAG_START) / (DIAG_FULL - DIAG_START), 0.0, 1.0)
+        colour = np.tile([0.72, 0.72, 0.74, 1.0], (len(co), 1))
+        hot = per_vertex > DIAG_START
+        colour[hot] = np.stack([np.ones(hot.sum()), 0.9 * (1.0 - t[hot]), np.zeros(hot.sum()), np.ones(hot.sum())], axis=1)
+        colour[co[:, 2] < rest_low.z - 0.01 * height] = [0.1, 0.3, 1.0, 1.0]
+        colour[info["open"]] = [0.0, 1.0, 1.0, 1.0]
+        o.data.color_attributes["review_diag"].data.foreach_set("color", colour.astype(np.float32).ravel())
+        o.data.update()
+    return worst
+
+
+def render_diagnostics(clip, frames, views):
+    rows = []
+    shading.color_type = "VERTEX"
+    for frame in frames:
+        scene.frame_set(frame)
+        worst = paint_diagnostics()
+        row = {"frame": frame, "tiles": {}, "worst_share": round(worst, 4)}
+        for view in views:
+            aim(view)
+            path = out / f"{clip}_{frame:04d}_{view}_diag.png"
+            scene.render.filepath = str(path)
+            bpy.ops.render.render(write_still=True)
+            row["tiles"][view] = path.name
+        rows.append(row)
+    shading.color_type = "TEXTURE"
+    next(item for item in index["clips"] if item["name"] == clip)["diagnostic_rows"] = rows
+
+
 if rig is not None:
     rig.animation_data_create()
 render("rest", [scene.frame_current])
+if request.get("diagnostic_views"):
+    render_diagnostics("rest", [scene.frame_current], request["diagnostic_views"])
 for clip in request["clips"]:
     if rig is None:
         break
@@ -144,6 +244,8 @@ for clip in request["clips"]:
     bpy.ops.io_pdx_mesh.import_anim(filepath=clip["path"], int_start=1)
     # `.anim` sample k plays at Blender frame k + 1.
     render(clip["name"], [frame + 1 for frame in clip["frames"]])
+    if request.get("diagnostic_views") and clip.get("diagnostic_frames"):
+        render_diagnostics(clip["name"], [frame + 1 for frame in clip["diagnostic_frames"]], request["diagnostic_views"])
 
 (out / "index.json").write_text(json.dumps(index, indent=1), encoding="utf-8")
 print("REVIEW_RENDERED", out)

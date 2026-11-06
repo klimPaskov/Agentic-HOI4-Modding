@@ -6907,6 +6907,15 @@ def export_animation(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]
     pdx = load_pdx(req["io_pdx_root"])
     rig, action, start, end = select_armature_and_action(payload["action_name"])
     export_transforms = prepare_pdx_export_transforms()
+    from anim_frame_range import HOI4_FPS, retime_action, verify_fps, verify_frame_range
+    # io_pdx_mesh writes the scene's rate into the file, and a scene from factory settings runs at 24.
+    # The keys were placed at the scene's rate (the glTF import converts seconds with it), so they are
+    # scaled to keep the clip's length in seconds, then the clip is written at HOI4's 30.
+    scene = bpy.context.scene
+    source_fps = scene.render.fps / scene.render.fps_base
+    source_range = [start, end]
+    start, end = retime_action(action, start, end, source_fps, HOI4_FPS)
+    scene.render.fps, scene.render.fps_base = HOI4_FPS, 1.0
     bpy.context.scene.frame_start = start
     bpy.context.scene.frame_end = end
     for old_output in (output, output.with_suffix(".txt")):
@@ -6926,13 +6935,19 @@ def export_animation(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]
     scale_normalization = normalize_exported_animation_scales(output, pdx, 1.0)
     from animation_root_export import correct_exported_initial_roots
     initial_root_world_pose = correct_exported_initial_roots(output, rig, start, bpy)
+    # One sample per frame of the action: io_pdx_mesh's operator exports the scene's range instead.
+    samples = verify_frame_range(output, start, end)
+    written_fps = verify_fps(output, HOI4_FPS)
     result = {
         "blend": str(blend.relative_to(job)).replace("\\", "/"),
         "action": action.name,
         "armature": rig.name,
         "frame_start": start,
         "frame_end": end,
-        "fps": bpy.context.scene.render.fps,
+        "samples": samples,
+        "fps": written_fps,
+        "source_fps": source_fps,
+        "source_frame_range": source_range,
         "armature_world_scale": export_transforms["armature_world_scale_after"],
         "export_transforms": export_transforms,
         "anim": str(output.relative_to(job)).replace("\\", "/"),

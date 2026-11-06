@@ -30,6 +30,9 @@ STRICT = {
     "sink": 0.01,
     "death_sink": 0.01,
     "hover": 0.01,
+    "seam_edges": 0,
+    "knee_backward": 0.0,
+    "still_motion": 0.0,
 }
 
 
@@ -73,10 +76,10 @@ def write_mesh(path: Path, positions, triangles, bone_of_vertex=None) -> None:
     path.write_bytes(data)
 
 
-def write_anim(path: Path, frames: int, pose) -> None:
+def write_anim(path: Path, frames: int, pose, fps: float = 30.0) -> None:
     """`pose(frame)` returns {bone: (local translation, quaternion x y z w)} for the moving bones."""
 
-    data = b"@@b@" + _obj("info", 1) + _prop("fps", "f", [15.0]) + _prop("sa", "i", [frames]) + _prop("j", "i", [len(BONES)])
+    data = b"@@b@" + _obj("info", 1) + _prop("fps", "f", [fps]) + _prop("sa", "i", [frames]) + _prop("j", "i", [len(BONES)])
     rest_local = {}
     for name, parent, position in BONES:
         parent_position = BONES[parent][2] if parent >= 0 else (0, 0, 0)
@@ -244,7 +247,8 @@ class Calibration(unittest.TestCase):
         for group in ("organic", "vehicle", "air_naval"):
             limits = check_unit_files.load_calibration(group)
             self.assertIsNotNone(limits, "config/deformation_calibration.json is missing; run calibrate_deformation.py")
-            self.assertEqual(set(STRICT), set(limits))
+            # Loose parts are calibrated on a vanilla soldier and horse only, so only organic units have that limit.
+            self.assertEqual(set(STRICT) | ({"loose_gap"} if group == "organic" else set()), set(limits))
         # Soldiers and animals get far tighter hole limits than vehicles with open panel backs.
         organic, vehicle = check_unit_files.load_calibration("organic"), check_unit_files.load_calibration("vehicle")
         self.assertLess(organic["open_edge_share"], vehicle["open_edge_share"])

@@ -43,6 +43,10 @@ class SkinnedMesh:
     parents: List[int]  # global index of each bone's parent, -1 for a root
     inverse_bind: np.ndarray  # (B, 4, 4)
     skinned: bool = True
+    # (V,) True for the vertices of `Collision` shapes (the game's selection box), which never render.
+    collision: np.ndarray = field(default_factory=lambda: np.zeros(0, dtype=bool))
+    # (V,) the index of the shape (the `object` child) each vertex belongs to, in file order.
+    shape: np.ndarray = field(default_factory=lambda: np.zeros(0, dtype=np.int64))
 
     @property
     def height(self) -> float:
@@ -106,9 +110,9 @@ def load_mesh(path: Path) -> SkinnedMesh:
     if objects is None:
         raise PdxFormatError("the file has no object block")
     skeleton = _Skeleton()
-    positions, triangles, names, weights = [], [], [], []
+    positions, triangles, names, weights, collision, shapes = [], [], [], [], [], []
     offset = 0
-    for shape in objects.children:
+    for shape_index, shape in enumerate(objects.children):
         local = skeleton.add_shape(shape.child("skeleton"))
         for mesh in (node for node in shape.children if node.name == "mesh"):
             p = np.asarray(mesh.properties.get("p", []), dtype=float).reshape(-1, 3)
@@ -117,6 +121,10 @@ def load_mesh(path: Path) -> SkinnedMesh:
             triangles.append(np.asarray(mesh.properties.get("tri", []), dtype=np.int64).reshape(-1, 3) + offset)
             names.append(stream_names)
             weights.append(stream_weights)
+            material = mesh.child("material")
+            shader = (material.properties.get("shader") or [""])[0] if material is not None else ""
+            collision.append(np.full(len(p), str(shader).lower() == "collision"))
+            shapes.append(np.full(len(p), shape_index, dtype=np.int64))
             offset += len(p)
     if not positions:
         raise PdxFormatError("the file has no mesh streams")
@@ -134,6 +142,8 @@ def load_mesh(path: Path) -> SkinnedMesh:
         parents=[index_of.get(skeleton.parent_names[name] or "", -1) for name in bones],
         inverse_bind=np.stack([skeleton.inverse[name] for name in bones]) if bones else np.zeros((0, 4, 4)),
         skinned=bool(bones) and bool((total > 0).any()),
+        collision=np.concatenate(collision),
+        shape=np.concatenate(shapes),
     )
 
 

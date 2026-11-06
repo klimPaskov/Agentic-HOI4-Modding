@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "note": "Body presets for the default 3D route (decision 3D-4). measure_body.py measures a generation's surface (lib/body_measure.py) and scores each preset: the job's declared anatomy must match exactly, and every measured value must fall in the preset's range (a value up to `margin` of the range's width outside it still counts, with a lower score). Each unit type in unit_types.json names its body preset with `body`. A body that fits no preset, or a job whose unit type does not fit the measured body, escalates to live authoring unless the job sets `body_preset` with a `body_preset_reason`. Ranges were measured on 2026-11-06: 7 Meshy generations (meshy-t2.5 and meshy-7, ZIN jobs), 15 exported ZIN units, 37 exported Chaos Redux units and 5 vanilla units; `calibration` names them.",
+  "anatomy_questions": {
+    "legs": "How many legs reach the ground in the reference image (0, 2 or 4; count a robe or skirt over two legs as 2)?",
+    "arms": "How many arms (0, 2, or more)?",
+    "wings": "Does it have wings?",
+    "tail": "Does it have a tail longer than a fifth of its height?",
+    "extra_limbs": "Does it have tentacles, extra arms or other limbs a person does not have?",
+    "vehicle": "Is it a vehicle, a machine on wheels or tracks, or a building?",
+    "rider_on_mount": "Is a rider sitting on a mount in the same image (the route needs them as two images)?"
+  },
+  "margin": 0.15,
+  "presets": {
+    "humanoid": {
+      "description": "Two legs, two arms, upright, human proportions: soldiers, archers, elves, orcs, zombies, robots. Riders are generated standing and seated in Blender.",
+      "anatomy": {"legs": 2, "arms": 2, "wings": false, "tail": false, "extra_limbs": false, "vehicle": false, "rider_on_mount": false},
+      "measured": {
+        "contacts": [1, 2],
+        "torso_width": [0.18, 0.66],
+        "lower_length": [0.28, 0.95],
+        "centre_height": [0.42, 0.66]
+      },
+      "blender": {
+        "rig": "meshy_humanoid",
+        "calibration_group": "organic",
+        "repairs_after_export": ["winding", "holes"],
+        "review_focus": "Hands close on held props; the crotch and armpits do not tear; knees bend toward the toes."
+      }
+    },
+    "large_biped": {
+      "description": "Two legs and two arms, but heavy, wide or long-armed: giants, trolls, ogres, yeti, apes, ents. Meshy's humanoid rig fits; human library clips often do not read on these bodies.",
+      "anatomy": {"legs": 2, "arms": 2, "wings": false, "tail": false, "extra_limbs": false, "vehicle": false, "rider_on_mount": false},
+      "measured": {
+        "contacts": [1, 2],
+        "torso_width": [0.4, 1.3],
+        "lower_length": [0.45, 1.3],
+        "centre_height": [0.42, 0.66]
+      },
+      "blender": {
+        "rig": "meshy_humanoid",
+        "calibration_group": "organic",
+        "repairs_after_export": ["winding", "holes", "bridges", "weights"],
+        "review_focus": "Long arms do not tear from the thighs; overhead strikes do not hide the head from the map camera; the body moves with weight."
+      }
+    },
+    "quadruped": {
+      "description": "Four legs: horses, camels, wolves, war beasts, elephants. Blender rigs and animates it; a mount also gets a Saddle_Node.",
+      "anatomy": {"legs": 4, "arms": 0, "wings": false, "tail": null, "extra_limbs": false, "vehicle": false, "rider_on_mount": false},
+      "measured": {
+        "contacts": [3, 8],
+        "lower_length": [0.6, 2.2],
+        "centre_height": [0.38, 0.7]
+      },
+      "blender": {
+        "rig": "blender_quadruped",
+        "calibration_group": "organic",
+        "repairs_after_export": ["winding", "holes"],
+        "review_focus": "Legs move in a gait, not a slide; the tail follows its own bones; a mount's saddle sits level."
+      }
+    }
+  },
+  "calibration": {
+    "humanoid": "Meshy t2.5 generations of a human infantryman and an elven archer (contacts 2, torso 0.31 to 0.37, lower 0.48 to 0.55); exported ZIN men, elves, orcs, revenant and riders (torso 0.35 to 0.57, lower 0.54 to 0.72); Chaos Redux zombies, guards, cadres, clones and robots (torso 0.21 to 0.54, lower 0.31 to 0.88 with props).",
+    "large_biped": "Meshy yeti generations in A-pose and T-pose (torso 0.58 and 1.10, lower 0.86 and 0.49); exported ZIN yeti, giant, troll and ent (torso 0.55 to 0.78, lower 0.81 to 1.03); Chaos Redux gorilla and forest giants (torso 0.46 to 0.54, lower 0.79).",
+    "quadruped": "Meshy t2.5 warhorse (contacts 4, lower 0.97); vanilla horse, camel and deer (contacts 4 to 5, lower 0.65 to 0.93); exported ZIN mounts (lower 0.94 to 0.99); Chaos Redux elephant, donkey and cave monster (lower 1.14 to 1.78)."
+  }
+}
