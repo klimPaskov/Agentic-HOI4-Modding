@@ -75,7 +75,7 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 | A mount's `Saddle_Node` exports without rotation | The game turns the rider with the node, so a turned node tips him over |
 | With `--mod-root`: the mesh, every animation, an entity with every state and a sub-unit sprite are registered | Unregistered files never show |
 
-Add `--repair-textures` to convert old uncompressed or unmipped textures in place.
+Add `--repair-textures` to convert old uncompressed or unmipped textures in place. When a mount and its rider share one folder, check each with `--stem`, for example `--stem <unit> --unit-type mount` and `--stem <unit>_rider --unit-type rider`.
 
 ## When something fails
 

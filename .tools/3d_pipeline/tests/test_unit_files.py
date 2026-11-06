@@ -151,6 +151,25 @@ class CheckUnitFiles(unittest.TestCase):
                 rules = {item.rule for item in self.run_check(folder, "mount")}
                 self.assertEqual("UNIT-NODE-ORIENTATION" in rules, expected)
 
+    def test_a_mount_and_its_rider_share_a_folder(self) -> None:
+        identity = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, -5.0, 0.0]
+        horse, rider = ["Root", "Spine", "Saddle_Node"], ["Hips", "Spine01", "Head"]
+        types = check_unit_files.load_unit_types()
+        with tempfile.TemporaryDirectory() as name:
+            folder = Path(name)
+            write_mesh(folder / "knights.mesh", horse, tx={"Saddle_Node": identity})
+            write_mesh(folder / "knights_rider.mesh", rider)
+            for role in LAND_ROLES:
+                write_anim(folder / f"knights_{role}.anim", horse)
+                write_anim(folder / f"knights_rider_{role}.anim", rider)
+            for stem, unit_type in (("knights", "mount"), ("knights_rider", "rider")):
+                findings, facts = check_unit_files.check_files(folder, types[unit_type], None, stem)
+                self.assertEqual([item.rule for item in findings if item.severity == "error"], [], stem)
+                self.assertEqual(list(facts["meshes"]), [f"{stem}.mesh"])
+                self.assertEqual(len(facts["animations"]), len(LAND_ROLES))
+            unscoped = {item.rule for item in check_unit_files.check_files(folder, types["mount"], None)[0]}
+            self.assertIn("UNIT-NODE-MISSING", unscoped)
+
     def test_texture_warnings_and_repair(self) -> None:
         with tempfile.TemporaryDirectory() as name:
             folder = Path(name)

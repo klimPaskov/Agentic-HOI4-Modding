@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Move the `hoi4-imagegen` release route to v0.3.5. The install writes `legacy_lazy_load = no` on a unit's text-icon sprite, which the division tooltip needs. The install notes say a landmark needs a `building_<key>` entity and a technology needs a `path` or its own tree box. The technology canvas follows the tree item's vanilla size. The kit's reference shelf no longer hands other countries' focus art to a generic brief. Counter art that holds more than the unit's glyph is refused.
+- Build 3D unit mounts at vanilla's horse size on the map (#72). A ZIN warhorse drew 1.6 times larger than vanilla cavalry's in game. The packed specular maps scale Meshy's metalness by 0.35 and its gloss by 0.65, so units no longer show white speckles. The humanoid open-edge limit is 700, measured on a hooded rider.
 
 ## 2026-11-06
 
