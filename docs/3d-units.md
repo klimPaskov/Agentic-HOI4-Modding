@@ -44,6 +44,10 @@ Every type gets the six land-unit roles: idle, move, attack, defend, retreat and
 
 Mounts are built to vanilla's horse size on the map, which is smaller than vanilla infantry. A mounted unit is two jobs: a `mount` and a `rider`. The mount's entity attaches the rider's entity to its `Saddle_Node`, the way vanilla cavalry does, so one horse can carry several kinds of rider.
 
+## Pick units players will see
+
+A division shows the model of its highest-priority sub-unit (`priority` in the unit's `sub_units` entry). A unit that never leads a template, for example archers next to higher-priority infantry, is drawn only when a player builds a template led by it. Before you pay for a model, check that the unit leads at least one starting or AI division template. Spend credits first on units that lead starting divisions.
+
 ## What happens
 
 1. **Reference image.** One clean picture of the unit, without weapons in hand and on a plain background. You look at it and approve it.
