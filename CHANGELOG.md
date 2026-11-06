@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Move the Meshy MCP pin from 0.6.7 to 0.6.9 (runtime lock, bootstrap identities and the tool schema lock re-captured from a live `tools/list`). 0.6.9 adds `texture_model` to `meshy_image_to_3d`, which picks the texture model apart from the geometry (`meshy-7`, `meshy-n1` or `meshy-6-lite`). It needs HOI4 Mod Setup with the 0.6.9 launcher (klimPaskov/HOI4-Mod-Setup#165), and projects on the 0.6.7 runtime need **Repair**. The profiles keep `meshy-7`.
+- A mount or four-legged beast generation no longer sends `pose_mode`. Meshy's a-pose and t-pose are for humanoids only.
+- `docs/3d-units.md` gives a mount's cost as 35 credits (model 30, remesh 5) and a mounted unit's as about 84.
+
 ## 2026-11-06.1
 
 Package release `package-2026-11-06.1`. HOI4 Agent Tools stays on 4.8.0 and HOI4 Live Tools on 1.3.0, the newest published versions.

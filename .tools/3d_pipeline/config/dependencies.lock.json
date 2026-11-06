@@ -4,7 +4,7 @@
   "resolution_policy": "exact_package_and_source_commit_pins",
   "bootstrap": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
   "sources": {
-    "meshy_mcp": "npm:@meshy-ai/meshy-mcp-server@0.6.7",
+    "meshy_mcp": "npm:@meshy-ai/meshy-mcp-server@0.6.9",
     "blender_lab_mcp": "https://projects.blender.org/lab/blender_mcp.git@dbbf836ad4b1025f14a2b3b504c43903f39e0b04",
     "io_pdx_mesh": "https://github.com/ross-g/io_pdx_mesh/releases/download/0.91/blender-io_pdx_mesh.zip"
   },

@@ -19,8 +19,8 @@ Prices come from `.tools/3d_pipeline/config/meshy_pricing.json`.
 | --- | --- | --- |
 | Foot unit (soldier, archer, giant, beast) | model 30, remesh 5, rig 5, six animations at 3 each | about 58 |
 | Rider of a mounted unit | model 30, remesh 5, rig 5, three animations | about 49 |
-| Mount or four-legged beast | model 30 (Blender rigs and animates it) | 30 |
-| Mounted unit (rider plus mount) | both of the above | about 79 |
+| Mount or four-legged beast | model 30, remesh 5 (Blender rigs and animates it) | 35 |
+| Mounted unit (rider plus mount) | both of the above | about 84 |
 
 Blender work costs nothing. Your agent asks you once for a credit budget per unit and never pays for a retry.
 

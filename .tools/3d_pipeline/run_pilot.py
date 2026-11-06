@@ -3347,6 +3347,8 @@ def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:
         spec.setdefault("profile_validation_overrides", dict(unit["validation_overrides"]))
     if unit["rig"] == "blender_quadruped":
         spec.setdefault("asset_kind", "creature")
+        # Meshy's a-pose and t-pose are for humanoids only; a four-legged generation is sent without one.
+        spec["meshy_pose_mode"] = None
         spec.setdefault("creature_rig_family", "quadruped")
         # The raw generation is hundreds of loose pieces; the rig needs one closed surface.
         spec.setdefault("creature_remesh", True)
