@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "8997ff57eb5d9eb32faf6b6a39117bf622101d5b",
+  "generated_for_revision": "1c4f558a19da3f234445d6875a7fc32f41a8b9d5",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15005,13 +15005,13 @@
         },
         {
           "path": ".tools/3d_pipeline/calibrate_deformation.py",
-          "sha256": "5f7a7c61a6b45192c24012df2ff7f3dff10173bcac885e5499a48bcdf596a8b7",
-          "size": 10217
+          "sha256": "ff0ede542fe3577a35e50e556dabb4930090b0af2671a5c6e57acb330cea07f1",
+          "size": 11625
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "6b48bcf1a99f6f941c6d2bbec76b9b97c356ef93696b96fc612a19d070be8b44",
-          "size": 38802
+          "sha256": "13d322b4aab0f324d497c6e96dba1162ba5a41901d483c2332d4ec452c3e57bf",
+          "size": 41367
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -15025,8 +15025,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/deformation_calibration.json",
-          "sha256": "240118823c67593b72f2b1671168dac3e69cfc2771939c4a699320004a7bd4e4",
-          "size": 6528
+          "sha256": "8648bd62bf90dceb5edfde2611ea09581d815d2689bce62ff4c6f86108cc5bfb",
+          "size": 6672
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_pricing.json",
@@ -15100,8 +15100,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_deform.py",
-          "sha256": "ef01d1f94aaa1abfdaa7f7d33e5c15829e62b76d96b8e910644313ca23ccc086",
-          "size": 20133
+          "sha256": "a428843b24e3ae67a987c1c70cb6c05852c19cf1094214d4856238bfc93e178a",
+          "size": 20607
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_ground.py",
@@ -15110,13 +15110,13 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_motion.py",
-          "sha256": "e6c75129e127619135779b9a1f677657ab3d08ed046ab916e52064f1ad6f4d9b",
-          "size": 16141
+          "sha256": "e22403c5f1a1833bf2d8403c664af205fa5d58c8310b49c8c3e030fe1555eaf3",
+          "size": 20127
         },
         {
           "path": ".tools/3d_pipeline/lib/profile_gates.py",
-          "sha256": "bd4da02d226e5e7638e45c0cfd650d74fcc3ecc0e2a1e52fb6002f2d694886ec",
-          "size": 14405
+          "sha256": "3fede8a978ee6b97b177de1c920bd70305d290163baac468fc2bf66ca2726de1",
+          "size": 14838
         },
         {
           "path": ".tools/3d_pipeline/lib/reuse.py",
@@ -15125,8 +15125,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/stage_verdict.py",
-          "sha256": "200abe8911361368534ae92fdeb3e3bfa52be74d7b5d756ce3aa9b09b0677ea4",
-          "size": 6384
+          "sha256": "dadd2c3f584099f123b28c1491e1c0b6600b925005db9b17e704e05f50ac6e4d",
+          "size": 6565
         },
         {
           "path": ".tools/3d_pipeline/lib/texture_lineage.py",
@@ -15800,8 +15800,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_deformation_checks.py",
-          "sha256": "487372763fec94b76889b30f59ea71e192cb0936bde145b5a8baf847a14ade4b",
-          "size": 12959
+          "sha256": "83e12990616a11fa27d5a18f89da9accf75bb4ab648658921c953ff2ff4b93c2",
+          "size": 13127
         },
         {
           "path": ".tools/3d_pipeline/tests/test_explicit_batch_repair.py",
@@ -15857,6 +15857,11 @@
           "path": ".tools/3d_pipeline/tests/test_locator_adapter_contract.py",
           "sha256": "f3ae58b89a6e0c6ed9fd3b145f81b6f815533679f39f239d9437a321a21b2aef",
           "size": 29310
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_loose_parts.py",
+          "sha256": "01304df4c4d850bd07ca70b36434196eaf9689d1b803972fbd49cb6775a837d0",
+          "size": 5613
         },
         {
           "path": ".tools/3d_pipeline/tests/test_manual_creature_rig_contract.py",
@@ -15930,8 +15935,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_profile_gates.py",
-          "sha256": "31dd8764f42abcc09d7ad8c6de6b388bf1a56e57a618c34aa5e6679a8c622eed",
-          "size": 30948
+          "sha256": "01d93398db805d105d44528132c0a35e7ec61467317cef95a3c73b54ad767568",
+          "size": 31391
         },
         {
           "path": ".tools/3d_pipeline/tests/test_quadruped_layout.py",
