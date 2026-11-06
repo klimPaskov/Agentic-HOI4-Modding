@@ -170,6 +170,20 @@
   ".tools/3d_pipeline/adapter/pdx_skin_membership.py": {
    "PLR0915 verify_pdx_skin_membership": 60
   },
+  ".tools/3d_pipeline/adapter/quadruped_layout.py": {
+   "C901 detect_landmarks": 17,
+   "F841 Local variable `names` is assigned to but never used": 1,
+   "PLR0915 detect_landmarks": 78,
+   "PLR0915 pose_at": 66
+  },
+  ".tools/3d_pipeline/adapter/quadruped_rig.py": {
+   "PLR0915 author_action": 71,
+   "PLR0915 author_rig": 64
+  },
+  ".tools/3d_pipeline/adapter/rider_seat.py": {
+   "B007 Loop control variable `side` not used within loop body": 1,
+   "PLR0915 seat_rider_action": 62
+  },
   ".tools/3d_pipeline/adapter/skeletal_export_partition.py": {
    "B023 Function definition does not bind loop variable `differences`": 2,
    "C901 exported_mesh_streams": 19,
@@ -191,6 +205,12 @@
    "PLR0915 main": 51,
    "PLR0915 safe_extract": 56
   },
+  ".tools/3d_pipeline/check_unit_files.py": {
+   "C901 check_files": 32,
+   "C901 check_registration": 24,
+   "PLR0915 check_files": 78,
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 1
+  },
   ".tools/3d_pipeline/init_pilot_jobs.py": {
    "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 1
   },
@@ -201,6 +221,9 @@
   },
   ".tools/3d_pipeline/lib/paths.py": {
    "F401 `os` imported but unused": 1
+  },
+  ".tools/3d_pipeline/lib/unit_registration.py": {
+   "F541 f-string without any placeholders": 1
   },
   ".tools/3d_pipeline/run_pilot.py": {
    "B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling": 1,
@@ -214,6 +237,9 @@
    "PLR0915 run_shared_humanoid_batch": 84,
    "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 5,
    "S110 `try`-`except`-`pass` detected, consider logging the exception": 1
+  },
+  ".tools/3d_pipeline/tests/blender_quadruped_integration.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 2
   },
   ".tools/3d_pipeline/tests/blender_rigid_weapon_attachment_integration.py": {
    "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 1
@@ -251,6 +277,9 @@
   },
   ".tools/3d_pipeline/tests/test_rigid_weapon_attachment_tool.py": {
    "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 1
+  },
+  ".tools/3d_pipeline/tests/test_unit_files.py": {
+   "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 4
   },
   ".tools/3d_pipeline/tests/test_workflow_sync_contracts.py": {
    "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 4

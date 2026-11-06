@@ -32,6 +32,8 @@ workflow-documentation task.
 Each gate is defined once in the guide:
 
 - **Route**: choose it before any provider call ([Route selection](references/production-guide.md#route-selection-and-component-completion)).
+- **Unit type**: a land unit names one `unit_type`, which sets its rig and animations ([Unit types](references/production-guide.md#unit-types-and-the-unit-route)).
+- **Files**: `check_unit_files.py` checks the exported bytes and the registration; `run_pilot.py --status` names the next step after any failure.
 - **Key and dependencies**: provider work needs a nonblank `MESHY_API_KEY`
   first, then the reviewed dependency lock, live schemas, Blender bridge and
   pinned io_pdx_mesh export support ([Hard start gates](references/production-guide.md#hard-start-gates)).

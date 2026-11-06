@@ -10,7 +10,8 @@
   },
   "compatibility": {
     "blender": {
-      "supported_minors": ["5.1", "5.2"]
+      "supported_minors": ["5.1", "5.2"],
+      "winget_version": "5.2.3"
     },
     "io_pdx_mesh": {
       "source_sha256": "A683DF08318CB700014C7FE9A3D15139E5FB2313C7E98715204263E48931F7C2",

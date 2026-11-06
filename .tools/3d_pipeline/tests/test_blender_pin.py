@@ -134,6 +134,9 @@ class FindBlenderTests(unittest.TestCase):
         run_patch = patch.object(bootstrap, "run", side_effect=self.fake_version)
         run_patch.start()
         self.addCleanup(run_patch.stop)
+        install_patch = patch.object(bootstrap, "install_pinned_blender")
+        self.installs = install_patch.start()
+        self.addCleanup(install_patch.stop)
 
     def fake_version(self, command: list[str], **_kwargs: object) -> str:
         self.assertEqual(command[1:], ["--version"])
@@ -179,6 +182,17 @@ class FindBlenderTests(unittest.TestCase):
         with self.assertRaisesRegex(bootstrap.SetupError, "No usable Blender executable") as raised:
             bootstrap.find_blender()
         self.assertNotIsInstance(raised.exception, bootstrap.UnsupportedBlenderError)
+        self.installs.assert_called_once()
+
+    def test_a_supported_build_needs_no_install(self) -> None:
+        self.install("Blender 5.2", "5.2.0")
+        bootstrap.find_blender()
+        self.installs.assert_not_called()
+
+    def test_the_lock_pins_a_supported_winget_version(self) -> None:
+        lock = json.loads((PIPELINE_ROOT / "config" / "dependencies.lock.json").read_text(encoding="utf-8"))
+        blender = lock["compatibility"]["blender"]
+        self.assertIn(".".join(blender["winget_version"].split(".")[:2]), blender["supported_minors"])
 
     def test_a_build_that_does_not_report_a_version_is_ignored(self) -> None:
         self.install("Blender 9.9", "")

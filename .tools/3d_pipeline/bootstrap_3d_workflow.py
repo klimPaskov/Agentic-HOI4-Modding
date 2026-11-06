@@ -338,6 +338,14 @@ def select_supported_blender(
     return executable, shortcut, version
 
 
+def portable_blender_executables(programs: Path) -> list[Path]:
+    """Portable builds unpacked by hand, such as %LOCALAPPDATA%/Programs/Blender 5.2.2/blender-5.2.2-windows-x64."""
+    if not programs.exists():
+        return []
+    folders = [folder for folder in programs.glob("Blender*") if folder.is_dir() and folder.name != "Blender Foundation"]
+    return [path for folder in folders for path in folder.glob("**/blender.exe") if len(path.relative_to(folder).parts) <= 3]
+
+
 def discover_blender_installs() -> list[tuple[str, Path, Path | None]]:
     """Return every runnable Blender build found as (version, executable, shortcut)."""
     user_profile = Path(os.environ.get("USERPROFILE", str(Path.home())))
@@ -373,6 +381,7 @@ def discover_blender_installs() -> list[tuple[str, Path, Path | None]]:
     for root in install_roots:
         if root.exists():
             candidates.extend((path, None) for path in root.rglob("blender.exe"))
+    candidates.extend((path, None) for path in portable_blender_executables(local_appdata / "Programs"))
 
     found: list[tuple[str, Path, Path | None]] = []
     seen: set[Path] = set()
@@ -413,7 +422,34 @@ def find_blender(pipeline_root: Path = PIPELINE_ROOT) -> tuple[Path, Path | None
                     f"BLENDER_EXE points to Blender {version}, which is not a supported minor "
                     f"(supported: {', '.join(supported)})."
                 )
+    if not any(blender_minor_of(version) in supported for version, _executable, _shortcut in found) and not explicit:
+        install_pinned_blender(pipeline_root)
+        found = discover_blender_installs()
     return select_supported_blender(found, supported)
+
+
+def install_pinned_blender(pipeline_root: Path = PIPELINE_ROOT) -> None:
+    """Install the lock's pinned Blender with winget when no supported build is present, as Node is installed."""
+    lock = json.loads((pipeline_root / "config" / "dependencies.lock.json").read_text(encoding="utf-8"))
+    pinned = lock.get("compatibility", {}).get("blender", {}).get("winget_version")
+    winget = shutil.which("winget")
+    if not pinned or not winget:
+        return
+    run(
+        [
+            winget,
+            "install",
+            "--id",
+            "BlenderFoundation.Blender",
+            "--exact",
+            "--version",
+            str(pinned),
+            "--silent",
+            "--disable-interactivity",
+            "--accept-source-agreements",
+            "--accept-package-agreements",
+        ]
+    )
 
 
 def ensure_npx() -> Path:
@@ -938,7 +974,8 @@ def adapter_source_hashes(adapter_root: Path) -> dict[str, str]:
     """Bind the complete flat adapter source closure, rejecting missing local imports."""
     sources = sorted(adapter_root.glob("*.py"), key=lambda path: path.name)
     local_modules = {path.stem for path in sources}
-    external_modules = {"bpy", "bmesh", "mathutils", "mcp", "io_pdx_mesh", "io_anim_bvh"}
+    # numpy is bundled with every Blender build; only the Blender-side worker modules import it.
+    external_modules = {"bpy", "bmesh", "mathutils", "numpy", "mcp", "io_pdx_mesh", "io_anim_bvh"}
     stdlib_modules = getattr(sys, "stdlib_module_names", None)
     if stdlib_modules is None:  # Python 3.9 has no stdlib_module_names.
         stdlib_root = sysconfig.get_path("stdlib")
