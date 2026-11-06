@@ -144,6 +144,41 @@ class HeldProps(unittest.TestCase):
         self.assertEqual((list(holding), bone), ([0, 1, 2], 0))
 
 
+class PropClearance(unittest.TestCase):
+    """UNIT-PROP-CLIP: a held prop going inside the body in a frame is named, frame by frame."""
+
+    # A closed torso block on the spine: the test body's own ribbons have no inside.
+    TORSO = [cube((0.0, 1.4, 0.0), 0.3, [("Spine", 1.0)])]
+
+    def clip_warnings(self, prop):
+        with tempfile.TemporaryDirectory() as folder:
+            write_unit(Path(folder), self.TORSO, None, prop)
+            found, facts = check_unit_files.check_files(Path(folder), None, None, limits=LIMITS)
+        return [item for item in found if item.rule == "UNIT-PROP-CLIP"], facts["motion"]["u.mesh"]["props"]
+
+    def test_a_prop_beside_the_body_is_clear(self) -> None:
+        # The spike is left off: it sits beside the head ribbon, and a point behind an open sheet reads as inside.
+        warnings, props = self.clip_warnings(polearm("LeftUpLeg", shift=0.1)[:-1])
+        self.assertEqual(warnings, [])
+        self.assertEqual((props[0]["prop_bone"], props[0]["frames_over"]), ("LeftUpLeg", 0))
+
+    def test_a_prop_through_the_torso_is_named_with_its_worst_frame(self) -> None:
+        through = polearm("LeftUpLeg", shift=0.1)[:-1] + [cube((0.0, 1.3 + 0.05 * k, 0.0), 0.04, [("LeftUpLeg", 1.0)]) for k in range(4)]
+        warnings, props = self.clip_warnings(through)
+        self.assertEqual(len(warnings), 1)
+        self.assertEqual(warnings[0].severity, "warning")
+        self.assertIn("u_move.anim frame", warnings[0].message)
+        self.assertGreater(props[0]["worst_inside_share"], 0.02)
+
+    def test_the_holding_hand_and_forearm_are_left_out(self) -> None:
+        mesh = pdx_deform.SkinnedMesh(
+            positions=np.zeros((1, 3)), triangles=np.zeros((0, 3), dtype=np.int64), joints=np.array([[0, -1, -1, -1]]),
+            weights=np.array([[1.0, 0, 0, 0]]), bones=["Spine", "ForeArm", "Hand", "Finger", "Head"], parents=[-1, 0, 1, 2, 0],
+            inverse_bind=np.zeros((5, 4, 4)),
+        )
+        self.assertEqual(pdx_motion._holding_bones(mesh, 2), {1, 2, 3})
+
+
 class LooseParts(unittest.TestCase):
     def test_a_part_resting_on_the_hips_and_weighted_to_them_passes(self) -> None:
         loose, facts = findings([cube((0.0, 1.0, 0.06), 0.1, [("Hips", 1.0)])])
