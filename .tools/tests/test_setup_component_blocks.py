@@ -64,8 +64,9 @@ class SetupComponentBlocks(unittest.TestCase):
 		self.assertEqual(failures, [])
 
 	def test_the_reader_finds_each_kind_of_broken_block(self) -> None:
-		start = "<!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:START -->"
-		end = "<!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:END -->"
+		# Built from parts so this file never holds a marker of its own.
+		marker = "<!-- HOI4_MOD_SETUP:" + "COMPONENT:workflow.live_tools:{} -->"
+		start, end = marker.format("START"), marker.format("END")
 		self.assertEqual(block_problems(f"a\n{start}\nb\n{end}\n"), [])
 		self.assertEqual(block_problems(f"a\n{start}\n"), ["workflow.live_tools is never closed"])
 		self.assertEqual(block_problems(f"{end}\n"), ["stray end of workflow.live_tools"])
