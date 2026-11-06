@@ -120,6 +120,31 @@ class RepairInBlender(unittest.TestCase):
         self.assertEqual(changed["bridge_faces_removed"], 0)
         self.assertEqual(changed["weight_seams"], {"HandL-HandR": 2})
 
+    def test_a_crotch_seam_is_blended_until_the_rule_passes(self) -> None:
+        import test_motion_checks as legged
+        from lib import pdx_motion
+
+        with tempfile.TemporaryDirectory() as folder:
+            unit = Path(folder) / "unit"
+            legged.write_unit(unit, "u", {"move": (20, legged.walk)}, crotch_blend=0.0)
+            self.assertGreater(pdx_motion.seam_edges(pdx_deform.load_mesh(unit / "u.mesh")).edges, 0)
+            out = Path(folder) / "repair"
+            with redirect_stdout(io.StringIO()):
+                repair_unit.main([str(unit), "--out", str(out), "--repairs", "weights"])
+            changed = next(iter(json.loads((out / "repair_report.json").read_text(encoding="utf-8"))["blender"]["objects"].values()))
+            after = pdx_deform.load_mesh(out / "files" / "u.mesh")
+        self.assertGreater(changed["leg_seam_edges"], 0)
+        self.assertEqual(pdx_motion.seam_edges(after).edges, 0)
+
+
+class RepairRequest(unittest.TestCase):
+    def test_the_request_names_the_leg_seams(self) -> None:
+        import test_motion_checks as legged
+
+        with tempfile.TemporaryDirectory() as folder:
+            legged.write_unit(Path(folder), "u", {}, crotch_blend=0.0)
+            self.assertEqual(repair_unit.leg_seam_pairs(Path(folder) / "u.mesh"), [["LeftUpLeg", "RightUpLeg"]])
+
 
 if __name__ == "__main__":
     unittest.main()

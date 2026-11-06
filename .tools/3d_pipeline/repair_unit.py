@@ -18,8 +18,9 @@ Repairs:
 - `ground`: shift each clip's root translation keys so the lowest point meets the ground in every
   frame; a death clip is only lifted where it sinks (UNIT-ANIM-GROUND). Runs without Blender.
 - `weights`: blend the existing weights across each weight seam (a bridge inside one continuous
-  skin, which `bridges` keeps) over a few edge rings, then keep at most four influences per
-  vertex and normalize. No weight is created for a bone a vertex was not already near.
+  skin, which `bridges` keeps) and each leg seam (a crotch whose vertices follow one thigh each,
+  UNIT-SEAM) over a few edge rings, then keep at most four influences per vertex and normalize.
+  No weight is created for a bone a vertex was not already near.
 
 The report `<out>/repair_report.json` lists what each repair changed and the rules before and after.
 """
@@ -39,7 +40,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import check_unit_files
-from lib import pdx_deform, pdx_ground
+from lib import pdx_deform, pdx_ground, pdx_motion
 from review_unit import find_blender
 
 BLENDER_SCRIPT = PIPELINE_ROOT / "blender" / "repair_mesh.py"
@@ -70,6 +71,16 @@ def ground_clips(files: Path, mesh: Path, stem: Optional[str], stems: List[str])
     return results
 
 
+def leg_seam_pairs(mesh: Path) -> List[List[str]]:
+    """The bone pairs of the mesh's hard leg seams (UNIT-SEAM), for the `weights` repair to blend."""
+
+    try:
+        report = pdx_motion.seam_edges(pdx_deform.load_mesh(mesh))
+    except (OSError, ValueError, IndexError):
+        return []
+    return [pair.split("-", 1) for pair in report.pairs]
+
+
 def repair(folder: Path, out: Path, repairs: List[str], stem: Optional[str], max_hole_edges: int, unit_type: Optional[dict]) -> dict:
     meshes = sorted(folder.glob("*.mesh"))
     mesh = next((m for m in meshes if m.stem == stem), meshes[0] if meshes else None)
@@ -91,6 +102,7 @@ def repair(folder: Path, out: Path, repairs: List[str], stem: Optional[str], max
             "max_hole_edges": max_hole_edges,
             "seam_rings": SEAM_RINGS,
             "seam_passes": SEAM_PASSES,
+            "leg_seam_pairs": leg_seam_pairs(mesh),
         }
         request_path = out / "repair_request.json"
         request_path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")

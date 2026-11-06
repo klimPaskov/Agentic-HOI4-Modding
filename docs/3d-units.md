@@ -83,6 +83,11 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 | No surface joining body parts that move apart, such as a hand fused to a thigh | Every clip tears the join into spikes and webs |
 | No frame stretches or squashes the surface more than vanilla clips do | Catches weights leaking across body parts and torn joins in every frame, not only the frames someone looked at |
 | Feet stay on the ground in every frame (a dead body may lie anywhere) | Floating and sinking units |
+| No seam between the legs whose two sides follow one leg each, unblended | Parting the legs tears the seam open |
+| No knee bends backward in any frame | A leg solver can pick the wrong side, and the unit walks like a bird |
+| Every clip moves at least as much as the stillest vanilla clip | A near-frozen clip reads as a static pose on the map |
+| No two roles of one unit play the same motion | Each role must read as itself: a retreat that is the walk, a defend that is the idle |
+| With `--mod-root`: no clip is one another unit of the mod already plays, unless the unit is a reskin of it (`--reskin-of <unit>`) | Every unit has its own animations. Reskins of one base unit, with the same body and rig, may share them |
 | With `--mod-root`: the mesh, every animation, an entity with every state and a sub-unit sprite are registered | Unregistered files never show |
 
 The surface and deformation limits are the worst values measured on the game's own soldiers, riders and horses (or on its vehicles, for a unit type with `"calibration_group": "vehicle"`). They live in `.tools/3d_pipeline/config/deformation_calibration.json`. After a game update, measure them again with `calibrate_deformation.py "<game folder>" --out .tools/3d_pipeline/config/deformation_calibration.json`. Never raise a limit by hand to pass a unit: fix the unit.
@@ -122,7 +127,7 @@ py -3.13 -B .tools/3d_pipeline/repair_unit.py gfx/models/units/<unit> --out <job
 | `winding` | Triangles facing the wrong way and inside-out parts (UNIT-WINDING, UNIT-INSIDE-OUT) |
 | `bridges` | Surfaces fusing body parts that move apart, such as an arm pressed into the hips. The joining faces are cut and both sides are closed (UNIT-BRIDGE, and the stretch it causes). A bridge inside one continuous skin, such as an ear root between head and shoulder, is not cut: the report lists it under `weight_seams`, and it needs blended weights instead |
 | `holes` | Small open loops, up to `--max-hole-edges` edges (UNIT-HOLE) |
-| `weights` | Hard weight edges inside one skin: the existing weights are blended over a few rings around each weight seam, then each vertex keeps at most four influences |
+| `weights` | Hard weight edges inside one skin, and a crotch whose two sides follow one leg each (UNIT-SEAM): the existing weights are blended over a few rings around each seam, then each vertex keeps at most four influences |
 | `ground` | Feet off or under the ground in a clip: the root bone's existing translation keys are shifted so the lowest point meets the ground in every frame. A death clip is only lifted where it sinks (UNIT-ANIM-GROUND). Needs no Blender |
 
 Repairs never make new bones, a new weight set or new keyframes: a clip that does not read as its role, or a prop that passes through the body, needs its motion authored again in Blender. It writes the repaired copy to `<job folder>/repair/files` and leaves `gfx/` alone. The skeleton, materials and the weights of every vertex it does not cut stay as they were, so the unit's `.anim` files still play. `repair_report.json` lists what changed and the check results before and after. Review the copy with `review_unit.py`, and copy it into `gfx/` only after a fresh reviewer passes it.
