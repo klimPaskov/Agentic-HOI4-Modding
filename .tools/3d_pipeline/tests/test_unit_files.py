@@ -189,6 +189,27 @@ class CheckUnitFiles(unittest.TestCase):
                 self.assertEqual(check_unit_files.main([name]), 1)
 
 
+class RegistrationAuditFallback(unittest.TestCase):
+    def test_a_mod_with_an_older_audit_gets_a_warning_not_a_crash(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            mod = Path(folder)
+            unit = mod / "gfx" / "models" / "units" / "u"
+            unit.mkdir(parents=True)
+            write_mesh(unit / "u.mesh", ["Hips"])
+            (mod / ".tools" / "audits").mkdir(parents=True)
+            older_audit = "def _files(root, folder):\n    return []\n"
+            (mod / ".tools" / "audits" / "audit_asset_wiring_static.py").write_text(older_audit, encoding="utf-8")
+            original = check_unit_files.REPO_ROOT
+            check_unit_files.REPO_ROOT = mod
+            try:
+                findings = check_unit_files.check_unit_registration(unit, mod, None)
+            finally:
+                check_unit_files.REPO_ROOT = original
+                sys.modules.pop("audit_asset_wiring_static", None)
+        self.assertEqual([(item.rule, item.severity) for item in findings], [("UNIT-REG-UNAVAILABLE", "warning")])
+        self.assertIn("ModelLookup", findings[0].message)
+
+
 class UnitTypeCatalog(unittest.TestCase):
     def test_every_type_is_complete(self) -> None:
         types = check_unit_files.load_unit_types()

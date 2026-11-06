@@ -62,6 +62,8 @@ Registration rules (with `--mod-root`):
 - UNIT-REG-MESHSETTINGS, UNIT-REG-TEXTURE: a `meshsettings` name that is not an object of the
   mesh, or a texture that is not next to the mesh.
 - UNIT-REG-SPRITE (warning): no sub-unit's sprite resolves to an entity that shows the unit.
+- UNIT-REG-UNAVAILABLE (warning): the mod's `.tools/audits/audit_asset_wiring_static.py` is missing or an older
+  copy without the kit's model API, so registration was not checked. The file rules still run.
 """
 
 from __future__ import annotations
@@ -348,6 +350,31 @@ def _import_registration_audit():
     return audit
 
 
+REGISTRATION_API = ("ModelLookup", "game_model_roots", "check_pdxmesh", "_files", "_parse_source", "_scalar_node")
+
+
+def _registration_audit():
+    """The kit's registration audit, or None and the reason a mod's copy cannot be used."""
+
+    try:
+        audit = _import_registration_audit()
+    except ImportError as error:
+        return None, f"cannot import it ({error})"
+    missing = [name for name in REGISTRATION_API if not hasattr(audit, name)]
+    return (None, f"it lacks {', '.join(missing)}") if missing else (audit, "")
+
+
+def check_unit_registration(folder: Path, mod_root: Path, unit_type: Optional[dict]) -> List[Finding]:
+    """The registration rules, or one warning when the mod's audit cannot run them."""
+
+    _audit, reason = _registration_audit()
+    if reason:
+        # A mod that carries its own, older `.tools/audits` checks registration with its own audits.
+        return [Finding("UNIT-REG-UNAVAILABLE", "warning", (mod_root / ".tools" / "audits").as_posix(),
+                        f"registration not checked: the mod's audit_asset_wiring_static.py is not the kit's ({reason})")]
+    return check_registration(folder, mod_root, unit_type)
+
+
 def check_registration(folder: Path, mod_root: Path, unit_type: Optional[dict]) -> List[Finding]:
     audit = _import_registration_audit()
     findings: List[Finding] = []
@@ -480,7 +507,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         raise SystemExit(f"Not a folder: {folder}")
     findings, facts = check_files(folder, unit_type, profile, args.stem)
     if args.mod_root:
-        findings.extend(check_registration(folder, args.mod_root, unit_type))
+        findings.extend(check_unit_registration(folder, args.mod_root, unit_type))
     errors = [item for item in findings if item.severity == "error"]
     if args.json:
         print(json.dumps({"findings": [asdict(item) for item in findings], "facts": facts}, indent=2))
