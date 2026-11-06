@@ -46,6 +46,7 @@ ESCALATE = {
     "UNIT-ANIM-SHARED": "the unit plays another unit's clip: give it its own clip, or declare it a reskin",
     "UNIT-ROLE-MISSING": "a role has no clip",
     "UNIT-ANIM-STATIC": "a clip moves nothing",
+    "UNIT-ANIM-FPS": "a clip is not at 30 fps: export it again with the kit (run_pilot.py's export step, or live_helpers.export_clip in a live session), which retimes it to 30 and keeps its length in seconds",
     "UNIT-UNSKINNED": "the mesh has no skeleton",
     "UNIT-LOOSE-PART": "a loose part floats or drifts off the body: bind it to the bone it rests on with the job's loose_part_edits and rerun the job (free), or weight it by hand",
 }
