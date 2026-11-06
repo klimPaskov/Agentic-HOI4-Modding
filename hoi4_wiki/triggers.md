@@ -1,88 +1,18 @@
 # Triggers
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Triggers", revision 105091, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+How this page lines up with `documentation/triggers_documentation.md` of build 1.19.3.0.
 
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105091" sources="documentation/triggers_documentation.md documentation/script_math_functions.md common/collections/ common/scripted_triggers/ common/factions/goals/ common/medals/ common/ribbons/ common/on_actions/ common/raids/ common/operations/ common/unit_leader/ common/combat_tactics.txt common/decisions/ common/national_focus/ common/equipment_groups/ common/military_industrial_organization/ common/special_projects/ common/technologies/ common/ai_strategy/ common/scripted_effects/ events/ localisation/english/ hoi4.exe" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against `documentation/triggers_documentation.md` (all 596 triggers: scope lists, parameter keys, stated notes), the collection, scripted trigger, faction goal, medal, ribbon, on action, raid, operation and unit leader files under `common/`, and text searches of vanilla script and `hoi4.exe`.
-- Kit blocks added (30): `coverage`, `comparison-notes`, `scope-row-corrections`, `scope-iterator-additions`, `collection-triggers`, `scope-keyword-notes`, `flow-control-notes`, `any-scope-general`, `career-profile-notes`, `variable-array-triggers`, `country-general-notes`, `country-trigger-additions`, `ideas-keys`, `military-notes`, `intelligence-keys`, `peace-conference-corrections`, `state-scope-corrections`, `character-trigger-additions`, `advisor-warning`, `unit-leader-notes`, `scientist-names`, `combat-notes`, `division-scope-notes`, `mio-scope-notes`, `contract-name`, `other-scopes`, `meta-trigger-notes`, `diplomacy-scripted-trigger-notes`, `resistance-trigger-notes`, `useful-scripted-triggers-check`.
-- Wrong or stale wiki text found: the "last updated in 1.17.0" statement; `all_purchase_contract` (engine name `all_purchase_contracts`); swapped `all_core_state` and `any_core_state` descriptions; `pc_is_untouched_loser` and `pc_is_liberated_by` (not in 1.19.3); `ships_in_area` and `skill_advantage` under the wrong scope; `limit` instead of `level` in `any_province_building_level`; `frits` for `first` in `career_profile_check_playthrough_ratio`; the `has_mines` example; `is_mio_available` description and `token` keys in the MIO examples; `common/equipment_groups.txt` (now a folder); `tag` in the state-scope resistance example; `owner` and `controller` marked unusable as targets; `pc_is_state_claimed` parameter; `is_scientist_active` and `deal_completition` spellings.
-- Example keys the inventory flagged: `achievement`, `mod`, `ai_area`, `check_mio_parent_completed`, `goal`, `not_tooltip` and `var_list` are in the documentation; `medal` and `ribbon` are unused in vanilla script (their example ids are real); `EQUIPMENT_ARCHETYPE` is a meta trigger placeholder; `state_is_in_area` is an example name vanilla does not define; `should_initiate_resistance_123_321` follows the vanilla naming pattern.
-- Gaps left: parameters were compared only where the documentation or vanilla script states them. The "must use > or <" operator notes, the Dual scopes table (covered on Scopes) were not re-checked. The "Version Added" column was checked on 2026-11-01 as far as the installed files allow (see the note under Trigger scopes). Engine behaviour was not run, so inclusive comparisons beyond `collection_size` stay unverified.
-**1.19.4.1 re-check (2026-11-01).** 43 statements depended on vanilla scans or files that the update changed, and all 43 were re-measured on the installed files. Numbers moved: `any_other_country_with_original_tag_of` is used in 17 files (was 1), `any_collection_element` in 180 blocks (was 45), `owner = {` 1086 times (was 1001), `custom_trigger_tooltip` 1818 times (was 1782), `controls_or_subject_of` 436 times (was 76), `has_navy_size` 226 blocks (was 221), `any_province_building_level` 141 blocks (was 140), and vanilla defines 24 of the 43 listed diplomacy enable triggers (was 23). Vanilla now has two `meta_trigger` blocks, and the MIO trait note is corrected because vanilla does use `has_mio_trait` and `is_mio_trait_completed` with a bare token. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-<!-- kit:begin id="coverage" at="top" -->
-**Kit note** How this page lines up with `documentation/triggers_documentation.md` of build 1.19.3.0.
-
-- The file documents 596 triggers under 13 scope headings: ACE, CHARACTER, COMBATANT, COUNTRY, FACTION, INDUSTRIAL_ORG, OPERATION, PURCHASE_CONTRACT, RAID_INSTANCE, SPECIAL_PROJECT, STATE, STRATEGIC_REGION and any. There is no DIVISION heading, and the division triggers show an empty scope list. [docs] `documentation/triggers_documentation.md`
-- The wiki text above says the file was last updated in 1.17.0 (as of 1.17.1.1). That is stale: the wiki tables never named 56 of the 596 triggers. They are written up in kit blocks: the iterator and collection triggers under "Trigger scopes"; the temp-variable, array, loop and expression triggers under "Variables"; `career_profile_set_temp_variable`, `career_profile_set_temp_playthrough_variable` and `num_of_career_profile_points` under "Career profile"; `scope_exists` under "General" (any scope); ten country triggers under "General" of the country scope; four character triggers under "General" of the character scope; `has_cavalry_ratio` and `province_vp` under "Combat"; `is_operation_type` under "Special projects". [docs] `documentation/triggers_documentation.md`
-- `all_purchase_contract`, `pc_is_untouched_loser` and `pc_is_liberated_by` are not documented triggers in 1.19.3 (corrections under "Trigger scopes" and "Peace conferences"). [docs] `documentation/triggers_documentation.md`
-- The rows under "Useful scripted triggers" are scripted triggers defined in vanilla script, not engine triggers. [vanilla-confirmed 1.19.4.1] `common/scripted_triggers/00_scripted_triggers.txt`
-- The only trigger the documentation marks deprecated is `has_unit_leader_flag`; it still works in vanilla (see "Unit leaders"). [docs] `documentation/triggers_documentation.md`
-<!-- kit:end id="coverage" -->
-
-## Table of contents
-
-- [Operators](#Operators)
-- [Context scopes](#Context_scopes)
-- [Scopes](#Scopes)
-  - [Trigger scopes](#Trigger_scopes)
-  - [Dual scopes](#Dual_scopes)
-- [Flow control tools](#Flow_control_tools)
-- [Any scope](#Any_scope)
-  - [General](#General)
-  - [Career profile](#Career_profile)
-  - [Variables](#Variables)
-  - [Debugging](#Debugging)
-- [Country scope](#Country_scope)
-  - [General](#General_2)
-  - [National focuses](#National_focuses)
-  - [Politics](#Politics)
-  - [Balance of power](#Balance_of_power)
-  - [Buildings](#Buildings)
-  - [Technology](#Technology)
-  - [Ideas](#Ideas)
-  - [Diplomacy](#Diplomacy)
-  - [Faction](#Faction)
-  - [War](#War)
-  - [State](#State)
-  - [Military](#Military)
-  - [Doctrine](#Doctrine)
-  - [Equipment](#Equipment)
-  - [Intelligence](#Intelligence)
-  - [AI](#AI)
-  - [Characters](#Characters)
-  - [Peace conferences](#Peace_conferences)
-- [Faction scope](#Faction_scope)
-- [State scope](#State_scope)
-  - [General](#General_3)
-  - [Resistance and Compliance](#Resistance_and_Compliance)
-- [Character scope](#Character_scope)
-  - [General](#General_4)
-  - [Advisors](#Advisors)
-  - [Country leaders](#Country_leaders)
-  - [Unit leaders](#Unit_leaders)
-  - [Operatives](#Operatives)
-  - [Scientists](#Scientists)
-- [Combat](#Combat)
-- [Division scope](#Division_scope)
-- [MIO scope](#MIO_scope)
-- [Contract scope](#Contract_scope)
-- [Special projects](#Special_projects)
-- [Meta triggers](#Meta_triggers)
-- [Scripted triggers](#Scripted_triggers)
-  - [Diplomacy scripted triggers](#Diplomacy_scripted_triggers)
-  - [Resistance initiation triggers](#Resistance_initiation_triggers)
-  - [Useful scripted triggers](#Useful_scripted_triggers)
-- [References and notes](#References_and_notes)
-
----
+- The file documents 596 triggers under 13 scope headings: ACE, CHARACTER, COMBATANT, COUNTRY, FACTION, INDUSTRIAL_ORG, OPERATION, PURCHASE_CONTRACT, RAID_INSTANCE, SPECIAL_PROJECT, STATE, STRATEGIC_REGION and any. There is no DIVISION heading, and the division triggers show an empty scope list.
+- The wiki text above says the file was last updated in 1.17.0 (as of 1.17.1.1). That is stale: the wiki tables never named 56 of the 596 triggers. They are described on this page: the iterator and collection triggers under "Trigger scopes"; the temp-variable, array, loop and expression triggers under "Variables"; `career_profile_set_temp_variable`, `career_profile_set_temp_playthrough_variable` and `num_of_career_profile_points` under "Career profile"; `scope_exists` under "General" (any scope); ten country triggers under "General" of the country scope; four character triggers under "General" of the character scope; `has_cavalry_ratio` and `province_vp` under "Combat"; `is_operation_type` under "Special projects".
+- `all_purchase_contract`, `pc_is_untouched_loser` and `pc_is_liberated_by` are not documented triggers in 1.19.3 (corrections under "Trigger scopes" and "Peace conferences").
+- The rows under "Useful scripted triggers" are scripted triggers defined in vanilla script, not engine triggers.
+- The only trigger the documentation marks deprecated is `has_unit_leader_flag`; it still works in vanilla (see "Unit leaders").
 
 **Conditions** (also known as **Triggers**) are used to check whether certain conditions are fulfilled in the game's current state or not, without being able to change anything in the game's state.`[a]` These return a boolean (true or false), which may be interpreted by the block where it's used. Usually blocks that allow using triggers are an AND unless stated otherwise, which would instantly stop execution upon receiving a single false statement and return false. Please note that the `yes` and `no` inputs are case-sensitive and must not contain any uppercase letters.
 
 The list of triggers may be outdated. A complete, but unsorted, list of triggers can be found in `/Hearts of Iron IV/documentation/triggers_documentation.html` or `/Hearts of Iron IV/documentation/triggers_documentation.md`. As of 1.17.1.1, this file was last updated in the version 1.17.0.
 
-## Operators <a id="Operators"></a>
+## Operators
 
 Every trigger uses one of the three operators: The equality sign `=` or the comparison signs `>` and `<`.
 
@@ -90,17 +20,15 @@ The equality sign can either mean strict equality (Unlike previous games in the 
 
 Not all triggers support the equality sign or comparison signs. See the details for each trigger in the notes for it. If not stated otherwise, the trigger only supports the equality sign.
 
-<!-- kit:begin id="comparison-notes" at="section:Operators" -->
-**Kit note** Which comparisons the 1.19.3 documentation spells out.
+Which comparisons the 1.19.3 documentation spells out.
 
-- `collection_size` is documented as inclusive: `value > X` actually means `value >= X`, and `<` is inclusive in the same way. The documentation gives this warning for no other trigger. [docs] `documentation/triggers_documentation.md`
-- `any_collection_element` takes an optional `count`, documented as "equal or larger", so `count = 3` passes when at least 3 elements pass. [docs] `documentation/triggers_documentation.md`
-- Where the documentation gives worked examples for other triggers they read as strict: for `has_navy_size` it comments `size > 10` as "more than 10" and `size > 39` as "40 or more". [docs] `documentation/triggers_documentation.md`
-- Vanilla writes `collection_size` bounds the way a strict comparison would be written, for example `value < 1` and `value > 19` in `common/factions/goals/faction_goals_short_term.txt` and `common/decisions/USA.txt`. [vanilla-confirmed 1.19.4.1] Under the documented inclusive rule these would mean "at most 1" and "at least 19". [docs] `documentation/triggers_documentation.md` The engine reads these comparisons strictly (see the last note).
-- The engine does not apply the inclusive rule. With a collection of exactly 3 items, `value > 3` and `value < 3` were false and `value = 3`, `value > 2` and `value < 4` were true. So `value > 0` means at least one, as vanilla writes it. The same strict reading held for `count_in_collection` and `has_resources_in_collection`. Details are under [Comparison notes](<collection_modding.md#Comparison_notes>). [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, eval_effect log scan.
-<!-- kit:end id="comparison-notes" -->
+- `collection_size` is documented as inclusive: `value > X` actually means `value >= X`, and `<` is inclusive in the same way. The documentation gives this warning for no other trigger.
+- `any_collection_element` takes an optional `count`, documented as "equal or larger", so `count = 3` passes when at least 3 elements pass.
+- Where the documentation gives worked examples for other triggers they read as strict: for `has_navy_size` it comments `size > 10` as "more than 10" and `size > 39` as "40 or more".
+- Vanilla writes `collection_size` bounds the way a strict comparison would be written, for example `value < 1` and `value > 19` in `common/factions/goals/faction_goals_short_term.txt` and `common/decisions/USA.txt`. Under the documented inclusive rule these would mean "at most 1" and "at least 19". The engine reads these comparisons strictly (see the last note).
+- The engine does not apply the inclusive rule. With a collection of exactly 3 items, `value > 3` and `value < 3` were false and `value = 3`, `value > 2` and `value < 4` were true. So `value > 0` means at least one, as vanilla writes it. The same strict reading held for `count_in_collection` and `has_resources_in_collection`. Details are under [Comparison notes](collection_modding.md#comparison-notes).
 
-## Context scopes <a id="Context_scopes"></a>
+## Context scopes
 
 There are three general scopes all triggers operate in:
 
@@ -114,15 +42,15 @@ Each country acts as a sub-scope of the general country scope, i.e. `GER = { }` 
 
 Triggers won't work in scopes they are not assigned to. Country triggers will not work for states or vice-versa.
 
-## Scopes <a id="Scopes"></a>
+## Scopes
 
-*Main article: [Scopes](<scopes.md>)*
+*Main article: [Scopes](scopes.md)*
 
 These don't serve as triggers, but rather as scopes that change for whom the triggers are being checked. Each one also serves as an AND statement.
 
-### Trigger scopes <a id="Trigger_scopes"></a>
+### Trigger scopes
 
-These can only be used as triggers; trying to use them as [effects](<effects.md>) will result in nothing happening.
+These can only be used as triggers; trying to use them as [effects](effects.md) will result in nothing happening.
 
 Trigger scopes:
 
@@ -271,19 +199,16 @@ any_state_of = {
 }
 ```
 
-<!-- kit:begin id="scope-row-corrections" at="section:Trigger_scopes" -->
-**Kit correction** Rows in the table above that differ from the 1.19.3 documentation.
+Rows in the table above that differ from the 1.19.3 documentation.
 
-- `all_purchase_contract` is not the engine name. The documentation has `all_purchase_contracts` (plural) and `any_purchase_contract` (singular). [docs] `documentation/triggers_documentation.md`
-- The descriptions of `all_core_state` and `any_core_state` are swapped: `all_core_state` needs every core state of the country to pass, `any_core_state` needs at least one. [docs] `documentation/triggers_documentation.md`
-- `all_scientists` is the name; the example `all_scientistst` in that row is a typo. `all_active_scientist` is the documented heading, although the documentation's own example writes `all_active_scientists`. [docs] `documentation/triggers_documentation.md` Both spellings occur as strings in `hoi4.exe`. The plural form `all_active_scientists` is not a trigger in 1.19.4.1: it logged "Invalid trigger 'all_active_scientists'" and "Unknown trigger-type" at load. A scripted trigger whose only content was that unknown trigger still evaluated TRUE. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, scripted trigger run from the console, error.log read.
-- `all_other_country` and `any_other_country` are documented with scope `any`, not "country scope only", and both skip the current country. [docs] `documentation/triggers_documentation.md`
-- The all_*/any_* iterators accept `tooltip = <loc key>` to override the title. The unit leader, army leader, navy leader and MIO iterators also take `include_invisible = yes` (default no). [docs] `documentation/triggers_documentation.md` Vanilla uses `include_invisible` once, in `common/national_focus/finland.txt`. [vanilla-confirmed 1.19.4.1]
-- `any_state_in` takes exactly one of `array`, `continent`, `ai_area` (the id of an AI area) or `strategic_region`, and an optional `tooltip`. The documentation says there is no default tooltip for `array` and `ai_area`, so add `tooltip` for those; its own example misspells `continent` as `conteinent`. [docs] `documentation/triggers_documentation.md` Vanilla has 17 blocks: `strategic_region` in 12, `array` in 5, with `tooltip` in 3. [vanilla-confirmed 1.19.4.1] `common/decisions/INS.txt`
-<!-- kit:end id="scope-row-corrections" -->
+- `all_purchase_contract` is not the engine name. The documentation has `all_purchase_contracts` (plural) and `any_purchase_contract` (singular).
+- The descriptions of `all_core_state` and `any_core_state` are swapped: `all_core_state` needs every core state of the country to pass, `any_core_state` needs at least one.
+- `all_scientists` is the name; the example `all_scientistst` in that row is a typo. `all_active_scientist` is the documented heading, although the documentation's own example writes `all_active_scientists`. Both spellings occur as strings in `hoi4.exe`. The plural form `all_active_scientists` is not a trigger in 1.19.4.1: it logged "Invalid trigger 'all_active_scientists'" and "Unknown trigger-type" at load. A scripted trigger whose only content was that unknown trigger still evaluated TRUE.
+- `all_other_country` and `any_other_country` are documented with scope `any`, not "country scope only", and both skip the current country.
+- The all_*/any_* iterators accept `tooltip = <loc key>` to override the title. The unit leader, army leader, navy leader and MIO iterators also take `include_invisible = yes` (default no). Vanilla uses `include_invisible` once, in `common/national_focus/finland.txt`.
+- `any_state_in` takes exactly one of `array`, `continent`, `ai_area` (the id of an AI area) or `strategic_region`, and an optional `tooltip`. The documentation says there is no default tooltip for `array` and `ai_area`, so add `tooltip` for those; its own example misspells `continent` as `conteinent`. Vanilla has 17 blocks: `strategic_region` in 12, `array` in 5, with `tooltip` in 3.
 
-<!-- kit:begin id="scope-iterator-additions" at="section:Trigger_scopes" -->
-**Kit addition** Scope iterators the table does not list. All rows: [docs] `documentation/triggers_documentation.md`
+Scope iterators the table does not list.
 
 | Name | Scope | Form |
 | --- | --- | --- |
@@ -292,11 +217,9 @@ any_state_of = {
 | `any_other_country_with_original_tag_of` | any | The same, skipping the current country. The documentation's example for it names `any_country_with_original_tag_of`, a copy error. |
 | `all_claimant` | STATE | `{ tooltip = my_loc <triggers> }`. Every country that claims the state in scope must pass; the triggers run in country scope. |
 
-- Vanilla uses `any_country_with_original_tag_of` in 10 files, `any_other_country_with_original_tag_of` in 17, `any_country_of` in 5, `all_country_of` once (`common/decisions/formable_nation_decisions.txt`), `any_other_country_of` once (`common/national_focus/italy.txt`) and `all_claimant` once (`common/scripted_triggers/ROM_scripted_triggers.txt`, with `has_country_flag` inside). [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="scope-iterator-additions" -->
+- Vanilla uses `any_country_with_original_tag_of` in 10 files, `any_other_country_with_original_tag_of` in 17, `any_country_of` in 5, `all_country_of` once (`common/decisions/formable_nation_decisions.txt`), `any_other_country_of` once (`common/national_focus/italy.txt`) and `all_claimant` once (`common/scripted_triggers/ROM_scripted_triggers.txt`, with `has_country_flag` inside).
 
-<!-- kit:begin id="collection-triggers" at="section:Trigger_scopes" -->
-**Kit addition** Collection triggers. A collection is a group of scopes (countries or states) built from an `input` and `operators`. This is the compact syntax; the system itself (inputs, operators, named collections in `common/collections/`) is on [Collection modding](<collection_modding.md>).
+Collection triggers. A collection is a group of scopes (countries or states) built from an `input` and `operators`. This is the compact syntax; the system itself (inputs, operators, named collections in `common/collections/`) is on [Collection modding](collection_modding.md).
 
 | Trigger | Scope | Form |
 | --- | --- | --- |
@@ -307,13 +230,11 @@ any_state_of = {
 | `count_in_collection` | COUNTRY | `count_in_collection = { collection = { ... } size > N }` plus at most one counting mode: `unit = <sub-unit>`, `buildings = { <building> }`, `manpower = yes`; also `unit_category = { ... }`, `stockpile = <archetype>` and `equipment_ratio` (default 0, land units only). `unit`, `buildings` and `manpower` are mutually exclusive. |
 | `has_resources_in_collection` | COUNTRY | `has_resources_in_collection = { collection = { ... } resource = <resource> amount > N }` with optional `extracted = yes` and `buildings = yes` (both default no, mutually exclusive). |
 
-All rows: [docs] `documentation/triggers_documentation.md`
-
-- The documentation says `collection_size` is inclusive (`value > X` means `value >= X`). [docs] `documentation/triggers_documentation.md` The game reads it strictly, so `value > X` means more than X. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, eval_effect log scan. The boundary cases are under [Comparison notes](<collection_modding.md#Comparison_notes>).
-- Key trap: `collection_size` takes its collection under `input`; the other triggers take it under `collection`. Vanilla follows this in all 122 `collection_size` blocks and in all 180 `any_collection_element`, 26 `count_in_collection` and 88 `has_resources_in_collection` blocks. [vanilla-confirmed 1.19.4.1] `common/factions/goals/`
-- The documentation's example for `has_resources_in_collection` writes `collection = { game:scope operators = { country_and_all_subjects } }` without `input =`. Vanilla always writes `input = game:scope`. [vanilla-confirmed 1.19.3] `common/factions/goals/faction_goals_long_term.txt`
-- Vanilla collection blocks also carry `name = <KEY>` (all 68 inline collections in `has_resources_in_collection`, 26 of 26 in `count_in_collection`, 45 of 47 in `any_collection_element`). The keys exist in vanilla localisation (`FACTION` in `diplomacy_l_english.yml`, `FACTION_CONTROLLED_STATES` in `factions_l_english.yml`, `COLLECTION_*` in `collections_l_english.yml`). [vanilla-confirmed 1.19.4.1] The concept document says the collection is localised by its `name`, which describes it where it is used. [docs] `documentation/script_concept_documentation.md`
-- `all_collection_elements` and `collection_contains` appear only in the documentation, not in vanilla script. [vanilla-confirmed 1.19.4.1]
+- The documentation says `collection_size` is inclusive (`value > X` means `value >= X`). The game reads it strictly, so `value > X` means more than X. The boundary cases are under [Comparison notes](collection_modding.md#comparison-notes).
+- Key trap: `collection_size` takes its collection under `input`; the other triggers take it under `collection`. Vanilla follows this in all 122 `collection_size` blocks and in all 180 `any_collection_element`, 26 `count_in_collection` and 88 `has_resources_in_collection` blocks.
+- The documentation's example for `has_resources_in_collection` writes `collection = { game:scope operators = { country_and_all_subjects } }` without `input =`. Vanilla always writes `input = game:scope`.
+- Vanilla collection blocks also carry `name = <KEY>` (all 68 inline collections in `has_resources_in_collection`, 26 of 26 in `count_in_collection`, 45 of 47 in `any_collection_element`). The keys exist in vanilla localisation (`FACTION` in `diplomacy_l_english.yml`, `FACTION_CONTROLLED_STATES` in `factions_l_english.yml`, `COLLECTION_*` in `collections_l_english.yml`). The concept document says the collection is localised by its `name`, which describes it where it is used.
+- `all_collection_elements` and `collection_contains` appear only in the documentation, not in vanilla script.
 
 ```text
 count_in_collection = {
@@ -326,18 +247,13 @@ count_in_collection = {
     size > 59
 }
 ```
-Vanilla form from `common/factions/goals/faction_goals_long_term.txt`. [vanilla-confirmed 1.19.3]
-<!-- kit:end id="collection-triggers" -->
+Vanilla form from `common/factions/goals/faction_goals_long_term.txt`.
 
-<!-- kit:begin id="version-added-column" at="section:Trigger_scopes" -->
-**Kit note: the "Version Added" column.** Re-checked on 2026-11-01 as far as the installed game allows.
+**The "Version Added" column.** The column is the wiki's claim. No installed file records when a trigger was added (`changelog.txt` only links to the forum), and the documentation names no versions. No trigger was added or removed in 1.19.4.
 
-- The trigger documentation has the same 596 entries in 1.19.3.0 and 1.19.4.1, compared heading by heading through the kit's recorded documentation index of both builds. No trigger was added or removed by 1.19.4, so no row should say 1.19.4, and none does. The newest value in the column is 1.17.2. [docs] `documentation/triggers_documentation.md`
-- No installed file says when a trigger was added. `changelog.txt` only links to the forum, and the documentation names no versions. Every other value in the column is the wiki's claim and was not checked. [vanilla-confirmed 1.19.4.1] `changelog.txt`, `documentation/`
 - Rows with no usable version: the cell is blank for `has_idea`, `has_market_access_with`, `network_national_coverage`, `pc_is_state_claimed_and_taken_by` and `has_officer_name`. It says `???` for the eight `career_profile_*` triggers, `has_advisor_role`, `has_artillery_ratio`, `has_unit_type` and the two `resource` rows.
-<!-- kit:end id="version-added-column" -->
 
-### Dual scopes <a id="Dual_scopes"></a>
+### Dual scopes
 
 The following scopes can be used either as effect or trigger scopes; some can also be used as the right side of some effects and triggers as a target. If usage as a target is possible, it's marked within the table.
 
@@ -352,17 +268,17 @@ Dual scopes:
 | <character> | not within Character scope | Character scope | `ENG_theodore_makhno = { set_nationality = UKR }` | On game versions prior to 1.12.8, the character must be already recruited by the country this is scoped from. | ✓ | 1.11 |
 | mio:<MIO> | Within country scope only | MIO scope | `mio:AST_cockatoo_doe_organization = { … }` | The MIO identified by that ID as defined within the `/Hearts of Iron IV/common/military_industrial_organization/organizations/*.txt` file. | ✓ | 1.13 |
 | sp:<special_project> | Within country scope only | Special project scope | `sp:sp_land_flamethrower_tank = { … }` | The special project identified by that ID as defined within the `/Hearts of Iron IV/common/special_projects/projects/*.txt` file. | ✓ | 1.15 |
-| ROOT | Always usable | Depends on usage | *(example below)* | Targets the root node of the block, an inherent property of each block. Most commonly, this is the default scope: for example, ROOT [within a national focus](<national_focus_modding.md>) will always refer to the country doing the focus and ROOT [within a event](<event_modding.md>) will always refer to the country getting the event. However, some blocks do distinguish between the default scope and ROOT, such as [certain scripted GUI contexts](<scripted_gui_modding.md>) or [certain on actions](<on_actions.md#La_R.C3.A9sistance>). If a block doesn't have ROOT defined (such as [on_startup in on actions](<on_actions.md>)), then it is impossible to use it. | ✓ | 1.0 |
-| THIS | Always usable | Depends on usage | `set_temp_variable = { target_country = THIS }` | Targets the current scope where it's used. For example, when used in every_state, it will refer to the state that's currently being evaluated. Primarily useful for [variables](<data_structures.md>) (as in the example, where omitting it wouldn't work) or for [built-in localisation commands](<localisation.md#Namespaces>), where some scope must be specified. More rarely, this may help with scope manipulation when using PREV. Since omitting it makes no difference in how the code gets interpreted, there is little to no usage outside of these cases. | ✓ | 1.0 |
-| PREV | Always usable | Depends on usage | *(example below)* | Targets the scope that the current scope is contained in. Can have additional applications where the assumed default scope differs from the ROOT, such as in state events or some on_actions. Can be chained indefinitely as PREV.PREV. **Commonly results in broken-looking tooltips**: what's shown to the player doesn't always correlate with reality.<br> See also: [PREV usage](<scopes.md#PREV_usage>). | ✓ | 1.0 |
-| FROM | Always usable | Depends on usage | *(example below)* | Can be chained indefinitely as FROM.FROM. Used to target various hardcoded scopes inherent to the block, often a secondary scope in addition to ROOT. For example:<br> In [events](<event_modding.md>), this refers to the country that sent the event (i.e. if the event was fired [using an effect](<event_modding.md#Effect>), then it's the ROOT scope where it was fired).<br> In [targeted decisions](<decision_modding.md>) or [diplomacy scripted triggers](<triggers.md#Scripted_triggers>), this refers to the scope that is targeted.<br> | ✓ | 1.0 |
-| overlord | Within country scope only | Country scope | `overlord = { … }` | The overlord of the country if it is a subject. [Subject to the 'invalid event target' error.](<scopes.md#Invalid_event_target>) | X | 1.3 |
-| faction_leader | Within country scope only | Country scope | `faction_leader = { add_to_faction = FROM }` | Faction leader of the faction the country is a part of. [Subject to the 'invalid event target' error.](<scopes.md#Invalid_event_target>) | X | 1.10.1 |
-| owner | Within state, character, or combatant scope only | Country scope | `owner = { add_ideas = owns_this_state }` | In state scope, the country that owns the state. In combatant scope, the country that owns the divisions. In character scope, the country that has recruited the character. [Subject to the 'invalid event target' error](<scopes.md#Invalid_event_target>) when used for a state. | X | 1.0 |
-| controller | Within state scope only | Country scope | *(example below)* | The controller of the current state. [Subject to the 'invalid event target' error.](<scopes.md#Invalid_event_target>) | X | 1.0 |
-| capital_scope | Within country scope only | State scope | `capital_scope = { … }` | The state where the capital of the current country is located in. [Subject to the 'invalid event target' error](<scopes.md#Invalid_event_target>) in rare cases. | X | 1.0 |
-| event_target:<event_target_key> | Always usable | Depends on usage | `event_target:my_event_target = { … }` | Saved [event target or global event target](<data_structures.md#Event_targets>), with no space after the colon. [Subject to the 'invalid event target' error.](<scopes.md#Invalid_event_target>) | ✓ | 1.0 |
-| var:<variable> | Always usable | Depends on usage | `var:my_variable = { … }`<br>`add_to_faction = my_variable` or <br>`add_to_faction = var:my_variable` | [Variable](<data_structures.md>) set to a scope.<br> When used as a target rather than a scope, the `var:` can be omitted in most cases. | ✓ | 1.5 |
+| ROOT | Always usable | Depends on usage | *(example below)* | Targets the root node of the block, an inherent property of each block. Most commonly, this is the default scope: for example, ROOT [within a national focus](national_focus_modding.md) will always refer to the country doing the focus and ROOT [within a event](event_modding.md) will always refer to the country getting the event. However, some blocks do distinguish between the default scope and ROOT, such as [certain scripted GUI contexts](scripted_gui_modding.md) or [certain on actions](on_actions.md#la-résistance). If a block doesn't have ROOT defined (such as [on_startup in on actions](on_actions.md)), then it is impossible to use it. | ✓ | 1.0 |
+| THIS | Always usable | Depends on usage | `set_temp_variable = { target_country = THIS }` | Targets the current scope where it's used. For example, when used in every_state, it will refer to the state that's currently being evaluated. Primarily useful for [variables](data_structures.md) (as in the example, where omitting it wouldn't work) or for [built-in localisation commands](localisation.md#namespaces), where some scope must be specified. More rarely, this may help with scope manipulation when using PREV. Since omitting it makes no difference in how the code gets interpreted, there is little to no usage outside of these cases. | ✓ | 1.0 |
+| PREV | Always usable | Depends on usage | *(example below)* | Targets the scope that the current scope is contained in. Can have additional applications where the assumed default scope differs from the ROOT, such as in state events or some on_actions. Can be chained indefinitely as PREV.PREV. **Commonly results in broken-looking tooltips**: what's shown to the player doesn't always correlate with reality.<br> See also: [PREV usage](scopes.md#prev-usage). | ✓ | 1.0 |
+| FROM | Always usable | Depends on usage | *(example below)* | Can be chained indefinitely as FROM.FROM. Used to target various hardcoded scopes inherent to the block, often a secondary scope in addition to ROOT. For example:<br> In [events](event_modding.md), this refers to the country that sent the event (i.e. if the event was fired [using an effect](event_modding.md#effect), then it's the ROOT scope where it was fired).<br> In [targeted decisions](decision_modding.md) or [diplomacy scripted triggers](triggers.md#scripted-triggers), this refers to the scope that is targeted.<br> | ✓ | 1.0 |
+| overlord | Within country scope only | Country scope | `overlord = { … }` | The overlord of the country if it is a subject. [Subject to the 'invalid event target' error.](scopes.md#invalid-event-target) | X | 1.3 |
+| faction_leader | Within country scope only | Country scope | `faction_leader = { add_to_faction = FROM }` | Faction leader of the faction the country is a part of. [Subject to the 'invalid event target' error.](scopes.md#invalid-event-target) | X | 1.10.1 |
+| owner | Within state, character, or combatant scope only | Country scope | `owner = { add_ideas = owns_this_state }` | In state scope, the country that owns the state. In combatant scope, the country that owns the divisions. In character scope, the country that has recruited the character. [Subject to the 'invalid event target' error](scopes.md#invalid-event-target) when used for a state. | X | 1.0 |
+| controller | Within state scope only | Country scope | *(example below)* | The controller of the current state. [Subject to the 'invalid event target' error.](scopes.md#invalid-event-target) | X | 1.0 |
+| capital_scope | Within country scope only | State scope | `capital_scope = { … }` | The state where the capital of the current country is located in. [Subject to the 'invalid event target' error](scopes.md#invalid-event-target) in rare cases. | X | 1.0 |
+| event_target:<event_target_key> | Always usable | Depends on usage | `event_target:my_event_target = { … }` | Saved [event target or global event target](data_structures.md#event-targets), with no space after the colon. [Subject to the 'invalid event target' error.](scopes.md#invalid-event-target) | ✓ | 1.0 |
+| var:<variable> | Always usable | Depends on usage | `var:my_variable = { … }`<br>`add_to_faction = my_variable` or <br>`add_to_faction = var:my_variable` | [Variable](data_structures.md) set to a scope.<br> When used as a target rather than a scope, the `var:` can be omitted in most cases. | ✓ | 1.5 |
 
 **Example: ROOT**
 
@@ -421,17 +337,15 @@ controller = {
 }
 ```
 
-<!-- kit:begin id="scope-keyword-notes" at="section:Dual_scopes" -->
-**Kit note** Scope keywords as vanilla script spells and uses them.
+Scope keywords as vanilla script spells and uses them.
 
-- Vanilla writes the scope keywords in both cases: `owner = {` 1086 times and `OWNER = {` 601, `controller = {` 1331 and `CONTROLLER = {` 509, `overlord = {` 105 and `OVERLORD = {` 450. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
-- The table marks `owner` and `controller` as not usable as targets. Vanilla uses them as targets of state-scope triggers: `is_fully_controlled_by = controller` inside `609 = { ... }` in `common/decisions/JAP.txt` (8 uses), `is_controlled_by = OWNER` in `common/national_focus/iraq.txt`, and `is_core_of = controller` and `is_owned_by = controller` elsewhere. [vanilla-confirmed 1.19.4.1] In these blocks the scope is a state, so the keyword stands for that state's owner or controller. [unverified]
-- The documentation lists THIS, ROOT, PREV, FROM, OWNER, CONTROLLER, OCCUPIED and CAPITAL as the supported targets of triggers that take a scope. [docs] `documentation/triggers_documentation.md` Vanilla script never writes `OCCUPIED` or `CAPITAL` as a target. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="scope-keyword-notes" -->
+- Vanilla writes the scope keywords in both cases: `owner = {` 1086 times and `OWNER = {` 601, `controller = {` 1331 and `CONTROLLER = {` 509, `overlord = {` 105 and `OVERLORD = {` 450.
+- The table marks `owner` and `controller` as not usable as targets. Vanilla uses them as targets of state-scope triggers: `is_fully_controlled_by = controller` inside `609 = { ... }` in `common/decisions/JAP.txt` (8 uses), `is_controlled_by = OWNER` in `common/national_focus/iraq.txt`, and `is_core_of = controller` and `is_owned_by = controller` elsewhere. In these blocks the scope is a state, so the keyword stands for that state's owner or controller. (unverified)
+- The documentation lists THIS, ROOT, PREV, FROM, OWNER, CONTROLLER, OCCUPIED and CAPITAL as the supported targets of triggers that take a scope. Vanilla script never writes `OCCUPIED` or `CAPITAL` as a target.
 
-## Flow control tools <a id="Flow_control_tools"></a>
+## Flow control tools
 
-*Main article: [Scopes#Flow control tools](<scopes.md#Flow_control_tools>)*
+*Main article: [Scopes#Flow control tools](scopes.md#flow-control-tools)*
 
 These are triggers that serve as more of a way to establish a connection in how triggers are evaluated. Each one serves as a trigger scope with additional arguments and can be used regardless of scope.
 
@@ -445,8 +359,8 @@ Flow control tools:
 | count_triggers | `amount = <int>`<br> The amount of triggers that need to be fulfilled. | *(example below)* | Sums the results of all sub-triggers (false=0, true=1) and returns true if the sum is at least `amount`. |  | 1.5 |
 | if | `limit = <trigger block>`<br> `else_if = <if-trigger>`<br> Alternative condition. Optional.<br> `else = <AND-trigger>`<br> Final alternative condition. Optional. | *(example below)* | If `limit` is true, the sub-triggers are evaluated like an AND-trigger. If `limit` is false, `else_if` blocks are tried in sequence and finally `else` (if present). *Otherwise true is returned*. | Both nested (As in inside of `if = { ... }`) and unnested (As in the example) `else` and `else_if` exist. In case of overlap, unnested is preferred. Can be useful for tooltip management: same as in effects, if the limit is unmet, nothing appears. If it is met, then the limit is hidden while the condition outside of the limit appears in the tooltip.  `if = { limit = { trigger_1 = yes } trigger_2 = yes }` is equivalent to `OR = { NOT = { trigger_1 = yes } trigger_2 = yes }`, but generates a different tooltip. | 1.0 |
 | hidden_trigger | None | *(example below)* | Hides the triggers from the tooltip shown to the player. | Also serves as an AND statement. | 1.0 |
-| custom_trigger_tooltip | `tooltip = <string>`<br>The localisation key to use. | *(example below)* | Hides the triggers from the tooltip shown to the player and instead uses the specified localisation key. | Alias for #custom_override_tooltip trigger (see that trigger for more info). Kept for backward compatibility. Prefer #custom_override_tooltip instead. Also supports [Localisation#Bindable_localisation](<localisation.md#Bindable_localisation>). | 1.0 |
-| custom_override_tooltip | `tooltip = <string>`<br>The localisation key to use. `not_tooltip = <string>`<br>The localisation key to use for NOT block. Optional. | *(example below)* | An AND trigger that has an overriden custom tooltip. | A positive tooltip can be set with `tooltip` and the tooltip to be used inside a NOT can be set with `not_tooltip`. If no positive tooltip is provided and the root key is a localization key (not a formatter, see formatted localization), then a negative tooltip will be generated by appending `_NOT` to the root localization for the positive tooltip. Both `tooltip` and `not_tooltip` are bindable localizations. [Can also be used as effect.](<effects.md>)<br> Also supports [Localisation#Bindable_localisation](<localisation.md#Bindable_localisation>). | 1.15 |
+| custom_trigger_tooltip | `tooltip = <string>`<br>The localisation key to use. | *(example below)* | Hides the triggers from the tooltip shown to the player and instead uses the specified localisation key. | Alias for #custom_override_tooltip trigger (see that trigger for more info). Kept for backward compatibility. Prefer #custom_override_tooltip instead. Also supports [Localisation#Bindable_localisation](localisation.md#bindable-localisation). | 1.0 |
+| custom_override_tooltip | `tooltip = <string>`<br>The localisation key to use. `not_tooltip = <string>`<br>The localisation key to use for NOT block. Optional. | *(example below)* | An AND trigger that has an overriden custom tooltip. | A positive tooltip can be set with `tooltip` and the tooltip to be used inside a NOT can be set with `not_tooltip`. If no positive tooltip is provided and the root key is a localization key (not a formatter, see formatted localization), then a negative tooltip will be generated by appending `_NOT` to the root localization for the positive tooltip. Both `tooltip` and `not_tooltip` are bindable localizations. [Can also be used as effect.](effects.md)<br> Also supports [Localisation#Bindable_localisation](localisation.md#bindable-localisation). | 1.15 |
 
 **Example: AND**
 
@@ -541,20 +455,18 @@ custom_override_tooltip = {
 }
 ```
 
-<!-- kit:begin id="flow-control-notes" at="section:Flow_control_tools" -->
-**Kit note** Spelling and options of the flow control triggers in 1.19.3.
+Spelling and options of the flow control triggers in 1.19.3.
 
-- Vanilla accepts the flow keywords in either case. It has `IF = {` 6971 times next to `if = {` 20323, `ELSE` 1228 next to `else` 3729, `ELSE_IF` 1653 next to `else_if` 4160, and lowercase `not = {` 933 times, `or = {` 23 and `and = {` 3, in effect and trigger blocks. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
-- The documentation lists the lowercase `and`, `or` and `not` as triggers of their own (scope any). [docs] `documentation/triggers_documentation.md`
-- `hidden_trigger` takes `tooltip_evaluation = eval`, `no_eval` or `legacy`. `eval` is the standard evaluation and is what you want when the hidden block has side effects (temporary variables) or random parts. `no_eval` is slightly faster when it has neither. `legacy` is the old behaviour and using it explicitly is "very likely a bug". [docs] `documentation/triggers_documentation.md` Vanilla uses `eval` twice, in `common/factions/goals/faction_goals_short_term.txt`. [vanilla-confirmed 1.19.4.1]
-- `custom_trigger_tooltip` is documented as a backward-compatible alias of `custom_override_tooltip`. [docs] `documentation/triggers_documentation.md` Vanilla still uses `custom_trigger_tooltip` 1818 times in 166 files against 107 uses of `custom_override_tooltip` in 16 files, and never uses `not_tooltip`. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="flow-control-notes" -->
+- Vanilla accepts the flow keywords in either case. It has `IF = {` 6971 times next to `if = {` 20323, `ELSE` 1228 next to `else` 3729, `ELSE_IF` 1653 next to `else_if` 4160, and lowercase `not = {` 933 times, `or = {` 23 and `and = {` 3, in effect and trigger blocks.
+- The documentation lists the lowercase `and`, `or` and `not` as triggers of their own (scope any).
+- `hidden_trigger` takes `tooltip_evaluation = eval`, `no_eval` or `legacy`. `eval` is the standard evaluation and is what you want when the hidden block has side effects (temporary variables) or random parts. `no_eval` is slightly faster when it has neither. `legacy` is the old behaviour and using it explicitly is "very likely a bug". Vanilla uses `eval` twice, in `common/factions/goals/faction_goals_short_term.txt`.
+- `custom_trigger_tooltip` is documented as a backward-compatible alias of `custom_override_tooltip`. Vanilla still uses `custom_trigger_tooltip` 1818 times in 166 files against 107 uses of `custom_override_tooltip` in 16 files, and never uses `not_tooltip`.
 
-## Any scope <a id="Any_scope"></a>
+## Any scope
 
 These triggers do not require any particular scope.
 
-### General <a id="General"></a>
+### General
 
 General any-scoped triggers:
 
@@ -599,15 +511,13 @@ has_completed_custom_achievement = {
 }
 ```
 
-<!-- kit:begin id="any-scope-general" at="section:General" -->
-**Kit addition** Notes on the any-scope triggers.
+Notes on the any-scope triggers.
 
-- `scope_exists = yes` (scope any) checks that the scope itself exists. `exists` checks that the country of the scope exists in the game. Variable scopes are always valid. For example `sp:sp_land_flamethrower_tank = { character = { scope_exists = yes } }` is true when the project has an assigned scientist. Vanilla script does not use it. [docs] `documentation/triggers_documentation.md`
-- `has_completed_custom_achievement` takes `mod` (the id the mod sets in its achievements file) and `achievement`; the documentation comment says "set in common/achievements files". [docs] `documentation/triggers_documentation.md`
-- `has_dlc` strings must match exactly. Vanilla script uses these 16, none with diacritics: "Man the Guns", "Arms Against Tyranny", "No Compromise, No Surrender", "La Resistance", "By Blood Alone", "No Step Back", "Gotterdammerung", "Battle for the Bosporus", "Thunder at Our Gates", "Graveyard of Empires", "Trial of Allegiance", "Together for Victory", "Waking the Tiger", "Peace For Our Time", "Death or Dishonor" and "Poland: United and Ready". [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
-<!-- kit:end id="any-scope-general" -->
+- `scope_exists = yes` (scope any) checks that the scope itself exists. `exists` checks that the country of the scope exists in the game. Variable scopes are always valid. For example `sp:sp_land_flamethrower_tank = { character = { scope_exists = yes } }` is true when the project has an assigned scientist. Vanilla script does not use it.
+- `has_completed_custom_achievement` takes `mod` (the id the mod sets in its achievements file) and `achievement`; the documentation comment says "set in common/achievements files".
+- `has_dlc` strings must match exactly. Vanilla script uses these 16, none with diacritics: "Man the Guns", "Arms Against Tyranny", "No Compromise, No Surrender", "La Resistance", "By Blood Alone", "No Step Back", "Gotterdammerung", "Battle for the Bosporus", "Thunder at Our Gates", "Graveyard of Empires", "Trial of Allegiance", "Together for Victory", "Waking the Tiger", "Peace For Our Time", "Death or Dishonor" and "Poland: United and Ready".
 
-### Career profile <a id="Career_profile"></a>
+### Career profile
 
 Career profile-releated any-scoped triggers:
 
@@ -681,23 +591,21 @@ career_profile_check_points = {
 }
 ```
 
-<!-- kit:begin id="career-profile-notes" at="section:Career_profile" -->
-**Kit correction** The career profile triggers are used in the `bronze`, `silver` and `gold` blocks of `common/medals/00_medals.txt` and the condition blocks of `common/ribbons/00_ribbons.txt`. [vanilla-confirmed 1.19.3]
+The career profile triggers are used in the `bronze`, `silver` and `gold` blocks of `common/medals/00_medals.txt` and the condition blocks of `common/ribbons/00_ribbons.txt`.
 
-- The first key of `career_profile_check_playthrough_ratio` is `first`, not `frits` as the row says; the keys are `first`, `second`, `ratio` and `compare`. `career_profile_check_ratio` takes the same four keys. [vanilla-confirmed 1.19.3] `common/medals/00_medals.txt` (3 blocks), `common/ribbons/00_ribbons.txt` (1 block)
-- `career_profile_check_value` and `career_profile_check_playthrough_value` are not "possibly the same as": vanilla uses both with `{ var = <statistic> value = <n> compare = greater_than_or_equals tooltip = "<LOC_KEY>" }` (57 of 68 `career_profile_check_value` blocks) and with a compact form that lists one or more `<statistic> > N` lines in the block (11 `career_profile_check_value` blocks, all in the ribbons file). [vanilla-confirmed 1.19.3] `common/medals/00_medals.txt`, `common/ribbons/00_ribbons.txt`
+- The first key of `career_profile_check_playthrough_ratio` is `first`, not `frits` as the row says; the keys are `first`, `second`, `ratio` and `compare`. `career_profile_check_ratio` takes the same four keys.
+- `career_profile_check_value` and `career_profile_check_playthrough_value` are not "possibly the same as": vanilla uses both with `{ var = <statistic> value = <n> compare = greater_than_or_equals tooltip = "<LOC_KEY>" }` (57 of 68 `career_profile_check_value` blocks) and with a compact form that lists one or more `<statistic> > N` lines in the block (11 `career_profile_check_value` blocks, all in the ribbons file).
 - The second `career_profile_check_playthrough_value` example above is missing its closing `}`.
-- `career_profile_check_medal`, `career_profile_check_ribbon` and `career_profile_check_points` are never used in vanilla script, so their keys (`medal`, `ribbon`, `value`, `compare`, `tooltip`) come from the wiki only: the documentation entries list no keys. [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`. Whether the engine accepts most of those keys is [unverified]. `career_profile_check_medal = { medal = raining_debris_medal }` loaded without an error and read TRUE. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, scripted trigger run from the console, error.log read. TRUE says little about the medal itself, which was not checked. The ids in the examples, `raining_debris_medal` and `orchestra_of_boom`, are real vanilla ids. [vanilla-confirmed 1.19.3] `common/medals/00_medals.txt`, `common/ribbons/00_ribbons.txt`
-- `career_profile_has_player_flag` is used 14 times in `common/ribbons/00_ribbons.txt`; the vanilla comments say the flags are "Set in code". [vanilla-confirmed 1.19.3]
+- `career_profile_check_medal`, `career_profile_check_ribbon` and `career_profile_check_points` are never used in vanilla script, so their keys (`medal`, `ribbon`, `value`, `compare`, `tooltip`) come from the wiki only: the documentation entries list no keys. Whether the engine accepts most of those keys is unverified. `career_profile_check_medal = { medal = raining_debris_medal }` loaded without an error and read TRUE. TRUE says little about the medal itself, which was not checked. The ids in the examples, `raining_debris_medal` and `orchestra_of_boom`, are real vanilla ids.
+- `career_profile_has_player_flag` is used 14 times in `common/ribbons/00_ribbons.txt`; the vanilla comments say the flags are "Set in code".
 
-**Kit addition** Three entries documented in `documentation/triggers_documentation.md` (scope any) that the table does not name. [docs] `documentation/triggers_documentation.md`
+Three entries documented in `documentation/triggers_documentation.md` (scope any) that the table does not name.
 
-- `career_profile_set_temp_variable` copies a career profile statistic into a temporary variable. Vanilla writes `career_profile_set_temp_variable = { gained = recent_provinces_gained }` (29 uses, medals and ribbons), then does arithmetic with `subtract_from_temp_variable` or `add_to_temp_variable` and `check_variable`. The documentation shows a `var = ... value = ...` block instead; vanilla never uses that form. [vanilla-confirmed 1.19.3]
-- `career_profile_set_temp_playthrough_variable` is the same for playthrough values (documented form `{ var = <temp> value = <playthrough value> }`); vanilla does not use it. [docs]
-- `num_of_career_profile_points` checks the amount of gained career points; vanilla does not use it, and the comparison syntax is not given. [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/` The syntax is [unverified], apart from this: `num_of_career_profile_points > 1` is accepted with no error and read false in the test. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, scripted trigger run from the console, error.log read. It is also listed as a game variable in [Data structures](<data_structures.md#Game_variables>). [docs]
-<!-- kit:end id="career-profile-notes" -->
+- `career_profile_set_temp_variable` copies a career profile statistic into a temporary variable. Vanilla writes `career_profile_set_temp_variable = { gained = recent_provinces_gained }` (29 uses, medals and ribbons), then does arithmetic with `subtract_from_temp_variable` or `add_to_temp_variable` and `check_variable`. The documentation shows a `var = ... value = ...` block instead; vanilla never uses that form.
+- `career_profile_set_temp_playthrough_variable` is the same for playthrough values (documented form `{ var = <temp> value = <playthrough value> }`); vanilla does not use it.
+- `num_of_career_profile_points` checks the amount of gained career points; vanilla does not use it, and the comparison syntax is not given. The syntax is unverified, apart from this: `num_of_career_profile_points > 1` is accepted with no error and read false in the test. It is also listed as a game variable in [Data structures](data_structures.md#game-variables).
 
-### Variables <a id="Variables"></a>
+### Variables
 
 Variable-related triggers:
 
@@ -738,10 +646,9 @@ For example, to get the country variable whilst in a state scope, you'd do the f
 }
 ```
 
-See [Variables](<data_structures.md>) for more information.
+See [Variables](data_structures.md) for more information.
 
-<!-- kit:begin id="variable-array-triggers" at="section:Variables" -->
-**Kit addition** Temp-variable, array and expression entries that the documentation lists as triggers (scope any) but this page never named. Their full rows are on other pages: [Variables](<data_structures.md#Variables>), [Arrays](<data_structures.md#Arrays>), [Math expressions](<data_structures.md#Math_expressions>), [Scorers](<data_structures.md#Scorers>) and, for the effect side, [Effects](<effects.md#Variables>). All rows: [docs] `documentation/triggers_documentation.md`
+Temp-variable, array and expression entries that the documentation lists as triggers (scope any) but this page never named. Their full rows are on other pages: [Variables](data_structures.md#variables), [Arrays](data_structures.md#arrays), [Math expressions](data_structures.md#math-expressions), [Scorers](data_structures.md#scorers) and, for the effect side, [Effects](effects.md#variables).
 
 | Name | Form |
 | --- | --- |
@@ -764,14 +671,13 @@ See [Variables](<data_structures.md>) for more information.
 | `check_expr` | `check_expr = { value = <x> add = <y> greater_than = <z> }`. True when the math expression evaluates to non-zero. |
 | `debug_math_expr` | Evaluates a math expression and writes the number to the tooltip. Always true; for debugging. |
 
-- Vanilla uses (key assignments in `common/`, `events/`, `history/`): `add_to_temp_variable` 535, `subtract_from_temp_variable` 426, `multiply_temp_variable` 235, `divide_temp_variable` 82, `clamp_temp_variable` 35 (`var` always, `min` in 24, `max` in 30), `add_to_temp_array` 29, `round_temp_variable` 12, `clear_temp_array` 6, `modulo_temp_variable` 3, `check_expr` 3 (in `gain_xp` of `common/unit_leader/00_traits.txt`), `set_temp_variable_to_random` 2, `get_supply_vehicles_temp` 2 (`common/ribbons/00_ribbons.txt`), `find_highest_in_array` 1. `remove_from_temp_array`, `resize_temp_array`, `find_lowest_in_array`, `get_highest_scored_country_temp`, `get_sorted_scored_countries_temp`, `debug_math_expr` and `all_of` are not used in vanilla script. [vanilla-confirmed 1.19.4.1]
-- Trap: the default names of the loop temp variables are documented differently. `any_of` is documented with `value` and `index`, while `all_of`, `find_highest_in_array` and `find_lowest_in_array` are documented with `v` and `i`. [docs] `documentation/triggers_documentation.md` Vanilla relies on `v` after a bare `any_of = { array = ... }` (six uses, all `var:v = { ... }`, in `common/decisions/ENG.txt`, `JAP.txt` and `SOV.txt`) and on `v` and `i` after `find_highest_in_array = { array = ... }` in `common/scripted_effects/operation_strat_effects.txt`. [vanilla-confirmed 1.19.4.1] Name `value` and `index` explicitly if you do not want to depend on either.
-- `any_of` also appears in `common/ai_equipment/` as a plain list of module ids. That is a different keyword use and has nothing to do with the array trigger. [vanilla-confirmed 1.19.3] `common/ai_equipment/generic_tank.txt`
-- `check_variable` also takes `tooltip = <loc key>`; the text may contain the tokens `LEFT` and `RIGHT` for the two sides of the comparison. [docs] `documentation/triggers_documentation.md` Vanilla uses it in 37 blocks, 17 of them in `common/decisions/RAJ_GOE.txt`. [vanilla-confirmed 1.19.4.1]
-- `set_temp_variable` is documented as a trigger (scope any) too. The wiki text mentions it but gives it no row here; it is covered under [Variables](<data_structures.md#Variables>). [docs] `documentation/triggers_documentation.md`
-<!-- kit:end id="variable-array-triggers" -->
+- Vanilla uses (key assignments in `common/`, `events/`, `history/`): `add_to_temp_variable` 535, `subtract_from_temp_variable` 426, `multiply_temp_variable` 235, `divide_temp_variable` 82, `clamp_temp_variable` 35 (`var` always, `min` in 24, `max` in 30), `add_to_temp_array` 29, `round_temp_variable` 12, `clear_temp_array` 6, `modulo_temp_variable` 3, `check_expr` 3 (in `gain_xp` of `common/unit_leader/00_traits.txt`), `set_temp_variable_to_random` 2, `get_supply_vehicles_temp` 2 (`common/ribbons/00_ribbons.txt`), `find_highest_in_array` 1. `remove_from_temp_array`, `resize_temp_array`, `find_lowest_in_array`, `get_highest_scored_country_temp`, `get_sorted_scored_countries_temp`, `debug_math_expr` and `all_of` are not used in vanilla script.
+- Trap: the default names of the loop temp variables are documented differently. `any_of` is documented with `value` and `index`, while `all_of`, `find_highest_in_array` and `find_lowest_in_array` are documented with `v` and `i`. Vanilla relies on `v` after a bare `any_of = { array = ... }` (six uses, all `var:v = { ... }`, in `common/decisions/ENG.txt`, `JAP.txt` and `SOV.txt`) and on `v` and `i` after `find_highest_in_array = { array = ... }` in `common/scripted_effects/operation_strat_effects.txt`. Name `value` and `index` explicitly if you do not want to depend on either.
+- `any_of` also appears in `common/ai_equipment/` as a plain list of module ids. That is a different keyword use and has nothing to do with the array trigger.
+- `check_variable` also takes `tooltip = <loc key>`; the text may contain the tokens `LEFT` and `RIGHT` for the two sides of the comparison. Vanilla uses it in 37 blocks, 17 of them in `common/decisions/RAJ_GOE.txt`.
+- `set_temp_variable` is documented as a trigger (scope any) too. The wiki text mentions it but gives it no row here; it is covered under [Variables](data_structures.md#variables).
 
-### Debugging <a id="Debugging"></a>
+### Debugging
 
 These are usable as both effects and triggers and are used for debugging, with the player never seeing them.
 
@@ -779,8 +685,8 @@ Debugging-helpful triggers:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| log | `<string>`<br>What to log. Supports dynamic localisation.<br> | `log = "Added [?temp_add] to [THIS.GetTag]'s variable [?THIS.varvalue]"` | Appends an entry into the game.log and, if open, the console when evaluating the trigger. | game.log is stored within `/Hearts of Iron IV/logs/` in the [user directory](<modding.md>) | 1.5 |
-| print_variables | `print_global = <bool>`<br>Print global variables. Defaults to `no`.<br> `var_list = <list>`<br>The variables to print. Defaults to all variables.<br> `file = <string>`The file path to log to. Defaults to "variable_dump". Does not include the `.log` extension.<br> `text = <string>`Text to prepend. Defaults to "No Header".<br> `append = <bool>`Whether to append to the file instead of overwrite. Defaults to `yes` | *(example below)* | Dumps the specified variables from the current scope and optionally the global scope into a log file with the specified name. | The log will be within `/Hearts of Iron IV/logs/variable_dumps/` in the [user directory](<modding.md>). See also [debugging variables](<data_structures.md#Debugging>). | 1.5 |
+| log | `<string>`<br>What to log. Supports dynamic localisation.<br> | `log = "Added [?temp_add] to [THIS.GetTag]'s variable [?THIS.varvalue]"` | Appends an entry into the game.log and, if open, the console when evaluating the trigger. | game.log is stored within `/Hearts of Iron IV/logs/` in the [user directory](modding.md) | 1.5 |
+| print_variables | `print_global = <bool>`<br>Print global variables. Defaults to `no`.<br> `var_list = <list>`<br>The variables to print. Defaults to all variables.<br> `file = <string>`The file path to log to. Defaults to "variable_dump". Does not include the `.log` extension.<br> `text = <string>`Text to prepend. Defaults to "No Header".<br> `append = <bool>`Whether to append to the file instead of overwrite. Defaults to `yes` | *(example below)* | Dumps the specified variables from the current scope and optionally the global scope into a log file with the specified name. | The log will be within `/Hearts of Iron IV/logs/variable_dumps/` in the [user directory](modding.md). See also [debugging variables](data_structures.md#debugging). | 1.5 |
 
 **Example: print_variables**
 
@@ -792,11 +698,11 @@ print_variables = {
 }
 ```
 
-## Country scope <a id="Country_scope"></a>
+## Country scope
 
 Can be used in **country** scope.
 
-### General <a id="General_2"></a>
+### General
 
 General country-scoped triggers:
 
@@ -804,7 +710,7 @@ General country-scoped triggers:
 | --- | --- | --- | --- | --- | --- |
 | exists | `<bool>`<br>Boolean. | `exists = yes` | Checks if the current scope exists in game. |  | 1.0 |
 | tag | `<scope> / <variable>`<br>The country to check. | `tag = GER``tag = var:my_country` | Checks if the current scope is the specified country. | Only checks the actual tag while excluding dynamic countries, see original_tag if they should be included. | 1.0 |
-| original_tag | `<scope> / <variable>`<br>The country to check. | `original_tag = GER``original_tag = var:my_country` | Checks if the current scope originates from the specified country. | This also includes dynamic countries: civil war breakaways and countries created via [create_dynamic_country](<effects.md>). True for the original country. | 1.0 |
+| original_tag | `<scope> / <variable>`<br>The country to check. | `original_tag = GER``original_tag = var:my_country` | Checks if the current scope originates from the specified country. | This also includes dynamic countries: civil war breakaways and countries created via [create_dynamic_country](effects.md). True for the original country. | 1.0 |
 | is_ai | `<bool>`<br>Boolean. | `is_ai = yes` | Checks if the current scope is AI. |  | 1.0 |
 | has_collaboration | `target = <country>`<br>The country to check.<br> `value <> <decimal>`<br>The value of the collaboration on the 0-1 scale. | *(example below)* | Checks if the current scope has a collaboration level in the target scope. | The target is occupied by the current scope. Must use < or > in the value argument. | 1.9 |
 | has_country_flag | `<string>`<br>The flag to check. | `has_country_flag = my_flag` | Checks if the current scope has the specified flag. |  | 1.0 |
@@ -860,16 +766,13 @@ has_resources_in_country = {
 }
 ```
 
-<!-- kit:begin id="country-general-notes" at="section:General_2" -->
-**Kit correction** Scope and key details for rows in the table above.
+Scope and key details for rows in the table above.
 
-- `tag` is valid in CHARACTER and COMBATANT scope as well as COUNTRY. `has_dynamic_modifier` is valid in STATE, COUNTRY and CHARACTER scope. `has_border_war` and `has_border_war_with` are valid in STATE and COUNTRY scope. `is_female` is valid in COUNTRY, CHARACTER and ACE scope. [docs] `documentation/triggers_documentation.md`
-- `is_dynamic_country` is true for tags D01 to D50. [docs] `documentation/triggers_documentation.md`
-- `has_resources_in_country` also takes `only_imported = yes` (default no), which counts only imported resources instead of the country balance. [docs] `documentation/triggers_documentation.md` Vanilla uses `extracted` in 52 blocks, `only_imported` in 2 and `buildings` in 1. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="country-general-notes" -->
+- `tag` is valid in CHARACTER and COMBATANT scope as well as COUNTRY. `has_dynamic_modifier` is valid in STATE, COUNTRY and CHARACTER scope. `has_border_war` and `has_border_war_with` are valid in STATE and COUNTRY scope. `is_female` is valid in COUNTRY, CHARACTER and ACE scope.
+- `is_dynamic_country` is true for tags D01 to D50.
+- `has_resources_in_country` also takes `only_imported = yes` (default no), which counts only imported resources instead of the country balance. Vanilla uses `extracted` in 52 blocks, `only_imported` in 2 and `buildings` in 1.
 
-<!-- kit:begin id="country-trigger-additions" at="section:General_2" -->
-**Kit addition** Country-scope triggers the tables never name. All rows: [docs] `documentation/triggers_documentation.md`
+Country-scope triggers the tables never name.
 
 | Trigger | Form | Meaning and vanilla use |
 | --- | --- | --- |
@@ -884,10 +787,9 @@ has_resources_in_country = {
 | `has_any_captured_general` | `has_any_captured_general = yes` | Any general of the country is captured by another country. Vanilla: `common/raids/land_infiltration_raids.txt`. |
 | `has_any_general_captured_by` | `has_any_general_captured_by = <country>` | The country has a unit leader captured by the target. Vanilla: `common/operations/00_operations.txt`. |
 
-- The vanilla uses named in the last column were read from the files given; counts are of key assignments in `common/`, `events/` and `history/`. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="country-trigger-additions" -->
+- The vanilla uses named in the last column were read from the files given; counts are of key assignments in `common/`, `events/` and `history/`.
 
-### National focuses <a id="National_focuses"></a>
+### National focuses
 
 National focus-related country-scoped triggers:
 
@@ -896,7 +798,7 @@ National focus-related country-scoped triggers:
 | has_focus_tree | `<string>`<br>The focus tree to check. | `has_focus_tree = soviet_tree` | Checks if the current scope has the specified focus tree. |  | 1.3 |
 | has_completed_focus | `<string>`<br>The focus to check. | `has_completed_focus = my_focus` | Checks if the current scope has the specified focus completed. |  | 1.0 |
 | focus_progress | `focus = <string>`<br>The focus to check.<br> `progress = <string>`<br>The progress to check for. | *(example below)* | Checks if the specified focus has been completed the specified percent for the current scope. | Must use either > or < operators for progress. | 1.0 |
-| has_shine_effect_on_focus | `<string>`<br>The focus to check. | `has_shine_effect_on_focus = GER_wunderwaffe` | Check if country has shine effect on focus (either manually achieved or by being worked on). | Note that tooltips are only shown in debug mode. Shine can be added manually by selecting focus, or via [activate_shine_on_focus](<effects.md>) effect. | 1.15 |
+| has_shine_effect_on_focus | `<string>`<br>The focus to check. | `has_shine_effect_on_focus = GER_wunderwaffe` | Check if country has shine effect on focus (either manually achieved or by being worked on). | Note that tooltips are only shown in debug mode. Shine can be added manually by selecting focus, or via [activate_shine_on_focus](effects.md) effect. | 1.15 |
 
 **Example: focus_progress**
 
@@ -907,7 +809,7 @@ focus_progress = {
 }
 ```
 
-### Politics <a id="Politics"></a>
+### Politics
 
 Political country-scoped triggers:
 
@@ -942,7 +844,7 @@ has_manpower_for_recruit_change_to = {
 }
 ```
 
-### Balance of power <a id="Balance_of_power"></a>
+### Balance of power
 
 Balances of power are stored within `/Hearts of Iron IV/common/bop/*.txt` files.
 
@@ -957,7 +859,7 @@ Balance of power-related country-scoped triggers:
 | power_balance_weekly_change | `id = <bop ID>`<br>The balance to check in.<br> `value = <float>`<br>The value to check for. | *(example below)* | Checks if the current scope's balance of power changes each week by the specified value. | Either =, >, or < operators are allowed. | 1.12 |
 | is_power_balance_in_range | `id = <bop ID>`<br>The balance to check in.<br> `range = <range ID>`<br>The range to check for. | *(example below)* | Checks if the current scope's balance of power value lies within the specified range. | Ranges are defined within the balance of power. Can use either =, >, and < operators. In case of > or <, the comparison is 'strict', i.e. excluding the range itself. | 1.12 |
 | is_power_balance_side_active | `id = <bop ID>`<br>The balance to check in.<br> `side = <side ID>`<br>The side to check. | *(example below)* | Checks if the specified balance of power has a side active. | Sides are defined within the balance of power. "Active" means that the side is among those that are currently visible instead of relying on the current value. | 1.12 |
-| has_power_balance_modifier | `id = <bop ID>`<br>The balance to check in.<br> `modifier = <modifier ID>`<br>The [static modifier](<modifiers.md>). | *(example below)* | Checks if the current scope's balance of power value activates a modifier. | BoP modifiers are defined within `/Hearts of Iron IV/common/modifiers/*.txt` files, while they're activated in the balance of power definition. | 1.12 |
+| has_power_balance_modifier | `id = <bop ID>`<br>The balance to check in.<br> `modifier = <modifier ID>`<br>The [static modifier](modifiers.md). | *(example below)* | Checks if the current scope's balance of power value activates a modifier. | BoP modifiers are defined within `/Hearts of Iron IV/common/modifiers/*.txt` files, while they're activated in the balance of power definition. | 1.12 |
 
 **Example: has_power_balance**
 
@@ -1021,7 +923,7 @@ has_power_balance_modifier = {
 }
 ```
 
-### Buildings <a id="Buildings"></a>
+### Buildings
 
 Building-related country-scoped triggers:
 
@@ -1060,7 +962,7 @@ has_built = {
 }
 ```
 
-### Technology <a id="Technology"></a>
+### Technology
 
 Technology-related country-scoped triggers:
 
@@ -1095,7 +997,7 @@ has_tech_bonus = {
 }
 ```
 
-### Ideas <a id="Ideas"></a>
+### Ideas
 
 Idea-related country-scoped triggers:
 
@@ -1138,14 +1040,12 @@ amount_taken_ideas = {
 }
 ```
 
-<!-- kit:begin id="ideas-keys" at="section:Ideas" -->
-**Kit addition** Keys missing from the idea rows.
+Keys missing from the idea rows.
 
-- `amount_taken_ideas` also takes `categories = { military_staff }` (optional), next to `slots = { ... }`. It excludes national spirits, hidden ideas and laws. [docs] `documentation/triggers_documentation.md`
-- In `has_allowed_idea_with_traits` and `has_available_idea_with_traits`, `idea` can be a list of trait names in braces and `ignore` can be a list of ideas. The first of the two examples above is labelled `has_allowed_idea_with_traits` but calls `has_available_idea_with_traits`; the documentation's own example has the same copy error. [docs] `documentation/triggers_documentation.md`
-<!-- kit:end id="ideas-keys" -->
+- `amount_taken_ideas` also takes `categories = { military_staff }` (optional), next to `slots = { ... }`. It excludes national spirits, hidden ideas and laws.
+- In `has_allowed_idea_with_traits` and `has_available_idea_with_traits`, `idea` can be a list of trait names in braces and `ignore` can be a list of ideas. The first of the two examples above is labelled `has_allowed_idea_with_traits` but calls `has_available_idea_with_traits`; the documentation's own example has the same copy error.
 
-### Diplomacy <a id="Diplomacy"></a>
+### Diplomacy
 
 Diplomatic country-scoped triggers:
 
@@ -1212,7 +1112,7 @@ received_expeditionary_forces = {
 }
 ```
 
-### Faction <a id="Faction"></a>
+### Faction
 
 Faction-related country-scoped triggers:
 
@@ -1269,7 +1169,7 @@ compare_ideology_with_faction = {
 }
 ```
 
-### War <a id="War"></a>
+### War
 
 War-related country-scoped triggers:
 
@@ -1342,9 +1242,9 @@ war_length_with = {
 }
 ```
 
-### State <a id="State"></a>
+### State
 
-These are state-related triggers in the country scope, not [state-scoped triggers](#State_scope).
+These are state-related triggers in the country scope, not [state-scoped triggers](#state-scope).
 
 State-related country-scoped triggers:
 
@@ -1360,7 +1260,7 @@ State-related country-scoped triggers:
 | core_resistance | `occupied_country_tag = <TAG>`<br>The country for which to check resistance.<br> `value = <int>`<br>The value to check for.<br> | *(example below)* | Compares the average resistance of core states of the specified country within controlled states of the current scope. | Must use either > or < operators for value. | 1.9 |
 | garrison_manpower_need | `<int>`<br>Amount to check. | `garrison_manpower_need > 10000` | Checks how much garrison manpower we need for resistance in controlled states. | Must use either > or < operators. | 1.9 |
 | has_core_occupation_modifier | `occupied_country_tag = <scope> / <variable>`<br>The country to check.<br> `modifier = <token>`The modifier to check. | *(example below)* | Checks if the current scope has an occupation modifier for resistance/compliance that applies to our occupied states of a specified country. |  | 1.9 |
-| occupation_law | `<law ID>`<br>The law to check. | *(example below)*# Checks POL's default occupation law *(example below)*# Checks HOL's occupation law over BEL | Checks the occupation law that's either the default or applied over a specific country. | Checks [PREV's](<scopes.md#PREV_usage>) occupation law over the current country. If they're the same scope, checks the default occupation law. Can also be used in state scope. | 1.12 |
+| occupation_law | `<law ID>`<br>The law to check. | *(example below)*# Checks POL's default occupation law *(example below)*# Checks HOL's occupation law over BEL | Checks the occupation law that's either the default or applied over a specific country. | Checks [PREV's](scopes.md#prev-usage) occupation law over the current country. If they're the same scope, checks the default occupation law. Can also be used in state scope. | 1.12 |
 | has_contested_owner | `<state> / <variable>`<br>State to check. | `has_contested_owner = 42` | Checks if a state has the specified country as a contested owner. The trigger can be used either from a country or a state scope and accepts the other as parameter. | Can also be used in state scope. | 1.15 |
 | owns_any_state_of | `<states>`<br>States to check. | *(example below)* | Check if the country owns any of the states in the list. | The same as: *(example below)* | 1.16 |
 | is_on_same_continent_as | `<scope> / <variable>`<br>The state to check for. | `is_on_same_continent_as = 111` | Checks if the scope country is on the same continent as the given state. The capital state is used for given country tag. | Can also be used in state scope. | 1.17 |
@@ -1439,7 +1339,7 @@ OR = {
 }
 ```
 
-### Military <a id="Military"></a>
+### Military
 
 Military-related country-scoped triggers:
 
@@ -1675,14 +1575,12 @@ has_mined = {
 }
 ```
 
-<!-- kit:begin id="military-notes" at="section:Military" -->
-**Kit correction** Keys and examples for rows in the table above.
+Keys and examples for rows in the table above.
 
-- `has_navy_size` also takes `unit = <sub-unit>` (a sub unit definition such as `heavy_cruiser` or `battleship`) next to `type` and `archetype`. The documentation comments `size > 39 unit = heavy_cruiser` as "40 or more". [docs] `documentation/triggers_documentation.md` Vanilla uses `unit` in 53 of its 226 `has_navy_size` blocks, `type` in 110 and `archetype` in 24. [vanilla-confirmed 1.19.4.1]
-- The example under `has_mines` is wrong: it shows `has_mined` with `target` and `amount`. `has_mines` takes `region` (a strategic region id) and `amount`, for example `has_mines = { region = <strategic region id> amount = 5 }`. `has_mined` takes `target` and `value`. [docs] `documentation/triggers_documentation.md` Vanilla uses `has_mined` once (`common/achievements.txt`) and never uses `has_mines`. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="military-notes" -->
+- `has_navy_size` also takes `unit = <sub-unit>` (a sub unit definition such as `heavy_cruiser` or `battleship`) next to `type` and `archetype`. The documentation comments `size > 39 unit = heavy_cruiser` as "40 or more". Vanilla uses `unit` in 53 of its 226 `has_navy_size` blocks, `type` in 110 and `archetype` in 24.
+- The example under `has_mines` is wrong: it shows `has_mined` with `target` and `amount`. `has_mines` takes `region` (a strategic region id) and `amount`, for example `has_mines = { region = <strategic region id> amount = 5 }`. `has_mined` takes `target` and `value`. Vanilla uses `has_mined` once (`common/achievements.txt`) and never uses `has_mines`.
 
-### Doctrine <a id="Doctrine"></a>
+### Doctrine
 
 Doctrine-related country-scoped triggers:
 
@@ -1714,7 +1612,7 @@ has_mastery_level = {
 }
 ```
 
-### Equipment <a id="Equipment"></a>
+### Equipment
 
 Equipment-related country-scoped triggers:
 
@@ -1789,7 +1687,7 @@ has_license = {
 }
 ```
 
-### Intelligence <a id="Intelligence"></a>
+### Intelligence
 
 Intelligence-related country-scoped triggers:
 
@@ -1932,11 +1830,9 @@ has_operation_token = {
 }
 ```
 
-<!-- kit:begin id="intelligence-keys" at="section:Intelligence" -->
-**Kit addition** `num_finished_operations` also takes a comparison, `value > 35`, next to `target` and `operation`. [docs] `documentation/triggers_documentation.md` Vanilla uses it in 5 blocks (for example `value < 1`) in `common/ai_strategy/GER_operation_strats.txt`, `common/ai_strategy/ENG_operation_strats.txt` and `common/scripted_effects/operation_strat_effects.txt`. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="intelligence-keys" -->
+`num_finished_operations` also takes a comparison, `value > 35`, next to `target` and `operation`. Vanilla uses it in 5 blocks (for example `value < 1`) in `common/ai_strategy/GER_operation_strats.txt`, `common/ai_strategy/ENG_operation_strats.txt` and `common/scripted_effects/operation_strat_effects.txt`.
 
-### AI <a id="AI"></a>
+### AI
 
 AI-related country-scoped triggers:
 
@@ -1958,9 +1854,9 @@ ai_liberate_desire = {
 }
 ```
 
-### Characters <a id="Characters"></a>
+### Characters
 
-These are character-related triggers in the country scope, not [character-scoped triggers](#Character_scope).
+These are character-related triggers in the country scope, not [character-scoped triggers](#character-scope).
 
 Character-related country-scoped triggers:
 
@@ -2001,7 +1897,7 @@ has_country_leader = {
 }
 ```
 
-### Peace conferences <a id="Peace_conferences"></a>
+### Peace conferences
 
 These are not exactly peace conference-related triggers, but **those that can only be used within peace conferences**.
 
@@ -2024,27 +1920,25 @@ Peace conference-only country-scoped triggers:
 | pc_total_score | `<decimal>`<br>Scope to check for. | `pc_total_score > 2400` | Checks if the current scope has the specified amount in total score within the peace conference. | Can only be used for the winning countries. | 1.12 |
 | pc_current_score | `<decimal>`<br>Scope to check for. | `pc_current_score > 100` | Checks if the current scope has the specified amount in current score within the peace conference. | Can only be used for the winning countries. | 1.12 |
 
-<!-- kit:begin id="peace-conference-corrections" at="section:Peace_conferences" -->
-**Kit correction** Two triggers in this table do not exist in 1.19.3, and one parameter is mislabelled.
+Two triggers in this table do not exist in 1.19.3, and one parameter is mislabelled.
 
-- `pc_is_untouched_loser` and `pc_is_liberated_by` are not in `documentation/triggers_documentation.md`. It documents 19 triggers with the `pc_` prefix: `pc_current_score`, `pc_does_state_stack_demilitarized`, `pc_does_state_stack_dismantled`, `pc_is_forced_government`, `pc_is_forced_government_by`, `pc_is_forced_government_to`, `pc_is_liberated`, `pc_is_loser`, `pc_is_on_same_side_as`, `pc_is_on_winning_side`, `pc_is_puppeted`, `pc_is_puppeted_by`, `pc_is_state_claimed`, `pc_is_state_claimed_and_taken_by`, `pc_is_state_claimed_by`, `pc_is_state_outside_influence_for_winner`, `pc_is_winner`, `pc_total_score` and `pc_turn`. [docs] `documentation/triggers_documentation.md` Both missing triggers are rejected: `pc_is_untouched_loser = yes` and `pc_is_liberated_by = GER` each logged "Invalid trigger" with "Unknown trigger-type" at load. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, scripted triggers loaded, error.log read.
-- Neither name occurs in vanilla script or localisation (`common/`, `events/`, `history/`, `interface/`, `localisation/`). [vanilla-confirmed 1.19.4.1] A read-only string search of `hoi4.exe` finds neither name either, so treat both as invalid and do not look for a documented replacement of the same meaning. [unverified]
-- Scopes in the documentation: the country triggers above are COUNTRY, the `pc_does_state_stack_*`, `pc_is_state_claimed*` and `pc_is_state_outside_influence_for_winner` triggers are STATE, and `pc_turn` is scope any. [docs] `documentation/triggers_documentation.md`
-- `pc_is_state_claimed` takes `yes` or `no` in the documentation (claimed and uncontested in the conference), not a country as the row says; the country form is `pc_is_state_claimed_by`. [docs] `documentation/triggers_documentation.md`
-- Vanilla use counts for each `pc_` trigger are in [Peace conference modding](<peace_conference_modding.md#Triggers>).
-<!-- kit:end id="peace-conference-corrections" -->
+- `pc_is_untouched_loser` and `pc_is_liberated_by` are not in `documentation/triggers_documentation.md`. It documents 19 triggers with the `pc_` prefix: `pc_current_score`, `pc_does_state_stack_demilitarized`, `pc_does_state_stack_dismantled`, `pc_is_forced_government`, `pc_is_forced_government_by`, `pc_is_forced_government_to`, `pc_is_liberated`, `pc_is_loser`, `pc_is_on_same_side_as`, `pc_is_on_winning_side`, `pc_is_puppeted`, `pc_is_puppeted_by`, `pc_is_state_claimed`, `pc_is_state_claimed_and_taken_by`, `pc_is_state_claimed_by`, `pc_is_state_outside_influence_for_winner`, `pc_is_winner`, `pc_total_score` and `pc_turn`. Both missing triggers are rejected: `pc_is_untouched_loser = yes` and `pc_is_liberated_by = GER` each logged "Invalid trigger" with "Unknown trigger-type" at load.
+- Neither name occurs in vanilla script or localisation (`common/`, `events/`, `history/`, `interface/`, `localisation/`). A read-only string search of `hoi4.exe` finds neither name either, so treat both as invalid and do not look for a documented replacement of the same meaning. (unverified)
+- Scopes in the documentation: the country triggers above are COUNTRY, the `pc_does_state_stack_*`, `pc_is_state_claimed*` and `pc_is_state_outside_influence_for_winner` triggers are STATE, and `pc_turn` is scope any.
+- `pc_is_state_claimed` takes `yes` or `no` in the documentation (claimed and uncontested in the conference), not a country as the row says; the country form is `pc_is_state_claimed_by`.
+- Vanilla use counts for each `pc_` trigger are in [Peace conference modding](peace_conference_modding.md#triggers).
 
-## Faction scope <a id="Faction_scope"></a>
+## Faction scope
 
 Can be used in **faction** scope.
 
 There are currently no faction-specific triggers.
 
-## State scope <a id="State_scope"></a>
+## State scope
 
 Can be used in **state** scope.
 
-### General <a id="General_3"></a>
+### General
 
 General state-scoped triggers:
 
@@ -2225,16 +2119,14 @@ has_railway_level = {
 }
 ```
 
-<!-- kit:begin id="state-scope-corrections" at="section:General_3" -->
-**Kit correction** Scope, key and syntax details for rows in the table above.
+Scope, key and syntax details for rows in the table above.
 
-- `ships_in_area` is a COUNTRY trigger in the documentation, not a state trigger. It takes `area`, `size` and an optional `type`. Vanilla runs it inside `owner = { ... }`, for example `ships_in_area = { area = 95 size > 29 }` in `common/on_actions/14_sea_on_actions.txt`, and uses `type` in 16 of 32 blocks. A comment there says it counts all ships, convoys and submarines included. [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/on_actions/14_sea_on_actions.txt`
-- `any_province_building_level` compares with `level`, not `limit` as the row says (`level < 3`; 141 of 141 vanilla blocks). The `province = { ... }` block takes repeatable `id`, or `all_provinces = yes` (instead of `id`), and the filters `limit_to_border`, `limit_to_coastal`, `limit_to_victory_point` (provinces with more than 0 victory points) and `limit_to_naval_base`, all default no. [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/national_focus/`
-- `free_building_slots` also takes `province = <id>` to check the buildings of one province. Vanilla uses it in 146 blocks, mostly bunkers in focuses such as `common/national_focus/austria.txt`. [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1]
-- `has_railway_connection` and `can_build_railway` are documented with scope any and take the same route keys. They pick the route in this order: `path = { <province ids> }`, then `start_province` and `target_province` (the shortest path), then `start_state` and `target_state` (the best node). `fallback = yes` (default no) lets each option fall back to the next, and `build_only_on_allied = yes` (default no) restricts a country scope to allied territory. `can_build_railway` also takes `controller_priority = { base = 1 modifier = { tag = MAN add = 2 } }`, where a negative value stops pathing to that controller and a non-negative value is the path cost. [docs] `documentation/triggers_documentation.md` Vanilla uses `start_state` and `target_state` (10 blocks), `start_province` and `target_province` (1) and `build_only_on_allied` (1). [vanilla-confirmed 1.19.4.1] `common/`
-<!-- kit:end id="state-scope-corrections" -->
+- `ships_in_area` is a COUNTRY trigger in the documentation, not a state trigger. It takes `area`, `size` and an optional `type`. Vanilla runs it inside `owner = { ... }`, for example `ships_in_area = { area = 95 size > 29 }` in `common/on_actions/14_sea_on_actions.txt`, and uses `type` in 16 of 32 blocks. A comment there says it counts all ships, convoys and submarines included.
+- `any_province_building_level` compares with `level`, not `limit` as the row says (`level < 3`; 141 of 141 vanilla blocks). The `province = { ... }` block takes repeatable `id`, or `all_provinces = yes` (instead of `id`), and the filters `limit_to_border`, `limit_to_coastal`, `limit_to_victory_point` (provinces with more than 0 victory points) and `limit_to_naval_base`, all default no.
+- `free_building_slots` also takes `province = <id>` to check the buildings of one province. Vanilla uses it in 146 blocks, mostly bunkers in focuses such as `common/national_focus/austria.txt`.
+- `has_railway_connection` and `can_build_railway` are documented with scope any and take the same route keys. They pick the route in this order: `path = { <province ids> }`, then `start_province` and `target_province` (the shortest path), then `start_state` and `target_state` (the best node). `fallback = yes` (default no) lets each option fall back to the next, and `build_only_on_allied = yes` (default no) restricts a country scope to allied territory. `can_build_railway` also takes `controller_priority = { base = 1 modifier = { tag = MAN add = 2 } }`, where a negative value stops pathing to that controller and a non-negative value is the path cost. Vanilla uses `start_state` and `target_state` (10 blocks), `start_province` and `target_province` (1) and `build_only_on_allied` (1).
 
-### Resistance and Compliance <a id="Resistance_and_Compliance"></a>
+### Resistance and Compliance
 
 Resistance-related state-scoped triggers:
 
@@ -2251,11 +2143,11 @@ Resistance-related state-scoped triggers:
 | occupation_law | `<token>`<br>The occupation law to check. | `occupation_law = law_name` | Checks if the current scope has an occupation law. | Can also be used in country scope. | 1.9 |
 | occupied_country_tag | `<tag>`<br>The occupation tag to check. | `occupied_country_tag = POL` | Checks which country creates resistance. |  | 1.9 |
 
-## Character scope <a id="Character_scope"></a>
+## Character scope
 
 Can be used in **Character** scope.
 
-### General <a id="General_4"></a>
+### General
 
 General character-scoped triggers:
 
@@ -2296,8 +2188,7 @@ has_character_flag = {
 }
 ```
 
-<!-- kit:begin id="character-trigger-additions" at="section:General_4" -->
-**Kit addition** Character-scope triggers the tables never name. All rows: [docs] `documentation/triggers_documentation.md`
+Character-scope triggers the tables never name.
 
 | Trigger | Form | Meaning and vanilla use |
 | --- | --- | --- |
@@ -2306,10 +2197,9 @@ has_character_flag = {
 | `is_promoted_from_unit` | `is_promoted_from_unit = yes` | The unit leader was promoted from a division or ship. Vanilla: `common/achievements.txt`. |
 | `is_in_state` | `is_in_state = 64` or `is_in_state = root.capital` | The character is in that state. Works for deployed generals (HQ location), scientists (facility location, faction programs included) and operatives (mission location). Targets: THIS, ROOT, PREV, FROM, CAPITAL. Vanilla: `common/achievements.txt` (9 uses), `common/on_actions/00_on_actions.txt`. |
 
-- The vanilla comment in `on_deployed_leader_defeated` says `is_in_state` needs the leader to be still deployed, so test it before `capture_by`. [vanilla-confirmed 1.19.4.1] `common/on_actions/00_on_actions.txt`
-<!-- kit:end id="character-trigger-additions" -->
+- The vanilla comment in `on_deployed_leader_defeated` says `is_in_state` needs the leader to be still deployed, so test it before `capture_by`.
 
-### Advisors <a id="Advisors"></a>
+### Advisors
 
 These triggers are to be used specifically for advisors.
 
@@ -2320,7 +2210,7 @@ Advisor-scoped triggers:
 | is_hired_as_advisor | `<bool>`<br>Boolean.<br> | `is_hired_as_advisor = yes` | Checks if the current character is activated as an advisor in any slot. |  | 1.12.10 |
 | not_already_hired_except_as | `<slot>`<br>The slot to check in. | `not_already_hired_except_as = political_advisor` | Checks if the current character is not hired, with the exception of the specified slot. |  | 1.11 |
 | advisor_can_be_fired | `<bool>`<br>Boolean.<br> **OR**<br> `slot = <slot>`<br>The slot to check in. | `advisor_can_be_fired = no`*(example below)* | Checks if the current character's `can_be_fired` attribute is set or not within a certain slot. | If an advisor is available in multiple slots, the long version is mandatory to use. | 1.12.8 |
-| has_advisor_role | `<slot>`<br>The slot to check in. | `has_advisor_role = political_advisor` | Checks if the character in scope has an advisor role for the given slot. | Possible [advisor](<character_modding.md#Advisors>) role slots. | ??? |
+| has_advisor_role | `<slot>`<br>The slot to check in. | `has_advisor_role = political_advisor` | Checks if the character in scope has an advisor role for the given slot. | Possible [advisor](character_modding.md#advisors) role slots. | ??? |
 
 **Example: advisor_can_be_fired**
 
@@ -2330,11 +2220,9 @@ advisor_can_be_fired = {
 }
 ```
 
-<!-- kit:begin id="advisor-warning" at="section:Advisors" -->
-**Kit note** `advisor_can_be_fired` returns false when the character has no advisor role or the role does not match the given `slot`, so a `no` result does not prove the advisor can be fired. Test `has_advisor_role` first. Without `slot` the short `advisor_can_be_fired = yes` form is enough only when the character has a single advisor role. [docs] `documentation/triggers_documentation.md`
-<!-- kit:end id="advisor-warning" -->
+`advisor_can_be_fired` returns false when the character has no advisor role or the role does not match the given `slot`, so a `no` result does not prove the advisor can be fired. Test `has_advisor_role` first. Without `slot` the short `advisor_can_be_fired = yes` form is enough only when the character has a single advisor role.
 
-### Country leaders <a id="Country_leaders"></a>
+### Country leaders
 
 These triggers are to be used specifically for country leaders.
 
@@ -2345,7 +2233,7 @@ Country leader-scoped triggers:
 | has_ideology | `<ideology>`<br>The sub-ideology to check for. | `has_ideology = liberalism` | Checks if the current character has the specificed sub-ideology assigned. |  | 1.11 |
 | has_ideology_group | `<ideology>`<br>The ideology to check for. | `has_ideology_group = democratic` | Checks if the current character has the specificed ideology assigned. |  | 1.11 |
 
-### Unit leaders <a id="Unit_leaders"></a>
+### Unit leaders
 
 These triggers are to be used specifically for unit leaders, i.e. generals and admirals.
 
@@ -2388,15 +2276,13 @@ has_unit_leader_flag = {
 }
 ```
 
-<!-- kit:begin id="unit-leader-notes" at="section:Unit_leaders" -->
-**Kit note** Details for rows in the table above.
+Details for rows in the table above.
 
-- `has_unit_leader_flag` is documented as deprecated in favour of `has_character_flag`, which does the same. It still works: vanilla uses it 89 times in 20 files, for example `events/Decisions_Events.txt`. [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1]
-- `skill_advantage` is a COMBATANT trigger in the documentation ("compare leader skill levels"), not a character trigger. Vanilla uses it only in `common/combat_tactics.txt` (8 uses). [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1]
-- `is_leading_army_in_province` also has a block form, `{ province = <id> include_field_marshal = yes }`, that counts a field marshal whose subordinate generals have a division in the province. Vanilla uses the block form once, in `common/on_actions/00_on_actions.txt`. [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="unit-leader-notes" -->
+- `has_unit_leader_flag` is documented as deprecated in favour of `has_character_flag`, which does the same. It still works: vanilla uses it 89 times in 20 files, for example `events/Decisions_Events.txt`.
+- `skill_advantage` is a COMBATANT trigger in the documentation ("compare leader skill levels"), not a character trigger. Vanilla uses it only in `common/combat_tactics.txt` (8 uses).
+- `is_leading_army_in_province` also has a block form, `{ province = <id> include_field_marshal = yes }`, that counts a field marshal whose subordinate generals have a division in the province. Vanilla uses the block form once, in `common/on_actions/00_on_actions.txt`.
 
-### Operatives <a id="Operatives"></a>
+### Operatives
 
 These triggers only work for operatives.
 
@@ -2409,7 +2295,7 @@ Operative-scoped triggers:
 | operative_leader_mission | `<token>`<br>Mission. | `operative_leader_mission = mission_name` | Checks if the current scope is on the given mission. |  | 1.9 |
 | operative_leader_operation | `<token>`<br>Operation. | `operative_leader_operation = operation_name` | Checks if the current scope is on the given operation. |  | 1.9 |
 
-### Scientists <a id="Scientists"></a>
+### Scientists
 
 These triggers only work for scientists.
 
@@ -2430,11 +2316,9 @@ has_scientist_level = {
 }
 ```
 
-<!-- kit:begin id="scientist-names" at="section:Scientists" -->
-**Kit correction** The trigger is `is_active_scientist`, as in the first column. The example `is_scientist_active = yes` in the row is copied from the documentation's own example text. Vanilla uses `is_active_scientist` 10 times (`common/factions/goals/faction_goals_short_term.txt`, `common/special_projects/projects/land_projects.txt`) and never uses `is_scientist_active`, although that string also exists in `hoi4.exe`. [vanilla-confirmed 1.19.4.1] `is_scientist_active` is not accepted as an alias: `is_scientist_active = yes` logged "Invalid trigger 'is_scientist_active'" and "Unknown trigger-type" at load. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, scripted trigger loaded, error.log read.
-<!-- kit:end id="scientist-names" -->
+The trigger is `is_active_scientist`, as in the first column. The example `is_scientist_active = yes` in the row is copied from the documentation's own example text. Vanilla uses `is_active_scientist` 10 times (`common/factions/goals/faction_goals_short_term.txt`, `common/special_projects/projects/land_projects.txt`) and never uses `is_scientist_active`, although that string also exists in `hoi4.exe`.
 
-## Combat <a id="Combat"></a>
+## Combat
 
 These triggers are used within the combatant scope. Some trigger blocks in abilities, combat tactics, and unit leader traits check this, and it's impossible to access elsewhere.
 
@@ -2470,15 +2354,13 @@ Combatant-scoped triggers:
 | has_artillery_ratio | `<float>`<br> | `has_artillery_ratio > 0.1` | Check that ratio of atrillery battalions in the composition of a side of combating troops are over a certain level. |  | ??? |
 | has_unit_type | `<unit_type>`<br> | `has_unit_type = amphibious_mechanized` | Check if the combatant has at least one of the provided unit types. |  | ??? |
 
-<!-- kit:begin id="combat-notes" at="section:Combat" -->
-**Kit addition** Combatant-scope triggers beyond the table.
+Combatant-scope triggers beyond the table.
 
-- `has_cavalry_ratio` (ratio of cavalry battalions in one side's composition, for example `has_cavalry_ratio > 0.5`) and `province_vp` (victory points of the combat province, for example `province_vp > 2`) are documented COMBATANT triggers the table never names. `has_artillery_ratio` and `has_unit_type`, shown above with version `???`, are documented too. [docs] `documentation/triggers_documentation.md`
-- Vanilla uses `province_vp` once, `has_artillery_ratio` twice and `has_unit_type` 5 times, all in `common/combat_tactics.txt`; it does not use `has_cavalry_ratio`. [vanilla-confirmed 1.19.4.1]
-- These triggers from the character tables are also valid in combatant scope: `tag`, `skill`, `attack_skill_level`, `defense_skill_level`, `planning_skill_level`, `logistics_skill_level`, `average_stats`, `can_select_trait`, `has_trait`, `is_border_war`, `is_leading_volunteer_group` and `is_leading_volunteer_group_with_original_country`. `skill_advantage` is combatant-only. [docs] `documentation/triggers_documentation.md`
-<!-- kit:end id="combat-notes" -->
+- `has_cavalry_ratio` (ratio of cavalry battalions in one side's composition, for example `has_cavalry_ratio > 0.5`) and `province_vp` (victory points of the combat province, for example `province_vp > 2`) are documented COMBATANT triggers the table never names. `has_artillery_ratio` and `has_unit_type`, shown above with version `???`, are documented too.
+- Vanilla uses `province_vp` once, `has_artillery_ratio` twice and `has_unit_type` 5 times, all in `common/combat_tactics.txt`; it does not use `has_cavalry_ratio`.
+- These triggers from the character tables are also valid in combatant scope: `tag`, `skill`, `attack_skill_level`, `defense_skill_level`, `planning_skill_level`, `logistics_skill_level`, `average_stats`, `can_select_trait`, `has_trait`, `is_border_war`, `is_leading_volunteer_group` and `is_leading_volunteer_group_with_original_country`. `skill_advantage` is combatant-only.
 
-## Division scope <a id="Division_scope"></a>
+## Division scope
 
 Can be used in **Division** scope.
 
@@ -2493,15 +2375,13 @@ Division-scoped triggers:
 | is_unit_template_reserves | `<bool>`<br>Boolean. | `is_unit_template_reserves = yes` | Checks if the current division has the supply priority set to 'Reserves', i.e. the lowest priority. | Must use either the < or > operator. | 1.12 |
 | has_officer_name | `<string>`<br>The localization key to check. | `has_officer_name = FIN_nikke_parmi` | Checks if the current division has an officer with the provided name key. |  |  |
 
-<!-- kit:begin id="division-scope-notes" at="section:Division_scope" -->
-**Kit note** Details for rows in the table above.
+Details for rows in the table above.
 
-- The documentation lists no scope for the division triggers (the field is empty). They run in the scope that `any_country_division`, `any_state_division`, `random_country_division` and similar selectors open, and unit leader traits use them too. Examples: `any_country_division = { division_has_majority_template = militia }` in `common/decisions/NOR.txt`, `random_country_division = { limit = { unit_organization > 0.4 } ... }` in `events/SEA_generic_events.txt`, and 19 uses of `division_has_majority_template` in `common/unit_leader/00_traits.txt`. [vanilla-confirmed 1.19.4.1]
-- `is_unit_template_reserves` is a yes/no check ("returns true if this unit's template has the reserves priority"); the note "must use either the < or > operator" in its row is a copy error. [docs] `documentation/triggers_documentation.md`
-- `unit_strength` and `unit_organization` compare on a 0 to 1 scale. Vanilla uses `unit_organization` three times and never uses `unit_strength`, `is_unit_template_reserves` or `has_officer_name`. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="division-scope-notes" -->
+- The documentation lists no scope for the division triggers (the field is empty). They run in the scope that `any_country_division`, `any_state_division`, `random_country_division` and similar selectors open, and unit leader traits use them too. Examples: `any_country_division = { division_has_majority_template = militia }` in `common/decisions/NOR.txt`, `random_country_division = { limit = { unit_organization > 0.4 } ... }` in `events/SEA_generic_events.txt`, and 19 uses of `division_has_majority_template` in `common/unit_leader/00_traits.txt`.
+- `is_unit_template_reserves` is a yes/no check ("returns true if this unit's template has the reserves priority"); the note "must use either the < or > operator" in its row is a copy error.
+- `unit_strength` and `unit_organization` compare on a 0 to 1 scale. Vanilla uses `unit_organization` three times and never uses `unit_strength`, `is_unit_template_reserves` or `has_officer_name`.
 
-## MIO scope <a id="MIO_scope"></a>
+## MIO scope
 
 Can be used in **Military-industrial organisation** scope.
 
@@ -2513,11 +2393,11 @@ MIO-scoped triggers:
 | is_mio_visible | `<bool>`<br>Boolean. | `is_mio_visible = yes` | Checks if the currently-scoped MIO is visible. |  | 1.13 |
 | is_mio_available | `<bool>`<br>Boolean. | `is_mio_available = yes` | Checks if the currently-scoped MIO is visible. |  | 1.13 |
 | is_mio_assigned_to_task | `<bool>`<br>Boolean. | `is_mio_assigned_to_task = yes` | Checks if the currently-scoped MIO is assigned to a task. |  | 1.13 |
-| has_mio_size | `<int>`<br>Integer. | `has_mio_size > 3` | Checks the size of the MIO. | Accepts [variables](<data_structures.md>). May use < or >. | 1.13 |
+| has_mio_size | `<int>`<br>Integer. | `has_mio_size > 3` | Checks the size of the MIO. | Accepts [variables](data_structures.md). May use < or >. | 1.13 |
 | has_mio_trait | `<token>`<br>Trait to check.<br> **OR**<br> `trait = <token>`<br>Trait to check. | `has_mio_trait = my_trait_token`*(example below)* | Checks whether the MIO has the target trait in its list. |  | 1.13 |
 | is_mio_trait_available | `<token>`<br>Trait to check.<br> **OR**<br> `trait = <token>`<br>Trait to check.<br> `check_mio_parent_completed = <bool>`<br>Whether to check if the parent traits are complete. True by default. `check_mio_mutually_exclusive = <bool>`<br>Whether to check if any mutually exclusive traits are complete. True by default. | `is_mio_trait_available = my_trait_token`*(example below)* | Checks whether the MIO has the target trait in its list and whether it's available. |  | 1.13 |
 | is_mio_trait_completed | `<token>`<br>Trait to check.<br> **OR**<br> `trait = <token>`<br>Trait to check. | `is_mio_trait_completed = my_trait_token`*(example below)* | Checks whether the MIO has the target trait in its list and whether it's completed. |  | 1.13 |
-| has_mio_number_of_completed_traits | `<int>`<br>Integer. | `has_mio_number_of_completed_traits < 2` | Checks the amount of unlocked MIO traits. | Accepts [variables](<data_structures.md>). May use < or >. | 1.13 |
+| has_mio_number_of_completed_traits | `<int>`<br>Integer. | `has_mio_number_of_completed_traits < 2` | Checks the amount of unlocked MIO traits. | Accepts [variables](data_structures.md). May use < or >. | 1.13 |
 | has_mio_flag | `<string>`<br>The flag to check. | `has_mio_flag = my_flag` | Checks if the current scope has the specified flag. |  | 1.13 |
 | has_mio_flag | `flag = <string>`<br>The flag to check.<br> `value = <int>`<br>The flag value to check for. Optional.<br> `date = <date>`<br>The flag creation date to check for. Optional.<br> `days = <int>`<br>The duration the flag existed for. Optional. | *(example below)* | Compares the specified flag's last set date, days since last set, and/or value. | If not set, the value comparison is `>0`. `value` is limited between -32768 and 32767. | 1.13 |
 | has_mio_policy | `<token>`<br>Policy to check. | `has_mio_policy = my_policy_token` | Checks if the currently-scoped MIO has the target policy allowed. |  | 1.13 |
@@ -2561,17 +2441,15 @@ has_mio_flag = {
 }
 ```
 
-<!-- kit:begin id="mio-scope-notes" at="section:MIO_scope" -->
-**Kit correction** Details for rows and examples in this section.
+Details for rows and examples in this section.
 
-- The documentation uses `trait = <token>` for `has_mio_trait`, `is_mio_trait_available` and `is_mio_trait_completed` (or the bare token as value). The three examples above write `token = ...`, a key the documentation does not mention. [docs] `documentation/triggers_documentation.md` `token` is not accepted: `has_mio_trait = { token = x }` logged "Unexpected token: token" and "has_mio_trait- no trait provided", and run in a country scope also "Invalid Scope, supported: Military Industrial Organisation, provided: Country", and it read false. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, scripted trigger run from the console, error.log read. Vanilla script uses `has_mio_trait` (3 times, `common/national_focus/soviet.txt`) and `is_mio_trait_completed` (5 times, `common/characters/GER.txt` and `common/military_industrial_organization/organizations/AST_organization.txt`) only with a bare token as value, and never uses `is_mio_trait_available`. [vanilla-confirmed 1.19.4.1]
-- `is_mio_trait_available` takes two optional switches, `check_mio_parent_completed` and `check_mio_mutually_exclusive`, both yes by default; the wiki row describes them as the parent-trait and mutually-exclusive-trait tests. [docs] `documentation/triggers_documentation.md`
-- `is_mio_available` is not a visibility check as its row says: it is true when the MIO's `available` and `visible` triggers both pass. `is_mio_visible` is true when the `visible` trigger passes. [docs] `documentation/triggers_documentation.md`
-- Equipment types for `has_mio_equipment_type` come from `script_enum_equipment_bonus_type` in `common/script_enums.txt` and from `common/equipment_groups/` (a folder, holding `mio_equipment_groups.txt` in 1.19.3); the file `common/equipment_groups.txt` named in the row does not exist. Vanilla uses the trigger 195 times in 5 files, mostly the policy files under `common/military_industrial_organization/policies/`. [vanilla-confirmed 1.19.4.1]
-- The MIO triggers also run through a variable or `mio:` scope, for example `var:my_mio_var = { has_mio_size > 5 }`; `has_mio_size` and `has_mio_number_of_completed_traits` accept `<` or `>` against a number or a variable. [docs] `documentation/triggers_documentation.md`
-<!-- kit:end id="mio-scope-notes" -->
+- The documentation uses `trait = <token>` for `has_mio_trait`, `is_mio_trait_available` and `is_mio_trait_completed` (or the bare token as value). The three examples above write `token = ...`, a key the documentation does not mention. Vanilla script uses `has_mio_trait` (3 times, `common/national_focus/soviet.txt`) and `is_mio_trait_completed` (5 times, `common/characters/GER.txt` and `common/military_industrial_organization/organizations/AST_organization.txt`) only with a bare token as value, and never uses `is_mio_trait_available`.
+- `is_mio_trait_available` takes two optional switches, `check_mio_parent_completed` and `check_mio_mutually_exclusive`, both yes by default; the wiki row describes them as the parent-trait and mutually-exclusive-trait tests.
+- `is_mio_available` is not a visibility check as its row says: it is true when the MIO's `available` and `visible` triggers both pass. `is_mio_visible` is true when the `visible` trigger passes.
+- Equipment types for `has_mio_equipment_type` come from `script_enum_equipment_bonus_type` in `common/script_enums.txt` and from `common/equipment_groups/` (a folder, holding `mio_equipment_groups.txt` in 1.19.3); the file `common/equipment_groups.txt` named in the row does not exist. Vanilla uses the trigger 195 times in 5 files, mostly the policy files under `common/military_industrial_organization/policies/`.
+- The MIO triggers also run through a variable or `mio:` scope, for example `var:my_mio_var = { has_mio_size > 5 }`; `has_mio_size` and `has_mio_number_of_completed_traits` accept `<` or `>` against a number or a variable.
 
-## Contract scope <a id="Contract_scope"></a>
+## Contract scope
 
 Can be used in **purchase contract** scope.
 
@@ -2584,11 +2462,9 @@ Contract-scoped triggers:
 | seller | `<country>`<br>Country to check. | `seller = BHR` | Checks the seller in the current purchase contract. |  | 1.13 |
 | buyer | `<country>`<br>Country to check. | `buyer = OMA` | Checks the buyer in the current purchase contract. |  | 1.13 |
 
-<!-- kit:begin id="contract-name" at="section:Contract_scope" -->
-**Kit correction** The trigger is `deal_completion`. The example in the row (`deal_completition`) repeats a misspelling from the documentation's own example text; the documentation heading and the compared value (0 to 1) are `deal_completion`. [docs] `documentation/triggers_documentation.md` Vanilla script never uses it. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="contract-name" -->
+The trigger is `deal_completion`. The example in the row (`deal_completition`) repeats a misspelling from the documentation's own example text; the documentation heading and the compared value (0 to 1) are `deal_completion`. Vanilla script never uses it.
 
-## Special projects <a id="Special_projects"></a>
+## Special projects
 
 Special project-scoped triggers:
 
@@ -2607,8 +2483,7 @@ has_project_flag = {
 }
 ```
 
-<!-- kit:begin id="other-scopes" at="section:Special_projects" -->
-**Kit addition** Scopes the documentation has triggers for that the page has no section for.
+Scopes the documentation has triggers for that the page has no section for.
 
 | Scope | Triggers beyond `hidden_trigger` and `meta_trigger` |
 | --- | --- |
@@ -2616,22 +2491,19 @@ has_project_flag = {
 | ACE | `is_female` |
 | FACTION, RAID_INSTANCE, STRATEGIC_REGION | none |
 
-All rows: [docs] `documentation/triggers_documentation.md`
+- `is_operation_type` has no syntax example in the documentation and no vanilla use, so the form `is_operation_type = <operation token>` is unverified. It needs an operation scope: `is_operation_type = x` run in a country scope logged "Invalid Scope, supported: Operation, provided: Country" and read false.
+- The "Faction scope" section above is right that there are no faction-specific triggers.
 
-- `is_operation_type` has no syntax example in the documentation and no vanilla use, so the form `is_operation_type = <operation token>` is [unverified]. [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/` It needs an operation scope: `is_operation_type = x` run in a country scope logged "Invalid Scope, supported: Operation, provided: Country" and read false. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, scripted trigger run from the console, error.log read.
-- The "Faction scope" section above is right that there are no faction-specific triggers. [docs] `documentation/triggers_documentation.md`
-<!-- kit:end id="other-scopes" -->
+## Meta triggers
 
-## Meta triggers <a id="Meta_triggers"></a>
-
-Meta triggers are a system added with 1.6 with ![Man the Guns](media/country_creation_1d4220f262__img8.png)Man the Guns[3] used in the exact same manner as [meta effects](<effects.md#Meta_effects>): in order to tie a trigger block to a dynamic localisation entry. This is usually used in conjunction with [scripted localisation](<localisation.md#Scripted_localisation>) for non-numerical checks. This also can serve in order to place a variable check where one is not possible.
+Meta triggers are a system added with 1.6 with ![Man the Guns](media/country_creation_1d4220f262__img8.png)Man the Guns[3] used in the exact same manner as [meta effects](effects.md#meta-effects): in order to tie a trigger block to a dynamic localisation entry. This is usually used in conjunction with [scripted localisation](localisation.md#scripted-localisation) for non-numerical checks. This also can serve in order to place a variable check where one is not possible.
 Meta triggers work in any scope that supports triggers, including combat scope.
 
 The following arguments go inside of a scripted trigger:
 
 - `text = { ... }` is a trigger block used by the meta trigger. In here, any string that must be made dynamic is marked with the square brackets on each side as `[EXAMPLE]`.
-- `EXAMPLE = "..."` is a string that will serve as the dynamic replacement for `[EXAMPLE]` within `text = { ... }`. This accepts [dynamic localisation](<localisation.md#Namespaces>) to a limited degree, such as getting a variable's value with `[?var_name]` or some namespaces like `[ROOT.GetTag]`.
-- `debug = yes`, if added, will add the final output in the [user directory](<modding.md>)'s `/Hearts of Iron IV/logs/game.log` file for debugging purposes.
+- `EXAMPLE = "..."` is a string that will serve as the dynamic replacement for `[EXAMPLE]` within `text = { ... }`. This accepts [dynamic localisation](localisation.md#namespaces) to a limited degree, such as getting a variable's value with `[?var_name]` or some namespaces like `[ROOT.GetTag]`.
+- `debug = yes`, if added, will add the final output in the [user directory](modding.md)'s `/Hearts of Iron IV/logs/game.log` file for debugging purposes.
 
 For example, the following can be used with has_equipment to make it depend on a variable's value:
 
@@ -2644,7 +2516,7 @@ meta_trigger = {
 }
 ```
 
-In this case, `GetEquipmentArchetype` is [scripted localisation](<localisation.md#Scripted_localisation>). An example definition of scripted localisation in this case is as such:
+In this case, `GetEquipmentArchetype` is [scripted localisation](localisation.md#scripted-localisation). An example definition of scripted localisation in this case is as such:
 
 ```text
 defined_text = {
@@ -2661,11 +2533,9 @@ defined_text = {
 }
 ```
 
-<!-- kit:begin id="meta-trigger-notes" at="section:Meta_triggers" -->
-**Kit note** `meta_trigger` is documented for STATE, COUNTRY, CHARACTER, COMBATANT, ACE, STRATEGIC_REGION, OPERATION, INDUSTRIAL_ORG, PURCHASE_CONTRACT, RAID_INSTANCE, SPECIAL_PROJECT and FACTION scope. The placeholder names (`COUNTRY`, `POW`, and `EQUIPMENT_ARCHETYPE` in the example above) are chosen by the modder: a token written in square brackets in `text` is replaced by the string given under the same name. `debug = yes` shows what the game actually executes. [docs] `documentation/triggers_documentation.md` Vanilla script has two `meta_trigger` blocks, both in `common/on_actions/12_wuw_on_actions.txt`, where `RK_TAG = "[PREV.GetTag]"` fills the placeholder. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="meta-trigger-notes" -->
+`meta_trigger` is documented for STATE, COUNTRY, CHARACTER, COMBATANT, ACE, STRATEGIC_REGION, OPERATION, INDUSTRIAL_ORG, PURCHASE_CONTRACT, RAID_INSTANCE, SPECIAL_PROJECT and FACTION scope. The placeholder names (`COUNTRY`, `POW`, and `EQUIPMENT_ARCHETYPE` in the example above) are chosen by the modder: a token written in square brackets in `text` is replaced by the string given under the same name. `debug = yes` shows what the game actually executes. Vanilla script has two `meta_trigger` blocks, both in `common/on_actions/12_wuw_on_actions.txt`, where `RK_TAG = "[PREV.GetTag]"` fills the placeholder.
 
-## Scripted triggers <a id="Scripted_triggers"></a>
+## Scripted triggers
 
 Scripted triggers serve a similar purpose to functions in that they can be defined in `/Hearts of Iron IV/common/scripted_triggers/*.txt` and then used elsewhere as a shortened version. Alongside that, the game has certain base game scripted triggers that are checked directly in the game's code determining triggers for functions that cannot be changed.
 
@@ -2706,15 +2576,15 @@ focus = {
 }
 ```
 
-If there are several definitions of scripted triggers with the exact same name, the game will make the scripted trigger be the one that was [evaluated later, as decided by file names and order in files](<modding.md#Loading_files>).
+If there are several definitions of scripted triggers with the exact same name, the game will make the scripted trigger be the one that was [evaluated later, as decided by file names and order in files](modding.md#loading-files).
 
-### Diplomacy scripted triggers <a id="Diplomacy_scripted_triggers"></a>
+### Diplomacy scripted triggers
 
 Diplomacy scripted triggers fall into two mutually exclusive groups: deciding availability and deciding visibility. By default, these are defined in `/Hearts of Iron IV/common/scripted_triggers/diplomacy_scripted_triggers.txt` and `/Hearts of Iron IV/common/scripted_triggers/00_diplo_action_valid_triggers.txt` respectively. While it is possible to also use them as regular scripted triggers, they will also modify the prerequisites of being able to do a diplomatic action between 2 countries.
 
 A diplomacy scripted trigger is identified by the naming pattern of `DIPLOMACY_<action>_ENABLE_TRIGGER` for availability, such as `DIPLOMACY_GUARANTEE_ENABLE_TRIGGER`, and `is_diplomatic_action_valid_<action>` for visibility, such as `is_diplomatic_action_valid_stage_coup`. In the base game, diplomacy scripted triggers are used to implement the game rules and add some country-specific exceptions, such as the ![Flag of United Kingdom](media/localisation_0824ba8845__img2.png) United Kingdom being unable to release its colonies with the ![Man the Guns](media/country_creation_1d4220f262__img8.png)Man the Guns DLC. Checking the base game's contents beforehand or copying it to the mod would ensure that the mod won't accidentally break any existing game rules.
 
-Generally, the pattern in localisation keys used for the button usually matches up with the internal ID of a diplomatic action. If the diplomatic action doesn't already have a scripted trigger in the base game, [entirety of localisation can be searched](<modding.md#Searching_multiple_files>) for the name of the button to find the name of the action. For example, a the English localisation entry of  `DIPLOMACY_CALL_ALLY_TITLE:0 "Call to arms"` would suggest that the diplomatic action of calling ally to war is `CALL_ALLY`.
+Generally, the pattern in localisation keys used for the button usually matches up with the internal ID of a diplomatic action. If the diplomatic action doesn't already have a scripted trigger in the base game, [entirety of localisation can be searched](modding.md#searching-multiple-files) for the name of the button to find the name of the action. For example, a the English localisation entry of  `DIPLOMACY_CALL_ALLY_TITLE:0 "Call to arms"` would suggest that the diplomatic action of calling ally to war is `CALL_ALLY`.
 
 List of known triggers:
 
@@ -2781,7 +2651,7 @@ Know tokens for `is_diplomatic_action_valid_<action>` are:
 - **stage_coup**, for the stage coup button
 - **boost_party_popularity**, for the boost party popularity button
 
-Within a diplomacy scripted trigger, the default scope is the country that does the trigger, while [FROM](<scopes.md>) is the target of the action. For availability, the trigger's tooltip is shown to the player when hovering over the diplomatic action; in case of country-specific restrictions, using conditional statements can ensure that the tooltip would only be generated when needed rather than between any pair of nations.
+Within a diplomacy scripted trigger, the default scope is the country that does the trigger, while [FROM](scopes.md) is the target of the action. For availability, the trigger's tooltip is shown to the player when hovering over the diplomatic action; in case of country-specific restrictions, using conditional statements can ensure that the tooltip would only be generated when needed rather than between any pair of nations.
 
 For example, this trigger will prevent BHR from revoking a guarantee on QAT, while still ensuring the game rule works otherwise:
 
@@ -2812,18 +2682,16 @@ DIPLOMACY_REVOKE_GUARANTEE_ENABLE_TRIGGER = {
 }
 ```
 
-<!-- kit:begin id="diplomacy-scripted-trigger-notes" at="section:Diplomacy_scripted_triggers" -->
-**Kit note** What vanilla actually defines, and the scope rules.
+What vanilla actually defines, and the scope rules.
 
-- Of the 43 `DIPLOMACY_*_ENABLE_TRIGGER` names in the list above, vanilla defines 24 in `common/scripted_triggers/diplomacy_scripted_triggers.txt`. These 19 are not defined anywhere in vanilla script, so overriding them does not replace a base-game rule: `DIPLOMACY_AIR_BASE_ACCESS_ENABLE_TRIGGER`, `DIPLOMACY_ASKSTATECONTROL_ENABLE_TRIGGER`, `DIPLOMACY_CANCEL_FOREIGN_MANPOWER_ENABLE_TRIGGER`, `DIPLOMACY_CANCEL_LICENSED_PRODUCTION_ENABLE_TRIGGER`, `DIPLOMACY_CREATE_FACTION_ENABLE_TRIGGER`, `DIPLOMACY_EMBARGO_ENABLE_TRIGGER`, `DIPLOMACY_GIVESTATECONTROL_ENABLE_TRIGGER`, `DIPLOMACY_IMPROVERELATION_ENABLE_TRIGGER`, `DIPLOMACY_NONAGGRESSIONPACT_ENABLE_TRIGGER`, `DIPLOMACY_OFFER_AIR_BASE_ACCESS_ENABLE_TRIGGER`, `DIPLOMACY_PEACE_PROPOSAL_ENABLE_TRIGGER`, `DIPLOMACY_REQUEST_ACCESS_TO_LICENCE_PRODUCTION_ENABLE_TRIGGER`, `DIPLOMACY_REQUEST_EXP_FORCE_ENABLE_TRIGGER`, `DIPLOMACY_REQUEST_FOREIGN_MANPOWER_ENABLE_TRIGGER`, `DIPLOMACY_RETURN_EXP_FORCE_ENABLE_TRIGGER`, `DIPLOMACY_REVOKE_NONAGGRESSIONPACT_ENABLE_TRIGGER`, `DIPLOMACY_SEND_ATTACHE_ENABLE_TRIGGER`, `DIPLOMACY_SEND_EXP_FORCE_ENABLE_TRIGGER` and `DIPLOMACY_WAR_ENABLE_TRIGGER`. The file header uses `DIPLOMACY_WAR_ENABLE_TRIGGER` as its worked example, so overriding these names is legitimate. [vanilla-confirmed 1.19.4.1] Of the 19, only `DIPLOMACY_CANCEL_FOREIGN_MANPOWER_ENABLE_TRIGGER`, `DIPLOMACY_CREATE_FACTION_ENABLE_TRIGGER` and `DIPLOMACY_EMBARGO_ENABLE_TRIGGER` are literal strings in `hoi4.exe`; whether the engine reads the other 16 is [unverified].
-- Names that are in the engine but not in the list: `DIPLOMACY_GUARANTEE_ENABLE_TRIGGER_OVERRIDES_GAME_TRIGGER` (defined in vanilla as `NOT = { has_game_rule = { rule = allow_guarantees option = LIMITED } }`, with a comment that it overrides the rule check on guaranteeing other ideologies), `DIPLOMACY_RECALL_VOLUNTEERS_ENABLE_TRIGGER` (defined in the same vanilla file, and a string in `hoi4.exe`) and `DIPLOMACY_REVOKE_GUARANTEE_ENABLE_TRIGGER_OVERRIDES_GAME_TRIGGER`. [vanilla-confirmed 1.19.4.1] `hoi4.exe` also contains `DIPLOMACY_CANCEL_GENERATE_WARGOAL_ENABLE_TRIGGER`, `DIPLOMACY_LEND_LEASE_CANCEL_ENABLE_TRIGGER`, `DIPLOMACY_LEND_LEASE_EXISTING_ENABLE_TRIGGER`, `DIPLOMACY_REVOKE_EMBARGO_ENABLE_TRIGGER` and the revoke-guarantee override string, which appear nowhere in vanilla script. [unverified]
-- Scope: for `DIPLOMACY_*_ENABLE_TRIGGER` the vanilla header says ROOT is the country starting the action and FROM the recipient, as the text above states. For `is_diplomatic_action_valid_<token>` it is the other way round: the scope is the target country and FROM is the initiator; in some cases the trigger is checked only for the initiator, and then both are the same country. If the trigger fails, the action does not appear. [vanilla-confirmed 1.19.3] `common/scripted_triggers/00_diplo_action_valid_triggers.txt`
-- Vanilla defines only two visibility triggers, `is_diplomatic_action_valid_stage_coup` and `is_diplomatic_action_valid_boost_party_popularity`, both `NOT = { has_dlc = "La Resistance" }` because the DLC has an operation for it. The other tokens in the list above are not defined in vanilla [vanilla-confirmed 1.19.4.1], and whether the engine reads a trigger of that name for them is [unverified]. [vanilla-confirmed 1.19.3] `common/scripted_triggers/00_diplo_action_valid_triggers.txt`
-<!-- kit:end id="diplomacy-scripted-trigger-notes" -->
+- Of the 43 `DIPLOMACY_*_ENABLE_TRIGGER` names in the list above, vanilla defines 24 in `common/scripted_triggers/diplomacy_scripted_triggers.txt`. These 19 are not defined anywhere in vanilla script, so overriding them does not replace a base-game rule: `DIPLOMACY_AIR_BASE_ACCESS_ENABLE_TRIGGER`, `DIPLOMACY_ASKSTATECONTROL_ENABLE_TRIGGER`, `DIPLOMACY_CANCEL_FOREIGN_MANPOWER_ENABLE_TRIGGER`, `DIPLOMACY_CANCEL_LICENSED_PRODUCTION_ENABLE_TRIGGER`, `DIPLOMACY_CREATE_FACTION_ENABLE_TRIGGER`, `DIPLOMACY_EMBARGO_ENABLE_TRIGGER`, `DIPLOMACY_GIVESTATECONTROL_ENABLE_TRIGGER`, `DIPLOMACY_IMPROVERELATION_ENABLE_TRIGGER`, `DIPLOMACY_NONAGGRESSIONPACT_ENABLE_TRIGGER`, `DIPLOMACY_OFFER_AIR_BASE_ACCESS_ENABLE_TRIGGER`, `DIPLOMACY_PEACE_PROPOSAL_ENABLE_TRIGGER`, `DIPLOMACY_REQUEST_ACCESS_TO_LICENCE_PRODUCTION_ENABLE_TRIGGER`, `DIPLOMACY_REQUEST_EXP_FORCE_ENABLE_TRIGGER`, `DIPLOMACY_REQUEST_FOREIGN_MANPOWER_ENABLE_TRIGGER`, `DIPLOMACY_RETURN_EXP_FORCE_ENABLE_TRIGGER`, `DIPLOMACY_REVOKE_NONAGGRESSIONPACT_ENABLE_TRIGGER`, `DIPLOMACY_SEND_ATTACHE_ENABLE_TRIGGER`, `DIPLOMACY_SEND_EXP_FORCE_ENABLE_TRIGGER` and `DIPLOMACY_WAR_ENABLE_TRIGGER`. The file header uses `DIPLOMACY_WAR_ENABLE_TRIGGER` as its worked example, so overriding these names is legitimate. Of the 19, only `DIPLOMACY_CANCEL_FOREIGN_MANPOWER_ENABLE_TRIGGER`, `DIPLOMACY_CREATE_FACTION_ENABLE_TRIGGER` and `DIPLOMACY_EMBARGO_ENABLE_TRIGGER` are literal strings in `hoi4.exe`; whether the engine reads the other 16 is unverified.
+- Names that are in the engine but not in the list: `DIPLOMACY_GUARANTEE_ENABLE_TRIGGER_OVERRIDES_GAME_TRIGGER` (defined in vanilla as `NOT = { has_game_rule = { rule = allow_guarantees option = LIMITED } }`, with a comment that it overrides the rule check on guaranteeing other ideologies), `DIPLOMACY_RECALL_VOLUNTEERS_ENABLE_TRIGGER` (defined in the same vanilla file, and a string in `hoi4.exe`) and `DIPLOMACY_REVOKE_GUARANTEE_ENABLE_TRIGGER_OVERRIDES_GAME_TRIGGER`. which appear nowhere in vanilla script. (unverified)
+- Scope: for `DIPLOMACY_*_ENABLE_TRIGGER` the vanilla header says ROOT is the country starting the action and FROM the recipient, as the text above states. For `is_diplomatic_action_valid_<token>` it is the other way round: the scope is the target country and FROM is the initiator; in some cases the trigger is checked only for the initiator, and then both are the same country. If the trigger fails, the action does not appear.
+- Vanilla defines only two visibility triggers, `is_diplomatic_action_valid_stage_coup` and `is_diplomatic_action_valid_boost_party_popularity`, both `NOT = { has_dlc = "La Resistance" }` because the DLC has an operation for it. The other tokens in the list above are not defined in vanilla, and whether the engine reads a trigger of that name for them is unverified.
 
-### Resistance initiation triggers <a id="Resistance_initiation_triggers"></a>
+### Resistance initiation triggers
 
-The behaviour of resistance being automatically initiated is decided by the `should_initiate_resistance` scripted trigger, by default defined in `/Hearts of Iron IV/common/scripted_triggers/00_resistance_initiate_triggers.txt`. If it is unfulfilled, the resistance will never initiate unless forced via the [the force_enable_resistance effect](<effects.md>). Likewise, the resistance will always occur if it's true unless forcefully disabled.
+The behaviour of resistance being automatically initiated is decided by the `should_initiate_resistance` scripted trigger, by default defined in `/Hearts of Iron IV/common/scripted_triggers/00_resistance_initiate_triggers.txt`. If it is unfulfilled, the resistance will never initiate unless forced via the [the force_enable_resistance effect](effects.md). Likewise, the resistance will always occur if it's true unless forcefully disabled.
 
 The scripted trigger's behaviour can be overwritten with state-specific scripted triggers, which should be named `should_initiate_resistance` with the list of state IDs suffixed at the end, separated by underscores. For example, this ensures that when a state 321 or 123 is controlled by the ![Flag of United Kingdom](media/localisation_0824ba8845__img2.png) United Kingdom, resistance would get initiated if and only if they're national territory of ![Flag of France](media/cosmetic_tag_modding_8daa0f4184__img3.png) France; otherwise, the normal behaviour is used:
 
@@ -2841,16 +2709,14 @@ should_initiate_resistance_123_321 = {
 }
 ```
 
-<!-- kit:begin id="resistance-trigger-notes" at="section:Resistance_initiation_triggers" -->
-**Kit correction** The example above tests the wrong scope, and the file defines more than the one trigger.
+The example above tests the wrong scope, and the file defines more than the one trigger.
 
-- `should_initiate_resistance` runs in state scope. `FROM` is the occupier and `FROM.FROM` the occupied country (always its original tag). It is evaluated when the controller or owner of a state changes, and daily while a resistance is active. State-specific overrides are named `should_initiate_resistance_<id>_<id>`. [vanilla-confirmed 1.19.3] `common/scripted_triggers/00_resistance_initiate_triggers.txt`
-- `tag = ENG` in the example is a country trigger; the documentation lists `tag` for COUNTRY, CHARACTER and COMBATANT scope only. [docs] `documentation/triggers_documentation.md` In state scope the occupier is tested through `FROM`: `limit = { FROM = { tag = ENG } }`, as the commented example in the vanilla file does for GER. [vanilla-confirmed 1.19.3]
-- The vanilla default is true when `impassable = no`, and either `core_countries^num > 0` is true (the state has a core country) or a Spanish civil war special case applies, and the state is not a core of `FROM`. [vanilla-confirmed 1.19.3]
-- The same file holds two AI hook scripted triggers for active cryptology, `should_activate_active_crypto_bonuses` and `should_not_activate_active_crypto_bonuses`, both `always = no` in vanilla. Scope is the target country and `FROM` the AI country; the temp variables `activation_score` and `activation_threshold` are available. Returning true overrides the AI decision. [vanilla-confirmed 1.19.3] `common/scripted_triggers/00_resistance_initiate_triggers.txt`
-<!-- kit:end id="resistance-trigger-notes" -->
+- `should_initiate_resistance` runs in state scope. `FROM` is the occupier and `FROM.FROM` the occupied country (always its original tag). It is evaluated when the controller or owner of a state changes, and daily while a resistance is active. State-specific overrides are named `should_initiate_resistance_<id>_<id>`.
+- `tag = ENG` in the example is a country trigger; the documentation lists `tag` for COUNTRY, CHARACTER and COMBATANT scope only. In state scope the occupier is tested through `FROM`: `limit = { FROM = { tag = ENG } }`, as the commented example in the vanilla file does for GER.
+- The vanilla default is true when `impassable = no`, and either `core_countries^num > 0` is true (the state has a core country) or a Spanish civil war special case applies, and the state is not a core of `FROM`.
+- The same file holds two AI hook scripted triggers for active cryptology, `should_activate_active_crypto_bonuses` and `should_not_activate_active_crypto_bonuses`, both `always = no` in vanilla. Scope is the target country and `FROM` the AI country; the temp variables `activation_score` and `activation_threshold` are available. Returning true overrides the AI decision.
 
-### Useful scripted triggers <a id="Useful_scripted_triggers"></a>
+### Useful scripted triggers
 
 These scripted triggers are defined in base game and might be useful to keep in the mod to cut down on the amount of code. As scripted triggers, all of these use a boolean value as argument.
 
@@ -2867,29 +2733,13 @@ Scripted triggers:
 | is_controlled_by_ROOT_or_ally | State | `is_controlled_by_ROOT_or_ally = yes` | Checks if the current state is controlled by ROOT, a subject of ROOT, or a country in the same faction as ROOT. |  |
 | owns_or_subject_of | State | `owns_or_subject_of = yes` | Checks if the current scope is owned by ROOT or a subject of ROOT. |  |
 
-<!-- kit:begin id="useful-scripted-triggers-check" at="section:Useful_scripted_triggers" -->
-**Kit note** All eight rows were compared with their vanilla definitions and match. They are defined in `common/scripted_triggers/00_scripted_triggers.txt`, except `is_enemy_ideology`, which is in `common/scripted_triggers/ideology_scripted_triggers.txt`. `has_same_ideology` accepts the groups democratic, fascism, communism and neutrality, and `is_free_or_subject_of_root` is true for any country with `is_subject = no` and for subjects of ROOT. Vanilla uses `is_controlled_by_ROOT_or_ally` 508 times, `controls_or_subject_of` 436, `has_same_ideology` 37 and `is_enemy_ideology` 24. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="useful-scripted-triggers-check" -->
+All eight rows were compared with their vanilla definitions and match. They are defined in `common/scripted_triggers/00_scripted_triggers.txt`, except `is_enemy_ideology`, which is in `common/scripted_triggers/ideology_scripted_triggers.txt`. `has_same_ideology` accepts the groups democratic, fascism, communism and neutrality, and `is_free_or_subject_of_root` is true for any country with `is_subject = no` and for subjects of ROOT. Vanilla uses `is_controlled_by_ROOT_or_ally` 508 times, `controls_or_subject_of` 436, `has_same_ideology` 37 and `is_enemy_ideology` 24.
 
-## References and notes <a id="References_and_notes"></a>
+## References and notes
 
-**^** **a:** Triggers are able to set and modify [temporary variables](<data_structures.md>). This temporary variable itself may be then used separately to change the game's state, such as in a MTTH block or if the trigger block is used in some [effect](<effects.md>)'s `limit = { ... }` (most commonly [if statements](<effects.md>) or [effect scope limits](<scopes.md>)), though the usage of the variable to change the game's state is not a trigger by itself.
+**^** **a:** Triggers are able to set and modify [temporary variables](data_structures.md). This temporary variable itself may be then used separately to change the game's state, such as in a MTTH block or if the trigger block is used in some [effect](effects.md)'s `limit = { ... }` (most commonly [if statements](effects.md) or [effect scope limits](scopes.md)), though the usage of the variable to change the game's state is not a trigger by itself.
 
-1. ↑ `[Modding]` Achievement for mods
+1. `[Modding]` Achievement for mods
    Tutorial to write achievements files in your mod
-2. ↑ forum:1356228/#post-26361808
-3. ↑ HOI4 Dev Diary - Modding and Traits
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
+2. forum:1356228/#post-26361808
+3. HOI4 Dev Diary - Modding and Traits

@@ -128,7 +128,7 @@ Do not commit secrets, provider outputs, job artifacts, virtual environments, ve
 
 ### HOI4 wiki
 
-`wiki/sync_wiki_snapshot.py` regenerates `hoi4_wiki/` from the live Hearts of Iron IV wiki and keeps the kit's local additions (kit blocks and kit pages), `wiki/verify_wiki_snapshot.py` is the read-only acceptance check for the result, and `wiki/wiki_status.py` reports which pages are current for the installed game build and which to re-check after a game update.
+`wiki/sync_wiki_snapshot.py` regenerates `hoi4_wiki/` from the live Hearts of Iron IV wiki and puts the kit's local additions back from their sidecars in `wiki/kit/`, `wiki/render_wiki.py` rebuilds the pages after a sidecar edit, `wiki/verify_wiki_snapshot.py` is the read-only acceptance check for the result, and `wiki/wiki_status.py` reports which pages are current for the installed game build and which to re-check after a game update.
 The snapshot ships as the `wiki.snapshot` manifest component and is named by the project instructions as the required modding reference, so the commands run together whenever the wiki or the game moves:
 
 ```powershell

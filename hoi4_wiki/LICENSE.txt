@@ -4,8 +4,9 @@ Offline Hearts of Iron IV Wiki snapshot: source, license and changes
 Source
 ------
 The pages in this folder are adapted from the Hearts of Iron 4 Wiki
-(hoi4.paradoxwikis.com), written by its editors. The first line of every page
-names the wiki page and the revision it was captured from, and the capture date.
+(hoi4.paradoxwikis.com), written by its editors. SOURCES.json in this folder
+lists every page with the wiki page it was adapted from, its URL, the revision it
+was captured from and the capture date, or marks it as a kit page.
 
 License
 -------
@@ -24,14 +25,15 @@ under the same license.
 Changes made to the wiki text
 -----------------------------
 * Each page was converted from the wiki's rendered HTML to Markdown. Navigation
-  chrome, edit links and maintenance banners were removed, tables and code
-  samples were reshaped for Markdown, and links were pointed at local files or
-  reduced to their text.
-* Text between "<!-- kit:begin ... -->" and "<!-- kit:end ... -->" markers was
-  written by the Agentic HOI4 Modding Kit contributors. It corrects, updates and
-  extends the wiki text against the installed game, and says which build it was
-  checked against.
-* Pages whose header carries "<!-- kit:page -->" were written in full by the kit
+  chrome, tables of contents, edit links and maintenance banners were removed,
+  tables and code samples were reshaped for Markdown, and links were pointed at
+  local files or reduced to their text.
+* The Agentic HOI4 Modding Kit contributors added text to the wiki pages, in
+  place and without markers, to correct, update and extend them against the
+  installed game. The kit's source repository
+  (github.com/klimPaskov/Agentic-HOI4-Modding) records exactly which passages
+  the kit wrote, in .tools/wiki/kit/.
+* Pages that SOURCES.json marks as kit pages were written in full by the kit
   contributors. Most cover systems the wiki has no page for; "Defines additions"
   supplements the wiki's Defines page, whose text it leaves unchanged.
 

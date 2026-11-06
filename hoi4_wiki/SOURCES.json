@@ -1,0 +1,598 @@
+{
+ "license": "CC BY-SA 3.0",
+ "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+ "license_file": "LICENSE.txt",
+ "notice": "Wiki pages in this folder are adapted from the Hearts of Iron IV Wiki (https://hoi4.paradoxwikis.com), written by its editors and licensed under CC BY-SA 3.0. The Agentic HOI4 Modding Kit converted them to Markdown, removed site navigation and added its own corrections and notes in the text. Kit pages were written by the kit's contributors. Everything the kit wrote here is licensed under CC BY-SA 3.0 as well. Images in media/ keep their own terms. See LICENSE.txt.",
+ "pages": [
+  {
+   "file": "achievement_modding.md",
+   "title": "Achievement modding",
+   "source": "wiki",
+   "wiki_page": "Achievement modding",
+   "url": "https://hoi4.paradoxwikis.com/Achievement_modding",
+   "revision": 101492,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=101492",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "ai_focuses.md",
+   "title": "AI focuses",
+   "source": "wiki",
+   "wiki_page": "AI focuses",
+   "url": "https://hoi4.paradoxwikis.com/AI_focuses",
+   "revision": 34354,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=34354",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "ai_modding.md",
+   "title": "AI modding",
+   "source": "wiki",
+   "wiki_page": "AI modding",
+   "url": "https://hoi4.paradoxwikis.com/AI_modding",
+   "revision": 105110,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105110",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "autonomy_state_modding.md",
+   "title": "Autonomy state modding",
+   "source": "wiki",
+   "wiki_page": "Autonomy state modding",
+   "url": "https://hoi4.paradoxwikis.com/Autonomy_state_modding",
+   "revision": 100160,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=100160",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "balance_of_power_modding.md",
+   "title": "Balance of power modding",
+   "source": "wiki",
+   "wiki_page": "Balance of power modding",
+   "url": "https://hoi4.paradoxwikis.com/Balance_of_power_modding",
+   "revision": 67049,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=67049",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "bookmark_modding.md",
+   "title": "Bookmark modding",
+   "source": "wiki",
+   "wiki_page": "Bookmark modding",
+   "url": "https://hoi4.paradoxwikis.com/Bookmark_modding",
+   "revision": 81580,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=81580",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "building_modding.md",
+   "title": "Building modding",
+   "source": "wiki",
+   "wiki_page": "Building modding",
+   "url": "https://hoi4.paradoxwikis.com/Building_modding",
+   "revision": 104005,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=104005",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "character_modding.md",
+   "title": "Character modding",
+   "source": "wiki",
+   "wiki_page": "Character modding",
+   "url": "https://hoi4.paradoxwikis.com/Character_modding",
+   "revision": 99479,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=99479",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "collection_modding.md",
+   "title": "Collection modding",
+   "source": "kit"
+  },
+  {
+   "file": "console_commands.md",
+   "title": "Console commands",
+   "source": "wiki",
+   "wiki_page": "Console commands",
+   "url": "https://hoi4.paradoxwikis.com/Console_commands",
+   "revision": 105778,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105778",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "cosmetic_tag_modding.md",
+   "title": "Cosmetic tag modding",
+   "source": "wiki",
+   "wiki_page": "Cosmetic tag modding",
+   "url": "https://hoi4.paradoxwikis.com/Cosmetic_tag_modding",
+   "revision": 67378,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=67378",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "country_creation.md",
+   "title": "Country creation",
+   "source": "wiki",
+   "wiki_page": "Country creation",
+   "url": "https://hoi4.paradoxwikis.com/Country_creation",
+   "revision": 71937,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=71937",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "data_structures.md",
+   "title": "Data structures",
+   "source": "wiki",
+   "wiki_page": "Data structures",
+   "url": "https://hoi4.paradoxwikis.com/Data_structures",
+   "revision": 103616,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=103616",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "decision_modding.md",
+   "title": "Decision modding",
+   "source": "wiki",
+   "wiki_page": "Decision modding",
+   "url": "https://hoi4.paradoxwikis.com/Decision_modding",
+   "revision": 103880,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=103880",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "defines.md",
+   "title": "Defines",
+   "source": "wiki",
+   "wiki_page": "Defines",
+   "url": "https://hoi4.paradoxwikis.com/Defines",
+   "revision": 104682,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=104682",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "defines_additions.md",
+   "title": "Defines additions",
+   "source": "kit"
+  },
+  {
+   "file": "division_modding.md",
+   "title": "Division modding",
+   "source": "wiki",
+   "wiki_page": "Division modding",
+   "url": "https://hoi4.paradoxwikis.com/Division_modding",
+   "revision": 105628,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105628",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "doctrine_modding.md",
+   "title": "Doctrine modding",
+   "source": "wiki",
+   "wiki_page": "Doctrine modding",
+   "url": "https://hoi4.paradoxwikis.com/Doctrine_modding",
+   "revision": 96850,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=96850",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "effects.md",
+   "title": "Effects",
+   "source": "wiki",
+   "wiki_page": "Effect",
+   "url": "https://hoi4.paradoxwikis.com/Effect",
+   "revision": 105661,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105661",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "entity_modding.md",
+   "title": "Entity modding",
+   "source": "wiki",
+   "wiki_page": "Entity modding",
+   "url": "https://hoi4.paradoxwikis.com/Entity_modding",
+   "revision": 23379,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=23379",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "equipment_modding.md",
+   "title": "Equipment modding",
+   "source": "wiki",
+   "wiki_page": "Equipment modding",
+   "url": "https://hoi4.paradoxwikis.com/Equipment_modding",
+   "revision": 104717,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=104717",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "event_modding.md",
+   "title": "Event modding",
+   "source": "wiki",
+   "wiki_page": "Event modding",
+   "url": "https://hoi4.paradoxwikis.com/Event_modding",
+   "revision": 102070,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=102070",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "faction_modding.md",
+   "title": "Faction modding",
+   "source": "wiki",
+   "wiki_page": "Faction modding",
+   "url": "https://hoi4.paradoxwikis.com/Faction_modding",
+   "revision": 104712,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=104712",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "font_modding.md",
+   "title": "Font modding",
+   "source": "wiki",
+   "wiki_page": "Font modding",
+   "url": "https://hoi4.paradoxwikis.com/Font_modding",
+   "revision": 72880,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=72880",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "game_rule_modding.md",
+   "title": "Game rule modding",
+   "source": "kit"
+  },
+  {
+   "file": "graphical_asset_modding.md",
+   "title": "Graphical asset modding",
+   "source": "wiki",
+   "wiki_page": "Graphical asset modding",
+   "url": "https://hoi4.paradoxwikis.com/Graphical_asset_modding",
+   "revision": 73705,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=73705",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "idea_modding.md",
+   "title": "Idea modding",
+   "source": "wiki",
+   "wiki_page": "Idea modding",
+   "url": "https://hoi4.paradoxwikis.com/Idea_modding",
+   "revision": 99295,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=99295",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "ideology_modding.md",
+   "title": "Ideology modding",
+   "source": "wiki",
+   "wiki_page": "Ideology modding",
+   "url": "https://hoi4.paradoxwikis.com/Ideology_modding",
+   "revision": 90513,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=90513",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "intelligence_agency_modding.md",
+   "title": "Intelligence agency modding",
+   "source": "wiki",
+   "wiki_page": "Intelligence agency modding",
+   "url": "https://hoi4.paradoxwikis.com/Intelligence_agency_modding",
+   "revision": 91095,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=91095",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "intelligence_operation_modding.md",
+   "title": "Intelligence operation modding",
+   "source": "kit"
+  },
+  {
+   "file": "interface_modding.md",
+   "title": "Interface modding",
+   "source": "wiki",
+   "wiki_page": "Interface modding",
+   "url": "https://hoi4.paradoxwikis.com/Interface_modding",
+   "revision": 100547,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=100547",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "list_of_modifiers.md",
+   "title": "List of modifiers",
+   "source": "wiki",
+   "wiki_page": "List of modifiers",
+   "url": "https://hoi4.paradoxwikis.com/List_of_modifiers",
+   "revision": 87096,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=87096",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "localisation.md",
+   "title": "Localisation",
+   "source": "wiki",
+   "wiki_page": "Localisation",
+   "url": "https://hoi4.paradoxwikis.com/Localisation",
+   "revision": 105503,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105503",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "map_modding.md",
+   "title": "Map modding",
+   "source": "wiki",
+   "wiki_page": "Map modding",
+   "url": "https://hoi4.paradoxwikis.com/Map_modding",
+   "revision": 105627,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105627",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "map_mode_modding.md",
+   "title": "Map mode modding",
+   "source": "kit"
+  },
+  {
+   "file": "military_industrial_organization_modding.md",
+   "title": "Military industrial organization modding",
+   "source": "wiki",
+   "wiki_page": "Military industrial organization modding",
+   "url": "https://hoi4.paradoxwikis.com/Military_industrial_organization_modding",
+   "revision": 76388,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=76388",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "mod_structure.md",
+   "title": "Mod structure",
+   "source": "wiki",
+   "wiki_page": "Mod structure",
+   "url": "https://hoi4.paradoxwikis.com/Mod_structure",
+   "revision": 96970,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=96970",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "modding.md",
+   "title": "Modding",
+   "source": "wiki",
+   "wiki_page": "Modding",
+   "url": "https://hoi4.paradoxwikis.com/Modding",
+   "revision": 105601,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105601",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "modifiers.md",
+   "title": "Modifiers",
+   "source": "wiki",
+   "wiki_page": "Modifiers",
+   "url": "https://hoi4.paradoxwikis.com/Modifiers",
+   "revision": 102188,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=102188",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "mods.md",
+   "title": "Mods",
+   "source": "wiki",
+   "wiki_page": "Mods",
+   "url": "https://hoi4.paradoxwikis.com/Mods",
+   "revision": 105602,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105602",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "music_modding.md",
+   "title": "Music modding",
+   "source": "wiki",
+   "wiki_page": "Music modding",
+   "url": "https://hoi4.paradoxwikis.com/Music_modding",
+   "revision": 88012,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=88012",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "namelist_modding.md",
+   "title": "Namelist modding",
+   "source": "wiki",
+   "wiki_page": "Namelist modding",
+   "url": "https://hoi4.paradoxwikis.com/Namelist_modding",
+   "revision": 93543,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=93543",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "national_focus_modding.md",
+   "title": "National focus modding",
+   "source": "wiki",
+   "wiki_page": "National focus modding",
+   "url": "https://hoi4.paradoxwikis.com/National_focus_modding",
+   "revision": 105626,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105626",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "nudger.md",
+   "title": "Nudger",
+   "source": "wiki",
+   "wiki_page": "Nudger",
+   "url": "https://hoi4.paradoxwikis.com/Nudger",
+   "revision": 97432,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=97432",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "occupation_and_resistance_modding.md",
+   "title": "Occupation and resistance modding",
+   "source": "kit"
+  },
+  {
+   "file": "on_actions.md",
+   "title": "On actions",
+   "source": "wiki",
+   "wiki_page": "On actions",
+   "url": "https://hoi4.paradoxwikis.com/On_actions",
+   "revision": 102346,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=102346",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "particle_modding.md",
+   "title": "Particle modding",
+   "source": "wiki",
+   "wiki_page": "Particle modding",
+   "url": "https://hoi4.paradoxwikis.com/Particle_modding",
+   "revision": 71496,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=71496",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "peace_conference_modding.md",
+   "title": "Peace conference modding",
+   "source": "kit"
+  },
+  {
+   "file": "portrait_modding.md",
+   "title": "Portrait modding",
+   "source": "wiki",
+   "wiki_page": "Portrait modding",
+   "url": "https://hoi4.paradoxwikis.com/Portrait_modding",
+   "revision": 97039,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=97039",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "posteffect_modding.md",
+   "title": "Posteffect modding",
+   "source": "wiki",
+   "wiki_page": "Posteffect modding",
+   "url": "https://hoi4.paradoxwikis.com/Posteffect_modding",
+   "revision": 23212,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=23212",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "raid_modding.md",
+   "title": "Raid modding",
+   "source": "kit"
+  },
+  {
+   "file": "resources_modding.md",
+   "title": "Resources modding",
+   "source": "wiki",
+   "wiki_page": "Resources modding",
+   "url": "https://hoi4.paradoxwikis.com/Resources_modding",
+   "revision": 73143,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=73143",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "scopes.md",
+   "title": "Scopes",
+   "source": "wiki",
+   "wiki_page": "Scopes",
+   "url": "https://hoi4.paradoxwikis.com/Scopes",
+   "revision": 103725,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=103725",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "script_constant_modding.md",
+   "title": "Script constant modding",
+   "source": "kit"
+  },
+  {
+   "file": "scripted_gui_modding.md",
+   "title": "Scripted GUI modding",
+   "source": "wiki",
+   "wiki_page": "Scripted GUI modding",
+   "url": "https://hoi4.paradoxwikis.com/Scripted_GUI_modding",
+   "revision": 105160,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105160",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "sound_modding.md",
+   "title": "Sound modding",
+   "source": "wiki",
+   "wiki_page": "Sound modding",
+   "url": "https://hoi4.paradoxwikis.com/Sound_modding",
+   "revision": 79549,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=79549",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "special_project_modding.md",
+   "title": "Special project modding",
+   "source": "kit"
+  },
+  {
+   "file": "state_modding.md",
+   "title": "State modding",
+   "source": "wiki",
+   "wiki_page": "State modding",
+   "url": "https://hoi4.paradoxwikis.com/State_modding",
+   "revision": 67186,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=67186",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "strategic_region_modding.md",
+   "title": "Strategic region modding",
+   "source": "wiki",
+   "wiki_page": "Strategic region modding",
+   "url": "https://hoi4.paradoxwikis.com/Strategic_region_modding",
+   "revision": 54730,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=54730",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "supply_areas_modding.md",
+   "title": "Supply areas modding",
+   "source": "wiki",
+   "wiki_page": "Supply areas modding",
+   "url": "https://hoi4.paradoxwikis.com/Supply_areas_modding",
+   "revision": 67235,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=67235",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "technology_modding.md",
+   "title": "Technology modding",
+   "source": "wiki",
+   "wiki_page": "Technology modding",
+   "url": "https://hoi4.paradoxwikis.com/Technology_modding",
+   "revision": 104524,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=104524",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "triggers.md",
+   "title": "Triggers",
+   "source": "wiki",
+   "wiki_page": "Triggers",
+   "url": "https://hoi4.paradoxwikis.com/Triggers",
+   "revision": 105091,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105091",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "troubleshooting.md",
+   "title": "Troubleshooting",
+   "source": "wiki",
+   "wiki_page": "Troubleshooting",
+   "url": "https://hoi4.paradoxwikis.com/Troubleshooting",
+   "revision": 105132,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=105132",
+   "captured": "2026-10-31"
+  },
+  {
+   "file": "unit_modding.md",
+   "title": "Unit modding",
+   "source": "wiki",
+   "wiki_page": "Unit modding",
+   "url": "https://hoi4.paradoxwikis.com/Unit_modding",
+   "revision": 71837,
+   "revision_url": "https://hoi4.paradoxwikis.com/index.php?oldid=71837",
+   "captured": "2026-10-31"
+  }
+ ]
+}

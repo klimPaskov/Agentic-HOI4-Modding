@@ -1,52 +1,10 @@
 # Defines additions
 
-*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files and re-checked against 1.19.4.1. It supplements the wiki's Defines page, which it leaves unchanged. CC BY-SA 3.0 (see LICENSE.txt).*
-<!-- kit:page -->
+The wiki's [Defines](defines.md) page lists the engine defines in one table per category, and its tables date from an older build. This page holds what the installed game's define files add to them: how the files combine, and for each category the defines the wiki table lacks, the values that differ from it, and the names 1.19.3 no longer has. A category with no section here showed no difference in names or values in that comparison. The tables were written for 1.19.3 and still hold for 1.19.4.1; what 1.19.4.1 changed is in its own section after Overrides.
 
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" sources="common/defines/ localisation/english/core_l_english.yml" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Written from the three files in `common/defines/` (`00_defines.lua`, `00_graphics.lua`, `01_career_profile.lua`: 4504 defines in 39 categories), parsed with a script and compared name by name and value by value with the 37 category tables of the wiki's [Defines](<defines.md>) page at wiki revision 104682. This text used to sit in kit blocks on that page; it moved here so the wiki page stays an unchanged snapshot.
-Contents: an Overrides note, then per category the 617 defines the wiki tables lack (value and meaning, 22 categories), 127 changed values and 58 removed names with likely successors, plus the new categories `NFactions` and `NDoctrines`. The naval "supremacy" to "dominance" rename and the new energy defines are called out.
-Gaps left: meanings come from the Lua comments or, where there is none, from the define name. Which defines the engine still reads was not tested. The comparison is with the wiki page as captured at revision 104682; when that page changes, check these tables against it again.
-**1.19.4.1 re-check (2026-11-01).** The 1.19.3 define set was rebuilt from the wiki tables plus this page's tables and compared with the 1.19.4.1 files name by name and value by value, by script. 1.19.4.1 has 4523 defines in the same 39 categories: 19 are new, none was removed, and one value changed (`NMarket.REQUEST_AUTOMATION_AUTO_ACCEPT_PURCHASE_DEFAULT`, `false` to `true`). The section [1.19.4.1 changes](#Changes_1_19_4_1) lists them. Every other value in the tables below is the same in 1.19.4.1, but the two arrays the tables quote only in part (`BORDER_COLOR_CUSTOM_HIGHLIGHTS`, `FACTION_INTELLIGENCE_ALLOWED_ADVISOR_TRAIT`) were compared only as far as they are quoted.
-<!-- kit:end id="review" -->
+## Overrides
 
-## Table of contents
-
-- [Overrides](#Overrides)
-- [1.19.4.1 changes](#Changes_1_19_4_1)
-- [NGame](#NGame)
-- [NDiplomacy](#NDiplomacy)
-- [NCountry](#NCountry)
-- [NProduction](#NProduction)
-- [NBuildings](#NBuildings)
-- [NMilitary](#NMilitary)
-- [NAir](#NAir)
-- [NNavy](#NNavy)
-- [NRailwayGun](#NRailwayGun)
-- [NAI](#NAI)
-- [NOperatives](#NOperatives)
-- [NIntel](#NIntel)
-- [NSupply](#NSupply)
-- [NAITheatre](#NAITheatre)
-- [NProject](#NProject)
-- [NFactions](#NFactions)
-- [NDoctrines](#NDoctrines)
-- [NMapMode](#NMapMode)
-- [NMapIcons](#NMapIcons)
-- [NAirGfx](#NAirGfx)
-- [NGraphics](#NGraphics)
-- [NInterface](#NInterface)
-- [NFrontend](#NFrontend)
-- [NSound](#NSound)
-- [NCareerProfile](#NCareerProfile)
-
----
-
-The wiki's [Defines](<defines.md>) page lists the engine defines in one table per category, and its tables date from an older build. This page holds what the installed game's define files add to them: how the files combine, and for each category the defines the wiki table lacks, the values that differ from it, and the names 1.19.3 no longer has. A category with no section here showed no difference in names or values in that comparison. The tables were written for 1.19.3 and still hold for 1.19.4.1; what 1.19.4.1 changed is in its own section after Overrides.
-
-## Overrides <a id="Overrides"></a>
-
-**Kit note** The three vanilla define files in 1.19.4.1 and how they combine. [vanilla-confirmed 1.19.4.1] `common/defines/`
+The three vanilla define files in 1.19.4.1 and how they combine.
 
 | File | Table it defines | Categories | Defines |
 | --- | --- | --- | --- |
@@ -54,21 +12,21 @@ The wiki's [Defines](<defines.md>) page lists the engine defines in one table pe
 | `00_graphics.lua` | `NDefines_Graphics` | 9: `NWiki`, `NMapMode`, `NMapIcons`, `NAirGfx`, `NGraphics`, `NInterface`, `NFrontend`, `NSound`, `NFriendGUI` | 1258 |
 | `01_career_profile.lua` | `NDefines_CareerProfile` | 2: `NCareerProfile`, `NCareerProfileGUI` | 21 |
 
-The last line of `00_graphics.lua` is `for k,v in pairs( NDefines_Graphics ) do NDefines[k] = v end`, and `01_career_profile.lua` ends with the same loop for `NDefines_CareerProfile`. So all 39 categories end up inside `NDefines`, and a mod can write `NDefines.NGraphics.X = ...` or `NDefines_Graphics.NGraphics.X = ...` for graphics defines, and `NDefines.NCareerProfile.X = ...` for the career profile ones. [vanilla-confirmed 1.19.4.1] The counts are from a script that reads the three files and counts `NAME = value` lines per category.
+The last line of `00_graphics.lua` is `for k,v in pairs( NDefines_Graphics ) do NDefines[k] = v end`, and `01_career_profile.lua` ends with the same loop for `NDefines_CareerProfile`. So all 39 categories end up inside `NDefines`, and a mod can write `NDefines.NGraphics.X = ...` or `NDefines_Graphics.NGraphics.X = ...` for graphics defines, and `NDefines.NCareerProfile.X = ...` for the career profile ones. The counts are from a script that reads the three files and counts `NAME = value` lines per category.
 
-The wiki page covers 37 of these 39 categories. `NFactions` and `NDoctrines` are new; they have sections of their own below. [vanilla-confirmed 1.19.4.1]
+The wiki page covers 37 of these 39 categories. `NFactions` and `NDoctrines` are new; they have sections of their own below.
 
-Advice that holds for 1.19.3: override single values in a small file of your own and never ship a copy of a vanilla define file. The vanilla files add many defines between builds (the wiki page's tables lack 617 of the 4504 defines in 1.19.3, and 58 of its names are gone; 1.19.4.1 adds 19 more), so a copied file would pin old values and miss new ones. [vanilla-confirmed 1.19.3] `common/defines/` against the wiki page for the counts. A same-name `00_defines.lua` in a mod replaces the vanilla file instead of adding to it, so a copy keeps only its own values and lacks every define it leaves out. A mod file holding only `NDefines = { NCountry = { STARTING_COMMAND_POWER = 10 } }` made the game report every other define missing at load (3060 "is not a lua table" lines, the first reading "Error reading "PEACE_TIME_NAVY_FUEL_FACTOR", "NAI" is not a lua table") and the game then crashed (EXCEPTION_INT_DIVIDE_BY_ZERO). The same file written as `NDefines.NCountry.STARTING_COMMAND_POWER = 10` failed with "attempt to index global 'NDefines' (a nil value)" and crashed the same way. So a partial copy is destructive. The start command power of 10 was never read, because neither variant reached the game. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launch, error.log and the crash folder read.
+Advice that holds for 1.19.3: override single values in a small file of your own and never ship a copy of a vanilla define file. The vanilla files add many defines between builds (the wiki page's tables lack 617 of the 4504 defines in 1.19.3, and 58 of its names are gone; 1.19.4.1 adds 19 more), so a copied file would pin old values and miss new ones. A same-name `00_defines.lua` in a mod replaces the vanilla file instead of adding to it, so a copy keeps only its own values and lacks every define it leaves out. A mod file holding only `NDefines = { NCountry = { STARTING_COMMAND_POWER = 10 } }` made the game report every other define missing at load (3060 "is not a lua table" lines, the first reading "Error reading "PEACE_TIME_NAVY_FUEL_FACTOR", "NAI" is not a lua table") and the game then crashed (EXCEPTION_INT_DIVIDE_BY_ZERO). The same file written as `NDefines.NCountry.STARTING_COMMAND_POWER = 10` failed with "attempt to index global 'NDefines' (a nil value)" and crashed the same way. So a partial copy is destructive. The start command power of 10 was never read, because neither variant reached the game.
 
-Name the override file so that it sorts after the vanilla files. The vanilla names are `00_defines.lua`, `00_graphics.lua` and `01_career_profile.lua`; a name such as `zz_my_mod_defines.lua` sorts after all of them. The wiki's remark that "almost any filename can work" does not hold for a name like `00_a.lua`: it does run before `00_defines.lua`, and the vanilla file has not yet created `NDefines`. A `00_a.lua` that sets `NDefines.NCountry.STARTING_COMMAND_POWER = 10` logged "attempt to index global 'NDefines' (a nil value)" and "An error occured when loading defines in common/defines/00_a.lua", then "No oil resource defined." and "No fuel resource defined.", and the game crashed at load (EXCEPTION_INT_DIVIDE_BY_ZERO), with an empty game.log. A `zz_b.lua` ran after the vanilla file: a command power cap of 200 set there alone was read in the game. The mod also held `zz_b.lua`, so the crash is tied to `00_a.lua` by its Lua error line and by the `zz_b.lua`-only run, not by a folder with `00_a.lua` alone. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launch, error.log, the crash folder and a script probe read in game.log.
+Name the override file so that it sorts after the vanilla files. The vanilla names are `00_defines.lua`, `00_graphics.lua` and `01_career_profile.lua`; a name such as `zz_my_mod_defines.lua` sorts after all of them. The wiki's remark that "almost any filename can work" does not hold for a name like `00_a.lua`: it does run before `00_defines.lua`, and the vanilla file has not yet created `NDefines`. A `00_a.lua` that sets `NDefines.NCountry.STARTING_COMMAND_POWER = 10` logged "attempt to index global 'NDefines' (a nil value)" and "An error occured when loading defines in common/defines/00_a.lua", then "No oil resource defined." and "No fuel resource defined.", and the game crashed at load (EXCEPTION_INT_DIVIDE_BY_ZERO), with an empty game.log. A `zz_b.lua` ran after the vanilla file: a command power cap of 200 set there alone was read in the game. The mod also held `zz_b.lua`, so the crash is tied to `00_a.lua` by its Lua error line and by the `zz_b.lua`-only run, not by a folder with `00_a.lua` alone.
 
-Syntax traps seen in the vanilla files: values may be expressions (`7 * 24`, `25 * 10`, `90.0/360.0`), strings (`"oil"`), booleans (`true`), arrays (`{ 0.1, 0.2 }`) and nested arrays. Some vanilla lines end in `;` instead of `,`, and one has a decimal comma (`0,4`, see `NCountry` below). [vanilla-confirmed 1.19.4.1]
+Syntax traps seen in the vanilla files: values may be expressions (`7 * 24`, `25 * 10`, `90.0/360.0`), strings (`"oil"`), booleans (`true`), arrays (`{ 0.1, 0.2 }`) and nested arrays. Some vanilla lines end in `;` instead of `,`, and one has a decimal comma (`0,4`, see `NCountry` below).
 
-hoi4.exe contains the message `defines reloaded!`. The console command `reload defines` replied "defines reloaded!" and game.log logged "4489 defines loaded". After a `zz_b.lua` with a command power cap of 200 was replaced by one with 300, the cap read 300 in the game, so a defines edit can be reloaded without restarting. The game also logged a defines pass of its own a few seconds after the file changed and before the command, so the 300 may already have been live, and the command's own effect is not isolated. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply, game.log and a script probe read.
+hoi4.exe contains the message `defines reloaded!`. The console command `reload defines` replied "defines reloaded!" and game.log logged "4489 defines loaded". After a `zz_b.lua` with a command power cap of 200 was replaced by one with 300, the cap read 300 in the game, so a defines edit can be reloaded without restarting. The game also logged a defines pass of its own a few seconds after the file changed and before the command, so the 300 may already have been live, and the command's own effect is not isolated.
 
-## 1.19.4.1 changes <a id="Changes_1_19_4_1"></a>
+## 1.19.4.1 changes
 
-**Kit addition** What 1.19.4.1 changed in the define files, from a name-by-name and value-by-value comparison with the 1.19.3 set. 19 defines are new and none was removed. Counts in 1.19.4.1: `00_defines.lua` 3244, `00_graphics.lua` 1258, `01_career_profile.lua` 21. All rows: [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua` or `00_graphics.lua`. The meaning is in my words, taken from the Lua comment.
+What 1.19.4.1 changed in the define files, from a name-by-name and value-by-value comparison with the 1.19.3 set. 19 defines are new and none was removed. Counts in 1.19.4.1: `00_defines.lua` 3244, `00_graphics.lua` 1258, `01_career_profile.lua` 21. The meaning is in my words, taken from the Lua comment.
 
 | Category | Define | 1.19.4.1 value | Meaning |
 | --- | --- | --- | --- |
@@ -92,21 +50,21 @@ hoi4.exe contains the message `defines reloaded!`. The console command `reload d
 | `NInterface` | `INFO_WINDOW_OFFSET_Y` | `60` | How far above the clicked item a details window starts. |
 | `NInterface` | `INFO_WINDOW_CASCADE_OFFSET` | `40` | Diagonal step used when a details window would open on top of another. |
 
-One value changed. The wiki's `NMarket` table shows the 1.19.3 value. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`
+One value changed. The wiki's `NMarket` table shows the 1.19.3 value.
 
 | Define | 1.19.3 value | 1.19.4.1 value | Meaning |
 | --- | --- | --- | --- |
 | `NMarket.REQUEST_AUTOMATION_AUTO_ACCEPT_PURCHASE_DEFAULT` | `false` | `true` | Whether purchase requests from other countries are accepted by default. |
 
-## NGame <a id="NGame"></a>
+## NGame
 
-**Kit addition** NGame in 1.19.3: 26 defines in `common/defines/00_defines.lua`; the wiki's table lists 23. [vanilla-confirmed 1.19.3]
+NGame in 1.19.3: 26 defines in `common/defines/00_defines.lua`; the wiki's table lists 23.
 
-`START_DATE = "1936.1.1.12"` and `END_DATE = "1949.1.1.1"` are unchanged in 1.19.3. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+`START_DATE = "1936.1.1.12"` and `END_DATE = "1949.1.1.1"` are unchanged in 1.19.3.
 
-`FUEL_RESOURCE` is still `"oil"`, and the two localisation keys the wiki page quotes for changing it, `FUEL_DAILY_GAIN_FROM_OIL` and `FUEL_DAILY_GAIN_OIL_ONLY`, still exist in `localisation/english/core_l_english.yml`. 1.19.3 adds a separate `ENERGY_RESOURCE` (coal). [vanilla-confirmed 1.19.3]
+`FUEL_RESOURCE` is still `"oil"`, and the two localisation keys the wiki page quotes for changing it, `FUEL_DAILY_GAIN_FROM_OIL` and `FUEL_DAILY_GAIN_OIL_ONLY`, still exist in `localisation/english/core_l_english.yml`. 1.19.3 adds a separate `ENERGY_RESOURCE` (coal).
 
-Defines the wiki's table lacks (3). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (3). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -114,20 +72,20 @@ Defines the wiki's table lacks (3). All rows: [vanilla-confirmed 1.19.3] `common
 | `OIL_RESOURCE` | `"oil"` | Name of the oil resource. |
 | `ENERGY_RESOURCE` | `"coal"` | Resource that gives a country energy. |
 
-Values that differ from the wiki's table (2). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+Values that differ from the wiki's table (2). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
 | `SAVE_VERSION` | `25` | `33` |
 | `TRADE_ROUTE_RECALCULATE_FREQUENCY_DAYS` | `30` | `45` |
 
-## NDiplomacy <a id="NDiplomacy"></a>
+## NDiplomacy
 
-**Kit addition** NDiplomacy in 1.19.3: 217 defines in `common/defines/00_defines.lua`; the wiki's table lists 203. [vanilla-confirmed 1.19.3] 1.19.4.1 adds three volunteer defines (220 in all); see [1.19.4.1 changes](#Changes_1_19_4_1). [vanilla-confirmed 1.19.4.1]
+NDiplomacy in 1.19.3: 217 defines in `common/defines/00_defines.lua`; the wiki's table lists 203. See [1.19.4.1 changes](#11941-changes).
 
-Many `TENSION_*` values on the wiki page are older numbers; the changed ones are in the table below. `TENSION_DECAY_DAILY` is present, which agrees with the wiki page's note that it replaced `TENSION_DECAY`; there is no `TENSION_DECAY` define in 1.19.3. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+Many `TENSION_*` values on the wiki page are older numbers; the changed ones are in the table below. `TENSION_DECAY_DAILY` is present, which agrees with the wiki page's note that it replaced `TENSION_DECAY`; there is no `TENSION_DECAY` define in 1.19.3.
 
-Defines the wiki's table lacks (14). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (14). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -146,7 +104,7 @@ Defines the wiki's table lacks (14). All rows: [vanilla-confirmed 1.19.3] `commo
 | `NAVAL_BLOCKADE_DAILY_COST` | `0.1` | Daily political power cost of each naval blockade. |
 | `NAVAL_BLOCKADE_THREAT_THRESHOLD` | `15` | Threat the target must have generated before a naval blockade is allowed. |
 
-Values that differ from the wiki's table (17). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+Values that differ from the wiki's table (17). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
@@ -168,13 +126,13 @@ Values that differ from the wiki's table (17). The wiki page shows an older valu
 | `GUARANTEE_COST` | `25` | `15` |
 | `REVOKE_GUARANTEE_COST` | `25` | `15` |
 
-## NCountry <a id="NCountry"></a>
+## NCountry
 
-**Kit addition** NCountry in 1.19.3: 179 defines in `common/defines/00_defines.lua`; the wiki's table lists 176. [vanilla-confirmed 1.19.3]
+NCountry in 1.19.3: 179 defines in `common/defines/00_defines.lua`; the wiki's table lists 176.
 
-The line `MAX_INTELLIGENCE_INDUSTRY_DATA_DEVIATION = 0,4,` in the vanilla file has a comma where a decimal point was meant. By Lua table-constructor rules the define is read as 0 and the 4 becomes an unnamed array entry. The wiki page shows 0.4. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+The line `MAX_INTELLIGENCE_INDUSTRY_DATA_DEVIATION = 0,4,` in the vanilla file has a comma where a decimal point was meant. By Lua table-constructor rules the define is read as 0 and the 4 becomes an unnamed array entry. The wiki page shows 0.4.
 
-Defines the wiki's table lacks (3). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (3). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -182,7 +140,7 @@ Defines the wiki's table lacks (3). All rows: [vanilla-confirmed 1.19.3] `common
 | `CONVOY_CONTROLLED_ROUTE_COST_REDUCTION_FACTOR` | `0.25` | How many fewer convoys a route needs when it runs through areas you control. |
 | `DEFAULT_COASTAL_PROTECTION_STABILITY` | `0.1` | Stability value when the coastal states are fully protected. |
 
-Values that differ from the wiki's table (4). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+Values that differ from the wiki's table (4). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
@@ -191,13 +149,13 @@ Values that differ from the wiki's table (4). The wiki page shows an older value
 | `GIE_EXILE_ARMY_LEADER_START_LEVEL` | `3` | `1` |
 | `SURRENDER_LIMIT_REDUCTION_PER_COLLABORATION` | `0.3` | `0.15` |
 
-## NProduction <a id="NProduction"></a>
+## NProduction
 
-**Kit addition** NProduction in 1.19.3: 70 defines in `common/defines/00_defines.lua`; the wiki's table lists 59. [vanilla-confirmed 1.19.3]
+NProduction in 1.19.3: 70 defines in `common/defines/00_defines.lua`; the wiki's table lists 59.
 
-Energy is new. `BASE_FACTORY_SPEED`, `BASE_FACTORY_SPEED_MIL` and `BASE_FACTORY_SPEED_NAV` are 4, 3.5 and 2.0 in 1.19.3. The values the wiki page lists for them (5, 4.50, 2.5) are the 1.19.3 values of the new `POWERED_FACTORY_SPEED`, `POWERED_FACTORY_SPEED_MIL` and `POWERED_FACTORY_SPEED_NAV`. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` The console command `energy_ratio` sets the energy ratio for factories without coal consumption. [docs] `documentation/console_commands_documentation.md`
+Energy is new. `BASE_FACTORY_SPEED`, `BASE_FACTORY_SPEED_MIL` and `BASE_FACTORY_SPEED_NAV` are 4, 3.5 and 2.0 in 1.19.3. The values the wiki page lists for them (5, 4.50, 2.5) are the 1.19.3 values of the new `POWERED_FACTORY_SPEED`, `POWERED_FACTORY_SPEED_MIL` and `POWERED_FACTORY_SPEED_NAV`. The console command `energy_ratio` sets the energy ratio for factories without coal consumption.
 
-Defines the wiki's table lacks (11). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (11). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -213,7 +171,7 @@ Defines the wiki's table lacks (11). All rows: [vanilla-confirmed 1.19.3] `commo
 | `POWERED_FACTORY_SPEED_NAV` | `2.5` | Powered factory speed multiplier, naval factories (the old base value 2.5). |
 | `MILITARY_FACTORY_COHERENCY_BONUS` | `250` | Weight the AI adds to a production line already running when it has only one military factory, to stop it switching back and forth. |
 
-Values that differ from the wiki's table (3). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+Values that differ from the wiki's table (3). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
@@ -221,23 +179,23 @@ Values that differ from the wiki's table (3). The wiki page shows an older value
 | `BASE_FACTORY_SPEED_MIL` | `4.50` | `3.5` |
 | `BASE_FACTORY_SPEED_NAV` | `2.5` | `2.0` |
 
-## NBuildings <a id="NBuildings"></a>
+## NBuildings
 
-**Kit addition** NBuildings in 1.19.3: 20 defines in `common/defines/00_defines.lua`; the wiki's table lists 20. [vanilla-confirmed 1.19.3]
+NBuildings in 1.19.3: 20 defines in `common/defines/00_defines.lua`; the wiki's table lists 20.
 
-Values that differ from the wiki's table (1). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+Values that differ from the wiki's table (1). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
 | `INFRASTRUCTURE_RESOURCE_BONUS` | `0.2` | `0.15` |
 
-## NMilitary <a id="NMilitary"></a>
+## NMilitary
 
-**Kit addition** NMilitary in 1.19.3: 382 defines in `common/defines/00_defines.lua`; the wiki's table lists 331, 7 of them removed in 1.19.3. [vanilla-confirmed 1.19.3] 1.19.4.1 adds `MAX_CASUALTY_TRICKLEBACK` (383 in all); see [1.19.4.1 changes](#Changes_1_19_4_1). [vanilla-confirmed 1.19.4.1]
+NMilitary in 1.19.3: 382 defines in `common/defines/00_defines.lua`; the wiki's table lists 331, 7 of them removed in 1.19.3. See [1.19.4.1 changes](#11941-changes).
 
-`SUPPLY_USE_FACTOR_MOVING` and `SUPPLY_USE_FACTOR_INACTIVE` still carry the Lua comment "Deprecated/Unused", and `PLAN_COHESION_DISTANCE_MAX_WHEN_LEFT_BEHIND` still says it is unused, deprecated and "will be removed in next major version". All three are still in 1.19.3, so the removal the comment announced has not happened. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+`SUPPLY_USE_FACTOR_MOVING` and `SUPPLY_USE_FACTOR_INACTIVE` still carry the Lua comment "Deprecated/Unused", and `PLAN_COHESION_DISTANCE_MAX_WHEN_LEFT_BEHIND` still says it is unused, deprecated and "will be removed in next major version". All three are still in 1.19.3, so the removal the comment announced has not happened.
 
-Defines the wiki's table lacks (58). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (58). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -300,7 +258,7 @@ Defines the wiki's table lacks (58). All rows: [vanilla-confirmed 1.19.3] `commo
 | `ARMY_HQ_REQUISITION_MINIMUM_REMAINING_PERCENTAGE` | `10` | Deploying an Army HQ never takes divisions below this percentage of their target manpower or equipment. |
 | `PREFERRED_PRISON_VP` | `5` | A captured general is jailed in a province with at least this many victory points when one exists. |
 
-Values that differ from the wiki's table (11). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+Values that differ from the wiki's table (11). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
@@ -316,7 +274,7 @@ Values that differ from the wiki's table (11). The wiki page shows an older valu
 | `STRATEGIC_SPEED_RAIL_BASE` | `15.0` | `10.0` |
 | `HOURS_REQ_REJOIN_BORDER_WAR_FOR_INJURED_UNITS` | `1` | `-1` |
 
-**Kit correction** Defines in the wiki's table that 1.19.3 no longer has (7). The successor column names a define with the same value and a matching name, which is an inference. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` for the absence; [unverified] for the successor.
+Defines in the wiki's table that 1.19.3 no longer has (7). The successor column names a define with the same value and a matching name, which is an inference. (unverified) for the successor.
 
 | Define | Page value | Likely successor |
 | --- | --- | --- |
@@ -328,13 +286,13 @@ Values that differ from the wiki's table (11). The wiki page shows an older valu
 | `NUKE_MIN_DAMAGE_PERCENT` | `0.1` | `NUCLEAR_BOMB_MIN_DAMAGE_PERCENT` in `NRaids` |
 | `NUKE_MAX_DAMAGE_PERCENT` | `0.9` | `NUCLEAR_BOMB_MAX_DAMAGE_PERCENT` in `NRaids` |
 
-## NAir <a id="NAir"></a>
+## NAir
 
-**Kit addition** NAir in 1.19.3: 176 defines in `common/defines/00_defines.lua`; the wiki's table lists 166, 5 of them removed in 1.19.3. [vanilla-confirmed 1.19.3]
+NAir in 1.19.3: 176 defines in `common/defines/00_defines.lua`; the wiki's table lists 166, 5 of them removed in 1.19.3.
 
-The wiki page marks `COMBAT_MAX_WINGS_AT_ONCE`, `COMBAT_MAX_WINGS_AT_GROUND_ATTACK` and `COMBAT_MAX_WINGS_AT_ONCE_PORT_STRIKE` as "Deprecated/Unused". The 1.19.3 Lua comments do not say so, so that label is not confirmed. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+The wiki page marks `COMBAT_MAX_WINGS_AT_ONCE`, `COMBAT_MAX_WINGS_AT_GROUND_ATTACK` and `COMBAT_MAX_WINGS_AT_ONCE_PORT_STRIKE` as "Deprecated/Unused". The 1.19.3 Lua comments do not say so, so that label is not confirmed.
 
-Defines the wiki's table lacks (15). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (15). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -354,7 +312,7 @@ Defines the wiki's table lacks (15). All rows: [vanilla-confirmed 1.19.3] `commo
 | `NAVAL_MINES_PLANTING_SPEED_LOWER_BOUND` | `0.001` | Mine planting speed cannot fall below this. |
 | `NAVAL_MINES_SWEEPING_SPEED_LOWER_BOUND` | `0.001` | Mine sweeping speed cannot fall below this. |
 
-Values that differ from the wiki's table (4). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+Values that differ from the wiki's table (4). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
@@ -363,7 +321,7 @@ Values that differ from the wiki's table (4). The wiki page shows an older value
 | `MISSION_COMMAND_POWER_COSTS` | `{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0 }` | `{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0,0, 0,0 }` |
 | `MISSION_FUEL_COSTS` | `{ 1.0, 1.0, 0.2, 1.0, 1.0, 1.0, 1.0, 0.75, 1.2, 1.2, 1.0, 0.6, 1.0, 1.0, 1.0, 1.0 }` | `{ 1.0, 1.0, 0.2, 1.0, 1.0, 1.0, 1.0, 0.75, 1.2, 1.2, 1.0, 0.6, 1.0, 1.0, 1.0, 1.0, 0.0, 0,0, 0,0 }` |
 
-**Kit correction** Defines in the wiki's table that 1.19.3 no longer has (5). The successor column names a define with the same value and a matching name, which is an inference. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` for the absence; [unverified] for the successor.
+Defines in the wiki's table that 1.19.3 no longer has (5). The successor column names a define with the same value and a matching name, which is an inference. (unverified) for the successor.
 
 | Define | Page value | Likely successor |
 | --- | --- | --- |
@@ -373,15 +331,15 @@ Values that differ from the wiki's table (4). The wiki page shows an older value
 | `BOMBING_STATE_BUILD_PRIO_SCALE` | `1.5` | `STRATEGIC_BOMBING_STATE_BUILD_PRIO_SCALE` |
 | `BOMBING_INFRA_PRIO_SCALE` | `0.7` | `STRATEGIC_BOMBING_INFRA_PRIO_SCALE` |
 
-## NNavy <a id="NNavy"></a>
+## NNavy
 
-**Kit addition** NNavy in 1.19.3: 414 defines in `common/defines/00_defines.lua`; the wiki's table lists 340, 18 of them removed in 1.19.3. [vanilla-confirmed 1.19.3]
+NNavy in 1.19.3: 414 defines in `common/defines/00_defines.lua`; the wiki's table lists 340, 18 of them removed in 1.19.3.
 
-Naval "supremacy" is called "dominance" in 1.19.3: the old `SUPREMACY_*` and `*_SUPREMACY_*` defines are gone and `DOMINANCE_*` defines exist instead (the removed ones with a clear successor are listed below with their old values). [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+Naval "supremacy" is called "dominance" in 1.19.3: the old `SUPREMACY_*` and `*_SUPREMACY_*` defines are gone and `DOMINANCE_*` defines exist instead (the removed ones with a clear successor are listed below with their old values).
 
-The wiki page shows `SUBMARINE_REVEAL_BASE_CHANCE`, `SUBMARINE_REVEAL_POW` and `SUBMARINE_BASE_TORPEDO_REVEAL_CHANCE` as current. In 1.19.3 their Lua comments are marked "deprecated, will be removed in the future update", and the rows `SUBMARINE_BASE_STEALTH_VALUE`, `SUBMARINE_REVEAL_DETECTION_MULTIPLIER` and `SUBMARINE_REVEAL_TORPEDO_FIRING_DETECTION_MULTIPLIER` below belong to the reworked detection formula. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+The wiki page shows `SUBMARINE_REVEAL_BASE_CHANCE`, `SUBMARINE_REVEAL_POW` and `SUBMARINE_BASE_TORPEDO_REVEAL_CHANCE` as current. In 1.19.3 their Lua comments are marked "deprecated, will be removed in the future update", and the rows `SUBMARINE_BASE_STEALTH_VALUE`, `SUBMARINE_REVEAL_DETECTION_MULTIPLIER` and `SUBMARINE_REVEAL_TORPEDO_FIRING_DETECTION_MULTIPLIER` below belong to the reworked detection formula.
 
-Defines the wiki's table lacks (92). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (92). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -478,7 +436,7 @@ Defines the wiki's table lacks (92). All rows: [vanilla-confirmed 1.19.3] `commo
 | `NAVAL_HEADQUARTERS_FIRST_ADJACENT_FACTOR` | `0.5` | Multiplier on naval HQ dominance in the first adjacent region. |
 | `NAVAL_HEADQUARTERS_SECOND_ADJACENT_FACTOR` | `0.25` | Multiplier on naval HQ dominance in the second adjacent region. |
 
-Values that differ from the wiki's table (37). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+Values that differ from the wiki's table (37). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
@@ -520,7 +478,7 @@ Values that differ from the wiki's table (37). The wiki page shows an older valu
 | `SUBMARINE_HIDE_TIMEOUT` | `20` | `8` |
 | `SUBMARINE_REVEALED_TIMEOUT` | `16` | `12` |
 
-**Kit correction** Defines in the wiki's table that 1.19.3 no longer has (18). The successor column names a define with the same value and a matching name, which is an inference. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` for the absence; [unverified] for the successor.
+Defines in the wiki's table that 1.19.3 no longer has (18). The successor column names a define with the same value and a matching name, which is an inference. (unverified) for the successor.
 
 | Define | Page value | Likely successor |
 | --- | --- | --- |
@@ -543,24 +501,24 @@ Values that differ from the wiki's table (37). The wiki page shows an older valu
 | `NAVAL_COMBAT_AIR_CARRIER_TARGET_SCORE` | `200` | `NAVAL_COMBAT_AIR_CARRIER_TARGET_SCALE` (same value) |
 | `NAVAL_COMBAT_AIR_CONVOY_TARGET_SCORE` | `1.0` | `NAVAL_COMBAT_AIR_CONVOY_TARGET_SCALE` (same value) |
 
-## NRailwayGun <a id="NRailwayGun"></a>
+## NRailwayGun
 
-**Kit addition** NRailwayGun in 1.19.3: 24 defines in `common/defines/00_defines.lua`; the wiki's table lists 26, 2 of them removed in 1.19.3. [vanilla-confirmed 1.19.3]
+NRailwayGun in 1.19.3: 24 defines in `common/defines/00_defines.lua`; the wiki's table lists 26, 2 of them removed in 1.19.3.
 
-**Kit correction** Defines in the wiki's table that 1.19.3 no longer has (2). The successor column names a define with the same value and a matching name, which is an inference. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` for the absence; [unverified] for the successor.
+Defines in the wiki's table that 1.19.3 no longer has (2). The successor column names a define with the same value and a matching name, which is an inference. (unverified) for the successor.
 
 | Define | Page value | Likely successor |
 | --- | --- | --- |
 | `ANNEX_RATIO` | `0.5` | none found |
 | `HOURS_BETWEEN_REDISTRIBUTION` | `24` | none found |
 
-## NAI <a id="NAI"></a>
+## NAI
 
-**Kit addition** NAI in 1.19.3: 946 defines in `common/defines/00_defines.lua`; the wiki's table lists 825, 14 of them removed in 1.19.3. [vanilla-confirmed 1.19.3] 1.19.4.1 adds two (948 in all); see [1.19.4.1 changes](#Changes_1_19_4_1). [vanilla-confirmed 1.19.4.1]
+NAI in 1.19.3: 946 defines in `common/defines/00_defines.lua`; the wiki's table lists 825, 14 of them removed in 1.19.3. See [1.19.4.1 changes](#11941-changes).
 
-`TRANSPORTS_PER_PARATROOPER` still has the Lua comment "Currently unused". [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` `AIFC` is the AI force concentration logic. [vanilla-confirmed 1.19.3] (the Lua comments for `AIFC_UPDATE_FREQUENCY_DAYS` and its neighbours say so)
+`TRANSPORTS_PER_PARATROOPER` still has the Lua comment "Currently unused".
 
-Defines the wiki's table lacks (135). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (135). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -700,7 +658,7 @@ Defines the wiki's table lacks (135). All rows: [vanilla-confirmed 1.19.3] `comm
 | `MIN_FACTORIES_TO_WANT_TO_IMPORT` | `{ 0, 0, 0, 0, 0, 0, 10 }` | Civilian factories the AI needs before it considers importing a resource; one entry per strategic resource, in resource order. |
 | `SUGGESTED_NUM_MAX_CARRIERS` | `4` | Starting guess for how many carriers to plan when evaluating AI builds and task force suggestions. |
 
-Values that differ from the wiki's table (33). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+Values that differ from the wiki's table (33). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
@@ -738,7 +696,7 @@ Values that differ from the wiki's table (33). The wiki page shows an older valu
 | `MIN_INVASION_ORG_FACTOR_TO_EXECUTE` | `0.75` | `0.4` |
 | `INDUSTRIAL_ORG_RESEARCH_BONUS_FACTOR` | `1.0` | `10.0` |
 
-**Kit correction** Defines in the wiki's table that 1.19.3 no longer has (14). The successor column names a define with the same value and a matching name, which is an inference. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` for the absence; [unverified] for the successor.
+Defines in the wiki's table that 1.19.3 no longer has (14). The successor column names a define with the same value and a matching name, which is an inference. (unverified) for the successor.
 
 | Define | Page value | Likely successor |
 | --- | --- | --- |
@@ -757,21 +715,21 @@ Values that differ from the wiki's table (33). The wiki page shows an older valu
 | `LAND_DEFENSE_INTERSEPTORS_PER_PLANE` | `0.1` | `LAND_DEFENSE_INTERCEPTORS_PER_PLANE` (spelling fixed) |
 | `ARMY_LEADER_ASSIGN_KEEP_LEADER` | `500` | `ARMY_LEADER_ASSIGN_KEEP_CURRENT_LEADER_FACTOR` (different scale) |
 
-## NOperatives <a id="NOperatives"></a>
+## NOperatives
 
-**Kit addition** NOperatives in 1.19.3: 125 defines in `common/defines/00_defines.lua`; the wiki's table lists 124. [vanilla-confirmed 1.19.3]
+NOperatives in 1.19.3: 125 defines in `common/defines/00_defines.lua`; the wiki's table lists 124.
 
-Defines the wiki's table lacks (1). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (1). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
 | `BECOME_SPYMASTER_FI_COST` | `1` | Faction initiative spent to become Spy Master (faction DLC only). |
 
-## NIntel <a id="NIntel"></a>
+## NIntel
 
-**Kit addition** NIntel in 1.19.3: 223 defines in `common/defines/00_defines.lua`; the wiki's table lists 217, 3 of them removed in 1.19.3. [vanilla-confirmed 1.19.3]
+NIntel in 1.19.3: 223 defines in `common/defines/00_defines.lua`; the wiki's table lists 217, 3 of them removed in 1.19.3.
 
-Defines the wiki's table lacks (9). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (9). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -785,7 +743,7 @@ Defines the wiki's table lacks (9). All rows: [vanilla-confirmed 1.19.3] `common
 | `RAID_MIN_INTEL_FOR_WARNING_HALFWAY_TO_LAUNCH` | `0.5` | Intel needed for a warning halfway through raid preparation. |
 | `RAID_MIN_INTEL_FOR_WARNING_EARLY_PREPARATION` | `0.8` | Intel needed for a warning early in raid preparation. |
 
-Values that differ from the wiki's table (3). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`.
+Values that differ from the wiki's table (3). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
@@ -793,7 +751,7 @@ Values that differ from the wiki's table (3). The wiki page shows an older value
 | `AIR_MAPICON_MISSION_COUNT_INTEL_MAX` | `{ 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6 }` | `{ 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6 }` |
 | `AIR_MAPICON_MISSION_COUNT_INTEL_RANGE_AT_LOWEST_INTEL` | `{ 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 }` | `{ 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 }` |
 
-**Kit correction** Defines in the wiki's table that 1.19.3 no longer has (3). The successor column names a define with the same value and a matching name, which is an inference. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` for the absence; [unverified] for the successor.
+Defines in the wiki's table that 1.19.3 no longer has (3). The successor column names a define with the same value and a matching name, which is an inference. (unverified) for the successor.
 
 | Define | Page value | Likely successor |
 | --- | --- | --- |
@@ -801,33 +759,33 @@ Values that differ from the wiki's table (3). The wiki page shows an older value
 | `NAVAL_SUPREMACY_INTEL_LOW_SUPREMACY_PENALTY_START` | `0.1` | `NAVAL_DOMINANCE_INTEL_LOW_DOMINANCE_PENALTY_START` |
 | `NAVAL_SUPREMACY_INTEL_LOW_SUPREMACY_MIN_PENALTY` | `0.5` | `NAVAL_DOMINANCE_INTEL_LOW_DOMINANCE_MIN_PENALTY` |
 
-## NSupply <a id="NSupply"></a>
+## NSupply
 
-**Kit addition** NSupply in 1.19.3: 103 defines in `common/defines/00_defines.lua`; the wiki's table lists 102. [vanilla-confirmed 1.19.3]
+NSupply in 1.19.3: 103 defines in `common/defines/00_defines.lua`; the wiki's table lists 102.
 
-`SUPPLY_NODE_MIN_SUPPLY_THRESHOLD` keeps its Lua comment "Currently unused?" in 1.19.3. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
+`SUPPLY_NODE_MIN_SUPPLY_THRESHOLD` keeps its Lua comment "Currently unused?" in 1.19.3.
 
-Defines the wiki's table lacks (1). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (1). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
 | `NAVAL_SUPPLY_HUB_REDUCTION_FACTOR` | `0.0` | Share by which a naval supply hub reduces the fleet's supply need. |
 
-## NAITheatre <a id="NAITheatre"></a>
+## NAITheatre
 
-**Kit addition** NAITheatre in 1.19.3: 16 defines in `common/defines/00_defines.lua`; the wiki's table lists 17, 1 of them removed in 1.19.3. [vanilla-confirmed 1.19.3]
+NAITheatre in 1.19.3: 16 defines in `common/defines/00_defines.lua`; the wiki's table lists 17, 1 of them removed in 1.19.3.
 
-**Kit correction** Defines in the wiki's table that 1.19.3 no longer has (1). The successor column names a define with the same value and a matching name, which is an inference. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua` for the absence; [unverified] for the successor.
+Defines in the wiki's table that 1.19.3 no longer has (1). The successor column names a define with the same value and a matching name, which is an inference. (unverified) for the successor.
 
 | Define | Page value | Likely successor |
 | --- | --- | --- |
 | `AI_THEATRE_PERCENTAGE_OF_UNITS_TO_KEEP_IN_NEIGHBOR_DEFENSIVE_ORDERS` | `0.05` | none found |
 
-## NProject <a id="NProject"></a>
+## NProject
 
-**Kit addition** NProject in 1.19.3: 33 defines in `common/defines/00_defines.lua`; the wiki's table lists 29. [vanilla-confirmed 1.19.3]
+NProject in 1.19.3: 33 defines in `common/defines/00_defines.lua`; the wiki's table lists 29.
 
-Defines the wiki's table lacks (4). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (4). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -836,11 +794,11 @@ Defines the wiki's table lacks (4). All rows: [vanilla-confirmed 1.19.3] `common
 | `SUPPORTIVE_SCIENITST_PROGRESS_BONUS` | `0.1` | Share of an iteration's progress given to the supporting scientist country's project. The define name keeps the spelling `SCIENITST`. |
 | `SUPPORTIVE_SCIENTISTS_SHARING_BONUS` | `0.05` | Research sharing percentage per supportive scientist, global per faction. |
 
-## NFactions <a id="NFactions"></a>
+## NFactions
 
-**Kit addition** NFactions is new. 1.19.3 has 76 defines in this group in `common/defines/00_defines.lua`; the wiki page has no section for it. [vanilla-confirmed 1.19.3]
+NFactions is new. 1.19.3 has 76 defines in this group in `common/defines/00_defines.lua`; the wiki page has no section for it.
 
-Defines the wiki's table lacks (76). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (76). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -921,11 +879,11 @@ Defines the wiki's table lacks (76). All rows: [vanilla-confirmed 1.19.3] `commo
 | `FACTION_DEFAULT_TEMPLATE` | `"faction_template_generic"` | Template used when no faction template is specified. |
 | `AI_DAYS_TO_SELECT_GOAL` | `14` | Days the AI takes to select a faction goal (no Lua comment). |
 
-## NDoctrines <a id="NDoctrines"></a>
+## NDoctrines
 
-**Kit addition** NDoctrines is new. 1.19.3 has 12 defines in this group in `common/defines/00_defines.lua`; the wiki page has no section for it. [vanilla-confirmed 1.19.3]
+NDoctrines is new. 1.19.3 has 12 defines in this group in `common/defines/00_defines.lua`; the wiki page has no section for it.
 
-Defines the wiki's table lacks (12). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (12). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -942,11 +900,11 @@ Defines the wiki's table lacks (12). All rows: [vanilla-confirmed 1.19.3] `commo
 | `THEATER_COMMANDER_UNITS_MASTERY_GAIN_FACTOR_PER_SKILL` | `0.01` | Share of unit mastery gain in a theater passed to the commander's country, per attack plus defense skill point. |
 | `NAVAL_MISSION_MASTERY_GAIN_FACTORS` | `{ 0.0, 0.2, 0.05, 0.3, 0.2, 0.2, 0.2, 0.0, 0.0, 0.0 }` | Mastery gain per naval mission type (hold, patrol, strike force, convoy raiding, convoy escort, mines planting, mines sweeping, train, reserve fleet, naval invasion support); the comment says it is reduced like training. |
 
-## NMapMode <a id="NMapMode"></a>
+## NMapMode
 
-**Kit addition** NMapMode in 1.19.3: 105 defines in `common/defines/00_graphics.lua`; the wiki's table lists 79. [vanilla-confirmed 1.19.3]
+NMapMode in 1.19.3: 105 defines in `common/defines/00_graphics.lua`; the wiki's table lists 79.
 
-Defines the wiki's table lacks (26). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (26). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -977,7 +935,7 @@ Defines the wiki's table lacks (26). All rows: [vanilla-confirmed 1.19.3] `commo
 | `FACTION_THEATER_COLOR_INDEX` | `13` | Border colour index while editing a faction theater. |
 | `FACTION_THEATER_HIGHLIGHT_COLOR_INDEX` | `14` | Border colour index while hovering a faction theater map icon. |
 
-Values that differ from the wiki's table (5). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`.
+Values that differ from the wiki's table (5). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
@@ -987,20 +945,20 @@ Values that differ from the wiki's table (5). The wiki page shows an older value
 | `CONSTRUCTION_MAP_MODE_BUILDING_LEVEL_HI_COLOR` | `{ 0.4, 0.9, 0.0, 0.5 }` | `{ 0.45, 0.98, 0.0, 0.9 }` |
 | `FACTIONS_COLOR_NOT_MEMBER` | `{ 0.6, 0.6, 0.6, 0.25 }` | `{ 0.7, 0.7, 0.7, 0.7 }` |
 
-## NMapIcons <a id="NMapIcons"></a>
+## NMapIcons
 
-**Kit addition** NMapIcons in 1.19.3: 515 defines in `common/defines/00_graphics.lua`; the wiki's table lists 408. [vanilla-confirmed 1.19.3]
+NMapIcons in 1.19.3: 515 defines in `common/defines/00_graphics.lua`; the wiki's table lists 408.
 
-`DEFAULT_PRIORITY_NAVAL_ACCIDENTS` and `OPERATIVES_PRIORITY_NAVAL_ACCIDENTS` each appear twice in the Lua file with the same value 13, which is harmless. [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`
+`DEFAULT_PRIORITY_NAVAL_ACCIDENTS` and `OPERATIVES_PRIORITY_NAVAL_ACCIDENTS` each appear twice in the Lua file with the same value 13, which is harmless.
 
-Defines the wiki's table lacks (2). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (2). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
 | `HOME_BASE_MAP_ICON_SCALE_DEFAULT` | `1.0` | Default scale of the home base map icon. |
 | `HOME_BASE_MAP_ICON_SCALE_HIGHLIGHTED` | `1.2` | Scale of the home base map icon when highlighted. |
 
-Map icon priority defines the wiki's table lacks (105). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`. Each icon type exists once per map mode with the same value in every mode; the wiki page already has the same pattern for other icon types. The word "priority" is read from the name, the Lua has no comment. [unverified]
+Map icon priority defines the wiki's table lacks (105). Each icon type exists once per map mode with the same value in every mode; the wiki page already has the same pattern for other icon types. The word "priority" is read from the name, the Lua has no comment. (unverified)
 
 | Define pattern | Value in every mode | Count |
 | --- | --- | --- |
@@ -1012,29 +970,29 @@ Map icon priority defines the wiki's table lacks (105). All rows: [vanilla-confi
 
 The `<MODE>` prefixes are: `DEFAULT`, `DEPLOYMENT_AIR`, `DEPLOYMENT_MILITARY`, `DEPLOYMENT_NAVY`, `DIPLOMACY`, `DIPLOMACY_FABRICATE_CLAIM`, `FACTIONS`, `IDEOLOGY`, `INFRASTRUCTURE`, `MANPOWER`, `OPERATIVES`, `PEACE_CONFERENCE`, `PLAYERS`, `RESISTANCE`, `RESOURCES`, `START_CONSTRUCTION`, `STATES`, `STRATEGIC_AIR`, `STRATEGIC_NAVY`, `STRATEGIC_REGIONS`, `SUPPLY_AREAS`.
 
-Values that differ from the wiki's table (1). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`.
+Values that differ from the wiki's table (1). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
 | `SUPPLY_AREAS_PRIORITY_ADJACENCY_RULE` | `3` | `2` |
 
-## NAirGfx <a id="NAirGfx"></a>
+## NAirGfx
 
-**Kit addition** NAirGfx in 1.19.3: 39 defines in `common/defines/00_graphics.lua`; the wiki's table lists 38. [vanilla-confirmed 1.19.3]
+NAirGfx in 1.19.3: 39 defines in `common/defines/00_graphics.lua`; the wiki's table lists 38.
 
-Defines the wiki's table lacks (1). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (1). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
 | `RANDOM_SCENARIO_ANIMATION_MAX_DELAY` | `3.0` | Longest delay before an animation of a gfx airplane (currently SAM and gun emplacements) starts. |
 
-## NGraphics <a id="NGraphics"></a>
+## NGraphics
 
-**Kit addition** NGraphics in 1.19.3: 459 defines in `common/defines/00_graphics.lua`; the wiki's table lists 423, 6 of them removed in 1.19.3. [vanilla-confirmed 1.19.3]
+NGraphics in 1.19.3: 459 defines in `common/defines/00_graphics.lua`; the wiki's table lists 423, 6 of them removed in 1.19.3.
 
-`MOON_LATITUDE` is still commented "NOT USED" in the Lua. [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`
+`MOON_LATITUDE` is still commented "NOT USED" in the Lua.
 
-Defines the wiki's table lacks (42). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (42). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -1081,7 +1039,7 @@ Defines the wiki's table lacks (42). All rows: [vanilla-confirmed 1.19.3] `commo
 | `FACTION_PING_MAP_ALREADY_ASSIGNED_COLOR` | `{ 0.5, 0.5, 0.75, 0.15 }` | Colour of a region already assigned to another theater. |
 | `FACTION_PING_MAP_GRADIENT` | `150` | Distance gradient of the selected region. |
 
-Values that differ from the wiki's table (5). The wiki page shows an older value. All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`.
+Values that differ from the wiki's table (5). The wiki page shows an older value.
 
 | Define | Page value | 1.19.3 value |
 | --- | --- | --- |
@@ -1091,7 +1049,7 @@ Values that differ from the wiki's table (5). The wiki page shows an older value
 | `RAILWAY_CAMERA_CUTOFF` | `200.0` | `300.0` |
 | `TRADE_ROUTE_SUPPLIES_TRANSFER_COLOR` | `{ 1.0, 1.0, 1.0, 0.75 }` | `{ 1.0, 1.0, 1.0, 0.35 }` |
 
-**Kit correction** Defines in the wiki's table that 1.19.3 no longer has (6). The successor column names a define with the same value and a matching name, which is an inference. [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua` for the absence; [unverified] for the successor.
+Defines in the wiki's table that 1.19.3 no longer has (6). The successor column names a define with the same value and a matching name, which is an inference. (unverified) for the successor.
 
 | Define | Page value | Likely successor |
 | --- | --- | --- |
@@ -1102,11 +1060,11 @@ Values that differ from the wiki's table (5). The wiki page shows an older value
 | `STRATEGIC_NAVY_COLOR_GOOD_WHILE_HIGHLIGHTING_HOLD` | `{ 0, 0.6, 0.5, 1 }` | none found |
 | `STRATEGIC_NAVY_COLOR_AVERAGE_WHILE_HIGHLIGHTING_HOLD` | `{ 0.5, 0.5, 0.6, 1 }` | none found |
 
-## NInterface <a id="NInterface"></a>
+## NInterface
 
-**Kit addition** NInterface in 1.19.3: 86 defines in `common/defines/00_graphics.lua`; the wiki's table lists 83. [vanilla-confirmed 1.19.3] 1.19.4.1 adds six (92 in all); see [1.19.4.1 changes](#Changes_1_19_4_1). [vanilla-confirmed 1.19.4.1]
+NInterface in 1.19.3: 86 defines in `common/defines/00_graphics.lua`; the wiki's table lists 83. See [1.19.4.1 changes](#11941-changes).
 
-Defines the wiki's table lacks (3). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (3). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
@@ -1114,54 +1072,40 @@ Defines the wiki's table lacks (3). All rows: [vanilla-confirmed 1.19.3] `common
 | `AIR_WING_NICHE_ICON_SCALE` | `0.8` | Scale of the niche icon in the air wing toolbar strip. |
 | `FIXED_TOOLTIP_POSITION` | `{ -90, -12 }` | Offset from the bottom right of the screen for a fixed map tooltip (when enabled in settings). |
 
-## NFrontend <a id="NFrontend"></a>
+## NFrontend
 
-**Kit addition** NFrontend in 1.19.3: 30 defines in `common/defines/00_graphics.lua`; the wiki's table lists 28. [vanilla-confirmed 1.19.3]
+NFrontend in 1.19.3: 30 defines in `common/defines/00_graphics.lua`; the wiki's table lists 28.
 
-Defines the wiki's table lacks (2). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (2). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
 | `TIME_TO_SWAP_BACKGROUNDS` | `20` | Seconds before the main menu background changes. |
 | `NEW_BACKGROUND_DURATION` | `4` | How many start-ups a new background is shown first: 1 selects it automatically, 0 never, higher values prioritise it that many times. |
 
-## NSound <a id="NSound"></a>
+## NSound
 
-**Kit addition** NSound in 1.19.3: 12 defines in `common/defines/00_graphics.lua`; the wiki's table lists 11. [vanilla-confirmed 1.19.3]
+NSound in 1.19.3: 12 defines in `common/defines/00_graphics.lua`; the wiki's table lists 11.
 
-Defines the wiki's table lacks (1). All rows: [vanilla-confirmed 1.19.3] `common/defines/00_graphics.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (1). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
 | `ABILITY_GENERIC_SOUND_NAME` | `"ability_generic"` | Sound played in addition to an ability's own sound when the player activates an ability. |
 
-## NCareerProfile <a id="NCareerProfile"></a>
+## NCareerProfile
 
-**Kit addition** NCareerProfile in 1.19.3: 16 defines in `common/defines/01_career_profile.lua`; the wiki's table lists 17, 2 of them removed in 1.19.3. [vanilla-confirmed 1.19.3]
+NCareerProfile in 1.19.3: 16 defines in `common/defines/01_career_profile.lua`; the wiki's table lists 17, 2 of them removed in 1.19.3.
 
-Defines the wiki's table lacks (1). All rows: [vanilla-confirmed 1.19.3] `common/defines/01_career_profile.lua`. The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
+Defines the wiki's table lacks (1). The meaning is in my words, taken from the Lua comment; "no Lua comment" means it comes from the name only.
 
 | Define | 1.19.3 value | Meaning |
 | --- | --- | --- |
 | `NEVERMINE_ME_MEDAL_MIN_RATIO` | `0.5` | Least effect mines must have on dominance for the naval region to count for the Nevermine Me medal. |
 
-**Kit correction** Defines in the wiki's table that 1.19.3 no longer has (2). The successor column names a define with the same value and a matching name, which is an inference. [vanilla-confirmed 1.19.3] `common/defines/01_career_profile.lua` for the absence; [unverified] for the successor.
+Defines in the wiki's table that 1.19.3 no longer has (2). The successor column names a define with the same value and a matching name, which is an inference. (unverified) for the successor.
 
 | Define | Page value | Likely successor |
 | --- | --- | --- |
 | `LORD_OF_THE_SEAS_MEDAL_MIN_SUPREMACY` | `0.75` | none found |
 | `NEVERMINE_ME_MEDAL_MIN_SUPREMACY_EFFECT` | `0.5` | `NEVERMINE_ME_MEDAL_MIN_RATIO` |
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)

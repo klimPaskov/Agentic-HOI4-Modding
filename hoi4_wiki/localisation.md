@@ -1,52 +1,5 @@
 # Localisation
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Localisation", revision 105503, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
-
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105503" sources="documentation/loc_objects_documentation.md documentation/loc_formatter_documentation.md documentation/script_concept_documentation.md documentation/effects_documentation.md documentation/triggers_documentation.md documentation/console_commands_documentation.md localisation/ interface/core.gfx interface/texticons.gfx common/scripted_localisation/ launcher-settings.json hoi4.exe" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the localisation object, formatter and script-concept documentation, the 2,083 vanilla `.yml` files (encoding, file names, key lines, colour, format and icon use), `interface/core.gfx` and `interface/texticons.gfx`, all 42 files of `common/scripted_localisation/`, `launcher-settings.json` and strings in `hoi4.exe`.
-Kit blocks added: vanilla file facts, colour codes with real use and the dynamic `§[Name]` colour, variable format letters (`U`, `H`, `^`, `*`), text icons, bindable tooltip rules, the missing `country_leader_desc` formatter, the object and promotion table with the three missing properties, the scripted localisation scope rule and `seed`, war names, division ranks and the `loc_check` commands.
-Errors found in the wiki text: the language setting file name (`pdx_settings.txt` versus `pdx_settings.json`), `GetCallsign` listed for operatives (the documentation puts it on aces), pronoun functions listed for characters only, and the formatter list lacks `country_leader_desc`.
-Gaps left: the stub markers "to be added" and "incomplete" are false positives (an `INDENT` description and the page's own caveat that its list of places where `[...]` works may be incomplete, which was not extended). `DATA`, `NAME`, `USRNAME` and `temp_display_B`, `_M`, `_T` are placeholder names in examples. The `0xC0000005` crash, the `replace` folder priority and the meaning of the `U` format letter cannot be shown from files and stay [unverified].
-**1.19.4.1 re-check (2026-11-01).** 27 statements depended on files the update changed (the localisation folder, `interface/core.gfx`, `interface/texticons.gfx`, `hoi4.exe`, `launcher-settings.json`, `common/scripted_localisation/` and the console command documentation) and all 27 were re-measured. Numbers that moved: 2,093 `.yml` files (the 10 new ones are `keybinds_l_<language>.yml`), 1,336,123 key lines, 346 English lines with a trailing comment, the colour letter and format letter counts, 473 text icon sprite blocks, the `£` style counts and 1,546 `defined_text` entries in 41 files (the removed `debug_types` console command is not mentioned on this page). Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-## Table of contents
-
-- [Quick checklist](#Quick_checklist)
-- [Basics](#Basics)
-- [Replacing](#Replacing)
-- [Special characters](#Special_characters)
-  - [Colouring characters](#Colouring_characters)
-    - [Errors](#Errors)
-  - [Formatting variables](#Formatting_variables)
-  - [Country's flags](#Country.27s_flags)
-  - [Text icons](#Text_icons)
-- [Nesting strings](#Nesting_strings)
-- [Bindable localisation](#Bindable_localisation)
-  - [Usage of Bindable Localization](#Usage_of_Bindable_Localization)
-  - [Context-Aware Tooltips](#Context-Aware_Tooltips)
-  - [Localization Formatters](#Localization_Formatters)
-- [Localization Formatters](#Localization_Formatters_2)
-- [Contextual Localization](#Contextual_Localization)
-  - [Using a localization object](#Using_a_localization_object)
-  - [Condition in contextual localization](#Condition_in_contextual_localization)
-  - [Relation to Event Scopes](#Relation_to_Event_Scopes)
-  - [Documentation of localized objects](#Documentation_of_localized_objects)
-- [Namespaces](#Namespaces)
-  - [Functions](#Functions)
-    - [Country scope](#Country_scope)
-    - [Other scopes](#Other_scopes)
-- [Scripted localisation](#Scripted_localisation)
-  - [Dynamic scripted localisation](#Dynamic_scripted_localisation)
-  - [Temporary variable display](#Temporary_variable_display)
-- [Hard-to-find Localisation Info](#Hard-to-find_Localisation_Info)
-  - [War Naming](#War_Naming)
-  - [Division Commander Ranks](#Division_Commander_Ranks)
-- [References](#References)
-- [Kit: checking localisation](#kit-checking-localisation)
-
----
-
 HOI4 uses the modified YAML **localisation** system used by modern Paradox games.
 
 The localisation is stored within the `/Hearts of Iron IV/localisation/` folder, in which any sub-folder can be used. Each file is assigned a language with its filename by adding it in the end, with the following languages existing:
@@ -65,7 +18,7 @@ The localisation is stored within the `/Hearts of Iron IV/localisation/` folder,
 The filename **has to contain the language's internal name** as the file will not be loaded otherwise.
 The currently-enabled language is chosen within the user directory's `/Hearts of Iron IV/pdx_settings.txt` file, however, more languages cannot be added directly other than these listed languages.
 
-## Quick checklist <a id="Quick_checklist"></a>
+## Quick checklist
 
 In order for a file to work, it must have the following:
 
@@ -79,22 +32,20 @@ In order for a file to work, it must have the following:
   - The optional version number, 0 in this case, may only consist of numeric digits. Anything else such as hyphens or letters will break the rest of the file.
   - The localisation value must be surrounded by a U+022 quotation mark on both sides and must lie strictly on one line. Failing to meet this will break the rest of the file.
 
-<!-- kit:begin id="loc-vanilla-file-facts" at="section:Quick_checklist" -->
-**Kit addition** What the 1.19.4.1 localisation folder looks like. All items: [vanilla-confirmed 1.19.4.1] `localisation/`, unless tagged otherwise.
+What the 1.19.4.1 localisation folder looks like.
 
 - There are 2,093 `.yml` files and every one starts with the UTF-8 byte order mark. 2,092 sit in the ten language folders (`english`, `braz_por`, `french`, `german`, `japanese`, `korean`, `polish`, `russian`, `simp_chinese`, `spanish`), and 2,091 of those are named `<name>_l_<language>.yml` for their folder's language. The exception is `french/career_profile_zelosissimo.yml`, a leftover that holds only comments. The 2,093rd file is `localisation/languages.yml`, the table of language names.
 - `languages.yml` has one block per language with the same ten entries as the page's list. `l_braz_por` is "Português do Brasil", Brazilian Portuguese.
 - 2,083 files start with the matching `l_<language>:` header on line 1; the other 9 begin with a `# === [LocEditor:...]` comment. No file in a language folder holds two language headers, although the page says one is allowed; `languages.yml` holds ten.
 - There are 1,336,123 key lines. 1,333,745 have no version number (`key: "text"`), 2,099 use `key:0` and 279 use `key:1` to `key:4`. New files can drop the number, as the page says.
 - A key line can end with a `# comment` after the closing quote; 346 English lines do.
-- No vanilla language folder has a `replace` subfolder (0 of 10 folders). [vanilla-confirmed 1.19.4.1] `localisation/`. `hoi4.exe` contains the strings `/replace/`, "Duplicate localization found", "The game has loc key collisions. Check logs/text.log" and "should be in in utf-8-bom encoding", which fit the page's `replace` and `text.log` text. [unverified] (strings in `hoi4.exe`)
-- Duplicate keys. In a test, a key defined in two normal files of one mod was listed in `text.log` once per file ("Duplicate localization found, key: ..." with the file and the value), and the first file by name (`a` before `b`) won. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, text.log and game.log read. The winner comes from one pair of files only.
-- The `replace` folder. In a test, a key defined again under `localisation/replace/english/`, `localisation/english/replace/` and `localisation/replace/` was overridden by the replace file in all three spellings, with no duplicate line in `text.log`. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, text.log and game.log read.
-- A missing BOM. In a test, a `.yml` file without the BOM was reported in `error.log` as "Missing UTF8 BOM in" followed by the file's path under `localisation/english/`, and its key printed as the raw key name, so the key was not loaded. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log and game.log read. That the key is not loaded is shown only by the raw key in the log.
-- The page says the language is set in `pdx_settings.txt`. `launcher-settings.json` names `pdx_settings.json` as `ingameSettingsPath`, and `hoi4.exe` still contains the string `pdx_settings.txt`. [vanilla-confirmed 1.19.4.1] `launcher-settings.json` for the first part. The game reads the language from `pdx_settings.txt`: it holds `"System" = { "language" = { value="l_english" } }`, and no `pdx_settings.json` existed in the scratch user folder or in the maintainer's backed-up folder. With only `pdx_settings.txt` set to `l_german` and `settings.txt` left at `l_english`, the main menu came up in German (Einzelspieler, Mehrspieler, Optionen). On exit the game wrote `language="l_german"` into `settings.txt` as well. Editing `settings.txt` alone was not tested. The file was edited with the game closed, not through the Options screen, and the game was started without the Paradox launcher. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, main menu screenshot and the files compared before and after.
-<!-- kit:end id="loc-vanilla-file-facts" -->
+- No vanilla language folder has a `replace` subfolder (0 of 10 folders). `hoi4.exe` contains the strings `/replace/`, "Duplicate localization found", "The game has loc key collisions. Check logs/text.log" and "should be in in utf-8-bom encoding", which fit the page's `replace` and `text.log` text. (unverified) (strings in `hoi4.exe`)
+- Duplicate keys. In a test, a key defined in two normal files of one mod was listed in `text.log` once per file ("Duplicate localization found, key: ..." with the file and the value), and the first file by name (`a` before `b`) won. The winner comes from one pair of files only.
+- The `replace` folder. In a test, a key defined again under `localisation/replace/english/`, `localisation/english/replace/` and `localisation/replace/` was overridden by the replace file in all three spellings, with no duplicate line in `text.log`.
+- A missing BOM. In a test, a `.yml` file without the BOM was reported in `error.log` as "Missing UTF8 BOM in" followed by the file's path under `localisation/english/`, and its key printed as the raw key name, so the key was not loaded. That the key is not loaded is shown only by the raw key in the log.
+- The page says the language is set in `pdx_settings.txt`. `launcher-settings.json` names `pdx_settings.json` as `ingameSettingsPath`, and `hoi4.exe` still contains the string `pdx_settings.txt`. The game reads the language from `pdx_settings.txt`: it holds `"System" = { "language" = { value="l_english" } }`, and no `pdx_settings.json` existed in the scratch user folder or in the maintainer's backed-up folder. With only `pdx_settings.txt` set to `l_german` and `settings.txt` left at `l_english`, the main menu came up in German (Einzelspieler, Mehrspieler, Optionen). On exit the game wrote `language="l_german"` into `settings.txt` as well. Editing `settings.txt` alone was not tested. The file was edited with the game closed, not through the Options screen, and the game was started without the Paradox launcher.
 
-## Basics <a id="Basics"></a>
+## Basics
 
 Localisation is created within any file in the localisation folder: the filename aside from the file extension is irrelevant aside from deciding which language is chosen.
 **Every localisation file must use the UTF-8-BOM encoding**, i.e. the UTF-8 encoding with the byte order mark in the beginning of the file. Exact details depend on the text editor:
@@ -125,11 +76,11 @@ l_english:
  infantry_equipment_desc: "This is infantry equipment"
 ```
 
-Nearly any printable character is allowed to use within the localisation value, other than certain special characters with special meaning, such as square brackets, or newlines. However, only some select characters are present in the fonts that are used in the game, and the selection of characters differs depending on the font. If the used font doesn't include a representation of a character, the game will replace it with a question mark (?). This affects only the font representation: this may be remedied by switching the used font within the [interface](<interface_modding.md>) or by [changing the font](<font_modding.md>) to include the letter.
+Nearly any printable character is allowed to use within the localisation value, other than certain special characters with special meaning, such as square brackets, or newlines. However, only some select characters are present in the fonts that are used in the game, and the selection of characters differs depending on the font. If the used font doesn't include a representation of a character, the game will replace it with a question mark (?). This affects only the font representation: this may be remedied by switching the used font within the [interface](interface_modding.md) or by [changing the font](font_modding.md) to include the letter.
 
-## Replacing <a id="Replacing"></a>
+## Replacing
 
-Typically, localisation key overlap must be avoided, overlap being the same localisation key being defined several times in the same language's files. This is tracked within [user directory](<modding.md>)'s `/Hearts of Iron IV/logs/text.log` file, which contains a list of overlapping localisation keys if any. The value that'll get chosen does not seem to have a consistent pattern, but seems to prioritise base game files.
+Typically, localisation key overlap must be avoided, overlap being the same localisation key being defined several times in the same language's files. This is tracked within [user directory](modding.md)'s `/Hearts of Iron IV/logs/text.log` file, which contains a list of overlapping localisation keys if any. The value that'll get chosen does not seem to have a consistent pattern, but seems to prioritise base game files.
 
 However, if the localisation file is contained within a folder with the name of "replace" (such as `/Hearts of Iron IV/localisation/english/replace`, still must be inside of localisation), it will get priority over the entries that are not. This can be helpful to overwrite only specific localisation keys without porting over the entire file, such as if the file gets frequently updated in base game.
 
@@ -143,9 +94,9 @@ l_english:
  POLITICS_ADD_POLITICAL_POWER: "New mana: $VAL|=+0$."
 ```
 
-## Special characters <a id="Special_characters"></a>
+## Special characters
 
-### Colouring characters <a id="Colouring_characters"></a>
+### Colouring characters
 
 Various characters can be added to a string to alter its colour in-game. A colouring character formatting begins with a section sign (§) and includes a single letter (byte) afterwards used to identify the colour. The exclamation point is used to mark the end of a colouring rule. The end of a string doesn't necessarily mean that the colouring rule will end, meaning its use is mandatory with every colouring rule to avoid spillover into the next text, even if it should last until the end of the string. On Windows, the `Alt`+`21` alt code can be used to input a section sign.
 
@@ -185,19 +136,17 @@ l_english:
  example_key: "This is my text, §Bthis text is blue§!, and §Rthis text is red§!"
 ```
 
-New text colours can be added by expanding the `textcolors = { ... }` array in `/Hearts of Iron IV/interface/core.gfx`. Colour keys *cannot* have more than one letter (i.e. "BU = {0 255 0}"), and will attempt to overwrite another colour key with the same first letter. It is also possible to make a colouring character represent a different colour from default when a certain font is used within the [bitmapfont definition](<font_modding.md#Defining_bitmaps>) of that font.
+New text colours can be added by expanding the `textcolors = { ... }` array in `/Hearts of Iron IV/interface/core.gfx`. Colour keys *cannot* have more than one letter (i.e. "BU = {0 255 0}"), and will attempt to overwrite another colour key with the same first letter. It is also possible to make a colouring character represent a different colour from default when a certain font is used within the [bitmapfont definition](font_modding.md#defining-bitmaps) of that font.
 
-<!-- kit:begin id="loc-colour-codes" at="section:Colouring_characters" -->
-**Kit addition** The colour table checked against the game.
+The colour table checked against the game.
 
-- The global `textcolors` table in `interface/core.gfx` has exactly the 23 one-character keys of the table above: `C L W B G R b g Y H T O`, `0` to `9` and `t`. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`.
-- Fonts can change single letters. 30 `textcolors` blocks exist in three files (`core.gfx` 27, `core_bare_minimum.gfx` 1, `load_screen_font.gfx` 2): the global table plus per-font tables. The `vic_18_black` font redefines `G`, `R`, `Y`, `H` and `T`; there `Y` is black (`0 0 0`). [vanilla-confirmed 1.19.4.1] `interface/core.gfx`.
-- Use in the 208 English files: `§!` 20,262 times, `Y` 12,297, `G` 2,893, `R` 2,298, `H` 1,860, `L` 391, `T` 213, `W` 185, `g` 89, `O` 10, `b` 4, `B` 2, and `0`, `7` and `8` seven times in total. `C`, `t` and the digits `1` to `6` and `9` are never used. `B` is pure blue (`0 0 255`) and nearly unused; vanilla highlights with `Y`, good and bad values with `G` and `R`, headings with `H`. [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
-- A colour letter can come from scripted localisation: `§[GetColorX]text§!`. In `WUW_GER_scripted_loc.txt` the entries are `localization_key = R` and `localization_key = G`; no localisation key named `R` or `G` exists, so the game prints the key text itself, which is the colour letter. Vanilla uses this form 13 times in 5 English files, for example `§[GetColorForCurrentIntegratedPuppetEconomiesValue][?GER_puppet_economies_integrated]§!`. [vanilla-confirmed 1.19.4.1] `common/scripted_localisation/WUW_GER_scripted_loc.txt`, `localisation/english/WUW_decisions_l_english.yml`.
-- Both error messages in the Errors section below exist in `hoi4.exe`: "Could not find coloring for character '%c'" and "Could not find coloring for character id '%u'". [unverified] (strings in `hoi4.exe`) The first one is logged for an unknown colour letter: `§Z` in an event text wrote "Could not find coloring for character 'Z'" to `error.log`, and the same line appeared again when a loc key holding it was printed with the `log` effect. The event window dropped the code and showed "A red B", and the log route kept the letter and removed the section signs ("A Zred! B"). [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log and game.log read, event window checked in a screenshot. The two lines have identical text, so a second message was not seen, and which line belongs to which route rests on their time stamps. The "character id" form was not triggered.
-<!-- kit:end id="loc-colour-codes" -->
+- The global `textcolors` table in `interface/core.gfx` has exactly the 23 one-character keys of the table above: `C L W B G R b g Y H T O`, `0` to `9` and `t`.
+- Fonts can change single letters. 30 `textcolors` blocks exist in three files (`core.gfx` 27, `core_bare_minimum.gfx` 1, `load_screen_font.gfx` 2): the global table plus per-font tables. The `vic_18_black` font redefines `G`, `R`, `Y`, `H` and `T`; there `Y` is black (`0 0 0`).
+- Use in the 208 English files: `§!` 20,262 times, `Y` 12,297, `G` 2,893, `R` 2,298, `H` 1,860, `L` 391, `T` 213, `W` 185, `g` 89, `O` 10, `b` 4, `B` 2, and `0`, `7` and `8` seven times in total. `C`, `t` and the digits `1` to `6` and `9` are never used. `B` is pure blue (`0 0 255`) and nearly unused; vanilla highlights with `Y`, good and bad values with `G` and `R`, headings with `H`.
+- A colour letter can come from scripted localisation: `§[GetColorX]text§!`. In `WUW_GER_scripted_loc.txt` the entries are `localization_key = R` and `localization_key = G`; no localisation key named `R` or `G` exists, so the game prints the key text itself, which is the colour letter. Vanilla uses this form 13 times in 5 English files, for example `§[GetColorForCurrentIntegratedPuppetEconomiesValue][?GER_puppet_economies_integrated]§!`.
+- Both error messages in the Errors section below exist in `hoi4.exe`: "Could not find coloring for character '%c'" and "Could not find coloring for character id '%u'". (unverified) (strings in `hoi4.exe`) The first one is logged for an unknown colour letter: `§Z` in an event text wrote "Could not find coloring for character 'Z'" to `error.log`, and the same line appeared again when a loc key holding it was printed with the `log` effect. The event window dropped the code and showed "A red B", and the log route kept the letter and removed the section signs ("A Zred! B"). The two lines have identical text, so a second message was not seen, and which line belongs to which route rests on their time stamps. The "character id" form was not triggered.
 
-#### Errors <a id="Errors"></a>
+#### Errors
 
 The errors related to the colouring characters can be fairly unintuitive to find, considering that they do not provide the location of the file.
 There are three types of the error:
@@ -215,9 +164,9 @@ Searching can be done using a text editor with the "Find in Files" functionality
 - **Sublime Text** – This is located in the "Find" topbar menu as "Find in Files...". In order to add a folder to search, the menu to the right of the "Where:" line can be opened, with either "Add Folder" (to select an individual folder) or "Add Open Folders" (To automatically select all folders opened via Sublime Text) buttons serving to do so.
 - **Visual Studio Code** – Visual Studio Code by default searches only the currently opened folder. A folder is opened either through the "Open Folder..." button in the "File" topbar menu or the "Explorer" menu, accessed through the bar on the left. After this, the functionality can be accessed in the "Edit" menu as "Find in Files". To search in other folders, open the 'search details' menu, represented with an ellipsis, and enter the full path to the folder in the 'Files to include' area. In order to speed up the search, filename filters can be used. For example, `localisation/english/*.yml` within "files to include" will only search every \*.yml file within the `<currently opened folder>/localisation/english/` folder, where `*` stands for any amount (including 0) of any characters within the filename. Similar filters can be used in the previous two text editors, however without allowing folders to be filtered — only the filenames.
 
-### Formatting variables <a id="Formatting_variables"></a>
+### Formatting variables
 
-*See also: [Variables](<data_structures.md>)*
+*See also: [Variables](data_structures.md)*
 
 Variables have a unique way for applying colouring, also allowing extra formatting characters. These are applied after a pipe placed at the end of the variable's name, such as `[?my_variable|R]` that will turn the colour of the variable `my_variable` red. If no colouring is applied, it will use the same colour as regular text: the §-colour block, textbox's `text_color_mode`, or the font's default colour in that order.
 
@@ -245,23 +194,21 @@ l_english:
  pol_power_trigger_tt: "Has more than [?var_name|Y] political power"
 ```
 
-Within these examples, the first string depicts the current scope's democratic popularity as a percentage multiplied by 100 (%), in green (G), rounded to a whole number with 0 decimals (0). The second string displays the `my_modifier` [modifier token](<modifiers.md>)'s value as a 'good' number (+ making it green if positive, red if negative), with a percentage sign appended in the end (%%) and rounded to a number with one decimal (.1). The third string displays the variable in yellow colouring (as is common in the base game's tooltips), leaving it unchanged otherwise.
+Within these examples, the first string depicts the current scope's democratic popularity as a percentage multiplied by 100 (%), in green (G), rounded to a whole number with 0 decimals (0). The second string displays the `my_modifier` [modifier token](modifiers.md)'s value as a 'good' number (+ making it green if positive, red if negative), with a percentage sign appended in the end (%%) and rounded to a number with one decimal (.1). The third string displays the variable in yellow colouring (as is common in the base game's tooltips), leaving it unchanged otherwise.
 
-<!-- kit:begin id="loc-variable-formats" at="section:Formatting_variables" -->
-**Kit addition** Format letters as vanilla uses them. All items: [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
+Format letters as vanilla uses them.
 
 - The same letters work on `$KEY|fmt$` placeholders as on `[?var|fmt]`. English vanilla has 353 distinct `$KEY|fmt$` strings and 41 distinct `[?var|fmt]` strings. The commonest `$KEY|fmt$` forms are `|H` (2,896 uses), `|Y` (1,323), `|+=%1` (288) and `|UY` (191). The commonest `[?var|fmt]` forms are `|+0` (145), `|Y0` (82) and `|%` (50).
 - Any colour letter from the colour table can be a format letter: `H`, `Y`, `R`, `G`, `g`, `W`, `L`, `T` and `O` all occur after the pipe. `H` leads in placeholders, `Y` in `[?var|...]`.
 - A dot in the format string, as in `|.1`, occurs 309 times, `*` 115 times and `^` 69 times, and `%%` occurs as in `$LIMIT|R.0%%$`, so these forms from the table are all in real use.
-- The letter `U`, not in the table above, occurs 352 times in format codes, mostly as `$COUNTRY|U$` or `$COUNTRY|UY$` at the start of a sentence. [vanilla-confirmed 1.19.4.1] `localisation/english/`. It presumably upper-cases the first letter. [unverified] (meaning inferred from the sentence position) In a test, a loc key holding `$igc_b_g148_o|U$` showed an empty string, not the upper-cased text, so the first-letter reading did not show. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, loc key logged with the `log` effect. The same reference without `|U` was not tested, so the empty text may come from the reference and not from the format.
-<!-- kit:end id="loc-variable-formats" -->
+- The letter `U`, not in the table above, occurs 352 times in format codes, mostly as `$COUNTRY|U$` or `$COUNTRY|UY$` at the start of a sentence. It presumably upper-cases the first letter. (unverified) (meaning inferred from the sentence position) In a test, a loc key holding `$igc_b_g148_o|U$` showed an empty string, not the upper-cased text, so the first-letter reading did not show. The same reference without `|U` was not tested, so the empty text may come from the reference and not from the format.
 
-### Country's flags <a id="Country.27s_flags"></a><a id="Country's_flags"></a>
+### Country's flags
 
 The following in localisation will display the default, `/Hearts of Iron IV/gfx/flags/TAG.tga`, flag of a country: `@TAG`
 It's recommended to use the GetFlag namespace when possible instead, however, this can be used on localisation that doesn't support namespaces, such as custom modifier tooltips or the game rules.
 
-### Text icons <a id="Text_icons"></a>
+### Text icons
 
 Icons can be displayed within strings using the **£** notation.
 
@@ -284,21 +231,19 @@ The text icon's name is equal to the text icon with the GFX_ part in the beginni
 
 If the sprite of the text icon is made out of multiple frames, then the specified frame can be used in localisation as `£icon_name|1`, this example being the first frame. Note that `legacy_lazy_load = no` is necessary for multi-framed text icons to work properly. It is also required to make the icon appear on game start without reloading/modifying interface files, so you should include it.
 
-<!-- kit:begin id="loc-text-icons" at="section:Text_icons" -->
-**Kit addition** Text icons in 1.19.4.1. All items: [vanilla-confirmed 1.19.4.1] `interface/texticons.gfx`, `localisation/english/*.yml`.
+Text icons in 1.19.4.1.
 
 - Vanilla defines its text icons in `interface/texticons.gfx`: 473 sprite blocks, most with textures in `gfx/texticons/` (428 written `spriteType`, 45 written `SpriteType`). 472 set `legacy_lazy_load = no` and 260 set `noOfFrames`, the frame count that `£name|N` indexes.
 - Both ways to write the icon occur. English vanilla uses `£army_experience` style 1,580 times and `£GFX_army_experience` style 351 times, and `£name|N` with a frame 150 times. All counts are a `£` followed by letters, digits and underscores. Prefer the short form, as the page's own paragraph describes.
-<!-- kit:end id="loc-text-icons" -->
 
-## Nesting strings <a id="Nesting_strings"></a>
+## Nesting strings
 
 The dollar sign special symbol is used for nesting other strings within any given localisation key's value. In particular, there are 4 primary usage cases for it:
 
 - Nesting other localisation keys. For example,  `some_modifier_tooltip:0 "$modifier_production_speed_infrastructure_factor$: §R-10%§!"` will show up in-game as `Infrastructure construction speed: -10%`, assuming that `modifier_production_speed_infrastructure_factor`'s definition is unchanged from the base game.
 
 This is useful with localisation key values that need to be re-used within others, but can be easily changed during the development of the mod, as to not need to adjust every single localisation value that uses it when changing it. This can also be used to expand compatibility with base game updates or other mods that may potentially change the localisation value but should still be compatible with the mod.
-When used within `pdx_tooltip` of an interface element, this does not work properly, instead showing up with the dollar signs visible. This can be bypassed using [scripted localisation](#Scripted_localisation), as a scripted localisation entry that points towards a key, the value of which contains nested localisation entry, will work as intended.
+When used within `pdx_tooltip` of an interface element, this does not work properly, instead showing up with the dollar signs visible. This can be bypassed using [scripted localisation](#scripted-localisation), as a scripted localisation entry that points towards a key, the value of which contains nested localisation entry, will work as intended.
 
 - Inputting a dollar sign itself. This is done by doubling the dollar sign in localisation, such as  `cost_tooltip: "This option costs $$100"`.
 - Nesting a boundable variable. Introduced in patch 1.15, boundable variables allow modders to define custom variables for use in localisation keys, functioning similarly to internal variables. These can be assigned within any effect, trigger block, or on a scripted GUI. For example, by using a loacalisation key like: `my_boundable_tooltip: "My name is $NAME$."`, `$NAME$` in this case would be a custom boundable variable that can be defined elsewhere by the modder. This provides significant flexibility for dynamic localisation that adapts to gameplay conditions. For further details on defining and binding these variables, refer to the boundable localisation section.
@@ -307,15 +252,13 @@ When used within `pdx_tooltip` of an interface element, this does not work prope
 
 One notable usage of strictly internal variables is in country names, as these offer a variety of internal variables fetching the non-ideology name of the country and the overlord's name in either regular, ADJ, or DEF form, such as `COUNTRY_autonomy_collaboration_government:0 "$OVERLORDADJ$ $NONIDEOLOGY$"`.
 
-<!-- kit:begin id="loc-nesting-dollar" at="section:Nesting_strings" -->
-**Kit note** The doubled dollar sign has no vanilla precedent.
+The doubled dollar sign has no vanilla precedent.
 
-- In vanilla, `$$` appears where two placeholders touch, as in `$TAG$$CONTROL|H$` or `$VAL_HIGH|G%$$VAL_MID|H%$` (130 English values). No English vanilla value uses `$$` as a literal dollar sign before a digit, bracket or space. [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
-- The page's `$$100` and `$$[?temp_display_T|2]T` examples rest on the wiki alone. [unverified] `$$100` in a loc key printed `$100`, one literal dollar sign. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, loc key logged with the `log` effect. A string written directly in a `log` effect does not expand `$...$` at all (`$$100` stayed `$$100`). The `$$[?temp_display_T|2]T` form was not tested.
-- Three examples on this page are real vanilla lines: `confirm_cancel_national_focus_desc` (`$FOCUS_NAME$`), `SCIENTIST_ROSTER_SORT_BUTTON_TOOLTIP` (`$REASON|Y$`) and `COUNTRY_autonomy_collaboration_government` (`$OVERLORDADJ$ $NONIDEOLOGY$`). [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
-<!-- kit:end id="loc-nesting-dollar" -->
+- In vanilla, `$$` appears where two placeholders touch, as in `$TAG$$CONTROL|H$` or `$VAL_HIGH|G%$$VAL_MID|H%$` (130 English values). No English vanilla value uses `$$` as a literal dollar sign before a digit, bracket or space.
+- The page's `$$100` and `$$[?temp_display_T|2]T` examples rest on the wiki alone. (unverified) `$$100` in a loc key printed `$100`, one literal dollar sign. A string written directly in a `log` effect does not expand `$...$` at all (`$$100` stayed `$$100`). The `$$[?temp_display_T|2]T` form was not tested.
+- Three examples on this page are real vanilla lines: `confirm_cancel_national_focus_desc` (`$FOCUS_NAME$`), `SCIENTIST_ROSTER_SORT_BUTTON_TOOLTIP` (`$REASON|Y$`) and `COUNTRY_autonomy_collaboration_government` (`$OVERLORDADJ$ $NONIDEOLOGY$`).
 
-## Bindable localisation <a id="Bindable_localisation"></a>
+## Bindable localisation
 
 **Bindable Localization** was introduced in **patch 1.15**, allowing variables to be dynamically bound to localization keys through scripting.
 
@@ -331,13 +274,12 @@ Before patch 1.15, `$REASON$` would be internal and unmodifiable. With the intro
 - `custom_trigger_tooltip`,
 - and to GUI files using the `bound_tooltip` construct.
 
-<!-- kit:begin id="loc-bindable-tooltips" at="section:Bindable_localisation" -->
-**Kit addition** Bindable localisation, as the game documents it.
+Bindable localisation, as the game documents it.
 
-- A bindable value accepts a formatted localization (a localisation key, a string, or `formatter|token`) or a bound object `{ localization_key = KEY PARAM = <bindable> ... }`. A parameter value can itself be a bound object. [docs] `documentation/script_concept_documentation.md`.
-- `custom_trigger_tooltip` is kept as an alias of the trigger `custom_override_tooltip`, and the documentation says to prefer the new name. The trigger takes `tooltip` for the positive text and `not_tooltip` for the text under `NOT`. With no positive tooltip given and a plain localisation key as root, the negative text is that key plus `_NOT`. Both fields are bindable. [docs] `documentation/triggers_documentation.md`.
-- The effect `custom_override_tooltip = { tooltip = <bindable> <effects> }` replaces the tooltips of the effects inside it; `custom_effect_tooltip` takes a bindable directly. [docs] `documentation/effects_documentation.md`.
-- The `tooltip` field of `any_country_of`, `all_country_of`, `any_other_country_of`, `any_state_of`, `all_claimant` and their siblings is also bindable. [docs] `documentation/triggers_documentation.md`.
+- A bindable value accepts a formatted localization (a localisation key, a string, or `formatter|token`) or a bound object `{ localization_key = KEY PARAM = <bindable> ... }`. A parameter value can itself be a bound object.
+- `custom_trigger_tooltip` is kept as an alias of the trigger `custom_override_tooltip`, and the documentation says to prefer the new name. The trigger takes `tooltip` for the positive text and `not_tooltip` for the text under `NOT`. With no positive tooltip given and a plain localisation key as root, the negative text is that key plus `_NOT`. Both fields are bindable.
+- The effect `custom_override_tooltip = { tooltip = <bindable> <effects> }` replaces the tooltips of the effects inside it; `custom_effect_tooltip` takes a bindable directly.
+- The `tooltip` field of `any_country_of`, `all_country_of`, `any_other_country_of`, `any_state_of`, `all_claimant` and their siblings is also bindable.
 
 ```text
 custom_override_tooltip = {
@@ -346,9 +288,8 @@ custom_override_tooltip = {
 	<triggers>
 }
 ```
-<!-- kit:end id="loc-bindable-tooltips" -->
 
-### Usage of Bindable Localization <a id="Usage_of_Bindable_Localization"></a>
+### Usage of Bindable Localization
 
 Consider the following localization key:
 
@@ -408,7 +349,7 @@ COLOR_YELLOW: "§Y$DATA$§!"
 
 The resulting tooltip would render `$TIME$` as "§YMorning§!" (with the text in yellow).
 
-Instead of using inline strings, bindable localization can reference other localization keys directly, like [scripted localisation](#Scripted_localisation). For example:
+Instead of using inline strings, bindable localization can reference other localization keys directly, like [scripted localisation](#scripted-localisation). For example:
 
 ```text
 custom_effect_tooltip = {
@@ -419,7 +360,7 @@ custom_effect_tooltip = {
 
 In this case, `GER_mefo_bills` is a predefined localization key, and its value will replace `$IDEA_NAME$`.
 
-### Context-Aware Tooltips <a id="Context-Aware_Tooltips"></a>
+### Context-Aware Tooltips
 
 **Context-aware tooltips** extend bound localization by allowing tooltips to be localized based on a context provided by the game. They are used strictly on GUI files, like `bound_tooltip`.
 
@@ -427,7 +368,7 @@ They are used with the `context_aware_tooltip` construct. The context is provide
 
 Additionally, the context is recursive: if a parent object is localized with a context, all child objects will inherit the same context.
 
-### Localization Formatters <a id="Localization_Formatters"></a>
+### Localization Formatters
 
 Localization formatters provide a syntax for retrieving localized text properties of static tokens. The general format is:
 
@@ -451,7 +392,7 @@ Here:
 - `building_state_modifier|dam` retrieves the localized text property for the token `dam`.
 - `INDENT` adjusts the indentation of the tooltip text.
 
-## Localization Formatters <a id="Localization_Formatters_2"></a>
+## Localization Formatters
 
 **character_name**
 
@@ -540,12 +481,11 @@ Example:
 custom_effect_tooltip = building_state_modifier|dam
 ```
 
-<!-- kit:begin id="loc-formatters-complete" at="section:Localization_Formatters_2" -->
-**Kit addition** The formatter list is one short.
+The formatter list is one short.
 
-The game documents eight formatters: `advisor_desc`, `building_state_modifier`, `character_name`, `country_culture`, `country_leader_desc`, `idea_desc`, `idea_name` and `tech_effect`. The list above lacks `country_leader_desc`. [docs] `documentation/loc_formatter_documentation.md`.
+The game documents eight formatters: `advisor_desc`, `building_state_modifier`, `character_name`, `country_culture`, `country_leader_desc`, `idea_desc`, `idea_name` and `tech_effect`. The list above lacks `country_leader_desc`.
 
-`country_leader_desc|<character token>` gets the description of a possible country leader, found in the database by ideology. It needs no scope object. `IDEOLOGY` is mandatory and is an ideology group token written `token:fascism`; `INDENT` is optional. [docs] `documentation/loc_formatter_documentation.md`.
+`country_leader_desc|<character token>` gets the description of a possible country leader, found in the database by ideology. It needs no scope object. `IDEOLOGY` is mandatory and is an ideology group token written `token:fascism`; `INDENT` is optional.
 
 ```text
 custom_effect_tooltip = {
@@ -554,10 +494,9 @@ custom_effect_tooltip = {
 }
 ```
 
-Vanilla uses `idea_desc|` 263 times (249 in `common/`, 14 in `events/`), `building_state_modifier|` 27 times and `tech_effect|` 24 times; the other five formatters have no vanilla use. Vanilla passes `INDENT = "    "` as literal spaces; the documentation's `2_SPACES` is not a localisation key in vanilla. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `localisation/english/`.
-<!-- kit:end id="loc-formatters-complete" -->
+Vanilla uses `idea_desc|` 263 times (249 in `common/`, 14 in `events/`), `building_state_modifier|` 27 times and `tech_effect|` 24 times; the other five formatters have no vanilla use. Vanilla passes `INDENT = "    "` as literal spaces; the documentation's `2_SPACES` is not a localisation key in vanilla.
 
-## Contextual Localization <a id="Contextual_Localization"></a>
+## Contextual Localization
 
 Contextual localization is a way to access data from Localization Objects when localizing a string.
 The concept differs slightly from standard values ($VAL$) that can be injected into the localization string by allowing the localization string
@@ -580,7 +519,7 @@ Some of the localization objects are :
 - Terrain
 - UnitLeader
 
-### Using a localization object <a id="Using_a_localization_object"></a>
+### Using a localization object
 
 The localization objects are used with the following syntax: `[(Object.)+Property]`.
 `(Object.)+` refers to a sequence of at least one object accessor and `Property` is the property
@@ -588,7 +527,7 @@ that is accessed by the last object in the sequence. For example, if the localiz
 the following queries would get the character's name and the name of the country that the character belongs to `[Character.GetName]`
 and `[Character.Owner.GetName]`, respectively.
 
-### Condition in contextual localization <a id="Condition_in_contextual_localization"></a>
+### Condition in contextual localization
 
 Conditions in contextual localization can be used to check if objects are null or not. The basic syntax for the condition is `[(OBJECT ? TRUE_CASE : FALSE_CASE)]`.
 Where:
@@ -607,21 +546,20 @@ As an example loc. If there is character to scope into it gets the character nam
  PROGRAM_NO_SCIENTIST_ASSIGNED: "Assign a Scientist to start a project"
 ```
 
-### Relation to Event Scopes <a id="Relation_to_Event_Scopes"></a>
+### Relation to Event Scopes
 
-When a localization string is localized from a scoped context (for example effects or triggers), then the root [Scope](<scopes.md>) is created
+When a localization string is localized from a scoped context (for example effects or triggers), then the root [Scope](scopes.md) is created
 from the event scope of that context. For example, an effect that creates a trade route between two countries `FROM` and `THIS`
 could be localized with: `LOC_KEY: "Creates a trade route between [FROM.GetName] and [THIS.GetName]"`. For more information on
-how the scope accessors `FROM`, `THIS`, `PREV` and `ROOT` works on `Scope` see [Dual Scopes](<scopes.md#Dual_scopes>)
+how the scope accessors `FROM`, `THIS`, `PREV` and `ROOT` works on `Scope` see [Dual Scopes](scopes.md#dual-scopes)
 
-### Documentation of localized objects <a id="Documentation_of_localized_objects"></a>
+### Documentation of localized objects
 
-In general a scoped context (for example, effects and triggers) are localized using a [Scope](<scopes.md>) object based on the scope of that context.
+In general a scoped context (for example, effects and triggers) are localized using a [Scope](scopes.md) object based on the scope of that context.
 However, there are legacy systems where this may not hold. For other places where localization keys are provided, please see the documentation
 for which localization objects that are defined for that context.
 
-<!-- kit:begin id="loc-objects-promotions" at="section:Documentation_of_localized_objects" -->
-**Kit addition** The documented localization objects, with the promotions the page does not describe. A promotion is the next object in a chain, as in `[ROOT.Capital.GetName]`. All rows: [docs] `documentation/loc_objects_documentation.md`.
+The documented localization objects, with the promotions the page does not describe. A promotion is the next object in a chain, as in `[ROOT.Capital.GetName]`.
 
 | Object | Promotions | Properties missing from the tables above |
 | --- | --- | --- |
@@ -641,19 +579,18 @@ for which localization objects that are defined for that context.
 | `Terrain` | none | `GetName` |
 | `IndustrialOrg` | `Owner` | none |
 
-- The list "Some of the localization objects are" above omits `Faction`, `LocalizationEnvironment` and `Scope`. [docs] `documentation/loc_objects_documentation.md`.
-- The ten pronoun functions (`GetSheHe`, `GetSheHeCap`, `GetHerHim`, `GetHerHimCap`, `GetHerHis`, `GetHerHisCap`, `GetHersHis`, `GetHersHisCap`, `GetHerselfHimself`, `GetHerselfHimselfCap`) exist on `Country` (for the country's leader), `UnitLeader`, `Ace` and `Character`. The page lists them under characters only. Vanilla usually chains through the leader, as in `[FROM.GetLeader.GetHerHis]`. [docs] `documentation/loc_objects_documentation.md`, [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
-- `GetCallsign` belongs to `Ace` and `GetCodeName` to `UnitLeader` (the operative leader). The "Other scopes" table above gives `GetCallsign` as an operative function. Vanilla uses `[From.GetCallsign]` and `[Prev.GetCallsign]` in ace texts. [docs] `documentation/loc_objects_documentation.md`, [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
-- Promotions work inside ordinary bracket chains. Vanilla uses `[ROOT.Capital.GetName]` and `[ROOT.Capital.GetCapitalVictoryPointName]`, `[From.Owner.GetAdjective]` (14 uses) and `[FROM.Controller.GetNameDef]`. Vanilla GUI text roots a chain at an object: `[Character.GetName]` (35 uses), `[SpecialProject.GetName]` (22), `[State.GetName]` (10), `[Country.GetNameWithFlag]` (6), and the condition form `[(Character?.GetName:'KEY)]` twice. [vanilla-confirmed 1.19.4.1] `localisation/english/*.yml`.
-- `GetDateString`, `GetDateStringShortMonth`, `GetDateStringNoHour`, `GetDateStringNoHourLong`, `GetTokenKey` and `GetTokenLocalizedKey` in the tables above are not in the objects documentation (0 matches). [docs] `documentation/loc_objects_documentation.md`. They are strings in `hoi4.exe`. Vanilla localisation uses two of them: `[?global.date.GetDateStringShortMonth]` and `[?BUL.BUL_date_of_tsars_death.GetDateStringNoHourLong]`. [unverified] (strings in `hoi4.exe`), [vanilla-confirmed 1.19.4.1] for the two uses. All four date getters work through `[?global.date.Get...]` at the 1936 start: `GetDateString` gave "12:00, 1 January, 1936", `GetDateStringNoHour` gave "1936.1.1", `GetDateStringNoHourLong` gave "1 January, 1936" and `GetDateStringShortMonth` gave "12:00, 1 Jan, 1936", with no dot after "Jan". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, loc key and inline expression logged with the `log` effect.
-<!-- kit:end id="loc-objects-promotions" -->
+- The list "Some of the localization objects are" above omits `Faction`, `LocalizationEnvironment` and `Scope`.
+- The ten pronoun functions (`GetSheHe`, `GetSheHeCap`, `GetHerHim`, `GetHerHimCap`, `GetHerHis`, `GetHerHisCap`, `GetHersHis`, `GetHersHisCap`, `GetHerselfHimself`, `GetHerselfHimselfCap`) exist on `Country` (for the country's leader), `UnitLeader`, `Ace` and `Character`. The page lists them under characters only. Vanilla usually chains through the leader, as in `[FROM.GetLeader.GetHerHis]`.
+- `GetCallsign` belongs to `Ace` and `GetCodeName` to `UnitLeader` (the operative leader). The "Other scopes" table above gives `GetCallsign` as an operative function. Vanilla uses `[From.GetCallsign]` and `[Prev.GetCallsign]` in ace texts.
+- Promotions work inside ordinary bracket chains. Vanilla uses `[ROOT.Capital.GetName]` and `[ROOT.Capital.GetCapitalVictoryPointName]`, `[From.Owner.GetAdjective]` (14 uses) and `[FROM.Controller.GetNameDef]`. Vanilla GUI text roots a chain at an object: `[Character.GetName]` (35 uses), `[SpecialProject.GetName]` (22), `[State.GetName]` (10), `[Country.GetNameWithFlag]` (6), and the condition form `[(Character?.GetName:'KEY)]` twice.
+- `GetDateString`, `GetDateStringShortMonth`, `GetDateStringNoHour`, `GetDateStringNoHourLong`, `GetTokenKey` and `GetTokenLocalizedKey` in the tables above are not in the objects documentation (0 matches). They are strings in `hoi4.exe`. Vanilla localisation uses two of them: `[?global.date.GetDateStringShortMonth]` and `[?BUL.BUL_date_of_tsars_death.GetDateStringNoHourLong]`. (unverified) (strings in `hoi4.exe`),. All four date getters work through `[?global.date.Get...]` at the 1936 start: `GetDateString` gave "12:00, 1 January, 1936", `GetDateStringNoHour` gave "1936.1.1", `GetDateStringNoHourLong` gave "1 January, 1936" and `GetDateStringShortMonth` gave "12:00, 1 Jan, 1936", with no dot after "Jan".
 
-## Namespaces <a id="Namespaces"></a>
+## Namespaces
 
 Namespaces refer to obtaining certain information from some scope to display in localisation. For example, getting the name of a country, the surname of a character, the ID of a state, and etc.
-A namespace is marked with the square brackets on either side as in `my_localisation_key: "[GetDateText]"`. By default, **there is no scope assumed**. A [scope](<scopes.md>) can be added, separated from the namespace with a dot, in order to let the game know from whom to obtain information, such as `my_localisation_key: "[QAT.GetRulingParty]"`, which'll result in the ruling party of the country QAT appearing in localisation. Any dual scope that can be used as a target may be used in localisation. [THIS](<scopes.md>) can be used in order to refer to the scope of where it's used, such as  `effect_tooltip: "[ROOT.GetNameDefCap] declares war on [THIS.GetNameDef]"`.
+A namespace is marked with the square brackets on either side as in `my_localisation_key: "[GetDateText]"`. By default, **there is no scope assumed**. A [scope](scopes.md) can be added, separated from the namespace with a dot, in order to let the game know from whom to obtain information, such as `my_localisation_key: "[QAT.GetRulingParty]"`, which'll result in the ruling party of the country QAT appearing in localisation. Any dual scope that can be used as a target may be used in localisation. [THIS](scopes.md) can be used in order to refer to the scope of where it's used, such as  `effect_tooltip: "[ROOT.GetNameDefCap] declares war on [THIS.GetNameDef]"`.
 
-Variables and event targets can be used within namespaces as well. For example, this grants the name of the capital state of OMA using the 'capital' variable:  `my_localisation_key: "[OMA.capital.GetName]"`. A list of built-in variables that can be used can be seen in [the respective wiki page](<data_structures.md#Game_variables>). Another common ones to use include 'owner' and 'controller' for states, such as `my_localisation_key: "Owner of South-West England: [123.owner.GetName]"`.
+Variables and event targets can be used within namespaces as well. For example, this grants the name of the capital state of OMA using the 'capital' variable:  `my_localisation_key: "[OMA.capital.GetName]"`. A list of built-in variables that can be used can be seen in [the respective wiki page](data_structures.md#game-variables). Another common ones to use include 'owner' and 'controller' for states, such as `my_localisation_key: "Owner of South-West England: [123.owner.GetName]"`.
 
 **Characters only exist within the scope of the country where they're recruited**, in versions prior to 1.12.8. What this means is that before scoping into the character, one must first scope into the country that they are assigned to, such as  `current_name_of_fdr:0 "[USA.USA_franklin_delano_roosevelt.GetFullName]"`. If the character is marked with some other token (such as THIS or ROOT), this is unnecessary, but it is necessary for direct character IDs. Characters also support scoping to the `GetLeader` localisation function beforehand, such as `leader_pronoun: "[ROOT.GetLeader.GetHeShe]"` In this case, scoping into the country is still necessary.
 
@@ -662,27 +599,27 @@ Note that namespaces cannot be used everywhere. In the majority of the user inte
 | Location | Notes |
 | --- | --- |
 | Focuses | Requires `dynamic = yes` within the focus to work correctly for the title, otherwise it generates a value at the game's start and it remains unchanging until the next reload (either of the savefile or the focus tree). Not required for the description, which always dynamically refreshes localisation. |
-| Ideas and [dynamic modifiers](<modifiers.md>) | Support for dynamic modifiers was added in 1.13. |
+| Ideas and [dynamic modifiers](modifiers.md) | Support for dynamic modifiers was added in 1.13. |
 | Decisions |  |
-| Events | At times it may be better to use [completely different localisation keys within events](<event_modding.md#Localisation>) instead of using scripted localisation. |
-| Custom effect/trigger tooltips | Despite the fact that it works for [effects](<effects.md>) and [triggers](<triggers.md>), custom [modifier](<modifiers.md>) tooltips do not support scripted localisation. |
+| Events | At times it may be better to use [completely different localisation keys within events](event_modding.md#localisation) instead of using scripted localisation. |
+| Custom effect/trigger tooltips | Despite the fact that it works for [effects](effects.md) and [triggers](triggers.md), custom [modifier](modifiers.md) tooltips do not support scripted localisation. |
 | Boolean flags | The names of the boolean flags, appearing in the tooltip when checked for them with triggers such as `has_country_flag = flag_name` or `has_character_flag = flag_name` |
 | Operations |  |
 | Adjacency rule tooltips | Referring to the tooltip that appears when hovering over a strait that's disabled for this country. |
-| [Custom interface elements](<interface_modding.md>) | The container with the UI element must be attached to a scripted GUI that has a valid `context_type` within the corresponding `/Hearts of Iron IV/common/scripted_guis/*.txt` file. May require a game restart for it to apply. |
+| [Custom interface elements](interface_modding.md) | The container with the UI element must be attached to a scripted GUI that has a valid `context_type` within the corresponding `/Hearts of Iron IV/common/scripted_guis/*.txt` file. May require a game restart for it to apply. |
 
 The list may be incomplete, so something not being mentioned does not necessitate that localisation does not work there, but that does make it unlikely. Other localisation functions, not involving square brackets, do still work in this case, however.
 
-### Functions <a id="Functions"></a>
+### Functions
 
 Sometimes, the result of a function may be interpreted as a localisation key itself, but only if the string consists entirely out of that function. For example, `log = "[THIS.GetTag]"` will result in the non-ideology name being logged instead if one exists, since that localisation key consists only of the country tag. However, `log = "loc_key_[ALB.GetTag]"` will log `loc_key_ALB`, even if a localisation key exists with that name.
 
-#### Country scope <a id="Country_scope"></a>
+#### Country scope
 
 | Name | Example | Description |
 | --- | --- | --- |
 | GetName | `[GER.GetName]` | Gets the name of the country, the name of the state, or the name of the character. For aces, only gets the first name: see GetFullName. |
-| GetTag | `[GER.GetTag]` | Puts the tag of the country into localisation. Particularly useful for [Meta effects](<effects.md#Meta_effects>). |
+| GetTag | `[GER.GetTag]` | Puts the tag of the country into localisation. Particularly useful for [Meta effects](effects.md#meta-effects). |
 | GetLeader | `[POL.GetLeader]` | Gets the name of the leader of the country. Can be further scoped into the pronoun-related namespaces, such as `[THIS.GetLeader.GetSheHe]`. |
 | GetManpower | `[ENG.GetManpower]` | Gets the total population of the country, including civilians. |
 | GetFactionName | `[SOV.GetFactionName]` | Gets the name of the faction that the country is located in. |
@@ -718,7 +655,7 @@ Sometimes, the result of a function may be interpreted as a localisation key its
 | GetFascistLeader | `[ALB.GetFascistLeader]` | Gets the name of the leader of the country's ![Fascism](media/character_modding_58ea48332f__img14.png)Fascist party. |
 | GetNeutralLeader | `[TUR.GetNeutralLeader]` | Gets the name of the leader of the country's ![Neutrality](media/ai_modding_25696e0a81__img2.png)Non-aligned party. |
 | GetPowerBalanceName | `[ITA.GetPowerBalanceName]` | Gets the name of the country's currently-active balance of power. |
-| GetPowerBalanceModDesc | `[ITA.GetPowerBalanceModDesc]` | Gets the names of the country's currently-active [balance of power modifiers](<modifiers.md#Balance_of_power_modifiers>) and their effects towards the BoP. For the modifiers applied by the active range, see GetActiveRangeModDesc. |
+| GetPowerBalanceModDesc | `[ITA.GetPowerBalanceModDesc]` | Gets the names of the country's currently-active [balance of power modifiers](modifiers.md#balance-of-power-modifiers) and their effects towards the BoP. For the modifiers applied by the active range, see GetActiveRangeModDesc. |
 | GetRightSideName | `[ITA.GetRightSideName]` | Gets the name of the country's right side in the currently-active balance of power. |
 | GetLeftSideName | `[ITA.GetLeftSideName]` | Gets the name of the country's left side in the currently-active balance of power. |
 | GetActiveSideName | `[ITA.GetActiveSideName]` | Gets the name of the side in the country's currently-active balance of power that has more power. |
@@ -731,7 +668,7 @@ Sometimes, the result of a function may be interpreted as a localisation key its
 | GetChangeRateDesc | `[ITA.GetChangeRateDesc]` | Gets the rate by which the balance of power is changed weekly and/or daily and towards which side. May use `BOP_CHANGE_RATE_DAILY` or `BOP_CHANGE_RATE_WEEKLY` localisation keys depending on the current BoP modifiers, prioritising the former if possible. |
 | GetBopTrendTextIcon | `[ITA.GetBopTrendTextIcon]` | Selects the text icon corresponding towards which side is getting power. May select either `GFX_BoP_left_texticon`, `GFX_BoP_right_texticon`, or nothing. |
 
-#### Other scopes <a id="Other_scopes"></a>
+#### Other scopes
 
 Date variable in this case refers to a variable set to a date value. Using it with the current date can be done by using the global.date variable as `[?global.date.GetDateString]`.
 
@@ -743,7 +680,7 @@ Date variable in this case refers to a variable set to a date value. Using it wi
 | GetDate | Any | `[GetDate]` | Gets the date in the format of YYYY.MM.DD.HH, such as 1936.1.1.12. |
 | GetMonth | Any | `[GetMonth]` | Gets the current month. |
 | GetYear | Any | `[GetYear]` | Gets the current year. |
-| GetID | State | `[123.GetID]` | Gets the ID of the state. Particularly useful for [Meta effects](<effects.md>). |
+| GetID | State | `[123.GetID]` | Gets the ID of the state. Particularly useful for [Meta effects](effects.md). |
 | GetCapitalVictoryPointName | State | `[540.GetCapitalVictoryPointName]` | Gets the name of the capital victory point (i.e. the province with the largest amount of victory points) of the state. |
 | GetSheHe | Character | `[PRU.GetLeader.GetSheHe]` | Results in either "she" or "he" depending on the gender of the character, beginning with lowercase letters. |
 | GetSheHeCap | Character | `[MEX.MEX_character.GetSheHeCap]` | Results in either "She" or "He" depending on the gender of the character, beginning with uppercase letters. |
@@ -766,14 +703,14 @@ Date variable in this case refers to a variable set to a date value. Using it wi
 | GetWingShort | Ace | `[THIS.GetWingShort]` | Gets the shortened name of the wing that the ace is assigned to. |
 | GetAceType | Ace | `[THIS.GetAceType]` | Gets the type of the ace. |
 | GetMissionRegion | Ace | `[THIS.GetMissionRegion]` | Gets the region that the ace is assigned to. |
-| GetTokenKey | Any [token variable](<data_structures.md#Token-valued_variables>) | `[?global.variablename.GetTokenKey]` | Gets the token of the variable, such as infantry_equipment, instead of the internal ID. Particularly useful for [Meta effects](<effects.md>). |
-| GetTokenLocalizedKey | Any [token variable](<data_structures.md#Token-valued_variables>) | `[?GER.variablename.GetTokenLocalizedKey]` | Returns the *localised* name of the variable, such as "Infantry Equipment", by converting an internal identifier or database object, such as `infantry_equipment` into its localised equivalent, provided a localization key exists for it. This functionality becomes invaluable for advanced abstraction techniques. For instance, it can approximate arbitrary string interpolation (string interpolaration is the ability to embed expressions or variables within a string literal in a programming language) in [Meta effects](<effects.md>) by applying it to token variables that reference dummy objects (e.g., empty ideas) with predefined arbitrary localization strings. By passing token variables that resolve to localized dummy objects, developers can achieve a level of flexibility similar to direct string manipulation.  Additionally, concatenating the localization values of two dummy tokens can produce a new token string. This string can then be inserted into a token variable within a Meta effect, provided the resulting token string corresponds to a valid existing token. If the resulting token is invalid, the function will simply return an integer value of 0.  Effectively, this approach allows for the derivation of previously-unknown token variables from known ones, following a template defined by another known token variable. This is particularly useful when the destination token follows a templated variation (via prefixes or suffixes) of the source token. |
+| GetTokenKey | Any [token variable](data_structures.md#token-valued-variables) | `[?global.variablename.GetTokenKey]` | Gets the token of the variable, such as infantry_equipment, instead of the internal ID. Particularly useful for [Meta effects](effects.md). |
+| GetTokenLocalizedKey | Any [token variable](data_structures.md#token-valued-variables) | `[?GER.variablename.GetTokenLocalizedKey]` | Returns the *localised* name of the variable, such as "Infantry Equipment", by converting an internal identifier or database object, such as `infantry_equipment` into its localised equivalent, provided a localization key exists for it. This functionality becomes invaluable for advanced abstraction techniques. For instance, it can approximate arbitrary string interpolation (string interpolaration is the ability to embed expressions or variables within a string literal in a programming language) in [Meta effects](effects.md) by applying it to token variables that reference dummy objects (e.g., empty ideas) with predefined arbitrary localization strings. By passing token variables that resolve to localized dummy objects, developers can achieve a level of flexibility similar to direct string manipulation.  Additionally, concatenating the localization values of two dummy tokens can produce a new token string. This string can then be inserted into a token variable within a Meta effect, provided the resulting token string corresponds to a valid existing token. If the resulting token is invalid, the function will simply return an integer value of 0.  Effectively, this approach allows for the derivation of previously-unknown token variables from known ones, following a template defined by another known token variable. This is particularly useful when the destination token follows a templated variation (via prefixes or suffixes) of the source token. |
 | GetDateString | Date variable | `[?global.date.GetDateString]` | Gets the date in the format of "HH:00, DD Month, YYYY", such as "12:00, 1 January, 1936". |
 | GetDateStringShortMonth | Date variable | `[?global.date.GetDateStringShortMonth]` | Gets the date in the format of "HH:00, DD Mon., YYYY", such as "12:00, 1 Jan., 1936". |
 | GetDateStringNoHour | Date variable | `[?global.date.GetDateStringNoHour]` | Gets the date in the format of YYYY.MM.DD, such as 1936.1.1. |
 | GetDateStringNoHourLong | Date variable | `[?global.date.GetDateStringNoHourLong]` | Gets the date in the format of "DD Month, YYYY", such as "1 January, 1936". |
 
-## Scripted localisation <a id="Scripted_localisation"></a>
+## Scripted localisation
 
 Scripted localisation is similar to creating your own namespaces. It is defined in `/Hearts of Iron IV/common/scripted_localisation/*.txt` and used in localisation in a similar manner to namespaces. However, unlike namespaces, by default the current scope is assumed when using scripted localisation, making scoping optional.
 An example of a scripted localisation definition is:
@@ -797,7 +734,7 @@ This consists of these entries:
 
 - `name = my_scripted_loc` - The name of the scripted localisation used to refer to it within regular localisation.
 - `text = { ... }` - A possible choice for localisation. The game picks the topmost `text = { ... }` block to serve as the localisation's output. In particular, these are used in the example:
-  - `trigger = { ... }` is the trigger block evaluated for the checked scope, using this scripted localisation if true. [Temporary variables](<data_structures.md>) set in this trigger block will remain set when displaying the localisation key, allowing math to be done between different variables or using scripted localisation recursively (such as to display every element of an [array](<data_structures.md>)).
+  - `trigger = { ... }` is the trigger block evaluated for the checked scope, using this scripted localisation if true. [Temporary variables](data_structures.md) set in this trigger block will remain set when displaying the localisation key, allowing math to be done between different variables or using scripted localisation recursively (such as to display every element of an [array](data_structures.md)).
   - `localization_key = my_loc_key` (Note the American spelling with Z rather than the British spelling with S used elsewhere) assigns the localisation key to be used with this scripted localisation option.
 
 The example above will show the FRA_localization_key localisation key for France and the mod_localization_key one otherwise as a backup. **The first localization key that meets the triggers will be used**, meaning it is often more intuitive to specify localisation entries with more specific requirements first before those with more general triggers. In localisation, that example can be used as
@@ -809,7 +746,7 @@ l_english:
  mod_localization_key: "Generic localisation"
 ```
 
-Scripted localisation also allows randomisation of the localisation key that would be chosen, using [random_list](<effects.md>). For example, the following code will give a 60% and a 40% chance respectively for mod_localization_key_1 or mod_localization_key_2 to be chosen when this scripted localisation entry is used:
+Scripted localisation also allows randomisation of the localisation key that would be chosen, using [random_list](effects.md). For example, the following code will give a 60% and a 40% chance respectively for mod_localization_key_1 or mod_localization_key_2 to be chosen when this scripted localisation entry is used:
 
 ```text
 defined_text = {
@@ -823,8 +760,7 @@ defined_text = {
 }
 ```
 
-<!-- kit:begin id="loc-scripted-scope-and-seed" at="section:Scripted_localisation" -->
-**Kit addition** Scripted localisation as vanilla writes it. All items: [vanilla-confirmed 1.19.4.1] `common/scripted_localisation/`.
+Scripted localisation as vanilla writes it.
 
 - The header comment of `00_scripted_localisation.txt` says the `trigger` blocks must be valid for the scope the key is called in, giving Root or From.From as examples. Vanilla calls the entry as `[ROOT.GetImportOrDomesticFilmIndustry]` and also as a bare `[GetReichsWerkeName]`, so write the call with the scope your triggers expect.
 - Vanilla has 1,546 `defined_text` entries in 41 of the 42 files (`WUW_BEL_scripted_loc.txt` holds only the comment template). Entries commented `# Country` expect a country scope.
@@ -841,9 +777,8 @@ text = {
 	}
 }
 ```
-<!-- kit:end id="loc-scripted-scope-and-seed" -->
 
-### Dynamic scripted localisation <a id="Dynamic_scripted_localisation"></a>
+### Dynamic scripted localisation
 
 The `localization_key` argument now directly supports the use of dynamic localisation. That is, it is possible to use a piece of dynamic localisation *as part* of a localisation key call. This allows for a far more streamlined system of localisation automation when it is needed. For example:
 
@@ -866,9 +801,9 @@ l_english:
  mod_localization_version_3: "This localization will be called when my_variable is equal to 3."
 ```
 
-### Temporary variable display <a id="Temporary_variable_display"></a>
+### Temporary variable display
 
-Temporary variables allow for [calculations within triggers](<data_structures.md#Trigger_usage>), and with scripted localisation, the result of such calculations can be directly shown in text without the need to use a separate variable. This is especially useful if a desired value is inherently tied to another variable, saving the necessity of having to constantly update a variable to the new value.
+Temporary variables allow for [calculations within triggers](data_structures.md#trigger-usage), and with scripted localisation, the result of such calculations can be directly shown in text without the need to use a separate variable. This is especially useful if a desired value is inherently tied to another variable, saving the necessity of having to constantly update a variable to the new value.
 
 An example of this use case is to display money with dynamic units, i.e. millions, billions, trillions, where the basic unit assigned to a variable `gdp_value` is in **billions**, and we wish to change the display units to **millions** when `gdp_value` is under 1 and to **trillions** when `gdp_value` reaches 1,000. Below is an implementation of it using scripted localisation and local temporary variable calculation.
 
@@ -930,11 +865,11 @@ In this example, a `gdp_value` of 5000 will display as `$5.00T`, a `gdp_value` o
 
 As can be seen, the temporary variable value that has been calculated within their corresponding `trigger` blocks can be called like any other variable, but is only accessible within the scripted localisation itself and nowhere else. While the temporary variables can be accessed by localisation keys further down from the `trigger` (and subsequently `text`) block that it was calculated in, it is still good practice to organize it this way to not lose track of which temporary variable calculations belong to which localisation key.\\
 
-## Hard-to-find Localisation Info <a id="Hard-to-find_Localisation_Info"></a>
+## Hard-to-find Localisation Info
 
 The following localisation entries are undocumented and hard to find within base-game code
 
-### War Naming <a id="War_Naming"></a>
+### War Naming
 
 Custom names for wars can be set through
 
@@ -944,8 +879,7 @@ WAR_NAME_TAG1_TAG2:""
 
 TAG1 is the attacker, TAG2 is the defender. The naming supports using $FIRST$ and $SECOND$ to directly access the adjective forms of the respective tags. $FIRST$ would be the same as `[TAG1.GetAdjective]`
 
-<!-- kit:begin id="loc-war-name-keys" at="section:War_Naming" -->
-**Kit addition** The war name keys vanilla defines. All rows: [vanilla-confirmed 1.19.3] `localisation/english/war_l_english.yml`.
+The war name keys vanilla defines.
 
 | Key | Vanilla value | Placeholders |
 | --- | --- | --- |
@@ -956,10 +890,9 @@ TAG1 is the attacker, TAG2 is the defender. The naming supports using $FIRST$ an
 | `WAR_TAKE_CLAIM_NAME` | `$ORDER$$FIRST$ Aggression for $STATE$` | `$ORDER$`, `$FIRST$`, `$STATE$` |
 | `WAR_NAME_ITA_ETH` | `Italian War on Ethiopia` | none; the only vanilla key of the form `WAR_NAME_TAG1_TAG2` |
 
-The keys `ST`, `ND`, `RD` and `TH` next to them hold the ordinal suffixes. [vanilla-confirmed 1.19.4.1] `localisation/english/war_l_english.yml`. So `$ORDER$` is presumably the war's ordinal. [unverified] (inferred from the neighbouring keys)
-<!-- kit:end id="loc-war-name-keys" -->
+The keys `ST`, `ND`, `RD` and `TH` next to them hold the ordinal suffixes. So `$ORDER$` is presumably the war's ordinal. (unverified) (inferred from the neighbouring keys)
 
-### Division Commander Ranks <a id="Division_Commander_Ranks"></a>
+### Division Commander Ranks
 
 ```text
 DIVISION_EXPERIENCE_TITLE_ARMY_EXPERIENCE_0:""
@@ -971,34 +904,16 @@ DIVISION_EXPERIENCE_TITLE_ARMY_EXPERIENCE_4:""
 
 The base game default goes from Brigadier (0) to Lieutenant-General (4)
 
-<!-- kit:begin id="loc-division-rank-overrides" at="section:Division_Commander_Ranks" -->
-**Kit addition** Each key can be prefixed with a tag: `GER_DIVISION_EXPERIENCE_TITLE_ARMY_EXPERIENCE_0` overrides the generic key for Germany. Vanilla English defines the override for 25 tags (`CHI`, `ETH`, `FIN`, `FRA`, `GDC`, `GER`, `GSM`, `GXC`, `HBC`, `ITA`, `JAP`, `KHM`, `KUM`, `NOR`, `NXM`, `PRC`, `SHX`, `SIC`, `SIK`, `SND`, `SOV`, `USA`, `XIC`, `XSM`, `YUN`); `USA` defines only levels 0 and 1. The generic values are `Brigadier` for 0 and 1, `Major-General` for 2 and 3, and `Lt-General` for 4. [vanilla-confirmed 1.19.4.1] `localisation/english/unit_medals_l_english.yml`.
-<!-- kit:end id="loc-division-rank-overrides" -->
+Each key can be prefixed with a tag: `GER_DIVISION_EXPERIENCE_TITLE_ARMY_EXPERIENCE_0` overrides the generic key for Germany. Vanilla English defines the override for 25 tags (`CHI`, `ETH`, `FIN`, `FRA`, `GDC`, `GER`, `GSM`, `GXC`, `HBC`, `ITA`, `JAP`, `KHM`, `KUM`, `NOR`, `NXM`, `PRC`, `SHX`, `SIC`, `SIK`, `SND`, `SOV`, `USA`, `XIC`, `XSM`, `YUN`); `USA` defines only levels 0 and 1. The generic values are `Brigadier` for 0 and 1, `Major-General` for 2 and 3, and `Lt-General` for 4.
 
-## References <a id="References"></a>
+## References
 
-1. ↑ https://twitter.com/Martin_Anward/status/1039175213773144066
+1. https://twitter.com/Martin_Anward/status/1039175213773144066
 
-<!-- kit:begin id="loc-checks" at="bottom" -->
-## Kit: checking localisation <a id="kit-checking-localisation"></a>
+## Checking localisation
 
-**Kit addition** Console commands that find missing localisation, and the file that silences them.
+Console commands that find missing localisation, and the file that silences them.
 
-- `loc_check` checks for missing localization; `loc_check_characters`, `loc_check_decisions`, `loc_check_events`, `loc_check_focuses`, `loc_check_modifiers` and `loc_check_national_spirits` do the same for one kind of entry. [docs] `documentation/console_commands_documentation.md`.
-- `update_loc <localization tag>` updates the localization tag file. `dump_equipment_loc` writes equipment names, or descriptions with `desc`, to `logs/equipment_loc.csv` by default, with `path=<filepath>` to change the file. [docs] `documentation/console_commands_documentation.md`.
-- `localisation/ignored_loc_keys.txt` begins "Add loc keys to this file to have them ignored by the loc_check* console commands" and lists test keys such as `test.1.a`. [vanilla-confirmed 1.19.3] `localisation/ignored_loc_keys.txt`.
-<!-- kit:end id="loc-checks" -->
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
+- `loc_check` checks for missing localization; `loc_check_characters`, `loc_check_decisions`, `loc_check_events`, `loc_check_focuses`, `loc_check_modifiers` and `loc_check_national_spirits` do the same for one kind of entry.
+- `update_loc <localization tag>` updates the localization tag file. `dump_equipment_loc` writes equipment names, or descriptions with `desc`, to `logs/equipment_loc.csv` by default, with `path=<filepath>` to change the file.
+- `localisation/ignored_loc_keys.txt` begins "Add loc keys to this file to have them ignored by the loc_check* console commands" and lists test keys such as `test.1.a`.

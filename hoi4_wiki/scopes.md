@@ -1,44 +1,13 @@
 # Scopes
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Scopes", revision 103725, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
-
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="103725" sources="documentation/effects_documentation.md documentation/triggers_documentation.md documentation/dynamic_variables_documentation.md documentation/script_concept_documentation.md documentation/script_collection_input.md documentation/script_collection_operator.md common/script_constants/ common/country_tag_aliases/ common/factions/ common/raids/ common/special_projects/ common/combat_tactics.txt" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the scope lists and every `every_`, `random_`, `any_` and `all_` name in the effect and trigger documentation, the script concept and collection docs, the faction, raid and special project docs, and vanilla script for usage counts.
-Kit blocks added: the scope types the docs name (COMBATANT, ACE, FACTION, OPERATION, RAID_INSTANCE, STRATEGIC_REGION and more), `include_invisible`, tooltip keys, undocumented `visible_when_empty`, the five `prioritize` effects, scope keyword spelling, eleven trigger names the table lacks with five corrections to it, effect scope notes, array scope use, and flow control additions (`custom_override_tooltip`, `tooltip_evaluation`, `random_list` seed).
-Gaps left: how ACE and STRATEGIC_REGION scopes are entered, what `OCCUPIED` and `CAPITAL` select as targets of an effect, and what `any_claim = yes` matches stay `[unverified]`. A game run on 2026-11-02 settled the `count` option on ordinary `any_` triggers, the two keywords as scope switches, and the scope of `global_every_army_leader`. The version-added columns were not re-checked. The inventory keys `ai_area` (an `any_state_in` argument) and `not_tooltip` (a `custom_override_tooltip` argument) are real documented keys.
-**1.19.4.1 re-check (2026-11-01).** 15 statements depended on vanilla scans over folders that the update changed, and all 15 were re-measured on the installed files. Numbers moved: the scope-word table (for example `owner` is now 1086 lines in 133 files, was 1001 in 123), the vanilla file counts of the `_of` and collection triggers (for example `any_state_of` 7 files, was 1, and `any_collection_element` 43, was 2) and `random_allied_country`, which now has one use. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-## Table of contents
-
-- [Types](#Types)
-  - [Kit: Scope types in the 1.19.3 documentation](#kit-scope-types)
-- [Examples](#Examples)
-- [Settings](#Settings)
-  - [Limiting](#Limiting)
-  - [Tooltip](#Tooltip)
-  - [Empty Effect Scopes](#Empty_Effect_Scopes)
-  - [Priority](#Priority)
-- [Dual scopes](#Dual_scopes)
-  - [Invalid event target](#Invalid_event_target)
-- [Trigger scopes](#Trigger_scopes)
-  - [Kit: Trigger scopes missing from the table](#kit-trigger-scope-additions)
-- [Effect scopes](#Effect_scopes)
-  - [Effects with scopes](#Effects_with_scopes)
-- [Array scopes](#Array_scopes)
-- [PREV usage](#PREV_usage)
-- [Flow control tools](#Flow_control_tools)
-
----
-
-**Scopes** change the currently-selected entity where the [effects](<effects.md>) should apply or which is checked by the [triggers](<triggers.md>). Each one must follow the same formatting of `scope = { <contents> }`.
+**Scopes** change the currently-selected entity where the [effects](effects.md) should apply or which is checked by the [triggers](triggers.md). Each one must follow the same formatting of `scope = { <contents> }`.
 
 When a scope is used as for effects, each effect inside of the scope's block is executed. Conversely, when a scope is used as for triggers, it serves as a logical conjunction, requiring every trigger in the scope's block to be met for that scope to evaluate as true.
 
 In addition to serving as blocks for effects or triggers, some scopes can also serve as targets of effects or triggers: e.g. `transfer_state_to = ROOT` or `owns_state = 123`.
- However, only [some dual scopes](#Dual_scopes) can be used as a target. For scopes that cannot be used as targets, [PREV](#PREV_usage), [Variables](<data_structures.md>), or [Event targets](<data_structures.md>) can be used to get around this limitation.
+ However, only [some dual scopes](#dual-scopes) can be used as a target. For scopes that cannot be used as targets, [PREV](#prev-usage), [Variables](data_structures.md), or [Event targets](data_structures.md) can be used to get around this limitation.
 
-## Types <a id="Types"></a>
+## Types
 
 Scopes can be thought of as divided into 3 types by purpose:
 
@@ -46,7 +15,7 @@ Scopes can be thought of as divided into 3 types by purpose:
 - Effect scopes - those that can only be used in effect blocks, failing when put within a trigger block.
 - Dual scopes - those that can be put in both trigger and effect blocks without issues.
 
-It is to be noted that trigger or effect scopes cannot ever be used as targets. That is strictly limited to [some dual scopes](#Dual_scopes).
+It is to be noted that trigger or effect scopes cannot ever be used as targets. That is strictly limited to [some dual scopes](#dual-scopes).
 
 Most of the non-dual scopes follow one of these following patterns:
 
@@ -69,12 +38,11 @@ Additionally, scopes can be divided into 6 types by the targets of the scope for
 - Contract scopes - Executed for purchase contracts.
 - Special Project scopes - Executed for special projects.
 
-Only [effects](<effects.md>) or [triggers](<triggers.md>) of the same target type can be used. For example, `add_building_construction` can only be used in a state scope such as `random_owned_controlled_state = { ... }`, as you can only construct buildings in states. For countries, [offsite buildings are used instead](<effects.md>).
+Only [effects](effects.md) or [triggers](triggers.md) of the same target type can be used. For example, `add_building_construction` can only be used in a state scope such as `random_owned_controlled_state = { ... }`, as you can only construct buildings in states. For countries, [offsite buildings are used instead](effects.md).
 
-<!-- kit:begin id="scope-types-1-19-3" at="section:Types" -->
-### Kit: Scope types in the 1.19.3 documentation <a id="kit-scope-types"></a>
+### Scope types in the 1.19.3 documentation
 
-**Kit addition** The list above misses several scope types. The effect and trigger documentation sorts commands under the types below. Counts are the commands listed for that type; scope-agnostic commands are listed under `any`. All rows: [docs] `documentation/effects_documentation.md` and `documentation/triggers_documentation.md`.
+The list above misses several scope types. The effect and trigger documentation sorts commands under the types below. Counts are the commands listed for that type; scope-agnostic commands are listed under `any`.
 
 | Scope type | Effects | Triggers | What the docs list there |
 | --- | --- | --- | --- |
@@ -92,14 +60,13 @@ Only [effects](<effects.md>) or [triggers](<triggers.md>) of the same target typ
 | STRATEGIC_REGION | 1 | 2 | effect `add_region_efficiency` |
 | any | 104 | 94 | commands that work in every scope |
 
-- `hidden_trigger` and `meta_trigger` are listed for all twelve trigger scope types. [docs] `documentation/triggers_documentation.md`
-- There is no DIVISION section. Division commands are listed under `any` and are reached through `every_country_division`, `every_state_division`, `any_country_division` and `any_state_division`. [docs] `documentation/effects_documentation.md`
-- Where vanilla enters these scopes: COMBATANT in the `trigger` block of a combat tactic, whose comment calls it a "combined scope for both country and combatant"; FACTION as `scope:faction = { ... }` in faction goal effects (4 uses in one file); RAID_INSTANCE in the `actor_effects` and `victim_effects` blocks of a raid outcome; SPECIAL_PROJECT through `sp:<id>`; INDUSTRIAL_ORG through `mio:<id>`. [vanilla-confirmed 1.19.3] `common/combat_tactics.txt`, `common/factions/goals/faction_goals_short_term.txt`, `common/raids/_documentation.md`
-- How a script enters ACE or STRATEGIC_REGION scope is not shown in the docs, which name no iterator or scope switch for either, or in vanilla script, which has none. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`. Whether the engine offers a way in is [unverified].
-- The pattern table says every `any_<object>` has an optional `count`. The docs describe `count` only for `any_collection_element`, and no vanilla `any_` block sets it directly, so the docs do not promise it for the ordinary iterators. [docs] `documentation/triggers_documentation.md`, [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/` (0 blocks). The option works anyway and means at least N: `any_owned_state = { is_coastal = yes count = N }` for GER was true for N from 1 to 8, false for 12, 20 and 100, and wrote no error (the control without `count` was true, and GER has 8 to 11 coastal states). [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, trigger run from the console, game.log and error.log read.
-<!-- kit:end id="scope-types-1-19-3" -->
+- `hidden_trigger` and `meta_trigger` are listed for all twelve trigger scope types.
+- There is no DIVISION section. Division commands are listed under `any` and are reached through `every_country_division`, `every_state_division`, `any_country_division` and `any_state_division`.
+- Where vanilla enters these scopes: COMBATANT in the `trigger` block of a combat tactic, whose comment calls it a "combined scope for both country and combatant"; FACTION as `scope:faction = { ... }` in faction goal effects (4 uses in one file); RAID_INSTANCE in the `actor_effects` and `victim_effects` blocks of a raid outcome; SPECIAL_PROJECT through `sp:<id>`; INDUSTRIAL_ORG through `mio:<id>`.
+- How a script enters ACE or STRATEGIC_REGION scope is not shown in the docs, which name no iterator or scope switch for either, or in vanilla script, which has none. Whether the engine offers a way in is unverified.
+- The pattern table says every `any_<object>` has an optional `count`. The docs describe `count` only for `any_collection_element`, and no vanilla `any_` block sets it directly, so the docs do not promise it for the ordinary iterators. The option works anyway and means at least N: `any_owned_state = { is_coastal = yes count = N }` for GER was true for N from 1 to 8, false for 12, 20 and 100, and wrote no error (the control without `count` was true, and GER has 8 to 11 coastal states).
 
-## Examples <a id="Examples"></a>
+## Examples
 
 Example scope with effects: all contained effects are executed for the scope. This adds 10% ![Stability](media/country_creation_1d4220f262__img10.png)Stability and 20% ![War support](media/country_creation_1d4220f262__img11.png)War support to the ![Flag of Soviet Union](media/national_focus_modding_b6347a9782__img37.png) Soviet Union:
 
@@ -119,7 +86,7 @@ Example scope with triggers: all contained triggers must return true for the sco
 }
 ```
 
-Example use of PREV as target for non-targetable scope. Since `random_country` cannot be used as a target, `add_to_faction = random_country` is not valid syntax; instead, [PREV](#PREV_usage) can be used to get around this limitation. The following example adds random country to ROOT's faction:
+Example use of PREV as target for non-targetable scope. Since `random_country` cannot be used as a target, `add_to_faction = random_country` is not valid syntax; instead, [PREV](#prev-usage) can be used to get around this limitation. The following example adds random country to ROOT's faction:
 
 ```text
 random_country = {
@@ -127,11 +94,11 @@ random_country = {
 }
 ```
 
-## Settings <a id="Settings"></a>
+## Settings
 
 Scopes can have additional settings to narrow down the usage. This may change how many and which targets it's able to select or what the tooltip shows.
 
-### Limiting <a id="Limiting"></a>
+### Limiting
 
 Non-dual scopes that select unit leaders or MIOs, such as `every_navy_leader`, by default only include those that are visible to the player, i.e. those unit leaders whose roles do not have an unfulfilled `visible = { ... }` and those MIOs that do not have an unfulfilled `visible = { ... }`. By including `include_invisible = yes`, this can be changed. This will look as such:
 
@@ -142,7 +109,7 @@ random_army_leader = {
 }
 ```
 
-Within **only** effect scopes, `limit = { ... }` can be used as a trigger block, evaluated for each possible target contained by the scope. In case of the `every_<name>` pattern, this will ensure that the tooltip will function properly, which may not be the case when using `if` directly. In case of the `random_<name>` pattern, this will remove the possibility of scopes not meeting the triggers being chosen, limiting the selection. For `party_leader` in specific, the limit must contain [has_ideology](<triggers.md>), while there are no requirements on other scopes. An example of limiting the selection is the following:
+Within **only** effect scopes, `limit = { ... }` can be used as a trigger block, evaluated for each possible target contained by the scope. In case of the `every_<name>` pattern, this will ensure that the tooltip will function properly, which may not be the case when using `if` directly. In case of the `random_<name>` pattern, this will remove the possibility of scopes not meeting the triggers being chosen, limiting the selection. For `party_leader` in specific, the limit must contain [has_ideology](triggers.md), while there are no requirements on other scopes. An example of limiting the selection is the following:
 
 ```text
 every_neighbor_country = { #Targets every neighbor country
@@ -164,17 +131,15 @@ every_country = {
 }
 ```
 
-<!-- kit:begin id="limiting-additions" at="section:Limiting" -->
-**Kit addition** `include_invisible = yes` (default no) is documented on more iterators than the page names: `every_unit_leader`, `every_army_leader`, `global_every_army_leader`, `every_character`, `every_scientist`, `every_military_industrial_organization` and the trigger `any_unit_leader`. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
+`include_invisible = yes` (default no) is documented on more iterators than the page names: `every_unit_leader`, `every_army_leader`, `global_every_army_leader`, `every_character`, `every_scientist`, `every_military_industrial_organization` and the trigger `any_unit_leader`.
 
-Vanilla sets it once, in `common/national_focus/finland.txt`, so most vanilla script relies on the default. `random_select_amount` is documented on the `every_` iterators and appears in 32 vanilla files. [vanilla-confirmed 1.19.4.1] `common/`, `events/`
-<!-- kit:end id="limiting-additions" -->
+Vanilla sets it once, in `common/national_focus/finland.txt`, so most vanilla script relies on the default. `random_select_amount` is documented on the `every_` iterators and appears in 32 vanilla files.
 
-### Tooltip <a id="Tooltip"></a>
+### Tooltip
 
-By default, using a scope of either of the `any_`, `all_`, and `every_` types will show a title specific to that scope in the tooltip, such as `Every country:` or `All neighbor states:`. If scope limits are used, then this changes to the list of scopes that fulfill the limit, such as `Corsica, Rome, Sardinia:`. For countries, the order in which [country tags are created](<country_creation.md>) is used in ordering; for states, the state ID is used. If the tooltip differs depending on the scope where it's executed, such as with if statements, then only the first-selected scope is used in the evaluation.
+By default, using a scope of either of the `any_`, `all_`, and `every_` types will show a title specific to that scope in the tooltip, such as `Every country:` or `All neighbor states:`. If scope limits are used, then this changes to the list of scopes that fulfill the limit, such as `Corsica, Rome, Sardinia:`. For countries, the order in which [country tags are created](country_creation.md) is used in ordering; for states, the state ID is used. If the tooltip differs depending on the scope where it's executed, such as with if statements, then only the first-selected scope is used in the evaluation.
 
-By using `tooltip = loc_key` within any non-dual scope, including of the `random_` type, the tooltip shown to the player can be changed towards the value of the targeted [localisation](<localisation.md>) key in the currently enabled language. This will look like the following:
+By using `tooltip = loc_key` within any non-dual scope, including of the `random_` type, the tooltip shown to the player can be changed towards the value of the targeted [localisation](localisation.md) key in the currently enabled language. This will look like the following:
 
 ```text
 any_country = {
@@ -230,13 +195,11 @@ Gain Base War Support: **-10%**.
 
 Gain Base Stability: **-10%**.
 
-<!-- kit:begin id="tooltip-additions" at="section:Tooltip" -->
-**Kit addition** `tooltip = <key>` replaces the title on the `every_`, `random_`, `any_` and `all_` iterators the docs describe. On `every_allied_country`, `random_allied_country`, the `_of` triggers (`any_country_of`, `all_country_of` and their relatives) and `all_claimant` the value can be a bound localisation object, not only a key; see [Data structures](<data_structures.md#kit-bindable-localisation>). [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
+`tooltip = <key>` replaces the title on the `every_`, `random_`, `any_` and `all_` iterators the docs describe. On `every_allied_country`, `random_allied_country`, the `_of` triggers (`any_country_of`, `all_country_of` and their relatives) and `all_claimant` the value can be a bound localisation object, not only a key; see [Data structures](data_structures.md#bindable-and-formatted-localisation).
 
-`display_individual_scopes = yes` (default no) is documented on the `every_` iterators and used in 13 vanilla files. [vanilla-confirmed 1.19.4.1] `common/`, `events/`
-<!-- kit:end id="tooltip-additions" -->
+`display_individual_scopes = yes` (default no) is documented on the `every_` iterators and used in 13 vanilla files.
 
-### Empty Effect Scopes <a id="Empty_Effect_Scopes"></a>
+### Empty Effect Scopes
 
 An effect scope argument that is frequently used in conjunction with `tooltip` is `visible_when_empty = yes` which will show the scope's effects even when no valid targets can be found (that meet the limit).
 
@@ -275,11 +238,9 @@ every_other_country = {
 }
 ```
 
-<!-- kit:begin id="visible-when-empty-undocumented" at="section:Empty_Effect_Scopes" -->
-**Kit note** `visible_when_empty` does not appear anywhere in `documentation/effects_documentation.md`, yet 45 vanilla files use it, so it is a working but undocumented key. [vanilla-confirmed 1.19.4.1] `common/`, `events/`
-<!-- kit:end id="visible-when-empty-undocumented" -->
+`visible_when_empty` does not appear anywhere in `documentation/effects_documentation.md`, yet 45 vanilla files use it, so it is a working but undocumented key.
 
-### Priority <a id="Priority"></a>
+### Priority
 
 Within effect scopes of the `random_` type, if it is aimed at states, it is possible to prioritize a certain state if possible, by using `prioritize` as such:
 
@@ -295,13 +256,11 @@ random_owned_controlled_state = {
 
 In this case, the limit will first be evaluated for states 123 and 321. Only if neither of the states 123 or 321 meets the conditions of being owned, controlled, and cored by the country will the random_owned_controlled_state scope be able to select a state that isn't 123 or 321. States 123 and 321, in this case, have the same priority: if both have conditions fulfilled, which one will be picked is random. This only applies at scopes of the `random_` type which target states, this cannot be done with countries or characters.
 
-<!-- kit:begin id="prioritize-effects" at="section:Priority" -->
-**Kit addition** `prioritize = { <state id> ... }` is documented for exactly five effects: `random_state`, `random_owned_state`, `random_core_state`, `random_controlled_state` and `random_owned_controlled_state`. [docs] `documentation/effects_documentation.md`
+`prioritize = { <state id> ... }` is documented for exactly five effects: `random_state`, `random_owned_state`, `random_core_state`, `random_controlled_state` and `random_owned_controlled_state`.
 
-Vanilla uses it in 75 files, mostly under `random_owned_controlled_state`; `random_neighbor_state` is not among the documented five. [vanilla-confirmed 1.19.4.1] `common/`, `events/`
-<!-- kit:end id="prioritize-effects" -->
+Vanilla uses it in 75 files, mostly under `random_owned_controlled_state`; `random_neighbor_state` is not among the documented five.
 
-## Dual scopes <a id="Dual_scopes"></a>
+## Dual scopes
 
 The following scopes can be used either as effect or trigger scopes; some can also be used as the right side of some effects and triggers as a target. If usage as a target is possible, it's marked within the table.
 
@@ -316,17 +275,17 @@ Dual scopes:
 | <character> | not within Character scope | Character scope | `ENG_theodore_makhno = { set_nationality = UKR }` | On game versions prior to 1.12.8, the character must be already recruited by the country this is scoped from. | ✓ | 1.11 |
 | mio:<MIO> | Within country scope only | MIO scope | `mio:AST_cockatoo_doe_organization = { … }` | The MIO identified by that ID as defined within the `/Hearts of Iron IV/common/military_industrial_organization/organizations/*.txt` file. | ✓ | 1.13 |
 | sp:<special_project> | Within country scope only | Special project scope | `sp:sp_land_flamethrower_tank = { … }` | The special project identified by that ID as defined within the `/Hearts of Iron IV/common/special_projects/projects/*.txt` file. | ✓ | 1.15 |
-| ROOT | Always usable | Depends on usage | *(example below)* | Targets the root node of the block, an inherent property of each block. Most commonly, this is the default scope: for example, ROOT [within a national focus](<national_focus_modding.md>) will always refer to the country doing the focus and ROOT [within a event](<event_modding.md>) will always refer to the country getting the event. However, some blocks do distinguish between the default scope and ROOT, such as [certain scripted GUI contexts](<scripted_gui_modding.md>) or [certain on actions](<on_actions.md#La_R.C3.A9sistance>). If a block doesn't have ROOT defined (such as [on_startup in on actions](<on_actions.md>)), then it is impossible to use it. | ✓ | 1.0 |
-| THIS | Always usable | Depends on usage | `set_temp_variable = { target_country = THIS }` | Targets the current scope where it's used. For example, when used in every_state, it will refer to the state that's currently being evaluated. Primarily useful for [variables](<data_structures.md>) (as in the example, where omitting it wouldn't work) or for [built-in localisation commands](<localisation.md#Namespaces>), where some scope must be specified. More rarely, this may help with scope manipulation when using PREV. Since omitting it makes no difference in how the code gets interpreted, there is little to no usage outside of these cases. | ✓ | 1.0 |
-| PREV | Always usable | Depends on usage | *(example below)* | Targets the scope that the current scope is contained in. Can have additional applications where the assumed default scope differs from the ROOT, such as in state events or some on_actions. Can be chained indefinitely as PREV.PREV. **Commonly results in broken-looking tooltips**: what's shown to the player doesn't always correlate with reality.<br> See also: [PREV usage](#PREV_usage). | ✓ | 1.0 |
-| FROM | Always usable | Depends on usage | *(example below)* | Can be chained indefinitely as FROM.FROM. Used to target various hardcoded scopes inherent to the block, often a secondary scope in addition to ROOT. For example:<br> In [events](<event_modding.md>), this refers to the country that sent the event (i.e. if the event was fired [using an effect](<event_modding.md#Effect>), then it's the ROOT scope where it was fired).<br> In [targeted decisions](<decision_modding.md>) or [diplomacy scripted triggers](<triggers.md#Scripted_triggers>), this refers to the scope that is targeted.<br> | ✓ | 1.0 |
-| overlord | Within country scope only | Country scope | `overlord = { … }` | The overlord of the country if it is a subject. [Subject to the 'invalid event target' error.](#Invalid_event_target) | X | 1.3 |
-| faction_leader | Within country scope only | Country scope | `faction_leader = { add_to_faction = FROM }` | Faction leader of the faction the country is a part of. [Subject to the 'invalid event target' error.](#Invalid_event_target) | X | 1.10.1 |
-| owner | Within state, character, or combatant scope only | Country scope | `owner = { add_ideas = owns_this_state }` | In state scope, the country that owns the state. In combatant scope, the country that owns the divisions. In character scope, the country that has recruited the character. [Subject to the 'invalid event target' error](#Invalid_event_target) when used for a state. | X | 1.0 |
-| controller | Within state scope only | Country scope | *(example below)* | The controller of the current state. [Subject to the 'invalid event target' error.](#Invalid_event_target) | X | 1.0 |
-| capital_scope | Within country scope only | State scope | `capital_scope = { … }` | The state where the capital of the current country is located in. [Subject to the 'invalid event target' error](#Invalid_event_target) in rare cases. | X | 1.0 |
-| event_target:<event_target_key> | Always usable | Depends on usage | `event_target:my_event_target = { … }` | Saved [event target or global event target](<data_structures.md#Event_targets>), with no space after the colon. [Subject to the 'invalid event target' error.](#Invalid_event_target) | ✓ | 1.0 |
-| var:<variable> | Always usable | Depends on usage | `var:my_variable = { … }`<br>`add_to_faction = my_variable` or <br>`add_to_faction = var:my_variable` | [Variable](<data_structures.md>) set to a scope.<br> When used as a target rather than a scope, the `var:` can be omitted in most cases. | ✓ | 1.5 |
+| ROOT | Always usable | Depends on usage | *(example below)* | Targets the root node of the block, an inherent property of each block. Most commonly, this is the default scope: for example, ROOT [within a national focus](national_focus_modding.md) will always refer to the country doing the focus and ROOT [within a event](event_modding.md) will always refer to the country getting the event. However, some blocks do distinguish between the default scope and ROOT, such as [certain scripted GUI contexts](scripted_gui_modding.md) or [certain on actions](on_actions.md#la-résistance). If a block doesn't have ROOT defined (such as [on_startup in on actions](on_actions.md)), then it is impossible to use it. | ✓ | 1.0 |
+| THIS | Always usable | Depends on usage | `set_temp_variable = { target_country = THIS }` | Targets the current scope where it's used. For example, when used in every_state, it will refer to the state that's currently being evaluated. Primarily useful for [variables](data_structures.md) (as in the example, where omitting it wouldn't work) or for [built-in localisation commands](localisation.md#namespaces), where some scope must be specified. More rarely, this may help with scope manipulation when using PREV. Since omitting it makes no difference in how the code gets interpreted, there is little to no usage outside of these cases. | ✓ | 1.0 |
+| PREV | Always usable | Depends on usage | *(example below)* | Targets the scope that the current scope is contained in. Can have additional applications where the assumed default scope differs from the ROOT, such as in state events or some on_actions. Can be chained indefinitely as PREV.PREV. **Commonly results in broken-looking tooltips**: what's shown to the player doesn't always correlate with reality.<br> See also: [PREV usage](#prev-usage). | ✓ | 1.0 |
+| FROM | Always usable | Depends on usage | *(example below)* | Can be chained indefinitely as FROM.FROM. Used to target various hardcoded scopes inherent to the block, often a secondary scope in addition to ROOT. For example:<br> In [events](event_modding.md), this refers to the country that sent the event (i.e. if the event was fired [using an effect](event_modding.md#effect), then it's the ROOT scope where it was fired).<br> In [targeted decisions](decision_modding.md) or [diplomacy scripted triggers](triggers.md#scripted-triggers), this refers to the scope that is targeted.<br> | ✓ | 1.0 |
+| overlord | Within country scope only | Country scope | `overlord = { … }` | The overlord of the country if it is a subject. [Subject to the 'invalid event target' error.](#invalid-event-target) | X | 1.3 |
+| faction_leader | Within country scope only | Country scope | `faction_leader = { add_to_faction = FROM }` | Faction leader of the faction the country is a part of. [Subject to the 'invalid event target' error.](#invalid-event-target) | X | 1.10.1 |
+| owner | Within state, character, or combatant scope only | Country scope | `owner = { add_ideas = owns_this_state }` | In state scope, the country that owns the state. In combatant scope, the country that owns the divisions. In character scope, the country that has recruited the character. [Subject to the 'invalid event target' error](#invalid-event-target) when used for a state. | X | 1.0 |
+| controller | Within state scope only | Country scope | *(example below)* | The controller of the current state. [Subject to the 'invalid event target' error.](#invalid-event-target) | X | 1.0 |
+| capital_scope | Within country scope only | State scope | `capital_scope = { … }` | The state where the capital of the current country is located in. [Subject to the 'invalid event target' error](#invalid-event-target) in rare cases. | X | 1.0 |
+| event_target:<event_target_key> | Always usable | Depends on usage | `event_target:my_event_target = { … }` | Saved [event target or global event target](data_structures.md#event-targets), with no space after the colon. [Subject to the 'invalid event target' error.](#invalid-event-target) | ✓ | 1.0 |
+| var:<variable> | Always usable | Depends on usage | `var:my_variable = { … }`<br>`add_to_faction = my_variable` or <br>`add_to_faction = var:my_variable` | [Variable](data_structures.md) set to a scope.<br> When used as a target rather than a scope, the `var:` can be omitted in most cases. | ✓ | 1.5 |
 
 **Example: ROOT**
 
@@ -385,11 +344,10 @@ controller = {
 }
 ```
 
-<!-- kit:begin id="scope-keywords" at="section:Dual_scopes" -->
-**Kit addition** Scope keywords and prefixes the table above does not cover.
+Scope keywords and prefixes the table above does not cover.
 
-- The docs name eight keywords that can stand as a scope target: THIS, ROOT, PREV, FROM, OWNER, CONTROLLER, OCCUPIED and CAPITAL. They do not describe `OCCUPIED` or `CAPITAL`, and vanilla never opens a scope with either (0 uses) [vanilla-confirmed 1.19.4.1], so what they select as targets is [unverified]. [docs] `documentation/effects_documentation.md` (Supported Targets lines) Neither works as a scope switch in an effect: `CAPITAL = { ... }` was rejected at load with "Invalid effect 'CAPITAL'" and "Unknown effect-type: CAPITAL", and `OCCUPIED = { ... }` inside a state scope logged "occupied: invalid event target: OCCUPIED" at run time (the state tested was one nobody occupies). The lower-case keyword `owner` worked in `is_owned_by = owner` and gave the same result as `OWNER`, with no error. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, effects and triggers run from the console, error.log and game.log read. Whether they are valid as the target of some other effect was not tested.
-- Vanilla spells several scope words in both cases. Counts are scope blocks opened with the word at the start of a line (lines / files). [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
+- The docs name eight keywords that can stand as a scope target: THIS, ROOT, PREV, FROM, OWNER, CONTROLLER, OCCUPIED and CAPITAL. They do not describe `OCCUPIED` or `CAPITAL`, and vanilla never opens a scope with either (0 uses), so what they select as targets is unverified. The lower-case keyword `owner` worked in `is_owned_by = owner` and gave the same result as `OWNER`, with no error. Whether they are valid as the target of some other effect was not tested.
+- Vanilla spells several scope words in both cases. Counts are scope blocks opened with the word at the start of a line (lines / files).
 
 | Word | Lower case | Upper case |
 | --- | --- | --- |
@@ -399,18 +357,17 @@ controller = {
 | faction_leader | 51 / 25 | 3 / 1 |
 | capital_scope | 761 / 147 | none |
 
-- `scope:<name>` is a saved scope that vanilla uses only inside faction goals (`scope:faction`). It is separate from `save_event_target_as`. [vanilla-confirmed 1.19.4.1] `common/factions/goals/faction_goals_short_term.txt`
-- `temp_var:<name> = { ... }` inside `random_list` is a weight, not a scope. `game:`, `collection:`, `constant:` and `token:` are prefixes for values, not for scope blocks. [vanilla-confirmed 1.19.4.1] `common/on_actions/05_lar_on_actions.txt`, `common/collections/collections.txt`
-<!-- kit:end id="scope-keywords" -->
+- `scope:<name>` is a saved scope that vanilla uses only inside faction goals (`scope:faction`). It is separate from `save_event_target_as`.
+- `temp_var:<name> = { ... }` inside `random_list` is a weight, not a scope. `game:`, `collection:`, `constant:` and `token:` are prefixes for values, not for scope blocks.
 
-### Invalid event target <a id="Invalid_event_target"></a>
+### Invalid event target
 
-*See also: [Event targets](<data_structures.md>)*
+*See also: [Event targets](data_structures.md)*
 
 In regards to some dual scopes, a possible logged error to get while using them is "Invalid event target", as in `common/national_focus/generic.txt:690: controller: invalid event target: controller`, while the scope being used is not necessarily an event target.
 This refers to the scope not having any defined target in the context that it is used, i.e. it is impossible to select any single target when it is used. In case of `controller = { ... }` as in the example, this means that the scope is checked or executed in a state that isn't controlled by any country. Such states are rather unstable and can cause crashes easily (such as if evaluated for an air mission by AI or if doing almost any effect on them), so if this happens for `controller` or `owner`, then this must be fixed only by making sure that every state has an owner or controller.
 
-In practice, this gets skipped over entirely when evaluating the effects or triggers: none of the effects would be executed; as a trigger it'll not come up as either true or false. However, since this can be checked every tick, leaving it as is can result in cluttering the error log. To avoid this, it's possible to use the if statement in [effects](<effects.md#If_statements>) or [triggers](<triggers.md>) in such a manner that the dual scope would only be checked if the conditions for it existing are fulfilled, such as by checking that the country is indeed a subject before checking the overlord. An example of that being done is as such:
+In practice, this gets skipped over entirely when evaluating the effects or triggers: none of the effects would be executed; as a trigger it'll not come up as either true or false. However, since this can be checked every tick, leaving it as is can result in cluttering the error log. To avoid this, it's possible to use the if statement in [effects](effects.md#if-statements) or [triggers](triggers.md) in such a manner that the dual scope would only be checked if the conditions for it existing are fulfilled, such as by checking that the country is indeed a subject before checking the overlord. An example of that being done is as such:
 
 ```text
 if = {
@@ -425,9 +382,9 @@ if = {
 
 While this has identical effects regardless of whether the country is independent or is a subject, this doesn't access the `overlord` scope for an independent country.
 
-## Trigger scopes <a id="Trigger_scopes"></a>
+## Trigger scopes
 
-These can only be used as [triggers](<triggers.md>); trying to use them as [effects](<effects.md>) will result in nothing happening.
+These can only be used as [triggers](triggers.md); trying to use them as [effects](effects.md) will result in nothing happening.
 
 Trigger scopes:
 
@@ -576,10 +533,9 @@ any_state_of = {
 }
 ```
 
-<!-- kit:begin id="trigger-scope-additions" at="section:Trigger_scopes" -->
-### Kit: Trigger scopes missing from the table <a id="kit-trigger-scope-additions"></a>
+### Trigger scopes missing from the table
 
-**Kit addition** The docs list 61 `any_` and `all_` iterator triggers. These are the ones the table above lacks. Description and scope column: [docs] `documentation/triggers_documentation.md`; use column: [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`.
+The docs list 61 `any_` and `all_` iterator triggers. These are the ones the table above lacks.
 
 | Trigger | Scope | What the docs say | Vanilla files |
 | --- | --- | --- | --- |
@@ -593,21 +549,20 @@ any_state_of = {
 | `any_collection_element`, `all_collection_elements` | any | trigger block over a collection; `any_collection_element` takes an optional `count` | 43, 0 |
 | `scope_exists` | any | true if the current scope exists, which differs from `exists` (does the country exist); variable scopes always exist | 0 |
 
-- `target` takes either a list (`target = { SWE NOR FIN DEN ICE }`) or `constant:<category>.<entry>`. Collection triggers are covered on [Collection modding](<collection_modding.md#Collection_triggers>). [docs] `documentation/triggers_documentation.md`
-- `any_claim` is documented in one line, as a check for a claim between the country in scope and all others. [docs] `documentation/triggers_documentation.md` Its exact meaning is [unverified]. `any_claim = yes` is accepted and takes a boolean, not a block: the block form `any_claim = { always = yes }` logged "Not a valid value: {" at load. The boolean form read false for GER, ITA, HUN, JAP, SOV and LUX in 1936, with no error, and no country with claims was found to test a true result. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, trigger run from the console, error.log and game.log read.
+- `target` takes either a list (`target = { SWE NOR FIN DEN ICE }`) or `constant:<category>.<entry>`. Collection triggers are covered on [Collection modding](collection_modding.md#triggers).
+- `any_claim` is documented in one line, as a check for a claim between the country in scope and all others. Its exact meaning is unverified. `any_claim = yes` is accepted and takes a boolean, not a block: the block form `any_claim = { always = yes }` logged "Not a valid value: {" at load. The boolean form read false for GER, ITA, HUN, JAP, SOV and LUX in 1936, with no error, and no country with claims was found to test a true result.
 
-**Kit correction** Errors in the table and examples above:
+Errors in the table and examples above:
 
-- `all_purchase_contract` is not a trigger. The documented name is `all_purchase_contracts`; `any_purchase_contract` is singular. [docs] `documentation/triggers_documentation.md`
-- `all_core_state` and `any_core_state` have their descriptions swapped: `all_` checks that every core state passes, `any_` that at least one does. [docs] `documentation/triggers_documentation.md`
-- `any_scientist` is described as "active scientist". The docs give two separate pairs: `any_scientist` / `all_scientists` and `any_active_scientist` / `all_active_scientist`. The example `all_scientistst` has a typo. [docs] `documentation/triggers_documentation.md`
-- The `_of` examples write `constant:country_groups:nordics` with a colon. Vanilla separates category and entry with a dot, as in `target = constant:country_groups.literally_china`. The `any_state_of` example also takes a country group; state groups live in `common/script_constants/state_groups.txt`. [vanilla-confirmed 1.19.4.1] `common/decisions/CHI_decisions.txt`, `common/script_constants/state_groups.txt`
-- The docs example under `any_other_country_with_original_tag_of` shows the name `any_country_with_original_tag_of`; the documented heading is the longer name. [docs] `documentation/triggers_documentation.md`
-<!-- kit:end id="trigger-scope-additions" -->
+- `all_purchase_contract` is not a trigger. The documented name is `all_purchase_contracts`; `any_purchase_contract` is singular.
+- `all_core_state` and `any_core_state` have their descriptions swapped: `all_` checks that every core state passes, `any_` that at least one does.
+- `any_scientist` is described as "active scientist". The docs give two separate pairs: `any_scientist` / `all_scientists` and `any_active_scientist` / `all_active_scientist`. The example `all_scientistst` has a typo.
+- The `_of` examples write `constant:country_groups:nordics` with a colon. Vanilla separates category and entry with a dot, as in `target = constant:country_groups.literally_china`. The `any_state_of` example also takes a country group; state groups live in `common/script_constants/state_groups.txt`.
+- The docs example under `any_other_country_with_original_tag_of` shows the name `any_country_with_original_tag_of`; the documented heading is the longer name.
 
-## Effect scopes <a id="Effect_scopes"></a>
+## Effect scopes
 
-These can only be used as [effects](<effects.md>); trying to use them as [triggers](<triggers.md>) will result in nothing happening.
+These can only be used as [effects](effects.md); trying to use them as [triggers](triggers.md) will result in nothing happening.
 
 Effect scopes:
 
@@ -758,25 +713,23 @@ every_collection_element = {
 
 **NOTE:** Some of these scopes may have no countries/states that match the criteria.
 
-<!-- kit:begin id="effect-scope-notes" at="section:Effect_scopes" -->
-**Kit note** The effect side of the table is complete for 1.19.3: all 53 `every_`, `random_` and `global_every_` iterator effects in the documentation (not counting `random_list` and `random_scope_in_array`) are listed above. [docs] `documentation/effects_documentation.md` (compared by name)
+The effect side of the table is complete for 1.19.3: all 53 `every_`, `random_` and `global_every_` iterator effects in the documentation (not counting `random_list` and `random_scope_in_array`) are listed above.
 
-- The docs list `every_other_country` and `every_country_with_original_tag` for country scope only, and `random_other_country` and `random_country_with_original_tag` for any scope; the table above says otherwise for some of them. Call all four from country scope, which both readings allow. [docs] `documentation/effects_documentation.md`
-- `global_every_army_leader` is listed under COUNTRY scope in the docs and has no vanilla use (0 files) [vanilla-confirmed 1.19.4.1], so the docs do not back the table's "Always usable". [docs] `documentation/effects_documentation.md` It needs a country scope: from GER it visited every country's leaders (1862 visits against GER's 19 army leaders), and inside a state scope it logged "global_every_army_leader: Invalid Scope, supported: Country, provided: State" and visited none. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, effect run from the console, game.log and error.log read.
-- Vanilla use (lines / files): `every_faction_member` 128 / 7, `every_allied_country` 24 / 16, `every_collection_element` 26 / 4. `random_allied_country` 1 / 1, and `party_leader` has none. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
-- For `every_collection_element` see [Collection modding](<collection_modding.md#Collection_effects>).
-<!-- kit:end id="effect-scope-notes" -->
+- The docs list `every_other_country` and `every_country_with_original_tag` for country scope only, and `random_other_country` and `random_country_with_original_tag` for any scope; the table above says otherwise for some of them. Call all four from country scope, which both readings allow.
+- `global_every_army_leader` is listed under COUNTRY scope in the docs and has no vanilla use (0 files), so the docs do not back the table's "Always usable". It needs a country scope: from GER it visited every country's leaders (1862 visits against GER's 19 army leaders), and inside a state scope it logged "global_every_army_leader: Invalid Scope, supported: Country, provided: State" and visited none.
+- Vanilla use (lines / files): `every_faction_member` 128 / 7, `every_allied_country` 24 / 16, `every_collection_element` 26 / 4. `random_allied_country` 1 / 1, and `party_leader` has none.
+- For `every_collection_element` see [Collection modding](collection_modding.md#effects-and-math).
 
-### Effects with scopes <a id="Effects_with_scopes"></a>
+### Effects with scopes
 
-There are the following [effects](<effects.md>) that also change the currently-selected scope:
+There are the following [effects](effects.md) that also change the currently-selected scope:
 
 Effects changing the scope:
 
 | Name | Parameters | Examples | Description | Notes | Version Added |
 | --- | --- | --- | --- | --- | --- |
-| start_civil_war | `ideology = <ideology>`<br>The ideology of the breakaway country. `ruling_party = <ideology>`<br>The ruling party of the **original, player-led** country. Optional.<br> `size = <float>`<br>The size of the breakaway country and the fraction of the original stockpile and military units it will receive by default. Optional, defaults to 0.5.<br> `army_ratio = <float>`<br>The size of the land army that the breakaway country gets. Optional, defaults to being the same as size.<br> `navy_ratio = <float>`<br>The size of the naval forces that the breakaway country gets. Optional, defaults to being the same as size.<br> `air_ratio = <float>`<br>The size of the airforce that the breakaway country gets. Optional, defaults to being the same as size.<br> `capital = <state>`<br>The capital state of the breakaway country. Optional.<br> `states = { <state> }`<br>The states included in the breakway country. Optional, defaults to random states based off size. `all` will result in all states that meet the filter going to the breakaway.<br> `states_filter = { <triggers> }`<br>A trigger block checked for the state that must be met to be transferred to the breakaway. Optional.<br> `keep_unit_leaders = { <unit leader id> }`<br>List of unit leaders to be kept by their legacy_id. Optional.<br> `keep_unit_leaders_trigger = { <triggers> }`<br>Trigger block checked for every unit leader that forces them to be kept if they meet the triggers. Optional.<br> `keep_political_leader = <bool>`<br>Controls if the promoted party leader (i.e. the one that'd take power if the country were to be switched to that ideology group) of the revolting ideology group will be kept by the country or join the revolt, yes resulting in the former. Optional, defaults to false.<br> `keep_political_party_members = <bool>`<br>Controls if non-promoted party leaders of the revolting ideology group will be kept by the country or join the revolt, yes resulting in the former. Optional, defaults to false.<br> `keep_all_characters = yes`<br>If true, the revolter will have no characters from the original country transferred to them. Optional, defaults to false.<br> `<effects>`<br>An effect block executed for the breakaway country. | *(example below)* *(example below)* ([See country tag aliases](<data_structures.md>)) *(example below)* ([See usage for PREV and PREV.PREV](#PREV_usage)) | **Within country scope:** starts a civil war for the current scope with the specified parameters, changing the scope to the dynamic country. | `states = all` would include every single state controlled by the country. **If the country's current capital state is set as one of the states that the revolt can gain, it won't fire**. set_capital can be used to change the capital beforehand, with [On_actions#on_civil_war_end](<on_actions.md>) being used to set it back to the default after the civil war ends. | 1.0 |
-| create_dynamic_country | `original_tag = <tag>`<br>The original tag to be used by the country.<br> `copy_tag = <tag>`<br>If specified, copies stuff from this tag rather than the original tag.<br> `<effects>`<br>Effects that will be executed on the new dynamic country.<br> | *(example below)* | **Within country scope:** Creates a new dynamic country, akin to ones used in civil wars, adding every core of the original tag as core and changing the scope to the dynamic country. | The [reserve_dynamic_country](<effects.md>) effect can be used if the dynamic country does not yet exist in order to ensure that it does not get overwritten by other creations of dynamic countries. | 1.9 |
+| start_civil_war | `ideology = <ideology>`<br>The ideology of the breakaway country. `ruling_party = <ideology>`<br>The ruling party of the **original, player-led** country. Optional.<br> `size = <float>`<br>The size of the breakaway country and the fraction of the original stockpile and military units it will receive by default. Optional, defaults to 0.5.<br> `army_ratio = <float>`<br>The size of the land army that the breakaway country gets. Optional, defaults to being the same as size.<br> `navy_ratio = <float>`<br>The size of the naval forces that the breakaway country gets. Optional, defaults to being the same as size.<br> `air_ratio = <float>`<br>The size of the airforce that the breakaway country gets. Optional, defaults to being the same as size.<br> `capital = <state>`<br>The capital state of the breakaway country. Optional.<br> `states = { <state> }`<br>The states included in the breakway country. Optional, defaults to random states based off size. `all` will result in all states that meet the filter going to the breakaway.<br> `states_filter = { <triggers> }`<br>A trigger block checked for the state that must be met to be transferred to the breakaway. Optional.<br> `keep_unit_leaders = { <unit leader id> }`<br>List of unit leaders to be kept by their legacy_id. Optional.<br> `keep_unit_leaders_trigger = { <triggers> }`<br>Trigger block checked for every unit leader that forces them to be kept if they meet the triggers. Optional.<br> `keep_political_leader = <bool>`<br>Controls if the promoted party leader (i.e. the one that'd take power if the country were to be switched to that ideology group) of the revolting ideology group will be kept by the country or join the revolt, yes resulting in the former. Optional, defaults to false.<br> `keep_political_party_members = <bool>`<br>Controls if non-promoted party leaders of the revolting ideology group will be kept by the country or join the revolt, yes resulting in the former. Optional, defaults to false.<br> `keep_all_characters = yes`<br>If true, the revolter will have no characters from the original country transferred to them. Optional, defaults to false.<br> `<effects>`<br>An effect block executed for the breakaway country. | *(example below)* *(example below)* ([See country tag aliases](data_structures.md)) *(example below)* ([See usage for PREV and PREV.PREV](#prev-usage)) | **Within country scope:** starts a civil war for the current scope with the specified parameters, changing the scope to the dynamic country. | `states = all` would include every single state controlled by the country. **If the country's current capital state is set as one of the states that the revolt can gain, it won't fire**. set_capital can be used to change the capital beforehand, with [On_actions#on_civil_war_end](on_actions.md) being used to set it back to the default after the civil war ends. | 1.0 |
+| create_dynamic_country | `original_tag = <tag>`<br>The original tag to be used by the country.<br> `copy_tag = <tag>`<br>If specified, copies stuff from this tag rather than the original tag.<br> `<effects>`<br>Effects that will be executed on the new dynamic country.<br> | *(example below)* | **Within country scope:** Creates a new dynamic country, akin to ones used in civil wars, adding every core of the original tag as core and changing the scope to the dynamic country. | The [reserve_dynamic_country](effects.md) effect can be used if the dynamic country does not yet exist in order to ensure that it does not get overwritten by other creations of dynamic countries. | 1.9 |
 
 **Example: start_civil_war**
 
@@ -849,11 +802,11 @@ create_dynamic_country = {
 }
 ```
 
-## Array scopes <a id="Array_scopes"></a>
+## Array scopes
 
-*See also: [Arrays](<data_structures.md>)*
+*See also: [Arrays](data_structures.md)*
 
-[Arrays](<data_structures.md>) can be used to create a generic selection of scopes meeting the criteria. These scopes exist for checking conditions on elements of an array or executing effects on them:
+[Arrays](data_structures.md) can be used to create a generic selection of scopes meeting the criteria. These scopes exist for checking conditions on elements of an array or executing effects on them:
 
 Array-related scopes:
 
@@ -923,15 +876,13 @@ random_scope_in_array = {
 }
 ```
 
-<!-- kit:begin id="array-scope-notes" at="section:Array_scopes" -->
-**Kit note** `for_each_scope_loop` also takes `tooltip = <loc>`, which prints the sub-effects under that title, and every array scope names its break variable `break` unless you set another. [docs] `documentation/effects_documentation.md`
+`for_each_scope_loop` also takes `tooltip = <loc>`, which prints the sub-effects under that title, and every array scope names its break variable `break` unless you set another.
 
-Vanilla use (lines / files): `for_each_scope_loop` 187 / 49, `all_of_scopes` 61 / 16, `any_of_scopes` 24 / 11, `random_scope_in_array` 3 / 2. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
+Vanilla use (lines / files): `for_each_scope_loop` 187 / 49, `all_of_scopes` 61 / 16, `any_of_scopes` 24 / 11, `random_scope_in_array` 3 / 2.
 
-Collections do the same job without a stored array: [Collection modding](<collection_modding.md#Collections_and_loops>) compares them with the array loops. Loop defaults are in [Data structures](<data_structures.md#Arguments>).
-<!-- kit:end id="array-scope-notes" -->
+Collections do the same job without a stored array: [Collection modding](collection_modding.md#collections-and-loops) compares them with the array loops. Loop defaults are in [Data structures](data_structures.md#arguments).
 
-## PREV usage <a id="PREV_usage"></a>
+## PREV usage
 
 In order to understand PREV, it can be helpful to think back to the trigger/effect scopes such as every_controlled_state. In this case, if put inside directly, PREV can be used as the controller of the state. In fact, every_controlled_state is equivalent to every_state with a limit of `is_controlled_by = PREV` in most ways, although it is recommended to use every_controlled_state instead as it is better for optimisation. For example, the following will transfer every state to its controller, changing the owner:
 
@@ -991,9 +942,9 @@ In many cases, using PREV can result in seemingly broken tooltips which'll work 
   - ![Flag of Switzerland](media/scopes_eff9c6f993__img16.png) Switzerland:
     - Becomes owner and controller of **Sardinia**
 
-This can not be avoided with traditional means while still using PREV. Instead, it's possible to use [hidden_effect and custom_effect_tooltip](<effects.md>) or [custom_trigger_tooltip](<triggers.md>) in order to completely replace the tooltip in this case.
+This can not be avoided with traditional means while still using PREV. Instead, it's possible to use [hidden_effect and custom_effect_tooltip](effects.md) or [custom_trigger_tooltip](triggers.md) in order to completely replace the tooltip in this case.
 
-## Flow control tools <a id="Flow_control_tools"></a>
+## Flow control tools
 
 While these aren't scopes, not changing where the effects are run or triggers are checked, they still function as blocks of code that can be used within any trigger and/or effect.
 
@@ -1011,10 +962,10 @@ Flow control tools:
 | hidden_effect | Within effects | *(example below)* | Hides the tooltips from all contained effects | Commonly used alongside `custom_effect_tooltip`, to avoid messy effect tooltips or hide precise effects from the player. |
 | effect_tooltip | Within effects | *(example below)* | Shows the tooltips of the contained effects, but does not execute them. | Most often useful with event chains, where the actual effect is done in a follow-up event. |
 | if | Always usable | *(example below)* | If statements allow to conditionally check triggers or run effects. The `limit` block is used to define triggers that must be fulfilled for the effects to be run or triggers to be checked. The triggers in `limit` are *never* shown to the player: if they are unfulfilled, the if statement will have no tooltip, while, if fulfilled, the player will see the effects/triggers inside the if statement itself. In addition, `else_if` and `else` can be optionally defined to run if the limit is considered false. They can be defined as both nested (i.e. directly inside of the previous `if` or `else_if`) or unnested (i.e. directly after, but not inside of the previous `if` or `else_if`). In case of overlap, the game will prefer the unnested variant, so using that is preferred. | `else_if` is optional and can be used as many times as desired. `else` is also optional, but can only be used once per `if`.<br> The main `if` as well as any `else_if` must have a `limit`, and `else` cannot use a `limit`.<br> If statements can be used to clean up tooltips on triggers: the limit can check if the country has a specific tag, while the if statement can contain an always false custom trigger tooltip. This will restrict it from being true for that country, while other countries will not see anything in the tooltip. |
-| for_loop_effect | Within effects | *(example below)* | Runs the effect in a typical for loop, with the current value of the variable kept with the [temp variable](<data_structures.md>) specified with `value`. `break` defines a [temp variable](<data_structures.md>) that can be set to 1 to break the loop instantly. | If unspecified, `start` and `end` are 0, `compare` is less_than, `add` is 1, `value` is v, and `break` is break. Can run for up to 1000 times before stopping automatically. |
-| while_loop_effect | Within effects | *(example below)* | Runs the effect as long as the trigger is true. `break` defines a [temp variable](<data_structures.md>) that can be set to 1 to break the loop instantly. | The trigger is checked at the start of each loop only. Can run for up to 1000 times before stopping automatically. If `break` is unspecified, assumes to be a temp variable with the name of break. |
+| for_loop_effect | Within effects | *(example below)* | Runs the effect in a typical for loop, with the current value of the variable kept with the [temp variable](data_structures.md) specified with `value`. `break` defines a [temp variable](data_structures.md) that can be set to 1 to break the loop instantly. | If unspecified, `start` and `end` are 0, `compare` is less_than, `add` is 1, `value` is v, and `break` is break. Can run for up to 1000 times before stopping automatically. |
+| while_loop_effect | Within effects | *(example below)* | Runs the effect as long as the trigger is true. `break` defines a [temp variable](data_structures.md) that can be set to 1 to break the loop instantly. | The trigger is checked at the start of each loop only. Can run for up to 1000 times before stopping automatically. If `break` is unspecified, assumes to be a temp variable with the name of break. |
 | random | Within effects | *(example below)* | Simulates a random chance to either execute the effect or do nothing, with the `chance` used to define the chance. | Chance is defined on the scale from 0 to 100. |
-| random_list | Within effects | *(example below)* | Simulates a random chance to pick one of the listed effects. | Chance for each section is proportional, doesn't have to add up to 100. Can use a variable as a chance. Modifiers can be used in the same way as in [ai_will_do blocks](<ai_modding.md>). |
+| random_list | Within effects | *(example below)* | Simulates a random chance to pick one of the listed effects. | Chance for each section is proportional, doesn't have to add up to 100. Can use a variable as a chance. Modifiers can be used in the same way as in [ai_will_do blocks](ai_modding.md). |
 
 **Example: AND**
 
@@ -1189,26 +1140,10 @@ random_list = {
 }
 ```
 
-<!-- kit:begin id="flow-control-additions" at="section:Flow_control_tools" -->
-**Kit addition** Details the table above lacks.
+Details the table above lacks.
 
-- `custom_trigger_tooltip` is an alias of `custom_override_tooltip`, kept for old script; the docs prefer `custom_override_tooltip` for new triggers. `custom_override_tooltip` also exists as an effect and takes a bound localisation object, see [Data structures](<data_structures.md#kit-bindable-localisation>). [docs] `documentation/triggers_documentation.md`, `documentation/effects_documentation.md`
-- `hidden_trigger` accepts `tooltip_evaluation = eval`, `no_eval` or `legacy`. Use `eval` when the hidden trigger sets temp variables or uses random choices; see [Data structures](<data_structures.md#Trigger_usage>). [docs] `documentation/triggers_documentation.md`
-- `random_list` accepts `log = yes`, which writes the roll to `game.log`, and `seed = <variable, constant or random>`, which replaces the scope's seed. Weights may be variables. [docs] `documentation/effects_documentation.md`
-- Vanilla has a `seed =` line in 12 files, for example `seed = random` inside a `random_list`. [vanilla-confirmed 1.19.4.1] `common/`, `events/`
-- Loop caps: `MAX_EFFECT_ITERATION = 1000`, which matches the 1000 in the table. [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
-<!-- kit:end id="flow-control-additions" -->
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
+- `custom_trigger_tooltip` is an alias of `custom_override_tooltip`, kept for old script; the docs prefer `custom_override_tooltip` for new triggers. `custom_override_tooltip` also exists as an effect and takes a bound localisation object, see [Data structures](data_structures.md#bindable-and-formatted-localisation).
+- `hidden_trigger` accepts `tooltip_evaluation = eval`, `no_eval` or `legacy`. Use `eval` when the hidden trigger sets temp variables or uses random choices; see [Data structures](data_structures.md#trigger-usage).
+- `random_list` accepts `log = yes`, which writes the roll to `game.log`, and `seed = <variable, constant or random>`, which replaces the scope's seed. Weights may be variables.
+- Vanilla has a `seed =` line in 12 files, for example `seed = random` inside a `random_list`.
+- Loop caps: `MAX_EFFECT_ITERATION = 1000`, which matches the 1000 in the table.
