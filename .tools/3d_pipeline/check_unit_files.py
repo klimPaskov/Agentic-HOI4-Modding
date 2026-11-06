@@ -68,7 +68,11 @@ Surface and deformation rules (always; limits are the largest values measured on
 - UNIT-LOOSE-PART: a part not joined to the body's surface (a strap, a plate, a quiver, a separate
   weapon) has vertices with no skin weight, or sits or drifts farther from the rest of the unit, at
   rest or in any frame, than any loose part of vanilla GER_infantry or cavalry_horse. Selection boxes
-  (`Collision` shapes) are skipped. Any number of parts is fine while each stays attached.
+  (`Collision` shapes) are skipped. Any number of parts is fine while each stays attached. A held prop,
+  a separate shape that follows one bone wholly (the weapon `fit_prop.py` binds to the hand), is one
+  part however many pieces it has, judged against the body vertices that follow the same bone (the
+  hand that holds it): it must touch them at rest and stay on them in every frame. A polearm's head
+  may reach as far from the body as its shaft carries it.
 
 Mod rule (with `--mod-root`, or `--compare-units <folder>`):
 
@@ -431,7 +435,8 @@ def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):
     parts = pdx_motion.loose_parts(mesh, {path.name: anim for path, anim in loaded.items()})
     facts["motion"][mesh_path.name]["loose_parts"] = [
         {"triangles": part.triangles, "unweighted": part.unweighted, "rest_gap": round(part.rest_gap, 4),
-         "worst_gap": round(part.worst_gap, 4), "worst_clip": part.worst_clip, "worst_frame": part.worst_frame}
+         "worst_gap": round(part.worst_gap, 4), "worst_clip": part.worst_clip, "worst_frame": part.worst_frame,
+         "prop_bone": part.prop_bone, "held_by": part.held_by, "pieces": part.pieces}
         for part in parts[:10]
     ]
     unweighted = [part for part in parts if part.unweighted and mesh.skinned]
@@ -440,6 +445,13 @@ def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):
     limit = limits.get("loose_gap")
     if limit is None:
         return
+    for prop in (part for part in parts if part.prop_bone and part.held_by):
+        where = f"the body vertices that follow {prop.held_by}"
+        if prop.rest_gap > limit:
+            add("UNIT-LOOSE-PART", "error", mesh_path, f"the prop bound to {prop.prop_bone} ({prop.pieces} piece(s), {prop.triangles} triangles) is {prop.rest_gap:.1%} of the unit's height from {where} at rest: nothing holds it. Fit it to the hand again (fit_prop.py) or bind it to the bone that holds it")
+        elif prop.worst_gap > limit:
+            add("UNIT-LOOSE-PART", "error", mesh_path, f"the prop bound to {prop.prop_bone} slides {prop.worst_gap:.1%} of the unit's height off {where} in {prop.worst_clip} frame {prop.worst_frame}; vanilla loose parts stay within {limit:.1%}")
+    parts = [part for part in parts if not (part.prop_bone and part.held_by)]
     floating = [part for part in parts if part.rest_gap > limit]
     drifting = [part for part in parts if part.rest_gap <= limit < part.worst_gap]
     if floating:
