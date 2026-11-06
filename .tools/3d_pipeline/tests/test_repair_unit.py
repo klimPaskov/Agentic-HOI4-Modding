@@ -102,6 +102,24 @@ class RepairInBlender(unittest.TestCase):
             clip = pdx_deform.deformation_report(after, pdx_deform.load_anim(out / "files" / "u_idle.anim"))
             self.assertEqual(clip.stretched_edges, 0)
 
+    def test_a_join_inside_one_skin_is_kept_as_a_weight_seam(self) -> None:
+        # The arm strip runs hand to hand through the arms and root, and one extra triangle joins
+        # the hands' own strip vertices directly. Cutting it would open the skin, not separate parts.
+        from test_deformation_checks import two_arm_strip, write_mesh
+
+        positions, triangles, bones = two_arm_strip()
+        triangles = triangles + [(0, 4, 9)]
+        with tempfile.TemporaryDirectory() as folder:
+            unit = Path(folder) / "unit"
+            unit.mkdir()
+            write_mesh(unit / "u.mesh", positions, triangles, bones)
+            out = Path(folder) / "repair"
+            with redirect_stdout(io.StringIO()):
+                repair_unit.main([str(unit), "--out", str(out), "--repairs", "bridges"])
+            changed = next(iter(json.loads((out / "repair_report.json").read_text(encoding="utf-8"))["blender"]["objects"].values()))
+        self.assertEqual(changed["bridge_faces_removed"], 0)
+        self.assertEqual(changed["weight_seams"], {"HandL-HandR": 2})
+
 
 if __name__ == "__main__":
     unittest.main()

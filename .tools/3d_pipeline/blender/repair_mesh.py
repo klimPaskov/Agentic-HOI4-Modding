@@ -10,10 +10,12 @@ Repairs, each optional and run in this order:
 - `winding`: make every connected surface face one way, outward for closed parts
   (`bmesh.ops.recalc_face_normals`). The game culls back faces, so a flipped triangle is a hole
   from one side.
-- `bridges`: delete the faces that join body parts that move apart (an edge whose two vertices
-  follow bones `hops` or more parent steps apart, with neither blending the other's bone), then
-  close each opened loop on both sides with a flat cap. Skinning tears such faces into spikes and
-  webs in every clip.
+- `bridges`: delete the faces that fuse body parts that move apart (an edge whose two vertices
+  follow bones `hops` or more parent steps apart, with neither blending the other's bone, and
+  whose two sides come apart once the faces are gone), then close each opened loop on both sides.
+  Skinning tears such faces into spikes and webs in every clip. A bridge inside one continuous
+  skin (the two sides still connect through the rest of the mesh) is kept and reported as a
+  weight seam: it needs blended weights, not a cut.
 - `holes`: close open loops of at most `max_hole_edges` edges.
 
 Every cap vertex is an existing boundary vertex, so caps inherit their neighbours' weights and no
@@ -89,6 +91,53 @@ def bridge_edges(bm, weights):
             continue
         found.append(edge)
     return found
+
+
+def dominant(weights, vert):
+    bones = weights[vert.index]
+    return max(bones, key=bones.get) if bones else None
+
+
+def bridge_pairs(edges, weights):
+    pairs = {}
+    for edge in edges:
+        key = "-".join(sorted(dominant(weights, v) for v in edge.verts))
+        pairs[key] = pairs.get(key, 0) + 1
+    return pairs
+
+
+def split_fusions(bm, bridges, weights):
+    """Split bridge edges into fusions (cut them) and weight seams (keep them).
+
+    A fusion joins two body parts that are separate once the joining faces are gone, such as an arm
+    pressed into the hips. A weight seam sits inside one continuous skin, such as an elephant's ear
+    root between head and shoulder: cutting it would open the skin, so it needs blended weights
+    instead. Each cluster of bridge faces is a fusion when the vertices on its two sides are no
+    longer connected through the rest of the mesh."""
+
+    bridge_faces = {f for e in bridges for f in e.link_faces}
+    parent = {}
+
+    def find(v):
+        parent.setdefault(v, v)
+        while parent[v] is not v:
+            parent[v] = parent[parent[v]]
+            v = parent[v]
+        return v
+
+    for face in bm.faces:
+        if face in bridge_faces:
+            continue
+        verts = list(face.verts)
+        for other in verts[1:]:
+            ra, rb = find(verts[0]), find(other)
+            if ra is not rb:
+                parent[ra] = rb
+    fused, seams = [], []
+    for edge in bridges:
+        a, b = edge.verts
+        (fused if find(a) is not find(b) else seams).append(edge)
+    return fused, seams
 
 
 def cap_loops(bm, edges, max_edges):
@@ -207,12 +256,10 @@ for obj in [o for o in scene.objects if o.type == "MESH"]:
         bm.verts.ensure_lookup_table()
         weights = weights_of(obj, bm)
         bridges = bridge_edges(bm, weights)
-        faces = list({f for e in bridges for f in e.link_faces})
-        pairs = {}
-        for edge in bridges:
-            a, b = (weights[v.index] for v in edge.verts)
-            key = "-".join(sorted((max(a, key=a.get), max(b, key=b.get))))
-            pairs[key] = pairs.get(key, 0) + 1
+        fused, seams = split_fusions(bm, bridges, weights)
+        faces = list({f for e in fused for f in e.link_faces})
+        pairs = bridge_pairs(fused, weights)
+        entry["weight_seams"] = bridge_pairs(seams, weights)
         loop_edges = {e for f in faces for e in f.edges}
         bmesh.ops.delete(bm, geom=faces, context="FACES_ONLY")
         # Edges that joined the two parts directly are now loose; drop them, keep both sides' rims.
@@ -222,7 +269,7 @@ for obj in [o for o in scene.objects if o.type == "MESH"]:
         cut = {v for e in loop_edges if e.is_valid for v in e.verts}
         touched = {v for loop in boundary_loops([e for e in bm.edges if e.is_boundary]) if cut & set(loop) for v in loop}
         rims = [e for e in bm.edges if e.is_boundary and (e.verts[0] in touched or e.verts[0] in cut)]
-        entry.update({"bridge_edges": len(bridges), "bridge_faces_removed": len(faces), "bridge_pairs": pairs,
+        entry.update({"bridge_edges": len(fused), "bridge_faces_removed": len(faces), "bridge_pairs": pairs,
                       "caps": cap_loops(bm, rims, 0)})  # a cut rim is always closed, whatever its size
     if "holes" in repairs:
         entry["holes_closed"] = cap_loops(bm, list(bm.edges), request["max_hole_edges"])

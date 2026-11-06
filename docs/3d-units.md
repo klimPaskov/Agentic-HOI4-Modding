@@ -120,7 +120,7 @@ py -3.13 -B .tools/3d_pipeline/repair_unit.py gfx/models/units/<unit> --out <job
 | Repair | Fixes |
 |---|---|
 | `winding` | Triangles facing the wrong way and inside-out parts (UNIT-WINDING, UNIT-INSIDE-OUT) |
-| `bridges` | Surfaces joining body parts that move apart, such as an arm fused to the hips. The joining faces are cut and both sides are closed (UNIT-BRIDGE, and the stretch it causes) |
+| `bridges` | Surfaces fusing body parts that move apart, such as an arm pressed into the hips. The joining faces are cut and both sides are closed (UNIT-BRIDGE, and the stretch it causes). A bridge inside one continuous skin, such as an ear root between head and shoulder, is not cut: the report lists it under `weight_seams`, and it needs blended weights instead |
 | `holes` | Small open loops, up to `--max-hole-edges` edges (UNIT-HOLE) |
 
 It writes the repaired copy to `<job folder>/repair/files` and leaves `gfx/` alone. The skeleton, materials and the weights of every vertex it does not cut stay as they were, so the unit's `.anim` files still play. `repair_report.json` lists what changed and the check results before and after. Review the copy with `review_unit.py`, and copy it into `gfx/` only after a fresh reviewer passes it.
