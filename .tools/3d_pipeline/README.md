@@ -26,10 +26,10 @@ python .tools/3d_pipeline/bootstrap_3d_workflow.py `
   --trusted-launcher <installed-hoi4-mod-setup-executable>
 ```
 
-The bootstrap verifies the pinned Meshy MCP 0.6.7 package (npm integrity
-`sha512-kmOyjdcW+FZuc+TZHK4aUjfOID+LbjmQAM7W9YLtLhApW7b7lo+aZLnLl6xnNfM2KvktODXCF61kgDhjwP7dUg==`,
-upstream head `0f4c10a3c37f74a2625a922aeaff03b2f878887f`) and its complete
-3,954-file runtime tree (SHA-256 `dbd2ebfce197a18875c3d367ad4b5325a345b92ce54c2a33440f5490efe7f6b3`),
+The bootstrap verifies the pinned Meshy MCP 0.6.9 package (npm integrity
+`sha512-iw9gPAtvxkSx39emL0AN7q9Hqgjjq457s7fDeuFf6GTXd5lLh71LzuayvWfC9+28i18/F5zbGXCiY8qdFX6daw==`,
+upstream head `f7fe59e0df5050d8ccf70d118ec084f39a725638`) and its complete
+3,956-file runtime tree (SHA-256 `b322d0b8a4ad03f3f0c4840462c517b79fa41ec44473a5800652c005dab6d082`),
 installs Blender Lab MCP at source commit `dbbf836ad4b1025f14a2b3b504c43903f39e0b04`, discovers Blender, installs
 and verifies io_pdx_mesh 0.91, enables the matching Blender MCP add-on, probes
 the loopback bridge, materializes the bounded Blender adapter config, and
