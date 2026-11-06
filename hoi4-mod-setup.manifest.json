@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "c2baab298b2db412acd6f6b5a225c833ed8cbe0d",
+  "generated_for_revision": "76a5c10f69882bc73103d8bfe47490c65e211314",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15015,8 +15015,8 @@
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "13d322b4aab0f324d497c6e96dba1162ba5a41901d483c2332d4ec452c3e57bf",
-          "size": 41367
+          "sha256": "3b4082e7b35fd2391295d308fa27d93e4b01f1b58d87482c61f778b77a56c7c5",
+          "size": 42267
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -15060,8 +15060,8 @@
         },
         {
           "path": ".tools/3d_pipeline/fit_prop.py",
-          "sha256": "38d6f13333d735b2fa02b933d9cdf38cfd6c3b2da62d6d011294a357e6709998",
-          "size": 10470
+          "sha256": "15ed732b83335ce1d9eed1ad3e6c836bcc28b706c41ac7ecdfa80762966647e9",
+          "size": 11712
         },
         {
           "path": ".tools/3d_pipeline/init_pilot_jobs.py",
@@ -15835,8 +15835,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_fit_prop.py",
-          "sha256": "e6f191ee4f20315c213570bad83d8f107527cbb5f1a5835dd80e56703604c2d1",
-          "size": 5472
+          "sha256": "0ec29bb1607e92dfdf4ba7f2117969e2e8d2a03059c1b88c6f3222865d88948d",
+          "size": 6171
         },
         {
           "path": ".tools/3d_pipeline/tests/test_fitted_humanoid_repair.py",
@@ -16000,8 +16000,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_stage_verdict.py",
-          "sha256": "cacbe1bf7752722c200402b318f3c4183067f03c89a928d174514232f4748299",
-          "size": 5590
+          "sha256": "92abf54c7f2adc1c139c2872b3e370337c92d78824d29b97a579f4a0cba1b76c",
+          "size": 5758
         },
         {
           "path": ".tools/3d_pipeline/tests/test_texture_lineage.py",
