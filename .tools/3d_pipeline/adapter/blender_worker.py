@@ -6926,12 +6926,16 @@ def export_animation(req: Dict[str, Any], pdx: Dict[str, Any]) -> Dict[str, Any]
     scale_normalization = normalize_exported_animation_scales(output, pdx, 1.0)
     from animation_root_export import correct_exported_initial_roots
     initial_root_world_pose = correct_exported_initial_roots(output, rig, start, bpy)
+    from anim_frame_range import verify_frame_range
+    # One sample per frame of the action: io_pdx_mesh's operator exports the scene's range instead.
+    samples = verify_frame_range(output, start, end)
     result = {
         "blend": str(blend.relative_to(job)).replace("\\", "/"),
         "action": action.name,
         "armature": rig.name,
         "frame_start": start,
         "frame_end": end,
+        "samples": samples,
         "fps": bpy.context.scene.render.fps,
         "armature_world_scale": export_transforms["armature_world_scale_after"],
         "export_transforms": export_transforms,

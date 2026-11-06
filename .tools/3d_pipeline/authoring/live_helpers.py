@@ -35,8 +35,10 @@ Blender's axes: Z up. The kit's units face -Y.
 
 from __future__ import annotations
 
+import importlib
 import math
 import os
+import sys
 from typing import Dict, Iterable, List, Optional, Sequence
 
 import bpy
@@ -477,6 +479,45 @@ def plant(frame: int, upper: str, lower: str, foot: str, groups: Sequence[str], 
         rig.animation_data.action = action
     key([upper, lower, foot], frame)
     return round(remaining, 4)
+
+
+# ---- export ----
+
+
+def export_clip(action_name: str, path: str) -> int:
+    """Export one action as a `.anim` with exactly its own frames, and check the file. Returns the sample count.
+
+    Never export with `bpy.ops.io_pdx_mesh.export_anim`: it ignores its start and end frames unless the
+    scene's custom-range setting is on, and exports the scene's frame range, so clips came out padded
+    or cut short. This calls io_pdx_mesh's `export_animfile` with the action's range, restores the
+    scene's range afterwards, and raises when the written sample count is not the action's frame count.
+    """
+
+    import addon_utils
+
+    module = next((m for m in addon_utils.modules() if m.__name__.endswith("io_pdx_mesh")), None)
+    if module is None:
+        raise RuntimeError("io_pdx_mesh is not installed for this Blender")
+    addon_utils.enable(module.__name__, default_set=False)
+    pdx = importlib.import_module(module.__name__ + ".pdx_blender.blender_import_export")
+    rig = arm()
+    action = bpy.data.actions[action_name]
+    rig.animation_data_create()
+    rig.animation_data.action = action
+    start, end = (int(round(value)) for value in action.frame_range)
+    scene = bpy.context.scene
+    saved = (scene.frame_start, scene.frame_end, scene.frame_current)
+    bpy.context.view_layer.objects.active = rig  # the exporter takes the active object as the rig
+    try:
+        scene.frame_start, scene.frame_end = start, end
+        pdx.export_animfile(str(path), frame_start=start, frame_end=end, uniform_scale=True)
+    finally:
+        scene.frame_start, scene.frame_end = saved[0], saved[1]
+        scene.frame_set(saved[2])
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "adapter"))
+    from anim_frame_range import verify_frame_range
+
+    return verify_frame_range(path, start, end)
 
 
 # ---- weights ----
