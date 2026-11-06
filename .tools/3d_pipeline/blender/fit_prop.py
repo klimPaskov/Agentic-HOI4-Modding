@@ -15,7 +15,8 @@ fixed grip hit the ground and clipped the body.
    ground count against it, the ground `ground_weight` times, since a prop in the ground shows at
    every zoom. Points within the fist are held, not clipping, so the first 12 % from the grip is not
    scored.
-5. The best direction is attached in the rest pose, bound fully to the hand bone as its own shape,
+5. The best direction is attached in the rest pose, bound fully to the hand bone as its own shape
+   (replacing a shape of the same name that an earlier fit left),
    given a `PdxMeshAdvanced` material on `<prop>_{diffuse,specular,normal}.dds`, and exported.
 
 A JSON report holds the palm, the score of the best, the worst and the top five directions, and the
@@ -50,6 +51,10 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 mesh_path = Path(request["mesh"])
 bie.import_meshfile(str(mesh_path), imp_mesh=True, imp_skel=True, imp_locs=True, join_materials=True, bonespace=False)
 rig = next(o for o in bpy.data.objects if o.type == "ARMATURE")
+# A prop fitted before is replaced, not doubled; its vertices, bound to the hand, would also move the palm.
+replaced = [o.name for o in bpy.data.objects if o.type == "MESH" and (o.name == request["prop_stem"] or o.name.startswith(request["prop_stem"] + "."))]
+for name in replaced:
+    bpy.data.objects.remove(bpy.data.objects[name], do_unlink=True)
 body = [o for o in bpy.data.objects if o.type == "MESH" and "collision" not in o.name.lower()]
 for o in body:
     o.parent = rig
@@ -264,6 +269,7 @@ report = {
     "palm": list(palm),
     "prop_open_edges": open_edges,
     "prop_length_share": round(prop_length / height, 4),
+    "replaced_prop": replaced,
     "best": {**{k: best[k] for k in keys}, "per_clip": best["per_clip"]},
     "worst": {k: ranked[-1][k] for k in keys},
     "top5": [{k: c[k] for k in keys} for c in ranked[:5]],
