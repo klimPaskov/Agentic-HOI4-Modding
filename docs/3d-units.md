@@ -144,6 +144,14 @@ py -3.13 -B .tools/3d_pipeline/review_unit.py gfx/models/units/<unit> --out <job
 
 The unit passes only on `VERDICT: pass` with no listed defect. After a fail, fix the cause, export again and ask a new reviewer. Keep the replies: they are the record that the unit was looked at.
 
+Rounds converge when every reviewer gets the same request:
+
+- **Fixed notes.** If part of the unit's look could be mistaken for a defect, such as a ragged, torn hem or torn wing membranes, say so once in a notes file in the job folder and pass it every round with `--note-file <job folder>/review_notes.md` (or `--note "..."`). The reviewer still judges everything the note does not name, including any hole in the body.
+- **The checklist.** The reviewer goes through the quality bar item by item and ends the reply with a `CHECKLIST:` block. A reply that skips an item is recorded as a fail, and a new reviewer gets the same request.
+- **Changed clips only, then a full round.** After you fix some clips, render and review only those: `--clips attack death` renders them and the rest pose, and the request tells the reviewer to judge only them. A unit is accepted only after a full round, without `--clips`, by a new reviewer. The verdict names that round when an intermediate one passes.
+
+The camera angles never change between rounds.
+
 ### When the reviewer finds defects
 
 The checks pass anything within vanilla's limits, so a reviewer can still see defects. Each kind has its fix:
