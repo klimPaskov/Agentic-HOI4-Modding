@@ -133,7 +133,7 @@ def write_anim(path: Path, frames: int, pose) -> None:
     for name, parent, position in BONES:
         parent_position = BONES[parent][2] if parent >= 0 else (0.0, 0.0, 0.0)
         rest_local[name] = [position[i] - parent_position[i] for i in range(3)]
-    data = b"@@b@" + _obj("info", 1) + _prop("fps", "f", [15.0]) + _prop("sa", "i", [frames]) + _prop("j", "i", [len(BONES)])
+    data = b"@@b@" + _obj("info", 1) + _prop("fps", "f", [30.0]) + _prop("sa", "i", [frames]) + _prop("j", "i", [len(BONES)])
     for name, _parent, _position in BONES:
         data += _obj(name, 2) + _prop("sa", "s", ["tq"])
         data += _prop("t", "f", rest_local[name]) + _prop("q", "f", [0.0, 0.0, 0.0, 1.0]) + _prop("s", "f", [1.0])

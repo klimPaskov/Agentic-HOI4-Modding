@@ -26,7 +26,10 @@ File rules (always):
   missing, or is rotated (vanilla's has an identity rotation) [vanilla-confirmed 1.19.4.1].
 - UNIT-ANIM-UNREADABLE, UNIT-ANIM-JOINTS, UNIT-ANIM-STATIC: an `.anim` that does not parse,
   animates bones the mesh does not have, or moves nothing.
-- UNIT-ANIM-FPS (warning): a frame rate outside 10 to 60.
+- UNIT-ANIM-FPS: a soldier's, rider's or creature's clip that does not play at 30 frames a second, as
+  vanilla's do (30.0 to 30.9). A Blender scene from factory settings runs at 24, and io_pdx_mesh writes
+  the scene's rate. For a vehicle, plane or ship type (`calibration_group`), a warning outside 10 to 60
+  (vanilla's run at 15, 30 or 60).
 - UNIT-ROLE-MISSING: a role the unit type needs has no `<stem>_<role>.anim`.
 - UNIT-DDS-UNREADABLE, UNIT-DDS-SIZE: a texture that does not parse, or is not a power of two or
   is larger than 2048.
@@ -186,6 +189,11 @@ def _check_meshes(meshes, unit_type, profile, needs_animation, add, facts, skele
 
 
 
+# Vanilla soldiers, riders, horses, camels and deer play at 30.0 to 30.9 (their exporter rounds the length).
+ORGANIC_FPS = 30.0
+ORGANIC_FPS_TOLERANCE = 1.0
+
+
 def _check_animations(folder, stem, unit_type, skeleton, add, facts, stems=None):
     """The animation and role rules. With `stems`, only the animations `stem` owns are read."""
 
@@ -215,7 +223,11 @@ def _check_animations(folder, stem, unit_type, skeleton, add, facts, stems=None)
                 add("UNIT-ANIM-JOINTS", "error", anim_path, f"animates {len(unknown)} bones the mesh does not have: {', '.join(unknown[:6])}")
         if not anim.animated_joints or anim.samples < 2:
             add("UNIT-ANIM-STATIC", "error", anim_path, f"moves nothing ({len(anim.animated_joints)} animated joints, {anim.samples} samples)")
-        if not 10 <= anim.fps <= 60:
+        if (unit_type or {}).get("calibration_group", "organic") == "organic":
+            if abs(anim.fps - ORGANIC_FPS) > ORGANIC_FPS_TOLERANCE:
+                add("UNIT-ANIM-FPS", "error", anim_path,
+                    f"plays at {anim.fps:g} frames a second; soldiers, riders and creatures play at 30. Export it again with the kit (it keeps the clip's length in seconds)")
+        elif not 10 <= anim.fps <= 60:
             add("UNIT-ANIM-FPS", "warning", anim_path, f"frame rate {anim.fps:.2f} is outside 10 to 60")
     for role in (unit_type or {}).get("roles", {}):
         if role not in roles_found:

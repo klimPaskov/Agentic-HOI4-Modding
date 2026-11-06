@@ -100,6 +100,7 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 | At most 50 bones, at most 4 bone weights per vertex | The game's shader skins no more (`gfx/FX/pdxmesh.shader`) |
 | Triangles within the profile's budget | Big meshes slow the map down |
 | Every animation moves only bones the mesh has | Other bones are ignored and the unit freezes |
+| Every clip of a soldier, rider or creature plays at 30 frames a second | Vanilla's do, and Paradox's own exporter knows only 15, 30 and 60. A Blender scene from factory settings runs at 24, so a clip keyed for 30 and written at 24 plays a quarter too slowly. The kit's exports write 30 and keep each clip's length in seconds |
 | Every role has an animation | A missing role shows a frozen pose |
 | A mount has a `Saddle_Node` | The rider has nothing to sit on |
 | Textures are DXT5 or DXT1 with mip levels | Without mips the zoomed-out map shimmers. Uncompressed textures use four times the memory |
