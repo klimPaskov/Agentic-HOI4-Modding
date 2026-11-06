@@ -1658,6 +1658,10 @@ def remeshed_creature_checkpoint(spec: Dict[str, Any], job: Path, blender: Blend
         target_triangles=profile["triangle_range"]["working_triangle_target"],
         vanilla_reference=stage_vanilla_reference(job, spec),
         texture_source_rels=texture_sources,
+        # As on the humanoid route: weld the seams before reducing, or the reduction tears the
+        # mesh apart along its UV seams (the warhorse went from 4 to 241 pieces without it).
+        repair_before_reduction=True,
+        topology_weld_distance=0.0,
     )
     candidate_gate(job, prep, hard_max=profile["triangle_range"]["hard_max"], stage="remeshed_candidate")
     return str(prep["checkpoints"]["pre_export"])

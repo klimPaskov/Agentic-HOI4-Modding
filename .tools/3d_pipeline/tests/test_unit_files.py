@@ -39,7 +39,7 @@ def _obj(name: str, depth: int) -> bytes:
     return b"[" * depth + name.encode("latin-1") + b"\0"
 
 
-def write_mesh(path: Path, bones: list[str], influences: int = 4, triangles: int = 2) -> None:
+def write_mesh(path: Path, bones: list[str], influences: int = 4, triangles: int = 2, tx: dict | None = None) -> None:
     data = b"@@b@" + _obj("object", 1) + _obj("unit_shape", 2) + _obj("mesh", 3)
     vertices = triangles + 2
     data += _prop("p", "f", [0.0] * (3 * vertices))
@@ -50,6 +50,8 @@ def write_mesh(path: Path, bones: list[str], influences: int = 4, triangles: int
         data += _obj("skeleton", 3)
         for index, bone in enumerate(bones):
             data += _obj(bone, 4) + _prop("ix", "i", [index])
+            if tx and bone in tx:
+                data += _prop("tx", "f", tx[bone])
     path.write_bytes(data)
 
 
@@ -138,6 +140,16 @@ class CheckUnitFiles(unittest.TestCase):
             write_anim(folder / "unit_move.anim", bones, animated=False)
             rules = {item.rule for item in self.run_check(folder, "mount")}
         self.assertTrue({"UNIT-BONES", "UNIT-INFLUENCES", "UNIT-ANIM-JOINTS", "UNIT-ANIM-STATIC", "UNIT-ROLE-MISSING", "UNIT-NODE-MISSING"} <= rules)
+
+    def test_a_rotated_attach_node_is_refused(self) -> None:
+        identity = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, -5.0, 0.0]
+        turned = [1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 0.0, -5.0, 0.0]
+        for matrix, expected in ((identity, False), (turned, True)):
+            with tempfile.TemporaryDirectory() as name:
+                folder = Path(name)
+                write_mesh(folder / "unit.mesh", ["Root", "Saddle_Node"], tx={"Saddle_Node": matrix})
+                rules = {item.rule for item in self.run_check(folder, "mount")}
+                self.assertEqual("UNIT-NODE-ORIENTATION" in rules, expected)
 
     def test_texture_warnings_and_repair(self) -> None:
         with tempfile.TemporaryDirectory() as name:

@@ -87,8 +87,10 @@ def seat_rider_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         hips_world_x = hips.head.dot(side_axis)
         for side, (thigh, shin, foot) in LEGS.items():
             outward = side_axis if rig.pose.bones[thigh].head.dot(side_axis) >= hips_world_x else -side_axis
-            _aim(rig, thigh, 0.62 * forward + 0.42 * outward - 0.66 * up)
-            _aim(rig, shin, -0.22 * forward + 0.18 * outward - 1.0 * up)
+            # Knees about 0.21 of the rider's height out from the centre clear a horse's barrel
+            # (measured on the ZIN knights' warhorse); the feet hang just outside them.
+            _aim(rig, thigh, 0.55 * forward + 0.62 * outward - 0.56 * up)
+            _aim(rig, shin, -0.2 * forward + 0.12 * outward - 1.0 * up)
             _aim(rig, foot, 1.0 * forward - 0.35 * up)
         if slump:
             for index, name in enumerate(SPINE):

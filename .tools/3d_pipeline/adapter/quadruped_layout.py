@@ -241,7 +241,10 @@ def build_layout(landmarks: Dict[str, object]) -> Layout:
             add(Bone(name, _t(chain[index], g), _t(chain[index + 1], g), parent))
             parent = name
     saddle = np.asarray(landmarks["saddle"], dtype=float)
-    add(Bone(SADDLE_NODE, _t(saddle, g), _t(saddle + v([0.0, 0.0, 0.1 * h]), g), "Spine", deform=False))
+    # An attach node points along +Y with no roll, so io_pdx_mesh exports it with an identity
+    # rotation, as vanilla cavalry_horse.mesh stores its Saddle_Node; a node pointing up exports
+    # turned 90 degrees and the engine would tip the attached rider over.
+    add(Bone(SADDLE_NODE, _t(saddle, g), _t(saddle + v([0.0, 0.1 * h, 0.0]), g), "Spine", deform=False))
     return layout
 
 

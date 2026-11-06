@@ -122,6 +122,7 @@ class MeshSummary:
     shapes: List[str]
     bones: List[str]
     locators: List[str]
+    bone_rotations: Dict[str, bool] = field(default_factory=dict)  # bone name -> its bind rotation is identity
 
     @property
     def triangles(self) -> int:
@@ -137,6 +138,7 @@ def summarize_mesh(root: PdxNode) -> MeshSummary:
     streams: List[MeshStream] = []
     shapes: List[str] = []
     bones: List[str] = []
+    rotations: Dict[str, bool] = {}
     for shape in objects.children:
         shapes.append(shape.name)
         skeleton = shape.child("skeleton")
@@ -144,6 +146,14 @@ def summarize_mesh(root: PdxNode) -> MeshSummary:
             for joint in skeleton.children:
                 if joint.name not in bones:
                     bones.append(joint.name)
+                    matrix = [float(value) for value in joint.properties.get("tx", [])]
+                    if len(matrix) == 12:
+                        rotation = [matrix[0:3], matrix[3:6], matrix[6:9]]
+                        rotations[joint.name] = all(
+                            abs(rotation[row][column] - (1.0 if row == column else 0.0)) < 1e-3
+                            for row in range(3)
+                            for column in range(3)
+                        )
         for mesh in (node for node in shape.children if node.name == "mesh"):
             positions = mesh.properties.get("p", [])
             indices = [int(value) for value in mesh.properties.get("tri", [])]
@@ -173,7 +183,7 @@ def summarize_mesh(root: PdxNode) -> MeshSummary:
             )
     locators_node = root.child("locator")
     locators = [node.name for node in locators_node.children] if locators_node is not None else []
-    return MeshSummary(streams=streams, shapes=shapes, bones=bones, locators=locators)
+    return MeshSummary(streams=streams, shapes=shapes, bones=bones, locators=locators, bone_rotations=rotations)
 
 
 @dataclass

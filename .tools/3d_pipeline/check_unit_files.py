@@ -19,7 +19,8 @@ File rules (always):
   limit; the largest vanilla stream has 38,447 vertices].
 - UNIT-TRIANGLES: above the profile's `hard_max` (error) or `preferred_max` (warning).
 - UNIT-UNSKINNED: the unit type needs animations but the mesh has no skeleton.
-- UNIT-NODE-MISSING: a bone the unit type attaches to (a mount's `Saddle_Node`) is missing.
+- UNIT-NODE-MISSING, UNIT-NODE-ORIENTATION: a bone the unit type attaches to (a mount's `Saddle_Node`) is
+  missing, or is rotated (vanilla's has an identity rotation) [vanilla-confirmed 1.19.4.1].
 - UNIT-ANIM-UNREADABLE, UNIT-ANIM-JOINTS, UNIT-ANIM-STATIC: an `.anim` that does not parse,
   animates bones the mesh does not have, or moves nothing.
 - UNIT-ANIM-FPS (warning): a frame rate outside 10 to 60.
@@ -89,19 +90,9 @@ def _role_of(anim: Path, stem: str) -> Optional[str]:
     return name[len(stem) + 1 :] if name.startswith(stem + "_") else None
 
 
-def check_files(folder: Path, unit_type: Optional[dict], profile: Optional[dict]) -> tuple[List[Finding], dict]:
-    findings: List[Finding] = []
-    facts: dict = {"meshes": {}, "animations": {}, "textures": {}}
+def _check_meshes(meshes, unit_type, profile, needs_animation, add, facts, skeleton):
+    """The mesh rules; fills `skeleton` with every bone name."""
 
-    def add(rule: str, severity: str, path: Path, message: str) -> None:
-        findings.append(Finding(rule, severity, path.as_posix(), message))
-
-    meshes = sorted(folder.glob("*.mesh"))
-    if not meshes:
-        add("UNIT-MESH-NONE", "error", folder, "the folder has no .mesh file")
-    skeleton: List[str] = []
-    stem = meshes[0].stem if meshes else folder.name
-    needs_animation = bool(unit_type and unit_type.get("roles"))
     for mesh_path in meshes:
         try:
             summary = pdx_binary.summarize_mesh(pdx_binary.read(mesh_path))
@@ -134,6 +125,13 @@ def check_files(folder: Path, unit_type: Optional[dict], profile: Optional[dict]
         for node in (unit_type or {}).get("required_nodes", []):
             if node not in summary.bones and node not in summary.locators:
                 add("UNIT-NODE-MISSING", "error", mesh_path, f"{node} is not a bone or locator of the mesh; the entity attaches to it")
+            elif node in summary.bone_rotations and not summary.bone_rotations[node]:
+                add("UNIT-NODE-ORIENTATION", "error", mesh_path, f"{node} is rotated; vanilla attach nodes (cavalry_horse.mesh Saddle_Node) have an identity rotation, and the engine turns the attached entity with the node")
+
+
+
+def _check_animations(folder, stem, unit_type, skeleton, add, facts):
+    """The animation and role rules."""
 
     skeleton_set = set(skeleton)
     roles_found: Dict[str, Path] = {}
@@ -165,6 +163,11 @@ def check_files(folder: Path, unit_type: Optional[dict], profile: Optional[dict]
         if role not in roles_found:
             add("UNIT-ROLE-MISSING", "error", folder, f"no {stem}_{role}.anim for the {role} role")
 
+
+
+def _check_textures(folder, add, facts):
+    """The texture rules."""
+
     for dds_path in sorted(folder.glob("*.dds")):
         try:
             from lib import model_dds
@@ -190,6 +193,24 @@ def check_files(folder: Path, unit_type: Optional[dict], profile: Optional[dict]
                     add("UNIT-DDS-EMISSIVE", "warning", dds_path, f"blue channel reaches {blue}; PdxMeshAdvanced reads normal-map blue as emissive light")
             except (ValueError, model_dds.DdsError):
                 pass
+
+
+def check_files(folder: Path, unit_type: Optional[dict], profile: Optional[dict]) -> tuple[List[Finding], dict]:
+    findings: List[Finding] = []
+    facts: dict = {"meshes": {}, "animations": {}, "textures": {}}
+
+    def add(rule: str, severity: str, path: Path, message: str) -> None:
+        findings.append(Finding(rule, severity, path.as_posix(), message))
+
+    meshes = sorted(folder.glob("*.mesh"))
+    if not meshes:
+        add("UNIT-MESH-NONE", "error", folder, "the folder has no .mesh file")
+    skeleton: List[str] = []
+    stem = meshes[0].stem if meshes else folder.name
+    needs_animation = bool(unit_type and unit_type.get("roles"))
+    _check_meshes(meshes, unit_type, profile, needs_animation, add, facts, skeleton)
+    _check_animations(folder, stem, unit_type, skeleton, add, facts)
+    _check_textures(folder, add, facts)
     return findings, facts
 
 
