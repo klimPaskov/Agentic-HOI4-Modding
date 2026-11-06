@@ -1,0 +1,200 @@
+{
+ "_about": "Largest surface and deformation measures over vanilla skinned units, per group, from calibrate_deformation.py. check_unit_files.py uses them as limits.",
+ "game_folder": "gfx/models/units",
+ "settings": {
+  "stretch_ratio": 1.5,
+  "significant_share": 0.005,
+  "bridge_hops": 3,
+  "organic_pattern": "(^|_)(infantry|marine|mountain|paratroop|cavalry|horse|camel|deer|elephant|soldier|rider|officer|commando|ranger|militia|guard)",
+  "clips_per_mesh": 6,
+  "seed": 1936,
+  "text_anims_skipped": 0
+ },
+ "measured": {
+  "organic": {
+   "meshes": 44,
+   "clips": 173
+  },
+  "vehicle": {
+   "meshes": 75,
+   "clips": 202
+  },
+  "air_naval": {
+   "meshes": 69,
+   "clips": 112
+  }
+ },
+ "groups": {
+  "organic": {
+   "largest_open_loop": {
+    "value": 56.0,
+    "mesh": "SOV_infantry_snow.mesh",
+    "clip": ""
+   },
+   "open_edge_share": {
+    "value": 0.038662,
+    "mesh": "SOV_infantry_snow.mesh",
+    "clip": ""
+   },
+   "winding_flips": {
+    "value": 0.0,
+    "mesh": "",
+    "clip": ""
+   },
+   "inside_out_triangles": {
+    "value": 0.0,
+    "mesh": "",
+    "clip": ""
+   },
+   "bridge_edges": {
+    "value": 12.0,
+    "mesh": "cavalry_camel.mesh",
+    "clip": ""
+   },
+   "stretched_share": {
+    "value": 0.042291,
+    "mesh": "GER_militia_snow.mesh",
+    "clip": "gfx/models/units/GER_infantry_long_idle01_mg.anim"
+   },
+   "squashed_share": {
+    "value": 0.035257,
+    "mesh": "GER_infantry_alt_2.mesh",
+    "clip": "gfx/models/units/GER_infantry_attack_crouch_rifle.anim"
+   },
+   "worst_stretch_share": {
+    "value": 0.238402,
+    "mesh": "GER_infantry_snow.mesh",
+    "clip": "gfx/models/units/GER_infantry_charge_rifle.anim"
+   },
+   "sink": {
+    "value": 0.041802,
+    "mesh": "GER_infantry_alt_0_desert.mesh",
+    "clip": "gfx/models/units/GER_infantry_pushup.anim"
+   },
+   "death_sink": {
+    "value": 0.130243,
+    "mesh": "GER_infantry_alt_0.mesh",
+    "clip": "gfx/models/units/GER_infantry_death_mg.anim"
+   },
+   "hover": {
+    "value": 0.049281,
+    "mesh": "cavalry_horse.mesh",
+    "clip": "gfx/models/units/cavalry_horse_charge.anim"
+   }
+  },
+  "vehicle": {
+   "largest_open_loop": {
+    "value": 122.0,
+    "mesh": "vehicles/US_mechanized_01.mesh",
+    "clip": ""
+   },
+   "open_edge_share": {
+    "value": 0.305212,
+    "mesh": "tanks/FIN_medium_armor.mesh",
+    "clip": ""
+   },
+   "winding_flips": {
+    "value": 2.0,
+    "mesh": "tanks/SOV_tank_medium.mesh",
+    "clip": ""
+   },
+   "inside_out_triangles": {
+    "value": 0.0,
+    "mesh": "",
+    "clip": ""
+   },
+   "bridge_edges": {
+    "value": 39.0,
+    "mesh": "vehicles/GER_motorbike.mesh",
+    "clip": ""
+   },
+   "stretched_share": {
+    "value": 0.031811,
+    "mesh": "vehicles/FIN_motorized_snow.mesh",
+    "clip": "gfx/models/units/vehicles/FIN_motorized_snow_moving.anim"
+   },
+   "squashed_share": {
+    "value": 0.541019,
+    "mesh": "vehicles/FIN_motorized_snow.mesh",
+    "clip": "gfx/models/units/vehicles/FIN_motorized_snow_idle.anim"
+   },
+   "worst_stretch_share": {
+    "value": 1.126484,
+    "mesh": "armored_engineering_vehicles/light_crossing_support_vehicle.mesh",
+    "clip": "gfx/models/units/armored_engineering_vehicles/light_crossing_support_vehicle_deploy.anim"
+   },
+   "sink": {
+    "value": 0.078565,
+    "mesh": "howitzers/generic_super_heavy_sp_howitzer.mesh",
+    "clip": "gfx/models/units/howitzers/generic_super_heavy_sp_howitzer_training.anim"
+   },
+   "death_sink": {
+    "value": 0.07407,
+    "mesh": "army_headquarters/african_gfx_army_headquarters.mesh",
+    "clip": "gfx/models/units/GER_infantry_death_mg.anim"
+   },
+   "hover": {
+    "value": 0.251437,
+    "mesh": "howitzers/generic_super_heavy_artillery.mesh",
+    "clip": "gfx/models/units/howitzers/generic_super_heavy_artillery_moving.anim"
+   }
+  },
+  "air_naval": {
+   "largest_open_loop": {
+    "value": 54.0,
+    "mesh": "ships/generic_super_heavy_battleship.mesh",
+    "clip": ""
+   },
+   "open_edge_share": {
+    "value": 0.300538,
+    "mesh": "ships/repair_ship.mesh",
+    "clip": ""
+   },
+   "winding_flips": {
+    "value": 4.0,
+    "mesh": "ships/bismarck_battleship.mesh",
+    "clip": ""
+   },
+   "inside_out_triangles": {
+    "value": 0.0,
+    "mesh": "",
+    "clip": ""
+   },
+   "bridge_edges": {
+    "value": 0.0,
+    "mesh": "",
+    "clip": ""
+   },
+   "stretched_share": {
+    "value": 0.032462,
+    "mesh": "planes/generic_nuclear_missile_2.mesh",
+    "clip": "gfx/models/units/planes/generic_nuclear_missile_2_idle3.anim"
+   },
+   "squashed_share": {
+    "value": 1.0,
+    "mesh": "planes/generic_sam_missile.mesh",
+    "clip": "gfx/models/units/planes/generic_sam_missile_attack.anim"
+   },
+   "worst_stretch_share": {
+    "value": 6.244374,
+    "mesh": "planes/generic_nuclear_missile_2.mesh",
+    "clip": "gfx/models/units/planes/generic_nuclear_missile_2_idle3.anim"
+   },
+   "sink": {
+    "value": 3.24796,
+    "mesh": "planes/generic_nuclear_missile_2.mesh",
+    "clip": "gfx/models/units/planes/generic_nuclear_missile_2_idle3_intro.anim"
+   },
+   "death_sink": {
+    "value": 4.972534,
+    "mesh": "ships/submarine_carrier.mesh",
+    "clip": "gfx/models/units/ships/submarine_carrier_death.anim"
+   },
+   "hover": {
+    "value": 14.283371,
+    "mesh": "planes/generic_sam_missile.mesh",
+    "clip": "gfx/models/units/planes/generic_sam_missile_attack.anim"
+   }
+  }
+ }
+}

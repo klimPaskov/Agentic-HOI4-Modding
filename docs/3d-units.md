@@ -77,7 +77,14 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 | Normal maps have a black blue channel | The game reads blue in a normal map as glow |
 | Specular maps stay about as dull as vanilla's | Shinier maps show as white speckles on the map. The pipeline scales Meshy's metalness and gloss down to vanilla's range |
 | A mount's `Saddle_Node` exports without rotation | The game turns the rider with the node, so a turned node tips him over |
+| No more open edges, and no larger open loop, than vanilla units | The game hides back faces, so a gap shows the ground through the unit |
+| No triangles facing the wrong way, and no part turned inside out | The same culling makes them look like holes from one side |
+| No surface joining body parts that move apart, such as a hand fused to a thigh | Every clip tears the join into spikes and webs |
+| No frame stretches or squashes the surface more than vanilla clips do | Catches weights leaking across body parts and torn joins in every frame, not only the frames someone looked at |
+| Feet stay on the ground in every frame (a dead body may lie anywhere) | Floating and sinking units |
 | With `--mod-root`: the mesh, every animation, an entity with every state and a sub-unit sprite are registered | Unregistered files never show |
+
+The surface and deformation limits are the worst values measured on the game's own soldiers, riders and horses (or on its vehicles, for a unit type with `"calibration_group": "vehicle"`). They live in `.tools/3d_pipeline/config/deformation_calibration.json`. After a game update, measure them again with `calibrate_deformation.py "<game folder>" --out .tools/3d_pipeline/config/deformation_calibration.json`. Never raise a limit by hand to pass a unit: fix the unit.
 
 Add `--repair-textures` to convert old uncompressed or unmipped textures in place. When a mount and its rider share one folder, check each with `--stem`, for example `--stem <unit> --unit-type mount` and `--stem <unit>_rider --unit-type rider`.
 
