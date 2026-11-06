@@ -251,6 +251,51 @@ class UnitTypeActions(unittest.TestCase):
         self.assertTrue(run_pilot.route_remeshes(rider))
         self.assertEqual([row["role"] for row in run_pilot.planned_stages(rider) if row["operation"] == "animation"], ["idle", "attack", "defend"])
 
+    def test_a_type_generation_block_sets_smart_topology_and_keeps_the_mesh(self) -> None:
+        import copy
+        from unittest import mock
+
+        import run_pilot
+
+        types = copy.deepcopy(run_pilot.load_unit_types())
+        types["beast_biped"]["generation"] = {
+            "ai_model": "meshy-t2.5", "model_type": "smart-topology", "target_polycount": 21000}
+        types["beast_biped"]["pose_mode"] = "a-pose"
+        with mock.patch.object(run_pilot, "load_unit_types", return_value=types):
+            spec = run_pilot.prepare_spec(
+                {"unit_type": "beast_biped", "asset_id": "x.yeti", "runtime_stem": "yeti", "meshy_pose_mode": "t-pose"},
+                require_budget=False,
+            )
+        self.assertEqual((spec["generation"]["ai_model"], spec["generation"]["model_type"]), ("meshy-t2.5", "smart-topology"))
+        self.assertEqual(spec["meshy_pose_mode"], "t-pose")
+        types["beast_biped"]["pose_mode"] = None
+        with mock.patch.object(run_pilot, "load_unit_types", return_value=types):
+            unposed = run_pilot.apply_unit_type({"unit_type": "beast_biped", "meshy_pose_mode": "a-pose"})
+        self.assertIsNone(unposed["meshy_pose_mode"])
+        self.assertEqual(spec["image_to_3d_estimate_credits"], 15)
+        operations = [row["operation"] for row in run_pilot.planned_stages(spec)]
+        self.assertNotIn("remesh", operations)
+        self.assertFalse(run_pilot.route_remeshes(spec))
+        profile = run_pilot.load_profile(spec["profile"])
+        self.assertEqual(run_pilot.topology_options(spec, profile), {"preserve_geometry_topology": True, "target_triangles": 0})
+        legacy = run_pilot.prepare_spec({"unit_type": "archer", "asset_id": "x.archer", "runtime_stem": "archer"}, require_budget=False)
+        self.assertTrue(run_pilot.topology_options(legacy, profile)["repair_before_reduction"])
+
+    def test_a_job_cannot_restate_another_model_than_its_type(self) -> None:
+        import copy
+        from unittest import mock
+
+        import run_pilot
+
+        types = copy.deepcopy(run_pilot.load_unit_types())
+        types["beast_biped"]["generation"] = {"ai_model": "meshy-t2.5", "model_type": "smart-topology"}
+        with mock.patch.object(run_pilot, "load_unit_types", return_value=types):
+            with self.assertRaises(RuntimeError):
+                run_pilot.prepare_spec(
+                    {"unit_type": "beast_biped", "asset_id": "x.yeti", "runtime_stem": "yeti", "meshy_ai_model": "meshy-7"},
+                    require_budget=False,
+                )
+
     def test_job_actions_win_and_unknown_types_fail(self) -> None:
         import run_pilot
 

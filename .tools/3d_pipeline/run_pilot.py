@@ -183,17 +183,38 @@ def resolve_generation(spec: Dict[str, Any], profile: Dict[str, Any]) -> Dict[st
     """
 
     generation = dict(profile.get("generation") or {})
+    # A unit type may name its own generation settings (config/unit_types.json, measured per body).
+    generation.update(spec.get("type_generation") or {})
     expected = str(generation.get("ai_model", "")).lower()
     for key in ("meshy_ai_model", "resolved_meshy_ai_model"):
         stated = spec.get(key)
         if stated and str(stated).lower() != expected:
             raise RuntimeError(
-                f"The job states {key}={stated!r}, but profile {spec.get('profile')!r} generates with "
-                f"{expected!r}. A model never changes silently: edit the profile's generation block."
+                f"The job states {key}={stated!r}, but profile {spec.get('profile')!r} and unit type "
+                f"{spec.get('unit_type')!r} generate with {expected!r}. A model never changes silently: "
+                "edit the profile's or the unit type's generation block."
             )
     if spec.get("target_polycount"):
         generation["target_polycount"] = int(spec["target_polycount"])
     return validate_generation(generation)
+
+
+def topology_options(spec: Dict[str, Any], profile: Dict[str, Any]) -> Dict[str, Any]:
+    """How Blender prepares the provider mesh before rigging.
+
+    A smart-topology generation arrives as triangles at the working budget with consistent winding,
+    so it keeps its topology. The reduction path recalculates normals on the mesh while it is still
+    split at its UV seams, which turns whole islands inside out: the ZIN yeti went from 11 to 22,486
+    flipped edges and showed holes over 7% of its silhouette.
+    """
+    if (spec.get("generation") or {}).get("model_type") == "smart-topology":
+        return {"preserve_geometry_topology": True, "target_triangles": 0}
+    # Weld the seams before reducing, or the reduction tears the mesh apart along them.
+    return {
+        "target_triangles": profile["triangle_range"]["working_triangle_target"],
+        "repair_before_reduction": True,
+        "topology_weld_distance": 0.0,
+    }
 
 
 def provider_animated_roles(spec: Dict[str, Any]) -> List[str]:
@@ -3342,6 +3363,15 @@ def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:
         raise ValueError(f"Unknown unit_type {name!r}; known: {', '.join(sorted(types))}.")
     unit = types[name]
     spec.setdefault("profile", unit["profile"])
+    if unit.get("generation"):
+        spec.setdefault("type_generation", dict(unit["generation"]))
+    if "pose_mode" in unit:
+        # The type's pose is the default; a job may ask for the other humanoid pose. Meshy's poses are
+        # humanoid only, so a type without one (null) never sends any.
+        if unit["pose_mode"] is None:
+            spec["meshy_pose_mode"] = None
+        else:
+            spec.setdefault("meshy_pose_mode", unit["pose_mode"])
     if unit.get("validation_overrides"):
         # Measured per type (see the type's validation_calibration); the profile's other types keep its limits.
         spec.setdefault("profile_validation_overrides", dict(unit["validation_overrides"]))
@@ -3608,13 +3638,11 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         target_height_m=spec.get("blender_target_height_m", spec["target_height_m"]),
         runtime_entity_scale=float(spec.get("runtime_entity_scale", 1.0)),
         runtime_stem=f"{stem}_base",
-        target_triangles=profile["triangle_range"]["working_triangle_target"],
         excluded_provider_objects=spec.get("excluded_provider_objects"),
         vanilla_reference=stages["vanilla_reference"],
         texture_source_rels=texture_sources,
         geometry_source_rel=spec.get("geometry_source_rel"),
-        repair_before_reduction=True,
-        topology_weld_distance=0.0,
+        **topology_options(spec, profile),
     )
     textures = finish_unit_base(job, slug, spec, blender, prep, profile)
     chain = "blender/checkpoints/unit_base_pre_export.blend"
