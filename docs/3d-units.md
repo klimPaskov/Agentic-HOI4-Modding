@@ -62,14 +62,18 @@ A division shows the model of its highest-priority sub-unit (`priority` in the u
 
 ## What happens
 
-1. **Reference image.** One clean picture of the unit, without weapons in hand and on a plain background. You look at it and approve it.
-2. **Model.** Meshy turns the picture into a textured model. Blender imports it, checks it for holes and loose parts, and scales it against vanilla infantry.
-3. **Rig and animations.** Meshy rigs humanoids and animates them from its library. Blender rigs four-legged animals itself and seats riders.
-4. **Export.** Blender writes the `.mesh`, one `.anim` per role and three DXT5 textures with mip levels, then re-imports them to prove they load.
-5. **Checks.** `check_unit_files.py` reads the exported files and stops on anything the game cannot use.
-6. **Hand-over.** The files land in the job's `runtime/files` folder with their final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text to paste.
-7. **Independent review.** `review_unit.py` renders every clip from six sides, including the map camera, and a reviewer who did not make the unit lists every defect it sees. The unit is finished only when that list is empty. See [Independent review](#independent-review).
-8. **In game.** You or your live-testing setup place the unit and look at it idle, moving and fighting.
+Each step is one command, and each prints a one-line verdict. `pass` names the next command. `fail` names the free fix to run. `escalate` means no script can fix it and the unit needs hands-on work (see [Author animations live in Blender](#author-animations-live-in-blender)). Run the command the verdict names, and keep going until the unit passes the review.
+
+1. **Reference image.** One clean picture of the unit, without weapons in hand and on a plain background. You look at it, approve it, and answer the anatomy questions in `.tools/3d_pipeline/config/body_presets.json` (legs, arms, wings, a tail, extra limbs, a vehicle, a rider on a mount). They go into the job as `anatomy`.
+2. **Model.** `run_pilot.py --jobs-config <your 3d_jobs.json> --phase candidate <unit>` has Meshy turn the picture into a textured model (paid), and Blender imports it, checks it for holes and scales it against vanilla infantry.
+3. **Body check.** `measure_body.py <job folder>` measures the model and checks that it fits the job's unit type (see [Check the body before you rig it](#check-the-body-before-you-rig-it)). It costs nothing. Pay for nothing more until it passes.
+4. **Rig, animations and export.** `run_pilot.py --jobs-config <your 3d_jobs.json> <unit>` continues the job. Meshy rigs humanoids and animates them from its library (paid). Blender rigs four-legged animals itself and seats riders. Blender then writes the `.mesh`, one `.anim` per role and three DXT5 textures with mip levels, and re-imports them to prove they load. Steps that already succeeded are reused, never paid twice.
+5. **Weapon in hand.** An armed unit's weapon is a separate model. `fit_prop.py` fits it to the hand against every clip and binds it there (see [Put the weapon in the hand](#put-the-weapon-in-the-hand)). It costs nothing.
+6. **Checks.** `check_unit_files.py <unit folder> --unit-type <type> --mod-root . --verdict <job folder>/evidence/check.json` reads the exported files. Its verdict names the repair to run, or escalates.
+7. **Free repair.** `repair_unit.py` fixes what the check names (holes, faces turned the wrong way, fused body parts, hard weight seams, feet off the ground) in a copy, then the check runs on the copy.
+8. **Hand-over.** The files land in the job's `runtime/files` folder with their final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text to paste.
+9. **Independent review.** `review_unit.py` renders every clip from six sides, including the map camera, plus a diagnostics sheet per clip, and a reviewer who did not make the unit lists every defect it sees. The unit is finished only when that list is empty. See [Independent review](#independent-review).
+10. **In game.** You or your live-testing setup place the unit and look at it idle, moving and fighting.
 
 ## Automatic checks
 
