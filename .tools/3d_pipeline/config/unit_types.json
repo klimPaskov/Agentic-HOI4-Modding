@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "note": "What each kind of land unit needs: its profile, rig route, HOI4 animation roles, the Meshy library clips for each role, the entity states that play them, and the bones an entity attaches to. A job names one type with `unit_type`. Library clips are [action_id, key] pairs read from meshy_list_animations on 2026-11-05; the runner looks the ids up again (free) and refuses a clip whose key changed. `_inplace` clips have no root motion, so the unit does not slide. `body` names the type's body preset in body_presets.json, which measure_body.py checks against the measured generation.",
+  "note": "What each kind of land unit needs: its profile, rig route, HOI4 animation roles, the Meshy library clips for each role, the entity states that play them, and the bones an entity attaches to. A job names one type with `unit_type`. Library clips are [action_id, key] pairs read from meshy_list_animations on 2026-11-05; the runner looks the ids up again (free) and refuses a clip whose key changed. `_inplace` clips have no root motion, so the unit does not slide. `body` names the type's body preset in body_presets.json, which measure_body.py checks against the measured generation (`null` for a vehicle: it has no preset and goes the live Blender route). `calibration_group` picks the vanilla limits check_unit_files.py judges the type against (`organic` when absent).",
   "engine_limits": {
     "max_bones_per_skinned_mesh": 50,
     "max_influences_per_vertex": 4,
@@ -716,6 +716,40 @@
         },
         "death": {
           "blender": "quadruped_collapse",
+          "loop": false
+        }
+      }
+    },
+    "vehicle": {
+      "description": "Tank, armoured car or other wheeled or tracked land unit. Meshy rigs bipeds only, so a vehicle goes the live Blender route: rig and animate it in Blender (wheels, tracks, turret, recoil, rock) and check it against vanilla's vehicle group",
+      "body": null,
+      "calibration_group": "vehicle",
+      "profile": "nonhumanoid_creature",
+      "rig": "blender_live",
+      "entity_template": "infantry",
+      "roles": {
+        "idle": {
+          "blender": "vehicle_idle",
+          "loop": true
+        },
+        "move": {
+          "blender": "vehicle_drive",
+          "loop": true
+        },
+        "attack": {
+          "blender": "vehicle_fire",
+          "loop": false
+        },
+        "defend": {
+          "blender": "vehicle_brace",
+          "loop": true
+        },
+        "retreat": {
+          "blender": "vehicle_reverse",
+          "loop": true
+        },
+        "death": {
+          "blender": "vehicle_wreck",
           "loop": false
         }
       }

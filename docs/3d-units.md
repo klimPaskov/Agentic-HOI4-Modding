@@ -19,8 +19,8 @@ Prices come from `.tools/3d_pipeline/config/meshy_pricing.json`.
 | --- | --- | --- |
 | Foot unit (soldier, archer, giant, beast) | model 30, remesh 5, rig 5, six animations at 3 each | about 58 |
 | Rider of a mounted unit | model 30, remesh 5, rig 5, three animations | about 49 |
-| Mount or four-legged beast | model 30 (Blender rigs and animates it) | 30 |
-| Mounted unit (rider plus mount) | both of the above | about 79 |
+| Mount or four-legged beast | model 30, remesh 5 (Blender rigs and animates it) | 35 |
+| Mounted unit (rider plus mount) | both of the above | about 84 |
 
 Blender work costs nothing. Your agent asks you once for a credit budget per unit and never pays for a retry.
 
@@ -102,6 +102,7 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 | At most 50 bones, at most 4 bone weights per vertex | The game's shader skins no more (`gfx/FX/pdxmesh.shader`) |
 | Triangles within the profile's budget | Big meshes slow the map down |
 | Every animation moves only bones the mesh has | Other bones are ignored and the unit freezes |
+| Every clip of a soldier, rider or creature plays at 30 frames a second | Vanilla's do, and Paradox's own exporter knows only 15, 30 and 60. A Blender scene from factory settings runs at 24, so a clip keyed for 30 and written at 24 plays a quarter too slowly. The kit's exports write 30 and keep each clip's length in seconds |
 | Every role has an animation | A missing role shows a frozen pose |
 | A mount has a `Saddle_Node` | The rider has nothing to sit on |
 | Textures are DXT5 or DXT1 with mip levels | Without mips the zoomed-out map shimmers. Uncompressed textures use four times the memory |
@@ -116,7 +117,8 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 | No seam between the legs whose two sides follow one leg each, unblended | Parting the legs tears the seam open |
 | No knee bends backward in any frame | A leg solver can pick the wrong side, and the unit walks like a bird |
 | Every clip moves at least as much as the stillest vanilla clip | A near-frozen clip reads as a static pose on the map |
-| Every separate part (a strap, a plate, a quiver, a weapon) is skinned and stays on the body in every frame, as close as vanilla soldiers' and horses' parts do. Any number of parts is fine | A part that floats off the body, or slides away from where it rests when the unit moves, looks broken at every zoom |
+| No joint turns farther in one frame than vanilla's fastest (37 degrees for soldiers, riders and creatures) | Keys on opposite sides of the quaternion sphere make Blender turn the long way, and a limb or polearm sweeps through the ground or the head in a frame or two |
+| Every separate part (a strap, a plate, a quiver, a weapon) is skinned and stays on the body in every frame, as close as vanilla soldiers' and horses' parts do. Any number of parts is fine. A weapon fitted as its own shape and bound to the hand counts as one part, however many pieces it has, and must stay in that hand. A warning also names the frames in which it goes inside the body, the holding hand and forearm left out, in-betweens included | A part that floats off the body, or slides away from where it rests when the unit moves, looks broken at every zoom |
 | No two roles of one unit play the same motion (a rider's idle, move and retreat may: the mount's gait carries it) | Each role must read as itself: a retreat that is the walk, a defend that is the idle |
 | With `--mod-root`: no clip is one another unit of the mod already plays, unless the unit is a reskin of it (`--reskin-of <unit>`) | Every unit has its own animations. Reskins of one base unit, with the same body and rig, may share them |
 | With `--mod-root`: the mesh, every animation, an entity with every state and a sub-unit sprite are registered | Unregistered files never show |
@@ -156,6 +158,14 @@ py -3.13 -B .tools/3d_pipeline/review_unit.py gfx/models/units/<unit> --out <job
 ```
 
 The unit passes only on `VERDICT: pass` with no listed defect. After a fail, fix the cause, export again and ask a new reviewer. Keep the replies: they are the record that the unit was looked at.
+
+Rounds converge when every reviewer gets the same request:
+
+- **Fixed notes.** If part of the unit's look could be mistaken for a defect, such as a ragged, torn hem or torn wing membranes, say so once in a notes file in the job folder and pass it every round with `--note-file <job folder>/review_notes.md` (or `--note "..."`). The reviewer still judges everything the note does not name, including any hole in the body.
+- **The checklist.** The reviewer goes through the quality bar item by item and ends the reply with a `CHECKLIST:` block. A reply that skips an item is recorded as a fail, and a new reviewer gets the same request.
+- **Changed clips only, then a full round.** After you fix some clips, render and review only those: `--clips attack death` renders them and the rest pose, and the request tells the reviewer to judge only them. A unit is accepted only after a full round, without `--clips`, by a new reviewer. The verdict names that round when an intermediate one passes.
+
+The camera angles never change between rounds.
 
 ### When the reviewer finds defects
 

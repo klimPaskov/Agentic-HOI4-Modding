@@ -292,6 +292,38 @@ def body_poses(mesh: SkinnedMesh, anim: Animation) -> np.ndarray:
     return (posed - centre) / max(mesh.height, 1e-6)
 
 
+@dataclass
+class FastestTurn:
+    degrees: float  # the largest turn of one joint between two frames, scaled to 30 frames a second
+    joint: str = ""
+    frame: int = -1  # the frame the turn ends on
+
+
+def fastest_turn(mesh: SkinnedMesh, anim: Animation) -> FastestTurn:
+    """The largest rotation any joint that skins vertices makes from one frame to the next.
+
+    Keys on opposite sides of the quaternion sphere make Blender turn the long way between them, and
+    the baked samples then swing a limb or a held polearm most of a circle in a frame or two. Joints
+    that skin nothing (attach nodes) are skipped: vanilla flips a hand node half a turn in one frame.
+    The angle is scaled to 30 frames a second, so clips at other rates compare.
+    """
+
+    skinning = {mesh.bones[index] for index in np.unique(mesh.joints[mesh.weights > 0]) if 0 <= index < len(mesh.bones)}
+    best = FastestTurn(0.0)
+    scale = (anim.fps / 30.0) if getattr(anim, "fps", 0) else 1.0
+    for joint, channel in anim.channels.items():
+        q = channel["q"]
+        if joint not in skinning or len(q) < 2:
+            continue
+        q = q / np.maximum(np.linalg.norm(q, axis=1, keepdims=True), 1e-12)
+        dots = np.abs(np.sum(q[1:] * q[:-1], axis=1)).clip(0.0, 1.0)
+        turns = np.degrees(2.0 * np.arccos(dots)) * scale
+        frame = int(turns.argmax())
+        if turns[frame] > best.degrees:
+            best = FastestTurn(float(turns[frame]), joint, frame + 1)
+    return best
+
+
 def motion_amount(mesh: SkinnedMesh, anim: Animation) -> float:
     """Average over skinned joints of their largest distance from their mean position, as a share of height."""
 
@@ -373,6 +405,14 @@ def same_clip(first: np.ndarray, second: np.ndarray) -> Optional[float]:
 ANCHOR_PAIRS = 16
 PART_SAMPLES = 64
 BODY_SAMPLES = 6000
+# A held prop is a separate shape whose every vertex follows one bone this wholly: fit_prop.py binds a
+# weapon 100 % to the hand as its own shape. Its pieces (a shaft, a band, a spike) move as one, so the
+# shape is judged as one part, against the body vertices that follow the same bone (the hand that holds
+# it), not against whatever it passes near. Judged piece by piece against the whole body, a polearm's
+# spike was anchored to the helmet it sits beside at rest and "drifted" half the unit's height in the
+# attack it swings in.
+RIGID_WEIGHT = 0.99
+PROP_SAMPLES = 512
 
 
 @dataclass
@@ -384,6 +424,9 @@ class LoosePart:
     worst_gap: float  # largest such distance in any frame of any clip
     worst_clip: str = ""
     worst_frame: int = -1
+    prop_bone: str = ""  # for a held prop: the bone the whole shape follows
+    held_by: str = ""  # the bone whose body vertices it is judged against (the prop bone, or its nearest ancestor with any)
+    pieces: int = 1
 
 
 def _parts(mesh: SkinnedMesh) -> np.ndarray:
@@ -411,8 +454,152 @@ def _evenly(indices: np.ndarray, count: int) -> np.ndarray:
     return indices if len(indices) <= count else indices[np.linspace(0, len(indices) - 1, count).round().astype(int)]
 
 
+def rigid_bone(mesh: SkinnedMesh, vertices: np.ndarray) -> int:
+    """The bone every one of `vertices` follows wholly (weight of at least RIGID_WEIGHT), or -1."""
+
+    if not mesh.skinned or not len(vertices):
+        return -1
+    best = np.argmax(mesh.weights[vertices], axis=1)
+    top = mesh.weights[vertices, best]
+    bones = np.unique(mesh.joints[vertices, best])
+    return int(bones[0]) if len(bones) == 1 and bones[0] >= 0 and bool((top >= RIGID_WEIGHT).all()) else -1
+
+
+def prop_shapes(mesh: SkinnedMesh, labels: np.ndarray, main: int) -> Dict[int, int]:
+    """Shape index -> bone, for every shape apart from the body's that follows one bone wholly."""
+
+    if len(mesh.shape) != len(mesh.positions):
+        return {}
+    body_shape = int(np.bincount(mesh.shape[labels == main]).argmax()) if (labels == main).any() else -1
+    found = {}
+    for shape in np.unique(mesh.shape):
+        vertices = np.unique(mesh.triangles[np.isin(mesh.triangles[:, 0], np.nonzero(mesh.shape == shape)[0])])
+        if shape == body_shape or not len(vertices) or (len(mesh.collision) == len(mesh.positions) and mesh.collision[vertices].any()):
+            continue
+        bone = rigid_bone(mesh, vertices)
+        if bone >= 0:
+            found[int(shape)] = bone
+    return found
+
+
+def holding_vertices(mesh: SkinnedMesh, bone: int, candidates: np.ndarray) -> tuple:
+    """The candidates that follow `bone` most, or its nearest ancestor that any candidate follows; and that bone."""
+
+    dominant = dominant_bones(mesh)[candidates]
+    while bone >= 0:
+        holding = candidates[dominant == bone]
+        if len(holding):
+            return holding, bone
+        bone = mesh.parents[bone] if bone < len(mesh.parents) else -1
+    return candidates, -1
+
+
+# A held prop passes through the body when its points sit inside the body's surface in a frame. The
+# hand and forearm that hold it are left out: a grip closes around the shaft by design. The share is
+# judged per frame, because in-betweens swing a polearm through a head or a thigh although every key
+# is clear. fit_prop.py accepts a fit when at most INSIDE_SHARE of its sampled points go inside.
+CLEARANCE_SAMPLES = 256
+CLEARANCE_BODY = 8000  # body triangles sampled
+CLEARANCE_DEPTH = 0.25  # a point farther than this (share of height) from every body triangle is outside
+INSIDE_SHARE = 0.02
+
+
+@dataclass
+class PropClearance:
+    prop_bone: str
+    pieces_triangles: int
+    worst_share: float = 0.0  # the largest share of the prop's points inside the body in one frame
+    worst_clip: str = ""
+    worst_frame: int = -1
+    frames_over: int = 0  # frames past INSIDE_SHARE
+
+
+def face_centres(positions: np.ndarray, triangles: np.ndarray) -> tuple:
+    """Each triangle's centre and unit normal (its winding's outward side)."""
+
+    a, b, c = positions[triangles[:, 0]], positions[triangles[:, 1]], positions[triangles[:, 2]]
+    normals = np.cross(b - a, c - a)
+    return (a + b + c) / 3.0, normals / np.maximum(np.linalg.norm(normals, axis=1, keepdims=True), 1e-12)
+
+
+def inside_share(points: np.ndarray, surface: np.ndarray, normals: np.ndarray, depth: float) -> float:
+    """The share of `points` behind the nearest surface triangle (its centre within `depth`)."""
+
+    if not len(points) or not len(surface):
+        return 0.0
+    squared = (points**2).sum(axis=1)[:, None] + (surface**2).sum(axis=1)[None] - 2.0 * points @ surface.T
+    nearest = squared.argmin(axis=1)
+    offset = points - surface[nearest]
+    close = np.linalg.norm(offset, axis=1) < depth
+    behind = np.einsum("ij,ij->i", offset, normals[nearest]) < 0.0
+    return float((close & behind).mean())
+
+
+def _holding_bones(mesh: SkinnedMesh, bone: int) -> set:
+    """The bone, its parent (a forearm for a hand) and every bone below it (fingers)."""
+
+    held = {bone}
+    if 0 <= bone < len(mesh.parents) and mesh.parents[bone] >= 0:
+        held.add(mesh.parents[bone])
+    changed = True
+    while changed:
+        changed = False
+        for index, parent in enumerate(mesh.parents):
+            if parent in held and index not in held and parent != mesh.parents[bone]:
+                held.add(index)
+                changed = True
+    return held
+
+
+def prop_clearance(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[PropClearance]:
+    """For every held prop shape, the worst frame in which its points sit inside the body."""
+
+    if not mesh.skinned or len(mesh.shape) != len(mesh.positions):
+        return []
+    labels = _parts(mesh)
+    if len(mesh.collision) == len(mesh.positions) and mesh.collision.any():
+        labels = np.where(mesh.collision, -1, labels)
+    used = np.unique(mesh.triangles)
+    kept = labels[used] != -1
+    if not kept.any():
+        return []
+    values, counts = np.unique(labels[used][kept], return_counts=True)
+    props = prop_shapes(mesh, labels, int(values[np.argmax(counts)]))
+    if not props:
+        return []
+    height = max(mesh.height, 1e-6)
+    in_props = np.isin(mesh.shape, list(props))
+    solid = ~in_props & (labels != -1)
+    body_triangles = mesh.triangles[solid[mesh.triangles].all(axis=1)]
+    dominant = dominant_bones(mesh)
+    triangle_bone = dominant[body_triangles[:, 0]] if len(body_triangles) else np.zeros(0, dtype=np.int64)
+    reports = []
+    for shape, bone in props.items():
+        mine = used[mesh.shape[used] == shape]
+        free = body_triangles[~np.isin(triangle_bone, list(_holding_bones(mesh, bone)))]
+        sample = _evenly(mine, CLEARANCE_SAMPLES)
+        faces = free[_evenly(np.arange(len(free)), CLEARANCE_BODY)] if len(free) else free
+        triangles = int(np.isin(mesh.triangles[:, 0], mine).sum())
+        report = PropClearance(mesh.bones[bone], triangles)
+        for name, anim in clips.items():
+            matrices = skinning_matrices(mesh, anim)
+            for frame in range(matrices.shape[0]):
+                moved = skin(mesh, matrices[frame])
+                centres, normals = face_centres(moved, faces)
+                share = inside_share(moved[sample], centres, normals, CLEARANCE_DEPTH * height)
+                if share > INSIDE_SHARE:
+                    report.frames_over += 1
+                if share > report.worst_share:
+                    report.worst_share, report.worst_clip, report.worst_frame = share, name, frame
+        reports.append(report)
+    return reports
+
+
 def loose_parts(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[LoosePart]:
-    """Every part but the largest, with its skinning and its distance from the rest of the unit per frame."""
+    """Every part but the largest, with its skinning and its distance from the rest of the unit per frame.
+
+    A held prop (a separate shape that follows one bone wholly) counts as one part, however many pieces it has.
+    """
 
     labels = _parts(mesh)
     if len(mesh.collision) == len(mesh.positions) and mesh.collision.any():
@@ -424,23 +611,38 @@ def loose_parts(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[LoosePar
     main = parts[parts != -1][np.argmax(counts[parts != -1])]
     height = max(mesh.height, 1e-6)
     used = np.unique(mesh.triangles)
-    found: List[LoosePart] = []
-    anchors = []
-    for part, triangles in zip(parts, counts):
+    props = prop_shapes(mesh, labels, int(main))
+    # One group per held prop shape; every other separate part is its own group.
+    groups: Dict[tuple, List[int]] = {}
+    for part in parts:
         if part in (main, -1):
             continue
-        mine = used[labels[used] == part]
-        others = used[(labels[used] != part) & (labels[used] != -1)]
+        shapes = np.unique(mesh.shape[used[labels[used] == part]]) if len(mesh.shape) == len(mesh.positions) else np.zeros(0)
+        key = ("prop", int(shapes[0])) if len(shapes) == 1 and int(shapes[0]) in props else ("part", int(part))
+        groups.setdefault(key, []).append(int(part))
+    triangle_count = dict(zip(parts.tolist(), counts.tolist()))
+    found: List[LoosePart] = []
+    anchors = []
+    for key, members in groups.items():
+        in_group = np.isin(labels[used], members)
+        mine = used[in_group]
+        others = used[~in_group & (labels[used] != -1)]
         if not len(mine) or not len(others):
             continue
-        sample = _evenly(mine, PART_SAMPLES)
+        triangles = sum(triangle_count[member] for member in members)
+        holder = -1
+        if key[0] == "prop":
+            others, holder = holding_vertices(mesh, props[key[1]], others)
+        sample = _evenly(mine, PROP_SAMPLES if key[0] == "prop" else PART_SAMPLES)
         body = _evenly(others, BODY_SAMPLES)
         distance = np.linalg.norm(mesh.positions[sample][:, None] - mesh.positions[body][None], axis=2)
         flat = np.argsort(distance, axis=None)[:ANCHOR_PAIRS]
         pairs = np.stack(np.unravel_index(flat, distance.shape), axis=1)
         unweighted = int((mesh.weights[mine].sum(axis=1) <= 0).sum()) if mesh.skinned else 0
         gap = float(distance.min()) / height
-        found.append(LoosePart(int(triangles), len(mine), unweighted, gap, gap))
+        bone = mesh.bones[props[key[1]]] if key[0] == "prop" else ""
+        held_by = mesh.bones[holder] if holder >= 0 else ""
+        found.append(LoosePart(int(triangles), len(mine), unweighted, gap, gap, prop_bone=bone, held_by=held_by, pieces=len(members)))
         anchors.append((sample[pairs[:, 0]], body[pairs[:, 1]]))
     if mesh.skinned and found:
         for name, anim in clips.items():

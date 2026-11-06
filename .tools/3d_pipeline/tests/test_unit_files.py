@@ -55,7 +55,7 @@ def write_mesh(path: Path, bones: list[str], influences: int = 4, triangles: int
     path.write_bytes(data)
 
 
-def write_anim(path: Path, joints: list[str], animated: bool = True, fps: float = 24.0, samples: int = 24) -> None:
+def write_anim(path: Path, joints: list[str], animated: bool = True, fps: float = 30.0, samples: int = 24) -> None:
     data = b"@@b@" + _obj("info", 1) + _prop("fps", "f", [fps]) + _prop("sa", "i", [samples]) + _prop("j", "i", [len(joints)])
     for joint in joints:
         data += _obj(joint, 2) + _prop("sa", "s", ["q" if animated else ""])
@@ -84,7 +84,7 @@ class PdxReader(unittest.TestCase):
             self.assertEqual(summary.streams[0].influences_per_vertex, 4)
             self.assertEqual(summary.streams[0].textures, {"diff": "unit_diffuse.dds"})
             anim = Path(folder) / "u_idle.anim"
-            write_anim(anim, ["Hips", "Spine"], samples=48)
+            write_anim(anim, ["Hips", "Spine"], fps=24.0, samples=48)
             parsed = pdx_binary.summarize_anim(pdx_binary.read(anim))
             self.assertEqual((parsed.fps, parsed.samples, parsed.joints), (24.0, 48, ["Hips", "Spine"]))
             self.assertAlmostEqual(parsed.seconds, 2.0)
@@ -130,6 +130,22 @@ class CheckUnitFiles(unittest.TestCase):
             for role in LAND_ROLES:
                 write_anim(folder / f"unit_{role}.anim", bones)
             self.assertEqual([item.rule for item in self.run_check(folder, "infantry_melee") if item.severity == "error"], [])
+
+    def test_a_soldiers_clip_must_play_at_30_a_vehicles_need_not(self) -> None:
+        # A Blender scene from factory settings runs at 24, and io_pdx_mesh writes the scene's rate.
+        bones = ["Hips", "Spine", "Head"]
+        with tempfile.TemporaryDirectory() as name:
+            folder = Path(name)
+            write_mesh(folder / "unit.mesh", bones)
+            for role in LAND_ROLES:
+                write_anim(folder / f"unit_{role}.anim", bones, fps=24.0 if role == "attack" else 30.0)
+            errors = [item for item in self.run_check(folder, "infantry_melee") if item.severity == "error"]
+            self.assertEqual([(item.rule, Path(item.file).name) for item in errors], [("UNIT-ANIM-FPS", "unit_attack.anim")])
+            self.assertIn("plays at 24", errors[0].message)
+            found = []
+            vehicle = {"calibration_group": "vehicle", "roles": {}}
+            check_unit_files._check_animations(folder, "unit", vehicle, bones, lambda *item: found.append(item), {"animations": {}})
+            self.assertEqual(found, [])
 
     def test_engine_limits_and_missing_roles(self) -> None:
         bones = [f"Bone_{index}" for index in range(51)]
@@ -226,6 +242,7 @@ class UnitTypeCatalog(unittest.TestCase):
                     if unit_type["rig"] != "meshy_humanoid":
                         self.assertNotIn("meshy", role)
         self.assertIn("Saddle_Node", types["mount"]["required_nodes"])
+        self.assertEqual(types["vehicle"]["calibration_group"], "vehicle")
 
 
 class UnitTypeValidation(unittest.TestCase):
@@ -261,6 +278,19 @@ class UnitTypeActions(unittest.TestCase):
         self.assertEqual(run_pilot.provider_animated_roles(spec), [])
         self.assertEqual({row["action_style"] for row in spec["required_actions"]} - {None}, {
             "quadruped_idle", "quadruped_trot", "quadruped_charge", "quadruped_rear", "quadruped_gallop", "quadruped_collapse"})
+
+    def test_a_mount_generation_sends_no_humanoid_pose(self) -> None:
+        import run_pilot
+        from meshy_client import image_to_3d_arguments
+
+        spec = run_pilot.prepare_spec(
+            {"unit_type": "mount", "asset_id": "x.mount", "runtime_stem": "mount", "meshy_pose_mode": "a-pose"},
+            require_budget=False,
+        )
+        self.assertIsNone(spec["meshy_pose_mode"])
+        self.assertNotIn("pose_mode", image_to_3d_arguments(Path("horse.png"), spec["generation"], spec["meshy_pose_mode"]))
+        rider = run_pilot.apply_unit_type({"unit_type": "rider", "meshy_pose_mode": "a-pose"})
+        self.assertEqual(rider["meshy_pose_mode"], "a-pose")
 
     def test_mounts_plan_a_paid_remesh_and_humanoids_defer_raw_topology(self) -> None:
         import run_pilot

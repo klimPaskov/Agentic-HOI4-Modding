@@ -26,7 +26,10 @@ File rules (always):
   missing, or is rotated (vanilla's has an identity rotation) [vanilla-confirmed 1.19.4.1].
 - UNIT-ANIM-UNREADABLE, UNIT-ANIM-JOINTS, UNIT-ANIM-STATIC: an `.anim` that does not parse,
   animates bones the mesh does not have, or moves nothing.
-- UNIT-ANIM-FPS (warning): a frame rate outside 10 to 60.
+- UNIT-ANIM-FPS: a soldier's, rider's or creature's clip that does not play at 30 frames a second, as
+  vanilla's do (30.0 to 30.9). A Blender scene from factory settings runs at 24, and io_pdx_mesh writes
+  the scene's rate. For a vehicle, plane or ship type (`calibration_group`), a warning outside 10 to 60
+  (vanilla's run at 15, 30 or 60).
 - UNIT-ROLE-MISSING: a role the unit type needs has no `<stem>_<role>.anim`.
 - UNIT-DDS-UNREADABLE, UNIT-DDS-SIZE: a texture that does not parse, or is not a power of two or
   is larger than 2048.
@@ -46,6 +49,9 @@ Surface and deformation rules (always; limits are the largest values measured on
 - UNIT-WINDING: more edges between triangles facing opposite ways than any vanilla unit. The game
   culls back faces, so the flipped side shows as a hole.
 - UNIT-INSIDE-OUT: a closed part whose triangles face inward.
+- UNIT-NORMALS: more vertices than any vanilla unit of the group (share of vertices, limits in
+  `NORMALS_AGAINST_SHARE`) have a stored normal pointing against every face that uses them. The shading
+  shows pale flat facets. Flip those normals, or recalculate them on a welded copy.
 - UNIT-BRIDGE: more rest-pose edges joining far-apart bones' regions (three or more parent steps,
   for example a hand and a thigh) than any vanilla unit. Skinning tears these joins.
 - UNIT-ANIM-STRETCH: in some frame, more edges stretched or squashed (by 1.5 times and by 0.5 % of the
@@ -59,13 +65,25 @@ Surface and deformation rules (always; limits are the largest values measured on
   pelvis faces, by more than 5 % of the leg's length. No vanilla soldier's knee ever does.
 - UNIT-ANIM-STILL: a clip moves its joints less than the stillest vanilla clip of the group. It
   reads as a frozen pose on the map.
+- UNIT-ANIM-SPIN: a joint that skins vertices turns farther between two frames than any vanilla joint
+  of the group does (at 30 frames a second). Keys on opposite sides of the quaternion sphere make
+  Blender interpolate the long way, and a limb or a held polearm sweeps most of a circle, through the
+  ground or the head, in a frame or two.
 - UNIT-ANIM-SAME: two roles of the unit play nearly the same motion (their distance is under 12 %
   of the larger clip's motion). Each role must read as itself. A seated rider is exempt for idle,
   move, retreat and training: the mount's gait carries it, so those roles reuse idle by design.
 - UNIT-LOOSE-PART: a part not joined to the body's surface (a strap, a plate, a quiver, a separate
   weapon) has vertices with no skin weight, or sits or drifts farther from the rest of the unit, at
   rest or in any frame, than any loose part of vanilla GER_infantry or cavalry_horse. Selection boxes
-  (`Collision` shapes) are skipped. Any number of parts is fine while each stays attached.
+  (`Collision` shapes) are skipped. Any number of parts is fine while each stays attached. A held prop,
+  a separate shape that follows one bone wholly (the weapon `fit_prop.py` binds to the hand), is one
+  part however many pieces it has, judged against the body vertices that follow the same bone (the
+  hand that holds it): it must touch them at rest and stay on them in every frame. A polearm's head
+  may reach as far from the body as its shaft carries it.
+- UNIT-PROP-CLIP (warning): a held prop goes inside the body in some frame, more than 2 % of its
+  sampled points (`fit_prop.py`'s bar), with the hand and forearm holding it left out. Every frame
+  counts, in-betweens included. The warning names the worst clip and frame to look at. A point behind
+  an open, one-sided sheet (a cape) also reads as inside, so look before changing the clip.
 
 Mod rule (with `--mod-root`, or `--compare-units <folder>`):
 
@@ -111,6 +129,14 @@ EMISSIVE_TOLERANCE = 8
 SHINY_METALLIC = 120
 SHINY_GLOSS = 140
 CALIBRATION = PIPELINE_ROOT / "config" / "deformation_calibration.json"
+# UNIT-NORMALS: the share of vertices whose stored normal points against every triangle that uses
+# them. Measured on 2026-11-07 over the vanilla units of gfx/models/units that calibrate_deformation.py
+# measures (44 organic, 75 vehicle, 69 air_naval meshes, normals read from each stream's `n`):
+# organic 1.24 % at most (33 of 2,670 vertices, vehicles/FIN_deer.mesh; the largest count is 34 on
+# ITA_infantry.mesh, 0.96 %), vehicle 8.97 % (354 of 3,947, tanks/FIN_medium_armor.mesh) and air_naval
+# 1.73 % (23 of 1,326, planes/ENG_plane_medium.mesh). Vanilla is not 0, so each limit is its group's
+# largest share, rounded up.
+NORMALS_AGAINST_SHARE = {"organic": 0.0124, "vehicle": 0.0897, "air_naval": 0.0174}
 # Open loops up to this size are closed by `repair_unit.py --repairs holes` with no visible seam.
 SMALL_HOLE_EDGES = 32
 
@@ -186,6 +212,11 @@ def _check_meshes(meshes, unit_type, profile, needs_animation, add, facts, skele
 
 
 
+# Vanilla soldiers, riders, horses, camels and deer play at 30.0 to 30.9 (their exporter rounds the length).
+ORGANIC_FPS = 30.0
+ORGANIC_FPS_TOLERANCE = 1.0
+
+
 def _check_animations(folder, stem, unit_type, skeleton, add, facts, stems=None):
     """The animation and role rules. With `stems`, only the animations `stem` owns are read."""
 
@@ -215,7 +246,11 @@ def _check_animations(folder, stem, unit_type, skeleton, add, facts, stems=None)
                 add("UNIT-ANIM-JOINTS", "error", anim_path, f"animates {len(unknown)} bones the mesh does not have: {', '.join(unknown[:6])}")
         if not anim.animated_joints or anim.samples < 2:
             add("UNIT-ANIM-STATIC", "error", anim_path, f"moves nothing ({len(anim.animated_joints)} animated joints, {anim.samples} samples)")
-        if not 10 <= anim.fps <= 60:
+        if (unit_type or {}).get("calibration_group", "organic") == "organic":
+            if abs(anim.fps - ORGANIC_FPS) > ORGANIC_FPS_TOLERANCE:
+                add("UNIT-ANIM-FPS", "error", anim_path,
+                    f"plays at {anim.fps:g} frames a second; soldiers, riders and creatures play at 30. Export it again with the kit (it keeps the clip's length in seconds)")
+        elif not 10 <= anim.fps <= 60:
             add("UNIT-ANIM-FPS", "warning", anim_path, f"frame rate {anim.fps:.2f} is outside 10 to 60")
     for role in (unit_type or {}).get("roles", {}):
         if role not in roles_found:
@@ -235,7 +270,7 @@ def load_calibration(group: str = "organic", path: Optional[Path] = None) -> Opt
     return {measure: float(entry["value"]) for measure, entry in measures.items()} if measures else None
 
 
-def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seated=False):
+def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seated=False, group="organic"):
     """The surface, bridge and per-frame deformation rules, against the vanilla limits. A seated rider skips the ground rule."""
 
     from lib import pdx_deform
@@ -261,6 +296,11 @@ def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seate
     if bridges.edges > limits["bridge_edges"]:
         pairs = ", ".join(f"{pair} {count}" for pair, count in list(bridges.pairs.items())[:4])
         add("UNIT-BRIDGE", "error", mesh_path, f"{bridges.edges} edges join body parts that move apart ({pairs}); cut the join before rigging or the clips tear it")
+    against, used = pdx_deform.normals_against_faces(mesh)
+    facts["surface"][mesh_path.name]["normals_against_faces"] = against
+    normals_limit = NORMALS_AGAINST_SHARE.get(group, NORMALS_AGAINST_SHARE["organic"])
+    if used and against / used > normals_limit:
+        add("UNIT-NORMALS", "error", mesh_path, f"{against} of {used} vertex normals ({against / used:.1%}) point against every face that uses them; the shading shows pale flat facets. Flip those normals, or recalculate them on a welded copy; vanilla {group} units reach {normals_limit:.2%}")
     loaded = {}
     for anim_path in sorted(folder.glob("*.anim")):
         if stems and _owner_of(anim_path, stems) != stem:
@@ -320,7 +360,12 @@ def _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated=False):
             add("UNIT-ANIM-KNEE", "error", anim_path, f"frame {knee.worst_frame}: knee {knee.worst_leg} bends backward by {-knee.worst_bend:.0%} of the leg's length ({knee.backward_frames} frame(s) past {knee_limit:.0%}); vanilla soldiers' knees bend back at most {limits.get('knee_backward', 0.0):.1%}. Solve the leg again with the knee toward the toes")
         if "still_motion" in limits and motion < limits["still_motion"]:
             add("UNIT-ANIM-STILL", "error", anim_path, f"the joints move {motion:.2%} of the unit's height on average; the stillest vanilla clip moves {limits['still_motion']:.2%}. It reads as a frozen pose")
+        turn = pdx_motion.fastest_turn(mesh, anim)
+        facts["motion"][mesh_path.name]["clips"][anim_path.name]["fastest_turn"] = round(turn.degrees, 1)
+        if "turn_per_frame" in limits and turn.degrees > limits["turn_per_frame"]:
+            add("UNIT-ANIM-SPIN", "error", anim_path, f"frame {turn.frame}: {turn.joint} turns {turn.degrees:.0f} degrees in one frame; vanilla's fastest joint turns {limits['turn_per_frame']:.0f}. Keys on opposite sides of the quaternion sphere make Blender turn the long way: flip them (live_helpers.normalize_quaternion_keys) and export again, or spread the turn over more frames")
     _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits)
+    _check_prop_clearance(mesh, mesh_path, loaded, add, facts)
     paths = sorted(loaded)
     for index, first in enumerate(paths):
         for second in paths[index + 1 :]:
@@ -406,9 +451,28 @@ def check_files(
     if deformation and meshes:
         group = (unit_type or {}).get("calibration_group", "organic")
         seated = (unit_type or {}).get("entity_template") == "rider"
-        _check_deformation(meshes[0], folder, stem, stems if only_stem else None, add, facts, load_calibration(group) if limits is None else limits, seated)
+        _check_deformation(meshes[0], folder, stem, stems if only_stem else None, add, facts, load_calibration(group) if limits is None else limits, seated, group)
     _check_textures(folder, add, facts)
     return findings, facts
+
+
+def _check_prop_clearance(mesh, mesh_path, loaded, add, facts):
+    """UNIT-PROP-CLIP (warning): the frames in which a held prop goes inside the body, hand and forearm left out."""
+
+    from lib import pdx_motion
+
+    reports = pdx_motion.prop_clearance(mesh, {path.name: anim for path, anim in loaded.items()})
+    facts["motion"][mesh_path.name]["props"] = [
+        {"prop_bone": r.prop_bone, "triangles": r.pieces_triangles, "worst_inside_share": round(r.worst_share, 4),
+         "worst_clip": r.worst_clip, "worst_frame": r.worst_frame, "frames_over": r.frames_over}
+        for r in reports
+    ]
+    for report in reports:
+        if report.frames_over:
+            add("UNIT-PROP-CLIP", "warning", mesh_path,
+                f"the prop bound to {report.prop_bone} goes inside the body in {report.frames_over} frame(s), worst {report.worst_share:.0%} of its points in "
+                f"{report.worst_clip} frame {report.worst_frame} (the hand and forearm holding it are left out). Look at those frames: an in-between can swing it "
+                f"through the head or a leg although every key is clear")
 
 
 def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):
@@ -419,7 +483,8 @@ def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):
     parts = pdx_motion.loose_parts(mesh, {path.name: anim for path, anim in loaded.items()})
     facts["motion"][mesh_path.name]["loose_parts"] = [
         {"triangles": part.triangles, "unweighted": part.unweighted, "rest_gap": round(part.rest_gap, 4),
-         "worst_gap": round(part.worst_gap, 4), "worst_clip": part.worst_clip, "worst_frame": part.worst_frame}
+         "worst_gap": round(part.worst_gap, 4), "worst_clip": part.worst_clip, "worst_frame": part.worst_frame,
+         "prop_bone": part.prop_bone, "held_by": part.held_by, "pieces": part.pieces}
         for part in parts[:10]
     ]
     unweighted = [part for part in parts if part.unweighted and mesh.skinned]
@@ -428,6 +493,13 @@ def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):
     limit = limits.get("loose_gap")
     if limit is None:
         return
+    for prop in (part for part in parts if part.prop_bone and part.held_by):
+        where = f"the body vertices that follow {prop.held_by}"
+        if prop.rest_gap > limit:
+            add("UNIT-LOOSE-PART", "error", mesh_path, f"the prop bound to {prop.prop_bone} ({prop.pieces} piece(s), {prop.triangles} triangles) is {prop.rest_gap:.1%} of the unit's height from {where} at rest: nothing holds it. Fit it to the hand again (fit_prop.py) or bind it to the bone that holds it")
+        elif prop.worst_gap > limit:
+            add("UNIT-LOOSE-PART", "error", mesh_path, f"the prop bound to {prop.prop_bone} slides {prop.worst_gap:.1%} of the unit's height off {where} in {prop.worst_clip} frame {prop.worst_frame}; vanilla loose parts stay within {limit:.1%}")
+    parts = [part for part in parts if not (part.prop_bone and part.held_by)]
     floating = [part for part in parts if part.rest_gap > limit]
     drifting = [part for part in parts if part.rest_gap <= limit < part.worst_gap]
     if floating:

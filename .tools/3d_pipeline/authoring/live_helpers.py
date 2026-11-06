@@ -45,6 +45,13 @@ import bpy
 import numpy as np
 from mathutils import Matrix, Quaternion, Vector
 
+# One definition of "stretched": the kit's own constants (UNIT-ANIM-STRETCH), not a copy.
+PIPELINE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PIPELINE_ROOT not in sys.path:
+    sys.path.insert(0, PIPELINE_ROOT)
+from lib import pdx_deform
+from lib.pdx_deform import SIGNIFICANT_SHARE, SQUASH_RATIO, STRETCH_RATIO
+
 OUT = os.environ.get("HOI4_LIVE_SHOTS") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "shots")
 # Views as (azimuth, elevation) in degrees. Azimuth 0 looks at the unit's face (the unit faces -Y).
 VIEWS = {"front": (0, 8), "left": (90, 8), "right": (270, 8), "back": (180, 8), "hoi4": (25, 55), "q": (35, 15)}
@@ -66,6 +73,9 @@ def setup_scene(size: int = 360) -> None:
     """Workbench renders like the kit's review sheets: back faces culled, magenta background, a ground disc."""
 
     scene = bpy.context.scene
+    if not bpy.data.actions:
+        # Author at HOI4's rate from the start; a factory scene runs at 24 (export_clip retimes otherwise).
+        scene.render.fps, scene.render.fps_base = 30, 1.0
     scene.render.engine = "BLENDER_WORKBENCH"
     scene.display.shading.light = "STUDIO"
     scene.display.shading.color_type = "TEXTURE"
@@ -481,16 +491,219 @@ def plant(frame: int, upper: str, lower: str, foot: str, groups: Sequence[str], 
     return round(remaining, 4)
 
 
+# ---- measuring and repairing a pose ----
+
+
+def _action_fcurves(action):
+    """Every F-curve of an action: layered actions (Blender 4.4 and later) first, then the flat list."""
+
+    found = []
+    for layer in getattr(action, "layers", ()):
+        for action_strip in layer.strips:
+            for bag in getattr(action_strip, "channelbags", ()):
+                found.extend(bag.fcurves)
+    return found or list(getattr(action, "fcurves", ()))
+
+
+def _quaternion_flips(keys: Sequence[Sequence[float]]) -> List[bool]:
+    """Which quaternions in a time-ordered list to negate so each is in the same hemisphere as the one before.
+
+    The decision compares with the previous key after its own flip, so a run of flipped keys stays
+    consistent. Negating all four components is the same rotation.
+    """
+
+    flips: List[bool] = []
+    previous = None
+    for quaternion in keys:
+        current = [float(v) for v in quaternion]
+        flip = previous is not None and sum(a * b for a, b in zip(previous, current)) < 0.0
+        if flip:
+            current = [-v for v in current]
+        flips.append(bool(flip))
+        previous = current
+    return flips
+
+
+def normalize_quaternion_keys(action_name: str) -> int:
+    """Flip quaternion keys that sit in the opposite hemisphere from the key before, so interpolation takes the short way.
+
+    A key and its negation are the same rotation, but blending between keys whose dot product is
+    negative swings the long way round (a polearm's blade sweeps through the ground). For every pose
+    bone's `rotation_quaternion` curves in the action, each key whose quaternion has a negative dot
+    with the previous key's is negated in all four components. Run it before export. Returns the
+    number of keys flipped.
+    """
+
+    action = bpy.data.actions[action_name]
+    curves: Dict[str, Dict[int, object]] = {}
+    for curve in _action_fcurves(action):
+        if curve.data_path.endswith(".rotation_quaternion") and 0 <= curve.array_index <= 3:
+            curves.setdefault(curve.data_path, {})[curve.array_index] = curve
+    flipped = 0
+    for channels in curves.values():
+        if len(channels) != 4 or len({len(c.keyframe_points) for c in channels.values()}) != 1:
+            continue  # a partly keyed quaternion has no sign to compare
+        count = len(channels[0].keyframe_points)
+        order = sorted(range(count), key=lambda i: channels[0].keyframe_points[i].co.x)
+        quaternions = [[channels[c].keyframe_points[i].co.y for c in range(4)] for i in order]
+        for index, flip in zip(order, _quaternion_flips(quaternions)):
+            if not flip:
+                continue
+            for channel in channels.values():
+                point = channel.keyframe_points[index]
+                point.co.y = -point.co.y
+                point.handle_left.y = -point.handle_left.y
+                point.handle_right.y = -point.handle_right.y
+            flipped += 1
+    for channels in curves.values():
+        for channel in channels.values():
+            channel.update()
+    return flipped
+
+
+def _welded_edges(rest: np.ndarray, raw_edges: np.ndarray, height: float) -> np.ndarray:
+    """Unique undirected edges over welded vertices, the way the kit builds them (`pdx_deform.mesh_edges`)."""
+
+    canon = pdx_deform.weld(rest, max(height, 1e-6) * 1e-5)
+    edges = np.sort(canon[raw_edges], axis=1)
+    edges = edges[edges[:, 0] != edges[:, 1]]
+    return np.unique(edges, axis=0)
+
+
+def _stretch_edge_share(rest: np.ndarray, moved: np.ndarray, edges: np.ndarray, height: float) -> float:
+    """The kit's UNIT-ANIM-STRETCH test on one posed frame: the share of edges stretched or squashed."""
+
+    if len(edges) == 0:
+        return 0.0
+    rest_length = np.linalg.norm(rest[edges[:, 0]] - rest[edges[:, 1]], axis=1)
+    length = np.linalg.norm(moved[edges[:, 0]] - moved[edges[:, 1]], axis=1)
+    usable = rest_length > 1e-9
+    growth = (length - rest_length) / max(height, 1e-6)
+    ratio = np.where(usable, length / np.where(usable, rest_length, 1.0), 1.0)
+    stretched = (ratio > STRETCH_RATIO) & (growth > SIGNIFICANT_SHARE)
+    squashed = (ratio < SQUASH_RATIO) & (-growth > SIGNIFICANT_SHARE)
+    return float((stretched | squashed).sum()) / len(edges)
+
+
+def stretch_share(mesh_name: str, frame: Optional[int] = None) -> float:
+    """The share of a mesh's edges that the kit's UNIT-ANIM-STRETCH counts as stretched or squashed at a frame.
+
+    It is the kit's own measure, not a lookalike: the same constants (`STRETCH_RATIO`, `SQUASH_RATIO`,
+    `SIGNIFICANT_SHARE`), the same welding of rest positions (height times 1e-5) and the same unique
+    edges. An edge counts when its length is over `STRETCH_RATIO` times (or under `SQUASH_RATIO` times)
+    its rest length and it changed by more than `SIGNIFICANT_SHARE` of the mesh's rest height. A hand
+    made gauge read about 0.8 times this number, so use this one and keep it under the kit's limit.
+    """
+
+    if frame is not None:
+        bpy.context.scene.frame_set(frame)
+    obj = bpy.data.objects[mesh_name]
+    world = np.array(obj.matrix_world)
+    count = len(obj.data.vertices)
+    rest = np.empty(count * 3, dtype=np.float32)
+    obj.data.vertices.foreach_get("co", rest)
+    rest = rest.reshape(-1, 3).astype(np.float64) @ world[:3, :3].T + world[:3, 3]
+    moved = eval_co(mesh_name).astype(np.float64)
+    if len(moved) != count:
+        raise RuntimeError(f"{mesh_name} changes its vertex count when evaluated, so its edges cannot be compared")
+    raw = np.empty(len(obj.data.edges) * 2, dtype=np.int64)
+    obj.data.edges.foreach_get("vertices", raw)
+    height = float(np.ptp(rest[:, 2])) if count else 0.0
+    return _stretch_edge_share(rest, moved, _welded_edges(rest, raw.reshape(-1, 2), height), height)
+
+
+def _region_for_bone(bone: str) -> str:
+    """The body region a bone name belongs to: head, chest, hips, arms, hands, legs, feet, tail, wings or other."""
+
+    name = bone.lower()
+    for region, words in (
+        ("tail", ("tail",)),
+        ("wings", ("wing",)),
+        ("feet", ("foot", "toe", "ankle", "hoof", "paw")),
+        ("hands", ("hand", "finger", "thumb", "palm")),
+        ("head", ("head", "neck", "jaw", "skull")),
+        ("legs", ("leg", "thigh", "shin", "calf", "knee")),
+        ("arms", ("arm", "shoulder", "clavicle", "elbow")),
+        ("chest", ("spine", "chest", "rib")),
+        ("hips", ("hip", "pelvis")),
+    ):
+        if any(word in name for word in words):
+            return region
+    return "other"
+
+
+def lowest_regions(frame: Optional[int] = None, top: int = 3) -> List[tuple]:
+    """For a lying or falling body, the lowest world point of each body region at a frame, lowest first.
+
+    Returns `[(region, height), ...]`, at most `top` long. The body is the armature-bound mesh with the
+    most vertices. Its vertices are grouped by their dominant deform bone, and the bone's name gives the
+    region (head, chest, hips, arms, hands, legs, feet, tail, wings, other). Every other mesh object
+    (not the ground disc) is a separate prop and is its own region, named after the object. A body
+    propped up on a limb or a prop does not lie dead: lift or lower the lowest group, not the hips.
+    """
+
+    if frame is not None:
+        bpy.context.scene.frame_set(frame)
+    meshes = [o for o in bpy.data.objects if o.type == "MESH" and o.name != "ground_disc" and not o.hide_get()]
+    if not meshes:
+        return []
+    body = max(meshes, key=lambda o: len(o.data.vertices))
+    heights: Dict[str, float] = {}
+    bones = {b.name for b in arm().data.bones}
+    names = {group.index: group.name for group in body.vertex_groups}
+    z = eval_co(body.name)[:, 2]
+    for vertex in body.data.vertices:
+        owned = [(g.weight, names.get(g.group, "")) for g in vertex.groups if names.get(g.group, "") in bones]
+        region = _region_for_bone(max(owned)[1]) if owned else "other"
+        height = float(z[vertex.index])
+        if height < heights.get(region, math.inf):
+            heights[region] = height
+    for prop in meshes:
+        if prop is not body and len(prop.data.vertices):
+            heights[prop.name] = float(eval_co(prop.name)[:, 2].min())
+    return sorted(heights.items(), key=lambda item: item[1])[: max(top, 0)]
+
+
+def clear_sharp_faces(mesh_name: str) -> int:
+    """Remove the per-face `sharp_face` flags an import leaves and smooth every polygon. Returns how many faces were sharp.
+
+    io_pdx_mesh splits every corner of a flat-shaded face, so a mesh edited after import can export
+    with far more than 65,535 vertices in one stream (UNIT-STREAM-VERTICES fails after export). Clearing
+    the flags brings the count back to the source count. Custom corner normals stay as they are.
+    """
+
+    mesh = bpy.data.objects[mesh_name].data
+    sharp = 0
+    attribute = mesh.attributes.get("sharp_face")
+    if attribute is not None:
+        values = np.zeros(len(attribute.data), dtype=bool)
+        attribute.data.foreach_get("value", values)
+        sharp = int(values.sum())
+    if len(mesh.polygons):
+        mesh.polygons.foreach_set("use_smooth", np.ones(len(mesh.polygons), dtype=bool))
+    # Smoothing can write the attribute back as all-false, so drop it last.
+    attribute = mesh.attributes.get("sharp_face")
+    if attribute is not None:
+        mesh.attributes.remove(attribute)
+    mesh.update()
+    return sharp
+
+
 # ---- export ----
 
 
 def export_clip(action_name: str, path: str) -> int:
-    """Export one action as a `.anim` with exactly its own frames, and check the file. Returns the sample count.
+    """Export one action as a `.anim` at 30 fps with exactly its own frames, and check the file. Returns the sample count.
 
     Never export with `bpy.ops.io_pdx_mesh.export_anim`: it ignores its start and end frames unless the
     scene's custom-range setting is on, and exports the scene's frame range, so clips came out padded
     or cut short. This calls io_pdx_mesh's `export_animfile` with the action's range, restores the
     scene's range afterwards, and raises when the written sample count is not the action's frame count.
+
+    HOI4 units play at 30 frames a second, and io_pdx_mesh writes the scene's rate. A scene started
+    from factory settings runs at 24. When the scene is not at 30, the action's keys are scaled first so
+    the clip lasts as long in game as it played in the scene (24 to 30 is 1.25 times the frames), and
+    the scene is left at 30 so later previews match the game. The written rate is checked too.
     """
 
     import addon_utils
@@ -506,6 +719,15 @@ def export_clip(action_name: str, path: str) -> int:
     rig.animation_data.action = action
     start, end = (int(round(value)) for value in action.frame_range)
     scene = bpy.context.scene
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "adapter"))
+    from anim_frame_range import HOI4_FPS, retime_action, verify_fps, verify_frame_range
+
+    source_fps = scene.render.fps / scene.render.fps_base
+    if abs(source_fps - HOI4_FPS) > 1e-6:
+        old_end = end
+        start, end = retime_action(action, start, end, source_fps, HOI4_FPS)
+        print(f"export_clip: the scene ran at {source_fps:g} fps; {action_name} was retimed from frames {start}-{old_end} to {start}-{end} so it keeps its length at {HOI4_FPS} fps")
+    scene.render.fps, scene.render.fps_base = HOI4_FPS, 1.0
     saved = (scene.frame_start, scene.frame_end, scene.frame_current)
     bpy.context.view_layer.objects.active = rig  # the exporter takes the active object as the rig
     try:
@@ -514,9 +736,7 @@ def export_clip(action_name: str, path: str) -> int:
     finally:
         scene.frame_start, scene.frame_end = saved[0], saved[1]
         scene.frame_set(saved[2])
-    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "adapter"))
-    from anim_frame_range import verify_frame_range
-
+    verify_fps(path, HOI4_FPS)
     return verify_frame_range(path, start, end)
 
 
