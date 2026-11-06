@@ -71,7 +71,7 @@ Each step is one command, and each prints a one-line verdict. `pass` names the n
 5. **Weapon in hand.** An armed unit's weapon is a separate model. `fit_prop.py` fits it to the hand against every clip and binds it there (see [Put the weapon in the hand](#put-the-weapon-in-the-hand)). It costs nothing.
 6. **Checks.** `check_unit_files.py <unit folder> --unit-type <type> --mod-root . --verdict <job folder>/evidence/check.json` reads the exported files. Its verdict names the repair to run, or escalates.
 7. **Free repair.** `repair_unit.py` fixes what the check names (holes, faces turned the wrong way, fused body parts, hard weight seams, feet off the ground) in a copy, then the check runs on the copy.
-8. **Hand-over.** The files land in the job's `runtime/files` folder with their final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text to paste.
+8. **Hand-over.** The export lands in the job's `runtime/files` folder with its final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text to paste. Each later step writes a full copy of the unit to its own folder (`<job folder>/props/files`, `<job folder>/repair/files`): the newest copy that passed its check is the one you review and install.
 9. **Independent review.** `review_unit.py` renders every clip from six sides, including the map camera, plus a diagnostics sheet per clip, and a reviewer who did not make the unit lists every defect it sees. The unit is finished only when that list is empty. See [Independent review](#independent-review).
 10. **In game.** You or your live-testing setup place the unit and look at it idle, moving and fighting.
 
@@ -131,6 +131,20 @@ py -3.13 -B .tools/3d_pipeline/review_unit.py gfx/models/units/<unit> --out <job
 
 The unit passes only on `VERDICT: pass` with no listed defect. After a fail, fix the cause, export again and ask a new reviewer. Keep the replies: they are the record that the unit was looked at.
 
+### When the reviewer finds defects
+
+The checks pass anything within vanilla's limits, so a reviewer can still see defects. Each kind has its fix:
+
+| The reviewer sees | Fix |
+| --- | --- |
+| A small hole (magenta, or a cyan rim on the diagnostics sheet) | `repair_unit.py ... --repairs holes --max-hole-edges 32`, then check the copy |
+| Surface that tears or smears where two body parts meet, red on the diagnostics sheet in every clip | `repair_unit.py ... --repairs bridges weights` |
+| A foot above or below the ground | `repair_unit.py ... --repairs ground` |
+| The weapon through the head or body | `fit_prop.py` again with another `--grip`, `--butt` or a shorter `--length`; a two-handed hold is made by hand |
+| A part that tears or crushes only in some clips (a death or an attack that twists the torso hard), or a clip that does not read as its role | No script fixes the motion itself: author those clips again in Blender ([Author animations live in Blender](#author-animations-live-in-blender)), or ask the user before paying for other clips |
+
+Fix the free ones first, render again and ask a new reviewer, then take what is left to Blender.
+
 The renders need Blender with io_pdx_mesh, which HOI4 Mod Setup installs. Set `BLENDER_EXE` to use a particular Blender.
 
 ## Repair an exported unit for free
@@ -161,7 +175,7 @@ py -3.13 -B .tools/3d_pipeline/fit_prop.py gfx/models/units/<unit> --prop <weapo
 
 It scales the weapon to `--length` of the unit's height, puts its grip (`--grip` of its length from the butt) in the palm, and tries 42 directions over every clip. It keeps the one whose far end least often passes through the body or into the ground, binds the weapon to the hand bone and writes the unit again, with the weapon's three textures, to `<job folder>/props/files`. The clips are not touched.
 
-Its verdict passes when the weapon stays out of the ground and almost never passes through the body, and names the check to run next. Add a `meshsettings` block for the weapon's shape (its textures sit next to the mesh) before you review the unit. If no direction clears the clips, try another `--grip` or `--butt`, or seat the weapon by hand in Blender. A weapon held in both hands always needs that hand-made step for the second hand.
+Its verdict passes when the weapon stays out of the ground and almost never passes through the body, and names the check to run next. It also writes `<job folder>/props/registration_prop.md`: the `meshsettings` block that gives the weapon's shape its own textures, to paste into the unit's `pdxmesh` block when you register the unit. If no direction clears the clips, try another `--grip` or `--butt`, or seat the weapon by hand in Blender. A weapon held in both hands always needs that hand-made step for the second hand.
 
 ## Author animations live in Blender
 

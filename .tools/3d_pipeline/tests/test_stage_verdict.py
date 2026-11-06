@@ -91,7 +91,9 @@ class CheckVerdict(unittest.TestCase):
     def test_a_clean_unit_passes_and_names_the_review(self) -> None:
         code, payload = self.run_check({"move": (20, legged.walk), "attack": (20, legged.strike)}, 0.5)
         self.assertEqual((code, payload["verdict"]), (0, "pass"))
-        self.assertIn("review_unit.py", payload["next"][0])
+        self.assertIn("review_unit.py", payload["next"][-1])
+        # The ribbons of the synthetic unit are open, so the pass also offers the free hole repair first.
+        self.assertIn("--repairs holes", payload["next"][0])
 
     def test_a_seam_fails_with_the_repair_to_run(self) -> None:
         code, payload = self.run_check({"move": (20, legged.walk), "attack": (20, legged.strike)}, 0.0)
