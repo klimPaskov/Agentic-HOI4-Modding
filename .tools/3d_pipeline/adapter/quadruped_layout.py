@@ -256,6 +256,26 @@ def _segment_distance(points: np.ndarray, head: np.ndarray, tail: np.ndarray) ->
     return np.linalg.norm(points - closest, axis=1)
 
 
+def _hanging_tail_only(allowed, q, distance, bones, behind_y: float, min_z: float) -> None:
+    """Give a tail that hangs below the belly to the tail bones alone.
+
+    Such a tail is behind the rear legs and nearer the tail chain than any leg bone. Leg weights
+    there tear it when the tail lifts (the ZIN grave horse's trot).
+    """
+
+    tail_bones = [index for index, bone in enumerate(bones) if bone.deform and bone.name.startswith("Tail_")]
+    leg_bones = [index for index, bone in enumerate(bones) if bone.deform and bone.name.startswith(("Front_", "Rear_"))]
+    if not tail_bones or not leg_bones:
+        return
+    hanging = np.flatnonzero(
+        (q[:, 1] > behind_y)
+        & (q[:, 2] > min_z)
+        & (distance[:, tail_bones].min(axis=1) < distance[:, leg_bones].min(axis=1))
+    )
+    allowed[np.ix_(hanging, leg_bones)] = False
+    allowed[np.ix_(hanging, tail_bones)] = True
+
+
 def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) -> Tuple[np.ndarray, np.ndarray]:
     """Return (bone indices, weights) per vertex, each row normalized, at most `max_influences` bones.
 
@@ -307,18 +327,7 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
             allowed[:, index] = in_body & (q[:, 1] < mid_y + 0.12 * length)
         elif name == "Spine":
             allowed[:, index] = in_body
-    tail_bones = [index for index, bone in enumerate(bones) if bone.deform and bone.name.startswith("Tail_")]
-    leg_bones = [index for index, bone in enumerate(bones) if bone.deform and bone.name.startswith(("Front_", "Rear_"))]
-    if tail_bones and leg_bones:
-        # A tail that hangs below the belly is behind the rear legs and nearer the tail chain than
-        # any leg bone. It follows the tail alone; leg weights there tear it when the tail lifts.
-        hanging = np.flatnonzero(
-            (q[:, 1] > rear_y + 0.06 * length)
-            & (q[:, 2] > 0.2 * h)
-            & (distance[:, tail_bones].min(axis=1) < distance[:, leg_bones].min(axis=1))
-        )
-        allowed[np.ix_(hanging, leg_bones)] = False
-        allowed[np.ix_(hanging, tail_bones)] = True
+    _hanging_tail_only(allowed, q, distance, bones, rear_y + 0.06 * length, 0.2 * h)
     orphans = ~allowed.any(axis=1)
     if orphans.any():
         for index, bone in enumerate(bones):

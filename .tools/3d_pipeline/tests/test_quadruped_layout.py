@@ -10,7 +10,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "adapter"))
 
-import quadruped_layout  # noqa: E402
+import quadruped_layout
 
 
 def _line(start, end, count, radius, rng):
