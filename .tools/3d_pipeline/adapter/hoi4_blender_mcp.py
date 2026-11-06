@@ -1108,6 +1108,7 @@ def hoi4_blender_author_creature_action(
     action_role: str,
     action_name: str,
     creature_rig_family: str = "elephant",
+    action_style: str = "",
 ) -> Dict[str, Any]:
     """Author one real skeletal creature action and checkpoint its contact-checked result."""
 
@@ -1120,6 +1121,33 @@ def hoi4_blender_author_creature_action(
             "action_role": action_role,
             "action_name": action_name,
             "creature_rig_family": creature_rig_family,
+            "action_style": action_style,
+        },
+    )
+
+
+@mcp.tool()
+def hoi4_blender_seat_rider_action(
+    job_id: str,
+    blend_rel: str,
+    checkpoint_rel: str,
+    action_name: str,
+    target_armature_name: str,
+    seat_lift: float = 0.06,
+    slump: bool = False,
+) -> Dict[str, Any]:
+    """Seat an imported humanoid action on horseback: pelvis on the attach origin, legs astride, upper body from the clip."""
+
+    return _run(
+        job_id,
+        "seat_rider_action",
+        {
+            "blend_rel": blend_rel,
+            "checkpoint_rel": checkpoint_rel,
+            "action_name": action_name,
+            "target_armature_name": target_armature_name,
+            "seat_lift": seat_lift,
+            "slump": slump,
         },
     )
 

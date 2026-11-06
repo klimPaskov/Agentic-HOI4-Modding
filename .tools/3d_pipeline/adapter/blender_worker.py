@@ -128,7 +128,13 @@ def save_blend(path: Path) -> None:
     for action in bpy.data.actions:
         action.use_fake_user = True
     path.parent.mkdir(parents=True, exist_ok=True)
-    bpy.ops.wm.save_as_mainfile(filepath=str(path))
+    # Compressed saves and no .blend1 backup: a job keeps dozens of checkpoints, and the
+    # uncompressed copies with backups filled about 1.2 GB per unit. The backup is deleted
+    # rather than switched off, so the user's Blender preferences stay untouched.
+    bpy.ops.wm.save_as_mainfile(filepath=str(path), compress=True)
+    backup = path.with_name(path.name + "1")
+    if backup.is_file():
+        backup.unlink()
 
 
 def new_collection(name: str) -> bpy.types.Collection:
@@ -1623,7 +1629,7 @@ def verify_saved_normalization(checkpoint: Path, target_height: float) -> Dict[s
     """Reopen a checkpoint and fail if its measured height differs from its report."""
 
     bpy.ops.wm.open_mainfile(filepath=str(checkpoint))
-    persisted_geometry = geometry_metrics()
+    persisted_geometry = geometry_metrics(position_weld_distance=GATE_POSITION_WELD_DISTANCE)
     persisted_height = float(persisted_geometry["dimensions"][2])
     tolerance = max(1e-5, abs(target_height) * 1e-5)
     height_delta = persisted_height - target_height
@@ -1661,7 +1667,7 @@ def stabilize_saved_normalization(
     max_corrections = 8
     for corrections_applied in range(max_corrections + 1):
         bpy.ops.wm.open_mainfile(filepath=str(checkpoint))
-        persisted_geometry = geometry_metrics()
+        persisted_geometry = geometry_metrics(position_weld_distance=GATE_POSITION_WELD_DISTANCE)
         persisted_height = float(persisted_geometry["dimensions"][2])
         tolerance = max(1e-5, abs(target_height) * 1e-5)
         step = evaluate_convergence_step(
@@ -9163,15 +9169,28 @@ def author_winged_biped_rig(req: Dict[str, Any]) -> Dict[str, Any]:
     return report
 
 
+def _route_creature_family(req: Dict[str, Any], kind: str) -> Optional[Dict[str, Any]]:
+    """Run a non-elephant creature family's rig or action; None leaves the elephant route to the caller."""
+
+    family = str(req["payload"].get("creature_rig_family") or "elephant").casefold()
+    if family == "elephant":
+        return None
+    if family == "quadruped":
+        import quadruped_rig
+        return (quadruped_rig.author_rig if kind == "rig" else quadruped_rig.author_action)(req, globals())
+    if family == "winged_biped":
+        return author_winged_biped_rig(req) if kind == "rig" else author_winged_biped_action(req)
+    raise ValueError(f"Unsupported creature {kind} family; use explicit measured {kind} authoring.")
+
+
 def author_creature_rig(req: Dict[str, Any]) -> Dict[str, Any]:
     """Create a bounded creature armature and bind the approved mesh to semantic bones."""
 
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
-    if str(payload.get("creature_rig_family") or "elephant").casefold() == "winged_biped":
-        return author_winged_biped_rig(req)
-    if str(payload.get("creature_rig_family") or "elephant").casefold() != "elephant":
-        raise ValueError("Unsupported creature rig family; use explicit measured rig authoring.")
+    routed = _route_creature_family(req, "rig")
+    if routed is not None:
+        return routed
     blend = within(job, payload["blend_rel"])
     checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
     rider_names = {str(name) for name in payload.get("rider_component_names", [])}
@@ -9550,10 +9569,9 @@ def author_creature_action(req: Dict[str, Any]) -> Dict[str, Any]:
 
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
-    if str(payload.get("creature_rig_family") or "elephant").casefold() == "winged_biped":
-        return author_winged_biped_action(req)
-    if str(payload.get("creature_rig_family") or "elephant").casefold() != "elephant":
-        raise ValueError("Unsupported creature action family; use explicit measured action authoring.")
+    routed = _route_creature_family(req, "action")
+    if routed is not None:
+        return routed
     blend = within(job, payload["blend_rel"])
     checkpoint = within(job, payload["checkpoint_rel"], allow_missing=True)
     role = str(payload.get("action_role") or "").casefold()
@@ -10366,7 +10384,7 @@ def run(req: Dict[str, Any]) -> Dict[str, Any]:
     if operation == "partition_skeletal_mesh_export_batches":
         from skeletal_export_partition import partition_skeletal_mesh_export_batches
         return partition_skeletal_mesh_export_batches(req, sys.modules[__name__])
-    if operation in {"inspect_mesh_landmarks", "author_measured_creature_rig", "attach_rigid_component", "author_measured_creature_action", "repair_explicit_mesh_winding", "ground_existing_action"}:
+    if operation in {"inspect_mesh_landmarks", "author_measured_creature_rig", "attach_rigid_component", "author_measured_creature_action", "repair_explicit_mesh_winding", "ground_existing_action", "seat_rider_action"}:
         import manual_creature_rig
         return getattr(manual_creature_rig, operation)(req, globals())
     if operation == "isolate_humanoid_weapon":

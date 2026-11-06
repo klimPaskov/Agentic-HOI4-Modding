@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "3c655f7e398311dba30ed80e99c6310a40be9db8",
+  "generated_for_revision": "fd8eed04a004fb823348572314437e2ab860531d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -317,8 +317,8 @@
         },
         {
           "path": ".tools/quality_baseline.json",
-          "sha256": "749a013bd10a6435345172031062ff785aa9d3e8e2fea96667f2102fc8d380fd",
-          "size": 12796
+          "sha256": "bb0822a1f91eac368324787e46c26b4bff4b2d4a117a9a6433f9421503ff3938",
+          "size": 14187
         },
         {
           "path": ".tools/requirements-dev.txt",
@@ -1784,8 +1784,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "06e699ba0c50b0ad819e7989047cceb7ecf341782cfc5faeabd1738faed3d2be",
-          "size": 3478
+          "sha256": "a3ccd50d8a6aced8e2ede15d7fb95efdc390dbe9882b705ae8343eb5a3b89ac3",
+          "size": 3788
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -1794,8 +1794,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "1f1c301dcaafed7ec3bd03ae2a7d98b015c13ec484c76c1b808cfae0539a152c",
-          "size": 70321
+          "sha256": "59d95cc1e8ebe71e58043ee892abefa240a53a86ebedcb3105350b8e21a5fe94",
+          "size": 73291
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -6633,8 +6633,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "06e699ba0c50b0ad819e7989047cceb7ecf341782cfc5faeabd1738faed3d2be",
-          "size": 3478
+          "sha256": "a3ccd50d8a6aced8e2ede15d7fb95efdc390dbe9882b705ae8343eb5a3b89ac3",
+          "size": 3788
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -6643,8 +6643,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "1f1c301dcaafed7ec3bd03ae2a7d98b015c13ec484c76c1b808cfae0539a152c",
-          "size": 70321
+          "sha256": "59d95cc1e8ebe71e58043ee892abefa240a53a86ebedcb3105350b8e21a5fe94",
+          "size": 73291
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -13580,8 +13580,8 @@
       "expected_files": [
         {
           "path": ".tools/3d_pipeline/README.md",
-          "sha256": "0c8b9af4318490180f4b694372d01bb05402b180a9fd5110b49c911c28481e73",
-          "size": 15964
+          "sha256": "9f80c08d314d0e370bf243efc87b37a5e8f987e0536e25f4ad10e0dfce68cbc4",
+          "size": 16081
         },
         {
           "path": ".tools/3d_pipeline/adapter/animation_root_export.py",
@@ -13595,8 +13595,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/blender_worker.py",
-          "sha256": "88a83d2a5a44fdd0e06cca41baae7e64de6c04f5d85674af86e26fc205b2bfa1",
-          "size": 540375
+          "sha256": "d3163aa544b3bd2a649f563769d48abcc0b87eb9e0f55467b0b124ddc961a42d",
+          "size": 541147
         },
         {
           "path": ".tools/3d_pipeline/adapter/explicit_batch_repair.py",
@@ -13625,8 +13625,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/hoi4_blender_mcp.py",
-          "sha256": "eca738973d441a357ecc715c685e6feee5a330ec913122734b6146693f430674",
-          "size": 56618
+          "sha256": "2ed48d9b7b6f012d23616152e6943867f2a6753fdd2a2b4fd1131b2bb3146e7b",
+          "size": 57388
         },
         {
           "path": ".tools/3d_pipeline/adapter/identity_leaf_alias.py",
@@ -13635,8 +13635,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/manual_creature_rig.py",
-          "sha256": "1b91a65c7654e7f1b0c84e1f1f6156a79193a2ef301259806a307391c780449a",
-          "size": 49716
+          "sha256": "eaa37133a31bae089c8034f263d6a1c9fbdce237f0c376761e71e51f47b8bd1d",
+          "size": 49928
         },
         {
           "path": ".tools/3d_pipeline/adapter/material_visibility_probe.py",
@@ -13689,9 +13689,24 @@
           "size": 270
         },
         {
+          "path": ".tools/3d_pipeline/adapter/quadruped_layout.py",
+          "sha256": "75a4cb77f1cc97868b1eade6848e7c5c01429ce7955b1cdbb99a5a5f922db690",
+          "size": 21465
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/quadruped_rig.py",
+          "sha256": "6d0eb812eaba58d9814af6c3a11a0e65a71bab06d62fbb1af816d9305ccb6191",
+          "size": 12994
+        },
+        {
           "path": ".tools/3d_pipeline/adapter/retarget_root_motion.py",
           "sha256": "1b8834f5ef6c83ca00ea32392f415243b58c8165c93f826f9785ef17459be899",
           "size": 4486
+        },
+        {
+          "path": ".tools/3d_pipeline/adapter/rider_seat.py",
+          "sha256": "58b8d70b2b9cd17a7e7cb4cacbabdd2aa5cc9ed590829f3e189c4ce18709b6aa",
+          "size": 5864
         },
         {
           "path": ".tools/3d_pipeline/adapter/skeletal_export_partition.py",
@@ -13705,13 +13720,13 @@
         },
         {
           "path": ".tools/3d_pipeline/blender_client.py",
-          "sha256": "4e8072fc3e76abf773f34e2aaf51c2e12ef8d67fab7e410626a24a0b9b920952",
-          "size": 34348
+          "sha256": "d9de53e42b211e0f84498ba81b44b9193ecd990e136fb6c41635b18ca4b2d38c",
+          "size": 35103
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "dc481194ba0c3ea3991324b711f38ea93c860b55434331680f1be0d49d04bf98",
-          "size": 71896
+          "sha256": "4942cd63ff9c4e97145b7195d82271673e9781a6d2b1a1b73b70cf9547b1c9b8",
+          "size": 73616
         },
         {
           "path": ".tools/3d_pipeline/build_io_pdx_py313_compat.py",
@@ -13719,9 +13734,14 @@
           "size": 4502
         },
         {
+          "path": ".tools/3d_pipeline/check_unit_files.py",
+          "sha256": "56a2f2c6609e370bad12c272f3ea3c9e7e7d43f3a62fe5476fb4452060a4962e",
+          "size": 19389
+        },
+        {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
-          "sha256": "3aeaec7d061be5a1ac493f04a3567be7235b1b6897b45a8fdaf9eaeabd0306ba",
-          "size": 15503
+          "sha256": "36eb45d40f7df11c75e0eff7855222897e79a7035e6e36760a57347043d561ef",
+          "size": 16396
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_pricing.json",
@@ -13739,9 +13759,14 @@
           "size": 32285
         },
         {
+          "path": ".tools/3d_pipeline/config/unit_types.json",
+          "sha256": "2400047edb1c30dc302d7402ec1752f2c6dda83c7e376f7718d52f06faacaa1d",
+          "size": 16234
+        },
+        {
           "path": ".tools/3d_pipeline/init_pilot_jobs.py",
-          "sha256": "7718acfc4cfe90857b19a8e7a24abbdff3e68bee97663365f1b248dc1dbf62eb",
-          "size": 20109
+          "sha256": "17e6c2a54c4cd02dad3d726fec4f0f81ee1813f2c240c3acff1b88d71ce2e4e9",
+          "size": 20384
         },
         {
           "path": ".tools/3d_pipeline/lib/__init__.py",
@@ -13764,9 +13789,19 @@
           "size": 19405
         },
         {
+          "path": ".tools/3d_pipeline/lib/model_dds.py",
+          "sha256": "1908e6a258ef1fff7186e6255313cd428f072abf4bff2cbd1261dafd0e252d89",
+          "size": 11109
+        },
+        {
           "path": ".tools/3d_pipeline/lib/paths.py",
           "sha256": "416bb45aeabe170002af0098fe2d7df0a922c923b7b6d61ab0f20de0a8ece713",
           "size": 8173
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/pdx_binary.py",
+          "sha256": "f4ddae206979d0d65b903cd76f658ee1fb878608decd18ccd2bafb6eab509355",
+          "size": 7875
         },
         {
           "path": ".tools/3d_pipeline/lib/profile_gates.py",
@@ -13782,6 +13817,11 @@
           "path": ".tools/3d_pipeline/lib/texture_lineage.py",
           "sha256": "c10a5229ca2d0fddf8c8ad32224150c59eae7805fe53dc6c2a8c831a36a2da3e",
           "size": 11401
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/unit_registration.py",
+          "sha256": "7f408fcd9cc0e7651e8a4de927c008b0c833793d3180466098dee933c572981b",
+          "size": 6100
         },
         {
           "path": ".tools/3d_pipeline/meshy_client.py",
@@ -13805,8 +13845,13 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "1856ec8c2608899647e8bf02a6f0c0506b2d82c203d7ec43abaa06fcd4fc25a6",
-          "size": 125765
+          "sha256": "2236f4dcb85bec990a74edddb5cf64c53515c566eb829b2044f4aac9e2d2014e",
+          "size": 152124
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/blender_quadruped_integration.py",
+          "sha256": "b7f8fd870b7afcfc0a17e9cfb5fe53066c1e10fd60f1d2b95570bfc7c640dbfb",
+          "size": 5232
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_rigid_weapon_attachment_integration.py",
@@ -14380,8 +14425,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_blender_pin.py",
-          "sha256": "fb4e962ccc6924bdffc1385ad1442ad32d56d80402f98f3de6d5b937a4795514",
-          "size": 16687
+          "sha256": "430c6ae8c749b3262bbda51195e8701c73c6e9728a3199c8ebdd6e36b804f4fd",
+          "size": 17411
         },
         {
           "path": ".tools/3d_pipeline/tests/test_blender_stdio_response.py",
@@ -14515,8 +14560,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_profile_gates.py",
-          "sha256": "0fbaf158def75d6c2f4552ada5acb9b5e071ec6b29b741bca66710856006f909",
-          "size": 30116
+          "sha256": "fcd7f483d03b0f7ac6cc0c604e74c926a80fd33f4688c25f5577f94cf023ace1",
+          "size": 30934
         },
         {
           "path": ".tools/3d_pipeline/tests/test_reimport_promotion_contract.py",
@@ -14557,6 +14602,11 @@
           "path": ".tools/3d_pipeline/tests/test_texture_size_gate.py",
           "sha256": "b316d57c9c903ce73cb3e86db2bb3704bc360c8d8bc0ae6d92efb494bf969953",
           "size": 8744
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_unit_files.py",
+          "sha256": "b37403576ff65cc00bfba2350d031e4880e66337188f423eb9ade539372ed0c6",
+          "size": 12899
         },
         {
           "path": ".tools/3d_pipeline/tests/test_visual_preflight.py",
@@ -17601,8 +17651,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "06e699ba0c50b0ad819e7989047cceb7ecf341782cfc5faeabd1738faed3d2be",
-          "size": 3478
+          "sha256": "a3ccd50d8a6aced8e2ede15d7fb95efdc390dbe9882b705ae8343eb5a3b89ac3",
+          "size": 3788
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -17611,8 +17661,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "1f1c301dcaafed7ec3bd03ae2a7d98b015c13ec484c76c1b808cfae0539a152c",
-          "size": 70321
+          "sha256": "59d95cc1e8ebe71e58043ee892abefa240a53a86ebedcb3105350b8e21a5fe94",
+          "size": 73291
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -22453,8 +22503,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "06e699ba0c50b0ad819e7989047cceb7ecf341782cfc5faeabd1738faed3d2be",
-          "size": 3478
+          "sha256": "a3ccd50d8a6aced8e2ede15d7fb95efdc390dbe9882b705ae8343eb5a3b89ac3",
+          "size": 3788
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -22463,8 +22513,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "1f1c301dcaafed7ec3bd03ae2a7d98b015c13ec484c76c1b808cfae0539a152c",
-          "size": 70321
+          "sha256": "59d95cc1e8ebe71e58043ee892abefa240a53a86ebedcb3105350b8e21a5fe94",
+          "size": 73291
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -27305,8 +27355,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "06e699ba0c50b0ad819e7989047cceb7ecf341782cfc5faeabd1738faed3d2be",
-          "size": 3478
+          "sha256": "a3ccd50d8a6aced8e2ede15d7fb95efdc390dbe9882b705ae8343eb5a3b89ac3",
+          "size": 3788
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -27315,8 +27365,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "1f1c301dcaafed7ec3bd03ae2a7d98b015c13ec484c76c1b808cfae0539a152c",
-          "size": 70321
+          "sha256": "59d95cc1e8ebe71e58043ee892abefa240a53a86ebedcb3105350b8e21a5fe94",
+          "size": 73291
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",

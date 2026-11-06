@@ -27,6 +27,7 @@ from lib.paths import (  # noqa: E402
     read_job_document,
     read_json,
     resolve_job_root,
+    sha256_file,
     utc_now,
     write_json,
 )
@@ -69,6 +70,7 @@ from lib.texture_lineage import (
 from lib.reuse import (
     block_message,
     copy_artifacts,
+    BLOCKING_STATES,
     find_other_job_result,
     sibling_jobs,
     unreconciled_submissions,
@@ -201,6 +203,20 @@ def provider_animated_roles(spec: Dict[str, Any]) -> List[str]:
     ]
 
 
+def route_remeshes(spec: Dict[str, Any]) -> bool:
+    """True when the route replaces the generation with a Meshy remesh before anything is exported."""
+
+    generation = spec.get("generation") or {}
+    if spec.get("asset_kind") == "creature":
+        return bool(spec.get("creature_remesh"))
+    return (
+        spec.get("asset_kind") == "humanoid"
+        and not uses_local_humanoid_route(spec)
+        and generation.get("model_type") == "standard"
+        and not generation.get("should_remesh")
+    )
+
+
 def planned_stages(spec: Dict[str, Any]) -> List[Dict[str, Any]]:
     """The paid stages a job plans, in order, each with its price-table estimate."""
 
@@ -208,6 +224,8 @@ def planned_stages(spec: Dict[str, Any]) -> List[Dict[str, Any]]:
         return {"stage": name, "operation": operation, "role": role, "estimate_credits": int(estimate)}
 
     stages = [stage(generation_stage_for(spec), "image_to_3d", None, spec["image_to_3d_estimate_credits"])]
+    if spec.get("asset_kind") == "creature" and spec.get("creature_remesh"):
+        stages.append(stage(continuation_stage_for(spec, "creature_remesh"), "remesh", None, spec["remesh_estimate_credits"]))
     if spec.get("asset_kind") != "humanoid" or uses_local_humanoid_route(spec):
         return stages
     generation = spec["generation"]
@@ -240,6 +258,7 @@ def prepare_spec(spec: Dict[str, Any], *, require_budget: bool = True) -> Dict[s
 
     if spec.get("_credits_prepared"):
         return spec
+    apply_unit_type(spec)
     generation = resolve_generation(spec, load_profile(spec["profile"]))
     pricing = load_pricing()
     spec["generation"] = generation
@@ -923,6 +942,9 @@ def download_once(
     return result
 
 
+DEFERRABLE_TOPOLOGY = ("welded boundary edges", "welded loose components")
+
+
 def candidate_gate(
     job: Path,
     prep: Dict[str, Any],
@@ -933,8 +955,13 @@ def candidate_gate(
     runtime_entity_scale: float = 1.0,
     profile: Optional[Dict[str, Any]] = None,
     weights_after: Any = None,
+    defer_topology_reason: str = "",
 ) -> None:
     """Block a candidate that fails a measured check.
+
+    `defer_topology_reason` is for a raw provider candidate that the route replaces with
+    a Meshy remesh before anything is exported: its welded boundary-edge and loose-part
+    counts are recorded as deferred, and the same limits block the remeshed geometry.
 
     The profile checks (non-manifold and boundary edges, loose parts, preferred
     triangle range, material slots, residual zero-weight vertices) come from the
@@ -972,6 +999,8 @@ def candidate_gate(
         failures.extend(evaluation["failures"])
     except ProfileGateError as exc:
         failures.append(f"asset profile checks could not run: {exc}")
+    deferred = [item for item in failures if defer_topology_reason and item.startswith(DEFERRABLE_TOPOLOGY)]
+    failures = [item for item in failures if item not in deferred]
     record = {
         "failures": failures,
         "geometry": geometry,
@@ -979,6 +1008,7 @@ def candidate_gate(
         "profile": profile_name,
         "checks": evaluation["checks"],
         "exceptions_applied": evaluation["exceptions_applied"],
+        "deferred": {"checks": deferred, "reason": defer_topology_reason} if deferred else None,
     }
     if failures:
         write_json(job / "validation" / f"{stage}_gate.json", {"status": "blocked", **record})
@@ -1291,6 +1321,40 @@ def _apply_runtime_diffuse_grade(
     return textures
 
 
+def compress_runtime_textures(job: Path, spec: Dict[str, Any], textures: Dict[str, Any]) -> Dict[str, Any]:
+    """Rewrite each runtime DDS as DXT5 with a full mip chain, the format vanilla units ship.
+
+    The source is the processed PNG each conversion recorded (graded diffuse,
+    packed specular, packed RRxG normal), resized to the recorded size. A profile
+    that lists `runtime_texture_format` as `bgra_single` keeps the single-level
+    BGRA files the converter wrote.
+    """
+
+    from lib.model_dds import write_dxt5
+
+    profile = load_profile(spec["profile"])
+    if profile.get("runtime_texture_format", "dxt5_mipped") != "dxt5_mipped":
+        return textures
+    written = {}
+    for item in textures.get("conversions") or []:
+        png_rel, dds_rel = item.get("png"), item.get("dds")
+        if not png_rel or not dds_rel:
+            continue
+        source = job / png_rel
+        if not source.is_file():
+            raise FileNotFoundError(f"Runtime texture source is missing: {source}")
+        width = int(item.get("width") or 0)
+        height = int(item.get("height") or 0)
+        sized = source
+        with Image.open(source) as image:
+            if width and height and image.size != (width, height):
+                sized = job / "textures" / "processed" / f"{Path(png_rel).stem}_runtime.png"
+                image.convert("RGBA").resize((width, height), Image.Resampling.LANCZOS).save(sized, format="PNG")
+        written[dds_rel] = write_dxt5(sized, job / dds_rel)
+    textures["runtime_texture_format"] = {"format": "DXT5", "mips": "full chain", "files": written}
+    return textures
+
+
 def _dds_header_report(job: Path, textures: Dict[str, Any]) -> Dict[str, Any]:
     """Report each shipped DDS's size and mip count.
 
@@ -1376,6 +1440,7 @@ def finalize_pdx_runtime_textures(
                 "alpha": "source_normal_green_tangent_y",
             },
         )
+    textures = compress_runtime_textures(job, spec, textures)
     report = job / "blender" / "reports" / "textures_dds.json"
     textures["runtime_texture_sources"] = provider_sources
     if spec.get("_texture_lineage"):
@@ -1490,6 +1555,11 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
         stage="provider_candidate",
         max_runtime_footprint_m=max_runtime_footprint_m,
         runtime_entity_scale=float(spec.get("runtime_entity_scale", 1.0)),
+        defer_topology_reason=(
+            "the route exports Meshy's remesh of this generation, never the generation itself"
+            if route_remeshes(spec)
+            else ""
+        ),
     )
     update_job(job, status="candidate_qa", selected_provider_task=generation_id)
     append_history(
@@ -1538,6 +1608,65 @@ def continue_static(spec: Dict[str, Any]) -> Dict[str, Any]:
     return {"textures": textures, "export": exported, "reimport": reimport}
 
 
+def remeshed_creature_checkpoint(spec: Dict[str, Any], job: Path, blender: BlenderAdapterClient) -> str:
+    """Remesh the creature's generation once with Meshy, prepare that model and gate it with the profile's limits.
+
+    The raw generation is a high-detail mesh of many loose pieces; the rig and the export
+    need one closed surface. The remesh keeps its own UV layout, so its own maps are bound.
+    """
+
+    prepare_spec(spec)
+    slug = spec["asset_id"].rsplit(".", 1)[-1]
+    client = MeshyClient(REPO_ROOT, job)
+    generation_stage = generation_stage_for(spec)
+    generation = existing_task(job, generation_stage)
+    if not generation:
+        raise RuntimeError("Creature generation must be completed before the remesh.")
+    generation_id = str(generation["task_id"])
+    polycount = int(spec.get("creature_remesh_polycount", 30000))
+    estimate = int(spec["remesh_estimate_credits"])
+    remesh_id = provider_task(
+        client,
+        job,
+        continuation_stage_for(spec, "creature_remesh"),
+        task_type="remesh",
+        estimate=estimate,
+        input_stage=generation_stage,
+        create=lambda: client.remesh(input_task_id=generation_id, target_polycount=polycount, estimate_credits=estimate),
+        request=paid_request(spec, "remesh", "meshy_remesh", remesh_arguments(generation_id, polycount)),
+    )
+    remesh_glb = download_once(
+        client,
+        job,
+        stage=continuation_stage_for(spec, "creature_remesh_glb"),
+        task_id=remesh_id,
+        task_type="remesh",
+        format_name="glb",
+        filename=continuation_download_name(spec, "remesh_model.glb"),
+    )
+    source_rel = remesh_glb["file"]["relative_path"]
+    select_geometry_textures(job, spec, source_rel)
+    texture_sources = prepare_pilot_texture_sources(job, spec, exported_rels=[source_rel])
+    profile = load_profile(spec["profile"])
+    prep = blender.prepare_candidate(
+        slug,
+        source_rel=source_rel,
+        asset_kind="creature",
+        target_height_m=spec.get("blender_target_height_m", spec["target_height_m"]),
+        runtime_entity_scale=float(spec.get("runtime_entity_scale", 1.0)),
+        runtime_stem=f"{spec['runtime_stem']}_remeshed",
+        target_triangles=profile["triangle_range"]["working_triangle_target"],
+        vanilla_reference=stage_vanilla_reference(job, spec),
+        texture_source_rels=texture_sources,
+        # As on the humanoid route: weld the seams before reducing, or the reduction tears the
+        # mesh apart along its UV seams (the warhorse went from 4 to 241 pieces without it).
+        repair_before_reduction=True,
+        topology_weld_distance=0.0,
+    )
+    candidate_gate(job, prep, hard_max=profile["triangle_range"]["hard_max"], stage="remeshed_candidate")
+    return str(prep["checkpoints"]["pre_export"])
+
+
 def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
     """Build, rig, animate, export, and reimport a custom nonhumanoid unit."""
 
@@ -1547,7 +1676,11 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
     candidate_report = read_json(
         job / "blender" / "reports" / f"{spec['runtime_stem']}_candidate_prepare.json"
     )
-    source_checkpoint = candidate_report["checkpoints"]["pre_export"]
+    source_checkpoint = (
+        remeshed_creature_checkpoint(spec, job, blender)
+        if spec.get("creature_remesh")
+        else candidate_report["checkpoints"]["pre_export"]
+    )
     component_checkpoint = "blender/checkpoints/creature_components.blend"
     components = blender.segment_creature_components(
         slug,
@@ -1578,6 +1711,7 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
             role,
             action_name,
             creature_rig_family=str(spec["creature_rig_family"]),
+            action_style=str(action.get("action_style") or ""),
         )
         if authored.get("status") != "pass":
             raise RuntimeError(
@@ -1644,6 +1778,11 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
             "reimport": reimports,
         },
     )
+    staged = (
+        stage_runtime_files(job, spec, {"mesh": mesh_rel, "animations": {role: report["output_rel"] for role, report in action_reports.items()}})
+        if spec.get("unit_type")
+        else None
+    )
     return {
         "components": components,
         "rig": rig,
@@ -1652,6 +1791,7 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
         "animation_exports": animation_exports,
         "action_reports": action_reports,
         "reimport": reimports,
+        "runtime": staged["check"] if staged else None,
     }
 
 
@@ -1786,7 +1926,9 @@ def continue_humanoid_local(spec: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
+def humanoid_provider_stages(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Run (or reuse) the paid humanoid stages: remesh when needed, one rig, one clip per provider role."""
+
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
     client = MeshyClient(REPO_ROOT, job)
@@ -1916,7 +2058,7 @@ def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     animation_downloads: Dict[str, Dict[str, Any]] = {}
     for action in spec["required_actions"]:
         role = action["role"]
-        if action.get("task_type") == "blender_authored_skeletal":
+        if action.get("task_type") in {"blender_authored_skeletal", "reused_clip"}:
             continue
         if action.get("provider_action_id") is None:
             raise RuntimeError(
@@ -1968,6 +2110,21 @@ def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
             fetch_provider_url=True,
         )
 
+    return {
+        "slug": slug,
+        "job": job,
+        "blender": blender,
+        "vanilla_reference": vanilla_reference,
+        "rig_id": rig_id,
+        "animation_downloads": animation_downloads,
+    }
+
+
+def continue_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
+    stages = humanoid_provider_stages(spec)
+    slug, job, blender = stages["slug"], stages["job"], stages["blender"]
+    vanilla_reference = stages["vanilla_reference"]
+    rig_id, animation_downloads = stages["rig_id"], stages["animation_downloads"]
     profile = read_json(PIPELINE_ROOT / "config" / "asset_profiles.json")["profiles"][spec["profile"]]
 
     final_source = animation_downloads["attack"]["file"]["relative_path"]
@@ -3179,6 +3336,362 @@ def run_shared_humanoid_batch(
     return results
 
 
+UNIT_SCALE_REFERENCE = {"source_head_bones": ["LeftFoot", "Head"], "target_head_bones": ["LeftFoot", "Head"]}
+
+
+def load_unit_types() -> Dict[str, Any]:
+    return read_json(PIPELINE_ROOT / "config" / "unit_types.json")["types"]
+
+
+def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Fill a job's profile, kind and actions from its `unit_type` (config/unit_types.json).
+
+    A role whose first library clip another role already uses reuses that clip instead of
+    paying for it again; a Blender role (a quadruped gait, the seated slump) costs nothing.
+    Actions a job lists itself win.
+    """
+
+    name = spec.get("unit_type")
+    if not name or spec.get("_unit_type_applied"):
+        return spec
+    types = load_unit_types()
+    if name not in types:
+        raise ValueError(f"Unknown unit_type {name!r}; known: {', '.join(sorted(types))}.")
+    unit = types[name]
+    spec.setdefault("profile", unit["profile"])
+    if unit["rig"] == "blender_quadruped":
+        spec.setdefault("asset_kind", "creature")
+        spec.setdefault("creature_rig_family", "quadruped")
+        # The raw generation is hundreds of loose pieces; the rig needs one closed surface.
+        spec.setdefault("creature_remesh", True)
+        spec.setdefault("creature_remesh_polycount", 30000)
+    else:
+        spec.setdefault("asset_kind", "humanoid")
+    if not spec.get("required_actions"):
+        actions: List[Dict[str, Any]] = []
+        first_role_for_clip: Dict[int, str] = {}
+        for role, config in unit["roles"].items():
+            row: Dict[str, Any] = {"role": role, "fps": 24, "loop": bool(config.get("loop")), "root_policy": "in_place"}
+            if config.get("meshy"):
+                clip_id, clip_key = config["meshy"][0]
+                row["library_candidates"] = [list(item) for item in config["meshy"]]
+                if clip_id in first_role_for_clip:
+                    row.update(provider_action_id=None, task_type="reused_clip", reuse_role=first_role_for_clip[clip_id])
+                else:
+                    first_role_for_clip[clip_id] = role
+                    row.update(provider_action_id=clip_id, library_key=clip_key)
+            elif config.get("blender") == "seated_slump":
+                row.update(provider_action_id=None, task_type="reused_clip", reuse_role="idle", slump=True)
+            else:
+                row.update(provider_action_id=None, task_type="blender_authored_skeletal", action_style=config["blender"])
+            actions.append(row)
+        spec["required_actions"] = actions
+    spec["_unit_type_applied"] = True
+    return spec
+
+
+def verify_library_clips(spec: Dict[str, Any], client: "MeshyClient") -> Dict[str, Any]:
+    """Look the paid clips up (free) and switch to the next candidate when an id no longer names its clip."""
+
+    wanted = [action for action in spec["required_actions"] if action.get("provider_action_id") is not None]
+    if not wanted:
+        return {}
+    ids = sorted({int(item[0]) for action in wanted for item in action.get("library_candidates", [[action["provider_action_id"], ""]])})
+    listed = client.list_animations(action_ids=ids)
+    keys: Dict[int, str] = {}
+    for content in listed.get("content", []):
+        if isinstance(content, dict) and content.get("type") == "text":
+            try:
+                for row in json.loads(content["text"]):
+                    keys[int(row["action_id"])] = str(row.get("key"))
+            except (ValueError, TypeError, KeyError):
+                continue
+    report = {}
+    for action in wanted:
+        candidates = action.get("library_candidates") or [[action["provider_action_id"], action.get("library_key", "")]]
+        chosen = next((item for item in candidates if keys.get(int(item[0])) == item[1] or (not item[1] and int(item[0]) in keys)), None)
+        if chosen is None:
+            raise RuntimeError(
+                f"No Meshy library clip for the {action['role']} role still matches its key: "
+                f"{[(item[0], item[1], keys.get(int(item[0]))) for item in candidates]}. Update config/unit_types.json."
+            )
+        action["provider_action_id"], action["library_key"] = int(chosen[0]), chosen[1]
+        report[action["role"]] = {"action_id": int(chosen[0]), "key": chosen[1]}
+    return report
+
+
+def glb_animation_name(path: Path) -> str:
+    """The first animation name stored in a GLB; Blender's glTF importer gives the action this name."""
+
+    data = path.read_bytes()
+    length = int.from_bytes(data[12:16], "little")
+    document = json.loads(data[20 : 20 + length])
+    animations = document.get("animations") or []
+    if not animations or not animations[0].get("name"):
+        raise RuntimeError(f"{path.name} holds no named animation.")
+    return str(animations[0]["name"])
+
+
+def _prepared_armature(prep: Dict[str, Any]) -> str:
+    try:
+        return str(prep["rig_and_actions"]["root_translation_sanitization"]["actions"][0]["armature"])
+    except (KeyError, IndexError, TypeError):
+        return "Armature"
+
+
+def write_animation_receipt(
+    job: Path,
+    role: str,
+    task: Dict[str, Any],
+    scene_name: str,
+    provider_name: str,
+    source_rel: str,
+    source_sha: str,
+    library_clip: Optional[Dict[str, Any]],
+) -> str:
+    """Write the provenance receipt animation import requires, once per role, and return its job path."""
+
+    receipt_rel = f"provider/animation_receipts/{role}.json"
+    existing = read_json(job / receipt_rel) if (job / receipt_rel).is_file() else {}
+    current = (scene_name, source_sha, task.get("task_id"))
+    if (existing.get("source_action_name"), existing.get("source_sha256"), existing.get("source_reference_id")) != current:
+        # A receipt from a failed attempt that named another clip is replaced, never reused.
+        write_json(job / receipt_rel, {
+            "verification_status": "verified",
+            "source_kind": "meshy_animate",
+            "source_reference_id": task.get("task_id"),
+            "source_action_name": scene_name,
+            "provider_file_action_name": provider_name,
+            "source_sha256": source_sha,
+            "source_rel": source_rel,
+            "library_clip": library_clip,
+            "verified_by": "hoi4_3d_model_pipeline",
+            "verified_at": utc_now(),
+            "basis": "Completed Meshy animate task from this job's own rig task, downloaded with a checksum manifest.",
+        })
+    return receipt_rel
+
+
+def export_unit_roles(
+    job: Path,
+    spec: Dict[str, Any],
+    blender: BlenderAdapterClient,
+    roles: Dict[str, Dict[str, Any]],
+    mesh_rel: str,
+    chain: str,
+    library: Dict[str, Any],
+    mesh_export: Dict[str, Any],
+    textures: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Export and re-import every finished role, record the job and stage the runtime files."""
+
+    slug = spec["asset_id"].rsplit(".", 1)[-1]
+    stem = spec["runtime_stem"]
+    exports: Dict[str, str] = {}
+    for role, report in roles.items():
+        anim_rel = f"export/anim/{stem}_{role}.anim"
+        report["export"] = blender.export_animation(slug, chain, report["action"], anim_rel)
+        report["reimport"] = blender.reimport_export(slug, mesh_rel, anim_rel, proof_name=f"{stem}_{role}")
+        exports[role] = anim_rel
+    update_job(job, status="pdx_exported", exports={"mesh": mesh_rel, "animations": exports}, unit_type=spec["unit_type"])
+    append_history(
+        job,
+        state="pdx_exported",
+        event="unit_exported",
+        actor="hoi4_3d_model_pipeline",
+        details={"unit_type": spec["unit_type"], "library": library, "final_checkpoint": chain, "mesh": file_record(job / mesh_rel, relative_to=job)},
+    )
+    write_json(job / "blender" / "reports" / "unit_roles.json", {"unit_type": spec["unit_type"], "final_checkpoint": chain, "roles": roles})
+    staged = stage_runtime_files(job, spec, {"mesh": mesh_rel, "animations": exports})
+    return {"unit_type": spec["unit_type"], "mesh_export": mesh_export, "textures": textures, "roles": roles, "final_checkpoint": chain, "runtime": staged["check"]}
+
+
+def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Finish a Meshy-rigged unit of any humanoid type: one prepared body, every role retargeted onto it.
+
+    Each role's library clip is imported onto the single prepared rig with a provenance
+    receipt, then grounded per frame (standing types) or seated on the attach origin
+    (riders), exported and re-imported against the one exported mesh.
+    """
+
+    apply_unit_type(spec)
+    unit = load_unit_types()[spec["unit_type"]]
+    slug = spec["asset_id"].rsplit(".", 1)[-1]
+    job = ensure_job_layout(resolve_job_root(slug))
+    library = verify_library_clips(spec, MeshyClient(REPO_ROOT, job))
+    stages = humanoid_provider_stages(spec)
+    blender = stages["blender"]
+    downloads = stages["animation_downloads"]
+    profile = load_profile(spec["profile"])
+    stem = spec["runtime_stem"]
+    base_role = "attack" if "attack" in downloads else next(iter(downloads))
+    base_source = downloads[base_role]["file"]["relative_path"]
+    texture_sources = prepare_pilot_texture_sources(
+        job,
+        spec,
+        exported_rels=[item["file"]["relative_path"] for item in downloads.values()],
+        geometry_source_rel=spec.get("geometry_source_rel"),
+    )
+    prep = blender.prepare_candidate(
+        slug,
+        source_rel=base_source,
+        asset_kind="humanoid",
+        target_height_m=spec.get("blender_target_height_m", spec["target_height_m"]),
+        runtime_entity_scale=float(spec.get("runtime_entity_scale", 1.0)),
+        runtime_stem=f"{stem}_base",
+        target_triangles=profile["triangle_range"]["working_triangle_target"],
+        excluded_provider_objects=spec.get("excluded_provider_objects"),
+        vanilla_reference=stages["vanilla_reference"],
+        texture_source_rels=texture_sources,
+        geometry_source_rel=spec.get("geometry_source_rel"),
+        repair_before_reduction=True,
+        topology_weld_distance=0.0,
+    )
+    candidate_gate(job, prep, hard_max=profile["triangle_range"]["hard_max"], stage="animated_candidate_base")
+    textures = finalize_pdx_runtime_textures(job, spec, blender.process_textures(slug, prep["checkpoints"]["pre_export"]))
+    blender.save_checkpoint(slug, prep["checkpoints"]["pre_export"], "unit_base_pre_export")
+    chain = "blender/checkpoints/unit_base_pre_export.blend"
+    mesh_rel = f"export/mesh/{stem}.mesh"
+    mesh_export = blender.export_mesh(slug, chain, mesh_rel)
+    armature = _prepared_armature(prep)
+    # The prepared base checkpoint keeps the base clip's own action, so Blender names that clip's
+    # imported copy "<name>.001". Every other import removes its source action after the retarget,
+    # so a clip that several roles reuse keeps its plain name each time.
+    base_clip = glb_animation_name(job / base_source)
+    # A rerun after a failure starts the roles again from the base: the role checkpoints of the
+    # earlier attempt are derived from files on disk, hold no paid data, and block a new import.
+    for stale in (job / "blender" / "checkpoints").glob("unit_*.blend"):
+        if stale.name != "unit_base_pre_export.blend":
+            stale.unlink()
+    roles: Dict[str, Dict[str, Any]] = {}
+    for action in spec["required_actions"]:
+        role = action["role"]
+        clip_role = action.get("reuse_role") or role
+        source_rel = downloads[clip_role]["file"]["relative_path"]
+        provider_name = glb_animation_name(job / source_rel)
+        scene_name = provider_name + (".001" if provider_name == base_clip else "")
+        task = existing_task(job, animation_stage_for(spec, clip_role)) or {}
+        source_sha = sha256_file(job / source_rel)
+        receipt_rel = write_animation_receipt(job, role, task, scene_name, provider_name, source_rel, source_sha, library.get(clip_role))
+        target = f"{stem}_{role}"
+        imported_rel = f"blender/checkpoints/unit_{role}.blend"
+        imported = blender.import_animation_action(
+            slug, chain, source_rel, receipt_rel, imported_rel, scene_name, armature, target,
+            "meshy_animate", str(task.get("task_id")), source_sha, root_scale_reference=UNIT_SCALE_REFERENCE,
+        )
+        chain = imported_rel
+        if unit.get("seated"):
+            finished_rel = f"blender/checkpoints/unit_{role}_seated.blend"
+            finishing = blender.seat_rider_action(slug, chain, finished_rel, target, armature, slump=bool(action.get("slump")))
+        else:
+            finished_rel = f"blender/checkpoints/unit_{role}_grounded.blend"
+            finishing = blender.correct_action_grounding(slug, chain, finished_rel, target, target_armature_name=armature)
+        chain = finished_rel
+        roles[role] = {"action": target, "clip_role": clip_role, "receipt": receipt_rel, "import": imported, "finishing": finishing}
+    return export_unit_roles(job, spec, blender, roles, mesh_rel, chain, library, mesh_export, textures)
+
+
+def job_status(slug: str, spec: Dict[str, Any], jobs_config: Path) -> Dict[str, Any]:
+    """Where one job stands and the next command to run. Reads files only; no key, no provider call."""
+
+    job = resolve_job_root(slug)
+    config = jobs_config.as_posix()
+    run = f"py -3.13 -B .tools/3d_pipeline/run_pilot.py --jobs-config {config} {slug}"
+    result: Dict[str, Any] = {"asset": slug, "job_root": job.as_posix(), "unit_type": spec.get("unit_type")}
+    if not (job / "job.yaml").is_file():
+        result.update(state="not_initialized", next=f"py -3.13 -B .tools/3d_pipeline/init_pilot_jobs.py --jobs-config {config} {slug}")
+        return result
+    document = read_job_document(job / "job.yaml")
+    result["state"] = document.get("status")
+    history = job / "history.jsonl"
+    if history.is_file():
+        lines = [line for line in history.read_text(encoding="utf-8").splitlines() if line.strip()]
+        result["last_events"] = [
+            {key: entry.get(key) for key in ("timestamp", "state", "event")}
+            for entry in (json.loads(line) for line in lines[-3:])
+        ]
+    preflight = job / "validation" / "reference_preflight.json"
+    pending = sorted(
+        path.name
+        for path in (job / "provider" / "submissions").glob("*.json")
+        if read_json(path).get("state") in BLOCKING_STATES
+    )
+    ledger = read_ledger(job)
+    result["credits_consumed"] = sum(int(row.get("consumed_credits") or 0) for row in ledger)
+    result["credit_budget"] = spec.get("credit_budget")
+    exports = document.get("exports") or {}
+    if not preflight.is_file() or read_json(preflight).get("status") != "passed":
+        result["next"] = (
+            "Look at refs/original/meshy_input.png, answer the six visual checks in a JSON file, then: "
+            f"py -3.13 -B .tools/3d_pipeline/init_pilot_jobs.py --jobs-config {config} --record-visual-review {slug} "
+            "--reviewer <name> --review-file <answers.json>"
+        )
+    elif pending:
+        result["next"] = (
+            f"Reconcile the uncertain paid submissions first ({', '.join(pending)}): read each task in the Meshy "
+            "task list and record it with lib.reuse.reconcile_submission. Never submit the stage again."
+        )
+    elif not exports.get("mesh"):
+        candidate = job / "blender" / "reports" / f"{spec.get('runtime_stem', slug)}_candidate_prepare.json"
+        result["next"] = (
+            f"{run} --phase candidate   (then review the previews in blender/previews before the full run)"
+            if not candidate.is_file()
+            else f"{run}   (paid stages that already succeeded are reused, never paid twice)"
+        )
+    else:
+        result["exports"] = exports
+        result["next"] = (
+            f"Copy {(job / 'runtime' / 'files').as_posix()} into the mod's model folder, paste runtime/registration.md, "
+            "then run check_unit_files.py on that folder with --mod-root ."
+        )
+    return result
+
+
+def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]) -> Dict[str, Any]:
+    """Copy the selected exports into runtime/files under their final names, check them and write the registration."""
+
+    import check_unit_files
+    from lib.unit_registration import registration_text
+
+    stem = spec["runtime_stem"]
+    staged = job / "runtime" / "files"
+    staged.mkdir(parents=True, exist_ok=True)
+    copies = {f"{stem}.mesh": job / exports["mesh"]}
+    for role, rel in exports["animations"].items():
+        copies[f"{stem}_{role}.anim"] = job / rel
+    for image, suffix in (("texture_0", "diffuse"), ("texture_normal", "normal"), ("texture_specular", "specular")):
+        source = job / "textures" / "dds" / f"{image}.dds"
+        if source.is_file():
+            copies[f"{stem}_{suffix}.dds"] = source
+    records = {}
+    for name, source in copies.items():
+        shutil.copy2(source, staged / name)
+        records[name] = {"source": file_record(source, relative_to=job), "staged": file_record(staged / name, relative_to=job)}
+    unit = load_unit_types().get(spec.get("unit_type") or "")
+    profile = load_profile(spec["profile"])
+    findings, facts = check_unit_files.check_files(staged, unit, profile)
+    errors = [item.__dict__ for item in findings if item.severity == "error"]
+    shapes = next(iter(facts["meshes"].values()), {}).get("shapes", []) if facts["meshes"] else []
+    roles = sorted(exports["animations"])
+    folder = spec.get("runtime_model_folder") or f"gfx/models/units/{stem}"
+    text = registration_text(
+        unit_entity=f"{stem}_entity",
+        model_folder=folder,
+        stem=stem,
+        shapes=shapes,
+        roles=roles,
+        scale=float(spec.get("runtime_entity_scale", 1.0)),
+        template=(unit or {}).get("entity_template", "infantry"),
+        state_set=str(spec.get("entity_state_set") or {"mount": "cavalry", "rider": "cavalry"}.get((unit or {}).get("entity_template", ""), "infantry")),
+    )
+    (job / "runtime" / "registration.md").write_text(text, encoding="utf-8")
+    report = {"files": records, "check": {"errors": errors, "warnings": [item.__dict__ for item in findings if item.severity != "error"]}, "facts": facts}
+    write_json(job / "runtime" / "files.json", report)
+    if errors:
+        raise RuntimeError(f"The staged runtime files fail {len(errors)} check(s); see runtime/files.json: {errors[:3]}")
+    return report
+
+
 def print_credits_report(location: str) -> int:
     """Print credits per model and stage, failed and wasted credits, and credits avoided, for one job or a root."""
 
@@ -3188,6 +3701,27 @@ def print_credits_report(location: str) -> int:
         print(f"No job folders with a provider folder under {path}.")
         return 1
     print(format_report(credits_report(jobs)))
+    return 0
+
+
+def run_file_only_command(args: argparse.Namespace, parser: argparse.ArgumentParser) -> Optional[int]:
+    """Run --credits-report, --status or --rebuild-runtime-textures; none needs a key or makes a provider call."""
+
+    if args.credits_report is not None:
+        return print_credits_report(args.credits_report)
+    if args.jobs_config is None:
+        parser.error("--jobs-config is required unless --credits-report is given")
+    if not (args.status or args.rebuild_runtime_textures):
+        return None
+    configs = load_job_configs(args.jobs_config)
+    assets = list(configs) if args.all or not args.assets else args.assets
+    missing = sorted(set(assets) - set(configs))
+    if missing:
+        raise KeyError(f"Unknown configured 3D jobs: {missing}")
+    if args.status:
+        print(json.dumps([job_status(asset, configs[asset], args.jobs_config) for asset in assets], indent=2))
+    else:
+        print(json.dumps({asset: rebuild_runtime_textures(configs[asset]) for asset in assets}, indent=2, sort_keys=True))
     return 0
 
 
@@ -3208,24 +3742,19 @@ def main() -> int:
         help="rebuild the finished humanoid job's runtime DDS from the remesh maps on disk; "
         "needs no API key and makes no provider call or Blender run",
     )
+    parser.add_argument(
+        "--status",
+        action="store_true",
+        help="print where each job stands and the next command to run; reads files only",
+    )
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--phase", choices=("full", "candidate"), default="full")
     parser.add_argument("--shared-humanoid-batch")
     parser.add_argument("assets", nargs="*")
     args = parser.parse_args()
-    if args.credits_report is not None:
-        return print_credits_report(args.credits_report)
-    if args.jobs_config is None:
-        parser.error("--jobs-config is required unless --credits-report is given")
-    if args.rebuild_runtime_textures:
-        configs = load_job_configs(args.jobs_config)
-        assets = list(configs) if args.all or not args.assets else args.assets
-        missing = sorted(set(assets) - set(configs))
-        if missing:
-            raise KeyError(f"Unknown configured 3D jobs: {missing}")
-        rebuilt = {asset: rebuild_runtime_textures(configs[asset]) for asset in assets}
-        print(json.dumps(rebuilt, indent=2, sort_keys=True))
-        return 0
+    handled = run_file_only_command(args, parser)
+    if handled is not None:
+        return handled
     require_api_key()
     configs = load_job_configs(args.jobs_config)
     if args.shared_humanoid_batch:
@@ -3255,6 +3784,8 @@ def main() -> int:
             results.append({"asset": asset, "continuation": continue_static(spec)})
         elif spec["asset_kind"] in CREATURE_ASSET_KINDS:
             results.append({"asset": asset, "continuation": continue_creature(spec)})
+        elif spec.get("unit_type"):
+            results.append({"asset": asset, "continuation": continue_unit_humanoid(spec)})
         else:
             continuation = (
                 continue_humanoid_local(spec)

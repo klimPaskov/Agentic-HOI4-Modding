@@ -655,3 +655,9 @@ def ground_existing_action(req,h):
     corrected['hoi4_grounding_policy']='root_local_pure_world_z'
     bpy.context.scene.frame_set(start)
     return _finish(req,h,job,source,output,{'operation':'ground_existing_action','source_action':action.name,'action':corrected.name,'source_provenance':provenance,'frames':frames,'body_keys_and_original_actions_preserved':True,'native_action_sha256':h['_mesh_region_action_hash'](corrected),'status':'corrected_requires_export_reimport_review'})
+
+
+def seat_rider_action(req, h):
+    """Rider seating lives in rider_seat.py; the worker reaches it through this module's operation group."""
+    import rider_seat
+    return rider_seat.seat_rider_action(req, h)
