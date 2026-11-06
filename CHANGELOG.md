@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fix holes in 3D units made by the route itself. The first Blender step recalculated face winding on the provider mesh before any weld. Meshy's mesh is split at every UV seam, so each UV island was oriented on its own and thin fur, cloth and leaf cards came out facing inward: the ZIN yeti's own rigged mesh went from 11 flipped edges and 0.02 % of its silhouette missing to 22,486 and 7.1 %, and the later weld's rollback kept those normals. `triangulate_and_normals` now recalculates on a welded copy and flips only the split faces whose welded twin disagrees (`wind_like_welded_copy`). Found and measured by the ZIN 3D session.
 - Add six workflow lessons to the skills that own them (L-012 to L-017 in `LESSONS.md`). An interface pass starts from an assembled-screen mockup, and every capture is read against a defect checklist before it is reported. Each icon socket gets its own art, and a duplicate check is never re-baselined. Sapient armed fighters keep their weapon in hand and no two units share a library clip. Sessions in a shared checkout revert only their own hunks. A hand-drawn reference map is followed for placement and shapes, and its omissions are filled by judgment and recorded.
 
 ## 2026-11-06.1
