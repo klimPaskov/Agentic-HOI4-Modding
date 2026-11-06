@@ -48,7 +48,7 @@ The body column names a body preset (`.tools/3d_pipeline/config/body_presets.jso
 py -3.13 -B .tools/3d_pipeline/measure_body.py <job folder>
 ```
 
-It counts the feet on the ground and measures the torso and the reach of the lower body, then says which preset the model fits and how sure it is. It passes when the job's unit type uses that preset. It fails when they disagree, for example a `beast_biped` job whose model came out on four legs, and names the unit types that fit. It escalates when no preset fits, for example a body with wings, extra arms or tentacles: such a unit is rigged and animated live in Blender (see [Author animations live in Blender](#author-animations-live-in-blender)). It reads files only and costs nothing.
+It counts the feet on the ground and measures the torso and the reach of the lower body, then says which preset the model fits and how sure it is. It measures the body only, not separate plates, a quiver or a weapon, and it fails a model with pieces floating apart from the body, so you drop them before paying for the rig. It passes when the job's unit type uses that preset. It fails when they disagree, for example a `beast_biped` job whose model came out on four legs, and names the unit types that fit. It escalates when no preset fits, for example a body with wings, extra arms or tentacles: such a unit is rigged and animated live in Blender (see [Author animations live in Blender](#author-animations-live-in-blender)). It reads files only and costs nothing.
 
 Give the job its anatomy, answered from the reference image when you review it, so the check knows what a measurement cannot see: `"anatomy": {"legs": 2, "arms": 2, "wings": false, "tail": false, "extra_limbs": false, "vehicle": false, "rider_on_mount": false}` in the job's registry entry. When you know better than the measurement, set `"body_preset"` and say why in `"body_preset_reason"`.
 
@@ -103,7 +103,7 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 | No knee bends backward in any frame | A leg solver can pick the wrong side, and the unit walks like a bird |
 | Every clip moves at least as much as the stillest vanilla clip | A near-frozen clip reads as a static pose on the map |
 | Every separate part (a strap, a plate, a quiver, a weapon) is skinned and stays on the body in every frame, as close as vanilla soldiers' and horses' parts do. Any number of parts is fine | A part that floats off the body, or slides away from where it rests when the unit moves, looks broken at every zoom |
-| No two roles of one unit play the same motion | Each role must read as itself: a retreat that is the walk, a defend that is the idle |
+| No two roles of one unit play the same motion (a rider's idle, move and retreat may: the mount's gait carries it) | Each role must read as itself: a retreat that is the walk, a defend that is the idle |
 | With `--mod-root`: no clip is one another unit of the mod already plays, unless the unit is a reskin of it (`--reskin-of <unit>`) | Every unit has its own animations. Reskins of one base unit, with the same body and rig, may share them |
 | With `--mod-root`: the mesh, every animation, an entity with every state and a sub-unit sprite are registered | Unregistered files never show |
 

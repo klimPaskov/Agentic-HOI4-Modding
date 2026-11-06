@@ -2,6 +2,11 @@
 the torso is and how far the arms reach. No Blender and no rig: it reads a provider `.glb` (glTF 2.0
 binary, as Meshy delivers it) or an exported `.mesh`, both Y up.
 
+Only the body's large parts are measured: a smart-topology generation keeps an armoured figure's
+plates, a quiver and a held bow as separate small parts (an elven archer welds to 96), and a bow in
+hand reaches below the knee. A part not linked to the body through parts within vanilla's loose-part
+distance of each other is counted as `debris`, to drop before the paid rig.
+
 Every measure is a share of the model's height, so a 2 m soldier and a 7 m giant compare directly.
 The surface is sampled evenly by area (a fixed seed, so the result never changes), cut into thin
 horizontal slices, and each slice's footprint is split into separate pieces on a grid:
@@ -231,6 +236,9 @@ class BodyMeasures:
     top_pieces: int
     centre_height: float  # mean height of the surface, share of height
     slices: Dict[str, int] = field(default_factory=dict)  # slice height -> pieces, for the record
+    parts: int = 1  # connected parts after welding
+    debris: int = 0  # separate parts farther from the body than DEBRIS_GAP of the height
+    debris_gap: float = 0.0  # the farthest such part's distance, share of height
 
     def as_dict(self) -> dict:
         data = asdict(self)
@@ -293,5 +301,86 @@ def measure(positions: np.ndarray, triangles: np.ndarray) -> BodyMeasures:
     )
 
 
+# Vanilla's loose parts (GER_infantry, cavalry_horse) stay within 2 % of the height of the body
+# (`loose_gap` in config/deformation_calibration.json); a separate part farther out is debris.
+DEBRIS_GAP = 0.0197
+
+
+def split_parts(positions: np.ndarray, triangles: np.ndarray) -> np.ndarray:
+    """A part label for every triangle, connected over vertices welded by position."""
+
+    height = float(np.ptp(positions[:, 1])) if len(positions) else 1.0
+    keys = np.round(positions / max(height * 1e-5, 1e-12)).astype(np.int64)
+    _unique, canon = np.unique(keys, axis=0, return_inverse=True)
+    canon = canon.ravel()
+    parent = np.arange(int(canon.max()) + 1 if len(canon) else 0)
+
+    def find(a: int) -> int:
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    tris = canon[triangles]
+    for a, b, c in tris:
+        ra, rb, rc = find(int(a)), find(int(b)), find(int(c))
+        parent[rb] = ra
+        parent[find(rc)] = ra
+    return np.array([find(int(t[0])) for t in tris], dtype=np.int64)
+
+
+# Parts with at least this share of the largest part's surface are body (legs, torso, a helmet that came
+# apart); smaller ones (plates, straps, a quiver, a held bow) are left out of the measures.
+BODY_PART_SHARE = 0.15
+
+
+def _areas(positions: np.ndarray, triangles: np.ndarray) -> np.ndarray:
+    a, b, c = (positions[triangles[:, i]] for i in range(3))
+    return np.linalg.norm(np.cross(b - a, c - a), axis=1) / 2.0
+
+
+def body_parts(positions: np.ndarray, triangles: np.ndarray) -> Tuple[np.ndarray, int, int, float]:
+    """The body's triangles (every large part), the number of parts, and the debris count and farthest gap.
+
+    Parts are linked when they come within DEBRIS_GAP of each other; debris is every part not linked to
+    the largest one through such a chain, so a plate resting on another plate is not debris.
+    """
+
+    labels = split_parts(positions, triangles)
+    parts = np.unique(labels)
+    area = _areas(positions, triangles)
+    part_area = {int(part): float(area[labels == part].sum()) for part in parts}
+    main = max(part_area, key=part_area.get)
+    large = [part for part in part_area if part_area[part] >= BODY_PART_SHARE * part_area[main]]
+    body = triangles[np.isin(labels, large)]
+    height = max(float(np.ptp(positions[:, 1])), 1e-6)
+    # Surface samples, not vertices: two coarse parts can touch along faces whose corners are far apart.
+    samples = {}
+    for part in parts:
+        share = part_area[int(part)] / max(part_area[main], 1e-12)
+        samples[int(part)] = sample_surface(positions, triangles[labels == part], int(np.clip(3000 * share, 48, 3000)))
+    order = list(samples)
+    linked = {main}
+    frontier = [main]
+    gaps = {}
+    while frontier:
+        current = frontier.pop()
+        for other in order:
+            if other in linked:
+                continue
+            gap = float(np.linalg.norm(samples[other][:, None] - samples[current][None], axis=2).min()) / height
+            gaps[other] = min(gaps.get(other, 9.0), gap)
+            if gap <= DEBRIS_GAP:
+                linked.add(other)
+                frontier.append(other)
+    debris = [other for other in order if other not in linked]
+    farthest = max((gaps[other] for other in debris), default=0.0)
+    return body, len(parts), len(debris), farthest
+
+
 def measure_file(path: Path) -> BodyMeasures:
-    return measure(*load_surface(path))
+    positions, triangles = load_surface(path)
+    body, parts, debris, gap = body_parts(positions, triangles)
+    measures = measure(positions, body)
+    measures.parts, measures.debris, measures.debris_gap = parts, debris, gap
+    return measures

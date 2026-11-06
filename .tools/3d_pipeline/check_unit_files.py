@@ -60,7 +60,8 @@ Surface and deformation rules (always; limits are the largest values measured on
 - UNIT-ANIM-STILL: a clip moves its joints less than the stillest vanilla clip of the group. It
   reads as a frozen pose on the map.
 - UNIT-ANIM-SAME: two roles of the unit play nearly the same motion (their distance is under 12 %
-  of the larger clip's motion). Each role must read as itself.
+  of the larger clip's motion). Each role must read as itself. A seated rider is exempt for idle,
+  move, retreat and training: the mount's gait carries it, so those roles reuse idle by design.
 - UNIT-LOOSE-PART: a part not joined to the body's surface (a strap, a plate, a quiver, a separate
   weapon) has vertices with no skin weight, or sits or drifts farther from the rest of the unit, at
   rest or in any frame, than any loose part of vanilla GER_infantry or cavalry_horse. Selection boxes
@@ -280,10 +281,14 @@ def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seate
         hover = 0.0 if death else report.highest_lowest
         if not seated and (sink > sink_limit or hover > limits["hover"]):
             add("UNIT-ANIM-GROUND", "error", anim_path, f"the lowest point goes {sink:.1%} of the unit's height below the ground and up to {report.highest_lowest:.1%} above it; vanilla {'deaths sink' if death else 'units sink'} at most {sink_limit:.1%} and lift at most {limits['hover']:.1%}")
-    _check_motion(mesh, mesh_path, loaded, add, facts, limits)
+    _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated)
 
 
-def _check_motion(mesh, mesh_path, loaded, add, facts, limits):
+# A seated rider's idle, move, retreat and training are one clip by design: the mount's gait carries it.
+SEATED_REUSE = {"idle", "move", "retreat", "training"}
+
+
+def _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated=False):
     """The seam, knee, still and same-role rules (lib/pdx_motion.py)."""
 
     from lib import pdx_motion
@@ -319,6 +324,9 @@ def _check_motion(mesh, mesh_path, loaded, add, facts, limits):
     paths = sorted(loaded)
     for index, first in enumerate(paths):
         for second in paths[index + 1 :]:
+            roles = {path.stem[len(mesh_path.stem) + 1 :] for path in (first, second)}
+            if seated and roles <= SEATED_REUSE:
+                continue
             larger = max(motions[first], motions[second])
             if larger <= 0 or ("still_motion" in limits and larger < limits["still_motion"]):
                 continue  # UNIT-ANIM-STATIC or UNIT-ANIM-STILL already names both
