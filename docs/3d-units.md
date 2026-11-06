@@ -109,6 +109,22 @@ The unit passes only on `VERDICT: pass` with no listed defect. After a fail, fix
 
 The renders need Blender with io_pdx_mesh, which HOI4 Mod Setup installs. Set `BLENDER_EXE` to use a particular Blender.
 
+## Repair an exported unit for free
+
+`repair_unit.py` fixes the mesh faults the checks name, in Blender, without Meshy:
+
+```
+py -3.13 -B .tools/3d_pipeline/repair_unit.py gfx/models/units/<unit> --out <job folder>/repair --repairs winding bridges
+```
+
+| Repair | Fixes |
+|---|---|
+| `winding` | Triangles facing the wrong way and inside-out parts (UNIT-WINDING, UNIT-INSIDE-OUT) |
+| `bridges` | Surfaces joining body parts that move apart, such as an arm fused to the hips. The joining faces are cut and both sides are closed (UNIT-BRIDGE, and the stretch it causes) |
+| `holes` | Small open loops, up to `--max-hole-edges` edges (UNIT-HOLE) |
+
+It writes the repaired copy to `<job folder>/repair/files` and leaves `gfx/` alone. The skeleton, materials and the weights of every vertex it does not cut stay as they were, so the unit's `.anim` files still play. `repair_report.json` lists what changed and the check results before and after. Review the copy with `review_unit.py`, and copy it into `gfx/` only after a fresh reviewer passes it.
+
 ## When something fails
 
 Ask where a unit stands at any time. This reads files only and costs nothing:
