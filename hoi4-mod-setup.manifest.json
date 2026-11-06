@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "580f25ae7b78a0aeb06155a3b79547644218972f",
+  "generated_for_revision": "c045d7e342cff5f1b67eac6acdcc05d5512b105a",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15282,7 +15282,7 @@
       "expected_files": [
         {
           "path": ".tools/image_generation/runtime/provider_catalog.json",
-          "sha256": "8ae77af36ababba14a82662d49e761ee388270cf7f0d5380177d617f534eb013",
+          "sha256": "370dc16b73a31f095e512e08ec9ff8a788fe33fce57e0a9263fc06c769e341d4",
           "size": 108945
         },
         {
