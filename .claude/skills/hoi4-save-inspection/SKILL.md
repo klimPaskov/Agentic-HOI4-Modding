@@ -1,6 +1,6 @@
 ---
 name: hoi4-save-inspection
-description: Use when the user supplies, names, or offers a Hearts of Iron IV save, or when runtime state would settle a question that source reading cannot, such as which flags and variables are really set, why a decision is unavailable, what an action changed, whether state survives save and reload, what the AI did over time, whether script state leaks, or how an engine rule behaves. Reads plain-text saves with the bundled read-only inspector.
+description: Use when the user supplies or names a Hearts of Iron IV save, or when runtime state would settle what source reading cannot, with a read-only inspector for plain-text saves.
 ---
 
 # HOI4 Save Inspection

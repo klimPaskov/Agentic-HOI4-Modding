@@ -11,5 +11,11 @@
     ".claude/agents/*.md"
   ],
   "root_skill_max_bytes": 58000,
-  "_comment": "Measured: about 3 bytes per token for this guidance. guidance_file_tokens is the single-read ceiling for instruction files and agent prompts; root_skill_max_bytes keeps each SKILL.md just below it."
+  "context_budget": {
+    "bytes_per_token": 4,
+    "template_tokens": 4000,
+    "skill_tokens": 5000,
+    "description_max_chars": 200
+  },
+  "_comment": "guidance_file_tokens is the single-read ceiling for instruction files and agent prompts in every project (measured at about 3 bytes per token, the safe side); root_skill_max_bytes keeps each SKILL.md just below it in an installed mod. context_budget (maintainer decision R-1, 2026-11-06) applies in the source package, where CLAUDE_template.md exists: the instruction template holds at most template_tokens, each SKILL.md at most skill_tokens with details moved to references/, and each skill description is one sentence of at most description_max_chars characters. A token is estimated as bytes_per_token UTF-8 bytes (LF line endings); the o200k tokenizer measured 4.3 to 5.1 bytes per token on this guidance on 2026-11-06."
 }

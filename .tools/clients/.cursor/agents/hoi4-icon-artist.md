@@ -14,6 +14,7 @@ Context budget rule:
 Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files beyond explicitly named visual references, or gameplay implementation files. This task does not require Clausewitz syntax or repo-wide implementation context.
 
 Read only:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - the parent icon prompt, manifest, or handoff
 - relevant sections of .claude/skills/hoi4-feature-assets/SKILL.md for icon sizes, reference folders, transparency, DDS conversion, manifests, and GFX handoff
 - relevant sections of .claude/skills/hoi4-frame-animation/SKILL.md when the parent asks for any animated icon, sprite sequence, GIF preview, glow loop, pulse loop, hover loop, route-state animation, or button animation

@@ -185,10 +185,24 @@ def main():
         assert runtime_settings["agents"]["source"] == ".claude/agents"
 
     template = (ROOT / "CLAUDE_template.md").read_text(encoding="utf-8")
-    for required in ("[MOD_NAME]", "[MOD_PREFIX]", "[HOI4_GAME_DIR]", "## Placeholder Guide", "## 0. Required Reading", "## 1. Coding Style", "## 5. Completion", "## 10. Git", "### Agent runtimes", "#### Claude Code runtime", "#### DeepSeek Harness (DSH) runtime", "docs/runtimes.md", "sync_agents.py", "| Opus | `hoi4_improvement_loop_planner` |"):
+    # The template keeps the rules every task needs and the Setup placeholders. The full text of each section lives
+    # in the hoi4-project-rules skill (maintainer decision R-1: a template of at most 4,000 tokens).
+    rules_dir = ROOT / ".claude" / "skills" / "hoi4-project-rules" / "references"
+    rules = {path.name: path.read_text(encoding="utf-8") for path in sorted(rules_dir.glob("*.md"))}
+    assert len(rules) == 14, sorted(rules)
+    for required in ("[MOD_NAME]", "[MOD_PREFIX]", "[HOI4_GAME_DIR]", "[STEAM_WORKSHOP_DIR]", "## Placeholder Guide", "## 0. Required Reading", "## 1. Coding Style", "## 5. Completion", "## 10. Git", "### Agent runtimes", "docs/runtimes.md", "sync_agents.py", "hoi4-project-rules"):
         assert required in template, required
+    for name, required in (("agent-runtimes.md", "#### Claude Code runtime"), ("agent-runtimes.md", "#### DeepSeek Harness (DSH) runtime"), ("subagents.md", "| Opus | `hoi4_improvement_loop_planner` |")):
+        assert required in rules[name], (name, required)
+    # Every reference the template names exists, so no summary points at a missing file.
+    for name in set(re.findall(r"`([a-z0-9-]+\.md)`", template)):
+        assert name in rules, f"CLAUDE_template.md names {name}, which is not a hoi4-project-rules reference"
     for forbidden in ("ImageGen", "$imagegen", "Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/", "sync_claude_agents", "OneDrive", "klimp", "Chaos Redux", "chaosx"):
         assert forbidden not in template.replace("for example `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`", ""), forbidden
+        for name, text in rules.items():
+            assert forbidden not in text, (name, forbidden)
+    for name, text in rules.items():
+        assert not re.search(r"\[(?:MOD|HOI4|STEAM)_[A-Z_]+\]", text), f"{name} holds a Setup placeholder that is only filled in CLAUDE.md"
     markers = re.findall(r"<!-- HOI4_MOD_SETUP:COMPONENT:([a-z0-9._]+):(START|END) -->", template)
     stack = []
     for component, kind in markers:
@@ -205,7 +219,8 @@ def main():
     runtimes_doc = (ROOT / "docs" / "runtimes.md").read_text(encoding="utf-8")
     assert "@path" in runtimes_doc and "mcp__" in runtimes_doc and "sync_skills.py" in runtimes_doc
 
-    for path in ("CLAUDE_template.md", "AGENTS_template.md", "docs/runtimes.md", ".tools/sync/README.md"):
+    rule_files = [f".claude/skills/hoi4-project-rules/references/{name}" for name in rules]
+    for path in ("CLAUDE_template.md", "AGENTS_template.md", "docs/runtimes.md", ".tools/sync/README.md", *rule_files):
         wraps = hard_wraps((ROOT / path).read_text(encoding="utf-8"))
         assert not wraps, f"{path} has mid-sentence hard wraps: {wraps[:3]}"
 

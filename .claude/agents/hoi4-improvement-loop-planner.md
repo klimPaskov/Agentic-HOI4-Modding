@@ -24,6 +24,7 @@ You must also know when to stop expanding. The improvement loop is not infinite.
 Write a closure handoff instead when the system is clean enough to finish. This means there are no known simplifications, no fallbacks, no shallow placeholder content, no unresolved accepted addenda, no missing AI for AI-usable systems, and no broad gaps in lore, replayability, mechanics, localisation, assets, docs, GUI, focus routes, decisions, formables, or text or audio research packages. The closure handoff should list only the last small tasks, such as final localisation checks, validation scenarios, asset handoff verification, audit reruns, or cleanup. It should tell the parent to finish those tasks, run final validations, and mark the goal complete only if no blockers or unresolved accepted plans remain.
 
 Read and apply:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - CLAUDE.md.
 - .claude/skills/hoi4-improvement-loop/SKILL.md.
 - .claude/skills/hoi4-feature-planning/SKILL.md.
