@@ -56,9 +56,11 @@ def _obj(name: str, depth: int) -> bytes:
 BONES = [("Root", -1, (0, 1, 0)), ("ArmL", 0, (-1, 1, 0)), ("HandL", 1, (-2, 1, 0)), ("ArmR", 0, (1, 1, 0)), ("HandR", 3, (2, 1, 0))]
 
 
-def write_mesh(path: Path, positions, triangles, bone_of_vertex=None) -> None:
+def write_mesh(path: Path, positions, triangles, bone_of_vertex=None, normals=None) -> None:
     data = b"@@b@" + _obj("object", 1) + _obj("unit", 2) + _obj("mesh", 3)
     data += _prop("p", "f", [float(v) for p in positions for v in p])
+    if normals is not None:
+        data += _prop("n", "f", [float(v) for n in normals for v in n])
     data += _prop("tri", "i", [int(i) for t in triangles for i in t])
     data += _obj("material", 4) + _prop("shader", "s", ["PdxMeshAdvanced"])
     if bone_of_vertex is not None:
@@ -157,6 +159,65 @@ class SurfaceRules(unittest.TestCase):
         self.assertNotIn("UNIT-HOLE", rules)
 
 
+class NormalsRule(unittest.TestCase):
+    """UNIT-NORMALS: stored normals against the faces that use them."""
+
+    def check(self, normals, unit_type=None):
+        positions, triangles = tetrahedron()
+        with tempfile.TemporaryDirectory() as folder:
+            write_mesh(Path(folder) / "u.mesh", positions, triangles, normals=normals)
+            findings, facts = check_unit_files.check_files(Path(folder), unit_type, None, limits=STRICT)
+        return [item for item in findings if item.rule == "UNIT-NORMALS"], facts
+
+    @staticmethod
+    def outward(sign=1.0):
+        positions, triangles = tetrahedron()
+        centre = np.mean(positions, axis=0)
+        return [tuple(sign * (np.array(p) - centre) / np.linalg.norm(np.array(p) - centre)) for p in positions]
+
+    def test_normals_that_agree_with_the_faces_pass(self) -> None:
+        found, facts = self.check(self.outward())
+        self.assertEqual(found, [])
+        self.assertEqual(facts["surface"]["u.mesh"]["normals_against_faces"], 0)
+
+    def test_flipped_normals_are_an_error_that_names_the_shading(self) -> None:
+        found, facts = self.check(self.outward(-1.0))
+        self.assertEqual(len(found), 1)
+        self.assertEqual(found[0].severity, "error")
+        self.assertIn("pale flat facets", found[0].message)
+        self.assertEqual(facts["surface"]["u.mesh"]["normals_against_faces"], 4)
+
+    def test_a_mesh_without_stored_normals_is_not_judged(self) -> None:
+        self.assertEqual(self.check(None)[0], [])
+
+    def test_a_vehicle_gets_the_vehicle_share(self) -> None:
+        # Twenty tetrahedra with one turned inside out: 4 of 80 vertices (5 %). Above the organic
+        # limit (1.24 %), below the vehicle limit (8.97 %).
+        positions, triangles, normals = [], [], []
+        for index in range(20):
+            tetra, faces = tetrahedron((index * 1.0, 0.0, 0.0))
+            centre = np.mean(tetra, axis=0)
+            sign = -1.0 if index == 0 else 1.0
+            triangles += [tuple(v + len(positions) for v in face) for face in faces]
+            normals += [tuple(sign * (np.array(p) - centre) / np.linalg.norm(np.array(p) - centre)) for p in tetra]
+            positions += tetra
+        found = {}
+        for group in ("organic", "vehicle"):
+            with tempfile.TemporaryDirectory() as folder:
+                write_mesh(Path(folder) / "u.mesh", positions, triangles, normals=normals)
+                findings, _ = check_unit_files.check_files(Path(folder), {"calibration_group": group, "roles": {}}, None, limits=STRICT)
+            found[group] = [item.rule for item in findings if item.rule == "UNIT-NORMALS"]
+        self.assertEqual(found, {"organic": ["UNIT-NORMALS"], "vehicle": []})
+
+    def test_the_verdict_escalates_with_a_one_line_fix(self) -> None:
+        from lib import stage_verdict
+
+        steps, escalation = stage_verdict.next_for_findings(["UNIT-NORMALS"], "u", "out")
+        self.assertEqual(steps, [])
+        self.assertEqual(escalation["rules"], ["UNIT-NORMALS"])
+        self.assertIn("flip those normals", escalation["why"][0])
+
+
 class BridgeRule(unittest.TestCase):
     def bridges(self, positions, triangles, bones):
         with tempfile.TemporaryDirectory() as folder:
@@ -240,6 +301,30 @@ class DeformationRules(unittest.TestCase):
         self.assertLess(report.lowest, -0.5)
         self.assertEqual(report.lowest_frame, 0)
         self.assertIn("UNIT-ANIM-GROUND", rules)
+
+
+class VehicleType(unittest.TestCase):
+    def test_the_vehicle_type_is_judged_against_the_vehicle_group(self) -> None:
+        types = check_unit_files.load_unit_types()
+        self.assertEqual(types["vehicle"]["calibration_group"], "vehicle")
+        self.assertIsNone(types["vehicle"]["body"])
+        self.assertEqual(types["vehicle"]["rig"], "blender_live")
+        # A flat 25 x 25 grid has one open loop of 100 edges: over the organic limit (56), under the vehicle's (122).
+        n = 25
+        positions = [(x, 0.0, z) for z in range(n + 1) for x in range(n + 1)]
+        triangles = []
+        for z in range(n):
+            for x in range(n):
+                a = z * (n + 1) + x
+                triangles += [(a, a + n + 1, a + 1), (a + 1, a + n + 1, a + n + 2)]
+        found = {}
+        for name in ("infantry_melee", "vehicle"):
+            with tempfile.TemporaryDirectory() as folder:
+                write_mesh(Path(folder) / "u.mesh", positions, triangles)
+                unit_type = {**types[name], "roles": {}}
+                findings, _ = check_unit_files.check_files(Path(folder), unit_type, None)
+            found[name] = [item.rule for item in findings if item.rule == "UNIT-HOLE"]
+        self.assertEqual(found, {"infantry_melee": ["UNIT-HOLE"], "vehicle": []})
 
 
 class Calibration(unittest.TestCase):

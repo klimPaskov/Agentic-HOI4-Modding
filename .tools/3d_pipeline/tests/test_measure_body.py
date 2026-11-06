@@ -214,6 +214,10 @@ class Job(unittest.TestCase):
         presets = measure_body.load_presets()["presets"]
         types = json.loads(measure_body.UNIT_TYPES.read_text(encoding="utf-8"))["types"]
         for name, entry in types.items():
+            if entry.get("body") is None:
+                # A vehicle has no body preset: measure_body.py sends it to live Blender authoring.
+                self.assertEqual(entry.get("calibration_group"), "vehicle", name)
+                continue
             self.assertIn(entry.get("body"), presets, name)
             self.assertEqual(presets[entry["body"]]["blender"]["rig"], entry["rig"], name)
 

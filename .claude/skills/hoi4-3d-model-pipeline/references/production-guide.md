@@ -368,6 +368,8 @@ Give `REVIEW_REQUEST.md` and the sheets, and nothing else, to a reviewer with a 
 
 After a fail, fix the root cause, export again, rerun the checks and render a new review for a new fresh reviewer. Keep every reply and `verdict.json` as evidence. Never raise a check's limit, mark a defect as accepted, or crop or hide views to get a pass. Only the maintainer may waive a listed defect, and the waiver is recorded with the reply.
 
+A reviewer can misread a small dark feature seen side-on, for example a large black eye read as an open mouth with a hole. Before changing the model, check the geometry: a closed mesh with no winding conflicts has no hole. Name the feature in the unit's fixed review note (`review_unit.py --note-file`, kept in the job folder so every round uses it), for example that the large dark eyes are intended. Then render a close-up at a higher resolution (`--size 768` or more) so the feature shows its real shape.
+
 ## Evidence package and handoff
 
 The job package must contain, as applicable:

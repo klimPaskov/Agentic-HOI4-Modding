@@ -156,6 +156,26 @@ Weight fixes correct existing weights; they never invent a weight set.
 - Ground corrections in a death clip pile up and fight later pose edits. Keep a correction key only at
   the deepest frame of each dip, and delete the stale correction keys before you re-pose a fall.
 
+## Vehicles
+
+Use the `vehicle` unit type for a tank, an armoured car or any wheeled or tracked unit. It has no Meshy
+route: rig and animate it here, and the checks judge it against vanilla's vehicle group.
+
+- A generated vehicle often has fused rigid parts: faces that join the chassis to the wheels and the
+  turret. Skinning smears wheels into fans and stripes the turret skirt. Rip each bridge face onto one
+  part. Turret bridges go to the turret. Outer fender pieces (radius beyond the tyre) go to the chassis.
+  The kit welds vertices that coincide (1e-5 of the height), so move the ripped part's seam vertices a
+  few millimetres inward, or the stretch check still sees one surface. That opens seam loops, so close
+  them afterwards with `repair_unit.py --repairs holes winding`. Keep the gap near 6 mm: with 2 mm the
+  caps joined both sides again.
+- Put each wheel bone at the centre of its tyre ring, not at the hub vertex or the bounding box. Fit a
+  circle to the tyre's rim vertices in the wheel's plane and place the bone head on its centre. An
+  off-centre pivot makes the wheel dip below the ground while it spins (UNIT-ANIM-GROUND).
+- Keep turret traverse within what the model allows. A turret that is not round shows slivers between the
+  skirt and the deck past about 25 degrees of yaw, so author at most 25 degrees. Make the roles read
+  through other motion: recoil on the attack, rock and weave on the move, spin on the wheels or tracks,
+  a lurch on the retreat and a settling slump on the death.
+
 ## Repairing the mesh
 
 - A surface that folds through itself, one the winding repair cannot resolve (a shoulder pad and collar
@@ -163,6 +183,9 @@ Weight fixes correct existing weights; they never invent a weight set.
   the Left and Right vertex groups, reverse the faces and mirror the corner normals. Then delete the
   remaining fold edges and cap each opening with a fan around a new centre vertex wound like its
   neighbours.
+- UNIT-NORMALS means corner normals point against their faces and shade as pale flat facets. The winding
+  repair keeps imported normals, so flip those corner normals, or recalculate them on a welded copy and
+  copy the result back.
 - If an edit leaves the per-face `sharp_face` flags from the import, io_pdx_mesh splits every corner and a
   stream goes past 65,535 vertices (UNIT-STREAM-VERTICES fails after export). Clear them first with
   `h.clear_sharp_faces(mesh)`, which also smooths every face and returns how many were sharp.

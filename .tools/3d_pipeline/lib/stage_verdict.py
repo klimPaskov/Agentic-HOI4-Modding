@@ -47,6 +47,7 @@ ESCALATE = {
     "UNIT-ROLE-MISSING": "a role has no clip",
     "UNIT-ANIM-STATIC": "a clip moves nothing",
     "UNIT-ANIM-FPS": "a clip is not at 30 fps: export it again with the kit (run_pilot.py's export step, or live_helpers.export_clip in a live session), which retimes it to 30 and keeps its length in seconds",
+    "UNIT-NORMALS": "corner normals point against their faces and shade as pale flat facets: flip those normals, or recalculate them on a welded copy (the winding repair keeps imported normals)",
     "UNIT-UNSKINNED": "the mesh has no skeleton",
     "UNIT-LOOSE-PART": "a loose part floats or drifts off the body: bind it to the bone it rests on with the job's loose_part_edits and rerun the job (free), or weight it by hand",
 }

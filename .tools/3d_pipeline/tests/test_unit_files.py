@@ -242,6 +242,7 @@ class UnitTypeCatalog(unittest.TestCase):
                     if unit_type["rig"] != "meshy_humanoid":
                         self.assertNotIn("meshy", role)
         self.assertIn("Saddle_Node", types["mount"]["required_nodes"])
+        self.assertEqual(types["vehicle"]["calibration_group"], "vehicle")
 
 
 class UnitTypeValidation(unittest.TestCase):
