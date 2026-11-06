@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "dd8fd661be61ae83274dd0728330c6822ca63c72",
+  "generated_for_revision": "0bfb15617dab3080b98de4d6a0f017a4f2300a8a",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15020,8 +15020,8 @@
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "25b7349422953d66d06ea0e807a9f12a139c4e8b797f7b6cead327a9ef4899c3",
-          "size": 43569
+          "sha256": "9770e1597968ae5783409d71f77213cbc87247fddc05786289a385d21c05172a",
+          "size": 44869
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -15115,8 +15115,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_deform.py",
-          "sha256": "a428843b24e3ae67a987c1c70cb6c05852c19cf1094214d4856238bfc93e178a",
-          "size": 20607
+          "sha256": "5c00c5ad5c80a27aae5e615d8efc315e77b559fd5b0529b75a68daa2802ab9c1",
+          "size": 20930
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_ground.py",
@@ -15125,8 +15125,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_motion.py",
-          "sha256": "e22403c5f1a1833bf2d8403c664af205fa5d58c8310b49c8c3e030fe1555eaf3",
-          "size": 20127
+          "sha256": "7f6fe34c5fb5506223f755a9c44a9cffd431f2324daa714ed86f75f55b9e19ca",
+          "size": 23780
         },
         {
           "path": ".tools/3d_pipeline/lib/profile_gates.py",
@@ -15895,8 +15895,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_loose_parts.py",
-          "sha256": "e42a22c9042d600fe003e2df8c97061501722b4e6352f0ec1abbae9135a64507",
-          "size": 6236
+          "sha256": "95fc6780b071c107833cca989431fbed57ff014978fd65aa095e470132379519",
+          "size": 9868
         },
         {
           "path": ".tools/3d_pipeline/tests/test_manual_creature_rig_contract.py",
