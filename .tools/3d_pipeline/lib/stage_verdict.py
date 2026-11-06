@@ -42,6 +42,7 @@ REPAIRS = {
 ESCALATE = {
     "UNIT-ANIM-KNEE": "a knee bends backward: solve the leg again with the knee toward the toes",
     "UNIT-ANIM-STILL": "a clip barely moves: author a clip that reads as its role",
+    "UNIT-ANIM-SPIN": "a joint snaps round in one frame: flip keys on the far side of the quaternion sphere (live_helpers.normalize_quaternion_keys) and export again, or spread the turn over more frames",
     "UNIT-ANIM-SAME": "two roles play the same motion: give one its own clip",
     "UNIT-ANIM-SHARED": "the unit plays another unit's clip: give it its own clip, or declare it a reskin",
     "UNIT-ROLE-MISSING": "a role has no clip",

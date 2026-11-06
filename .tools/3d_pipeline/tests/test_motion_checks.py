@@ -50,6 +50,7 @@ LIMITS = {
     "hover": 1e9,
     "seam_edges": 0,
     "still_motion": 0.003,
+    "turn_per_frame": 37.2,
 }
 
 
@@ -207,6 +208,32 @@ class MotionRules(unittest.TestCase):
     def test_a_crotch_blended_into_the_hips_is_no_seam(self) -> None:
         _findings, facts = self.check({}, crotch_blend=0.4)
         self.assertEqual(facts["motion"]["u.mesh"]["seam_edges"], 0)
+
+    def test_a_limb_that_swings_round_in_one_frame_spins(self) -> None:
+        # A thigh keyed on the far side of the quaternion sphere: Blender bakes the long way round,
+        # 150 degrees between frames 4 and 5. The walk turns about 10 degrees a frame.
+        def sweep(frame: int):
+            pose = walk(frame)
+            if frame >= 5:
+                pose["LeftUpLeg"] = about_x(150.0)
+            return pose
+
+        findings, facts = self.check({"move": (20, walk), "attack": (12, sweep)})
+        spin = [item for item in findings if item.rule == "UNIT-ANIM-SPIN"]
+        self.assertEqual(len(spin), 1, findings)
+        self.assertIn("u_attack.anim", spin[0].file)
+        self.assertIn("frame 5: LeftUpLeg turns", spin[0].message)
+        self.assertLess(facts["motion"]["u.mesh"]["clips"]["u_move.anim"]["fastest_turn"], 15.0)
+
+    def test_a_joint_that_skins_nothing_may_flip(self) -> None:
+        # Vanilla flips a hand attach node half a turn in one frame; a node skins no vertex.
+        with tempfile.TemporaryDirectory() as folder:
+            write_unit(Path(folder), "u", {"idle": (6, lambda f: {"LeftToeBase": about_x(170.0 if f >= 3 else 0.0)})})
+            loaded = pdx_deform.load_mesh(Path(folder) / "u.mesh")
+            anim = pdx_deform.load_anim(Path(folder) / "u_idle.anim")
+            skinned = {loaded.bones[i] for i in set(loaded.joints[loaded.weights > 0].tolist())}
+        self.assertNotIn("LeftToeBase", skinned)
+        self.assertEqual(pdx_motion.fastest_turn(loaded, anim).degrees, 0.0)
 
     def test_a_clip_that_barely_moves_is_still(self) -> None:
         rules = self.rules({"idle": (20, lambda f: {"Head": about_x(0.3 * math.sin(f))}), "move": (20, walk)})
