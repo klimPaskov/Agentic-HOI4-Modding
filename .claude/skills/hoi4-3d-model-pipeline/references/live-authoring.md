@@ -120,7 +120,10 @@ Weight fixes correct existing weights; they never invent a weight set.
 
 ## After authoring
 
-1. Export, then run `check_unit_files.py` with `--mod-root` (it also compares the clips with the mod's
+1. Export each clip with `h.export_clip(action, path)`, never with the io_pdx_mesh export operator: the
+   operator ignores its start and end frames unless the scene's custom-range setting is on and exports
+   the scene's range, so clips came out padded or cut to 80 or 85 samples. `export_clip` uses the action's
+   own range and fails when the file's sample count differs. Then run `check_unit_files.py` with `--mod-root` (it also compares the clips with the mod's
    other units). Every rule must pass, including UNIT-ANIM-KNEE, UNIT-SEAM, UNIT-ANIM-STILL,
    UNIT-ANIM-SAME and UNIT-ANIM-SHARED.
 2. Re-time the entity's timed events (muzzle flashes, sounds) in `gfx/entities/*.asset` to the new

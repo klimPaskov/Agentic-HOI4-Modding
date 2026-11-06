@@ -16,7 +16,11 @@ copied to `<out>/prop_textures`, packed the way the unit route packs a unit's ma
 - tries 42 directions in the hand bone's frame over every `--step`-th frame of every clip, and keeps
   the one whose far end least often goes inside the body or below the ground;
 - binds the prop rigidly to the hand as its own shape and exports the mesh again. The clips are not
-  touched.
+  touched. A prop shape of the same name from an earlier fit is replaced, so refitting never doubles it.
+
+Run the free mesh repairs first and fit the prop last. To try another grip, run it again on the same
+folder: start with a shorter `--length` (0.4 of the height clears most heads and hips) and move
+`--grip` between 0.1 and 0.3.
 
 The verdict passes when the best direction never goes below the ground and goes inside the body in
 at most 2 % of its sampled points, and names the check and the review to run next. Otherwise it

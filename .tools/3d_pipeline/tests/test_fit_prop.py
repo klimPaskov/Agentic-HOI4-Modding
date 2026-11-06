@@ -121,6 +121,29 @@ class FitInBlender(unittest.TestCase):
         self.assertTrue(np.all(fitted.joints[added, 0] == hand))
         self.assertEqual(report["frames_checked"], 6)
 
+    def test_fitting_again_replaces_the_prop(self) -> None:
+        import test_deformation_checks as arms
+        import test_measure_body as glb
+
+        with tempfile.TemporaryDirectory() as folder:
+            unit = Path(folder) / "unit"
+            unit.mkdir()
+            positions, triangles, bones = arms.two_arm_strip()
+            arms.write_mesh(unit / "u.mesh", positions, triangles, bones)
+            arms.write_anim(unit / "u_idle.anim", 4, lambda frame: {})
+            prop = Path(folder) / "prop" / "geometry.glb"
+            maps(prop.parent / "geometry_textures")
+            glb.write_glb(prop, *glb.body((-0.03, 0.03, 0.0, 1.0, -0.03, 0.03)))
+            common = ["--prop", str(prop), "--bone", "HandR", "--size", "16", "--step", "2"]
+            with redirect_stdout(io.StringIO()):
+                fit_prop.main([str(unit), *common, "--out", str(Path(folder) / "first")])
+                fit_prop.main([str(Path(folder) / "first" / "files"), *common, "--length", "0.4", "--out", str(Path(folder) / "second")])
+            once = pdx_binary.summarize_mesh(pdx_binary.read(Path(folder) / "first" / "files" / "u.mesh"))
+            twice = pdx_binary.summarize_mesh(pdx_binary.read(Path(folder) / "second" / "files" / "u.mesh"))
+            report = json.loads((Path(folder) / "second" / "fit_report.json").read_text(encoding="utf-8"))
+        self.assertEqual(len(twice.streams), len(once.streams))
+        self.assertEqual(report["replaced_prop"], ["u_prop"])
+
 
 if __name__ == "__main__":
     unittest.main()

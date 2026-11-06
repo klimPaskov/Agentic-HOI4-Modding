@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "76a5c10f69882bc73103d8bfe47490c65e211314",
+  "generated_for_revision": "8ff77e26fe0abd5a6c1773f433e33d9261711e67",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1789,8 +1789,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "7336239540e5e129f6e2c2a5b9b7356eec374187eea9c33b8263c16c1b9b635b",
-          "size": 8548
+          "sha256": "173e8cae11f9b2697129e7e6e12ae7dc48df356c97a7ae36ce6955a4a848a818",
+          "size": 8912
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -7243,8 +7243,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "7336239540e5e129f6e2c2a5b9b7356eec374187eea9c33b8263c16c1b9b635b",
-          "size": 8548
+          "sha256": "173e8cae11f9b2697129e7e6e12ae7dc48df356c97a7ae36ce6955a4a848a818",
+          "size": 8912
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -14834,6 +14834,11 @@
           "size": 16081
         },
         {
+          "path": ".tools/3d_pipeline/adapter/anim_frame_range.py",
+          "sha256": "7850759efa0693c23a95a5f50eb9221379291569395e7054a5e972c0ba1fa009",
+          "size": 1886
+        },
+        {
           "path": ".tools/3d_pipeline/adapter/animation_root_export.py",
           "sha256": "d03799e55f410e2f60c2d51957910dd0573a5956bbb4d0ad460c567c3ea8b6b0",
           "size": 4949
@@ -14845,8 +14850,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/blender_worker.py",
-          "sha256": "221f0df0cef8e0c43165f5a2e320b56ed5a54d66cfe45113e6c68a38765441a8",
-          "size": 542775
+          "sha256": "2aa5f689bd46d5f14fef57b2c2f863c3d3b5bd529c0e76b9e05068dbd870d9fc",
+          "size": 543008
         },
         {
           "path": ".tools/3d_pipeline/adapter/explicit_batch_repair.py",
@@ -14975,8 +14980,8 @@
         },
         {
           "path": ".tools/3d_pipeline/authoring/live_helpers.py",
-          "sha256": "f314198a4b10923e13472aad55572c6097925abd6e2621259099fd705a63e951",
-          "size": 25901
+          "sha256": "1671869ad3625f266a6c92c28dc3be157af48fb83e5247898a8a093e899e69dd",
+          "size": 27784
         },
         {
           "path": ".tools/3d_pipeline/blender/fit_prop.py",
@@ -15187,6 +15192,11 @@
           "path": ".tools/3d_pipeline/run_pilot.py",
           "sha256": "d864c73d577c81c49547446139f467da809610925a2f0ed72e5b2119479d666a",
           "size": 156211
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/blender_export_clip_integration.py",
+          "sha256": "efea4f3c6bc85a2d2be0fd4e5bedfce09f348433a6a1d7181b3f27d9b7a1bba9",
+          "size": 2004
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_live_helpers_integration.py",
@@ -15772,6 +15782,11 @@
           "path": ".tools/3d_pipeline/tests/test_action_phase_patch.py",
           "sha256": "58eaea29b09ce425e17a409f3926de442e60b718896c365146b9bd017cae06dd",
           "size": 11831
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_anim_frame_range.py",
+          "sha256": "a646bd56f501a8896b58ac7ed2b616a247e75e05f2d33a7402467c00ad7b832c",
+          "size": 2544
         },
         {
           "path": ".tools/3d_pipeline/tests/test_animation_retarget.py",
@@ -19106,8 +19121,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "7336239540e5e129f6e2c2a5b9b7356eec374187eea9c33b8263c16c1b9b635b",
-          "size": 8548
+          "sha256": "173e8cae11f9b2697129e7e6e12ae7dc48df356c97a7ae36ce6955a4a848a818",
+          "size": 8912
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -24598,8 +24613,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "7336239540e5e129f6e2c2a5b9b7356eec374187eea9c33b8263c16c1b9b635b",
-          "size": 8548
+          "sha256": "173e8cae11f9b2697129e7e6e12ae7dc48df356c97a7ae36ce6955a4a848a818",
+          "size": 8912
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -30090,8 +30105,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "7336239540e5e129f6e2c2a5b9b7356eec374187eea9c33b8263c16c1b9b635b",
-          "size": 8548
+          "sha256": "173e8cae11f9b2697129e7e6e12ae7dc48df356c97a7ae36ce6955a4a848a818",
+          "size": 8912
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
