@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "4a0046bd9594f8b615d7985460d26d75aef7f146",
+  "generated_for_revision": "3d9b650e9811649db497dc9e68963b465716542a",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "1b982916057955ccdad20db3ce39ccda019d16276765674829f9bbce49ba8b72",
-          "size": 15903
+          "sha256": "aaa10f4c949931af4285b208f9cddb3df7c86d44786e3f8cc9b7d3a6279a6556",
+          "size": 15884
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "6d75b2c9d5afd051ef169661f2c194062346e471a9671ce6d98bdb226ae5a13c",
-          "size": 15903
+          "sha256": "a5f0be122b2558ee28b21b7adb6e1888e5751a0f10c9bb03aa654be6cd7617f2",
+          "size": 15884
         }
       ]
     },
@@ -1784,8 +1784,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "fdd60b5bf00b7f94fbae7cd726affc5a4ecce845850f31f123b767d12b09c394",
-          "size": 4359
+          "sha256": "f3b97b4b55ebda23bbbd6a2fad113508c914b19ea9f012e76f021902fa56678a",
+          "size": 4786
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -1794,8 +1794,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "24d918cbe213cf5f73eaf87f419f4b57de67d8641a10c7eb650aa5fcefc5459c",
-          "size": 73637
+          "sha256": "af1db803521395a6d27cfa27f07dd940e3493906ae06a32886caa2c91df25387",
+          "size": 75158
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -1844,8 +1844,8 @@
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/SKILL.md",
-          "sha256": "1459f95cef3a06e90df910d1e21bbbe0fda6108bc001fbc19173c2f90e29fb8e",
-          "size": 10791
+          "sha256": "797df9e90482ce4ed5f20e7ec9f951b600859715fdf23655c1b8c9094e0d2e9c",
+          "size": 10900
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/references/advisor-unit-leader-and-scientist-roles.md",
@@ -2119,8 +2119,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "9573614f539635f27dd511e79b142b92f42c15e2b3f25fcefbd015967c9cd0cd",
-          "size": 12917
+          "sha256": "b97c412f4914f2d7af5db232aa86f36a9b1da6d757b0a6dc957cb05008013fcb",
+          "size": 13050
         },
         {
           "path": ".claude/skills/hoi4-events/references/completion-checklist.md",
@@ -6493,6 +6493,11 @@
           "size": 4800
         },
         {
+          "path": ".claude/skills/hoi4-ideologies/SKILL.md",
+          "sha256": "9a1b4d3a311a0e135b17be32597e98d9e3ddd6651a9f0a627484497dfcb1143a",
+          "size": 11929
+        },
+        {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
           "sha256": "c0b81b3449e614d4b9a391e4115d268568dd90a01f57b209be2c783f10eeb066",
           "size": 9458
@@ -6526,6 +6531,11 @@
           "path": ".claude/skills/hoi4-investigate/SKILL.md",
           "sha256": "aa1330a8ea73dd206e346943c9d0e417faea99d40d4d6bfb44505848eb9739c7",
           "size": 5913
+        },
+        {
+          "path": ".claude/skills/hoi4-localisation/SKILL.md",
+          "sha256": "fcaceb0430dd2f4a54dbe5a4c58a39229ff22d9654fa91803a0ef2762b6c1324",
+          "size": 12002
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
@@ -6576,6 +6586,11 @@
           "path": ".claude/skills/hoi4-native-raids/SKILL.md",
           "sha256": "a50def314f25a52eb8b64be05b3e54dec9fe3ef6a8d1ed29054a3697d4a4b57a",
           "size": 4828
+        },
+        {
+          "path": ".claude/skills/hoi4-on-actions/SKILL.md",
+          "sha256": "764550f8c1fc39e0c6ce9a5855ff4bcfeba43320100a73718571f48daa96eca7",
+          "size": 12044
         },
         {
           "path": ".claude/skills/hoi4-project-rules/SKILL.md",
@@ -6639,8 +6654,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "4d949bf6a01f5b066ed52b97cf1816b9940c220cf4f42dcb85bdba0fe0999e6a",
-          "size": 5380
+          "sha256": "3adec4ef098a628325c1b8ba45d144a9f5e47bce490660b56a0eb21bd11109db",
+          "size": 5696
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -6671,6 +6686,11 @@
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
           "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
           "size": 10353
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-triggers-effects/SKILL.md",
+          "sha256": "abe2a0168a60ca7272228c3c232988bbae2fa623ca41b7d98a4abf5471fc468b",
+          "size": 12221
         },
         {
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
@@ -7213,8 +7233,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "fdd60b5bf00b7f94fbae7cd726affc5a4ecce845850f31f123b767d12b09c394",
-          "size": 4359
+          "sha256": "f3b97b4b55ebda23bbbd6a2fad113508c914b19ea9f012e76f021902fa56678a",
+          "size": 4786
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -7223,8 +7243,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "24d918cbe213cf5f73eaf87f419f4b57de67d8641a10c7eb650aa5fcefc5459c",
-          "size": 73637
+          "sha256": "af1db803521395a6d27cfa27f07dd940e3493906ae06a32886caa2c91df25387",
+          "size": 75158
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -7273,8 +7293,8 @@
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/SKILL.md",
-          "sha256": "1459f95cef3a06e90df910d1e21bbbe0fda6108bc001fbc19173c2f90e29fb8e",
-          "size": 10791
+          "sha256": "797df9e90482ce4ed5f20e7ec9f951b600859715fdf23655c1b8c9094e0d2e9c",
+          "size": 10900
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/references/advisor-unit-leader-and-scientist-roles.md",
@@ -7548,8 +7568,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "9573614f539635f27dd511e79b142b92f42c15e2b3f25fcefbd015967c9cd0cd",
-          "size": 12917
+          "sha256": "b97c412f4914f2d7af5db232aa86f36a9b1da6d757b0a6dc957cb05008013fcb",
+          "size": 13050
         },
         {
           "path": ".claude/skills/hoi4-events/references/completion-checklist.md",
@@ -11922,6 +11942,11 @@
           "size": 4800
         },
         {
+          "path": ".claude/skills/hoi4-ideologies/SKILL.md",
+          "sha256": "9a1b4d3a311a0e135b17be32597e98d9e3ddd6651a9f0a627484497dfcb1143a",
+          "size": 11929
+        },
+        {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
           "sha256": "c0b81b3449e614d4b9a391e4115d268568dd90a01f57b209be2c783f10eeb066",
           "size": 9458
@@ -11955,6 +11980,11 @@
           "path": ".claude/skills/hoi4-investigate/SKILL.md",
           "sha256": "aa1330a8ea73dd206e346943c9d0e417faea99d40d4d6bfb44505848eb9739c7",
           "size": 5913
+        },
+        {
+          "path": ".claude/skills/hoi4-localisation/SKILL.md",
+          "sha256": "fcaceb0430dd2f4a54dbe5a4c58a39229ff22d9654fa91803a0ef2762b6c1324",
+          "size": 12002
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
@@ -12005,6 +12035,11 @@
           "path": ".claude/skills/hoi4-native-raids/SKILL.md",
           "sha256": "a50def314f25a52eb8b64be05b3e54dec9fe3ef6a8d1ed29054a3697d4a4b57a",
           "size": 4828
+        },
+        {
+          "path": ".claude/skills/hoi4-on-actions/SKILL.md",
+          "sha256": "764550f8c1fc39e0c6ce9a5855ff4bcfeba43320100a73718571f48daa96eca7",
+          "size": 12044
         },
         {
           "path": ".claude/skills/hoi4-project-rules/SKILL.md",
@@ -12068,8 +12103,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "4d949bf6a01f5b066ed52b97cf1816b9940c220cf4f42dcb85bdba0fe0999e6a",
-          "size": 5380
+          "sha256": "3adec4ef098a628325c1b8ba45d144a9f5e47bce490660b56a0eb21bd11109db",
+          "size": 5696
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -12100,6 +12135,11 @@
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
           "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
           "size": 10353
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-triggers-effects/SKILL.md",
+          "sha256": "abe2a0168a60ca7272228c3c232988bbae2fa623ca41b7d98a4abf5471fc468b",
+          "size": 12221
         },
         {
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
@@ -14924,6 +14964,11 @@
           "size": 3777
         },
         {
+          "path": ".tools/3d_pipeline/blender/review_render.py",
+          "sha256": "bb5b08e6f3cd29ad031d9fbf38948375dfaabd6ae23c8f9c4d4745be35b9bde7",
+          "size": 6124
+        },
+        {
           "path": ".tools/3d_pipeline/blender_client.py",
           "sha256": "226aad5ee4420683ec0c070a4304c1b134c2a0ff33d0d76a78df48f2abc445d1",
           "size": 35426
@@ -14979,6 +15024,11 @@
           "size": 17102
         },
         {
+          "path": ".tools/3d_pipeline/config/visual_review_prompt.md",
+          "sha256": "6495687a970ad9d6535a367f1b1703bb6e2c240fdac78a697525d6547a60b414",
+          "size": 3299
+        },
+        {
           "path": ".tools/3d_pipeline/init_pilot_jobs.py",
           "sha256": "17e6c2a54c4cd02dad3d726fec4f0f81ee1813f2c240c3acff1b88d71ce2e4e9",
           "size": 20384
@@ -15020,8 +15070,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_deform.py",
-          "sha256": "08ac655e9bc08432927d667415101f8c76c036fecfb3eefc91bded763f57c935",
-          "size": 19985
+          "sha256": "ef01d1f94aaa1abfdaa7f7d33e5c15829e62b76d96b8e910644313ca23ccc086",
+          "size": 20133
         },
         {
           "path": ".tools/3d_pipeline/lib/profile_gates.py",
@@ -15062,6 +15112,11 @@
           "path": ".tools/3d_pipeline/pack_pdx_material.py",
           "sha256": "8bb45aed990cc3857405d76e709d0d042614839ea1137e9f0ff9e371ec336a14",
           "size": 12741
+        },
+        {
+          "path": ".tools/3d_pipeline/review_unit.py",
+          "sha256": "620f8630db3689066cafe45dab278242e3ac05b959823062178a0b85fb1ab8ea",
+          "size": 11581
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
@@ -15685,8 +15740,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_deformation_checks.py",
-          "sha256": "5af55f0c4c1300e76407c445abf466685f88214ddca92759320ef805d5ffd6d0",
-          "size": 12838
+          "sha256": "6b182aa52fd6fe6338b4194452b02bdda769821f244fbe9e5231890aff9d492e",
+          "size": 12887
         },
         {
           "path": ".tools/3d_pipeline/tests/test_explicit_batch_repair.py",
@@ -15817,6 +15872,11 @@
           "path": ".tools/3d_pipeline/tests/test_reuse_before_paying.py",
           "sha256": "f1c00dfcb03e9aa82aaa7c7a7404995a51f82374b80555d188084f77530c4cca",
           "size": 14588
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_review_unit.py",
+          "sha256": "de80578b4e4b6474d6a4c23739c2d82b0ad763df06b2e43736a77f28e26d3847",
+          "size": 6407
         },
         {
           "path": ".tools/3d_pipeline/tests/test_rig_animation_regressions.py",
@@ -18931,8 +18991,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "fdd60b5bf00b7f94fbae7cd726affc5a4ecce845850f31f123b767d12b09c394",
-          "size": 4359
+          "sha256": "f3b97b4b55ebda23bbbd6a2fad113508c914b19ea9f012e76f021902fa56678a",
+          "size": 4786
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -18941,8 +19001,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "24d918cbe213cf5f73eaf87f419f4b57de67d8641a10c7eb650aa5fcefc5459c",
-          "size": 73637
+          "sha256": "af1db803521395a6d27cfa27f07dd940e3493906ae06a32886caa2c91df25387",
+          "size": 75158
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -18991,8 +19051,8 @@
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/SKILL.md",
-          "sha256": "1459f95cef3a06e90df910d1e21bbbe0fda6108bc001fbc19173c2f90e29fb8e",
-          "size": 10791
+          "sha256": "797df9e90482ce4ed5f20e7ec9f951b600859715fdf23655c1b8c9094e0d2e9c",
+          "size": 10900
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/references/advisor-unit-leader-and-scientist-roles.md",
@@ -19266,8 +19326,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "9573614f539635f27dd511e79b142b92f42c15e2b3f25fcefbd015967c9cd0cd",
-          "size": 12917
+          "sha256": "b97c412f4914f2d7af5db232aa86f36a9b1da6d757b0a6dc957cb05008013fcb",
+          "size": 13050
         },
         {
           "path": ".claude/skills/hoi4-events/references/completion-checklist.md",
@@ -23640,6 +23700,11 @@
           "size": 4800
         },
         {
+          "path": ".claude/skills/hoi4-ideologies/SKILL.md",
+          "sha256": "9a1b4d3a311a0e135b17be32597e98d9e3ddd6651a9f0a627484497dfcb1143a",
+          "size": 11929
+        },
+        {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
           "sha256": "c0b81b3449e614d4b9a391e4115d268568dd90a01f57b209be2c783f10eeb066",
           "size": 9458
@@ -23673,6 +23738,11 @@
           "path": ".claude/skills/hoi4-investigate/SKILL.md",
           "sha256": "aa1330a8ea73dd206e346943c9d0e417faea99d40d4d6bfb44505848eb9739c7",
           "size": 5913
+        },
+        {
+          "path": ".claude/skills/hoi4-localisation/SKILL.md",
+          "sha256": "fcaceb0430dd2f4a54dbe5a4c58a39229ff22d9654fa91803a0ef2762b6c1324",
+          "size": 12002
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
@@ -23723,6 +23793,11 @@
           "path": ".claude/skills/hoi4-native-raids/SKILL.md",
           "sha256": "a50def314f25a52eb8b64be05b3e54dec9fe3ef6a8d1ed29054a3697d4a4b57a",
           "size": 4828
+        },
+        {
+          "path": ".claude/skills/hoi4-on-actions/SKILL.md",
+          "sha256": "764550f8c1fc39e0c6ce9a5855ff4bcfeba43320100a73718571f48daa96eca7",
+          "size": 12044
         },
         {
           "path": ".claude/skills/hoi4-project-rules/SKILL.md",
@@ -23786,8 +23861,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "4d949bf6a01f5b066ed52b97cf1816b9940c220cf4f42dcb85bdba0fe0999e6a",
-          "size": 5380
+          "sha256": "3adec4ef098a628325c1b8ba45d144a9f5e47bce490660b56a0eb21bd11109db",
+          "size": 5696
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -23818,6 +23893,11 @@
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
           "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
           "size": 10353
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-triggers-effects/SKILL.md",
+          "sha256": "abe2a0168a60ca7272228c3c232988bbae2fa623ca41b7d98a4abf5471fc468b",
+          "size": 12221
         },
         {
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
@@ -24398,8 +24478,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "fdd60b5bf00b7f94fbae7cd726affc5a4ecce845850f31f123b767d12b09c394",
-          "size": 4359
+          "sha256": "f3b97b4b55ebda23bbbd6a2fad113508c914b19ea9f012e76f021902fa56678a",
+          "size": 4786
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -24408,8 +24488,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "24d918cbe213cf5f73eaf87f419f4b57de67d8641a10c7eb650aa5fcefc5459c",
-          "size": 73637
+          "sha256": "af1db803521395a6d27cfa27f07dd940e3493906ae06a32886caa2c91df25387",
+          "size": 75158
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -24458,8 +24538,8 @@
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/SKILL.md",
-          "sha256": "1459f95cef3a06e90df910d1e21bbbe0fda6108bc001fbc19173c2f90e29fb8e",
-          "size": 10791
+          "sha256": "797df9e90482ce4ed5f20e7ec9f951b600859715fdf23655c1b8c9094e0d2e9c",
+          "size": 10900
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/references/advisor-unit-leader-and-scientist-roles.md",
@@ -24733,8 +24813,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "9573614f539635f27dd511e79b142b92f42c15e2b3f25fcefbd015967c9cd0cd",
-          "size": 12917
+          "sha256": "b97c412f4914f2d7af5db232aa86f36a9b1da6d757b0a6dc957cb05008013fcb",
+          "size": 13050
         },
         {
           "path": ".claude/skills/hoi4-events/references/completion-checklist.md",
@@ -29107,6 +29187,11 @@
           "size": 4800
         },
         {
+          "path": ".claude/skills/hoi4-ideologies/SKILL.md",
+          "sha256": "9a1b4d3a311a0e135b17be32597e98d9e3ddd6651a9f0a627484497dfcb1143a",
+          "size": 11929
+        },
+        {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
           "sha256": "c0b81b3449e614d4b9a391e4115d268568dd90a01f57b209be2c783f10eeb066",
           "size": 9458
@@ -29140,6 +29225,11 @@
           "path": ".claude/skills/hoi4-investigate/SKILL.md",
           "sha256": "aa1330a8ea73dd206e346943c9d0e417faea99d40d4d6bfb44505848eb9739c7",
           "size": 5913
+        },
+        {
+          "path": ".claude/skills/hoi4-localisation/SKILL.md",
+          "sha256": "fcaceb0430dd2f4a54dbe5a4c58a39229ff22d9654fa91803a0ef2762b6c1324",
+          "size": 12002
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
@@ -29190,6 +29280,11 @@
           "path": ".claude/skills/hoi4-native-raids/SKILL.md",
           "sha256": "a50def314f25a52eb8b64be05b3e54dec9fe3ef6a8d1ed29054a3697d4a4b57a",
           "size": 4828
+        },
+        {
+          "path": ".claude/skills/hoi4-on-actions/SKILL.md",
+          "sha256": "764550f8c1fc39e0c6ce9a5855ff4bcfeba43320100a73718571f48daa96eca7",
+          "size": 12044
         },
         {
           "path": ".claude/skills/hoi4-project-rules/SKILL.md",
@@ -29253,8 +29348,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "4d949bf6a01f5b066ed52b97cf1816b9940c220cf4f42dcb85bdba0fe0999e6a",
-          "size": 5380
+          "sha256": "3adec4ef098a628325c1b8ba45d144a9f5e47bce490660b56a0eb21bd11109db",
+          "size": 5696
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -29285,6 +29380,11 @@
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
           "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
           "size": 10353
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-triggers-effects/SKILL.md",
+          "sha256": "abe2a0168a60ca7272228c3c232988bbae2fa623ca41b7d98a4abf5471fc468b",
+          "size": 12221
         },
         {
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
@@ -29865,8 +29965,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "fdd60b5bf00b7f94fbae7cd726affc5a4ecce845850f31f123b767d12b09c394",
-          "size": 4359
+          "sha256": "f3b97b4b55ebda23bbbd6a2fad113508c914b19ea9f012e76f021902fa56678a",
+          "size": 4786
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -29875,8 +29975,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "24d918cbe213cf5f73eaf87f419f4b57de67d8641a10c7eb650aa5fcefc5459c",
-          "size": 73637
+          "sha256": "af1db803521395a6d27cfa27f07dd940e3493906ae06a32886caa2c91df25387",
+          "size": 75158
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -29925,8 +30025,8 @@
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/SKILL.md",
-          "sha256": "1459f95cef3a06e90df910d1e21bbbe0fda6108bc001fbc19173c2f90e29fb8e",
-          "size": 10791
+          "sha256": "797df9e90482ce4ed5f20e7ec9f951b600859715fdf23655c1b8c9094e0d2e9c",
+          "size": 10900
         },
         {
           "path": ".claude/skills/hoi4-characters-leaders/references/advisor-unit-leader-and-scientist-roles.md",
@@ -30200,8 +30300,8 @@
         },
         {
           "path": ".claude/skills/hoi4-events/SKILL.md",
-          "sha256": "9573614f539635f27dd511e79b142b92f42c15e2b3f25fcefbd015967c9cd0cd",
-          "size": 12917
+          "sha256": "b97c412f4914f2d7af5db232aa86f36a9b1da6d757b0a6dc957cb05008013fcb",
+          "size": 13050
         },
         {
           "path": ".claude/skills/hoi4-events/references/completion-checklist.md",
@@ -34574,6 +34674,11 @@
           "size": 4800
         },
         {
+          "path": ".claude/skills/hoi4-ideologies/SKILL.md",
+          "sha256": "9a1b4d3a311a0e135b17be32597e98d9e3ddd6651a9f0a627484497dfcb1143a",
+          "size": 11929
+        },
+        {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
           "sha256": "c0b81b3449e614d4b9a391e4115d268568dd90a01f57b209be2c783f10eeb066",
           "size": 9458
@@ -34607,6 +34712,11 @@
           "path": ".claude/skills/hoi4-investigate/SKILL.md",
           "sha256": "aa1330a8ea73dd206e346943c9d0e417faea99d40d4d6bfb44505848eb9739c7",
           "size": 5913
+        },
+        {
+          "path": ".claude/skills/hoi4-localisation/SKILL.md",
+          "sha256": "fcaceb0430dd2f4a54dbe5a4c58a39229ff22d9654fa91803a0ef2762b6c1324",
+          "size": 12002
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
@@ -34657,6 +34767,11 @@
           "path": ".claude/skills/hoi4-native-raids/SKILL.md",
           "sha256": "a50def314f25a52eb8b64be05b3e54dec9fe3ef6a8d1ed29054a3697d4a4b57a",
           "size": 4828
+        },
+        {
+          "path": ".claude/skills/hoi4-on-actions/SKILL.md",
+          "sha256": "764550f8c1fc39e0c6ce9a5855ff4bcfeba43320100a73718571f48daa96eca7",
+          "size": 12044
         },
         {
           "path": ".claude/skills/hoi4-project-rules/SKILL.md",
@@ -34720,8 +34835,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "4d949bf6a01f5b066ed52b97cf1816b9940c220cf4f42dcb85bdba0fe0999e6a",
-          "size": 5380
+          "sha256": "3adec4ef098a628325c1b8ba45d144a9f5e47bce490660b56a0eb21bd11109db",
+          "size": 5696
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -34752,6 +34867,11 @@
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
           "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
           "size": 10353
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-triggers-effects/SKILL.md",
+          "sha256": "abe2a0168a60ca7272228c3c232988bbae2fa623ca41b7d98a4abf5471fc468b",
+          "size": 12221
         },
         {
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
