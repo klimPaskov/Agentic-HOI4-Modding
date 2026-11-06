@@ -452,6 +452,10 @@
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "infantry",
+      "validation_overrides": {
+        "max_boundary_edges": 1250
+      },
+      "validation_calibration": "max_boundary_edges measured 1144 on the ZIN ent (Meshy remesh reduced from 51,981 to 21,000 triangles in Blender 5.2.2): one connected part, no non-manifold edges, 253 small loops of at most 14 edges between bark plates and in the leaf crown. Limit 1250 is the measurement plus about 9 percent. Other humanoid types keep the profile's 700",
       "roles": {
         "idle": {
           "meshy": [

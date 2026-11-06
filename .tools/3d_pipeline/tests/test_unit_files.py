@@ -207,6 +207,20 @@ class UnitTypeCatalog(unittest.TestCase):
         self.assertIn("Saddle_Node", types["mount"]["required_nodes"])
 
 
+class UnitTypeValidation(unittest.TestCase):
+    def test_overrides_are_measured_and_stay_with_their_type(self) -> None:
+        import run_pilot
+
+        types = check_unit_files.load_unit_types()
+        for name, unit_type in types.items():
+            if unit_type.get("validation_overrides"):
+                with self.subTest(unit_type=name):
+                    self.assertIn("measured", unit_type.get("validation_calibration", ""))
+        tree = run_pilot.apply_unit_type({"unit_type": "tree_creature"})
+        self.assertEqual(tree["profile_validation_overrides"], {"max_boundary_edges": 1250})
+        self.assertNotIn("profile_validation_overrides", run_pilot.apply_unit_type({"unit_type": "archer"}))
+
+
 class UnitTypeActions(unittest.TestCase):
     def test_rider_pays_once_per_clip_and_seats_its_death(self) -> None:
         import run_pilot

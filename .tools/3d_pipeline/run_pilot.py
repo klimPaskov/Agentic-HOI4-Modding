@@ -3342,6 +3342,9 @@ def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:
         raise ValueError(f"Unknown unit_type {name!r}; known: {', '.join(sorted(types))}.")
     unit = types[name]
     spec.setdefault("profile", unit["profile"])
+    if unit.get("validation_overrides"):
+        # Measured per type (see the type's validation_calibration); the profile's other types keep its limits.
+        spec.setdefault("profile_validation_overrides", dict(unit["validation_overrides"]))
     if unit["rig"] == "blender_quadruped":
         spec.setdefault("asset_kind", "creature")
         spec.setdefault("creature_rig_family", "quadruped")
@@ -3597,7 +3600,8 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         repair_before_reduction=True,
         topology_weld_distance=0.0,
     )
-    candidate_gate(job, prep, hard_max=profile["triangle_range"]["hard_max"], stage="animated_candidate_base")
+    gate_profile = dict(profile, validation={**profile.get("validation", {}), **spec.get("profile_validation_overrides", {})})
+    candidate_gate(job, prep, hard_max=profile["triangle_range"]["hard_max"], stage="animated_candidate_base", profile=gate_profile)
     textures = finalize_pdx_runtime_textures(job, spec, blender.process_textures(slug, prep["checkpoints"]["pre_export"]))
     blender.save_checkpoint(slug, prep["checkpoints"]["pre_export"], "unit_base_pre_export")
     chain = "blender/checkpoints/unit_base_pre_export.blend"
