@@ -58,6 +58,7 @@ place, measure, render and key what you name at the call site.
 
 ## Props in hand
 
+- Fit a one-handed prop with `fit_prop.py` first: it searches 42 grip directions against every clip for free. Come here when its verdict escalates, or for the second hand of a two-handed hold.
 - Before posing, check that the prop's grip sits inside the closed hand at rest. A provider rig often
   parks the weapon beside the hip, and every later pose then shows an open palm beside the gun. Key
   the prop bone into the palm first.

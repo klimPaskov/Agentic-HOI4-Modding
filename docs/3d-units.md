@@ -147,6 +147,18 @@ py -3.13 -B .tools/3d_pipeline/repair_unit.py gfx/models/units/<unit> --out <job
 
 Repairs never make new bones, a new weight set or new keyframes: a clip that does not read as its role, or a prop that passes through the body, needs its motion authored again in Blender. It writes the repaired copy to `<job folder>/repair/files` and leaves `gfx/` alone. The skeleton, materials and the weights of every vertex it does not cut stay as they were, so the unit's `.anim` files still play. `repair_report.json` lists what changed and the check results before and after. Review the copy with `review_unit.py`, and copy it into `gfx/` only after a fresh reviewer passes it.
 
+## Put the weapon in the hand
+
+Soldiers, riders, giants and other armed units hold their weapon in hand, and the weapon is generated as a separate model. `fit_prop.py` puts it there for free:
+
+```
+py -3.13 -B .tools/3d_pipeline/fit_prop.py gfx/models/units/<unit> --prop <weapon job>/provider/downloads/generation_model.glb --bone RightHand --length 0.55 --grip 0.15 --out <job folder>/props
+```
+
+It scales the weapon to `--length` of the unit's height, puts its grip (`--grip` of its length from the butt) in the palm, and tries 42 directions over every clip. It keeps the one whose far end least often passes through the body or into the ground, binds the weapon to the hand bone and writes the unit again, with the weapon's three textures, to `<job folder>/props/files`. The clips are not touched.
+
+Its verdict passes when the weapon stays out of the ground and almost never passes through the body, and names the check to run next. Add a `meshsettings` block for the weapon's shape (its textures sit next to the mesh) before you review the unit. If no direction clears the clips, try another `--grip` or `--butt`, or seat the weapon by hand in Blender. A weapon held in both hands always needs that hand-made step for the second hand.
+
 ## Author animations live in Blender
 
 Some units need motion no library clip gives them: a body with wings, extra arms or a tail, a creature on which human clips look wrong, a project that wants every unit's clips to be its own, or a clip that failed the review twice. Then your agent poses the unit by hand in a live Blender session, through an interactive Blender MCP, one key at a time, and looks at every key before it keeps it. It costs nothing.
