@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "1c4f558a19da3f234445d6875a7fc32f41a8b9d5",
+  "generated_for_revision": "a58186e0fe31f9d3254ecc8a9a2a82abc9e30516",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1789,8 +1789,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "98aa3d38853e22b51729688611fcdd2f63fad9f0c5dbb09a1619f4fe45333493",
-          "size": 6141
+          "sha256": "9cc5c19847eb835fb3e9343aa82b0848c2b3703b5498d836eb7711d1dbb4f5e8",
+          "size": 6334
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -7243,8 +7243,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "98aa3d38853e22b51729688611fcdd2f63fad9f0c5dbb09a1619f4fe45333493",
-          "size": 6141
+          "sha256": "9cc5c19847eb835fb3e9343aa82b0848c2b3703b5498d836eb7711d1dbb4f5e8",
+          "size": 6334
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -14979,6 +14979,11 @@
           "size": 25901
         },
         {
+          "path": ".tools/3d_pipeline/blender/fit_prop.py",
+          "sha256": "fdbbaf7703bd04268c58175edf084bc65471e48fe639305cf8833859f01f12ec",
+          "size": 13333
+        },
+        {
           "path": ".tools/3d_pipeline/blender/repair_mesh.py",
           "sha256": "c874214bdcbceda6cf1133ba2294542eed468bb1f96d324f07f9c3a7b39a2f30",
           "size": 17013
@@ -15052,6 +15057,11 @@
           "path": ".tools/3d_pipeline/config/visual_review_prompt.md",
           "sha256": "f603e286ec94468c6c7749d015fa5f61e57417b773075cbe1e86866918968bd3",
           "size": 3686
+        },
+        {
+          "path": ".tools/3d_pipeline/fit_prop.py",
+          "sha256": "38d6f13333d735b2fa02b933d9cdf38cfd6c3b2da62d6d011294a357e6709998",
+          "size": 10470
         },
         {
           "path": ".tools/3d_pipeline/init_pilot_jobs.py",
@@ -15822,6 +15832,11 @@
           "path": ".tools/3d_pipeline/tests/test_exporter_log_capture.py",
           "sha256": "0b160e83914de0660a03b7c7ae14bc58105d9e5a4256e034aacb244543eaae6e",
           "size": 7933
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_fit_prop.py",
+          "sha256": "e6f191ee4f20315c213570bad83d8f107527cbb5f1a5835dd80e56703604c2d1",
+          "size": 5472
         },
         {
           "path": ".tools/3d_pipeline/tests/test_fitted_humanoid_repair.py",
@@ -19091,8 +19106,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "98aa3d38853e22b51729688611fcdd2f63fad9f0c5dbb09a1619f4fe45333493",
-          "size": 6141
+          "sha256": "9cc5c19847eb835fb3e9343aa82b0848c2b3703b5498d836eb7711d1dbb4f5e8",
+          "size": 6334
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -24583,8 +24598,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "98aa3d38853e22b51729688611fcdd2f63fad9f0c5dbb09a1619f4fe45333493",
-          "size": 6141
+          "sha256": "9cc5c19847eb835fb3e9343aa82b0848c2b3703b5498d836eb7711d1dbb4f5e8",
+          "size": 6334
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -30075,8 +30090,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "98aa3d38853e22b51729688611fcdd2f63fad9f0c5dbb09a1619f4fe45333493",
-          "size": 6141
+          "sha256": "9cc5c19847eb835fb3e9343aa82b0848c2b3703b5498d836eb7711d1dbb4f5e8",
+          "size": 6334
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
