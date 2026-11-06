@@ -52,6 +52,10 @@ def _replace_file(path: Path) -> None:
         path.unlink()
 
 
+PDX_METALLIC_SCALE = 0.35
+PDX_GLOSS_SCALE = 0.65
+
+
 def pack_pdx_specular_map(job: Path, specular_source_rel: str) -> Dict[str, Any]:
     """Pack Meshy metallic and roughness maps into the HOI4 PDX layout.
 
@@ -91,7 +95,13 @@ def pack_pdx_specular_map(job: Path, specular_source_rel: str) -> Dict[str, Any]
             )
         zero = Image.new("L", metal_l.size, 0)
         specular = Image.new("L", metal_l.size, PDX_SPECULAR_LEVEL)
-        packed = Image.merge("RGBA", (zero, specular, metal_l, ImageOps.invert(rough_l)))
+        # Meshy materials are far shinier than vanilla units, whose specular maps keep metalness
+        # (blue) near 10-21 mean and 57-79 at the 95th percentile, and glossiness (alpha) near
+        # 36-87 mean and 77-114 at the 95th percentile (ENG, FRA, FIN infantry, 1.19.4.1). Unscaled,
+        # the ZIN knights rendered with white specular speckles in game, so both channels are scaled.
+        metal_l = metal_l.point(lambda value: round(value * PDX_METALLIC_SCALE))
+        gloss_l = ImageOps.invert(rough_l).point(lambda value: round(value * PDX_GLOSS_SCALE))
+        packed = Image.merge("RGBA", (zero, specular, metal_l, gloss_l))
 
     output = source.with_name("pdx_specular.png")
     _replace_file(output)
@@ -143,7 +153,9 @@ def pack_pdx_specular_channels(
             )
         zero = Image.new("L", metallic_l.size, 0)
         specular = Image.new("L", metallic_l.size, PDX_SPECULAR_LEVEL)
-        packed = Image.merge("RGBA", (zero, specular, metallic_l, ImageOps.invert(roughness_l)))
+        metallic_l = metallic_l.point(lambda value: round(value * PDX_METALLIC_SCALE))
+        gloss_l = ImageOps.invert(roughness_l).point(lambda value: round(value * PDX_GLOSS_SCALE))
+        packed = Image.merge("RGBA", (zero, specular, metallic_l, gloss_l))
     output.parent.mkdir(parents=True, exist_ok=True)
     _replace_file(output)
     packed.save(output, format="PNG", optimize=True)

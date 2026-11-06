@@ -42,7 +42,7 @@ Pick one type per unit. The type decides the rig, the animations and how the uni
 
 Every type gets the six land-unit roles: idle, move, attack, defend, retreat and death. Walks use Meshy's in-place clips, so the unit does not slide.
 
-A mounted unit is two jobs: a `mount` and a `rider`. The mount's entity attaches the rider's entity to its `Saddle_Node`, the way vanilla cavalry does, so one horse can carry several kinds of rider.
+Mounts are built to vanilla's horse size on the map, which is smaller than vanilla infantry. A mounted unit is two jobs: a `mount` and a `rider`. The mount's entity attaches the rider's entity to its `Saddle_Node`, the way vanilla cavalry does, so one horse can carry several kinds of rider.
 
 ## What happens
 
@@ -71,6 +71,8 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 | A mount has a `Saddle_Node` | The rider has nothing to sit on |
 | Textures are DXT5 or DXT1 with mip levels | Without mips the zoomed-out map shimmers. Uncompressed textures use four times the memory |
 | Normal maps have a black blue channel | The game reads blue in a normal map as glow |
+| Specular maps stay about as dull as vanilla's | Shinier maps show as white speckles on the map. The pipeline scales Meshy's metalness and gloss down to vanilla's range |
+| A mount's `Saddle_Node` exports without rotation | The game turns the rider with the node, so a turned node tips him over |
 | With `--mod-root`: the mesh, every animation, an entity with every state and a sub-unit sprite are registered | Unregistered files never show |
 
 Add `--repair-textures` to convert old uncompressed or unmipped textures in place.

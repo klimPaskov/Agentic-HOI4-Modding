@@ -240,9 +240,9 @@ class WeldedTopologyTests(unittest.TestCase):
         # Measured zin_men_infantry provider remesh: 81 boundary and 56 non-manifold edges once welded.
         remesh = measured((54388, 0, 6463), (81, 56, 1), triangles=21000)
         self.assertEqual(self.failures(remesh), ["welded non-manifold edges 56 exceed profile allowance 0"])
-        # A large open area exceeds the measured shipped maximum of 563 boundary edges.
+        # A large open area exceeds the measured maximum of 624 boundary edges (the ZIN grave rider).
         holed = measured((90000, 0, 1500), (900, 0, 1), triangles=21000)
-        self.assertEqual(self.failures(holed), ["welded boundary edges 900 exceed profile allowance 600"])
+        self.assertEqual(self.failures(holed), ["welded boundary edges 900 exceed profile allowance 700"])
         # A profile with no calibration allows no open edge at all.
         self.assertEqual(
             self.failures(measured((40, 0, 1), (40, 0, 1), triangles=8000), self.strict),

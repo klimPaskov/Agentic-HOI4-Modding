@@ -189,15 +189,15 @@
       },
       "validation": {
         "max_non_manifold_edges": 0,
-        "max_boundary_edges": 600,
+        "max_boundary_edges": 700,
         "max_loose_components": 8,
         "max_residual_zero_weight_vertices": 0
       },
       "validation_calibration": {
         "counted_on": "position-welded geometry (1e-6), so UV and normal seams are not holes or loose parts",
-        "measured_on": "13 shipped humanoid_unit meshes: 5 zin units (zin_elves_warden, zin_men_infantry, zin_orcs_warrior, zin_the_dead_revenant, zin_trolls_brute) and 8 chaos_redux zombie units (demonic, infected, mutant, necrotic, parasitic, rabid, undead, base zombies), read from the exported .mesh files on 2026-11-01 in Blender 5.1",
+        "measured_on": "13 shipped humanoid_unit meshes: 5 zin units (zin_elves_warden, zin_men_infantry, zin_orcs_warrior, zin_the_dead_revenant, zin_trolls_brute) and 8 chaos_redux zombie units (demonic, infected, mutant, necrotic, parasitic, rabid, undead, base zombies), read from the exported .mesh files on 2026-11-01 in Blender 5.1; and on 2026-11-06 the ZIN grave rider (an armoured skeleton, Meshy remesh reduced to 21,000 triangles) in Blender 5.2.2",
         "max_non_manifold_edges": "measured 0 on all 13, limit 0",
-        "max_boundary_edges": "measured 0 on all 8 chaos_redux units and 90, 214, 371, 468, 563 on the five zin units (in small boundary loops of at most 16 edges), limit 600 is the largest measured 563 plus about 7 percent",
+        "max_boundary_edges": "measured 0 on all 8 chaos_redux units, 90, 214, 371, 468, 563 on the five zin pilots, and 624 on the ZIN grave rider (150 loops of at most 12 edges in the gaps between bones and plates; every bounded cap was rolled back as non-manifold). Limit 700 is the largest measured 624 plus about 12 percent",
         "max_loose_components": "measured 1 on the five zin units and on 3 of 8 chaos_redux units (demonic, mutant, rabid), 2, 3, 4, 5 and 7 on the other five (separate accessory parts, largest 7 on parasitic_zombies), limit 8 is the largest measured 7 plus 1",
         "max_residual_zero_weight_vertices": "measured 0 on all 13, limit 0",
         "not_measured": "the other profiles have no shipped model on disk, so their limits are unchanged"

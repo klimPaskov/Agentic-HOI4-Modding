@@ -31,9 +31,9 @@ class PdxGlossinessTests(unittest.TestCase):
             for report in reports:
                 self.assertEqual(report["layout"]["alpha"], "glossiness_255_minus_roughness")
                 with Image.open(root / report["output"]["path"]) as result:
-                    self.assertEqual(list(result.getchannel("A").getdata()), [255, 191, 127, 0])
+                    self.assertEqual(list(result.getchannel("A").getdata()), [round(v * PACK.PDX_GLOSS_SCALE) for v in (255, 191, 127, 0)])
                     self.assertEqual(list(result.getchannel("G").getdata()), [PACK.PDX_SPECULAR_LEVEL] * 4)
-                    self.assertEqual(list(result.getchannel("B").getdata()), [73] * 4)
+                    self.assertEqual(list(result.getchannel("B").getdata()), [round(73 * PACK.PDX_METALLIC_SCALE)] * 4)
             for filename, digest in originals.items():
                 self.assertEqual(hashlib.sha256((root / filename).read_bytes()).hexdigest(), digest)
 
