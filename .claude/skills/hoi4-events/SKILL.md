@@ -68,6 +68,7 @@ Use this skill with:
 - `hoi4-focus-trees` when the event creates, unlocks, modifies, or depends on focus trees
 - `hoi4-decisions-missions` when the event creates or depends on decisions, missions, timed objectives, formables, or decision-driven mechanics
 - `hoi4-scripted-gui` when the event owns or opens a scripted GUI; that skill owns reference-image mapping, layout, iterative MCP previews, and visual acceptance while this event skill retains gameplay and lifecycle ownership
+- `hoi4-localisation`, `hoi4-on-actions` and `hoi4-scripted-triggers-effects` for the file, hook and helper details of those systems
 - `hoi4-subagents` when bounded research, asset production, event-owned UI layout work, small patches, or completion audits should be delegated
 - `hoi4_3d_model_pipeline` for bounded model geometry, textures, rigs, skeletal actions, sourced custom-unit audio research and synchronization design, `.mesh`/`.anim` exports, reimport proof, and runtime handoff when the event owns a 3D unit or building surface
 - `hoi4-improvement-loop` when an implemented event works but is still shallow, generic, disconnected, or underdeveloped

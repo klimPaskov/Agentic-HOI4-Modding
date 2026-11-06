@@ -7,6 +7,7 @@ description: Use when defining, recruiting, promoting or retiring HOI4 character
 
 Generic HOI4 modding guidance for the character system introduced in patch 1.11.
 Divisions, templates, orders of battle and manpower belong to `hoi4-units-divisions`.
+The definitions of ideologies, parties and popularities in `common/ideologies/` belong to `hoi4-ideologies`.
 Weighted AI choices (`ai_will_do`, `new_commander_weight` tuning) belong to `hoi4-ai-strategies`.
 Portrait production (research, placeholders, the configured image generator, DDS, wiring, manifests) belongs entirely to `hoi4-feature-assets` and the `hoi4_portrait_creator` subagent; this skill only covers how a portrait is referenced from a character.
 Unit-leader trait schema, selection trees, experience rules and abilities are in `references/unit-leader-traits.md`.
