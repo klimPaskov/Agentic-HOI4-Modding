@@ -141,6 +141,18 @@ def bridge_edges(bm, weights):
     return found
 
 
+def winding_conflicts(bm):
+    """Manifold edges whose two faces walk them the same way: each shows a flipped face."""
+
+    conflicts = 0
+    for edge in bm.edges:
+        if len(edge.link_faces) != 2:
+            continue
+        a, b = (next(c for c in face.loops if c.edge is edge) for face in edge.link_faces)
+        conflicts += a.vert is b.vert
+    return conflicts
+
+
 def dominant(weights, vert):
     bones = weights[vert.index]
     return max(bones, key=bones.get) if bones else None
@@ -297,9 +309,21 @@ for obj in [o for o in scene.objects if o.type == "MESH"]:
     entry["welded_vertices"] = count - len(bm.verts)
     if "winding" in repairs:
         before = [f.normal.copy() for f in bm.faces]
+        conflicts_before = winding_conflicts(bm)
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         bm.normal_update()
-        entry["faces_flipped"] = sum(1 for f, n in zip(bm.faces, before) if f.normal.dot(n) < 0)
+        flipped = [f for f, n in zip(bm.faces, before) if f.normal.dot(n) < 0]
+        conflicts_after = winding_conflicts(bm)
+        if conflicts_after >= conflicts_before and conflicts_before:
+            # The surface cannot be wound one way (it folds through itself or is non-orientable):
+            # keep the original winding and report it for hand repair.
+            for face in flipped:
+                face.normal_flip()
+            bm.normal_update()
+            flipped = []
+            entry["winding_unresolved"] = conflicts_before
+        entry["faces_flipped"] = len(flipped)
+        entry["winding_conflicts"] = [conflicts_before, conflicts_after if flipped else conflicts_before]
     if "bridges" in repairs and rig is not None:
         bm.verts.ensure_lookup_table()
         weights = weights_of(obj, bm)
