@@ -33,6 +33,7 @@ STRICT = {
     "seam_edges": 0,
     "knee_backward": 0.0,
     "still_motion": 0.0,
+    "turn_per_frame": 180.0,
 }
 
 
