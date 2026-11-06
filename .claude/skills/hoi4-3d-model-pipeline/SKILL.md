@@ -43,6 +43,11 @@ Each gate is defined once in the guide:
   by the parent before any paid call ([Exactly one reference image](references/production-guide.md#exactly-one-reference-image-per-meshy-geometry-task)).
 - **Checks**: gates fail closed and every role needs anatomical multi-phase
   motion with exported-byte reimport proof ([Geometry, materials, rigging, and actions](references/production-guide.md#geometry-materials-rigging-and-actions)).
+- **Independent visual review**: a unit is finished only after `review_unit.py`
+  renders every clip and a reviewer with a fresh context, given only the
+  sheets and `config/visual_review_prompt.md`, finds no defect. Never pass the
+  reviewer your conclusions, never review your own renders in its place, and
+  keep its reply as evidence ([Independent visual review](references/production-guide.md#independent-visual-review)).
 - **Custom units**: defensibly sourced audio (including selection) and bespoke
   vanilla-green counters, or the package stays blocked ([counters](references/production-guide.md#custom-unit-counter-companion), [sound](references/production-guide.md#custom-unit-sound-design-companion)).
 

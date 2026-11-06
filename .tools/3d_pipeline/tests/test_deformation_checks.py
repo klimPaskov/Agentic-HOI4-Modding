@@ -235,6 +235,7 @@ class DeformationRules(unittest.TestCase):
     def test_sinking_below_the_ground_is_found(self) -> None:
         report, rules = self.run_clip(lambda frame: {"Root": ((0.0, -0.3, 0.0), (0.0, 0.0, 0.0, 1.0))})
         self.assertLess(report.lowest, -0.5)
+        self.assertEqual(report.lowest_frame, 0)
         self.assertIn("UNIT-ANIM-GROUND", rules)
 
 
