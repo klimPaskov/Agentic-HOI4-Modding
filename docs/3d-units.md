@@ -92,6 +92,8 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 
 The surface and deformation limits are the worst values measured on the game's own soldiers, riders and horses (or on its vehicles, for a unit type with `"calibration_group": "vehicle"`). They live in `.tools/3d_pipeline/config/deformation_calibration.json`. After a game update, measure them again with `calibrate_deformation.py "<game folder>" --out .tools/3d_pipeline/config/deformation_calibration.json`. Never raise a limit by hand to pass a unit: fix the unit.
 
+Add `--verdict <job folder>/evidence/check.json` for a short verdict instead of the full list. It says `pass` and names the review command, `fail` with the exact repair command to run next, or `escalate` when no script can fix a rule, such as a knee that bends backward or a clip shared with another unit, and points to live authoring. `repair_unit.py` and `review_unit.py` print the same kind of verdict, so you can follow a unit from one step to the next.
+
 Add `--repair-textures` to convert old uncompressed or unmipped textures in place. When a mount and its rider share one folder, check each with `--stem`, for example `--stem <unit> --unit-type mount` and `--stem <unit>_rider --unit-type rider`.
 
 ## Independent review
@@ -102,7 +104,7 @@ Checks count things. They cannot tell you that a cape tears into spikes in the d
 py -3.13 -B .tools/3d_pipeline/review_unit.py gfx/models/units/<unit> --mod-root . --out <job folder>/evidence/review
 ```
 
-It renders each clip at several frames, always including the frames where the surface stretches most and where the unit sits lowest and highest, from front, left, back, right, the map camera and below. Back faces are hidden as in the game and the background is magenta, so any magenta inside the unit is a hole. A dark disc marks the ground. You get one contact sheet per clip and `REVIEW_REQUEST.md`, which holds the reviewer instructions and the quality bar.
+It renders each clip at several frames, always including the frames where the surface stretches most and where the unit sits lowest and highest, from front, left, back, right, the map camera and below. Back faces are hidden as in the game and the background is magenta, so any magenta inside the unit is a hole. A dark disc marks the ground. You get one contact sheet per clip and `REVIEW_REQUEST.md`, which holds the reviewer instructions and the quality bar. Each clip also gets a diagnostics sheet at its worst frames, in flat colours that show what the checks measure: yellow to red where the surface stretches or squashes, cyan at the rim of a hole, blue below the ground. It shows the reviewer where to look.
 
 Give `REVIEW_REQUEST.md` and the sheets, and nothing else, to a reviewer that has not seen how the unit was made: a new agent session or subagent, or a friend. Do not tell it what you already fixed or what you think is fine. Save its whole reply and record it:
 

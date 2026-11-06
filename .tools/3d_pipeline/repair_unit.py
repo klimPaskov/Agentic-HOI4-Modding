@@ -40,7 +40,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import check_unit_files
-from lib import pdx_deform, pdx_ground, pdx_motion
+from lib import pdx_deform, pdx_ground, pdx_motion, stage_verdict
 from review_unit import find_blender
 
 BLENDER_SCRIPT = PIPELINE_ROOT / "blender" / "repair_mesh.py"
@@ -142,9 +142,23 @@ def main(argv: Optional[List[str]] = None) -> int:
     unit_type = check_unit_files.load_unit_types().get(args.unit_type) if args.unit_type else None
     args.out.mkdir(parents=True, exist_ok=True)
     report = repair(args.folder, args.out, args.repairs, args.stem, args.max_hole_edges, unit_type)
-    print(json.dumps({key: report[key] for key in ("rules_before", "rules_after")}, indent=1))
-    print(f"Repaired copy in {args.out / 'files'}. Render it with review_unit.py for an independent review before copying it back.")
-    return 0
+    after = set(report["rules_after"])
+    files = (args.out / "files").as_posix()
+    out = args.out.as_posix()
+    steps, escalate = stage_verdict.next_for_findings(after, files, out, args.stem, args.unit_type, repaired=True)
+    if not after:
+        steps = [f"{stage_verdict.PY} {stage_verdict.PIPELINE}/review_unit.py {stage_verdict.quote(files)}{' --stem ' + args.stem if args.stem else ''} --out {stage_verdict.quote(out + '/review')}"]
+    stage_verdict.write(
+        stage_verdict.verdict(
+            "repair", not after, report["unit"],
+            outputs={"files": files, "report": (args.out / "repair_report.json").as_posix(), "rules_before": report["rules_before"], "rules_after": report["rules_after"]},
+            findings=[{"rule": rule, "file": report["unit"], "message": f"{count} finding(s) after the repair"} for rule, count in sorted(report["rules_after"].items())],
+            escalate=escalate,
+            next_steps=steps,
+        ),
+        args.out / "verdict.json",
+    )
+    return 0 if not after else 1
 
 
 if __name__ == "__main__":

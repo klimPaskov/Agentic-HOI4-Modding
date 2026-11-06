@@ -17,6 +17,12 @@ unit was made (a fresh subagent or a person). Save its whole reply and record it
 form. The unit passes only when the reply says `VERDICT: pass` and `DEFECTS: none`; anything else
 records a fail with the reply kept next to the sheets. Put `<out>` in the job's evidence folder, never
 under `gfx/`, or the renders ship with the mod.
+
+Each clip also gets a diagnostics sheet (`<clip>_diagnostics.png`) at its worst-stretch, lowest and
+highest frames, in flat colours that show what the checks measure: grey is fine, yellow to red is
+surface stretched or squashed by 1.3 to 1.5 times or more, cyan is an open edge, blue is below the
+ground, magenta is a hole or a back face. `--no-diagnostics` skips them. Both forms print a one-line
+stage verdict and write it to `<out>/verdict_render.json` or `<out>/verdict.json`.
 """
 
 from __future__ import annotations
@@ -35,12 +41,14 @@ from typing import Dict, List, Optional
 PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib import pdx_binary, pdx_deform
+from lib import pdx_binary, pdx_deform, stage_verdict
 
 PROMPT = PIPELINE_ROOT / "config" / "visual_review_prompt.md"
 BLENDER_SCRIPT = PIPELINE_ROOT / "blender" / "review_render.py"
 VIEWS = ["front", "left", "back", "right", "hoi4", "below"]
+DIAGNOSTIC_VIEWS = ["front", "left", "hoi4"]
 LABEL_HEIGHT = 18
+LEGEND = "grey fine | yellow to red stretched or squashed 1.3x to 1.5x+ | cyan open edge | blue below ground | magenta hole or back face"
 
 
 def owned_anims(folder: Path, stem: str, stems: List[str]) -> List[Path]:
@@ -103,6 +111,16 @@ def pick_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path, count: int) -> Li
     return sorted(frame for frame in frames if 0 <= frame <= last)
 
 
+def diagnostic_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path) -> List[int]:
+    """The frames the checks care most about: the worst stretch, the lowest point and the highest."""
+
+    anim = pdx_deform.load_anim(anim_path)
+    if not mesh.skinned or not anim.frames:
+        return []
+    report = pdx_deform.deformation_report(mesh, anim)
+    return sorted({report.worst_frame, report.lowest_frame, report.highest_frame})
+
+
 def find_blender() -> Path:
     explicit = os.environ.get("BLENDER_EXE", "").strip()
     if explicit:
@@ -137,12 +155,40 @@ def build_sheets(render_dir: Path, sheet_dir: Path) -> List[Path]:
         path = sheet_dir / f"{clip['name']}.png"
         sheet.save(path)
         sheets.append(path)
+        if clip.get("diagnostic_rows"):
+            sheets.append(build_diagnostic_sheet(render_dir, sheet_dir, clip))
     return sheets
+
+
+def build_diagnostic_sheet(render_dir: Path, sheet_dir: Path, clip: dict) -> Path:
+    """The clip's diagnostic tiles with a legend line on top."""
+
+    from PIL import Image, ImageDraw
+
+    rows = clip["diagnostic_rows"]
+    views = list(rows[0]["tiles"])
+    width, height = Image.open(render_dir / rows[0]["tiles"][views[0]]).size
+    top = LABEL_HEIGHT
+    sheet = Image.new("RGB", (max(width * len(views), 8 * len(LEGEND)), top + (height + LABEL_HEIGHT) * len(rows)), (30, 30, 30))
+    draw = ImageDraw.Draw(sheet)
+    draw.text((4, 3), LEGEND, fill=(230, 230, 230))
+    for r, row in enumerate(rows):
+        y = top + r * (height + LABEL_HEIGHT)
+        for c, view in enumerate(views):
+            with Image.open(render_dir / row["tiles"][view]) as tile:
+                sheet.paste(tile.convert("RGB"), (c * width, y + LABEL_HEIGHT))
+            draw.text((c * width + 4, y + 3), f"{clip['name']} f{row['frame']} {view} diagnostics (worst edge change {row['worst_share']:.1%} of height)", fill=(230, 230, 230))
+    path = sheet_dir / f"{clip['name']}_diagnostics.png"
+    sheet.save(path)
+    return path
 
 
 def write_request(out: Path, unit: str, sheets: List[Path], tile_dir: Path) -> Path:
     prompt = PROMPT.read_text(encoding="utf-8")
-    listing = "\n".join(f"- `{sheet.resolve()}`" for sheet in sheets)
+    listing = "\n".join(f"- `{sheet.resolve()}`" for sheet in sheets if not sheet.stem.endswith("_diagnostics"))
+    diagnostics = "\n".join(f"- `{sheet.resolve()}`" for sheet in sheets if sheet.stem.endswith("_diagnostics"))
+    if diagnostics:
+        listing += f"\n\nDiagnostic sheets (flat colours; {LEGEND}):\n\n{diagnostics}"
     request = (
         f"{prompt.rstrip()}\n\n## This review\n\nUnit: `{unit}`\n\nSheets (open every one):\n\n{listing}\n\n"
         f"Single tiles, if a sheet is too small to judge a region: `{tile_dir.resolve()}` (`<clip>_<frame>_<view>.png`). "
@@ -185,7 +231,7 @@ def record(out: Path, reply_path: Path) -> dict:
     return result
 
 
-def render(folder: Path, stem: Optional[str], out: Path, mod_root: Optional[Path], frames: int, size: int) -> List[Path]:
+def render(folder: Path, stem: Optional[str], out: Path, mod_root: Optional[Path], frames: int, size: int, diagnostics: bool = True) -> List[Path]:
     meshes = sorted(folder.glob("*.mesh"))
     stems = [mesh.stem for mesh in meshes]
     mesh_path = next((mesh for mesh in meshes if mesh.stem == stem), meshes[0] if meshes else None)
@@ -195,7 +241,10 @@ def render(folder: Path, stem: Optional[str], out: Path, mod_root: Optional[Path
     clips = []
     for anim in owned_anims(folder, mesh_path.stem, stems):
         try:
-            clips.append({"name": anim.stem, "path": str(anim.resolve()), "frames": pick_frames(mesh, anim, frames)})
+            entry = {"name": anim.stem, "path": str(anim.resolve()), "frames": pick_frames(mesh, anim, frames)}
+            if diagnostics:
+                entry["diagnostic_frames"] = diagnostic_frames(mesh, anim)
+            clips.append(entry)
         except (pdx_binary.PdxFormatError, ValueError, IndexError) as error:
             print(f"skipped {anim.name}: {error}")
     tile_dir = out / "tiles"
@@ -205,6 +254,7 @@ def render(folder: Path, stem: Optional[str], out: Path, mod_root: Optional[Path
         "diffuse": diffuse_maps(mesh_path.resolve(), gfx_texts(mod_root)),
         "clips": clips,
         "views": VIEWS,
+        "diagnostic_views": DIAGNOSTIC_VIEWS if diagnostics else [],
         "size": size,
     }
     out.mkdir(parents=True, exist_ok=True)
@@ -234,14 +284,38 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--frames", type=int, default=5, help="evenly spaced frames per clip, before the worst frames are added")
     parser.add_argument("--size", type=int, default=384, help="tile size in pixels")
     parser.add_argument("--record", type=Path, help="record a reviewer's reply instead of rendering")
+    parser.add_argument("--no-diagnostics", action="store_true", help="skip the flat-colour diagnostics sheets")
     args = parser.parse_args(argv)
     out = args.out
+    unit = args.stem or next((mesh.stem for mesh in sorted(args.folder.glob("*.mesh"))), args.folder.name)
     if args.record:
         result = record(out, args.record)
-        print(f"{result['verdict']}: {result['defects']} defect(s) recorded in {out / 'verdict.json'}")
-        return 0 if result["verdict"] == "pass" else 1
-    sheets = render(args.folder, args.stem, out, args.mod_root, args.frames, args.size)
-    print(f"{len(sheets)} sheets in {out / 'sheets'}. Give {out / 'REVIEW_REQUEST.md'} to a fresh reviewer, then rerun with --record <reply>.")
+        passed = result["verdict"] == "pass"
+        stage_verdict.write(
+            stage_verdict.verdict(
+                "review", passed, unit,
+                outputs={"verdict": str(out / "verdict.json"), "reply": str(out / "review_reply.md")},
+                findings=[{"rule": "REVIEW-DEFECT", "file": "review_reply.md", "message": f"{result['defects']} defect(s) listed by the reviewer"}] if not passed else [],
+                next_steps=[] if passed else ["Fix every listed defect at its cause, export again, then render and ask a new reviewer."],
+            ),
+            None,
+        )
+        return 0 if passed else 1
+    sheets = render(args.folder, args.stem, out, args.mod_root, args.frames, args.size, not args.no_diagnostics)
+    request = out / "REVIEW_REQUEST.md"
+    stage_verdict.write(
+        stage_verdict.verdict(
+            "render", True, unit,
+            outputs={"sheets": str(out / "sheets"), "tiles": str(out / "tiles")},
+            sheets=[str(sheet) for sheet in sheets],
+            checklist=str(request),
+            next_steps=[
+                f"Give {request} and the sheets, and nothing else, to a reviewer with a fresh context.",
+                f"{stage_verdict.PY} {stage_verdict.PIPELINE}/review_unit.py {stage_verdict.quote(args.folder.as_posix())} --out {stage_verdict.quote(out.as_posix())} --record <reply.md>",
+            ],
+        ),
+        out / "verdict_render.json",
+    )
     return 0
 
 
