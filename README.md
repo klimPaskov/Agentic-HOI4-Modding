@@ -32,6 +32,8 @@ Make focus trees, events, decisions and maps, fix broken script and balance the 
 2. Pick your coding client and the workflows you want. The app installs the kit, the HOI4 tools and the MCP registrations, and can update, repair or remove them later.
 3. Open the mod in your coding client and describe what you want to build or fix.
 
+Windows or macOS warns about an unknown publisher the first time? That is expected for the free builds. Follow the [Run anyway and Open Anyway guide](https://github.com/klimPaskov/HOI4-Mod-Setup/blob/main/docs/RUN_ANYWAY.md).
+
 Prefer to do it by hand? Follow the [manual setup](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/manual-setup.md).
 
 ## What you get
