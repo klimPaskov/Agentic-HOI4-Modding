@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "7c8d90cad161130c8f2b8803ba491507bf4e2ff9",
+  "generated_for_revision": "030251ee8b00e5d4ea94dc181c1bd01e3e7d8e04",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -13595,8 +13595,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/blender_worker.py",
-          "sha256": "d3163aa544b3bd2a649f563769d48abcc0b87eb9e0f55467b0b124ddc961a42d",
-          "size": 541147
+          "sha256": "24028507f0672056b84003489e2227c1df280dac70947c445fd2c84ba7d6f5a5",
+          "size": 541167
         },
         {
           "path": ".tools/3d_pipeline/adapter/explicit_batch_repair.py",
@@ -13625,8 +13625,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/hoi4_blender_mcp.py",
-          "sha256": "2ed48d9b7b6f012d23616152e6943867f2a6753fdd2a2b4fd1131b2bb3146e7b",
-          "size": 57388
+          "sha256": "37f20bdeb8b0ef7085b160703734bc0fa9cd2c72629e71ade50e5e29bfe2b23e",
+          "size": 57829
         },
         {
           "path": ".tools/3d_pipeline/adapter/identity_leaf_alias.py",
@@ -13634,9 +13634,14 @@
           "size": 15172
         },
         {
+          "path": ".tools/3d_pipeline/adapter/loose_parts.py",
+          "sha256": "001d5d25c200fe9bd9761b7a3bf052ecbf04a4fc3723a5402a6b7b4606689fdb",
+          "size": 5499
+        },
+        {
           "path": ".tools/3d_pipeline/adapter/manual_creature_rig.py",
-          "sha256": "eaa37133a31bae089c8034f263d6a1c9fbdce237f0c376761e71e51f47b8bd1d",
-          "size": 49928
+          "sha256": "8d45efa241f45612d3929e8a00198773bb26fd5dd18ccacef674d18fdd3795c6",
+          "size": 50145
         },
         {
           "path": ".tools/3d_pipeline/adapter/material_visibility_probe.py",
@@ -13690,8 +13695,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_layout.py",
-          "sha256": "75a4cb77f1cc97868b1eade6848e7c5c01429ce7955b1cdbb99a5a5f922db690",
-          "size": 21465
+          "sha256": "fd45e1ad355265f06c5fc446e21c4f7e48bfe3a1bb08ec0c091cc6e7a2fcea6b",
+          "size": 22450
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_rig.py",
@@ -13720,8 +13725,8 @@
         },
         {
           "path": ".tools/3d_pipeline/blender_client.py",
-          "sha256": "d9de53e42b211e0f84498ba81b44b9193ecd990e136fb6c41635b18ca4b2d38c",
-          "size": 35103
+          "sha256": "226aad5ee4420683ec0c070a4304c1b134c2a0ff33d0d76a78df48f2abc445d1",
+          "size": 35426
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
@@ -13735,8 +13740,8 @@
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "afe515893cbc8c8cf7f3124acc287bdc3f349b6daf28ab4a4acf6de59e6e4cc7",
-          "size": 20262
+          "sha256": "f41632937952a0fa2720879cecda35d5951e30e4f1b0570e5989f00d05238f8b",
+          "size": 21238
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -13760,8 +13765,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/unit_types.json",
-          "sha256": "2400047edb1c30dc302d7402ec1752f2c6dda83c7e376f7718d52f06faacaa1d",
-          "size": 16234
+          "sha256": "02b8c4b014ae5c96f38ebb8c946a114c5b5012330325f768242e29f9567baee9",
+          "size": 17102
         },
         {
           "path": ".tools/3d_pipeline/init_pilot_jobs.py",
@@ -13845,8 +13850,13 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "8b070a0fce02c37c3f10d97367eb53fb2e099a1b8bc58e84dfc6f1942faa2a29",
-          "size": 152438
+          "sha256": "d864c73d577c81c49547446139f467da809610925a2f0ed72e5b2119479d666a",
+          "size": 156211
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/blender_loose_parts_integration.py",
+          "sha256": "1e25264fc49027109d2cf9bd5919435c2396e7833bfd7c3a68420fa7a04fc096",
+          "size": 4360
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_quadruped_integration.py",
@@ -14564,6 +14574,11 @@
           "size": 30948
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_quadruped_layout.py",
+          "sha256": "d06379b41efc56b239f52b16091760064228504c2cff791a2cb6c73c8f0c6389",
+          "size": 2423
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_reimport_promotion_contract.py",
           "sha256": "272194534cf77f86ee053aae6469c2137ae10ae139f1a3f6e49ac4b8b931ae18",
           "size": 31850
@@ -14605,8 +14620,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_unit_files.py",
-          "sha256": "b37403576ff65cc00bfba2350d031e4880e66337188f423eb9ade539372ed0c6",
-          "size": 12899
+          "sha256": "6f220df25810be7f97bdc7abf683ec262a69bf96a6875b52e2b021c5dfc46205",
+          "size": 17434
         },
         {
           "path": ".tools/3d_pipeline/tests/test_visual_preflight.py",
