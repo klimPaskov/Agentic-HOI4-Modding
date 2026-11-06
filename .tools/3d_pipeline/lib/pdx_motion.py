@@ -373,6 +373,14 @@ def same_clip(first: np.ndarray, second: np.ndarray) -> Optional[float]:
 ANCHOR_PAIRS = 16
 PART_SAMPLES = 64
 BODY_SAMPLES = 6000
+# A held prop is a separate shape whose every vertex follows one bone this wholly: fit_prop.py binds a
+# weapon 100 % to the hand as its own shape. Its pieces (a shaft, a band, a spike) move as one, so the
+# shape is judged as one part, against the body vertices that follow the same bone (the hand that holds
+# it), not against whatever it passes near. Judged piece by piece against the whole body, a polearm's
+# spike was anchored to the helmet it sits beside at rest and "drifted" half the unit's height in the
+# attack it swings in.
+RIGID_WEIGHT = 0.99
+PROP_SAMPLES = 512
 
 
 @dataclass
@@ -384,6 +392,9 @@ class LoosePart:
     worst_gap: float  # largest such distance in any frame of any clip
     worst_clip: str = ""
     worst_frame: int = -1
+    prop_bone: str = ""  # for a held prop: the bone the whole shape follows
+    held_by: str = ""  # the bone whose body vertices it is judged against (the prop bone, or its nearest ancestor with any)
+    pieces: int = 1
 
 
 def _parts(mesh: SkinnedMesh) -> np.ndarray:
@@ -411,8 +422,51 @@ def _evenly(indices: np.ndarray, count: int) -> np.ndarray:
     return indices if len(indices) <= count else indices[np.linspace(0, len(indices) - 1, count).round().astype(int)]
 
 
+def rigid_bone(mesh: SkinnedMesh, vertices: np.ndarray) -> int:
+    """The bone every one of `vertices` follows wholly (weight of at least RIGID_WEIGHT), or -1."""
+
+    if not mesh.skinned or not len(vertices):
+        return -1
+    best = np.argmax(mesh.weights[vertices], axis=1)
+    top = mesh.weights[vertices, best]
+    bones = np.unique(mesh.joints[vertices, best])
+    return int(bones[0]) if len(bones) == 1 and bones[0] >= 0 and bool((top >= RIGID_WEIGHT).all()) else -1
+
+
+def prop_shapes(mesh: SkinnedMesh, labels: np.ndarray, main: int) -> Dict[int, int]:
+    """Shape index -> bone, for every shape apart from the body's that follows one bone wholly."""
+
+    if len(mesh.shape) != len(mesh.positions):
+        return {}
+    body_shape = int(np.bincount(mesh.shape[labels == main]).argmax()) if (labels == main).any() else -1
+    found = {}
+    for shape in np.unique(mesh.shape):
+        vertices = np.unique(mesh.triangles[np.isin(mesh.triangles[:, 0], np.nonzero(mesh.shape == shape)[0])])
+        if shape == body_shape or not len(vertices) or (len(mesh.collision) == len(mesh.positions) and mesh.collision[vertices].any()):
+            continue
+        bone = rigid_bone(mesh, vertices)
+        if bone >= 0:
+            found[int(shape)] = bone
+    return found
+
+
+def holding_vertices(mesh: SkinnedMesh, bone: int, candidates: np.ndarray) -> tuple:
+    """The candidates that follow `bone` most, or its nearest ancestor that any candidate follows; and that bone."""
+
+    dominant = dominant_bones(mesh)[candidates]
+    while bone >= 0:
+        holding = candidates[dominant == bone]
+        if len(holding):
+            return holding, bone
+        bone = mesh.parents[bone] if bone < len(mesh.parents) else -1
+    return candidates, -1
+
+
 def loose_parts(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[LoosePart]:
-    """Every part but the largest, with its skinning and its distance from the rest of the unit per frame."""
+    """Every part but the largest, with its skinning and its distance from the rest of the unit per frame.
+
+    A held prop (a separate shape that follows one bone wholly) counts as one part, however many pieces it has.
+    """
 
     labels = _parts(mesh)
     if len(mesh.collision) == len(mesh.positions) and mesh.collision.any():
@@ -424,23 +478,38 @@ def loose_parts(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[LoosePar
     main = parts[parts != -1][np.argmax(counts[parts != -1])]
     height = max(mesh.height, 1e-6)
     used = np.unique(mesh.triangles)
-    found: List[LoosePart] = []
-    anchors = []
-    for part, triangles in zip(parts, counts):
+    props = prop_shapes(mesh, labels, int(main))
+    # One group per held prop shape; every other separate part is its own group.
+    groups: Dict[tuple, List[int]] = {}
+    for part in parts:
         if part in (main, -1):
             continue
-        mine = used[labels[used] == part]
-        others = used[(labels[used] != part) & (labels[used] != -1)]
+        shapes = np.unique(mesh.shape[used[labels[used] == part]]) if len(mesh.shape) == len(mesh.positions) else np.zeros(0)
+        key = ("prop", int(shapes[0])) if len(shapes) == 1 and int(shapes[0]) in props else ("part", int(part))
+        groups.setdefault(key, []).append(int(part))
+    triangle_count = dict(zip(parts.tolist(), counts.tolist()))
+    found: List[LoosePart] = []
+    anchors = []
+    for key, members in groups.items():
+        in_group = np.isin(labels[used], members)
+        mine = used[in_group]
+        others = used[~in_group & (labels[used] != -1)]
         if not len(mine) or not len(others):
             continue
-        sample = _evenly(mine, PART_SAMPLES)
+        triangles = sum(triangle_count[member] for member in members)
+        holder = -1
+        if key[0] == "prop":
+            others, holder = holding_vertices(mesh, props[key[1]], others)
+        sample = _evenly(mine, PROP_SAMPLES if key[0] == "prop" else PART_SAMPLES)
         body = _evenly(others, BODY_SAMPLES)
         distance = np.linalg.norm(mesh.positions[sample][:, None] - mesh.positions[body][None], axis=2)
         flat = np.argsort(distance, axis=None)[:ANCHOR_PAIRS]
         pairs = np.stack(np.unravel_index(flat, distance.shape), axis=1)
         unweighted = int((mesh.weights[mine].sum(axis=1) <= 0).sum()) if mesh.skinned else 0
         gap = float(distance.min()) / height
-        found.append(LoosePart(int(triangles), len(mine), unweighted, gap, gap))
+        bone = mesh.bones[props[key[1]]] if key[0] == "prop" else ""
+        held_by = mesh.bones[holder] if holder >= 0 else ""
+        found.append(LoosePart(int(triangles), len(mine), unweighted, gap, gap, prop_bone=bone, held_by=held_by, pieces=len(members)))
         anchors.append((sample[pairs[:, 0]], body[pairs[:, 1]]))
     if mesh.skinned and found:
         for name, anim in clips.items():

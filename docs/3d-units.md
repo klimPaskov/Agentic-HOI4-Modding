@@ -115,7 +115,7 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 | No seam between the legs whose two sides follow one leg each, unblended | Parting the legs tears the seam open |
 | No knee bends backward in any frame | A leg solver can pick the wrong side, and the unit walks like a bird |
 | Every clip moves at least as much as the stillest vanilla clip | A near-frozen clip reads as a static pose on the map |
-| Every separate part (a strap, a plate, a quiver, a weapon) is skinned and stays on the body in every frame, as close as vanilla soldiers' and horses' parts do. Any number of parts is fine | A part that floats off the body, or slides away from where it rests when the unit moves, looks broken at every zoom |
+| Every separate part (a strap, a plate, a quiver, a weapon) is skinned and stays on the body in every frame, as close as vanilla soldiers' and horses' parts do. Any number of parts is fine. A weapon fitted as its own shape and bound to the hand counts as one part, however many pieces it has, and must stay in that hand | A part that floats off the body, or slides away from where it rests when the unit moves, looks broken at every zoom |
 | No two roles of one unit play the same motion (a rider's idle, move and retreat may: the mount's gait carries it) | Each role must read as itself: a retreat that is the walk, a defend that is the idle |
 | With `--mod-root`: no clip is one another unit of the mod already plays, unless the unit is a reskin of it (`--reskin-of <unit>`) | Every unit has its own animations. Reskins of one base unit, with the same body and rig, may share them |
 | With `--mod-root`: the mesh, every animation, an entity with every state and a sub-unit sprite are registered | Unregistered files never show |
