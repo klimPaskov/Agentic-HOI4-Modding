@@ -183,13 +183,59 @@ def grips_and_renders() -> None:
     h.flat_colours(False)
 
 
+def measuring() -> None:
+    # The kit's stretch share: nothing at rest, something once the crotch strip is pulled apart.
+    h.clear_pose()
+    assert h.stretch_share("body") == 0.0
+    h.rot("LeftUpLeg", (0.0, 1.0, 0.0), 80.0)
+    share = h.stretch_share("body")
+    assert 0.0 < share < 1.0, share
+    # The lowest region of the rest pose is the feet, then the legs; the prop is its own region.
+    h.clear_pose()
+    lowest = h.lowest_regions(top=10)
+    names = [name for name, _height in lowest]
+    assert names[:3] == ["feet", "legs", "hips"], lowest
+    assert "gun" in names and "chest" in names, lowest
+    assert abs(lowest[0][1]) < 1e-4, lowest
+    assert [height for _name, height in lowest] == sorted(height for _name, height in lowest)
+    assert len(h.lowest_regions(top=2)) == 2
+    # Import leaves per-face sharp flags; clearing them smooths every face and reports how many were sharp.
+    mesh = bpy.data.meshes.new("flat")
+    mesh.from_pydata([(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0), (2, 0, 0), (2, 1, 0)], [], [(0, 1, 2, 3), (1, 4, 5, 2)])
+    mesh.attributes.new("sharp_face", "BOOLEAN", "FACE")
+    mesh.attributes["sharp_face"].data.foreach_set("value", [True, True])
+    bpy.context.scene.collection.objects.link(bpy.data.objects.new("flat", mesh))
+    assert h.clear_sharp_faces("flat") == 2
+    assert "sharp_face" not in mesh.attributes
+    assert all(polygon.use_smooth for polygon in mesh.polygons)
+    assert h.clear_sharp_faces("flat") == 0
+
+
+def quaternion_continuity() -> None:
+    # Keys in opposite hemispheres are the same rotation; after normalising, the middle key is flipped and the last is not.
+    h.clear_pose()
+    h.new_action("spin", 9)
+    for frame, quaternion in ((1, (1.0, 0.0, 0.0, 0.0)), (5, (0.6, 0.8, 0.0, 0.0)), (9, (-0.5, -0.866, 0.0, 0.0))):
+        bpy.data.objects["rig"].pose.bones["Hips"].rotation_quaternion = quaternion
+        h.key(["Hips"], frame)
+    assert h.normalize_quaternion_keys("spin") == 1
+    values = {}
+    for curve in h._action_fcurves(bpy.data.actions["spin"]):
+        if curve.data_path.endswith('["Hips"].rotation_quaternion'):
+            values[curve.array_index] = [round(point.co.y, 3) for point in curve.keyframe_points]
+    assert values[0] == [1.0, 0.6, 0.5] and values[1] == [0.0, 0.8, 0.866], values
+    assert h.normalize_quaternion_keys("spin") == 0
+
+
 def main() -> None:
     rig, _body = build()
     legs()
     temporary_ik(rig)
     planting(rig)
     lean_and_seam(rig)
+    measuring()
     grips_and_renders()
+    quaternion_continuity()
     print("LIVE_HELPERS_INTEGRATION_OK")
 
 

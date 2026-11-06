@@ -33,6 +33,10 @@ Free live work comes before any paid clip or new generation.
    ```
 
    Keep them on `sys.path`. Opening a `.blend` clears `bpy.app.driver_namespace`.
+4. If you cache vertex groups or weights in your own code, key the cache by the mesh data pointer or
+   the vertex count, never by the mesh name. A provider names every body mesh `char1.001`, so a cache
+   keyed by name returns the wrong indices after you open another `.blend`. The kit's helpers keep no
+   cache.
 
 ## Author one role
 
@@ -82,6 +86,10 @@ place, measure, render and key what you name at the call site.
   wedge, and a box around them grows to crate size. Generating the fists closed avoids all of this.
 - Slots and vents in a prop whose side walls are missing show magenta: join a dark core inside the prop,
   with the prop's material and a dark texel.
+- Keep a held shaft off the body line and at an angle to the map camera. A prop held across the chest
+  vanishes into the forearms and torso, and one pointed at the camera vanishes in the map view.
+- A rigid pole with a hanging load on one bone cannot lie down believably. Give the pole and the load
+  their own bones, or a joint between them, before you pose a fall.
 - Show hand contact to the reviewer: `h.flat_colours(True, props=[...])` renders flat colours with the
   prop in yellow. Dark-coated units read nearly black with textures.
 
@@ -94,6 +102,20 @@ Weight fixes correct existing weights; they never invent a weight set.
   `h.weight_seam(mesh, vertices, pelvis, (left_thigh, right_thigh))` (pelvis 0.40, near thigh 0.36,
   far thigh 0.24). `repair_unit.py --repairs weights` does the same blend without a live session.
 - Hard edges inside one skin and four-influence limits: `repair_unit.py --repairs weights`.
+- Long coats and skirts weighted to the thighs tear and fan in every stride, crouch and lying pose. Give
+  them their own bones under the hips, give the thighs at most 0.15 weight on the cloth, and blend
+  toward the hem. Key the cloth bones to follow each thigh part of the way.
+- Cloth weighted to a tail root follows the tail like a wing. Weight it to the pelvis, but do not
+  switch hard: blend its weights across the seam from the tail to the pelvis over a short distance
+  (about a quarter of a unit passed UNIT-BRIDGE), or the seam bridges two body parts.
+- A cloak weighted to the arms stretches and flaps whenever an arm moves. Move arm weight off any cloth
+  more than a short distance from the arm bone segments, ramped over a similar distance, onto the spine
+  chain and shoulders. A colour mask alone misses part of the cloth.
+- A small island (an ear, a tuft, a strap, a crate part) split between two bones tears into spikes once
+  those bones move apart. Bind each island wholly to its dominant bone.
+- Measure stretch the kit's way: `h.stretch_share(mesh, frame)` is the share of edges that
+  UNIT-ANIM-STRETCH counts at that frame, from the kit's own constants. A hand-made gauge read about
+  0.8 times that number. Check the worst frames and keep the share under the kit's limit.
 
 ## Rigs with extra limbs
 
@@ -103,6 +125,12 @@ Weight fixes correct existing weights; they never invent a weight set.
   chain bone that owns no vertices. Before posing, check that each bone's head lies inside its own
   vertices and that every chain bone owns some; place joints at the centres of slices taken along the
   limb from the shoulder.
+- Before posing a limb, compare its bone head with the mesh cross-section at that height. If the head
+  sits outside the section (a knee bone in front of the knee), the posed joint leaves the mesh. Move the
+  bone to the section's centre in edit mode first.
+- Open wings by turning the finger bones, not the wing-arm bone: turning the wing-arm bone around its
+  own head swings the wing roots across the spine into an X. Watch the left and right wing-root
+  separation at every frame.
 
 ## Posture and reading on the map
 
@@ -117,10 +145,34 @@ Weight fixes correct existing weights; they never invent a weight set.
   barely moves the head); a death lies flat, face down for spiky or long-limbed bodies.
   `check_unit_files.py` fails two roles with the same motion (UNIT-ANIM-SAME), but a reviewer judges the
   read.
+- A digitigrade or splayed leg breaks a two-bone solve with a forward pole: the knee goes out to the
+  side and a lifted step reads as a sideways kick. Solve those legs with the pole along the leg's own
+  bend, or pose the swing leg by turning the thigh and shin about the body's forward axis. Keep
+  `h.knee_bend` for the checks.
+- A tail placed to hang and then lie along the ground, with a heading and a little lift, keyed at each
+  beat, reads better than a fixed curve, which reads as a rigid rod.
+- In a death clip, find what holds the body up before moving it: `h.lowest_regions(frame)` lists the
+  lowest point of each body region (and of each separate prop). Move the lowest group, not the hips.
+- Ground corrections in a death clip pile up and fight later pose edits. Keep a correction key only at
+  the deepest frame of each dip, and delete the stale correction keys before you re-pose a fall.
+
+## Repairing the mesh
+
+- A surface that folds through itself, one the winding repair cannot resolve (a shoulder pad and collar
+  in one patch), is fixed by replacing the folded region with the mirrored opposite side. Negate x, swap
+  the Left and Right vertex groups, reverse the faces and mirror the corner normals. Then delete the
+  remaining fold edges and cap each opening with a fan around a new centre vertex wound like its
+  neighbours.
+- If an edit leaves the per-face `sharp_face` flags from the import, io_pdx_mesh splits every corner and a
+  stream goes past 65,535 vertices (UNIT-STREAM-VERTICES fails after export). Clear them first with
+  `h.clear_sharp_faces(mesh)`, which also smooths every face and returns how many were sharp.
 
 ## After authoring
 
-1. Export each clip with `h.export_clip(action, path)`, never with the io_pdx_mesh export operator: the
+1. Run `h.normalize_quaternion_keys(action)` on every clip first. A key and its negation are the same
+   rotation, but when two keys sit in opposite hemispheres the blend between them turns the long way
+   (a blade sweeps through the ground). It flips those keys and returns how many it changed.
+   Export each clip with `h.export_clip(action, path)`, never with the io_pdx_mesh export operator: the
    operator ignores its start and end frames unless the scene's custom-range setting is on and exports
    the scene's range, so clips came out padded or cut to 80 or 85 samples. `export_clip` uses the action's
    own range and fails when the file's sample count differs. It also writes the clip at 30 frames a
