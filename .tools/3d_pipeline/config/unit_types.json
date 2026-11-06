@@ -366,6 +366,10 @@
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "infantry",
+      "validation_overrides": {
+        "max_boundary_edges": 980
+      },
+      "validation_calibration": "max_boundary_edges measured 895 on the ZIN yeti (Meshy remesh reduced from 51,341 to 21,000 triangles in Blender 5.2.2): one connected part, no non-manifold edges, 214 small loops of at most 16 edges in the fur. Limit 980 is the measurement plus about 9 percent. Other humanoid types keep the profile's 700",
       "roles": {
         "idle": {
           "meshy": [
