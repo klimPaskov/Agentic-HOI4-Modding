@@ -1,60 +1,23 @@
 # Modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Modding", revision 105601, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
-
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105601" sources="launcher-settings.json steam_appid.txt checksum_manifest.txt dlc/ integrated_dlc/ pdx_launcher/common/localisation/l_english.yml localisation/ common/ events/ history/ interface/ map/ tests/ script/ wiki/ changelog.txt hoi4.exe" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `launcher-settings.json`, `steam_appid.txt`, `checksum_manifest.txt`, the `dlc/` and `integrated_dlc/` folders, the launcher localisation, the byte order mark of every vanilla script and localisation file, the other top-level game folders, and strings in `hoi4.exe`.
-Kit blocks added: encoding in practice, the user directory files, load-order and checksum facts, the top-level folders the page does not list, descriptor keys, and the other launch option names.
-Gaps left: no game file defines the `.mod` descriptor format, `dlc_load.json` or the launcher database, so those statements stay [unverified]. The stub markers are false positives: "incomplete" is about CWTools rules, "out of date" is the launcher marker for `supported_version`, and "TODO" sits inside a sample comment. The inventory's unknown keys `supported_version`, `remote_file_id`, `replace_path`, `user_dir` and `editor_postfix` are real names (strings in `hoi4.exe`, see the descriptor block); the page's `replace_path` and load-order text was not re-tested in the game.
-**1.19.4.1 re-check (2026-11-01).** 13 statements depended on files the update changed (`launcher-settings.json`, `hoi4.exe`, `dlc/` and the vanilla script and localisation folders, but not the removed `debug_types` console command) and all 13 were re-measured. What changed: the game version is now `1.19.4.1`, the localisation folder holds 2,093 `.yml` files, `common/**/*.txt` has 2,224 files, `interface/` has 616 `.gfx` and `.gui` files, `common/` holds 39 documentation files (was 38), and the DLC `path` row is corrected because both quoted and unquoted paths occur. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-## Table of contents
-
-- [Official video guides](#Official_video_guides)
-- [Guidelines](#Guidelines)
-- [Text editor](#Text_editor)
-  - [Searching multiple files](#Searching_multiple_files)
-  - [Indenting](#Indenting)
-- [Universal modding concepts](#Universal_modding_concepts)
-  - [User directory](#User_directory)
-  - [Loading files](#Loading_files)
-  - [Folder structure](#Folder_structure)
-  - [Code structure](#Code_structure)
-  - [Debug mode](#Debug_mode)
-    - [Logs](#Logs)
-  - [Localisation](#Localisation)
-  - [GFX](#GFX)
-- [Mod structure](#Mod_structure)
-  - [Descriptor contents](#Descriptor_contents)
-    - [replace_path](#replace_path)
-- [Game data](#Game_data)
-- [Tools & utilities](#Tools_.26_utilities)
-- [Common mistakes](#Common_mistakes)
-- [Useful knowledge](#Useful_knowledge)
-- [See also](#See_also)
-- [Notes](#Notes)
-
----
-
-**Modding**, or creating [mods](<mods.md>), is the act of modifying the behavior of the base game (often referred to as *vanilla*), either for personal use, or to release publicly for other players, for instance - via the Steam Workshop.
+**Modding**, or creating [mods](mods.md), is the act of modifying the behavior of the base game (often referred to as *vanilla*), either for personal use, or to release publicly for other players, for instance - via the Steam Workshop.
 
 As for all Paradox games, Hearts of Iron IV is moddable to a great extent. Motivations of modders may vary widely: a better translation to their native language, more events or decisions, better maps, a major overhaul, etc.
 
-Mods are stored within the `mod/` folder within the [user directory](#User_directory). Alongside mods, the game will load any files stored in the user directory. The game's internal map editor, the Nudger, stores its output within that folder. The path to the folder containing the mod files cannot contain any non-ASCII characters, such as letters with diacritics or non-Latin script.
+Mods are stored within the `mod/` folder within the [user directory](#user-directory). Alongside mods, the game will load any files stored in the user directory. The game's internal map editor, the Nudger, stores its output within that folder. The path to the folder containing the mod files cannot contain any non-ASCII characters, such as letters with diacritics or non-Latin script.
 
-The game will read any [.mod file](#Mod_structure) within the `mod/` folder, and a local mod can be created via the launcher: "All installed mods" -> "Upload mod" -> "Create a mod". This is limited in the path and allowed mod structure options, so manually editing the output may be necessary.
+The game will read any [.mod file](#mod-structure) within the `mod/` folder, and a local mod can be created via the launcher: "All installed mods" -> "Upload mod" -> "Create a mod". This is limited in the path and allowed mod structure options, so manually editing the output may be necessary.
 
 Mods cannot coincide in name, in which case only the first-loaded mod as decided by the filename of the user-specific descriptor will have any effect in-game.
 
-## Official video guides <a id="Official_video_guides"></a>
+## Official video guides
 
 Official modding guides made by Paradox on Youtube.
 
 - Beginner's Modding Guide
 - Intermediate Modding Guide
 
-## Guidelines <a id="Guidelines"></a>
+## Guidelines
 
 - **Never modify game files**: use a mod even for small changes, and never modify directly game files in Steam Hearts of Iron 4 folder, as your changes may be undone without warning.
 - **Minimize overwrites of vanilla files** by adding separate files and loading from folders whenever possible, to improve mod compatibility and maintenance. (Your files can have any name, all files in the folder will be loaded by the game. So choose a name, no one else will ever use, like the name of your mod. Ex: coolmod_countries)
@@ -64,14 +27,12 @@ Official modding guides made by Paradox on Youtube.
 - **Use UTF-8 encoding** without the byte order mark for text files. This is commonly called "UTF-8", but can sometimes be specified as "UTF-8 without BOM".
 - **Use UTF-8 encoding with the byte order mark** for localisation files (.yml). This is commonly called "UTF-8-BOM", but can be just "UTF-8", in which case omitting the byte order mark is a separate option. Some text editors, such as Atom, do not support the byte order mark in entirety and should be avoided for localisation.
 - **Use comments** starting with # character, to remember reasons for writing tricky stuff. A single sharp sign will make the rest of the line completely ignored. There is no multi-line comment notation in the code.
-- **Debug** effectively by enabling [the debug mode](#Debug_mode). Do this by adding **-debug** to your launch options in Steam. The launch options are accessed in the menu opened by right-clicking the game and choosing 'Properties..'.
+- **Debug** effectively by enabling [the debug mode](#debug-mode). Do this by adding **-debug** to your launch options in Steam. The launch options are accessed in the menu opened by right-clicking the game and choosing 'Properties..'.
    Alternatively, in Windows it's possible to create a shortcut to the hoi4.exe or dowser.exe file, and then to open the shortcut's properties and append -debug (separated by a space) after the path's end, such as `"C:\Program Files (x86)\Steam\steamapps\common\Hearts of Iron IV\hoi4.exe" -debug`.
 
-<!-- kit:begin id="modding-encoding" at="section:Guidelines" -->
-**Kit note** Vanilla does not follow "UTF-8 without BOM for every text file". All 2,093 localisation `.yml` files start with the byte order mark, as the page says. For script, 235 of 2,224 `common/**/*.txt`, 87 of 128 `events/*.txt` and 942 of 2,058 `history/**/*.txt` also start with one, while none of the 616 `interface/*.gfx` and `*.gui` files do. A BOM in script is therefore tolerated; omit it in new script files. The full table is on [Mod structure](<mod_structure.md#General_rules>). [vanilla-confirmed 1.19.4.1] first three bytes of each file.
-<!-- kit:end id="modding-encoding" -->
+Vanilla does not follow "UTF-8 without BOM for every text file". All 2,093 localisation `.yml` files start with the byte order mark, as the page says. For script, 235 of 2,224 `common/**/*.txt`, 87 of 128 `events/*.txt` and 942 of 2,058 `history/**/*.txt` also start with one, while none of the 616 `interface/*.gfx` and `*.gui` files do. A BOM in script is therefore tolerated; omit it in new script files. The full table is on [Mod structure](mod_structure.md#general-rules).
 
-## Text editor <a id="Text_editor"></a>
+## Text editor
 
 These are the most common text editors to use for modding the game:
 
@@ -94,7 +55,7 @@ Reasons to use a non-default text editor include the following:
 - Greater capabilities to work with multiple files. Each of these editors may only have one instance of it open at a time with multiple files open at once (switching between them with `^Ctrl` + `⇆Tab`), in contrast to Microsoft Notepad that opens a separate instance for each opened file, which can quickly fill the `Alt` + `⇆Tab` menu. Multiple instances of the text editor can still be opened, however. A text comparison tool also exists on each one of these: "ComparePlus" plugin in Notepad++, "Compare Side-By-Side" or "Diffy" package in Sublime Text, or a variety of Visual Studio Code extensions ("Partial Diff" being the most popular one).
 - Greater customisation capabilities: each of these text editors allows a wide variety of light or night themes that can be picked as fit, with downloadable themes existing as well. Since one would need to look at the text editor a lot while modding, selecting a theme that looks good to the eyes can make the experience much better.
 
-### Searching multiple files <a id="Searching_multiple_files"></a>
+### Searching multiple files
 
 One feature of non-default text editors is a highly-customisable search of all files within the same folder. This is highly useful for dealing with errors and finding locations of certain elements.
 **Windows File Explorer is a poor choice for doing this**, as it only searches inside of .txt files while it may be desirable to search files of other extensions, e.g. .yml, .gfx, .gui, or .asset, and it is very noticeably slower than either text editor: a search taking ~10 seconds on a text editor may take up to 15 minutes to conclude in the Windows File Explorer.
@@ -120,9 +81,9 @@ A subset of this includes finding sprites' or interface elements' locations: The
 
 - Dealing with unintuitive errors where the location is not specified, such as `Invalid Decision Category`, where this can be used to locate *which* file is throwing the error.
 - Finding out what can cause a certain occurance to happen, such what fires a certain event or what sets a certain cosmetic tag.
-- Doing mass replacements in multiple files at the same time, usually used together with regular expression. This can be used to automate monotonous tasks, such as adding a log to every event, or most simply to change the owner in multiple states (such as by [commenting out](#Code_structure) the previous owner and inserting another one by replacing `owner=` with `owner=XYZ#`).
+- Doing mass replacements in multiple files at the same time, usually used together with regular expression. This can be used to automate monotonous tasks, such as adding a log to every event, or most simply to change the owner in multiple states (such as by [commenting out](#code-structure) the previous owner and inserting another one by replacing `owner=` with `owner=XYZ#`).
 
-### Indenting <a id="Indenting"></a>
+### Indenting
 
 Another reason to use non-default text editors is greater indenting capabilities. Indenting refers to the usage of newlines and spaces at the beginning of the line, which does not leave an impact on how the code is interpreted, but makes it easier to see the relations between different parts of the code.
 Typically, either a tab character (represented as `\t`) or 4 spaces are used as a single indenting level, placed from the beginning of the line to the beginning of code on the line. In order to increase the indenting level of code, the `⇆Tab` button is used in text editors, which can be done on multiple lines at the same time by selecting them. Inversely, `⇧Shift`+`⇆Tab` is used to decrease the indenting level of the line by one.
@@ -242,11 +203,11 @@ focus = { # Does not work due to being contained within another focus = { ... }
 
 Following the indenting rules and checking for these indenting errors will ensure that there will be no bracket-related errors within the code.
 
-## Universal modding concepts <a id="Universal_modding_concepts"></a>
+## Universal modding concepts
 
 *It's heavily recommended to turn off Windows file explorer from hiding file extensions from the filename*, if using Windows. File extensions are considered a part of the filename, and hiding them can cause files to not work due to wrong filenames (Such as accidentally saving localisation files as .txt files, saving an image in the wrong format and not realising it, et cetera).
 
-### User directory <a id="User_directory"></a>
+### User directory
 
 The user directory is used for storing the information related to Hearts of Iron IV that's not built into the game, but instead created by the user. The location is decided by `gameDataPath` in the base game's `/Hearts of Iron IV/launcher-settings.json`. By default, the user directory for Hearts of Iron IV is located in the following folders:
 
@@ -257,24 +218,22 @@ The user directory is used for storing the information related to Hearts of Iron
 In particular, these contents are notable contents of the user directory:
 
 - The user-specific mod descriptors are located inside of the `/Hearts of Iron IV/mod/` folder. This is used for assigning the mod information, such as the path to the folder that contains the mod. The same folder contains the default location of local mods after being created in the launcher, though any folder can be used for it.
-- The [nudger](<nudger.md>)'s outputs are stored in this folder. In particular, `/Hearts of Iron IV/map/`, `/Hearts of Iron IV/history/states/`, and `/Hearts of Iron IV/localisation/` may be created by the user as outputs of the nudger. **From here, they will be loaded into the game when it is opened, having priority over the base game's files.**
-- The game's logs are created in `/Hearts of Iron IV/logs/`. From there, they can be used for [troubleshooting](<troubleshooting.md>) or useful information. See also [§ Logs](#Logs).
+- The [nudger](nudger.md)'s outputs are stored in this folder. In particular, `/Hearts of Iron IV/map/`, `/Hearts of Iron IV/history/states/`, and `/Hearts of Iron IV/localisation/` may be created by the user as outputs of the nudger. **From here, they will be loaded into the game when it is opened, having priority over the base game's files.**
+- The game's logs are created in `/Hearts of Iron IV/logs/`. From there, they can be used for [troubleshooting](troubleshooting.md) or useful information. See also [§ Logs](#logs).
 - The savefiles are stored in `/Hearts of Iron IV/save games/`.
 - The game's screenshots are stored in `/Hearts of Iron IV/screenshots/`. This includes both the regular `F11` screenshots and the map generated with `F10`, which is a pixel-perfect representation of the entire world map taking the province borders from `/Hearts of Iron IV/map/provinces.bmp`.
 - `/Hearts of Iron IV/settings.txt` is modified by the game's settings menu and includes some that aren't possible to change there. In particular, `save_as_binary=no` isn't possible to change anywhere else, and so is changing the default text editor used by the game.
 
-**If there are non-ASCII characters in the path to the user directory, it may not work as intended**. In particular, the game will be unable to open error.log (but will change it regardless) or mods stored there. To circumvent this, either just mods may be moved to a different folder by modifying the `path` in the [user-specific descriptor](#Mod_structure) or it's possible to move the entire user directory by editing `/Hearts of Iron IV/launcher-settings.json` and moving the files accordingly.
+**If there are non-ASCII characters in the path to the user directory, it may not work as intended**. In particular, the game will be unable to open error.log (but will change it regardless) or mods stored there. To circumvent this, either just mods may be moved to a different folder by modifying the `path` in the [user-specific descriptor](#mod-structure) or it's possible to move the entire user directory by editing `/Hearts of Iron IV/launcher-settings.json` and moving the files accordingly.
 
-<!-- kit:begin id="modding-user-directory-files" at="section:User_directory" -->
-**Kit note** What the game files say about the user directory in 1.19.4.1.
+What the game files say about the user directory in 1.19.4.1.
 
-- `launcher-settings.json` sets `gameDataPath` to `%USER_DOCUMENTS%/Paradox Interactive/Hearts of Iron IV` and `ingameSettingsPath` to `pdx_settings.json`. The [Localisation](<localisation.md>) page says `pdx_settings.txt`, and `hoi4.exe` also contains that name as a string, [vanilla-confirmed 1.19.4.1] `launcher-settings.json`. For the language the file is `pdx_settings.txt`, and no `pdx_settings.json` existed in the folders checked. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, see the [Localisation](<localisation.md>) page. Where other settings are stored was not tested. [unverified]
-- Its `gameCachePaths` list names these user-directory entries: `buildings_nudger_markers.txt`, `cache/`, `continue_game.json`, `game rules/`, `map/`, `mod/`, `naval_dist.cache`, `naval_dist_checksum.cache`, `playlists/`, `pops_filestorage.index`, `pops_filestorage/` and `shadercache/`. [vanilla-confirmed 1.19.4.1] `launcher-settings.json`.
-- `hoi4.exe` contains the message "Custom user directory configured in the old style with the userdir.txt file in the game folder", followed by "Overridden by the gameDataPath field". A `userdir.txt` in the game folder is the old way to move the directory; `gameDataPath` wins. [unverified] (strings in `hoi4.exe`)
-- Other file names that appear as strings in `hoi4.exe`: `settings.txt`, `gameplaysettings.txt`, `pdx_settings.txt`, `autotestsettings.txt`, `dlc_load.json`, `mods_registry.json`, `logs/error.log`, `logs/system.log`, `logs/code_revisions.log`, and the folders `dumps/`, `exceptions/`, `save games` and `screenshots`. [unverified] (strings in `hoi4.exe`)
-<!-- kit:end id="modding-user-directory-files" -->
+- `launcher-settings.json` sets `gameDataPath` to `%USER_DOCUMENTS%/Paradox Interactive/Hearts of Iron IV` and `ingameSettingsPath` to `pdx_settings.json`. The [Localisation](localisation.md) page says `pdx_settings.txt`, and `hoi4.exe` also contains that name as a string,. For the language the file is `pdx_settings.txt`, and no `pdx_settings.json` existed in the folders checked. Where other settings are stored was not tested. (unverified)
+- Its `gameCachePaths` list names these user-directory entries: `buildings_nudger_markers.txt`, `cache/`, `continue_game.json`, `game rules/`, `map/`, `mod/`, `naval_dist.cache`, `naval_dist_checksum.cache`, `playlists/`, `pops_filestorage.index`, `pops_filestorage/` and `shadercache/`.
+- `hoi4.exe` contains the message "Custom user directory configured in the old style with the userdir.txt file in the game folder", followed by "Overridden by the gameDataPath field". A `userdir.txt` in the game folder is the old way to move the directory; `gameDataPath` wins. (unverified) (strings in `hoi4.exe`)
+- Other file names that appear as strings in `hoi4.exe`: `settings.txt`, `gameplaysettings.txt`, `pdx_settings.txt`, `autotestsettings.txt`, `dlc_load.json`, `mods_registry.json`, `logs/error.log`, `logs/system.log`, `logs/code_revisions.log`, and the folders `dumps/`, `exceptions/`, `save games` and `screenshots`. (unverified) (strings in `hoi4.exe`)
 
-### Loading files <a id="Loading_files"></a>
+### Loading files
 
 After creating a mod folder within the launcher, every single file within will get loaded at the same location as in base game. Taking a mod with the name of "yourmod" as an example, every single file within `mod/yourmod/common/national_focus` will get loaded alongside files in base game's `/Hearts of Iron IV/common/national_focus` assuming the default path. However, inserting one more folder as in `mod/yourmod/test/common/national_focus` will result in the files in that folder not being loaded as national focus files, appearing to get ignored.
 The root folder of the mod, considered the same as the `/Hearts of Iron IV/` folder in the base game, will be defined in the user directory's `/Hearts of Iron IV/mod/yourmod.mod` file, opened with a text editor. This is set via `path = ""` in that file, by default being user directory's `/Hearts of Iron IV/mod/yourmod`.
@@ -282,22 +241,22 @@ The root folder of the mod, considered the same as the `/Hearts of Iron IV/` fol
 The base game is loaded first, while mods are loaded later. The order of loading files is primarily used to determine two things:
 
 - In case of files with the same name in the same location, the load order decides which one gets used. For example, if a mod and the base game edit `../events/Generic.txt`, the game will read the mod's version. This applies only to individual files and not entire folders. It is never possible for several files with the same name in the same location to each get loaded: it will only pick the later-loaded one and disregard the older ones.
-- In case of [replace_path](<modding.md>) being used inside of a mod descriptor, the load order decides which files will be unloaded inside of the specified folder.
+- In case of [replace_path](modding.md) being used inside of a mod descriptor, the load order decides which files will be unloaded inside of the specified folder.
 
 Aside from replace_path, there is no way to completely unload a file, though it can be overwritten if there is one with the same filename.`[a]` For example, if the only file in a mod is `../common/national_focus/generic.txt`, then it will only overwrite the base game's generic national focus tree, but other national focus trees will remain the same as they are in the base game. If another mod that only edits a different focus tree (e.g. a new `malta.txt`), then the game will read the edit to the generic national focus tree, read `malta.txt`, and have the rest as in the base game.
 
 The load order in the game is as such:
 
 - Base game. Due to being earliest in the load order, this has the lowest priority in case of overlap.
-- DLCs, in the order of their internal ID (follows release date). For example, if the base game, DLC018, and DLC20 each contain `../interface/frontendmainviewbg.gfx`, the game will only read the version in DLC020 and ignore the rest. Due to checksum constraints, DLC folders usually only contain graphics and audio related to the DLC, while the code is always kept in the base game itself, locked behind a [has_dlc check](<triggers.md>).
-- [User directory](<modding.md>). While it's usually limited to the [nudger](<nudger.md>)'s outputs, any other folder also works here.
-- Mods, ordered by using [filenames of user-specific descriptors](#Mod_structure). For example, if mods with descriptors of `mod/abc_mod.mod` and `mod/xyz_mod.mod` both overwrite `../events/my_events.txt`, only the version in the mod with the descriptor of `mod/xyz_mod.mod` will be read.
+- DLCs, in the order of their internal ID (follows release date). For example, if the base game, DLC018, and DLC20 each contain `../interface/frontendmainviewbg.gfx`, the game will only read the version in DLC020 and ignore the rest. Due to checksum constraints, DLC folders usually only contain graphics and audio related to the DLC, while the code is always kept in the base game itself, locked behind a [has_dlc check](triggers.md).
+- [User directory](modding.md). While it's usually limited to the [nudger](nudger.md)'s outputs, any other folder also works here.
+- Mods, ordered by using [filenames of user-specific descriptors](#mod-structure). For example, if mods with descriptors of `mod/abc_mod.mod` and `mod/xyz_mod.mod` both overwrite `../events/my_events.txt`, only the version in the mod with the descriptor of `mod/xyz_mod.mod` will be read.
 
-This can be overwritten using `dependencies = { ... }` in the [descriptor contents](#Descriptor_contents). **[replace_path](<modding.md>) does not change the order**, but it is used to completely unload everything previously-loaded from a certain folder.
+This can be overwritten using `dependencies = { ... }` in the [descriptor contents](#descriptor-contents). **[replace_path](modding.md) does not change the order**, but it is used to completely unload everything previously-loaded from a certain folder.
 
 Due to DLCs being their own source of loaded files, the `modname/dlc/` folder and its subfolders will have no effect. Instead, the file has to follow the actual load location: e.g. to edit `../dlc/dlc023_man_the_guns/music/mtg_music.txt`, the mod will have to contain `modname/music/mtg_music.txt`.
 
-During the process of loading, the files remain as pure text and do not immediately get interpreted. Exceptions for this are files that are necessary for the loading screen to work and localisation. Afterwards, there's the process of interpretation/evaluation, which reads the text files and creates content (such as national focuses, countries, or states) accordingly. **Filenames don't matter in how the file is interpreted** with few exceptions.`[b]` For vast majority of files, they're either read only by the virtue of being within a specific folder (Such as national focuses), or by a direct link within a different file (Such as `oob = "TAG_1936"` within a [country history file](<country_creation.md>) loading the `/Hearts of Iron IV/history/units/TAG_1936.txt` file for unit locations). This allows avoiding overwriting base game files in many cases, which eases making the mod's contents be compatible to the next major update.
+During the process of loading, the files remain as pure text and do not immediately get interpreted. Exceptions for this are files that are necessary for the loading screen to work and localisation. Afterwards, there's the process of interpretation/evaluation, which reads the text files and creates content (such as national focuses, countries, or states) accordingly. **Filenames don't matter in how the file is interpreted** with few exceptions.`[b]` For vast majority of files, they're either read only by the virtue of being within a specific folder (Such as national focuses), or by a direct link within a different file (Such as `oob = "TAG_1936"` within a [country history file](country_creation.md) loading the `/Hearts of Iron IV/history/units/TAG_1936.txt` file for unit locations). This allows avoiding overwriting base game files in many cases, which eases making the mod's contents be compatible to the next major update.
 
 For the vast majority of folders, such as `/Hearts of Iron IV/interface/*.gfx` files, the ASCII character IDs are used to sort them by filename for the interpretation. This is different from the alphabetic sorting used by the file explorer as uppercase letters are considered to come before lowercase letters and there are multiple characters inbetween (such as underscores) that lie inbetween. In order to place a file particularly high in the evaluation order, a prefix using late character IDs such as `zz_` can be used and a reverse for the other way around, with the base game commonly using `00_` for this.
 
@@ -306,7 +265,7 @@ For the vast majority of folders, such as `/Hearts of Iron IV/interface/*.gfx` f
 Changing the interpretation order has very limited use, but it is present. Some notable cases of this include:
 
 - `/Hearts of Iron IV/interface/*.gfx` files that create sprites assigning information to images, such as attaching a singular name. If there are multiple definitions of the same sprite, only the later-evaluated sprite is used, with the earlier one being ignored. The base game notably uses this for DLCs: if a character only has a portrait within a DLC, then they will be set to use a sprite as the portrait. Within the base game, the sprite is set to lead to a generic portrait, as otherwise the character may appear broken, which is plausible in multiplayer. However, within the DLC files, the sprite that's used for the portrait is defined once again in a separate file later in the evaluation order to ensure that the DLC-added portrait will be used for the DLC owners.
-- `/Hearts of Iron IV/common/country_tags/*.txt` files: the order in which country tags are defined matters. While the base game places the evaluation order mostly in the order inside of the files here, it is still relevant. This decides on such things as the order in which `/Hearts of Iron IV/history/countries/` files are evaluated, which may result in subjects having broken popularities otherwise, the order in which events/decisions/focuses/etc are evaluated (whether it's the triggers for firing it or the AI selecting it), or the order when a [scope](<scopes.md>) selects several countries: both evaluated and in the tooltip.
+- `/Hearts of Iron IV/common/country_tags/*.txt` files: the order in which country tags are defined matters. While the base game places the evaluation order mostly in the order inside of the files here, it is still relevant. This decides on such things as the order in which `/Hearts of Iron IV/history/countries/` files are evaluated, which may result in subjects having broken popularities otherwise, the order in which events/decisions/focuses/etc are evaluated (whether it's the triggers for firing it or the AI selecting it), or the order when a [scope](scopes.md) selects several countries: both evaluated and in the tooltip.
 
 ![Game Checksum](media/modding_e0cb4ef0a6__img1.jpg)The main menu showing a checksum of f680 on version 1.0.1
 
@@ -314,15 +273,13 @@ Changing the interpretation order has very limited use, but it is present. Some 
 
 The **checksum**, the 4-character alphanumeric code that can be seen next to the version in the main menu, such as a2b4, decides multiplayer and achievement compatibility: servers can be joined only if the checksum is identical to the host's, while achievements are only enabled if the checksum is identical to the base game's, which can be seen in the launcher. The list of what changes it can be seen in the base game's `/Hearts of Iron IV/checksum_manifest.txt` file, which includes entire `common/`, `events/`, and `history/` folders, as well as most of the `map/` folder, other than `map/terrain/`. Any change to the files in that folder will change the checksum, while any mod that doesn't change them will not.
 
-<!-- kit:begin id="modding-load-facts" at="section:Loading_files" -->
-**Kit note** Load-order and checksum facts that the game files confirm.
+Load-order and checksum facts that the game files confirm.
 
-- `dlc/` holds 12 DLC folders and `integrated_dlc/` four more (`dlc018`, `dlc020`, `dlc022`, `dlc023`). They hold `gfx/`, `interface/`, `music/`, `portraits/` and `sound/` content (`dlc014` holds wallpapers), a `dlcNNN.dlc` descriptor and `thumbnail.png`. None has `common/`, `events/` or `history/`; `dlc003` ships a zip that was not opened. This supports the page's statement that DLC code lives in the base game behind `has_dlc`. [vanilla-confirmed 1.19.4.1] `dlc/*/`, `integrated_dlc/*/`.
-- `checksum_manifest.txt` lists the checksummed folders, each with its sub-folders: `common` (`.txt`, `.lua`), `events` (`.txt`), `history` (`.txt`) and `map` (`.txt`, `.map`, `.bmp`, `.csv`). `localisation`, `interface`, `gfx`, `music`, `sound` and `portraits` are not listed, so a mod that only changes those leaves the checksum alone. [vanilla-confirmed 1.19.3] `checksum_manifest.txt`.
-- The manifest has no exclusion lines, and `map/terrain/` holds two `.bmp` files (`Tree_season.bmp`, `Tree_tint.bmp`) that match the `map` plus `.bmp` entry. The page's "other than `map/terrain/`" is therefore not what the manifest says; its 62 `.dds` files are the part that no entry matches. [vanilla-confirmed 1.19.4.1] `checksum_manifest.txt`, `map/terrain/`. The engine counts `Tree_tint.bmp`: a mod override with its last byte changed changed one of the 91 values in the `dump_checksum` output (slot 3). A byte-identical override also changed five values against no file, so the sum is not a pure content hash of the `.bmp` and its presence counts too. Which category each slot stands for is not known, and the checksum shown on the main menu was not read. The second file, `Tree_season.bmp`, was not overridden, so that it counts is [unverified]. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launches, `dump_checksum` files compared.
-<!-- kit:end id="modding-load-facts" -->
+- `dlc/` holds 12 DLC folders and `integrated_dlc/` four more (`dlc018`, `dlc020`, `dlc022`, `dlc023`). They hold `gfx/`, `interface/`, `music/`, `portraits/` and `sound/` content (`dlc014` holds wallpapers), a `dlcNNN.dlc` descriptor and `thumbnail.png`. None has `common/`, `events/` or `history/`; `dlc003` ships a zip that was not opened. This supports the page's statement that DLC code lives in the base game behind `has_dlc`.
+- `checksum_manifest.txt` lists the checksummed folders, each with its sub-folders: `common` (`.txt`, `.lua`), `events` (`.txt`), `history` (`.txt`) and `map` (`.txt`, `.map`, `.bmp`, `.csv`). `localisation`, `interface`, `gfx`, `music`, `sound` and `portraits` are not listed, so a mod that only changes those leaves the checksum alone.
+- The manifest has no exclusion lines, and `map/terrain/` holds two `.bmp` files (`Tree_season.bmp`, `Tree_tint.bmp`) that match the `map` plus `.bmp` entry. The page's "other than `map/terrain/`" is therefore not what the manifest says; its 62 `.dds` files are the part that no entry matches. The engine counts `Tree_tint.bmp`: a mod override with its last byte changed changed one of the 91 values in the `dump_checksum` output (slot 3). A byte-identical override also changed five values against no file, so the sum is not a pure content hash of the `.bmp` and its presence counts too. Which category each slot stands for is not known, and the checksum shown on the main menu was not read. The second file, `Tree_season.bmp`, was not overridden, so that it counts is unverified.
 
-### Folder structure <a id="Folder_structure"></a>
+### Folder structure
 
 These folders are common to edit within mods:
 
@@ -331,35 +288,33 @@ These folders are common to edit within mods:
 - `/Hearts of Iron IV/history/`: This folder primary decides on starting historical information: which states are owned by which countries, the starting political and diplomatic situations, the army positions, starting buildings, and so on. Typically, if something happens before any country gets selected, it's decided here. However, starting railways and supply nodes are instead defined in the `/Hearts of Iron IV/map/` folder.
 - `/Hearts of Iron IV/map/`: This folder is used to edit the appearance of the map, such as provinces, the shown terrain, the heightmap, and so on. This also includes the strategic regions and starting supply nodes and railways. However, the boundaries of states are instead defined in the `/Hearts of Iron IV/history/states/` folder.
 - `/Hearts of Iron IV/localisation/`: This folder is used to define how the text is shown, depending on the currently turned-on language.
-- `/Hearts of Iron IV/gfx/`: This folder is used to store images. However, most of the time, [these images aren't automatically loaded but must be linked to in sprites](#GFX). Commonly-edited exceptions include `/Hearts of Iron IV/gfx/loadingscreens` where every single file is always loaded, `/Hearts of Iron IV/gfx/flags` and subfolders where the country tries to load the flag upon ideology or [cosmetic tag](<cosmetic_tag_modding.md>) change, and `/Hearts of Iron IV/gfx/interface/equipmentdesigner/graphic_db/*.txt` files that assign sprites to the pools of images shown in the equipment designer. Everything else requires a sprite.
+- `/Hearts of Iron IV/gfx/`: This folder is used to store images. However, most of the time, [these images aren't automatically loaded but must be linked to in sprites](#gfx). Commonly-edited exceptions include `/Hearts of Iron IV/gfx/loadingscreens` where every single file is always loaded, `/Hearts of Iron IV/gfx/flags` and subfolders where the country tries to load the flag upon ideology or [cosmetic tag](cosmetic_tag_modding.md) change, and `/Hearts of Iron IV/gfx/interface/equipmentdesigner/graphic_db/*.txt` files that assign sprites to the pools of images shown in the equipment designer. Everything else requires a sprite.
 - `/Hearts of Iron IV/interface/` (not to be confused with `/Hearts of Iron IV/gfx/interface/`): This folder is mostly filled with `*.gfx` and `*.gui` files, both of which can be opened in a text editor. The former define the graphical entries that are shown in-game: sprites that assign a name and properties (such as animation, the amount of frames, or loading type) to an image file, fonts, text colours, map arrows, et cetera. The latter define the graphical user interface itself: how the buttons and icons are laid out, which GFX is used where, where to write text, et cetera. This only decides on the appearance of the GUI, the attributes such as effects have to be defined elsewhere.
 - `/Hearts of Iron IV/music/`: This folder is used to define songs that play within the radio stations, and the possibilities in the weighted shuffle.
 - `/Hearts of Iron IV/sound/`: This folder is used to define sounds that play elsewhere, usually tied to an element of the GUI. This also includes such entries as the division voicelines.
 - `/Hearts of Iron IV/portraits/`: This folder is used to assign sprites as portraits for randomly-generated generic characters.
 
-<!-- kit:begin id="modding-top-level-folders" at="section:Folder_structure" -->
-**Kit note** Other top-level folders in the 1.19.4.1 game folder that the list above omits. For the 81 folders inside `common/` see the index on [Mod structure](<mod_structure.md#kit-common-folder-index>).
+Other top-level folders in the 1.19.4.1 game folder that the list above omits. For the 81 folders inside `common/` see the index on [Mod structure](mod_structure.md#common-folder-index-for-11941).
 
-- `documentation/` holds the generated reference, each as `.md` and `.html`: effects, triggers, modifiers, dynamic variables, console commands, localisation objects and formatters, script concepts, collection inputs and operators, and math functions. A further 39 documentation files (`.md`) sit inside `common/` folders. [vanilla-confirmed 1.19.4.1] `documentation/`, `common/`.
-- `tests/` holds 34 `.txt` files of scripted test bundles. `tests/_documentation.info` says each file is one bundle of `tests = { ... }` and that results go to `logs/tests/` in the user directory. [docs] `tests/_documentation.info`.
-- `script/` holds five Lua files: `autoexec.lua`, `ai_diplomacy.lua`, `diplomacy.lua`, `tweaks.lua` and `utils.lua`. The header of `autoexec.lua` says it runs on app start, once per context created. [vanilla-confirmed 1.19.3] `script/`.
-- `country_metadata/00_country_metadata.txt` sets the playthrough-stats and career-profile background per tag, with a `default` entry. [vanilla-confirmed 1.19.3] `country_metadata/00_country_metadata.txt`.
-- `changelog.txt` is four lines long and only points to the forum; it no longer holds patch notes. [vanilla-confirmed 1.19.3] `changelog.txt`.
-<!-- kit:end id="modding-top-level-folders" -->
+- `documentation/` holds the generated reference, each as `.md` and `.html`: effects, triggers, modifiers, dynamic variables, console commands, localisation objects and formatters, script concepts, collection inputs and operators, and math functions. A further 39 documentation files (`.md`) sit inside `common/` folders.
+- `tests/` holds 34 `.txt` files of scripted test bundles. `tests/_documentation.info` says each file is one bundle of `tests = { ... }` and that results go to `logs/tests/` in the user directory.
+- `script/` holds five Lua files: `autoexec.lua`, `ai_diplomacy.lua`, `diplomacy.lua`, `tweaks.lua` and `utils.lua`. The header of `autoexec.lua` says it runs on app start, once per context created.
+- `country_metadata/00_country_metadata.txt` sets the playthrough-stats and career-profile background per tag, with a `default` entry.
+- `changelog.txt` is four lines long and only points to the forum; it no longer holds patch notes.
 
-### Code structure <a id="Code_structure"></a>
+### Code structure
 
 The script language in which the code is built always has a common structure: `<attribute> = <argument>` (sometimes using inequality signs in case of triggers), such as `add_political_power = 100`, with few exceptions where the argument can be dropped. Each attribute and argument is a single word (A word character includes the `[a-zA-Z0-9_.,-/]` group), with whitespace characters serving as delimiters. There are two types of arguments that may include more than a single word, however:
 
 - Strings are marked with quotation marks (only `"`) on both sides. A space will not interrupt the string, but a direct newline will. If there aren't any whitespace characters inside, omitting the quotation marks will not change the result (such as `date > "1936.1.1"` and `date > 1936.1.1`). There are two special characters allowed to use in strings: `\"` is used to write a quotation mark and `\\` is used to write a backslash, a backslash may not be used in any other way. It's impossible to include a newline directly inside of a string. Occassionally the attribute itself may be enclosed in quotation marks, such as `"TAG" = { has_political_power > 100 }`. A string can include at most 255 characters, not including the null terminator.
 
-Where text is intended to be displayed to the player, such as tooltips, attributes generally accept a [localisation key](#Localisation) as the argument. This allows the shown text to change depending on the enabled language and contains more capabilities, such as not being bound to 255 characters or capabilities for text customisation (e.g. coloured text, newlines, or dynamic changes). If the game detects no defined localisation key in the enabled language's database, it will default to directly displaying the argument.
+Where text is intended to be displayed to the player, such as tooltips, attributes generally accept a [localisation key](#localisation) as the argument. This allows the shown text to change depending on the enabled language and contains more capabilities, such as not being bound to 255 characters or capabilities for text customisation (e.g. coloured text, newlines, or dynamic changes). If the game detects no defined localisation key in the enabled language's database, it will default to directly displaying the argument.
 
-- In certain types of attributes, figure brackets are used to attach an entire block of code as the argument, which usually consists of other code in the same `<attribute> = <argument>` format. As an example, `random_country = { add_stability = 0.1 }` (as an [effect](<effects.md>)) is an attribute of `random_country` with the argument of `{ add_stability = 0.1 }`; that argument itself consists of an attribute of `add_stability` with an argument of `0.1`. In particular, this will [scope](<scopes.md>) into a random existing country and add 10% ![Stability](media/country_creation_1d4220f262__img10.png)Stability.
+- In certain types of attributes, figure brackets are used to attach an entire block of code as the argument, which usually consists of other code in the same `<attribute> = <argument>` format. As an example, `random_country = { add_stability = 0.1 }` (as an [effect](effects.md)) is an attribute of `random_country` with the argument of `{ add_stability = 0.1 }`; that argument itself consists of an attribute of `add_stability` with an argument of `0.1`. In particular, this will [scope](scopes.md) into a random existing country and add 10% ![Stability](media/country_creation_1d4220f262__img10.png)Stability.
 
-If the attribute doesn't support grouping together attributes, then using the opening bracket will be interpreted as the argument itself. For example, the game would interpret `transfer_state = { 123 321 }` as trying to transfer the state with the ID of `{`. Afterwards, the game encounters `123` which'd get interpreted as [scoping into a state](<scopes.md>), which'd get interrupted prematurely by the closing bracket. As a result, there's one more closing bracket which doesn't have a proper opening bracket, which will likely lead to a scoping error, breaking the rest of the file.
+If the attribute doesn't support grouping together attributes, then using the opening bracket will be interpreted as the argument itself. For example, the game would interpret `transfer_state = { 123 321 }` as trying to transfer the state with the ID of `{`. Afterwards, the game encounters `123` which'd get interpreted as [scoping into a state](scopes.md), which'd get interrupted prematurely by the closing bracket. As a result, there's one more closing bracket which doesn't have a proper opening bracket, which will likely lead to a scoping error, breaking the rest of the file.
 
-**Omitting the argument/equality sign is almost always erroneous**. For example, it is always mandatory where [effects](<effects.md>) or [triggers](<triggers.md>) are expected, making this incorrect: `GER = { leave_faction }`. Instead, where there is no expected argument, `yes` is commonly used as `GER = { leave_faction = yes }`. There are few exceptions where an argument should be omitted, such as inside of [the expanded form of add_ideas](<effects.md>).
+**Omitting the argument/equality sign is almost always erroneous**. For example, it is always mandatory where [effects](effects.md) or [triggers](triggers.md) are expected, making this incorrect: `GER = { leave_faction }`. Instead, where there is no expected argument, `yes` is commonly used as `GER = { leave_faction = yes }`. There are few exceptions where an argument should be omitted, such as inside of [the expanded form of add_ideas](effects.md).
 
 Comments are marked with the `#` character: everything after that character until the newline will be entirely ignored by the game. For example:
 
@@ -386,25 +341,25 @@ In this case, the focus' icon attribute is set with `icon = x`, and next the gam
 
 There are these types of argument blocks are particularly common:
 
-- [Effects](<effects.md>) are used in circumstances such as focus completion rewards, event options, decision effects, [on actions](<on_actions.md>), country history files, and so on. They are used in order to enact a one-time change to the game's state.
-- [Triggers](<triggers.md>) are used in circumstances such as focus and decision availability checks, event triggers, or [if statements](<effects.md#If_statements>). They return a strictly boolean value of either true or false, without actually changing anything in the game's state.
-- [Scopes](<scopes.md>) are a particular subset of triggers and effects that can be used to change for which country/state/character/division the effects are executed or triggers are checked for.
-- [Modifiers](<modifiers.md>) are used to apply a constant numeric change, such as the daily political power gain. Commonly, [ideas such as spirits](<idea_modding.md>) are used to apply it to countries.
+- [Effects](effects.md) are used in circumstances such as focus completion rewards, event options, decision effects, [on actions](on_actions.md), country history files, and so on. They are used in order to enact a one-time change to the game's state.
+- [Triggers](triggers.md) are used in circumstances such as focus and decision availability checks, event triggers, or [if statements](effects.md#if-statements). They return a strictly boolean value of either true or false, without actually changing anything in the game's state.
+- [Scopes](scopes.md) are a particular subset of triggers and effects that can be used to change for which country/state/character/division the effects are executed or triggers are checked for.
+- [Modifiers](modifiers.md) are used to apply a constant numeric change, such as the daily political power gain. Commonly, [ideas such as spirits](idea_modding.md) are used to apply it to countries.
 
 The order in which attributes are placed may matter or not depending on the context. In particular, these are the general rules:
 
-- The order of effects and triggers matters the most: they are executed in the order that they are placed and this decides the placing of them in the tooltip shown to the player. For example, if an effect block first contains `annex_country` and then [an if statement](<effects.md>) checking for the annexed country owning a state, the if statement will always be false since the country is already annexed. In triggers, the order of execution matters for [temporary variables](<data_structures.md>).
+- The order of effects and triggers matters the most: they are executed in the order that they are placed and this decides the placing of them in the tooltip shown to the player. For example, if an effect block first contains `annex_country` and then [an if statement](effects.md) checking for the annexed country owning a state, the if statement will always be false since the country is already annexed. In triggers, the order of execution matters for [temporary variables](data_structures.md).
 - The order of modifiers doesn't matter at all and their order in the tooltip is hard-coded.`[d]`
 - The order of different attributes of the same entry doesn't change the interpretation. For example, if a national focus' reward is defined before its position instead of the opposite as normally done, it won't be treated any differently.
 - For the same type of database entries, the position in the file is used for the order in which they are created. Examples where this order is especially visible to the player are decisions (unless overridden with `priority`), buildings, or ideologies.
   - This order of creation may matter in other references. For example, in equipment, an equipment type must be assigned an existing archetype. If the archetype doesn't exist when the equipment type is created, the game will crash to desktop, even if there is a definition later in the file.
-  - Where applicable, [the filename is primarily used for evaluation](#Loading_files), with the order inside of the files being secondary. As the ASCII order is used for this, the filename beginning with `00_` is usually used to ensure that it's to be evaluated near the beginning, while beginning with `zz_` is used in the opposite manner.
-- For the same type of attribute in a database entry, the interpretation varies. If multiple are supported, the position in code decides the order (e.g. every `prerequisite = { ... }` in a national focus must be met for it to be possible to complete, or every `immediate = { ... }` in an event will be executed when the event is fired). Otherwise, it may pick the earliest or the latest definition of the attribute, disregarding the other ones (For example, in [scripted localisation](<localisation.md>), the first valid `text = { ... }` where the trigger is met will be used).
+  - Where applicable, [the filename is primarily used for evaluation](#loading-files), with the order inside of the files being secondary. As the ASCII order is used for this, the filename beginning with `00_` is usually used to ensure that it's to be evaluated near the beginning, while beginning with `zz_` is used in the opposite manner.
+- For the same type of attribute in a database entry, the interpretation varies. If multiple are supported, the position in code decides the order (e.g. every `prerequisite = { ... }` in a national focus must be met for it to be possible to complete, or every `immediate = { ... }` in an event will be executed when the event is fired). Otherwise, it may pick the earliest or the latest definition of the attribute, disregarding the other ones (For example, in [scripted localisation](localisation.md), the first valid `text = { ... }` where the trigger is met will be used).
 
 It is common for the same attribute to intentionally be duplicated with different arguments. The handling of duplicated attributes varies and isn't intended everywhere. For example, each instance of `focus = { ... }` inside of a national focus tree is treated as a separate national focus. Usually if an effect block is duplicated (such as an event's `immediate = { ... }`), each one gets executed in order that they are placed.
 Occassionally, the name of the attribute is arbitrary. For example, in ideas, each idea (placed inside of an idea category) the attribute's name will be treated as the name of the idea.
 
-### Debug mode <a id="Debug_mode"></a>
+### Debug mode
 
 The debug mode is activated using the `-debug` launch option. In particular, there are two ways to apply it:
 
@@ -413,37 +368,35 @@ The debug mode is activated using the `-debug` launch option. In particular, the
 
 The debug mode is very useful for modding, resulting in these benefits:
 
-- **Automatic loading** - Edits to files done inside the mod folder will show up in-game without the need to use the 'reload' console command. This will also automatically add the errors in the files to the error log. **This only applies to files that existed when the game was launched**, with an exception: if a file's direct path gets mentioned elsewhere within the mod, then it can still get loaded for that use in particular. Examples of that include [orders of battle](<division_modding.md>), as [load_oob = "TAG_my_oob"](<effects.md>) functions as a direct link to `/Hearts of Iron IV/history/units/TAG_my_oob.txt`; or GFX, as [sprites](<graphical_asset_modding.md#Sprite_Types>) directly reference the position of the image. Although, notably, the loading of images in-game does not uncompress them properly, leading to visible distortion or black backgrounds which get fixed on a restart. Although edits to most files work, this doesn't work with `/Hearts of Iron IV/history/countries/`, `/Hearts of Iron IV/history/states/`, and `/Hearts of Iron IV/map/`, although the nudge partially can be used for the latter two.
+- **Automatic loading** - Edits to files done inside the mod folder will show up in-game without the need to use the 'reload' console command. This will also automatically add the errors in the files to the error log. **This only applies to files that existed when the game was launched**, with an exception: if a file's direct path gets mentioned elsewhere within the mod, then it can still get loaded for that use in particular. Examples of that include [orders of battle](division_modding.md), as [load_oob = "TAG_my_oob"](effects.md) functions as a direct link to `/Hearts of Iron IV/history/units/TAG_my_oob.txt`; or GFX, as [sprites](graphical_asset_modding.md#sprite-types) directly reference the position of the image. Although, notably, the loading of images in-game does not uncompress them properly, leading to visible distortion or black backgrounds which get fixed on a restart. Although edits to most files work, this doesn't work with `/Hearts of Iron IV/history/countries/`, `/Hearts of Iron IV/history/states/`, and `/Hearts of Iron IV/map/`, although the nudge partially can be used for the latter two.
 - **No map definition crash** - If the map is edited, there's a possibility for errors to appear. Any map-related errors will crash the game when loading with a message saying 'Some errors are present in the map defition`[*sic*]` and have been logged to error.log'. If debug mode is on, the game will continue to load properly. The map definition occurs when there is any error containing MAP_ERROR within the error log *after loading into a country*, as certain map errors do not get logged yet when the debug launch option opens the log during the main menu loading.`[c]`
 - **Extended error log** - Certain errors do not get logged in the log unless the debug mode is turned on. An example would be the map definition errors mentioned above, as the game crashes before getting a chance to log them. Enabling debug mode will ensure that all errors that can be logged in the error log will get logged.
-- **Ease of error log opening** - As long as there are any errors in the log, the log will automatically open when loading the game or after selecting a country. The log will also be able to get accessed by clicking on the error dog in the bottom-right corner after loading into a country, which appears each time a new error appears in the log (since files get automatically loaded-in). If the full path to the [user directory](<modding.md>), after expanding the `gameDataPath` in `/Hearts of Iron IV/launcher-settings.json`, contains any non-ASCII characters, such as non-Latin script or diacritics, then it will fail to open with "The system cannot find the path specified", which can be fixed by changing the folder used for the game data, moving the files if needed.
-- **Ease of nudge access** - With debug mode turned on, an option to open the nudge will appear in the main menu. This can be useful to save time or to be able to open the nudge if the game crashes when you're trying to load into a country (This can happen if the `/Hearts of Iron IV/tutorial/tutorial.txt` file references invalid states, if that file doesn't contain at least one `tutorial = {}` even if not containing anything, if [supply nodes and railways aren't set up properly](<map_modding.md>), or for other reasons).
+- **Ease of error log opening** - As long as there are any errors in the log, the log will automatically open when loading the game or after selecting a country. The log will also be able to get accessed by clicking on the error dog in the bottom-right corner after loading into a country, which appears each time a new error appears in the log (since files get automatically loaded-in). If the full path to the [user directory](modding.md), after expanding the `gameDataPath` in `/Hearts of Iron IV/launcher-settings.json`, contains any non-ASCII characters, such as non-Latin script or diacritics, then it will fail to open with "The system cannot find the path specified", which can be fixed by changing the folder used for the game data, moving the files if needed.
+- **Ease of nudge access** - With debug mode turned on, an option to open the nudge will appear in the main menu. This can be useful to save time or to be able to open the nudge if the game crashes when you're trying to load into a country (This can happen if the `/Hearts of Iron IV/tutorial/tutorial.txt` file references invalid states, if that file doesn't contain at least one `tutorial = {}` even if not containing anything, if [supply nodes and railways aren't set up properly](map_modding.md), or for other reasons).
 - **Graphical interface information in the main menu** - As long as the debug mode is turned on, hitting the \` button (Typically in the top left corner of QWERTY keyboards, used to open the console by default) in the main menu will provide information about the graphical interface used, giving the names of elements, their positions, and the sprites used by them. This is equivalent to using the "gui" console command, but the debug mode makes it possible to do in the main menu.
-- **Expanded information** - With debug mode turned on, there will be additional information when hovering over the province, including its and the state it's in's IDs, tags of owner and controller, et cetera. This debug information is also given for entire countries when hovering over their flag in the country politics/diplomacy view, such as the tag, the original tag (for dynamic countries), and the [cosmetic tag](<cosmetic_tag_modding.md>).
+- **Expanded information** - With debug mode turned on, there will be additional information when hovering over the province, including its and the state it's in's IDs, tags of owner and controller, et cetera. This debug information is also given for entire countries when hovering over their flag in the country politics/diplomacy view, such as the tag, the original tag (for dynamic countries), and the [cosmetic tag](cosmetic_tag_modding.md).
 - **Access to more console commands** - Certain console commands are locked for developers only and debug mode allows the player to use them. However, note that not all console commands will become available.
 - **Ease of access to GUI files** - When hovering over a GUI element, *Ctrl+Alt+Right Click* can be used to open a debug menu, which will allow going to the GUI file where the element is defined.
 - **Automatic saving on peace deals** - The game automatically creates a savefile each time a peace conference occurs with debug.
 
 If the 'debug' console command is used, **only the last 4 advantages** will be available to use. If debug is turned on via launch options, be that `-debug` or `-crash_data_log` (doesn't enable automatic loading), all benefits will be granted. However, multiplayer will be disabled and the game's performance will drop compared to not enabling it.
 
-<!-- kit:begin id="modding-launch-options" at="section:Debug_mode" -->
-**Kit note** Other launch option names that appear as strings in `hoi4.exe`, next to `debug` and `crash_data_log`: `nofilewatcher`, `disableoutdatedmodwarning`, `suppress_error_log`, `force_text_save`, `dump_script_doc`, `quickstart`, `start_save`, `allowoldsave`, `forcenodlc`, `log_messaging` and `nohdr`. Only the names are known. What each one does is [unverified]; test one at a time. The name `dump_script_doc` suggests it regenerates the files in `documentation/`. [unverified]
-<!-- kit:end id="modding-launch-options" -->
+Other launch option names that appear as strings in `hoi4.exe`, next to `debug` and `crash_data_log`: `nofilewatcher`, `disableoutdatedmodwarning`, `suppress_error_log`, `force_text_save`, `dump_script_doc`, `quickstart`, `start_save`, `allowoldsave`, `forcenodlc`, `log_messaging` and `nohdr`. Only the names are known. What each one does is unverified; test one at a time. The name `dump_script_doc` suggests it regenerates the files in `documentation/`. (unverified)
 
-#### Logs <a id="Logs"></a>
+#### Logs
 
-The logs are located in the [user directory](#User_directory)'s `/Hearts of Iron IV/logs/` folder and may be used for [troubleshooting](<troubleshooting.md>) the game. In particular, these are especially useful when dealing with unexpected behaviour:
+The logs are located in the [user directory](#user-directory)'s `/Hearts of Iron IV/logs/` folder and may be used for [troubleshooting](troubleshooting.md) the game. In particular, these are especially useful when dealing with unexpected behaviour:
 
-- `text.log` is used for duplicate definitions of [localisation](<localisation.md>) values.
-- `game.log` is information that's logged in the middle of the game. In particular, "log" (either as an [effect](<effects.md>) or a [trigger](<triggers.md>)) outputs its logs into this file.
-- `error.log` logs what the game developers have foreseen as potential errors that may occur when modding the game. As such, it usually omits crash-causing errors, detailing potential unexpected behaviour instead. However, it can be useful for [troubleshooting](<troubleshooting.md>) crashes either way, since that unexpected behaviour may sometimes lead to crashes (e.g. an "[invalid event target](<scopes.md#Invalid_event_target>)" error may lead to an uncontrolled state being transferred, causing a crash). **Every error marked with MAP_ERROR requires the debug mode to appear**, otherwise the game will fail to open.`[c]` Some of the MAP_ERROR errors only appear after selecting a country and starting a playthrough.
+- `text.log` is used for duplicate definitions of [localisation](localisation.md) values.
+- `game.log` is information that's logged in the middle of the game. In particular, "log" (either as an [effect](effects.md) or a [trigger](triggers.md)) outputs its logs into this file.
+- `error.log` logs what the game developers have foreseen as potential errors that may occur when modding the game. As such, it usually omits crash-causing errors, detailing potential unexpected behaviour instead. However, it can be useful for [troubleshooting](troubleshooting.md) crashes either way, since that unexpected behaviour may sometimes lead to crashes (e.g. an "[invalid event target](scopes.md#invalid-event-target)" error may lead to an uncontrolled state being transferred, causing a crash). **Every error marked with MAP_ERROR requires the debug mode to appear**, otherwise the game will fail to open.`[c]` Some of the MAP_ERROR errors only appear after selecting a country and starting a playthrough.
 - `system.log` details the system-generated information, usually to do with graphics. With the `-checksum` launch option, it also generates an output for the checksum, which may be compared with a different user's checksum to find out where exactly the difference is.
 
-### Localisation <a id="Localisation"></a>
+### Localisation
 
-*Main article: [Localisation](<localisation.md>)*
+*Main article: [Localisation](localisation.md)*
 
-Names depending on language are defined within [localisation](<localisation.md>). Taking only the English language into consideration, the `/Hearts of Iron IV/localisation/english` folder is used. A file within must end with `_l_english.yml` in the filename to work properly, including the extension that is hidden by default within the Windows File Explorer. The file must be encoded in the UTF-8 encoding with the byte-order mark included, usually called UTF-8-BOM. The exact details on conversion depend on the text editor. The first line in the file is `l_english:` to assign it to that database.
+Names depending on language are defined within [localisation](localisation.md). Taking only the English language into consideration, the `/Hearts of Iron IV/localisation/english` folder is used. A file within must end with `_l_english.yml` in the filename to work properly, including the extension that is hidden by default within the Windows File Explorer. The file must be encoded in the UTF-8 encoding with the byte-order mark included, usually called UTF-8-BOM. The exact details on conversion depend on the text editor. The first line in the file is `l_english:` to assign it to that database.
 
 A localisation entry is structured as  `localisation_key:0 "Value of the key"`. In here, the first part before the colon is referred to as the localisation key, the ending part in quotes is referred to as the localisation key's value, and the number in-between is the version number. The version number is purely a comment and isn't read by the game, and it can be omitted entirely. **Any localisation file can be used for any localisation**, and it's better to use new files rather than copying over base game files.
 While it is theoretically possible to avoid using localisation in many cases, localisation has advantages over using strings directly:
@@ -453,11 +406,11 @@ While it is theoretically possible to avoid using localisation in many cases, lo
 - Strings have a character limit of at most 255 visible characters, making it impractical to use them on large chunks of text such as descriptions.
 - Non-ASCII characters, such as umlauts and other diacritics are unsupported by strings in multiple files, such as country leader traits or adjacency rules. Non-ASCII support is usually marked by the file having the byte order mark (usually noted as a separate encoding with UTF-8-BOM), which causes the game to fail to load the file if not directly supported.
 
-### GFX <a id="GFX"></a>
+### GFX
 
-*Main article: [Graphical asset modding](<graphical_asset_modding.md>)*
+*Main article: [Graphical asset modding](graphical_asset_modding.md)*
 
-Most of the time, images are stored in the DDS format, typically ARGB8 (or A8R8G8B8. depending on the image editor) without mipmaps. The exact format doesn't strictly matter, however: most image files can be saved in either DDS, TGA, PNG, or BMP; as long as information in the sprite is correct. Main exceptions to this include the [flags representing countries](<country_creation.md>) that must be 32-bit TGA files without RLE encoding and bottom-left origin point, and files in the map folder.
+Most of the time, images are stored in the DDS format, typically ARGB8 (or A8R8G8B8. depending on the image editor) without mipmaps. The exact format doesn't strictly matter, however: most image files can be saved in either DDS, TGA, PNG, or BMP; as long as information in the sprite is correct. Main exceptions to this include the [flags representing countries](country_creation.md) that must be 32-bit TGA files without RLE encoding and bottom-left origin point, and files in the map folder.
 
 A sprite is used to add extra information to an image file (such as a sprite's name, loading type, the amount of frames, or animation), and are required for an image to be shown in the graphical user interface. Sprites are defined in the `/Hearts of Iron IV/interface/*.gfx` files opened with a text editor. Note that the folder is not related to `/Hearts of Iron IV/gfx/interface/`.
 
@@ -476,22 +429,22 @@ spriteTypes = {
 }
 ```
 
-This assigns the `/Hearts of Iron IV/gfx/interface/folder/filename.dds` file to have the `GFX_my_sprite_name` sprite in-game. This sprite can then be used in the graphical user interface, such as a decision or a focus icon ([Note that focus icons must also have a separate sprite for the shine animation](<national_focus_modding.md#Icon>)).
+This assigns the `/Hearts of Iron IV/gfx/interface/folder/filename.dds` file to have the `GFX_my_sprite_name` sprite in-game. This sprite can then be used in the graphical user interface, such as a decision or a focus icon ([Note that focus icons must also have a separate sprite for the shine animation](national_focus_modding.md#icon)).
 The only images that do not have any definition within interface files are:
 
 - Flags used for countries in `/Hearts of Iron IV/gfx/flags/` and its subfolders.
 - Loading screens within `/Hearts of Iron IV/gfx/loadingscreens/`. Note that, however, the main menu background usually stored in that folder *is* defined as a sprite.
-- [Character portraits](<character_modding.md>). They *may* use a sprite as a definition, but they're the only place in the game which doesn't have it as a mandatory requirement, accepting direct links to the file as an alternative.
+- [Character portraits](character_modding.md). They *may* use a sprite as a definition, but they're the only place in the game which doesn't have it as a mandatory requirement, accepting direct links to the file as an alternative.
 
 There are also potential errors that may occur related to sprites:
 
 - A sprite is entirely transparent: This is an indication that the sprite exists, but the image within can't be loaded. This occurs if the `texturefile` is defined to a file that doesn't exist (The folder path or the filename may not correspond with the file itself) or if the image itself is corrupted. This is usually accompanied with a `Texture Handler encountered missing texture file` error.
-- A sprite is replaced with the default image: This is an indication that there is something wrong with the sprite itself rather than the image: the game links to a non-existing sprite somewhere. This is typically a typo within the sprite's name or a failure to follow a name format (Such as omitting _shine from the end of a [national focus icon's shine sprite](<national_focus_modding.md#Icon>)). Ensure that the sprite exists and has the right name.`[e]`
+- A sprite is replaced with the default image: This is an indication that there is something wrong with the sprite itself rather than the image: the game links to a non-existing sprite somewhere. This is typically a typo within the sprite's name or a failure to follow a name format (Such as omitting _shine from the end of a [national focus icon's shine sprite](national_focus_modding.md#icon)). Ensure that the sprite exists and has the right name.`[e]`
 - The character uses a randomly-generated portrait: This is an indication of either of the previous two problems: a character with an invalid sprite or a missing file will have their portrait randomised.
 
-## Mod structure <a id="Mod_structure"></a>
+## Mod structure
 
-*The .mod file extension doesn't show up in the Windows File Explorer by default, which can make finding the files mentioned here more difficult. Ensure that file extensions are set to show up.**Unless stated otherwise, this section assumes that the files are in the [user directory](#User_directory).*
+*The .mod file extension doesn't show up in the Windows File Explorer by default, which can make finding the files mentioned here more difficult. Ensure that file extensions are set to show up.**Unless stated otherwise, this section assumes that the files are in the [user directory](#user-directory).*
 
 There are two descriptor files with the .mod extension associated with each mod:
 
@@ -511,7 +464,7 @@ In addition, these files within the user directory are also used when loading mo
 - `/Hearts of Iron IV/dlc_load.json` provides a list of enabled mods (in the form of a list of shortened paths to the .mod files, as in `"mod/modname.mod"`) and disabled DLCs while opening the game. While this gets automatically changed by the launcher before the game's launch, this allows toggling off and on different mods without using the launcher. If there are multiple `enabled_mods` definitions, the game will use the first-defined definition, allowing a set of playlists without using the launcher.
 - `/Hearts of Iron IV/launcher-v2.sqlite` or `/Hearts of Iron IV/launcher-v2_openbeta.sqlite` is a SQLite database that is used to generate the mod information and playsets within the launcher. Occassionally, the launcher may fail to update existing mods (e.g. an "invalid path" error may remain eternally even after the path is fixed or a new user-specific mod descriptor may fail to get detected), and a deletion of this file allows to re-generate the playsets. After the file is deleted, the game will pick up every user-specific mod descriptor and recreate the list of mods using each one. Mods hosted on Steam workshop and Paradox mods will be automatically added to the default playset; local mods will remain in the "All installed mods" list but not be assigned to any playset by default.
 
-### Descriptor contents <a id="Descriptor_contents"></a>
+### Descriptor contents
 
 Most .mod files contain content similar to this, which is possible to set within the launcher:
 
@@ -548,69 +501,67 @@ These arguments aren't possible to set within the launcher and can only be added
 ```
 
 - `user_dir` changes the folder where the game stores saves. This prevents loading a save made in base game and mods with a different `user_dir` entry and, vise-versa, prevents saves made in this mod to be loaded in the base game or mods with a different `user_dir` entry.
-- `dependencies` changes the [order in which mods will be loaded](#Loading_files), in particular forcing this mod to be loaded after every mod listed in this attribute. This doesn't make this mod require the listed mods to work. Changing the load order will ensure that any [replace_path](#replace_path) within the dependency mod will leave this mod's files untouched and that this mod's files will overwrite the dependency mod's files in case of overlapping filenames. **Necessary for sub-mods to work correctly**.
+- `dependencies` changes the [order in which mods will be loaded](#loading-files), in particular forcing this mod to be loaded after every mod listed in this attribute. This doesn't make this mod require the listed mods to work. Changing the load order will ensure that any [replace_path](#replace_path) within the dependency mod will leave this mod's files untouched and that this mod's files will overwrite the dependency mod's files in case of overlapping filenames. **Necessary for sub-mods to work correctly**.
 
-<!-- kit:begin id="modding-descriptor-keys" at="section:Descriptor_contents" -->
-**Kit note** The descriptor keys, with what the 1.19.4.1 files show about each. The format itself is not defined in any game file.
+The descriptor keys, with what the 1.19.4.1 files show about each. The format itself is not defined in any game file.
 
 | Key | What the game files show | Tag |
 | --- | --- | --- |
-| `supported_version` | The launcher compares it with the game version, which is `1.19.4.1` (`rawVersion`). It shows "Outdated mods enabled" for a mismatch and "The mod does not have supported_version set." when the key is missing. `hoi4.exe` has "Invalid supported_version in %s", and a value of `abc` wrote "Invalid supported_version in  file: mod/igc_g.mod line: 3" to error.log while the mod still loaded. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launch, error.log and system.log read. A 1.19 mod writes `"1.19.*"` or `"1.19.4.1"`. | [vanilla-confirmed 1.19.4.1] `launcher-settings.json`, `pdx_launcher/common/localisation/l_english.yml` |
-| `remote_file_id` | The key name is a string in `hoi4.exe`. The page says it links the descriptor to a Workshop or Paradox Mods item. | [unverified] |
-| `replace_path` | The key name is a string in `hoi4.exe`. The game reads it from the user-specific `mod/<name>.mod` file alone: in that file it replaced the vanilla `events/` folder, and in the mod folder's `descriptor.mod` alone it had no effect, so it does not have to be in both files. Only the `events/` folder was tested. The rest of the behaviour is as described in the section below. | [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launches, console and error.log read |
-| `user_dir` | The key name is a string in `hoi4.exe`. The page says it moves the save folder. | [unverified] |
-| `dependencies` | The word is a string in `hoi4.exe`. The page says it forces this mod to load after the listed names. | [unverified] |
-| `archive` | Vanilla `dlc003.dlc` is the only one of 14 `.dlc` files that sets it, to its `.zip`. [vanilla-confirmed 1.19.4.1] `dlc/dlc003_rocket_launcher_unit_pack/dlc003.dlc`. `hoi4.exe` has "Could not find archive for mod: %s". Only zipped mods use it; mods since 1.9.0 do not. An `archive="mod/missing.zip"` in both descriptors did not write that message: the game wrote "Incorrect MOD descriptor" for the outer file and loaded no mod. | [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launch, error.log and system.log read |
-| `path` | Vanilla DLC descriptors (`dlc/*/dlc*.dlc`) use the same syntax with a game-folder-relative path and forward slashes, with or without quotes (`path = "dlc/dlc001_german_historical_portraits"` and `path = dlc/dlc034_no_step_back/` both occur). `dlc003.dlc` has no `path`. For a mod, `path` belongs only in the user-specific file, as the page says. | [vanilla-confirmed 1.19.4.1] `dlc/*/dlc*.dlc` |
+| `supported_version` | The launcher compares it with the game version, which is `1.19.4.1` (`rawVersion`). It shows "Outdated mods enabled" for a mismatch and "The mod does not have supported_version set." when the key is missing. `hoi4.exe` has "Invalid supported_version in %s", and a value of `abc` wrote "Invalid supported_version in file: mod/igc_g.mod line: 3" to error.log while the mod still loaded. A 1.19 mod writes `"1.19.*"` or `"1.19.4.1"`. | |
+| `remote_file_id` | The key name is a string in `hoi4.exe`. The page says it links the descriptor to a Workshop or Paradox Mods item. | (unverified) |
+| `replace_path` | The key name is a string in `hoi4.exe`. The game reads it from the user-specific `mod/<name>.mod` file alone: in that file it replaced the vanilla `events/` folder, and in the mod folder's `descriptor.mod` alone it had no effect, so it does not have to be in both files. Only the `events/` folder was tested. The rest of the behaviour is as described in the section below. | |
+| `user_dir` | The key name is a string in `hoi4.exe`. The page says it moves the save folder. | (unverified) |
+| `dependencies` | The word is a string in `hoi4.exe`. The page says it forces this mod to load after the listed names. | (unverified) |
+| `archive` | Vanilla `dlc003.dlc` is the only one of 14 `.dlc` files that sets it, to its `.zip`. `hoi4.exe` has "Could not find archive for mod: %s". Only zipped mods use it; mods since 1.9.0 do not. An `archive="mod/missing.zip"` in both descriptors did not write that message: the game wrote "Incorrect MOD descriptor" for the outer file and loaded no mod. | |
+| `path` | Vanilla DLC descriptors (`dlc/*/dlc*.dlc`) use the same syntax with a game-folder-relative path and forward slashes, with or without quotes (`path = "dlc/dlc001_german_historical_portraits"` and `path = dlc/dlc034_no_step_back/` both occur). `dlc003.dlc` has no `path`. For a mod, `path` belongs only in the user-specific file, as the page says. | |
 
-The user-specific file name for a Workshop item follows the pattern `ugc_<id>.mod`: `hoi4.exe` has the format string `%s/ugc_%llu.mod`. `editor_postfix` in the page's `settings.txt` example is also a string in `hoi4.exe`. [unverified] (strings in `hoi4.exe`)
-<!-- kit:end id="modding-descriptor-keys" -->
+The user-specific file name for a Workshop item follows the pattern `ugc_<id>.mod`: `hoi4.exe` has the format string `%s/ugc_%llu.mod`. `editor_postfix` in the page's `settings.txt` example is also a string in `hoi4.exe`. (unverified) (strings in `hoi4.exe`)
 
-#### replace_path <a id="replace_path"></a>
+#### replace_path
 
 `replace_path` is used in order to unload every previously-loaded file during the main menu loading within the specified folder. This only applies to files directly within that folder, any sub-folders will left untouched.
 **This does not force the mod to replace the folder's contents**: anything higher in the load order than the mod will be loaded in the exact same way, anything lower than the mod will first get loaded before getting unloaded (e.g. the error where a file will get loaded twice if there's one with a filename differing only by capitalisation will still be present even if one of the files is intended to be replaced with replace_path), anything loaded after the main menu will still get loaded from "replaced" folders. **This doesn't change the load order**: if a file fails to overwrite another mod's file, it will still not do so with this attribute used; instead, `dependencies` is used in the mod's attributes to change the load order. In case the mod fails to overwrite base game's files, this will never solve the problem: ensure that the folder you're writing to is indeed the mod's folder rather than, for example, the user directory or a backup of the mod; in case of flags, the game may occassionally fail to make the mod's `/Hearts of Iron IV/gfx/flags` folder overwrite the base game which can be solved by creating another mod and moving the files there.
 
-For example, `replace_path = "history/states"` will ensure that no state files from the base game or the user directory will be loaded when the game is launched with the mod. This can be used within major map overhauls to ensure that no base game contents will be read with unexpected results. Since the user directory is earlier in the load order than the mod files, this will also seemingly prevent the [Nudger](<nudger.md>) from having any impact on the states, however the files will still be outputted in the folder even if immediately unloaded upon saving.
+For example, `replace_path = "history/states"` will ensure that no state files from the base game or the user directory will be loaded when the game is launched with the mod. This can be used within major map overhauls to ensure that no base game contents will be read with unexpected results. Since the user directory is earlier in the load order than the mod files, this will also seemingly prevent the [Nudger](nudger.md) from having any impact on the states, however the files will still be outputted in the folder even if immediately unloaded upon saving.
 
-Since this only unloads indexed files, a direct link to a file will not change regardless of the replace_path being present. For example, `replace_path = "history/units"` will not change anything, since the files in that folder aren't checked during the main menu loading but rather get loaded with a direct link to the filename, such as `oob = "TAG_1936"` in [the country history file](<country_creation.md>). Similarly, a `replace_path = "gfx/flags"` will not change anything since the country-identifying flags are only loaded when the country changes the ruling ideology group.
+Since this only unloads indexed files, a direct link to a file will not change regardless of the replace_path being present. For example, `replace_path = "history/units"` will not change anything, since the files in that folder aren't checked during the main menu loading but rather get loaded with a direct link to the filename, such as `oob = "TAG_1936"` in [the country history file](country_creation.md). Similarly, a `replace_path = "gfx/flags"` will not change anything since the country-identifying flags are only loaded when the country changes the ruling ideology group.
 This is particularly obvious with the loading screens: `replace_path = "gfx/loadingscreens"` will prevent any base game or DLC loading screen from appearing during the loading, however the main menu background will remain the same as if the replace_path wasn't present. This is since the main menu background is defined as a sprite with a direct link to the image, by default in `/Hearts of Iron IV/interface/frontendmainviewbg.gfx`.
 
 **This option must be added to both .mod files**: leaving it out from the mod-specific descriptor will cause the launcher to remove it from the user-specific one, while leaving it out from the user-specific descriptor will cause it to not take effect instead of being copied from the mod-specific descriptor as most other attributes do.
-**This commonly causes game crashes and unintuitive errors if used recklessly**. In some folders, the game isn't built for there being no database entries, such as [national focuses](<national_focus_modding.md>), resulting in a crash; in others, such as [Scripted triggers](<triggers.md>), there are several usages for entries besides the obvious, which can cause unintuitive errors such as the resistance system being triggered when unintended. Therefore, the `replace_path` attribute shouldn't be used recklessly: there should always be at least one file with content within the replaced folder in the mod files, and the base game's contents in the folder should be checked manually to see if anything useful is better left as remaining in the mod.
+**This commonly causes game crashes and unintuitive errors if used recklessly**. In some folders, the game isn't built for there being no database entries, such as [national focuses](national_focus_modding.md), resulting in a crash; in others, such as [Scripted triggers](triggers.md), there are several usages for entries besides the obvious, which can cause unintuitive errors such as the resistance system being triggered when unintended. Therefore, the `replace_path` attribute shouldn't be used recklessly: there should always be at least one file with content within the replaced folder in the mod files, and the base game's contents in the folder should be checked manually to see if anything useful is better left as remaining in the mod.
 
-## Game data <a id="Game_data"></a>
+## Game data
 
-- [Console commands](<console_commands.md>), useful for debugging mods.
-- [Scopes](<scopes.md>), [Triggers](<triggers.md>), and [Effects](<effects.md>) used for scripting.
-- [Modifiers](<modifiers.md>), used to influence calculations made by the game.
-- [Localisation](<localisation.md>), used for the text shown to the player depending on the currently-enabled language.
-- [Graphical asset modding](<graphical_asset_modding.md>) for creating sprites, used for nearly every 2-dimension image that may appear in-game.
-- [Defines](<defines.md>), which allow to change constants used in some of the hard-coded calculations, such as the starting date or the necessary amount of victory points to show a specific icon over the province.
-  - [Static modifiers](<modifiers.md>) also include modifiers applied in hard-coded cases, such as non-core state malus or the political power cost when a national focus is selected.
+- [Console commands](console_commands.md), useful for debugging mods.
+- [Scopes](scopes.md), [Triggers](triggers.md), and [Effects](effects.md) used for scripting.
+- [Modifiers](modifiers.md), used to influence calculations made by the game.
+- [Localisation](localisation.md), used for the text shown to the player depending on the currently-enabled language.
+- [Graphical asset modding](graphical_asset_modding.md) for creating sprites, used for nearly every 2-dimension image that may appear in-game.
+- [Defines](defines.md), which allow to change constants used in some of the hard-coded calculations, such as the starting date or the necessary amount of victory points to show a specific icon over the province.
+  - [Static modifiers](modifiers.md) also include modifiers applied in hard-coded cases, such as non-core state malus or the political power cost when a national focus is selected.
 
-## Tools & utilities <a id="Tools_.26_utilities"></a><a id="Tools_&_utilities"></a>
+## Tools & utilities
 
 - Official Paradox Forum for mods
 - Maya exporter - Clausewitz Maya Exporter to create your own 3D models.
 - Steam Workshop - The place where you can share your creations with other players.
 
-## Common mistakes <a id="Common_mistakes"></a>
+## Common mistakes
 
 - **Multiple mods with the same name in the launcher** (*Mod fails to load*) – This commonly happens when subscribing to one's own mod on Steam Workshop. If there are two mods with the same name that may be selected from the launcher, only the one that is loaded earlier will have its files detected; the other mod will appear as changing nothing in-game. This is corrected by changing the `name` attribute in the descriptors of either one of the mods.
 
 Generally, there is no reason to subscribe to your own mod in the Steam Workshop: it will almost never function any differently from the local mod and this may also occassionally break updating the mod due to duplicate `remote_file_id` attributes in different mods.
 
-- **Wrong path** (*replace_paths apply, yet the mod doesn't get loaded*) – In this case, the needed file to adjust is [user directory](<modding.md>)'s `/Hearts of Iron IV/mod/modname.mod`, opened directly within a text editor. There are two primary variations on this issue:
+- **Wrong path** (*replace_paths apply, yet the mod doesn't get loaded*) – In this case, the needed file to adjust is [user directory](modding.md)'s `/Hearts of Iron IV/mod/modname.mod`, opened directly within a text editor. There are two primary variations on this issue:
 
 - **Incorrect path** – This is commonly the cause if the game displays the filesize of the mod, but doesn't load it. The mod doesn't route to the file directly. This can sometimes be a cause of further subfoldering, such as if the mod is located in `mod/my_mod/cool_mod`, yet the user-specific .mod file contains `path = "mod/my_mod"`. In this case, the files still exist and get loaded. However, the game, for example, expects focus trees in the `/Hearts of Iron IV/common/national_focus/` folder. `mod/my_mod/cool_mod/common/national_focus/` gets taken to be `/Hearts of Iron IV/cool_mod/common/national_focus/` instead, as `path = "mod/my_mod"` doesn't knock off the `/cool_mod/` folder. This is corrected simply by adjusting the path to be to the correct folder.
 - **Invalid path** – The *intended* folder is correct, yet it's stated in a way that the game can't recognise.
 
 One of the ways of doing so is using backslashes for folder separations, such as `path = "mod\my_mod"`. **This is incorrect**, as a single backlash gets taken to be an escape character instead. Using forward slashes as in `path = "mod/my_mod"` is correct.
 Another way of doing so is using special characters in the name, such as `path = "C:/Users/Пример кириллицы/Documents/Paradox Interactive/Hearts of Iron IV/mod/my_mod"`. In this case, a special character is defined as one that takes more than 1 byte to write with UTF-8, not being present in ASCII's printable characters. This is commonly non-English language folder names, such as diacritics or non-Latin alphabets. In this case, it can be rerouted to a folder that does not contain special characters in the name, such as `path = "D:/Hearts of Iron IV modding/my_mod"`.
-If the path to the [user directory](#User_directory) itself contains special characters, it's better to re-route the entire directory to another folder. To do so, edit the base game's `/Hearts of Iron IV/launcher-settings.json` file and change the folder specified under `gameDataPath`. After doing so, move the user directory's contents to that folder as to not lose save games and other information. The mod's path also needs to be adjusted properly.
+If the path to the [user directory](#user-directory) itself contains special characters, it's better to re-route the entire directory to another folder. To do so, edit the base game's `/Hearts of Iron IV/launcher-settings.json` file and change the folder specified under `gameDataPath`. After doing so, move the user directory's contents to that folder as to not lose save games and other information. The mod's path also needs to be adjusted properly.
 **If the user directory has non-ASCII characters in the path to it, then all local mods stored there (as the default place to store them) will fail to be loaded and the in-game means will fail to open the error log**, with a pop-up saying that the system cannot get access to the file. The default Steam installation folder has a path that will only have ASCII characters in it, making the Steam mods work as intended even if the user directory has non-ASCII characters in it.
-In case the launcher shows that the mod has an invalid path even after correcting the issue, make sure that the user-specific mod descriptor file directly within the user directory's `/Hearts of Iron IV/mod/` exists and try forcing an update of mod information by deleting the [SQLite database that stores mod information](#Mod_structure), located at either `/Hearts of Iron IV/launcher-v2.sqlite` or `/Hearts of Iron IV/launcher-v2_openbeta.sqlite`.
+In case the launcher shows that the mod has an invalid path even after correcting the issue, make sure that the user-specific mod descriptor file directly within the user directory's `/Hearts of Iron IV/mod/` exists and try forcing an update of mod information by deleting the [SQLite database that stores mod information](#mod-structure), located at either `/Hearts of Iron IV/launcher-v2.sqlite` or `/Hearts of Iron IV/launcher-v2_openbeta.sqlite`.
 
 - **Incorrect dependency name** (*Mod fails to loaded when enabled with the main mod*) – If a mod is intended to be a sub-mod to a larger mod or several, it is, in most cases, mandatory to include `dependencies = { "Main mod 1" "Main mod 2" }`, which will place it higher in the load order. In this case, the name of the mod must be the exact same as in the .mod file of the mod, also showing up in the launcher. This can include special characters (e.g. `name = "Main mod – Subtitle"` in the main mod will require `dependencies = { "Main mod — Subtitle" }` in the sub-mod with an en dash rather than a hyphen). For this reason, it's preferable to copy over the name from the .mod file of the main mod rather than manually retyping it from the launcher: some special charactes may be difficult to notice or to distinguish from other characters.
 - **Not copying over mod information entries** (*Entries such as replace_path fail to apply*) – The game keeps the mod's `modname/descriptor.mod` file as the information for the mod in general and `/Hearts of Iron IV/mod/modname.mod` as the information for the mod that gets read for the machine. While the launcher typically attempts to keep the machine-specific file up to date with the general mod information file, it sometimes fails to do so, such as for replace_paths where it succeeds at deleting unneeded entries but not at copying needed ones. In this case, both files must be edited manually for a replace_path to apply. This also may be needed for other entries in the file.
@@ -633,7 +584,7 @@ set_politics = { # Will be ignored
 }
 ```
 
-## Useful knowledge <a id="Useful_knowledge"></a>
+## Useful knowledge
 
 Large English-speaking modding communities include the HOI4 Modding Coop and the HOI4 Modding Den, which can be joined on Discord. It's useful to join one or multiple of them, as they contain links to modding resources and you can ask questions regarding modding in them.
 
@@ -653,14 +604,14 @@ editor="C:\Program Files\Sublime Text 3\sublime_text.exe"
 editor_postfix=":$:1"
 ```
 
-## See also <a id="See_also"></a>
+## See also
 
-- [Mods](<mods.md>)
+- [Mods](mods.md)
 - Getting started with modding forum: 995985
 - How to create a new ship unit in Man the Guns forum: 1157324
 - How to add a new unit - Checklist forum: 947435
 
-## Notes <a id="Notes"></a>
+## Notes
 
 **^** **a:** Setting an empty file to overwrite a file is generally identical to unloading it in practice, since the game usually uses neither division into multiple files nor the filename of files for how it gets interpreted. This only applies to text files and not images such as loading screens.
 **^** **b:** These exceptions that may reasonably be changed within a mod are the following:
@@ -674,26 +625,5 @@ editor_postfix=":$:1"
 - `/Hearts of Iron IV/tutorial/tutorial.txt`
 
 **^** **c:** The only exception that gets treated as a regular error is `MAP_ERROR: Palette in rivers.bmp is probably not correct`, caused by the palette in the file having a non-zero amount of colours, typically a product of saving over it in GIMP. Unlike other entries in error.log marked with MAP_ERROR, this allows the game to be opened without the debug mode and doesn't place a warning when trying to go into singleplayer.
-**^** **d:** In [dynamic modifiers](<modifiers.md>) and only them, the order of modifiers in the tooltip isn't hard-coded. Instead, the game places them in the same order that they were written in the code of the dynamic modifier. However, the order of modifiers inside of dynamic modifiers cannot result in any difference in how they will get interpreted.
-**^** **e:** In rare cases, there is no image set to be placeholder, making it so that using a non-existing sprite also results in nothing appearing. An example of this happening is in [balances of power](<balance_of_power_modding.md>), where specifying a non-existing sprite to represent a side will result in the side having no icon. This is particularly rare since there is a default fallback image of `GFX_default`, showing the error dog in the base game.
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
-
-**Hearts of Iron IV**
-
-- **Game**: Achievements • Features • Game rules • Ironman
-- **Guides**: Beginner's guide • [Console commands](<console_commands.md>) • Hotkeys • Map modes • Tutorial videos • User interface
-- **Development**: Developer diaries • Downloadable content • Patches
-- **Community**: Jargon
+**^** **d:** In [dynamic modifiers](modifiers.md) and only them, the order of modifiers in the tooltip isn't hard-coded. Instead, the game places them in the same order that they were written in the code of the dynamic modifier. However, the order of modifiers inside of dynamic modifiers cannot result in any difference in how they will get interpreted.
+**^** **e:** In rare cases, there is no image set to be placeholder, making it so that using a non-existing sprite also results in nothing appearing. An example of this happening is in [balances of power](balance_of_power_modding.md), where specifying a non-existing sprite to represent a side will result in the side having no icon. This is particularly rare since there is a default fallback image of `GFX_default`, showing the error dog in the base game.

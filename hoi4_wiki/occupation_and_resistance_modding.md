@@ -1,41 +1,8 @@
 # Occupation and resistance modding
 
-*Kit page: written by the Agentic HOI4 Modding Kit from the Hearts of Iron IV 1.19.3.0 game files and re-checked against 1.19.4.1. The wiki has no page for this topic. CC BY-SA 3.0 (see LICENSE.txt).*
-<!-- kit:page -->
+When a country holds states that belong to someone else, each state tracks resistance and compliance, and the occupier chooses an occupation law. Three folders of `common/` shape this system: laws, resistance activities and the resistance and compliance modifiers that switch on at thresholds. Effects, triggers and modifiers for it are listed under [Effects](effects.md#resistance-and-compliance), [Triggers](triggers.md#resistance-and-compliance) and [Modifiers](modifiers.md#resistance-and-compliance).
 
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" sources="common/occupation_laws/ common/resistance_activity/ common/resistance_compliance_modifiers/ common/defines/00_defines.lua common/scripted_triggers/00_resistance_initiate_triggers.txt documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md documentation/dynamic_variables_documentation.md localisation/english/resistance_and_occupation_l_english.yml interface/countryoccupationview.gfx" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Written from: the header comments and all vanilla blocks of the three folders (22 laws, 20 activities, 9 modifiers), the `NResistance` and related defines, and the resistance and compliance entries of the effects, triggers, modifiers and dynamic variables documentation.
-Corrections found: the law header documents `main_fallback_law`, which no vanilla law uses and `hoi4.exe` does not contain; the modifier header spells two keys differently from vanilla (`icon_small`, `core_compliancemodifier`).
-Gaps left: the exact resistance and compliance formulas, the timing of resistance activity rolls, the meaning of `alert_level`/`alert_margin` and the scopes inside resistance activity blocks are not stated in the files.
-**1.19.4.1 re-check (2026-11-01).** 32 tagged lines depended on files the update changed (the law file, the compliance modifier file, defines, `hoi4.exe` strings, a few focus, event, history and localisation files) and all were re-measured. Changed: five laws (was four) test their own selection in `ai_will_do` because `brutally_oppressive_occupation` joins them, `compliance_80` is also gated by `has_rule = can_create_collaboration_government`, and only 7 of the 10 `visible` blocks that use `FROM` test `original_tag`. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-## Table of contents
-
-- [Overview](#Overview)
-- [Numbers behind the system](#Numbers_behind_the_system)
-- [Occupation laws](#Occupation_laws)
-  - [Law keys](#Law_keys)
-  - [Offering and gating laws](#Offering_and_gating_laws)
-  - [Fallback laws](#Fallback_laws)
-  - [Law AI](#Law_AI)
-  - [Vanilla laws](#Vanilla_laws)
-  - [Law localisation and GFX](#Law_localisation_and_GFX)
-- [Resistance activities](#Resistance_activities)
-- [Resistance and compliance modifiers](#Resistance_and_compliance_modifiers)
-  - [Modifier keys](#Modifier_keys)
-  - [Types, scopes and thresholds](#Types_scopes_and_thresholds)
-  - [Vanilla modifiers](#Vanilla_modifiers)
-- [Script interface](#Script_interface)
-- [Starting resistance](#Starting_resistance)
-- [Minimal example](#Minimal_example)
-- [Traps](#Traps)
-
----
-
-When a country holds states that belong to someone else, each state tracks resistance and compliance, and the occupier chooses an occupation law. Three folders of `common/` shape this system: laws, resistance activities and the resistance and compliance modifiers that switch on at thresholds. [vanilla-confirmed 1.19.4.1] `common/occupation_laws/`, `common/resistance_activity/`, `common/resistance_compliance_modifiers/`. Effects, triggers and modifiers for it are listed under [Effects](<effects.md#Resistance_and_compliance>), [Triggers](<triggers.md#Resistance_and_Compliance>) and [Modifiers](<modifiers.md#Resistance_and_compliance>).
-
-## Overview <a id="Overview"></a>
+## Overview
 
 | Folder | Defines | Vanilla content |
 | --- | --- | --- |
@@ -43,15 +10,13 @@ When a country holds states that belong to someone else, each state tracks resis
 | `common/resistance_activity/` | Actions the resistance may take against garrisons: sabotage. | `resistance_activity.txt`, 20 activities |
 | `common/resistance_compliance_modifiers/` | Modifiers that turn on when resistance or compliance passes a threshold. | `resistance_modifiers.txt` (4), `compliance_modifiers.txt` (5) |
 
-All rows: [vanilla-confirmed 1.19.4.1] file lists and block counts of the three folders.
+- Resistance and compliance are percentages from 0 to 100 per state. The scripted `threshold` values are percentages, and the defines call them percentages.
+- Compliance gives economy and manpower back to the occupier and lowers the resistance target. Resistance fights the garrison and, at high values, turns on penalties for the occupier.
+- Garrisons are division templates with a suppression value. A template with suppression 0 cannot be chosen, and special-forces templates are refused.
 
-- Resistance and compliance are percentages from 0 to 100 per state. The scripted `threshold` values are percentages, and the defines call them percentages. [vanilla-confirmed 1.19.4.1] `common/resistance_compliance_modifiers/`, `common/defines/00_defines.lua`.
-- Compliance gives economy and manpower back to the occupier and lowers the resistance target. Resistance fights the garrison and, at high values, turns on penalties for the occupier. [vanilla-confirmed 1.19.4.1] the vanilla compliance and resistance modifiers listed below and `localisation/english/resistance_and_occupation_l_english.yml`.
-- Garrisons are division templates with a suppression value. A template with suppression 0 cannot be chosen, and special-forces templates are refused. [vanilla-confirmed 1.19.3] `localisation/english/resistance_and_occupation_l_english.yml` (`OCCUPATION_BAD_GARRISON_NO_SUPPRESSION`, `OCCUPATION_BAD_GARRISON_SPECIAL_FORCES`).
+## Numbers behind the system
 
-## Numbers behind the system <a id="Numbers_behind_the_system"></a>
-
-The block `NResistance` of `common/defines/00_defines.lua` holds most values. The full list is in [Defines](<defines.md#NResistance>). All rows: [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`.
+The block `NResistance` of `common/defines/00_defines.lua` holds most values. The full list is in [Defines](defines.md#nresistance).
 
 | Define | Value | Use |
 | --- | --- | --- |
@@ -82,14 +47,14 @@ The block `NResistance` of `common/defines/00_defines.lua` holds most values. Th
 | `SUPPRESSION_NEEDED_BY_RESISTANCE_POINT` | 0.75 | Suppression needed per resistance point (capped between 10 and 50). |
 | `GARRISON_MANPOWER_LOST_BY_ATTACK` / `GARRISON_EQUIPMENT_LOST_BY_ATTACK` | 0.016 / 0.02 | Garrison losses per resistance attack. |
 
-- Built-in map mode colours for resistance and compliance are `OCCUPATION_RESISTANCE_MAP_MODE_COLORS` and `OCCUPATION_COMPLIANCE_MAP_MODE_COLORS` (rows of value, red, green, blue, alpha). [vanilla-confirmed 1.19.4.1] `common/defines/00_graphics.lua`.
-- The resistance target is the sum of these defines plus the `resistance_target` modifier. The files do not give the exact formula or the unit mix of fractions (modifiers) and points (defines). [unverified]
+- Built-in map mode colours for resistance and compliance are `OCCUPATION_RESISTANCE_MAP_MODE_COLORS` and `OCCUPATION_COMPLIANCE_MAP_MODE_COLORS` (rows of value, red, green, blue, alpha).
+- The resistance target is the sum of these defines plus the `resistance_target` modifier. The files do not give the exact formula or the unit mix of fractions (modifiers) and points (defines). (unverified)
 
-## Occupation laws <a id="Occupation_laws"></a>
+## Occupation laws
 
-### Law keys <a id="Law_keys"></a>
+### Law keys
 
-Law block name = law id = loc key of the law name. Documented keys: [docs] header of `common/occupation_laws/occupation_laws.txt`. Counts: [vanilla-confirmed 1.19.4.1] over the 22 laws.
+Law block name = law id = loc key of the law name.
 
 | Key | Value | Used by | Meaning |
 | --- | --- | --- | --- |
@@ -108,38 +73,38 @@ Law block name = law id = loc key of the law name. Documented keys: [docs] heade
 | `starting_law` | `yes` | 1 | On `military_governor_occupation`. Not in the header. |
 | `missing_garrison_law` | `yes` | 1 | On `missing_garrison_scaled_effect`. Not in the header. |
 
-- The `state_modifier` keys vanilla uses are `resistance_target`, `compliance_gain`, `required_garrison_factor`, `resistance_damage_to_garrison`, `local_resources`, `local_factories`, `local_manpower`, `resistance_decay`, `no_compliance_gain`, `repair_speed_*_factor`, `enemy_operative_detection_chance_over_occupied_tag`, `enemy_intel_network_gain_factor_over_occupied_tag` and `custom_modifier_tooltip`. Any state modifier from [Modifiers](<modifiers.md#Resistance_and_compliance>) fits. [vanilla-confirmed 1.19.4.1] `occupation_laws.txt`.
-- `missing_garrison_scaled_effect` has `visible = { always = no }`. Its comment says a law with missing garrison scales toward the law marked `missing_garrison_law`, otherwise toward `default_law`. [vanilla-confirmed 1.19.4.1] `occupation_laws.txt`.
+- The `state_modifier` keys vanilla uses are `resistance_target`, `compliance_gain`, `required_garrison_factor`, `resistance_damage_to_garrison`, `local_resources`, `local_factories`, `local_manpower`, `resistance_decay`, `no_compliance_gain`, `repair_speed_*_factor`, `enemy_operative_detection_chance_over_occupied_tag`, `enemy_intel_network_gain_factor_over_occupied_tag` and `custom_modifier_tooltip`. Any state modifier from [Modifiers](modifiers.md#resistance-and-compliance) fits.
+- `missing_garrison_scaled_effect` has `visible = { always = no }`. Its comment says a law with missing garrison scales toward the law marked `missing_garrison_law`, otherwise toward `default_law`.
 
-### Offering and gating laws <a id="Offering_and_gating_laws"></a>
+### Offering and gating laws
 
-- `visible` is checked with the occupier as scope. The header says the occupied country is not set there, but 10 of the 15 vanilla `visible` blocks test `FROM = { ... }` (7 of them with `original_tag`), so `FROM` is the occupied country in practice. [docs] header; [vanilla-confirmed 1.19.4.1] `reconciliation`, `colonial_police*`, `secretaries_general`, `independent_rule`, `princely_subjugation`, `senbu_occupation_law`, `GEACPS_*`.
-- `available` has the occupier as scope and `FROM` as the occupied country. [docs] header.
-- Vanilla gates laws by government (`autonomous_occupation`: `has_government = democratic`, `liberate_workers_occupation`: `communism`, `brutally_oppressive_occupation`: `fascism`), by DLC and country plus completed focus (`colonial_police`, `independent_rule`), and by the occupied tag. [vanilla-confirmed 1.19.4.1] `occupation_laws.txt`.
-- Laws are set at three levels: the occupier's default law, an override per occupied country, and an override per state. `set_occupation_law = my_law` sets the level of its scope; `set_occupation_law = default_law` clears an override or, on a country's own default, restores the law marked `starting_law = yes`. [docs] `documentation/effects_documentation.md`.
-- `set_occupation_law_where_available` tries the default level first, then each country, then each state, and clears the overrides below the level where it succeeded. Use it for a law only some targets may have. [docs] `documentation/effects_documentation.md`.
-- The trigger `occupation_law` reads the same three levels in the same scopes. [docs] `documentation/triggers_documentation.md`.
-- Vanilla calls `set_occupation_law_where_available` 7 times (focus, events, one on action) and `set_occupation_law` 3 times. [vanilla-confirmed 1.19.4.1] `common/national_focus/india_goe.txt`, `events/`, `common/on_actions/13_goe_on_actions.txt`.
+- `visible` is checked with the occupier as scope. The header says the occupied country is not set there, but 10 of the 15 vanilla `visible` blocks test `FROM = { ... }` (7 of them with `original_tag`), so `FROM` is the occupied country in practice.
+- `available` has the occupier as scope and `FROM` as the occupied country.
+- Vanilla gates laws by government (`autonomous_occupation`: `has_government = democratic`, `liberate_workers_occupation`: `communism`, `brutally_oppressive_occupation`: `fascism`), by DLC and country plus completed focus (`colonial_police`, `independent_rule`), and by the occupied tag.
+- Laws are set at three levels: the occupier's default law, an override per occupied country, and an override per state. `set_occupation_law = my_law` sets the level of its scope; `set_occupation_law = default_law` clears an override or, on a country's own default, restores the law marked `starting_law = yes`.
+- `set_occupation_law_where_available` tries the default level first, then each country, then each state, and clears the overrides below the level where it succeeded. Use it for a law only some targets may have.
+- The trigger `occupation_law` reads the same three levels in the same scopes.
+- Vanilla calls `set_occupation_law_where_available` 7 times (focus, events, one on action) and `set_occupation_law` 3 times.
 
-### Fallback laws <a id="Fallback_laws"></a>
+### Fallback laws
 
-- Header: when the current law stops being visible or available, the state falls back to its `fallback_law`; if that is not set, to the one law marked `main_fallback_law = yes`. With too little garrison manpower or equipment, law bonuses blend toward the fallback law, and at 0 manpower the player must switch. [docs] header of `occupation_laws.txt`.
-- Vanilla marks `military_governor_occupation` with `default_law = yes` and `starting_law = yes`, uses `fallback_law` on 9 laws, and never writes `main_fallback_law`. The string `main_fallback_law` is not in `hoi4.exe`, while `default_law` and `starting_law` are. A mod that only adds laws leaves the vanilla `default_law` alone and gives its own laws a `fallback_law`. [vanilla-confirmed 1.19.4.1] `occupation_laws.txt`; that `default_law` replaced `main_fallback_law` is [unverified].
-- The loc text says an invalid default law makes territories "default to No Garrison". It conflicts with the header and the cause is unclear. [vanilla-confirmed 1.19.3] `OCCUPATION_INVALID_DEFAULT_LAW` in `resistance_and_occupation_l_english.yml`.
-- Fallback chains in vanilla: `colonial_police` to `colonial_police_improved` to `colonial_police_final` to `foreign_civilian_oversight`; `secretaries_general` and `princely_subjugation` to `military_governor_occupation`. [vanilla-confirmed 1.19.4.1] `occupation_laws.txt`.
+- Header: when the current law stops being visible or available, the state falls back to its `fallback_law`; if that is not set, to the one law marked `main_fallback_law = yes`. With too little garrison manpower or equipment, law bonuses blend toward the fallback law, and at 0 manpower the player must switch.
+- Vanilla marks `military_governor_occupation` with `default_law = yes` and `starting_law = yes`, uses `fallback_law` on 9 laws, and never writes `main_fallback_law`. The string `main_fallback_law` is not in `hoi4.exe`, while `default_law` and `starting_law` are. A mod that only adds laws leaves the vanilla `default_law` alone and gives its own laws a `fallback_law`. That `default_law` replaced `main_fallback_law` is unverified.
+- The loc text says an invalid default law makes territories "default to No Garrison". It conflicts with the header and the cause is unclear.
+- Fallback chains in vanilla: `colonial_police` to `colonial_police_improved` to `colonial_police_final` to `foreign_civilian_oversight`; `secretaries_general` and `princely_subjugation` to `military_governor_occupation`.
 
-### Law AI <a id="Law_AI"></a>
+### Law AI
 
-- `ai_will_do` scores a law per state. Scope is the state, `FROM` is the occupier and `FROM.FROM` the occupied country. Temp variables available: `ai_desire_<resource>` (0 to 1), `uncapped_resistance_target`, `resistance_target_without_law`, `garrison_min_support_ratio`, `garrison_equipment_support_ratio`, `garrison_manpower_support_ratio`. [docs] header of `occupation_laws.txt`.
-- Vanilla pattern: `base = 0` plus `modifier` blocks that test `check_variable = { resistance_target_without_law > 0.44 }` and add 200 to 500. [vanilla-confirmed 1.19.4.1] `military_governor_occupation`, `martial_law_occupation`, `colonial_police`.
-- Anti-flapping: five laws test their own selection and switch to a looser limit while selected, for example `if = { limit = { occupation_law = martial_law_occupation } set_temp_variable = { resistance_limit = 35 } }`. [vanilla-confirmed 1.19.4.1] `martial_law_occupation`, `military_governor_occupation`, `forced_labor_occupation`, `local_police_force_garrison`, `brutally_oppressive_occupation`.
-- `forced_labor_occupation` multiplies the score to 0 below a garrison support ratio of 1.5 (1.3 when selected). [vanilla-confirmed 1.19.4.1] `occupation_laws.txt`.
-- The `ai_strategy` type `occupation_policy` is listed in the AI strategy documentation without a description, and the dynamic variable `ai_strategy_occupation_policy` exists (`GER.ai_strategy_occupation_policy@ENG`). No vanilla file uses the strategy. [docs] `common/ai_strategy/_documentation.md`, `documentation/dynamic_variables_documentation.md`; [vanilla-confirmed 1.19.4.1] search of `common/ai_strategy/`.
-- Garrison strategies exist as well: `garrison`, `garrison_reinforcement_priority`, `asking_foreign_garrison`. [docs] `common/ai_strategy/_documentation.md`.
+- `ai_will_do` scores a law per state. Scope is the state, `FROM` is the occupier and `FROM.FROM` the occupied country. Temp variables available: `ai_desire_<resource>` (0 to 1), `uncapped_resistance_target`, `resistance_target_without_law`, `garrison_min_support_ratio`, `garrison_equipment_support_ratio`, `garrison_manpower_support_ratio`.
+- Vanilla pattern: `base = 0` plus `modifier` blocks that test `check_variable = { resistance_target_without_law > 0.44 }` and add 200 to 500.
+- Anti-flapping: five laws test their own selection and switch to a looser limit while selected, for example `if = { limit = { occupation_law = martial_law_occupation } set_temp_variable = { resistance_limit = 35 } }`.
+- `forced_labor_occupation` multiplies the score to 0 below a garrison support ratio of 1.5 (1.3 when selected).
+- The `ai_strategy` type `occupation_policy` is listed in the AI strategy documentation without a description, and the dynamic variable `ai_strategy_occupation_policy` exists (`GER.ai_strategy_occupation_policy@ENG`). No vanilla file uses the strategy.
+- Garrison strategies exist as well: `garrison`, `garrison_reinforcement_priority`, `asking_foreign_garrison`.
 
-### Vanilla laws <a id="Vanilla_laws"></a>
+### Vanilla laws
 
-State modifier values of the laws without a country or DLC gate, as a calibration table. All rows: [vanilla-confirmed 1.19.4.1] `occupation_laws.txt`. Empty cells are not set. `rt` = `resistance_target`, `cg` = `compliance_gain`, `rgf` = `required_garrison_factor`, `rdg` = `resistance_damage_to_garrison`.
+State modifier values of the laws without a country or DLC gate, as a calibration table. Empty cells are not set. `rt` = `resistance_target`, `cg` = `compliance_gain`, `rgf` = `required_garrison_factor`, `rdg` = `resistance_damage_to_garrison`.
 
 | Law | rt | cg | rgf | rdg | `local_resources` | `local_factories` | Gate |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -155,19 +120,19 @@ State modifier values of the laws without a country or DLC gate, as a calibratio
 | `harsh_quotas_occupation` | -0.40 | -0.08 | 0.15 | 0.50 | 0.05 | 0.25 | none |
 | `brutally_oppressive_occupation` | -0.75 | -0.11 | 0.25 | 1.0 | 0.10 | | fascism |
 
-The other laws are country or DLC specific: `reconciliation`, `colonial_police` (three tiers), `secretaries_general`, `independent_rule`, `princely_subjugation`, `senbu_occupation_law`, `GEACPS_exploitation_occupation_law`, `GEACPS_prosperity_occupation_law`. `missing_garrison_scaled_effect` is the hidden scaling law. [vanilla-confirmed 1.19.4.1] `occupation_laws.txt`.
+The other laws are country or DLC specific: `reconciliation`, `colonial_police` (three tiers), `secretaries_general`, `independent_rule`, `princely_subjugation`, `senbu_occupation_law`, `GEACPS_exploitation_occupation_law`, `GEACPS_prosperity_occupation_law`. `missing_garrison_scaled_effect` is the hidden scaling law.
 
-### Law localisation and GFX <a id="Law_localisation_and_GFX"></a>
+### Law localisation and GFX
 
-- The law name is the loc key equal to the law id (`military_governor_occupation: "Military Governor"`). `tooltip` is the optional description key. [vanilla-confirmed 1.19.3] `localisation/english/resistance_and_occupation_l_english.yml`; [docs] header.
-- `custom_modifier_tooltip = "key"` inside `state_modifier` adds a text line, as in `forced_labor_occupation`. [vanilla-confirmed 1.19.4.1] `occupation_laws.txt`.
-- The default icon strip `GFX_occupation_policy_icon_strip` (`interface/countryoccupationview.gfx`) is 510 by 30 with 17 frames. [vanilla-confirmed 1.19.3] `interface/countryoccupationview.gfx`, DDS header of `gfx/interface/occupation/occupation_policy_icon_strip.dds`.
+- The law name is the loc key equal to the law id (`military_governor_occupation: "Military Governor"`). `tooltip` is the optional description key.
+- `custom_modifier_tooltip = "key"` inside `state_modifier` adds a text line, as in `forced_labor_occupation`.
+- The default icon strip `GFX_occupation_policy_icon_strip` (`interface/countryoccupationview.gfx`) is 510 by 30 with 17 frames.
 
-## Resistance activities <a id="Resistance_activities"></a>
+## Resistance activities
 
-An activity is one action the resistance can take once it gets through the garrison. [vanilla-confirmed 1.19.3] `localisation/english/resistance_and_occupation_l_english.yml` (`RESISTANCE_ACTIVITY_LIST_TITLE`: "One of the following effects will apply when the resistance penetrates the garrisons"; each entry shows its chance).
+An activity is one action the resistance can take once it gets through the garrison.
 
-Keys, [docs] header of `common/resistance_activity/resistance_activity.txt` and [vanilla-confirmed 1.19.3] counts over the 20 activities:
+Keys:
 
 | Key | Used by | Meaning |
 | --- | --- | --- |
@@ -177,19 +142,19 @@ Keys, [docs] header of `common/resistance_activity/resistance_activity.txt` and 
 | `alert_text` | 20 | Loc key of the alert on the map (`building_is_sabotaged`, `resource_is_sabotaged`). |
 | `max_amount`, `duration`, `state_modifier` | 0 | Documented in the header; unused in vanilla. |
 
-- The roll has two steps in the UI text: a chance for activity at all (`RESISTANCE_CHANCE_FOR_ACTIVITY`, with 0.312 at maximum resistance as the define above) and a chance to get through the garrison (`RESISTANCE_CHANCE_FOR_GARRISON_PENETRATE`, at least 0.02); then one of the available activities applies. How often it is rolled is not stated. [vanilla-confirmed 1.19.4.1] `localisation/english/resistance_and_occupation_l_english.yml`, `common/defines/00_defines.lua`; the timing is [unverified]. In a test, resistance activities started on the 01:00 tick (every logged activity was at hour 01, the first at 1936.01.04.01 after a setup at 1936.01.03.12), and the same state fired again 10 to 23 days later. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, a `log` line in each activity effect, game.log read. One state fired only once, because its occupier went into a peace conference, so a fixed roll interval is not isolated by these lines.
-- All vanilla blocks use state-scope triggers and effects directly (`non_damaged_building_level`, `has_resources_amount`, `damage_building`, `add_dynamic_modifier`), so the scope is the state. The meaning of `ROOT` and `FROM` is not stated. [vanilla-confirmed 1.19.3] `resistance_activity.txt`. In a test activity effect, `ROOT` and `THIS` both were the state, and `FROM` was the country holding it: for Bhutan's state under Nepalese control `FROM` printed Nepal, and for other states it printed the British Raj, the Dominion of New Zealand, the Dutch East Indies and the Japanese Empire. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, a `log` line in each activity effect, game.log read.
-- Vanilla activities: 13 building sabotage (`sabotage_arms_factory`, `_infrastructure`, `_industrial_complex`, `_air_base`, `_dockyard`, `_anti_air_building`, `_synthetic_refinery`, `_fuel_silo`, `_radar_station`, `_rocket_site`, `_nuclear_reactor`, `_nuclear_reactor_heavy_water`, `_commercial_nuclear_reactor`) and 7 resource sabotage (`_oil`, `_aluminium`, `_rubber`, `_tungsten`, `_steel`, `_chromium`, `_coal`). [vanilla-confirmed 1.19.3] `resistance_activity.txt`.
-- Building sabotage calls `damage_building = { type = ... damage = N }`: 0.25 for most buildings, 0.5 for infrastructure, 0.15 for the three nuclear reactors; the targeted-sabotage variants of arms factory, civilian factory and infrastructure use 0.5, 0.5 and 1.0. Resource sabotage adds a negative value to a state variable such as `sabotaged_oil` (-12) and adds the dynamic modifier `sabotaged_resources` for 180 days (135 under `forced_labor_occupation`). [vanilla-confirmed 1.19.3] `resistance_activity.txt`.
-- The intelligence operations `operation_targeted_sabotage_*` feed this system: they add to the state variables `targeted_sabotage_industry`, `_infrastructure` and `_resources`, and the activities raise their `weight` by 4 while the variable is above 0 and consume one point per use. [vanilla-confirmed 1.19.3] `common/operations/00_operations.txt`, `resistance_activity.txt`. See [Intelligence operation modding](<intelligence_operation_modding.md>).
-- Laws change activity weights through `occupation_law = harsh_quotas_occupation` and `forced_labor_occupation` tests in `weight` (add -0.25). [vanilla-confirmed 1.19.3] `resistance_activity.txt`.
-- The modifiers `resistance_activity` and `resistance_garrison_penetration_chance` are shown to the player as "Resistance Activity Chance" and "Garrison Penetration Chance". [vanilla-confirmed 1.19.4.1] `localisation/english/modifiers_l_english.yml`.
+- The roll has two steps in the UI text: a chance for activity at all (`RESISTANCE_CHANCE_FOR_ACTIVITY`, with 0.312 at maximum resistance as the define above) and a chance to get through the garrison (`RESISTANCE_CHANCE_FOR_GARRISON_PENETRATE`, at least 0.02); then one of the available activities applies. How often it is rolled is not stated. The timing is unverified. In a test, resistance activities started on the 01:00 tick (every logged activity was at hour 01, the first at 1936.01.04.01 after a setup at 1936.01.03.12), and the same state fired again 10 to 23 days later. One state fired only once, because its occupier went into a peace conference, so a fixed roll interval is not isolated by these lines.
+- All vanilla blocks use state-scope triggers and effects directly (`non_damaged_building_level`, `has_resources_amount`, `damage_building`, `add_dynamic_modifier`), so the scope is the state. The meaning of `ROOT` and `FROM` is not stated. In a test activity effect, `ROOT` and `THIS` both were the state, and `FROM` was the country holding it: for Bhutan's state under Nepalese control `FROM` printed Nepal, and for other states it printed the British Raj, the Dominion of New Zealand, the Dutch East Indies and the Japanese Empire.
+- Vanilla activities: 13 building sabotage (`sabotage_arms_factory`, `_infrastructure`, `_industrial_complex`, `_air_base`, `_dockyard`, `_anti_air_building`, `_synthetic_refinery`, `_fuel_silo`, `_radar_station`, `_rocket_site`, `_nuclear_reactor`, `_nuclear_reactor_heavy_water`, `_commercial_nuclear_reactor`) and 7 resource sabotage (`_oil`, `_aluminium`, `_rubber`, `_tungsten`, `_steel`, `_chromium`, `_coal`).
+- Building sabotage calls `damage_building = { type = ... damage = N }`: 0.25 for most buildings, 0.5 for infrastructure, 0.15 for the three nuclear reactors; the targeted-sabotage variants of arms factory, civilian factory and infrastructure use 0.5, 0.5 and 1.0. Resource sabotage adds a negative value to a state variable such as `sabotaged_oil` (-12) and adds the dynamic modifier `sabotaged_resources` for 180 days (135 under `forced_labor_occupation`).
+- The intelligence operations `operation_targeted_sabotage_*` feed this system: they add to the state variables `targeted_sabotage_industry`, `_infrastructure` and `_resources`, and the activities raise their `weight` by 4 while the variable is above 0 and consume one point per use. See [Intelligence operation modding](intelligence_operation_modding.md).
+- Laws change activity weights through `occupation_law = harsh_quotas_occupation` and `forced_labor_occupation` tests in `weight` (add -0.25).
+- The modifiers `resistance_activity` and `resistance_garrison_penetration_chance` are shown to the player as "Resistance Activity Chance" and "Garrison Penetration Chance".
 
-## Resistance and compliance modifiers <a id="Resistance_and_compliance_modifiers"></a>
+## Resistance and compliance modifiers
 
-### Modifier keys <a id="Modifier_keys"></a>
+### Modifier keys
 
-Block name = modifier id = loc key of its name. Documented keys: [docs] header of `resistance_modifiers.txt` (`compliance_modifiers.txt` points to it). Counts over the 9 vanilla modifiers: [vanilla-confirmed 1.19.4.1].
+Block name = modifier id = loc key of its name.
 
 | Key | Used by | Meaning |
 | --- | --- | --- |
@@ -203,20 +168,18 @@ Block name = modifier id = loc key of its name. Documented keys: [docs] header o
 | `on_enable`, `on_disable` | 2, 0 | Effects run when the modifier turns on or off. |
 | `is_dynamic` | 0 | Documented: not added to states by default, active only after the threshold and an `add_state_resistance_compliance_modifier` call. State types only. |
 | `tooltip` | 0 | Description text. |
-| `alert_level`, `alert_margin` | 1 | Only on `resistance_90` (`high`, 20). Not documented. The alert list shows modifiers that are active or about to activate, so these probably set when the map alert appears. [unverified] |
+| `alert_level`, `alert_margin` | 1 | Only on `resistance_90` (`high`, 20). Not documented. The alert list shows modifiers that are active or about to activate, so these probably set when the map alert appears. (unverified) |
 
-### Types, scopes and thresholds <a id="Types_scopes_and_thresholds"></a>
+### Types, scopes and thresholds
 
-- State types measure one state. Scope is the state; the header says the occupier is `FROM` (and root) and `FROM.FROM` the occupied country. Core types measure the average over all states of an occupied country: scope and root are the occupier, `FROM` the occupied country. [docs] header of `resistance_modifiers.txt`.
-- The header writes `core_compliancemodifier` for the fourth type; vanilla and `hoi4.exe` use `core_compliance_modifier`. [vanilla-confirmed 1.19.4.1] `compliance_modifiers.txt`.
-- In a core type `on_enable`, `var:occupied_country` is the occupied country. [vanilla-confirmed 1.19.3] `resistance_modifiers.txt` (`resistance_90`).
-- Enable when the value reaches `threshold`, disable below `threshold - margin`. The tooltip says "goes above" for enabling. [docs] header; [vanilla-confirmed 1.19.3] `OCCUPATION_MODIFIER_ACTIVE` and `OCCUPATION_MODIFIER_NOT_ACTIVE` in `resistance_and_occupation_l_english.yml`.
-- Effects that need to reach state controllers should not run in `on_enable` of a core type. The vanilla comment in `resistance_90` says to avoid them, and it fires the event through a hidden `country_event` with `hours = 1`. [vanilla-confirmed 1.19.3] `resistance_modifiers.txt`.
-- Icon strips: compliance 5 frames (`GFX_occupation_compliance_modifier_strip`, 31 by 31 each; small 19 by 19), resistance 4 frames (31 by 31; small 19 by 19). [vanilla-confirmed 1.19.3] `interface/countryoccupationview.gfx`, DDS headers.
+- State types measure one state. Scope is the state; the header says the occupier is `FROM` (and root) and `FROM.FROM` the occupied country. Core types measure the average over all states of an occupied country: scope and root are the occupier, `FROM` the occupied country.
+- The header writes `core_compliancemodifier` for the fourth type; vanilla and `hoi4.exe` use `core_compliance_modifier`.
+- In a core type `on_enable`, `var:occupied_country` is the occupied country.
+- Enable when the value reaches `threshold`, disable below `threshold - margin`. The tooltip says "goes above" for enabling.
+- Effects that need to reach state controllers should not run in `on_enable` of a core type. The vanilla comment in `resistance_90` says to avoid them, and it fires the event through a hidden `country_event` with `hours = 1`.
+- Icon strips: compliance 5 frames (`GFX_occupation_compliance_modifier_strip`, 31 by 31 each; small 19 by 19), resistance 4 frames (31 by 31; small 19 by 19).
 
-### Vanilla modifiers <a id="Vanilla_modifiers"></a>
-
-All rows: [vanilla-confirmed 1.19.4.1] `common/resistance_compliance_modifiers/`.
+### Vanilla modifiers
 
 | Id | Type | Threshold | State modifier |
 | --- | --- | --- | --- |
@@ -230,11 +193,11 @@ All rows: [vanilla-confirmed 1.19.4.1] `common/resistance_compliance_modifiers/`
 | `compliance_60` | core compliance | 60 | `recruitable_population_factor` 0.2 |
 | `compliance_80` | core compliance | 80 | none; `enabled` needs `is_available_to_collaboration_government = yes` and `has_rule = can_create_collaboration_government`; `on_enable` fires `occupied_countries.1` |
 
-Script reads these ids with `has_core_occupation_modifier`: one decision in `common/decisions/foreign_influence.txt` is `visible` at `compliance_60` and `available` at `compliance_80` (`has_core_occupation_modifier = { occupied_country_tag = FROM modifier = compliance_80 }`). [vanilla-confirmed 1.19.3] `common/decisions/foreign_influence.txt`.
+Script reads these ids with `has_core_occupation_modifier`: one decision in `common/decisions/foreign_influence.txt` is `visible` at `compliance_60` and `available` at `compliance_80` (`has_core_occupation_modifier = { occupied_country_tag = FROM modifier = compliance_80 }`).
 
-## Script interface <a id="Script_interface"></a>
+## Script interface
 
-Scopes and arguments: [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`, `documentation/modifiers_documentation.md`, `documentation/dynamic_variables_documentation.md`.
+Scopes and arguments:
 
 | Kind | Names |
 | --- | --- |
@@ -249,20 +212,20 @@ Scopes and arguments: [docs] `documentation/effects_documentation.md`, `document
 | `..._on_our_occupied_states` modifiers | `resistance_target`, `resistance_growth`, `resistance_decay`, `resistance_damage_to_garrison` and `compliance_growth` each have an `_on_our_occupied_states` form for our states held by the enemy |
 | Agency modifiers | `boost_resistance_factor`, `root_out_resistance_effectiveness_factor`, `occupied_operative_recruitment_chance` |
 
-- The documentation text of `has_occupation_modifier` repeats the text of `occupied_country_tag`; it reads "compares occupied country that creates resistance to a tag" and shows `has_occupation_modifier = modifier_name`. [docs] `documentation/triggers_documentation.md`. No vanilla file uses `has_occupation_modifier` or `add_state_resistance_compliance_modifier`, so both are documented only. [vanilla-confirmed 1.19.4.1]
-- Console: `resistance <amount>` and `compliance <amount>` raise or lower the value in a state. [docs] `documentation/console_commands_documentation.md`.
+- The documentation text of `has_occupation_modifier` repeats the text of `occupied_country_tag`; it reads "compares occupied country that creates resistance to a tag" and shows `has_occupation_modifier = modifier_name`. No vanilla file uses `has_occupation_modifier` or `add_state_resistance_compliance_modifier`, so both are documented only.
+- Console: `resistance <amount>` and `compliance <amount>` raise or lower the value in a state.
 
-## Starting resistance <a id="Starting_resistance"></a>
+## Starting resistance
 
-- Whether a state gets resistance is decided by the scripted trigger `should_initiate_resistance` in `common/scripted_triggers/00_resistance_initiate_triggers.txt`. Scope is the state, `FROM` the occupier, `FROM.FROM` the occupied country (always the original tag). It runs when owner or controller changes and daily while resistance is active. [vanilla-confirmed 1.19.3] comments in that file.
-- Vanilla version: the state is not impassable, `core_countries^num > 0` (the file's comment says "have no cores", but the check is for more than zero), and the state is never a core of the occupier; one extra branch is specific to Spain (`SPR_original_core`, `scw_over`). [vanilla-confirmed 1.19.3] same file.
-- A trigger named `should_initiate_resistance_<id>_<id>` replaces it for those state ids, as in the commented examples of the file. See [Triggers](<triggers.md#Resistance_initiation_triggers>). [vanilla-confirmed 1.19.3] same file.
-- `force_enable_resistance` and `start_resistance` start resistance in states the trigger would exclude, for example cores; `force_disable_resistance` and `cancel_resistance` stop it. [docs] `documentation/effects_documentation.md`.
-- History files can set `set_resistance`, `set_compliance` and `start_resistance` per state, for example `history/states/1050-Ajteh.txt`. [vanilla-confirmed 1.19.4.1] `history/states/`.
+- Whether a state gets resistance is decided by the scripted trigger `should_initiate_resistance` in `common/scripted_triggers/00_resistance_initiate_triggers.txt`. Scope is the state, `FROM` the occupier, `FROM.FROM` the occupied country (always the original tag). It runs when owner or controller changes and daily while resistance is active.
+- Vanilla version: the state is not impassable, `core_countries^num > 0` (the file's comment says "have no cores", but the check is for more than zero), and the state is never a core of the occupier; one extra branch is specific to Spain (`SPR_original_core`, `scw_over`).
+- A trigger named `should_initiate_resistance_<id>_<id>` replaces it for those state ids, as in the commented examples of the file. See [Triggers](triggers.md#resistance-initiation-triggers).
+- `force_enable_resistance` and `start_resistance` start resistance in states the trigger would exclude, for example cores; `force_disable_resistance` and `cancel_resistance` stop it.
+- History files can set `set_resistance`, `set_compliance` and `start_resistance` per state, for example `history/states/1050-Ajteh.txt`.
 
-## Minimal example <a id="Minimal_example"></a>
+## Minimal example
 
-All three blocks follow vanilla shapes. [vanilla-confirmed 1.19.4.1] shape only; ids and numbers are made up.
+All three blocks follow vanilla shapes. Ids and numbers are made up.
 
 `common/occupation_laws/my_mod_laws.txt`
 
@@ -321,27 +284,13 @@ my_mod_resistance_60 = {
 }
 ```
 
-Localisation: `my_mod_garrison_tax`, `sabotage_my_mod_radio` and `my_mod_resistance_60` are the name keys (for example `my_mod_garrison_tax: "Garrison Tax"`); `building_is_sabotaged` already exists. Set the law with `set_occupation_law = my_mod_garrison_tax` in an effect, or let the AI pick it by weight. [vanilla-confirmed 1.19.3] `resistance_and_occupation_l_english.yml` for the key pattern.
+Localisation: `my_mod_garrison_tax`, `sabotage_my_mod_radio` and `my_mod_resistance_60` are the name keys (for example `my_mod_garrison_tax: "Garrison Tax"`); `building_is_sabotaged` already exists. Set the law with `set_occupation_law = my_mod_garrison_tax` in an effect, or let the AI pick it by weight.
 
-## Traps <a id="Traps"></a>
+## Traps
 
-- Do not mark a second law `default_law = yes` or `starting_law = yes`; vanilla has exactly one of each, and `main_fallback_law` from the header is unused. [vanilla-confirmed 1.19.4.1] `occupation_laws.txt`. In a test, a second law in a later file marked `default_law = yes` and `starting_law = yes` drew no error.log line and did not become the starting law: a state occupied three days earlier was on vanilla `military_governor_occupation`, not on the test law. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log and game.log read. The AI may have chosen the law after the occupation, and the country-level default read returned FALSE for both laws, so it says nothing.
-- `visible` of a law is also read with `FROM` set, although the header says otherwise. Test `FROM` there only when you accept this. [vanilla-confirmed 1.19.4.1] 10 of 15 vanilla `visible` blocks.
-- Use `small_icon` and `core_compliance_modifier`, the vanilla spellings, not the header's `icon_small` and `core_compliancemodifier`. [vanilla-confirmed 1.19.4.1] all 9 vanilla modifiers.
-- Modifier thresholds are percentages (0 to 100): the header calls the key "percentage threshold to enable" and the vanilla values run from 15 to 90. [vanilla-confirmed 1.19.4.1] `resistance_modifiers.txt`, `compliance_modifiers.txt`. A threshold of 0.5 does mean half a percent: a modifier with `threshold = 0.5` and `margin = 0` was inactive at a resistance of 0.2 percent (`local_non_core_manpower` read 0.00019) and active at 1.2 percent and at about 50 percent (about -0.9). [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, resistance set by effect and the modifier read in game.log. Resistance drifted from the set values 0, 1 and 50 to 0.2, 1.2 and about 50 over the day, and nothing between 0.2 and 1.2 was tested.
-- `is_dynamic = yes` modifiers are never active unless a script adds them with `add_state_resistance_compliance_modifier`. [docs] header of `resistance_modifiers.txt`.
-- The operations that feed sabotage change variables on the selected state (`FROM.FROM` in operation scope). Vanilla activities that read these variables spend them with `subtract_from_variable`; a custom activity that reads one should do the same. [vanilla-confirmed 1.19.3] `common/operations/00_operations.txt`, `resistance_activity.txt`.
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
+- Do not mark a second law `default_law = yes` or `starting_law = yes`; vanilla has exactly one of each, and `main_fallback_law` from the header is unused. In a test, a second law in a later file marked `default_law = yes` and `starting_law = yes` drew no error.log line and did not become the starting law: a state occupied three days earlier was on vanilla `military_governor_occupation`, not on the test law. The AI may have chosen the law after the occupation, and the country-level default read returned FALSE for both laws, so it says nothing.
+- `visible` of a law is also read with `FROM` set, although the header says otherwise. Test `FROM` there only when you accept this.
+- Use `small_icon` and `core_compliance_modifier`, the vanilla spellings, not the header's `icon_small` and `core_compliancemodifier`.
+- Modifier thresholds are percentages (0 to 100): the header calls the key "percentage threshold to enable" and the vanilla values run from 15 to 90. A threshold of 0.5 does mean half a percent: a modifier with `threshold = 0.5` and `margin = 0` was inactive at a resistance of 0.2 percent (`local_non_core_manpower` read 0.00019) and active at 1.2 percent and at about 50 percent (about -0.9). Resistance drifted from the set values 0, 1 and 50 to 0.2, 1.2 and about 50 over the day, and nothing between 0.2 and 1.2 was tested.
+- `is_dynamic = yes` modifiers are never active unless a script adds them with `add_state_resistance_compliance_modifier`.
+- The operations that feed sabotage change variables on the selected state (`FROM.FROM` in operation scope). Vanilla activities that read these variables spend them with `subtract_from_variable`; a custom activity that reads one should do the same.

@@ -1,56 +1,15 @@
 # List of modifiers
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "List of modifiers", revision 87096, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+Rows on this page that do not match 1.19.3. The game documents 722 plain modifiers and 38 template families, and 252 of the 722 are never named in the table below; the tables at the bottom add them.
 
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="87096" sources="documentation/modifiers_documentation.md documentation/effects_documentation.md documentation/dynamic_variables_documentation.md common/dynamic_modifiers/ common/modifier_definitions/ common/modifiers/ common/units/equipment/ common/units/unit_modifiers/ common/operations/ localisation/english/modifiers_l_english.yml" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against the modifier documentation (722 plain modifiers and 38 template families), the unit modifier registry, the modifier definition and dynamic modifier files, and the in-game modifier text.
-- Kit blocks added: `list-corrections` (names that do not exist in 1.19.3, a misspelt token, equipment stats that are not modifiers, short lists), `missing-from-table` (the 252 documented modifiers the table never names, in themed tables and a sub-unit grid) and `template-families`.
-- Gaps left: meanings starting with `~` are guesses from names; the unused modifiers were not tested in game; the Notes column of the table was not re-checked, only the names.
-**1.19.4.1 re-check (2026-11-01).** Eight statements depended on files the update changed (vanilla-wide scans, the equipment and operation files and the modifier text file), and all eight were re-measured. Two facts changed: `navy_screen_attack_factor_against` is now used in `common/ideas/japan.txt`, and the in-game text of `river_crossing_factor_against` does not end in "against a country"; the 20 "unused in vanilla" modifiers, the 72 `foreign_subversive_activites` uses and the 13 operation modifier names are unchanged, and the meaning column cannot be diffed against the old text file. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
+- Not found in the modifier documentation or in any vanilla script or localisation (and not in the strings of `hoi4.exe`): `occupation_cost`, `modifier_enemy_port_superiority_limit`, `paratrooper_count_per_plane`, `max_marshal_army_size`, `max_marshal_army_group_size`, and the air factor rows `air_interception_{attack,defence,agility}_factor`, `air_air_superiority_{attack,defence,agility}_factor`, `air_close_air_support_{attack,defence,agility}_factor`, `air_strategic_bomber_{attack,agility}_factor` and `air_paradrop_{attack,defence,agility}_factor`. The `hoi4.exe` part is a read-only string search. (unverified) In an idea's `modifier` block, `occupation_cost` and `max_marshal_army_size` were rejected at load as "Unknown modifier", and read back by name each gave 0. The other names in this list were not tried.
+- `max_commander_army_group_size` is not documented and no script or localisation uses it. The documented names are `max_commander_army_size` and `max_army_group_size`. The string appears once in `hoi4.exe`. It is not a leftover but a live modifier key: an idea with `max_commander_army_group_size = 1` loaded with no error.log line, the modifier read 1 once the idea was added, and the add tooltip showed "General Max Army Group Size". The tooltip text is from OCR of the console reply and partly garbled, and `list_modifiers` was not used.
+- `foreign_subversive_activities` is misspelled. The game's token is `foreign_subversive_activites` (one "i" missing), which is what the documentation and 72 vanilla uses write.
+- `operation_steal_tech_cost` is not in the documented `<Operation>_cost` list. The documented names are `operation_steal_tech_army_cost`, `operation_steal_tech_navy_cost`, `operation_steal_tech_airforce_cost` and `operation_steal_tech_civilian_cost`; `operation_steal_tech_outcome` and `operation_steal_tech_risk` do exist. A localisation key `operation_steal_tech_cost` exists in `localisation/english/modifiers_l_english.yml`. The old name is not recognised: in an idea's `modifier` block `operation_steal_tech_cost` was rejected at load as "Unknown modifier", and read back by name it gave 0.
+- `breakthrough`, `armor_value`, `air_attack`, `air_defence`, `air_agility`, `maximum_speed`, `air_range`, `air_superiority` and `air_bombing` are equipment stats, not entries of the modifier documentation. They are keys of the equipment files in `common/units/equipment/` and of equipment upgrades.
+- The explicit lists in some rows are shorter than the game's lists: resources (7, with `coal`), buildings (55, the page names up to 16), `production_cost_max_*` (9 tokens, the page names 6), units for `experience_gain_*` (157, and a third `_mission_factor` variant exists) and `special_forces_doctrine_cost_factor` next to the three `<land/air/naval>` doctrine cost rows. Full lists are in [Template modifier families](#template-modifier-families).
 
-<!-- kit:begin id="list-corrections" at="top" -->
-**Kit correction** Rows on this page that do not match 1.19.3. The game documents 722 plain modifiers and 38 template families, and 252 of the 722 are never named in the table below; the kit tables at the bottom add them. [docs] `documentation/modifiers_documentation.md`
-
-- Not found in the modifier documentation or in any vanilla script or localisation (and not in the strings of `hoi4.exe`): `occupation_cost`, `modifier_enemy_port_superiority_limit`, `paratrooper_count_per_plane`, `max_marshal_army_size`, `max_marshal_army_group_size`, and the air factor rows `air_interception_{attack,defence,agility}_factor`, `air_air_superiority_{attack,defence,agility}_factor`, `air_close_air_support_{attack,defence,agility}_factor`, `air_strategic_bomber_{attack,agility}_factor` and `air_paradrop_{attack,defence,agility}_factor`. [docs] [vanilla-confirmed 1.19.4.1] The `hoi4.exe` part is a read-only string search. [unverified] In an idea's `modifier` block, `occupation_cost` and `max_marshal_army_size` were rejected at load as "Unknown modifier", and read back by name each gave 0. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read and the modifier read in game.log. The other names in this list were not tried.
-- `max_commander_army_group_size` is not documented and no script or localisation uses it. The documented names are `max_commander_army_size` and `max_army_group_size`. [docs] [vanilla-confirmed 1.19.4.1] `documentation/modifiers_documentation.md`, search of the data folders. The string appears once in `hoi4.exe`. It is not a leftover but a live modifier key: an idea with `max_commander_army_group_size = 1` loaded with no error.log line, the modifier read 1 once the idea was added, and the add tooltip showed "General Max Army Group Size". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log and game.log read. The tooltip text is from OCR of the console reply and partly garbled, and `list_modifiers` was not used.
-- `foreign_subversive_activities` is misspelled. The game's token is `foreign_subversive_activites` (one "i" missing), which is what the documentation and 72 vanilla uses write. [docs] [vanilla-confirmed 1.19.4.1]
-- `operation_steal_tech_cost` is not in the documented `<Operation>_cost` list. The documented names are `operation_steal_tech_army_cost`, `operation_steal_tech_navy_cost`, `operation_steal_tech_airforce_cost` and `operation_steal_tech_civilian_cost`; `operation_steal_tech_outcome` and `operation_steal_tech_risk` do exist. A localisation key `operation_steal_tech_cost` exists in `localisation/english/modifiers_l_english.yml`. [docs] [vanilla-confirmed 1.19.4.1] The old name is not recognised: in an idea's `modifier` block `operation_steal_tech_cost` was rejected at load as "Unknown modifier", and read back by name it gave 0. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read at load and the modifier read in game.log.
-- `breakthrough`, `armor_value`, `air_attack`, `air_defence`, `air_agility`, `maximum_speed`, `air_range`, `air_superiority` and `air_bombing` are equipment stats, not entries of the modifier documentation. [docs] They are keys of the equipment files in `common/units/equipment/` and of equipment upgrades. [vanilla-confirmed 1.19.4.1]
-- The explicit lists in some rows are shorter than the game's lists: resources (7, with `coal`), buildings (55, the page names up to 16), `production_cost_max_*` (9 tokens, the page names 6), units for `experience_gain_*` (157, and a third `_mission_factor` variant exists) and `special_forces_doctrine_cost_factor` next to the three `<land/air/naval>` doctrine cost rows. Full lists are in [Template modifier families](#kit-template-families). [docs] `documentation/modifiers_documentation.md`
-<!-- kit:end id="list-corrections" -->
-
-## Table of contents
-
-- [Kit: Documented modifiers missing from the table](#kit-missing-from-table)
-  - [Kit: General country modifiers (8)](#kit-missing-gen)
-  - [Kit: Politics (9)](#kit-missing-pol)
-  - [Kit: Diplomacy (11)](#kit-missing-dip)
-  - [Kit: Autonomy (3)](#kit-missing-aut)
-  - [Kit: Governments in exile (1)](#kit-missing-exi)
-  - [Kit: Equipment (4)](#kit-missing-eqp)
-  - [Kit: Fuel and supply (7)](#kit-missing-fuel)
-  - [Kit: Buildings (10)](#kit-missing-bld)
-  - [Kit: Intelligence (7)](#kit-missing-int)
-  - [Kit: Operatives (15)](#kit-missing-ops)
-  - [Kit: Military outside of combat (10)](#kit-missing-mil)
-  - [Kit: MIOs (9)](#kit-missing-mio)
-  - [Kit: Unit leaders (10)](#kit-missing-ldr)
-  - [Kit: Land combat (27)](#kit-missing-land)
-  - [Kit: Invasions (9)](#kit-missing-ninv)
-  - [Kit: Naval combat (15)](#kit-missing-naval)
-  - [Kit: Carriers and their planes (3)](#kit-missing-carr)
-  - [Kit: Air combat (8)](#kit-missing-air)
-  - [Kit: Targeted modifiers (12)](#kit-missing-targ)
-  - [Kit: State scope (13)](#kit-missing-state)
-  - [Kit: Unit leader scope (3)](#kit-missing-ulead)
-  - [Kit: Scientists scope (4)](#kit-missing-sci)
-  - [Kit: Sub-unit modifiers (54)](#kit-missing-sub-units)
-- [Kit: Template modifier families](#kit-template-families)
-
----
-
-[Modifiers](<modifiers.md>) listed here are recognized by the game, but not necessarily used in any context.
+[Modifiers](modifiers.md) listed here are recognized by the game, but not necessarily used in any context.
 
 The listed decimal places is for display only. All numbers support up to 3 decimal places.
 
@@ -111,7 +70,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | operation_targeted_sabotage_industry_cost<br>operation_targeted_sabotage_industry_outcome<br>operation_targeted_sabotage_industry_risk | Sabotage Industry <parameter> |  |  |  |  |
 | operation_targeted_sabotage_infrastructure_cost<br>operation_targeted_sabotage_infrastructure_outcome<br>operation_targeted_sabotage_infrastructure_risk | Sabotage Infrastructure <parameter> |  |  |  |  |
 | operation_targeted_sabotage_resources_cost<br>operation_targeted_sabotage_resources_outcome<br>operation_targeted_sabotage_resources_risk | Sabotage Resources <parameter> |  |  |  |  |
-| ai_focus_defense_factor | AI Modifier: Focus on Defense | Number with 1 decimal places; see [AI_focuses#Modding](<ai_focuses.md#Modding>) |  |  |  |
+| ai_focus_defense_factor | AI Modifier: Focus on Defense | Number with 1 decimal places; see [AI_focuses#Modding](ai_focuses.md#modding) |  |  |  |
 | ai_focus_aggressive_factor | AI Modifier: Focus on Offense |  |  |  |  |
 | ai_focus_war_production_factor | AI Modifier: Focus on War Production |  |  |  |  |
 | ai_focus_military_advancements_factor | AI Modifier: Focus on Military Advancements |  |  |  |  |
@@ -542,19 +501,18 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | political_advisor_cost_factor<br>economy_cost_factor<br>trade_laws_cost_factor<br>mobilization_laws_cost_factor<br>army_chief_cost_factor<br>navy_chief_cost_factor<br>air_chief_cost_factor<br>high_command_cost_factor<br>theorist_cost_factor<br>materiel_manufacturer_cost_factor<br>naval_manufacturer_cost_factor<br>aircraft_manufacturer_cost_factor<br>tank_manufacturer_cost_factor<br>industrial_concern_cost_factor<br>country_cost_factor<br>hidden_ideas_cost_factor<br><idea_group>_cost_factor | <idea_group> Cost |  |  |  |  |
 | experience_gain_infantry_training_factor<br>experience_gain_infantry_combat_factor<br>experience_gain_mountaineers_training_factor<br>experience_gain_mountaineers_combat_factor<br>experience_gain_marine_training_factor<br>experience_gain_marine_combat_factor<br>experience_gain_paratrooper_training_factor<br>experience_gain_paratrooper_combat_factor<br>experience_gain_bicycle_battalion_training_factor<br>experience_gain_bicycle_battalion_combat_factor<br>experience_gain_cavalry_training_factor<br>experience_gain_cavalry_combat_factor<br>experience_gain_armored_car_training_factor<br>experience_gain_armored_car_combat_factor<br>experience_gain_armored_car_recon_training_factor<br>experience_gain_armored_car_recon_combat_factor<br>experience_gain_motorized_training_factor<br>experience_gain_motorized_combat_factor<br>experience_gain_motorized_rocket_brigade_training_factor<br>experience_gain_motorized_rocket_brigade_combat_factor<br>experience_gain_mechanized_training_factor<br>experience_gain_mechanized_combat_factor<br>experience_gain_amphibious_mechanized_training_factor<br>experience_gain_amphibious_mechanized_combat_factor experience_gain_engineer_training_factor<br>experience_gain_engineer_combat_factor<br>experience_gain_recon_training_factor<br>experience_gain_recon_combat_factor<br>experience_gain_military_police_training_factor<br>experience_gain_military_police_combat_factor<br>experience_gain_maintenance_company_training_factor<br>experience_gain_maintenance_company_combat_factor<br>experience_gain_field_hospital_training_factor<br>experience_gain_field_hospital_combat_factor<br>experience_gain_logistics_company_training_factor<br>experience_gain_logistics_company_combat_factor<br>experience_gain_signal_company_training_factor<br>experience_gain_signal_company_combat_factor<br>experience_gain_mot_recon_training_factor<br>experience_gain_mot_recon_combat_factor  experience_gain_artillery_training_factor<br>experience_gain_artillery_combat_factor<br>experience_gain_rocket_artillery_training_factor<br>experience_gain_rocket_artillery_combat_factor<br>experience_gain_anti_air_training_factor<br>experience_gain_anti_air_combat_factor<br>experience_gain_anti_tank_training_factor<br>experience_gain_anti_tank_combat_factor<br>experience_gain_artillery_brigade_training_factor<br>experience_gain_artillery_brigade_combat_factor<br>experience_gain_rocket_artillery_brigade_training_factor<br>experience_gain_rocket_artillery_brigade_combat_factor<br>experience_gain_anti_air_brigade_training_factor<br>experience_gain_anti_air_brigade_combat_factor<br>experience_gain_anti_tank_brigade_training_factor<br>experience_gain_anti_tank_brigade_combat_factor<br>experience_gain_mot_artillery_brigade_training_factor<br>experience_gain_mot_artillery_brigade_combat_factor<br>experience_gain_mot_rocket_artillery_brigade_training_factor<br>experience_gain_mot_rocket_artillery_brigade_combat_factor<br>experience_gain_mot_anti_air_brigade_training_factor<br>experience_gain_mot_anti_air_brigade_combat_factor<br>experience_gain_mot_anti_tank_brigade_training_factor<br>experience_gain_mot_anti_tank_brigade_combat_factor  experience_gain_light_armor_training_factor<br>experience_gain_light_armor_combat_factor<br>experience_gain_light_sp_artillery_brigade_training_factor<br>experience_gain_light_sp_artillery_brigade_combat_factor<br>experience_gain_light_sp_anti_air_brigade_training_factor<br>experience_gain_light_sp_anti_air_brigade_combat_factor<br>experience_gain_light_tank_destroyer_brigade_training_factor<br>experience_gain_light_tank_destroyer_brigade_combat_factor<br>experience_gain_light_tank_recon_training_factor<br>experience_gain_light_tank_recon_combat_factor<br>experience_gain_medium_armor_training_factor<br>experience_gain_medium_armor_combat_factor<br>experience_gain_medium_sp_artillery_brigade_training_factor<br>experience_gain_medium_sp_artillery_brigade_combat_factor<br>experience_gain_medium_sp_anti_air_brigade_training_factor<br>experience_gain_medium_sp_anti_air_brigade_combat_factor<br>experience_gain_medium_tank_destroyer_brigade_training_factor<br>experience_gain_medium_tank_destroyer_brigade_combat_factor<br>experience_gain_heavy_armor_training_factor<br>experience_gain_heavy_armor_combat_factor<br>experience_gain_heavy_sp_artillery_brigade_training_factor<br>experience_gain_heavy_sp_artillery_brigade_combat_factor<br>experience_gain_heavy_sp_anti_air_brigade_training_factor<br>experience_gain_heavy_sp_anti_air_brigade_combat_factor<br>experience_gain_heavy_tank_destroyer_brigade_training_factor<br>experience_gain_heavy_tank_destroyer_brigade_combat_factor<br>experience_gain_super_heavy_armor_training_factor<br>experience_gain_super_heavy_armor_combat_factor<br>experience_gain_super_heavy_sp_artillery_brigade_training_factor<br>experience_gain_super_heavy_sp_artillery_brigade_combat_factor<br>experience_gain_super_heavy_sp_anti_air_brigade_training_factor<br>experience_gain_super_heavy_sp_anti_air_brigade_combat_factor<br>experience_gain_super_heavy_tank_destroyer_brigade_training_factor<br>experience_gain_super_heavy_tank_destroyer_brigade_combat_factor<br>experience_gain_modern_armor_training_factor<br>experience_gain_modern_armor_combat_factor<br>experience_gain_modern_sp_artillery_brigade_training_factor<br>experience_gain_modern_sp_artillery_brigade_combat_factor<br>experience_gain_modern_sp_anti_air_brigade_training_factor<br>experience_gain_modern_sp_anti_air_brigade_combat_factor<br>experience_gain_modern_tank_destroyer_brigade_training_factor<br>experience_gain_modern_tank_destroyer_brigade_combat_factor<br>experience_gain_amphibious_armor_training_factor<br>experience_gain_amphibious_armor_combat_factor  experience_gain_submarine_training_factor<br>experience_gain_submarine_combat_factor<br>experience_gain_destroyer_training_factor<br>experience_gain_destroyer_combat_factor<br>experience_gain_light_cruiser_combat_factor<br>experience_gain_light_cruiser_training_factor<br>experience_gain_heavy_cruiser_training_factor<br>experience_gain_heavy_cruiser_combat_factor<br>experience_gain_battle_cruiser_training_factor<br>experience_gain_battle_cruiser_combat_factor<br>experience_gain_battleship_training_factor<br>experience_gain_battleship_combat_factor<br>experience_gain_carrier_training_factor<br>experience_gain_carrier_combat_factor  experience_gain_fighter_training_factor<br>experience_gain_fighter_combat_factor<br>experience_gain_cv_fighter_training_factor<br>experience_gain_cv_fighter_combat_factor<br>experience_gain_heavy_fighter_training_factor<br>experience_gain_heavy_fighter_combat_factor<br>experience_gain_jet_fighter_training_factor<br>experience_gain_jet_fighter_combat_factor<br>experience_gain_cas_training_factor<br>experience_gain_cas_combat_factor<br>experience_gain_cv_cas_training_factor<br>experience_gain_cv_cas_combat_factor<br>experience_gain_nav_bomber_training_factor<br>experience_gain_nav_bomber_combat_factor<br>experience_gain_cv_nav_bomber_training_factor<br>experience_gain_cv_nav_bomber_combat_factor<br>experience_gain_tac_bomber_training_factor<br>experience_gain_tac_bomber_combat_factor<br>experience_gain_jet_tac_bomber_training_factor<br>experience_gain_jet_tac_bomber_combat_factor<br>experience_gain_strat_bomber_training_factor<br>experience_gain_strat_bomber_combat_factor<br>experience_gain_jet_strat_bomber_training_factor<br>experience_gain_jet_strat_bomber_combat_factor<br>experience_gain_transport_plane_training_factor<br>experience_gain_transport_plane_combat_factor<br>experience_gain_scout_plane_training_factor<br>experience_gain_scout_plane_combat_factor<br>experience_gain_rocket_interceptor_training_factor<br>experience_gain_rocket_interceptor_combat_factor<br>experience_gain_suicide_craft_training_factor<br>experience_gain_suicide_craft_combat_factor<br>experience_gain_guided_missile_training_factor<br>experience_gain_guided_missile_combat_factor  experience_gain_<unit_type>_training_factor<br>experience_gain_<unit_type>_combat_factor | <sub_unit> Training/Combat Experience Gain |  |  |  |  |
 
-<!-- kit:begin id="missing-from-table" at="bottom" -->
-## Kit: Documented modifiers missing from the table <a id="kit-missing-from-table"></a>
+## Documented modifiers missing from the table
 
-252 documented modifiers are never named in the table above. They are grouped by theme below. The sub-unit family is a grid after the groups. All rows: [docs] `documentation/modifiers_documentation.md`
+252 documented modifiers are never named in the table above. They are grouped by theme below. The sub-unit family is a grid after the groups.
 
-- Modifier, Categories and Format come from the game documentation. `dp` is the number of decimals the tooltip shows; any value accepts up to 3 decimals. [docs] `documentation/modifiers_documentation.md`
-- Meaning is the in-game wording from `localisation/english/modifiers_l_english.yml` and the MIO and effect strings, paraphrased. [vanilla-confirmed 1.19.3] The text file changed in 1.19.4.1 and the old text is gone, so a reworded single row would not show. A word-overlap check of the meaning column against the new file found no row that contradicts it. [unverified]
-- A meaning that starts with `~` is a guess from the name and its vanilla use. [unverified]
+- Modifier, Categories and Format come from the game documentation. `dp` is the number of decimals the tooltip shows; any value accepts up to 3 decimals.
+- Meaning is the in-game wording from `localisation/english/modifiers_l_english.yml` and the MIO and effect strings, paraphrased. The text file changed in 1.19.4.1 and the old text is gone, so a reworded single row would not show. A word-overlap check of the meaning column against the new file found no row that contradicts it. (unverified)
+- A meaning that starts with `~` is a guess from the name and its vanilla use. (unverified)
 - An empty meaning means the name is self-explanatory. `(not described in the docs)` means there is no in-game text and no clear vanilla use.
-- "Unused in vanilla" means no `key = value` use in `common/`, `events/` or `history/`. [vanilla-confirmed 1.19.4.1]
-- Sample checks against vanilla use: `army_non_core_attack_factor` is negative in `common/ideas/australia.txt`; `naval_invasion_prep_days` is -5 and -10 in `special_forces_subdoctrines.txt` and `MTG_naval_Support.txt`; `army_intel_to_others` is -15 and -50 in a trait and a decision; `peace_score_ratio_transferred_to_players` is used by the `diff_*_ai` static modifiers; `river_crossing_factor_against` sits inside `targeted_modifier` in `common/ideas/GER.txt`. [vanilla-confirmed 1.19.4.1]
+- "Unused in vanilla" means no `key = value` use in `common/`, `events/` or `history/`.
+- Sample checks against vanilla use: `army_non_core_attack_factor` is negative in `common/ideas/australia.txt`; `naval_invasion_prep_days` is -5 and -10 in `special_forces_subdoctrines.txt` and `MTG_naval_Support.txt`; `army_intel_to_others` is -15 and -50 in a trait and a decision; `peace_score_ratio_transferred_to_players` is used by the `diff_*_ai` static modifiers; `river_crossing_factor_against` sits inside `targeted_modifier` in `common/ideas/GER.txt`.
 
-### Kit: General country modifiers (8) <a id="kit-missing-gen"></a>
+### General country modifiers (8)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -567,7 +525,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `thermonuclear_production` | country | bool | Allows thermonuclear bombs |
 | `thermonuclear_production_factor` | country | 0 dp | Thermonuclear bomb production rate |
 
-### Kit: Politics (9) <a id="kit-missing-pol"></a>
+### Politics (9)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -581,7 +539,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `weekly_casualties_war_support` | country | 2 dp | Weekly war support change from combat casualties |
 | `weekly_convoys_war_support` | country | 2 dp | Weekly war support change from sunk convoys |
 
-### Kit: Diplomacy (11) <a id="kit-missing-dip"></a>
+### Diplomacy (11)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -597,7 +555,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `peace_score_ratio_transferred_to_players` | peace | 2 dp | Share of AI countries' peace score that goes to human players |
 | `request_lease_tension` | country | 1 dp | ~ World tension needed before the country can request lend-lease |
 
-### Kit: Autonomy (3) <a id="kit-missing-aut"></a>
+### Autonomy (3)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -605,13 +563,13 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `autonomy_manpower_share_from_subjects` | autonomy | 2 dp | Amount of manpower demanded from subject forces |
 | `resources_to_overlord_factor` | autonomy | 2 dp |  |
 
-### Kit: Governments in exile (1) <a id="kit-missing-exi"></a>
+### Governments in exile (1)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
 | `exiled_government_weekly_manpower` | country, war_production | 0 dp | Weekly manpower from an exiled government |
 
-### Kit: Equipment (4) <a id="kit-missing-eqp"></a>
+### Equipment (4)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -620,7 +578,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `floating_harbor_supply` | country | 0 dp |  |
 | `railway_gun_bombardment_factor` | country | 0 dp |  |
 
-### Kit: Fuel and supply (7) <a id="kit-missing-fuel"></a>
+### Fuel and supply (7)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -632,7 +590,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `underway_replenishment_convoy_cost` | country | 2 dp | Convoys used to provide underway replenishment |
 | `underway_replenishment_range` | country | 2 dp | How far underway replenishment extends fleet range |
 
-### Kit: Buildings (10) <a id="kit-missing-bld"></a>
+### Buildings (10)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -647,7 +605,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `production_speed_buildings_powered_factor` | country, war_production | 2 dp | Construction speed of powered buildings (unused in vanilla) |
 | `production_speed_facility_factor` | country | 2 dp | Construction speed of all facilities |
 
-### Kit: Intelligence (7) <a id="kit-missing-int"></a>
+### Intelligence (7)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -659,7 +617,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `intelligence_operation_speed` | intelligence_agency | 0 dp | Operation speed factor (unused in vanilla) |
 | `navy_intel_to_others` | country | 1 dp | ~ Navy intel other countries get about us (negative hides us) |
 
-### Kit: Operatives (15) <a id="kit-missing-ops"></a>
+### Operatives (15)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -679,7 +637,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `own_operative_harmed_time_factor` | unit_leader, country | 0 dp | ~ Time our operatives stay harmed (unused in vanilla) |
 | `own_operative_intel_extraction_rate` | unit_leader, country | 0 dp | Rate at which our operatives extract enemy intel (unused in vanilla) |
 
-### Kit: Military outside of combat (10) <a id="kit-missing-mil"></a>
+### Military outside of combat (10)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -694,7 +652,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `special_forces_cap_flat` | army | 0 dp | ~ Flat increase to the special forces cap of a template |
 | `special_forces_doctrine_cost_factor` | country | 2 dp |  |
 
-### Kit: MIOs (9) <a id="kit-missing-mio"></a>
+### MIOs (9)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -708,7 +666,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `military_industrial_organization_size_up_requirement` | war_production | 0 dp | Requirement for sizing up an MIO |
 | `military_industrial_organization_task_capacity` | war_production | 0 dp | Task capacity of an MIO |
 
-### Kit: Unit leaders (10) <a id="kit-missing-ldr"></a>
+### Unit leaders (10)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -723,7 +681,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `unit_leader_as_advisor_cp_cost_factor` | unit_leader, country | 1 dp | ~ Command power cost to turn a commander into an advisor |
 | `unit_medal_effectiveness` | country | 0 dp | ~ Strength of the bonuses that unit medals give |
 
-### Kit: Land combat (27) <a id="kit-missing-land"></a>
+### Land combat (27)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -755,7 +713,7 @@ The listed decimal places is for display only. All numbers support up to 3 decim
 | `supply_combat_penalties_on_core_factor` | army, aggressive | 1 dp | Combat penalties from low supply on core territory |
 | `war_support_reduction_on_damage` | army, defensive | 1 dp | War support lost from casualties |
 
-### Kit: Invasions (9) <a id="kit-missing-ninv"></a>
+### Invasions (9)
 
 The `air_invasion_*` rows are about airborne invasions. 
 
@@ -771,7 +729,7 @@ The `air_invasion_*` rows are about airborne invasions.
 | `naval_invasion_planning_bonus_speed` | army, aggressive | 0 dp | ~ Speed at which the planning bonus builds up while preparing a naval invasion |
 | `naval_invasion_prep_days` | country | 0 dp | ~ Days needed to prepare a naval invasion (negative shortens it) |
 
-### Kit: Naval combat (15) <a id="kit-missing-naval"></a>
+### Naval combat (15)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -791,7 +749,7 @@ The `air_invasion_*` rows are about airborne invasions.
 | `night_spotting_chance` | naval | 1 dp | Spotting chance against enemy vessels at night |
 | `screening_without_screens` | naval, country | 1 dp | Screening bonus when only capital ships are in the fleet |
 
-### Kit: Carriers and their planes (3) <a id="kit-missing-carr"></a>
+### Carriers and their planes (3)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -799,7 +757,7 @@ The `air_invasion_*` rows are about airborne invasions.
 | `carrier_night_traffic` | air | 2 dp | ~ Carrier air traffic capacity at night |
 | `carrier_sortie_hours_delay` | naval, unit_leader, aggressive | 0 dp | Delay, in hours, before carrier air wings can sortie again |
 
-### Kit: Air combat (8) <a id="kit-missing-air"></a>
+### Air combat (8)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -812,9 +770,9 @@ The `air_invasion_*` rows are about airborne invasions.
 | `air_untrained_pilots_penalty_factor` | air | 0 dp | ~ Penalty on new air wings that have untrained pilots |
 | `navy_weather_penalty` | air | 2 dp | Penalty on naval operations in bad weather |
 
-### Kit: Targeted modifiers (12) <a id="kit-missing-targ"></a>
+### Targeted modifiers (12)
 
-These only work inside a `targeted_modifier = { tag = X ... }` block. The in-game text of eleven of them ends in "against a country", and `river_crossing_factor_against` reads "against country". Vanilla uses `spotting_chance_against`, `navy_capital_ship_attack_factor_against` and `navy_screen_attack_factor_against` that way in `common/ideas/japan.txt` (the first two also in `common/ideas/australia.txt`) and `river_crossing_factor_against` in `common/ideas/GER.txt`. [vanilla-confirmed 1.19.4.1]
+These only work inside a `targeted_modifier = { tag = X ... }` block. The in-game text of eleven of them ends in "against a country", and `river_crossing_factor_against` reads "against country". Vanilla uses `spotting_chance_against`, `navy_capital_ship_attack_factor_against` and `navy_screen_attack_factor_against` that way in `common/ideas/japan.txt` (the first two also in `common/ideas/australia.txt`) and `river_crossing_factor_against` in `common/ideas/GER.txt`.
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -831,7 +789,7 @@ These only work inside a `targeted_modifier = { tag = X ... }` block. The in-gam
 | `river_crossing_factor_against` | army | 2 dp | Targeted: river crossing penalty against one country |
 | `spotting_chance_against` | naval | 0 dp | Targeted: naval spotting chance against one country |
 
-### Kit: State scope (13) <a id="kit-missing-state"></a>
+### State scope (13)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -849,7 +807,7 @@ These only work inside a `targeted_modifier = { tag = X ... }` block. The in-gam
 | `local_supply_impact_factor` | state | 0 dp | ~ Impact of the state's local supplies |
 | `state_production_speed_facility_factor` | state | 2 dp | Local construction speed of facilities (unused in vanilla) |
 
-### Kit: Unit leader scope (3) <a id="kit-missing-ulead"></a>
+### Unit leader scope (3)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -857,7 +815,7 @@ These only work inside a `targeted_modifier = { tag = X ... }` block. The in-gam
 | `paratrooper_weight_factor` | unit_leader, country | 1 dp | ~ Transport space paratroopers take |
 | `terrain_trait_xp_gain_factor` | naval, country, army | 2 dp | Experience gain toward terrain traits |
 
-### Kit: Scientists scope (4) <a id="kit-missing-sci"></a>
+### Scientists scope (4)
 
 | Modifier | Categories | Format | Meaning |
 | --- | --- | --- | --- |
@@ -866,10 +824,9 @@ These only work inside a `targeted_modifier = { tag = X ... }` block. The in-gam
 | `scientist_research_bonus_factor` | character | 2 dp | Scientist research bonus |
 | `scientist_xp_gain_factor` | character | 2 dp |  |
 
+### Sub-unit modifiers (54)
 
-### Kit: Sub-unit modifiers (54) <a id="kit-missing-sub-units"></a>
-
-Only the `modifier_army_sub_unit_*` names listed in `sub_unit_modifiers = { ... }` in `common/units/unit_modifiers/unit_modifiers.txt` exist, and the documentation names exactly these 54. Add a mod battalion's names to that block to get its modifiers. The file marks the speed and max organisation modifiers of `armored_car_recon`, `light_tank_recon` and `blackshirt_assault_battalion` "Cannot be applied to support battalions". `category_special_forces` and `category_rocket_artillery` are sub-unit categories. All 54 rows: categories `army`, format 2 dp. [vanilla-confirmed 1.19.3] [docs] `documentation/modifiers_documentation.md`
+Only the `modifier_army_sub_unit_*` names listed in `sub_unit_modifiers = { ... }` in `common/units/unit_modifiers/unit_modifiers.txt` exist, and the documentation names exactly these 54. Add a mod battalion's names to that block to get its modifiers. The file marks the speed and max organisation modifiers of `armored_car_recon`, `light_tank_recon` and `blackshirt_assault_battalion` "Cannot be applied to support battalions". `category_special_forces` and `category_rocket_artillery` are sub-unit categories. All 54 rows: categories `army`, format 2 dp.
 
 | Sub-unit token | Attack | Defence | Speed | Max organisation | Organisation recovery cap |
 | --- | --- | --- | --- | --- | --- |
@@ -889,17 +846,15 @@ Only the `modifier_army_sub_unit_*` names listed in `sub_unit_modifiers = { ... 
 | `militia` | `modifier_army_sub_unit_militia_attack_factor` | `modifier_army_sub_unit_militia_defence_factor` | `modifier_army_sub_unit_militia_speed_factor` | `modifier_army_sub_unit_militia_max_org_factor` | `modifier_army_sub_unit_militia_org_recovery_cap_factor` |
 | `mountaineers` | `modifier_army_sub_unit_mountaineers_attack_factor` | `modifier_army_sub_unit_mountaineers_defence_factor` | `modifier_army_sub_unit_mountaineers_speed_factor` | `modifier_army_sub_unit_mountaineers_max_org_factor` |  |
 | `paratrooper` | `modifier_army_sub_unit_paratrooper_attack_factor` | `modifier_army_sub_unit_paratrooper_defence_factor` | `modifier_army_sub_unit_paratrooper_speed_factor` | `modifier_army_sub_unit_paratrooper_max_org_factor` |  |
-<!-- kit:end id="missing-from-table" -->
 
-<!-- kit:begin id="template-families" at="bottom" -->
-## Kit: Template modifier families <a id="kit-template-families"></a>
+## Template modifier families
 
-Each pattern stands for one modifier per slot value; the documentation lists the slot values as "modified types". The explicit rows above name only some of them. All rows: [docs] `documentation/modifiers_documentation.md`
+Each pattern stands for one modifier per slot value; the documentation lists the slot values as "modified types". The explicit rows above name only some of them.
 
 | Pattern | Categories | Format | What fills the slot |
 | --- | --- | --- | --- |
 | `<Building>_max_level_terrain_limit`<br>`state_<Building>_max_level_terrain_limit` | country<br>state | 0 dp | Two forms: a building token (54 tokens, for example `bunker`) or a building plus a terrain (770 tokens, for example `bunker_hills`). |
-| `production_cost_<Building>_factor`<br>`production_speed_<Building>_factor`<br>`repair_speed_<Building>_factor` | country | 2 dp | 55 building tokens, listed in the Modifiers page under [Template modifier families](<modifiers.md#kit-template-families>). |
+| `production_cost_<Building>_factor`<br>`production_speed_<Building>_factor`<br>`repair_speed_<Building>_factor` | country | 2 dp | 55 building tokens, listed in the Modifiers page under [Template modifier families](modifiers.md#template-modifier-families). |
 | `state_production_speed_<Building>_factor`<br>`state_repair_speed_<Building>_factor` | state | 2 dp | The same 55 building tokens. |
 | `country_resource_<Resource>`<br>`country_resource_cost_<Resource>`<br>`local_resources_<Resource>_factor` | country | 0 dp | 7 resources: `aluminium`, `chromium`, `coal`, `oil`, `rubber`, `steel`, `tungsten`. |
 | `state_resource_<Resource>`<br>`state_resource_cost_<Resource>`<br>`temporary_state_resource_<Resource>`<br>`state_resources_<Resource>_factor` | state | 0 dp | The same 7 resources. |
@@ -923,27 +878,12 @@ Each pattern stands for one modifier per slot value; the documentation lists the
 
 Notes on rows of the table above:
 
-- `<Operation>_cost`, `<Operation>_outcome`, `<Operation>_risk`: An operation only reacts to a modifier it names in its own `cost_modifiers`, `outcome_modifiers` or `risk_modifiers` list (`common/operations/_documentation.md`) [docs]. Vanilla operations name only `operation_cost`, `operation_infiltrate_cost`, `operation_coup_cost`, `target_sabotage_cost`, `operation_outcome`, `operation_infiltrate_outcome`, `operation_steal_tech_outcome`, `boost_resistance_factor`, `target_sabotage_factor`, `operation_risk`, `operation_infiltrate_risk`, `operation_steal_tech_risk` and `target_sabotage_risk`, so per-operation names such as `bruneval_raid_cost` are valid but no vanilla operation reads them in `common/operations/` [vanilla-confirmed 1.19.4.1].
+- `<Operation>_cost`, `<Operation>_outcome`, `<Operation>_risk`: An operation only reacts to a modifier it names in its own `cost_modifiers`, `outcome_modifiers` or `risk_modifiers` list (`common/operations/_documentation.md`). Vanilla operations name only `operation_cost`, `operation_infiltrate_cost`, `operation_coup_cost`, `target_sabotage_cost`, `operation_outcome`, `operation_infiltrate_outcome`, `operation_steal_tech_outcome`, `boost_resistance_factor`, `target_sabotage_factor`, `operation_risk`, `operation_infiltrate_risk`, `operation_steal_tech_risk` and `target_sabotage_risk`, so per-operation names such as `bruneval_raid_cost` are valid but no vanilla operation reads them in `common/operations/`.
 
-Corrections to the rows above. [docs] `documentation/modifiers_documentation.md`
+Corrections to the rows above.
 
 - `country_resource_*`, `country_resource_cost_*` and the state resource rows: there are 7 resources and the 7th is `coal`.
 - `production_speed_*`, `repair_speed_*` and the `state_` variants: 55 building tokens, including `air_facility`, `land_facility`, `naval_facility`, `nuclear_facility`, `energy_infrastructure`, `naval_headquarters`, `naval_supply_hub`, `stronghold_network` and the landmarks.
 - `production_cost_max_*`: also `floating_harbor_equipment`, `repair_ship_hull` and `support_ship_hull`.
 - `experience_gain_<unit>_training_factor` and `_combat_factor` exist for 157 unit tokens, and a `_mission_factor` variant exists for each.
 - `<idea_group>_cost_factor`: 25 groups; the row above names 16 and omits nine spirit groups (`army_spirit`, `navy_spirit`, `air_force_spirit`, `academy_spirit`, `division_command_spirit` and four more).
-<!-- kit:end id="template-families" -->
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
