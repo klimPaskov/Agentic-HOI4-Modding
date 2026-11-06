@@ -37,12 +37,16 @@ class Limit(unittest.TestCase):
         data = json.loads(check_holes.CALIBRATION.read_text(encoding="utf-8"))
         self.assertEqual((data["size"], data["frames"], data["views"]), (check_holes.SIZE, check_holes.FRAMES, len(check_holes.VIEWS)))
         self.assertEqual(set(data["references"]), {"GER_infantry.mesh", "cavalry_horse.mesh"})
-        self.assertGreater(data["largest"]["pixels"], 0)
+        self.assertGreater(data["by_kind"]["other"]["pixels"], 0)
+        self.assertEqual(data["largest"]["pixels"], max(row["pixels"] for row in data["by_kind"].values()))
         self.assertEqual(data["largest"]["pixels"], max(row["largest"] for row in data["references"].values()))
+        self.assertIn("death", data["by_kind"]["death"]["clip"])
 
     def test_the_limit_scales_with_the_tile_area(self) -> None:
-        base = check_holes.load_limit(check_holes.SIZE)["pixels"]
-        self.assertAlmostEqual(check_holes.load_limit(check_holes.SIZE * 2)["pixels"], base * 4)
+        base = check_holes.load_limit(check_holes.SIZE)
+        doubled = check_holes.load_limit(check_holes.SIZE * 2)
+        for kind in check_holes.KINDS:
+            self.assertAlmostEqual(doubled[kind], base[kind] * 4)
 
     def test_a_missing_calibration_fails_closed(self) -> None:
         self.assertIsNone(check_holes.load_limit(256, Path("no_such_calibration.json")))
@@ -52,7 +56,7 @@ class Limit(unittest.TestCase):
 
 
 class Judge(unittest.TestCase):
-    limit = {"pixels": 20.0}
+    limit = {"death": 60.0, "other": 20.0}
 
     def test_specks_as_large_as_vanillas_pass(self) -> None:
         self.assertEqual(check_holes.judge(results(0, 3, 20), self.limit), (True, []))
@@ -65,6 +69,14 @@ class Judge(unittest.TestCase):
         self.assertIn("unit_attack frame 2", findings[0]["message"])
         self.assertIn("2 of 3 renders are over", findings[0]["message"])
 
+    def test_a_death_clip_lying_on_the_ground_has_its_own_limit(self) -> None:
+        lying = {"source": "unit.mesh", "size": 256, "results": [{"clip": "unit_death", "frame": 40, "view": [45, 10], "largest": 55, "pixels": 55}]}
+        self.assertTrue(check_holes.judge(lying, self.limit)[0])
+        standing = {"source": "unit.mesh", "size": 256, "results": [{"clip": "unit_idle", "frame": 4, "view": [45, 10], "largest": 55, "pixels": 55}]}
+        ok, findings = check_holes.judge(standing, self.limit)
+        self.assertFalse(ok)
+        self.assertIn("standing clip is 20 px", findings[0]["message"])
+
     def test_many_edges_do_not_matter_only_what_shows(self) -> None:
         # A smart-topology unit with 1,250 open edges on its bark plates and no visible hole passes.
         self.assertTrue(check_holes.judge(results(*([4] * 200)), self.limit)[0])
@@ -72,7 +84,7 @@ class Judge(unittest.TestCase):
 
 class Command(unittest.TestCase):
     def run_main(self, source: Path, out: Path, rendered: dict) -> tuple:
-        with mock.patch.object(check_holes, "render", return_value=rendered), mock.patch.object(check_holes, "load_limit", return_value={"pixels": 20.0}), redirect_stdout(io.StringIO()) as printed:
+        with mock.patch.object(check_holes, "render", return_value=rendered), mock.patch.object(check_holes, "load_limit", return_value={"death": 60.0, "other": 20.0}), redirect_stdout(io.StringIO()) as printed:
             code = check_holes.main([str(source), "--out", str(out)])
         return code, json.loads(printed.getvalue())
 

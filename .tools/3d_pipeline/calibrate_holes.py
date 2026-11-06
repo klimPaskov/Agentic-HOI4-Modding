@@ -8,8 +8,10 @@ Vanilla units are not free of holes either: a sleeve or a collar seen edge-on, o
 behind, shows a few pixels of ground. This renders the two loose-part references, GER_infantry and
 cavalry_horse, exactly the way `check_holes.py` renders a custom unit (same views, tile size and
 frames, every clip the game plays on them, as the `.gfx` and `.asset` files register them) and
-writes the largest cluster it found, with where it was found, to
-`config/silhouette_calibration.json`. Rerun after a game update. Takes a few minutes in Blender.
+writes the largest cluster it found, overall and for death clips and every other clip apart (a body
+lying on the ground shows larger specks from low views), with where each was found, to
+`config/silhouette_calibration.json`. Rerun after a game update. Takes about half an hour in Blender
+(GER_infantry alone plays 44 clips).
 """
 
 from __future__ import annotations
@@ -34,6 +36,7 @@ def measure(game: Path, work: Path, size: int, frames: int) -> Dict[str, Any]:
     clips = registered_clips(game)
     per_reference: Dict[str, Any] = {}
     largest: Dict[str, Any] = {"pixels": 0}
+    by_kind: Dict[str, Dict[str, Any]] = {kind: {"pixels": 0} for kind in check_holes.KINDS}
     for name in REFERENCES:
         mesh_path = next((mesh for mesh in clips if mesh.name == name), None)
         if mesh_path is None:
@@ -51,8 +54,12 @@ def measure(game: Path, work: Path, size: int, frames: int) -> Dict[str, Any]:
         }
         if top["largest"] > largest["pixels"]:
             largest = {"pixels": top["largest"], "mesh": name, "clip": top["clip"], "frame": top["frame"], "view": top["view"]}
+        for row in rows:
+            kind = check_holes.kind_of(row["clip"])
+            if row["largest"] > by_kind[kind]["pixels"]:
+                by_kind[kind] = {"pixels": row["largest"], "mesh": name, "clip": row["clip"], "frame": row["frame"], "view": row["view"]}
         check_holes.build_sheet(work / mesh_path.stem, rows[: check_holes.OVERLAYS], None)
-    return {"largest": largest, "references": per_reference}
+    return {"largest": largest, "by_kind": by_kind, "references": per_reference}
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -71,7 +78,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         **measured,
     }
     args.out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
-    print(json.dumps({"largest": payload["largest"], "references": {name: row["largest"] for name, row in payload["references"].items()}}))
+    print(json.dumps({"by_kind": {kind: row["pixels"] for kind, row in payload["by_kind"].items()}, "references": {name: row["largest"] for name, row in payload["references"].items()}}))
     return 0
 
 

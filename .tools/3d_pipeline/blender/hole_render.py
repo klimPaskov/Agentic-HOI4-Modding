@@ -6,8 +6,9 @@ The game culls back faces. Each view is rendered twice with a transparent backgr
 back faces culled and once without, and the pixels that only back faces cover are a hole as the
 player sees it: a missing face, a face turned the wrong way, or a one-sided sheet seen from behind.
 The pixels are split into connected clusters, and the largest cluster per view and frame is
-reported in pixels at the request's tile size. The camera frames the rest pose the same way for every
-unit (orthographic, 1.45 times the largest extent), so clusters compare across units of any size.
+reported in pixels at the request's tile size. The camera's scale is set from the rest pose the same way
+for every unit (orthographic, 1.45 times the largest extent), so clusters compare across units of any
+size, and it is centred on each frame's pose, so a body lying in a death clip stays in the tile.
 
 The request names a `.mesh` with `.anim` clips and the frames to render, or a `.glb` (rest pose only).
 The `overlays` worst views are rendered again as tiles (`worst_<n>.png`): the unit grey, the holes
@@ -60,15 +61,19 @@ shading.show_shadows = False
 
 def bounds():
     graph = bpy.context.evaluated_depsgraph_get()
-    points = []
+    lows, highs = [], []
     for o in meshes:
         evaluated = o.evaluated_get(graph)
         data = evaluated.to_mesh()
-        points.extend(evaluated.matrix_world @ v.co for v in data.vertices)
+        if len(data.vertices):
+            co = np.empty(len(data.vertices) * 3, dtype=np.float64)
+            data.vertices.foreach_get("co", co)
+            matrix = np.array(evaluated.matrix_world)
+            world = co.reshape(-1, 3) @ matrix[:3, :3].T + matrix[:3, 3]
+            lows.append(world.min(axis=0))
+            highs.append(world.max(axis=0))
         evaluated.to_mesh_clear()
-    low = Vector((min(p.x for p in points), min(p.y for p in points), min(p.z for p in points)))
-    high = Vector((max(p.x for p in points), max(p.y for p in points), max(p.z for p in points)))
-    return low, high
+    return Vector(np.min(lows, axis=0)), Vector(np.max(highs, axis=0))
 
 
 low, high = bounds()
@@ -81,10 +86,13 @@ scene.camera = camera
 VIEWS = [tuple(view) for view in request["views"]]
 
 
+centre = (low + high) / 2
+
+
 def aim(azimuth, elevation):
     a, e = math.radians(azimuth), math.radians(elevation)
     direction = Vector((math.sin(a) * math.cos(e), -math.cos(a) * math.cos(e), math.sin(e)))
-    camera.location = (low + high) / 2 + direction * span * 6
+    camera.location = centre + direction * span * 6
     camera.rotation_euler = (-direction).to_track_quat("-Z", "Y").to_euler()
     camera_data.ortho_scale = span * 1.45
     camera_data.clip_end = span * 20
@@ -127,9 +135,16 @@ def largest_cluster(mask):
 results = []
 
 
+def recentre():
+    global centre
+    frame_low, frame_high = bounds()
+    centre = (frame_low + frame_high) / 2
+
+
 def measure(clip, frames):
     for frame in frames:
         scene.frame_set(frame)
+        recentre()
         for azimuth, elevation in VIEWS:
             aim(azimuth, elevation)
             only_back = coverage(False) & ~coverage(True)
@@ -154,25 +169,28 @@ def pose(clip, frame):
 
 def overlay(row, index):
     pose(row["clip"], row["scene_frame"])
+    recentre()
     aim(*row["view"])
     shown, front = coverage(False), coverage(True)
     holes = shown & ~front
     pixels = np.ones((size, size, 4), dtype=np.float32)
     pixels[shown] = (0.55, 0.55, 0.55, 1.0)
     pixels[holes] = (0.9, 0.05, 0.05, 1.0)
-    image = bpy.data.images.new(f"worst_{index}", size, size, alpha=True)
+    name = f"{request.get('tile_prefix', 'worst')}_{index}.png"
+    image = bpy.data.images.new(name, size, size, alpha=True)
     image.pixels[:] = pixels.ravel()
-    image.filepath_raw = str(out / f"worst_{index}.png")
+    image.filepath_raw = str(out / name)
     image.file_format = "PNG"
     image.save()
     bpy.data.images.remove(image)
-    row["tile"] = f"worst_{index}.png"
+    row["tile"] = name
 
 
 if rig is not None:
     rig.animation_data_create()
 rest_frame = scene.frame_current
-measure("rest", [rest_frame])
+if request.get("rest", True):
+    measure("rest", [rest_frame])
 for row in results:
     row["scene_frame"] = rest_frame
 for clip in request.get("clips", []):
@@ -193,5 +211,5 @@ for index, row in enumerate(worst_rows):
 for row in results:
     row.pop("scene_frame", None)
 
-(out / "holes.json").write_text(json.dumps({"source": str(source), "size": size, "results": results}, indent=1), encoding="utf-8")
+(out / request.get("results_name", "holes.json")).write_text(json.dumps({"source": str(source), "size": size, "results": results}, indent=1), encoding="utf-8")
 print("HOLES_RENDERED", len(results))
