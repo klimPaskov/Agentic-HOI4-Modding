@@ -7,7 +7,10 @@ Usage (from the repository root):
 
 It reads the `.mesh`, `.anim` and `.dds` bytes in the folder without Blender
 and reports each problem as a rule id, the file and a sentence. Errors make it
-exit 1, warnings do not. `--json` prints the findings as JSON.
+exit 1, warnings do not. `--json` prints the findings as JSON. `--verdict <file>`
+writes the route's short stage verdict there (lib/stage_verdict.py) and prints it as
+one line: the failed rules, the exact repair commands to run next, or an escalation
+when no script fixes them.
 
 File rules (always):
 
@@ -606,6 +609,30 @@ def repair_textures(folder: Path) -> List[str]:
     return rewritten
 
 
+def _write_verdict(args, folder: Path, findings: List[Finding], errors: List[Finding], facts: dict) -> None:
+    from lib import stage_verdict
+
+    shown = args.folder.as_posix()
+    out = args.verdict.parent.as_posix()
+    stem = args.stem or (next(iter(facts["meshes"]), folder.name).rsplit(".", 1)[0])
+    steps, escalate = stage_verdict.next_for_findings(
+        {item.rule for item in errors}, shown, out, args.stem, args.unit_type, repaired=folder.name == "files" and folder.parent.name == "repair"
+    )
+    if not errors:
+        mod = f" --mod-root {stage_verdict.quote(args.mod_root.as_posix())}" if args.mod_root else ""
+        steps = [f"{stage_verdict.PY} {stage_verdict.PIPELINE}/review_unit.py {stage_verdict.quote(shown)}{' --stem ' + args.stem if args.stem else ''}{mod} --out {stage_verdict.quote(out + '/review')}"]
+    stage_verdict.write(
+        stage_verdict.verdict(
+            "check", not errors, stem,
+            outputs={"folder": shown, "errors": len(errors), "warnings": len(findings) - len(errors)},
+            findings=[{"rule": item.rule, "file": Path(item.file).name, "message": stage_verdict.short(item.message)} for item in errors],
+            escalate=escalate,
+            next_steps=steps,
+        ),
+        args.verdict,
+    )
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("folder", type=Path, help="the folder that holds the unit's .mesh, .anim and .dds files")
@@ -616,6 +643,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--compare-units", type=Path, help="compare the unit's clips with every unit under this folder (default with --mod-root: <mod-root>/gfx/models/units)")
     parser.add_argument("--reskin-of", action="append", default=[], metavar="UNIT", help="a unit folder or mesh stem this unit reskins; it may share that unit's clips (repeatable)")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--verdict", type=Path, help="write the stage verdict (pass, fail with repair commands, or escalate) to this file and print it")
     parser.add_argument(
         "--repair-textures",
         action="store_true",
@@ -644,6 +672,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if units_root and units_root.is_dir():
         findings.extend(check_shared_clips(folder, units_root, args.stem, args.reskin_of))
     errors = [item for item in findings if item.severity == "error"]
+    if args.verdict:
+        _write_verdict(args, folder, findings, errors, facts)
+        return 1 if errors else 0
     if args.json:
         print(json.dumps({"findings": [asdict(item) for item in findings], "facts": facts}, indent=2))
     else:

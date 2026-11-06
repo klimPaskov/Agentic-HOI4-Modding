@@ -91,6 +91,26 @@ class Sheets(unittest.TestCase):
             with Image.open(sheets[1]) as sheet:
                 self.assertEqual(sheet.size, (32 * len(review_unit.VIEWS), (32 + review_unit.LABEL_HEIGHT) * 3))
 
+    def test_a_clip_with_diagnostic_rows_gets_a_diagnostics_sheet(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            tiles = Path(folder) / "tiles"
+            tiles.mkdir()
+            write_tiles(tiles)
+            index = json.loads((tiles / "index.json").read_text(encoding="utf-8"))
+            diag = {}
+            for view in review_unit.DIAGNOSTIC_VIEWS:
+                diag[view] = f"u_idle_0009_{view}_diag.png"
+                Image.new("RGB", (32, 32), (200, 200, 200)).save(tiles / diag[view])
+            index["clips"][1]["diagnostic_rows"] = [{"frame": 9, "tiles": diag, "worst_share": 0.031}]
+            (tiles / "index.json").write_text(json.dumps(index), encoding="utf-8")
+            sheets = review_unit.build_sheets(tiles, Path(folder) / "sheets")
+            self.assertEqual([sheet.name for sheet in sheets], ["rest.png", "u_idle.png", "u_idle_diagnostics.png"])
+            with Image.open(sheets[2]) as sheet:
+                self.assertEqual(sheet.size[1], review_unit.LABEL_HEIGHT + 32 + review_unit.LABEL_HEIGHT)
+            request = review_unit.write_request(Path(folder), "u", sheets, tiles).read_text(encoding="utf-8")
+            self.assertIn("Diagnostic sheets", request)
+            self.assertIn("cyan open edge", request)
+
     def test_the_request_carries_the_prompt_and_every_sheet(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             out = Path(folder)
