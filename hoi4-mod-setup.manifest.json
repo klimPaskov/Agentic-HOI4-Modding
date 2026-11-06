@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "fd966715fca12fc66cacd42a8c9f9b0b9685a39d",
+  "generated_for_revision": "a2f0ab2f3b5261c21d6afaf688fbcdaaaecfd4b7",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15015,13 +15015,13 @@
         },
         {
           "path": ".tools/3d_pipeline/calibrate_deformation.py",
-          "sha256": "ff0ede542fe3577a35e50e556dabb4930090b0af2671a5c6e57acb330cea07f1",
-          "size": 11625
+          "sha256": "ed4137c38cb41208f92f1b55469f1464b104d852b0292f27c6ec1ead21f576f0",
+          "size": 13230
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "9770e1597968ae5783409d71f77213cbc87247fddc05786289a385d21c05172a",
-          "size": 44869
+          "sha256": "d8c6bc4b2fd64aaffc4cbab3efa9ad2736b42a2f1ae8b7deaf1d31f25be6b484",
+          "size": 45837
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -15035,8 +15035,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/deformation_calibration.json",
-          "sha256": "8648bd62bf90dceb5edfde2611ea09581d815d2689bce62ff4c6f86108cc5bfb",
-          "size": 6672
+          "sha256": "14a840ddbc14c2985b1834a9eb88716e329d79a4057bc662fa0a2556af400ccd",
+          "size": 7167
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_pricing.json",
@@ -15125,8 +15125,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_motion.py",
-          "sha256": "7f6fe34c5fb5506223f755a9c44a9cffd431f2324daa714ed86f75f55b9e19ca",
-          "size": 23780
+          "sha256": "a728c632c4556ae63e56a93c91fac278ad0828ed9d5eb92f207fc7ca002fe03a",
+          "size": 25263
         },
         {
           "path": ".tools/3d_pipeline/lib/profile_gates.py",
@@ -15140,8 +15140,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/stage_verdict.py",
-          "sha256": "affbcea41e668fa90b106ca419eb071d64a2e67319eec337931f5c7036a34e2c",
-          "size": 6775
+          "sha256": "839f871b515ebc1afb3b7e2fc8e59656f51269d474dc6be6065e7d4bcc111f6b",
+          "size": 6980
         },
         {
           "path": ".tools/3d_pipeline/lib/texture_lineage.py",
@@ -15830,8 +15830,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_deformation_checks.py",
-          "sha256": "53c7200ecdf60a42ef913fdf6f6605cc123fdaa2a854a1b360352f67c42fb73f",
-          "size": 13145
+          "sha256": "1ef19348537342210d072830030c744814a19b9353549d5ce344db04e52f86a5",
+          "size": 13174
         },
         {
           "path": ".tools/3d_pipeline/tests/test_explicit_batch_repair.py",
@@ -15940,8 +15940,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_motion_checks.py",
-          "sha256": "04fb372ea725e6a77fa9ccbd87ef2cacd06ad3805591a641b57220d35c9841b8",
-          "size": 13270
+          "sha256": "8935f86a0dfada88990b12c92c1d9051dc63eebc6552746d0a654e5e30b65846",
+          "size": 14838
         },
         {
           "path": ".tools/3d_pipeline/tests/test_optional_motion_contract.py",
