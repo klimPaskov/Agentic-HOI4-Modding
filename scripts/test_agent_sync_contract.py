@@ -46,6 +46,43 @@ def load_module():
     return module
 
 
+COMPONENT_MARKER = re.compile(r"(?m)^[ \t]*<!-- HOI4_MOD_SETUP:COMPONENT:([a-z0-9][a-z0-9._-]{0,127}):(START|END) -->[ \t]*\n?")
+PAIRED_MARKERS = (
+    ("Super Events", "<!-- HOI4_MOD_SETUP_SUPER_EVENTS_START -->", "<!-- HOI4_MOD_SETUP_SUPER_EVENTS_END -->"),
+    ("portrait", "<!-- HOI4_MOD_SETUP_PORTRAITS_START -->", "<!-- HOI4_MOD_SETUP_PORTRAITS_END -->"),
+    ("image provider", "<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->", "<!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->"),
+    ("live testing provider", "<!-- HOI4_MOD_SETUP:LIVE_TESTING_PROVIDER:START -->", "<!-- HOI4_MOD_SETUP:LIVE_TESTING_PROVIDER:END -->"),
+)
+
+
+def setup_marker_problems(name, text):
+    """Mirror what HOI4 Mod Setup does with the optional-block markers of each file it installs (adapt.rs).
+
+    Setup reads every file on its own. An unbalanced component block, or a Super Events or portrait marker whose end
+    is missing or comes first, fails the whole install with "a source file has an unterminated optional block".
+    Moving text between files, as when a skill is split into references, must keep each pair inside one file.
+    """
+    problems = []
+    text = text.replace("\r\n", "\n")
+    open_block = None
+    for match in COMPONENT_MARKER.finditer(text):
+        component, kind = match.group(1), match.group(2)
+        if kind == "START" and open_block is None:
+            open_block = component
+        elif kind == "END" and open_block == component:
+            open_block = None
+        else:
+            problems.append(f"{name}: unbalanced component block for {component}")
+            open_block = None
+    if open_block:
+        problems.append(f"{name}: unterminated component block for {open_block}")
+    for label, start, end in PAIRED_MARKERS:
+        starts, ends = text.count(start), text.count(end)
+        if starts != ends or starts > 1 or (starts and text.index(start) > text.index(end)):
+            problems.append(f"{name}: {label} markers need one start before one end, found {starts} start and {ends} end")
+    return problems
+
+
 def hard_wraps(text):
     """Report markdown lines that continue one prose sentence on the next line."""
     in_fence = False
@@ -212,6 +249,13 @@ def main():
         else:
             assert stack and stack.pop() == component, f"unbalanced component block {component}"
     assert not stack and markers, "component blocks must be balanced"
+    # Setup processes the optional-block markers of each installed file separately, so every skill, reference,
+    # agent and template file keeps its pairs balanced inside itself.
+    shipped = [ROOT / "CLAUDE_template.md", ROOT / "AGENTS_template.md", *sorted((ROOT / ".claude" / "skills").rglob("*.md")), *sorted((ROOT / ".claude" / "agents").glob("*.md"))]
+    marker_problems = [problem for path in shipped for problem in setup_marker_problems(path.relative_to(ROOT).as_posix(), path.read_text(encoding="utf-8"))]
+    assert not marker_problems, marker_problems
+    assert setup_marker_problems("fixture", "text\n<!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:START -->\nmore\n"), "an unterminated block must be reported"
+    assert not setup_marker_problems("fixture", "<!-- HOI4_MOD_SETUP:COMPONENT:a.b:START -->\nx\n<!-- HOI4_MOD_SETUP:COMPONENT:a.b:END -->\n")
     agents_template = (ROOT / "AGENTS_template.md").read_text(encoding="utf-8")
     assert all(marker in agents_template for marker in provider_markers)
     assert "native ImageGen" not in agents_template

@@ -22,5 +22,3 @@ Tool exposure does not prove service health or the availability of a standalone 
 MCP supports implementation and review; successful MCP output is not a universal completion gate. When a skill calls an MCP route mandatory and it is unavailable, record the exact blocker and report that evidence as missing: source review and local checks can then support completion, but never describe them as MCP proof or live engine validation, and an auditor marks the missing evidence unresolved, never passed.
 
 The detailed capability, artifact, probability-scenario, rewrite-recovery, and troubleshooting notes are in `docs/systems/hoi4_agent_tools_mcp_integration.md`.
-
-<!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:START -->
