@@ -73,6 +73,10 @@ Surface and deformation rules (always; limits are the largest values measured on
   part however many pieces it has, judged against the body vertices that follow the same bone (the
   hand that holds it): it must touch them at rest and stay on them in every frame. A polearm's head
   may reach as far from the body as its shaft carries it.
+- UNIT-PROP-CLIP (warning): a held prop goes inside the body in some frame, more than 2 % of its
+  sampled points (`fit_prop.py`'s bar), with the hand and forearm holding it left out. Every frame
+  counts, in-betweens included. The warning names the worst clip and frame to look at. A point behind
+  an open, one-sided sheet (a cape) also reads as inside, so look before changing the clip.
 
 Mod rule (with `--mod-root`, or `--compare-units <folder>`):
 
@@ -337,6 +341,7 @@ def _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated=False):
         if "still_motion" in limits and motion < limits["still_motion"]:
             add("UNIT-ANIM-STILL", "error", anim_path, f"the joints move {motion:.2%} of the unit's height on average; the stillest vanilla clip moves {limits['still_motion']:.2%}. It reads as a frozen pose")
     _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits)
+    _check_prop_clearance(mesh, mesh_path, loaded, add, facts)
     paths = sorted(loaded)
     for index, first in enumerate(paths):
         for second in paths[index + 1 :]:
@@ -425,6 +430,25 @@ def check_files(
         _check_deformation(meshes[0], folder, stem, stems if only_stem else None, add, facts, load_calibration(group) if limits is None else limits, seated)
     _check_textures(folder, add, facts)
     return findings, facts
+
+
+def _check_prop_clearance(mesh, mesh_path, loaded, add, facts):
+    """UNIT-PROP-CLIP (warning): the frames in which a held prop goes inside the body, hand and forearm left out."""
+
+    from lib import pdx_motion
+
+    reports = pdx_motion.prop_clearance(mesh, {path.name: anim for path, anim in loaded.items()})
+    facts["motion"][mesh_path.name]["props"] = [
+        {"prop_bone": r.prop_bone, "triangles": r.pieces_triangles, "worst_inside_share": round(r.worst_share, 4),
+         "worst_clip": r.worst_clip, "worst_frame": r.worst_frame, "frames_over": r.frames_over}
+        for r in reports
+    ]
+    for report in reports:
+        if report.frames_over:
+            add("UNIT-PROP-CLIP", "warning", mesh_path,
+                f"the prop bound to {report.prop_bone} goes inside the body in {report.frames_over} frame(s), worst {report.worst_share:.0%} of its points in "
+                f"{report.worst_clip} frame {report.worst_frame} (the hand and forearm holding it are left out). Look at those frames: an in-between can swing it "
+                f"through the head or a leg although every key is clear")
 
 
 def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):

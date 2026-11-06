@@ -462,6 +462,107 @@ def holding_vertices(mesh: SkinnedMesh, bone: int, candidates: np.ndarray) -> tu
     return candidates, -1
 
 
+# A held prop passes through the body when its points sit inside the body's surface in a frame. The
+# hand and forearm that hold it are left out: a grip closes around the shaft by design. The share is
+# judged per frame, because in-betweens swing a polearm through a head or a thigh although every key
+# is clear. fit_prop.py accepts a fit when at most INSIDE_SHARE of its sampled points go inside.
+CLEARANCE_SAMPLES = 256
+CLEARANCE_BODY = 8000  # body triangles sampled
+CLEARANCE_DEPTH = 0.25  # a point farther than this (share of height) from every body triangle is outside
+INSIDE_SHARE = 0.02
+
+
+@dataclass
+class PropClearance:
+    prop_bone: str
+    pieces_triangles: int
+    worst_share: float = 0.0  # the largest share of the prop's points inside the body in one frame
+    worst_clip: str = ""
+    worst_frame: int = -1
+    frames_over: int = 0  # frames past INSIDE_SHARE
+
+
+def face_centres(positions: np.ndarray, triangles: np.ndarray) -> tuple:
+    """Each triangle's centre and unit normal (its winding's outward side)."""
+
+    a, b, c = positions[triangles[:, 0]], positions[triangles[:, 1]], positions[triangles[:, 2]]
+    normals = np.cross(b - a, c - a)
+    return (a + b + c) / 3.0, normals / np.maximum(np.linalg.norm(normals, axis=1, keepdims=True), 1e-12)
+
+
+def inside_share(points: np.ndarray, surface: np.ndarray, normals: np.ndarray, depth: float) -> float:
+    """The share of `points` behind the nearest surface triangle (its centre within `depth`)."""
+
+    if not len(points) or not len(surface):
+        return 0.0
+    squared = (points**2).sum(axis=1)[:, None] + (surface**2).sum(axis=1)[None] - 2.0 * points @ surface.T
+    nearest = squared.argmin(axis=1)
+    offset = points - surface[nearest]
+    close = np.linalg.norm(offset, axis=1) < depth
+    behind = np.einsum("ij,ij->i", offset, normals[nearest]) < 0.0
+    return float((close & behind).mean())
+
+
+def _holding_bones(mesh: SkinnedMesh, bone: int) -> set:
+    """The bone, its parent (a forearm for a hand) and every bone below it (fingers)."""
+
+    held = {bone}
+    if 0 <= bone < len(mesh.parents) and mesh.parents[bone] >= 0:
+        held.add(mesh.parents[bone])
+    changed = True
+    while changed:
+        changed = False
+        for index, parent in enumerate(mesh.parents):
+            if parent in held and index not in held and parent != mesh.parents[bone]:
+                held.add(index)
+                changed = True
+    return held
+
+
+def prop_clearance(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[PropClearance]:
+    """For every held prop shape, the worst frame in which its points sit inside the body."""
+
+    if not mesh.skinned or len(mesh.shape) != len(mesh.positions):
+        return []
+    labels = _parts(mesh)
+    if len(mesh.collision) == len(mesh.positions) and mesh.collision.any():
+        labels = np.where(mesh.collision, -1, labels)
+    used = np.unique(mesh.triangles)
+    kept = labels[used] != -1
+    if not kept.any():
+        return []
+    values, counts = np.unique(labels[used][kept], return_counts=True)
+    props = prop_shapes(mesh, labels, int(values[np.argmax(counts)]))
+    if not props:
+        return []
+    height = max(mesh.height, 1e-6)
+    in_props = np.isin(mesh.shape, list(props))
+    solid = ~in_props & (labels != -1)
+    body_triangles = mesh.triangles[solid[mesh.triangles].all(axis=1)]
+    dominant = dominant_bones(mesh)
+    triangle_bone = dominant[body_triangles[:, 0]] if len(body_triangles) else np.zeros(0, dtype=np.int64)
+    reports = []
+    for shape, bone in props.items():
+        mine = used[mesh.shape[used] == shape]
+        free = body_triangles[~np.isin(triangle_bone, list(_holding_bones(mesh, bone)))]
+        sample = _evenly(mine, CLEARANCE_SAMPLES)
+        faces = free[_evenly(np.arange(len(free)), CLEARANCE_BODY)] if len(free) else free
+        triangles = int(np.isin(mesh.triangles[:, 0], mine).sum())
+        report = PropClearance(mesh.bones[bone], triangles)
+        for name, anim in clips.items():
+            matrices = skinning_matrices(mesh, anim)
+            for frame in range(matrices.shape[0]):
+                moved = skin(mesh, matrices[frame])
+                centres, normals = face_centres(moved, faces)
+                share = inside_share(moved[sample], centres, normals, CLEARANCE_DEPTH * height)
+                if share > INSIDE_SHARE:
+                    report.frames_over += 1
+                if share > report.worst_share:
+                    report.worst_share, report.worst_clip, report.worst_frame = share, name, frame
+        reports.append(report)
+    return reports
+
+
 def loose_parts(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[LoosePart]:
     """Every part but the largest, with its skinning and its distance from the rest of the unit per frame.
 
