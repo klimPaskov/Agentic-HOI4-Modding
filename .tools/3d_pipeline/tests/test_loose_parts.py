@@ -7,6 +7,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import numpy as np
+
 PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE))
 sys.path.insert(0, str(PIPELINE / "tests"))
@@ -48,8 +50,8 @@ def connected_body():
     return vertices, triangles
 
 
-def write_unit(folder: Path, extra, collision=None) -> None:
-    """The connected unit plus extra cubes in its own stream; `collision` adds a selection box shape."""
+def write_unit(folder: Path, extra, collision=None, prop=None) -> None:
+    """The connected unit plus extra cubes in its own stream; `collision` adds a selection box shape, `prop` a held prop shape."""
 
     vertices, triangles = connected_body()
     for verts, tris in extra:
@@ -67,14 +69,79 @@ def write_unit(folder: Path, extra, collision=None) -> None:
         shape += legged._prop("tri", "i", [int(i) for t in tris for i in t])
         shape += legged._obj("material", 4) + legged._prop("shader", "s", ["Collision"])
         (folder / "u.mesh").write_bytes(data + shape)
+    if prop is not None:
+        # A second shape, the way fit_prop.py adds a held weapon: its own skin and skeleton block.
+        vertices, triangles = [], []
+        for verts, tris in prop:
+            offset = len(vertices)
+            vertices += verts
+            triangles += [(a + offset, b + offset, c + offset) for a, b, c in tris]
+        with tempfile.TemporaryDirectory() as scratch:
+            legged.write_mesh(Path(scratch) / "prop.mesh", vertices, triangles)
+            shape = (Path(scratch) / "prop.mesh").read_bytes()
+        header = b"@@b@" + legged._obj("object", 1) + legged._obj("unit", 2)
+        assert shape.startswith(header)
+        data = (folder / "u.mesh").read_bytes()
+        (folder / "u.mesh").write_bytes(data + legged._obj("u_prop", 2) + shape[len(header):])
     legged.write_anim(folder / "u_move.anim", 20, legged.walk)
 
 
-def findings(extra, collision=None):
+def findings(extra, collision=None, prop=None):
     with tempfile.TemporaryDirectory() as folder:
-        write_unit(Path(folder), extra, collision)
+        write_unit(Path(folder), extra, collision, prop)
         found, facts = check_unit_files.check_files(Path(folder), None, None, limits=LIMITS)
     return [item for item in found if item.rule == "UNIT-LOOSE-PART"], facts
+
+
+def polearm(bone: str, shift: float = 0.0):
+    """A polearm in pieces, all bound wholly to `bone`: a grip at the left thigh, a shaft, a band set
+    2.5 % of the height off the shaft, and a spike that sits beside the head at rest (ZIN's halberd)."""
+
+    skin = [(bone, 1.0)]
+    x = 0.20 + shift
+    pieces = [cube((x, 0.95, 0.0), 0.04, skin)]
+    pieces += [cube((x, 0.95 + 0.05 * k, 0.0), 0.04, skin) for k in range(1, 15)]
+    pieces.append(cube((x + 0.065, 1.2, 0.0), 0.02, skin))
+    pieces.append(cube((0.06 + shift, 1.83, 0.0), 0.04, skin))
+    return pieces
+
+
+class HeldProps(unittest.TestCase):
+    """A weapon fitted as its own shape and bound to the hand is one part, however many pieces it has."""
+
+    def test_a_held_polearm_judged_as_one_part_passes(self) -> None:
+        loose, facts = findings([], prop=polearm("LeftUpLeg"))
+        self.assertEqual(loose, [])
+        parts = facts["motion"]["u.mesh"]["loose_parts"]
+        self.assertEqual([(part["prop_bone"], part["held_by"], part["pieces"]) for part in parts], [("LeftUpLeg", "LeftUpLeg", 17)])
+
+    def test_its_pieces_judged_alone_would_fail(self) -> None:
+        # The same pieces in the body's own shape: the band floats, and the spike, anchored to the head,
+        # drifts as the leg it follows swings.
+        loose, _facts = findings(polearm("LeftUpLeg"))
+        messages = " ".join(item.message for item in loose)
+        self.assertIn("float apart from the body at rest", messages)
+        self.assertIn("drift off the body", messages)
+
+    def test_a_prop_held_nowhere_fails(self) -> None:
+        loose, _facts = findings([], prop=polearm("LeftUpLeg", shift=0.3))
+        self.assertEqual(len(loose), 1)
+        self.assertIn("nothing holds it", loose[0].message)
+
+    def test_a_prop_bound_to_a_bone_that_does_not_hold_it_fails(self) -> None:
+        # Gripped at the left thigh but bound to the right one: it is not where the right thigh is.
+        loose, _facts = findings([], prop=polearm("RightUpLeg"))
+        self.assertEqual(len(loose), 1)
+        self.assertIn("follow RightUpLeg", loose[0].message)
+
+    def test_a_prop_on_a_bone_without_body_vertices_is_judged_against_the_bone_that_carries_it(self) -> None:
+        # A weapon bone under the thigh holds nothing itself: the thigh, its parent, holds the prop.
+        mesh = pdx_deform.SkinnedMesh(
+            positions=np.zeros((3, 3)), triangles=np.zeros((0, 3), dtype=np.int64), joints=np.array([[0, -1, -1, -1]] * 3),
+            weights=np.array([[1.0, 0, 0, 0]] * 3), bones=["Thigh", "Weapon"], parents=[-1, 0], inverse_bind=np.zeros((2, 4, 4)),
+        )
+        holding, bone = pdx_motion.holding_vertices(mesh, 1, np.arange(3))
+        self.assertEqual((list(holding), bone), ([0, 1, 2], 0))
 
 
 class LooseParts(unittest.TestCase):
