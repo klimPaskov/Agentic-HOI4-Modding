@@ -61,6 +61,10 @@ Surface and deformation rules (always; limits are the largest values measured on
   reads as a frozen pose on the map.
 - UNIT-ANIM-SAME: two roles of the unit play nearly the same motion (their distance is under 12 %
   of the larger clip's motion). Each role must read as itself.
+- UNIT-LOOSE-PART: a part not joined to the body's surface (a strap, a plate, a quiver, a separate
+  weapon) has vertices with no skin weight, or sits or drifts farther from the rest of the unit, at
+  rest or in any frame, than any loose part of vanilla GER_infantry or cavalry_horse. Selection boxes
+  (`Collision` shapes) are skipped. Any number of parts is fine while each stays attached.
 
 Mod rule (with `--mod-root`, or `--compare-units <folder>`):
 
@@ -309,6 +313,7 @@ def _check_motion(mesh, mesh_path, loaded, add, facts, limits):
             add("UNIT-ANIM-KNEE", "error", anim_path, f"frame {knee.worst_frame}: knee {knee.worst_leg} bends backward by {-knee.worst_bend:.0%} of the leg's length ({knee.backward_frames} frame(s) past {knee_limit:.0%}); vanilla soldiers' knees bend back at most {limits.get('knee_backward', 0.0):.1%}. Solve the leg again with the knee toward the toes")
         if "still_motion" in limits and motion < limits["still_motion"]:
             add("UNIT-ANIM-STILL", "error", anim_path, f"the joints move {motion:.2%} of the unit's height on average; the stillest vanilla clip moves {limits['still_motion']:.2%}. It reads as a frozen pose")
+    _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits)
     paths = sorted(loaded)
     for index, first in enumerate(paths):
         for second in paths[index + 1 :]:
@@ -394,6 +399,33 @@ def check_files(
         _check_deformation(meshes[0], folder, stem, stems if only_stem else None, add, facts, load_calibration(group) if limits is None else limits, seated)
     _check_textures(folder, add, facts)
     return findings, facts
+
+
+def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):
+    """UNIT-LOOSE-PART: every loose part is skinned and stays within vanilla's contact distance in every frame."""
+
+    from lib import pdx_motion
+
+    parts = pdx_motion.loose_parts(mesh, {path.name: anim for path, anim in loaded.items()})
+    facts["motion"][mesh_path.name]["loose_parts"] = [
+        {"triangles": part.triangles, "unweighted": part.unweighted, "rest_gap": round(part.rest_gap, 4),
+         "worst_gap": round(part.worst_gap, 4), "worst_clip": part.worst_clip, "worst_frame": part.worst_frame}
+        for part in parts[:10]
+    ]
+    unweighted = [part for part in parts if part.unweighted and mesh.skinned]
+    if unweighted:
+        add("UNIT-LOOSE-PART", "error", mesh_path, f"{len(unweighted)} loose part(s) have vertices with no skin weight ({sum(p.unweighted for p in unweighted)} vertices, the largest part {max(p.triangles for p in unweighted)} triangles); they stay where the bind pose put them while the body moves. Bind each to the bone it rests on (the job's loose_part_edits) or drop it")
+    limit = limits.get("loose_gap")
+    if limit is None:
+        return
+    floating = [part for part in parts if part.rest_gap > limit]
+    drifting = [part for part in parts if part.rest_gap <= limit < part.worst_gap]
+    if floating:
+        worst = max(floating, key=lambda part: part.rest_gap)
+        add("UNIT-LOOSE-PART", "error", mesh_path, f"{len(floating)} loose part(s) float apart from the body at rest, the farthest {worst.rest_gap:.1%} of the unit's height away ({worst.triangles} triangles); vanilla loose parts stay within {limit:.1%}. Move the part onto the body or drop it")
+    if drifting:
+        worst = drifting[0]
+        add("UNIT-LOOSE-PART", "error", mesh_path, f"{len(drifting)} loose part(s) drift off the body in a clip, the worst {worst.worst_gap:.1%} of the unit's height in {worst.worst_clip} frame {worst.worst_frame} ({worst.triangles} triangles); vanilla loose parts stay within {limit:.1%}. Weight the part to the bone it rests on (the job's loose_part_edits bind rule)")
 
 
 def _unit_clips(folder: Path):

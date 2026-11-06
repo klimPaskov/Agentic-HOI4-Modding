@@ -202,13 +202,17 @@ def _check_topology(evaluation: _Evaluation, profile: Mapping[str, Any], geometr
         _limit(profile, "max_boundary_edges"),
         raw=geometry.get("loose_boundary_edges"),
     )
-    evaluation.at_most(
-        "loose_components",
-        "welded loose components",
-        welded.get("loose_component_count"),
-        _limit(profile, "max_loose_components"),
-        raw=geometry.get("loose_component_count"),
-    )
+    # Loose parts are not counted against a limit any more: a smart-topology generation keeps an
+    # armoured figure's plates, straps and gear as separate closed parts by design (an elven archer
+    # arrived in 96). check_unit_files.py judges each one after export instead (UNIT-LOOSE-PART: skinned,
+    # and attached in every frame). The count stays in the record.
+    evaluation.checks["loose_components"] = {
+        "status": "measured",
+        "measured": welded.get("loose_component_count"),
+        "limit": None,
+        "raw_as_imported": geometry.get("loose_component_count"),
+        "judged_by": "check_unit_files.py UNIT-LOOSE-PART after export",
+    }
 
 
 def _check_triangle_range(evaluation: _Evaluation, profile: Mapping[str, Any], geometry: Mapping[str, Any]) -> None:

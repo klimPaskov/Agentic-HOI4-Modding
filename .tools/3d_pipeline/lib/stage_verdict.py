@@ -47,6 +47,7 @@ ESCALATE = {
     "UNIT-ROLE-MISSING": "a role has no clip",
     "UNIT-ANIM-STATIC": "a clip moves nothing",
     "UNIT-UNSKINNED": "the mesh has no skeleton",
+    "UNIT-LOOSE-PART": "a loose part floats or drifts off the body: bind it to the bone it rests on with the job's loose_part_edits and rerun the job (free), or weight it by hand",
 }
 TEXTURE_RULES = {"UNIT-DDS-MIPS", "UNIT-DDS-FORMAT", "UNIT-DDS-EMISSIVE"}
 
