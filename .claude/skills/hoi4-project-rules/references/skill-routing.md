@@ -29,5 +29,3 @@ Use repo skills as required implementation guidance, not as optional notes.
 - Use `xlsx` for repository-maintained spreadsheet or delimited-table work. Establish the editable source of truth first, preserve existing workbook structure and formulas, regenerate declared exports rather than editing them, and require successful recalculation with no formula errors when formulas change.
 
 `hoi4-debug-playtest` is never part of normal coding, validation, audit, or completion routing. Use it only when the user explicitly names the skill or explicitly authorizes autonomous desktop playtesting for the current task; otherwise live game and launcher testing remain user-owned.
-
-<!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_testing:START -->
