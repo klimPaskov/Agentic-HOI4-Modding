@@ -3559,6 +3559,22 @@ def export_unit_roles(
     return {"unit_type": spec["unit_type"], "mesh_export": mesh_export, "textures": textures, "roles": roles, "final_checkpoint": chain, "runtime": staged["check"]}
 
 
+def finish_unit_base(job: Path, slug: str, spec: Dict[str, Any], blender: BlenderAdapterClient, prep: Dict[str, Any], profile: Dict[str, Any]) -> Dict[str, Any]:
+    """Gate the prepared base, pack its textures, apply the job's loose part edits and save `unit_base_pre_export`."""
+
+    gate_profile = dict(profile, validation={**profile.get("validation", {}), **spec.get("profile_validation_overrides", {})})
+    candidate_gate(job, prep, hard_max=profile["triangle_range"]["hard_max"], stage="animated_candidate_base", profile=gate_profile)
+    textures = finalize_pdx_runtime_textures(job, spec, blender.process_textures(slug, prep["checkpoints"]["pre_export"]))
+    base = prep["checkpoints"]["pre_export"]
+    if spec.get("loose_part_edits"):
+        # A prop the provider rig weighted to several limbs (a maul hanging between the legs) is dropped or bound to one bone.
+        edited = blender.edit_loose_parts(slug, base, "blender/checkpoints/base_loose_parts.blend", spec["loose_part_edits"])
+        write_json(job / "blender" / "reports" / "loose_part_edits.json", edited)
+        base = edited["checkpoint"]
+    blender.save_checkpoint(slug, base, "unit_base_pre_export")
+    return textures
+
+
 def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     """Finish a Meshy-rigged unit of any humanoid type: one prepared body, every role retargeted onto it.
 
@@ -3600,10 +3616,7 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         repair_before_reduction=True,
         topology_weld_distance=0.0,
     )
-    gate_profile = dict(profile, validation={**profile.get("validation", {}), **spec.get("profile_validation_overrides", {})})
-    candidate_gate(job, prep, hard_max=profile["triangle_range"]["hard_max"], stage="animated_candidate_base", profile=gate_profile)
-    textures = finalize_pdx_runtime_textures(job, spec, blender.process_textures(slug, prep["checkpoints"]["pre_export"]))
-    blender.save_checkpoint(slug, prep["checkpoints"]["pre_export"], "unit_base_pre_export")
+    textures = finish_unit_base(job, slug, spec, blender, prep, profile)
     chain = "blender/checkpoints/unit_base_pre_export.blend"
     mesh_rel = f"export/mesh/{stem}.mesh"
     mesh_export = blender.export_mesh(slug, chain, mesh_rel)

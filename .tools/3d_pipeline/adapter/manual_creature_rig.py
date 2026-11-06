@@ -661,3 +661,9 @@ def seat_rider_action(req, h):
     """Rider seating lives in rider_seat.py; the worker reaches it through this module's operation group."""
     import rider_seat
     return rider_seat.seat_rider_action(req, h)
+
+
+def edit_loose_parts(req, h):
+    """Loose part edits live in loose_parts.py; the worker reaches them through this module's operation group."""
+    import loose_parts
+    return loose_parts.edit_loose_parts(req, h)

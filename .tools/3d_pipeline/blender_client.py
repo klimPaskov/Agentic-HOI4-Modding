@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from lib.mcp_stdio import MCPRouteError, call_stdio
 from lib.paths import resolve_job_root
@@ -663,6 +663,12 @@ class BlenderAdapterClient:
                 "creature_rig_family": creature_rig_family,
                 "action_style": action_style,
             },
+        )
+
+    def edit_loose_parts(self, job_id: str, blend_rel: str, checkpoint_rel: str, rules: List[Dict[str, Any]]) -> Dict[str, Any]:
+        return self.call(
+            "hoi4_blender_edit_loose_parts",
+            {"job_id": job_id, "blend_rel": blend_rel, "checkpoint_rel": checkpoint_rel, "rules": rules},
         )
 
     def seat_rider_action(

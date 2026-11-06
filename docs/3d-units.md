@@ -99,5 +99,6 @@ It prints the last steps and the exact next command.
 | "No library clip still matches its key" | Meshy renamed a library clip. Pick another clip for that role in `unit_types.json` |
 | "This animation is no longer available" | Meshy retired a clip it still lists. The pipeline moves to the role's next clip by itself and releases the refused call's credits, because Meshy charges nothing for it. If no clip is left, add one for that role in `unit_types.json` |
 | The quadruped rig says it cannot find four legs | The legs touch each other or the ground is uneven. Your agent can pass measured landmarks instead |
+| A hanging prop (a maul on the belt, a quiver) smears when the unit walks | Meshy weighted a loose part to the nearest limbs. Add `loose_part_edits` to the job: each rule's box, in fractions of the unit's height (x and y from the body's centre, z from the ground), selects the loose parts inside it, which are dropped (`"action": "drop"`) or given to one bone (`"action": "bind", "bone": "Hips"`). Rerun the job. It costs nothing |
 | A check fails after export | Read `runtime/files.json` in the job folder. It names the file and the rule |
 | A paid step fails | Run the same command again. Steps that succeeded are reused and never paid twice |
